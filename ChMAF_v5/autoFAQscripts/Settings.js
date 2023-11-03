@@ -274,8 +274,6 @@ if (localStorage.getItem('audiovol') != null) {
   audio.volume = localStorage.getItem('audiovol');
 } else localStorage.setItem('audiovol', 1);
 
-document.getElementById('getnewtmpldata').onclick = getText // по клику на кнопку сработает функция обновления шаблонов из документа
-
 document.getElementById('setting').onclick = function () { // открывает параметры
   if (document.getElementById('AF_Settings').style.display == '')
     document.getElementById('AF_Settings').style.display = 'none'

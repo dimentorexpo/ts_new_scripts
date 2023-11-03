@@ -26,6 +26,8 @@ TestUsersdiv.setAttribute('id', 'TestUsers');
 TestUsersdiv.classList = 'onlyfortp';
 TestUsersdiv.innerHTML = win_TestUsers;
 
+document.getElementById('TestRooms').onclick = getTestRoomsButtonPress;
+
 setDisplayStyle(TestUsersdiv, localStorage.getItem('disablelpmwindow') === '1' ? 'none' : '');
 
 let addInfoUser = document.getElementById('addInfoUser');

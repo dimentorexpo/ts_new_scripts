@@ -817,6 +817,8 @@ function getText() { // функция обновления текста с ша
     xhr.send();
 }
 
+document.getElementById('getnewtmpldata').onclick = getText // по клику на кнопку сработает функция обновления шаблонов из документа
+
 async function getInfo(flag1 = 1) { //функция получения инфо о чате и сервис айди
     let activeConvId = getChatId();
 

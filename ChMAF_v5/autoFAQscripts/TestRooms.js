@@ -112,7 +112,7 @@ document.getElementById('hideMetestrooms').onclick = function () { // скрыт
     document.getElementById('AF_testrooms').style.display = 'none'
 }
 
-document.getElementById('TestRooms').onclick = function () { //открывает окно создания тестовых комнат
+function getTestRoomsButtonPress() { //открывает окно создания тестовых комнат
     setDisplayStyle(document.getElementById('AF_testrooms'), document.getElementById('AF_testrooms').style.display === '' ? 'none' : '');
 }
 
