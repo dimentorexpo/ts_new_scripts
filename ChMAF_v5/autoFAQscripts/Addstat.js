@@ -223,57 +223,32 @@ document.getElementById('clearall').onclick = function () {
     document.querySelector('#themesdata').innerText = ""
 }
 
-function setUpStatsButton() { // открытие Статистики
-	    document.getElementById('getStats').onclick = function () { 
-		let getcurdate = new Date();
-		let year = getcurdate.getFullYear();
-		let month = String(getcurdate.getMonth() + 1).padStart(2, "0");
-		let day = String(getcurdate.getDate()).padStart(2, "0");
+function getStatsButtonPress() { // открытие Статистики
+	let getcurdate = new Date();
+	let year = getcurdate.getFullYear();
+	let month = String(getcurdate.getMonth() + 1).padStart(2, "0");
+	let day = String(getcurdate.getDate()).padStart(2, "0");
 
-		let lastDayOfPrevMonth = new Date(year, getcurdate.getMonth(), 0).getDate();
-		let fromDate = new Date(year, getcurdate.getMonth(), day - 1);
-		let toDate = new Date(year, getcurdate.getMonth(), day);
+	let lastDayOfPrevMonth = new Date(year, getcurdate.getMonth(), 0).getDate();
+	let fromDate = new Date(year, getcurdate.getMonth(), day - 1);
+	let toDate = new Date(year, getcurdate.getMonth(), day);
 
-		if (day === "01") {
-		  // set date range to previous month
-		  fromDate = new Date(year, getcurdate.getMonth() - 1, lastDayOfPrevMonth);
-		  toDate = new Date(year, getcurdate.getMonth(), 1);
-		}
+	if (day === "01") {
+	  // set date range to previous month
+		fromDate = new Date(year, getcurdate.getMonth() - 1, lastDayOfPrevMonth);
+	    toDate = new Date(year, getcurdate.getMonth(), 1);
+	}
 
-		document.getElementById("dateFrom").value = `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, "0")}-${String(fromDate.getDate()).padStart(2, "0")}`;
-		document.getElementById("dateTo").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
+	document.getElementById("dateFrom").value = `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, "0")}-${String(fromDate.getDate()).padStart(2, "0")}`;
+	document.getElementById("dateTo").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
 
-
-
-        document.querySelector('#chatcommentsdata').style.display = "none"
-        document.querySelector('#lowCSATcount').style.display = "none"
-        if (document.getElementById('AF_Stat').style.display == '')
-            document.getElementById('AF_Stat').style.display = 'none'
-        else
-            document.getElementById('AF_Stat').style.display = ''
-    };
+    document.querySelector('#chatcommentsdata').style.display = "none"
+    document.querySelector('#lowCSATcount').style.display = "none"
+    if (document.getElementById('AF_Stat').style.display == '')
+        document.getElementById('AF_Stat').style.display = 'none'
+    else
+        document.getElementById('AF_Stat').style.display = ''
 }
-	
-function waitForElement(selector, callback) { // Функция ожидания элемента в DOM
-    const observer = new MutationObserver((mutations, me) => {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if ((node instanceof HTMLElement) && node.matches(selector)) {
-            callback(node);
-            me.disconnect(); // Отключаем наблюдение после выполнения задачи
-            return;
-          }
-        }
-      }
-    });
-  
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true
-    });
-  }
-  
-  waitForElement('#getStats', setUpStatsButton);
 
 	// Тут будет функция запуска получения информации о статистики
 

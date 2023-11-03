@@ -780,7 +780,7 @@ document.getElementById('chagetheme').onclick = () => { //функция пер�
     }
 };
 
-    document.getElementById('opennewcat').onclick = () => { // открывает меню для работы с историей чата по типу кота Омельченко
+function getopennewcatButtonPress() {// открывает меню для работы с историей чата по типу кота Омельченко
 
         if (document.getElementById('AF_ChatHis').style.display == '') {
             document.getElementById('AF_ChatHis').style.display = 'none';

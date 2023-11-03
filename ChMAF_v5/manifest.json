@@ -25,7 +25,6 @@
 				  "/autoFAQscripts/Addstat.js",
 				  "/autoFAQscripts/AFOperatorStatus.js",
 				  "/autoFAQscripts/AlarmClock.js",
-				  "/autoFAQscripts/AutoRespond.js",
 				  "/autoFAQscripts/BinBankInfo.js",
 				  "/autoFAQscripts/Calendar.js",
 				  "/autoFAQscripts/ChatHistory.js",
@@ -36,12 +35,10 @@
 				  "/autoFAQscripts/Knowledge.js",
 				  "/autoFAQscripts/LessonStatus.js",
 				  "/autoFAQscripts/Link.js",
-				  "/autoFAQscripts/LinkKC.js",
 				  "/autoFAQscripts/Linksdostup.js",
 				  "/autoFAQscripts/Marks.js",
 				  "/autoFAQscripts/MobilePass.js",
 				  "/autoFAQscripts/OperatorStatuse.js",
-				  "/autoFAQscripts/OpStatusMM.js",
 				  "/autoFAQscripts/Radio.js",
 				  "/autoFAQscripts/RefuseForm.js",
 				  "/autoFAQscripts/ServiceDesk.js",
@@ -78,7 +75,7 @@
 		  "128" : "/icons/128.png"
 	  },
 	  "web_accessible_resources": [
-		  "Modules/*"
+		  "OtherScripts/*", "autoFAQscripts/*"
 	  ],
 	  "permissions": [ 
 		  "contextMenus",

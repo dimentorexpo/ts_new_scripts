@@ -114,7 +114,6 @@ var win_mainmenu = // описание кнопок меню
         <div id="otkaz" class="onlyfortp">❌Отказ от помощи</div>
         <div id="smartroomform" class="onlyfortp">🦐Smartroom</div>
         <div id="butLessonInfo">🎓 Lesson Info</div>
-        <div id="butFrozeChat" class="onlyfortp">❄ Auto Respond</div>
         <div id="radioPlayer">📻 Radio</div>
         <div id="buttonGetStat">📊 Статистика</div>
     </div>`;
@@ -255,6 +254,7 @@ function prepTp() { //функция подготовки расширения �
     openCalendar.id = 'datsyCalendar'
     openCalendar.title = 'Открывает календарь Datsy'
     openCalendar.classList.add('onlyfortp', 'rightPanelBtn')
+    openCalendar.onclick = getdatsyCalendarButtonPress;
     document.getElementById('rightPanel').appendChild(openCalendar)
 
     let butServ = document.createElement('button')
@@ -493,7 +493,6 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     const TP_addr = data.TP_addr;
     const KC_addrRzrv = data.KC_addrRzrv;
     const TP_addrRzrv = data.TP_addrRzrv;
-    console.log(TS_addr, KC_addr, TP_addr, KC_addrRzrv, TP_addrRzrv);
 
     let sidePanel = document.createElement('div')
     sidePanel.id = "rightPanel"
@@ -554,6 +553,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     openchhis.id = 'opennewcat'
     openchhis.title = 'Открывает виджет просмотра истории чатов'
     openchhis.classList.add('rightPanelBtn')
+    openchhis.onclick = getopennewcatButtonPress;
     document.getElementById('rightPanel').appendChild(openchhis)
 
     if ((scriptAdr == TP_addr || scriptAdr == TP_addrRzrv) && opsection == "КЦ") {

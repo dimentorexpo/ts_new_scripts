@@ -1,10 +1,40 @@
-if (localStorage.getItem('hidesummaryflag') == null)
-    localStorage.setItem('hidesummaryflag', '1') // 1 список скрыт , 0 список открыт
-let peoplestatus = document.createElement('div')
-peoplestatus.id = 'idforpeopstatus'
-peoplestatus.style = 'width: 200px; color: bisque;'
-document.getElementsByClassName('ant-layout-sider-children')[0].append(peoplestatus)
-let chatneraspcountleft = 0;
+let testint;
+let chatneraspcountleft;
+let peoplestatus = document.createElement('div');
+peoplestatus.id = 'idforpeopstatus';
+peoplestatus.style = 'width: 200px; color: bisque;';
+
+function initializeStartOperStatus() {
+	const siderElements = document.getElementsByClassName('ant-layout-sider-children');
+	if (siderElements.length > 0) {
+	  StartOperStatus();
+	} else {
+	  // Если элемент не найден, начинаем наблюдение
+	  const observer = new MutationObserver((mutations) => {
+		const siderElements = document.getElementsByClassName('ant-layout-sider-children');
+		if (siderElements.length > 0) {
+		  StartOperStatus();
+		  observer.disconnect(); // Прекращаем наблюдение, так как элемент найден
+		}
+	  });
+  
+	  observer.observe(document.documentElement, {
+		childList: true,
+		subtree: true
+	  });
+	}
+  }
+
+function StartOperStatus(){
+	if (localStorage.getItem('hidesummaryflag') == null) {
+		localStorage.setItem('hidesummaryflag', '1') // 1 список скрыт , 0 список открыт
+	}
+
+	document.getElementsByClassName('ant-layout-sider-children')[0].append(peoplestatus)
+	chatneraspcountleft = 0;
+	testint = setInterval(operstatusleftbar, 6000)
+}
+
 async function operstatusleftbar() { // функция замены Script Package вывода списка операторов
     let opstats = []
     let moderresult = '';
@@ -235,6 +265,4 @@ async function operstatusleftbar() { // функция замены Script Packa
 
 }
 
-var testint = setInterval(operstatusleftbar, 6000)
-// setTimeout(operstatusleftbar, 10000)
-
+initializeStartOperStatus();
