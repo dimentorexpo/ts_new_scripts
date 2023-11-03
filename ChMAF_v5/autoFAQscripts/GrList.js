@@ -85,11 +85,8 @@ function getGrListDataButtonPress() {
         let tempgrid = document.getElementById('idgrouptolist').value;
         tempgrid = tempgrid.trim();
 		
-		
-		let tmp = 1001680;
-
 		// Отправляем сообщение с запросом на выполнение из background.js и передаем переменную tmp
-		chrome.runtime.sendMessage({ action: 'executeRequest', tmp: tmp }, function(response) {
+		chrome.runtime.sendMessage({ action: 'executeRequest', tmp: tempgrid }, function(response) {
 		  // Обработка ответа
 		  console.log(response);
 		});
