@@ -3,8 +3,6 @@ var btnthstyls = 'margin-left:2px; width:150px; height: 44px;';
 var btnTagsTPtyles = 'margin-left:2px; width:125px; height: 25px;';
 var btnTagsKCtyles = 'margin-left:2px; width:150px; height: 25px;';
 var chbxTagstyles = 'margin: 2px; width: 20px;';
-var scriptAdrTH = localStorage.getItem('scriptAdrTH');
-var scriptAdrChek = localStorage.getItem('scriptAdr');
 var KCThemesFlag = 0;
 
 var win_Themes =  // описание элементов окна Тематик
@@ -43,7 +41,7 @@ var win_Themes =  // описание элементов окна Тематик
 async function startThemes(){
 
     // модуль проверки адреса загрузки тематик
-    const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
+    const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv', 'TP_addrth', 'KC_addrth']); // Получаем данные из хранилища
 
     // Присваиваем данные константам
     const TS_addr = data.TS_addr;
@@ -51,6 +49,10 @@ async function startThemes(){
     const TP_addr = data.TP_addr;
     const KC_addrRzrv = data.KC_addrRzrv;
     const TP_addrRzrv = data.TP_addrRzrv;
+    const KC_addrth = data.KC_addrth;
+    const TP_addrth = data.TP_addrth;
+    let scriptAdrTH = localStorage.getItem('scriptAdrTH');
+    let scriptAdrChek = localStorage.getItem('scriptAdr');
 
     if (scriptAdrChek === TP_addr || scriptAdrChek === TP_addrRzrv) {
         scriptAdrTH = TP_addrth;
@@ -62,8 +64,11 @@ async function startThemes(){
     }
 
     localStorage.setItem('scriptAdrTH', scriptAdrTH);
+    getTextThemes(scriptAdrTH)
     // конец модуля
 }
+
+startThemes()
 
 if (localStorage.getItem('winTopThemes') == null) { // начальное положение окна Themes
     localStorage.setItem('winTopThemes', '120');
@@ -151,8 +156,7 @@ function pagethClick(event) { // обновленный обработчик с�
     document.getElementById(pagethId + 'pageth').style.display = 'flex';
 }
 
-function getTextThemes() { // функция обновления текста для тематик из документа
-    const appThemes = localStorage.getItem('scriptAdrTH');
+function getTextThemes(appThemes) { // функция обновления текста для тематик из документа
     const xhrThemes = new XMLHttpRequest();
     xhrThemes.open('GET', appThemes);
     xhrThemes.onreadystatechange = function () {
@@ -171,7 +175,6 @@ function getTextThemes() { // функция обновления текста �
     };
     xhrThemes.send();
 }
-getTextThemes()
 
 function refreshThemesBtns() { // функция обновляет тематики которые загружены были с гугл таблицы и сформированы их в tableth
 
@@ -296,7 +299,7 @@ function SmartBtnTag(BtnValue) { // при теге smartroom открывает
 
 document.getElementById('getnewthdata').onclick = function () {  // по клику на кнопку сработает функция обновления тематик из документа
     document.getElementById('backtomenu').style.display = 'none'
-    getTextThemes()
+    startThemes()
 }
 
 document.getElementById('ClearSmartroomData').onclick = function () { // очистка чекбоксов мультитэг
