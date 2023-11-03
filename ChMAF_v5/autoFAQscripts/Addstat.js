@@ -222,8 +222,9 @@ document.getElementById('clearall').onclick = function () {
     document.querySelector('#commenttosearch').value = ""
     document.querySelector('#themesdata').innerText = ""
 }
-	
-	    document.getElementById('getStats').onclick = function () { // открытие Статистики
+
+function setUpStatsButton() { // открытие Статистики
+	    document.getElementById('getStats').onclick = function () { 
 		let getcurdate = new Date();
 		let year = getcurdate.getFullYear();
 		let month = String(getcurdate.getMonth() + 1).padStart(2, "0");
@@ -250,8 +251,30 @@ document.getElementById('clearall').onclick = function () {
             document.getElementById('AF_Stat').style.display = 'none'
         else
             document.getElementById('AF_Stat').style.display = ''
-    }
+    };
+}
 	
+function waitForElement(selector, callback) { // Функция ожидания элемента в DOM
+    const observer = new MutationObserver((mutations, me) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if ((node instanceof HTMLElement) && node.matches(selector)) {
+            callback(node);
+            me.disconnect(); // Отключаем наблюдение после выполнения задачи
+            return;
+          }
+        }
+      }
+    });
+  
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+  }
+  
+  waitForElement('#getStats', setUpStatsButton);
+
 	// Тут будет функция запуска получения информации о статистики
 
 document.getElementById('getstatfromperiod').onclick = async function () { // Тут будет функция запуска получения информации о статистики
