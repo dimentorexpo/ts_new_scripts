@@ -16,7 +16,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   
   if (request.action === 'getUserCrmName') {
 	  let sid = request.student_id
-	  fetch("https://backend.skyeng.ru/api/persons/${student_id}?crm2=true&debugParam=person-page", {
+	  fetch("https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page", {
 		"method": "GET",
 		"credentials": "include"
 	  })    .then(response => response.json())
