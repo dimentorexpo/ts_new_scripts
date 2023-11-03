@@ -88,22 +88,16 @@ function getGrListDataButtonPress() {
 		// Отправляем сообщение с запросом на выполнение из background.js и передаем переменную tmp
 		chrome.runtime.sendMessage({ action: 'executeRequest', tmp: tempgrid }, function(response) {
 		  // Обработка ответа
-		  console.log(response);
+		  console.log(response.data);
+		  
+		  
 		});
 
 
 				
-		
 
-        // document.getElementById('responseTextarea1').value = '{}'
-        // document.getElementById('responseTextarea2').value = "https://learning-groups-storage-api.skyeng.ru/api/v1/groupParticipants/getParticipants/" + tempgrid;
-        // document.getElementById('responseTextarea3').value = 'heredata'
-        // document.getElementById('sendResponse').click()
-
-
-        // document.getElementById("responseTextarea1").addEventListener("DOMSubtreeModified", function () {
             // responsegrdata = document.getElementById('responseTextarea1').getAttribute('heredata')
-         //   // grdata = responsegrdata;
+         // //  grdata = responsegrdata;
             // if (responsegrdata != null) {
                 // grdata = JSON.parse(responsegrdata)
                 // document.getElementById('responseTextarea1').removeAttribute('heredata');
@@ -144,7 +138,7 @@ function getGrListDataButtonPress() {
                 // }
             // }
             // dataarr = ''
-        // })
+        
 
     }) // end of func getidgrouptolist
 
