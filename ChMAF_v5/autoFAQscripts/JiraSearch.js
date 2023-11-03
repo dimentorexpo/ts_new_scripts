@@ -210,7 +210,7 @@ function addPageSwitcher(spanCount) { // добавляем страницы д�
 
 function addJiraIssueOnClickEvent(barray, issueKeys) { // обработчик нажатия на задачу
 		for (let j = 0; j < barray.length; j++) {
-			barray[j].onclick = function () {
+			barray[j].addEventListener('click', function () {
 				let chatId = getChatId();
 				if (chatId){
 					if (window.location.href.includes('tickets/assigned')) {
@@ -230,13 +230,13 @@ function addJiraIssueOnClickEvent(barray, issueKeys) { // обработчик �
 					"credentials": "include"
 				})
 			}
-		}
+		})
 		}
 }
 
 function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputTable) { // добавление в избранное
 		for (let v = 0; v < addtofarr.length; v++) {
-			addtofarr[v].onclick = function () {
+			addtofarr[v].addEventListener('click', function () {
 				addtofarr[v].innerText = "❤";
 				for (let x = 0; x < tagsarray.length; x++) {
 					if (x == v) {
@@ -253,13 +253,13 @@ function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputT
 						localStorage.setItem('bugsarray', JSON.stringify(favissues));
 					}
 				}
-			}
+			})
 		}
 }
 
 function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
 		for (let f = 0; f < refreshissuesarr.length; f++) {
-			refreshissuesarr[f].onclick = function () {
+			refreshissuesarr[f]..addEventListener('click', function () {
 
 			textArea1.value = '{}'
 			textArea2.value = "https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=" + issueIds[f]
@@ -305,7 +305,7 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
 						increasedcount = "";
 					}, 1000);
 				}, 1000)
-			}
+			})
 		}
 }
 
@@ -378,7 +378,7 @@ function switchJiraPages() {
     const pageSwArr = document.getElementsByName('changeList');
 
     pageSwArr.forEach((page, d) => {
-        page.onclick = async function() {
+        page.addEventListener('click', function () {
             if (!this.classList.contains('active')) {
                 document.getElementById('issuetable').innerHTML = '<span style="color:bisque">Загрузка...</span>';
                 
@@ -433,7 +433,7 @@ function switchJiraPages() {
                     
                 }, 1000);
             }
-        }
+        })
     });
 			}
 
@@ -441,17 +441,17 @@ document.getElementById('AF_Jira').ondblclick = function (a) { // скрытие
     if (checkelementtype(a)) { document.getElementById('AF_Jira').style.display = 'none'; }
 }
 
-document.getElementById('hideMej').onclick = function () { // скрытие окна поиска по Jira
+document.getElementById('hideMej').addEventListener('click', function () { // скрытие окна поиска по Jira
     if (document.getElementById('AF_Jira').style.display == '')
         document.getElementById('AF_Jira').style.display = 'none'
-}
+})
 
-document.getElementById('ClearJiraData').onclick = function () {  // функция очистки полей в форме
+document.getElementById('ClearJiraData').addEventListener('click', function () {  // функция очистки полей в форме
     document.getElementById('testJira').value = '';
     document.getElementById('issuetable').innerText = '';
     document.getElementById('foundIssuesAmount').innerText = '';
 	ClearPages();
-}
+})
 
 function ClearPages() { // Удаляем страницы найденных задачь
 	var pagesSwitcher = document.getElementById('pagesSwitcher');
@@ -463,9 +463,9 @@ function ClearPages() { // Удаляем страницы найденных з
 	}
 }
 
-document.getElementById('jirainstr').onclick = function () {
+document.getElementById('jirainstr').addEventListener('click', function () {
     window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-jirasearch%F0%9F%94%8EJiraSearch')
-}
+})
 
 function getJiraOpenFormPress() { // открывает поле для работой с JIRA поиском
     if (document.getElementById('AF_Jira').style.display == 'none') {
@@ -511,61 +511,62 @@ function getJiraOpenFormPress() { // открывает поле для рабо
         }
 
         checkJiraToken()
-        document.getElementById('RefreshJiraStatus').onclick = checkJiraToken // функция повторной проверки авторизации в Jira
+				
+        document.getElementById('RefreshJiraStatus').addEventListener('click', checkJiraToken); // функция повторной проверки авторизации в Jira
 
         if (localStorage.getItem('bugsarray')) {
             favissues = JSON.parse(localStorage.getItem('bugsarray'));
             document.getElementById('favouriteissuetable').innerHTML = favissues.join(" ");
         }
 
-        document.getElementById('defaultQuery').onclick = function () { // если выбрана default
+        document.getElementById('defaultQuery').addEventListener('click', function () { // если выбрана default
             toggleAndDeactivateQueries(this.id);
             document.getElementById('JQLquery').value = defqueryitem;
             showelemonpages();
-        }
+        })
 		
-		document.getElementById('PSquery').onclick = function() { //Если выбрана PS
+		document.getElementById('PSquery').addEventListener('click', function () { //Если выбрана PS
             toggleAndDeactivateQueries(this.id);
             document.getElementById('JQLquery').value = PSqueryitem;
 			showelemonpages();
-		}
+		})
 
-        document.getElementById('getiosbugs').onclick = function () { // если выбрана ios
+        document.getElementById('getiosbugs').addEventListener('click', function () { // если выбрана ios
             toggleAndDeactivateQueries(this.id);
 			showelemonpages();
 			document.getElementById('testJira').value = "ios";
             document.getElementById('getJiraTasks').click();
-        }
+        })
 
-        document.getElementById('getandroidbugs').onclick = function () { // если выбрана android
+        document.getElementById('getandroidbugs').addEventListener('click', function () { // если выбрана android
             toggleAndDeactivateQueries(this.id);
 			showelemonpages();
 			document.getElementById('testJira').value = "android";
             document.getElementById('getJiraTasks').click();
-        }
+        })
 
-        document.getElementById('freshQuery').onclick = function () {  // если выбрана fresh
+        document.getElementById('freshQuery').addEventListener('click', function () { // если выбрана fresh
             toggleAndDeactivateQueries(this.id);
             document.getElementById('JQLquery').value = frqueryitem;
 			showelemonpages();
-        }
+        })
 
-        document.getElementById('ZBPQuery').onclick = function () {  // если выбрана fresh
+        document.getElementById('ZBPQuery').addEventListener('click', function () {  // если выбрана fresh
             toggleAndDeactivateQueries(this.id);
             document.getElementById('JQLquery').value = zbpqueryitem;
 			showelemonpages();
-        }
+        })
 
-        document.getElementById('customQuery').onclick = function () { // если выбрана custom
+        document.getElementById('customQuery').addEventListener('click', function () { // если выбрана custom
 			toggleAndDeactivateQueries(this.id);
             document.getElementById('JQLquery').oninput = function () {
                 localStorage.setItem('customquery', this.value)
             }
             document.getElementById('JQLquery').value = localStorage.getItem('customquery');
 			showelemonpages();
-        }
+        })
 
-        document.getElementById('favouriteBugs').onclick = function () { // если выбрана ❤ favourite
+        document.getElementById('favouriteBugs').addEventListener('click', function () { // если выбрана ❤ favourite
             if (document.getElementById('favouriteissuetable').style.display != "") {
 				toggleAndDeactivateQueries(this.id);
                 document.getElementById('issuetable').style.display = "none";
@@ -575,18 +576,18 @@ function getJiraOpenFormPress() { // открывает поле для рабо
 				document.getElementById('favouriteissuetable').style.display = "";
 
                 for (let i = 0; i < document.getElementsByName('removefromfavourites').length; i++) {
-                    document.getElementsByName('removefromfavourites')[i].onclick = function () {
+                    document.getElementsByName('removefromfavourites')[i].addEventListener('click', function () {
                         let parent = this.parentNode.parentNode;
                         favissues.splice(favissues.indexOf(this.value), 1);
                         localStorage.setItem('bugsarray', JSON.stringify(favissues));
                         parent.removeChild(this.parentNode);
                         sndmsgafterdeletebug() //test
                         plusonecount() // test
-                    }
+                    })
                 }
 
                 for (let j = 0; j < document.getElementsByName('addtonotesbug').length; j++) {
-                    document.getElementsByName('addtonotesbug')[j].onclick = function () {
+                    document.getElementsByName('addtonotesbug')[j].addEventListener('click', function () {
                         sendComment('https://jira.skyeng.tech/browse/' + favissues[j].match(/browse.(\S+)"/)[1])
 
                         let Chatid = getChatId();
@@ -603,28 +604,28 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                             "mode": "cors",
                             "credentials": "include"
                         })
-                    }
+                    })
                 }
 
                 function sndmsgafterdeletebug() {
                     for (let j = 0; j < document.getElementsByName('addtonotesbug').length; j++) {
-                        document.getElementsByName('addtonotesbug')[j].onclick = function () {
+                        document.getElementsByName('addtonotesbug')[j].addEventListener('click', function () {
                             sendComment(favissues[j].match(/href.=(\S+)/)[1])
-                        }
+                        })
                     }
                 }
 
                 let cnttoincrease = document.getElementsByName('increasecount');
                 let itarrs = document.getElementsByName('favissuemassive')
                 for (let c = 0; c < cnttoincrease.length; c++) {
-                    cnttoincrease[c].onclick = plusonecount;
+                     cnttoincrease[c].addEventListener('click', plusonecount);
                 }
 
                 function plusonecount() { // функция увеличения +1 в сапорт таб в джира
                     let cnttoincrease = document.getElementsByName('increasecount');
                     let itarrs = document.getElementsByName('favissuemassive')
                     for (let c = 0; c < cnttoincrease.length; c++) {
-                        cnttoincrease[c].onclick = function () {
+                        cnttoincrease[c].addEventListener('click', function () {
                             console.log('clicked')
 
                             textArea1.value = '{}'
@@ -670,7 +671,7 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                                     alert(`Support Tab для задачи ${document.getElementsByName('favbugs')[c].href} увеличен на 1 и сейчас равен: ${increasedcount}`)
                                 }, 1000);
                             }, 1000)
-                        }
+                        })
                     }
                 }
             } else {
@@ -678,10 +679,10 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                 document.getElementById('favouriteissuetable').style.display = "none"
                 document.getElementById('favouriteBugs').classList.remove('active-query')
             }
-        }
+        })
 		// end of favouritebugs
 
-        document.getElementById('getJiraTasks').onclick = function () {
+        document.getElementById('getJiraTasks').addEventListener('click', function () {
 			ClearPages();
 
 			const queries = {
@@ -708,7 +709,7 @@ function getJiraOpenFormPress() { // открывает поле для рабо
 			sendRespbtn.click();
 		
 			setTimeout(getJiraTask, 1000);					
-}
+})
 
         // Просмотр таски по джира по ее коду и номеру
         document.getElementById('getJiraTasks').ondblclick = function () {
@@ -735,7 +736,7 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                     document.getElementById('issuetable').innerHTML = issues;
 
                     let barray = document.querySelector('.jiraissues');
-                    barray.onclick = function () {
+                    barray.addEventListener('click', function () {
                         sendComment(rezissuetable[0].items[0].url)
                         let b = document.URL.split('/')
                         fetch("https://skyeng.autofaq.ai/api/conversation/" + b[5] + "/payload", {
@@ -751,7 +752,7 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                             "mode": "cors",
                             "credentials": "include"
                         })
-                    }
+                    })
 
                     setTimeout(function () { issues = []; testJira.value = ""; }, 5000)
                 }
