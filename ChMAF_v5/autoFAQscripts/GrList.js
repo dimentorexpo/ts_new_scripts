@@ -70,7 +70,7 @@ document.getElementById('AF_GrList').ondblclick = function (a) { // скрыти
 
 
 
-document.getElementById('GrListData').onclick = function() {
+function getGrListDataButtonPress() {
 	        if (document.getElementById('AF_GrList').style.display == '') {
 				document.getElementById('AF_GrList').style.display = 'none';
 			} else {

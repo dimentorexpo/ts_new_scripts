@@ -422,7 +422,7 @@ function saveFilteredTableCSV() {
     downloadLink.click();
 }
 
-document.getElementById('openGrabber').onclick = function () {
+function getopenGrabberButtonPress() {
     let parseThemesAndVals = document.getElementById('ThemesToSearch')
     for (let i = 0; i < parseThemesAndVals.length; i++) {
         themesarray.push({ value: parseThemesAndVals[i].value, ThemeName: parseThemesAndVals[i].textContent });

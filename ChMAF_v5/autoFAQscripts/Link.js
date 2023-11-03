@@ -87,6 +87,8 @@ wintLinks.setAttribute('id', 'AF_Links');
 wintLinks.innerHTML = win_Links;
 
 document.getElementById('getStats').onclick = getStatsButtonPress; 
+document.getElementById('openGrabber').onclick = getopenGrabberButtonPress;
+document.getElementById('GrListData').onclick = getGrListDataButtonPress;
 
 wintLinks.onmousedown = function(event) {
   if (checkelementtype(event)) {
