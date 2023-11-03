@@ -77,48 +77,43 @@ function getGrListDataButtonPress() {
 				document.getElementById('AF_GrList').style.display = '';
 			}
 }
-    let grdata = [];
-    let responsegrdata;
-    document.getElementById('getidgrouptolist').addEventListener('click', async function () {
-        let dataarr = [];
-        document.getElementById('grlistinfo').innerHTML = "Загрузка...";
-        let tempgrid = document.getElementById('idgrouptolist').value;
-        tempgrid = tempgrid.trim();
-		
-		// Отправляем сообщение с запросом на выполнение из background.js и передаем переменную tmp
-		chrome.runtime.sendMessage({ action: 'getGroupList', tmp: tempgrid }, function(response) {
-		  // Обработка ответа
-		  console.log(response.data);
-		  
-		         for (let i = 0; i < response.data.students.length; i++) {
-                    dataarr += [i + 1] + "." + '<span class="grstdcrm" style="cursor:pointer" title="открывает профиль в CRM">ℹID У:</span>' + response.data.students[i].userId + " ID услуги: " + response.data.students[i].educationServiceId + " " + '<span class="getstname" style="cursor:pointer" title="Узнать имя и фамилию ученика, если раз нажали не появилось нажмите через секунду второй раз, быстро на все глаза не нажимайте, иначе получите некорректную информацию">👁‍🗨</span>' + '<span class="stname"></span>' + '<br>';
-                }
-				
-				document.getElementById('grlistinfo').innerHTML = !response.data.teachers ? dataarr : dataarr + '<br>ID П ' + response.data.teachers[0].userId;
-				
-				let arstname = document.querySelectorAll('.stname');
-                let getstnamearr = document.querySelectorAll('.getstname');
-                for (let f = 0; f < getstnamearr.length; f++) {
-                    getstnamearr[f].addEventListener('click', function () {
+document.getElementById('getidgrouptolist').addEventListener('click', async function () {
+    let dataarr = [];
+    document.getElementById('grlistinfo').innerHTML = "Загрузка...";
+    let tempgrid = document.getElementById('idgrouptolist').value;
+    tempgrid = tempgrid.trim();
 
-						chrome.runtime.sendMessage({ action: 'getUserCrmName', sid: response.data.students[f].userId }, function(response) {
-							arstname[f].innerHTML = response.data.name + " " + response.data.surname;
-						})
-                    })
-                }
+    chrome.runtime.sendMessage({ action: 'getGroupList', tmp: tempgrid }, function(response) {
+        console.log(response.data);
 
-                let grstdcrmarr = document.querySelectorAll('.grstdcrm');
-                for (let f = 0; f < grstdcrmarr.length; f++) {
-                    grstdcrmarr[f].addEventListener('click', function () {
-                        window.open("https://crm2.skyeng.ru/persons/" + response.data.students[f].userId)
-                    })
-                }
-				
-				dataarr = ''
+        for (let i = 0; i < response.data.students.length; i++) {
+            dataarr += [i + 1] + "." + '<span class="grstdcrm" style="cursor:pointer" title="открывает профиль в CRM">ℹID У:</span>' + response.data.students[i].userId + " ID услуги: " + response.data.students[i].educationServiceId + " " + '<span class="getstname" style="cursor:pointer" title="Узнать имя и фамилию ученика, если раз нажали не появилось нажмите через секунду второй раз, быстро на все глаза не нажимайте, иначе получите некорректную информацию">👁‍🗨</span>' + '<span class="stname"></span>' + '<br>';
+        }
 
-		});
+        document.getElementById('grlistinfo').innerHTML = !response.data.teachers ? dataarr : dataarr + '<br>ID П ' + response.data.teachers[0].userId;
 
-    }) // end of func getidgrouptolist
+        let arstname = document.querySelectorAll('.stname');
+        let getstnamearr = document.querySelectorAll('.getstname');
+
+        for (let f = 0; f < getstnamearr.length; f++) {
+            getstnamearr[f].addEventListener('click', function () {
+                chrome.runtime.sendMessage({ action: 'getUserCrmName', sid: response.data.students[f].userId }, function(userResponse) {
+                    arstname[f].innerHTML = userResponse.data.name + " " + userResponse.data.surname;
+                })
+            })
+        }
+
+        let grstdcrmarr = document.querySelectorAll('.grstdcrm');
+        for (let f = 0; f < grstdcrmarr.length; f++) {
+            grstdcrmarr[f].addEventListener('click', function () {
+                window.open("https://crm2.skyeng.ru/persons/" + response.data.students[f].userId)
+            })
+        }
+
+        dataarr = '';
+    });
+})
+ // end of func getidgrouptolist
 
     document.getElementById('hideList').addEventListener('click', function () { // скрытие окна Список группы
         if (document.getElementById('AF_GrList').style.display == '') {
