@@ -259,7 +259,7 @@ function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputT
 
 function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
 		for (let f = 0; f < refreshissuesarr.length; f++) {
-			refreshissuesarr[f]..addEventListener('click', function () {
+			refreshissuesarr[f].addEventListener('click', function () {
 
 			textArea1.value = '{}'
 			textArea2.value = "https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=" + issueIds[f]

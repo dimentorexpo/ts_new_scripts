@@ -219,22 +219,7 @@ async function whoAmI() {
 }
 
 function firstLoadPage() { //первичаня загрузка страницы
-    if (window.location.href.includes('skyeng.autofaq.ai')){
-        let mystyles = document.createElement('link')
-        mystyles.rel = 'stylesheet'
-        mystyles.href = "https://dimentorexpo.github.io/ChMAF/CSS/styles.css" // подключаем модуль стилей
-        document.querySelector('head').append(mystyles)
-
-        setTimeout(move_again_AF, 3500)
-
-        function addElementsToList(elements, list) {
-            elements.forEach((element) => {
-                list.append(element);
-            });
-        }
-    } else {
-        document.getElementById('AF_helper').style.display = 'none';
-    }
+    setTimeout(move_again_AF, 3500)
 }
 
 function timerHideButtons() { //функция добавления кнопки скрытия

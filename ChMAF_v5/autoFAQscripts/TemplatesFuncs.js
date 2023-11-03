@@ -20,6 +20,19 @@ var nameContainer = '';
     </span>
     `;
 
+
+function pageClick(pageId) { // по клику переключает страницы с шаблонами
+    b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1]
+    let pageNum = pageId.split('_')[0]
+    for (i = 0; i < b.childElementCount; i++) {
+        try {
+            b.children[1].children[i].style = 'background-color:#768d87; border-top:0px;'
+            document.getElementById(i + "page").style.display = 'none'
+        } catch (e) { }
+    }
+    document.getElementById(pageId).style = 'background-color: green; border-top:4px solid orange'
+    document.getElementById(pageNum + "page").style.display = ''
+}
 // Блок для работы с шаблонами из гугл таблиц
 
 function requestsRed(taketaskElement) {
