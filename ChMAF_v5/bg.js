@@ -1,8 +1,20 @@
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-	    if (request.name === "chmaf") {
-			let answer;
-		}
-})
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request.action === 'executeRequest') {
+    let tmp = request.tmp; // Получаем переменную tmp из сообщения
+    fetch(`https://learning-groups-storage-api.skyeng.ru/api/v1/groupParticipants/getParticipants/${tmp}`, {
+      method: 'GET',
+      credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => sendResponse(data))
+    .catch(error => {
+      console.error(error);
+      sendResponse({ error: error });
+    });
+    return true;
+  }
+});
+
 
 
 // chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
