@@ -1,5 +1,5 @@
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  if (request.action === 'executeRequest') {
+  if (request.action === 'getGroupList') {
     let tmp = request.tmp; // Получаем переменную tmp из сообщения
     fetch(`https://learning-groups-storage-api.skyeng.ru/api/v1/groupParticipants/getParticipants/${tmp}`, {
       method: 'GET',

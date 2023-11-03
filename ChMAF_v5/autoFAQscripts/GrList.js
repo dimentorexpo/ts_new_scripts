@@ -86,32 +86,18 @@ function getGrListDataButtonPress() {
         tempgrid = tempgrid.trim();
 		
 		// Отправляем сообщение с запросом на выполнение из background.js и передаем переменную tmp
-		chrome.runtime.sendMessage({ action: 'executeRequest', tmp: tempgrid }, function(response) {
+		chrome.runtime.sendMessage({ action: 'getGroupList', tmp: tempgrid }, function(response) {
 		  // Обработка ответа
 		  console.log(response.data);
 		  
-		  
-		});
-
-
+		         for (let i = 0; i < response.data.students.length; i++) {
+                    dataarr += [i + 1] + "." + '<span class="grstdcrm" style="cursor:pointer" title="открывает профиль в CRM">ℹID У:</span>' + response.data.students[i].userId + " ID услуги: " + response.data.students[i].educationServiceId + " " + '<span class="getstname" style="cursor:pointer" title="Узнать имя и фамилию ученика, если раз нажали не появилось нажмите через секунду второй раз, быстро на все глаза не нажимайте, иначе получите некорректную информацию">👁‍🗨</span>' + '<span class="stname"></span>' + '<br>';
+                }
 				
-
-            // responsegrdata = document.getElementById('responseTextarea1').getAttribute('heredata')
-         // //  grdata = responsegrdata;
-            // if (responsegrdata != null) {
-                // grdata = JSON.parse(responsegrdata)
-                // document.getElementById('responseTextarea1').removeAttribute('heredata');
-                // console.log(grdata)
-                // for (let i = 0; i < grdata.data.students.length; i++) {
-                    // dataarr += [i + 1] + "." + '<span class="grstdcrm" style="cursor:pointer" title="открывает профиль в CRM">ℹID У:</span>' + grdata.data.students[i].userId + " ID услуги: " + grdata.data.students[i].educationServiceId + " " + '<span class="getstname" style="cursor:pointer" title="Узнать имя и фамилию ученика, если раз нажали не появилось нажмите через секунду второй раз, быстро на все глаза не нажимайте, иначе получите некорректную информацию">👁‍🗨</span>' + '<span class="stname"></span>' + '<br>';
-                // }
-
-                // if (grdata.data.teachers == null || grdata.data.teachers == undefined)
-                    // document.getElementById('grlistinfo').innerHTML = dataarr;
-                // else document.getElementById('grlistinfo').innerHTML = dataarr + '<br>' + " ID П " + grdata.data.teachers[0].userId;
-
-                // let arstname = document.querySelectorAll('.stname');
-                // let getstnamearr = document.querySelectorAll('.getstname');
+				document.getElementById('grlistinfo').innerHTML = !response.data.teachers ? dataarr : dataarr + '<br>ID П ' + response.data.teachers[0].userId;
+				
+				let arstname = document.querySelectorAll('.stname');
+                let getstnamearr = document.querySelectorAll('.getstname');
                 // for (let f = 0; f < getstnamearr.length; f++) {
                     // getstnamearr[f].addEventListener('click', function () {
 
@@ -130,15 +116,16 @@ function getGrListDataButtonPress() {
                     // })
                 // }
 
-                // let grstdcrmarr = document.querySelectorAll('.grstdcrm');
-                // for (let f = 0; f < grstdcrmarr.length; f++) {
-                    // grstdcrmarr[f].addEventListener('click', function () {
-                        // window.open("https://crm2.skyeng.ru/persons/" + grdata.data.students[f].userId)
-                    // })
-                // }
-            // }
-            // dataarr = ''
-        
+                let grstdcrmarr = document.querySelectorAll('.grstdcrm');
+                for (let f = 0; f < grstdcrmarr.length; f++) {
+                    grstdcrmarr[f].addEventListener('click', function () {
+                        window.open("https://crm2.skyeng.ru/persons/" + grdata.data.students[f].userId)
+                    })
+                }
+				
+				dataarr = ''
+
+		});
 
     }) // end of func getidgrouptolist
 
