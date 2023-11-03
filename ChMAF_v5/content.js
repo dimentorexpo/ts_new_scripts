@@ -23,6 +23,20 @@ async function getStorageData(keys) {
     });
 }
 
+// Делаем функцию глобальной в контексте браузера
+window.pagethClick = function(pagethId) { // по клику переключает страницы с темами
+    areaThbtns = document.getElementById('themes_body')
+    pagethId = pagethId.split('_')[0]
+    document.getElementById('backtomenu').style.display = ''
+    for (i = 0; i < areaThbtns.childElementCount; i++) {
+        try {
+            document.getElementById(i + 'pageth').style.display = 'none'
+            document.getElementById(i + '_pageth_button').style.display = 'none'
+        } catch (e) { }
+    }
+    document.getElementById(pagethId + 'pageth').style.display = 'flex'
+};
+
 let pldata;
 let afopername; // переменная фамилии, имени оператора при переборе общего списка операторов
 let foundarr;
@@ -1000,3 +1014,16 @@ window.addEventListener('CallNewComment', (event) => {
     const ComemntText = event.detail.comment;
     sendComment(ComemntText);
 });
+
+function pageClick(pageId) { // по клику переключает страницы с шаблонами
+    b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1]
+	let pageNum = pageId.split('_')[0]
+    for (i = 0; i < b.childElementCount; i++) {
+        try {
+            b.children[1].children[i].style = 'background-color:#768d87; border-top:0px;'
+            document.getElementById(i + "page").style.display = 'none'
+        } catch (e) { }
+    }
+    document.getElementById(pageId).style = 'background-color: green; border-top:4px solid orange'
+    document.getElementById(pageNum + "page").style.display = ''
+}
