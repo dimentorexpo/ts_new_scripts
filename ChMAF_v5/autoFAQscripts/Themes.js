@@ -242,7 +242,9 @@ function refreshThemesBtns() { // функция обновляет темати
                 if (addTagFlag == 0) {
                     newBut.style = btnthstyls
                     if (addFontFlag == 1) {newBut.style.fontSize = c[3]+ 'px'} // если указан размер шрифта назначеем его
-                    newBut.setAttribute('onclick', 'newTag(this.value)')
+                    newBut.addEventListener('click', function(event) {
+                        newTag(event.target.value);
+                    });
                     areaThbtns.lastElementChild.lastElementChild.appendChild(newBut)
                 } else {
                     if (KCThemesFlag == 1) {
@@ -253,11 +255,17 @@ function refreshThemesBtns() { // функция обновляет темати
                     if (addFontFlag == 1) {newBut.style.fontSize = c[3]+ 'px'} // если указан размер шрифта назначеем его
                     newBut.name = "tagssbtn"
                     if (newBut.value == 'refusal_of_help'){
-                        newBut.setAttribute('onclick', 'RefBtnTag(this.value)')
+                        newBut.addEventListener('click', function(event) {
+                            RefBtnTag(event.target.value);
+                        });
                     } else if (newBut.value == 'smartroom') {
-                        newBut.setAttribute('onclick', 'SmartBtnTag(this.value)')
+                        newBut.addEventListener('click', function(event) {
+                            SmartBtnTag(event.target.value);
+                        });
                     } else {
-                        newBut.setAttribute('onclick', 'newTaggg(this.value)')
+                        newBut.addEventListener('click', function(event) {
+                            newTaggg(event.target.value);
+                        });
                     }
                     areaTagbtns.appendChild(newBut)
 

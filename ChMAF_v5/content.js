@@ -467,6 +467,7 @@ function addOption(oListbox, text, value) {  //функция добавлени
 }
 
 async function move_again_AF() { //с АФ шняга там стили шмили скрипта отображение отправку сообщений
+    getText()
     await whoAmI()    
     const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
 

@@ -21,17 +21,21 @@ var nameContainer = '';
     `;
 
 
-function pageClick(pageId) { // по клику переключает страницы с шаблонами
-    b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1]
-    let pageNum = pageId.split('_')[0]
-    for (i = 0; i < b.childElementCount; i++) {
+function pageClick(event) { // обновлённый обработчик событий
+    const b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1];
+    const pageId = event.currentTarget.id;
+    const pageNum = pageId.split('_')[0];
+
+    for (let i = 0; i < b.childElementCount; i++) {
         try {
-            b.children[1].children[i].style = 'background-color:#768d87; border-top:0px;'
-            document.getElementById(i + "page").style.display = 'none'
-        } catch (e) { }
+            b.children[1].children[i].style = 'background-color:#768d87; border-top:0px;';
+            document.getElementById(i + "page").style.display = 'none';
+        } catch (e) {
+
+        }
     }
-    document.getElementById(pageId).style = 'background-color: green; border-top:4px solid orange'
-    document.getElementById(pageNum + "page").style.display = ''
+    event.currentTarget.style = 'background-color: green; border-top:4px solid orange';
+    document.getElementById(pageNum + "page").style.display = '';
 }
 // Блок для работы с шаблонами из гугл таблиц
 
@@ -770,8 +774,8 @@ async function buttonsFromDoc(butName) { // функция отправки ша
     // start of counter of pressed key script то есть при нажатии на кнопку с шаблоном передает в гугл таблицу ин6формацию какая кнопка была нажата и там уже др скрипты считают сколько  раз и сортируют
 }
 
-function servFromDoc(butName) { // отправка комента и сообщение со стораницы серверные
-    but = butName
+function servFromDoc(event) {
+    let but = event.target.textContent;
     let chatthemevalue
     msgFromTable(but) // вызов функции отправки сообщения
     if (document.getElementById('avariyalink').value !== null) { // проверка есть ли значение в поле ссылки
@@ -893,21 +897,23 @@ function refreshTemplates() { // функция обновляет шаблон�
                 addTmpFlag = 1
                 break
             case 'Страница':
-                var newPageBut = document.createElement('button')
-                newPageBut.textContent = c[1]
-                pageType = c[2]
-                newPageBut.style.marginRight = '4px'
-                newPageBut.setAttribute('onclick', 'pageClick(this.id)')
-                newPageBut.id = countOfPages + '_page_button'
-                b.childNodes[3].appendChild(newPageBut)
+                var newPageBut = document.createElement('button');
+                newPageBut.textContent = c[1];
+                pageType = c[2];
+                newPageBut.style.marginRight = '4px';
 
-                var newPage = document.createElement('div')
-                newPage.id = countOfPages + 'page'
-                b.appendChild(newPage)
+                // Используйте addEventListener для назначения обработчика события
+                newPageBut.addEventListener('click', pageClick);
 
-                countOfPages++
+                newPageBut.id = countOfPages + '_page_button';
+                b.childNodes[3].appendChild(newPageBut);
 
-                countOfStr = 1
+                var newPage = document.createElement('div');
+                newPage.id = countOfPages + 'page';
+                b.appendChild(newPage);
+
+                countOfPages++;
+                countOfStr = 1;
 
                 if (pageType == "Серверные") { // дорисоква инпута для ссылки на серверные
                     var newDiv = document.createElement('div')
@@ -991,75 +997,40 @@ function refreshTemplates() { // функция обновляет шаблон�
                 break
             default:
                 switch (pageType) {
-                    case 'Баги':
-                        var newString = document.createElement('p')
-                        newString.style.color = 'white'
-                        newString.style.margin = '0 0 5px 0'
-                        newString.textContent = c[0]
-                        for (j = 0; j < c[1]; j++) {
-                            var newBut = document.createElement('button')
-                            newBut.style.width = '20px'
-                            newBut.style.marginRight = '4px'
-                            newBut.id = countOfStr + 'str' + (j + 1)
-                            newBut.textContent = (j + 1)
-                            newBut.setAttribute('onclick', 'bagPageButtons(this.id)')
-                            newString.appendChild(newBut)
-                        }
-                        countOfStr++
-                        b.lastElementChild.lastElementChild.appendChild(newString)
-                        break
                     case 'Шаблоны':
-                        var newBut = document.createElement('button')
-                        newBut.textContent = c[0]
-                        newBut.style.marginRight = '4px'
-                        newBut.setAttribute('onclick', 'buttonsFromDoc(this.textContent)')
-                        if (newBut.textContent == 'Урок NS')
-                            newBut.id = "NS"
-                        if (newBut.textContent == 'ус+брауз (У)')
-                            newBut.textContent = "ус+брауз"
-                        if (newBut.textContent == 'ус+брауз (П)')
-                            continue
-                        if (addTmpFlag == 0)
-                            b.lastElementChild.lastElementChild.appendChild(newBut)
-                        else {
-                            newBut.style.marginTop = '4px'
-                            document.getElementById('addTmp').children[0].appendChild(newBut)
+                        var newBut = document.createElement('button');
+                        newBut.textContent = c[0];
+                        newBut.style.marginRight = '4px';
+                    
+                        // Проверки для установки ID или изменения текста
+                        if (newBut.textContent == 'Урок NS') {
+                            newBut.id = "NS";
                         }
-                        break
-                    case 'Переводы':
-                        var newBut = document.createElement('button')
-                        newBut.textContent = c[0]
-                        newBut.style.marginRight = '4px'
-                        b.lastElementChild.lastElementChild.appendChild(newBut)
-                        break
+                        if (newBut.textContent == 'ус+брауз (У)' || newBut.textContent == 'ус+брауз (П)') {
+                            newBut.textContent = "ус+брауз";
+                        }
+                        if (newBut.textContent == 'ус+брауз (П)') {
+                            continue;
+                        }
+                        newBut.addEventListener('click', function(event) {
+                            buttonsFromDoc(event.target.textContent);
+                        });
+                    
+                        if (addTmpFlag == 0) {
+                            b.lastElementChild.lastElementChild.appendChild(newBut);
+                        } else {
+                            newBut.style.marginTop = '4px';
+                            document.getElementById('addTmp').children[0].appendChild(newBut);
+                        }
+                        break;
                     case 'Серверные': // обработка нажатия на кнопку на странице серверные
                         var newBut = document.createElement('button')
                         newBut.textContent = c[0]
                         newBut.style.marginRight = '4px'
-                        newBut.setAttribute('onclick', 'servFromDoc(this.textContent)')
+                        newBut.addEventListener('click', servFromDoc);
                         b.lastElementChild.lastElementChild.appendChild(newBut)
                         break
-                    case 'ТемыМоб':
-                        var newBut = document.createElement('button')
-                        newBut.textContent = c[0]
-                        newBut.style.marginRight = '4px'
-                        newBut.setAttribute('onclick', 'tagToChat(this.textContent)')
-                        b.lastElementChild.lastElementChild.appendChild(newBut)
-                        break
-                    case 'Темыadd':
-                        var newBut = document.createElement('button')
-                        newBut.textContent = c[0]
-                        newBut.style.marginRight = '4px'
-                        newBut.setAttribute('onclick', 'tagToChat(this.textContent)')
-                        b.lastElementChild.lastElementChild.appendChild(newBut)
-                        break
-                    case 'Темы':
-                        var newBut = document.createElement('button')
-                        newBut.textContent = c[0]
-                        newBut.style.marginRight = '4px'
-                        newBut.setAttribute('onclick', 'tagToChat(this.textContent)')
-                        b.lastElementChild.lastElementChild.appendChild(newBut)
-                        break
+
                     default:
                         break
                 }
