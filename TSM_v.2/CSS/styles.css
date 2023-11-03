@@ -1,0 +1,617 @@
+.commonbtn {
+    background-color:#768d87;
+    border-radius:5px;
+    border:1px solid #566963;
+    color:#ffffff;
+    padding:2px 2px;
+    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+}
+
+.commonbtn:hover {
+    background: #6A5ACD;
+    box-shadow: 1px 1px 10px;
+}
+
+.commonbtn:active {
+    box-shadow: inset 1px 1px 20px -1px;
+}
+
+button.dobig:hover {
+    transform:scale(1.15);
+}
+
+button.dobig:active {
+    box-shadow: inset 1px 1px 20px -1px;
+}
+
+.wintInitialize {
+    min-height: 20px;
+    max-height: 750px;
+    min-width: 35px;
+    max-width: 370px;
+    font-size: 14px;
+    z-index: 20;
+    position: fixed;
+    border: 1px solid rgb(56, 56, 56);
+    background: rgb(70, 68, 81);
+    color: white;
+    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+}
+
+.wintInitializeChat {
+    min-height: 75px;
+    min-width: 200px;
+    font-size: 14px;
+    z-index: 20;
+    position: fixed;
+    border: 1px solid rgb(56, 56, 56);
+    background: rgb(70, 68, 81);
+    color: white;
+    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+}
+
+.wintInitializeLessonInfo {
+    height: 232px;
+    width: 500px;
+    font-size: 14px;
+    z-index: 20;
+    position: fixed;
+    border: 1px solid rgb(56, 56, 56);
+    background: rgb(70, 68, 81);
+    color:black;
+    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+}
+
+.wintInitializeAdultsStudentsInfo {
+    min-height: 170px;
+    max-height: 490px;
+    width: 668px;
+    font-size: 14px;
+    z-index: 20;
+    position: fixed;
+    border: 1px solid rgb(56, 56, 56);
+    background: rgb(70, 68, 81);
+    color: black;
+    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+}
+
+.wintInitializeSkysmartStudentsInfo {
+    min-height: 170px;
+    max-height: 490px;
+    width: 668px;
+    font-size: 14px;
+    z-index: 20;
+    position: fixed;
+    border: 1px solid rgb(56, 56, 56);
+    background: rgb(70, 68, 81);
+    color: black;
+    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+}
+
+.wintInitializeVocabulary {
+    min-height: 170px;
+    max-height: 790px;
+    width: 514px;
+    font-size: 14px;
+    z-index: 20;
+    position: fixed;
+    border: 1px solid rgb(56, 56, 56);
+    background: rgb(70, 68, 81);
+    color: black;
+    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+}
+
+.wintInitializeSkysmartExercisesInfo {
+    min-height: 170px;
+    max-height: 790px;
+    width: 560px;
+    font-size: 14px;
+    z-index: 20;
+    position: fixed;
+    border: 1px solid rgb(56, 56, 56);
+    background: rgb(70, 68, 81);
+    color: black;
+    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+}
+
+.wintInitializeTTCExercisesInfo {
+    min-height: 170px;
+    max-height: 790px;
+    width: 560px;
+    font-size: 14px;
+    z-index: 20;
+    position: fixed;
+    border: 1px solid rgb(56, 56, 56);
+    background: rgb(70, 68, 81);
+    color: black;
+    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+}
+
+.lesson-field-name {
+    width: 50px;
+    text-align: center;
+    color: bisque;
+    margin: 5px;
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+}
+
+.lesson-field-value {
+     width: 150px;
+     min-height: 20px;
+     text-align: center;
+     color: #fff;
+     border-radius: 5px;
+     background: #2569c3f0;
+     padding: 5px;
+     margin: 5px;
+     border: 1px solid white;
+     font-weight: 500;
+     padding-top: 7px;
+     box-shadow: 0px 5px 5px rgb(0 0 0 / 55%);
+     cursor: text;
+}
+
+.lesson-field-value:hover {
+    background:#65227f70;
+}
+
+.lesson-field-value::selection {
+    background: #d4180c;
+}
+
+#vidserverurl::selection {
+    background: #d4180c;
+}
+
+#hidemainmenu {
+    cursor: pointer;
+    width: 110px;
+    background: #8bacb9d1;
+    color: #8bacb9d1;
+    font-size: 3px;
+    margin-top: 15px;
+    margin-left: 2px;
+    opacity: 0.7;
+    transition: all 0.5s cubic-bezier(0.89, 0.38, 0.57, 0.43);
+}
+
+
+#hidemainmenu:hover {
+    opacity: 1;
+    font-size:11px;
+    background: #16fe55bf;
+    color: rgb(69 57 192 / 80%);
+    font-weight: 700;
+}
+
+.rowadultdata {
+    width: 146px;
+    min-height: 80px;
+    background: #a9a9a9;
+    margin: 5px;
+    border-radius: 5px;
+    padding-left: 5px;
+    color: #000;
+    text-shadow: 1px 1px 1px rgb(0 0 0 / 30%);
+    box-shadow: 0px 5px 5px rgb(0 0 0 / 35%);
+}
+
+.kidsoutdata {
+    width: 146px;
+    min-height: 80px;
+    background: #a9a9a9;
+    margin: 5px;
+    border-radius: 5px;
+    padding-left: 5px;
+    color: #000;
+    text-shadow: 1px 1px 1px rgb(0 0 0 / 30%);
+    box-shadow: 0px 5px 5px rgb(0 0 0 / 35%);
+}
+
+.infbaradult {
+    width: 670px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: hidden;
+    max-height: 421px;
+}
+
+.infbarskysmart {
+    width: 670px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: hidden;
+    max-height: 421px;
+}
+
+.rowadultdata:hover .studadultname {
+    background: #6A5ACD;
+    color: #fff;
+    font-weight:600;
+    cursor: default;
+}
+
+.rowadultdata:hover {
+    background: #6A5ACD;
+    color: #fff;
+    font-weight:600;
+}
+
+.kidsoutdata:hover {
+    background: #6A5ACD;
+    color: #fff;
+    font-weight:600;
+}
+
+.studadultname {
+    text-align: center;
+    color: #2411df;
+    font-weight: 600;
+    margin: 5px;
+    border-bottom: 2.5px solid;
+    word-break: break-all;
+}
+
+.studkidstname {
+    text-align: center;
+    color: #2411df;
+    font-weight: 600;
+    margin: 5px;
+    border-bottom: 2.5px solid;
+    word-break: break-all;
+}
+
+.idadultstyle {
+    text-align:center;
+    margin-top:5px;
+    cursor: default;
+}
+
+.idkidsstyle {
+    text-align:center;
+    margin-top:5px;
+    cursor: default;
+}
+
+.kidsoutdata.sleep {
+    background-color: #646464;
+    color: gainsboro;
+}
+
+.kidsoutdata.sleep:hover {
+    background: #6A5ACD;
+    color: #fff;
+    font-weight: 600;
+}
+
+.kidsoutdata.sleep > .studkidstname {
+    color: gainsboro;
+}
+
+.kidsoutdata.vacation {
+    background-color: #888e7a;
+    color: gainsboro;
+}
+
+.kidsoutdata.vacation:hover {
+    background: #6A5ACD;
+    color: #fff;
+    font-weight: 600;
+}
+
+.kidsoutdata.vacation > .studkidstname {
+    color: gainsboro;
+}
+
+.kidsoutdata:hover .studkidstname {
+    background: #6A5ACD;
+    color: #fff;
+    font-weight:600;
+    cursor: default;
+}
+
+.mvushka {
+    cursor:pointer;
+    transition:all 0.7s ease;
+}
+
+.mvushka:hover {
+    font-size: 20px;;
+}
+
+.deletechat {
+    cursor:pointer;
+    transition:all 0.7s ease;
+}
+
+.deletechat:hover {
+    font-size: 20px;;
+}
+
+.adultprofile {
+    cursor:pointer;
+    transition:all 0.7s ease;
+}
+
+.adultprofile:hover {
+    font-size: 20px;;
+}
+
+.paymenthistory {
+    cursor:pointer;
+    transition:all 0.7s ease;
+}
+
+.paymenthistory:hover {
+    font-size: 20px;
+}
+
+.homeworklist  {
+    cursor:pointer;
+    transition:all 0.7s ease;
+}
+
+.homeworklist:hover {
+    font-size: 20px;
+}
+
+.portfoliolist  {
+    cursor:pointer;
+    transition:all 0.7s ease;
+}
+
+.portfoliolist:hover {
+    font-size: 20px;
+}
+
+.removestudent  {
+    cursor:pointer;
+    transition:all 0.7s ease;
+}
+
+.removestudent:hover {
+    font-size: 20px;
+}
+
+.subjname {
+    color: bisque;
+    width: 630px;
+    margin: 5px;
+    border: 1px solid #516051;
+    text-align: center;
+    background: #647b7b;
+    font-weight: 700;
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+    border-radius:20px;
+    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+}
+
+.wordsetname {
+    color: bisque;
+    width: 480px;
+    margin: 5px;
+    border: 1px solid #516051;
+    text-align: center;
+    background: #647b7b;
+    font-weight: 700;
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+    border-radius:20px;
+    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+}
+
+.wordsetname:hover {
+    background: #2eb05e;
+}
+
+#listofsubjects {
+    background: rgb(70, 68, 81);
+    height: 30px;
+    color: bisque;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#listofsubjects:hover {
+    box-shadow: 0px 5px 5px rgb(0 0 0 / 45%);
+    border: 1px solid #7d5e5e;
+}
+
+#listofsubjects > option {
+    background: rgb(70, 68, 81);
+}
+
+.sbjnamesearch {
+    color: white;
+    text-align: center;
+    font-weight: 700;
+    border: 1px solid black;
+    margin: 2px;
+    background: #2b6da5;
+    margin-right:5px;
+}
+
+.badgename {
+    text-align:center;
+    border: 1px solid black;
+    background:#2f7d35;
+    margin-right:5px;
+    color:bisque;
+}
+
+.languageobsl {
+    text-align:center;
+    padding:2px;
+    font-weight:600;
+    text-shadow: 1px 0 1px #000,
+        0 1px 1px #000,
+        -1px 0 1px #000,
+        0 -1px 1px #000;
+    color:gainsboro;
+}
+
+.homeworklistkids {
+    cursor: pointer;
+    transition: all 0.7s ease;
+}
+
+.homeworklistkids:hover {
+    font-size: 20px;
+}
+
+.vocabularbarcls {
+    text-align:center;
+    justify-content: space-between;
+    padding: 0 5px; 
+}    
+
+.vocabularremtools, #searchtoolswords {
+    margin: 5px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+#searchwordinput, #iduserwords, #deleteallwords, #unlearnallwords, #delunlearnallwords, #learncheckedwords, #selectallwords, #findwords {
+    flex-grow: 1;
+    margin: 0 5px;
+}
+
+.vocabularremtools > button {
+    padding: 3px;
+    min-width: 80px;
+}
+
+.wordsout  {
+    width: 515px;
+    max-height: 500px;
+    overflow-x: hidden;
+    margin-top:5px;
+}
+
+.checkdel {
+    float: right;
+    margin-right: 5px;
+    transition: all 0.5s ease;
+    width: 14px;
+    height: 14px;
+    margin-top: 2px;
+}
+
+.savelinktowordcms {
+    cursor: pointer;
+    float: right;
+    font-size: 14px;
+    transition: all 0.5s ease;
+}
+
+.headerexplain {
+    background: cadetblue;
+    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+    color: lemonchiffon;
+    margin: 5px 0;
+}
+
+.selectonesection {
+    float: right;
+    margin-right: 5px;
+    transition: all 0.5s ease;
+    width: 14px;
+    height: 14px;
+}
+
+.selectonesection:hover {
+    width: 18px;
+    height: 18px;
+}
+
+.adultsexcbar {
+    width: 535px;
+    max-height: 500px;
+    overflow-x: hidden;
+    margin-top:5px;
+}
+
+.skysmartexcbar {
+    width: 560px;
+    max-height: 500px;
+    overflow-x: hidden;
+    margin-top:5px;
+}
+
+.roomtype {
+    color: bisque;
+    width: 550px;
+    margin: 5px;
+    border: 1px solid #516051;
+    text-align: center;
+    background: #647b7b;
+    font-weight: 700;
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+    border-radius:20px;
+    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+    cursor:pointer;
+}
+
+.roomtype:hover {
+    background: #2eb05e;
+}
+
+.roomtypekids {
+    color: #c2f4c0;
+    width: 550px;
+    margin: 5px;
+    border: 1px solid #516051;
+    text-align: center;
+    background: #ac7b30;
+    font-weight: 700;
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+    border-radius:20px;
+    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+    cursor:pointer;
+}
+
+.itemexercises {
+    color:bisque;
+    margin:5px;
+}
+
+.itemexerciseskids {
+    color:bisque;
+    margin:5px;
+}
+
+.savelinktocms, .savelinktocmsttc {
+    cursor: pointer;
+    float: right;
+    font-size: 14px;
+    transition: all 0.5s ease;
+}
+
+.checkslides {
+    float: right;
+    margin-right: 5px;
+    transition: all 0.5s ease;
+    width: 14px;
+    height: 14px;
+    margin-top: 4px;
+}
+
+.checkroom {
+    float: right;
+    margin-right: 10px;
+    margin-top: 2px;
+}
+
+#toolsforslides > button {
+    padding:3px;
+    min-width:100px;
+}
+
+#toolsforroom > button {
+    padding:3px;
+    min-width:100px;
+    height:27px;
+}

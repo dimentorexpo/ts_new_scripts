@@ -1,0 +1,41 @@
+{
+  "name": "Technical Support Master",
+  "short_name": "TSM",
+  "description": "Удобное контекстное меню с разными плюшками и опциями, помогающими в работе",
+  "version": "1.6.1",
+  "permissions": [
+		"contextMenus",
+		"tabs",
+		"storage",
+		"*://*.skyeng.ru/*",
+		"*://skyeng.autofaq.ai/*",
+		"*://*.slack.com/*",
+		"*://jira.skyeng.tech/*",
+		"*://mattermost.skyeng.tech/*",
+		"*://mm-time.skyeng.tech/*"
+	],
+  "background": {
+    "scripts": ["app.js"]
+  },
+  "browser_action": {
+    "default_icon": "32.png"
+  },
+  "content_scripts": [
+	{
+		"js": ["stat.js"],
+		"matches": ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*"]
+	},
+		{
+		"js": ["content.js"],
+		"matches": ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*"],
+		"run_at": "document_end"
+	}
+	],
+  "icons" : {
+		"16" : "16.png",
+		"32" : "32.png",
+		"48" : "48.png",
+		"128" : "128.png"
+	},
+  "manifest_version": 2
+}
