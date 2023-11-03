@@ -53,7 +53,7 @@
 				  "/autoFAQscripts/Userinfo.js",
 				  "/autoFAQscripts/VoiceHelper.js",
 				  "/Lightbox/dist/js/lightbox.min.js"],
-		  "css": ["CSS/style.css", "/Lightbox/dist/css/lightbox.min.css"],
+		  "css": ["/CSS/style.css", "/Lightbox/dist/css/lightbox.min.css"],
 		  "matches": ["*://skyeng.autofaq.ai/*"],
 		  "run_at": "document_end"
 	  },
