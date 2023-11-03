@@ -23,20 +23,6 @@ async function getStorageData(keys) {
     });
 }
 
-// Делаем функцию глобальной в контексте браузера
-window.pagethClick = function(pagethId) { // по клику переключает страницы с темами
-    areaThbtns = document.getElementById('themes_body')
-    pagethId = pagethId.split('_')[0]
-    document.getElementById('backtomenu').style.display = ''
-    for (i = 0; i < areaThbtns.childElementCount; i++) {
-        try {
-            document.getElementById(i + 'pageth').style.display = 'none'
-            document.getElementById(i + '_pageth_button').style.display = 'none'
-        } catch (e) { }
-    }
-    document.getElementById(pagethId + 'pageth').style.display = 'flex'
-};
-
 let pldata;
 let afopername; // переменная фамилии, имени оператора при переборе общего списка операторов
 let foundarr;
