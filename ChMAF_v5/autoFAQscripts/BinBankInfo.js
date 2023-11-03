@@ -65,16 +65,16 @@ document.getElementById('AF_BankCheck').ondblclick = function (a) { // скры�
     if (checkelementtype(a)) { document.getElementById('AF_BankCheck').style.display = 'none'; }
 }
 
-    document.getElementById('hideMeGrList').onclick = function () { // скрытие окна Список группы
+    document.getElementById('hideMeGrList').addEventListener('click', function () { // скрытие окна Список группы
         if (document.getElementById('AF_BankCheck').style.display == '') {
             document.getElementById('AF_BankCheck').style.display = 'none';
             document.getElementById('cardInfoData').innerText = "";
             document.getElementById('carddigits').value = "";
         }
-    }
+    })
 
 
-    document.getElementById('getBankInfoData').onclick = async function () {
+    document.getElementById('getBankInfoData').addEventListener('click', async function () { 
 
         let tempgrid = document.getElementById('carddigits').value;
 		
@@ -99,11 +99,11 @@ document.getElementById('AF_BankCheck').ondblclick = function (a) { // скры�
 			document.getElementById('cardInfoData').innerHTML =  'Имя банка: ' + cardData.BIN.issuer.name + '<br>' + 'Схема карты: ' + cardData.BIN.scheme + '<br>' + 'Страна: ' + cardData.BIN.country.country +   '<br>' + 'Тип карты: ' + cardData.BIN.type + '<br>' + 'Валюта: ' + cardData.BIN.currency
 		}  else alert("Вы не ввели 6 цифр в поле для ввода. Пожалуйста, введите и повторите попытку!")
 
-     }
+     })
 	 
-	 document.getElementById('openSiteBin').onclick = function() {
+	 document.getElementById('openSiteBin').addEventListener('click', function () { 
          let tempgrid = document.getElementById('carddigits').value;
 		 if (tempgrid !='') {
 			 window.open('https://bincheck.io/ru/details/'+tempgrid)
 		} 
-	 }
+	 })
