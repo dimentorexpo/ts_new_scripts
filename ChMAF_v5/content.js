@@ -218,10 +218,6 @@ async function whoAmI() {
     }
 }
 
-function firstLoadPage() { //первичаня загрузка страницы
-    setTimeout(move_again_AF, 3500)
-}
-
 function timerHideButtons() { //функция добавления кнопки скрытия
     const iframeDoc = document.querySelector('[class^="NEW_FRONTEND"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND"]').contentWindow.document;
     const modalMasks = iframeDoc.getElementsByClassName('mantine-Modal-root')[0];
@@ -724,7 +720,7 @@ setInterval(screenshots, 5000)
 setInterval(closeTerms, 500);
 setInterval(changeNewUIStyle, 500);
 
-firstLoadPage() //вызов функции первичной загрузки страницы с фомированием меню и наполнением его
+setTimeout(move_again_AF, 3500) //вызов функции первичной загрузки страницы с фомированием меню и наполнением его
 
 if (localStorage.getItem('msg') != null) {
     document.getElementById('msg').innerHTML = localStorage.getItem('msg')
