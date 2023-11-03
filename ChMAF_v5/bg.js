@@ -29,7 +29,33 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	  fetch(`https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`, {
 		"method": "GET",
 		"credentials": "include"
-	  })    .then(response => response.json())
+	  }) 
+    .then(response => response.json())
+    .then(data => sendResponse(data))
+    .catch(error => {
+      console.error(error);
+      sendResponse({ error: error });
+    });
+    return true;
+  }
+  
+    if (request.action === 'getLoginer') { // получение логиннера (сперва пробуем для тестовых учеток, а дальше может и в остальных кусках)
+	  let userid = request.userid
+		fetch("https://id.skyeng.ru/admin/auth/login-links", {
+		  "headers": {
+			"content-type": "application/x-www-form-urlencoded",
+			"sec-fetch-site": "same-origin",
+			"sec-fetch-user": "?1",
+			"upgrade-insecure-requests": "1"
+		  },
+		  "referrer": "https://id.skyeng.ru/admin/auth/login-links",
+		  "referrerPolicy": "strict-origin-when-cross-origin",
+		  "body":  `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${userid}&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru&login_link_form%5Bpromocode%5D=&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=&login_link_form%5B_token%5D`,
+		  "method": "POST",
+		  "mode": "cors",
+		  "credentials": "include"
+		})
+    .then(response => response.json())
     .then(data => sendResponse(data))
     .catch(error => {
       console.error(error);
