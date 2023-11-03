@@ -4,7 +4,7 @@ buttonmobpas.innerHTML = '<a style="color: black; cursor: pointer;">Generate cod
 
 
 var getidfromaf;
-buttonmobpas.onclick = function () {
+buttonmobpas.addEventListener('click', function () {
 
     for (i = 0; document.getElementsByClassName('expert-user_details-list')[1].childNodes[i] != undefined; i++) {
         if (document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].firstChild.innerText == "id")
@@ -39,4 +39,4 @@ buttonmobpas.onclick = function () {
     setTimeout(getPassInfoNew, 2000);
 
     setTimeout(function () { document.getElementById('copymobpass').innerHTML = "Generate Code📱" }, 15000);
-}
+})
