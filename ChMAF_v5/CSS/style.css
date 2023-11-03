@@ -1,8 +1,8 @@
 button {
-		background:#768d87;
+		background:#768d87 !important;
 		border-radius:5px;
 		border:1px solid #566963;
-		color:#ffffff;
+		color:#ffffff!important;
 		padding:2px 2px;
 		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
 	}
@@ -420,7 +420,7 @@ button {
 		display:none !important;
 	}
 	.teststudteach {
-		background: #3c82b3;
+		background: #3c82b3!important;
 		margin-left: 5px;
 		margin:5px;
 		cursor: pointer;
@@ -462,7 +462,7 @@ button {
 		background: coral;
 	}
 	.buttonHide {
-		background:#228B22;
+		background:#228B22!important;
 		border-radius:5px;
 		border:1px solid #566963;
 		padding:2px 2px;
