@@ -428,7 +428,8 @@ function getTimeSlots() { //функция получения информаци
 
 let operNamesAF = []
 let refreshintervalset;
-document.getElementById('datsyCalendar').onclick = function () {
+
+function getdatsyCalendarButtonPress() {
     if (document.getElementById('AF_Calendar').style.display == "none") {
         document.getElementById('AF_Calendar').style.display = ""
 		document.getElementById('datsyCalendar').classList.add('activeScriptBtn')

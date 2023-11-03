@@ -42,18 +42,30 @@ var win_Themes =  // описание элементов окна Тематик
         </span>
 </div>`;
 
-// модуль проверки адреса загрузки тематик
-if (scriptAdrChek === TP_addr || scriptAdrChek === TP_addrRzrv || scriptAdrChek === TPprem_addr || scriptAdrChek === TPprem_addrRzrv) {
-    scriptAdrTH = TP_addrth;
-} else if (scriptAdrChek === KC_addr || scriptAdrChek === KC_addrRzrv) {
-    scriptAdrTH = KC_addrth;
-    KCThemesFlag = 1;
-} else if (!scriptAdrTH) { 
-    scriptAdrTH = TP_addrth;
-}
+async function startThemes(){
 
-localStorage.setItem('scriptAdrTH', scriptAdrTH);
-// конец модуля
+    // модуль проверки адреса загрузки тематик
+    const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
+
+    // Присваиваем данные константам
+    const TS_addr = data.TS_addr;
+    const KC_addr = data.KC_addr;
+    const TP_addr = data.TP_addr;
+    const KC_addrRzrv = data.KC_addrRzrv;
+    const TP_addrRzrv = data.TP_addrRzrv;
+
+    if (scriptAdrChek === TP_addr || scriptAdrChek === TP_addrRzrv) {
+        scriptAdrTH = TP_addrth;
+    } else if (scriptAdrChek === KC_addr || scriptAdrChek === KC_addrRzrv) {
+        scriptAdrTH = KC_addrth;
+        KCThemesFlag = 1;
+    } else if (!scriptAdrTH) { 
+        scriptAdrTH = TP_addrth;
+    }
+
+    localStorage.setItem('scriptAdrTH', scriptAdrTH);
+    // конец модуля
+}
 
 if (localStorage.getItem('winTopThemes') == null) { // начальное положение окна Themes
     localStorage.setItem('winTopThemes', '120');
@@ -115,7 +127,7 @@ document.getElementById('themesinstr').onclick = function () { // открыти
     window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-themes%D0%9A%D0%BD%D0%BE%D0%BF%D0%BA%D0%B0%D0%A2%D0%B5%D0%BC%D1%8B')
 }
 
-document.getElementById('themes').onclick = function () { // открытие окна темы
+function getThemesButtonPress() { // открытие окна темы
     if (document.getElementById('AF_Themes').style.display == ''){
         document.getElementById('AF_Themes').style.display = 'none'
         document.getElementById('themes').classList.remove('activeScriptBtn')

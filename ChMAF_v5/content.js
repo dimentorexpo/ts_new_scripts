@@ -254,8 +254,8 @@ function prepTp() { //функция подготовки расширения �
     openCalendar.id = 'datsyCalendar'
     openCalendar.title = 'Открывает календарь Datsy'
     openCalendar.classList.add('onlyfortp', 'rightPanelBtn')
-    openCalendar.onclick = getdatsyCalendarButtonPress;
     document.getElementById('rightPanel').appendChild(openCalendar)
+    document.getElementById('datsyCalendar').onclick = getdatsyCalendarButtonPress;
 
     let butServ = document.createElement('button')
     butServ.id = "butServ"
@@ -278,6 +278,7 @@ function prepTp() { //функция подготовки расширения �
     openKnowledge.title = 'Открывает базу знаний решений неполадок'
     openKnowledge.classList.add('onlyfortp', 'rightPanelBtn')
     document.getElementById('rightPanel').appendChild(openKnowledge)
+    document.getElementById('knowledgeCenter').onclick = getknowledgeCenterButtonPress;
 
     let taskBut = document.createElement('button')
     taskBut.id = "taskBut"
@@ -285,6 +286,7 @@ function prepTp() { //функция подготовки расширения �
     taskBut.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
     taskBut.classList.add('onlyfortp', 'rightPanelBtn')
     document.getElementById('rightPanel').appendChild(taskBut)
+    document.getElementById('taskBut').onclick = gettaskButButtonPress;
     
     setTimeout(() => {
         document.getElementById('rightPanel').appendChild(maskBack) 
@@ -523,6 +525,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     butThemes.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
     butThemes.classList.add('rightPanelBtn')
     document.getElementById('rightPanel').appendChild(butThemes)
+    document.getElementById('themes').onclick = getThemesButtonPress;
 
     let MainMenuBtn = document.createElement('button')
     MainMenuBtn.textContent = "👺"
@@ -553,8 +556,8 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     openchhis.id = 'opennewcat'
     openchhis.title = 'Открывает виджет просмотра истории чатов'
     openchhis.classList.add('rightPanelBtn')
-    openchhis.onclick = getopennewcatButtonPress;
     document.getElementById('rightPanel').appendChild(openchhis)
+    document.getElementById('opennewcat').onclick = getopennewcatButtonPress;
 
     if ((scriptAdr == TP_addr || scriptAdr == TP_addrRzrv) && opsection == "КЦ") {
         localStorage.setItem('scriptAdr', KC_addr)

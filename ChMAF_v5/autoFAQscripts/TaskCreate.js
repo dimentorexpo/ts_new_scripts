@@ -152,7 +152,8 @@ var srvcont;
 
 var usersrv;
 var usersrvparsed;
-taskBut.onclick = function () { // функция открытия окна для работы с созданием задач на СРМ
+
+function gettaskButButtonPress() { // функция открытия окна для работы с созданием задач на СРМ
 
 let conversid;
 	

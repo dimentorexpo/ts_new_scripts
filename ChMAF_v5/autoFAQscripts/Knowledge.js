@@ -275,7 +275,7 @@ async function getKnowData() { // получаем из файла список 
 	
 }
 
-document.getElementById('knowledgeCenter').onclick = function() {
+function getknowledgeCenterButtonPress() {
 	if (document.getElementById('AF_Knowledge').style.display == "none") {
 		document.getElementById('AF_Knowledge').style.display = ""
 		document.getElementById('knowledgeCenter').classList.add('activeScriptBtn');
