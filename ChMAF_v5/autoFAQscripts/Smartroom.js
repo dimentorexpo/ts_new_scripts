@@ -141,7 +141,7 @@ document.getElementById('AF_Smartroomform').ondblclick = function (a) { // ск�
     if (checkelementtype(a)) { document.getElementById('AF_Smartroomform').style.display = 'none'; }
 }
 
-    document.getElementById('smartroomform').onclick = function () {
+function getsmartroomformButtonPress() {
         if (document.getElementById('AF_Smartroomform').style.display == '') {
             document.getElementById('AF_Smartroomform').style.display = 'none'
             document.getElementById('idmymenu').style.display = 'none'

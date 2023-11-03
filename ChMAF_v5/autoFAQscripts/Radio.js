@@ -120,7 +120,7 @@ wintRadio.onmousedown = function(event) {
             return newAudio;
         }
 		
-		document.getElementById('radioPlayer').onclick = function() {
+		function getradioPlayerButtonPress() {
 			if(document.getElementById('AF_Radio').style.display == 'none') {
 				document.getElementById('AF_Radio').style.display = ''
 				document.getElementById('idmymenu').style.display = 'none'

@@ -109,7 +109,7 @@ function calculateAverageResponseTime(data) {
 let activeopersId;
 let summclsd
 
-buttonGetStat.onclick = function () { // по клику
+function getbuttonGetStatButtonPress() {
     if (document.getElementById('AF_StataAF').style.display == 'none') {
         document.getElementById('AF_StataAF').style.display = ''
         document.getElementById('idmymenu').style.display = 'none'

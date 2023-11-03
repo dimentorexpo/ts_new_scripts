@@ -467,7 +467,7 @@ document.getElementById('jirainstr').onclick = function () {
     window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-jirasearch%F0%9F%94%8EJiraSearch')
 }
 
-document.getElementById('JiraOpenForm').onclick = function () { // открывает поле для работой с JIRA поиском
+function getJiraOpenFormPress() { // открывает поле для работой с JIRA поиском
     if (document.getElementById('AF_Jira').style.display == 'none') {
         document.getElementById('AF_Jira').style.display = ''
 		document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')

@@ -200,7 +200,7 @@ async function getUserMarks(option,idfromchat) {
 			
 			
 	
-	document.getElementById('butMarks').onclick = function () { //открыть форму для поиска оценок от пользователя
+function getbutMarksButtonPress() { //открыть форму для поиска оценок от пользователя
 		if (document.getElementById('AF_Marks').style.display == '') {
             document.getElementById('AF_Marks').style.display = 'none'
             document.getElementById('idmymenu').style.display = 'none'

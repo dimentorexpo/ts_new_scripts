@@ -549,6 +549,14 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     menubar.id = 'idmymenu'
     menubar.innerHTML = win_mainmenu;
     document.getElementById('rightPanel').appendChild(menubar)
+    document.getElementById('servDsk').onclick = getservDskPress;
+    document.getElementById('JiraOpenForm').onclick = getJiraOpenFormPress;
+    document.getElementById('crmopersstatuses').onclick = getcrmopersstatusesButtonPress;
+    document.getElementById('butMarks').onclick = getbutMarksButtonPress;
+    document.getElementById('smartroomform').onclick = getsmartroomformButtonPress;
+    document.getElementById('butLessonInfo').onclick = getbutLessonInfoButtonPress;
+    document.getElementById('radioPlayer').onclick = getradioPlayerButtonPress;
+    document.getElementById('buttonGetStat').onclick = getbuttonGetStatButtonPress;
 
     let openchhis = document.createElement('button')
     openchhis.innerHTML = '☢'

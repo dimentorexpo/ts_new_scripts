@@ -106,7 +106,7 @@ document.getElementById('clearlessonstatus').onclick = function () { // очис
 	renewdate()
 };
 
-document.getElementById('butLessonInfo').onclick = function () {
+function getbutLessonInfoButtonPress() {
 	renewdate()
 
 	if (document.getElementById('AF_LessonStatus').style.display == '') {

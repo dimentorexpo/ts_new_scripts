@@ -66,7 +66,7 @@ wintOperStatus.onmousedown = function(event) {
 		document.getElementById('operstatustable').innerHTML = "";
 	}
 	
-document.getElementById('crmopersstatuses').onclick = function () { 
+function getcrmopersstatusesButtonPress() { 
 	
 	let readyarr = [];
 	let rcnt = 0;
