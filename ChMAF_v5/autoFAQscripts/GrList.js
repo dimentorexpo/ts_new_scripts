@@ -98,28 +98,19 @@ function getGrListDataButtonPress() {
 				
 				let arstname = document.querySelectorAll('.stname');
                 let getstnamearr = document.querySelectorAll('.getstname');
-                // for (let f = 0; f < getstnamearr.length; f++) {
-                    // getstnamearr[f].addEventListener('click', function () {
+                for (let f = 0; f < getstnamearr.length; f++) {
+                    getstnamearr[f].addEventListener('click', function () {
 
-                        // document.getElementById('responseTextarea1').value = `{}`
-                        // document.getElementById('responseTextarea2').value = "https://backend.skyeng.ru/api/persons/" + grdata.data.students[f].userId + "?crm2=true&debugParam=person-page";
-                        // document.getElementById('responseTextarea3').value = 'dataname'
-                        // document.getElementById('sendResponse').click()
-
-                        // setTimeout(async function () {
-                            // namedata = document.getElementById('responseTextarea1').getAttribute('dataname');
-                            // namedata = await namedata;
-                            // namedata = JSON.parse(namedata);
-                            // arstname[f].innerHTML = namedata.data.name + " " + namedata.data.surname;
-                            // namedata = document.getElementById('responseTextarea1').removeAttribute('dataname');
-                        // }, 500)
-                    // })
-                // }
+						chrome.runtime.sendMessage({ action: 'getUserCrmName', sid: response.data.students[f].userId }, function(response) {
+							arstname[f].innerHTML = response.data.name + " " + response.data.surname;
+						})
+                    })
+                }
 
                 let grstdcrmarr = document.querySelectorAll('.grstdcrm');
                 for (let f = 0; f < grstdcrmarr.length; f++) {
                     grstdcrmarr[f].addEventListener('click', function () {
-                        window.open("https://crm2.skyeng.ru/persons/" + grdata.data.students[f].userId)
+                        window.open("https://crm2.skyeng.ru/persons/" + response.data.students[f].userId)
                     })
                 }
 				

@@ -13,6 +13,21 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     });
     return true;
   }
+  
+  if (requst.action === 'getUserCrmName') {
+	  let sid = request.student_id
+	  fetch("https://backend.skyeng.ru/api/persons/${student_id}?crm2=true&debugParam=person-page", {
+		"method": "GET",
+		"credentials": "include"
+	  })    .then(response => response.json())
+    .then(data => sendResponse(data))
+    .catch(error => {
+      console.error(error);
+      sendResponse({ error: error });
+    });
+    return true;
+  }
+  
 });
 
 
