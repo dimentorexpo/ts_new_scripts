@@ -3,8 +3,6 @@ var btnthstyls = 'margin-left:2px; width:150px; height: 44px;';
 var btnTagsTPtyles = 'margin-left:2px; width:125px; height: 25px;';
 var btnTagsKCtyles = 'margin-left:2px; width:150px; height: 25px;';
 var chbxTagstyles = 'margin: 2px; width: 20px;';
-var TP_addrth = 'https://script.google.com/macros/s/AKfycbzgGszbjUND_GUDNFbKlRrpjrGtEFuCK-mMprFCADI8VFrQxCe01WZ_tXfnxsdEx4EB5w/exec';
-var KC_addrth = 'https://script.google.com/macros/s/AKfycbwwSfk_Y4xCsi3jI-TiBxb5ODKGes4vV_dgwnmMBPRTPiCR64AzMzAzIWgxkpbvmO7raQ/exec';
 var scriptAdrTH = localStorage.getItem('scriptAdrTH');
 var scriptAdrChek = localStorage.getItem('scriptAdr');
 var KCThemesFlag = 0;
@@ -137,6 +135,22 @@ function getThemesButtonPress() { // открытие окна темы
     }
 }
 
+function pagethClick(event) { // обновленный обработчик событий
+    const areaThbtns = document.getElementById('themes_body');
+    const pagethId = event.target.id.split('_')[0]; // получение ID нажатой кнопки
+    document.getElementById('backtomenu').style.display = '';
+
+    for (let i = 0; i < areaThbtns.childElementCount; i++) {
+        try {
+            document.getElementById(i + 'pageth').style.display = 'none';
+            document.getElementById(i + '_pageth_button').style.display = 'none';
+        } catch (e) {
+            // обработка возможных исключений
+        }
+    }
+    document.getElementById(pagethId + 'pageth').style.display = 'flex';
+}
+
 function getTextThemes() { // функция обновления текста для тематик из документа
     const appThemes = localStorage.getItem('scriptAdrTH');
     const xhrThemes = new XMLHttpRequest();
@@ -191,14 +205,14 @@ function refreshThemesBtns() { // функция обновляет темати
                 addTagFlag = 1
                 break
             case 'Темы': // Если тип "Тема" создаем кнопку и новый div
-                var newpagethBut = document.createElement('button')
-                newpagethBut.textContent = c[1]
-                newpagethBut.style = btnthstyls
-                if (c[2] != '') { newpagethBut.title = c[2] } // если есть title добавляем его
-                if (c[3] != '') { newpagethBut.style.fontSize = c[3]+ 'px' } // если указан размер шрифта назначеем его
-                newpagethBut.setAttribute('onclick', 'pagethClick(this.id)')
-                newpagethBut.id = countOfthPages + '_pageth_button'
-                areaThbtns.appendChild(newpagethBut)
+                var newpagethBut = document.createElement('button');
+                newpagethBut.textContent = c[1];
+                newpagethBut.style = btnthstyls;
+                if (c[2] !== '') { newpagethBut.title = c[2]; }
+                if (c[3] !== '') { newpagethBut.style.fontSize = c[3] + 'px'; }
+                newpagethBut.addEventListener('click', pagethClick);
+                newpagethBut.id = countOfthPages + '_pageth_button';
+                areaThbtns.appendChild(newpagethBut);
 
                 var newpageth = document.createElement('div')
                 newpageth.id = countOfthPages + 'pageth'
