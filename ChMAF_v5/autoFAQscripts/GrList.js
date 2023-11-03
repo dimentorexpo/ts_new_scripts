@@ -79,7 +79,7 @@ function getGrListDataButtonPress() {
 }
     let grdata = [];
     let responsegrdata;
-    document.getElementById('getidgrouptolist').onclick = async function () {
+    document.getElementById('getidgrouptolist').addEventListener('click', async function () {
         let dataarr = [];
         document.getElementById('grlistinfo').innerHTML = "Загрузка...";
         let tempgrid = document.getElementById('idgrouptolist').value;
@@ -109,7 +109,7 @@ function getGrListDataButtonPress() {
                 let arstname = document.querySelectorAll('.stname');
                 let getstnamearr = document.querySelectorAll('.getstname');
                 for (let f = 0; f < getstnamearr.length; f++) {
-                    getstnamearr[f].onclick = function () {
+                    getstnamearr[f].addEventListener('click', function () {
 
                         document.getElementById('responseTextarea1').value = `{}`
                         document.getElementById('responseTextarea2').value = "https://backend.skyeng.ru/api/persons/" + grdata.data.students[f].userId + "?crm2=true&debugParam=person-page";
@@ -123,25 +123,25 @@ function getGrListDataButtonPress() {
                             arstname[f].innerHTML = namedata.data.name + " " + namedata.data.surname;
                             namedata = document.getElementById('responseTextarea1').removeAttribute('dataname');
                         }, 500)
-                    }
+                    })
                 }
 
                 let grstdcrmarr = document.querySelectorAll('.grstdcrm');
                 for (let f = 0; f < grstdcrmarr.length; f++) {
-                    grstdcrmarr[f].onclick = function () {
+                    grstdcrmarr[f].addEventListener('click', function () {
                         window.open("https://crm2.skyeng.ru/persons/" + grdata.data.students[f].userId)
-                    }
+                    })
                 }
             }
             dataarr = ''
         })
 
-    } // end of func getidgrouptolist
+    }) // end of func getidgrouptolist
 
-    document.getElementById('hideList').onclick = function () { // скрытие окна Список группы
+    document.getElementById('hideList').addEventListener('click', function () { // скрытие окна Список группы
         if (document.getElementById('AF_GrList').style.display == '') {
             document.getElementById('AF_GrList').style.display = 'none';
             document.getElementById('grlistinfo').innerText = "";
             document.getElementById('idgrouptolist').value = "";
         }
-    }
+    })
