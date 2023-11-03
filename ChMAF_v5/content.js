@@ -236,8 +236,6 @@ function firstLoadPage() { //первичаня загрузка страниц�
                 list.append(element);
             });
         }
-    } else if (window.location.href.includes('billing-marketing.skyeng.ru/accrual-operations/create')){
-        include("https://dimentorexpo.github.io/ChMAF/Modules/Consideration.js") // подключаем модуль вывода подсказок при создании компенсации компенсации
     } else {
         document.getElementById('AF_helper').style.display = 'none';
     }
