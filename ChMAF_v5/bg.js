@@ -193,7 +193,34 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	}
 	
 	//Конец блока с Testrooms
-    
+	
+	// Блок отправки в Google forms отказы от помощи, или же пожелания предложения, поэтому должен универсальный быть, чтобы входящие данные были разные но функция была одна по сути
+	function sendDataToForm(url, body) {
+	  return fetch(url, {
+		method: 'POST',
+		headers: {
+		  'Content-Type': 'application/x-www-form-urlencoded',
+		},
+		body: body,
+	  })
+		.then(response => response.json())
+		.catch(error => {
+		  console.error(error);
+		  return { error: error };
+		});
+	}
+
+	  if (request.action === 'sentToForms') {
+		const url = request.url;
+		const body = request.body;
+		
+		sendDataToForm(url, body)
+		  .then(data => sendResponse(data));
+		
+		return true;
+	  }
+	;
+	//конец блока отправки в google forms
 });
 
 

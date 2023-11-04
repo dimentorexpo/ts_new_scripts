@@ -245,28 +245,20 @@ function getsmartroomformButtonPress() {
 				}					
 
 				let body2 = 'entry.466256037=' + encodeURIComponent(checkedclienttype) + '&entry.505070950=' + encodeURIComponent(document.getElementById('clientid').value) + '&entry.876256156=' + encodeURIComponent(checkedquestion) + '&entry.1879097323=' + encodeURIComponent(document.getElementById('fullcomentsmartroom').value) + '&entry.156405977=' + encodeURIComponent(document.getElementsByName('catsmartroom')[0].value) + '&entry.1625340245=' + encodeURIComponent(cat2selected) + '&entry.478427702=' + encodeURIComponent(cat3selected)
-
-				let options2 = {
-					"headers": {
-						"content-type": "application/x-www-form-urlencoded",
-					},
-					"body": body2,
-					"method": "POST",
-				}
-
-				document.getElementById('responseTextarea1').value = JSON.stringify(options2)
-				document.getElementById('responseTextarea2').value = 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse'
-				if (document.getElementById('responseTextarea3') != null)
-					document.getElementById('responseTextarea3').value = ''
-				document.getElementById('sendResponse').click()
-
-				document.getElementById('AF_Smartroomform').style.display = 'none'
-				document.getElementById('clientid').value = ''
-				document.getElementById('fullcomentsmartroom').value = ''
-				clearradio()
-				sendComment('Отправка в документ "Пожелания Смартрум" прошла успешно')
-
-                     
+			
+				chrome.runtime.sendMessage({ 
+				  action: 'sentToForms', 
+				  url: 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse',
+				  body: body2
+				}, function(response) {
+				  // Обработка ответа
+				  console.log(response);
+				  	document.getElementById('AF_Smartroomform').style.display = 'none'
+					document.getElementById('clientid').value = ''
+					document.getElementById('fullcomentsmartroom').value = ''
+					clearradio()
+					sendComment('Отправка в документ "Пожелания Смартрум" прошла успешно')
+				});              
 				
             }
         }
