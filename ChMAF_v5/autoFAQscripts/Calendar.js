@@ -284,33 +284,20 @@ function getTimeSlots() { //функция получения информаци
 	let formattedMonth = currentMonth < 10 ? '0' + currentMonth : currentMonth;
 	let curentDate = dateCalend.getFullYear() + '-' + formattedMonth + '-' + (dateCalend.getDate() < 10 ? "0" + dateCalend.getDate() : dateCalend.getDate());
 
-    responseslotsdata = '';
-
     let textvar = 0;
     let searchDate = document.getElementById('eventDate').value;
 	
-	chrome.runtime.sendMessage({ action: 'getTimeSlots', date: searchDate }, function(response) {
-		console.log(response)
-	})
-	
-/*     document.getElementById('responseTextarea1').value = '{}';
-    document.getElementById('responseTextarea2').value = `https://api.datsy.info/api/main-events/?date=${searchDate}`;
-    document.getElementById('responseTextarea3').value = 'getslotsinfo';
-    document.getElementById('sendResponse').click();
-    document.getElementById("responseTextarea1").addEventListener("DOMSubtreeModified", function () {
-        const responsevar = document.getElementById('responseTextarea1').getAttribute('getslotsinfo');
-
-        // Check if the 'getslotsinfo' attribute is not null
-        if (responsevar) {
-			arrayOfEvents = [];
+	chrome.runtime.sendMessage({ action: 'getTimeSlots', date: searchDate }, function(timeFromDatsy) {
+		console.log(timeFromDatsy)
+		
+		arrayOfEvents = [];
             document.getElementById('outputcalendarfield').innerHTML = ''
 			arrayOfMyEvents = [];
 			uniqueEvents = new Set();
-            responseslotsdata = JSON.parse(responsevar);
-            // console.log(responseslotsdata)
-            document.getElementById('datenowtime').value = responseslotsdata.nowDateTime;
-
-            let availableslotsentries = Object.entries(responseslotsdata.DataTimeSlot)
+			document.getElementById('datenowtime').value = timeFromDatsy.nowDateTime;
+			
+			
+			let availableslotsentries = Object.entries(timeFromDatsy.DataTimeSlot)
             for (let i = 0; i < availableslotsentries.length; i++) {
                 if (availableslotsentries[i][0] != "00:00" && availableslotsentries[i][0] != "00:20" && availableslotsentries[i][0] != "00:40" && availableslotsentries[i][0] != "23:00" && availableslotsentries[i][0] != "23:20" && availableslotsentries[i][0] != "23:40" && availableslotsentries[i][0] != "01:00" && availableslotsentries[i][0] != "01:20" && availableslotsentries[i][0] != "01:40" && availableslotsentries[i][0] != "02:00" && availableslotsentries[i][0] != "02:20" && availableslotsentries[i][0] != "02:40" && availableslotsentries[i][0] != "03:00" && availableslotsentries[i][0] != "03:20" && availableslotsentries[i][0] != "03:40" && availableslotsentries[i][0] != "04:00" && availableslotsentries[i][0] != "04:20" && availableslotsentries[i][0] != "04:40" && availableslotsentries[i][0] != "05:00" && availableslotsentries[i][0] != "05:20" && availableslotsentries[i][0] != "05:40" && availableslotsentries[i][0] != "06:00" && availableslotsentries[i][0] != "06:20" && availableslotsentries[i][0] != "06:40" && availableslotsentries[i][0] != "07:00" && availableslotsentries[i][0] != "07:20" && availableslotsentries[i][0] != "07:40") {
                     // console.log(availableslotsentries[i])
@@ -386,31 +373,30 @@ function getTimeSlots() { //функция получения информаци
 
                 }
             }
-		// console.log(arrayOfMyEvents)
 			
-	let allRows = document.getElementsByName('slotRow')
+				let allRows = document.getElementsByName('slotRow')
 	
-	if (flagRemember != '') {
-		getSlotData(flagRemember)
-		
-	}
-	
-		for (let i = 0; i < allRows.length; i++) {
-			allRows[i].onclick = function() {
+				if (flagRemember != '') {
+					getSlotData(flagRemember)
+					
+				}
 				
-				flagRemember = i;
-				
-			    for (let j = 0; j < allRows.length; j++) {
-			    	allRows[j].classList.remove('glowing-border-animation');
-			    }				
-					getSlotData(i)
-								
-			}
-		}
-				refreshActiveOperSlots()
-        }
-    })
-    document.getElementById('responseTextarea1').removeAttribute('getslotsinfo'); */
+					for (let i = 0; i < allRows.length; i++) {
+						allRows[i].onclick = function() {
+							
+							flagRemember = i;
+							
+							for (let j = 0; j < allRows.length; j++) {
+								allRows[j].classList.remove('glowing-border-animation');
+							}				
+								getSlotData(i)
+											
+						}
+					}
+							refreshActiveOperSlots()
+
+	})		
+
 }
 
 let operNamesAF = []
