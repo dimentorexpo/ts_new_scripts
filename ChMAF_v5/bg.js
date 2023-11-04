@@ -64,6 +64,20 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
   }
   
+    if (request.action === 'checkAuthDatsy') { // получение информации авторизован пользователь на сайте Datsy или нет
+	  fetch("https://api.datsy.info/api/auth/check.php", {
+		"method": "GET",
+		"credentials": "include"
+	  }) 
+    .then(response => response.json())
+    .then(data => sendResponse(data))
+    .catch(error => {
+      console.error(error);
+      sendResponse({ error: error });
+    });
+    return true;
+  }
+  
 });
 
 
