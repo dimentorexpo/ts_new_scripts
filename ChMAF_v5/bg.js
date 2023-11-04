@@ -221,6 +221,26 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	  }
 	;
 	//конец блока отправки в google forms
+	
+	//Блок работы с Timetable
+	if (request.action === 'getTimeData') { // удаление занятого слота
+	  const startdate = request.startdate;
+	  const enddate = request.enddate;
+	  const ticherid = request.ticherid;
+	  fetch("https://timetable.skyeng.ru/api/teachers/search", {
+		method: "POST",
+		headers: {
+		  "Content-Type": "application/x-www-form-urlencoded"
+		},
+		body: `from=${startdate}:00:00&to=${enddate}:00:00&offset=0&filters[teacherIds][]=${ticherid}&callback=getJSONP`,
+		credentials: "include"
+	  })
+	  .then(response => response.json())
+	  .then(data => sendResponse(data))
+	  .catch(sendErrorResponse);
+	  return true;
+	}
+	//Конец блока с Timetable
 });
 
 
