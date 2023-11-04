@@ -100,24 +100,6 @@ wintFrozeChat.onmousedown = function(event) {
 				var sDisplay = (s > 0 && s < 10) ? '0' + s : (s > 0 && s >= 10) ? s : "";
 				return mDisplay + sDisplay; 
 			}
-
-			// function sndmsgaftertime(session, hashchat) { // функция отправки сообщения в заметки по айди сессии и хешу
-				  // let notemsg = '<p>Извините, что заставляю вас ждать, но мне нужно еще несколько минут 🙏</p>';
-					
-					// fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-                        // "headers": {
-                            // "accept": "*/*",
-                            // "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                            // "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
-                            // "sec-fetch-mode": "cors",
-                            // "sec-fetch-site": "same-origin"
-                        // },
-                        // "body": "------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + session + "\",\"conversationId\":\"" + hashchat + "\",\"text\":\"" + notemsg + "\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n",
-                        // "method": "POST",
-                        // "mode": "cors",
-                        // "credentials": "include"
-                    // });
-			// }
 			
 			function sndmsgaftertime(session, hashchat) { // функция отправки сообщения в чат по айди сессии и хешу , ее потом включить сейчас для теста использую заметки
 				  let notemsg = '<p>Извините, что заставляю вас ждать, но мне нужно еще несколько минут 🙏</p>';
