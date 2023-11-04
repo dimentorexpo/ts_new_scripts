@@ -38,13 +38,13 @@ var win_testrooms =  // описание элементов окна созда�
               </div>
 
               <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                  <input id="teachforroom" placeholder="Введи ID П" title="Введи id П для кого создать тестовую комнату" oninput="onlyNumbers(this)" autocomplete="off" type="text" style="text-align: center; width: 120px; color: black; margin-left: 5px;">
-                  <input id="studforroom" placeholder="Введи ID У" title="Введи id У для кого создать тестовую комнату(Если У несколько, вводите через запятую)" oninput="onlyNumbersAndComma(this)" autocomplete="off" type="text" style="text-align: center; width: 120px; color: black; margin-left: 5px;">
+                  <input id="teachforroom" placeholder="Введи ID П" title="Введи id П для кого создать тестовую комнату" autocomplete="off" type="text" style="text-align: center; width: 120px; color: black; margin-left: 5px;">
+                  <input id="studforroom" placeholder="Введи ID У" title="Введи id У для кого создать тестовую комнату(Если У несколько, вводите через запятую)" autocomplete="off" type="text" style="text-align: center; width: 120px; color: black; margin-left: 5px;">
     					</div>
 
               <div style="width: 260px; margin:2px; display:flex; justify-content:left;">
-                  <button id="insertteachid" title="Поставить id вашего тестового П" onclick="testteachertofield()" class="testroomsbtn" style="margin-left:5px;">Тест👽</button>
-                  <button id="insertstudid" title="Поставить id вашего тестового У" onclick="teststudenttofield()" class="testroomsbtn">Тест👨&zwj;🎓</button>
+                  <button id="insertteachid" title="Поставить id вашего тестового П" class="testroomsbtn" style="margin-left:5px;">Тест👽</button>
+                  <button id="insertstudid" title="Поставить id вашего тестового У" class="testroomsbtn">Тест👨&zwj;🎓</button>
                   <button id="userfromchatid" title="Подставить id пользователя из активного чата и подставить id вашего тестового У или П" class="testroomsbtn">ID из чата</button>
               </div>
               <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
@@ -210,44 +210,12 @@ document.getElementById('starttestroom').onclick = function () { // добавл
 
     if (flagemptyttfields === '0'){
       randomHash = GenerateHash(14);
-
-      const requestBody = `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacheridforroom}&${randomHash}%5BstudentIds%5D=${studentidforroom}&btn_create_and_list=`;
-      const requestreferrer = `https://${lessonsubjecttype}.skyeng.ru/admin/tech-support-room/create`;
-      const requestAdr = `https://${lessonsubjecttype}.skyeng.ru/admin/tech-support-room/create?uniqid=${randomHash}`;
-      const requestHeaders = {
-          "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-          "accept-language": "en-US,en;q=0.9,ru;q=0.8",
-          "cache-control": "max-age=0",
-          "content-type": "application/x-www-form-urlencoded",
-          "sec-fetch-dest": "document",
-          "sec-fetch-mode": "navigate",
-          "sec-fetch-site": "same-origin",
-          "sec-fetch-user": "?1",
-          "upgrade-insecure-requests": "1"
-      };
-      const request = {
-          headers: requestHeaders,
-          referrer: requestreferrer,
-          referrerPolicy: 'strict-origin-when-cross-origin',
-          body: requestBody,
-          method: 'POST',
-          mode: 'cors',
-          credentials: 'include',
-      };
-  
-      document.getElementById('responseTextarea1').value = JSON.stringify(request);
-      document.getElementById('responseTextarea2').value = requestAdr;
-      document.getElementById('responseTextarea3').value = 'postdata';
-      document.getElementById('sendResponse').click();
-
-      document.getElementById('responseTextarea1').addEventListener('DOMSubtreeModified', () => {
-        let responseRoomCreate = document.getElementById('responseTextarea1').getAttribute('postdata');
-        if (responseRoomCreate) {
-          testroomsshowmessage('message','Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
-          document.getElementById('responseTextarea1').removeAttribute('postdata');
+	  
+	  chrome.runtime.sendMessage({ action: 'createTestRoom', lessonsubjecttype: lessonsubjecttype ,  randomHash: randomHash , lessontype: lessontype, teacheridforroom: teacheridforroom , studentidforroom: studentidforroom}, function(response) {
+		testroomsshowmessage('message','Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
           cleartestroomsfields()
-        }
-    });
+	  })
+  
     } else {
       testroomsshowmessage('error',massagetexttoshow);
     }        
@@ -293,3 +261,14 @@ function opentestroomsconf() { // Открывает раздел в Confluence 
 function opentestroomshelp() { // Открывает раздел в Confluence по созданию тестовых комнат
   window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-testrooms%D0%9E%D0%BA%D0%BD%D0%BE%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F%D1%82%D0%B5%D1%81%D1%82%D0%BE%D0%B2%D1%8B%D1%85%D1%83%D1%80%D0%BE%D0%BA%D0%BE%D0%B2")
 }
+
+teachforroom.addEventListener('input', function() {
+  onlyNumbers(this);
+});
+
+studforroom.addEventListener('input', function() {
+  onlyNumbersAndComma(this);
+});
+
+document.getElementById("insertteachid").addEventListener("click", testteachertofield);
+document.getElementById("insertstudid").addEventListener("click", teststudenttofield);

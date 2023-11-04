@@ -170,6 +170,29 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	  return true;
 	}
 	// Конец блока работы с Datsy
+		
+	//Блок с Testrooms
+		if (request.action === 'createTestRoom') { // создание тестовой комнаты
+	  const lessonsubjecttype = request.lessonsubjecttype;
+	  const randomHash = request.randomHash;
+	  const lessontype = request.lessontype;
+	  const teacheridforroom = request.teacheridforroom;
+	  const studentidforroom = request.studentidforroom;
+	  fetch(`https://${lessonsubjecttype}.skyeng.ru/admin/tech-support-room/create?uniqid=${randomHash}`, {
+		method: "POST",
+		headers: {
+		  "Content-Type": "application/x-www-form-urlencoded"
+		},
+		body: `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacheridforroom}&${randomHash}%5BstudentIds%5D=${studentidforroom}&btn_create_and_list=`,
+		credentials: "include"
+	  })
+	  .then(response => response.json())
+	  .then(data => sendResponse(data))
+	  .catch(sendErrorResponse);
+	  return true;
+	}
+	
+	//Конец блока с Testrooms
     
 });
 

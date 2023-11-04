@@ -16,9 +16,9 @@ var win_StatisticaAF =  // описание формы чтобы не дава�
 						</div>
 						<div style="width: 750px; display:flex; justify-content: space-evenly; margin-bottom:5px;">
 							<button id="retreivestata">Получить статистику</button>
-							<button id="buttonCheckStats" onclick="checkCSAT()">Проверить CSAT + тематики</button>
-							<button id="buttonKCpower" onclick="checkload(/КЦ/, 'КЦ')">Нагрузка КЦ</button>
-							<button id="buttonTPpower" onclick="checkload(/ТП/, 'ТП')">Нагрузка ТП</button>
+							<button id="buttonCheckStats">Проверить CSAT + тематики</button>
+							<button id="buttonKCpower")">Нагрузка КЦ</button>
+							<button id="buttonTPpower")">Нагрузка ТП</button>
 						</div>
 
 						<div id="outputstatafield" style="color:bisque;">
@@ -117,7 +117,7 @@ function getbuttonGetStatButtonPress() {
 				document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
 			}
 		
-        if (document.querySelector('.user_menu-dropdown-user_name').textContent.split('-')[0] == "ТПPrem" || document.querySelector('.user_menu-dropdown-user_name').textContent.split('-')[0] == "Prem")
+        if (document.querySelector('.user_menu-dropdown-user_name').textContent.split('-')[0] == "Prem")
             document.getElementById('buttonTPpower').style.display = "none"
     } else {
 		document.getElementById('idmymenu').style.display = 'none'
@@ -458,12 +458,7 @@ async function checkCSAT() { // функция проверки CSAT и чато
             test = ''
 
             let servicetopic;
-            if (localStorage.getItem('scriptAdr') == TS_addr) {
                 servicetopic = '361c681b-340a-4e47-9342-c7309e27e7b5'
-            } else if (localStorage.getItem('scriptAdr') == TPprem_addr || localStorage.getItem('scriptAdr') == TPprem_addrRzrv) {
-                servicetopic = 'df7d4f86-bb75-45b5-8ae8-87bf896bf308'
-            }
-
             await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
                 "headers": {
                     "content-type": "application/json",
@@ -1014,3 +1009,11 @@ async function getopersSLA() {
 		console.log('All chats closed: ' +alloperChatsclsed)
     }
 }
+
+document.getElementById("buttonCheckStats").addEventListener("click", checkCSAT);
+document.getElementById("buttonKCpower").addEventListener("click", function () {
+  checkload(/КЦ/, 'КЦ');
+});
+document.getElementById("buttonTPpower").addEventListener("click", function () {
+  checkload(/ТП/, 'ТП');
+});
