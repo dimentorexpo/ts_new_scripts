@@ -55,7 +55,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		  "mode": "cors",
 		  "credentials": "include"
 		})
-    .then(response => response.json())
+    .then(response => response.text())
     .then(data => sendResponse(data))
     .catch(error => {
       console.error(error);
