@@ -99,14 +99,22 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
   }
 
-  if (request.action === 'removeTimeSlot') { // удаление занятого слота
-    const slot = request.slottodelete;
-    makeFetchRequest('https://api.datsy.info/api/slot-event/delete.php', 'POST', { deleteslot: slot })
-      .then(response => response.json())
-      .then(data => sendResponse(data))
-      .catch(sendErrorResponse);
-    return true;
-  }
+	if (request.action === 'removeTimeSlot') { // удаление занятого слота
+	  const slot = request.slottodelete;
+	  fetch("https://api.datsy.info/api/slot-event/delete.php", {
+		method: "POST",
+		headers: {
+		  "Content-Type": "application/x-www-form-urlencoded"
+		},
+		body: `deleteslot=${slot}`,
+		credentials: "include"
+	  })
+	  .then(response => response.json())
+	  .then(data => sendResponse(data))
+	  .catch(sendErrorResponse);
+	  return true;
+	}
+    
 });
 
 

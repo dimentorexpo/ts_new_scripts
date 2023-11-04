@@ -236,27 +236,13 @@ function getSlotData(name) {
 						if (spisok[f].title !='') {
 							let podtvudal = confirm("Вы действительно хотите удалить этот слот из календаря?")
 							if (podtvudal) {
-								document.getElementById('responseTextarea1').value = `{
-								  "headers": {
-									"content-type": "application/x-www-form-urlencoded",
-									"sec-fetch-dest": "empty",
-									"sec-fetch-mode": "cors",
-									"sec-fetch-site": "same-site"
-								  },
-								  "referrer": "https://datsy.info/",
-								  "referrerPolicy": "strict-origin-when-cross-origin",
-								  "body": "&deleteslot=${spisok[f].title}",
-								  "method": "POST",
-								  "mode": "cors",
-								  "credentials": "include"
-								}`;
-								document.getElementById('responseTextarea2').value = `https://api.datsy.info/api/slot-event/delete.php`;
-								document.getElementById('responseTextarea3').value = '';
-								document.getElementById('sendResponse').click();
-							
-							spisok[f].title = ''
-							spisok[f].value = ''
-							
+								
+							chrome.runtime.sendMessage({ action: 'removeTimeSlot', slottodelete: spisok[f].title}, function(response) {
+								 console.log(response)
+								 	spisok[f].title = ''
+									spisok[f].value = ''
+							 })
+														
 							getTimeSlots()
 							}
 						}
@@ -483,24 +469,11 @@ function refreshActiveOperSlots() { // функция обновления ин�
 				if (allSlotsToDelete[j].title !='') {
 					let podtvudal = confirm("Вы действительно хотите удалить этот слот из календаря?")
 					if (podtvudal) {
-						document.getElementById('responseTextarea1').value = `{
-						  "headers": {
-							"content-type": "application/x-www-form-urlencoded",
-							"sec-fetch-dest": "empty",
-							"sec-fetch-mode": "cors",
-							"sec-fetch-site": "same-site"
-						  },
-						  "referrer": "https://datsy.info/",
-						  "referrerPolicy": "strict-origin-when-cross-origin",
-						  "body": "&deleteslot=${allSlotsToDelete[j].title}",
-						  "method": "POST",
-						  "mode": "cors",
-						  "credentials": "include"
-						}`;
-						document.getElementById('responseTextarea2').value = `https://api.datsy.info/api/slot-event/delete.php`;
-						document.getElementById('responseTextarea3').value = '';
-						document.getElementById('sendResponse').click();
-
+						
+						 chrome.runtime.sendMessage({ action: 'removeTimeSlot', slottodelete: allSlotsToDelete[j].title}, function(response) {
+								 console.log(response)
+							 })
+ 
 					getTimeSlots()
 					}
 				}
