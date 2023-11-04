@@ -22,7 +22,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     });
   }
 
-  if (request.action === 'getGroupList') {
+  if (request.action === 'getGroupList') { // получение списка учеников группы
     const tmp = request.tmp;
     makeFetchRequest(`https://learning-groups-storage-api.skyeng.ru/api/v1/groupParticipants/getParticipants/${tmp}`, 'GET')
       .then(response => response.json())
@@ -31,7 +31,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
 }
 
-  if (request.action === 'getUserCrmName') {
+	//Блок запросов в CRM2
+  if (request.action === 'getUserCrmName') { // Получение информации об ФИ
     const sid = request.sid;
     makeFetchRequest(`https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`, 'GET')
       .then(response => response.json())
@@ -39,8 +40,17 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       .catch(sendErrorResponse);
     return true;
 }
+
+  if (request.action === 'getEducationSrv') { // получение общего списка услуг
+    const sid = request.sid;
+    makeFetchRequest("https://backend.skyeng.ru/api/products/configurations/", 'GET')
+      .then(response => response.json())
+      .then(data => sendResponse(data))
+      .catch(sendErrorResponse);
+    return true;
+}
  	  
-  if (request.action === 'getLoginer') {
+  if (request.action === 'getLoginer') { // генерация ссылки-логиннера с копирование в буфер обмена
     const userid = request.userid;
     fetch("https://id.skyeng.ru/admin/auth/login-links", {
         method: "POST",

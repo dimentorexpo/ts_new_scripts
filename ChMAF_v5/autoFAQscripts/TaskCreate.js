@@ -163,21 +163,12 @@ document.getElementById('serviceinf').innerHTML = '';
     if (document.getElementById('AF_Createtask').style.display == 'none') {
         document.getElementById('AF_Createtask').style.display = ''
 		taskBut.classList.add('activeScriptBtn')
-				
-		document.getElementById('responseTextarea1').value = `{}`
-		document.getElementById('responseTextarea2').value = "https://backend.skyeng.ru/api/products/configurations/"
-		document.getElementById('responseTextarea3').value = 'arrayofservicesnew'
-		document.getElementById('sendResponse').click()
-
-		document.getElementById("responseTextarea1").addEventListener("DOMSubtreeModified", function () {
-			srvarray = document.getElementById('responseTextarea1').getAttribute('arrayofservicesnew');
-			if (srvarray != null) {
-				srvcont = JSON.parse(srvarray);
-				console.log(srvcont)
-				document.getElementById('responseTextarea1').removeAttribute('arrayofservices')
-			}
-		})
 		
+		chrome.runtime.sendMessage({ action: 'getEducationSrv'}, function(allUserSTK) {
+			srvcont = allUserSTK;
+			// console.log(srvcont)
+		})
+						
 		document.getElementById('getuserservices').onclick = function() {
 			if (document.getElementById('serviceinf').innerHTML != '')
 				document.getElementById('serviceinf').innerHTML = '';
