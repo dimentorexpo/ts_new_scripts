@@ -9,92 +9,84 @@ chrome.storage.local.set({ KC_addrth : 'https://script.google.com/macros/s/AKfyc
 
 //Block of requests
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  if (request.action === 'getGroupList') { // получение списка группы в модуле GrList.js
-    let tmp = request.tmp; // Получаем переменную tmp из сообщения
-    fetch(`https://learning-groups-storage-api.skyeng.ru/api/v1/groupParticipants/getParticipants/${tmp}`, {
-      method: 'GET',
-      credentials: 'include'
+  function sendErrorResponse(error) {
+    console.error(error);
+    sendResponse({ error: error });
+  }
+
+  function makeFetchRequest(url, method, data) {
+    return fetch(url, {
+      method,
+      credentials: 'include',
+      ...(data ? { body: JSON.stringify(data) } : {}),
+    });
+  }
+
+  if (request.action === 'getGroupList') {
+    const tmp = request.tmp;
+    makeFetchRequest(`https://learning-groups-storage-api.skyeng.ru/api/v1/groupParticipants/getParticipants/${tmp}`, 'GET')
+      .then(response => response.json())
+      .then(data => sendResponse(data))
+      .catch(sendErrorResponse);
+    return true;
+  }
+
+  if (request.action === 'getUserCrmName') {
+    const sid = request.sid;
+    makeFetchRequest(`https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`, 'GET')
+      .then(response => response.json())
+      .then(data => sendResponse(data))
+      .catch(sendErrorResponse);
+    return true;
+  }
+
+  if (request.action === 'getLoginer') { // получение логиннера (сперва пробуем для тестовых учеток, а дальше может и в остальных кусках)
+    const userid = request.userid;
+    makeFetchRequest('https://id.skyeng.ru/admin/auth/login-links', 'POST', {
+      login_link_form: {
+        identity: '',
+        id: userid,
+        target: 'https://skyeng.ru',
+        promocode: '',
+        lifetime: 3600,
+        create: '',
+        _token: '',
+      },
     })
-    .then(response => response.json())
-    .then(data => sendResponse(data))
-    .catch(error => {
-      console.error(error);
-      sendResponse({ error: error });
-    });
+      .then(response => response.text())
+      .then(data => sendResponse(data))
+      .catch(sendErrorResponse);
     return true;
   }
-  
-  if (request.action === 'getUserCrmName') { // получение фамилии и имени пользователя в модуле GrList.js
-	  let sid = request.sid
-	  fetch(`https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`, {
-		"method": "GET",
-		"credentials": "include"
-	  }) 
-    .then(response => response.json())
-    .then(data => sendResponse(data))
-    .catch(error => {
-      console.error(error);
-      sendResponse({ error: error });
-    });
-    return true;
-  }
-  
-    if (request.action === 'getLoginer') { // получение логиннера (сперва пробуем для тестовых учеток, а дальше может и в остальных кусках)
-	  let userid = request.userid
-		fetch("https://id.skyeng.ru/admin/auth/login-links", {
-		  "headers": {
-			"content-type": "application/x-www-form-urlencoded",
-			"sec-fetch-site": "same-origin",
-			"sec-fetch-user": "?1",
-			"upgrade-insecure-requests": "1"
-		  },
-		  "referrer": "https://id.skyeng.ru/admin/auth/login-links",
-		  "referrerPolicy": "strict-origin-when-cross-origin",
-		  "body":  `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${userid}&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru&login_link_form%5Bpromocode%5D=&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=&login_link_form%5B_token%5D`,
-		  "method": "POST",
-		  "mode": "cors",
-		  "credentials": "include"
-		})
-    .then(response => response.text())
-    .then(data => sendResponse(data))
-    .catch(error => {
-      console.error(error);
-      sendResponse({ error: error });
-    });
-    return true;
-  }
-  
+
   // Блок при работе с Datsy
-    if (request.action === 'checkAuthDatsy') { // получение информации авторизован пользователь на сайте Datsy или нет
-	  fetch("https://api.datsy.info/api/auth/check.php", {
-		"method": "GET",
-		"credentials": "include"
-	  }) 
-    .then(response => response.json())
-    .then(data => sendResponse(data))
-    .catch(error => {
-      console.error(error);
-      sendResponse({ error: error });
-    });
+  if (request.action === 'checkAuthDatsy') { // получение информации авторизован пользователь на сайте Datsy или нет
+    makeFetchRequest('https://api.datsy.info/api/auth/check.php', 'GET')
+      .then(response => response.json())
+      .then(data => sendResponse(data))
+      .catch(sendErrorResponse);
     return true;
   }
-  
-    if (request.action === 'getTimeSlots') { // получение информации по времени слотов
-	  let date = request.date;
-	  fetch(`https://api.datsy.info/api/main-events/?date=${date}`, {
-		"method": "GET",
-		"credentials": "include"
-	  }) 
-    .then(response => response.json())
-    .then(data => sendResponse(data))
-    .catch(error => {
-      console.error(error);
-      sendResponse({ error: error });
-    });
+
+  if (request.action === 'getTimeSlots') { // получение информации по времени слотов
+    const date = request.date;
+    makeFetchRequest(`https://api.datsy.info/api/main-events/?date=${date}`, 'GET')
+      .then(response => response.json())
+      .then(data => sendResponse(data))
+      .catch(sendErrorResponse);
     return true;
   }
-  
+
+  if (request.action === 'removeTimeSlot') { // удаление занятого слота
+    const slot = request.slottodelete;
+    makeFetchRequest('https://api.datsy.info/api/slot-event/delete.php', 'POST', { deleteslot: slot })
+      .then(response => response.json())
+      .then(data => sendResponse(data))
+      .catch(sendErrorResponse);
+    return true;
+  }
 });
+
 
 
 
