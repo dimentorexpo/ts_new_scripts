@@ -172,28 +172,22 @@ document.getElementById('serviceinf').innerHTML = '';
 		document.getElementById('getuserservices').onclick = function() {
 			if (document.getElementById('serviceinf').innerHTML != '')
 				document.getElementById('serviceinf').innerHTML = '';
-		document.getElementById('responseTextarea1').value = `{}`
-        document.getElementById('responseTextarea2').value = "https://backend.skyeng.ru/api/persons/" + document.getElementById('useriddata').value.trim() + "/education-services/"
-        document.getElementById('responseTextarea3').value = 'getserviceinfonew'
-        document.getElementById('sendResponse').click()
-
-        document.getElementById("responseTextarea1").addEventListener("DOMSubtreeModified", function () {
-            usersrv =document.getElementById('responseTextarea1').getAttribute('getserviceinfonew')
-			if (usersrv != null) {
-				usersrvparsed = JSON.parse(usersrv)
-				console.log(usersrvparsed)
+			
+			let idshka = document.getElementById('useriddata').value.trim();
+			chrome.runtime.sendMessage({ action: 'getUserServices', userid: idshka  }, function(userServices) {
+				console.log(userServices)
 				
-				for (let i=0; i<usersrvparsed.data.length;+i++) { 
+					for (let i=0; i<userServices.data.length;+i++) { 
 					for (let j=0; j<srvcont.data.length;j++) {
-						if(srvcont.data[j].serviceTypeKey == usersrvparsed.data[i].serviceTypeKey) {
-							usersrvparsed.data[i].serviceTypeKey = srvcont.data[j].shortTitle
-							if (usersrvparsed.data[i].incorrectnessReason == null) {
-								if (usersrvparsed.data[i].stage == 'regular_lessons') {
-									document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${usersrvparsed.data[i].id}" style="background: #2b602b; color:bisque;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Регулярные занятия |'+  ' 💰 Баланс: ' + (usersrvparsed.data[i].balance != null ? usersrvparsed.data[i].balance : '0') +'</div>' + '🆔 услуги: ' + usersrvparsed.data[i].id + ' — ' + usersrvparsed.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + usersrvparsed.data[i].student.general.id + ' ' + (usersrvparsed.data[i].student.general.name != null ? usersrvparsed.data[i].student.general.name : '') + ' ' +  (usersrvparsed.data[i].student.general.surname != null ? usersrvparsed.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: ' + (usersrvparsed.data[i].teacher != null ? usersrvparsed.data[i].teacher.general.id + ' ' + usersrvparsed.data[i].teacher.general.name + ' ' + usersrvparsed.data[i].teacher.general.surname : ' —') + '<br>' + '</div>'
-								} else if (usersrvparsed.data[i].stage == 'lost') {
-									document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${usersrvparsed.data[i].id}" style="background: #5a0f77; color:bisque;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Потерянная услуга |'+ ' 💰 Баланс: ' + (usersrvparsed.data[i].balance != null ? usersrvparsed.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + usersrvparsed.data[i].id + ' — ' + usersrvparsed.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + usersrvparsed.data[i].student.general.id + ' ' + (usersrvparsed.data[i].student.general.name != null ? usersrvparsed.data[i].student.general.name : '') + ' ' + (usersrvparsed.data[i].student.general.surname != null ? usersrvparsed.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: —' + '</div>'
-								} else if (usersrvparsed.data[i].stage == "after_trial" || usersrvparsed.data[i].stage == "before_call") {
-									document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${usersrvparsed.data[i].id}" style="background: #d59f34; color:#ffffff;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Этап ВУ |' + ' 💰 Баланс: ' + (usersrvparsed.data[i].balance != null ? usersrvparsed.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + usersrvparsed.data[i].id + ' — ' + usersrvparsed.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + usersrvparsed.data[i].student.general.id + ' ' + (usersrvparsed.data[i].student.general.name != null ? usersrvparsed.data[i].student.general.name : '') + ' ' + (usersrvparsed.data[i].student.general.surname != null ? usersrvparsed.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: —' + '</div>'
+						if(srvcont.data[j].serviceTypeKey == userServices.data[i].serviceTypeKey) {
+							userServices.data[i].serviceTypeKey = srvcont.data[j].shortTitle
+							if (userServices.data[i].incorrectnessReason == null) {
+								if (userServices.data[i].stage == 'regular_lessons') {
+									document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${userServices.data[i].id}" style="background: #2b602b; color:bisque;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Регулярные занятия |'+  ' 💰 Баланс: ' + (userServices.data[i].balance != null ? userServices.data[i].balance : '0') +'</div>' + '🆔 услуги: ' + userServices.data[i].id + ' — ' + userServices.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + userServices.data[i].student.general.id + ' ' + (userServices.data[i].student.general.name != null ? userServices.data[i].student.general.name : '') + ' ' +  (userServices.data[i].student.general.surname != null ? userServices.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: ' + (userServices.data[i].teacher != null ? userServices.data[i].teacher.general.id + ' ' + userServices.data[i].teacher.general.name + ' ' + userServices.data[i].teacher.general.surname : ' —') + '<br>' + '</div>'
+								} else if (userServices.data[i].stage == 'lost') {
+									document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${userServices.data[i].id}" style="background: #5a0f77; color:bisque;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Потерянная услуга |'+ ' 💰 Баланс: ' + (userServices.data[i].balance != null ? userServices.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + userServices.data[i].id + ' — ' + userServices.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + userServices.data[i].student.general.id + ' ' + (userServices.data[i].student.general.name != null ? userServices.data[i].student.general.name : '') + ' ' + (userServices.data[i].student.general.surname != null ? userServices.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: —' + '</div>'
+								} else if (userServices.data[i].stage == "after_trial" || userServices.data[i].stage == "before_call") {
+									document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${userServices.data[i].id}" style="background: #d59f34; color:#ffffff;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Этап ВУ |' + ' 💰 Баланс: ' + (userServices.data[i].balance != null ? userServices.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + userServices.data[i].id + ' — ' + userServices.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + userServices.data[i].student.general.id + ' ' + (userServices.data[i].student.general.name != null ? userServices.data[i].student.general.name : '') + ' ' + (userServices.data[i].student.general.surname != null ? userServices.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: —' + '</div>'
 								}
 							}
 						}	
@@ -205,10 +199,11 @@ document.getElementById('serviceinf').innerHTML = '';
 						document.getElementById('taskserviceid').value = document.getElementsByName('outservfield')[z].title
 					}	
 				}
+			})
+			
 
-				document.getElementById('responseTextarea1').removeAttribute('getserviceinfonew')
-			}
-		})
+
+
 		}	
         document.getElementById('refreshhashcreateform').click();
 

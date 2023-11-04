@@ -49,6 +49,16 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       .catch(sendErrorResponse);
     return true;
 }
+
+  if (request.action === 'getUserServices') { // Получение информации об ФИ
+    const userid = request.userid;
+    makeFetchRequest(`https://backend.skyeng.ru/api/persons/${userid}/education-services/`, 'GET')
+      .then(response => response.json())
+      .then(data => sendResponse(data))
+      .catch(sendErrorResponse);
+    return true;
+}
+	//Конец блока запросов в CRM2
  	  
   if (request.action === 'getLoginer') { // генерация ссылки-логиннера с копирование в буфер обмена
     const userid = request.userid;
