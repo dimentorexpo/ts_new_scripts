@@ -105,13 +105,11 @@ function checkAuth() { //функция проверки авторизации 
 		window.open("https://datsy.info/")
 	} else {
 		console.log("Вы авторизованы, смело продолжайте работу с календарем")
-		//getTimeSlots()
+		getTimeSlots()
 	} 
 	 
  })
 }
-
-
 
 function getSlotData(name) {
 		let allRows = document.getElementsByName('slotRow')
@@ -290,16 +288,16 @@ function getTimeSlots() { //функция получения информаци
 
     let textvar = 0;
     let searchDate = document.getElementById('eventDate').value;
-    document.getElementById('responseTextarea1').value = '{}';
+	
+	chrome.runtime.sendMessage({ action: 'getTimeSlots', date: searchDate }, function(response) {
+		console.log(response)
+	})
+	
+/*     document.getElementById('responseTextarea1').value = '{}';
     document.getElementById('responseTextarea2').value = `https://api.datsy.info/api/main-events/?date=${searchDate}`;
     document.getElementById('responseTextarea3').value = 'getslotsinfo';
-
-    // Click the 'sendResponse' element to trigger the DOMSubtreeModified event
     document.getElementById('sendResponse').click();
-
-    // Add an event listener for the DOMSubtreeModified event
     document.getElementById("responseTextarea1").addEventListener("DOMSubtreeModified", function () {
-        // Get the 'getslotsinfo' attribute from the 'responseTextarea1' element
         const responsevar = document.getElementById('responseTextarea1').getAttribute('getslotsinfo');
 
         // Check if the 'getslotsinfo' attribute is not null
@@ -412,7 +410,7 @@ function getTimeSlots() { //функция получения информаци
 				refreshActiveOperSlots()
         }
     })
-    document.getElementById('responseTextarea1').removeAttribute('getslotsinfo');
+    document.getElementById('responseTextarea1').removeAttribute('getslotsinfo'); */
 }
 
 let operNamesAF = []

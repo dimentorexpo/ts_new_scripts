@@ -64,8 +64,24 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
   }
   
+  // Блок при работе с Datsy
     if (request.action === 'checkAuthDatsy') { // получение информации авторизован пользователь на сайте Datsy или нет
 	  fetch("https://api.datsy.info/api/auth/check.php", {
+		"method": "GET",
+		"credentials": "include"
+	  }) 
+    .then(response => response.json())
+    .then(data => sendResponse(data))
+    .catch(error => {
+      console.error(error);
+      sendResponse({ error: error });
+    });
+    return true;
+  }
+  
+    if (request.action === 'getTimeSlots') { // получение информации по времени слотов
+	  let date = request.date;
+	  fetch(`https://api.datsy.info/api/main-events/?date=${date}`, {
 		"method": "GET",
 		"credentials": "include"
 	  }) 
