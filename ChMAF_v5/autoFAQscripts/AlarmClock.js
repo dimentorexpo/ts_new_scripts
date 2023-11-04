@@ -19,10 +19,10 @@ var win_Alarmclock =  // описание элементов окна будил
 				</div>
 			</div>`;
 			
-// Определите функцию maxLengthCheck
-function maxLengthCheck(object) {
+			
+function maxLengthCheck(object) { // функция ограничения кол-ва символов в полях
     if (object.value.length > object.maxLength)
-        object.value = object.value.slice(0, object.maxLength);
+        object.value = object.value.slice(0, object.maxLength)
 }
 			
 
