@@ -1,5 +1,5 @@
     
-var win_OperStatus =  // описание элементов окна оценок от пользователя
+var win_OperStatus =  // описание элементов окна статуса операторов, работающих в CRM2
     `<div style="display: flex; width: 400px;">
         <span style="width: 400px">
                 <span style="cursor: -webkit-grab;">
