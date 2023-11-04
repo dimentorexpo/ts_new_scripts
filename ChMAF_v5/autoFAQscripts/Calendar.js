@@ -189,44 +189,17 @@ function getSlotData(name) {
 					saveBtns[v].onclick  = function() {
 						
 						if (spisok[v].title =='') { // функция добавления нового слота
-							document.getElementById('responseTextarea1').value = `{ 
-								"headers": {
-									"content-type": "application/x-www-form-urlencoded",
-									"sec-fetch-mode": "cors",
-									"sec-fetch-site": "same-site"
-								  },
-								  "referrer": "https://datsy.info/",
-								  "referrerPolicy": "strict-origin-when-cross-origin",
-								  "body": "addinput=${spisok[v].value}&slotname=${curSlotTime}&date=${curSlotDate}",
-								  "method": "POST",
-								  "mode": "cors",
-								  "credentials": "include"
-							}`;
-							document.getElementById('responseTextarea2').value = `https://api.datsy.info/api/slot-event/add.php`;
-							document.getElementById('responseTextarea3').value = '';
-							document.getElementById('sendResponse').click();
-
+						chrome.runtime.sendMessage({ action: 'addTimeSlot', value: spisok[v].value , time: curSlotTime , date: curSlotDate }, function(response) {
 							getTimeSlots()
+						})
+						
+							
 							
 						} else if (spisok[v].title !='') { //функция модификации информации в слоте
-							document.getElementById('responseTextarea1').value = `{
-								 "headers": {
-									"content-type": "application/x-www-form-urlencoded",
-									"sec-fetch-mode": "cors",
-									"sec-fetch-site": "same-site"
-								  },
-								  "referrer": "https://datsy.info/",
-								  "referrerPolicy": "strict-origin-when-cross-origin",
-								  "body": "event-text=${spisok[v].value}&save-slot=${spisok[v].title}",
-								  "method": "POST",
-								  "mode": "cors",
-								  "credentials": "include"
-							}`;
-							document.getElementById('responseTextarea2').value = `https://api.datsy.info/api/slot-event/save.php`;
-							document.getElementById('responseTextarea3').value = '';
-							document.getElementById('sendResponse').click();
-							
+						
+						chrome.runtime.sendMessage({ action: 'saveTimeSlot', textval: spisok[v].value, value: spisok[v].title }, function(response) {
 							getTimeSlots()
+						})
 						}
 					}
 				}

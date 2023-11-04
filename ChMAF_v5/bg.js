@@ -114,6 +114,41 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	  .catch(sendErrorResponse);
 	  return true;
 	}
+	
+		if (request.action === 'addTimeSlot') { // добавление занятого слота
+	  const value = request.value;
+	  const time = request.time;
+	  const date = request.date;
+	  fetch("https://api.datsy.info/api/slot-event/add.php", {
+		method: "POST",
+		headers: {
+		  "Content-Type": "application/x-www-form-urlencoded"
+		},
+		body: `addinput=${value}&slotname=${time}&date=${date}`,
+		credentials: "include"
+	  })
+	  .then(response => response.json())
+	  .then(data => sendResponse(data))
+	  .catch(sendErrorResponse);
+	  return true;
+	}
+	
+		if (request.action === 'saveTimeSlot') { // сохранение изменений при правке занятого слота
+	  const textval = request.textval;
+	  const value = request.value
+	  fetch("https://api.datsy.info/api/slot-event/save.php", {
+		method: "POST",
+		headers: {
+		  "Content-Type": "application/x-www-form-urlencoded"
+		},
+		body: `event-text=${textval}&save-slot=${value}`,
+		credentials: "include"
+	  })
+	  .then(response => response.json())
+	  .then(data => sendResponse(data))
+	  .catch(sendErrorResponse);
+	  return true;
+	}
     
 });
 
