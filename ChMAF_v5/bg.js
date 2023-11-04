@@ -29,7 +29,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       .then(data => sendResponse(data))
       .catch(sendErrorResponse);
     return true;
-  }
+}
 
   if (request.action === 'getUserCrmName') {
     const sid = request.sid;
@@ -38,26 +38,48 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       .then(data => sendResponse(data))
       .catch(sendErrorResponse);
     return true;
-  }
-
-  if (request.action === 'getLoginer') { // получение логиннера (сперва пробуем для тестовых учеток, а дальше может и в остальных кусках)
+}
+ 	  
+  if (request.action === 'getLoginer') {
     const userid = request.userid;
-    makeFetchRequest('https://id.skyeng.ru/admin/auth/login-links', 'POST', {
-      login_link_form: {
-        identity: '',
-        id: userid,
-        target: 'https://skyeng.ru',
-        promocode: '',
-        lifetime: 3600,
-        create: '',
-        _token: '',
-      },
+    fetch("https://id.skyeng.ru/admin/auth/login-links", {
+        method: "POST",
+        headers: {
+            "content-type": "application/x-www-form-urlencoded",
+            // ...
+        },
+        body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${userid}&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=&login_link_form%5B_token%5D`,
+        mode: "cors",
+        credentials: "include"
     })
-      .then(response => response.text())
-      .then(data => sendResponse(data))
-      .catch(sendErrorResponse);
+    .then(response => response.text())
+    .then(textHtml => {
+        let domPars = new DOMParser();
+        let testlink = domPars.parseFromString(textHtml, 'text/html').querySelectorAll("[value^='https://id.skyeng.ru/auth/login-link/']");
+        
+        // Выведите последнюю найденную ссылку в консоль
+        if (testlink.length > 0) {
+            console.log(`Loginner: ${testlink[testlink.length - 1].value}`);
+            
+            // Создайте элемент input и скопируйте ссылку в буфер обмена
+            let copyloginlnk = document.createElement("input");
+            copyloginlnk.setAttribute("value", testlink[testlink.length - 1].value);
+            document.body.appendChild(copyloginlnk);
+            copyloginlnk.select();
+            document.execCommand("copy");
+            document.body.removeChild(copyloginlnk);
+        } else {
+            console.error('Ссылки не найдены.');
+        }
+    })
+    .catch(error => {
+        console.error(error);
+        sendResponse({ error: error });
+    });
     return true;
-  }
+}
+
+
 
   // Блок при работе с Datsy
   if (request.action === 'checkAuthDatsy') { // получение информации авторизован пользователь на сайте Datsy или нет
