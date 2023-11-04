@@ -358,21 +358,14 @@ let intervalotak = setInterval(function () {
                             console.log(body2)
 
                         }
-
-                        let options2 = {
-                            "headers": {
-                                "content-type": "application/x-www-form-urlencoded",
-                            },
-                            "body": body2,
-                            "method": "POST",
-                        }
-
-                        document.getElementById('responseTextarea1').value = JSON.stringify(options2)
-                        document.getElementById('responseTextarea2').value = 'https://docs.google.com/forms/d/e/1FAIpQLScXLf0uRuESjzpu0gR-kE7T5LcCblOQtqzadtcwnTUb4_vpnQ/formResponse'
-                        if (document.getElementById('responseTextarea3') != null)
-                            document.getElementById('responseTextarea3').value = ''
-                        document.getElementById('sendResponse').click()
-
+					
+						chrome.runtime.sendMessage({ 
+						  action: 'sentToForms', 
+						  url: 'https://docs.google.com/forms/d/e/1FAIpQLScXLf0uRuESjzpu0gR-kE7T5LcCblOQtqzadtcwnTUb4_vpnQ/formResponse',
+						  body: body2
+						}, function(response) {
+						  // Обработка ответа
+						  console.log(response);
                         sendComment('Отправка в документ "Отказ от помощи" прошла успешно')
                         document.getElementById('send2doc').textContent = "Отправлено✅"
 
@@ -392,6 +385,7 @@ let intervalotak = setInterval(function () {
                         document.getElementById('otherproblem').setAttribute('disabled', 'disabled')
                         document.getElementById('otherproblem').value = ''
                         document.getElementById('othersolved').value = ''
+						}); 
                     }
                 }
             }
