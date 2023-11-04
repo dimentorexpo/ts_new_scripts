@@ -99,32 +99,16 @@ function checkAuth() { //функция проверки авторизации 
 
  chrome.runtime.sendMessage({ action: 'checkAuthDatsy'}, function(response) {
 	 console.log(response)
+	 
+	if (response['value-status'] == "Не авторизован") {
+		alert("Вы не авторизованы на datsy.info Проверьте, пожалуйста, авторизацию и повторите попытку после переоткрытия виджета в расширении или кнопкой обновить ♻, иначе слоты могут не добавляться!")
+		window.open("https://datsy.info/")
+	} else {
+		console.log("Вы авторизованы, смело продолжайте работу с календарем")
+		//getTimeSlots()
+	} 
+	 
  })
- 
-	// document.getElementById('responseTextarea1').value = '{}';
-    // document.getElementById('responseTextarea2').value = `https://api.datsy.info/api/auth/check.php`;
-    // document.getElementById('responseTextarea3').value = 'getAuthData';
-
-    // Click the 'sendResponse' element to trigger the DOMSubtreeModified event
-    // document.getElementById('sendResponse').click();
-
-    // Add an event listener for the DOMSubtreeModified event
-    // document.getElementById("responseTextarea1").addEventListener("DOMSubtreeModified", function () {
-        // Get the 'getslotsinfo' attribute from the 'responseTextarea1' element
-        // const responsevar = document.getElementById('responseTextarea1').getAttribute('getAuthData');
-		// if (responsevar) {
-			// parsedData = JSON.parse(responsevar)
-			// if (parsedData['value-status'] == "Не авторизован") {
-				// alert("Вы не авторизованы на datsy.info Проверьте, пожалуйста, авторизацию и повторите попытку после переоткрытия виджета в расширении или кнопкой обновить ♻, иначе слоты могут не добавляться!")
-				// window.open("https://datsy.info/")
-			// } else {
-				// console.log("Вы авторизованы, смело продолжайте работу с календарем")
-				// getTimeSlots()
-			// } 
-		// }
-
-		// document.getElementById('responseTextarea1').removeAttribute('getAuthData')
-	// })
 }
 
 
