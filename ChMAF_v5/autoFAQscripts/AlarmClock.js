@@ -24,23 +24,6 @@ var win_Alarmclock =  // описание элементов окна будил
     // if (object.value.length > object.maxLength)
         // object.value = object.value.slice(0, object.maxLength)
 // }
-
-// Добавьте обработчики событий для ограничения максимальной длины
-setchas.addEventListener('input', function() {
-  maxLengthCheck(this);
-});
-
-setminuta.addEventListener('input', function() {
-  maxLengthCheck(this);
-});
-
-setchas1.addEventListener('input', function() {
-  maxLengthCheck(this);
-});
-
-setminuta1.addEventListener('input', function() {
-  maxLengthCheck(this);
-});
 			
 
 if (localStorage.getItem('winTopAlarmclock') == null) { // началоное положение окна будильника (если не задано ранее)
@@ -345,3 +328,20 @@ setInterval(clock_on_javascript_3, 1000);
 // setInterval(operstatusleftbar, 3000);
 
 // конец блока работы с будильником
+
+// Добавьте обработчики событий для ограничения максимальной длины
+setchas.addEventListener('input', function() {
+  maxLengthCheck(this);
+});
+
+setminuta.addEventListener('input', function() {
+  maxLengthCheck(this);
+});
+
+setchas1.addEventListener('input', function() {
+  maxLengthCheck(this);
+});
+
+setminuta1.addEventListener('input', function() {
+  maxLengthCheck(this);
+});
