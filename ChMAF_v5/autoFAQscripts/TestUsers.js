@@ -66,54 +66,56 @@ let btnsid = document.getElementById('sidcode');
 let btntid = document.getElementById('tidcode');
 btnsid.addEventListener("click", (event) => { // копирует в буфер логиннер для У
     let teststudid = localStorage.getItem('test_stud');
-    if (teststudid != null || teststudid != '') {
-		
-		chrome.runtime.sendMessage({ action: 'getLoginer', userid: teststudid  }, function(userLoginer) {
-			let matchforloglink;
-			matchforloglink = userLoginer.match(/("https:\/\/id.skyeng.ru\/auth\/login-link\/\w+.*?")/gm);
-			matchforloglink = matchforloglink[matchforloglink.length - 1].split('"');
-			copyToClipboard(matchforloglink[1])
-		})
-		
-		
+    if (teststudid != null && teststudid !== '') {
+        chrome.runtime.sendMessage({ action: 'getLoginer', userid: teststudid  }, function(userLoginer) {
+            let matchforloglink;
+            matchforloglink = userLoginer.match(/("https:\/\/id.skyeng.ru\/auth\/login-link\/\w+.*?")/gm);
+            matchforloglink = matchforloglink[matchforloglink.length - 1].split('"');
+            copyToClipboard(matchforloglink[1])
+        });
         document.getElementById('sidcode').classList.add('active');
         setTimeout(function () { document.getElementById('sidcode').classList.remove('active') }, 1000);
-    } else alert("Введите ID тестового ученика в настройках ⚙");
+    } else {
+        alert("Введите ID тестового ученика в настройках ⚙");
+    }
 });
 
 btnsid.addEventListener("contextmenu", (event) => { // копирует в буфер id У
     event.preventDefault();
     let teststudid = localStorage.getItem('test_stud');
-    if (teststudid != null || teststudid != '') {
-        copyToClipboard(teststudid)
+    if (teststudid != null && teststudid !== '') {
+        copyToClipboard(teststudid);
         document.getElementById('sidcode').classList.add('active');
         setTimeout(function () { document.getElementById('sidcode').classList.remove('active') }, 1000);
-    } else alert("Введите ID тестового ученика в настройках ⚙");
+    } else {
+        alert("Введите ID тестового ученика в настройках ⚙");
+    }
 });
 
 btntid.addEventListener("click", (event) => { // копирует в буфер логиннер для П
     let testteachid = localStorage.getItem('test_teach');
-    if (testteachid != null || testteachid != '') {
-  //      logginerfortests(testteachid)
-		
-		chrome.runtime.sendMessage({ action: 'getLoginer', userid: testteachid  }, function(userLoginer) {
-			let matchforloglink;
-			matchforloglink = userLoginer.match(/("https:\/\/id.skyeng.ru\/auth\/login-link\/\w+.*?")/gm);
-			matchforloglink = matchforloglink[matchforloglink.length - 1].split('"');
-			copyToClipboard(matchforloglink[1])
-		})
-		
+    if (testteachid != null && testteachid !== '') {
+        chrome.runtime.sendMessage({ action: 'getLoginer', userid: testteachid  }, function(userLoginer) {
+            let matchforloglink;
+            matchforloglink = userLoginer.match(/("https:\/\/id.skyeng.ru\/auth\/login-link\/\w+.*?")/gm);
+            matchforloglink = matchforloglink[matchforloglink.length - 1].split('"');
+            copyToClipboard(matchforloglink[1])
+        });
         document.getElementById('tidcode').classList.add('active');
         setTimeout(function () { document.getElementById('tidcode').classList.remove('active') }, 1000);
-    } else alert("Введите ID тестового преподавателя в настройках ⚙");
+    } else {
+        alert("Введите ID тестового преподавателя в настройках ⚙");
+    }
 });
 
 btntid.addEventListener("contextmenu", (event) => { // копирует в буфер id П
     event.preventDefault();
     let testteachid = localStorage.getItem('test_teach');
-    if (testteachid != null || testteachid != '') {
-        copyToClipboard(testteachid)
+    if (testteachid != null && testteachid !== '') {
+        copyToClipboard(testteachid);
         document.getElementById('tidcode').classList.add('active');
         setTimeout(function () { document.getElementById('tidcode').classList.remove('active') }, 1000);
-    } else alert("Введите ID тестового преподавателя в настройках ⚙");
+    } else {
+        alert("Введите ID тестового преподавателя в настройках ⚙");
+    }
 });
