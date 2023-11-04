@@ -18,6 +18,13 @@ var win_Alarmclock =  // описание элементов окна будил
 					<button id="clock_remin1" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: MediumSpringGreen; margin-left:28px; margin-top: 5px">00 : 00 : 00</button>
 				</div>
 			</div>`;
+			
+// Определите функцию maxLengthCheck
+function maxLengthCheck(object) {
+    if (object.value.length > object.maxLength)
+        object.value = object.value.slice(0, object.maxLength);
+}
+			
 
 if (localStorage.getItem('winTopAlarmclock') == null) { // началоное положение окна будильника (если не задано ранее)
     localStorage.setItem('winTopAlarmclock', '120');
