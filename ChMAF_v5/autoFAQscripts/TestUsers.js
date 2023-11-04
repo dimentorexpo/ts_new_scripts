@@ -69,11 +69,10 @@ btnsid.addEventListener("click", (event) => { // копирует в буфер 
     if (teststudid != null || teststudid != '') {
 		
 		chrome.runtime.sendMessage({ action: 'getLoginer', userid: teststudid  }, function(userLoginer) {
-			console.log(userLoginer)
-			// let matchforloglink;
-			// matchforloglink = userLoginer.match(/("https:\/\/id.skyeng.ru\/auth\/login-link\/\w+.*?")/gm);
-			// matchforloglink = matchforloglink[matchforloglink.length - 1].split('"');
-			// copyToClipboard(matchforloglink[1])
+			let matchforloglink;
+			matchforloglink = userLoginer.match(/("https:\/\/id.skyeng.ru\/auth\/login-link\/\w+.*?")/gm);
+			matchforloglink = matchforloglink[matchforloglink.length - 1].split('"');
+			copyToClipboard(matchforloglink[1])
 		})
 		
 		
@@ -95,14 +94,11 @@ btnsid.addEventListener("contextmenu", (event) => { // копирует в бу�
 btntid.addEventListener("click", (event) => { // копирует в буфер логиннер для П
     let testteachid = localStorage.getItem('test_teach');
     if (testteachid != null || testteachid != '') {
-  //      logginerfortests(testteachid)
-		
 		chrome.runtime.sendMessage({ action: 'getLoginer', userid: testteachid  }, function(userLoginer) {
-			console.log(userLoginer)
-			// let matchforloglink;
-			// matchforloglink = userLoginer.match(/("https:\/\/id.skyeng.ru\/auth\/login-link\/\w+.*?")/gm);
-			// matchforloglink = matchforloglink[matchforloglink.length - 1].split('"');
-			// copyToClipboard(matchforloglink[1])
+			let matchforloglink;
+			matchforloglink = userLoginer.match(/("https:\/\/id.skyeng.ru\/auth\/login-link\/\w+.*?")/gm);
+			matchforloglink = matchforloglink[matchforloglink.length - 1].split('"');
+			copyToClipboard(matchforloglink[1])
 		})
 		
         document.getElementById('tidcode').classList.add('active');
