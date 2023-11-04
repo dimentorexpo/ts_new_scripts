@@ -490,7 +490,7 @@ document.getElementById('parsechat').onclick = async function () { //Функц�
                 chatscontainer[j].onclick = function () {
 
                     if (document.getElementById('AF_ChatHis').style.display == 'none') {
-                        document.getElementById('userServices').click();
+                        document.getElementById('opennewcat').click();
 
                         document.getElementById('hashchathis').value = chatids[j].innerText;
                         btn_search_history.click()
@@ -611,7 +611,7 @@ document.getElementById('parsechat').onclick = async function () { //Функц�
         csatcontainer[j].onclick = function () {
 
             if (document.getElementById('AF_ChatHis').style.display == 'none') {
-                document.getElementById('userServices').click();
+                document.getElementById('opennewcat').click();
                 document.getElementById('hashchathis').value = csatchattids[j].innerText;
                 btn_search_history.click()
             } else {
