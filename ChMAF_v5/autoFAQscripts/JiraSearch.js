@@ -570,9 +570,6 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                                 console.log("count=" + count + " increasedcount " + increasedcount);
 
                                 chrome.runtime.sendMessage({ action: 'increaseSupportTab', newcount: increasedcount, issueId: itarrs[c].innerText, jirakey: jira_token }, function (responseAuth) {
-                                    let newinfocount = document.querySelectorAll('.newcount');
-                                    newinfocount[f].innerHTML = increasedcount;
-                                    increasedcount = "";
                                     alert(`Support Tab для задачи ${document.getElementsByName('favbugs')[c].href} увеличен на 1 и сейчас равен: ${increasedcount}`)
                                 })
 
@@ -616,54 +613,6 @@ function getJiraOpenFormPress() { // открывает поле для рабо
         })
 
         // Просмотр таски по джира по ее коду и номеру
-        document.getElementById('getJiraTasks').ondblclick = function () {
-            if (document.getElementById('AF_Jira').style.display == 'none') {
-                document.getElementById('AF_Jira').style.display = ''
-            }
-
-            let rezissuetable;
-
-            textArea1.value = `{}`
-            textArea2.value = "https://jira.skyeng.tech/rest/quicksearch/1.0/productsearch/search?q=" + document.getElementById('testJira').value;
-            textArea3.value = 'getissuetable1'
-            sendRespbtn.click()
-
-            async function getJiraTask1() {
-
-                rezissuetable = JSON.parse(textArea1.getAttribute('getissuetable1'))
-                rezissuetable = await rezissuetable;
-                textArea1.removeAttribute('getissuetable1')
-                if (rezissuetable != null) {
-                    let issues = [];
-                    issues = '<span style="color: #00FA9A">&#5129;</span>' + '<a href="' + rezissuetable[0].items[0].url + '" onclick="" target="_blank" style="color: #ffe4c4">' + rezissuetable[0].items[0].subtitle + " - " + rezissuetable[0].items[0].title + '</a>' + " " + '<span class = "jiraissues" style="margin-left: 10px; cursor: pointer">💬</span>';
-
-                    document.getElementById('issuetable').innerHTML = issues;
-
-                    let barray = document.querySelector('.jiraissues');
-                    barray.addEventListener('click', function () {
-                        sendComment(rezissuetable[0].items[0].url)
-                        let b = document.URL.split('/')
-                        fetch("https://skyeng.autofaq.ai/api/conversation/" + b[5] + "/payload", {
-                            "headers": {
-                                "accept": "*/*",
-                                "content-type": "application/json",
-                                "sec-fetch-dest": "empty",
-                                "sec-fetch-mode": "cors",
-                                "sec-fetch-site": "same-origin"
-                            },
-                            "body": "{\"conversationId\":\"${b[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"" + rezissuetable[0].items[0].url + "\"}]}",
-                            "method": "POST",
-                            "mode": "cors",
-                            "credentials": "include"
-                        })
-                    })
-
-                    setTimeout(function () { issues = []; testJira.value = ""; }, 5000)
-                }
-            }
-
-            setTimeout(getJiraTask1, 1000)
-        }
 
         const searchJiraByEnter = document.querySelector('#testJira');
         const searchJiraByEnterInput = document.querySelector('#JQLquery');

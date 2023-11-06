@@ -305,7 +305,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			  .catch(sendErrorResponse);
 			  return true;
 		}
-	
+			
 	// Конец блока с Jira
 });
 
