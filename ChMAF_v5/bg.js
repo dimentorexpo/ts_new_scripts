@@ -305,7 +305,16 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			  .catch(sendErrorResponse);
 			  return true;
 		}
-			
+		
+		if (request.action ==="searchForTaskName") { // поиск по коду баги ее названия
+			const taskCode = request.taskCode;
+			makeFetchRequest(`https://jira.skyeng.tech/rest/quicksearch/1.0/productsearch/search?q=${taskCode}`, 'GET')
+			  .then(response => response.json())
+			  .then(data => sendResponse(data))
+			  .catch(sendErrorResponse);
+			return true;
+		}
+	
 	// Конец блока с Jira
 });
 

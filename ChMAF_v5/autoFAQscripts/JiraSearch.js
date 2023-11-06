@@ -613,6 +613,45 @@ function getJiraOpenFormPress() { // открывает поле для рабо
         })
 
         // Просмотр таски по джира по ее коду и номеру
+document.getElementById('getJiraTasks').addEventListener('contextmenu', function (event) {
+    event.preventDefault(); // Предотвращаем появление стандартного контекстного меню
+
+    if (document.getElementById('AF_Jira').style.display == 'none') {
+        document.getElementById('AF_Jira').style.display = ''
+    }
+
+    let taskCode = document.getElementById('testJira').value;
+
+    chrome.runtime.sendMessage({action:"searchForTaskName", taskCode: taskCode}, function(response){
+        let issues = [];
+        issues = '<span style="color: #00FA9A">&#5129;</span>' + '<a href="' + response[0].items[0].url + '" onclick="" target="_blank" style="color: #ffe4c4">' + response[0].items[0].subtitle + " - " + response[0].items[0].title + '</a>' + " " + '<span class = "jiraissues" style="margin-left: 10px; cursor: pointer">💬</span>';
+
+        document.getElementById('issuetable').innerHTML = issues;
+
+        let barray = document.querySelector('.jiraissues');
+        barray.addEventListener('click', function () {
+            sendComment(response[0].items[0].url);
+            let b = document.URL.split('/');
+            fetch("https://skyeng.autofaq.ai/api/conversation/" + b[5] + "/payload", {
+                "headers": {
+                    "accept": "*/*",
+                    "content-type": "application/json",
+                    "sec-fetch-dest": "empty",
+                    "sec-fetch-mode": "cors",
+                    "sec-fetch-site": "same-origin"
+                },
+                "body": "{\"conversationId\":\"${b[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"" + response[0].items[0].url + "\"}]}",
+                "method": "POST",
+                "mode": "cors",
+                "credentials": "include"
+            });
+        });
+
+        setTimeout(function () { issues = []; document.getElementById('testJira').value = ""; }, 5000)
+    });
+
+});
+
 
         const searchJiraByEnter = document.querySelector('#testJira');
         const searchJiraByEnterInput = document.querySelector('#JQLquery');
