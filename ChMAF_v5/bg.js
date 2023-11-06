@@ -243,12 +243,67 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	//Конец блока с Timetable
 	
 	//Блок работы с Jira
-		if (request.action === 'checkJiraAuth') { // удаление занятого слота
+		if (request.action === 'checkJiraAuth') { // Проверка авторизации в Jira
 		    makeFetchRequest("https://jira.skyeng.tech", 'GET')
 			  .then(response => response.text())
 			  .then(data => sendResponse(data))
 			  .catch(sendErrorResponse);
 			return true;
+		}
+		
+		if (request.action === 'getTokenToCreate') { // Получение счетчика Support Tab баги
+			const issueId = request.issueId;
+			makeFetchRequest(`https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueId}`, 'GET')
+			  .then(response => response.text())
+			  .then(data => sendResponse(data))
+			  .catch(sendErrorResponse);
+			return true;
+		}
+		
+		if (request.action === "increaseSupportTab") { // Увеличение счетчика Support Tab на +1
+			const newcount = request.newcount;
+			const issueId = request.issueId;
+			const jira_token = request.jirakey
+			  fetch("https://jira.skyeng.tech/secure/AjaxIssueAction.jspa?decorator=none", {
+				  headers:{
+					"content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+					"sec-fetch-mode": "cors",
+					"sec-fetch-site": "same-origin",
+					"x-requested-with": "XMLHttpRequest",
+					"x-sitemesh-off": "true"
+							},
+			body: `customfield_15410=${newcount}&issueId=${issueId}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410`,
+				  method: "POST",
+				  mode: "cors",
+				  credentials: "include"
+			  })
+			  .then(response => response.json())
+			  .then(data => sendResponse(data))
+			  .catch(sendErrorResponse);
+			  return true;
+		}
+		
+		if (request.action === "startJiraSearch") { // Запуска поиска по ключевому слову/фразе 
+			const startIndex = request.startIndex;
+			const textQuery = request.textQuery;
+			fetch("https://jira.skyeng.tech/rest/issueNav/1/issueTable", {
+					"headers": {
+					"__amdmodulename": "jira/issue/utils/xsrf-token-header",
+				   "accept": "*/*",
+					"sec-fetch-mode": "cors",
+				   "sec-fetch-site": "same-origin",
+				   "x-atlassian-token": "no-check",
+				   "x-requested-with": "XMLHttpRequest"
+				 },
+				 "body": `startIndex=${startIndex}&filterId=21266&jql=${textQuery}&layoutKey=list-view`,
+				 "method": "POST",
+				 "mode": "cors",
+				 "credentials": "include"
+			})
+			.then(response => response.json())
+			  .then(data => sendResponse(data))
+			  .catch(sendErrorResponse);
+			  return true;
 		}
 	
 	// Конец блока с Jira
