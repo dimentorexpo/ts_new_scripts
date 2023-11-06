@@ -241,6 +241,17 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	  return true;
 	}
 	//Конец блока с Timetable
+	
+	//Блок работы с Jira
+		if (request.action === 'checkJiraAuth') { // удаление занятого слота
+		    makeFetchRequest("https://jira.skyeng.tech", 'GET')
+			  .then(response => response.text())
+			  .then(data => sendResponse(data))
+			  .catch(sendErrorResponse);
+			return true;
+		}
+	
+	// Конец блока с Jira
 });
 
 

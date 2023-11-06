@@ -474,40 +474,22 @@ function getJiraOpenFormPress() { // открывает поле для рабо
         document.getElementById('idmymenu').style.display = 'none'
 
         document.getElementById('JQLquery').innerText = defqueryitem;
-
+		
         function checkJiraToken() {
-            // Set initial values for the textarea elements
-            textArea1.value = '{}';
-            textArea2.value = "https://jira.skyeng.tech/";
-            textArea3.value = 'getjiratoken';
-
-            // Click the 'sendResponse' element to trigger the DOMSubtreeModified event
-            sendRespbtn.click();
-
-            // Add an event listener for the DOMSubtreeModified event
-            document.getElementById("responseTextarea1").addEventListener("DOMSubtreeModified", function () {
-                // Get the 'getjiratoken' attribute from the 'responseTextarea1' element
-                const jiratknAttr = textArea1.getAttribute('getjiratoken');
-
-                // Check if the 'getjiratoken' attribute is not null
-                if (jiratknAttr) {
-                    // Check if the 'getjiratoken' attribute matches the regex pattern
-                    const regexMatch = jiratknAttr.match(/name="atlassian-token" content="(.*lin)/);
-                    if (regexMatch) {
+			
+			chrome.runtime.sendMessage({ action: 'checkJiraAuth'}, function(responseAuth) {
+				const regexMatch = responseAuth.match(/name="atlassian-token" content="(.*lin)/);
+				    if (regexMatch) {
                         // Set the 'jiratkn' variable to the first capturing group of the regex match
                         const jiratkn = regexMatch[1];
                         // Set the inner text of the 'searchjiratknstatus' element to a green checkmark
                         document.getElementById('searchjiratknstatus').innerText = "🟢";
-                        console.log(`TOKEN: ${jiratkn}`);
                     } else {
                         // If the regex pattern is not found, show an alert and set the inner text of the 'searchjiratknstatus' element to a red cross
                         alert("Авторизуйтесь в системе Jira, чтобы при поиске запрос был отправлен");
                         document.getElementById('searchjiratknstatus').innerText = "🔴";
                     }
-                    // Remove the 'getjiratoken'
-                    textArea1.removeAttribute('getjiratoken');
-                }
-            })
+			})
         }
 
         checkJiraToken()
