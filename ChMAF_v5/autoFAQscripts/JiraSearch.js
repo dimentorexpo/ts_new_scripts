@@ -286,7 +286,6 @@ function getJiraTask(rezissuetable) { // поиск задач в jira
 
         if (currentIssue && currentKey) {
             issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
-			console.log(currentIssue, currentNumber, currentKey,searchText, currentpic, currentIds)
         } else {
             console.error(`Не удалось найти соответствие для индекса: ${i}`);
         }
@@ -339,18 +338,25 @@ function switchJiraPages() {
                     const { issueKeys, table, issueIds } = response.issueTable;
                     const matchedItems = table.match(/(\w+-\d+">.*?).<\/a>/gmi).filter(filterItems);
                     const matchedNumbers = table.match(/(">.)*?([0-9]+)\n/gm);
+					
+					const regex = /<tr id="issuerow(\d+)"/g;
+					const matches = table.matchAll(regex);
+					const ids = Array.from(matches, m => m[1]);
+					console.log(ids)
+					// const searchIssueID = table.match(/<tr id="issuerow(\d+)"/gm)
+					//console.log(searchIssueID)
                     const searchText = document.getElementById('testJira').value;
-
 					
                     let issues = '';
-					let increaser  = Number(page.getAttribute('value'))
+					let switcher  = Number(page.getAttribute('value'))
                     for (let i = 0; i < response.issueTable.displayed; i++) {
                         const currentNumber = matchedNumbers ? matchedNumbers[i] : null;
                         const currentIssue = matchedItems[i];
-                        const currentKey = issueKeys[+i + increaser];
-                        const currentIds = issueIds[i];
+                        const currentKey = issueKeys[+i + switcher];
+                        const currentIds = ids[i];
+					//	console.log(currentIds)
                         const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
-						console.log(currentIssue, currentKey)
+					//	console.log(currentIssue, currentKey)
                         if (currentIssue && currentKey) {
                             issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
                         } else {
@@ -371,7 +377,7 @@ function switchJiraPages() {
                     );
 
                     const refreshissuesarr = document.querySelectorAll('.refreshissues');
-                    addRefreshIssueOnClickEvent(refreshissuesarr, issueIds);
+                    addRefreshIssueOnClickEvent(refreshissuesarr, ids);
                 })
             }
         })
