@@ -3,11 +3,11 @@ var win_GrList =  // описание элементов окна Списка �
         <span style="width: 450px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 400;" id="grlistdata">
-                                <button id="hideList" style="width:50px; background: #228B22;">hide</button>
+                                <button class="mainButton" id="hideList" style="width:50px; background: #228B22;">hide</button>
                         </div>
 						<div>
                         <input id="idgrouptolist" placeholder="ID группы" title="Введите ID группы для получения списка учеников" autocomplete="off" type="text" style="text-align: center; width: 80px; color: black;margin-left:5px; position:relative; left:30%;">
-							<button title="Запуск получения списка учеников группы" id="getidgrouptolist" style="position:relative; left:30%;">Get info</button>
+							<button class="mainButton" title="Запуск получения списка учеников группы" id="getidgrouptolist" style="position:relative; left:30%;">Get info</button>
 						</div>
 				</span>
 						<div id="grlstdiv">

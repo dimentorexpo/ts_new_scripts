@@ -1,3 +1,15 @@
+    async function init_settings() {
+		const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
+
+	
+
+    // Присваиваем данные константам
+    const TS_addr = data.TS_addr;
+    const KC_addr = data.KC_addr;
+    const TP_addr = data.TP_addr;
+    const KC_addrRzrv = data.KC_addrRzrv;
+    const TP_addrRzrv = data.TP_addrRzrv;
+	
 // Цвет заливки чата перед автозакрытием
 if (localStorage.getItem('defaclschatcolor') == null || localStorage.getItem('defaclschatcolor') == undefined) {
     localStorage.setItem('defaclschatcolor', '#FF47CA')
@@ -27,7 +39,7 @@ var win_Settings =  // описание элементов окна ссылок
   `<span style="width: 500px">
 			<span style="cursor: -webkit-grab;">
 				<div style="margin: 5px; width: 500px;" id="settings_head">
-					<button title="Скрытие меню" id="hideMeSettings" class="buttonHide">hide</button>
+					<button title="Скрытие меню" id="hideMeSettings" class="mainButton buttonHide">hide</button>
 				</div>
 
 				<div style="border: 2px double black; background-color: #464451" id="set_bar">
@@ -36,19 +48,19 @@ var win_Settings =  // описание элементов окна ссылок
 							<option selected="" disabled="">Звук нового сообщения</option>
 							<option value="othersound">Выбрать свой звук</option>
                          </select>
-						<button title="Проверка звука при добавленной ссылке" id="sound_test">▶</button>
+						<button class="mainButton" title="Проверка звука при добавленной ссылке" id="sound_test">▶</button>
 						<label title="Включение и отключение звука в АФ входящих запросов" class="checkbox-audio">
 							<input id="audioswitcher" type="checkbox" checked="">
 							<span class="checkbox-audio-switch"></span>
 						</label>
 						<input id="sound_adr" placeholder="Введи адрес звука" autocomplete="off" type="text" style="display: none; text-align: center; width: 210px; color: black;">
-						<button title="Сохраняет ссылки на новый источник звука для входящего запроса в АФ" id="sound_save" style="display: none">💾</button>
+						<button class="mainButton" title="Сохраняет ссылки на новый источник звука для входящего запроса в АФ" id="sound_save" style="display: none">💾</button>
 						<span style="color:bisque">Громкость</span>
 						<input id="range" min="0" max="1" value="1.0" step="0.1" type="range">
 						<br>
 						<span style="color:bisque">Интервал воспроизведения звука:</span>
 						<input title="Ввод интервала в секундах между повторами звука нового чата" id="soundplayinterval" placeholder="N" autocomplete="off" oninput="maxLengthCheck(this)" type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px; width: 50px; color: black;">
-						<button title="Внести изменения в интервал между повторами звука нового чата" id="setsoundplayinterval" style="margin-top: 5px">SET⌚</button>
+						<button class="mainButton" title="Внести изменения в интервал между повторами звука нового чата" id="setsoundplayinterval" style="margin-top: 5px">SET⌚</button>
 						<br>
 						<label class="onlyfortp" style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hidelpmwindow">Скрыть окно с У П</label>
             <label class="onlyfortp" style="color:bisque; margin-left: 5px;" title="Добавить тэги в боковое меню"><input type="checkbox" id="showquicktags">Добавить тэги</label>
@@ -57,23 +69,23 @@ var win_Settings =  // описание элементов окна ссылок
 						<label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hideInnerTaskCreate">Скрыть окно АФ при создании задачи</label>
 						<br>
 						<label style="color:bisque;"><input type="color" id="aclstimepicker">Цвет заливки закрытия чата</label>
-            <button id="activateVoiceCommands" title="Позволяет изменить кнопку для активации голосовых командю По умолчанию SHIFT" style="margin-left:10px;">Shift</button>
+            <button class="mainButton" id="activateVoiceCommands" title="Позволяет изменить кнопку для активации голосовых командю По умолчанию SHIFT" style="margin-left:10px;">Shift</button>
             <br>
 						<input class="onlyfortp" id="test_std" placeholder="ID тест У" autocomplete="off" title = "ID личного тестового ученика" type="text" style="text-align: center; width: 100px; color: black;">
-						<button class="onlyfortp" id="setteststd" title="Добавить в localstorage ID тестового У" style="margin-top: 5px">💾</button>
+						<button class="mainButton onlyfortp" id="setteststd" title="Добавить в localstorage ID тестового У" style="margin-top: 5px">💾</button>
 						<input class="onlyfortp" id="test_teach" placeholder="ID тест П" autocomplete="off" title = "ID личного тестового преподавателя" type="text" style="text-align: center; width: 100px; color: black;">
-						<button class="onlyfortp" id="settestteach" title="Добавить в localstorage ID тестового П" style="margin-top: 5px">💾</button>
+						<button class="mainButton onlyfortp" id="settestteach" title="Добавить в localstorage ID тестового П" style="margin-top: 5px">💾</button>
 
 					<div style="margin-top: 5px; width: 500px">
 						<span style="color:bisque;">Выберите отдел:</span>
-						<button class="onlyfortp" onclick="AFthePieceofShit()" id="set_TPrezerv" title="Нажмите если вы из ТП и в АФ не работает Базы Знаний" style="margin-top: 5px">ТП рез</button>
-						<button class="onlyfortp" onclick="WeAreTheChempions()" id="set_TP" title="Нажмите если вы из ТП" style="margin-top: 5px">ТП</button>
-						<button onclick="ShowMustGoOn()" id="set_KC" title="Нажмите если вы из КЦ" style="margin-top: 5px">КЦ</button>
-						<button onclick="AFthePieceofShitKC()" id="set_KCrezerv" title="Нажмите если вы из КЦ и в АФ не работает Базы Знаний" style="margin-top: 5px">КЦ рез</button>
+						<button class="mainButton onlyfortp" id="set_TPrezerv" title="Нажмите если вы из ТП и в АФ не работает Базы Знаний" style="margin-top: 5px">ТП рез</button>
+						<button class="mainButton onlyfortp" id="set_TP" title="Нажмите если вы из ТП" style="margin-top: 5px">ТП</button>
+						<button class="mainButton" id="set_KC" title="Нажмите если вы из КЦ" style="margin-top: 5px">КЦ</button>
+						<button class="mainButton" id="set_KCrezerv" title="Нажмите если вы из КЦ и в АФ не работает Базы Знаний" style="margin-top: 5px">КЦ рез</button>
 						<br>
 					</div>
 
-						<button id="savesettingstofile" title="Сохраняет все настройки из localstorage в отдельный .json файл" style="color: #e5ece6; margin-top: 5px">💾 Сохранить настройки</button>
+						<button class="mainButton" id="savesettingstofile" title="Сохраняет все настройки из localstorage в отдельный .json файл" style="color: #e5ece6; margin-top: 5px">💾 Сохранить настройки</button>
 						<input type="file" id="fileinput" title="Загружает все настройки в localstorage из ранее сохраненного файла настроек в формте .json" style="display:none;">
 						<label style="color: #e5ece6; background: #768d87; padding: 5px; border-radius: 5px; border: 1px solid #566963;" for="fileinput">⤵ Загрузить настройки</label>
 					</div>
@@ -128,15 +140,14 @@ function ShowMustGoOn() { //функция вносит в локалсторе�
   location.reload()
 }
 
-function WeAreTheChempions() { //функция вносит в локалсторедж адрес скрипта с гугл таблиц шаблонов для ТП
-  localStorage.setItem('scriptAdr', TP_addr)
-  localStorage.setItem('tpflag', 'ТП')
+function AFthePieceofShitKC() { //функция вносит в локалсторедж адрес скрипта с гугл таблиц шаблонов для КЦ
+  localStorage.setItem('scriptAdr', KC_addrRzrv)
   location.reload()
 }
 
-function WeAreTheChempionsPrem() { //функция вносит в локалсторедж адрес скрипта с гугл таблиц шаблонов для Premium ТП
-  localStorage.setItem('scriptAdr', TPprem_addr)
-  localStorage.setItem('tpflag', 'ТПPrem')
+function WeAreTheChempions() { //функция вносит в локалсторедж адрес скрипта с гугл таблиц шаблонов для ТП
+  localStorage.setItem('scriptAdr', TP_addr)
+  localStorage.setItem('tpflag', 'ТП')
   location.reload()
 }
 
@@ -614,3 +625,12 @@ document.getElementById('hideMeSettings').onclick = function () {
 // конец блока настроек
 
 setInterval(paintstatus, 5000); //  вызов функции перекрашивания статуса в котором оператор находится
+
+document.getElementById('set_KC').addEventListener('click', ShowMustGoOn)
+document.getElementById('set_KCrezerv').addEventListener('click', AFthePieceofShitKC)
+document.getElementById('set_TP').addEventListener('click',WeAreTheChempions)
+document.getElementById('set_TPrezerv').addEventListener('click', AFthePieceofShit)
+
+	}
+	
+	init_settings()

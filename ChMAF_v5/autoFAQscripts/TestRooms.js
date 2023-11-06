@@ -3,10 +3,10 @@ var win_testrooms =  // описание элементов окна созда�
       <span style="width: 260px">
           <span style="cursor: -webkit-grab;">
               <div style="width: 260px; margin: 5px;" id="testroomshead">
-                  <button title="скрывает меню" id="hideMetestrooms" class="buttonHide">hide</button>
-                  <button onclick="cleartestroomsfields()" title="По нажатию очищает поля" style="width:24px;">🧹</button>
-                  <button onclick="opentestroomshelp()" style="width:24px; float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
-                  <button onclick="opentestroomsconf()" title="Открывает раздел в Confluence по созданию тестовых комнат" style="width:24px; float: right; margin-right: 5px;">📋</button>
+                  <button title="скрывает меню" id="hideMetestrooms" class="mainButton buttonHide">hide</button>
+                  <button class="mainButton" id="clrTestRooms" title="По нажатию очищает поля" style="width:24px;">🧹</button>
+                  <button class="mainButton" id="aboutTestRooms" style="width:24px; float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
+                  <button class="mainButton" id="confluenceTestRooms" title="Открывает раздел в Confluence по созданию тестовых комнат" style="width:24px; float: right; margin-right: 5px;">📋</button>
               </div>
 
 					    <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
@@ -43,12 +43,12 @@ var win_testrooms =  // описание элементов окна созда�
     					</div>
 
               <div style="width: 260px; margin:2px; display:flex; justify-content:left;">
-                  <button id="insertteachid" title="Поставить id вашего тестового П" class="testroomsbtn" style="margin-left:5px;">Тест👽</button>
-                  <button id="insertstudid" title="Поставить id вашего тестового У" class="testroomsbtn">Тест👨&zwj;🎓</button>
-                  <button id="userfromchatid" title="Подставить id пользователя из активного чата и подставить id вашего тестового У или П" class="testroomsbtn">ID из чата</button>
+                  <button id="insertteachid" title="Поставить id вашего тестового П" class="mainButton testroomsbtn" style="margin-left:5px;">Тест👽</button>
+                  <button id="insertstudid" title="Поставить id вашего тестового У" class="mainButton testroomsbtn">Тест👨&zwj;🎓</button>
+                  <button id="userfromchatid" title="Подставить id пользователя из активного чата и подставить id вашего тестового У или П" class="mainButton testroomsbtn">ID из чата</button>
               </div>
               <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                  <button id="starttestroom" title="Тут и так понятно" class="testroomscreate">Создать тестовый урок</button>
+                  <button id="starttestroom" title="Тут и так понятно" class="mainButton testroomscreate">Создать тестовый урок</button>
               </div>
               <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
               <label id="testroomsmessage" style="color:bisque; width:250px; text-align: center; border: 1px solid #3e4f55; background: rgb(70, 68, 81); border-radius: 10px; font-size: 15px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);"></label>
@@ -272,3 +272,6 @@ studforroom.addEventListener('input', function() {
 
 document.getElementById("insertteachid").addEventListener("click", testteachertofield);
 document.getElementById("insertstudid").addEventListener("click", teststudenttofield);
+document.getElementById("clrTestRooms").addEventListener("click", cleartestroomsfields);
+document.getElementById("aboutTestRooms").addEventListener("click", opentestroomshelp);
+document.getElementById("confluenceTestRooms").addEventListener("click", opentestroomsconf);

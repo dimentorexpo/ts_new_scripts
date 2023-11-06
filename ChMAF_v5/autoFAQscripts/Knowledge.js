@@ -7,8 +7,8 @@ var win_Knowledge =  // описание элементов окна ссыло�
         <span style="width: 550px">
 			<span style="cursor: -webkit-grab;">
 				<div style="margin: 5px; width: 550;">
-					<button title="Скрытие меню" id="hideMeKnowledge" class="buttonHide">hide</button>
-					<button title="Индикатор загрузки базы знаний" id="IndicatorLoadData">⏳</button>
+					<button title="Скрытие меню" id="hideMeKnowledge" class="mainButton buttonHide">hide</button>
+					<button class="mainButton" title="Индикатор загрузки базы знаний" id="IndicatorLoadData">⏳</button>
 				</div>
 				<div style="margin: 5px; width: 550px;">
 					<input placeholder="Слово для поиска" id="textToSearchSolution" style="border-radius: 20px; text-align: center; width: 300px; margin-left: 20%;"></input>

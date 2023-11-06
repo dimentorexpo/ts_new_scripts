@@ -1,4 +1,4 @@
-button {
+	.mainButton {
 		background:#768d87;
 		border-radius:5px;
 		border:1px solid #566963;
@@ -6,10 +6,10 @@ button {
 		padding:2px 2px;
 		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
 	}
-	button:hover {
+	.mainButton:hover {
 		background: #6A5ACD;
 	}
-	button:active {
+	.mainButton:active {
 		background: #231d4b;
 	}
 	.activebtn {

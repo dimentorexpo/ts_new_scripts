@@ -4,24 +4,24 @@ var win_Calendar =  // описание формы чтобы не давала 
         <span style="width: 600px; min-height: 70px; max-height:700px; overflow-y:auto; overflow-x:hidden;">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 600px;" id="stataaf_header">
-                                <button title="Скрывает меню" id="hidecalendar" style="width:50px; background: #228B22;">hide</button>
-								<button title="Очищает окно календаря" id="clearcalendar">🧹</button>
-								<button title="Обновляет информацию о слотах выбранной даты" id="refreshcalendar">♻</button>
-								<button title="Открывает сайт datsy.info" id="opendatsy">📅</button>
+                                <button class="mainButton" title="Скрывает меню" id="hidecalendar" style="width:50px; background: #228B22;">hide</button>
+								<button class="mainButton" title="Очищает окно календаря" id="clearcalendar">🧹</button>
+								<button class="mainButton" title="Обновляет информацию о слотах выбранной даты" id="refreshcalendar">♻</button>
+								<button class="mainButton" title="Открывает сайт datsy.info" id="opendatsy">📅</button>
 								<label title="Включение и отключение автоматического обновления информации в слотах с интервалом 30 секунд" class="checkbox-refresh">
 									<input id="autorefreshswitcher" type="checkbox" checked="">
 										<span class="checkbox-refresh-switch"></span>
 								</label>
-								<button id="showOperActiveSlots" title="Открывает боковое дополнительное окно, чтобы просмотреть все добавленные за выбранную дату. Если есть знак ⚠ значит в этот день вы точно добавляли календарь и можете нажать кнопку, чтобы узнать на какое время">📑</button>
+								<button class="mainButton" id="showOperActiveSlots" title="Открывает боковое дополнительное окно, чтобы просмотреть все добавленные за выбранную дату. Если есть знак ⚠ значит в этот день вы точно добавляли календарь и можете нажать кнопку, чтобы узнать на какое время">📑</button>
 								<span id="availableActiveSlots" style="display:none; position: absolute; top: -4px; left: 210px;" class="">⚠</span>
 			    </span>
                         </div>
 
 						<div style="display: flex; justify-content: center;">
-								<button id="prevDay" style="border-radius: 20px; padding: 5px; padding-top: 6px;">◀</button>
+								<button class="mainButton" id="prevDay" style="border-radius: 20px; padding: 5px; padding-top: 6px;">◀</button>
 								<input type="date" id="eventDate" onChange="getTimeSlots()" style="width:100px; text-align:center; background: blanchedalmond; font-weight: 700; border-radius: 20px;"></input>
-								<button id="nextDay" style="border-radius: 20px; padding: 5px; padding-top: 6px;">▶</button>
-								<button id="nowDay" style="margin-left: 5px; padding: 5px;">Сегодня</button>
+								<button class="mainButton" id="nextDay" style="border-radius: 20px; padding: 5px; padding-top: 6px;">▶</button>
+								<button class="mainButton" id="nowDay" style="margin-left: 5px; padding: 5px;">Сегодня</button>
 								<label style="margin-left: 5px; margin-right: 5px; margin-top: 5px; color: bisque;">Слоты по состоянию на: </label>
 								<input type="text" id="datenowtime" style="text-align:center; background: cornsilk; border-radius: 20px;" disabled></input>
 						</div>
@@ -150,7 +150,7 @@ function getSlotData(name) {
 				for (let j=0; j<parseInt(allRows[name].getAttribute('dlina')); j++) {
 					let testd = document.createElement('div')
 					testd.style = "margin-top: 5px;"
-					testd.innerHTML = '<input name="slotInfo" style="width: 478px;">' + ' ' + '<button name="saveToCalend">💾</button>' + ' ' + '<button name="deleteFromCalend">❌</button>'
+					testd.innerHTML = '<input name="slotInfo" style="width: 478px;">' + ' ' + '<button class="mainButton" name="saveToCalend">💾</button>' + ' ' + '<button class="mainButton" name="deleteFromCalend">❌</button>'
 					document.getElementById('slotData').appendChild(testd)
 				}
 
@@ -426,7 +426,7 @@ function refreshActiveOperSlots() { // функция обновления ин�
 			  <span style="background: #2058cb; padding: 6px; margin-top: 5px; padding-bottom: 8px; color: white; font-weight: 700;">${slotTime}</span>
 			  <span style="background: darkseagreen; padding: 5px; font-weight: 700;">${slotDate}</span>
 			  <input name="slotToDelete" title="${eventId}" value="${slotToDelete}" style="width: 80px; text-align: center;">
-			  <button name="deleMySlot">❌</button>
+			  <button class="mainButton" name="deleMySlot">❌</button>
 			  <span style="width: 90px;">${statusLabel}</span>
 			</div>
 		  `;

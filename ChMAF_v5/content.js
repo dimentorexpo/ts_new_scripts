@@ -71,13 +71,13 @@ var win_AFhelper =  // описание элементов главного ок
         <span style="width: 351px">
 			<span style="cursor: -webkit-grab;">
 				<div style="margin: 5px;" id="1str">
-					<button id="languageAF" title="Переключает язык Русский/Английский" style="width:100px">Русский</button>
-					<button id="hideMenuMain" title="Скрывает расширение и др открытых окон" style="margin-left:18px;" class="buttonHide">hide</button>
-					<button id="setting" title="Открывает настройки расширения и включения/отключения будильника" style="width:23px; float: right; margin-right: 5px">⚙</button>
-					<button id="links" title="Открывает доп.меню со ссылками и функциями" style="width:16px; float: right; margin-right: 5px">L</button>
-					<button id="addsrc" class="onlyfortp" title="Открывает доп меню для работы с сервисами школы, требующими запрос на выдачу доступа" style="width:16px; float: right; margin-right: 5px">*</button>
-					<button id="getnewtmpldata" title="Обновляет шаблоны из документа с шаблонами без необходимости обновлять страницу для актуализации" style="width:27px; float: right; margin-right: 5px">🔄</button>
-					<button id="reminderstatus" title="Статус будильника 🔔 - вкл, 🔕 - выкл" style="width:25px; float: right; margin-right: 5px"></button>
+					<button class="mainButton" id="languageAF" title="Переключает язык Русский/Английский" style="width:100px">Русский</button>
+					<button class="mainButton" id="hideMenuMain" title="Скрывает расширение и др открытых окон" style="margin-left:18px;" class="buttonHide">hide</button>
+					<button class="mainButton" id="setting" title="Открывает настройки расширения и включения/отключения будильника" style="width:23px; float: right; margin-right: 5px">⚙</button>
+					<button class="mainButton" id="links" title="Открывает доп.меню со ссылками и функциями" style="width:16px; float: right; margin-right: 5px">L</button>
+					<button id="addsrc" class="mainButton onlyfortp" title="Открывает доп меню для работы с сервисами школы, требующими запрос на выдачу доступа" style="width:16px; float: right; margin-right: 5px">*</button>
+					<button class="mainButton" id="getnewtmpldata" title="Обновляет шаблоны из документа с шаблонами без необходимости обновлять страницу для актуализации" style="width:27px; float: right; margin-right: 5px">🔄</button>
+					<button class="mainButton" id="reminderstatus" title="Статус будильника 🔔 - вкл, 🔕 - выкл" style="width:25px; float: right; margin-right: 5px"></button>
 					<input id ="phone_tr" class="onlyfortp" placeholder="Телефон" autocomplete="off" type="text" style = "text-align: center; width: 150px; color: black; margin-left: 15px; margin-top: 5px;"></input>
                     <input id ="email_tr" class="onlyfortp" placeholder="Почта" autocomplete="off" type="text" style = "text-align: center; width: 150px; color: black; margin-left: 12px; margin-top: 5px;"></input>
 				</div>
@@ -90,13 +90,13 @@ var win_AFhelper =  // описание элементов главного ок
 				<textarea style="width: 341px; height: 56px;" id="inp"></textarea>
 			<div id="hyperlnk" class="hyperlnk">
 				<input type="text" placeholder="Enter your link 🔗 here" style="margin-bottom:5px;width:270px;text-align:center;" id="bindlinktotext" title="Вводите в это поле ссылку, после чего в общем поле выделяете слово или фразу и кнопкой Insert встраиваете ссылку в текст шаблона"></input>
-				<button id="insertlinktotext" title="Добавляет ссылку из поля слева в выделеное слово или фразу в тексте шаблона">Insert ✅</button>
+				<button class="mainButton" id="insertlinktotext" title="Добавляет ссылку из поля слева в выделеное слово или фразу в тексте шаблона">Insert ✅</button>
 			</div>
-				<button title="Переключение для выбора отправить или доработать сообщение" id="msg1" style="width:100px;">Доработать</button>
-				<button id="opandclsbarhyper" style="width:  30px; margin: 0; padding: 2px; text-align: center;" title="Открывает форму для прикрепления ссылки в текст">🔗</button>
-                <button title="Отправить текст от имени бота" id="sndbot" style="width: 30px; margin-left: 5px">🤖</button>
-				<button title="Отправить текст" id="snd" style="width:50px; margin-left: 10px">send</button>
-				<button title="Переключает между отправкой текста в заметки или в чат пользователю" class="msgtype" id="msg">Чат</button>
+				<button class="mainButton" title="Переключение для выбора отправить или доработать сообщение" id="msg1" style="width:100px;">Доработать</button>
+				<button class="mainButton" id="opandclsbarhyper" style="width:  30px; margin: 0; padding: 2px; text-align: center;" title="Открывает форму для прикрепления ссылки в текст">🔗</button>
+                <button class="mainButton" title="Отправить текст от имени бота" id="sndbot" style="width: 30px; margin-left: 5px">🤖</button>
+				<button class="mainButton" title="Отправить текст" id="snd" style="width:50px; margin-left: 10px">send</button>
+				<button class="mainButton" title="Переключает между отправкой текста в заметки или в чат пользователю" class="msgtype" id="msg">Чат</button>
 			</div>
 		<div style="border: 2px double black; display: none; background-color: #464451" id="addTmp">
 			<div style="margin: 5px; width: 350px">
@@ -234,7 +234,7 @@ function prepTp() { //функция подготовки расширения �
     openCalendar.innerHTML = '📅'
     openCalendar.id = 'datsyCalendar'
     openCalendar.title = 'Открывает календарь Datsy'
-    openCalendar.classList.add('onlyfortp', 'rightPanelBtn')
+    openCalendar.classList.add('onlyfortp', 'rightPanelBtn', 'mainButton')
     document.getElementById('rightPanel').appendChild(openCalendar)
     document.getElementById('datsyCalendar').onclick = getdatsyCalendarButtonPress;
 
@@ -242,7 +242,7 @@ function prepTp() { //функция подготовки расширения �
     butServ.id = "butServ"
     butServ.innerHTML = "⚜"
     butServ.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
-    butServ.classList.add('onlyfortp', 'rightPanelBtn')
+    butServ.classList.add('onlyfortp', 'rightPanelBtn', 'mainButton')
     butServ.onclick = function () { //открывает вензель user info
         setDisplayStyle(document.getElementById('AF_Service'), document.getElementById('AF_Service').style.display === '' ? 'none' : '');
         if (document.getElementById('AF_Service').style.display == "")
@@ -257,7 +257,7 @@ function prepTp() { //функция подготовки расширения �
     openKnowledge.innerHTML = '💡'
     openKnowledge.id = 'knowledgeCenter'
     openKnowledge.title = 'Открывает базу знаний решений неполадок'
-    openKnowledge.classList.add('onlyfortp', 'rightPanelBtn')
+    openKnowledge.classList.add('onlyfortp', 'rightPanelBtn', 'mainButton')
     document.getElementById('rightPanel').appendChild(openKnowledge)
     document.getElementById('knowledgeCenter').onclick = getknowledgeCenterButtonPress;
 
@@ -265,7 +265,7 @@ function prepTp() { //функция подготовки расширения �
     taskBut.id = "taskBut"
     taskBut.innerHTML = "🛠"
     taskBut.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
-    taskBut.classList.add('onlyfortp', 'rightPanelBtn')
+    taskBut.classList.add('onlyfortp', 'rightPanelBtn', 'mainButton')
     document.getElementById('rightPanel').appendChild(taskBut)
     document.getElementById('taskBut').onclick = gettaskButButtonPress;
     
@@ -487,7 +487,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     ScriptBut.id = 'scriptBut';
     ScriptBut.innerHTML = "🧩";
     ScriptBut.style = "width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;";
-    ScriptBut.classList.add('rightPanelBtn')
+    ScriptBut.classList.add('rightPanelBtn', 'mainButton')
     ScriptBut.onclick = function () {
         if (document.getElementById('AF_helper').style.display != 'flex') {
             document.getElementById('AF_helper').style.display = 'flex'
@@ -505,7 +505,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     butThemes.innerHTML = "📚"
     butThemes.title = "[Темы] - кнопка открывающая окно с темами и тегами"
     butThemes.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
-    butThemes.classList.add('rightPanelBtn')
+    butThemes.classList.add('rightPanelBtn', 'mainButton')
     document.getElementById('rightPanel').appendChild(butThemes)
     document.getElementById('themes').onclick = getThemesButtonPress;
 
@@ -514,7 +514,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     MainMenuBtn.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
     MainMenuBtn.id = 'MainMenuBtn'
     MainMenuBtn.title = '[Меню] - По клику открывает список инструментов необходимых для работы'
-    MainMenuBtn.classList.add('rightPanelBtn')
+    MainMenuBtn.classList.add('rightPanelBtn', 'mainButton')
     MainMenuBtn.onclick = function () {
         if (document.getElementById('idmymenu').style.display == 'none') {
             document.getElementById('idmymenu').style.display = ''
@@ -545,7 +545,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     openchhis.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
     openchhis.id = 'opennewcat'
     openchhis.title = 'Открывает виджет просмотра истории чатов'
-    openchhis.classList.add('rightPanelBtn')
+    openchhis.classList.add('rightPanelBtn', 'mainButton')
     document.getElementById('rightPanel').appendChild(openchhis)
     document.getElementById('opennewcat').onclick = getopennewcatButtonPress;
 
@@ -658,7 +658,7 @@ maskBack.id = "maskBack"
 maskBack.innerHTML = "↩️"
 maskBack.title = "Вернуть скрытое окно"
 maskBack.style = 'display: none; width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
-maskBack.classList.add('rightPanelBtn')
+maskBack.classList.add('rightPanelBtn', 'mainButton')
 
 maskBack.onclick = function () { // функция кнопки вернуть
     const iframeDoc = document.querySelector('[class^="NEW_FRONTEND"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND"]').contentWindow.document;

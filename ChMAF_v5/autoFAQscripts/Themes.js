@@ -10,16 +10,16 @@ var win_Themes =  // описание элементов окна Тематик
         <span style="width: 350px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 350;" id="themes_header">
-                                <button title="скрывает меню" id="hideMeThemes" style="width:50px; background: #228B22;">hide</button>
-								<button id="ClearSmartroomData" title="Очищает выбранные тэги">🧹</button>
-								<button id="backtomenu" style="width: 28px; height: 28px; font-size: 14px; display:none">🔙</button>
-								<button id="themesinstr" style="float:right;" title="Инструкция по этой форме">❓</button>
-                                <button id="getnewthdata" title="Обновляет тематики из документа с шаблонами без необходимости обновлять страницу для актуализации" style="width:27px; float: right; margin-right: 5px">🔄</button>
+                                <button class="mainButton" title="скрывает меню" id="hideMeThemes" style="width:50px; background: #228B22;">hide</button>
+								<button class="mainButton" id="ClearSmartroomData" title="Очищает выбранные тэги">🧹</button>
+								<button class="mainButton" id="backtomenu" style="width: 28px; height: 28px; font-size: 14px; display:none">🔙</button>
+								<button class="mainButton" id="themesinstr" style="float:right;" title="Инструкция по этой форме">❓</button>
+                                <button class="mainButton" id="getnewthdata" title="Обновляет тематики из документа с шаблонами без необходимости обновлять страницу для актуализации" style="width:27px; float: right; margin-right: 5px">🔄</button>
                         </div>
 
 						<div>
 							<input id="linktojiracoment" placeholder="Ссылка на Jira" title="Введите сюда ссылку на Jira, чтобы по нажатию на ракету добавить ее и в заметки в чат и в поле АФ ссылка на Jira" style="margin-left: 20px; width: 78%; text-align: center; margin-bottom:5px;">
-							<button id="linktojirasend" title="Отправить введеную ссылку в комментарий чата и в поле Ссылка на Jira в АФ">🚀</button>
+							<button class="mainButton" id="linktojirasend" title="Отправить введеную ссылку в комментарий чата и в поле Ссылка на Jira в АФ">🚀</button>
 						</div>
 
 						<div id="themes_body" style="margin-left:20px;display:flex; flex-wrap:wrap;">
@@ -32,7 +32,7 @@ var win_Themes =  // описание элементов окна Тематик
 						</div>
                         <div id="multitag_body" class="thonlyfortp" style="margin-left:20px;display:flex; flex-wrap:wrap;">
                             <br>
-                            <button id="multitag" style="width: 300px; margin-top:5px;">Мультитег</button>
+                            <button class="mainButton" id="multitag" style="width: 300px; margin-top:5px;">Мультитег</button>
                         </div>
                 </span>
         </span>
@@ -210,6 +210,7 @@ function refreshThemesBtns() { // функция обновляет темати
             case 'Темы': // Если тип "Тема" создаем кнопку и новый div
                 var newpagethBut = document.createElement('button');
                 newpagethBut.textContent = c[1];
+				newpagethBut.classList.add('mainButton')
                 newpagethBut.style = btnthstyls;
                 if (c[2] !== '') { newpagethBut.title = c[2]; }
                 if (c[3] !== '') { newpagethBut.style.fontSize = c[3] + 'px'; }
@@ -237,6 +238,7 @@ function refreshThemesBtns() { // функция обновляет темати
                 var newBut = document.createElement('button')
                 newBut.textContent = c[0]
                 newBut.value = c[1]
+				newBut.classList.add('mainButton')
                 if (c[2] != '') { newBut.title = c[2] } // если есть title добавляем его
                 if (c[3] != '') { addFontFlag = 1 } else { addFontFlag = 0 } // проверяем указан ли размер шрифта
                 if (addTagFlag == 0) {

@@ -3,26 +3,26 @@ var win_taskform = //описание формы создания задач в 
         <span style="width: 414px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 410px;" id="create_form_header">
-                            <button title="скрывает меню" id="hideMeCreateForm" style="width:50px; background: #228B22;">hide</button>
-                            <button title="По нажатию обновляет хеш чата в соответствующем поле, на случай, если при открытии формы вы открыли не тот чат, в котором обратился пользователь" id="refreshhashcreateform" style="width:24px;">♻</button>
-							<button title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearcreateform" style="width:24px;">🧹</button>
+                            <button class="mainButton" title="скрывает меню" id="hideMeCreateForm" style="width:50px; background: #228B22;">hide</button>
+                            <button class="mainButton" title="По нажатию обновляет хеш чата в соответствующем поле, на случай, если при открытии формы вы открыли не тот чат, в котором обратился пользователь" id="refreshhashcreateform" style="width:24px;">♻</button>
+							<button class="mainButton" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearcreateform" style="width:24px;">🧹</button>
 							<span style="color:bisque">Статус урока: </span>
 							<span id="statusuroka"></span>
                         </div>
 
                         <div id="addcreateformbtns">
-                            <button id="critteachertostudent" style="height:25px; width: 48%; margin-left:8px;">🔴 👽П -&gt; У👨‍🎓</button>
-                            <button id="critstudenttoteacher" style="height:25px; width: 48%;">🔴 👨‍🎓У -&gt; П👽</button>
+                            <button class="mainButton" id="critteachertostudent" style="height:25px; width: 48%; margin-left:8px;">🔴 👽П -&gt; У👨‍🎓</button>
+                            <button class="mainButton" id="critstudenttoteacher" style="height:25px; width: 48%;">🔴 👨‍🎓У -&gt; П👽</button>
                             <br>
-                            <button id="critteacherno" style="height:25px; width: 48%; margin-left:8px; margin-top:3px;">🔴 👽П н.о.</button>
-                            <button id="critstudentno" style="height:25px; width: 48%;">🔴 👨‍🎓У н.о.</button>
+                            <button class="mainButton" id="critteacherno" style="height:25px; width: 48%; margin-left:8px; margin-top:3px;">🔴 👽П н.о.</button>
+                            <button class="mainButton" id="critstudentno" style="height:25px; width: 48%;">🔴 👨‍🎓У н.о.</button>
                             <br>
-                            <button id="highteachersc" style="height:25px; width: 48%; margin-left:8px; margin-top:3px;">👽 Исх. звонки (SC)</button>
-							<button id="highteachertc" style="height:25px; width: 48%;">👽 Teachers Care</button>
+                            <button class="mainButton" id="highteachersc" style="height:25px; width: 48%; margin-left:8px; margin-top:3px;">👽 Исх. звонки (SC)</button>
+							<button class="mainButton" id="highteachertc" style="height:25px; width: 48%;">👽 Teachers Care</button>
                             <br>
-                            <button id="highsecondline" style="height:25px; width: 32%; margin-left:8px; margin-top:3px;">🗓 Календарь У/П</button>                
-                            <button id="lowkm" style="height:25px; width: 31%;">😡 КМ</button>
-                            <button id="lowcontrol" style="height:25px; width: 32%;">🛂 Контроль</button>
+                            <button class="mainButton" id="highsecondline" style="height:25px; width: 32%; margin-left:8px; margin-top:3px;">🗓 Календарь У/П</button>                
+                            <button class="mainButton" id="lowkm" style="height:25px; width: 31%;">😡 КМ</button>
+                            <button class="mainButton" id="lowcontrol" style="height:25px; width: 32%;">🛂 Контроль</button>
                         </div>
 
                         <div style="margin: 5px; margin-top: 0px; width: 410px" id="create_form_menu">
@@ -55,18 +55,18 @@ var win_taskform = //описание формы создания задач в 
                             <span id="NoteNoticeText" title="Нажми для отмены отправки заметки" style="background:#69a4c7; color:#fff;  font-weight:300; border:1px solid black; display:none;"></span>
 							<label style="color:bisque; display:none;">Используйте кнопку ниже для открытия создания задачи в СРМ на техподдержку 2 линии с обязательным выбором Темы обращения "Запланированная связь с пользователем" и время открытия задачи, которое забронировали на datsy.ru . Другие задачи на 2ЛТП передаем в прежнем режиме через это окно.</label>
 							<br>
-							<button style="margin-left: 70px; display:none;" id="taskcreate2linecrm">Создать задачу на 2ЛТП по календарю</button>
+							<button class="mainButton" style="margin-left: 70px; display:none;" id="taskcreate2linecrm">Создать задачу на 2ЛТП по календарю</button>
 
 							<textarea required id="taskcomment" placeholder="Комментарий" title="Укажите комментарий к задаче, что было сделано, что требуется сделать" autocomplete="off" type="text" style="text-align: center; width: 100%; height:100px; color: black; margin-top: 5px"></textarea>
 
 							<br>
-							<button id="studcontact" style="width: 115px;position: relative;left: 15%;margin-top: 5px;transform: translate(-50%, 0);">Обр П, связь с У</button>
-							<button id="teachcontact" style="width: 115px;position: relative;left: 15%;margin-top: 5px;transform: translate(-50%, 0);">Обр У, связь с П</button>
-							<button id="nrteacher" style="width: 80px;position: relative;left: 11%;margin-top: 5px;transform: translate(-50%, 0);">Крит П Н.О</button>
-							<button id="nrstudent" style="width: 80px;position: relative;left: 11%;margin-top: 5px;transform: translate(-50%, 0);">Крит У Н.О</button>
+							<button class="mainButton" id="studcontact" style="width: 115px;position: relative;left: 15%;margin-top: 5px;transform: translate(-50%, 0);">Обр П, связь с У</button>
+							<button class="mainButton" id="teachcontact" style="width: 115px;position: relative;left: 15%;margin-top: 5px;transform: translate(-50%, 0);">Обр У, связь с П</button>
+							<button class="mainButton" id="nrteacher" style="width: 80px;position: relative;left: 11%;margin-top: 5px;transform: translate(-50%, 0);">Крит П Н.О</button>
+							<button class="mainButton" id="nrstudent" style="width: 80px;position: relative;left: 11%;margin-top: 5px;transform: translate(-50%, 0);">Крит У Н.О</button>
 							
 							<div>
-								<button title="Создает задачу на СРМ2 на выранный отдел и приоритет" id="createtask" style="width: 80px;position: relative;left: 50%;margin-top: 5px;transform: translate(-50%, 0); background: chocolate;">Отправить</button>
+								<button class="mainButton" title="Создает задачу на СРМ2 на выранный отдел и приоритет" id="createtask" style="width: 80px;position: relative;left: 50%;margin-top: 5px;transform: translate(-50%, 0); background: chocolate;">Отправить</button>
 							</div>
 							
 						</div>
@@ -74,7 +74,7 @@ var win_taskform = //описание формы создания задач в 
         </span>
 			<div id="servicehelper" class="srvhhelpnomove" style="position: absolute; top: -1px; left: -311px; width: 310px; max-height: 400px; overflow: auto; background: #464451; cursor:default;">
 				<input id="useriddata" placeholder="ID У для получения списка услуг" style="width:240px; margin:10px; text-align:center;">
-				<button id="getuserservices">🔎</button>
+				<button class="mainButton" id="getuserservices">🔎</button>
 				<p id="serviceinf"></p>
 			</div>
 </div>`;

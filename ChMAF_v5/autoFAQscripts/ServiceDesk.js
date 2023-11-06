@@ -67,37 +67,37 @@ var win_servicedesk = // описание элементов окна Service De
 		<span style="width: 480px">
         <span style="cursor: -webkit-grab;">
                 <div style="margin: 5px; width: 480px;" id="SrvDskSummary">
-                        <button id="hideMeSrvDsk" class="buttonHide">hide</button>
-						<button id="refreshjiraauth" title="Перепроверить авторизацию в Jira">🔄</button>
-                        <button id="infratasklist" title="Открыть список своих задач в Infra">📑</button>
-						<button id="ServiceDeskinstr" title="Инструкция по этой форме">❓</button>
+                        <button id="hideMeSrvDsk" class="mainButton buttonHide">hide</button>
+						<button class="mainButton" id="refreshjiraauth" title="Перепроверить авторизацию в Jira">🔄</button>
+                        <button class="mainButton" id="infratasklist" title="Открыть список своих задач в Infra">📑</button>
+						<button class="mainButton" id="ServiceDeskinstr" title="Инструкция по этой форме">❓</button>
 						<span style="color:bisque">Infra Id:</span>
 						<span id="jiratknstatus">🟢</span>
 						<span style="color:yellow">Prev.tsk</span>
-						<button id="prevtask" style="width: 78px" title="Предыдущая задача"></button>
+						<button class="mainButton" id="prevtask" style="width: 78px" title="Предыдущая задача"></button>
 						<span style="color:cyan">Last tsk</span>
-						<button id="newtask" style="width: 78px" title="Последняя задача"></button>
+						<button class="mainButton" id="newtask" style="width: 78px" title="Последняя задача"></button>
                 </div>
                 <div id="servicedeskinfo" style="margin-left:20px;">
-                    <button class="sdbtn" id="optionTeacher" value="36" style="margin-left:2px; width:80px;">👺Corp</button>
-                    <button class="sdbtn" id="optionCRM2" value="26" style="margin-left:2px; width:80px;">🧮CRM2</button>
-                    <button class="sdbtn" id="optionAuth" value="20" style="margin-left:2px; width:80px;">🔐Auth</button>
-                    <button class="sdbtn" id="optionSchedule" value="33" style="margin-left:2px; width:80px;">📆Schedul</button>
-                    <button class="sdbtn" id="optionBillingQA" value="22" style="margin-left:2px; width:80px;">💲Billing-QA</button>
-                    <button class="sdbtn" id="optionOnboarding" value="23" style="margin-left:2px; margin-top:2px; width:80px;">♻Onboard</button>
-                    <button class="sdbtn" id="optionBilling"  value="21" style="margin-left:2px; margin-top:2px; width:80px;">💰Billing</button>
-                    <button class="sdbtn" id="optionMrktbill"  value="31" style="margin-left:2px; margin-top:2px; width:80px;">📈Mrkt-Bill</button>
-                    <button class="sdbtn" id="optionVimbugs" value="38" style="margin-left:2px; margin-top:2px; width:80px;">🐞Vim-bug</button>
-                    <button class="sdbtn" id="optionVimvideocall" value="39" style="margin-left:2px; margin-top:2px; width:80px;">📸Vid-call</button>
-                    <button class="sdbtn" id="optionStudcab" value="34" style="margin-left:2px; margin-top:2px; width:80px;">👨‍🎓Studcab</button>
-                    <button class="sdbtn" id="optionChat" value="24" style="margin-left:2px; margin-top:2px; width:80px;">💬Chat</button>
-                    <button class="sdbtn" id="optionTripwire" value="27" style="margin-left:2px; margin-top:2px; width:80px;">🗣Tripwire</button>
-                    <button class="sdbtn" id="optionEdModel" value="28" style="margin-left:2px; margin-top:2px; width:80px;">🎓SmartL</button>
-                    <button class="sdbtn" id="optionStudcabmobbugs" value="35" style="margin-left:2px; margin-top:2px; width:80px;">👨‍🎓📱Bugs</button>
-					<button class="sdbtn" id="optionMobbugs" value="30" style="margin-left:2px; margin-top:2px; width:80px;">📱Mobil bug</button>
-                    <button class="sdbtn" id="optionAcademymobbugs" value="19" style="margin-left:2px; margin-top:2px; width:80px;">🅰📱🐞</button>
-                    <button class="sdbtn" id="optionCommProblems" value="75" style="margin-left:2px; margin-top:2px; width:80px;">📧Comm</button>
-                    <button class="sdbtn" id="optionAnalyst" value="18" style="margin-left:2px; margin-top:2px; width:80px; display: none;">TEST</button>
+                    <button class="mainButton sdbtn" id="optionTeacher" value="36" style="margin-left:2px; width:80px;">👺Corp</button>
+                    <button class="mainButton sdbtn" id="optionCRM2" value="26" style="margin-left:2px; width:80px;">🧮CRM2</button>
+                    <button class="mainButton sdbtn" id="optionAuth" value="20" style="margin-left:2px; width:80px;">🔐Auth</button>
+                    <button class="mainButton sdbtn" id="optionSchedule" value="33" style="margin-left:2px; width:80px;">📆Schedul</button>
+                    <button class="mainButton sdbtn" id="optionBillingQA" value="22" style="margin-left:2px; width:80px;">💲Billing-QA</button>
+                    <button class="mainButton sdbtn" id="optionOnboarding" value="23" style="margin-left:2px; margin-top:2px; width:80px;">♻Onboard</button>
+                    <button class="mainButton sdbtn" id="optionBilling"  value="21" style="margin-left:2px; margin-top:2px; width:80px;">💰Billing</button>
+                    <button class="mainButton sdbtn" id="optionMrktbill"  value="31" style="margin-left:2px; margin-top:2px; width:80px;">📈Mrkt-Bill</button>
+                    <button class="mainButton sdbtn" id="optionVimbugs" value="38" style="margin-left:2px; margin-top:2px; width:80px;">🐞Vim-bug</button>
+                    <button class="mainButton sdbtn" id="optionVimvideocall" value="39" style="margin-left:2px; margin-top:2px; width:80px;">📸Vid-call</button>
+                    <button class="mainButton sdbtn" id="optionStudcab" value="34" style="margin-left:2px; margin-top:2px; width:80px;">👨‍🎓Studcab</button>
+                    <button class="mainButton sdbtn" id="optionChat" value="24" style="margin-left:2px; margin-top:2px; width:80px;">💬Chat</button>
+                    <button class="mainButton sdbtn" id="optionTripwire" value="27" style="margin-left:2px; margin-top:2px; width:80px;">🗣Tripwire</button>
+                    <button class="mainButton sdbtn" id="optionEdModel" value="28" style="margin-left:2px; margin-top:2px; width:80px;">🎓SmartL</button>
+                    <button class="mainButton sdbtn" id="optionStudcabmobbugs" value="35" style="margin-left:2px; margin-top:2px; width:80px;">👨‍🎓📱Bugs</button>
+					<button class="mainButton sdbtn" id="optionMobbugs" value="30" style="margin-left:2px; margin-top:2px; width:80px;">📱Mobil bug</button>
+                    <button class="mainButton sdbtn" id="optionAcademymobbugs" value="19" style="margin-left:2px; margin-top:2px; width:80px;">🅰📱🐞</button>
+                    <button class="mainButton sdbtn" id="optionCommProblems" value="75" style="margin-left:2px; margin-top:2px; width:80px;">📧Comm</button>
+                    <button class="mainButton sdbtn" id="optionAnalyst" value="18" style="margin-left:2px; margin-top:2px; width:80px; display: none;">TEST</button>
                 </div>
 				<div id="studcabmobbugskoptions" style="display: none; margin-left:20px;">
 					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#student-cabinet-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
@@ -207,7 +207,7 @@ var win_servicedesk = // описание элементов окна Service De
 					<textarea id="custom_str" placeholder="Как воспроизвести ошибку?"  class="sdcustfieldformlines removefield" style="margin-left: 21px;"></textarea>
 					<textarea id="custom_er" placeholder="Ожидаемое поведение"  class="sdexpecactual removefield" style="margin-left: 21px;"></textarea>
 					<textarea id="custom_ar" placeholder="Фактическое поведение"  class="sdexpecactual removefield" style="margin-left: 21px;"></textarea>
-					<button id="createsd" style="width: 150px; position:relative; left:30%; margin-bottom:5px;">Создать</button>
+					<button class="mainButton" id="createsd" style="width: 150px; position:relative; left:30%; margin-bottom:5px;">Создать</button>
 				</div>
 	        </span>
 		</span>
@@ -505,7 +505,7 @@ function getthemesfrominfra(categoryId,index) {
       }
 	  buttonsfromtest.innerHTML = ''
 	  for (let j=0; j<checkingId.length; j++) {
-			buttonsfromtest.innerHTML += `<button class="${buttons[index].replace('.','')} widthofsd" value=${checkingId[j].id}>${checkingId[j].summary}</button>`
+			buttonsfromtest.innerHTML += `<button class="${buttons[index].replace('.','')} widthofsd mainButton" value=${checkingId[j].id}>${checkingId[j].summary}</button>`
 		}
 	      buttons.forEach(button => {
         $(button).click(function () {

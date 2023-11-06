@@ -3,22 +3,22 @@ var win_LinksKC =  // описание элементов окна ссылок
         <span style="width: 550px">
 			<span style="cursor: -webkit-grab;">
 				<div style="margin: 5px; width: 550;" id="links_1str">
-					<button title="Скрытие меню" id="hideMe" style="width:50px; background: #228B22;">hide</button>
-                    <button title="Открывает Базу знаний в Confluence" id="knoweledgebaseKC" class="uplinksbar onlyforkc">📚</button>
-                    <button title="Прослушать запись урока" id="lessonrecordKC" class="uplinksbar onlyforkc">👩‍🏫</button>
-					<button title="Личный кабинет в Skyeng" id="skyhomeKC" class="uplinksbar onlyforkc">💼</button>
+					<button class="mainButton" title="Скрытие меню" id="hideMe" style="width:50px; background: #228B22;">hide</button>
+                    <button title="Открывает Базу знаний в Confluence" id="knoweledgebaseKC" class="mainButton uplinksbar onlyforkc">📚</button>
+                    <button title="Прослушать запись урока" id="lessonrecordKC" class="mainButton uplinksbar onlyforkc">👩‍🏫</button>
+					<button title="Личный кабинет в Skyeng" id="skyhomeKC" class="mainButton uplinksbar onlyforkc">💼</button>
 				</div>
                 <div style="margin: 5px; width: 550px;" id="links_butKC">
-                    <button title="Открывает Timetable" id="timetableKC" style="width:105px">TimeTable</button>
-                    <button title="Проведение операций с балансом ученика" id="CalcKC" style="width:105px">Калькулятор</button>
-                    <button title="Проведение компенсаций, условия промокодов/сертиикатов" id="nachislyatorKC" style="width:105px">Начислятор</button>
-                    <button title="Админка рассрочек" id="rassrochKC" style="width:105px">Рассрочка</button>
-                    <button title="Админка подписок" id="pondpisKC" style="width:105px">Подписки</button>
-                    <button title="Открывает Omnidesk" id="omniKC" style="width:105px">Omni</button>
-                    <button title="Админка разговорных клубов" id="RKKC" style="width:105px">РК</button>
-                    <button title="Актуальные шаблоны КЦ" id="shablKC" style="width:105px">Шаблоны</button>
-                    <button title="Написать нарушение бизнес-процесса на менеджера" id="narushKC" style="width:105px">Нарушение БП</button>
-                    <button title="Учет рабочего времени КЦ" id="grafKC" style="width:105px">График</button>
+                    <button class="mainButton" title="Открывает Timetable" id="timetableKC" style="width:105px">TimeTable</button>
+                    <button class="mainButton" title="Проведение операций с балансом ученика" id="CalcKC" style="width:105px">Калькулятор</button>
+                    <button class="mainButton" title="Проведение компенсаций, условия промокодов/сертиикатов" id="nachislyatorKC" style="width:105px">Начислятор</button>
+                    <button class="mainButton" title="Админка рассрочек" id="rassrochKC" style="width:105px">Рассрочка</button>
+                    <button class="mainButton" title="Админка подписок" id="pondpisKC" style="width:105px">Подписки</button>
+                    <button class="mainButton" title="Открывает Omnidesk" id="omniKC" style="width:105px">Omni</button>
+                    <button class="mainButton" title="Админка разговорных клубов" id="RKKC" style="width:105px">РК</button>
+                    <button class="mainButton" title="Актуальные шаблоны КЦ" id="shablKC" style="width:105px">Шаблоны</button>
+                    <button class="mainButton" title="Написать нарушение бизнес-процесса на менеджера" id="narushKC" style="width:105px">Нарушение БП</button>
+                    <button class="mainButton" title="Учет рабочего времени КЦ" id="grafKC" style="width:105px">График</button>
 				</div>
 			</span>
 	</span>

@@ -10,31 +10,31 @@ var win_serviceinfo =  // описание элементов окна инфо�
         <span style="width: 320px">
                 <span style="cursor: -webkit-grab;">
                         <div style="width: 320px; padding: 5px; border-bottom:1px solid #556B2F;" id="servicehead">
-                                <button title="скрывает меню" id="hideMeservice" class="buttonHide">hide</button>
-                                <button title="открывает СРМ пользователя при введенном айди в поле" id="GotoCRM" style="width:50px;">CRM</button>
-                                <button title="Начинает чат с пользователем" id="startnewchat" style="width: 25.23px;">💬</button>
-								<button title="Делаем видимым номер телефона и почты" id='dounhidemailandphone'>👁‍🗨</button>
-                                <button title="Левый клик обновить статус. Легенда: 💥 - задача на исход уже создана или есть также задача на тп1л , 📵 - нет задачи на исход и на тп, 🛠 - нет задачи на исход, но есть задача на тп" id="CrmStatus" style="width:30px; display:none;"></button>
+                                <button title="скрывает меню" id="hideMeservice" class="mainButton buttonHide">hide</button>
+                                <button class="mainButton" title="открывает СРМ пользователя при введенном айди в поле" id="GotoCRM" style="width:50px;">CRM</button>
+                                <button class="mainButton" title="Начинает чат с пользователем" id="startnewchat" style="width: 25.23px;">💬</button>
+								<button class="mainButton" title="Делаем видимым номер телефона и почты" id='dounhidemailandphone'>👁‍🗨</button>
+                                <button class="mainButton" title="Левый клик обновить статус. Легенда: 💥 - задача на исход уже создана или есть также задача на тп1л , 📵 - нет задачи на исход и на тп, 🛠 - нет задачи на исход, но есть задача на тп" id="CrmStatus" style="width:30px; display:none;"></button>
 								<span style="padding:7px; margin-left: 5px;height:28px; color:#ffff;  font-weight:700; border: 1px solid bisque;width: 82px; background-color:#1E90FF;display:none;" id="getcurrentstatus"></span>
                         </div>
 						<div style="width: 320px; margin:5px; display:flex; justify-content:left;" id="input_field">
 							<input id="idstudent" placeholder="ID У/П" title="Введите ID ученика для получения информации по услугам" oninput="onlyNumber(this)" autocomplete="off" type="text" style="text-align: center; width: 100px; color: black;">
-							<button title="запускает поиск по услугам" id="getidstudent" class="usinfoops">🚀</button>
-							<button title="Открывает список со всеми задачами пользователя" id="crmactivetasks" class="usinfoops">📋</button>
-							<button title="TRM 2.0 для информации по П" id="newtrm" style="margin-left: 5px; display: none; width: 25.23px;">🗿</button>
-							<button title="Личная страница П, как видят ученики" id="personalteacherpage" style="margin-left: 5px; display: none; width: 25.23px;">🎭</button>
-							<button title="Изменяет Язык обслуживания для профиля на Русский" id="changelocalelng" class="usinfoops">🌍</button>
-							<button title="Открывает начислятор для проверки реального баланса ученика" id="checkbalance" class="usinfoops">💰</button>
-							<button title="Просмотр прошедших и предстоящих уроков" id="getpastandfuturelessons" class="usinfoops">📆</button>
-							<button title="очищает все поля" id="clearservinfo" class="usinfoops">🧹</button>
+							<button title="запускает поиск по услугам" id="getidstudent" class="mainButton usinfoops">🚀</button>
+							<button title="Открывает список со всеми задачами пользователя" id="crmactivetasks" class="mainButton usinfoops">📋</button>
+							<button class="mainButton" title="TRM 2.0 для информации по П" id="newtrm" style="margin-left: 5px; display: none; width: 25.23px;">🗿</button>
+							<button class="mainButton" title="Личная страница П, как видят ученики" id="personalteacherpage" style="margin-left: 5px; display: none; width: 25.23px;">🎭</button>
+							<button title="Изменяет Язык обслуживания для профиля на Русский" id="changelocalelng" class="mainButton usinfoops">🌍</button>
+							<button title="Открывает начислятор для проверки реального баланса ученика" id="checkbalance" class="mainButton usinfoops">💰</button>
+							<button title="Просмотр прошедших и предстоящих уроков" id="getpastandfuturelessons" class="mainButton usinfoops">📆</button>
+							<button title="очищает все поля" id="clearservinfo" class="mainButton usinfoops">🧹</button>
 				       	</div>
 						<div style="width: 320px; margin:5px; display:flex; justify-content:left;" id="input_field2">
 							<input readonly id="onetimepassout"  placeholder="One time pass" title="Вывод разового пароля после выполнения команды" autocomplete="off" type="text" style="float:left; text-align: center; width: 100px; color: black;" class="">
-							<button title="Генерирует одноразовый код для входа в мобильное приложение и выводит его в спец поле" id="getonetimepass" class="usinfoops">📱</button>
-							<button title="Открывает админку редактирования пользователя/просмотра ролей" id="editadmbtn" class="usinfoops">✏</button>
-							<button title="Открывает кота для просмотра истории чатов" id="catchathistory" class="usinfoops">🗄</button>
-							<button title="Открывает меню для просмотра рассрочки" id="partialpaymentinfo" class="usinfoops">💸</button>
-							<button title="Открывает меню для просмотра статуса подписки" id="subscriptioninfo" class="usinfoops">💵</button>
+							<button title="Генерирует одноразовый код для входа в мобильное приложение и выводит его в спец поле" id="getonetimepass" class="mainButton usinfoops">📱</button>
+							<button title="Открывает админку редактирования пользователя/просмотра ролей" id="editadmbtn" class="mainButton usinfoops">✏</button>
+							<button title="Открывает кота для просмотра истории чатов" id="catchathistory" class="mainButton usinfoops">🗄</button>
+							<button title="Открывает меню для просмотра рассрочки" id="partialpaymentinfo" class="mainButton usinfoops">💸</button>
+							<button title="Открывает меню для просмотра статуса подписки" id="subscriptioninfo" class="mainButton usinfoops">💵</button>
 						</div>
 					   </span>
                         <div style="width: 320px; color:bisque; text-align:center">
@@ -86,11 +86,11 @@ var win_Timetable = // описание элементов окна предст
 <span style="width: 450px">
         <span style="cursor: -webkit-grab;">
                 <div style="margin: 5px; width: 450;" id="HeadTimetable">
-                        <button id="hideMeTT" style="width:50px; background: #228B22;">hide</button>
+                        <button class="mainButton" id="hideMeTT" style="width:50px; background: #228B22;">hide</button>
                 </div>
                 <div style="display:flex; justify-content:space-evenly; margin-top:5px;">
-                     <button title="Выводит инфо о прошедших уроках" id="getlessonpast">Прошедшие уроки</button>
-                     <button title="Выводит инфо о предстоящих уроках" id="getlessonfuture">Предстоящие уроки</button>
+                     <button class="mainButton" title="Выводит инфо о прошедших уроках" id="getlessonpast">Прошедшие уроки</button>
+                     <button class="mainButton" title="Выводит инфо о предстоящих уроках" id="getlessonfuture">Предстоящие уроки</button>
                  </div>
                  </span>
                 <div id="timetableinfo">

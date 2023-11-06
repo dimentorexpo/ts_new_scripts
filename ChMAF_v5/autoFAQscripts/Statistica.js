@@ -3,8 +3,8 @@ var win_StatisticaAF =  // описание формы чтобы не дава�
         <span style="width: 750px; min-height: 70px; max-height:700px; overflow-y:auto; overflow-x:hidden;">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 750px; display:flex; justify-content:space-evenly;" id="stataaf_header">
-                                <button title="скрывает меню" id="hidestatisticaaf" style="width:50px; background: #228B22;">hide</button>
-								<button id="clearstatawindow">🧹</button>
+                                <button class="mainButton" title="скрывает меню" id="hidestatisticaaf" style="width:50px; background: #228B22;">hide</button>
+								<button class="mainButton" id="clearstatawindow">🧹</button>
 								<input type="text" id="timeoutput" style="width:100px; text-align:center; background: blanchedalmond; font-weight: 700;" disabled></input>
 								<div style="width:450px;background: #5f7875;height: 21px;"><div id="progress-bar" style="width: 0%; height: 20px; background-color: #e38118; border: 1px solid black; text-align:center; font-weight:700; color:white;"></div></div>
 			    </span>
@@ -15,10 +15,10 @@ var win_StatisticaAF =  // описание формы чтобы не дава�
                         </span>
 						</div>
 						<div style="width: 750px; display:flex; justify-content: space-evenly; margin-bottom:5px;">
-							<button id="retreivestata">Получить статистику</button>
-							<button id="buttonCheckStats">Проверить CSAT + тематики</button>
-							<button id="buttonKCpower")">Нагрузка КЦ</button>
-							<button id="buttonTPpower")">Нагрузка ТП</button>
+							<button class="mainButton" id="retreivestata">Получить статистику</button>
+							<button class="mainButton" id="buttonCheckStats">Проверить CSAT + тематики</button>
+							<button class="mainButton" id="buttonKCpower")">Нагрузка КЦ</button>
+							<button class="mainButton" id="buttonTPpower")">Нагрузка ТП</button>
 						</div>
 
 						<div id="outputstatafield" style="color:bisque;">

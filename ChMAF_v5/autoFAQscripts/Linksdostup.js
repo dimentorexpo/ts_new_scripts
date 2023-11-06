@@ -3,38 +3,38 @@ var win_linksd =  // описание элементов окна доступо
         <span style="width: 414px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 409px;" id="linksd_1str">
-                            <button title="скрывает меню" id="hideMeLinksd" style="width:50px; background: #228B22;">hide</button>
+                            <button class="mainButton" title="скрывает меню" id="hideMeLinksd" style="width:50px; background: #228B22;">hide</button>
                         </div>
                         <div style="margin: 5px; margin-top: 0px; width: 409px" id="linksd_kib_box">
                             <p style="margin-left: 42%; margin-bottom: 0px; margin-top: 0px; color: #F6358A; font-size: 16px">Kibana</p>
                             <input id="kibsvid" placeholder="ID Summary" title="Вводим id пользователя для открытия Video | Tech Summary" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-                            <button id="kibsvidbut">🔎</button>
+                            <button class="mainButton" id="kibsvidbut">🔎</button>
                             <input id="kibsvhesh" placeholder="Хэш Summary" title="Вводим Хэш комнаты для открытия Video | Tech Summary" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-                            <button id="kibsvheshbut">🔎</button>
+                            <button class="mainButton" id="kibsvheshbut">🔎</button>
                             <input id="kibservhesh" placeholder="Хэш = сервер" title="Вводим Хэш комнаты для определения сервера" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-                            <button id="kibservheshbut">🔎</button>
+                            <button class="mainButton" id="kibservheshbut">🔎</button>
                             <input id="kibslow" placeholder="Хэш слоу" title="Вводим Хэш комнаты для проверки слоулинков" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-                            <button id="kibslowbut">🔎</button>
+                            <button class="mainButton" id="kibslowbut">🔎</button>
                             <input id="kibheshvid" placeholder="Хэш видео" title="Вводим Хэш комнаты для проверки состояния видео" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-                            <button id="kibheshvidbut">🔎</button>
+                            <button class="mainButton" id="kibheshvidbut">🔎</button>
                             <input id="kibstihesh" placeholder="Хэш стрим" title="Вводим Хэш комнаты для проверки срстояния стрима" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-                            <button id="kibstiheshbut">🔎</button>
+                            <button class="mainButton" id="kibstiheshbut">🔎</button>
                             <p style="margin-left: 42%; margin-bottom: 0px; margin-top: 0px; color: #F6358A; font-size: 16px">Redash</p>
                             <input id="mobappid" placeholder="ID mob.app" title="Вводим id пользователя для открытия действий в приложении" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-                            <button id="mobappidbut">🔎</button>
+                            <button class="mainButton" id="mobappidbut">🔎</button>
                             <input id="rpayid" placeholder="ID платежи" title="Вводим id пользователя для открытия лога платежей" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-                            <button id="rpayidbut">🔎</button>
+                            <button class="mainButton" id="rpayidbut">🔎</button>
  							<input id="UserActions" placeholder="ID У/П действ" title="Вводим id пользователя для открытия информации о действиях в личном кабинете" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-                            <button id="GetUserActions">🔎</button>
+                            <button class="mainButton" id="GetUserActions">🔎</button>
 							<input id="essayHashRoom" placeholder="Эссе Hash" title="Вводим хеш комнаты с эссе на открывшейся странице не забываем изменить дату" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-                            <button id="getUserEssay">🔎</button>
+                            <button class="mainButton" id="getUserEssay">🔎</button>
                             <p style="margin-left: 42%; margin-bottom: 0px; margin-top: 0px; color: #F6358A; font-size: 16px">Grafana</p>
                             <input id="WidgetLessonStatus" placeholder="ID У/П виджет" title="Вводим id пользователя для открытия информации об отображении виджета входа на урок" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-                            <button id="GetWidgetLessonStatus">🔎</button>
-                            <button title="Открывает Графану с состоянием видеосерверов, при наплыве обращений проверяйте его" id="grafanalnk" style="width:130px">Видео сервера</button>
-                            <button title="Открывает Графану с отображением пула задачь на группе Техподдержка Исход CRM2" id="grafanapoolCRM2" style="width:130px">Пул исход CRM2</button>
+                            <button class="mainButton" id="GetWidgetLessonStatus">🔎</button>
+                            <button class="mainButton" title="Открывает Графану с состоянием видеосерверов, при наплыве обращений проверяйте его" id="grafanalnk" style="width:130px">Видео сервера</button>
+                            <button class="mainButton" title="Открывает Графану с отображением пула задачь на группе Техподдержка Исход CRM2" id="grafanapoolCRM2" style="width:130px">Пул исход CRM2</button>
 							<p style="margin-left: 42%; margin-bottom: 0px; margin-top: 0px; color: #F6358A; font-size: 16px">KPI Teachers</p>
-							<button title="Открывает Datalens для просмотра информации по KPI teachers" id="kpiteachersdashboard" style="width:150px">Datalens Dashboard</button>
+							<button class="mainButton" title="Открывает Datalens для просмотра информации по KPI teachers" id="kpiteachersdashboard" style="width:150px">Datalens Dashboard</button>
                         </div>
                 </span>
         </span>

@@ -4,10 +4,10 @@
         <span style="width: 625px">
 			<span style="cursor: -webkit-grab;">
 				<div style="margin: 5px; width: 625;" id="links_1str">
-					<button title="Скрытие меню" id="hideMeRadio" style="width:50px; background: #228B22;">hide</button>
-					<button class="rotateDisc" style="margin-left:30%">📀</button>
+					<button class="mainButton" title="Скрытие меню" id="hideMeRadio" style="width:50px; background: #228B22;">hide</button>
+					<button class="mainButton" class="rotateDisc" style="margin-left:30%">📀</button>
 					<span style="color:bisque">Play'O'Neer</span>
-					<button class="rotateDisc">📀</button>
+					<button class="mainButton" class="rotateDisc">📀</button>
 				</div>
 				<div id="audioPlayer" class="mainplayer">
 					<div id="audioControls">
@@ -15,11 +15,11 @@
 							placeholder="Enter Radio URL">
 						<input type="text" id="audioName" style="text-align: center; border-radius: 10px; width:120px; color:black;"
 							placeholder="Enter Radio name">
-						<button id="addAudio">➕</button>
-						<button id="playAudio">▶</button>
-						<button id="pauseAudio">⏸</button>
+						<button class="mainButton" id="addAudio">➕</button>
+						<button class="mainButton" id="playAudio">▶</button>
+						<button class="mainButton" id="pauseAudio">⏸</button>
 						<input id="changeRadioVolume" min="0" max="1" value="1.0" step="0.11" type="range">
-						<button id="muteAudio" onclick="muteorunmute()">🔇Mute</button>
+						<button class="mainButton" id="muteAudio">🔇Mute</button>
 					</div>
 					<ol id="audioList" style="width:570px;"></ol>
 					<audio id="player"></audio>
@@ -95,7 +95,7 @@ wintRadio.onmousedown = function(event) {
             let deleteBtn = document.createElement("button");
             deleteBtn.innerHTML = "❌";
             deleteBtn.style = "margin: 5px; width:30px; border: 1px solid darkslategrey; cursor:pointer; border-radius: 10px;";
-            deleteBtn.classList ='deleteline'
+            deleteBtn.classList.add('deleteline', 'mainButton')
             newAudio.appendChild(deleteBtn);
             newAudio.appendChild(document.createTextNode(name));
             newAudio.addEventListener("click", function () {
@@ -201,3 +201,5 @@ wintRadio.onmousedown = function(event) {
                 localStorage.setItem('volume', player.volume);
             } else localStorage.setItem('volume', this.value);
         }
+		
+		document.getElementById('muteAudio').addEventListener('click', muteorunmute)

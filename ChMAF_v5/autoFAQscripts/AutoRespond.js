@@ -3,15 +3,15 @@ var win_FrozeChat =  // описание формы чтобы не давала
         <span style="width: 410px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 395px;" id="froze_chat_header">
-                                <button title="скрывает меню" id="hidefrozechat" style="width:50px; background: #228B22;">hide</button>
-								<button id="clearallchathash">🧹</button>
-								<button id="arinfo" style="float:right" title="При добавлении хеша чата и выборе времени, по умолчанию 6 минут, по истечению которого в этот чат автоматически будет отправлен ответ по умолчанию Извините, что заставляю вас ждать, но мне нужно еще несколько минут 🙏">❓</button>
+                                <button class="mainButton" title="скрывает меню" id="hidefrozechat" style="width:50px; background: #228B22;">hide</button>
+								<button class="mainButton" id="clearallchathash">🧹</button>
+								<button class="mainButton" id="arinfo" style="float:right" title="При добавлении хеша чата и выборе времени, по умолчанию 6 минут, по истечению которого в этот чат автоматически будет отправлен ответ по умолчанию Извините, что заставляю вас ждать, но мне нужно еще несколько минут 🙏">❓</button>
                         </div>
 						<div>
 							<input id="chatfrozehash" placeholder="Введите хэш чата" title="Введите хеш чата, которые хотите, чтобы через время скрипт отправил ответ от вашего имени" autocomplete="off" type="text" style="text-align: center; width: 300px; color: black;margin-left:5px">
 							<input id="frozetimer" value="6" style="width:38px;" oninput="maxLengthCheck(this)" type="number" maxlength="2" min="0" max="59">
 							<span style="color:bisque;">min</span>
-							<button id="freezechat" title="Задать таймер автоответа">❄</button>
+							<button class="mainButton" id="freezechat" title="Задать таймер автоответа">❄</button>
 						</div>
 			    </span>
                         <div style="margin: 5px; width: 400px" id="chats_hash_box">
@@ -148,7 +148,7 @@ wintFrozeChat.onmousedown = function(event) {
 				document.getElementById('chathastable').innerHTML  = ''
 				for (let i=0; i<uniqarr.length; i++) {
 					infoarr[i] = document.createElement('div')
-					infoarr[i].innerHTML = chathasharr[i] + ' ' + '<button name="frozechattimer"></button>' + ' ' + '<span name="deletetimer" title="Удаляет таймер автоответа" style="cursor:pointer">❌</span>'
+					infoarr[i].innerHTML = chathasharr[i] + ' ' + '<button class="mainButton" name="frozechattimer"></button>' + ' ' + '<span name="deletetimer" title="Удаляет таймер автоответа" style="cursor:pointer">❌</span>'
 					document.getElementById('chathastable').append(infoarr[i])
 					cancelflag[i] = 0
 						

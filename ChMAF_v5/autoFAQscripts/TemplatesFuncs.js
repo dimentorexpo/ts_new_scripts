@@ -2,21 +2,21 @@ var nameContainer = '';
  var win_UsersInfo = // описание окна тестовых пользователей
     `<span style="display: block;">
         <span id="CurrUser" title="Открыть в CRM обратившегося пользователя" style="cursor:pointer;"></span>
-        <button id="CurUsScriptPac" title="Открыть в Script Package обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">ℹ️</button>
-        <button id="CurUsLoginer" title="Скопировать в буфер обмена ссылку логинер для обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">🔑</button>
-        <button id="CurUstroublesh" title="Открыть в ТШ обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">🕵️‍♀️</button>
-        <button id="CurUsChatHis" title="Открыть историю чатов обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">☢</button>
-        <button id="CurUsChatHisWA" title="Открыть историю чатов WA обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left:-8px"><img src="https://dimentorexpo.github.io/ChMAF/Images/WA.png" alt="Поиск обращений в WA" width="20" height="20" vertical-align="top"></button>
-        <button id="CurUsUserInf" title="Открыть в ⚜ обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">⚜</button>
-        <button id="CurUsMarks" title="Открыть историю оценок обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">📊</button>
+        <button class="mainButton" id="CurUsScriptPac" title="Открыть в Script Package обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">ℹ️</button>
+        <button class="mainButton" id="CurUsLoginer" title="Скопировать в буфер обмена ссылку логинер для обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">🔑</button>
+        <button class="mainButton" id="CurUstroublesh" title="Открыть в ТШ обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">🕵️‍♀️</button>
+        <button class="mainButton" id="CurUsChatHis" title="Открыть историю чатов обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">☢</button>
+        <button class="mainButton" id="CurUsChatHisWA" title="Открыть историю чатов WA обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left:-8px"><img src="https://dimentorexpo.github.io/ChMAF/Images/WA.png" alt="Поиск обращений в WA" width="20" height="20" vertical-align="top"></button>
+        <button class="mainButton" id="CurUsUserInf" title="Открыть в ⚜ обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">⚜</button>
+        <button class="mainButton" id="CurUsMarks" title="Открыть историю оценок обратившегося пользователя" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">📊</button>
     </span>
     <span id="nextUsersp" style="display: none;">
         <span id="NextUser" title="Открыть в CRM У/П с кем следующий урок" style="cursor:pointer;"></span>
-        <button id="NextUsScriptPac" title="Открыть в Script Package У/П с кем следующий урок" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">ℹ️</button>
-        <button id="NextUsLoginer" title="Скопировать в буфер обмена ссылку логинер для У/П с кем следующий урок" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">🔑</button>
-        <button id="NextUstroublesh" title="Открыть в ТШ У/П с кем следующий урок" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">🕵️‍♀️</button>
-        <button id="NextUsChatHis" title="Открыть историю чатов У/П с кем следующий урок" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">☢</button>
-        <button id="NextUsUserInf" title="Открыть в ⚜ У/П с кем следующий урок" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">⚜</button>
+        <button class="mainButton" id="NextUsScriptPac" title="Открыть в Script Package У/П с кем следующий урок" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">ℹ️</button>
+        <button class="mainButton" id="NextUsLoginer" title="Скопировать в буфер обмена ссылку логинер для У/П с кем следующий урок" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">🔑</button>
+        <button class="mainButton" id="NextUstroublesh" title="Открыть в ТШ У/П с кем следующий урок" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">🕵️‍♀️</button>
+        <button class="mainButton" id="NextUsChatHis" title="Открыть историю чатов У/П с кем следующий урок" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">☢</button>
+        <button class="mainButton" id="NextUsUserInf" title="Открыть в ⚜ У/П с кем следующий урок" style="cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;">⚜</button>
     </span>
     `;
 
@@ -901,6 +901,7 @@ function refreshTemplates() { // функция обновляет шаблон�
                 newPageBut.textContent = c[1];
                 pageType = c[2];
                 newPageBut.style.marginRight = '4px';
+				newPageBut.classList.add('mainButton')
 
                 // Используйте addEventListener для назначения обработчика события
                 newPageBut.addEventListener('click', pageClick);
@@ -932,6 +933,7 @@ function refreshTemplates() { // функция обновляет шаблон�
                     var newbtnclrlink = document.createElement('button')
                     newbtnclrlink.textContent = "🧹"
                     newbtnclrlink.title = "Очищает поле задачи серверных"
+					newbtnclrlink.classList.add('mainButton')
                     newbtnclrlink.onclick = function () { document.getElementById('avariyalink').value = "" }
                     
                     newDiv.appendChild(newbtnclrlink)
@@ -982,6 +984,7 @@ function refreshTemplates() { // функция обновляет шаблон�
                     var newbtnclrtheme = document.createElement('button')
                     newbtnclrtheme.textContent = "🧹"
                     newbtnclrtheme.title = "Очищает поле тематики серверных"
+                    newbtnclrtheme.classList.add('mainButton')
                     newbtnclrtheme.onclick = function () { document.getElementById('avariyatema').children[0].selected = true }
                     
                     newDiv.appendChild(newbtnclrtheme)
@@ -1001,6 +1004,7 @@ function refreshTemplates() { // функция обновляет шаблон�
                         var newBut = document.createElement('button');
                         newBut.textContent = c[0];
                         newBut.style.marginRight = '4px';
+						newBut.classList.add('mainButton')
                     
                         // Проверки для установки ID или изменения текста
                         if (newBut.textContent == 'Урок NS') {
@@ -1027,6 +1031,7 @@ function refreshTemplates() { // функция обновляет шаблон�
                         var newBut = document.createElement('button')
                         newBut.textContent = c[0]
                         newBut.style.marginRight = '4px'
+						newBut.classList.add('mainButton')
                         newBut.addEventListener('click', servFromDoc);
                         b.lastElementChild.lastElementChild.appendChild(newBut)
                         break

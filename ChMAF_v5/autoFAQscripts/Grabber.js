@@ -14,27 +14,27 @@ var win_Grabber =  // описание элементов окна Grabber
         <span style="width: 800px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 800px; display:flex; justify-content:space-evenly;" id="grabdata">
-                                <button id="hideMeGrabber" class="buttonHide">hide</button>
-                                <button id="GatherStatByThemes" disabled>🧮</button>
+                                <button class="mainButton" id="hideMeGrabber" class="buttonHide">hide</button>
+                                <button class="mainButton" id="GatherStatByThemes" disabled>🧮</button>
 								<div style="width:450px;background: #5f7875;height: 21px;"><div id="progressBarGrabber" style="width: 0%; height: 20px; background-color: #e38118; border: 1px solid black; text-align:center; font-weight:700; color:white;"></div></div>
                         </div>
 
 						<div id="AgregatedDataThemes" style="display:none; width:400px; min-height:100px; max-height:800px; background: rgb(70, 68, 81); position:absolute; top:-1px; left:-400px; overflow-y:auto">
 							<div id="ToolsPanel" style="padding:5px;">
-								<button id="HideToolsPanel"class="buttonHide">hide</button>
-								<button id="SwitchToGraph">🔀📊</button>
-								<button id="SwitchToTable">🔀🧮</button>
-								<button id="SwitchToIntervalGraph">🔀📊〰</button>
-								<button id="SwitchToIntervalTable">🔀🧮〰</button>
-								<button id="SaveIntervalCSV" disabled>〰💾CSV</button>
+								<button class="mainButton" id="HideToolsPanel"class="buttonHide">hide</button>
+								<button class="mainButton" id="SwitchToGraph">🔀📊</button>
+								<button class="mainButton" id="SwitchToTable">🔀🧮</button>
+								<button class="mainButton" id="SwitchToIntervalGraph">🔀📊〰</button>
+								<button class="mainButton" id="SwitchToIntervalTable">🔀🧮〰</button>
+								<button class="mainButton" id="SaveIntervalCSV" disabled>〰💾CSV</button>
 							</div>
 							<div id="AgregatedDataOut" style="color: bisque; padding: 5px; text-align: center;"></div>
 						</div>
 
                         <div style="margin: 5px; width: 800px" id="grabbox">
 								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <input type="date" style="color:black; margin-left:20px;  width:125px;" name="FirstData" id="dateFromGrab"></span>
-								 <button style="margin-left:15%" id="dayminus">◀</button>
-								 <button id="dayplus">▶</button>
+								 <button class="mainButton" style="margin-left:15%" id="dayminus">◀</button>
+								 <button class="mainButton" id="dayplus">▶</button>
 								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input type="date" style="color:black; float:right; margin-left:20px; margin-right:10px; width:125px;" name="LastData" id="dateToGrab"</span>
                         </div>
 
@@ -74,8 +74,8 @@ var win_Grabber =  // описание элементов окна Grabber
 								  <label><input type="checkbox" name="tagsforfilter" value="#configuration"> Комплектации</label>
 							  </div>
 							  <div style="display: flex;">
-								  <button id="hideselecalltags" style="flex-grow:1">🚀Apply</button>
-								  <button id="SaveToCSVFilteredByTags" style="flex-grow:1">💾CSV</button>
+								  <button class="mainButton" id="hideselecalltags" style="flex-grow:1">🚀Apply</button>
+								  <button class="mainButton" id="SaveToCSVFilteredByTags" style="flex-grow:1">💾CSV</button>
 							  </div>
 							</div>
 
@@ -214,8 +214,8 @@ var win_Grabber =  // описание элементов окна Grabber
 									<option value="107">📱КЦ-Проч обр по Skyeng App</option>
 									<option value="1249">💋КЦ-Talks</option>
                                     </select>
-                               <button style=" title="ищет чаты по тематике" id="stargrab">Find</button>
-							   	<button id="webtoCSV">💾 Download CSV</button>
+                               <button class="mainButton" style=" title="ищет чаты по тематике" id="stargrab">Find</button>
+							   	<button class="mainButton" id="webtoCSV">💾 Download CSV</button>
 						</div>
 						</span>
 
@@ -232,7 +232,7 @@ var win_Grabber =  // описание элементов окна Grabber
 							  <label><input type="checkbox" name="marksFilter" value="2"> 2</label> <br>
 							  <label><input type="checkbox" name="marksFilter" value="1"> 1</label> <br>
 							  <label><input type="checkbox" name="marksFilter" value="-"> No marks</label> <br>
-							  <button id="downloadfilteredtocsv" style="margin-left: 25%; margin-bottom: 10px;">💾CSV</button>
+							  <button class="mainButton" id="downloadfilteredtocsv" style="margin-left: 25%; margin-bottom: 10px;">💾CSV</button>
 							 </div>
 						</div>
         </span>

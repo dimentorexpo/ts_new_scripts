@@ -3,8 +3,10 @@ function customTemplates(language = '') { //собственные шаблон�
         localStorage.setItem('winCstmTmpsTop', '120');
         localStorage.setItem('winCstmTmpsLeft', '295');
     }
+	
     if (localStorage.getItem('cntTmplts' + language) == null)
         localStorage.setItem('cntTmplts' + language, 0)
+	
     if (document.getElementById('cstmTmplates') == undefined) {
         var cstmTmp = document.createElement('div')
         cstmTmp.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winCstmTmpsTop') + 'px; left: ' + localStorage.getItem('winCstmTmpsLeft') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black; border-radius:5px; border:1px solid #768d87; ';
@@ -16,25 +18,8 @@ function customTemplates(language = '') { //собственные шаблон�
         while (document.getElementById('cstmTmplates').children[0] != undefined)
             document.getElementById('cstmTmplates').children[0].remove()
     }
-    countOfTemplates = localStorage.getItem('cntTmplts' + language)
-
-    var buttonOpenTmpWindow = document.createElement('button')
-    buttonOpenTmpWindow.innerHTML = '📒'
-    buttonOpenTmpWindow.title = 'Открывает окно для добавления своих шаблонов либо информации в ячейки в этом поле'
-    //buttonOpenTmpWindow.style.marginLeft = '7px'
-    buttonOpenTmpWindow.onclick = function () {
-        var a = document.getElementById('cstmTmplates')
-        if (a.style.display == '')
-            a.style.display = 'none'
-        else
-            a.style.display = ''
-    }
-
-    var tmpA = document.getElementById('AF_helper').children[0].children[0].children[0].children[0]
-    if (tmpA.children[1].innerHTML != '📒')
-        tmpA.insertBefore(buttonOpenTmpWindow, tmpA.children[1])
-
-    function refreshHotTmps() {
+	
+	    function refreshHotTmps() {
         while (document.getElementById('6str').children[0] != undefined)
             document.getElementById('6str').children[0].remove()
         countOfTemplates = localStorage.getItem('cntTmplts' + language)
@@ -48,6 +33,7 @@ function customTemplates(language = '') { //собственные шаблон�
                 newBut.setAttribute('template', 'template_' + language + i)
                 newBut.style.marginRight = '5px'
                 newBut.style.marginTop = '5px'
+				newBut.classList.add('mainButton')
                 newBut.innerHTML = localStorage.getItem('tmp_name_' + language + i)
                 a.appendChild(newBut)
                 newBut.onclick = function () {
@@ -57,8 +43,8 @@ function customTemplates(language = '') { //собственные шаблон�
             }
         }
     }
-
-    function addNewString(index) {
+	
+	    function addNewString(index) {
 
         var newDiv = document.createElement('div')
         newDiv.style.margin = '5px'
@@ -82,6 +68,7 @@ function customTemplates(language = '') { //собственные шаблон�
         var newButton = document.createElement('button')
         newButton.style.marginRight = '5px'
         newButton.textContent = 'save'
+        newButton.classList.add('mainButton')
         newButton.onclick = function () {
             localStorage.setItem(this.parentElement.getAttribute('tmp'), document.getElementById(this.parentElement.getAttribute('inp')).value)
             localStorage.setItem('tmp_name_' + language + index, this.parentElement.children[1].value)
@@ -90,6 +77,7 @@ function customTemplates(language = '') { //собственные шаблон�
         var newButton2 = document.createElement('button')
         newButton2.style.marginRight = '5px'
         newButton2.textContent = 'send'
+		newButton2.classList.add('mainButton')
         newButton2.onclick = function () {
             document.getElementById('inp').value = document.getElementById(this.parentElement.getAttribute('inp')).value.split('\\n').join('\n')
             this.parentElement.parentElement.style.display = 'none'
@@ -98,6 +86,7 @@ function customTemplates(language = '') { //собственные шаблон�
         var newButton3 = document.createElement('button')
         newButton3.style.marginRight = '5px'
         newButton3.textContent = 'delete'
+		newButton3.classList.add('mainButton')
         newButton3.onclick = function () {
             for (var i = this.parentElement.getAttribute('index'); i < countOfTemplates; i++) {
                 var n = Number(i) + 1
@@ -117,6 +106,8 @@ function customTemplates(language = '') { //собственные шаблон�
 
         var buttonSortUp = document.createElement('button')
         buttonSortUp.innerHTML = '↑'
+		buttonSortUp.style = 'width:20px;'
+		buttonSortUp.classList.add('mainButton')
         buttonSortUp.onclick = function () {
             var index = this.parentElement.getAttribute('index')
             if (index == 1)
@@ -142,7 +133,8 @@ function customTemplates(language = '') { //собственные шаблон�
 
         var buttonSortDown = document.createElement('button')
         buttonSortDown.innerHTML = '↓'
-        buttonSortDown.style.marginRight = '5px'
+        buttonSortDown.classList.add('mainButton')
+        buttonSortDown.style = 'margin-right:5px; width:20px;'
         buttonSortDown.onclick = function () {
             var index = this.parentElement.getAttribute('index')
             if (index == countOfTemplates)
@@ -184,6 +176,44 @@ function customTemplates(language = '') { //собственные шаблон�
         newDiv.append(newButton2)
         cstmTmp.insertBefore(newDiv, cstmTmp.lastElementChild)
     }
+	
+	
+    countOfTemplates = localStorage.getItem('cntTmplts' + language)
+	
+	    var listenercstmTmp = function (e, a) {
+        cstmTmp.style.left = Number(e.clientX - myXcstmTmp) + "px";
+        cstmTmp.style.top = Number(e.clientY - myYcstmTmp) + "px";
+        localStorage.setItem('winCstmTmpsTop', String(Number(e.clientY - myYcstmTmp)));
+        localStorage.setItem('winCstmTmpsLeft', String(Number(e.clientX - myXcstmTmp)));
+    };
+
+    cstmTmp.onmousedown = function (a) {
+        if (checkelementtype(a)) {
+            window.myXcstmTmp = a.layerX;
+            window.myYcstmTmp = a.layerY;
+            document.addEventListener('mousemove', listenercstmTmp);
+        }
+    }
+
+    cstmTmp.onmouseup = function () { document.removeEventListener('mousemove', listenercstmTmp); }
+	
+    var buttonOpenTmpWindow = document.createElement('button')
+    buttonOpenTmpWindow.innerHTML = '📒'
+    buttonOpenTmpWindow.id = 'testCustTMPL'
+    buttonOpenTmpWindow.classList.add('mainButton')
+    buttonOpenTmpWindow.title = 'Открывает окно для добавления своих шаблонов либо информации в ячейки в этом поле'
+    //buttonOpenTmpWindow.style.marginLeft = '7px'
+    buttonOpenTmpWindow.onclick = function () {
+        var a = document.getElementById('cstmTmplates')
+        if (a.style.display == '')
+            a.style.display = 'none'
+        else
+            a.style.display = ''
+    }
+
+    var tmpA = document.getElementById('AF_helper').children[0].children[0].children[0].children[0]
+    if (tmpA.children[1].innerHTML != '📒')
+        tmpA.insertBefore(buttonOpenTmpWindow, tmpA.children[1])
 
     var newDiv = document.createElement('div')
     newDiv.style = 'cursor: -webkit-grab;'
@@ -192,6 +222,7 @@ function customTemplates(language = '') { //собственные шаблон�
 
     var addTmpl = document.createElement('button')
     addTmpl.textContent = 'Добавить шаблон'
+	addTmpl.classList.add('mainButton')
     addTmpl.style.marginRight = '5px'
 
     addTmpl.onclick = function () {
@@ -206,6 +237,7 @@ function customTemplates(language = '') { //собственные шаблон�
     var saveAllTmp = document.createElement('button')
     saveAllTmp.textContent = 'Сохранить всё'
     saveAllTmp.style.marginRight = '5px'
+	saveAllTmp.classList.add('mainButton')
     saveAllTmp.onclick = function () {
         for (var i = 1; i <= countOfTemplates; i++) {
             localStorage.setItem('template_' + language + i, document.getElementById('cstmTmpInp' + language + i).value)
@@ -217,6 +249,7 @@ function customTemplates(language = '') { //собственные шаблон�
 
     var but = document.createElement('button')
     but.innerHTML = 'hide'
+    but.classList.add('mainButton')
 
     but.onclick = function () {
         this.parentElement.parentElement.style.display = 'none'
@@ -234,22 +267,10 @@ function customTemplates(language = '') { //собственные шаблон�
             addNewString(i)
     refreshHotTmps()
 
-    var listenercstmTmp = function (e, a) {
-        cstmTmp.style.left = Number(e.clientX - myXcstmTmp) + "px";
-        cstmTmp.style.top = Number(e.clientY - myYcstmTmp) + "px";
-        localStorage.setItem('winCstmTmpsTop', String(Number(e.clientY - myYcstmTmp)));
-        localStorage.setItem('winCstmTmpsLeft', String(Number(e.clientX - myXcstmTmp)));
-    };
+}
 
-    cstmTmp.onmousedown = function (a) {
-        if (checkelementtype(a)) {
-            window.myXcstmTmp = a.layerX;
-            window.myYcstmTmp = a.layerY;
-            document.addEventListener('mousemove', listenercstmTmp);
-        }
-    }
 
-    cstmTmp.onmouseup = function () { document.removeEventListener('mousemove', listenercstmTmp); }
+	customTemplates()
 
     document.getElementById('languageAF').onclick = function () {
         if (this.innerHTML == "Русский") {
@@ -262,4 +283,3 @@ function customTemplates(language = '') { //собственные шаблон�
             customTemplates()
         }
     }
-}

@@ -7,29 +7,29 @@ var win_Jira =  // описание элементов окна Поиска п�
         <span style="width: 550px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 550;" id="jira_1str">
-                                <button title="скрывает меню" id="hideMej" style="width:50px; background: #228B22;">hide</button>
-								<button id="RefreshJiraStatus" title="Обновляет статус Токена Jira, чтобы проверить авторизованы вы или нет">🔄</button>
-								<button id="ClearJiraData" title="Очищает поля с результатами и полем для ввода">🧹</button>
+                                <button class="mainButton" title="скрывает меню" id="hideMej" style="width:50px; background: #228B22;">hide</button>
+								<button class="mainButton" id="RefreshJiraStatus" title="Обновляет статус Токена Jira, чтобы проверить авторизованы вы или нет">🔄</button>
+								<button class="mainButton" id="ClearJiraData" title="Очищает поля с результатами и полем для ввода">🧹</button>
 								<span style="color:bisque">Token Status: </span>
 								<span id="searchjiratknstatus"></span>
-								<button id="jirainstr" style="float:right;" title="Инструкция по этой форме">❓</button>
+								<button class="mainButton" id="jirainstr" style="float:right;" title="Инструкция по этой форме">❓</button>
                         </div>
 
 						<div id="control_jira_search">
-							<button id="defaultQuery" title="Страница для поиска по умолчанию с заранее записанным JQL запросом" class="active-query">📇Default</button>
-                            <button id="ZBPQuery" title="Страница для поиска Zero Bug Policy">🙅‍♂️ZeroBug</button>
-							<button id="freshQuery" title="Страница при поиске по ключевому слову, выводящая свежесозданные баги в порядке убывания и с 0 Support Tab с заранее записанным JQL запросом">🍀Fresh</button>
-							<button id="customQuery" title="Страница для ручного составления JQL запроса. Поле для ввода поиска не используется, только лишь верхняя часть от выбора отдела до ввода искомого текста в двойных кавычках после надписи text~">📝Custom</button>
-							<button id="PSquery" title="Страница для поиска по ID или тексту срези запросов в Project Support, потому как в Mattermost может не найти">😵PS</button>
-							<button id="getiosbugs" title="По клику сразу ищет баги по iOS как если бы выискали стандартно с вводом текста поиска iOS">🍏iOS</button>
-							<button id="getandroidbugs" title="По клику сразу ищет баги по iOS как если бы выискали стандартно с вводом текста поиска Android">🤖Android</button>
-							<button id="favouriteBugs" title="Страница с сохраненными багами для быстрого доступа">❤</button>
+							<button class="mainButton" id="defaultQuery" title="Страница для поиска по умолчанию с заранее записанным JQL запросом" class="active-query">📇Default</button>
+                            <button class="mainButton" id="ZBPQuery" title="Страница для поиска Zero Bug Policy">🙅‍♂️ZeroBug</button>
+							<button class="mainButton" id="freshQuery" title="Страница при поиске по ключевому слову, выводящая свежесозданные баги в порядке убывания и с 0 Support Tab с заранее записанным JQL запросом">🍀Fresh</button>
+							<button class="mainButton" id="customQuery" title="Страница для ручного составления JQL запроса. Поле для ввода поиска не используется, только лишь верхняя часть от выбора отдела до ввода искомого текста в двойных кавычках после надписи text~">📝Custom</button>
+							<button class="mainButton" id="PSquery" title="Страница для поиска по ID или тексту срези запросов в Project Support, потому как в Mattermost может не найти">😵PS</button>
+							<button class="mainButton" id="getiosbugs" title="По клику сразу ищет баги по iOS как если бы выискали стандартно с вводом текста поиска iOS">🍏iOS</button>
+							<button class="mainButton" id="getandroidbugs" title="По клику сразу ищет баги по iOS как если бы выискали стандартно с вводом текста поиска Android">🤖Android</button>
+							<button class="mainButton" id="favouriteBugs" title="Страница с сохраненными багами для быстрого доступа">❤</button>
                         </div>
 
                         <div id="fields_jira_search">
 							<textarea id="JQLquery" placeholder="JQL запрос" title="Введите сюда JQL запрос" autocomplete="off" type="text" style="text-align: center; width: 500px; color: black; margin-top: 5px; margin-left: 5%;"></textarea>
 							<input id="testJira" placeholder="Введите слово или фразу для поиска" title="введите слово или фразу для поиска по Jira при одном клике будет искать по багам, если ввести в поле номер задачи например VIM-7288 и дабл кликнуть на рокету будет поиск по номеру" autocomplete="off" type="text" style="text-align: center; width: 300px; color: black; margin-top: 5px; margin-left: 20%; border-radius: 20px;">
-							<button id="getJiraTasks" style="width: 25.23px;">🚀</button>
+							<button class="mainButton" id="getJiraTasks" style="width: 25.23px;">🚀</button>
 						</div>
 
                         <div style="margin: 5px; width: 550px" id="jira_tasks_box">

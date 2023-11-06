@@ -3,72 +3,72 @@ var win_Links =  // описание элементов окна ссылок
         <span style="width: 550px">
 			<span style="cursor: -webkit-grab;">
 				<div style="margin: 5px; width: 550;" id="links_1str">
-					<button title="Скрытие меню" id="hideMe" class="buttonHide">hide</button>
-					<button title="Открывает раздел для формирования заявки на удаленине персональных данных" id="deleteaclnk" class="uplinksbar">🗑</button>
-					<button title="Открывает Базу знаний в Confluence" id="knoweledgebase" class="uplinksbar">📚</button>
-					<button title="Открывает админку с эссе для перезакрепления за П" id="essayadmin" class="uplinksbar">📝</button>
-					<button title="Открывает меню для работы со статистикой, поиска чатов без тематики, с низкими оценками, по комментарию" id="getStats" class="uplinksbar">📋</button>
-					<button title="Открывает Infra для запроса сброса пароля в Mattermost Teacher" id="resetMMPassword" class="uplinksbar">🔐</button>
-					<button title="Открывает менюшку для просмотра информации по BIN банка, чтобы узнать тип карты, страну происхождения, название банка" id="bankCheck" class="uplinksbar">💳</button>
-					<button title="Открывает просмотр список группы" id="GrListData" class="uplinksbar">👩‍👩‍👧‍👦</button>
-                    <button title="Открывает известные баги на платформе" id="confbugs" style="width: 50px; float: right; margin-right: 5px" class="uplinksbar">🐞</button>
+					<button title="Скрытие меню" id="hideMe" class="mainButton buttonHide">hide</button>
+					<button title="Открывает раздел для формирования заявки на удаленине персональных данных" id="deleteaclnk" class="mainButton uplinksbar">🗑</button>
+					<button title="Открывает Базу знаний в Confluence" id="knoweledgebase" class="mainButton uplinksbar">📚</button>
+					<button title="Открывает админку с эссе для перезакрепления за П" id="essayadmin" class="mainButton uplinksbar">📝</button>
+					<button title="Открывает меню для работы со статистикой, поиска чатов без тематики, с низкими оценками, по комментарию" id="getStats" class="mainButton uplinksbar">📋</button>
+					<button title="Открывает Infra для запроса сброса пароля в Mattermost Teacher" id="resetMMPassword" class="mainButton uplinksbar">🔐</button>
+					<button title="Открывает менюшку для просмотра информации по BIN банка, чтобы узнать тип карты, страну происхождения, название банка" id="bankCheck" class="mainButton uplinksbar">💳</button>
+					<button title="Открывает просмотр список группы" id="GrListData" class="mainButton uplinksbar">👩‍👩‍👧‍👦</button>
+                    <button title="Открывает известные баги на платформе" id="confbugs" style="width: 50px; float: right; margin-right: 5px" class="mainButton uplinksbar">🐞</button>
 				</div>
 				<div style="margin: 5px; width: 550px;" id="links_but">
-					<button title="Открывает Timetable" id="timetable" style="width:105px">TimeTable</button>
-					<button title="Открывает админку Talks для поиска по ID П ID У , с которым идет урок" id="talksadm" style="width:105px">Talks</button>
-					<button title="Открывает начислятор билинга для просмотра реального баланса у ученика и зависших уроков не на той STK" id="billingadm" style="width:105px">Начислятор</button>
-					<button title="Открывает раздел для создания операции компенсации ученику" id="compens" style="width:105px">Компенсация</button>
-					<button title="Открывает CMS хранилище материалов уроков" id="CMS" style="width:105px">CMS</button>
-					<button title="Открывает админку пользователей" id="useradm" style="width:105px; margin-top: 3px">Админка</button>
-					<button title="Открывает поиск платежа по данным карте, сумме, дате платежа" id="transactions" style="width:105px; margin-top: 3px">Поиск $</button>
-					<button title="Открывает форму передачи предложений от пользователей" id="suggestions" style="width:105px; margin-top: 3px">Предложения</button>
-					<button title="Открывает раздел с проверкой фичей(кругов), подключенных пользователю и добавление/удаление их" id="userfeatures" style="width:105px; margin-top: 3px">User Фичи</button>
-					<button title="Открывает  CMS детских предметов" id="kidscms" style="width:105px; margin-top: 3px">Kids CMS</button>
-					<button title="Открывает раздел в Confluence по созданию тестовых комнат" id="testroom" style="width:105px; margin-top: 3px">TestRooms</button>
-					<button title="Открывает билинг для просмотра и редактирования подписок" id="subscribebilling" style="width:105px; margin-top: 3px">$Подписки</button>
-					<button title="Открывает форму по аппеляциям аудита" id="apelation" style="width:105px; margin-top: 3px">Апелляции</button>
-					<button title="Открывает сайт BrowserStack" id="browserstack" style="width:105px; margin-top: 3px">BrowserStaсk</button>
-					<button title="Открывает сайт для поиска записей уроков" id="lesrecords" style="width:105px; margin-top: 3px">LessonRecords</button>
-					<button title="Открывает раздел для проверки сертификата" id="certificates" style="width:105px; margin-top: 3px">Сертификаты</button>
-					<button title="Открывает раздел для проверки промокодов" id="promocodes" style="width:105px; margin-top: 3px">Промокоды</button>
-					<button title="Открывает Help Centr для учеников" id="helpocentrstud" style="width:105px; margin-top: 3px">Help Center У</button>
-					<button title="Открывает Help Centr для преподавателей" id="helpocentrteach" style="width:105px; margin-top: 3px">Help Center П</button>	
-					<button title="Открывает сайт для просмотра ошибок и логов в комнате" id="trshoothing" style="width:105px; margin-top: 3px">Troubleshooting</button>
+					<button class="mainButton" title="Открывает Timetable" id="timetable" style="width:105px">TimeTable</button>
+					<button class="mainButton" title="Открывает админку Talks для поиска по ID П ID У , с которым идет урок" id="talksadm" style="width:105px">Talks</button>
+					<button class="mainButton" title="Открывает начислятор билинга для просмотра реального баланса у ученика и зависших уроков не на той STK" id="billingadm" style="width:105px">Начислятор</button>
+					<button class="mainButton" title="Открывает раздел для создания операции компенсации ученику" id="compens" style="width:105px">Компенсация</button>
+					<button class="mainButton" title="Открывает CMS хранилище материалов уроков" id="CMS" style="width:105px">CMS</button>
+					<button class="mainButton" title="Открывает админку пользователей" id="useradm" style="width:105px; margin-top: 3px">Админка</button>
+					<button class="mainButton" title="Открывает поиск платежа по данным карте, сумме, дате платежа" id="transactions" style="width:105px; margin-top: 3px">Поиск $</button>
+					<button class="mainButton" title="Открывает форму передачи предложений от пользователей" id="suggestions" style="width:105px; margin-top: 3px">Предложения</button>
+					<button class="mainButton" title="Открывает раздел с проверкой фичей(кругов), подключенных пользователю и добавление/удаление их" id="userfeatures" style="width:105px; margin-top: 3px">User Фичи</button>
+					<button class="mainButton" title="Открывает  CMS детских предметов" id="kidscms" style="width:105px; margin-top: 3px">Kids CMS</button>
+					<button class="mainButton" title="Открывает раздел в Confluence по созданию тестовых комнат" id="testroom" style="width:105px; margin-top: 3px">TestRooms</button>
+					<button class="mainButton" title="Открывает билинг для просмотра и редактирования подписок" id="subscribebilling" style="width:105px; margin-top: 3px">$Подписки</button>
+					<button class="mainButton" title="Открывает форму по аппеляциям аудита" id="apelation" style="width:105px; margin-top: 3px">Апелляции</button>
+					<button class="mainButton" title="Открывает сайт BrowserStack" id="browserstack" style="width:105px; margin-top: 3px">BrowserStaсk</button>
+					<button class="mainButton" title="Открывает сайт для поиска записей уроков" id="lesrecords" style="width:105px; margin-top: 3px">LessonRecords</button>
+					<button class="mainButton" title="Открывает раздел для проверки сертификата" id="certificates" style="width:105px; margin-top: 3px">Сертификаты</button>
+					<button class="mainButton" title="Открывает раздел для проверки промокодов" id="promocodes" style="width:105px; margin-top: 3px">Промокоды</button>
+					<button class="mainButton" title="Открывает Help Centr для учеников" id="helpocentrstud" style="width:105px; margin-top: 3px">Help Center У</button>
+					<button class="mainButton" title="Открывает Help Centr для преподавателей" id="helpocentrteach" style="width:105px; margin-top: 3px">Help Center П</button>	
+					<button class="mainButton" title="Открывает сайт для просмотра ошибок и логов в комнате" id="trshoothing" style="width:105px; margin-top: 3px">Troubleshooting</button>
 				</div>
 				<div style="margin: 5px; width: 550px" id="links_box">
 					<input id="cpuname" placeholder="CPU name" title="вводим название процессора, чтобы сразу перейти на сайт с проверкой рейтинга CPU" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="benchmark">🔎</button>
+					<button class="mainButton" id="benchmark">🔎</button>
 					<input id="creditstatus" placeholder="ID У рассрочка" title="вводим ID У, чтобы получить прямую ссылку для проверки рассрочек ученика" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="credits">🔎</button>
+					<button class="mainButton" id="credits">🔎</button>
 					<input id="iplookup" placeholder="IP У/П/Vimbox" title="вводим IP У/П/Платформы, чтобы получить информацию о месторасположении географического адреса и получения информации о хостинге" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="gotolookip">🔎</button>
+					<button class="mainButton" id="gotolookip">🔎</button>
 					<input id="lgssearch" placeholder="ID Группы LGS" title="Введите ID LGS или обычной группы KGL для просмотра информации" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="getlgsinfo">🔎</button>
+					<button class="mainButton" id="getlgsinfo">🔎</button>
 					<input id="cmsstepid" placeholder="CMS stepUUID" title="вводим stepUUID, чтобы сразу попасть в ЦМС на нужный урок и найти на нем наш слайд и проверить" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="cmsid">🔎</button>
+					<button class="mainButton" id="cmsid">🔎</button>
 					<input id="schemesteacher" placeholder="ID П схем возн" title="Вводим ID П, чтобы открытть ресурс с подключенными схемами вознаграждения П" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="getschemes">🔎</button>	
+					<button class="mainButton" id="getschemes">🔎</button>	
 					<input id="pushes" placeholder="ID У пуши" title="Вводим ID У, чтобы увидеть были отправлены пуши ученику или нет" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="getpushes">🔎</button>
+					<button class="mainButton" id="getpushes">🔎</button>
 					<input id="idforservicelocaleru" placeholder="ID У обсл RU" title="вводим ID У и по нажатию изменяем сразу ему язык обслуживания на русский" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="setservicelocaleru">🚀</button>
+					<button class="mainButton" id="setservicelocaleru">🚀</button>
 					<input id="setidformobpass" placeholder="ID У/П МП" title="введите ID У/П для генерации разового пароля он будет отображен в поле ввода ID и скопирован в  буфер обмена" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="getmobpasscode" style="width: 25.23px;">🚀</button>
+					<button class="mainButton" id="getmobpasscode" style="width: 25.23px;">🚀</button>
 					<input id="trshooterhash" placeholder="hash trshooter" title="Вводим хеш комнаты чтобы посмотреть сразу инфу в трабл шутере" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="gettrshinfo" style="width: 25.23px;">🚀</button>
+					<button class="mainButton" id="gettrshinfo" style="width: 25.23px;">🚀</button>
 					<input id="enablerAP" placeholder="ID услуги(АП)" title="копируем услуги, где нужно активировать АП и сохраняем в буфер, в ЛКУ переходим по ссылке для активации" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="getenablerAP" style="width: 25.23px;">💾</button>
+					<button class="mainButton" id="getenablerAP" style="width: 25.23px;">💾</button>
 					<input id="skipAP" placeholder="ID ус(skipАП)" title="копируем услуги, где нужно пропустить АП и сохраняем в буфер, в ЛКУ переходим по ссылке для деактивации" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="getskipAP" style="width: 25.23px;">💾</button>
+					<button class="mainButton" id="getskipAP" style="width: 25.23px;">💾</button>
 					<input id="skiponboarding" placeholder="ID ус(skip Onbo)" title="копируем услуги, где нужно отключить онбоардинг в ЛКУ" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button id="doskiponboard" style="width: 25.23px;">💾</button>
+					<button class="mainButton" id="doskiponboard" style="width: 25.23px;">💾</button>
 				</div>
 				<div style="margin: 5px; width: 550px" id="links_butd">
-					<button title="копирует в буфер обмена команду setstatus('classwork') для перезапуска уроков" id="restartlesson" style="width:100px">Redo MAT💾</button>
-					<button title="открывает модуль парсинга чатов операторов и вытягиваиет из них теги тематику или все вместе для дальнейшего анализа" id="openGrabber" style="width:100px">Grabber</button>
-					<button title="отображает актуальную версию iOS приложения" id="curVeriOS" style="float: right; margin-right: 10px;"></button>
-			  	    <button title="Отображает актуальную версию Android приложения" id="curVerAndroid" style="float: right; margin-right: 5px;"></button>
-			  	    <button title="Открывает Confluence с инструкцией по расширению" id="faqext" style="float: right; margin-right: 5px;">ChMAF</button>
+					<button class="mainButton" title="копирует в буфер обмена команду setstatus('classwork') для перезапуска уроков" id="restartlesson" style="width:100px">Redo MAT💾</button>
+					<button class="mainButton" title="открывает модуль парсинга чатов операторов и вытягиваиет из них теги тематику или все вместе для дальнейшего анализа" id="openGrabber" style="width:100px">Grabber</button>
+					<button class="mainButton" title="отображает актуальную версию iOS приложения" id="curVeriOS" style="float: right; margin-right: 10px;"></button>
+			  	    <button class="mainButton" title="Отображает актуальную версию Android приложения" id="curVerAndroid" style="float: right; margin-right: 5px;"></button>
+			  	    <button class="mainButton" title="Открывает Confluence с инструкцией по расширению" id="faqext" style="float: right; margin-right: 5px;">ChMAF</button>
 				</div>
 			</span>
 	</span>
