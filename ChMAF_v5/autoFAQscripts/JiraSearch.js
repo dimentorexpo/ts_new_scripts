@@ -2,10 +2,6 @@ let indexStart;
 let customquery = '';
 let requesttojiratext;
 let favissues = [];
-const textArea1 = document.getElementById('responseTextarea1');
-const textArea2 = document.getElementById('responseTextarea2');
-const textArea3 = document.getElementById('responseTextarea3');
-const sendRespbtn = document.getElementById('sendResponse');
 var win_Jira =  // описание элементов окна Поиска по Jira
     `<div style="display: flex; width: 550px;">
         <span style="width: 550px">
