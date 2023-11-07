@@ -109,44 +109,6 @@ if (localStorage.getItem('winTopTimetable') == null) { // начальное п�
   localStorage.setItem('winLeftTimetable', '295');
 }
 
-// let wintServices = document.createElement('div'); // создание окна вензель user info
-// document.body.append(wintServices);
-// wintServices.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopService') + 'px; left: ' + localStorage.getItem('winLeftService') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-// wintServices.style.display = 'none';
-// wintServices.setAttribute('id', 'AF_Service');
-// wintServices.innerHTML = win_serviceinfo;
-
-// let dragHandleServices = document.createElement('div');
-// dragHandleServices.style = 'width: 100%; height: 20px; background: #ccc; cursor: move;';
-// wintServices.prepend(dragHandleServices);
-
-// dragHandleServices.onmousedown = function(event) {
-    // let startX = event.clientX;
-    // let startY = event.clientY;
-    // let elemLeft = wintServices.offsetLeft;
-    // let elemTop = wintServices.offsetTop;
-
-    // function onMouseMove(event) {
-      // let deltaX = event.clientX - startX;
-      // let deltaY = event.clientY - startY;
-
-      // wintServices.style.left = (elemLeft + deltaX) + "px";
-      // wintServices.style.top = (elemTop + deltaY) + "px";
-
-      // localStorage.setItem('winTopService', wintServices.style.top);
-      // localStorage.setItem('winLeftService', wintServices.style.left);
-    // }
-
-    // document.addEventListener('mousemove', onMouseMove);
-
-    // function onMouseUp() {
-      // document.removeEventListener('mousemove', onMouseMove);
-      // document.removeEventListener('mouseup', onMouseUp);
-    // }
-
-    // document.addEventListener('mouseup', onMouseUp);
-// };
-
 let wintServices = document.createElement('div'); // создание окна вензель user info
 document.body.append(wintServices);
 wintServices.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopService') + 'px; left: ' + localStorage.getItem('winLeftService') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
