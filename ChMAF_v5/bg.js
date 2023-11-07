@@ -42,7 +42,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 }
 
   if (request.action === 'getEducationSrv') { // получение общего списка услуг
-    const sid = request.sid;
     makeFetchRequest("https://backend.skyeng.ru/api/products/configurations/", 'GET')
       .then(response => response.json())
       .then(data => sendResponse(data))
@@ -57,7 +56,64 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       .then(data => sendResponse(data))
       .catch(sendErrorResponse);
     return true;
-}
+  }
+	
+	if (request.action ==="getUserTasks") { // Получение списка активных задач на пользователе
+		const userid = request.userid;
+		makeFetchRequest(`https://customer-support.skyeng.ru/task/user/${userid}`, 'GET')
+      .then(response => response.json())
+      .then(data => sendResponse(data))
+      .catch(sendErrorResponse);
+    return true;
+	}
+	
+	if (request.action ==="getUserPhone") { // Получение телефона пользователя
+		const userid = request.userid;
+		makeFetchRequest(`https://backend.skyeng.ru/api/persons/${userid}/personal-data/?pdType=phone&source=persons.profile`, 'GET')
+      .then(response => response.json())
+      .then(data => sendResponse(data))
+      .catch(sendErrorResponse);
+    return true;
+	}
+	
+	if (request.action ==="getUserEmail") { // Получение email пользователя
+		const userid = request.userid;
+		makeFetchRequest(`https://backend.skyeng.ru/api/persons/${userid}/personal-data/?pdType=email&source=persons.profile`, 'GET')
+      .then(response => response.json())
+      .then(data => sendResponse(data))
+      .catch(sendErrorResponse);
+    return true;
+	}
+	
+	if (request.action === "changeLocaleToRu") { // Поменять локаль на "русский"
+			let userid = request.userid;
+			fetch(`https://backend.skyeng.ru/api/persons/general/${userid}`, {
+				"headers": {
+					"content-type": "application/json",
+					"sec-fetch-mode": "cors",
+					"sec-fetch-site": "same-site"
+				},
+				"referrer": "https://crm2.skyeng.ru/",
+				"referrerPolicy": "strict-origin-when-cross-origin",
+				"body": "{\"serviceLocale\":\"ru\"}",
+				"method": "PUT",
+				"mode": "cors",
+				"credentials": "include"
+			})
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok ' + response.statusText);
+				}
+				return response.json();
+			})
+			.then(data => sendResponse(data))
+			.catch(error => {
+				console.error('Ошибка при смене локали:', error);
+				sendErrorResponse('Произошла ошибка при смене локали: ' + error.message);
+			});
+			return true; // Это необходимо для асинхронной обработки sendResponse
+	}
+
 	//Конец блока запросов в CRM2
  	  
   if (request.action === 'getLoginer') { // генерация ссылки-логиннера с копирование в буфер обмена
@@ -88,8 +144,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             copyloginlnk.select();
             document.execCommand("copy");
             document.body.removeChild(copyloginlnk);
+			
+			sendResponse({ success: true });
         } else {
             console.error('Ссылки не найдены.');
+			sendResponse({ success: false });
         }
     })
     .catch(error => {
@@ -98,8 +157,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     });
     return true;
 }
-
-
 
   // Блок при работе с Datsy
   if (request.action === 'checkAuthDatsy') { // получение информации авторизован пользователь на сайте Datsy или нет
@@ -218,8 +275,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		  .then(data => sendResponse(data));
 		
 		return true;
-	  }
-	;
+	  };
 	//конец блока отправки в google forms
 	
 	//Блок работы с Timetable
@@ -316,6 +372,39 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		}
 	
 	// Конец блока с Jira
+	
+	// Блок работы с ID
+	
+		if (request.action === "generateMobileOTP") { // для создания OTP по МП
+			const userId = request.userId;
+			fetch("https://id.skyeng.ru/admin/auth/one-time-password", {
+				"headers": {
+					"content-type": "application/x-www-form-urlencoded",
+						"sec-fetch-site": "same-origin",
+						"sec-fetch-user": "?1",
+						"upgrade-insecure-requests": "1"
+				},
+				"body": `user_id_or_identity_for_one_time_password_form%5BuserIdOrIdentity%5D=${userId}&user_id_or_identity_for_one_time_password_form%5Bgenerate%5D=&user_id_or_identity_for_one_time_password_form%5B_token%5D=null`,
+					"method": "POST",
+					"mode": "cors",
+					"credentials": "include"
+			})
+			.then(response => response.text())
+			  .then(data => sendResponse(data))
+			  .catch(sendErrorResponse);
+			  return true;
+		}
+		
+		if (request.action ==="checkEmailAndPhone") { // проверка включена ли авторизация по телефону , почте или обоим
+			const idUser = request.idUser;	
+			makeFetchRequest(`https://id.skyeng.ru/admin/users/${idUser}/update-contacts`, 'GET')
+			  .then(response => response.text())
+			  .then(data => sendResponse(data))
+			  .catch(sendErrorResponse);
+			return true;
+		}
+	
+	// Конец работы с ID
 });
 
 
