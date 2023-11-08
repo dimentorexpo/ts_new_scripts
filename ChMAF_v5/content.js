@@ -96,7 +96,7 @@ var win_AFhelper =  // описание элементов главного ок
 				<button class="mainButton" id="opandclsbarhyper" style="width:  30px; margin: 0; padding: 2px; text-align: center;" title="Открывает форму для прикрепления ссылки в текст">🔗</button>
                 <button class="mainButton" title="Отправить текст от имени бота" id="sndbot" style="width: 30px; margin-left: 5px">🤖</button>
 				<button class="mainButton" title="Отправить текст" id="snd" style="width:50px; margin-left: 10px">send</button>
-				<button class="mainButton" title="Переключает между отправкой текста в заметки или в чат пользователю" class="msgtype" id="msg">Чат</button>
+				<button class="mainButton msgtype" title="Переключает между отправкой текста в заметки или в чат пользователю" id="msg">Чат</button>
 			</div>
 		<div style="border: 2px double black; display: none; background-color: #464451" id="addTmp">
 			<div style="margin: 5px; width: 350px">

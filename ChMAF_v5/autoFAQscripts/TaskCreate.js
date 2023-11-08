@@ -134,15 +134,17 @@ document.getElementById('AF_Createtask').ondblclick = function (a) { // скры
 function doHideForm(flag = localStorage.getItem('hideTaskWindow')) {
 	if (location.href.indexOf('skyeng.autofaq.ai/tickets/assigned') !== -1) { 
 		if (flag == 1) {
-				let newFrontend;
-			newFrontend = document.getElementsByTagName('iframe')[0].contentDocument.children[0].children[1].children
-
-			for (let g=0; g<newFrontend.length;g++) {
+				let newFrontend = document.getElementsByTagName('iframe');
+				if (newFrontend.length > 0) {
+					newFrontend = document.getElementsByTagName('iframe')[0].contentDocument.children[0].children[1].children
+											for (let g=0; g<newFrontend.length;g++) {
 						if(newFrontend[g].innerText.split('\n')[0] == "Создать задачу") {
 								newFrontend[g].children[0].children[0].style.display = "none"
 							console.log([g])
 						} 
 			}
+				}
+
 		} 
 	}
 }
