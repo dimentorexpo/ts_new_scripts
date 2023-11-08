@@ -1,0 +1,88 @@
+{ "manifest_version": 3, "name": "ChMAF", "version": "5.0.0",
+
+"background": {
+	  "service_worker": "bg.js"
+	},
+  "action": {
+	  "default_icon": "/icons/38.png",
+	  "default_title": "ChMAF - Your Professional Multitool"
+  },
+  "externally_connectable": {
+	  "matches": [
+		  "http://skyeng.autofaq.ai/",
+		  "https://skyeng.autofaq.ai/",
+		  "http://crm2.skyeng.ru/",
+		  "https://crm2.skyeng.ru/"
+	  ]
+  },
+  "content_scripts": [
+  {
+	  "js": ["content.js",
+			  "/Extras/chart.js",
+			  "/Extras/jquery-3.7.1.js",
+			  "/Extras/moment.js",
+			  "/autoFAQscripts/Addstat.js",
+			  "/autoFAQscripts/AFOperatorStatus.js",
+			  "/autoFAQscripts/AlarmClock.js",
+			  "/autoFAQscripts/BinBankInfo.js",
+			  "/autoFAQscripts/Calendar.js",
+			  "/autoFAQscripts/ChatHistory.js",
+			  "/autoFAQscripts/CustomTemplates.js",
+			  "/autoFAQscripts/Grabber.js",
+			  "/autoFAQscripts/GrList.js",
+			  "/autoFAQscripts/JiraSearch.js",
+			  "/autoFAQscripts/Knowledge.js",
+			  "/autoFAQscripts/LessonStatus.js",
+			  "/autoFAQscripts/Link.js",
+			  "/autoFAQscripts/Linksdostup.js",
+			  "/autoFAQscripts/Marks.js",
+			  "/autoFAQscripts/OperatorStatuse.js",
+			  "/autoFAQscripts/Radio.js",
+			  "/autoFAQscripts/RefuseForm.js",
+			  "/autoFAQscripts/ServiceDesk.js",
+			  "/autoFAQscripts/Settings.js",
+			  "/autoFAQscripts/Smartroom.js",
+			  "/autoFAQscripts/Statistica.js",
+			  "/autoFAQscripts/TaskCreate.js",
+			  "/autoFAQscripts/TemplatesFuncs.js",
+			  "/autoFAQscripts/TestRooms.js",
+			  "/autoFAQscripts/TestUsers.js",
+			  "/autoFAQscripts/Themes.js",
+			  "/autoFAQscripts/Userinfo.js",
+			  "/autoFAQscripts/VoiceHelper.js",
+			  "/Lightbox/dist/js/lightbox.min.js"],
+	  "css": ["/CSS/style.css", "/Lightbox/dist/css/lightbox.min.css"],
+	  "matches": ["*://skyeng.autofaq.ai/*"],
+	  "run_at": "document_end"
+  },
+  {
+	  "js": ["/OtherScripts/Consideration.js"],
+	  "matches": ["*://billing-marketing.skyeng.ru/*"],
+	  "run_at": "document_end"
+  },
+  {
+	"js": ["/OtherScripts/Multiclassroom.js"],
+	"matches": ["*://vimbox.skyeng.ru/*"],
+	"run_at": "document_end"
+}
+  ],
+  "icons" : {
+	  "16" : "/icons/16.png",
+	  "32" : "/icons/32.png",
+	  "48" : "/icons/48.png",
+	  "128" : "/icons/128.png"
+  },
+  "web_accessible_resources": [
+	  {
+		  "resources": ["OtherScripts/*", "autoFAQscripts/*", "Images/WA.png"],
+		  "matches": ["<all_urls>"]
+	  }
+  ],
+  "permissions": [ 
+	  "contextMenus",
+	  "tabs",
+	  "storage",
+	  "clipboardWrite"
+  ],
+  "host_permissions": [ "http://*.skyeng.ru/", "https://*.skyeng.ru/", "http://skyeng.autofaq.ai/", "https://skyeng.autofaq.ai/", "http://.datsy.info/", "https://.datsy.info/", "http://jira.skyeng.tech/", "https://jira.skyeng.tech/", "http://mattermost.skyeng.tech/","https://mattermost.skyeng.tech/", "http://mm-time.skyeng.tech/","https://mm-time.skyeng.tech/", "https://id.skyeng.ru/", "http://id.skyeng.ru/" ]
+}
