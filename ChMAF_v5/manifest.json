@@ -74,7 +74,8 @@
 		  "128" : "/icons/128.png"
 	  },
 	  "web_accessible_resources": [
-		  "OtherScripts/*", "autoFAQscripts/*"
+		  "OtherScripts/*", "autoFAQscripts/*",
+		  "Images/WA.png"
 	  ],
 	  "permissions": [ 
 		  "contextMenus",
