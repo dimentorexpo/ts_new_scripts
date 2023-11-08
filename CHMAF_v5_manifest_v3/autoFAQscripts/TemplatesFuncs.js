@@ -4,13 +4,13 @@ let TP_addresRzrv;
 chrome.storage.local.get({ TP_addr: '' }, function(result) {
   TP_addres = result.TP_addr;
   // Теперь переменная TP_addres содержит значение TP_addr из хранилища
-  console.log(TP_addres); // Используйте или обработайте TP_addres как нужно
+//  console.log(TP_addres); // Используйте или обработайте TP_addres как нужно
 });
 
 chrome.storage.local.get({ TP_addrRzrv: '' }, function(result) {
   TP_addresRzrv = result.TP_addr;
   // Теперь переменная TP_addres содержит значение TP_addr из хранилища
-  console.log(TP_addres); // Используйте или обработайте TP_addres как нужно
+ // console.log(TP_addres); // Используйте или обработайте TP_addres как нужно
 });
 
 
@@ -293,9 +293,21 @@ iframeDoc.getElementById('CurUsLoginer').onclick = function () {
     }, 1000);
     const idNode = SearchinAFnewUI("id");
 
-    if (idNode) {
-        chrome.runtime.sendMessage({ action: 'getLoginer', userid: idNode  }, function(userLoginer) {})
-		
+    if (idNode) {		
+		chrome.runtime.sendMessage({ action: 'getLoginer', userid: idNode }, function(response) {
+		  if (response.success) {
+			// Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
+			navigator.clipboard.writeText(response.loginLink).then(() => {
+			  // Уведомляем пользователя об успешном копировании
+			}).catch(err => {
+			  // Обрабатываем ошибки, связанные с буфером обмена
+			  console.error('Не удалось скопировать текст: ', err);
+			});
+		  } else {
+			// Обрабатываем ошибки, связанные с получением логиннера
+			alert('Не удалось получить логиннер: ' + response.error);
+		  }
+		});
     }
 }
 
@@ -431,7 +443,20 @@ iframeDoc.getElementById('NextUsLoginer').onclick = function () {
     const idNode = SearchinAFnewUI(requestargument);
 
     if (idNode) {		
-		chrome.runtime.sendMessage({ action: 'getLoginer', userid: idNode  }, function(userLoginer) {})
+				chrome.runtime.sendMessage({ action: 'getLoginer', userid: idNode }, function(response) {
+		  if (response.success) {
+			// Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
+			navigator.clipboard.writeText(response.loginLink).then(() => {
+			  // Уведомляем пользователя об успешном копировании
+			}).catch(err => {
+			  // Обрабатываем ошибки, связанные с буфером обмена
+			  console.error('Не удалось скопировать текст: ', err);
+			});
+		  } else {
+			// Обрабатываем ошибки, связанные с получением логиннера
+			alert('Не удалось получить логиннер: ' + response.error);
+		  }
+		});
     }
 
 }
