@@ -84,5 +84,5 @@
 	  "storage",
 	  "clipboardWrite"
   ],
-  "host_permissions": [ "http://*.skyeng.ru/", "https://*.skyeng.ru/", "http://skyeng.autofaq.ai/", "https://skyeng.autofaq.ai/", "http://.datsy.info/", "https://.datsy.info/", "http://jira.skyeng.tech/", "https://jira.skyeng.tech/", "http://mattermost.skyeng.tech/","https://mattermost.skyeng.tech/", "http://mm-time.skyeng.tech/","https://mm-time.skyeng.tech/", "https://id.skyeng.ru/", "http://id.skyeng.ru/" ]
+  "host_permissions": [ "https://*.skyeng.ru/*", "https://skyeng.autofaq.ai/*", "https://.datsy.info/*", "https://jira.skyeng.tech/*", "https://mattermost.skyeng.tech/*", "https://mm-time.skyeng.tech/*", "https://id.skyeng.ru/*", "https://api.datsy.info/*" ]
 }

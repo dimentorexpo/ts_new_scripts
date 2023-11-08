@@ -166,16 +166,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     });
     return true; // Возвращаем true для асинхронной отправки ответа
   }
-  
-/* function extractLoginLink(text) {
-  // Добавляем в регулярное выражение исключение для кавычек
-  const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/[^\s"']+/;
-  const match = text.match(regex);
-  return match ? match[0].replace(/["']+$/, '') : null; // Убираем кавычки с конца строки, если они есть
-}
-
- */
- 
+   
 function extractLoginLink(text) {
   // Используем глобальный поиск для нахождения всех URL
   const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g;
@@ -191,7 +182,16 @@ function extractLoginLink(text) {
 
   // Блок при работе с Datsy
   if (request.action === 'checkAuthDatsy') { // получение информации авторизован пользователь на сайте Datsy или нет
-    makeFetchRequest('https://api.datsy.info/api/auth/check.php', 'GET')
+	fetch("https://api.datsy.info/api/auth/check.php", {
+		  "headers": {
+			"sec-fetch-mode": "cors",
+			"sec-fetch-site": "cross-site"
+		  },
+		  "referrerPolicy": "strict-origin-when-cross-origin",
+		  "method": "GET",
+		  "mode": "cors",
+		  "credentials": "include"
+		})
       .then(response => response.json())
       .then(data => sendResponse(data))
       .catch(sendErrorResponse);
@@ -200,7 +200,16 @@ function extractLoginLink(text) {
 
   if (request.action === 'getTimeSlots') { // получение информации по времени слотов
     const date = request.date;
-    makeFetchRequest(`https://api.datsy.info/api/main-events/?date=${date}`, 'GET')
+		fetch(`https://api.datsy.info/api/main-events/?date=${date}`, {
+		  "headers": {
+			"sec-fetch-mode": "cors",
+			"sec-fetch-site": "cross-site"
+		  },
+		  "referrerPolicy": "strict-origin-when-cross-origin",
+		  "method": "GET",
+		  "mode": "cors",
+		  "credentials": "include"
+		})
       .then(response => response.json())
       .then(data => sendResponse(data))
       .catch(sendErrorResponse);
@@ -235,7 +244,7 @@ function extractLoginLink(text) {
 		body: `addinput=${value}&slotname=${time}&date=${date}`,
 		credentials: "include"
 	  })
-	  .then(response => response.json())
+	  .then(response => response.text())
 	  .then(data => sendResponse(data))
 	  .catch(sendErrorResponse);
 	  return true;
