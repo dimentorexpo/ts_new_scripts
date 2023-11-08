@@ -13,7 +13,7 @@ var win_Chathis =  // описание элементов окна Истори�
 				</div>
 				<div style="margin: 5px; width: 410px; display:flex; justify-content:space-evenly;" id="chathismenu">
 					<button class="mainButton" title="Возвращает на экран просмотра списка чатов" id="back_to_chat_his" style="width:50px; font-size:22px; padding:0;">🔙</button>
-					 <input id="chatuserhis" placeholder="ID пользователя" oninput="onlyNumbers(this)" autocomplete="off" type="text" style="text-align: center; width: 130px; color: black; margin-top: 5px">
+					 <input id="chatuserhis" placeholder="ID пользователя" autocomplete="off" type="text" style="text-align: center; width: 130px; color: black; margin-top: 5px">
 					 <input id="hashchathis" placeholder="Хеш чата" title="" autocomplete="off" type="text" style="text-align: center; width: 130px; color: black; margin-top: 5px">
 					<button class="mainButton" title="Находит историю чатов или открывает по хешу чата диалог" id="btn_search_history" style="width:50px;font-size:22px;padding:0;">🔎</button>
 				</div>
@@ -468,7 +468,6 @@ for (let i = convdata.messages.length - 1; i >= 0; i--) {
     }*/
 }
 
-
 function getFormattedDateComponent(dateComponent) { // функция добавляет 0 к месяцу, дню, минуте, часу если значение меньше 10 иначе просто размещает значение
   return dateComponent < 10 ? '0' + dateComponent : dateComponent;
 }
@@ -617,6 +616,10 @@ document.getElementById('clearallinfo').onclick = () => { //кнопка очи�
 	document.getElementById('chatuserhis').value = ''
 	document.getElementById('hashchathis').value = ''
 }
+	
+document.getElementById('chatuserhis').addEventListener('input', function(){
+	onlyNumbers(this);
+})
 	
 	document.getElementById('chid').onclick = () => { // копирует в буфер айди чата
         copyToClipboard('https://hdi.skyeng.ru/autofaq/conversation/-11/' + document.getElementById('placechatid').innerText)

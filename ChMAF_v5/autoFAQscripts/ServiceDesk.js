@@ -14,10 +14,7 @@ let prevtsk;
 let flagpsis = 0;
 let msgissnd = 0;
 let varinfraOID; //переменная для хранения значения ID оператора в Infra
-const responseTextarea1 = document.getElementById('responseTextarea1');
-const responseTextarea2 = document.getElementById('responseTextarea2');
-const responseTextarea3 = document.getElementById('responseTextarea3');
-const sendResponse = document.getElementById('sendResponse');
+
 const buttons = [ //array of buttonsnames
     '.edumodbtn',
     '.bilqabtn',
@@ -216,34 +213,23 @@ var win_servicedesk = // описание элементов окна Service De
 
 //func getOperInfraId
 function getInfraOId() {
-	responseTextarea1.value = `{}`
-    responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/session";
-    responseTextarea3.value = 'infradata'
-    sendResponse.click()
 	
-	responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-        const rsparray = JSON.parse(responseTextarea1.getAttribute('infradata'));
-        if (rsparray) {
-			localStorage.setItem('infraOID',rsparray.id);
+	chrome.runtime.sendMessage({action:"checkInfraAuth"}, function(response){
+		console.log(response)
+		    if (response) {
+			localStorage.setItem('infraOID',response.id);
 			document.getElementById('jiratknstatus').innerText = "🟢"
         }
-        responseTextarea1.removeAttribute('infradata');
-    });
+	})
 }
 
 function getprsuplasttask() { //функция для получения ссылки на последний созданный после отправки в канал тикет в джира +
 
     const prevtask = document.getElementById('prevtask');
-
-    responseTextarea1.value = `{}`;
-    responseTextarea2.value = `https://api-infra.skyeng.ru/api/v1/rs/requests?reporterId=${varinfraOID}&approverId=${varinfraOID}&maxResults=40&page=1`;
-    responseTextarea3.value = 'pstickets';
-    sendResponse.click();
-
-    responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-        const psarr = JSON.parse(responseTextarea1.getAttribute('pstickets'));
-        if (psarr) {
-            prevtsk = psarr.items[0].jiraIssueKey;
+	
+	chrome.runtime.sendMessage({action:"checkInfraHistory", infraOID: varinfraOID}, function(response){
+        if (response) {
+            prevtsk = response.items[0].jiraIssueKey;
             prevtask.innerText = prevtsk;
 
             prevtask.onclick = function () {
@@ -254,28 +240,19 @@ function getprsuplasttask() { //функция для получения ссы�
                 }
             }
         }
-        responseTextarea1.removeAttribute('pstickets');
-    });
+	})
 }
 
 function getmmlink() {
 	        if (newtask.innerText != '') {
-            responseTextarea1.value = `{}`
-            responseTextarea2.value = "https://jira.skyeng.tech/browse/" + newtask.innerText ;
-            responseTextarea3.value = 'mmlinkhere'
-            sendResponse.click()
-			
-			    responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-				const infoarr = responseTextarea1.getAttribute('mmlinkhere');
-				if (infoarr) {
-                    mmlink = infoarr.match(messregexPattern)[1];
-                    console.log(`${messanger_name} link ${mmlink}`);
-                    sendComment(`${messanger_name} link: ${mmlink}`);
-				}
-				responseTextarea1.removeAttribute('mmlinkhere');
-			});
-
-        } else console.log("Задача не была создана, поэтому в заметки нечего размещать")
+				chrome.runtime.sendMessage({action: "checkTimeLinkInTask" , taskId: newtask.innerText},function(response){
+					if (response) {
+						mmlink = response.match(messregexPattern)[1];
+						console.log(`${messanger_name} link ${mmlink}`);
+						sendComment(`${messanger_name} link: ${mmlink}`);
+					} else console.log("Задача не была создана, поэтому в заметки нечего размещать")
+				})
+			}
 }
 
 function sendRequest(idstdserv, dscr, str, erx, ary, code) {
@@ -298,24 +275,10 @@ function sendRequest(idstdserv, dscr, str, erx, ary, code) {
     mode: 'cors',
     credentials: 'include',
   };
-
-  let requestOptionsString = JSON.stringify(requestOptions);
-
-  responseTextarea1.value = requestOptionsString;
-  responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
-  responseTextarea3.value = 'responseRequest';
-
-  // логируем входящие переменные и значение полей отправки запроса
-  console.log(`${idstdserv} ${dscr} ${str} ${erx} ${ary} ${code}`);
-  console.log(responseTextarea1.value);
-  console.log(responseTextarea2.value);
-
-  sendResponse.click();
-    
-      responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-        const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-        if (reqvarr) {
-            lasttsk = reqvarr.jiraIssueKey;
+  
+  chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
+        if (response) {
+            lasttsk = response.jiraIssueKey;
             newtask.innerText = lasttsk;
 			sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
 			
@@ -324,10 +287,8 @@ function sendRequest(idstdserv, dscr, str, erx, ary, code) {
                 removefields[i].value = '';
             }
         }
-        responseTextarea1.removeAttribute('responseRequest');
-    });
-
-   setTimeout(getmmlink, 8000);
+		setTimeout(getmmlink, 8000);
+  })
 }
 
 function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code) {
@@ -351,24 +312,11 @@ function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code) {
       mode: 'cors',
       credentials: 'include',
     };
-  
-    let requestOptionsString = JSON.stringify(requestOptions);
-  
-    responseTextarea1.value = requestOptionsString;
-    responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
-    responseTextarea3.value = 'responseRequest';
-  
-    // логируем входящие переменные и значение полей отправки запроса
-    console.log(`${idstdserv} ${service} ${dscr} ${str} ${erx} ${ary} ${code}`);
-    console.log(responseTextarea1.value);
-    console.log(responseTextarea2.value);
-  
-    sendResponse.click();
-      
-        responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-          const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-          if (reqvarr) {
-              lasttsk = reqvarr.jiraIssueKey;
+	
+	
+	  chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){  
+          if (response) {
+              lasttsk = response.jiraIssueKey;
               newtask.innerText = lasttsk;
               sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
               
@@ -377,11 +325,9 @@ function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code) {
                   removefields[i].value = '';
               }
           }
-          responseTextarea1.removeAttribute('responseRequest');
-      });
-  
-     setTimeout(getmmlink, 8000);
-  }
+		setTimeout(getmmlink, 8000);
+	  })
+}
 
 function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code) {
     let formData = new URLSearchParams();
@@ -405,36 +351,20 @@ function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code) {
       credentials: 'include',
     };
   
-    let requestOptionsString = JSON.stringify(requestOptions);
-  
-    responseTextarea1.value = requestOptionsString;
-    responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
-    responseTextarea3.value = 'responseRequest';
-  
-    // логируем входящие переменные и значение полей отправки запроса
-    console.log(`${idstdserv} ${hesh} ${dscr} ${str} ${erx} ${ary} ${code}`);
-    console.log(responseTextarea1.value);
-    console.log(responseTextarea2.value);
-  
-    sendResponse.click();
-      
-        responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-          const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-          if (reqvarr) {
-              lasttsk = reqvarr.jiraIssueKey;
-              newtask.innerText = lasttsk;
-              sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
+  	  chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
+		      if (response) {
+				lasttsk = response.jiraIssueKey;
+				newtask.innerText = lasttsk;
+				sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
               
-              const removefields = document.getElementsByClassName('removefield');
-              for (let i = 0; i < removefields.length; i++) {
+				const removefields = document.getElementsByClassName('removefield');
+				for (let i = 0; i < removefields.length; i++) {
                   removefields[i].value = '';
               }
           }
-          responseTextarea1.removeAttribute('responseRequest');
-      });
-  
-     setTimeout(getmmlink, 8000);
-  }
+       setTimeout(getmmlink, 8000);
+	  })
+ }
 
 function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code) {
     let formData = new URLSearchParams();
@@ -455,24 +385,10 @@ function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code) {
       mode: 'cors',
       credentials: 'include',
     };
-  
-    let requestOptionsString = JSON.stringify(requestOptions);
-  
-    responseTextarea1.value = requestOptionsString;
-    responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
-    responseTextarea3.value = 'responseRequest';
-  
-    // логируем входящие переменные и значение полей отправки запроса
-    console.log(`${idstdserv} ${dscr} ${categoryvalue} ${usermail} ${code}`);
-    console.log(responseTextarea1.value);
-    console.log(responseTextarea2.value);
-  
-    sendResponse.click();
-      
-        responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-          const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-          if (reqvarr) {
-              lasttsk = reqvarr.jiraIssueKey;
+	
+	chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
+		  if (response) {
+              lasttsk = response.jiraIssueKey;
               newtask.innerText = lasttsk;
               sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
               
@@ -482,26 +398,17 @@ function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code) {
               }
               document.getElementById('categoryCommproblems').children[0].selected = true;
           }
-          responseTextarea1.removeAttribute('responseRequest');
-      });
-  
      setTimeout(getmmlink, 8000);
-  }
+	})  
+}
 
 let checkingId = [];
 function getthemesfrominfra(categoryId,index) {
-  responseTextarea1.value = '{}';
-  responseTextarea2.value = `https://api-infra.skyeng.ru/api/v1/rs/categories/${categoryId}/request-types`;
-  responseTextarea3.value = 'sendrequest';
-
-  sendResponse.click();
-
-  responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-    const reqvarr = JSON.parse(responseTextarea1.getAttribute('sendrequest'));
-    if (reqvarr) {
+  chrome.runtime.sendMessage({action:"getListOfTypes", category:categoryId},function(response){
+    if (response) {
       checkingId = [];
-      for (let i = 0; i < reqvarr.length; i++) {
-        checkingId.push({ id: reqvarr[i].id, summary: reqvarr[i].summary });
+      for (let i = 0; i < response.length; i++) {
+        checkingId.push({ id: response[i].id, summary: response[i].summary });
       }
 	  buttonsfromtest.innerHTML = ''
 	  for (let j=0; j<checkingId.length; j++) {
@@ -513,8 +420,7 @@ function getthemesfrominfra(categoryId,index) {
         });
     });
     }
-    responseTextarea1.removeAttribute('sendrequest');
-  });
+  })
 }
 
 function getcommproboptions(){
@@ -523,27 +429,11 @@ function getcommproboptions(){
     if (commprobselect.length < 2){
     
     let infraOID = localStorage.getItem('infraOID')
-    const requestopt = {
-        headers: {
-            'accept': 'application/json',
-            'content-type': 'application/json'
-        },
-        referrer: 'https://infra.skyeng.ru/',
-        body: `{\"reporterId\":${infraOID},\"data\":{}}`,
-        method: 'PATCH',
-        credentials: 'include'
-    };
-
-        responseTextarea1.value = JSON.stringify(requestopt);
-        responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request-types/541/form";
-        responseTextarea3.value = 'getoptionscomm';
-      
-        sendResponse.click();
-      
-        responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-            const commprobarr = JSON.parse(responseTextarea1.getAttribute('getoptionscomm'));
-            if (commprobarr !== '') {
-                commprobarr.forEach((item) => {
+	
+	chrome.runtime.sendMessage({action:"getOptionsCommunication", ioperId: infraOID},function(response){
+		console.log(response)
+		            if (response !== '') {
+                response.forEach((item) => {
                     if (item.label == "Категория проблемы") {
                       const commprobarropt = item.attributes.options;
                       if (addoptflag < commprobarropt.length) {
@@ -556,11 +446,10 @@ function getcommproboptions(){
                           }
                         });
                       }
-                    responseTextarea1.removeAttribute('getoptionscomm');
                     }
-                  }); 
+                }); 
             }
-        });
+		})
     }
 }
 
@@ -588,22 +477,9 @@ function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo , a
     credentials: 'include',
   };
 
-  let requestOptionsString = JSON.stringify(requestOptions);
-
-  responseTextarea1.value = requestOptionsString;
-  responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
-  responseTextarea3.value = 'responseRequest';
-	
-
-    // логируем входящие переменные и значение полей отправки запроса
-    console.log(appinfo + " " + deviceinfo + " " + dscr + " " + str + " " + erx + " " + ary + " " + idstdserv + " " + code)
-
-    sendResponse.click()
-	
-	      responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-        const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-        if (reqvarr) {
-            lasttsk = reqvarr.jiraIssueKey;
+	chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
+        if (response) {
+            lasttsk = response.jiraIssueKey;
             newtask.innerText = lasttsk;
 			sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
 			
@@ -612,10 +488,8 @@ function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo , a
                 removefields[i].value = '';
             }
         }
-        responseTextarea1.removeAttribute('responseRequest');
-    });
-
     setTimeout(getmmlink, 8000);
+	})
 }
 
 function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code) {
@@ -642,23 +516,10 @@ function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, 
     mode: 'cors',
     credentials: 'include',
   };
-
-  let requestOptionsString = JSON.stringify(requestOptions);
-
-  responseTextarea1.value = requestOptionsString;
-  responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
-  responseTextarea3.value = 'responseRequest';
-	
-	
-    // логируем входящие переменные и значение полей отправки запроса
-    console.log(priorvalue + " " + appinfo + " " + deviceinfo + " " + dscr + " " + str + " " + erx + " " + ary + " " + idstdserv + " " + code)
-
-    sendResponse.click()
-	
-	      responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-        const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-        if (reqvarr) {
-            lasttsk = reqvarr.jiraIssueKey;
+  
+  chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
+        if (response) {
+            lasttsk = response.jiraIssueKey;
             newtask.innerText = lasttsk;
 			sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
 			
@@ -667,10 +528,8 @@ function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, 
                 removefields[i].value = '';
             }
         }
-        responseTextarea1.removeAttribute('responseRequest');
-    });
-
     setTimeout(getmmlink, 8000);
+  })
 }
 
 function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code) {
@@ -698,23 +557,10 @@ function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, s
       mode: 'cors',
       credentials: 'include',
     };
-  
-    let requestOptionsString = JSON.stringify(requestOptions);
-  
-    responseTextarea1.value = requestOptionsString;
-    responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
-    responseTextarea3.value = 'responseRequest';
-      
-      
-      // логируем входящие переменные и значение полей отправки запроса
-      console.log(CMSvalue + " "  + priorvalue + " " + appinfo + " " + deviceinfo + " " + dscr + " " + str + " " + erx + " " + ary + " " + idstdserv + " " + code)
-  
-      sendResponse.click()
-      
-            responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-          const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-          if (reqvarr) {
-              lasttsk = reqvarr.jiraIssueKey;
+	
+	chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
+          if (response) {
+              lasttsk = response.jiraIssueKey;
               newtask.innerText = lasttsk;
               sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
               
@@ -723,10 +569,8 @@ function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, s
                   removefields[i].value = '';
               }
           }
-          responseTextarea1.removeAttribute('responseRequest');
-      });
-  
       setTimeout(getmmlink, 8000);
+	})	 
   }
 
 //main

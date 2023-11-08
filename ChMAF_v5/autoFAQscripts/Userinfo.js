@@ -365,23 +365,16 @@ let telefonStatus = document.getElementById('telefonIdentity')
 
 document.getElementById('getlessonpast').onclick = function () { // показывает прошедшие уроки
     document.getElementById('timetabledata').innerHTML = "";
-    let stid = document.getElementById('idstudent').value;
-    stid = stid.trim();
+    let stid = document.getElementById('idstudent').value.trim();
     let pastlessondata = "";
-    let pastlessoninfo = "";
-    document.getElementById('responseTextarea1').value = `{}`
-    document.getElementById('responseTextarea2').value = "https://backend.skyeng.ru/api/students/" + stid + "/timetable/lessons-history/?page=0";
-    document.getElementById('responseTextarea3').value = 'pastlessoninfodata'
-    document.getElementById('sendResponse').click()
 
-    document.getElementById("responseTextarea1").addEventListener("DOMSubtreeModified", function () {
-        pastlessoninfo = JSON.parse(document.getElementById('responseTextarea1').getAttribute('pastlessoninfodata'))
-        if (pastlessoninfo != null) {
-            if (pastlessoninfo.data == "") {
+	chrome.runtime.sendMessage({action:"checkLessonHistoryPast", uchId: stid},function(response){
+		   if (response != null) {
+            if (response.data == "") {
                 document.getElementById('timetabledata').innerHTML = "Еще не было уроков";
             } else {
-                for (let i = 0; i < pastlessoninfo.data.length; i++) {
-                    let d = new Date(pastlessoninfo.data[i].startedAt)
+                for (let i = 0; i < response.data.length; i++) {
+                    let d = new Date(response.data[i].startedAt)
                     let minutka;
                     let denek;
                     let mesacok;
@@ -406,86 +399,77 @@ document.getElementById('getlessonpast').onclick = function () { // показы
                     } else {
                         mesacok = d.getMonth() + 1;
                     }
-                    if (pastlessoninfo.data[i].status == "missed_by_student") {
-                        pastlessoninfo.data[i].status = "Пропущен учеником";
-                    } else if (pastlessoninfo.data[i].status == "canceled_by_student") {
-                        pastlessoninfo.data[i].status = "Отменен учеником";
-                    } else if (pastlessoninfo.data[i].status == "success") {
-                        pastlessoninfo.data[i].status = "Прошел";
-                    } else if (pastlessoninfo.data[i].status == "moved_by_student") {
-                        pastlessoninfo.data[i].status = "Перенесен учеником";
-                    } else if (pastlessoninfo.data[i].status == "canceled_by_teacher") {
-                        pastlessoninfo.data[i].status = "Отменен учителем";
-                    } else if (pastlessoninfo.data[i].status == "student_refused_to_study") {
-                        pastlessoninfo.data[i].status = "Отказался от обучения"
-                    } else if (pastlessoninfo.data[i].status == "interrupted") {
-                        pastlessoninfo.data[i].status = "Прерван"
-                    } else if (pastlessoninfo.data[i].status == "did_not_get_through_student") {
-                        pastlessoninfo.data[i].status = "Не смогли связаться с У"
-                    } else if (pastlessoninfo.data[i].status == "canceled_not_marked") {
-                        pastlessoninfo.data[i].status = "Не отмечен учителем вовремя"
+                    if (response.data[i].status == "missed_by_student") {
+                        response.data[i].status = "Пропущен учеником";
+                    } else if (response.data[i].status == "canceled_by_student") {
+                        response.data[i].status = "Отменен учеником";
+                    } else if (response.data[i].status == "success") {
+                        response.data[i].status = "Прошел";
+                    } else if (response.data[i].status == "moved_by_student") {
+                        response.data[i].status = "Перенесен учеником";
+                    } else if (response.data[i].status == "canceled_by_teacher") {
+                        response.data[i].status = "Отменен учителем";
+                    } else if (response.data[i].status == "student_refused_to_study") {
+                        response.data[i].status = "Отказался от обучения"
+                    } else if (response.data[i].status == "interrupted") {
+                        response.data[i].status = "Прерван"
+                    } else if (response.data[i].status == "did_not_get_through_student") {
+                        response.data[i].status = "Не смогли связаться с У"
+                    } else if (response.data[i].status == "canceled_not_marked") {
+                        response.data[i].status = "Не отмечен учителем вовремя"
                     }
 
-                    if (pastlessoninfo.data[i].lessonType == "regular") {
-                        pastlessoninfo.data[i].lessonType = "Регулярный";
-                    } else if (pastlessoninfo.data[i].lessonType == "single") {
-                        pastlessoninfo.data[i].lessonType = "Одиночный";
-                    } else if (pastlessoninfo.data[i].lessonType == "trial") {
-                        pastlessoninfo.data[i].lessonType = "Пробный";
+                    if (response.data[i].lessonType == "regular") {
+                        response.data[i].lessonType = "Регулярный";
+                    } else if (response.data[i].lessonType == "single") {
+                        response.data[i].lessonType = "Одиночный";
+                    } else if (response.data[i].lessonType == "trial") {
+                        response.data[i].lessonType = "Пробный";
                     }
 
                     for (let j = 0; j < servicecontainer.data.length; j++) {
-                        if (servicecontainer.data[j].serviceTypeKey == pastlessoninfo.data[i].educationService.serviceTypeKey)
-                            pastlessoninfo.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
+                        if (servicecontainer.data[j].serviceTypeKey == response.data[i].educationService.serviceTypeKey)
+                            response.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
                     }
 
-                    if (pastlessoninfo.data[i].educationService.serviceTypeKey == null) {
-                        pastlessoninfo.data[i].educationService.serviceTypeKey = "Услуга была в CRM1, см позднее обозначение!"
+                    if (response.data[i].educationService.serviceTypeKey == null) {
+                        response.data[i].educationService.serviceTypeKey = "Услуга была в CRM1, см позднее обозначение!"
                     }
 
-                    if (pastlessoninfo.data[i].teacher != null) {
+                    if (response.data[i].teacher != null) {
                         pastlessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka +
-                            '<span style="color:#00FF7F; font-weight:900;"> Статус: </span>' + pastlessoninfo.data[i].status + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + pastlessoninfo.data[i].lessonType + '<br>'
-                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + pastlessoninfo.data[i].educationService.id + " " + pastlessoninfo.data[i].educationService.serviceTypeKey + '<br>'
-                            + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + pastlessoninfo.data[i].teacher.general.id + " " + pastlessoninfo.data[i].teacher.general.name + " " + pastlessoninfo.data[i].teacher.general.surname + '<br>'
+                            '<span style="color:#c9dbd2; font-weight:900;"> Статус: </span>' + (response.data[i].status =="Прошел" ? ('<span style="color:#00FF7F;">'+ response.data[i].status +'</span>') : ('<span style="color:red">'+ response.data[i].status +'</span>') ) + '<span style="color:#c9dbd2; font-weight:900;"> Урок: </span>' + response.data[i].lessonType + '<br>'
+                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + response.data[i].educationService.id + " " + response.data[i].educationService.serviceTypeKey + '<br>'
+                            + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + response.data[i].teacher.general.id + " " + response.data[i].teacher.general.name + " " + response.data[i].teacher.general.surname + '<br>'
                             + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
                     } else {
                         pastlessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka +
-                            '<span style="color:#00FF7F; font-weight:900;"> Статус: </span>' + pastlessoninfo.data[i].status + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + pastlessoninfo.data[i].lessonType + '<br>'
-                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + pastlessoninfo.data[i].educationService.id + " " + pastlessoninfo.data[i].educationService.serviceTypeKey + '<br>'
+                            '<span style="color:#c9dbd2; font-weight:900;"> Статус: </span>' + response.data[i].status + '<span style="color:#c9dbd2; font-weight:900;"> Урок: </span>' + response.data[i].lessonType + '<br>'
+                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + response.data[i].educationService.id + " " + response.data[i].educationService.serviceTypeKey + '<br>'
                             + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
                     }
                 }
 
                 document.getElementById('timetabledata').innerHTML = pastlessondata;
-                pastlessondata = "";
+				pastlessondata = ""
             }
-
-            document.getElementById('responseTextarea1').removeAttribute('pastlessoninfodata')
         }
-    })
+	})
+
 }
 
 document.getElementById('getlessonfuture').onclick = function () { // показывает предстоящие уроки
 
     document.getElementById('timetabledata').innerHTML = "";
-    let stid = document.getElementById('idstudent').value;
-    stid = stid.trim();
+    let idShka = document.getElementById('idstudent').value.trim();
     let futurelessondata = "";
-    let futurelessoninfo = "";
-    document.getElementById('responseTextarea1').value = `{}`
-    document.getElementById('responseTextarea2').value = "https://backend.skyeng.ru/api/students/" + stid + "/timetable/future-lessons/"
-    document.getElementById('responseTextarea3').value = 'futurelessoninfodata'
-    document.getElementById('sendResponse').click()
-
-    document.getElementById("responseTextarea1").addEventListener("DOMSubtreeModified", function () {
-        futurelessoninfo = JSON.parse(document.getElementById('responseTextarea1').getAttribute('futurelessoninfodata'))
-        if (futurelessoninfo != null) {
-            if (futurelessoninfo.data == "") {
+	chrome.runtime.sendMessage({action:"checkLessonHistoryFuture", uchIdNew: idShka},function(responseFuture){
+        if (responseFuture != null) {
+            if (responseFuture.data == "") {
                 document.getElementById('timetabledata').innerHTML = "Уроки не запланированы";
             } else {
-                for (let i = 0; i < futurelessoninfo.data.length; i++) {
-                    let d = new Date(futurelessoninfo.data[i].startedAt)
+                for (let i = 0; i < responseFuture.data.length; i++) {
+                    let d = new Date(responseFuture.data[i].startedAt)
                     let minutka;
                     let denek;
                     let mesacok;
@@ -511,29 +495,29 @@ document.getElementById('getlessonfuture').onclick = function () { // показ
                         mesacok = d.getMonth() + 1;
                     }
 
-                    if (futurelessoninfo.data[i].lessonType == "regular") {
-                        futurelessoninfo.data[i].lessonType = "Регулярный";
-                    } else if (futurelessoninfo.data[i].lessonType == "single") {
-                        futurelessoninfo.data[i].lessonType = "Одиночный";
-                    } else if (futurelessoninfo.data[i].lessonType == "trial") {
-                        futurelessoninfo.data[i].lessonType = "Пробный";
+                    if (responseFuture.data[i].lessonType == "regular") {
+                        responseFuture.data[i].lessonType = "Регулярный";
+                    } else if (responseFuture.data[i].lessonType == "single") {
+                        responseFuture.data[i].lessonType = "Одиночный";
+                    } else if (responseFuture.data[i].lessonType == "trial") {
+                        responseFuture.data[i].lessonType = "Пробный";
                     }
 
                     for (let j = 0; j < servicecontainer.data.length; j++) {
-                        if (servicecontainer.data[j].serviceTypeKey == futurelessoninfo.data[i].educationService.serviceTypeKey)
-                            futurelessoninfo.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
+                        if (servicecontainer.data[j].serviceTypeKey == responseFuture.data[i].educationService.serviceTypeKey)
+                            responseFuture.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
                     }
 
-                    if (futurelessoninfo.data[i].teacher != null) {
+                    if (responseFuture.data[i].teacher != null) {
                         futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
-                            + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + futurelessoninfo.data[i].lessonType + '<br>'
-                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + futurelessoninfo.data[i].educationService.id + " " + futurelessoninfo.data[i].educationService.serviceTypeKey + '<br>'
-                            + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + futurelessoninfo.data[i].teacher.general.id + " " + futurelessoninfo.data[i].teacher.general.name + " " + futurelessoninfo.data[i].teacher.general.surname + '<br>'
+                            + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + responseFuture.data[i].lessonType + '<br>'
+                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + responseFuture.data[i].educationService.id + " " + responseFuture.data[i].educationService.serviceTypeKey + '<br>'
+                            + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + responseFuture.data[i].teacher.general.id + " " + responseFuture.data[i].teacher.general.name + " " + responseFuture.data[i].teacher.general.surname + '<br>'
                             + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
                     } else {
                         futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
-                            + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + futurelessoninfo.data[i].lessonType + '<br>'
-                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + futurelessoninfo.data[i].educationService.id + " " + futurelessoninfo.data[i].educationService.serviceTypeKey + '<br>'
+                            + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + responseFuture.data[i].lessonType + '<br>'
+                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + responseFuture.data[i].educationService.id + " " + responseFuture.data[i].educationService.serviceTypeKey + '<br>'
                             + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
                     }
 
@@ -541,9 +525,11 @@ document.getElementById('getlessonfuture').onclick = function () { // показ
                 document.getElementById('timetabledata').innerHTML = futurelessondata;
                 futurelessondata = "";
             }
-            document.getElementById('responseTextarea1').removeAttribute('futurelessoninfodata')
         }
-    })
+	})
+
+
+    
 }
 
 document.getElementById('changelocalelng').onclick = function () { // меняет язык обслуживания выбранного пользователя в вензеле на русский
