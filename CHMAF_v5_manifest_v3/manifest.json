@@ -53,7 +53,7 @@
 			  "/Lightbox/dist/js/lightbox.min.js"],
 	  "css": ["/CSS/style.css", "/Lightbox/dist/css/lightbox.min.css"],
 	  "matches": ["*://skyeng.autofaq.ai/*"],
-	  "run_at": "document_end"
+	  "run_at": "document_idle"
   },
   {
 	  "js": ["/OtherScripts/Consideration.js"],
