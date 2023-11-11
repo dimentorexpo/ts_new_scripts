@@ -283,7 +283,7 @@ function extractLoginLink(text) {
 		body: `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacheridforroom}&${randomHash}%5BstudentIds%5D=${studentidforroom}&btn_create_and_list=`,
 		credentials: "include"
 	  })
-	  .then(response => response.json())
+	  .then(response => response.text())
 	  .then(data => sendResponse(data))
 	  .catch(sendErrorResponse);
 	  return true;

@@ -70,8 +70,8 @@ btnsid.addEventListener("click", (event) => {
 			// Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
 			navigator.clipboard.writeText(response.loginLink).then(() => {
 			  // Уведомляем пользователя об успешном копировании
-			  document.getElementById('sidcode').classList.add('active');
-			  setTimeout(() => { document.getElementById('sidcode').classList.remove('active'); }, 1000);
+			  document.getElementById('sidcode').classList.add('activeTestUsrs');
+			  setTimeout(() => { document.getElementById('sidcode').classList.remove('activeTestUsrs'); }, 1000);
 			}).catch(err => {
 			  // Обрабатываем ошибки, связанные с буфером обмена
 			  console.error('Не удалось скопировать текст: ', err);
@@ -92,8 +92,8 @@ btnsid.addEventListener("contextmenu", (event) => { // копирует в бу�
     let teststudid = localStorage.getItem('test_stud');
     if (teststudid != null || teststudid != '') {
         copyToClipboard(teststudid)
-        document.getElementById('sidcode').classList.add('active');
-        setTimeout(function () { document.getElementById('sidcode').classList.remove('active') }, 1000);
+        document.getElementById('sidcode').classList.add('activeTestUsrs');
+        setTimeout(function () { document.getElementById('sidcode').classList.remove('activeTestUsrs') }, 1000);
     } else alert("Введите ID тестового ученика в настройках ⚙");
 });
 
@@ -105,8 +105,8 @@ btntid.addEventListener("click", (event) => { // копирует в буфер 
 			// Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
 			navigator.clipboard.writeText(response.loginLink).then(() => {
 			  // Уведомляем пользователя об успешном копировании
-        document.getElementById('tidcode').classList.add('active');
-        setTimeout(function () { document.getElementById('tidcode').classList.remove('active') }, 1000);
+        document.getElementById('tidcode').classList.add('activeTestUsrs');
+        setTimeout(function () { document.getElementById('tidcode').classList.remove('activeTestUsrs') }, 1000);
 			}).catch(err => {
 			  // Обрабатываем ошибки, связанные с буфером обмена
 			  console.error('Не удалось скопировать текст: ', err);
@@ -125,7 +125,7 @@ btntid.addEventListener("contextmenu", (event) => { // копирует в бу�
     let testteachid = localStorage.getItem('test_teach');
     if (testteachid != null || testteachid != '') {
         copyToClipboard(testteachid)
-        document.getElementById('tidcode').classList.add('active');
-        setTimeout(function () { document.getElementById('tidcode').classList.remove('active') }, 1000);
+        document.getElementById('tidcode').classList.add('activeTestUsrs');
+        setTimeout(function () { document.getElementById('tidcode').classList.remove('activeTestUsrs') }, 1000);
     } else alert("Введите ID тестового преподавателя в настройках ⚙");
 });

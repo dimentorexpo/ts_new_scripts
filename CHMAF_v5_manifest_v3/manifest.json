@@ -16,9 +16,13 @@
 	  ]
   },
   "content_scripts": [
-  {
-	  "js": ["content.js",
-			  "/Extras/chart.js",
+   {
+	    "js": ["content.js"],
+		 "matches": ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*"],
+		"run_at": "document_idle"
+	  },
+  {	  
+	  "js": [ "/Extras/chart.js",
 			  "/Extras/jquery-3.7.1.js",
 			  "/Extras/moment.js",
 			  "/autoFAQscripts/Addstat.js",
@@ -79,8 +83,6 @@
 	  }
   ],
   "permissions": [ 
-	  "contextMenus",
-	  "tabs",
 	  "storage",
 	  "clipboardWrite"
   ],

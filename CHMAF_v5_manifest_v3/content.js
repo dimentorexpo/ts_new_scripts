@@ -721,7 +721,10 @@ setInterval(screenshots, 5000)
 setInterval(closeTerms, 500);
 setInterval(changeNewUIStyle, 500);
 
-setTimeout(move_again_AF, 3500) //вызов функции первичной загрузки страницы с фомированием меню и наполнением его
+if (location.host == "skyeng.autofaq.ai") {
+	setTimeout(move_again_AF, 3500) //вызов функции первичной загрузки страницы с фомированием меню и наполнением его	
+}
+
 
 if (localStorage.getItem('msg') != null) {
     document.getElementById('msg').innerHTML = localStorage.getItem('msg')
