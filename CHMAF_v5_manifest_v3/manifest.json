@@ -86,5 +86,5 @@
 	  "storage",
 	  "clipboardWrite"
   ],
-  "host_permissions": [ "https://*.skyeng.ru/*", "https://skyeng.autofaq.ai/*", "https://jira.skyeng.tech/*", "https://mattermost.skyeng.tech/*", "https://mm-time.skyeng.tech/*", "https://*.datsy.info/*" ]
+  "host_permissions": [ "https://*.skyeng.ru/*", "https://skyeng.autofaq.ai/*", "https://jira.skyeng.tech/*", "https://mm-time.skyeng.tech/*", "https://*.datsy.info/*" ]
 }
