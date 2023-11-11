@@ -78,7 +78,7 @@
   },
   "web_accessible_resources": [
 	  {
-		  "resources": ["OtherScripts/*", "autoFAQscripts/*", "Images/WA.png"],
+		  "resources": ["OtherScripts/*", "autoFAQscripts/*", "Images/*"],
 		  "matches": ["<all_urls>"]
 	  }
   ],
