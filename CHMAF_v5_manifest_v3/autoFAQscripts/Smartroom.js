@@ -47,7 +47,7 @@ var win_smartroomform =  // описание элементов окна Мул�
 									<option value="Вернуть старую платформу">-Вернуть старую платформу</option>
 									<option value="Мобильное приложение Skyeng">-Мобильное приложение Skyeng</option>
                                 </select>
-							</div>	
+							</div>
 
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600;">Категория 3</div>
 								<select id="catthreesmatrtoom" style="margin-left: 5px; padding-top: 5px; font-size: 16px; vertical-align: middle; color: black;">
@@ -85,8 +85,8 @@ var win_smartroomform =  // описание элементов окна Мул�
 
                                 </select>
 							</div>
-							
-						<div>	
+
+						<div>
 							<textarea id="fullcomentsmartroom" placeholder="Полный комментарий предложения по улучшению" autocomplete="off" type="text" style="text-align: center; width: 405px; color: black; margin-top: 5px" data-gramm="false" wt-ignore-input="true"></textarea>
 						<br>
 							<button class="mainButton" title="Отправляет заполненные поля формы в док" id="send2smartroom" style="width:105px; position: relative; left: 50%; margin-top: 5px; transform: translate(-50%, 0);">Отправить</button>
@@ -107,33 +107,33 @@ wintSmartroom.style.display = 'none';
 wintSmartroom.setAttribute('id', 'AF_Smartroomform');
 wintSmartroom.innerHTML = win_smartroomform;
 
-wintSmartroom.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = wintSmartroom.offsetLeft;
-    let elemTop = wintSmartroom.offsetTop;
+wintSmartroom.onmousedown = function (event) {
+    if (checkelementtype(event)) {
+        let startX = event.clientX;
+        let startY = event.clientY;
+        let elemLeft = wintSmartroom.offsetLeft;
+        let elemTop = wintSmartroom.offsetTop;
 
-    function onMouseMove(event) {
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
+        function onMouseMove(event) {
+            let deltaX = event.clientX - startX;
+            let deltaY = event.clientY - startY;
 
-      wintSmartroom.style.left = (elemLeft + deltaX) + "px";
-      wintSmartroom.style.top = (elemTop + deltaY) + "px";
+            wintSmartroom.style.left = (elemLeft + deltaX) + "px";
+            wintSmartroom.style.top = (elemTop + deltaY) + "px";
 
-      localStorage.setItem('winTopSmartroom', String(elemTop + deltaY));
-      localStorage.setItem('winLeftSmartroom', String(elemLeft + deltaX));
+            localStorage.setItem('winTopSmartroom', String(elemTop + deltaY));
+            localStorage.setItem('winLeftSmartroom', String(elemLeft + deltaX));
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mouseup', onMouseUp);
     }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
 }; // прекращение изменения позиции окна Мультирум пожелания/баги
 
 
@@ -142,167 +142,164 @@ document.getElementById('AF_Smartroomform').ondblclick = function (a) { // ск�
 }
 
 function getsmartroomformButtonPress() {
-        if (document.getElementById('AF_Smartroomform').style.display == '') {
-            document.getElementById('AF_Smartroomform').style.display = 'none'
-            document.getElementById('idmymenu').style.display = 'none'
-			document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-        } else {
-            document.getElementById('AF_Smartroomform').style.display = ''
-            document.getElementById('idmymenu').style.display = 'none'
-			document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+    if (document.getElementById('AF_Smartroomform').style.display == '') {
+        document.getElementById('AF_Smartroomform').style.display = 'none'
+        document.getElementById('idmymenu').style.display = 'none'
+        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+    } else {
+        document.getElementById('AF_Smartroomform').style.display = ''
+        document.getElementById('idmymenu').style.display = 'none'
+        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+    }
+
+    function clearradio() { // функция очистки радиобатонов
+        for (let j = 0; j < 4; j++) {
+            document.getElementsByName('typetoform')[j].checked = false
         }
 
-        function clearradio() { // функция очистки радиобатонов
-            for (let j = 0; j < 4; j++) {
-                document.getElementsByName('typetoform')[j].checked = false
-            }
-			
-			document.getElementById('cattwosmatrtoom')[0].selected = true
-			document.getElementById('catthreesmatrtoom')[0].selected = true
+        document.getElementById('cattwosmatrtoom')[0].selected = true
+        document.getElementById('catthreesmatrtoom')[0].selected = true
 
-        }
-        let useridis = SearchinAFnewUI('id');
-        let userType = SearchinAFnewUI('userType');
+    }
+    let useridis = SearchinAFnewUI('id');
+    let userType = SearchinAFnewUI('userType');
 
-        if (useridis){
-            document.getElementById('clientid').value = useridis;
-            if (userType === 'teacher'){
-                        document.getElementsByName('typetoform')[3].checked = true
-            } else if (userType === 'parent') {
+    if (useridis) {
+        document.getElementById('clientid').value = useridis;
+        if (userType === 'teacher') {
+            document.getElementsByName('typetoform')[3].checked = true
+        } else if (userType === 'parent') {
+            document.getElementsByName('typetoform')[1].checked = true
+        } else if (userType === 'student') {
+            let verticalis = SearchinAFnewUI("supportVertical");
+            if (verticalis === 'Adult') {
+                document.getElementsByName('typetoform')[0].checked = true
+            } else if (verticalis === 'Kids') {
                 document.getElementsByName('typetoform')[1].checked = true
-            } else if (userType === 'student') {
-                let verticalis = SearchinAFnewUI("supportVertical");
-                if (verticalis === 'Adult') {
+            }
+        }
+    }
+
+    document.getElementById('send2smartroom').onclick = function () {
+
+        let checkedclienttype;
+        let checkedquestion;
+        let alloptions;
+        let cat2selected;
+        let cat3selected;
+
+        let flagemptysmart = 0;
+
+        if (!document.getElementsByName('typetoform')[0].checked && !document.getElementsByName('typetoform')[1].checked && !document.getElementsByName('typetoform')[2].checked && !document.getElementsByName('typetoform')[3].checked) {
+            document.getElementById('smartroomuser').style.backgroundColor = 'Coral';
+            document.getElementById('smartroomuser').style.color = 'black';
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('smartroomuser').style.backgroundColor = '';
+            document.getElementById('smartroomuser').style.color = '#c4ffd3';
+        }
+
+        if (document.getElementById('clientid').value.length < 3) {
+            document.getElementById('clientid').style.backgroundColor = 'Coral';
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('clientid').style.backgroundColor = '';
+        }
+
+        if (!document.getElementsByName('whatobratform')[0].checked && !document.getElementsByName('whatobratform')[1].checked) {
+            document.getElementById('smartroomquestion').style.backgroundColor = 'Coral';
+            document.getElementById('smartroomquestion').style.color = 'black';
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('smartroomquestion').style.backgroundColor = '';
+            document.getElementById('smartroomquestion').style.color = '#c4ffd3';
+        }
+
+        if (document.getElementById('fullcomentsmartroom').value.length < 3) {
+            document.getElementById('fullcomentsmartroom').style.backgroundColor = 'Coral';
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('fullcomentsmartroom').style.backgroundColor = '';
+        }
+
+        if (flagemptysmart == 0) {
+            for (let i = 0; i < document.getElementsByName('typetoform').length; i++) {
+                if (document.getElementsByName('typetoform')[i].checked == true)
+                    checkedclienttype = document.getElementsByName('typetoform')[i].value;
+            }
+
+            for (let i = 0; i < document.getElementById('cattwosmatrtoom').length; i++) {
+                if (document.getElementById('cattwosmatrtoom')[i].selected == true)
+                    cat2selected = document.getElementById('cattwosmatrtoom')[i].value
+            }
+
+            for (let i = 0; i < document.getElementById('catthreesmatrtoom').length; i++) {
+                if (document.getElementById('catthreesmatrtoom')[i].selected == true)
+                    cat3selected = document.getElementById('catthreesmatrtoom')[i].value
+            }
+
+
+            for (let i = 0; i < document.getElementsByName('whatobratform').length; i++) {
+                if (document.getElementsByName('whatobratform')[i].checked == true)
+                    checkedquestion = document.getElementsByName('whatobratform')[i].value;
+            }
+
+            let body2 = 'entry.466256037=' + encodeURIComponent(checkedclienttype) + '&entry.505070950=' + encodeURIComponent(document.getElementById('clientid').value) + '&entry.876256156=' + encodeURIComponent(checkedquestion) + '&entry.1879097323=' + encodeURIComponent(document.getElementById('fullcomentsmartroom').value) + '&entry.156405977=' + encodeURIComponent(document.getElementsByName('catsmartroom')[0].value) + '&entry.1625340245=' + encodeURIComponent(cat2selected) + '&entry.478427702=' + encodeURIComponent(cat3selected)
+
+            chrome.runtime.sendMessage({
+                action: 'sentToForms',
+                url: 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse',
+                body: body2
+            }, function (response) {
+                document.getElementById('AF_Smartroomform').style.display = 'none'
+                document.getElementById('clientid').value = ''
+                document.getElementById('fullcomentsmartroom').value = ''
+                clearradio()
+                sendComment('Отправка в документ "Пожелания Смартрум" прошла успешно')
+            });
+        }
+    }
+
+    document.getElementById('clearsmartroomform').onclick = function () {
+        document.getElementById('clientid').value = ''
+        document.getElementById('fullcomentsmartroom').value = ''
+        document.getElementById('otheroptionsmartchecked').value = ''
+        document.getElementById('smartroomuser').style.background = '';
+        document.getElementById('clientid').style.background = '';
+        document.getElementById('smartroomquestion').style.background = '';
+        document.getElementById('fullcomentsmartroom').style.background = '';
+        clearradio()
+    }
+
+    document.getElementById('smartroomforminstr').onclick = function () {
+        window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-smartroom%F0%9F%A6%90Smartroom')
+    }
+
+    document.getElementById('hideMeSmartRoomForm').onclick = function () {
+        document.getElementById('AF_Smartroomform').style.display = 'none'
+        document.getElementById('clientid').value = ''
+        document.getElementById('fullcomentsmartroom').value = ''
+        clearradio()
+    }
+
+    document.getElementById('refreshhashsmartform').onclick = function () {
+        for (i = 0; document.getElementsByClassName('expert-user_details-list')[1].childNodes[i] != undefined; i++) {
+            if (document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].firstChild.innerText == "id") {
+                document.getElementById('clientid').value = document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].childNodes[1].innerText.split(' ')[0]
+            } else if (document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].firstChild.innerText == "userType") {
+                if (document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].childNodes[1].innerText.split(' ')[0] == 'student' || document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].childNodes[1].innerText.split(' ')[0] == 'parent') {
                     document.getElementsByName('typetoform')[0].checked = true
-                } else if (verticalis === 'Kids') {
-                    document.getElementsByName('typetoform')[1].checked = true
-                }
-            }
-        }
-
-        document.getElementById('send2smartroom').onclick = function () {
-
-            let checkedclienttype;
-            let checkedquestion;
-            let alloptions;
-			let cat2selected;
-			let cat3selected;
-
-            let flagemptysmart = 0;
-
-            if (!document.getElementsByName('typetoform')[0].checked && !document.getElementsByName('typetoform')[1].checked && !document.getElementsByName('typetoform')[2].checked && !document.getElementsByName('typetoform')[3].checked) {
-                document.getElementById('smartroomuser').style.backgroundColor = 'Coral';
-                document.getElementById('smartroomuser').style.color = 'black';
-                flagemptysmart = 1;
-            } else {
-                document.getElementById('smartroomuser').style.backgroundColor = '';
-                document.getElementById('smartroomuser').style.color = '#c4ffd3';
-            }
-
-            if (document.getElementById('clientid').value.length < 3) {
-                document.getElementById('clientid').style.backgroundColor = 'Coral';
-                flagemptysmart = 1;
-            } else {
-                document.getElementById('clientid').style.backgroundColor = '';
-            }
-
-            if (!document.getElementsByName('whatobratform')[0].checked && !document.getElementsByName('whatobratform')[1].checked) {
-                document.getElementById('smartroomquestion').style.backgroundColor = 'Coral';
-                document.getElementById('smartroomquestion').style.color = 'black';
-                flagemptysmart = 1;
-            } else {
-                document.getElementById('smartroomquestion').style.backgroundColor = '';
-                document.getElementById('smartroomquestion').style.color = '#c4ffd3';
-            }
-
-            if (document.getElementById('fullcomentsmartroom').value.length < 3) {
-                document.getElementById('fullcomentsmartroom').style.backgroundColor = 'Coral';
-                flagemptysmart = 1;
-            } else {
-                document.getElementById('fullcomentsmartroom').style.backgroundColor = '';
-            }
-
-            if (flagemptysmart == 0) {
-                for (let i = 0; i < document.getElementsByName('typetoform').length; i++) {
-                    if (document.getElementsByName('typetoform')[i].checked == true)
-                        checkedclienttype = document.getElementsByName('typetoform')[i].value;
-                }
-				
-				for (let i =0; i<document.getElementById('cattwosmatrtoom').length;i++) {
-					if (document.getElementById('cattwosmatrtoom')[i].selected == true)
-					cat2selected = document.getElementById('cattwosmatrtoom')[i].value
-				}
-				
-				for (let i =0; i<document.getElementById('catthreesmatrtoom').length;i++) {
-					if (document.getElementById('catthreesmatrtoom')[i].selected == true)
-					cat3selected = document.getElementById('catthreesmatrtoom')[i].value
-				}
-					
-
-				for (let i =0; i<document.getElementsByName('whatobratform').length;i++) {
-					if (document.getElementsByName('whatobratform')[i].checked == true)
-					checkedquestion = document.getElementsByName('whatobratform')[i].value;
-				}					
-
-				let body2 = 'entry.466256037=' + encodeURIComponent(checkedclienttype) + '&entry.505070950=' + encodeURIComponent(document.getElementById('clientid').value) + '&entry.876256156=' + encodeURIComponent(checkedquestion) + '&entry.1879097323=' + encodeURIComponent(document.getElementById('fullcomentsmartroom').value) + '&entry.156405977=' + encodeURIComponent(document.getElementsByName('catsmartroom')[0].value) + '&entry.1625340245=' + encodeURIComponent(cat2selected) + '&entry.478427702=' + encodeURIComponent(cat3selected)
-			
-				chrome.runtime.sendMessage({ 
-				  action: 'sentToForms', 
-				  url: 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse',
-				  body: body2
-				}, function(response) {
-				  // Обработка ответа
-				  console.log(response);
-				  	document.getElementById('AF_Smartroomform').style.display = 'none'
-					document.getElementById('clientid').value = ''
-					document.getElementById('fullcomentsmartroom').value = ''
-					clearradio()
-					sendComment('Отправка в документ "Пожелания Смартрум" прошла успешно')
-				});              
-				
-            }
-        }
-
-        document.getElementById('clearsmartroomform').onclick = function () {
-            document.getElementById('clientid').value = ''
-            document.getElementById('fullcomentsmartroom').value = ''
-            document.getElementById('otheroptionsmartchecked').value = ''
-            document.getElementById('smartroomuser').style.background = '';
-            document.getElementById('clientid').style.background = '';
-            document.getElementById('smartroomquestion').style.background = '';
-            document.getElementById('fullcomentsmartroom').style.background = '';
-            clearradio()
-        }
-
-        document.getElementById('smartroomforminstr').onclick = function () {
-            window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-smartroom%F0%9F%A6%90Smartroom')
-        }
-
-        document.getElementById('hideMeSmartRoomForm').onclick = function () {
-            document.getElementById('AF_Smartroomform').style.display = 'none'
-            document.getElementById('clientid').value = ''
-            document.getElementById('fullcomentsmartroom').value = ''
-            clearradio()
-        }
-
-        document.getElementById('refreshhashsmartform').onclick = function () {
-            for (i = 0; document.getElementsByClassName('expert-user_details-list')[1].childNodes[i] != undefined; i++) {
-                if (document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].firstChild.innerText == "id") {
-                    document.getElementById('clientid').value = document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].childNodes[1].innerText.split(' ')[0]
-                } else if (document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].firstChild.innerText == "userType") {
-                    if (document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].childNodes[1].innerText.split(' ')[0] == 'student' || document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].childNodes[1].innerText.split(' ')[0] == 'parent') {
-                        document.getElementsByName('typetoform')[0].checked = true
-                        document.getElementsByName('typetoform')[3].checked = false
-                    } else if (document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].childNodes[1].innerText.split(' ')[0] == 'teacher') {
-                        document.getElementsByName('typetoform')[0].checked = false
-                        document.getElementsByName('typetoform')[3].checked = true
-                    } else {
-                        document.getElementsByName('typetoform')[0].checked = false
-                        document.getElementsByName('typetoform')[1].checked = false
-                        document.getElementsByName('typetoform')[2].checked = false
-                        document.getElementsByName('typetoform')[3].checked = false
-                    }
+                    document.getElementsByName('typetoform')[3].checked = false
+                } else if (document.getElementsByClassName('expert-user_details-list')[1].childNodes[i].childNodes[1].innerText.split(' ')[0] == 'teacher') {
+                    document.getElementsByName('typetoform')[0].checked = false
+                    document.getElementsByName('typetoform')[3].checked = true
+                } else {
+                    document.getElementsByName('typetoform')[0].checked = false
+                    document.getElementsByName('typetoform')[1].checked = false
+                    document.getElementsByName('typetoform')[2].checked = false
+                    document.getElementsByName('typetoform')[3].checked = false
                 }
             }
         }
     }
+}

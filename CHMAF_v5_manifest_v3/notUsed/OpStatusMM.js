@@ -35,7 +35,7 @@ function getMMostOperId(){ // функция получения id
         "mode": "cors",
         "credentials": "include"
       }`;
-    document.getElementById('responseTextarea2').value = "https://mattermost.skyeng.tech/api/v4/users/me";
+    document.getElementById('responseTextarea2').value = "https://mm-time.skyeng.tech/api/v4/users/me";
     document.getElementById('responseTextarea3').value = 'postdata';
     document.getElementById('sendResponse').click(); 
 
@@ -137,7 +137,7 @@ document.getElementById('responseTextarea1').value = `{
     "mode": "cors",
     "credentials": "include"
   }`;
-document.getElementById('responseTextarea2').value = "https://mattermost.skyeng.tech/api/v4/posts";
+document.getElementById('responseTextarea2').value = "https://mm-time.skyeng.tech/api/v4/posts";
 document.getElementById('responseTextarea3').value = '';
 document.getElementById('sendResponse').click(); 
 }
@@ -184,20 +184,20 @@ function stopstatsending(){ // Остановка отправки статис�
 let StatistikToMM = document.createElement('button')
 StatistikToMM.innerHTML = '📕';
 StatistikToMM.id = 'StatMM';
-StatistikToMM.title = 'Запуск и остановка отправки статистики в Mattermost';
+StatistikToMM.title = 'Запуск и остановка отправки статистики в Time';
 StatistikToMM.classList.add('rightPanelBtn')
 document.getElementById('rightPanel').appendChild(StatistikToMM)
 
 StatistikToMM.addEventListener("click", (event) => { //
     if(issending == 0){
-        let answersend = confirm("Запустить отправку статистики в Mattermost?")
+        let answersend = confirm("Запустить отправку статистики в Time?")
         if(answersend){
             issending = 1;
             localStorage.setItem('is_sending_MM', issending);
             startstatsending()
         }
     } else if(issending == 1){
-        let answersend = confirm("Прекратить отправку статистики в Mattermost?")
+        let answersend = confirm("Прекратить отправку статистики в Time?")
         if(answersend){
             issending = 0;
             localStorage.setItem('is_sending_MM', issending);

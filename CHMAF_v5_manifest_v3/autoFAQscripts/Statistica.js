@@ -46,62 +46,62 @@ wintStataAF.style.display = 'none';
 wintStataAF.setAttribute('id', 'AF_StataAF');
 wintStataAF.innerHTML = win_StatisticaAF;
 
-wintStataAF.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = wintStataAF.offsetLeft;
-    let elemTop = wintStataAF.offsetTop;
+wintStataAF.onmousedown = function (event) {
+    if (checkelementtype(event)) {
+        let startX = event.clientX;
+        let startY = event.clientY;
+        let elemLeft = wintStataAF.offsetLeft;
+        let elemTop = wintStataAF.offsetTop;
 
-    function onMouseMove(event) {
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
+        function onMouseMove(event) {
+            let deltaX = event.clientX - startX;
+            let deltaY = event.clientY - startY;
 
-      wintStataAF.style.left = (elemLeft + deltaX) + "px";
-      wintStataAF.style.top = (elemTop + deltaY) + "px";
+            wintStataAF.style.left = (elemLeft + deltaX) + "px";
+            wintStataAF.style.top = (elemTop + deltaY) + "px";
 
-      localStorage.setItem('winTopStataAF', String(elemTop + deltaY));
-      localStorage.setItem('winLeftStataAF', String(elemLeft + deltaX));
+            localStorage.setItem('winTopStataAF', String(elemTop + deltaY));
+            localStorage.setItem('winLeftStataAF', String(elemLeft + deltaX));
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mouseup', onMouseUp);
     }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
 };
 
 function calculateAverageResponseTime(data) {
-  let responseTimeSum = 0;
-  let responseCount = 0;
-  let previousQuestionTimestamp = null;
+    let responseTimeSum = 0;
+    let responseCount = 0;
+    let previousQuestionTimestamp = null;
 
-  for (let i = data.length-1; i >=0; i--) {
-    if (data[i].tpe === "Question") {
-      previousQuestionTimestamp = new Date(data[i].ts).getTime();
-    } else if (
-      (data[i].tpe === "AnswerOperator" || data[i].tpe === "AnswerOperatorWithBot") &&
-      previousQuestionTimestamp !== null
-    ) {
-      const responseTimestamp = new Date(data[i].ts).getTime();
-      const responseTimeInSeconds = (responseTimestamp - previousQuestionTimestamp) / 1000;
+    for (let i = data.length - 1; i >= 0; i--) {
+        if (data[i].tpe === "Question") {
+            previousQuestionTimestamp = new Date(data[i].ts).getTime();
+        } else if (
+            (data[i].tpe === "AnswerOperator" || data[i].tpe === "AnswerOperatorWithBot") &&
+            previousQuestionTimestamp !== null
+        ) {
+            const responseTimestamp = new Date(data[i].ts).getTime();
+            const responseTimeInSeconds = (responseTimestamp - previousQuestionTimestamp) / 1000;
 
-      responseTimeSum += responseTimeInSeconds;
-      responseCount++;
-      previousQuestionTimestamp = null; // Сбросить метку предыдущего вопроса
+            responseTimeSum += responseTimeInSeconds;
+            responseCount++;
+            previousQuestionTimestamp = null; // Сбросить метку предыдущего вопроса
+        }
     }
-  }
 
-  if (responseCount > 0) {
-    const averageResponseTime = responseTimeSum / responseCount;
-    return averageResponseTime;
-  } else {
-    return 0;
-  }
+    if (responseCount > 0) {
+        const averageResponseTime = responseTimeSum / responseCount;
+        return averageResponseTime;
+    } else {
+        return 0;
+    }
 }
 
 
@@ -113,22 +113,22 @@ function getbuttonGetStatButtonPress() {
     if (document.getElementById('AF_StataAF').style.display == 'none') {
         document.getElementById('AF_StataAF').style.display = ''
         document.getElementById('idmymenu').style.display = 'none'
-			if (document.getElementById('MainMenuBtn')) {
-				document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-			}
-		
+        if (document.getElementById('MainMenuBtn')) {
+            document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+        }
+
         if (document.querySelector('.user_menu-dropdown-user_name').textContent.split('-')[0] == "Prem")
             document.getElementById('buttonTPpower').style.display = "none"
     } else {
-		document.getElementById('idmymenu').style.display = 'none'
-		document.getElementById('AF_StataAF').style.display = 'none'
-					if (document.getElementById('MainMenuBtn')) {
-				document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-			}
-	}
+        document.getElementById('idmymenu').style.display = 'none'
+        document.getElementById('AF_StataAF').style.display = 'none'
+        if (document.getElementById('MainMenuBtn')) {
+            document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+        }
+    }
 
-// Добавляем автоподстановку даты в поля
-	    let getcurdate = new Date();
+    // Добавляем автоподстановку даты в поля
+    let getcurdate = new Date();
     let year = getcurdate.getFullYear();
     let month = String(getcurdate.getMonth() + 1).padStart(2, "0");
     let day = String(getcurdate.getDate()).padStart(2, "0");
@@ -145,9 +145,9 @@ function getbuttonGetStatButtonPress() {
 
     document.getElementById("dateFromStat").value = `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, "0")}-${String(fromDate.getDate()).padStart(2, "0")}`;
     document.getElementById("dateToStat").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
-//
+    //
 
-	
+
 
     document.getElementById('retreivestata').onclick = function () {
         if (document.getElementById('csatandthemes').style.display == "" || document.getElementById('loadkctp').style.display == "") {
@@ -212,11 +212,7 @@ async function getStats() { // функция получения статист�
     }
 
     const opSection = document.querySelector('.user_menu-dropdown-user_name').textContent.split('-')[0];
-    console.log("Department:", opSection);
-
-	
-	
-	    const padStart = (string, targetLength, padString) => {
+    const padStart = (string, targetLength, padString) => {
         return String(string).padStart(targetLength, padString);
     }
 
@@ -311,7 +307,7 @@ async function getStats() { // функция получения статист�
                     td.textContent = "⏳ Loading";
                     td.setAttribute('name', 'csatdata');
                     break;
-				case 5:
+                case 5:
                     td.textContent = "⏳ Loading";
                     td.setAttribute('name', 'artdata');
                     break;
@@ -358,26 +354,26 @@ async function getStats() { // функция получения статист�
     sumchatcount.textContent = 'Общая сумма пощупаных чатов за сутки по отделу: ' + summcnt;
     sumchatcount.style.marginLeft = '50px'
     document.getElementById('outputstatafield').append(sumchatcount)
-	
-	let averageCSATonGroup = document.createElement('div')
-	averageCSATonGroup.innerHTML = 'Средний CSAT по отделу: ' + '<span id ="avgCsatonGroup">⏳ Loading</span>';
-	averageCSATonGroup.style.marginLeft = '50px'
-	document.getElementById('outputstatafield').append(averageCSATonGroup)
 
-	let averageSLAclsGroup = document.createElement('div')
-	averageSLAclsGroup.innerHTML = 'SLA закрытия по отделу: ' + '<span id ="SLAonGroup">⏳ Loading</span>';
-	averageSLAclsGroup.style.marginLeft = '50px'
-	document.getElementById('outputstatafield').append(averageSLAclsGroup)
-	
-		let averageAFRTGroup = document.createElement('div')
-	averageAFRTGroup.innerHTML = 'AFRT по отделу: ' + '<span id ="AFRTGroup">⏳ Loading</span>';
-	averageAFRTGroup.style.marginLeft = '50px'
-	document.getElementById('outputstatafield').append(averageAFRTGroup)
-	
-	let averageARTGroup = document.createElement('div')
-	averageARTGroup.innerHTML = 'ART по отделу: ' + '<span id ="ARTGroup">⏳ Loading</span>';
-	averageARTGroup.style.marginLeft = '50px'
-	document.getElementById('outputstatafield').append(averageARTGroup)
+    let averageCSATonGroup = document.createElement('div')
+    averageCSATonGroup.innerHTML = 'Средний CSAT по отделу: ' + '<span id ="avgCsatonGroup">⏳ Loading</span>';
+    averageCSATonGroup.style.marginLeft = '50px'
+    document.getElementById('outputstatafield').append(averageCSATonGroup)
+
+    let averageSLAclsGroup = document.createElement('div')
+    averageSLAclsGroup.innerHTML = 'SLA закрытия по отделу: ' + '<span id ="SLAonGroup">⏳ Loading</span>';
+    averageSLAclsGroup.style.marginLeft = '50px'
+    document.getElementById('outputstatafield').append(averageSLAclsGroup)
+
+    let averageAFRTGroup = document.createElement('div')
+    averageAFRTGroup.innerHTML = 'AFRT по отделу: ' + '<span id ="AFRTGroup">⏳ Loading</span>';
+    averageAFRTGroup.style.marginLeft = '50px'
+    document.getElementById('outputstatafield').append(averageAFRTGroup)
+
+    let averageARTGroup = document.createElement('div')
+    averageARTGroup.innerHTML = 'ART по отделу: ' + '<span id ="ARTGroup">⏳ Loading</span>';
+    averageARTGroup.style.marginLeft = '50px'
+    document.getElementById('outputstatafield').append(averageARTGroup)
 
     getopersSLA();
 
@@ -416,9 +412,9 @@ async function checkCSAT() { // функция проверки CSAT и чато
     document.getElementById('csatandthemes').append(str)
 
     // getyesterdayandtoday()
-	
-	
-	const padStart = (string, targetLength, padString) => {
+
+
+    const padStart = (string, targetLength, padString) => {
         return String(string).padStart(targetLength, padString);
     }
 
@@ -458,7 +454,7 @@ async function checkCSAT() { // функция проверки CSAT и чато
             test = ''
 
             let servicetopic;
-                servicetopic = '361c681b-340a-4e47-9342-c7309e27e7b5'
+            servicetopic = '361c681b-340a-4e47-9342-c7309e27e7b5'
             await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
                 "headers": {
                     "content-type": "application/json",
@@ -581,8 +577,7 @@ async function checkCSAT() { // функция проверки CSAT и чато
                     str.innerHTML = firstpart + 'Оценка 1 🤬: ' + count[1] + '<br>' + 'Оценка 2 🤢: ' + count[2] + '<br>' + flagbad + '<br>' + 'Оценка 3 😐: ' + count[3] + '<br>' + flagmid + '<br>' + 'Оценка 4 🥴: ' + count[4] + '<br>' + 'Оценка 5 😊: ' + count[5] + '<br>' + secondpart
                 else if (flagvbad != "" && flagbad != "" && flagmid != "")
                     str.innerHTML = firstpart + 'Оценка 1 🤬: ' + count[1] + '<br>' + flagvbad + '<br>' + 'Оценка 2 🤢: ' + count[2] + '<br>' + flagbad + '<br>' + 'Оценка 3 😐: ' + count[3] + '<br>' + flagmid + '<br>' + 'Оценка 4 🥴: ' + count[4] + '<br>' + 'Оценка 5 😊: ' + count[5] + '<br>' + secondpart
-                console.log(tagsarr) //выводит список полученных тегов с чатов
-                break
+               break
             }
         }
     } catch (e) {
@@ -743,33 +738,33 @@ async function getopersSLA() {
     let currentWidth = 0;
     let page;
     let maxpage = 0;
-	let operartcount;
-	let operafrtcount;
-	let operclschatcount;
-	let totalChatsClosed=[];
-	let arrayartcount =[];
-	let arrayafrtcount =[];
-	let arrayafrtcountwithqueue =[];
-	let arraycsatcount = [];
-	let arraycsatsumma = [];
-	let operatorOverdueChats=[];
-	let operatorOverdueARTChats=[];
-	let operatorOverdueAFRTChats=[];
-	let csatcount;
-	let csatsumma;
-	let overduecount;
-	let alloperCSATsumma = 0;
-	let alloperCSATcount = 0;
-	let accumulator = 0;
-	alloperSLAclsed = 0;
-	alloperChatsclsed = 0;
-	alloperaboveART = 0;
-	alloperaboveAFRT = 0;
+    let operartcount;
+    let operafrtcount;
+    let operclschatcount;
+    let totalChatsClosed = [];
+    let arrayartcount = [];
+    let arrayafrtcount = [];
+    let arrayafrtcountwithqueue = [];
+    let arraycsatcount = [];
+    let arraycsatsumma = [];
+    let operatorOverdueChats = [];
+    let operatorOverdueARTChats = [];
+    let operatorOverdueAFRTChats = [];
+    let csatcount;
+    let csatsumma;
+    let overduecount;
+    let alloperCSATsumma = 0;
+    let alloperCSATcount = 0;
+    let accumulator = 0;
+    alloperSLAclsed = 0;
+    alloperChatsclsed = 0;
+    alloperaboveART = 0;
+    alloperaboveAFRT = 0;
     let slarows = document.getElementsByName('sladata');
     let csatrows = document.getElementsByName('csatdata');
-	let artrows = document.getElementsByName('artdata');
-	
-		const padStart = (string, targetLength, padString) => {
+    let artrows = document.getElementsByName('artdata');
+
+    const padStart = (string, targetLength, padString) => {
         return String(string).padStart(targetLength, padString);
     }
 
@@ -787,9 +782,9 @@ async function getopersSLA() {
     const dateToStatInput = document.getElementById("dateToStat");
     const selectedEndDate = new Date(dateToStatInput.value);
     const rightDateToGrab = `${selectedEndDate.getFullYear()}-${padStart(selectedEndDate.getMonth() + 1, 2, '0')}-${padStart(selectedEndDate.getDate(), 2, '0')}T20:59:59.059z`;
-	
-	
-	
+
+
+
     // getyesterdayandtoday();
     let operdata;
     filteredarray = [];
@@ -797,12 +792,12 @@ async function getopersSLA() {
     if (activeopersId) {
         let step = 100 / activeopersId.length;
         for (let i = 0; i < activeopersId.length; i++) {
-			operartcount = 0;
-			operafrtcount = 0;
-			operclschatcount = 0;
-			csatcount = 0;
-			csatsumma = 0;
-			overduecount = 0;
+            operartcount = 0;
+            operafrtcount = 0;
+            operclschatcount = 0;
+            csatcount = 0;
+            csatsumma = 0;
+            overduecount = 0;
             page = 1;
             do {
                 await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
@@ -818,23 +813,22 @@ async function getopersSLA() {
                     .then((r) => (operdata = r));
 
                 for (let j = 0; j < operdata.items.length; j++) {
-								flagFoundQueue = 0;
-								flagFoundOperGroup = 0;
-								flagChatIsInQueue = 0;
-								flagIsOnTPOper = 0;
-								operFuckUpName = '';
-								flagFoundOperAnswer = 0;
-								indexOfChangeGroup = -1;
-								indexOfFirstTimeInQueue = -1;
-								differenceInSeconds = 0;
-								
-			
+                    flagFoundQueue = 0;
+                    flagFoundOperGroup = 0;
+                    flagChatIsInQueue = 0;
+                    flagIsOnTPOper = 0;
+                    operFuckUpName = '';
+                    flagFoundOperAnswer = 0;
+                    indexOfChangeGroup = -1;
+                    indexOfFirstTimeInQueue = -1;
+                    differenceInSeconds = 0;
+
                     await fetch("https://skyeng.autofaq.ai/api/conversations/" + operdata.items[j].conversationId)
                         .then((r) => r.json())
                         .then((r) => fres = r);
                     if (fres.operatorId == activeopersId[i]) {
-						operclschatcount++;
-						totalChatsClosed[i] = operclschatcount;
+                        operclschatcount++;
+                        totalChatsClosed[i] = operclschatcount;
                         filteredarray.push({
                             ["id"]: "operator" + [i + 1],
                             ["chatHashId"]: operdata.items[j].conversationId,
@@ -845,175 +839,148 @@ async function getopersSLA() {
                                 ? operdata.items[j].stats.rate.rate
                                 : null,
                         });
-						
-						// if (operdata.items[j].stats.averageOperatorAnswerTime && ((operdata.items[j].stats.averageOperatorAnswerTime / 1000 / 60).toFixed(2)) > 2) {
-                            // operartcount++;
-							// arrayartcount[i] = operartcount
-                        // } else {
-							// arrayartcount[i] = 0;
-						// }
-						
-						if(calculateAverageResponseTime(fres.messages) > 120) {
-							console.log('%c (ART)' + ' '+ operdata.items[j].conversationId + ' ' + calculateAverageResponseTime(fres.messages), 'color:green')
-							operartcount++;
-							arrayartcount[i] = operartcount
-						} else {
-							arrayartcount[i] += 0;
-						}
-						
-						
-						
-						//
-						for (let z = fres.messages.length - 1; z >= 0; z--) {							
-							if (flagFoundOperGroup === 0) { 
-								if (fres.messages[z].eventTpe && fres.messages[z].eventTpe === "ChangeGroup" && fres.messages[z].payload.prevGroup == undefined && fres.messages[z].payload.group == "c7bbb211-a217-4ed3-8112-98728dc382d8") {
-									flagFoundOperGroup = 1;
-									indexOfChangeGroup = z; 
-									}
-							}
-							
-							if (flagFoundOperGroup == 1) {
-								if (flagFoundQueue === 0) {
-									if (fres.messages[z].eventTpe && fres.messages[z].eventTpe === "FirstTimeInQueue") {
-										foundQueue = fres.messages[z].ts;
-										flagFoundQueue = 1;
-										indexOfFirstTimeInQueue = z; 
-									}
-								}
 
-								if (flagFoundOperAnswer === 0) {
-									if (fres.messages[z].tpe && (fres.messages[z].tpe === "AnswerOperator" || fres.messages[z].tpe === "AnswerOperatorWithBot")) {
-										foundOperAnswer = fres.messages[z].ts;
-										flagFoundOperAnswer = 1;
-									}
-								}
-							}
-							
-							if (flagChatIsInQueue === 0) {
-								if (fres.messages[z].tpe && fres.messages[z].tpe === "AnswerSystem" && fres.messages[z].txt === "Ищем для вас лучшего оператора, подождите, пожалуйста.") {
-									flagChatIsInQueue = 1;
-								}
-							}
-							
-							// if (flagIsOnTPOper === 0) {
-								// if (fres.messages[z].eventTpe === "AssignToOperator" && fres.messages[z].payload.oid != undefined) {
-									// let filterOperObj = operatorsarray.filter(el => el.operator.id == fres.messages[z].payload.oid)
-									// operFuckUpName = filterOperObj[0].operator.fullName
-									// flagIsOnTPOper = 1
-								// }
-							// }
-							
-							if (flagIsOnTPOper === 0) {
-								if (fres.messages[z].eventTpe === "AssignToOperator" && fres.messages[z].payload.oid != undefined) {
-									let filterOperObj = operatorsarray.filter(el => el.operator.id == fres.messages[z].payload.oid);
+                        if (calculateAverageResponseTime(fres.messages) > 120) {
+                            console.log('%c (ART)' + ' ' + operdata.items[j].conversationId + ' ' + calculateAverageResponseTime(fres.messages), 'color:green')
+                            operartcount++;
+                            arrayartcount[i] = operartcount
+                        } else {
+                            arrayartcount[i] += 0;
+                        }
 
-									if (filterOperObj.length > 0) { // проверка на наличие элементов в массиве
-										operFuckUpName = filterOperObj[0].operator.fullName;
-										flagIsOnTPOper = 1;
-									}
-								}
-							}
+                        for (let z = fres.messages.length - 1; z >= 0; z--) {
+                            if (flagFoundOperGroup === 0) {
+                                if (fres.messages[z].eventTpe && fres.messages[z].eventTpe === "ChangeGroup" && fres.messages[z].payload.prevGroup == undefined && fres.messages[z].payload.group == "c7bbb211-a217-4ed3-8112-98728dc382d8") {
+                                    flagFoundOperGroup = 1;
+                                    indexOfChangeGroup = z;
+                                }
+                            }
 
-							
-						}
+                            if (flagFoundOperGroup == 1) {
+                                if (flagFoundQueue === 0) {
+                                    if (fres.messages[z].eventTpe && fres.messages[z].eventTpe === "FirstTimeInQueue") {
+                                        foundQueue = fres.messages[z].ts;
+                                        flagFoundQueue = 1;
+                                        indexOfFirstTimeInQueue = z;
+                                    }
+                                }
+
+                                if (flagFoundOperAnswer === 0) {
+                                    if (fres.messages[z].tpe && (fres.messages[z].tpe === "AnswerOperator" || fres.messages[z].tpe === "AnswerOperatorWithBot")) {
+                                        foundOperAnswer = fres.messages[z].ts;
+                                        flagFoundOperAnswer = 1;
+                                    }
+                                }
+                            }
+
+                            if (flagChatIsInQueue === 0) {
+                                if (fres.messages[z].tpe && fres.messages[z].tpe === "AnswerSystem" && fres.messages[z].txt === "Ищем для вас лучшего оператора, подождите, пожалуйста.") {
+                                    flagChatIsInQueue = 1;
+                                }
+                            }
+
+                            if (flagIsOnTPOper === 0) {
+                                if (fres.messages[z].eventTpe === "AssignToOperator" && fres.messages[z].payload.oid != undefined) {
+                                    let filterOperObj = operatorsarray.filter(el => el.operator.id == fres.messages[z].payload.oid);
+
+                                    if (filterOperObj.length > 0) { // проверка на наличие элементов в массиве
+                                        operFuckUpName = filterOperObj[0].operator.fullName;
+                                        flagIsOnTPOper = 1;
+                                    }
+                                }
+                            }
+                        }
 
 
-						if (fres.answers.length >0 && flagChatIsInQueue === 0 &&  indexOfChangeGroup > indexOfFirstTimeInQueue) {
-								foundQueueTime = new Date(foundQueue).getTime();
-								foundOperAnswerTime = new Date(foundOperAnswer).getTime();
+                        if (fres.answers.length > 0 && flagChatIsInQueue === 0 && indexOfChangeGroup > indexOfFirstTimeInQueue) {
+                            foundQueueTime = new Date(foundQueue).getTime();
+                            foundOperAnswerTime = new Date(foundOperAnswer).getTime();
 
-								differenceInSeconds = (foundOperAnswerTime - foundQueueTime) / 1000;
-														
-							if (differenceInSeconds > 60) {
-								arrayafrtcount.push(1)
-								console.log('%c (AFRT) ' + operFuckUpName + ' ' + fres.id + ' ' + differenceInSeconds  + ' ' + "Общее кол-во чатов без очереди: " + arrayafrtcount.length, 'color:coral')
-							} 
-						} else if (fres.answers.length >0 && flagChatIsInQueue === 1 && indexOfChangeGroup > indexOfFirstTimeInQueue) {
-								foundQueueTime = new Date(foundQueue).getTime();
-								foundOperAnswerTime = new Date(foundOperAnswer).getTime();
+                            differenceInSeconds = (foundOperAnswerTime - foundQueueTime) / 1000;
 
-								differenceInSeconds = (foundOperAnswerTime - foundQueueTime) / 1000;
-														
-							if (differenceInSeconds > 60) {
-								arrayafrtcountwithqueue.push(1)
-								console.log('%c [Очередь ТП] | (AFRT) ' + operFuckUpName + ' ' + fres.id + ' ' + differenceInSeconds + ' ' + "Общее кол-во чатов в очереди: " + arrayafrtcountwithqueue.length, 'color:coral')
-							} 
-						}
-												
-						if (operdata.items[j].stats.rate.rate) {
+                            if (differenceInSeconds > 60) {
+                                arrayafrtcount.push(1)
+                                console.log('%c (AFRT) ' + operFuckUpName + ' ' + fres.id + ' ' + differenceInSeconds + ' ' + "Общее кол-во чатов без очереди: " + arrayafrtcount.length, 'color:coral')
+                            }
+                        } else if (fres.answers.length > 0 && flagChatIsInQueue === 1 && indexOfChangeGroup > indexOfFirstTimeInQueue) {
+                            foundQueueTime = new Date(foundQueue).getTime();
+                            foundOperAnswerTime = new Date(foundOperAnswer).getTime();
+
+                            differenceInSeconds = (foundOperAnswerTime - foundQueueTime) / 1000;
+
+                            if (differenceInSeconds > 60) {
+                                arrayafrtcountwithqueue.push(1)
+                                console.log('%c [Очередь ТП] | (AFRT) ' + operFuckUpName + ' ' + fres.id + ' ' + differenceInSeconds + ' ' + "Общее кол-во чатов в очереди: " + arrayafrtcountwithqueue.length, 'color:coral')
+                            }
+                        }
+
+                        if (operdata.items[j].stats.rate.rate) {
                             csatcount++;
-							csatsumma += operdata.items[j].stats.rate.rate
-							arraycsatcount[i] = csatcount
-							arraycsatsumma[i] = csatsumma
-                        } 
-						
-						if (operdata.items[j].stats.conversationDuration  && (operdata.items[j].stats.conversationDuration / 1000 / 60).toFixed(1) > 25) {
-							overduecount++
-							operatorOverdueChats[i] = overduecount
-						} 
-						
+                            csatsumma += operdata.items[j].stats.rate.rate
+                            arraycsatcount[i] = csatcount
+                            arraycsatsumma[i] = csatsumma
+                        }
+
+                        if (operdata.items[j].stats.conversationDuration && (operdata.items[j].stats.conversationDuration / 1000 / 60).toFixed(1) > 25) {
+                            overduecount++
+                            operatorOverdueChats[i] = overduecount
+                        }
+
                     }
                 }
                 page++;
                 maxpage = operdata.total / 100;
-            } while (page-1 < maxpage);
-			
-			currentWidth += step;
-			progressBar.style.width = Number(currentWidth.toFixed(1)) + "%";
-			progressBar.textContent = Number(currentWidth.toFixed(1)) + "%";
-			
-			if (arrayartcount[i]) {
-					artrows[i].textContent = (100 - (arrayartcount[i] / totalChatsClosed[i])*100).toFixed(1) + '%';
-			} else artrows[i].textContent ='100%';
-			
-			
-			
-			if (arraycsatcount[i] && arraycsatsumma[i]) {
-				csatrows[i].textContent = (arraycsatsumma[i] / arraycsatcount[i]).toFixed(2);
-				alloperCSATsumma += arraycsatsumma[i]
-				alloperCSATcount += arraycsatcount[i]
-			} else {
-				csatrows[i].textContent = "No marks!"
-			}
-			
-			if (operatorOverdueChats[i]) {
-				alloperSLAclsed += operatorOverdueChats[i]
-				alloperChatsclsed += totalChatsClosed[i]
-				slarows[i].textContent = (100 - (operatorOverdueChats[i] / totalChatsClosed[i])*100).toFixed(1) + '%'
-			} else {
-				slarows[i].textContent  = "100%"
-			}
-			
-			if (arrayartcount[i]) {
-				alloperaboveART += arrayartcount[i]
-				// alloperChatsclsed += totalChatsClosed[i]
-				// console.log(alloperaboveART)
-			}
+            } while (page - 1 < maxpage);
 
-			if (arrayafrtcount[i]) {
-				alloperaboveAFRT = (+arrayafrtcount.length + arrayafrtcountwithqueue.length)
-				// alloperChatsclsed += totalChatsClosed[i]
-				// console.log(alloperaboveAFRT)
-			}
-			
-			
-							
+            currentWidth += step;
+            progressBar.style.width = Number(currentWidth.toFixed(1)) + "%";
+            progressBar.textContent = Number(currentWidth.toFixed(1)) + "%";
+
+            if (arrayartcount[i]) {
+                artrows[i].textContent = (100 - (arrayartcount[i] / totalChatsClosed[i]) * 100).toFixed(1) + '%';
+            } else artrows[i].textContent = '100%';
+
+
+
+            if (arraycsatcount[i] && arraycsatsumma[i]) {
+                csatrows[i].textContent = (arraycsatsumma[i] / arraycsatcount[i]).toFixed(2);
+                alloperCSATsumma += arraycsatsumma[i]
+                alloperCSATcount += arraycsatcount[i]
+            } else {
+                csatrows[i].textContent = "No marks!"
+            }
+
+            if (operatorOverdueChats[i]) {
+                alloperSLAclsed += operatorOverdueChats[i]
+                alloperChatsclsed += totalChatsClosed[i]
+                slarows[i].textContent = (100 - (operatorOverdueChats[i] / totalChatsClosed[i]) * 100).toFixed(1) + '%'
+            } else {
+                slarows[i].textContent = "100%"
+            }
+
+            if (arrayartcount[i]) {
+                alloperaboveART += arrayartcount[i]
+            }
+
+            if (arrayafrtcount[i]) {
+                alloperaboveAFRT = (+arrayafrtcount.length + arrayafrtcountwithqueue.length)
+            }
         }
-		document.getElementById('avgCsatonGroup').textContent = (alloperCSATsumma / alloperCSATcount).toFixed(2);
-		document.getElementById('SLAonGroup').textContent = (100 - (alloperSLAclsed / summclsd) * 100).toFixed(1) + '%'
-		document.getElementById('ARTGroup').textContent = (100 - (alloperaboveART / summclsd) * 100).toFixed(1) + '%'
-		document.getElementById('AFRTGroup').textContent = (100 - (alloperaboveAFRT / summclsd) * 100).toFixed(1) + '%'
-		
-		console.log('Chats above ART: ' + alloperaboveART)
-		console.log('Chats above AFRT: ' +alloperaboveAFRT)
-		console.log('All chats closed: ' +alloperChatsclsed)
+        document.getElementById('avgCsatonGroup').textContent = (alloperCSATsumma / alloperCSATcount).toFixed(2);
+        document.getElementById('SLAonGroup').textContent = (100 - (alloperSLAclsed / summclsd) * 100).toFixed(1) + '%'
+        document.getElementById('ARTGroup').textContent = (100 - (alloperaboveART / summclsd) * 100).toFixed(1) + '%'
+        document.getElementById('AFRTGroup').textContent = (100 - (alloperaboveAFRT / summclsd) * 100).toFixed(1) + '%'
+
+        console.log('Chats above ART: ' + alloperaboveART)
+        console.log('Chats above AFRT: ' + alloperaboveAFRT)
+        console.log('All chats closed: ' + alloperChatsclsed)
     }
 }
 
 document.getElementById("buttonCheckStats").addEventListener("click", checkCSAT);
 document.getElementById("buttonKCpower").addEventListener("click", function () {
-  checkload(/КЦ/, 'КЦ');
+    checkload(/КЦ/, 'КЦ');
 });
 document.getElementById("buttonTPpower").addEventListener("click", function () {
-  checkload(/ТП/, 'ТП');
+    checkload(/ТП/, 'ТП');
 });

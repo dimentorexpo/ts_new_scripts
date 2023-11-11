@@ -10,12 +10,11 @@ var win_TestUsers = // описание окна тестовых пользов
         </span>
     </div>
     `;
-			
+
 if (localStorage.getItem('winTopTestUsers') == null) {
     localStorage.setItem('winTopTestUsers', '120');
     localStorage.setItem('winLeftTestUsers', '295');
 }
-
 
 let TestUsersdiv = document.createElement('div'); // добавляем окно тестовых поьзователей
 document.body.append(TestUsersdiv);
@@ -30,60 +29,58 @@ setDisplayStyle(TestUsersdiv, localStorage.getItem('disablelpmwindow') === '1' ?
 
 let addInfoUser = document.getElementById('addInfoUser');
 
-TestUsersdiv.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = TestUsersdiv.offsetLeft;
-    let elemTop = TestUsersdiv.offsetTop;
+TestUsersdiv.onmousedown = function (event) {
+    if (checkelementtype(event)) {
+        let startX = event.clientX;
+        let startY = event.clientY;
+        let elemLeft = TestUsersdiv.offsetLeft;
+        let elemTop = TestUsersdiv.offsetTop;
 
-    function onMouseMove(event) {
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
+        function onMouseMove(event) {
+            let deltaX = event.clientX - startX;
+            let deltaY = event.clientY - startY;
+            TestUsersdiv.style.left = (elemLeft + deltaX) + "px";
+            TestUsersdiv.style.top = (elemTop + deltaY) + "px";
+            localStorage.setItem('winTopTestUsers', String(elemTop + deltaY));
+            localStorage.setItem('winLeftTestUsers', String(elemLeft + deltaX));
+        }
 
-      TestUsersdiv.style.left = (elemLeft + deltaX) + "px";
-      TestUsersdiv.style.top = (elemTop + deltaY) + "px";
+        document.addEventListener('mousemove', onMouseMove);
 
-      localStorage.setItem('winTopTestUsers', String(elemTop + deltaY));
-      localStorage.setItem('winLeftTestUsers', String(elemLeft + deltaX));
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mouseup', onMouseUp);
     }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
 };
- // прекращение изменения позиции окна тестовых поьзователей
+// прекращение изменения позиции окна тестовых поьзователей
 
 let btnsid = document.getElementById('sidcode');
 let btntid = document.getElementById('tidcode');
 btnsid.addEventListener("click", (event) => {
-  let teststudid = localStorage.getItem('test_stud');
-  if (teststudid != null && teststudid !== '') {
-		chrome.runtime.sendMessage({ action: 'getLoginer', userid: teststudid }, function(response) {
-		  if (response.success) {
-			// Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
-			navigator.clipboard.writeText(response.loginLink).then(() => {
-			  // Уведомляем пользователя об успешном копировании
-			  document.getElementById('sidcode').classList.add('activeTestUsrs');
-			  setTimeout(() => { document.getElementById('sidcode').classList.remove('activeTestUsrs'); }, 1000);
-			}).catch(err => {
-			  // Обрабатываем ошибки, связанные с буфером обмена
-			  console.error('Не удалось скопировать текст: ', err);
-			});
-		  } else {
-			// Обрабатываем ошибки, связанные с получением логиннера
-			alert('Не удалось получить логиннер: ' + response.error);
-		  }
-		});
-  } else {
-    alert("Введите ID тестового ученика в настройках ⚙");
-  }
+    let teststudid = localStorage.getItem('test_stud');
+    if (teststudid != null && teststudid !== '') {
+        chrome.runtime.sendMessage({ action: 'getLoginer', userid: teststudid }, function (response) {
+            if (response.success) {
+                // Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
+                navigator.clipboard.writeText(response.loginLink).then(() => {
+                    // Уведомляем пользователя об успешном копировании
+                    document.getElementById('sidcode').classList.add('activeTestUsrs');
+                    setTimeout(() => { document.getElementById('sidcode').classList.remove('activeTestUsrs'); }, 1000);
+                }).catch(err => {
+                    // Обрабатываем ошибки, связанные с буфером обмена
+                    console.error('Не удалось скопировать текст: ', err);
+                });
+            } else {
+                // Обрабатываем ошибки, связанные с получением логиннера
+                alert('Не удалось получить логиннер: ' + response.error);
+            }
+        });
+    } else {
+        alert("Введите ID тестового ученика в настройках ⚙");
+    }
 });
 
 
@@ -100,23 +97,23 @@ btnsid.addEventListener("contextmenu", (event) => { // копирует в бу�
 btntid.addEventListener("click", (event) => { // копирует в буфер логиннер для П
     let testteachid = localStorage.getItem('test_teach');
     if (testteachid != null || testteachid != '') {
-		chrome.runtime.sendMessage({ action: 'getLoginer', userid: testteachid }, function(response) {
-		  if (response.success) {
-			// Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
-			navigator.clipboard.writeText(response.loginLink).then(() => {
-			  // Уведомляем пользователя об успешном копировании
-        document.getElementById('tidcode').classList.add('activeTestUsrs');
-        setTimeout(function () { document.getElementById('tidcode').classList.remove('activeTestUsrs') }, 1000);
-			}).catch(err => {
-			  // Обрабатываем ошибки, связанные с буфером обмена
-			  console.error('Не удалось скопировать текст: ', err);
-			});
-		  } else {
-			// Обрабатываем ошибки, связанные с получением логиннера
-			alert('Не удалось получить логиннер: ' + response.error);
-		  }
-		});
-				
+        chrome.runtime.sendMessage({ action: 'getLoginer', userid: testteachid }, function (response) {
+            if (response.success) {
+                // Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
+                navigator.clipboard.writeText(response.loginLink).then(() => {
+                    // Уведомляем пользователя об успешном копировании
+                    document.getElementById('tidcode').classList.add('activeTestUsrs');
+                    setTimeout(function () { document.getElementById('tidcode').classList.remove('activeTestUsrs') }, 1000);
+                }).catch(err => {
+                    // Обрабатываем ошибки, связанные с буфером обмена
+                    console.error('Не удалось скопировать текст: ', err);
+                });
+            } else {
+                // Обрабатываем ошибки, связанные с получением логиннера
+                alert('Не удалось получить логиннер: ' + response.error);
+            }
+        });
+
     } else alert("Введите ID тестового преподавателя в настройках ⚙");
 });
 

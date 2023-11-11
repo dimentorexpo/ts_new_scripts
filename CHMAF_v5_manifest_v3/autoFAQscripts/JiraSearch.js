@@ -327,32 +327,26 @@ function switchJiraPages() {
 
                 pageSwArr.forEach(p => p.classList.remove('active'));
                 this.classList.add('active');
-
-				// console.log(page.getAttribute('value'), requesttojiratext)
                 chrome.runtime.sendMessage({ action: 'startJiraSearch', startIndex: page.getAttribute('value'), textQuery: requesttojiratext }, function (response) {
-					console.log(response)
+                    console.log(response)
                     const { issueKeys, table, issueIds } = response.issueTable;
                     const matchedItems = table.match(/(\w+-\d+">.*?).<\/a>/gmi).filter(filterItems);
                     const matchedNumbers = table.match(/(">.)*?([0-9]+)\n/gm);
-					
-					const regex = /<tr id="issuerow(\d+)"/g;
-					const matches = table.matchAll(regex);
-					const ids = Array.from(matches, m => m[1]);
-					console.log(ids)
-					// const searchIssueID = table.match(/<tr id="issuerow(\d+)"/gm)
-					//console.log(searchIssueID)
+
+                    const regex = /<tr id="issuerow(\d+)"/g;
+                    const matches = table.matchAll(regex);
+                    const ids = Array.from(matches, m => m[1]);
+                    console.log(ids)
                     const searchText = document.getElementById('testJira').value;
-					
+
                     let issues = '';
-					let switcher  = Number(page.getAttribute('value'))
+                    let switcher = Number(page.getAttribute('value'))
                     for (let i = 0; i < response.issueTable.displayed; i++) {
                         const currentNumber = matchedNumbers ? matchedNumbers[i] : null;
                         const currentIssue = matchedItems[i];
                         const currentKey = issueKeys[+i + switcher];
                         const currentIds = ids[i];
-					//	console.log(currentIds)
                         const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
-					//	console.log(currentIssue, currentKey)
                         if (currentIssue && currentKey) {
                             issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
                         } else {
@@ -551,8 +545,6 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                     let itarrs = document.getElementsByName('favissuemassive')
                     for (let c = 0; c < cnttoincrease.length; c++) {
                         cnttoincrease[c].addEventListener('click', function () {
-                            console.log('clicked')
-
                             chrome.runtime.sendMessage({ action: 'getTokenToCreate', issueId: itarrs[c].innerText }, function (responseAuth) {
                                 let count;
                                 let jira_token;
@@ -603,51 +595,49 @@ function getJiraOpenFormPress() { // открывает поле для рабо
             }
 
             chrome.runtime.sendMessage({ action: 'startJiraSearch', startIndex: 0, textQuery: requesttojiratext }, function (response) {
-                console.log(response)
                 getJiraTask(response)
             })
         })
 
         // Просмотр таски по джира по ее коду и номеру
-document.getElementById('getJiraTasks').addEventListener('contextmenu', function (event) {
-    event.preventDefault(); // Предотвращаем появление стандартного контекстного меню
+        document.getElementById('getJiraTasks').addEventListener('contextmenu', function (event) {
+            event.preventDefault(); // Предотвращаем появление стандартного контекстного меню
 
-    if (document.getElementById('AF_Jira').style.display == 'none') {
-        document.getElementById('AF_Jira').style.display = ''
-    }
+            if (document.getElementById('AF_Jira').style.display == 'none') {
+                document.getElementById('AF_Jira').style.display = ''
+            }
 
-    let taskCode = document.getElementById('testJira').value;
+            let taskCode = document.getElementById('testJira').value;
 
-    chrome.runtime.sendMessage({action:"searchForTaskName", taskCode: taskCode}, function(response){
-        let issues = [];
-        issues = '<span style="color: #00FA9A">&#5129;</span>' + '<a href="' + response[0].items[0].url + '" onclick="" target="_blank" style="color: #ffe4c4">' + response[0].items[0].subtitle + " - " + response[0].items[0].title + '</a>' + " " + '<span class = "jiraissues" style="margin-left: 10px; cursor: pointer">💬</span>';
+            chrome.runtime.sendMessage({ action: "searchForTaskName", taskCode: taskCode }, function (response) {
+                let issues = [];
+                issues = '<span style="color: #00FA9A">&#5129;</span>' + '<a href="' + response[0].items[0].url + '" onclick="" target="_blank" style="color: #ffe4c4">' + response[0].items[0].subtitle + " - " + response[0].items[0].title + '</a>' + " " + '<span class = "jiraissues" style="margin-left: 10px; cursor: pointer">💬</span>';
 
-        document.getElementById('issuetable').innerHTML = issues;
+                document.getElementById('issuetable').innerHTML = issues;
 
-        let barray = document.querySelector('.jiraissues');
-        barray.addEventListener('click', function () {
-            sendComment(response[0].items[0].url);
-            let b = document.URL.split('/');
-            fetch("https://skyeng.autofaq.ai/api/conversation/" + b[5] + "/payload", {
-                "headers": {
-                    "accept": "*/*",
-                    "content-type": "application/json",
-                    "sec-fetch-dest": "empty",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-origin"
-                },
-                "body": "{\"conversationId\":\"${b[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"" + response[0].items[0].url + "\"}]}",
-                "method": "POST",
-                "mode": "cors",
-                "credentials": "include"
+                let barray = document.querySelector('.jiraissues');
+                barray.addEventListener('click', function () {
+                    sendComment(response[0].items[0].url);
+                    let b = document.URL.split('/');
+                    fetch("https://skyeng.autofaq.ai/api/conversation/" + b[5] + "/payload", {
+                        "headers": {
+                            "accept": "*/*",
+                            "content-type": "application/json",
+                            "sec-fetch-dest": "empty",
+                            "sec-fetch-mode": "cors",
+                            "sec-fetch-site": "same-origin"
+                        },
+                        "body": "{\"conversationId\":\"${b[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"" + response[0].items[0].url + "\"}]}",
+                        "method": "POST",
+                        "mode": "cors",
+                        "credentials": "include"
+                    });
+                });
+
+                setTimeout(function () { issues = []; document.getElementById('testJira').value = ""; }, 5000)
             });
+
         });
-
-        setTimeout(function () { issues = []; document.getElementById('testJira').value = ""; }, 5000)
-    });
-
-});
-
 
         const searchJiraByEnter = document.querySelector('#testJira');
         const searchJiraByEnterInput = document.querySelector('#JQLquery');

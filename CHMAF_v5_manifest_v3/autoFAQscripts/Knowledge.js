@@ -73,7 +73,6 @@ wintKnowledge.onmousedown = function(event) {
   }
 };
 
-
 document.getElementById('IndicatorLoadData').onclick = async function() {
 	document.getElementById('ProblemsName').innerHTML = ''
 	document.getElementById('ProblemsSolution').style.display = 'none'
@@ -83,7 +82,6 @@ document.getElementById('IndicatorLoadData').onclick = async function() {
 	document.getElementById('ProblemsSolution').style.display = 'none'
 	getKnowData()
 }
-
 
 async function getKnowData() { // получаем из файла список версий моб. приложений
 	let knowData;
@@ -96,17 +94,14 @@ async function getKnowData() { // получаем из файла список 
 	while(dropdown1.options.length > 1) {
         dropdown1.remove(1);
     }
-	
 }
 
 	knowData = 'https://script.google.com/macros/s/AKfycbySlhuMPHSKHiI6Rhoyg797id3lbPg_zdeG_iBoEvYxwqlxkD4QizWm8OJDEucma7tGyg/exec'
 	await fetch(knowData).then(r => r.json()).then(r => versionsdata = r)
 	if (versionsdata && versionsdata.result.length>0) {
 		knowDataContainer = versionsdata.result;
-		console.log(knowDataContainer) //получим обект с информацией
 		document.getElementById('IndicatorLoadData').textContent = "🟢"
 	}
-
 	
 // Наполняем первый dropdown
 		const uniqueValues0 = [...new Set(knowDataContainer.map(item => item[0]))];
@@ -208,15 +203,10 @@ async function getKnowData() { // получаем из файла список 
 					solutionElem.innerHTML = matchedData[3]; // устанавливаем текст решения
 				}
 			});
-
-			
 			problemsDiv.appendChild(problemElem);
 		});
-			
-			
 	});
-		
-		
+				
 		    // Получаем элементы DOM
 		const searchInput = document.getElementById("textToSearchSolution");
 		const resultsDiv = document.getElementById("ProblemsNameFromSearch");
@@ -271,8 +261,6 @@ async function getKnowData() { // получаем из файла список 
 				});
 			}
 		});
-
-	
 }
 
 function getknowledgeCenterButtonPress() {
@@ -287,7 +275,6 @@ function getknowledgeCenterButtonPress() {
 		document.getElementById('ProblemsName').innerHTML = ''
 		document.getElementById('ProblemsSolution').style.display = 'none'
 	}
-	
 }
 
 document.getElementById('hideMeKnowledge').onclick = function(){

@@ -48,41 +48,41 @@ wintRefuseFormNew.style.display = 'none';
 wintRefuseFormNew.setAttribute('id', 'AF_Refuseformnew');
 wintRefuseFormNew.innerHTML = win_refusefrom;
 
-wintRefuseFormNew.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = wintRefuseFormNew.offsetLeft;
-    let elemTop = wintRefuseFormNew.offsetTop;
+wintRefuseFormNew.onmousedown = function (event) {
+    if (checkelementtype(event)) {
+        let startX = event.clientX;
+        let startY = event.clientY;
+        let elemLeft = wintRefuseFormNew.offsetLeft;
+        let elemTop = wintRefuseFormNew.offsetTop;
 
-    function onMouseMove(event) {
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
+        function onMouseMove(event) {
+            let deltaX = event.clientX - startX;
+            let deltaY = event.clientY - startY;
 
-      wintRefuseFormNew.style.left = (elemLeft + deltaX) + "px";
-      wintRefuseFormNew.style.top = (elemTop + deltaY) + "px";
+            wintRefuseFormNew.style.left = (elemLeft + deltaX) + "px";
+            wintRefuseFormNew.style.top = (elemTop + deltaY) + "px";
 
-      localStorage.setItem('winTopRefuseNew', String(elemTop + deltaY));
-      localStorage.setItem('winLeftRefuseNew', String(elemLeft + deltaX));
+            localStorage.setItem('winTopRefuseNew', String(elemTop + deltaY));
+            localStorage.setItem('winLeftRefuseNew', String(elemLeft + deltaX));
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mouseup', onMouseUp);
     }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
 };
- // прекращение изменения позиции окна отказов
+// прекращение изменения позиции окна отказов
 
-function hashrefuseform(){
+function hashrefuseform() {
     let chatId = getChatId();
-    if (chatId){
+    if (chatId) {
         document.getElementById('chatlnk').value = "https://skyeng.autofaq.ai/logs/" + getChatId()
-    }else {
+    } else {
         document.getElementById('chatlnk').value = ''
     }
 }
@@ -95,11 +95,11 @@ let intervalotak = setInterval(function () {
             if (document.getElementById('AF_Refuseformnew').style.display == '') {
                 document.getElementById('AF_Refuseformnew').style.display = 'none'
                 document.getElementById('idmymenu').style.display = 'none'
-				document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+                document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
             } else {
                 document.getElementById('AF_Refuseformnew').style.display = ''
                 document.getElementById('idmymenu').style.display = 'none'
-				document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+                document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
 
                 let objSelIssue = document.getElementById("userissue");
                 let objSelSolution = document.getElementById("howissuesolverd");
@@ -115,7 +115,6 @@ let intervalotak = setInterval(function () {
                         issuefromdoc = 'https://script.google.com/macros/s/AKfycbyBl2CvdFSi2IXYDTkCroJJjlP63NMBfSsp6TwXYYGfwct0YT1_gnTumsdFbcTpR7KksA/exec'
                         await fetch(issuefromdoc).then(r => r.json()).then(r => issuedata = r)
                         issuecontainer = issuedata.result;
-                        console.log(issuedata.result) //получим список проблем
 
                         for (let i = 0; i < issuecontainer.length; i++) {
                             addOption(objSelIssue, `${issuecontainer[i][0]}`, `${issuecontainer[i][0]}`)
@@ -124,7 +123,6 @@ let intervalotak = setInterval(function () {
                         solutionfromdoc = 'https://script.google.com/macros/s/AKfycbxut3AuCkPNsK_sR7zxxF8B7xFelbTPnR_iEywL1qo0BXbKbLiBRilGuKFm2XnPcCNdHQ/exec'
                         await fetch(solutionfromdoc).then(r => r.json()).then(r => solutiondata = r)
                         solutioncontainer = solutiondata.result;
-                        console.log(solutiondata.result) //получим список как решилось
 
                         for (let i = 0; i < solutioncontainer.length; i++) {
                             addOption(objSelSolution, `${solutioncontainer[i][0]}`, `${solutioncontainer[i][0]}`)
@@ -210,7 +208,6 @@ let intervalotak = setInterval(function () {
                     issuefromdoc = 'https://script.google.com/macros/s/AKfycbyBl2CvdFSi2IXYDTkCroJJjlP63NMBfSsp6TwXYYGfwct0YT1_gnTumsdFbcTpR7KksA/exec'
                     await fetch(issuefromdoc).then(r => r.json()).then(r => issuedata = r)
                     issuecontainer = issuedata.result;
-                    console.log(issuedata.result) //получим список проблем
 
                     for (let i = 0; i < issuecontainer.length; i++) {
                         addOption(objSelIssue, `${issuecontainer[i][0]}`, `${issuecontainer[i][0]}`)
@@ -219,7 +216,6 @@ let intervalotak = setInterval(function () {
                     solutionfromdoc = 'https://script.google.com/macros/s/AKfycbxut3AuCkPNsK_sR7zxxF8B7xFelbTPnR_iEywL1qo0BXbKbLiBRilGuKFm2XnPcCNdHQ/exec'
                     await fetch(solutionfromdoc).then(r => r.json()).then(r => solutiondata = r)
                     solutioncontainer = solutiondata.result;
-                    console.log(solutiondata.result) //получим список как решилось
 
                     for (let i = 0; i < solutioncontainer.length; i++) {
                         addOption(objSelSolution, `${solutioncontainer[i][0]}`, `${solutioncontainer[i][0]}`)
@@ -332,60 +328,42 @@ let intervalotak = setInterval(function () {
 
 
                         } else if (flagotherproblem == 1 && flagothersolved == 0) {
-
                             otherproblemtext = encodeURIComponent(document.getElementById('otherproblem').value)
-
                             body2 = 'entry.1040202788=' + chatlink + '&entry.763930179=' + textaskclient + '&entry.870072493=' + textclientsolution + '&entry.8206738=' + otherproblemtext
-                            console.log(body2)
-
-                            console.log('other problem =1  othersolve = 0')
-
                         } else if (flagotherproblem == 0 && flagothersolved == 1) {
-
                             othersolvedtext = encodeURIComponent(document.getElementById('othersolved').value)
-
                             body2 = 'entry.1040202788=' + chatlink + '&entry.763930179=' + textaskclient + '&entry.870072493=' + textclientsolution + '&entry.917004094=' + othersolvedtext
-                            console.log(body2)
-
-                            console.log('other problem =0  othersolve = 1')
-
                         } else if (flagotherproblem == 1 && flagothersolved == 1) {
-
                             otherproblemtext = encodeURIComponent(document.getElementById('otherproblem').value)
                             othersolvedtext = encodeURIComponent(document.getElementById('othersolved').value)
-
                             body2 = 'entry.1040202788=' + chatlink + '&entry.763930179=' + textaskclient + '&entry.870072493=' + textclientsolution + '&entry.917004094=' + othersolvedtext + '&entry.8206738=' + otherproblemtext
-                            console.log(body2)
-
                         }
-					
-						chrome.runtime.sendMessage({ 
-						  action: 'sentToForms', 
-						  url: 'https://docs.google.com/forms/d/e/1FAIpQLScXLf0uRuESjzpu0gR-kE7T5LcCblOQtqzadtcwnTUb4_vpnQ/formResponse',
-						  body: body2
-						}, function(response) {
-						  // Обработка ответа
-						  console.log(response);
-                        sendComment('Отправка в документ "Отказ от помощи" прошла успешно')
-                        document.getElementById('send2doc').textContent = "Отправлено✅"
 
-                        setTimeout(() => {
-                            document.getElementById('send2doc').textContent = "Отправить"
-                            document.getElementById('AF_Refuseformnew').style.display = 'none'
-                        }, 3000)
+                        chrome.runtime.sendMessage({
+                            action: 'sentToForms',
+                            url: 'https://docs.google.com/forms/d/e/1FAIpQLScXLf0uRuESjzpu0gR-kE7T5LcCblOQtqzadtcwnTUb4_vpnQ/formResponse',
+                            body: body2
+                        }, function (response) {
+                            sendComment('Отправка в документ "Отказ от помощи" прошла успешно')
+                            document.getElementById('send2doc').textContent = "Отправлено✅"
 
-                        document.getElementById('chatlnk').value = ''
-                        document.getElementById('userissue').children[0].selected = true
-                        document.getElementById('howissuesolverd').children[0].selected = true
-                        document.getElementById('othersolved').classList.add('otherfieldoff')
-                        document.getElementById('othersolved').classList.remove('otherfieldon')
-                        document.getElementById('othersolved').setAttribute('disabled', 'disabled')
-                        document.getElementById('otherproblem').classList.add('otherfieldoff')
-                        document.getElementById('otherproblem').classList.remove('otherfieldon')
-                        document.getElementById('otherproblem').setAttribute('disabled', 'disabled')
-                        document.getElementById('otherproblem').value = ''
-                        document.getElementById('othersolved').value = ''
-						}); 
+                            setTimeout(() => {
+                                document.getElementById('send2doc').textContent = "Отправить"
+                                document.getElementById('AF_Refuseformnew').style.display = 'none'
+                            }, 3000)
+
+                            document.getElementById('chatlnk').value = ''
+                            document.getElementById('userissue').children[0].selected = true
+                            document.getElementById('howissuesolverd').children[0].selected = true
+                            document.getElementById('othersolved').classList.add('otherfieldoff')
+                            document.getElementById('othersolved').classList.remove('otherfieldon')
+                            document.getElementById('othersolved').setAttribute('disabled', 'disabled')
+                            document.getElementById('otherproblem').classList.add('otherfieldoff')
+                            document.getElementById('otherproblem').classList.remove('otherfieldon')
+                            document.getElementById('otherproblem').setAttribute('disabled', 'disabled')
+                            document.getElementById('otherproblem').value = ''
+                            document.getElementById('othersolved').value = ''
+                        });
                     }
                 }
             }

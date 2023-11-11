@@ -171,46 +171,46 @@ wintStat.style.display = 'none';
 wintStat.setAttribute('id', 'AF_Stat');
 wintStat.innerHTML = win_Stat;
 
-wintStat.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = wintStat.offsetLeft;
-    let elemTop = wintStat.offsetTop;
+wintStat.onmousedown = function (event) {
+    if (checkelementtype(event)) {
+        let startX = event.clientX;
+        let startY = event.clientY;
+        let elemLeft = wintStat.offsetLeft;
+        let elemTop = wintStat.offsetTop;
 
-    function onMouseMove(event) {
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
+        function onMouseMove(event) {
+            let deltaX = event.clientX - startX;
+            let deltaY = event.clientY - startY;
 
-      wintStat.style.left = (elemLeft + deltaX) + "px";
-      wintStat.style.top = (elemTop + deltaY) + "px";
+            wintStat.style.left = (elemLeft + deltaX) + "px";
+            wintStat.style.top = (elemTop + deltaY) + "px";
 
-      localStorage.setItem('winTopStat', String(elemTop + deltaY));
-      localStorage.setItem('winLeftStat', String(elemLeft + deltaX));
+            localStorage.setItem('winTopStat', String(elemTop + deltaY));
+            localStorage.setItem('winLeftStat', String(elemLeft + deltaX));
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mouseup', onMouseUp);
     }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
 };
- // прекращение изменения позиции окна работы со статистикой
+// прекращение изменения позиции окна работы со статистикой
 
 document.getElementById('AF_Stat').ondblclick = function (a) { // скрытие окна работы со статистикой
     if (checkelementtype(a)) { document.getElementById('AF_Stat').style.display = 'none'; }
 }
 
-    document.getElementById('hideMeStat').onclick = function () { // скрытие окна работы со статистикой
-        if (document.getElementById('AF_Stat').style.display == '')
-            document.getElementById('AF_Stat').style.display = 'none'
-    }
-	
-	//Функция очищения выведенной информации после поиска
+document.getElementById('hideMeStat').onclick = function () { // скрытие окна работы со статистикой
+    if (document.getElementById('AF_Stat').style.display == '')
+        document.getElementById('AF_Stat').style.display = 'none'
+}
+
+//Функция очищения выведенной информации после поиска
 document.getElementById('clearall').onclick = function () {
     document.querySelector('#sumchatcounttouched').innerText = ""
     document.querySelector('#sumchatcountclosed').innerText = ""
@@ -224,23 +224,23 @@ document.getElementById('clearall').onclick = function () {
 }
 
 function getStatsButtonPress() { // открытие Статистики
-	let getcurdate = new Date();
-	let year = getcurdate.getFullYear();
-	let month = String(getcurdate.getMonth() + 1).padStart(2, "0");
-	let day = String(getcurdate.getDate()).padStart(2, "0");
+    let getcurdate = new Date();
+    let year = getcurdate.getFullYear();
+    let month = String(getcurdate.getMonth() + 1).padStart(2, "0");
+    let day = String(getcurdate.getDate()).padStart(2, "0");
 
-	let lastDayOfPrevMonth = new Date(year, getcurdate.getMonth(), 0).getDate();
-	let fromDate = new Date(year, getcurdate.getMonth(), day - 1);
-	let toDate = new Date(year, getcurdate.getMonth(), day);
+    let lastDayOfPrevMonth = new Date(year, getcurdate.getMonth(), 0).getDate();
+    let fromDate = new Date(year, getcurdate.getMonth(), day - 1);
+    let toDate = new Date(year, getcurdate.getMonth(), day);
 
-	if (day === "01") {
-	  // set date range to previous month
-		fromDate = new Date(year, getcurdate.getMonth() - 1, lastDayOfPrevMonth);
-	    toDate = new Date(year, getcurdate.getMonth(), 1);
-	}
+    if (day === "01") {
+        // set date range to previous month
+        fromDate = new Date(year, getcurdate.getMonth() - 1, lastDayOfPrevMonth);
+        toDate = new Date(year, getcurdate.getMonth(), 1);
+    }
 
-	document.getElementById("dateFrom").value = `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, "0")}-${String(fromDate.getDate()).padStart(2, "0")}`;
-	document.getElementById("dateTo").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
+    document.getElementById("dateFrom").value = `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, "0")}-${String(fromDate.getDate()).padStart(2, "0")}`;
+    document.getElementById("dateTo").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
 
     document.querySelector('#chatcommentsdata').style.display = "none"
     document.querySelector('#lowCSATcount').style.display = "none"
@@ -250,7 +250,7 @@ function getStatsButtonPress() { // открытие Статистики
         document.getElementById('AF_Stat').style.display = ''
 }
 
-	// Тут будет функция запуска получения информации о статистики
+// Тут будет функция запуска получения информации о статистики
 
 document.getElementById('getstatfromperiod').onclick = async function () { // Тут будет функция запуска получения информации о статистики
     let datefrom = document.getElementById('dateFrom').value + "T21:00:00.000Z";
@@ -515,14 +515,14 @@ document.getElementById('parsechat').onclick = async function () { //Функц�
     }
 }
 
-    let searchCommentsByEnter = document.querySelector('#commenttosearch'); //по Enter запускает поиск по комментариям
-    searchCommentsByEnter.addEventListener('keydown', event => {
-        if (event.key === "Enter") {
-            document.querySelector('#parsechat').click()
-        }
-    })
-	
-	document.getElementById('gofindit').onclick = async function () { //функция поиска чатов по выставленной тематике с отображениеи и тегов
+let searchCommentsByEnter = document.querySelector('#commenttosearch'); //по Enter запускает поиск по комментариям
+searchCommentsByEnter.addEventListener('keydown', event => {
+    if (event.key === "Enter") {
+        document.querySelector('#parsechat').click()
+    }
+})
+
+document.getElementById('gofindit').onclick = async function () { //функция поиска чатов по выставленной тематике с отображениеи и тегов
     let curval = document.getElementById('thematics').value;
     let strcsatnew = document.getElementById('themesdata');
     strcsatnew.textContent = "Загрузка"
@@ -620,9 +620,6 @@ document.getElementById('parsechat').onclick = async function () { //Функц�
             }
         }
     }
-
-    console.log(stringChatsWithComment);
-    console.log("count: " + count);
 }
 
 document.getElementById('changetheme').onclick = function () { //функция изменения тематики чата

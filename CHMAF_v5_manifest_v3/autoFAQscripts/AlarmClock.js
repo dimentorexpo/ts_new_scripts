@@ -17,9 +17,9 @@ var win_Alarmclock =  // описание элементов окна будил
 					<button class="mainButton" id="clock_remin" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: lightgreen; margin-top: 5px">00 : 00 : 00</button>
 					<button class="mainButton" id="clock_remin1" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: MediumSpringGreen; margin-left:28px; margin-top: 5px">00 : 00 : 00</button>
 				</div>
-			</div>`;			
+			</div>`;
 
-if (localStorage.getItem('winTopAlarmclock') == null) { // началоное положение окна будильника (если не задано ранее)
+if (localStorage.getItem('winTopAlarmclock') == null) { // начальное положение окна будильника (если не задано ранее)
     localStorage.setItem('winTopAlarmclock', '120');
     localStorage.setItem('winLeftAlarmclock', '295');
 }
@@ -31,35 +31,35 @@ wintAlarmclock.style.display = 'none';
 wintAlarmclock.setAttribute('id', 'AF_AlarmClock');
 wintAlarmclock.innerHTML = win_Alarmclock;
 
-wintAlarmclock.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = wintAlarmclock.offsetLeft;
-    let elemTop = wintAlarmclock.offsetTop;
+wintAlarmclock.onmousedown = function (event) {
+    if (checkelementtype(event)) {
+        let startX = event.clientX;
+        let startY = event.clientY;
+        let elemLeft = wintAlarmclock.offsetLeft;
+        let elemTop = wintAlarmclock.offsetTop;
 
-    function onMouseMove(event) {
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
+        function onMouseMove(event) {
+            let deltaX = event.clientX - startX;
+            let deltaY = event.clientY - startY;
 
-      wintAlarmclock.style.left = (elemLeft + deltaX) + "px";
-      wintAlarmclock.style.top = (elemTop + deltaY) + "px";
+            wintAlarmclock.style.left = (elemLeft + deltaX) + "px";
+            wintAlarmclock.style.top = (elemTop + deltaY) + "px";
 
-      localStorage.setItem('winTopAlarmclock', String(elemTop + deltaY));
-      localStorage.setItem('winLeftAlarmclock', String(elemLeft + deltaX));
+            localStorage.setItem('winTopAlarmclock', String(elemTop + deltaY));
+            localStorage.setItem('winLeftAlarmclock', String(elemLeft + deltaX));
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mouseup', onMouseUp);
     }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
 };
- // прекращение изменения позиции окна будильника
+// прекращение изменения позиции окна будильника
 
 function clock_on_javascript_1() {  //таймер обычного отсчета текущего времени
     // Get the current date and time
@@ -86,9 +86,9 @@ function clock_on_javascript_2() { //таймер отсчета до сраба
     var currentMinutes = data.getMinutes();
     var currentSeconds = data.getSeconds();
 
-    if (localStorage.getItem('setchas')){
-    var setHours = JSON.parse(localStorage.getItem('setchas'));
-    var setMinutes = JSON.parse(localStorage.getItem('setminuta'));
+    if (localStorage.getItem('setchas')) {
+        var setHours = JSON.parse(localStorage.getItem('setchas'));
+        var setMinutes = JSON.parse(localStorage.getItem('setminuta'));
     }
 
     if (localStorage.getItem('chronostamp') === null) {
@@ -119,9 +119,9 @@ function clock_on_javascript_3() { //таймер отсчета до сраба
     var currentMinutes1 = data1.getMinutes();
     var currentSeconds1 = data1.getSeconds();
 
-    if (localStorage.getItem('setchas1')){
-    var setHours1 = JSON.parse(localStorage.getItem('setchas1'));
-    var setMinutes1 = JSON.parse(localStorage.getItem('setminuta1'));
+    if (localStorage.getItem('setchas1')) {
+        var setHours1 = JSON.parse(localStorage.getItem('setchas1'));
+        var setMinutes1 = JSON.parse(localStorage.getItem('setminuta1'));
     }
 
     if (localStorage.getItem('chronostamp1') === null) {
@@ -164,7 +164,7 @@ function refreshTimerReminder() {
             var chronostamp22 = (((localStorage.getItem('setchas1') - timearr1.getHours()) * 60 * 60) + ((localStorage.getItem('setminuta1') - timearr1.getMinutes()) * 60) + (0 - timearr1.getSeconds())) * 1000;
             localStorage.setItem('chronostamp22', chronostamp22);
             abortTimeOut1 = setTimeout(function () {
-            setRemindAf('chronostamp1')
+                setRemindAf('chronostamp1')
             }, localStorage.getItem('chronostamp22'));
         }
     } else if (localStorage.getItem('chronostamp1') !== null && localStorage.getItem('chronostamp1') > 0) {
@@ -174,14 +174,14 @@ function refreshTimerReminder() {
         var timearr1 = new Date();
         var chronostamp22 = (((localStorage.getItem('setchas1') - timearr1.getHours()) * 60 * 60) + ((localStorage.getItem('setminuta1') - timearr1.getMinutes()) * 60) + (0 - timearr1.getSeconds())) * 1000;
         localStorage.setItem('chronostamp22', chronostamp22);
-		abortTimeOut1 = setTimeout(function () {
-		setRemindAf('chronostamp1')
-		}, localStorage.getItem('chronostamp22'));
-		} else {
-		clearTimeout(abortTimeOut);
-		clearTimeout(abortTimeOut1);
-		document.getElementById('reminderstatus').textContent = "🔕";
-		}
+        abortTimeOut1 = setTimeout(function () {
+            setRemindAf('chronostamp1')
+        }, localStorage.getItem('chronostamp22'));
+    } else {
+        clearTimeout(abortTimeOut);
+        clearTimeout(abortTimeOut1);
+        document.getElementById('reminderstatus').textContent = "🔕";
+    }
 }
 
 function setRemindAf(tsname) { //функция  при наступлении времени перевода в статус занят Будильник №1
@@ -256,7 +256,6 @@ document.getElementById('setreminder').onclick = function () {
     }, localStorage.getItem('chronostamp'));
 }
 
-
 document.getElementById('setreminder1').onclick = function () {  // выставляем будильник 2
     document.getElementById('reminderstatus').textContent = "🔔";
     localStorage.setItem('setchas1', setchas1.value);
@@ -266,7 +265,7 @@ document.getElementById('setreminder1').onclick = function () {  // выстав
 
     var timearr1 = new Date()
     var chronostamp1 = (((localStorage.getItem('setchas1') - timearr1.getHours()) * 60 * 60) + ((localStorage.getItem('setminuta1') - timearr1.getMinutes()) * 60) + (0 - timearr1.getSeconds())) * 1000;
-    
+
     localStorage.setItem('chronostamp1', chronostamp1);
 
     alert("Будильник установлен на " + setchas1.value + ":" + setminuta1.value + ":" + "00");
@@ -307,9 +306,8 @@ function checkAlarmsStatus() {
     }
 }
 
-
-document.getElementById('hideMeAlarm').onclick = function() {
-	document.getElementById('AF_AlarmClock').style.display = 'none'
+document.getElementById('hideMeAlarm').onclick = function () {
+    document.getElementById('AF_AlarmClock').style.display = 'none'
 }
 
 refreshTimerReminder(); //обновляет оставшееся время до будильника №1
@@ -317,24 +315,21 @@ refreshTimerReminder(); //обновляет оставшееся время д�
 setInterval(clock_on_javascript_1, 1000);
 setInterval(clock_on_javascript_2, 1000);
 setInterval(clock_on_javascript_3, 1000);
-
-// setInterval(operstatusleftbar, 3000);
-
 // конец блока работы с будильником
 
 // Добавьте обработчики событий для ограничения максимальной длины
-setchas.addEventListener('input', function() {
-  maxLengthCheck(this);
+setchas.addEventListener('input', function () {
+    maxLengthCheck(this);
 });
 
-setminuta.addEventListener('input', function() {
-  maxLengthCheck(this);
+setminuta.addEventListener('input', function () {
+    maxLengthCheck(this);
 });
 
-setchas1.addEventListener('input', function() {
-  maxLengthCheck(this);
+setchas1.addEventListener('input', function () {
+    maxLengthCheck(this);
 });
 
-setminuta1.addEventListener('input', function() {
-  maxLengthCheck(this);
+setminuta1.addEventListener('input', function () {
+    maxLengthCheck(this);
 });

@@ -256,7 +256,7 @@ document.getElementById('userfeatures').addEventListener('click', function () { 
 document.getElementById('benchmark').onclick = function () {                  //поиск по имени процессора на сайте cpubenchmark
     let lnkgr = 'https://www.cpubenchmark.net/cpu_lookup.php?cpu=';
     if (cpuname.value == "")
-        console.log('Введите CPU в поле')
+        alert('Введите CPU в поле')
     else {
         window.open(lnkgr + cpuname.value);
     };
@@ -265,7 +265,7 @@ document.getElementById('benchmark').onclick = function () {                  //
 	
 document.getElementById('cmsid').onclick = function () {                     // переход на степID в CMSке
     if (cmsstepid.value == "")
-        console.log('Введите STEPUUID в поле')
+        alert('Введите STEPUUID в поле')
     else {
         window.open('https://content.vimbox.skyeng.ru/cms/stepStore/update/stepId/' + cmsstepid.value);
     };
@@ -274,7 +274,7 @@ document.getElementById('cmsid').onclick = function () {                     // 
 
 document.getElementById('getschemes').onclick = function() { // переход на просмотра подключенных схем вознаграждения преподавателей
 	    if (schemesteacher.value == "")
-        console.log('Введите ID П в поле')
+        alert('Введите ID П в поле')
     else {
         window.open('https://teacher-incentive.skyeng.ru/incentive/teacher/' + schemesteacher.value);
     };
@@ -283,7 +283,7 @@ document.getElementById('getschemes').onclick = function() { // переход �
 
 document.getElementById('getpushes').onclick = function() { // переход на просмотр статусов пушей ученику в МП
 	    if (pushes.value == "")
-        console.log('Введите ID У в поле')
+        alert('Введите ID У в поле')
     else {
         window.open('https://push-notifications.skyeng.ru/cms/logs?page=1&paginateBy=100&id=&userId=' + pushes.value + '&status=&useCase=&notificationSource=&createdAtFrom=&createdAtTo=');
     };
@@ -293,7 +293,7 @@ document.getElementById('getpushes').onclick = function() { // переход н
 document.getElementById('credits').onclick = function () {                  // проверка рассрочки у ученика она же поэтапная оплата (ПО)
     let lnkscredits = 'https://accounting.skyeng.ru/credit/list?studentId=';
     if (creditstatus.value == "")
-        console.log('Введите id  ученика в поле')
+        alert('Введите id  ученика в поле')
     else {
         window.open(lnkscredits + creditstatus.value);
     };
@@ -303,7 +303,7 @@ document.getElementById('credits').onclick = function () {                  // �
 document.getElementById('gettrshinfo').onclick = function () {               // сохранение в буфере айди ученика для просмотра всего списка ДЗ по нему
     let trshootlnk = 'https://video-trouble-shooter.skyeng.ru/?hash=';
     if (trshooterhash.value == "")
-        console.log('Введите id  ученика в поле')
+        alert('Введите id  ученика в поле')
     else {
         window.open(trshootlnk + trshooterhash.value);
     };
@@ -313,7 +313,7 @@ document.getElementById('gettrshinfo').onclick = function () {               // 
 document.getElementById('getenablerAP').onclick = function () {               // сохранение в буфере ссылки для активации АП
     let enableAPlnk = 'https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=';
     if (enablerAP.value == "")
-        console.log('Введите hash комнаты в поле')
+        alert('Введите hash комнаты в поле')
     else {
         copyToClipboard(enableAPlnk + enablerAP.value);
     };
@@ -325,7 +325,7 @@ document.getElementById('getenablerAP').onclick = function () {               //
 document.getElementById('getskipAP').onclick = function () {               // сохранение в буфере ссылки для активации АП
     let skipAPlnk = 'https://student.skyeng.ru/product-stage?stage=auto-schedule&educationServiceId=';
     if (skipAP.value == "")
-        console.log('Введите hash комнаты в поле')
+        alert('Введите hash комнаты в поле')
     else {
         copyToClipboard(skipAPlnk + skipAP.value);
     };
@@ -338,7 +338,7 @@ document.getElementById('getskipAP').onclick = function () {               // с
 document.getElementById('doskiponboard').onclick = function () {               // сохранение в буфере ссылки для активации АП
     let skiponblnk = 'https://student.skyeng.ru/product-stage?stage=onboarding&educationServiceId=';
     if (skiponboarding.value == "")
-        console.log('Введите ID услуги в поле')
+        alert('Введите ID услуги в поле')
     else {
         copyToClipboard(skiponblnk + skiponboarding.value);
     };
@@ -387,7 +387,7 @@ document.getElementById('bankCheck').addEventListener('click', function () { // 
 document.getElementById('gotolookip').onclick = function () { // проверка информации по айпишнику ученика/препода/ хостинга
     let iplink = 'https://check-host.net/ip-info?host=';
     if (iplookup.value == "")
-        console.log('Введите ip в поле')
+        alert('Введите ip в поле')
     else {
         window.open(iplink + iplookup.value);
     };
@@ -397,7 +397,7 @@ document.getElementById('gotolookip').onclick = function () { // проверк�
 document.getElementById('getlgsinfo').onclick = function () { // открытие админки LGS по ID группы
     let lgslink = 'https://learning-groups-storage.skyeng.ru/group/';
     if (lgssearch.value == "")
-        console.log('Введите текст в поле')
+        alert('Введите текст в поле')
     else {
         window.open(lgslink + lgssearch.value + '?cp=(section:participants)');
     };
@@ -411,54 +411,16 @@ async function getversionsapp() { // получаем из файла списо
 	versionsfromdoc = 'https://script.google.com/macros/s/AKfycbwgym7WoXavCcMa7mpzlA4GHGncpWixKwyxhSJT1TU8tZg4KmRemyZqyQ3c5G2cKTxDrQ/exec'
 	await fetch(versionsfromdoc).then(r => r.json()).then(r => versionsdata = r)
 	versionscontainer = versionsdata.result;
-	console.log(versionsdata.result) //получим список версий
 	document.getElementById('curVeriOS').textContent  = versionscontainer[1][0] + ' : ' + versionscontainer[1][1]
 	document.getElementById('curVerAndroid').innerText = versionscontainer[0][0] + ' : ' + versionscontainer[0][1]
 
 }
-
-    // document.getElementById('getmobpasscode').onclick = function () {
-        // if (setidformobpass.value == "")
-            // console.log('Введите id в поле')
-        // else {
-            // document.getElementById('getmobpasscode').innerHTML = "✅";
-            // setTimeout(function () { document.getElementById('getmobpasscode').innerHTML = "🚀" }, 2000);
-            // document.getElementById('responseTextarea1').value = `{
-			// "headers": {
-				// "content-type": "application/x-www-form-urlencoded",
-					// "sec-fetch-dest": "document",
-					// "sec-fetch-mode": "navigate",
-					// "sec-fetch-site": "same-origin",
-					// "sec-fetch-user": "?1",
-					// "upgrade-insecure-requests": "1"
-			// },
-			// "body": "user_id_or_identity_for_one_time_password_form%5BuserIdOrIdentity%5D= + ${setidformobpass.value} + &user_id_or_identity_for_one_time_password_form%5Bgenerate%5D=&user_id_or_identity_for_one_time_password_form%5B_token%5D=null",
-				// "method": "POST",
-				// "mode": "cors",
-				// "credentials": "include"
-			// }`
-            // document.getElementById('responseTextarea2').value = "https://id.skyeng.ru/admin/auth/one-time-password"
-            // document.getElementById('responseTextarea3').value = 'getmobpwd'
-            // document.getElementById('sendResponse').click()
-
-            // function getPassInfo() {
-                // var resprez = document.getElementById('responseTextarea1').getAttribute('getmobpwd')
-                // document.getElementById('responseTextarea1').removeAttribute('getmobpwd');
-                // var convertres = resprez.match(/div class="alert alert-success" role="alert".*?([0-9]{5}).*/);
-                // setidformobpass.value = convertres[1];
-            // }
-            // setTimeout(getPassInfo, 2000);
-        // };
-        // setTimeout(function () { document.getElementById('setidformobpass').value = "" }, 15000);
-
-    // }
-	
 	const getmobpasscode = document.querySelector('#getmobpasscode');
 
 	getmobpasscode.onclick = function () {
 	const setidformobpass = document.querySelector('#setidformobpass');
 	if (setidformobpass.value.trim() == "") {
-	console.log('Введите id в поле');
+	alert('Введите id в поле');
 	} else {
 	getmobpasscode.innerHTML = '✅';
 	setTimeout(() => getmobpasscode.innerHTML = '🚀', 2000);

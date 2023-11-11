@@ -31,79 +31,79 @@ wintBankInfo.style.display = 'none';
 wintBankInfo.setAttribute('id', 'AF_BankCheck');
 wintBankInfo.innerHTML = win_BankInfo;
 
-wintBankInfo.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = wintBankInfo.offsetLeft;
-    let elemTop = wintBankInfo.offsetTop;
+wintBankInfo.onmousedown = function (event) {
+    if (checkelementtype(event)) {
+        let startX = event.clientX;
+        let startY = event.clientY;
+        let elemLeft = wintBankInfo.offsetLeft;
+        let elemTop = wintBankInfo.offsetTop;
 
-    function onMouseMove(event) {
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
+        function onMouseMove(event) {
+            let deltaX = event.clientX - startX;
+            let deltaY = event.clientY - startY;
 
-      wintBankInfo.style.left = (elemLeft + deltaX) + "px";
-      wintBankInfo.style.top = (elemTop + deltaY) + "px";
+            wintBankInfo.style.left = (elemLeft + deltaX) + "px";
+            wintBankInfo.style.top = (elemTop + deltaY) + "px";
 
-      localStorage.setItem('winTopBankInfo', String(elemTop + deltaY));
-      localStorage.setItem('winLeftBankInfo', String(elemLeft + deltaX));
+            localStorage.setItem('winTopBankInfo', String(elemTop + deltaY));
+            localStorage.setItem('winLeftBankInfo', String(elemLeft + deltaX));
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mouseup', onMouseUp);
     }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
 };
- // прекращение изменения позиции окна Список группы
+// прекращение изменения позиции окна Список группы
 
 document.getElementById('AF_BankCheck').ondblclick = function (a) { // скрытие окна Список группы по двойному клику
     if (checkelementtype(a)) { document.getElementById('AF_BankCheck').style.display = 'none'; }
 }
 
-    document.getElementById('hideMeGrList').addEventListener('click', function () { // скрытие окна Список группы
-        if (document.getElementById('AF_BankCheck').style.display == '') {
-            document.getElementById('AF_BankCheck').style.display = 'none';
-            document.getElementById('cardInfoData').innerText = "";
-            document.getElementById('carddigits').value = "";
-        }
-    })
+document.getElementById('hideMeGrList').addEventListener('click', function () { // скрытие окна Список группы
+    if (document.getElementById('AF_BankCheck').style.display == '') {
+        document.getElementById('AF_BankCheck').style.display = 'none';
+        document.getElementById('cardInfoData').innerText = "";
+        document.getElementById('carddigits').value = "";
+    }
+})
 
 
-    document.getElementById('getBankInfoData').addEventListener('click', async function () { 
+document.getElementById('getBankInfoData').addEventListener('click', async function () {
 
-        let tempgrid = document.getElementById('carddigits').value;
-		
-		if (tempgrid != '' ) {
-			document.getElementById('cardInfoData').innerHTML = "Загрузка...";
-					
-			const options = {
-			method: 'POST',
-			headers: {
-				'content-type': 'application/json',
-				'X-RapidAPI-Key': '1b65e6c5e9msh256f2c43c21ccf3p17b3b2jsnb9bb40c53806',
-				'X-RapidAPI-Host': 'bin-ip-checker.p.rapidapi.com'
-			},
-			body: `{"bin":"${tempgrid}"}`
-		};
+    let tempgrid = document.getElementById('carddigits').value;
 
-		await fetch(`https://bin-ip-checker.p.rapidapi.com/?bin=${tempgrid}`, options)
-			.then(response => response.json())
-			.then(response => cardData = response)
-			.catch(err => console.error(err));
-			
-			document.getElementById('cardInfoData').innerHTML =  'Имя банка: ' + cardData.BIN.issuer.name + '<br>' + 'Схема карты: ' + cardData.BIN.scheme + '<br>' + 'Страна: ' + cardData.BIN.country.country +   '<br>' + 'Тип карты: ' + cardData.BIN.type + '<br>' + 'Валюта: ' + cardData.BIN.currency
-		}  else alert("Вы не ввели 6 цифр в поле для ввода. Пожалуйста, введите и повторите попытку!")
+    if (tempgrid != '') {
+        document.getElementById('cardInfoData').innerHTML = "Загрузка...";
 
-     })
-	 
-	 document.getElementById('openSiteBin').addEventListener('click', function () { 
-         let tempgrid = document.getElementById('carddigits').value;
-		 if (tempgrid !='') {
-			 window.open('https://bincheck.io/ru/details/'+tempgrid)
-		} 
-	 })
+        const options = {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+                'X-RapidAPI-Key': '1b65e6c5e9msh256f2c43c21ccf3p17b3b2jsnb9bb40c53806',
+                'X-RapidAPI-Host': 'bin-ip-checker.p.rapidapi.com'
+            },
+            body: `{"bin":"${tempgrid}"}`
+        };
+
+        await fetch(`https://bin-ip-checker.p.rapidapi.com/?bin=${tempgrid}`, options)
+            .then(response => response.json())
+            .then(response => cardData = response)
+            .catch(err => console.error(err));
+
+        document.getElementById('cardInfoData').innerHTML = 'Имя банка: ' + cardData.BIN.issuer.name + '<br>' + 'Схема карты: ' + cardData.BIN.scheme + '<br>' + 'Страна: ' + cardData.BIN.country.country + '<br>' + 'Тип карты: ' + cardData.BIN.type + '<br>' + 'Валюта: ' + cardData.BIN.currency
+    } else alert("Вы не ввели 6 цифр в поле для ввода. Пожалуйста, введите и повторите попытку!")
+
+})
+
+document.getElementById('openSiteBin').addEventListener('click', function () {
+    let tempgrid = document.getElementById('carddigits').value;
+    if (tempgrid != '') {
+        window.open('https://bincheck.io/ru/details/' + tempgrid)
+    }
+})

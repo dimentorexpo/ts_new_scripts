@@ -38,7 +38,7 @@ var win_Themes =  // описание элементов окна Тематик
         </span>
 </div>`;
 
-async function startThemes(){
+async function startThemes() {
 
     // модуль проверки адреса загрузки тематик
     const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv', 'TP_addrth', 'KC_addrth']); // Получаем данные из хранилища
@@ -59,7 +59,7 @@ async function startThemes(){
     } else if (scriptAdrChek === KC_addr || scriptAdrChek === KC_addrRzrv) {
         scriptAdrTH = KC_addrth;
         KCThemesFlag = 1;
-    } else if (!scriptAdrTH) { 
+    } else if (!scriptAdrTH) {
         scriptAdrTH = TP_addrth;
     }
 
@@ -82,42 +82,42 @@ wintThemes.style.display = 'none';
 wintThemes.setAttribute('id', 'AF_Themes');
 wintThemes.innerHTML = win_Themes;
 
-wintThemes.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = wintThemes.offsetLeft;
-    let elemTop = wintThemes.offsetTop;
+wintThemes.onmousedown = function (event) {
+    if (checkelementtype(event)) {
+        let startX = event.clientX;
+        let startY = event.clientY;
+        let elemLeft = wintThemes.offsetLeft;
+        let elemTop = wintThemes.offsetTop;
 
-    function onMouseMove(event) {
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
+        function onMouseMove(event) {
+            let deltaX = event.clientX - startX;
+            let deltaY = event.clientY - startY;
 
-      wintThemes.style.left = (elemLeft + deltaX) + "px";
-      wintThemes.style.top = (elemTop + deltaY) + "px";
+            wintThemes.style.left = (elemLeft + deltaX) + "px";
+            wintThemes.style.top = (elemTop + deltaY) + "px";
 
-      localStorage.setItem('winTopThemes', String(elemTop + deltaY));
-      localStorage.setItem('winLeftThemes', String(elemLeft + deltaX));
+            localStorage.setItem('winTopThemes', String(elemTop + deltaY));
+            localStorage.setItem('winLeftThemes', String(elemLeft + deltaX));
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mouseup', onMouseUp);
     }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
 };
- // прекращение изменения позиции окна Тематик
+// прекращение изменения позиции окна Тематик
 
 document.getElementById('AF_Themes').ondblclick = function (a) { // скрытие окна Тематик и тегов по двойному клику
-    if (checkelementtype(a)) { document.getElementById('hideMeThemes').click();}
+    if (checkelementtype(a)) { document.getElementById('hideMeThemes').click(); }
 }
 
 document.getElementById('hideMeThemes').onclick = function () { // скрытие окна Тематик
-    if (document.getElementById('AF_Themes').style.display == ''){
+    if (document.getElementById('AF_Themes').style.display == '') {
         document.getElementById('AF_Themes').style.display = 'none'
         document.getElementById('themes').classList.remove('activeScriptBtn')
     }
@@ -125,13 +125,13 @@ document.getElementById('hideMeThemes').onclick = function () { // скрыти�
     if (document.getElementById('backtomenu').style.display == '')
         document.getElementById('backtomenu').click()
 }
-	
+
 document.getElementById('themesinstr').onclick = function () { // открытие интсрукции по тематикам
     window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-themes%D0%9A%D0%BD%D0%BE%D0%BF%D0%BA%D0%B0%D0%A2%D0%B5%D0%BC%D1%8B')
 }
 
 function getThemesButtonPress() { // открытие окна темы
-    if (document.getElementById('AF_Themes').style.display == ''){
+    if (document.getElementById('AF_Themes').style.display == '') {
         document.getElementById('AF_Themes').style.display = 'none'
         document.getElementById('themes').classList.remove('activeScriptBtn')
     } else {
@@ -190,8 +190,7 @@ function refreshThemesBtns() { // функция обновляет темати
     addFontFlag = 0
     areaThbtns = document.getElementById('themes_body')
     areaTagbtns = document.getElementById('tags_body')
-    console.log(tableth)
-    if (KCThemesFlag == 1) {document.getElementById('tags_body').children[0].style.marginBottom = '5px'}
+    if (KCThemesFlag == 1) { document.getElementById('tags_body').children[0].style.marginBottom = '5px' }
     for (i = 0; i < tableth.length; i++) {
         c = tableth[i]
         switch (c[0]) {
@@ -203,14 +202,14 @@ function refreshThemesBtns() { // функция обновляет темати
                 newstrth.id = countOfthPages + 'pageth_' + countOfthStr + 'strth'
                 areaThbtns.lastElementChild.appendChild(newstrth)
                 break
-    
+
             case 'Тэги': // Если тип "Тэг" помечаем флагом
                 addTagFlag = 1
                 break
             case 'Темы': // Если тип "Тема" создаем кнопку и новый div
                 var newpagethBut = document.createElement('button');
                 newpagethBut.textContent = c[1];
-				newpagethBut.classList.add('mainButton')
+                newpagethBut.classList.add('mainButton')
                 newpagethBut.style = btnthstyls;
                 if (c[2] !== '') { newpagethBut.title = c[2]; }
                 if (c[3] !== '') { newpagethBut.style.fontSize = c[3] + 'px'; }
@@ -238,13 +237,13 @@ function refreshThemesBtns() { // функция обновляет темати
                 var newBut = document.createElement('button')
                 newBut.textContent = c[0]
                 newBut.value = c[1]
-				newBut.classList.add('mainButton')
+                newBut.classList.add('mainButton')
                 if (c[2] != '') { newBut.title = c[2] } // если есть title добавляем его
                 if (c[3] != '') { addFontFlag = 1 } else { addFontFlag = 0 } // проверяем указан ли размер шрифта
                 if (addTagFlag == 0) {
                     newBut.style = btnthstyls
-                    if (addFontFlag == 1) {newBut.style.fontSize = c[3]+ 'px'} // если указан размер шрифта назначеем его
-                    newBut.addEventListener('click', function(event) {
+                    if (addFontFlag == 1) { newBut.style.fontSize = c[3] + 'px' } // если указан размер шрифта назначеем его
+                    newBut.addEventListener('click', function (event) {
                         newTag(event.target.value);
                     });
                     areaThbtns.lastElementChild.lastElementChild.appendChild(newBut)
@@ -254,33 +253,33 @@ function refreshThemesBtns() { // функция обновляет темати
                     } else {
                         newBut.style = btnTagsTPtyles
                     }
-                    if (addFontFlag == 1) {newBut.style.fontSize = c[3]+ 'px'} // если указан размер шрифта назначеем его
+                    if (addFontFlag == 1) { newBut.style.fontSize = c[3] + 'px' } // если указан размер шрифта назначеем его
                     newBut.name = "tagssbtn"
-                    if (newBut.value == 'refusal_of_help'){
-                        newBut.addEventListener('click', function(event) {
+                    if (newBut.value == 'refusal_of_help') {
+                        newBut.addEventListener('click', function (event) {
                             RefBtnTag(event.target.value);
                         });
                     } else if (newBut.value == 'smartroom') {
-                        newBut.addEventListener('click', function(event) {
+                        newBut.addEventListener('click', function (event) {
                             SmartBtnTag(event.target.value);
                         });
                     } else {
-                        newBut.addEventListener('click', function(event) {
+                        newBut.addEventListener('click', function (event) {
                             newTaggg(event.target.value);
                         });
                     }
                     areaTagbtns.appendChild(newBut)
 
                     if (KCThemesFlag == 0) {
-                    var newChekB = document.createElement('input')
-                    newChekB.type = "checkbox" 
-                    newChekB.name= "tagcheck"
-                    newChekB.style = chbxTagstyles
-                    areaTagbtns.appendChild(newChekB)
+                        var newChekB = document.createElement('input')
+                        newChekB.type = "checkbox"
+                        newChekB.name = "tagcheck"
+                        newChekB.style = chbxTagstyles
+                        areaTagbtns.appendChild(newChekB)
+                    }
                 }
         }
     }
-}
 }
 
 document.getElementById('backtomenu').onclick = function () { // возврат к выбору кнопок тематик
@@ -326,45 +325,44 @@ document.getElementById('multitag').onclick = function () { // откправк�
     let alltagsbtns = document.getElementsByName('tagssbtn')
     let tagsvaluesarr = [];
     let chatId = getChatId();
-	
-    if (chatId){
-    for (let i = 0; i < allcheckboxtags.length; i++) {
-        if (allcheckboxtags[i].checked) {
-            tagsvaluesarr.push('\"' + alltagsbtns[i].value + '\"')
-            if (alltagsbtns[i].value == 'refusal_of_help' && document.getElementById('AF_Refuseformnew').style.display == 'none') {
-                document.getElementById('otkaz').click()
-            }
-            if (alltagsbtns[i].value == 'smartroom' && document.getElementById('AF_Smartroomform').style.display == 'none') {
-                document.getElementById('smartroomform').click()
-            }
-        }
-    }
-    if (tagsvaluesarr.length > 0) {
-        tagsvaluesarr = tagsvaluesarr.join(',')
-        console.log("tagsvaluesarr: " + tagsvaluesarr)
 
-        fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
-            "headers": {
-                "content-type": "application/json",
-            },
-            "body": "{\"conversationId\":\"" + chatId + "\",\"elements\":[{\"name\":\"tags\",\"value\":[" + tagsvaluesarr + "]}]}",
-            "method": "POST",
-            "credentials": "include"
-        });
-
+    if (chatId) {
         for (let i = 0; i < allcheckboxtags.length; i++) {
             if (allcheckboxtags[i].checked) {
-                allcheckboxtags[i].checked = false;
+                tagsvaluesarr.push('\"' + alltagsbtns[i].value + '\"')
+                if (alltagsbtns[i].value == 'refusal_of_help' && document.getElementById('AF_Refuseformnew').style.display == 'none') {
+                    document.getElementById('otkaz').click()
+                }
+                if (alltagsbtns[i].value == 'smartroom' && document.getElementById('AF_Smartroomform').style.display == 'none') {
+                    document.getElementById('smartroomform').click()
+                }
             }
         }
-    } else alert("Не выбраны чекбоксы, выберите, пожалуйста, 1 или несколько и повторите попытку")
-}
+        if (tagsvaluesarr.length > 0) {
+            tagsvaluesarr = tagsvaluesarr.join(',')
+
+            fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
+                "headers": {
+                    "content-type": "application/json",
+                },
+                "body": "{\"conversationId\":\"" + chatId + "\",\"elements\":[{\"name\":\"tags\",\"value\":[" + tagsvaluesarr + "]}]}",
+                "method": "POST",
+                "credentials": "include"
+            });
+
+            for (let i = 0; i < allcheckboxtags.length; i++) {
+                if (allcheckboxtags[i].checked) {
+                    allcheckboxtags[i].checked = false;
+                }
+            }
+        } else alert("Не выбраны чекбоксы, выберите, пожалуйста, 1 или несколько и повторите попытку")
+    }
 }
 
 document.getElementById('linktojirasend').onclick = function () { // добавленгие ссылки на Jira
     let getval = document.getElementById('linktojiracoment').value;
     let chatId = getChatId();
-	
+
 
     if (getval && chatId) {
         if (window.location.href.includes('tickets/assigned')) {
@@ -383,7 +381,7 @@ document.getElementById('linktojirasend').onclick = function () { // добав�
     }
 }
 
-if (KCThemesFlag == 1){
+if (KCThemesFlag == 1) {
     let needtohide = document.getElementsByClassName('thonlyfortp')
     for (i = 0; i < needtohide.length; i++) {
         needtohide[i].style.display = 'none'

@@ -250,39 +250,39 @@ wintGrabber.style.display = 'none';
 wintGrabber.setAttribute('id', 'AF_Grabber');
 wintGrabber.innerHTML = win_Grabber;
 
-wintGrabber.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = wintGrabber.offsetLeft;
-    let elemTop = wintGrabber.offsetTop;
+wintGrabber.onmousedown = function (event) {
+    if (checkelementtype(event)) {
+        let startX = event.clientX;
+        let startY = event.clientY;
+        let elemLeft = wintGrabber.offsetLeft;
+        let elemTop = wintGrabber.offsetTop;
 
-    function onMouseMove(event) {
-		if (!(event.buttons & 1)) {
-			onMouseUp();
-			return;
-		  }
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
+        function onMouseMove(event) {
+            if (!(event.buttons & 1)) {
+                onMouseUp();
+                return;
+            }
+            let deltaX = event.clientX - startX;
+            let deltaY = event.clientY - startY;
 
-      wintGrabber.style.left = (elemLeft + deltaX) + "px";
-      wintGrabber.style.top = (elemTop + deltaY) + "px";
+            wintGrabber.style.left = (elemLeft + deltaX) + "px";
+            wintGrabber.style.top = (elemTop + deltaY) + "px";
 
-      localStorage.setItem('winTopGrabber', String(elemTop + deltaY));
-      localStorage.setItem('winLeftGrabber', String(elemLeft + deltaX));
+            localStorage.setItem('winTopGrabber', String(elemTop + deltaY));
+            localStorage.setItem('winLeftGrabber', String(elemLeft + deltaX));
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mouseup', onMouseUp);
     }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
 };
- // прекращение изменения позиции окна работы с Grabber
+// прекращение изменения позиции окна работы с Grabber
 
 // document.getElementById('AF_Grabber').ondblclick = function (a) { // скрытие окна работы со Grabber
 // if (checkelementtype(a)) { document.getElementById('AF_Grabber').style.display = 'none'; }
@@ -382,19 +382,17 @@ function calcAvgCsat() {
 }
 
 function calcAvgSLACompleted() {
-	let SLACompContainer = document.getElementsByName('SLACompletedValue')
-	let arrayOfOuttimedSLA = []; 
-	
-	for (let i=0; i < SLACompContainer.length; i++) {
-		        const cellValue = SLACompContainer[i].textContent;
-				
-				if (SLACompContainer[i].textContent == "0") {
-					arrayOfOuttimedSLA ++
-				}
-	}
-	// console.log("Prosrochennih SLA chatov " + arrayOfOuttimedSLA)
-	
-	document.getElementById('avgSLAClosedData').innerHTML = '<span style="background: #bb680f; padding: 5px; color: floralwhite; font-weight: 700; border-radius: 10px;">' + "SLA закрытия: " + (((pureArray.length - arrayOfOuttimedSLA) / pureArray.length)*100).toFixed(1) + '%' + '</span>'
+    let SLACompContainer = document.getElementsByName('SLACompletedValue')
+    let arrayOfOuttimedSLA = [];
+
+    for (let i = 0; i < SLACompContainer.length; i++) {
+        const cellValue = SLACompContainer[i].textContent;
+
+        if (SLACompContainer[i].textContent == "0") {
+            arrayOfOuttimedSLA++
+        }
+    }
+    document.getElementById('avgSLAClosedData').innerHTML = '<span style="background: #bb680f; padding: 5px; color: floralwhite; font-weight: 700; border-radius: 10px;">' + "SLA закрытия: " + (((pureArray.length - arrayOfOuttimedSLA) / pureArray.length) * 100).toFixed(1) + '%' + '</span>'
 }
 
 function saveFilteredTableCSV() {
@@ -988,7 +986,6 @@ document.getElementById('stargrab').onclick = async function () {
     let selTheme = document.getElementById('ThemesToSearch').options
     for (let i = 0; i < selTheme.length; i++) {
         if (selTheme[i].selected == true) {
-            // console.log(selTheme[i].value)
             chosentheme = selTheme[i].value
         }
     }
@@ -1086,10 +1083,10 @@ document.getElementById('stargrab').onclick = async function () {
                             .then(r => r.json())
                             .then(r => {
                                 if (r.payload.topicId && r.payload.topicId.value === chosentheme && tmponlyoperhashes[j].Duration != undefined) {
-									
-									//(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
-									//(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-									(r.channelUser.payload && r.channelUser.payload.userType =="teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
+
+                                    //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
+                                    //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
+                                    (r.channelUser.payload && r.channelUser.payload.userType == "teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
 
                                     payloadarray.push({
                                         ChatId: conversationId,
@@ -1102,15 +1099,12 @@ document.getElementById('stargrab').onclick = async function () {
 
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
 
-                                    // console.log(payloadarray);
-                                    // console.log(namespisochek[i]);
-                                    // console.log(operstagsarray);
                                 } else if (r.payload.topicId && r.payload.topicId.value === chosentheme && tmponlyoperhashes[j].Duration == undefined) {
-									
-								   //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
-									// (r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-									(r.channelUser.payload && r.channelUser.payload.userType =="teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
-									
+
+                                    //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
+                                    // (r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
+                                    (r.channelUser.payload && r.channelUser.payload.userType == "teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
+
                                     payloadarray.push({
                                         ChatId: conversationId,
                                         OperatorName: namespisochek[i],
@@ -1121,33 +1115,29 @@ document.getElementById('stargrab').onclick = async function () {
                                     });
 
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
-
-                                    // console.log(payloadarray);
-                                    // console.log(namespisochek[i]);
-                                    // console.log(operstagsarray);
                                 }
-								
-								//test
-									// if (r.messages.length > 0) {
-									  // for (let z = 0; z < r.messages.length; z++) {
-										// if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.match(keyMatch)) {
-										  // console.log("Вход найден: ", conversationId);
-										// }
-									  // }
-									// }
-								// end test
+
+                                //test
+                                // if (r.messages.length > 0) {
+                                // for (let z = 0; z < r.messages.length; z++) {
+                                // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.match(keyMatch)) {
+                                // console.log("Вход найден: ", conversationId);
+                                // }
+                                // }
+                                // }
+                                // end test
                             });
                     } else if (chosentheme !== "parseallthemes" && chosentheme == "parsenothemes") {
                         await fetch("https://skyeng.autofaq.ai/api/conversations/" + conversationId)
                             .then(r => r.json())
                             .then(r => {
-								
-								//(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
-								//(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-								(r.channelUser.payload && r.channelUser.payload.userType =="teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
-								
-								
-								
+
+                                //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
+                                //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
+                                (r.channelUser.payload && r.channelUser.payload.userType == "teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
+
+
+
                                 operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
                                 if (r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration == undefined) {
                                     payloadarray.push({
@@ -1170,19 +1160,15 @@ document.getElementById('stargrab').onclick = async function () {
 
                                 }
 
-                                // console.log(payloadarray);
-                                // console.log(namespisochek[i]);
-								
-								
-								//test
-/* 									if (r.messages.length > 0) {
-									  for (let z = 0; z < r.messages.length; z++) {
-										if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.match(keyMatch)) {
-										  console.log("Вход найден: ", conversationId);
-										}
-									  }
-									} */
-								// end test
+                                //test
+                                /* 									if (r.messages.length > 0) {
+                                                                      for (let z = 0; z < r.messages.length; z++) {
+                                                                        if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.match(keyMatch)) {
+                                                                          console.log("Вход найден: ", conversationId);
+                                                                        }
+                                                                      }
+                                                                    } */
+                                // end test
                             });
 
 
@@ -1190,11 +1176,11 @@ document.getElementById('stargrab').onclick = async function () {
                         await fetch("https://skyeng.autofaq.ai/api/conversations/" + conversationId)
                             .then(r => r.json())
                             .then(r => {
-								
-								//(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
-								//(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-								(r.channelUser.payload && r.channelUser.payload.userType =="teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
-								
+
+                                //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
+                                //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
+                                (r.channelUser.payload && r.channelUser.payload.userType == "teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
+
                                 if (r.payload && r.payload.tags) {
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
                                 } else {
@@ -1244,19 +1230,16 @@ document.getElementById('stargrab').onclick = async function () {
 
                                 }
 
-                                // console.log(payloadarray);
-                                // console.log(namespisochek[i]);
-								
-								//test
-									// if (r.messages.length > 0) {
-									  // for (let z = 0; z < r.messages.length; z++) {
-										// if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.match(keyMatch)) {
-										  // console.log("Вход найден: ", conversationId);
-										// }
-									  // }
-									// }
-								// end test
-								
+                                //test
+                                // if (r.messages.length > 0) {
+                                // for (let z = 0; z < r.messages.length; z++) {
+                                // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.match(keyMatch)) {
+                                // console.log("Вход найден: ", conversationId);
+                                // }
+                                // }
+                                // }
+                                // end test
+
                             });
                     }
                 }
@@ -1284,8 +1267,6 @@ document.getElementById('stargrab').onclick = async function () {
         }
         return element;
     });
-    // console.log(cleanedarray)
-
     const themesgrabbeddata = document.getElementById('themesgrabbeddata');
     themesgrabbeddata.innerHTML = '';
 
@@ -1343,8 +1324,7 @@ document.getElementById('stargrab').onclick = async function () {
 
         return unique;
     }, [])
-    // console.log(filteredArrayTags)
- 
+
     // Iterate through the data array and create table rows
     pureArray.forEach((element, index) => {
         const row = document.createElement('tr');
@@ -1395,7 +1375,7 @@ document.getElementById('stargrab').onclick = async function () {
         const SLAcompl = document.createElement('td');
         SLAcompl.textContent = element.SLACompleted
         SLAcompl.style = 'text-align:center; border: 1px solid black; font-size: 12px;'
-		SLAcompl.setAttribute('name', 'SLACompletedValue')
+        SLAcompl.setAttribute('name', 'SLACompletedValue')
         row.appendChild(SLAcompl);
 
         // Append the row to the table
@@ -1467,123 +1447,85 @@ document.getElementById('stargrab').onclick = async function () {
             });
 
             calcAvgCsat();
-			calcAvgSLACompleted()
+            calcAvgSLACompleted()
         } else {
             const rows = document.querySelectorAll('.rowOfChatGrabbed');
             rows.forEach(function (row) {
                 row.style.display = '';
             });
-            // console.log("Ни один чекбокс не выбран");
             calcAvgCsat();
-			calcAvgSLACompleted()
+            calcAvgSLACompleted()
         }
     }
 
 
     document.getElementById('hideselecalltags').onclick = filterTableRowsByTags
-		
-document.getElementById('SaveToCSVFilteredByTags').onclick = function() {
-    let checkboxes = document.querySelectorAll('input[type="checkbox"][name="tagsforfilter"]');
-    let allUnchecked = Array.from(checkboxes).every(checkbox => !checkbox.checked);
 
-    if (allUnchecked) {
-		function isJsonString(str) {
-			try {
-				if (typeof str !== 'string') throw new Error('Not a string');
-				let parsed = JSON.parse(str);
-				
-				// Не допускаем другие типы кроме массивов
-				if (!Array.isArray(parsed)) throw new Error('Not an array');
-			} catch (e) {
-				console.error('Invalid JSON for:', str, 'Error:', e.message);
-				return false;
-			}
-			return true;
-		}
-		
-		function isValidItem(item) {
-			return item.hasOwnProperty('ChatId') && item.hasOwnProperty('Tags');
-		}
+    document.getElementById('SaveToCSVFilteredByTags').onclick = function () {
+        let checkboxes = document.querySelectorAll('input[type="checkbox"][name="tagsforfilter"]');
+        let allUnchecked = Array.from(checkboxes).every(checkbox => !checkbox.checked);
 
-		// function downloadCSV(array) {
-			// let csvContent = 'data:text/csv;charset=utf-8,';
-			// let header = "ChatId,Tag1,Tag2,Tag3,Tag4,Tag5,Tag6";
-			// csvContent += header + "\r\n";
+        if (allUnchecked) {
+            function isJsonString(str) {
+                try {
+                    if (typeof str !== 'string') throw new Error('Not a string');
+                    let parsed = JSON.parse(str);
 
-			// array.forEach((item, index) => {
-				// if (!isValidItem(item)) {
-					// console.warn(`Element at index ${index} is invalid. Skipping...`, item);
-					// return; // Пропускаем этот элемент
-				// }
+                    // Не допускаем другие типы кроме массивов
+                    if (!Array.isArray(parsed)) throw new Error('Not an array');
+                } catch (e) {
+                    console.error('Invalid JSON for:', str, 'Error:', e.message);
+                    return false;
+                }
+                return true;
+            }
 
-				// let tags = [];
-				
-				// if (item.Tags === "") {
-					// tags = [];
-				// } else if (isJsonString(item.Tags)) {
-					// tags = JSON.parse(item.Tags);
-				// } else {
-					// console.warn(`Element at index ${index} has invalid Tags. Using empty array.`, item);
-				// }
-				
-				// let row = [item.ChatId, ...tags];
-				// csvContent += row.join(",") + "\r\n";
-				// console.log(`Processed element at index ${index}:`, row.join(","));
-			// });
+            function isValidItem(item) {
+                return item.hasOwnProperty('ChatId') && item.hasOwnProperty('Tags');
+            }
 
+            function downloadCSV(array) {
+                let csvContent = ''; // Убрали начальную строку
+                let header = "ChatId,Tag1,Tag2,Tag3,Tag4,Tag5,Tag6";
+                csvContent += header + "\r\n";
 
-			// let encodedUri = encodeURI(csvContent);
-			// let link = document.createElement("a");
-			// link.setAttribute("href", encodedUri);
-			// link.setAttribute("download", "export.csv");
-			// document.body.appendChild(link);
-			// link.click();
-			// document.body.removeChild(link);
-		// }
-		
-		function downloadCSV(array) {
-			let csvContent = ''; // Убрали начальную строку
-			let header = "ChatId,Tag1,Tag2,Tag3,Tag4,Tag5,Tag6";
-			csvContent += header + "\r\n";
+                array.forEach((item, index) => {
+                    if (!isValidItem(item)) {
+                        console.warn(`Element at index ${index} is invalid. Skipping...`, item);
+                        return;
+                    }
 
-			array.forEach((item, index) => {
-				if (!isValidItem(item)) {
-					console.warn(`Element at index ${index} is invalid. Skipping...`, item);
-					return;
-				}
+                    let tags = [];
+                    if (item.Tags === "") {
+                        tags = [];
+                    } else if (isJsonString(item.Tags)) {
+                        tags = JSON.parse(item.Tags);
+                    } else {
+                        console.warn(`Element at index ${index} has invalid Tags. Using empty array.`, item);
+                    }
 
-				let tags = [];
-				if (item.Tags === "") {
-					tags = [];
-				} else if (isJsonString(item.Tags)) {
-					tags = JSON.parse(item.Tags);
-				} else {
-					console.warn(`Element at index ${index} has invalid Tags. Using empty array.`, item);
-				}
-				
-				let row = [item.ChatId, ...tags];
-				csvContent += row.join(",") + "\r\n";
-				console.log(`Processed element at index ${index}:`, row.join(","));
-			});
+                    let row = [item.ChatId, ...tags];
+                    csvContent += row.join(",") + "\r\n";
+                    console.log(`Processed element at index ${index}:`, row.join(","));
+                });
 
-			// Создание Blob из строки CSV и загрузка файла
-			let blob = new Blob([csvContent], { type: 'text/csv' });
-			let link = document.createElement("a");
-			link.href = URL.createObjectURL(blob);
-			link.download = "export.csv";
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
-		}
+                // Создание Blob из строки CSV и загрузка файла
+                let blob = new Blob([csvContent], { type: 'text/csv' });
+                let link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "export.csv";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
 
-        console.log(operstagsarray.length);
-        downloadCSV(operstagsarray);
-    } else {
-        saveFilteredTableCSV()
+           downloadCSV(operstagsarray);
+        } else {
+            saveFilteredTableCSV()
+        }
     }
-}
 
-		
+
 
     ///
 
@@ -1617,7 +1559,7 @@ document.getElementById('SaveToCSVFilteredByTags').onclick = function() {
                         }
                     });
                     calcAvgCsat()
-					calcAvgSLACompleted()
+                    calcAvgSLACompleted()
                 }
 
                 // Обрабатываем событие изменения для каждого чекбокса
@@ -1644,7 +1586,7 @@ document.getElementById('SaveToCSVFilteredByTags').onclick = function() {
     document.getElementById('foundcount').innerHTML = '<span style="background: #166945; padding: 5px; color: floralwhite; font-weight: 700; border-radius: 10px;">' + "Всего найдено: " + pureArray.length + " обращений" + '</span>'
 
     calcAvgCsat()
-	calcAvgSLACompleted()
+    calcAvgSLACompleted()
 
     let hashes = document.querySelectorAll('.rowOfChatGrabbed');
     for (let j = 0; j < hashes.length; j++) {
@@ -1731,28 +1673,28 @@ document.getElementById('webtoCSV').onclick = function () {
     downloadCSV(pureArray, filename);
 }
 
-		document.getElementById('dayplus').onclick = function() { // обработчик нажатия на кнопку следующего дня
-			let dateInputIshod = document.getElementById('dateFromGrab').value;
-			let dateInputKonez = document.getElementById('dateToGrab').value;
-			let datestart = new Date(dateInputIshod);
-			let dateend = new Date(dateInputKonez);
-			datestart.setDate(datestart.getDate() + 1);
-			dateend.setDate(dateend.getDate() + 1);
-			let newDateStart = datestart.toISOString().split('T')[0];
-			let newDateEnd = dateend.toISOString().split('T')[0];
-			document.getElementById('dateFromGrab').value = newDateStart;
-			document.getElementById('dateToGrab').value = newDateEnd;
-		}
+document.getElementById('dayplus').onclick = function () { // обработчик нажатия на кнопку следующего дня
+    let dateInputIshod = document.getElementById('dateFromGrab').value;
+    let dateInputKonez = document.getElementById('dateToGrab').value;
+    let datestart = new Date(dateInputIshod);
+    let dateend = new Date(dateInputKonez);
+    datestart.setDate(datestart.getDate() + 1);
+    dateend.setDate(dateend.getDate() + 1);
+    let newDateStart = datestart.toISOString().split('T')[0];
+    let newDateEnd = dateend.toISOString().split('T')[0];
+    document.getElementById('dateFromGrab').value = newDateStart;
+    document.getElementById('dateToGrab').value = newDateEnd;
+}
 
-		document.getElementById('dayminus').onclick = function() { // обработчик нажатия на кнопку предыдущего дня
-			let dateInputIshod = document.getElementById('dateFromGrab').value;
-			let dateInputKonez = document.getElementById('dateToGrab').value;
-			let datestart = new Date(dateInputIshod);
-			let dateend = new Date(dateInputKonez);
-			datestart.setDate(datestart.getDate() - 1);
-			dateend.setDate(dateend.getDate() - 1);
-			let newDateStart = datestart.toISOString().split('T')[0];
-			let newDateEnd = dateend.toISOString().split('T')[0];
-			document.getElementById('dateFromGrab').value = newDateStart;
-			document.getElementById('dateToGrab').value = newDateEnd;
-		}
+document.getElementById('dayminus').onclick = function () { // обработчик нажатия на кнопку предыдущего дня
+    let dateInputIshod = document.getElementById('dateFromGrab').value;
+    let dateInputKonez = document.getElementById('dateToGrab').value;
+    let datestart = new Date(dateInputIshod);
+    let dateend = new Date(dateInputKonez);
+    datestart.setDate(datestart.getDate() - 1);
+    dateend.setDate(dateend.getDate() - 1);
+    let newDateStart = datestart.toISOString().split('T')[0];
+    let newDateEnd = dateend.toISOString().split('T')[0];
+    document.getElementById('dateFromGrab').value = newDateStart;
+    document.getElementById('dateToGrab').value = newDateEnd;
+}

@@ -116,78 +116,78 @@ function fillchatbox() { //функция наполнения элемента,
     document.getElementById('placechatid').innerText = convdata.id;
     document.getElementById('somechatinfo').style.display = '';
     document.getElementById('bottommenuchhis').style.display = '';
-	function extractDate(ts) {
-    return new Date(ts).toLocaleDateString('ru-RU', options);
-}
+    function extractDate(ts) {
+        return new Date(ts).toLocaleDateString('ru-RU', options);
+    }
 
-function extractTime(ts) {
-    return new Date(ts).toLocaleTimeString('ru-RU', options2);
-}
+    function extractTime(ts) {
+        return new Date(ts).toLocaleTimeString('ru-RU', options2);
+    }
 
-function getImagesFromText(txt) {
-    const patterns = [/https:\/\/vimbox-resource.*jpg/gm, /https:\/\/vimbox-resource.*jpeg/gm, /https:\/\/vimbox-resource.*png/gm];
-    return patterns.flatMap(pattern => txt.match(pattern) || []);
-}
+    function getImagesFromText(txt) {
+        const patterns = [/https:\/\/vimbox-resource.*jpg/gm, /https:\/\/vimbox-resource.*jpeg/gm, /https:\/\/vimbox-resource.*png/gm];
+        return patterns.flatMap(pattern => txt.match(pattern) || []);
+    }
 
-function appendToInfoField(html) {
-    document.getElementById('infofield').innerHTML += html;
-}
+    function appendToInfoField(html) {
+        document.getElementById('infofield').innerHTML += html;
+    }
 
-function getOperatorNameById(operatorId, defaultName) {
-    const operator = operatorsarray.find(op => op.operator && op.operator.id === operatorId);
-    return (operator && operator.operator.fullName) || defaultName;
-}
+    function getOperatorNameById(operatorId, defaultName) {
+        const operator = operatorsarray.find(op => op.operator && op.operator.id === operatorId);
+        return (operator && operator.operator.fullName) || defaultName;
+    }
 
-for (let i = convdata.messages.length - 1; i >= 0; i--) {
-    const message = convdata.messages[i];
-    const date = extractDate(message.ts);
-    const time = extractTime(message.ts);
+    for (let i = convdata.messages.length - 1; i >= 0; i--) {
+        const message = convdata.messages[i];
+        const date = extractDate(message.ts);
+        const time = extractTime(message.ts);
 
-    switch (message.tpe) {
-        case "Question":
-            if (message.click === undefined) {
-                const testarray = message.txt.match(/<p>(.*?)<\/p>/gm);
-                let images = getImagesFromText(message.txt);
-                const name = convdata.channelUser.fullName || "Widget";
+        switch (message.tpe) {
+            case "Question":
+                if (message.click === undefined) {
+                    const testarray = message.txt.match(/<p>(.*?)<\/p>/gm);
+                    let images = getImagesFromText(message.txt);
+                    const name = convdata.channelUser.fullName || "Widget";
 
-                if (testarray) {
-                    const temppics = testarray.flatMap(text => getImagesFromText(text));
+                    if (testarray) {
+                        const temppics = testarray.flatMap(text => getImagesFromText(text));
 
-                    let content = '';
-                    if (temppics.length > 0) {
-                        let result = message.txt;
-                        temppics.forEach((pic, idx) => {
-                            result = result.replace(testarray[idx], `<a href="${pic}" data-lightbox="pictures"><img src="${pic}" class="img-chat-history" alt="Изображение"></img></a>`);
-                        });
-                        content = result;
+                        let content = '';
+                        if (temppics.length > 0) {
+                            let result = message.txt;
+                            temppics.forEach((pic, idx) => {
+                                result = result.replace(testarray[idx], `<a href="${pic}" data-lightbox="pictures"><img src="${pic}" class="img-chat-history" alt="Изображение"></img></a>`);
+                            });
+                            content = result;
+                        } else {
+                            content = message.txt;
+                        }
+
+                        appendToInfoField(`
+                        <br>
+                        <div class="question-event">
+                            <span class="question-event-name">${name}</span>
+                            <span class="question-event-date">${date}</span>
+                            <div class="question-event-text"><br>${content}</div>
+                        </div>
+                    `);
                     } else {
-                        content = message.txt;
+                        const content = images.length === 1
+                            ? message.txt.replace(message.txt, `<img src="${images[0]}" class="img-chat-history"></img>`)
+                            : message.txt;
+
+                        appendToInfoField(`
+                        <br>
+                        <div class="question-event">
+                            <span class="question-event-name">${name}</span>
+                            <span class="question-event-date">${date}</span>
+                            <div class="question-event-text"><br>${content}</div>
+                        </div>
+                    `);
                     }
-
-                    appendToInfoField(`
-                        <br>
-                        <div class="question-event">
-                            <span class="question-event-name">${name}</span>
-                            <span class="question-event-date">${date}</span>
-                            <div class="question-event-text"><br>${content}</div>
-                        </div>
-                    `);
                 } else {
-                    const content = images.length === 1 
-                        ? message.txt.replace(message.txt, `<img src="${images[0]}" class="img-chat-history"></img>`) 
-                        : message.txt;
-
                     appendToInfoField(`
-                        <br>
-                        <div class="question-event">
-                            <span class="question-event-name">${name}</span>
-                            <span class="question-event-date">${date}</span>
-                            <div class="question-event-text"><br>${content}</div>
-                        </div>
-                    `);
-                }
-            } else {
-                appendToInfoField(`
                     <br>
                     <div class="question-event">
                         <span class="question-event-name">${convdata.channelUser.fullName}</span>
@@ -195,62 +195,62 @@ for (let i = convdata.messages.length - 1; i >= 0; i--) {
                         <div class="question-event-text"><br>${message.click.clickLabel}</div>
                     </div>
                 `);
-            }
-            break;
+                }
+                break;
 
-        case "Event":
-            let eventmsg;
-			function handleAssignToOperatorEvent(message) {
-				if (message.payload.status === 'OnOperator' && message.payload.oid) {
-					const operName = getOperatorNameById(message.payload.oid, "Оператор");
-					return `Диалог назначен на ${operName}`;
-				} else if (message.payload.status === 'AssignedToOperator' && message.payload.oid) {
-					const operName = getOperatorNameById(message.payload.oid, "Оператор");
-					return `${operName} взял(а) диалог в работу`;
-				}
-				return '';
-			}
-			
-				const eventMapping = {
-					'NewConversation': 'Начат новый диалог',
-					'RunScenario': 'Сценарий запущен',
-					'FirstTimeInQueue': 'Диалог отправлен в очередь',
-					'RunIntegration': `Запущена интеграция ${message.payload.name}`,
-					'FinishIntegration': 'Интеграция успешно отработала',
-					'CreatedByOperator': `${getOperatorNameById(message.payload.oid, "Оператор")} открыл(а) новый диалог`,
-					'AssignToOperator': handleAssignToOperatorEvent(message),
-					'CloseConversation': (function() {
-						if (message.payload.status !== 'ClosedByBot' && message.payload.sender === 'userAnswerTimer') {
-							return 'Диалог автоматически закрыт по отсутствию активности пользователя';
-						} else if (Object.values(message.payload) !== '' && message.payload.status !== 'ClosedByBot' && message.payload.sender !== 'userAnswerTimer') {
-							return `${getOperatorNameById(message.payload.sender, "Оператор")} закрыл чат!`;
-						} else if (Object.values(message.payload) === '') {
-							return message.eventTpe;
-						}
-						return '';
-					})()
-				};
+            case "Event":
+                let eventmsg;
+                function handleAssignToOperatorEvent(message) {
+                    if (message.payload.status === 'OnOperator' && message.payload.oid) {
+                        const operName = getOperatorNameById(message.payload.oid, "Оператор");
+                        return `Диалог назначен на ${operName}`;
+                    } else if (message.payload.status === 'AssignedToOperator' && message.payload.oid) {
+                        const operName = getOperatorNameById(message.payload.oid, "Оператор");
+                        return `${operName} взял(а) диалог в работу`;
+                    }
+                    return '';
+                }
 
-				const eventMsg = eventMapping[message.eventTpe] || '';
-				if (eventMsg) {
-					appendToInfoField(`<div class="event-name">${eventMsg}<span class="event-other-date">${extractTime(message.ts)}</span></div>`);
-				}
-				
-            // Further mappings and conditions for "Event"
-            // ... (similar style as the above example)
+                const eventMapping = {
+                    'NewConversation': 'Начат новый диалог',
+                    'RunScenario': 'Сценарий запущен',
+                    'FirstTimeInQueue': 'Диалог отправлен в очередь',
+                    'RunIntegration': `Запущена интеграция ${message.payload.name}`,
+                    'FinishIntegration': 'Интеграция успешно отработала',
+                    'CreatedByOperator': `${getOperatorNameById(message.payload.oid, "Оператор")} открыл(а) новый диалог`,
+                    'AssignToOperator': handleAssignToOperatorEvent(message),
+                    'CloseConversation': (function () {
+                        if (message.payload.status !== 'ClosedByBot' && message.payload.sender === 'userAnswerTimer') {
+                            return 'Диалог автоматически закрыт по отсутствию активности пользователя';
+                        } else if (Object.values(message.payload) !== '' && message.payload.status !== 'ClosedByBot' && message.payload.sender !== 'userAnswerTimer') {
+                            return `${getOperatorNameById(message.payload.sender, "Оператор")} закрыл чат!`;
+                        } else if (Object.values(message.payload) === '') {
+                            return message.eventTpe;
+                        }
+                        return '';
+                    })()
+                };
 
-            // appendToInfoField(`
+                const eventMsg = eventMapping[message.eventTpe] || '';
+                if (eventMsg) {
+                    appendToInfoField(`<div class="event-name">${eventMsg}<span class="event-other-date">${extractTime(message.ts)}</span></div>`);
+                }
+
+                // Further mappings and conditions for "Event"
+                // ... (similar style as the above example)
+
+                // appendToInfoField(`
                 // <div class="event-container">
-                    // ${eventmsg}
-                    // <span class="event-date">${time}</span>
+                // ${eventmsg}
+                // <span class="event-date">${time}</span>
                 // </div>
-            // `);
-            break;
+                // `);
+                break;
 
-        case "AnswerOperatorWithBot":
-		case "AnswerSystem":
-        case "AnswerBot":
-            appendToInfoField(`
+            case "AnswerOperatorWithBot":
+            case "AnswerSystem":
+            case "AnswerBot":
+                appendToInfoField(`
                 <br>
                 <div class="answer-bot-container">
                     <span class="answer-bot-name">AutoFAQ bot</span>
@@ -258,11 +258,11 @@ for (let i = convdata.messages.length - 1; i >= 0; i--) {
                     <div class="question-event-text"><br>${message.txt}</div>
                 </div>
             `);
-            break;
+                break;
 
-        case "AnswerOperator":
-            const operatorName = getOperatorNameById(message.operatorId, "Оператор");
-            appendToInfoField(`
+            case "AnswerOperator":
+                const operatorName = getOperatorNameById(message.operatorId, "Оператор");
+                appendToInfoField(`
                 <br>
                 <div class="answer-oper-container">
                     <span class="answer-oper-name">${operatorName}</span>
@@ -270,11 +270,11 @@ for (let i = convdata.messages.length - 1; i >= 0; i--) {
                     <div class="question-event-text"><br>${message.txt}</div>
                 </div>
             `);
-            break;
+                break;
 
-        case "OperatorComment":
-            const commentName = message.operatorId !== 'autoFAQ' ? getOperatorNameById(message.operatorId, "Оператор") : message.operatorId;
-            appendToInfoField(`
+            case "OperatorComment":
+                const commentName = message.operatorId !== 'autoFAQ' ? getOperatorNameById(message.operatorId, "Оператор") : message.operatorId;
+                appendToInfoField(`
                 <br>
                 <div class="oper-comment-container">
                     <span class="oper-comment-name">${commentName}</span>
@@ -282,11 +282,11 @@ for (let i = convdata.messages.length - 1; i >= 0; i--) {
                     <div class="question-event-text"><br>${message.txt}</div>
                 </div>
             `);
-            break;
+                break;
+        }
     }
-}
 
-	
+
     /*for (let i = 0; i < convdata.messages.length; i++) {
         timearr.push(new Date(convdata.messages[i].ts).toLocaleDateString('ru-RU', options))
         timearr2.push(new Date(convdata.messages[i].ts).toLocaleTimeString('ru-RU', options2))
@@ -469,18 +469,18 @@ for (let i = convdata.messages.length - 1; i >= 0; i--) {
 }
 
 function getFormattedDateComponent(dateComponent) { // функция добавляет 0 к месяцу, дню, минуте, часу если значение меньше 10 иначе просто размещает значение
-  return dateComponent < 10 ? '0' + dateComponent : dateComponent;
+    return dateComponent < 10 ? '0' + dateComponent : dateComponent;
 }
 
 async function findchatsoper() { // ищет активные чаты на выбранном операторе
     let objSel = document.getElementById("operatorstp");
 
-	let getdateset = new Date();
+    let getdateset = new Date();
 
-	let hrs = getdateset.getUTCHours() < 10 ? "0" + (getdateset.getUTCHours()) : getdateset.getUTCHours() >= 24 ? '0' + ((getdateset.getUTCHours() - 24)) : getdateset.getUTCHours();
-	let difhrs = hrs - 1 < 10 ? '0' + (hrs - 1) : hrs - 1;
-	let mins = getFormattedDateComponent(getdateset.getMinutes());
-	let secs = getFormattedDateComponent(getdateset.getUTCSeconds());
+    let hrs = getdateset.getUTCHours() < 10 ? "0" + (getdateset.getUTCHours()) : getdateset.getUTCHours() >= 24 ? '0' + ((getdateset.getUTCHours() - 24)) : getdateset.getUTCHours();
+    let difhrs = hrs - 1 < 10 ? '0' + (hrs - 1) : hrs - 1;
+    let mins = getFormattedDateComponent(getdateset.getMinutes());
+    let secs = getFormattedDateComponent(getdateset.getUTCSeconds());
 
     flagsearch = 'searchbyoperator'
 
@@ -520,7 +520,6 @@ async function findchatsoper() { // ищет активные чаты на вы
                     "mode": "cors",
                     "credentials": "include"
                 }).then(r => r.json()).then(r => operchatsdata = r)
-                console.log(operchatsdata)
 
                 if (operchatsdata.total == 0)
                     alert(`У выбранного пользователя ${objSel[i].innerText} нет активных чатов`)
@@ -575,7 +574,6 @@ async function findchatsoper() { // ищет активные чаты на вы
                     document.getElementsByClassName('chatlist')[i].onclick = async () => {
 
                         await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementsByClassName('chatlist')[i].title).then(r => r.json()).then(r => convdata = r)
-                        console.log(convdata)
 
                         if (convdata.status != null && convdata.status == 'AssignedToOperator')
                             isChatOnOperator = true
@@ -591,57 +589,57 @@ async function findchatsoper() { // ищет активные чаты на вы
 }
 
 document.getElementById('hideMeChHis').onclick = () => { //форма hide
-	if (document.getElementById('AF_ChatHis').style.display == '') {
-		document.getElementById('AF_ChatHis').style.display = 'none'
+    if (document.getElementById('AF_ChatHis').style.display == '') {
+        document.getElementById('AF_ChatHis').style.display = 'none'
         document.getElementById('opennewcat').classList.remove('activeScriptBtn');
-		document.getElementById('rightPanel').style.right = "22px";
-		document.getElementById('infofield').innerText = ''
-		document.getElementById('placeusid').innerText = ''
-		document.getElementById('placechatid').innerText = ''
-		document.getElementById('somechatinfo').style.display = 'none';
-		document.getElementById('bottommenuchhis').style.display = 'none';
-		document.getElementById('comentsbar').style.display = 'none';
-		document.getElementById('chatuserhis').value = ''
-		document.getElementById('hashchathis').value = ''
-	}
+        document.getElementById('rightPanel').style.right = "22px";
+        document.getElementById('infofield').innerText = ''
+        document.getElementById('placeusid').innerText = ''
+        document.getElementById('placechatid').innerText = ''
+        document.getElementById('somechatinfo').style.display = 'none';
+        document.getElementById('bottommenuchhis').style.display = 'none';
+        document.getElementById('comentsbar').style.display = 'none';
+        document.getElementById('chatuserhis').value = ''
+        document.getElementById('hashchathis').value = ''
+    }
 }
-	
+
 document.getElementById('clearallinfo').onclick = () => { //кнопка очистки
-	document.getElementById('infofield').innerText = ''
-	document.getElementById('placeusid').innerText = ''
-	document.getElementById('placechatid').innerText = ''
-	document.getElementById('somechatinfo').style.display = 'none';
-	document.getElementById('bottommenuchhis').style.display = 'none';
-	document.getElementById('comentsbar').style.display = 'none';
-	document.getElementById('chatuserhis').value = ''
-	document.getElementById('hashchathis').value = ''
+    document.getElementById('infofield').innerText = ''
+    document.getElementById('placeusid').innerText = ''
+    document.getElementById('placechatid').innerText = ''
+    document.getElementById('somechatinfo').style.display = 'none';
+    document.getElementById('bottommenuchhis').style.display = 'none';
+    document.getElementById('comentsbar').style.display = 'none';
+    document.getElementById('chatuserhis').value = ''
+    document.getElementById('hashchathis').value = ''
 }
-	
-document.getElementById('chatuserhis').addEventListener('input', function(){
-	onlyNumbers(this);
+
+document.getElementById('chatuserhis').addEventListener('input', function () {
+    onlyNumbers(this);
 })
-	
-	document.getElementById('chid').onclick = () => { // копирует в буфер айди чата
-        copyToClipboard('https://hdi.skyeng.ru/autofaq/conversation/-11/' + document.getElementById('placechatid').innerText)
-    }
 
-    document.getElementById('usidchat').onclick = () => { //копирует в буфер айди пользователя
-        copyToClipboard(document.getElementById('placeusid').innerText)
-    }
-	
-	document.getElementById('hideuserdatainfo').onclick = () => { // форма hide
-        if (document.getElementById('userchatdata').style.display == '')
-            document.getElementById('userchatdata').style.display = 'none'
-    }
-	
-	document.getElementById('gotocrmhis').onclick = () => { //открывает СРМ пользователя паари в меню с историей чатов
-        let fdata = document.getElementById('datafield').innerHTML
-        fdata = fdata.match(/ID:.?\d+/)[0].split(' ')[1]
-        window.open(`https://crm2.skyeng.ru/persons/${fdata}`)
-    }
+document.getElementById('chid').onclick = () => { // копирует в буфер айди чата
+    copyToClipboard('https://hdi.skyeng.ru/autofaq/conversation/-11/' + document.getElementById('placechatid').innerText)
+}
 
-	
-	function changeviewtheme() { //функция переключения темы в истории чатов на светлую(классическуб в стиле АФ) и темную в зависимости от значения переменной полученной в локалсторедж
+document.getElementById('usidchat').onclick = () => { //копирует в буфер айди пользователя
+    copyToClipboard(document.getElementById('placeusid').innerText)
+}
+
+document.getElementById('hideuserdatainfo').onclick = () => { // форма hide
+    if (document.getElementById('userchatdata').style.display == '')
+        document.getElementById('userchatdata').style.display = 'none'
+}
+
+document.getElementById('gotocrmhis').onclick = () => { //открывает СРМ пользователя паари в меню с историей чатов
+    let fdata = document.getElementById('datafield').innerHTML
+    fdata = fdata.match(/ID:.?\d+/)[0].split(' ')[1]
+    window.open(`https://crm2.skyeng.ru/persons/${fdata}`)
+}
+
+
+function changeviewtheme() { //функция переключения темы в истории чатов на светлую(классическуб в стиле АФ) и темную в зависимости от значения переменной полученной в локалсторедж
 
     if (localStorage.getItem('theme') == 'light') {
         document.getElementById('chagetheme').innerHTML = '☀'
@@ -785,672 +783,652 @@ document.getElementById('chagetheme').onclick = () => { //функция пер�
 
 function getopennewcatButtonPress() { // открывает меню для работы с историей чата по типу кота Омельченко
 
-        if (document.getElementById('AF_ChatHis').style.display == '') {
-            document.getElementById('AF_ChatHis').style.display = 'none';
-		    document.getElementById('rightPanel').style.right = "22px";
-            document.getElementById('opennewcat').classList.remove('activeScriptBtn');
-        }else {
-            document.getElementById('AF_ChatHis').style.display = '';
-			document.getElementById('rightPanel').style.right = "422px";
-            document.getElementById('opennewcat').classList.add('activeScriptBtn');
-		}
+    if (document.getElementById('AF_ChatHis').style.display == '') {
+        document.getElementById('AF_ChatHis').style.display = 'none';
+        document.getElementById('rightPanel').style.right = "22px";
+        document.getElementById('opennewcat').classList.remove('activeScriptBtn');
+    } else {
+        document.getElementById('AF_ChatHis').style.display = '';
+        document.getElementById('rightPanel').style.right = "422px";
+        document.getElementById('opennewcat').classList.add('activeScriptBtn');
+    }
 
-        changeviewtheme()
+    changeviewtheme()
 
-        flagsearch = ''
+    flagsearch = ''
 
-let getdateset = new Date();
-let getyearLS = getdateset.getFullYear();
-let getcurmonthLS = getdateset.getMonth() + 1;
+    let getdateset = new Date();
+    let getyearLS = getdateset.getFullYear();
+    let getcurmonthLS = getdateset.getMonth() + 1;
 
-// Set the number of days in the current month
-let numDaysInCurrentMonth;
-if (getcurmonthLS == 2) {
-  numDaysInCurrentMonth = 28;
-} else if (getcurmonthLS == 4 || getcurmonthLS == 6 || getcurmonthLS == 9 || getcurmonthLS == 11) {
-  numDaysInCurrentMonth = 30;
-} else {
-  numDaysInCurrentMonth = 31;
-}
+    // Set the number of days in the current month
+    let numDaysInCurrentMonth;
+    if (getcurmonthLS == 2) {
+        numDaysInCurrentMonth = 28;
+    } else if (getcurmonthLS == 4 || getcurmonthLS == 6 || getcurmonthLS == 9 || getcurmonthLS == 11) {
+        numDaysInCurrentMonth = 30;
+    } else {
+        numDaysInCurrentMonth = 31;
+    }
 
-let fromMonthLS = getcurmonthLS - 1;
-let toMonthLS = getcurmonthLS;
-let getyearFromLS = getyearLS;
+    let fromMonthLS = getcurmonthLS - 1;
+    let toMonthLS = getcurmonthLS;
+    let getyearFromLS = getyearLS;
 
-// Set the number of days in the fromMonthLS and toMonthLS months
-let numDaysInFromMonth, numDaysInToMonth;
-if (fromMonthLS == 2) {
-  numDaysInFromMonth = 28;
-} else if (fromMonthLS == 4 || fromMonthLS == 6 || fromMonthLS == 9 || fromMonthLS == 11) {
-  numDaysInFromMonth = 30;
-} else if (fromMonthLS == 0) {
-  numDaysInFromMonth = 31;
-  fromMonthLS = "12";
-  getyearFromLS = getyearLS - 1;
-} else {
-  numDaysInFromMonth = 31;
-}
+    // Set the number of days in the fromMonthLS and toMonthLS months
+    let numDaysInFromMonth, numDaysInToMonth;
+    if (fromMonthLS == 2) {
+        numDaysInFromMonth = 28;
+    } else if (fromMonthLS == 4 || fromMonthLS == 6 || fromMonthLS == 9 || fromMonthLS == 11) {
+        numDaysInFromMonth = 30;
+    } else if (fromMonthLS == 0) {
+        numDaysInFromMonth = 31;
+        fromMonthLS = "12";
+        getyearFromLS = getyearLS - 1;
+    } else {
+        numDaysInFromMonth = 31;
+    }
 
-if (toMonthLS == 2) {
-  numDaysInToMonth = 28;
-} else if (toMonthLS == 4 || toMonthLS == 6 || toMonthLS == 9 || toMonthLS == 11) {
-  numDaysInToMonth = 30;
-} else {
-  numDaysInToMonth = 31;
-}
+    if (toMonthLS == 2) {
+        numDaysInToMonth = 28;
+    } else if (toMonthLS == 4 || toMonthLS == 6 || toMonthLS == 9 || toMonthLS == 11) {
+        numDaysInToMonth = 30;
+    } else {
+        numDaysInToMonth = 31;
+    }
 
-// Set today's day to the last day of the month if it is greater than the number of days in the month
-let todayLSFrom = getFormattedDateComponent(Math.min(getdateset.getDate(), numDaysInFromMonth));
-let todayLSTo = getFormattedDateComponent(Math.min(getdateset.getDate(), numDaysInToMonth));
+    // Set today's day to the last day of the month if it is greater than the number of days in the month
+    let todayLSFrom = getFormattedDateComponent(Math.min(getdateset.getDate(), numDaysInFromMonth));
+    let todayLSTo = getFormattedDateComponent(Math.min(getdateset.getDate(), numDaysInToMonth));
 
-document.getElementById('dateFromChHis').value = getyearFromLS + "-" + getFormattedDateComponent(fromMonthLS) + "-" + todayLSFrom;
-document.getElementById('dateToChHis').value = getyearLS + "-" + getFormattedDateComponent(toMonthLS) + "-" + todayLSTo;
+    document.getElementById('dateFromChHis').value = getyearFromLS + "-" + getFormattedDateComponent(fromMonthLS) + "-" + todayLSFrom;
+    document.getElementById('dateToChHis').value = getyearLS + "-" + getFormattedDateComponent(toMonthLS) + "-" + todayLSTo;
 
-        let radiobtnsarray = document.getElementsByName('chatornotes')
-        let radiobtnsarray1 = document.getElementsByName('chatornotes1')
-        let activetechopers = [];
-        document.getElementById('RefrehOperators').onclick = currstate;
-        let objSel = document.getElementById("operatorstp");
+    let radiobtnsarray = document.getElementsByName('chatornotes')
+    let radiobtnsarray1 = document.getElementsByName('chatornotes1')
+    let activetechopers = [];
+    document.getElementById('RefrehOperators').onclick = currstate;
+    let objSel = document.getElementById("operatorstp");
 
-        function addOption(oListbox, text, value)  //функция добавления опции в список
-        {
-            var oOption = document.createElement("option");
-            oOption.appendChild(document.createTextNode(text));
-            oOption.setAttribute("value", value);
+    function addOption(oListbox, text, value)  //функция добавления опции в список
+    {
+        var oOption = document.createElement("option");
+        oOption.appendChild(document.createTextNode(text));
+        oOption.setAttribute("value", value);
 
-            oListbox.appendChild(oOption);
+        oListbox.appendChild(oOption);
+    }
+
+    async function currstate() { // функция получает массив операторов ТП, которые не в офлайне
+        let opsflag;
+        let operdepchist = document.getElementsByClassName('user_menu-dropdown-user_name')[0].innerText.split('-')[0];
+
+        switch (operdepchist) {
+            case 'ТП':
+                opsflag = 'ТП';
+                break;
+            case 'КЦ':
+                opsflag = 'КЦ';
+                break;
+            case 'КМ':
+                opsflag = 'КМ';
+                break;
+            case 'ТС':
+                opsflag = 'ТС';
+                break;
+            case 'ТПPrem':
+                opsflag = 'ТПPrem';
+                break;
+            default:
+                opsflag = 'Unknown';
+                break;
         }
 
-        async function currstate() { // функция получает массив операторов ТП, которые не в офлайне
-		let opsflag;
-		let operdepchist = document.getElementsByClassName('user_menu-dropdown-user_name')[0].innerText.split('-')[0];
+        console.log(`Подразделение для Chat history: ${opsflag}`);
+        activetechopers = []
+        objSel.length = 1
+        objSel[0].selected = true;
+        await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
+            "credentials": "include"
+        }).then(r => r.json()).then(result => {
 
-		switch (operdepchist) {
-		  case 'ТП':
-			opsflag = 'ТП';
-			break;
-		  case 'КЦ':
-			opsflag = 'КЦ';
-			break;
-		  case 'КМ':
-			opsflag = 'КМ';
-			break;
-		  case 'ТС':
-			opsflag = 'ТС';
-			break;
-		  case 'ТПPrem':
-			opsflag = 'ТПPrem';
-			break;
-		  default:
-			opsflag = 'Unknown';
-			break;
-		}
+            for (let i = 0; i < result.onOperator.length; i++) {
+                if (opsflag == 'ТП' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/ТП\D/)) {
+                    activetechopers.push(result.onOperator[i])
+                } else if (opsflag == 'КЦ' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/КЦ\D/)) {
+                    activetechopers.push(result.onOperator[i])
+                } else if (opsflag == 'КМ' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/КМ\D/)) {
+                    activetechopers.push(result.onOperator[i])
+                } else if (opsflag == 'ТС' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/ТС\D/)) {
+                    activetechopers.push(result.onOperator[i])
+                } else if (opsflag == 'ТПPrem' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/ТПPrem\D/)) {
+                    activetechopers.push(result.onOperator[i])
+                } // end of if state
+            } // end of for
+        })
 
-		console.log(`Подразделение для Chat history: ${opsflag}`);
+        // if (activetechopers.length != 0) {
+        // for (let i = 0; i < activetechopers.length; i++) {
+        // if (activetechopers[i].aCnt == null)
+        // activetechopers[i].aCnt = 0;
 
-			
-            activetechopers = []
-            objSel.length = 1
-            objSel[0].selected = true;
-            await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
-                "credentials": "include"
-            }).then(r => r.json()).then(result => {
+        // if (activetechopers[i].operator.status == "Online") {
+        // addOption(objSel, `🟢 ${activetechopers[i].operator.fullName} (${activetechopers[i].aCnt})`, `${activetechopers[i].operator.id}`)
+        // } else if (activetechopers[i].operator.status == "Busy") {
+        // addOption(objSel, `🟡 ${activetechopers[i].operator.fullName} (${activetechopers[i].aCnt})`, `${activetechopers[i].operator.id}`)
+        // } else if (activetechopers[i].operator.status == "Pause") {
+        // addOption(objSel, `🔴 ${activetechopers[i].operator.fullName} (${activetechopers[i].aCnt})`, `${activetechopers[i].operator.id}`)
+        // }
+        // }
+        // }
 
-                for (let i = 0; i < result.onOperator.length; i++) {
-                    if (opsflag == 'ТП' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/ТП\D/)) {
-                        activetechopers.push(result.onOperator[i])
-                    } else if (opsflag == 'КЦ' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/КЦ\D/)) {
-                        activetechopers.push(result.onOperator[i])
-                    } else if (opsflag == 'КМ' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/КМ\D/)) {
-                        activetechopers.push(result.onOperator[i])
-                    } else if (opsflag == 'ТС' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/ТС\D/)) {
-                        activetechopers.push(result.onOperator[i])
-                    } else if (opsflag == 'ТПPrem' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/ТПPrem\D/)) {
-                        activetechopers.push(result.onOperator[i])
-                    } // end of if state
-                } // end of for
-            })
+        if (activetechopers.length) {
+            let statusMap = {
+                Online: '🟢',
+                Busy: '🟡',
+                Pause: '🔴'
+            };
+            activetechopers.forEach(activetechoper => {
+                let { operator, aCnt = 0 } = activetechoper;
+                if (operator) {
+                    addOption(objSel, `${statusMap[operator.status]} ${operator.fullName} (${aCnt})`, operator.id);
+                }
+            });
+        }
+    }
 
-            // if (activetechopers.length != 0) {
-                // for (let i = 0; i < activetechopers.length; i++) {
-                    // if (activetechopers[i].aCnt == null)
-                        // activetechopers[i].aCnt = 0;
+    document.getElementById('getdatafrchat').onclick = () => { //открывает окно с информацией об обратившемся пользователе
 
-                    // if (activetechopers[i].operator.status == "Online") {
-                        // addOption(objSel, `🟢 ${activetechopers[i].operator.fullName} (${activetechopers[i].aCnt})`, `${activetechopers[i].operator.id}`)
-                    // } else if (activetechopers[i].operator.status == "Busy") {
-                        // addOption(objSel, `🟡 ${activetechopers[i].operator.fullName} (${activetechopers[i].aCnt})`, `${activetechopers[i].operator.id}`)
-                    // } else if (activetechopers[i].operator.status == "Pause") {
-                        // addOption(objSel, `🔴 ${activetechopers[i].operator.fullName} (${activetechopers[i].aCnt})`, `${activetechopers[i].operator.id}`)
-                    // }
-                // }
-            // }
-			
-			if (activetechopers.length) {
-			  let statusMap = {
-				Online: '🟢',
-				Busy: '🟡',
-				Pause: '🔴'
-			  };
-			  activetechopers.forEach(activetechoper => {
-				let { operator, aCnt = 0 } = activetechoper;
-				if (operator) {
-				  addOption(objSel, `${statusMap[operator.status]} ${operator.fullName} (${aCnt})`, operator.id);
-				}
-			  });
-			}
+
+        if (typeof (convdata) !== 'undefined') {
+
+            if (document.getElementById('userchatdata').style.display == 'none')
+                document.getElementById('userchatdata').style.display = ''
+            else document.getElementById('userchatdata').style.display = 'none'
+
+            if (convdata.channelUser.payload.techScreeningData == undefined)
+                convdata.channelUser.payload.techScreeningData = convdata.channelUser.payload["Тех.инфа об устройствах"]
+
+            if (convdata.channelUser.payload.userFullName != undefined)
+                document.getElementById('datafield').innerHTML = '<span style="color:#00BFFF; font-weight:700;">' + convdata.channelUser.payload.userFullName + '</span>' + '<br>' + '<span style="color: #00FA9A;">' + '(' + convdata.channelUser.payload.userType + ')' + '</span>' + ' ID: ' + convdata.channelUser.payload.id + '<br>' + '<span style="user-select: none;">' + '📧: ' + '</span>' + convdata.channelUser.payload.email + '<br>' + '<span style="user-select: none;">' + '📞:' + '</span>' + convdata.channelUser.payload.phone + '<br>' + "Tech Screening Data: " + '<br>' + convdata.channelUser.payload.techScreeningData;
+            else
+                document.getElementById('datafield').innerHTML = '<span style="color:#00BFFF; font-weight:700;">' + convdata.channelUser.fullName + '</span>' + '<br>' + '<span style="color: #00FA9A;">' + '(' + convdata.channelUser.payload.userType + ')' + '</span>' + ' ID: ' + convdata.channelUser.payload.id + '<br>' + '<span style="user-select: none;">' + '📧: ' + '</span>' + convdata.channelUser.payload.email + '<br>' + '<span style="user-select: none;">' + '📞:' + '</span>' + convdata.channelUser.payload.phone + '<br>' + "Tech Screening Data: " + '<br>' + convdata.channelUser.payload.techScreeningData;
+        } else alert("Не выбран активный чат")
+    }
+
+    currstate();
+    for (let i = 0; i < radiobtnsarray.length; i++) {
+        if (radiobtnsarray[i].value == 'Notes' && radiobtnsarray[i].checked == true) {
+            document.getElementById('msgftochatornotes').style.background = 'LightGrey';
+        } else if (radiobtnsarray[i].value == 'Chat' && radiobtnsarray[i].checked == true) {
+            document.getElementById('msgftochatornotes').style.background = 'white';
         }
 
-        document.getElementById('getdatafrchat').onclick = () => { //открывает окно с информацией об обратившемся пользователе
-
-
-            if (typeof (convdata) !== 'undefined') {
-
-                if (document.getElementById('userchatdata').style.display == 'none')
-                    document.getElementById('userchatdata').style.display = ''
-                else document.getElementById('userchatdata').style.display = 'none'
-
-                if (convdata.channelUser.payload.techScreeningData == undefined)
-                    convdata.channelUser.payload.techScreeningData = convdata.channelUser.payload["Тех.инфа об устройствах"]
-
-                if (convdata.channelUser.payload.userFullName != undefined)
-                    document.getElementById('datafield').innerHTML = '<span style="color:#00BFFF; font-weight:700;">' + convdata.channelUser.payload.userFullName + '</span>' + '<br>' + '<span style="color: #00FA9A;">' + '(' + convdata.channelUser.payload.userType + ')' + '</span>' + ' ID: ' + convdata.channelUser.payload.id + '<br>' + '<span style="user-select: none;">' + '📧: ' + '</span>' + convdata.channelUser.payload.email + '<br>' + '<span style="user-select: none;">' + '📞:' + '</span>' + convdata.channelUser.payload.phone + '<br>' + "Tech Screening Data: " + '<br>' + convdata.channelUser.payload.techScreeningData;
-                else
-                    document.getElementById('datafield').innerHTML = '<span style="color:#00BFFF; font-weight:700;">' + convdata.channelUser.fullName + '</span>' + '<br>' + '<span style="color: #00FA9A;">' + '(' + convdata.channelUser.payload.userType + ')' + '</span>' + ' ID: ' + convdata.channelUser.payload.id + '<br>' + '<span style="user-select: none;">' + '📧: ' + '</span>' + convdata.channelUser.payload.email + '<br>' + '<span style="user-select: none;">' + '📞:' + '</span>' + convdata.channelUser.payload.phone + '<br>' + "Tech Screening Data: " + '<br>' + convdata.channelUser.payload.techScreeningData;
-            } else alert("Не выбран активный чат")
-        }
-
-        currstate();
-        console.log(activetechopers);
-
-
-        for (let i = 0; i < radiobtnsarray.length; i++) {
+        radiobtnsarray[i].onclick = () => {
             if (radiobtnsarray[i].value == 'Notes' && radiobtnsarray[i].checked == true) {
                 document.getElementById('msgftochatornotes').style.background = 'LightGrey';
             } else if (radiobtnsarray[i].value == 'Chat' && radiobtnsarray[i].checked == true) {
                 document.getElementById('msgftochatornotes').style.background = 'white';
             }
-
-            radiobtnsarray[i].onclick = () => {
-                if (radiobtnsarray[i].value == 'Notes' && radiobtnsarray[i].checked == true) {
-                    document.getElementById('msgftochatornotes').style.background = 'LightGrey';
-                } else if (radiobtnsarray[i].value == 'Chat' && radiobtnsarray[i].checked == true) {
-                    document.getElementById('msgftochatornotes').style.background = 'white';
-                }
-            }
         }
-
-        document.getElementById('btn_search_history').onclick = async () => { //функця обработки нажатия "Найти"
-
-            if (document.getElementById('chatuserhis').value != '' && document.getElementById('hashchathis').value == '') { // если айди пользователя введен, а хеш чата не введен
-                flagsearch = 'searchbyuser'
-                let lusid = document.getElementById('chatuserhis').value.trim();
-                let from = document.getElementById('dateFromChHis').value
-                let to = document.getElementById('dateToChHis').value
-                document.getElementById('chatuserhis').value = ''
-
-                if (foundarr != '')
-                    foundarr = ''
-
-                if (document.getElementById('placeusid').innerText != '')
-                    document.getElementById('placeusid').innerText = ''
-
-                if (document.getElementById('placechatid').innerText != '')
-                    document.getElementById('placechatid').innerText = ''
-
-                if (document.getElementById('somechatinfo').style.display == '')
-                    document.getElementById('somechatinfo').style.display = 'none';
-
-                if (document.getElementById('bottommenuchhis').style.display == '')
-                    document.getElementById('bottommenuchhis').style.display = 'none';
-
-                if (document.getElementById('comentsbar').style.display == '')
-                    document.getElementById('comentsbar').style.display = 'none';
-
-                document.getElementById('infofield').innerHTML = 'Загрузка'
-
-                await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                    "headers": {
-                        "content-type": "application/json",
-                        "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin"
-                    },
-                    "body": `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"channelUserFullTextLike\":\"${lusid}\",\"tsFrom\":\"${from}T00:00:00.000Z\",\"tsTo\":\"${to}T23:59:59.059Z\",\"orderBy\":\"ts\",\"orderDirection\":\"Desc\",\"page\":1,\"limit\":10}`,
-                    "method": "POST",
-                    "mode": "cors",
-                    "credentials": "include"
-                }).then(r => r.json()).then(r => data = r)
-                console.log(data)
-
-                if (data.total == 0)
-                    alert("В выбранном диапазоне чатов от пользователя не найдено. Попробуйте, пожалуйста, выбрать другой, либо пользователь не обращался вовсе.")
-
-                for (let i = 0; i < data.items.length; i++) {
-
-				let tmestmp = new Date((data.items[i].ts.split('[GMT]'))[0]);
-				let tshrs;
-				let tsmin;
-				let day;
-				let month;
-				let actstatus = '';
-				let marksarr;
-
-				month = (tmestmp.getMonth() < 9) ? "0" + (tmestmp.getMonth() + 1) : (tmestmp.getMonth() + 1);
-				day = (tmestmp.getDate() < 10) ? "0" + tmestmp.getDate() : tmestmp.getDate();
-				let year = tmestmp.getFullYear();
-				tshrs = (tmestmp.getUTCHours() + 3 < 10) ? "0" + (tmestmp.getUTCHours() + 3) : ((tmestmp.getUTCHours() + 3 >= 24) ? '0' + ((tmestmp.getUTCHours() + 3 - 24)) : (tmestmp.getUTCHours() + 3));
-				tsmin = (tmestmp.getMinutes() < 10) ? "0" + tmestmp.getMinutes() : tmestmp.getMinutes();
-
-
-                    if (data.items[i].stats.rate == undefined || data.items[i].stats.rate.rate == undefined)
-                        marksarr = '⭕'
-                    else
-                        marksarr = data.items[i].stats.rate.rate
-
-                    if (data.items[i].stats.usedStatuses == "AssignedToOperator")
-                        actstatus = "🛠"
-                    else actstatus = '';
-
-                    //сюда также допилить классы и  менять их в зависимости от темы
-
-                    if (data.items[i].channelUser.payload != undefined && data.items[i].channelUser.payload.userFullName == undefined) {
-                        foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700;">' + data.items[i].channelUser.payload.userType + '</span>' + ' ' + data.items[i].channelUser.fullName + '<span style="color: MediumSeaGreen; font-weight:700;">' + ' Оценка: ' + '</span>' + marksarr + actstatus + '</span>' + '<br>'
-                    } else if (data.items[i].channelUser.payload != undefined && data.items[i].channelUser.payload.userFullName != undefined) {
-                        foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700;">' + data.items[i].channelUser.payload.userType + '</span>' + ' ' + data.items[i].channelUser.payload.userFullName + '<span style="color: MediumSeaGreen; font-weight:700;">' + ' Оценка: ' + '</span>' + marksarr + actstatus + '</span>' + '<br>'
-					} else if (data.items[i].channelUser.payload == undefined) {
-						foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700;">' + data.items[i].channel.name + '</span>' + ' ' + data.items[i].channelUser.channelTpe + '<span style="color: MediumSeaGreen; font-weight:700;">' + ' Оценка: ' + '</span>' + marksarr + actstatus + '</span>' + '<br>'
-					}
-
-
-                }
-
-                document.getElementById('infofield').innerHTML = foundarr;
-                checkandchangestyle()
-
-                for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
-                    document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
-
-                    document.getElementsByClassName('chatlist')[i].onclick = async () => {
-
-                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementsByClassName('chatlist')[i].title).then(r => r.json()).then(r => convdata = r)
-                        console.log(convdata)
-
-                        if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                            isChatOnOperator = true
-                        else isChatOnOperator = false;
-
-                        fillchatbox();
-                        checkandchangestyle();
-                    } // конец функции клика по списку в найденном чате
-                }
-
-            } else if (document.getElementById('chatuserhis').value == '' && document.getElementById('hashchathis').value != '') { //если пользователь не введен, но введн хеш чата
-                flagsearch = 'searchbyhash'
-                await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('hashchathis').value.trim()).then(r => r.json()).then(r => convdata = r)
-                console.log(convdata)
-
-                if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                    isChatOnOperator = true
-                else isChatOnOperator = false;
-
-                fillchatbox();
-                checkandchangestyle();
-
-            } else alert("Введено и ID пользователя и хеш чата, или оба поля пустые. Пожалуйста, выберите что-то одно и повторите попытку.")
-        } // конец функции клика найти
-
-        document.getElementById('back_to_chat_his').onclick = () => { // функция обработки нажатия кнопки "Вернуться"
-            document.getElementById('infofield').innerHTML = '';
-            document.getElementById('placeusid').innerText = '';
-            document.getElementById('placechatid').innerText = '';
-            document.getElementById('somechatinfo').style.display = 'none';
-            document.getElementById('bottommenuchhis').style.display = 'none';
-            document.getElementById('comentsbar').style.display = 'none';
-
-            if (foundarr != '' && foundarr != null && foundarr != undefined) {
-                document.getElementById('infofield').innerHTML = foundarr;
-                checkandchangestyle();
-
-                for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
-                    if (flagsearch == 'searchbyuser')
-                        document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
-                    else if (flagsearch == 'searchbyoperator')
-                        document.getElementsByClassName('chatlist')[i].title = operchatsdata.items[i].conversationId
-                    else if (flagsearch == 'searchbyhash') {
-                        if (typeof (operchatsdata) !== 'undefined' && typeof (data) === 'undefined')
-                            document.getElementsByClassName('chatlist')[i].title = operchatsdata.items[i].conversationId
-                        else if (typeof (data) !== 'undefined' && typeof (operchatsdata) === 'undefined')
-                            document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
-                        else if (typeof (data) !== 'undefined' && typeof (operchatsdata) !== 'undefined')
-                            document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
-                    }
-
-                    document.getElementsByClassName('chatlist')[i].onclick = async () => {
-
-                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementsByClassName('chatlist')[i].title).then(r => r.json()).then(r => convdata = r)
-                        console.log(convdata)
-
-                        if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                            isChatOnOperator = true
-                        else isChatOnOperator = false;
-
-                        fillchatbox();
-                        checkandchangestyle();
-                    } // конец функции клика по списку в найденном чате
-                }
-            }
-        } // конец обработки функции нажатия "Вернуться"
-
-        document.getElementById('chhisinstr').onclick = function () {
-            window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-chathistory%F0%9F%92%ACChatHistory')
-        }
-
-        document.getElementById('refreshchat').onclick = async () => { // функция обработки нажатия кнопки "обновить"
-            if (document.getElementById('placechatid').innerText != '') {
-                document.getElementById('infofield').innerHTML = '';
-
-                await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
-                console.log(convdata)
-
-                if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                    isChatOnOperator = true
-                else isChatOnOperator = false;
-
-                fillchatbox();
-                checkandchangestyle();
-            }
-        } // конец обработчика кнопки "Обновить"
-
-        document.getElementById('takechat').onclick = function () { //обработчик функции взятия чата
-            var result = confirm("Вы действительно желаете забрать чат?");
-            if (result) {
-                let chat_id = document.getElementById('placechatid').innerText;
-                let operator_id = operatorId;
-
-                fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-                    "headers": {
-                        "content-type": "application/json"
-                    },
-                    "credentials": "include",
-                    "body": `{\"command\":\"DO_ASSIGN_CONVERSATION\",\"conversationId\":\"${chat_id}\",\"assignToOperatorId\":\"${operator_id}\"}`,
-                    "method": "POST"
-                });
-            }
-        } // конец обработчика нажатия кнопки "Забрать"
-		
-		
-async function startnewchatfast(polzid) { //открывает быстро чат с пользователем
-    if (operatorId == "") {
-        await whoAmI()
     }
 
-    if (polzid) {
-        await fetch(`https://skyeng.autofaq.ai/api/conversation/start?channelId=eca64021-d5e9-4c25-b6e9-03c24s638d4d&userId=${polzid}&operatorId=${operatorId}&groupId=c7bbb211-a217-4ed3-8112-98728dc382d8`, {
-            headers: {
-            },
-            referrer: "https://skyeng.autofaq.ai/tickets/assigned/",
-            referrerPolicy: "strict-origin-when-cross-origin",
-            body: null,
-            method: "POST",
-            mode: "cors",
-            credentials: "include"
-        })
-            .then(response => response.json())
-            .then(data => {
-                chatId = data.conversationId
-                console.log(data, chatId)
-            })
-    } else alert('Не введен id пользователя');
-}
+    document.getElementById('btn_search_history').onclick = async () => { //функця обработки нажатия "Найти"
 
-        document.getElementById('startchat').onclick = () => { //обработчик функции начала чата с пользователем
-            let answer = confirm("Вы действительно желаете начать чат с пользователем?");
-            if (answer) {
-                if (isChatOnOperator == false) {
-                    let polzid = document.getElementById('placeusid').innerText.trim();
-                    document.getElementById('startchat').style.background = 'green';
-                    startnewchatfast(polzid)
-                    setTimeout(() => {
-                        document.getElementById('startchat').style.background = '';
-                    }, 3000)
-                } else alert('Чат не открыт, так как есть активный чат на операторе!')
-            }
-        } // конец обработчика нажатия кнопки Начать чат с пользователем
+        if (document.getElementById('chatuserhis').value != '' && document.getElementById('hashchathis').value == '') { // если айди пользователя введен, а хеш чата не введен
+            flagsearch = 'searchbyuser'
+            let lusid = document.getElementById('chatuserhis').value.trim();
+            let from = document.getElementById('dateFromChHis').value
+            let to = document.getElementById('dateToChHis').value
+            document.getElementById('chatuserhis').value = ''
 
-        document.getElementById('opencmtbar').onclick = function () { //обработчик функции начала чата с пользователем
+            if (foundarr != '')
+                foundarr = ''
+
+            if (document.getElementById('placeusid').innerText != '')
+                document.getElementById('placeusid').innerText = ''
+
+            if (document.getElementById('placechatid').innerText != '')
+                document.getElementById('placechatid').innerText = ''
+
+            if (document.getElementById('somechatinfo').style.display == '')
+                document.getElementById('somechatinfo').style.display = 'none';
+
+            if (document.getElementById('bottommenuchhis').style.display == '')
+                document.getElementById('bottommenuchhis').style.display = 'none';
+
             if (document.getElementById('comentsbar').style.display == '')
                 document.getElementById('comentsbar').style.display = 'none';
-            else
-                document.getElementById('comentsbar').style.display = '';
 
-            for (let i = 0; i < radiobtnsarray1.length; i++) {
+            document.getElementById('infofield').innerHTML = 'Загрузка'
+
+            await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
+                "headers": {
+                    "content-type": "application/json",
+                    "sec-fetch-mode": "cors",
+                    "sec-fetch-site": "same-origin"
+                },
+                "body": `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"channelUserFullTextLike\":\"${lusid}\",\"tsFrom\":\"${from}T00:00:00.000Z\",\"tsTo\":\"${to}T23:59:59.059Z\",\"orderBy\":\"ts\",\"orderDirection\":\"Desc\",\"page\":1,\"limit\":10}`,
+                "method": "POST",
+                "mode": "cors",
+                "credentials": "include"
+            }).then(r => r.json()).then(r => data = r)
+            if (data.total == 0)
+                alert("В выбранном диапазоне чатов от пользователя не найдено. Попробуйте, пожалуйста, выбрать другой, либо пользователь не обращался вовсе.")
+
+            for (let i = 0; i < data.items.length; i++) {
+
+                let tmestmp = new Date((data.items[i].ts.split('[GMT]'))[0]);
+                let tshrs;
+                let tsmin;
+                let day;
+                let month;
+                let actstatus = '';
+                let marksarr;
+
+                month = (tmestmp.getMonth() < 9) ? "0" + (tmestmp.getMonth() + 1) : (tmestmp.getMonth() + 1);
+                day = (tmestmp.getDate() < 10) ? "0" + tmestmp.getDate() : tmestmp.getDate();
+                let year = tmestmp.getFullYear();
+                tshrs = (tmestmp.getUTCHours() + 3 < 10) ? "0" + (tmestmp.getUTCHours() + 3) : ((tmestmp.getUTCHours() + 3 >= 24) ? '0' + ((tmestmp.getUTCHours() + 3 - 24)) : (tmestmp.getUTCHours() + 3));
+                tsmin = (tmestmp.getMinutes() < 10) ? "0" + tmestmp.getMinutes() : tmestmp.getMinutes();
+
+
+                if (data.items[i].stats.rate == undefined || data.items[i].stats.rate.rate == undefined)
+                    marksarr = '⭕'
+                else
+                    marksarr = data.items[i].stats.rate.rate
+
+                if (data.items[i].stats.usedStatuses == "AssignedToOperator")
+                    actstatus = "🛠"
+                else actstatus = '';
+
+                //сюда также допилить классы и  менять их в зависимости от темы
+
+                if (data.items[i].channelUser.payload != undefined && data.items[i].channelUser.payload.userFullName == undefined) {
+                    foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700;">' + data.items[i].channelUser.payload.userType + '</span>' + ' ' + data.items[i].channelUser.fullName + '<span style="color: MediumSeaGreen; font-weight:700;">' + ' Оценка: ' + '</span>' + marksarr + actstatus + '</span>' + '<br>'
+                } else if (data.items[i].channelUser.payload != undefined && data.items[i].channelUser.payload.userFullName != undefined) {
+                    foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700;">' + data.items[i].channelUser.payload.userType + '</span>' + ' ' + data.items[i].channelUser.payload.userFullName + '<span style="color: MediumSeaGreen; font-weight:700;">' + ' Оценка: ' + '</span>' + marksarr + actstatus + '</span>' + '<br>'
+                } else if (data.items[i].channelUser.payload == undefined) {
+                    foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700;">' + data.items[i].channel.name + '</span>' + ' ' + data.items[i].channelUser.channelTpe + '<span style="color: MediumSeaGreen; font-weight:700;">' + ' Оценка: ' + '</span>' + marksarr + actstatus + '</span>' + '<br>'
+                }
+
+
+            }
+
+            document.getElementById('infofield').innerHTML = foundarr;
+            checkandchangestyle()
+
+            for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
+                document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
+
+                document.getElementsByClassName('chatlist')[i].onclick = async () => {
+
+                    await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementsByClassName('chatlist')[i].title).then(r => r.json()).then(r => convdata = r)
+                    if (convdata.status != null && convdata.status == 'AssignedToOperator')
+                        isChatOnOperator = true
+                    else isChatOnOperator = false;
+
+                    fillchatbox();
+                    checkandchangestyle();
+                } // конец функции клика по списку в найденном чате
+            }
+
+        } else if (document.getElementById('chatuserhis').value == '' && document.getElementById('hashchathis').value != '') { //если пользователь не введен, но введн хеш чата
+            flagsearch = 'searchbyhash'
+            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('hashchathis').value.trim()).then(r => r.json()).then(r => convdata = r)
+
+            if (convdata.status != null && convdata.status == 'AssignedToOperator')
+                isChatOnOperator = true
+            else isChatOnOperator = false;
+
+            fillchatbox();
+            checkandchangestyle();
+
+        } else alert("Введено и ID пользователя и хеш чата, или оба поля пустые. Пожалуйста, выберите что-то одно и повторите попытку.")
+    } // конец функции клика найти
+
+    document.getElementById('back_to_chat_his').onclick = () => { // функция обработки нажатия кнопки "Вернуться"
+        document.getElementById('infofield').innerHTML = '';
+        document.getElementById('placeusid').innerText = '';
+        document.getElementById('placechatid').innerText = '';
+        document.getElementById('somechatinfo').style.display = 'none';
+        document.getElementById('bottommenuchhis').style.display = 'none';
+        document.getElementById('comentsbar').style.display = 'none';
+
+        if (foundarr != '' && foundarr != null && foundarr != undefined) {
+            document.getElementById('infofield').innerHTML = foundarr;
+            checkandchangestyle();
+
+            for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
+                if (flagsearch == 'searchbyuser')
+                    document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
+                else if (flagsearch == 'searchbyoperator')
+                    document.getElementsByClassName('chatlist')[i].title = operchatsdata.items[i].conversationId
+                else if (flagsearch == 'searchbyhash') {
+                    if (typeof (operchatsdata) !== 'undefined' && typeof (data) === 'undefined')
+                        document.getElementsByClassName('chatlist')[i].title = operchatsdata.items[i].conversationId
+                    else if (typeof (data) !== 'undefined' && typeof (operchatsdata) === 'undefined')
+                        document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
+                    else if (typeof (data) !== 'undefined' && typeof (operchatsdata) !== 'undefined')
+                        document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
+                }
+
+                document.getElementsByClassName('chatlist')[i].onclick = async () => {
+
+                    await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementsByClassName('chatlist')[i].title).then(r => r.json()).then(r => convdata = r)
+                    if (convdata.status != null && convdata.status == 'AssignedToOperator')
+                        isChatOnOperator = true
+                    else isChatOnOperator = false;
+
+                    fillchatbox();
+                    checkandchangestyle();
+                } // конец функции клика по списку в найденном чате
+            }
+        }
+    } // конец обработки функции нажатия "Вернуться"
+
+    document.getElementById('chhisinstr').onclick = function () {
+        window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-chathistory%F0%9F%92%ACChatHistory')
+    }
+
+    document.getElementById('refreshchat').onclick = async () => { // функция обработки нажатия кнопки "обновить"
+        if (document.getElementById('placechatid').innerText != '') {
+            document.getElementById('infofield').innerHTML = '';
+
+            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
+
+            if (convdata.status != null && convdata.status == 'AssignedToOperator')
+                isChatOnOperator = true
+            else isChatOnOperator = false;
+
+            fillchatbox();
+            checkandchangestyle();
+        }
+    } // конец обработчика кнопки "Обновить"
+
+    document.getElementById('takechat').onclick = function () { //обработчик функции взятия чата
+        var result = confirm("Вы действительно желаете забрать чат?");
+        if (result) {
+            let chat_id = document.getElementById('placechatid').innerText;
+            let operator_id = operatorId;
+
+            fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+                "headers": {
+                    "content-type": "application/json"
+                },
+                "credentials": "include",
+                "body": `{\"command\":\"DO_ASSIGN_CONVERSATION\",\"conversationId\":\"${chat_id}\",\"assignToOperatorId\":\"${operator_id}\"}`,
+                "method": "POST"
+            });
+        }
+    } // конец обработчика нажатия кнопки "Забрать"
+
+
+    async function startnewchatfast(polzid) { //открывает быстро чат с пользователем
+        if (operatorId == "") {
+            await whoAmI()
+        }
+
+        if (polzid) {
+            await fetch(`https://skyeng.autofaq.ai/api/conversation/start?channelId=eca64021-d5e9-4c25-b6e9-03c24s638d4d&userId=${polzid}&operatorId=${operatorId}&groupId=c7bbb211-a217-4ed3-8112-98728dc382d8`, {
+                headers: {
+                },
+                referrer: "https://skyeng.autofaq.ai/tickets/assigned/",
+                referrerPolicy: "strict-origin-when-cross-origin",
+                body: null,
+                method: "POST",
+                mode: "cors",
+                credentials: "include"
+            })
+                .then(response => response.json())
+                .then(data => {
+                    chatId = data.conversationId
+                })
+        } else alert('Не введен id пользователя');
+    }
+
+    document.getElementById('startchat').onclick = () => { //обработчик функции начала чата с пользователем
+        let answer = confirm("Вы действительно желаете начать чат с пользователем?");
+        if (answer) {
+            if (isChatOnOperator == false) {
+                let polzid = document.getElementById('placeusid').innerText.trim();
+                document.getElementById('startchat').style.background = 'green';
+                startnewchatfast(polzid)
+                setTimeout(() => {
+                    document.getElementById('startchat').style.background = '';
+                }, 3000)
+            } else alert('Чат не открыт, так как есть активный чат на операторе!')
+        }
+    } // конец обработчика нажатия кнопки Начать чат с пользователем
+
+    document.getElementById('opencmtbar').onclick = function () { //обработчик функции начала чата с пользователем
+        if (document.getElementById('comentsbar').style.display == '')
+            document.getElementById('comentsbar').style.display = 'none';
+        else
+            document.getElementById('comentsbar').style.display = '';
+
+        for (let i = 0; i < radiobtnsarray1.length; i++) {
+            if (radiobtnsarray1[i].value == 'Notes' && radiobtnsarray1[i].checked == true) {
+                document.getElementById('msgftochatornotes1').style.background = 'LightGrey';
+            } else if (radiobtnsarray1[i].value == 'Chat' && radiobtnsarray1[i].checked == true) {
+                document.getElementById('msgftochatornotes1').style.background = 'white';
+            }
+
+            radiobtnsarray1[i].onclick = () => {
                 if (radiobtnsarray1[i].value == 'Notes' && radiobtnsarray1[i].checked == true) {
                     document.getElementById('msgftochatornotes1').style.background = 'LightGrey';
                 } else if (radiobtnsarray1[i].value == 'Chat' && radiobtnsarray1[i].checked == true) {
                     document.getElementById('msgftochatornotes1').style.background = 'white';
                 }
-
-                radiobtnsarray1[i].onclick = () => {
-                    if (radiobtnsarray1[i].value == 'Notes' && radiobtnsarray1[i].checked == true) {
-                        document.getElementById('msgftochatornotes1').style.background = 'LightGrey';
-                    } else if (radiobtnsarray1[i].value == 'Chat' && radiobtnsarray1[i].checked == true) {
-                        document.getElementById('msgftochatornotes1').style.background = 'white';
-                    }
-                }
-            }
-
-            document.getElementById('hidecmtfield').onclick = function () {
-                document.getElementById('comentsbar').style.display = 'none';
-            }
-        } // конец обработчика нажатия кнопки Начать чат с пользователем
-
-        document.getElementById('reassign').onclick = () => { //кнопка перевода чата на выбранного из верхнего списка операторы на линии и открытом чате, который желаем переветси
-
-            let arops = document.getElementById('operatorstp')
-            let hashid = document.getElementById('placechatid').innerText;
-            if (arops.children[0].selected != true && hashid != '') {
-                for (let i = 1; i < arops.children.length; i++) {
-                    if (arops.children[i].selected == true)
-                        fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-                            "headers": {
-                                "content-type": "application/json",
-                                "sec-fetch-dest": "empty",
-                                "sec-fetch-mode": "cors",
-                                "sec-fetch-site": "same-origin"
-                            },
-                            "body": `{\"command\":\"DO_ASSIGN_CONVERSATION\",\"conversationId\":\"${hashid}\",\"assignToOperatorId\":\"${arops.children[i].value}\"}`,
-                            "method": "POST",
-                            "mode": "cors",
-                            "credentials": "include"
-                        })
-                }
-            } else alert("Условия передачи чата не выполнены: не выбран оператор, не открыт чат, который требуется переводить")
-        }
-
-
-
-        document.getElementById('sendmsgtochatornotes').onclick = async () => { // обработчик кнопки Отправить в зависимости от радиокнопки в заметки или в чат
-
-            let radiobtnsarray = document.getElementsByName('chatornotes')
-
-            for (let i = 0; i < radiobtnsarray.length; i++) {
-                if (radiobtnsarray[i].value == 'Notes' && radiobtnsarray[i].checked == true) {
-
-                    let chathashfromdiv = document.getElementById('placechatid').innerText
-                    let sesid;
-
-                    await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
-                        .then(r => r.json()).then(r => rdata = r)
-                    sesid = rdata.sessionId;
-
-                    let notemsg = '<p>' + document.getElementById('msgftochatornotes').value + '</p>';
-
-                    fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-                        "headers": {
-                            "accept": "*/*",
-                            "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
-                            "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-origin"
-                        },
-                        "body": "------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n",
-                        "method": "POST",
-                        "mode": "cors",
-                        "credentials": "include"
-                    });
-
-                    document.getElementById('msgftochatornotes').value = ''
-
-                    setTimeout(
-                        async function () {
-                            if (document.getElementById('placechatid').innerText != '') {
-                                document.getElementById('infofield').innerHTML = '';
-
-                                await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
-                                console.log(convdata)
-
-                                fillchatbox();
-                                checkandchangestyle();
-                            }
-                        }, 1000);
-
-                } else if (radiobtnsarray[i].value == 'Chat' && radiobtnsarray[i].checked == true) {
-
-                    let chathashfromdiv = document.getElementById('placechatid').innerText
-                    let sesid;
-
-                    await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
-                        .then(r => r.json()).then(r => rdata = r)
-                    sesid = rdata.sessionId;
-
-                    let notemsg = '<p>' + document.getElementById('msgftochatornotes').value + '</p>';
-
-                    fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-                        "headers": {
-                            "accept": "*/*",
-                            "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryFeIiMdHaxAteNUHd",
-                            "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-origin"
-                        },
-                        "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
-                        "method": "POST",
-                        "mode": "cors",
-                        "credentials": "include"
-                    });
-
-                    document.getElementById('msgftochatornotes').value = ''
-
-                    setTimeout(
-                        async function () {
-                            if (document.getElementById('placechatid').innerText != '') {
-                                document.getElementById('infofield').innerHTML = '';
-
-                                await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
-                                console.log(convdata)
-
-                                if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                                    isChatOnOperator = true
-                                else isChatOnOperator = false;
-
-                                fillchatbox();
-                                checkandchangestyle();
-                            }
-                        }, 1000);
-                }
             }
         }
 
-        document.getElementById('sendmsgtochatornotes1').onclick = async () => { // обработчик кнопки Отправить в зависимости от радиокнопки в заметки или в чат
+        document.getElementById('hidecmtfield').onclick = function () {
+            document.getElementById('comentsbar').style.display = 'none';
+        }
+    } // конец обработчика нажатия кнопки Начать чат с пользователем
 
-            let radiobtnsarray1 = document.getElementsByName('chatornotes1')
+    document.getElementById('reassign').onclick = () => { //кнопка перевода чата на выбранного из верхнего списка операторы на линии и открытом чате, который желаем переветси
 
-            for (let i = 0; i < radiobtnsarray1.length; i++) {
-                if (radiobtnsarray1[i].value == 'Notes' && radiobtnsarray1[i].checked == true) {
-
-                    let chathashfromdiv = document.getElementById('placechatid').innerText
-                    let sesid;
-
-                    await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
-                        .then(r => r.json()).then(r => rdata = r)
-                    sesid = rdata.sessionId;
-
-                    let notemsg = '<p>' + document.getElementById('msgftochatornotes1').value + '</p>';
-
-                    fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
+        let arops = document.getElementById('operatorstp')
+        let hashid = document.getElementById('placechatid').innerText;
+        if (arops.children[0].selected != true && hashid != '') {
+            for (let i = 1; i < arops.children.length; i++) {
+                if (arops.children[i].selected == true)
+                    fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
                         "headers": {
-                            "accept": "*/*",
-                            "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
+                            "content-type": "application/json",
+                            "sec-fetch-dest": "empty",
                             "sec-fetch-mode": "cors",
                             "sec-fetch-site": "same-origin"
                         },
-                        "body": "------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n",
+                        "body": `{\"command\":\"DO_ASSIGN_CONVERSATION\",\"conversationId\":\"${hashid}\",\"assignToOperatorId\":\"${arops.children[i].value}\"}`,
                         "method": "POST",
                         "mode": "cors",
                         "credentials": "include"
-                    });
+                    })
+            }
+        } else alert("Условия передачи чата не выполнены: не выбран оператор, не открыт чат, который требуется переводить")
+    }
 
-                    document.getElementById('msgftochatornotes1').value = ''
 
-                    setTimeout(
-                        async function () {
-                            if (document.getElementById('placechatid').innerText != '') {
-                                document.getElementById('infofield').innerHTML = '';
 
-                                await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
-                                console.log(convdata)
+    document.getElementById('sendmsgtochatornotes').onclick = async () => { // обработчик кнопки Отправить в зависимости от радиокнопки в заметки или в чат
 
-                                fillchatbox();
-                                checkandchangestyle();
-                            }
-                        }, 1000);
+        let radiobtnsarray = document.getElementsByName('chatornotes')
 
-                } else if (radiobtnsarray1[i].value == 'Chat' && radiobtnsarray1[i].checked == true) {
+        for (let i = 0; i < radiobtnsarray.length; i++) {
+            if (radiobtnsarray[i].value == 'Notes' && radiobtnsarray[i].checked == true) {
 
-                    let chathashfromdiv = document.getElementById('placechatid').innerText
-                    let sesid;
+                let chathashfromdiv = document.getElementById('placechatid').innerText
+                let sesid;
 
-                    await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
-                        .then(r => r.json()).then(r => rdata = r)
-                    sesid = rdata.sessionId;
+                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
+                    .then(r => r.json()).then(r => rdata = r)
+                sesid = rdata.sessionId;
 
-                    let notemsg = '<p>' + document.getElementById('msgftochatornotes1').value + '</p>';
+                let notemsg = '<p>' + document.getElementById('msgftochatornotes').value + '</p>';
 
-                    fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-                        "headers": {
-                            "accept": "*/*",
-                            "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryFeIiMdHaxAteNUHd",
-                            "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-origin"
-                        },
-                        "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
-                        "method": "POST",
-                        "mode": "cors",
-                        "credentials": "include"
-                    });
+                fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
+                    "headers": {
+                        "accept": "*/*",
+                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
+                        "sec-fetch-mode": "cors",
+                        "sec-fetch-site": "same-origin"
+                    },
+                    "body": "------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n",
+                    "method": "POST",
+                    "mode": "cors",
+                    "credentials": "include"
+                });
 
-                    document.getElementById('msgftochatornotes1').value = ''
+                document.getElementById('msgftochatornotes').value = ''
 
-                    setTimeout(
-                        async function () {
-                            if (document.getElementById('placechatid').innerText != '') {
-                                document.getElementById('infofield').innerHTML = '';
+                setTimeout(
+                    async function () {
+                        if (document.getElementById('placechatid').innerText != '') {
+                            document.getElementById('infofield').innerHTML = '';
 
-                                await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
-                                console.log(convdata)
+                            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
 
-                                if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                                    isChatOnOperator = true
-                                else isChatOnOperator = false;
+                            fillchatbox();
+                            checkandchangestyle();
+                        }
+                    }, 1000);
 
-                                fillchatbox();
-                                checkandchangestyle();
-                            }
-                        }, 1000);
-                }
+            } else if (radiobtnsarray[i].value == 'Chat' && radiobtnsarray[i].checked == true) {
+
+                let chathashfromdiv = document.getElementById('placechatid').innerText
+                let sesid;
+
+                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
+                    .then(r => r.json()).then(r => rdata = r)
+                sesid = rdata.sessionId;
+
+                let notemsg = '<p>' + document.getElementById('msgftochatornotes').value + '</p>';
+
+                fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
+                    "headers": {
+                        "accept": "*/*",
+                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryFeIiMdHaxAteNUHd",
+                        "sec-fetch-mode": "cors",
+                        "sec-fetch-site": "same-origin"
+                    },
+                    "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
+                    "method": "POST",
+                    "mode": "cors",
+                    "credentials": "include"
+                });
+
+                document.getElementById('msgftochatornotes').value = ''
+
+                setTimeout(
+                    async function () {
+                        if (document.getElementById('placechatid').innerText != '') {
+                            document.getElementById('infofield').innerHTML = '';
+
+                            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
+
+                            if (convdata.status != null && convdata.status == 'AssignedToOperator')
+                                isChatOnOperator = true
+                            else isChatOnOperator = false;
+
+                            fillchatbox();
+                            checkandchangestyle();
+                        }
+                    }, 1000);
             }
         }
     }
-	
+
+    document.getElementById('sendmsgtochatornotes1').onclick = async () => { // обработчик кнопки Отправить в зависимости от радиокнопки в заметки или в чат
+
+        let radiobtnsarray1 = document.getElementsByName('chatornotes1')
+
+        for (let i = 0; i < radiobtnsarray1.length; i++) {
+            if (radiobtnsarray1[i].value == 'Notes' && radiobtnsarray1[i].checked == true) {
+
+                let chathashfromdiv = document.getElementById('placechatid').innerText
+                let sesid;
+
+                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
+                    .then(r => r.json()).then(r => rdata = r)
+                sesid = rdata.sessionId;
+
+                let notemsg = '<p>' + document.getElementById('msgftochatornotes1').value + '</p>';
+
+                fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
+                    "headers": {
+                        "accept": "*/*",
+                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
+                        "sec-fetch-mode": "cors",
+                        "sec-fetch-site": "same-origin"
+                    },
+                    "body": "------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n",
+                    "method": "POST",
+                    "mode": "cors",
+                    "credentials": "include"
+                });
+
+                document.getElementById('msgftochatornotes1').value = ''
+
+                setTimeout(
+                    async function () {
+                        if (document.getElementById('placechatid').innerText != '') {
+                            document.getElementById('infofield').innerHTML = '';
+
+                            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
+                            fillchatbox();
+                            checkandchangestyle();
+                        }
+                    }, 1000);
+
+            } else if (radiobtnsarray1[i].value == 'Chat' && radiobtnsarray1[i].checked == true) {
+
+                let chathashfromdiv = document.getElementById('placechatid').innerText
+                let sesid;
+
+                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
+                    .then(r => r.json()).then(r => rdata = r)
+                sesid = rdata.sessionId;
+
+                let notemsg = '<p>' + document.getElementById('msgftochatornotes1').value + '</p>';
+
+                fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
+                    "headers": {
+                        "accept": "*/*",
+                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryFeIiMdHaxAteNUHd",
+                        "sec-fetch-mode": "cors",
+                        "sec-fetch-site": "same-origin"
+                    },
+                    "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
+                    "method": "POST",
+                    "mode": "cors",
+                    "credentials": "include"
+                });
+
+                document.getElementById('msgftochatornotes1').value = ''
+
+                setTimeout(
+                    async function () {
+                        if (document.getElementById('placechatid').innerText != '') {
+                            document.getElementById('infofield').innerHTML = '';
+
+                            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
+
+                            if (convdata.status != null && convdata.status == 'AssignedToOperator')
+                                isChatOnOperator = true
+                            else isChatOnOperator = false;
+
+                            fillchatbox();
+                            checkandchangestyle();
+                        }
+                    }, 1000);
+            }
+        }
+    }
+}
