@@ -376,7 +376,8 @@ document.getElementById('getlessonfuture').onclick = function () { // показ
 
     document.getElementById('timetabledata').innerHTML = "";
     let idShka = document.getElementById('idstudent').value.trim();
-    let futurelessondata = "";
+	if (idShka.length > 0) {
+		    let futurelessondata = "";
     chrome.runtime.sendMessage({ action: "checkLessonHistoryFuture", uchIdNew: idShka }, function (responseFuture) {
         if (responseFuture != null) {
             if (responseFuture.data == "") {
@@ -441,9 +442,7 @@ document.getElementById('getlessonfuture').onclick = function () { // показ
             }
         }
     })
-
-
-
+	} else alert('Запрос не выполнен. Введите ID в поле!')
 }
 
 document.getElementById('changelocalelng').onclick = function () { // меняет язык обслуживания выбранного пользователя в вензеле на русский
