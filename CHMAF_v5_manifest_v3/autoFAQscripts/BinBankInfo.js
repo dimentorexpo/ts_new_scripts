@@ -3,7 +3,7 @@ var win_BankInfo =  // описание элементов окна Списка
         <span style="width: 450px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 400;" id="grlistdata">
-                                <button class="mainButton buttonHide" id="hideMeGrList">hide</button>
+                                <button class="mainButton buttonHide" id="hideMeBinBank">hide</button>
                         </div>
 						<div>
                         <input oninput="onlyNumbers(this)" required id="carddigits" placeholder="6 первых цифр карты" title="Введите 6 первых цифр карты" autocomplete="off" type="text" style="text-align: center; width: 160px; color: black;margin-left:5px; position:relative; left:20%;">
@@ -19,53 +19,10 @@ var win_BankInfo =  // описание элементов окна Списка
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopBankInfo') == null) {  // начальное положение окна списка группы
-    localStorage.setItem('winTopBankInfo', '120');
-    localStorage.setItem('winLeftBankInfo', '295');
-}
+const wintBankInfo  = createWindow('AF_BankCheck', 'winTopBankInfo', 'winLeftBankInfo', win_BankInfo);
+hideWindowOnDoubleClick('AF_BankCheck');
 
-let wintBankInfo = document.createElement('div'); // создание окна Список группы
-document.body.append(wintBankInfo);
-wintBankInfo.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopBankInfo') + 'px; left: ' + localStorage.getItem('winLeftBankInfo') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintBankInfo.style.display = 'none';
-wintBankInfo.setAttribute('id', 'AF_BankCheck');
-wintBankInfo.innerHTML = win_BankInfo;
-
-wintBankInfo.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintBankInfo.offsetLeft;
-        let elemTop = wintBankInfo.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintBankInfo.style.left = (elemLeft + deltaX) + "px";
-            wintBankInfo.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopBankInfo', String(elemTop + deltaY));
-            localStorage.setItem('winLeftBankInfo', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна Список группы
-
-document.getElementById('AF_BankCheck').ondblclick = function (a) { // скрытие окна Список группы по двойному клику
-    if (checkelementtype(a)) { document.getElementById('AF_BankCheck').style.display = 'none'; }
-}
-
-document.getElementById('hideMeGrList').addEventListener('click', function () { // скрытие окна Список группы
+document.getElementById('hideMeBinBank').addEventListener('click', function () { // скрытие окна Список группы
     if (document.getElementById('AF_BankCheck').style.display == '') {
         document.getElementById('AF_BankCheck').style.display = 'none';
         document.getElementById('cardInfoData').innerText = "";
