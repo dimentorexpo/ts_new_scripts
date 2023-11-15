@@ -331,15 +331,6 @@ function switchJiraPages() {
     });
 }
 
-document.getElementById('AF_Jira').ondblclick = function (a) { // скрытие окна Jira по двойному клику
-    if (checkelementtype(a)) { document.getElementById('AF_Jira').style.display = 'none'; }
-}
-
-document.getElementById('hideMej').addEventListener('click', function () { // скрытие окна поиска по Jira
-    if (document.getElementById('AF_Jira').style.display == '')
-        document.getElementById('AF_Jira').style.display = 'none'
-})
-
 document.getElementById('ClearJiraData').addEventListener('click', function () {  // функция очистки полей в форме
     document.getElementById('testJira').value = '';
     document.getElementById('issuetable').innerText = '';

@@ -20,7 +20,6 @@ var win_GrList =  // описание элементов окна Списка �
 
 const wintGrList= createWindow('AF_GrList', 'winTopGrList', 'winTopGrList', win_GrList);
 hideWindowOnDoubleClick('AF_GrList');
-hideWindowOnClick('AF_GrList', 'hideList');
 
 function getGrListDataButtonPress() {
     if (document.getElementById('AF_GrList').style.display == '') {
