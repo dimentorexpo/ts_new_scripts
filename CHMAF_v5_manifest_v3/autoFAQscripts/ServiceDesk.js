@@ -210,6 +210,7 @@ var win_servicedesk = // описание элементов окна Service De
 		</span>
 </div>`;
 
+const wintServDsk  = createWindow('AF_ServDsk', 'winTopServDsk', 'winLeftServDsk', win_servicedesk);
 
 //func getOperInfraId
 function getInfraOId() {
@@ -568,51 +569,6 @@ function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, s
         setTimeout(getmmlink, 8000);
     })
 }
-
-//main
-
-if (localStorage.getItem('winTopServDsk') == null) { // начальное положение окна Service Desk
-    localStorage.setItem('winTopServDsk', '120');
-    localStorage.setItem('winLeftServDsk', '295');
-}
-
-let wintServDsk = document.createElement('div'); // создание окна ServiceDesk
-document.body.append(wintServDsk);
-wintServDsk.style = 'min-height: 165px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopServDsk') + 'px; left: ' + localStorage.getItem('winLeftServDsk') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintServDsk.style.display = 'none';
-wintServDsk.setAttribute('id', 'AF_ServDsk');
-wintServDsk.innerHTML = win_servicedesk;
-
-const inputsFieldsSD = document.getElementById('inputfieldsdiv');
-wintServDsk.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintServDsk.offsetLeft;
-        let elemTop = wintServDsk.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintServDsk.style.left = (elemLeft + deltaX) + "px";
-            wintServDsk.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopServDsk', String(elemTop + deltaY));
-            localStorage.setItem('winLeftServDsk', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна ServiceDesk
 
 function getservDskPress() { // функция открытия главного окна SD +
     if (document.getElementById('AF_ServDsk').style.display == '') {
