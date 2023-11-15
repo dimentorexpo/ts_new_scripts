@@ -85,7 +85,7 @@ var win_Timetable = // описание элементов окна предст
 <span style="width: 450px">
         <span style="cursor: -webkit-grab;">
                 <div style="margin: 5px; width: 450;" id="HeadTimetable">
-                        <button class="mainButton" id="hideMeTT" style="width:50px; background: #228B22;">hide</button>
+                        <button class="mainButton buttonHide" id="hideMeTT" style="width:50px; background: #228B22;">hide</button>
                 </div>
                 <div style="display:flex; justify-content:space-evenly; margin-top:5px;">
                      <button class="mainButton" title="Выводит инфо о прошедших уроках" id="getlessonpast">Прошедшие уроки</button>
