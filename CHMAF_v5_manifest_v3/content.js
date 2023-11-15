@@ -3,7 +3,6 @@
 			question: 'get-extension-id'
 		}
 		chrome.runtime.sendMessage(message, (result) => {
-			console.log(result)
 			if (localStorage.getItem('ext_id') == null)
 				localStorage.setItem('ext_id',result)
 			else localStorage.setItem('ext_id',result)

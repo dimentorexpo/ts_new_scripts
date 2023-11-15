@@ -14,49 +14,12 @@ var win_OperStatus =  // описание элементов окна стату
     </span>
 </div>`;
 
+const wintOperStatus = createWindow('AF_OperStat', 'winTopOpStat', 'winLeftOpStat', win_OperStatus);
+hideWindowOnDoubleClick('AF_OperStat');
+
 if (localStorage.getItem('winTopOpStat') == null) { //начальное положение окна оценко
     localStorage.setItem('winTopOpStat', '120');
     localStorage.setItem('winLeftOpStat', '295');
-}
-
-let wintOperStatus = document.createElement('div'); // создание окна поиска оценок от пользователя
-document.body.append(wintOperStatus);
-wintOperStatus.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopOpStat') + 'px; left: ' + localStorage.getItem('winLeftOpStat') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintOperStatus.style.display = 'none';
-wintOperStatus.setAttribute('id', 'AF_OperStat');
-wintOperStatus.innerHTML = win_OperStatus;
-
-wintOperStatus.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintOperStatus.offsetLeft;
-        let elemTop = wintOperStatus.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintOperStatus.style.left = (elemLeft + deltaX) + "px";
-            wintOperStatus.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopOpStat', String(elemTop + deltaY));
-            localStorage.setItem('winLeftOpStat', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна поиска оценок от пользователя
-document.getElementById('AF_OperStat').ondblclick = function (a) { // скрытие окна оценок от пользователя по двойному клику
-    if (checkelementtype(a)) { document.getElementById('AF_OperStat').style.display = 'none'; }
 }
 
 document.getElementById('clearopersinfo').onclick = function () { // кнопка очистки поля

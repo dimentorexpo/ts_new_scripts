@@ -74,58 +74,13 @@ var win_Links =  // описание элементов окна ссылок
 	</span>
 </div>`;
 
+const wintLinks  = createWindow('AF_Links', 'winTopLinks', 'winLeftLinks', win_Links);
+hideWindowOnDoubleClick('AF_Links');
+hideWindowOnClick('AF_Links', 'hideMe');
+
 if (localStorage.getItem('winTopLinks') == null) { // началоное положение окна ссылок (если не задано ранее)
     localStorage.setItem('winTopLinks', '120');
     localStorage.setItem('winLeftLinks', '295');
-}
-
-let wintLinks = document.createElement('div'); // создание окна ссылок
-document.body.append(wintLinks);
-wintLinks.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopLinks') + 'px; left: ' + localStorage.getItem('winLeftLinks') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintLinks.style.display = 'none';
-wintLinks.setAttribute('id', 'AF_Links');
-wintLinks.innerHTML = win_Links;
-
-document.getElementById('getStats').onclick = getStatsButtonPress; 
-document.getElementById('openGrabber').onclick = getopenGrabberButtonPress;
-document.getElementById('GrListData').onclick = getGrListDataButtonPress;
-
-wintLinks.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = wintLinks.offsetLeft;
-    let elemTop = wintLinks.offsetTop;
-
-    function onMouseMove(event) {
-		  if (!(event.buttons & 1)) {
-			onMouseUp();
-			return;
-		  }
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
-
-      wintLinks.style.left = (elemLeft + deltaX) + "px";
-      wintLinks.style.top = (elemTop + deltaY) + "px";
-
-      localStorage.setItem('winTopLinks', String(elemTop + deltaY));
-      localStorage.setItem('winLeftLinks', String(elemLeft + deltaX));
-    }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
-};
-// прекращение изменения позиции окна ссылок
-
-document.getElementById('AF_Links').ondblclick = function (a) { // скрытие окна ссылок по двойному клику
-    if (checkelementtype(a)) { document.getElementById('AF_Links').style.display = 'none'; }
 }
 
 document.getElementById('links').onclick = function () { //открывает окно ссылок
@@ -135,13 +90,7 @@ document.getElementById('links').onclick = function () { //открывает о
         document.getElementById('AF_Links').style.display = ''
         getversionsapp()
     }
-}
-	
-document.getElementById('hideMe').onclick = function () { // скрытие окна ссылок
-    if (document.getElementById('AF_Links').style.display == '')
-        document.getElementById('AF_Links').style.display = 'none'
-}	
-	                                        
+}                              
 
 document.getElementById('knoweledgebase').onclick = function () { // открытие Confluence БЗ 2.0
     window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=25407293")
