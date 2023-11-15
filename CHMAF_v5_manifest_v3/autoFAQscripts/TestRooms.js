@@ -57,60 +57,7 @@ var win_testrooms =  // описание элементов окна созда�
       </span>
   </div>`;
 
-
-if (localStorage.getItem('winToptestrooms') == null) { // началоное положение окна создания тестовых комнат
-    localStorage.setItem('winToptestrooms', '120');
-    localStorage.setItem('winLefttestrooms', '295');
-}
-
-let winttestrooms = document.createElement('div'); // создание окна создания тестовых комнат
-document.body.append(winttestrooms);
-winttestrooms.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winToptestrooms') + 'px; left: ' + localStorage.getItem('winLefttestrooms') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-winttestrooms.style.display = 'none';
-winttestrooms.setAttribute('id', 'AF_testrooms');
-winttestrooms.innerHTML = win_testrooms;
-
-const messagefield = document.getElementById('testroomsmessage');
-messagefield.display = 'none';
-
-
-winttestrooms.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = winttestrooms.offsetLeft;
-        let elemTop = winttestrooms.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            winttestrooms.style.left = (elemLeft + deltaX) + "px";
-            winttestrooms.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winToptestrooms', String(elemTop + deltaY));
-            localStorage.setItem('winLefttestrooms', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-}; // прекращение изменения позиции окна создания тестовых комнат
-
-document.getElementById('testroomshead').ondblclick = function (a) { // скрытие окна создания тестовых комнат по двойному клику
-    if (checkelementtype(a)) { document.getElementById('AF_testrooms').style.display = 'none'; }
-}
-
-document.getElementById('hideMetestrooms').onclick = function () { // скрытие окна создания тестовых комнат
-    if (document.getElementById('AF_testrooms').style.display == '')
-        document.getElementById('AF_testrooms').style.display = 'none'
-}
+const winttestrooms  = createWindow('AF_testrooms', 'winToptestrooms', 'winLefttestrooms', win_testrooms);
 
 function getTestRoomsButtonPress() { //открывает окно создания тестовых комнат
     setDisplayStyle(document.getElementById('AF_testrooms'), document.getElementById('AF_testrooms').style.display === '' ? 'none' : '');
@@ -138,82 +85,6 @@ function teststudenttofield() { // подставить тестового У
     } else {
         document.getElementById('studforroom').placeholder = "Не указан ID У";
         testroomsshowmessage('error', 'В настройках расширения не указан id тестового ученика')
-    }
-}
-
-document.getElementById('userfromchatid').onclick = function () { // добавить id пользователя из активного чата и добавить id тестовго У или П
-    let whoisuser = SearchinAFnewUI("userType");
-    if (whoisuser) {
-        let insertionfield = ''
-        let flagwhouser = '0'
-        if (whoisuser === "teacher") {
-            teststudenttofield()
-            insertionfield = document.getElementById('teachforroom')
-            flagwhouser = '1';
-        } else if (whoisuser === "student") {
-            testteachertofield()
-            insertionfield = document.getElementById('studforroom')
-            flagwhouser = '1';
-        }
-
-        if (flagwhouser == '1') {
-            let useridis = SearchinAFnewUI("id");
-            if (useridis)
-                insertionfield.value = useridis;
-        } else {
-            testroomsshowmessage('error', 'Не удается определить тип пользователя, пожалуйста, внесите id вручную')
-        }
-    } else {
-        testroomsshowmessage('error', 'Нет выбранного чата')
-    }
-}
-
-document.getElementById('starttestroom').onclick = function () { // добавляем тестовую комнату
-    let randomHash = '';
-    let flagemptyttfields = '0';
-    let studentidforroom = '';
-    let teacheridforroom = '';
-    let lessonsubjecttype = '';
-    let lessontype = '';
-    let massagetexttoshow = '';
-
-    if (document.getElementById('lessontypeselect').value == 'lessonnotselect') { // проверяем выбран ли тип урока
-        flagemptyttfields = '1';
-        massagetexttoshow += 'Не выбран тип урока\n'
-    } else { lessontype = document.getElementById('lessontypeselect').value }
-
-    if (document.getElementById('subjecttypeselect').value == 'subjnotselect') { // проверяем выбран ли предмет
-        flagemptyttfields = '1';
-        massagetexttoshow += 'Не выбран предмет\n'
-    } else { lessonsubjecttype = document.getElementById('subjecttypeselect').value }
-
-    if (document.getElementById('teachforroom').value.length < 4) { // проверяем введен ли id П
-        flagemptyttfields = '1';
-        massagetexttoshow += 'Не указан id преподавателя\n'
-    } else {
-        teacheridforroom = document.getElementById('teachforroom').value
-            .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой
-    }
-
-    if (document.getElementById('studforroom').value.length < 4) { // проверяем введен ли id У
-        flagemptyttfields = '1';
-        massagetexttoshow += 'Не указан id ученика\n'
-    } else {
-        studentidforroom = document.getElementById('studforroom').value
-            .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой
-            .replace(/,/g, '%2C');    // Заменить запятую на %2C
-    }
-
-    if (flagemptyttfields === '0') {
-        randomHash = GenerateHash(14);
-
-        chrome.runtime.sendMessage({ action: 'createTestRoom', lessonsubjecttype: lessonsubjecttype, randomHash: randomHash, lessontype: lessontype, teacheridforroom: teacheridforroom, studentidforroom: studentidforroom }, function (response) {
-            testroomsshowmessage('message', 'Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
-            cleartestroomsfields()
-        })
-
-    } else {
-        testroomsshowmessage('error', massagetexttoshow);
     }
 }
 
@@ -271,3 +142,86 @@ document.getElementById("insertstudid").addEventListener("click", teststudenttof
 document.getElementById("clrTestRooms").addEventListener("click", cleartestroomsfields);
 document.getElementById("aboutTestRooms").addEventListener("click", opentestroomshelp);
 document.getElementById("confluenceTestRooms").addEventListener("click", opentestroomsconf);
+document.getElementById("hideMetestrooms").addEventListener("click", function(){
+	    if (document.getElementById('AF_testrooms').style.display == '')
+        document.getElementById('AF_testrooms').style.display = 'none'
+});
+document.getElementById('testroomshead').addEventListener('dblclick', function(){
+	document.getElementById('AF_testrooms').style.display = 'none'; 
+})
+
+document.getElementById('userfromchatid').addEventListener('click', function () { // добавить id пользователя из активного чата и добавить id тестовго У или П
+    let whoisuser = SearchinAFnewUI("userType");
+    if (whoisuser) {
+        let insertionfield = ''
+        let flagwhouser = '0'
+        if (whoisuser === "teacher") {
+            teststudenttofield()
+            insertionfield = document.getElementById('teachforroom')
+            flagwhouser = '1';
+        } else if (whoisuser === "student") {
+            testteachertofield()
+            insertionfield = document.getElementById('studforroom')
+            flagwhouser = '1';
+        }
+
+        if (flagwhouser == '1') {
+            let useridis = SearchinAFnewUI("id");
+            if (useridis)
+                insertionfield.value = useridis;
+        } else {
+            testroomsshowmessage('error', 'Не удается определить тип пользователя, пожалуйста, внесите id вручную')
+        }
+    } else {
+        testroomsshowmessage('error', 'Нет выбранного чата')
+    }
+})
+
+document.getElementById('starttestroom').addEventListener('click', function () { // добавляем тестовую комнату
+    let randomHash = '';
+    let flagemptyttfields = '0';
+    let studentidforroom = '';
+    let teacheridforroom = '';
+    let lessonsubjecttype = '';
+    let lessontype = '';
+    let massagetexttoshow = '';
+
+    if (document.getElementById('lessontypeselect').value == 'lessonnotselect') { // проверяем выбран ли тип урока
+        flagemptyttfields = '1';
+        massagetexttoshow += 'Не выбран тип урока\n'
+    } else { lessontype = document.getElementById('lessontypeselect').value }
+
+    if (document.getElementById('subjecttypeselect').value == 'subjnotselect') { // проверяем выбран ли предмет
+        flagemptyttfields = '1';
+        massagetexttoshow += 'Не выбран предмет\n'
+    } else { lessonsubjecttype = document.getElementById('subjecttypeselect').value }
+
+    if (document.getElementById('teachforroom').value.length < 4) { // проверяем введен ли id П
+        flagemptyttfields = '1';
+        massagetexttoshow += 'Не указан id преподавателя\n'
+    } else {
+        teacheridforroom = document.getElementById('teachforroom').value
+            .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой
+    }
+
+    if (document.getElementById('studforroom').value.length < 4) { // проверяем введен ли id У
+        flagemptyttfields = '1';
+        massagetexttoshow += 'Не указан id ученика\n'
+    } else {
+        studentidforroom = document.getElementById('studforroom').value
+            .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой
+            .replace(/,/g, '%2C');    // Заменить запятую на %2C
+    }
+
+    if (flagemptyttfields === '0') {
+        randomHash = GenerateHash(14);
+
+        chrome.runtime.sendMessage({ action: 'createTestRoom', lessonsubjecttype: lessonsubjecttype, randomHash: randomHash, lessontype: lessontype, teacheridforroom: teacheridforroom, studentidforroom: studentidforroom }, function (response) {
+            testroomsshowmessage('message', 'Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
+            cleartestroomsfields()
+        })
+
+    } else {
+        testroomsshowmessage('error', massagetexttoshow);
+    }
+})
