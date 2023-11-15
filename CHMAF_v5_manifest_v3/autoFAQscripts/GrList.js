@@ -31,27 +31,26 @@ function getGrListDataButtonPress() {
 }
 document.getElementById('getidgrouptolist').addEventListener('click', async function () {
     let dataarr = [];
+	let userIdsarray = [];
     document.getElementById('grlistinfo').innerHTML = "Загрузка...";
     let tempgrid = document.getElementById('idgrouptolist').value;
     tempgrid = tempgrid.trim();
 
     chrome.runtime.sendMessage({ action: 'getGroupList', tmp: tempgrid }, function (response) {
+		userIdsarray = [];
         for (let i = 0; i < response.data.students.length; i++) {
-            dataarr += [i + 1] + "." + '<span class="grstdcrm" style="cursor:pointer" title="открывает профиль в CRM">ℹID У:</span>' + response.data.students[i].userId + " ID услуги: " + response.data.students[i].educationServiceId + " " + '<span class="getstname" style="cursor:pointer" title="Узнать имя и фамилию ученика, если раз нажали не появилось нажмите через секунду второй раз, быстро на все глаза не нажимайте, иначе получите некорректную информацию">👁‍🗨</span>' + '<span class="stname"></span>' + '<br>';
+            dataarr += [i + 1] + "." + '<span class="grstdcrm" style="cursor:pointer" title="открывает профиль в CRM">ℹID У:</span>' + response.data.students[i].userId + " ID услуги: " + response.data.students[i].educationServiceId + " " + '<span class="stname"></span>' + '<br>';
+			userIdsarray.push(response.data.students[i].userId)
         }
+		
+		chrome.runtime.sendMessage({action: "getGroupUserNames", userIds: userIdsarray}, function(response) {
+			  let allStudents = document.getElementsByClassName('stname')
+			  for (let i=0; i <allStudents.length;i++) {
+				  allStudents[i].textContent = response.data[i].name.first + " " + response.data[i].name.last
+			  }
+			});
 
         document.getElementById('grlistinfo').innerHTML = !response.data.teachers ? dataarr : dataarr + '<br>ID П ' + response.data.teachers[0].userId;
-
-        let arstname = document.querySelectorAll('.stname');
-        let getstnamearr = document.querySelectorAll('.getstname');
-
-        for (let f = 0; f < getstnamearr.length; f++) {
-            getstnamearr[f].addEventListener('click', function () {
-                chrome.runtime.sendMessage({ action: 'getUserCrmName', sid: response.data.students[f].userId }, function (userResponse) {
-                    arstname[f].innerHTML = userResponse.data.name + " " + userResponse.data.surname;
-                })
-            })
-        }
 
         let grstdcrmarr = document.querySelectorAll('.grstdcrm');
         for (let f = 0; f < grstdcrmarr.length; f++) {

@@ -31,6 +31,35 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
 }
 
+  if (request.action === 'getGroupUserNames') {
+    // Использование данных из запроса
+    let userIds = request.userIds;
+    let bodyContent = JSON.stringify({ids: userIds});
+
+    fetch("https://learning-groups-storage-api.skyeng.ru/api/v1/userInfo/findByIds", {
+      headers: {
+        "accept": "application/json, text/plain, */*",
+        "content-type": "application/json; charset=UTF-8",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site"
+      },
+      referrer: "https://learning-groups-storage.skyeng.ru/",
+      referrerPolicy: "strict-origin-when-cross-origin",
+      body: bodyContent,
+      method: "POST",
+      mode: "cors",
+      credentials: "include"
+    })
+    .then(response => response.json())
+    .then(data => sendResponse(data))
+    .catch(error => {
+      // Обработка ошибки
+      sendResponse({error: error.message});
+    });
+    return true; 
+  }
+
 	//Блок запросов в CRM2
   if (request.action === 'getUserCrmName') { // Получение информации об ФИ
     const sid = request.sid;
