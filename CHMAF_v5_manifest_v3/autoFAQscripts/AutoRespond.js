@@ -24,7 +24,6 @@ const wintFrozeChat = createWindow('AF_FrozeChat', 'winTopFrozeChat', 'winLeftFr
 hideWindowOnDoubleClick('AF_FrozeChat');
 hideWindowOnClick('AF_FrozeChat', 'hidefrozechat');
 
-
 function getbutFrozeChatButtonPress() {
 	   let uniqarr = []; //уникальный массив. чтобы не было задвоение одного и того же хеша
     let chathasharr = []; // исходный массив, куда  заносятя все хеши чатов

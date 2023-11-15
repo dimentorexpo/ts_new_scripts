@@ -28,47 +28,9 @@ var win_Radio =  // описание элементов окна радио
 </span>
 </div>`;
 
-if (localStorage.getItem('winTopRadio') == null) { // началоное положение окна радио (если не задано ранее)
-    localStorage.setItem('winTopRadio', '120');
-    localStorage.setItem('winLeftRadio', '295');
-}
-
-let wintRadio = document.createElement('div'); // создание окна радио
-document.body.append(wintRadio);
-wintRadio.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopRadio') + 'px; left: ' + localStorage.getItem('winLeftRadio') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintRadio.style.display = 'none';
-wintRadio.setAttribute('id', 'AF_Radio');
-wintRadio.innerHTML = win_Radio;
-
-wintRadio.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintRadio.offsetLeft;
-        let elemTop = wintRadio.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintRadio.style.left = (elemLeft + deltaX) + "px";
-            wintRadio.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopRadio', String(elemTop + deltaY));
-            localStorage.setItem('winLeftRadio', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна радио
+const wintRadio = createWindow('AF_Radio', 'winTopRadio', 'winLeftRadio', win_Radio);
+hideWindowOnDoubleClick('AF_Radio');
+hideWindowOnClick('AF_Radio', 'hideMeRadio');
 
 let audioUrls = JSON.parse(localStorage.getItem("audioUrls")) || [];
 let audioNames = JSON.parse(localStorage.getItem("audioNames")) || [];
@@ -182,10 +144,6 @@ function muteorunmute() {
         player.muted = true;
         muteAudio.innerHTML = "📢Unmute";
     }
-}
-
-document.getElementById('hideMeRadio').onclick = function () {
-    document.getElementById('AF_Radio').style.display = 'none'
 }
 
 let volRange = document.getElementById('changeRadioVolume');
