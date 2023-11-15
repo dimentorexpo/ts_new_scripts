@@ -27,62 +27,16 @@ var win_linksd =  // описание элементов окна доступо
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopLinksd') == null) { // началоное положение окна ссылок с доступами (если не задано ранее)
-    localStorage.setItem('winTopLinksd', '120');
-    localStorage.setItem('winLeftLinksd', '295');
-}
+const wintLinksd= createWindow('AF_Linksd', 'winTopLinksd', 'winLeftLinksd', win_linksd);
+hideWindowOnDoubleClick('AF_Linksd');
+hideWindowOnClick('AF_Linksd', 'hideMeLinksd');
 
-let wintLinksd = document.createElement('div'); // создание окна доступов
-document.body.append(wintLinksd);
-wintLinksd.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopLinksd') + 'px; left: ' + localStorage.getItem('winLeftLinksd') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintLinksd.style.display = 'none';
-wintLinksd.setAttribute('id', 'AF_Linksd');
-wintLinksd.innerHTML = win_linksd;
-
-wintLinksd.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintLinksd.offsetLeft;
-        let elemTop = wintLinksd.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintLinksd.style.left = (elemLeft + deltaX) + "px";
-            wintLinksd.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopLinksd', String(elemTop + deltaY));
-            localStorage.setItem('winLeftLinksd', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна доступов
-
-document.getElementById('AF_Linksd').ondblclick = function (a) { // скрытие окна доступов по двойному клику
-    if (checkelementtype(a)) { document.getElementById('AF_Linksd').style.display = 'none'; }
-}
 
 document.getElementById('addsrc').onclick = function () { //открывает окно доступов
     if (document.getElementById('AF_Linksd').style.display == '')
         document.getElementById('AF_Linksd').style.display = 'none'
     else
         document.getElementById('AF_Linksd').style.display = ''
-}
-
-document.getElementById('hideMeLinksd').onclick = function () { // скрытие окна доступов
-    if (document.getElementById('AF_Linksd').style.display == '')
-        document.getElementById('AF_Linksd').style.display = 'none'
 }
 
 // обработка нажатий на странице доступов
