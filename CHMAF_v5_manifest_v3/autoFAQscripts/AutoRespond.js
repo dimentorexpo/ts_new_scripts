@@ -3,7 +3,7 @@ var win_FrozeChat =  // описание формы чтобы не давала
         <span style="width: 410px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 395px;" id="froze_chat_header">
-                                <button class="mainButton" title="скрывает меню" id="hidefrozechat" style="width:50px; background: #228B22;">hide</button>
+                                <button class="mainButton buttonHide" title="скрывает меню" id="hidefrozechat">hide</button>
 								<button class="mainButton" id="clearallchathash">🧹</button>
 								<button class="mainButton" id="arinfo" style="float:right" title="При добавлении хеша чата и выборе времени, по умолчанию 6 минут, по истечению которого в этот чат автоматически будет отправлен ответ по умолчанию Извините, что заставляю вас ждать, но мне нужно еще несколько минут 🙏">❓</button>
                         </div>
@@ -20,50 +20,13 @@ var win_FrozeChat =  // описание формы чтобы не давала
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopFrozeChat') == null) { //начальное положение окна автоответа через время
-    localStorage.setItem('winTopFrozeChat', '120');
-    localStorage.setItem('winLeftFrozeChat', '295');
-}
-
-let wintFrozeChat = document.createElement('div'); // создание окна для заморозки чата
-document.body.append(wintFrozeChat);
-wintFrozeChat.style = 'min-height: 25px; width: 410px; background: #464451; top: ' + localStorage.getItem('winTopFrozeChat') + 'px; left: ' + localStorage.getItem('winLeftFrozeChat') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintFrozeChat.style.display = 'none';
-wintFrozeChat.setAttribute('id', 'AF_FrozeChat');
-wintFrozeChat.innerHTML = win_FrozeChat;
-
-wintFrozeChat.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintFrozeChat.offsetLeft;
-        let elemTop = wintFrozeChat.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintFrozeChat.style.left = (elemLeft + deltaX) + "px";
-            wintFrozeChat.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopFrozeChat', String(elemTop + deltaY));
-            localStorage.setItem('winLeftFrozeChat', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
+const wintFrozeChat = createWindow('AF_FrozeChat', 'winTopFrozeChat', 'winLeftFrozeChat', win_FrozeChat);
+hideWindowOnDoubleClick('AF_FrozeChat');
+hideWindowOnClick('AF_FrozeChat', 'hidefrozechat');
 
 
-document.getElementById('butFrozeChat').onclick = function () {
-    let uniqarr = []; //уникальный массив. чтобы не было задвоение одного и того же хеша
+function getbutFrozeChatButtonPress() {
+	   let uniqarr = []; //уникальный массив. чтобы не было задвоение одного и того же хеша
     let chathasharr = []; // исходный массив, куда  заносятя все хеши чатов
     let sessid = []; //массив сессий для каждого хеша чата
     let flagtimer = []; // флаг для проверки есть ли на чате таймаут, который выполнит функцию по истечении времени

@@ -242,7 +242,6 @@ const wintGrabber= createWindow('AF_Grabber', 'winTopGrabber', 'winTopGrabber', 
 hideWindowOnDoubleClick('AF_Grabber');
 hideWindowOnClick('AF_Grabber', 'hideMeGrabber');
 
-
 document.getElementById('HideToolsPanel').onclick = function () {
     if (document.getElementById('AgregatedDataThemes').style.display == '') {
         document.getElementById('AgregatedDataThemes').style.display = 'none'

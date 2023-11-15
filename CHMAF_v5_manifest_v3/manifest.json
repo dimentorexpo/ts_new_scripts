@@ -25,6 +25,7 @@
 	  "js": [ "/Extras/chart.js",
 			  "/Extras/jquery-3.7.1.js",
 			  "/Extras/moment.js",
+			  "/autoFAQscripts/AutoRespond.js",
 			  "/autoFAQscripts/Addstat.js",
 			  "/autoFAQscripts/AFOperatorStatus.js",
 			  "/autoFAQscripts/AlarmClock.js",

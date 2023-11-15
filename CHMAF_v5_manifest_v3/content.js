@@ -114,6 +114,7 @@ var win_mainmenu = // описание кнопок меню
         <div id="otkaz" class="onlyfortp">❌Отказ от помощи</div>
         <div id="smartroomform" class="onlyfortp">🦐Smartroom</div>
         <div id="butLessonInfo">🎓 Lesson Info</div>
+		<div id="butFrozeChat">❄ Auto Respond</div>
         <div id="radioPlayer">📻 Radio</div>
         <div id="buttonGetStat">📊 Статистика</div>
     </div>`;
@@ -606,6 +607,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     document.getElementById('butLessonInfo').onclick = getbutLessonInfoButtonPress;
     document.getElementById('radioPlayer').onclick = getradioPlayerButtonPress;
     document.getElementById('buttonGetStat').onclick = getbuttonGetStatButtonPress;
+    document.getElementById('butFrozeChat').onclick = getbutFrozeChatButtonPress;
 
     let openchhis = document.createElement('button')
     openchhis.innerHTML = '☢'

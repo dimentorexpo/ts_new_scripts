@@ -24,47 +24,9 @@ var win_Marks =  // описание элементов окна оценок о
     </span>
 </div>`;
 
-if (localStorage.getItem('winTopMarks') == null) { //начальное положение окна оценко
-    localStorage.setItem('winTopMarks', '120');
-    localStorage.setItem('winLeftMarks', '295');
-}
-
-let wintMarks = document.createElement('div'); // создание окна поиска оценок от пользователя
-document.body.append(wintMarks);
-wintMarks.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopMarks') + 'px; left: ' + localStorage.getItem('winLeftMarks') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintMarks.style.display = 'none';
-wintMarks.setAttribute('id', 'AF_Marks');
-wintMarks.innerHTML = win_Marks;
-
-wintMarks.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintMarks.offsetLeft;
-        let elemTop = wintMarks.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintMarks.style.left = (elemLeft + deltaX) + "px";
-            wintMarks.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopMarks', String(elemTop + deltaY));
-            localStorage.setItem('winLeftMarks', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна поиска оценок от пользователя
+const wintMarks= createWindow('AF_Marks', 'winTopMarks', 'winLeftMarks', win_Marks);
+hideWindowOnDoubleClick('AF_Marks');
+hideWindowOnClick('AF_Marks', 'hideMeMarks');
 
 function getDate() {
 
@@ -109,15 +71,6 @@ function getDate() {
         document.getElementById('dateToMarks').value = getyearLS + "-" + getcurmonthLS.toString().padStart(2, '0') + "-" + todayLS.toString().padStart(2, '0');
     }
 
-}
-
-document.getElementById('AF_Marks').ondblclick = function (a) { // скрытие окна оценок от пользователя по двойному клику
-    if (checkelementtype(a)) { document.getElementById('AF_Marks').style.display = 'none'; }
-}
-
-document.getElementById('hideMeMarks').onclick = function () { // скрытие окна поиска оценок от пользователя
-    if (document.getElementById('AF_Marks').style.display == '')
-        document.getElementById('AF_Marks').style.display = 'none'
 }
 
 document.getElementById('marksinstr').onclick = function () {
