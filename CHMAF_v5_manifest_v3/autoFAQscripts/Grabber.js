@@ -238,60 +238,10 @@ var win_Grabber =  // описание элементов окна Grabber
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopGrabber') == null) { // началоное положение окна статистики (если не задано ранее)
-    localStorage.setItem('winTopGrabber', '120');
-    localStorage.setItem('winLeftGrabber', '295');
-}
+const wintGrabber= createWindow('AF_Grabber', 'winTopGrabber', 'winTopGrabber', win_Grabber);
+hideWindowOnDoubleClick('AF_Grabber');
+hideWindowOnClick('AF_Grabber', 'hideMeGrabber');
 
-let wintGrabber = document.createElement('div'); // создание окна работы со Grabber
-document.body.append(wintGrabber);
-wintGrabber.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopGrabber') + 'px; left: ' + localStorage.getItem('winLeftGrabber') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintGrabber.style.display = 'none';
-wintGrabber.setAttribute('id', 'AF_Grabber');
-wintGrabber.innerHTML = win_Grabber;
-
-wintGrabber.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintGrabber.offsetLeft;
-        let elemTop = wintGrabber.offsetTop;
-
-        function onMouseMove(event) {
-            if (!(event.buttons & 1)) {
-                onMouseUp();
-                return;
-            }
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintGrabber.style.left = (elemLeft + deltaX) + "px";
-            wintGrabber.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopGrabber', String(elemTop + deltaY));
-            localStorage.setItem('winLeftGrabber', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна работы с Grabber
-
-// document.getElementById('AF_Grabber').ondblclick = function (a) { // скрытие окна работы со Grabber
-// if (checkelementtype(a)) { document.getElementById('AF_Grabber').style.display = 'none'; }
-// }
-
-document.getElementById('hideMeGrabber').onclick = function () { // скрытие окна работы со Grabber
-    if (document.getElementById('AF_Grabber').style.display == '')
-        document.getElementById('AF_Grabber').style.display = 'none'
-}
 
 document.getElementById('HideToolsPanel').onclick = function () {
     if (document.getElementById('AgregatedDataThemes').style.display == '') {
