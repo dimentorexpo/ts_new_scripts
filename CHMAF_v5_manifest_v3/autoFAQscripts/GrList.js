@@ -12,63 +12,15 @@ var win_GrList =  // описание элементов окна Списка �
 				</span>
 						<div id="grlstdiv">
 							 <br>
-							 <p id="grlistinfo" style="margin-left: 5px; color:bisque;"></span>
+							 <p id="grlistinfo" style="margin-left: 5px; color:bisque;  max-height: 600px; overflow-y: auto;"></span>
 							 <br>
 						</div>
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopGrList') == null) {  // начальное положение окна списка группы
-    localStorage.setItem('winTopGrList', '120');
-    localStorage.setItem('winLeftGrList', '295');
-}
-
-let wintGrList = document.createElement('div'); // создание окна Список группы
-document.body.append(wintGrList);
-wintGrList.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopGrList') + 'px; left: ' + localStorage.getItem('winLeftGrList') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintGrList.style.display = 'none';
-wintGrList.setAttribute('id', 'AF_GrList');
-wintGrList.innerHTML = win_GrList;
-
-wintGrList.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintGrList.offsetLeft;
-        let elemTop = wintGrList.offsetTop;
-
-        function onMouseMove(event) {
-            if (!(event.buttons & 1)) {
-                onMouseUp();
-                return;
-            }
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintGrList.style.left = (elemLeft + deltaX) + "px";
-            wintGrList.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopTaskCreate', String(elemTop + deltaY));
-            localStorage.setItem('winLeftTaskCreate', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-
-
-document.getElementById('AF_GrList').ondblclick = function (a) { // скрытие окна Список группы по двойному клику
-    if (checkelementtype(a)) { document.getElementById('AF_GrList').style.display = 'none'; }
-}
-
-
+const wintGrList= createWindow('AF_GrList', 'winTopGrList', 'winTopGrList', win_GrList);
+hideWindowOnDoubleClick('AF_GrList');
+hideWindowOnClick('AF_GrList', 'hideList');
 
 function getGrListDataButtonPress() {
     if (document.getElementById('AF_GrList').style.display == '') {
