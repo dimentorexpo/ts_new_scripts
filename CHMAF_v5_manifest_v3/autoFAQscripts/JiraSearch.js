@@ -44,53 +44,10 @@ var win_Jira =  // описание элементов окна Поиска п�
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopJira') == null) { // началоное положение окна поиска по Jira (если не задано ранее)
-    localStorage.setItem('winTopJira', '120');
-    localStorage.setItem('winLeftJira', '295');
-}
 
-let wintJira = document.createElement('div'); // создание окна поиска по Jira
-document.body.append(wintJira);
-wintJira.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopJira') + 'px; left: ' + localStorage.getItem('winLeftJira') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintJira.style.display = 'none';
-wintJira.setAttribute('id', 'AF_Jira');
-wintJira.innerHTML = win_Jira;
-
-// начало изменения позиции окна поиска по Jira
-wintJira.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintJira.offsetLeft;
-        let elemTop = wintJira.offsetTop;
-
-        function onMouseMove(event) {
-            if (!(event.buttons & 1)) {
-                onMouseUp();
-                return;
-            }
-
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintJira.style.left = (elemLeft + deltaX) + "px";
-            wintJira.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopJira', String(elemTop + deltaY));
-            localStorage.setItem('winLeftJira', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна поиска по Jira
+const wintJira = createWindow('AF_Jira', 'winTopJira', 'winLeftJira', win_Jira);
+hideWindowOnDoubleClick('AF_Jira');
+hideWindowOnClick('AF_Jira', 'hideMej');
 
 const JQLTemplates = { // шаблоны JQL запросов
     defqueryitem: 'issuetype in (Bug, Task) AND status != closed AND Reports > 0 AND text ~ "${testJira.value}" ORDER BY updated',
