@@ -1,8 +1,6 @@
 async function init_settings() {
     const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
 
-
-
     // Присваиваем данные константам
     const TS_addr = data.TS_addr;
     const KC_addr = data.KC_addr;
@@ -93,47 +91,9 @@ async function init_settings() {
         </span>
 </span>`;
 
-    if (localStorage.getItem('winTopSettings') == null) { // началоное положение окна ссылок (если не задано ранее)
-        localStorage.setItem('winTopSettings', '120');
-        localStorage.setItem('winLeftSettings', '295');
-    }
-
-    let wintSettings = document.createElement('div'); // создание окна ссылок
-    document.body.append(wintSettings);
-    wintSettings.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopSettings') + 'px; left: ' + localStorage.getItem('winLeftSettings') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-    wintSettings.style.display = 'none';
-    wintSettings.setAttribute('id', 'AF_Settings');
-    wintSettings.innerHTML = win_Settings;
-
-    wintSettings.onmousedown = function (event) {
-        if (checkelementtype(event)) {
-            let startX = event.clientX;
-            let startY = event.clientY;
-            let elemLeft = wintSettings.offsetLeft;
-            let elemTop = wintSettings.offsetTop;
-
-            function onMouseMove(event) {
-                let deltaX = event.clientX - startX;
-                let deltaY = event.clientY - startY;
-
-                wintSettings.style.left = (elemLeft + deltaX) + "px";
-                wintSettings.style.top = (elemTop + deltaY) + "px";
-
-                localStorage.setItem('winTopSettings', String(elemTop + deltaY));
-                localStorage.setItem('winLeftSettings', String(elemLeft + deltaX));
-            }
-
-            document.addEventListener('mousemove', onMouseMove);
-
-            function onMouseUp() {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            }
-
-            document.addEventListener('mouseup', onMouseUp);
-        }
-    };
-    // прекращение изменения позиции окна ссылок
+const wintStataAF  = createWindow('AF_Settings', 'winTopSettings', 'winLeftSettings', win_Settings);
+hideWindowOnDoubleClick('AF_Settings');
+hideWindowOnClick('AF_Settings', 'hideMeSettings');
 
     function ShowMustGoOn() { //функция вносит в локалсторедж адрес скрипта с гугл таблиц шаблонов для КЦ
         localStorage.setItem('scriptAdr', KC_addr)
@@ -611,10 +571,6 @@ async function init_settings() {
                 }
             }
         }
-    }
-
-    document.getElementById('hideMeSettings').onclick = function () {
-        document.getElementById('AF_Settings').style.display = 'none'
     }
 
     // конец блока настроек
