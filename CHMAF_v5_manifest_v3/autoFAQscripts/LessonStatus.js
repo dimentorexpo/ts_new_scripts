@@ -24,47 +24,9 @@ var win_LessonStatus =  // описание элементов окна стат
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopLessonStatus') == null) { // начальное положение окна проверки статуса урока удален перенесен и кем
-    localStorage.setItem('winTopLessonStatus', '120');
-    localStorage.setItem('winLeftLessonStatus', '295');
-}
-
-let wintLessonStatus = document.createElement('div'); // создание окна статус урока
-document.body.append(wintLessonStatus);
-wintLessonStatus.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopLessonStatus') + 'px; left: ' + localStorage.getItem('winLeftLessonStatus') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintLessonStatus.style.display = 'none';
-wintLessonStatus.setAttribute('id', 'AF_LessonStatus');
-wintLessonStatus.innerHTML = win_LessonStatus;
-
-wintLessonStatus.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintLessonStatus.offsetLeft;
-        let elemTop = wintLessonStatus.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintLessonStatus.style.left = (elemLeft + deltaX) + "px";
-            wintLessonStatus.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopLessonStatus', String(elemTop + deltaY));
-            localStorage.setItem('winLeftLessonStatus', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна
+const wintLessonStatus  = createWindow('AF_LessonStatus', 'winTopLessonStatus', 'winLeftLessonStatus', win_LessonStatus);
+hideWindowOnDoubleClick('AF_LessonStatus');
+hideWindowOnClick('AF_LessonStatus', 'hideMeLessonStatus');
 
 document.getElementById('hideMeLessonStatus').onclick = function () { // скрытие окна статус урока
     if (document.getElementById('AF_LessonStatus').style.display == '') {
