@@ -98,10 +98,6 @@ var win_smartroomform =  // описание элементов окна Мул�
 const wintSmartroom = createWindow('AF_Smartroomform', 'winTopSmartroom', 'winLeftSmartroom', win_smartroomform);
 hideWindowOnDoubleClick('AF_Smartroomform');
 
-document.getElementById('AF_Smartroomform').ondblclick = function (a) { // скрытие окна Мультирум пожелания/баги от помощи по двойному клику
-    if (checkelementtype(a)) { document.getElementById('AF_Smartroomform').style.display = 'none'; }
-}
-
 function getsmartroomformButtonPress() {
     if (document.getElementById('AF_Smartroomform').style.display == '') {
         document.getElementById('AF_Smartroomform').style.display = 'none'
