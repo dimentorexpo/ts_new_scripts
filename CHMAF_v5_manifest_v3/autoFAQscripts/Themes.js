@@ -38,6 +38,9 @@ var win_Themes =  // описание элементов окна Тематик
         </span>
 </div>`;
 
+const wintThemes  = createWindow('AF_Themes', 'winTopThemes', 'winLeftThemes', win_Themes);
+hideWindowOnDoubleClick('AF_Themes');
+
 async function startThemes() {
 
     // модуль проверки адреса загрузки тематик
@@ -69,48 +72,6 @@ async function startThemes() {
 }
 
 startThemes()
-
-if (localStorage.getItem('winTopThemes') == null) { // начальное положение окна Themes
-    localStorage.setItem('winTopThemes', '120');
-    localStorage.setItem('winLeftThemes', '295');
-}
-
-let wintThemes = document.createElement('div'); // создание окна ServiceDesk
-document.body.append(wintThemes);
-wintThemes.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopThemes') + 'px; left: ' + localStorage.getItem('winLeftThemes') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintThemes.style.display = 'none';
-wintThemes.setAttribute('id', 'AF_Themes');
-wintThemes.innerHTML = win_Themes;
-
-wintThemes.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintThemes.offsetLeft;
-        let elemTop = wintThemes.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintThemes.style.left = (elemLeft + deltaX) + "px";
-            wintThemes.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopThemes', String(elemTop + deltaY));
-            localStorage.setItem('winLeftThemes', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна Тематик
 
 document.getElementById('AF_Themes').ondblclick = function (a) { // скрытие окна Тематик и тегов по двойному клику
     if (checkelementtype(a)) { document.getElementById('hideMeThemes').click(); }
