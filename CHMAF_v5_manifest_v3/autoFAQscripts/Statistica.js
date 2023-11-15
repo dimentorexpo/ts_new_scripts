@@ -34,46 +34,9 @@ var win_StatisticaAF =  // описание формы чтобы не дава�
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopStataAF') == null) { //начальное положение окна автоответа через время
-    localStorage.setItem('winTopStataAF', '120');
-    localStorage.setItem('winLeftStataAF', '295');
-}
-
-let wintStataAF = document.createElement('div'); // создание окна для заморозки чата
-document.body.append(wintStataAF);
-wintStataAF.style = 'min-height: 25px; width: 750px; background: #464451; top: ' + localStorage.getItem('winTopStataAF') + 'px; left: ' + localStorage.getItem('winLeftStataAF') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintStataAF.style.display = 'none';
-wintStataAF.setAttribute('id', 'AF_StataAF');
-wintStataAF.innerHTML = win_StatisticaAF;
-
-wintStataAF.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintStataAF.offsetLeft;
-        let elemTop = wintStataAF.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintStataAF.style.left = (elemLeft + deltaX) + "px";
-            wintStataAF.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopStataAF', String(elemTop + deltaY));
-            localStorage.setItem('winLeftStataAF', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
+const wintStataAF  = createWindow('AF_StataAF', 'winTopStataAF', 'winLeftStataAF', win_StatisticaAF);
+hideWindowOnDoubleClick('AF_StataAF');
+hideWindowOnClick('AF_StataAF', 'hidestatisticaaf');
 
 function calculateAverageResponseTime(data) {
     let responseTimeSum = 0;
@@ -182,10 +145,6 @@ function getbuttonGetStatButtonPress() {
 
         getStats()
     }
-}
-
-document.getElementById('hidestatisticaaf').onclick = function () { // кнопка скрытия окна статистики
-    document.getElementById('AF_StataAF').style.display = 'none'
 }
 
 document.getElementById('clearstatawindow').onclick = function () { // кнопка очистки окошек

@@ -82,50 +82,7 @@ var win_taskform = //описание формы создания задач в 
 var NoteFlag = 0; // флаг отправлять заметку или нет
 var NoteText = ''; // какой текст отправим в заметку
 
-if (localStorage.getItem('winTopTaskCreate') == null) { //начальное положение окна Создания задач на СРМ
-    localStorage.setItem('winTopTaskCreate', '295');
-    localStorage.setItem('winLeftTaskCreate', '295');
-}
-
-let wintCreateTask = document.createElement('div'); // создание окна создания задачи через интеграцию в АФ
-document.body.append(wintCreateTask);
-wintCreateTask.style = 'min-height: 25px; width: 420px; background: #464451; top: ' + localStorage.getItem('winTopTaskCreate') + 'px; left: ' + localStorage.getItem('winLeftTaskCreate') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintCreateTask.style.display = 'none';
-wintCreateTask.setAttribute('id', 'AF_Createtask');
-wintCreateTask.innerHTML = win_taskform;
-
-wintCreateTask.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintCreateTask.offsetLeft;
-        let elemTop = wintCreateTask.offsetTop;
-
-        function onMouseMove(event) {
-            if (!(event.buttons & 1)) {
-                onMouseUp();
-                return;
-            }
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintCreateTask.style.left = (elemLeft + deltaX) + "px";
-            wintCreateTask.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopTaskCreate', String(elemTop + deltaY));
-            localStorage.setItem('winLeftTaskCreate', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
+const wintCreateTask   = createWindow('AF_Createtask', 'winTopTaskCreate', 'winLeftTaskCreate', win_taskform);
 
 document.getElementById('AF_Createtask').ondblclick = function (a) { // скрытие окна создания задачи в CRM2 по двойному клику
     if (checkelementtype(a)) { document.getElementById('hideMeCreateForm').click(); }
