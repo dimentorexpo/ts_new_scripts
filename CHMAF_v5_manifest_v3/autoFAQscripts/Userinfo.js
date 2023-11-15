@@ -98,88 +98,9 @@ var win_Timetable = // описание элементов окна предст
 </span>
 </div>`;
 
-if (localStorage.getItem('winTopService') == null) { // началоное положение окна информации об  услугах
-    localStorage.setItem('winTopService', '120');
-    localStorage.setItem('winLeftService', '295');
-}
+const wintServices  = createWindow('AF_Service', 'winTopService', 'winLeftService', win_serviceinfo);
 
-if (localStorage.getItem('winTopTimetable') == null) { // начальное положение окна проверки прошедшего расписания и предстоящих уроков
-    localStorage.setItem('winTopTimetable', '120');
-    localStorage.setItem('winLeftTimetable', '295');
-}
-
-let wintServices = document.createElement('div'); // создание окна вензель user info
-document.body.append(wintServices);
-wintServices.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopService') + 'px; left: ' + localStorage.getItem('winLeftService') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintServices.style.display = 'none';
-wintServices.setAttribute('id', 'AF_Service');
-wintServices.innerHTML = win_serviceinfo;
-
-wintServices.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintServices.offsetLeft;
-        let elemTop = wintServices.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintServices.style.left = (elemLeft + deltaX) + "px";
-            wintServices.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopService', String(elemTop + deltaY));
-            localStorage.setItem('winLeftService', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-
-let wintTimetable = document.createElement('div'); // создание окна предстоящих и прошедших занятиях
-document.body.append(wintTimetable);
-wintTimetable.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopTimetable') + 'px; left: ' + localStorage.getItem('winLeftTimetable') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintTimetable.style.display = 'none';
-wintTimetable.setAttribute('id', 'AF_Timetable');
-wintTimetable.innerHTML = win_Timetable;
-
-wintTimetable.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintTimetable.offsetLeft;
-        let elemTop = wintTimetable.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintTimetable.style.left = (elemLeft + deltaX) + "px";
-            wintTimetable.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopTimetable', String(elemTop + deltaY));
-            localStorage.setItem('winLeftTimetable', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-
+const wintTimetable  = createWindow('AF_Timetable', 'winTopTimetable', 'winLeftTimetable', win_Timetable);
 
 document.getElementById('servicehead').ondblclick = function (a) { // скрытие окна вензель user info по двойному клику
     if (checkelementtype(a)) {
