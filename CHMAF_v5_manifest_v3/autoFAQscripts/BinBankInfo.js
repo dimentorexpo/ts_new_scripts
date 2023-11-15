@@ -3,7 +3,7 @@ var win_BankInfo =  // описание элементов окна Списка
         <span style="width: 450px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 400;" id="grlistdata">
-                                <button class="mainButton" id="hideMeGrList" style="width:50px; background: #228B22;">hide</button>
+                                <button class="mainButton buttonHide" id="hideMeGrList">hide</button>
                         </div>
 						<div>
                         <input oninput="onlyNumbers(this)" required id="carddigits" placeholder="6 первых цифр карты" title="Введите 6 первых цифр карты" autocomplete="off" type="text" style="text-align: center; width: 160px; color: black;margin-left:5px; position:relative; left:20%;">

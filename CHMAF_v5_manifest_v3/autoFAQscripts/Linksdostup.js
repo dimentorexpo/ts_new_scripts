@@ -3,7 +3,7 @@ var win_linksd =  // описание элементов окна доступо
         <span style="width: 414px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 409px;" id="linksd_1str">
-                            <button class="mainButton" title="скрывает меню" id="hideMeLinksd" style="width:50px; background: #228B22;">hide</button>
+                            <button class="mainButton buttonHide" title="скрывает меню" id="hideMeLinksd">hide</button>
                         </div>
                         <div style="margin: 5px; margin-top: 0px; width: 409px" id="linksd_kib_box">
                             <p style="margin-left: 42%; margin-bottom: 0px; margin-top: 0px; color: #F6358A; font-size: 16px">Redash</p>

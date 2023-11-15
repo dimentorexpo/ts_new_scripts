@@ -12,6 +12,17 @@
 	.mainButton:active {
 		background: #231d4b;
 	}
+	.extwindows {
+		min-height: 25px; 
+		min-width: 65px; 
+		background: #464451; 
+		font-size: 14px; 
+		z-index: 10000; 
+		position: fixed; 
+		border: 1px solid rgb(56, 56, 56); 
+		color: black;
+		box-shadow: 0px 0px 10px #000;
+	}
 	.activebtn {
 		background-color: #1e90ff;
 	}
@@ -470,7 +481,7 @@
 		width:50px;
 	}
 	.buttonHide:hover {
-		background: #0d3f0d;
+		background: #0d3f0d!important;
 	}
 	.msgtype {
 		border-left: 8px solid #4ce479;

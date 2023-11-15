@@ -4,7 +4,7 @@ var win_Radio =  // описание элементов окна радио
     <span style="width: 625px">
         <span style="cursor: -webkit-grab;">
             <div style="margin: 5px; width: 625;" id="links_1str">
-                <button class="mainButton" title="Скрытие меню" id="hideMeRadio" style="width:50px; background: #228B22;">hide</button>
+                <button class="mainButton buttonHide" title="Скрытие меню" id="hideMeRadio">hide</button>
                 <button class="mainButton" class="rotateDisc" style="margin-left:30%">📀</button>
                 <span style="color:bisque">Play'O'Neer</span>
                 <button class="mainButton" class="rotateDisc">📀</button>

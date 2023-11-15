@@ -1047,12 +1047,10 @@ function refreshTemplates() { // функция обновляет шаблон�
                         if (newBut.textContent == 'Урок NS') {
                             newBut.id = "NS";
                         }
-                        if (newBut.textContent == 'ус+брауз (У)' || newBut.textContent == 'ус+брауз (П)') {
-                            newBut.textContent = "ус+брауз";
-                        }
-                        if (newBut.textContent == 'ус+брауз (П)') {
-                            continue;
-                        }
+                        if (newBut.textContent == 'ус+брауз (У)')
+                            newBut.textContent = "ус+брауз"
+                        if (newBut.textContent == 'ус+брауз (П)')
+                            continue
                         newBut.addEventListener('click', function (event) {
                             buttonsFromDoc(event.target.textContent);
                         });

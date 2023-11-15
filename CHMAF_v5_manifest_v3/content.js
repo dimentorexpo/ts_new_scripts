@@ -72,7 +72,7 @@ var win_AFhelper =  // описание элементов главного ок
 			<span style="cursor: -webkit-grab;">
 				<div style="margin: 5px;" id="1str">
 					<button class="mainButton" id="languageAF" title="Переключает язык Русский/Английский" style="width:100px">Русский</button>
-					<button class="mainButton" id="hideMenuMain" title="Скрывает расширение и др открытых окон" style="margin-left:18px;" class="buttonHide">hide</button>
+					<button class="mainButton buttonHide" id="hideMenuMain" title="Скрывает расширение и др открытых окон" style="margin-left:18px;">hide</button>
 					<button class="mainButton" id="setting" title="Открывает настройки расширения и включения/отключения будильника" style="width:23px; float: right; margin-right: 5px">⚙</button>
 					<button class="mainButton" id="links" title="Открывает доп.меню со ссылками и функциями" style="width:16px; float: right; margin-right: 5px">L</button>
 					<button id="addsrc" class="mainButton onlyfortp" title="Открывает доп меню для работы с сервисами школы, требующими запрос на выдачу доступа" style="width:16px; float: right; margin-right: 5px">*</button>
@@ -133,8 +133,75 @@ Object.keys(localStorage).forEach(function (key) { // чистка localstorage 
 
 localStorage.setItem('SMART_TABLE_SORTED_INFO(/tickets/archive)', '{\"columnKey\":\"ts\",\"order\":\"descend\"}')
 
-function setDisplayStyle(element, value) {
+function setDisplayStyle(element, value) { // функция изменения отображения
     element.style.display = value;
+}
+
+function createWindow(id, topKey, leftKey, content) { // Функция для создания окна и настройки стилей
+    const windowElement = document.createElement('div');
+    document.body.append(windowElement);
+
+    const storedTop = localStorage.getItem(topKey) || '120';
+    const storedLeft = localStorage.getItem(leftKey) || '295';
+
+    windowElement.classList.add('extwindows');
+    windowElement.style = `top: ${storedTop}px; left: ${storedLeft}px;`;
+    windowElement.style.display = 'none';
+    windowElement.setAttribute('id', id);
+    windowElement.innerHTML = content;
+
+    windowElement.onmousedown = function (event) {
+        if (checkelementtype(event)) {
+            let startX = event.clientX;
+            let startY = event.clientY;
+            let elemLeft = windowElement.offsetLeft;
+            let elemTop = windowElement.offsetTop;
+
+            function onMouseMove(event) {
+                if (!(event.buttons & 1)) {
+                    onMouseUp();
+                    return;
+                }
+                let deltaX = event.clientX - startX;
+                let deltaY = event.clientY - startY;
+
+                windowElement.style.left = `${elemLeft + deltaX}px`;
+                windowElement.style.top = `${elemTop + deltaY}px`;
+
+                localStorage.setItem(topKey, String(elemTop + deltaY));
+                localStorage.setItem(leftKey, String(elemLeft + deltaX));
+            }
+
+            document.addEventListener('mousemove', onMouseMove);
+
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+
+            document.addEventListener('mouseup', onMouseUp);
+        }
+    };
+
+    return windowElement;
+}
+
+function hideWindowOnDoubleClick(id) { // Функция для скрытия окна по двойному клику
+    const windowElement = document.getElementById(id);
+    windowElement.ondblclick = function (a) {
+        if (checkelementtype(a)) {
+            setDisplayStyle(windowElement, 'none');
+        }
+    };
+}
+
+function hideWindowOnClick(windowId, buttonId) { // Функция для скрытия окна по клику на кнопку
+    const windowElement = document.getElementById(windowId);
+    const buttonElement = document.getElementById(buttonId);
+
+    buttonElement.onclick = function () {
+        setDisplayStyle(windowElement, 'none');
+    };
 }
 
 // Блок горячих клавиш
@@ -604,54 +671,12 @@ function changeNewUIStyle() {
 	}
 }
 
-if (localStorage.getItem('winTopAF') == null) { // началоное положение главного окна (если не задано ранее)
-    localStorage.setItem('winTopAF', '120');
-    localStorage.setItem('winLeftAF', '295');
-}
-
 //Подключаем скрипт App Script с гугл таблиц, где содержаться шщаблоны, которыми пользуемся
 if (localStorage.getItem('scriptAdr') == null) {
     localStorage.setItem('scriptAdr', 'https://script.google.com/macros/s/AKfycbzsf72GllYQdCGg-L4Jw1qx9iv9Vz3eyiQ9QO81HEnlr0K2DKqy6zvi7IYu77GB6EMU/exec');
 }
 
-let wintAF = document.createElement('div'); // создание главного окна
-document.body.append(wintAF);
-wintAF.style = 'display: none; min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopAF') + 'px; left: ' + localStorage.getItem('winLeftAF') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black; box-shadow: 0px 0px 10px #000';
-wintAF.setAttribute('id', 'AF_helper');
-wintAF.innerHTML = win_AFhelper;
-
-wintAF.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintAF.offsetLeft;
-        let elemTop = wintAF.offsetTop;
-
-        function onMouseMove(event) {
-		  if (!(event.buttons & 1)) {
-			onMouseUp();
-			return;
-		  }
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintAF.style.left = (elemLeft + deltaX) + "px";
-            wintAF.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopAF', String(elemTop + deltaY));
-            localStorage.setItem('winLeftAF', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-}; // прекращение изменения позиции главного окна
+const wintAF = createWindow('AF_helper', 'winTopAF', 'winLeftAF', win_AFhelper);
 
 let maskBack = document.createElement('button') // кнопка вернуть
 maskBack.id = "maskBack"

@@ -3,7 +3,7 @@ var win_Stat =  // описание элементов окна Статисти
         <span style="width: 550px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 550;" id="statdata">
-                                <button class="mainButton" id="hideMeStat" style="width:50px; background: #228B22;">hide</button>
+                                <button class="mainButton buttonHide" id="hideMeStat">hide</button>
                         </div>
                         <div style="margin: 5px; width: 550px" id="statbox">
 								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <input type="date" style="color:black; margin-left:20px;  width:125px;" name="StartData" id="dateFrom"></span>
@@ -159,56 +159,9 @@ var win_Stat =  // описание элементов окна Статисти
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopStat') == null) { // началоное положение окна статистики (если не задано ранее)
-    localStorage.setItem('winTopStat', '120');
-    localStorage.setItem('winLeftStat', '295');
-}
-
-let wintStat = document.createElement('div'); // создание окна работы со статистикой
-document.body.append(wintStat);
-wintStat.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopStat') + 'px; left: ' + localStorage.getItem('winLeftStat') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintStat.style.display = 'none';
-wintStat.setAttribute('id', 'AF_Stat');
-wintStat.innerHTML = win_Stat;
-
-wintStat.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintStat.offsetLeft;
-        let elemTop = wintStat.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintStat.style.left = (elemLeft + deltaX) + "px";
-            wintStat.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopStat', String(elemTop + deltaY));
-            localStorage.setItem('winLeftStat', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна работы со статистикой
-
-document.getElementById('AF_Stat').ondblclick = function (a) { // скрытие окна работы со статистикой
-    if (checkelementtype(a)) { document.getElementById('AF_Stat').style.display = 'none'; }
-}
-
-document.getElementById('hideMeStat').onclick = function () { // скрытие окна работы со статистикой
-    if (document.getElementById('AF_Stat').style.display == '')
-        document.getElementById('AF_Stat').style.display = 'none'
-}
+const wintStat = createWindow('AF_Stat', 'winTopStat', 'winLeftStat', win_Stat);
+hideWindowOnDoubleClick('AF_Stat');
+hideWindowOnClick('AF_Stat', 'hideMeStat');
 
 //Функция очищения выведенной информации после поиска
 document.getElementById('clearall').onclick = function () {

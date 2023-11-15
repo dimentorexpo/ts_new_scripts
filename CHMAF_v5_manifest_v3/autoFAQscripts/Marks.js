@@ -3,7 +3,7 @@ var win_Marks =  // описание элементов окна оценок о
     <span style="width: 320px">
             <span style="cursor: -webkit-grab;">
                     <div style="margin: 5px; width: 320px;" id="marks_header">
-                            <button class="mainButton" title="скрывает меню" id="hideMeMarks" style="width:50px; background: #228B22;">hide</button>
+                            <button class="mainButton buttonHide" title="скрывает меню" id="hideMeMarks">hide</button>
                             <button class="mainButton" id="marksinstr" style="float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
                     </div>
                     <div>

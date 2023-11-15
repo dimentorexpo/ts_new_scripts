@@ -3,7 +3,7 @@ var win_refusefrom =  // описание элементов окна отказ
         <span style="width: 414px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 410px;" id="refuse_form_header">
-                            <button class="mainButton" title="скрывает меню" id="hideMeRefuseFormv2" style="width:50px; background: #228B22;">hide</button>
+                            <button class="mainButton buttonHide" title="скрывает меню" id="hideMeRefuseFormv2">hide</button>
                             <button class="mainButton" title="По нажатию обновляет хеш чата в соответствующем поле, на случай, если при открытии формы вы открыли не тот чат, в котором обратился пользователь" id="refreshhashrefuseform" style="width:24px;">♻</button>
                             <button class="mainButton" title="По нажатию обновляет перечень опций в разделе Проблема и Как решилось" id="refreshoptions" style="width:24px;">🔄</button>
                             <button class="mainButton" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearrefuseform" style="width:24px;">🧹</button>

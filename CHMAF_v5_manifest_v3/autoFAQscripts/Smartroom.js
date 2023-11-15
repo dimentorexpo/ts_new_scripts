@@ -3,7 +3,7 @@ var win_smartroomform =  // описание элементов окна Мул�
         <span style="width: 414px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 410px;" id="smartroomsug_form_header">
-                            <button class="mainButton" title="скрывает меню" id="hideMeSmartRoomForm" style="width:50px; background: #228B22;">hide</button>
+                            <button class="mainButton buttonHide" title="скрывает меню" id="hideMeSmartRoomForm">hide</button>
                             <button class="mainButton" title="По нажатию обновляет хеш чата в соответствующем поле, на случай, если при открытии формы вы открыли не тот чат, в котором обратился пользователь" id="refreshhashsmartform" style="width:24px;">♻</button>
                             <button class="mainButton" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearsmartroomform" style="width:24px;">🧹</button>
 							<button class="mainButton" title="Инструкция по этой форме" id="smartroomforminstr" style="float:right">❓</button>

@@ -14,14 +14,14 @@ var win_Grabber =  // описание элементов окна Grabber
         <span style="width: 800px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 800px; display:flex; justify-content:space-evenly;" id="grabdata">
-                                <button class="mainButton" id="hideMeGrabber" class="buttonHide">hide</button>
+                                <button class="mainButton buttonHide" id="hideMeGrabber">hide</button>
                                 <button class="mainButton" id="GatherStatByThemes" disabled>🧮</button>
 								<div style="width:450px;background: #5f7875;height: 21px;"><div id="progressBarGrabber" style="width: 0%; height: 20px; background-color: #e38118; border: 1px solid black; text-align:center; font-weight:700; color:white;"></div></div>
                         </div>
 
 						<div id="AgregatedDataThemes" style="display:none; width:400px; min-height:100px; max-height:800px; background: rgb(70, 68, 81); position:absolute; top:-1px; left:-400px; overflow-y:auto">
 							<div id="ToolsPanel" style="padding:5px;">
-								<button class="mainButton" id="HideToolsPanel"class="buttonHide">hide</button>
+								<button class="mainButton buttonHide" id="HideToolsPanel">hide</button>
 								<button class="mainButton" id="SwitchToGraph">🔀📊</button>
 								<button class="mainButton" id="SwitchToTable">🔀🧮</button>
 								<button class="mainButton" id="SwitchToIntervalGraph">🔀📊〰</button>

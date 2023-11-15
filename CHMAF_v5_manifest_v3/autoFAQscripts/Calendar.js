@@ -4,7 +4,7 @@ var win_Calendar =  // описание формы чтобы не давала 
         <span style="width: 600px; min-height: 70px; max-height:700px; overflow-y:auto; overflow-x:hidden;">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 600px;" id="stataaf_header">
-                                <button class="mainButton" title="Скрывает меню" id="hidecalendar" style="width:50px; background: #228B22;">hide</button>
+                                <button class="mainButton buttonHide" title="Скрывает меню" id="hidecalendar">hide</button>
 								<button class="mainButton" title="Очищает окно календаря" id="clearcalendar">🧹</button>
 								<button class="mainButton" title="Обновляет информацию о слотах выбранной даты" id="refreshcalendar">♻</button>
 								<button class="mainButton" title="Открывает сайт datsy.info" id="opendatsy">📅</button>

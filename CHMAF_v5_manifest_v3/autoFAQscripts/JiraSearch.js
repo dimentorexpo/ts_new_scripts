@@ -7,7 +7,7 @@ var win_Jira =  // описание элементов окна Поиска п�
         <span style="width: 550px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 550;" id="jira_1str">
-                                <button class="mainButton" title="скрывает меню" id="hideMej" style="width:50px; background: #228B22;">hide</button>
+                                <button class="mainButton buttonHide" title="скрывает меню" id="hideMej">hide</button>
 								<button class="mainButton" id="RefreshJiraStatus" title="Обновляет статус Токена Jira, чтобы проверить авторизованы вы или нет">🔄</button>
 								<button class="mainButton" id="ClearJiraData" title="Очищает поля с результатами и полем для ввода">🧹</button>
 								<span style="color:bisque">Token Status: </span>

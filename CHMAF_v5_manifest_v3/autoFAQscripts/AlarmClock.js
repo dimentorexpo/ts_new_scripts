@@ -19,47 +19,9 @@ var win_Alarmclock =  // описание элементов окна будил
 				</div>
 			</div>`;
 
-if (localStorage.getItem('winTopAlarmclock') == null) { // начальное положение окна будильника (если не задано ранее)
-    localStorage.setItem('winTopAlarmclock', '120');
-    localStorage.setItem('winLeftAlarmclock', '295');
-}
-
-let wintAlarmclock = document.createElement('div'); // создание окна будильника
-document.body.append(wintAlarmclock);
-wintAlarmclock.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopAlarmclock') + 'px; left: ' + localStorage.getItem('winLeftAlarmclock') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintAlarmclock.style.display = 'none';
-wintAlarmclock.setAttribute('id', 'AF_AlarmClock');
-wintAlarmclock.innerHTML = win_Alarmclock;
-
-wintAlarmclock.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintAlarmclock.offsetLeft;
-        let elemTop = wintAlarmclock.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintAlarmclock.style.left = (elemLeft + deltaX) + "px";
-            wintAlarmclock.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopAlarmclock', String(elemTop + deltaY));
-            localStorage.setItem('winLeftAlarmclock', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна будильника
+const wintStat = createWindow('AF_AlarmClock', 'winTopAlarmclock', 'winLeftAlarmclock', win_Alarmclock);
+hideWindowOnDoubleClick('AF_AlarmClock');
+hideWindowOnClick('AF_AlarmClock', 'hideMeAlarm');
 
 function clock_on_javascript_1() {  //таймер обычного отсчета текущего времени
     // Get the current date and time
@@ -304,10 +266,6 @@ function checkAlarmsStatus() {
     if ((!chronostamp || chronostamp <= 0) && (!chronostamp1 || chronostamp1 <= 0)) {
         document.getElementById('reminderstatus').textContent = "🔕";
     }
-}
-
-document.getElementById('hideMeAlarm').onclick = function () {
-    document.getElementById('AF_AlarmClock').style.display = 'none'
 }
 
 refreshTimerReminder(); //обновляет оставшееся время до будильника №1

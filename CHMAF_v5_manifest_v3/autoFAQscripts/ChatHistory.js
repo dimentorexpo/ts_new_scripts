@@ -3,7 +3,7 @@ var win_Chathis =  // описание элементов окна Истори�
         <span style="width: 410px">
 			<span style="cursor: default;">
 				<div style="margin: 5px; width: 410px;" id="chathisheader">
-					<button class="mainButton" title="Скрытие меню" id="hideMeChHis" style="width:50px; background: #228B22;">hide</button>
+					<button class="mainButton buttonHide" title="Скрытие меню" id="hideMeChHis">hide</button>
 					<button class="mainButton" title="Очистка всех полей" id="clearallinfo" style="width:25px;">🧹</button>
 					<select style="height:28px; width:260px; text-align:center" id="operatorstp" onchange="findchatsoper()">
 							<option selected="" disabled="">Операторы на линии</option>

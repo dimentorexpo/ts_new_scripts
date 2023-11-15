@@ -248,7 +248,7 @@ function customTemplates(language = '') { //собственные шаблон�
 
     var but = document.createElement('button')
     but.innerHTML = 'hide'
-    but.classList.add('mainButton')
+    but.classList.add('mainButton', 'buttonHide');
 
     but.onclick = function () {
         this.parentElement.parentElement.style.display = 'none'

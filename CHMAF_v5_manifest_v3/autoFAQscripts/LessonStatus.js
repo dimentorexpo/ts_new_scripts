@@ -3,7 +3,7 @@ var win_LessonStatus =  // описание элементов окна стат
         <span style="width: 1060px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 1060px;" id="lessomstatdata">
-                                <button class="mainButton" id="hideMeLessonStatus" style="width:50px; background: #228B22;">hide</button>
+                                <button class="mainButton buttonHide" id="hideMeLessonStatus">hide</button>
                         </div>
 						 <div style="margin: 5px; width: 1060px" id="databox">
 								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <input type="date" style="color:black; margin-left:20px;  width:125px;" name="StartDataLS" id="dateFromLS"></span>
