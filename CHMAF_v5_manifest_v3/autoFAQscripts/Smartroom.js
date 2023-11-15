@@ -95,47 +95,8 @@ var win_smartroomform =  // описание элементов окна Мул�
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopSmartroom') == null) { //начальное положение окна Smartroom
-    localStorage.setItem('winTopSmartroom', '295');
-    localStorage.setItem('winLeftSmartroom', '295');
-}
-
-let wintSmartroom = document.createElement('div'); // создание окна Мультирум пожелания/баги
-document.body.append(wintSmartroom);
-wintSmartroom.style = 'min-height: 25px; width: 420px; background: #464451; top: ' + localStorage.getItem('winTopSmartroom') + 'px; left: ' + localStorage.getItem('winLeftSmartroom') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintSmartroom.style.display = 'none';
-wintSmartroom.setAttribute('id', 'AF_Smartroomform');
-wintSmartroom.innerHTML = win_smartroomform;
-
-wintSmartroom.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintSmartroom.offsetLeft;
-        let elemTop = wintSmartroom.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintSmartroom.style.left = (elemLeft + deltaX) + "px";
-            wintSmartroom.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopSmartroom', String(elemTop + deltaY));
-            localStorage.setItem('winLeftSmartroom', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-}; // прекращение изменения позиции окна Мультирум пожелания/баги
-
+const wintSmartroom = createWindow('AF_Smartroomform', 'winTopSmartroom', 'winLeftSmartroom', win_smartroomform);
+hideWindowOnDoubleClick('AF_Smartroomform');
 
 document.getElementById('AF_Smartroomform').ondblclick = function (a) { // скрытие окна Мультирум пожелания/баги от помощи по двойному клику
     if (checkelementtype(a)) { document.getElementById('AF_Smartroomform').style.display = 'none'; }
