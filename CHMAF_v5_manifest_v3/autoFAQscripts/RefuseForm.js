@@ -36,47 +36,9 @@ var win_refusefrom =  // описание элементов окна отказ
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopRefuseNew') == null) { //начальное положение окна Отказ от помощи
-    localStorage.setItem('winTopRefuseNew', '295');
-    localStorage.setItem('winLeftRefuseNew', '295');
-}
-
-let wintRefuseFormNew = document.createElement('div'); // создание окна отказов
-document.body.append(wintRefuseFormNew);
-wintRefuseFormNew.style = 'min-height: 25px; width: 420px; background: #464451; top: ' + localStorage.getItem('winTopRefuseNew') + 'px; left: ' + localStorage.getItem('winLeftRefuseNew') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintRefuseFormNew.style.display = 'none';
-wintRefuseFormNew.setAttribute('id', 'AF_Refuseformnew');
-wintRefuseFormNew.innerHTML = win_refusefrom;
-
-wintRefuseFormNew.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintRefuseFormNew.offsetLeft;
-        let elemTop = wintRefuseFormNew.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintRefuseFormNew.style.left = (elemLeft + deltaX) + "px";
-            wintRefuseFormNew.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopRefuseNew', String(elemTop + deltaY));
-            localStorage.setItem('winLeftRefuseNew', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна отказов
+const wintRefuseFormNew = createWindow('AF_Refuseformnew', 'winTopRefuseNew', 'winLeftRefuseNew', win_refusefrom);
+hideWindowOnDoubleClick('AF_Refuseformnew');
+hideWindowOnClick('AF_Refuseformnew', 'hideMeRefuseFormv2');
 
 function hashrefuseform() {
     let chatId = getChatId();
@@ -181,17 +143,6 @@ let intervalotak = setInterval(function () {
                             document.getElementById('othersolved').setAttribute('disabled', 'disabled')
                             flagothersolved = 0;
                         }
-                    }
-                }
-
-                document.getElementById('hideMeRefuseFormv2').onclick = () => { //форма hide
-                    if (document.getElementById('AF_Refuseformnew').style.display == '')
-                        document.getElementById('AF_Refuseformnew').style.display = 'none'
-                }
-
-                document.getElementById('AF_Refuseformnew').ondblclick = function (a) { // скрытие окна отказа от помощи по двойному клику
-                    if (checkelementtype(a)) {
-                        document.getElementById('AF_Refuseformnew').style.display = 'none';
                     }
                 }
 
