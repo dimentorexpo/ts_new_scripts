@@ -41,52 +41,8 @@ var win_Calendar =  // описание формы чтобы не давала 
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopCalendar') == null) { //начальное положение окна автоответа через время
-    localStorage.setItem('winTopCalendar', '120');
-    localStorage.setItem('winLeftCalendar', '295');
-}
-
-let wintCalendar = document.createElement('div'); // создание окна для заморозки чата
-document.body.append(wintCalendar);
-wintCalendar.style = 'min-height: 25px; width: 600px; background: #464451; top: ' + localStorage.getItem('winTopCalendar') + 'px; left: ' + localStorage.getItem('winLeftCalendar') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintCalendar.style.display = 'none';
-wintCalendar.setAttribute('id', 'AF_Calendar');
-wintCalendar.innerHTML = win_Calendar;
-
-wintCalendar.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = wintCalendar.offsetLeft;
-        let elemTop = wintCalendar.offsetTop;
-
-        function onMouseMove(event) {
-            if (!(event.buttons & 1)) {
-                onMouseUp();
-                return;
-            }
-
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            wintCalendar.style.left = (elemLeft + deltaX) + "px";
-            wintCalendar.style.top = (elemTop + deltaY) + "px";
-
-            localStorage.setItem('winTopCalendar', String(elemTop + deltaY));
-            localStorage.setItem('winLeftCalendar', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-
+const wintCalendar  = createWindow('AF_Calendar', 'winTopCalendar', 'winLeftCalendar', win_Calendar);
+hideWindowOnDoubleClick('AF_Calendar');
 
 function compareTimes(time1, time2) { //функция сравнения времени
     var date1 = new Date("1970-01-01 " + time1);
