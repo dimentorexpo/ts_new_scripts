@@ -1030,7 +1030,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                     //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                     //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                    (r.channelUser.payload && r.channelUser.payload.userType == "teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
+                                    (r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList.includes('homeschooling') || r.channelUser.payload.teacherSTKList.includes('large_classes')))  ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
 
                                     payloadarray.push({
                                         ChatId: conversationId,
@@ -1047,7 +1047,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                     //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                     // (r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                    (r.channelUser.payload && r.channelUser.payload.userType == "teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
+                                    (r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList.includes('homeschooling') || r.channelUser.payload.teacherSTKList.includes('large_classes')))  ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
 
                                     payloadarray.push({
                                         ChatId: conversationId,
@@ -1078,7 +1078,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                 //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                 //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                (r.channelUser.payload && r.channelUser.payload.userType == "teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
+                                (r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList.includes('homeschooling') || r.channelUser.payload.teacherSTKList.includes('large_classes')))  ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
 
 
 
@@ -1123,7 +1123,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                 //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                 //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                (r.channelUser.payload && r.channelUser.payload.userType == "teacher") ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
+                                (r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList.includes('homeschooling') || r.channelUser.payload.teacherSTKList.includes('large_classes')))  ? console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList) : ""
 
                                 if (r.payload && r.payload.tags) {
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
