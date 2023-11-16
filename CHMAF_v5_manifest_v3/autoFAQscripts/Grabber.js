@@ -238,7 +238,7 @@ var win_Grabber =  // описание элементов окна Grabber
         </span>
 </div>`;
 
-const wintGrabber= createWindow('AF_Grabber', 'winTopGrabber', 'winTopGrabber', win_Grabber);
+const wintGrabber= createWindow('AF_Grabber', 'winTopGrabber', 'winLeftGrabber', win_Grabber);
 hideWindowOnDoubleClick('AF_Grabber');
 hideWindowOnClick('AF_Grabber', 'hideMeGrabber');
 
