@@ -401,3 +401,8 @@ async function getversionsapp() { // получаем из файла списо
 	};
 	setTimeout(() => setidformobpass.value = "", 15000);
 	};
+	
+	
+	document.getElementById('getStats').onclick = getStatsButtonPress; 
+document.getElementById('openGrabber').onclick = getopenGrabberButtonPress;
+document.getElementById('GrListData').onclick = getGrListDataButtonPress;

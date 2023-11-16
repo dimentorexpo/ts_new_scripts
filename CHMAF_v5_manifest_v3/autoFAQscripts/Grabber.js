@@ -255,11 +255,6 @@ document.getElementById('GatherStatByThemes').onclick = function () {
     } else document.getElementById('AgregatedDataThemes').style.display = 'none'
 }
 
-//Функция очищения выведенной информации после поиска
-document.getElementById('clearall').onclick = function () {
-
-}
-
 async function getlistofopers() {
     await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState").then(r => r.json()).then(r => dataInfo = r)
 
