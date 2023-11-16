@@ -403,6 +403,6 @@ async function getversionsapp() { // получаем из файла списо
 	};
 	
 	
-	document.getElementById('getStats').onclick = getStatsButtonPress; 
+document.getElementById('getStats').onclick = getStatsButtonPress; 
 document.getElementById('openGrabber').onclick = getopenGrabberButtonPress;
 document.getElementById('GrListData').onclick = getGrListDataButtonPress;
