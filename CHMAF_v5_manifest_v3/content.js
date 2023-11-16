@@ -308,7 +308,6 @@ function prepTp() { //функция подготовки расширения �
     let butServ = document.createElement('button')
     butServ.id = "butServ"
     butServ.innerHTML = "⚜"
-    butServ.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
     butServ.classList.add('onlyfortp', 'rightPanelBtn', 'mainButton')
     butServ.onclick = function () { //открывает вензель user info
         setDisplayStyle(document.getElementById('AF_Service'), document.getElementById('AF_Service').style.display === '' ? 'none' : '');
@@ -331,7 +330,6 @@ function prepTp() { //функция подготовки расширения �
     let taskBut = document.createElement('button')
     taskBut.id = "taskBut"
     taskBut.innerHTML = "🛠"
-    taskBut.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
     taskBut.classList.add('onlyfortp', 'rightPanelBtn', 'mainButton')
     document.getElementById('rightPanel').appendChild(taskBut)
     document.getElementById('taskBut').onclick = gettaskButButtonPress;
@@ -553,7 +551,6 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     let ScriptBut = document.createElement('button');
     ScriptBut.id = 'scriptBut';
     ScriptBut.innerHTML = "🧩";
-    ScriptBut.style = "width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;";
     ScriptBut.classList.add('rightPanelBtn', 'mainButton')
     ScriptBut.onclick = function () {
         if (document.getElementById('AF_helper').style.display != 'flex') {
@@ -571,14 +568,12 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     butThemes.id = "themes"
     butThemes.innerHTML = "📚"
     butThemes.title = "[Темы] - кнопка открывающая окно с темами и тегами"
-    butThemes.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
     butThemes.classList.add('rightPanelBtn', 'mainButton')
     document.getElementById('rightPanel').appendChild(butThemes)
     document.getElementById('themes').onclick = getThemesButtonPress;
 
     let MainMenuBtn = document.createElement('button')
     MainMenuBtn.textContent = "👺"
-    MainMenuBtn.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
     MainMenuBtn.id = 'MainMenuBtn'
     MainMenuBtn.title = '[Меню] - По клику открывает список инструментов необходимых для работы'
     MainMenuBtn.classList.add('rightPanelBtn', 'mainButton')
@@ -610,14 +605,13 @@ async function move_again_AF() { //с АФ шняга там стили шмил
 
     let openchhis = document.createElement('button')
     openchhis.innerHTML = '☢'
-    openchhis.style = 'width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
     openchhis.id = 'opennewcat'
     openchhis.title = 'Открывает виджет просмотра истории чатов'
     openchhis.classList.add('rightPanelBtn', 'mainButton')
     document.getElementById('rightPanel').appendChild(openchhis)
     document.getElementById('opennewcat').onclick = getopennewcatButtonPress;
 
-    if ((scriptAdr == TP_addr || scriptAdr == TP_addrRzrv) && opsection == "КЦ") {
+    if ((scriptAdr == TP_addr || scriptAdr == TP_addrRzrv) && opsection != 'ТП' && opsection != 'ТП ОС') {
         localStorage.setItem('scriptAdr', KC_addr)
         location.reload()
     }
@@ -683,7 +677,7 @@ let maskBack = document.createElement('button') // кнопка вернуть
 maskBack.id = "maskBack"
 maskBack.innerHTML = "↩️"
 maskBack.title = "Вернуть скрытое окно"
-maskBack.style = 'display: none; width: 40px; height: 40px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
+maskBack.style = 'display: none;'
 maskBack.classList.add('rightPanelBtn', 'mainButton')
 
 maskBack.onclick = function () { // функция кнопки вернуть
