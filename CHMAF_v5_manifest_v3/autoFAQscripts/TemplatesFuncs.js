@@ -270,6 +270,7 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
 		 }, 1000);
 		 const idNode = SearchinAFnewUI("id");
 		 if (idNode) {
+            const editorExtensionId = localStorage.getItem('ext_id');
 			 chrome.runtime.sendMessage(
 				 editorExtensionId,
 				 {
@@ -425,6 +426,7 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
 
          const idNode = SearchinAFnewUI(requestargument);
          if (idNode) {
+            const editorExtensionId = localStorage.getItem('ext_id');
              chrome.runtime.sendMessage(
                  editorExtensionId,
                  {
