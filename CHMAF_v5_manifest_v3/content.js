@@ -501,17 +501,16 @@ function replaceSelectedText(elem, str) { //функция замены выде
     if (document.selection) {
         var s = document.selection.createRange();
         if (s.text) {
-            eval("s.text=" + str + "(s.text);");
+            s.text = window[str](s.text); // Используйте window[str] вместо eval
             s.select();
             return true;
         }
-    }
-    else if (typeof (elem.selectionStart) == "number") {
+    } else if (typeof (elem.selectionStart) == "number") {
         if (elem.selectionStart != elem.selectionEnd) {
             var start = elem.selectionStart;
             var end = elem.selectionEnd;
 
-            eval("var rs = " + str + "(elem.value.substr(start,end-start));");
+            var rs = window[str](elem.value.substr(start, end - start)); // Используйте window[str] вместо eval
             elem.value = elem.value.substr(0, start) + rs + elem.value.substr(end);
             elem.setSelectionRange(end, end);
         }
@@ -519,6 +518,7 @@ function replaceSelectedText(elem, str) { //функция замены выде
     }
     return false;
 }
+
 
 function change_str(s) { // вспомогательная функция для подстановки вместо текста гиперссылку и сохраняя выделенный сам текст
     return `<a href="${document.getElementById('bindlinktotext').value}" target="_blank" rel="noopener">` + s + "</a>";
