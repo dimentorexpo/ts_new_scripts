@@ -501,7 +501,7 @@ function replaceSelectedText(elem, str) { //функция замены выде
     if (document.selection) {
         var s = document.selection.createRange();
         if (s.text) {
-            s.text = window[str](s.text); // Используйте window[str] вместо eval
+            s.text = window[str](s.text); 
             s.select();
             return true;
         }
@@ -510,7 +510,7 @@ function replaceSelectedText(elem, str) { //функция замены выде
             var start = elem.selectionStart;
             var end = elem.selectionEnd;
 
-            var rs = window[str](elem.value.substr(start, end - start)); // Используйте window[str] вместо eval
+            var rs = window[str](elem.value.substr(start, end - start)); 
             elem.value = elem.value.substr(0, start) + rs + elem.value.substr(end);
             elem.setSelectionRange(end, end);
         }
