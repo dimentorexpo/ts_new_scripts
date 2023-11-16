@@ -42,7 +42,7 @@ async function init_settings() {
 
             <div style="border: 2px double black; background-color: #464451" id="set_bar">
                 <div style="margin: 5px; width: 500px">
-                    <select style="height:28px; width:140px; text-align:center" id="soundlistaddr" onchange="changesoundaddr()">
+                    <select style="height:28px; width:140px; text-align:center" id="soundlistaddr">
                         <option selected="" disabled="">Звук нового сообщения</option>
                         <option value="othersound">Выбрать свой звук</option>
                      </select>
@@ -62,7 +62,6 @@ async function init_settings() {
                     <br>
                     <label class="onlyfortp" style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hidelpmwindow">Скрыть окно с У П</label>
         <label class="onlyfortp" style="color:bisque; margin-left: 5px;" title="Добавить тэги в боковое меню"><input type="checkbox" id="showquicktags">Добавить тэги</label>
-                    <label class="onlyfortp" style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hidestatMM">Статистика MM</label>
                     <br>
                     <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hideInnerTaskCreate">Скрыть окно АФ при создании задачи</label>
                     <br>
@@ -151,25 +150,27 @@ hideWindowOnClick('AF_Settings', 'hideMeSettings');
     }
 
     function changesoundaddr() { //функция изменения адреса звука
-        let objSoundList = document.getElementById('soundlistaddr')
-
+        let objSoundList = document.getElementById('soundlistaddr');
+    
         if (objSoundList.length > 1) {
             for (let i = 1; i < objSoundList.length; i++) {
                 if (objSoundList[i].selected == true) {
                     if (objSoundList[i].value == "othersound") {
-                        document.getElementById('sound_adr').style.display = ''
-                        document.getElementById('sound_save').style.display = ''
+                        document.getElementById('sound_adr').style.display = '';
+                        document.getElementById('sound_save').style.display = '';
                     } else {
-                        document.getElementById('sound_adr').style.display = 'none'
-                        document.getElementById('sound_save').style.display = 'none'
-                        document.getElementById('sound_adr').value = ""
-                        localStorage.setItem('sound_str', objSoundList[i].value)
-                        audio = new Audio(localStorage.getItem('sound_str'))
+                        document.getElementById('sound_adr').style.display = 'none';
+                        document.getElementById('sound_save').style.display = 'none';
+                        document.getElementById('sound_adr').value = "";
+                        localStorage.setItem('sound_str', objSoundList[i].value);
+                        audio = new Audio(localStorage.getItem('sound_str'));
                     }
                 }
             }
         }
     }
+
+    document.getElementById('soundlistaddr').addEventListener('change', changesoundaddr);
 
     function paintstatus() { //функция перекрашивания статуса оператора онлайн зеленый, занят желтый, офлайн и перерыв красные
         const statusElem = document.querySelectorAll('.user_menu-status-name')[1];
@@ -288,7 +289,7 @@ hideWindowOnClick('AF_Settings', 'hideMeSettings');
 
             let needtohide = document.getElementsByClassName('onlyfortp');
 
-            if (opsection !== 'ТП' && opsection !== 'ТПPrem') {
+            if (opsection !== 'ТП' && opsection !== 'ТП ОС') {
                 for (i = 0; i < needtohide.length; i++) {
                     needtohide[i].style.display = 'none'
                 }
@@ -453,35 +454,6 @@ hideWindowOnClick('AF_Settings', 'hideMeSettings');
                 showtagsSelector.checked = false;
             } else {
                 showtagsSelector.checked = true;
-            }
-
-            // Отображение/скрытие кнопки отправки статистики в ММ
-            let flagStatMM = 0;   // функция чекбокса вкл и откл кнопки отправки статистики
-            var StatMMboxstatus = document.getElementById('hidestatMM');
-            var StatMMBtn = document.getElementById('StatMM');
-            StatMMboxstatus.onclick = function () {
-
-                if (!StatMMboxstatus.checked) {
-                    if (localStorage.getItem('is_sending_MM') == 0) {
-                        flagStatMM = 0;
-                        localStorage.setItem('hidestatMM', flagStatMM)
-                        StatMMBtn.style.display = "none";
-                    } else {
-                        StatMMboxstatus.checked = true
-                        alert('Отправка статистики активна. Нельзя скрыть кнопку отправки статитстики');
-                    }
-                } else {
-                    StatMMBtn.style.display = "";
-                    flagStatMM = 1;
-                    localStorage.setItem('hidestatMM', flagStatMM)
-                }
-            }
-
-            if (localStorage.getItem('hidestatMM') == 0) {
-                StatMMBtn.style.display = "none";
-                StatMMboxstatus.checked = false;
-            } else {
-                StatMMboxstatus.checked = true;
             }
 
             //Скрыть окно Л П МВУ
