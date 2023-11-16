@@ -538,41 +538,42 @@ function extractLoginLink(text) {
 		  return true;
 		}	
 	// Конец блока с инфрой
+	if (request.name === "ChM") {
+
+			
+		if (request.question == 'sendResponse') {
+			fetch(request.addr, request.options)
+				.then(response => response.text())
+				.then(result => { sendResponse({answer: result, respName: request.respName}) });
+			return true;
+		}
+		
+    }		
+		const extensionId = chrome.runtime.id
+		    if (request.question === "get-extension-id") {
+			sendResponse(extensionId)
+    	}
+
+	    if (request.name === 'chm_message') {
+			console.log('Received request:', request);
+			console.log('Sender:', sender);
+			console.log(request)
+			if (request.question == 'send_event') {
+				const laserExtensionId = "kggpdmfnfmmkneemhknlojemcjmdlpjb";
+				console.log(request)
+				const callback = (response)=>{
+					console.log(response)
+				}
+				const messageValue = request.messageValue
+				const tabId = sender.tab.id
+				const message = {
+					messageValue,
+					tabId
+				}
+				chrome.runtime.sendMessage(laserExtensionId,
+					message,
+					callback
+				);
+			}
+		}
 });
-
-
-
-
-// chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-
-		// const extensionId = chrome.runtime.id
-		    // if (request.question === "get-extension-id") {
-			// sendResponse(extensionId)
-    // }
-// });
-
-
-
-// chrome.runtime.onMessageExternal.addListener(function (request, sender, sendResponse) {
-    // console.log('Received request:', request);
-    // console.log('Sender:', sender);
-
-    // if (request.name === 'chm_message' && request.question === 'send_event') {
-        // const laserExtensionId = "kggpdmfnfmmkneemhknlojemcjmdlpjb";
-        // const messageValue = request.messageValue;
-        // const tabId = sender.tab ? sender.tab.id : null; // Проверка sender.tab
-        // const message = { messageValue, tabId };
-
-        // const callback = (response) => {
-            // if (chrome.runtime.lastError) {
-                // console.error('Error in sending message:', chrome.runtime.lastError);
-            // } else {
-                // console.log('Response received:', response);
-            // }
-        // };
-
-        // chrome.runtime.sendMessage(laserExtensionId, message, callback);
-    // }
-    // return true; // Важно для асинхронного ответа
-// });
-

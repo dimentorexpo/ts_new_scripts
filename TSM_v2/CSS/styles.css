@@ -128,6 +128,19 @@ button.dobig:active {
     font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
 }
 
+.wintInitializeComplectExercisesInfo {
+    min-height: 170px;
+    max-height: 790px;
+    width: 560px;
+    font-size: 14px;
+    z-index: 20;
+    position: fixed;
+    border: 1px solid rgb(56, 56, 56);
+    background: rgb(70, 68, 81);
+    color: black;
+    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+}
+
 .lesson-field-name {
     width: 50px;
     text-align: center;

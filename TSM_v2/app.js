@@ -3,6 +3,7 @@ const OperId_API_URL = "https://mm-time.skyeng.tech/api/v4/users/me";
 
 const taskUrlPattern = "https://crm2.skyeng.ru/customer-support/task/*";
 const personTaskUrlPattern = "https://crm2.skyeng.ru/persons/*/customer-support/task/*";
+const ListTaskUrlPattern = "https://crm2.skyeng.ru/persons/*/customer-support/list";
 const mmtUrlPattern = "https://mattermost.skyeng.tech/*";
 
 
@@ -262,11 +263,11 @@ const createProperties = { url: encodeURI("https://video-trouble-shooter.skyeng.
 }
 //Конец функций для обработки пунков меню выделенного текста
 
-const linkparent = chrome.contextMenus.create( {"id":"linkOption","title": "Technical Support Master", "contexts":["link"], "documentUrlPatterns":showForPages, "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, mmtUrlPattern]} ); // обьявляем контекстное меню при выделении текста отвечает свойство selection
+const linkparent = chrome.contextMenus.create( {"id":"linkOption","title": "Technical Support Master", "contexts":["link"], "documentUrlPatterns":showForPages, "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern, mmtUrlPattern]} ); // обьявляем контекстное меню при выделении текста отвечает свойство selection
 
 let MMostOperId ='';
 
-chrome.contextMenus.create({"title": "🚫 Отмена ТП1Л (исход)", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern], "onclick": cancelishodcall}); //опция для копирования ссылки для test msg
+chrome.contextMenus.create({"title": "🚫 Отмена ТП1Л (исход)", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern], "onclick": cancelishodcall}); //опция для копирования ссылки для test msg
 
 async function cancelishodcall(i,t) {
 	MMostOperId = await getMMostOperId();
@@ -276,7 +277,7 @@ async function cancelishodcall(i,t) {
 	}
 }
 
-chrome.contextMenus.create({"title": "💬 Написать ТП1Л (исход) со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern], "onclick": sendtestmsgcustommsg}); //опция для копирования ссылки для test msg
+chrome.contextMenus.create({"title": "💬 Написать ТП1Л (исход) со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern], "onclick": sendtestmsgcustommsg}); //опция для копирования ссылки для test msg
 
 async function sendtestmsgcustommsg(i,t) {
 	MMostOperId = await getMMostOperId();
@@ -293,7 +294,7 @@ async function sendtestmsgcustommsg(i,t) {
 	}
 }
 
-chrome.contextMenus.create({"title": "🚫 Отмена 2ЛТП", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern], "onclick": cancelsecondline}); //опция для копирования ссылки для test msg
+chrome.contextMenus.create({"title": "🚫 Отмена 2ЛТП", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern], "onclick": cancelsecondline}); //опция для копирования ссылки для test msg
 
 async function cancelsecondline(i,t) {	MMostOperId = await getMMostOperId();
 	MMostOperId = await getMMostOperId();
@@ -303,7 +304,7 @@ async function cancelsecondline(i,t) {	MMostOperId = await getMMostOperId();
 	}
 }
 
-chrome.contextMenus.create({"title": "💬 Написать 2ЛТП со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern], "onclick": send2ndlinetestmsgcustommsg}); //опция для копирования ссылки для test msg
+chrome.contextMenus.create({"title": "💬 Написать 2ЛТП со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern], "onclick": send2ndlinetestmsgcustommsg}); //опция для копирования ссылки для test msg
 
 async function send2ndlinetestmsgcustommsg(i,t) {
 	MMostOperId = await getMMostOperId();

@@ -45,6 +45,35 @@ var win_TTCExercises = `<div style="display: flex;">
 
 					</span>
 				   </div>`;
+				   
+var win_complectationExercises = `<div style="display: flex;">
+					<span style="cursor: -webkit-grab;">
+
+					     <div style="margin: 5px; width:550px;" id="exercisesComplectHeader">
+                            <button class="commonbtn" title="скрывает меню" id="hideExercisesComplectMenu" style="width:50px; height:30px; background: #228B22;">hide</button>
+							<button class="commonbtn" id="RefreshInfoExerciseComplect title = "Обновляет информацию по открытой комнате" style="margin: 5px; width: 25px; height: 25px; padding: 0;">♻</button>
+							<span id="studnameComplect" style="color:#d5f4ff; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
+							<span id="studserviceidComplect" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
+							<span id="studidComplect" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
+							<span id="groupidComplect" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
+                        </div>
+
+						<div style="margin: 5px; width:550px;" id="exercisesComplectTeacher">
+							<span id="teachnameComplect" style="color:#d5f4ff; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
+							<span id="teachdidComplect" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
+							<span id="RoomStatus" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
+						</div>
+
+						<div style="margin: 5px; width:550px;">
+							<input id="roomhashhwComplect" placeholder="Room link" style="width: 490px; margin-left: 15px; text-align: center;">
+							<button class="commonbtn" id="getroomdataComplect">🔎</button>
+						</div>
+
+						<div id="exercisebarComplect" class="skysmartexcbar">
+						<div>
+
+					</span>
+				   </div>`;			   
 
 if (localStorage.getItem('winTopexercisesSkysmart') == null) { //additional skysmart students exercise menu
     localStorage.setItem('winTopexercisesSkysmart', '118');
@@ -54,6 +83,11 @@ if (localStorage.getItem('winTopexercisesSkysmart') == null) { //additional skys
 if (localStorage.getItem('winTopexercisesTTC') == null) { //additional TTC info menu
     localStorage.setItem('winTopexercisesTTC', '118');
     localStorage.setItem('winLeftexercisesTTC', '407');
+}
+
+if (localStorage.getItem('winTopComplect') == null) { //additional complectations info
+    localStorage.setItem('winTopComplect', '118');
+    localStorage.setItem('winLeftComplect', '407');
 }
 
 let wintExercSkysmart = document.createElement('div');
@@ -70,6 +104,13 @@ wintExercTTC.style = 'display:none;  top: ' + localStorage.getItem('winTopexerci
 wintExercTTC.setAttribute('id', 'AFMS_TTCExercInfo');
 wintExercTTC.innerHTML = win_TTCExercises;
 
+let wintComplect = document.createElement('div');
+document.body.append(wintComplect);
+wintComplect.className = 'wintInitializeComplectExercisesInfo'
+wintComplect.style = 'display:none;  top: ' + localStorage.getItem('winTopComplect') + 'px; left: ' + localStorage.getItem('winLeftComplect') + 'px;';
+wintComplect.setAttribute('id', 'AFMS_Complect');
+wintComplect.innerHTML = win_complectationExercises;
+
 // Exercises skysmart
 
 var listenerExercSkysmart = function (e, a) {
@@ -78,6 +119,7 @@ var listenerExercSkysmart = function (e, a) {
     localStorage.setItem('winTopexercisesSkysmart', String(Number(e.clientY - myY9993)));
     localStorage.setItem('winLeftexercisesSkysmart', String(Number(e.clientX - myX9993)));
 };
+
 wintExercSkysmart.onmousedown = function (a) {
     if (checkelementt(a)) {
         window.myX9993 = a.layerX;
@@ -107,6 +149,24 @@ wintExercTTC.onmousedown = function (a) {
 wintExercTTC.onmouseup = function () { document.removeEventListener('mousemove', listenerExercTTC); }
 
 // End Exercises TTC
+
+// Exercises complectations
+var listenerComplectations = function (e, a) {
+    wintComplect.style.left = Number(e.clientX - ComplectX) + "px";
+    wintComplect.style.top = Number(e.clientY - ComplectY) + "px";
+    localStorage.setItem('winTopComplect', String(Number(e.clientY - ComplectY)));
+    localStorage.setItem('winLeftComplect', String(Number(e.clientX - ComplectX)));
+};
+wintComplect.onmousedown = function (a) {
+    if (checkelementt(a)) {
+        window.ComplectX = a.layerX;
+        window.ComplectY = a.layerY;
+        document.addEventListener('mousemove', listenerComplectations);
+    }
+}
+wintComplect.onmouseup = function () { document.removeEventListener('mousemove', listenerComplectations); }
+
+// End Exercises complectation
 
 document.getElementById('exercisekysmart').onclick = async function () { // открывает менюшку скайсмарт упражнений
     if (wintExercSkysmart.style.display == 'none') {
@@ -416,3 +476,224 @@ document.getElementById('exercisesttc').onclick = async function () {
         wintExercTTC.style.display = 'none'
     }
 }
+
+document.getElementById('exercisesComplect').onclick = async function() {
+	    if (document.getElementById('AFMS_Complect').style.display == 'none') {
+        wintComplect.style.display = ''
+		wintExercSkysmart.style.display = 'none'
+		wintExercTTC.style.display = 'none'
+		AFMS_addMenu.style.display = 'none'
+		document.getElementById('roomhashhwComplect').value = document.URL;
+		setTimeout(function(){
+			getroomdataComplect.click()
+		}, 500)
+			
+		} else {
+        wintComplect.style.display = 'none'
+		}
+		
+		document.getElementById('hideExercisesComplectMenu').onclick = function () {
+            wintComplect.style.display = 'none'
+        }
+	
+				document.getElementById('getroomdataComplect').onclick = async function () {
+				document.getElementById('exercisebarComplect').innerHTML = ''
+				let rhash = document.getElementById('roomhashhwComplect').value
+				let urlComponents = rhash.split('/');
+				let hashroomkids = urlComponents[6].split('?')[0];
+				let kidsselector = urlComponents[4];
+				
+				const baseURL = `https://api-${kidsselector}.skyeng.ru/api/v2/rooms/${hashroomkids}?verbosity=only_mine_participants`;
+				
+					await fetch(baseURL, {
+						"headers": {
+							"content-type": "application/json",
+						},
+						"body": "{\"roomHash\":\"" + rhash + "\"}",
+						"method": "POST",
+						"mode": "cors",
+						"credentials": "include"
+					}).then(r => r.json()).then(r => complectationsData = r)
+
+					console.log(complectationsData)
+					
+						let temparr = [];
+						let hwarr = [];
+						let indexOfSlides=''
+								
+						let flagofuser='';
+
+						for (let z=0; z<complectationsData.participants.length;z++) {
+							if (complectationsData.participants[z].role == 'student')
+								flagofuser = complectationsData.participants[z].userId;
+						}
+						
+						for (let usId=0; usId<complectationsData.lessonCards.length; usId++) {
+							if (flagofuser == complectationsData.lessonCards[usId].userId) {
+								indexOfSlides = usId
+							}
+						}
+						
+						for (let i = 0; i < complectationsData.lessonCards[indexOfSlides].themes.length; i++) {
+							if (localStorage.getItem("Nullcards") == 1 && complectationsData.lessonCards[indexOfSlides].themes[i].cards.length > 0) {
+								temparr += '<div style="margin: 5px">' +
+									'<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого урока" ' +
+									'complectationsData-subtype="' + kidsselector + '" ' +
+									'complectationsData-lessonid="' + complectationsData.lessonCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' + '"> 💾 </span>' + 
+									'<div class="roomtypekids" style="cursor:default;">' + complectationsData.lessonCards[indexOfSlides].themes[i].name + ' ' + '<br>' + 
+									'</div></div>'
+							} else if (localStorage.getItem("Nullcards") == 0) {
+								temparr += '<div style="margin: 5px">'+ 
+									'<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого урока" ' +
+									'complectationsData-subtype="' + kidsselector + '" ' +
+									'complectationsData-lessonid="' + complectationsData.lessonCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' + '"> 💾 </span>' +
+									'<div class="roomtypekids" style="cursor:default;">' + complectationsData.lessonCards[indexOfSlides].themes[i].name + ' ' + '<br>' + 
+									'</div></div>'
+							}
+							for (let j = 0; j < complectationsData.lessonCards[indexOfSlides].themes[i].cards.length; j++) {
+								(complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].completeness == 100 && complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].score == null) ? complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].score = 100 : complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].score;
+								if (complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].completeness == null) {
+									complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].completeness = '——'
+									complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].score = '—'
+								}
+								temparr += '<div class="itemexerciseskids">' + [j + 1] + '.' +
+									complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].name + ' ' +
+									'<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого слайда" ' +
+									'complectationsData-subtype="' + kidsselector + '" ' +
+									'complectationsData-lessonid="' + complectationsData.lessonCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' +
+									'complectationsData-stepid="' + complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].id + '"> 💾 </span>' +
+									'<span style="float:right; margin-right: 80px;">' + complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].completeness + '</span>' +
+									'<span style="float:right; margin-right: 60px;">' + complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].score + '</span>' +
+									'</div>';
+							}
+						}
+
+						document.getElementById('exercisebarComplect').innerHTML += '<div class="roomtype">Lesson</div>' +
+							'<div class="boxwithslides" style="display:none">' +
+							'<div class="itemexerciseskids">' +
+							'<div style="text-align:center;">Информация по категории: Lesson</div>' +
+							'Количество завершенных карточек: ' + complectationsData.lessonCards[indexOfSlides].completedCardsCount + ' из ' + complectationsData.lessonCards[indexOfSlides].cardsCount +
+							'<br>Общий % завершения слайдов: ' + complectationsData.lessonCards[indexOfSlides].completeness + '%' +
+							'<br>Итоговый результат: ' + complectationsData.lessonCards[indexOfSlides].score + ' баллов из 100<br>' +
+							'<div class="headerexplain">' +
+							'<span style="margin-left: 15px;">Название слайда</span>' +
+							'<span style="margin-left: 155px;">Балл</span>' +
+							'<span style="margin-left: 70px;">%</span>' +
+							'<span style="margin-left: 50px;">Ссылка</span>' +
+							'</div>' +
+							'</div>' +
+							temparr +
+							'</div>';
+						
+						for (let i = 0; i < complectationsData.homeworkCards[indexOfSlides].themes.length; i++) {
+							if (localStorage.getItem("Nullcards") == 1 && complectationsData.homeworkCards[indexOfSlides].themes[i].cards.length > 0) {
+								hwarr += '<div style="margin: 5px">' + 
+									'<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого урока" ' +
+									'complectationsData-subtype="' + kidsselector + '" ' +
+									'complectationsData-lessonid="' + complectationsData.homeworkCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' + '"> 💾 </span>' +
+									'<div class="roomtypekids" style="cursor:default;">' + complectationsData.homeworkCards[indexOfSlides].themes[i].name + '<br>' + 
+									'</div></div>'
+							} else if (localStorage.getItem("Nullcards") == 0) {
+								hwarr += '<div style="margin: 5px">' +
+									'<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого урока" ' +
+									'complectationsData-subtype="' + kidsselector + '" ' +
+									'complectationsData-lessonid="' + complectationsData.homeworkCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' + '"> 💾 </span>' +
+									'<div class="roomtypekids" style="cursor:default;">' + complectationsData.homeworkCards[indexOfSlides].themes[i].name + '<br>' + 
+									'</div></div>'
+							}
+							for (let j = 0; j < complectationsData.homeworkCards[indexOfSlides].themes[i].cards.length; j++) {
+								(complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].completeness == 100 && complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].score == null) ? complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].score = 100 : complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].score;
+								if (complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].completeness == null) {
+									complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].completeness = '——'
+									complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].score = '—'
+								}
+
+								if (complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].emphasis == 'writing') {
+									complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].name = complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].name + '✏'
+								} else if (complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].emphasis == 'pronunciation') {
+									complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].name = complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].name + '🎧'
+								} else if (complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].emphasis == 'speaking') {
+									complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].name = complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].name + '🎙'
+								}
+								
+								hwarr += '<div class="itemexerciseskids">' + [j + 1] + '.' +
+									complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].name + ' ' +
+									'<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого слайда" ' +
+									'complectationsData-subtype="' + kidsselector + '" ' +
+									'complectationsData-lessonid="' + complectationsData.homeworkCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' +
+									'complectationsData-stepid="' + complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].id + '"> 💾 </span>' +
+									'<span style="float:right; margin-right: 80px;">' + complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].completeness + '</span>' +
+									'<span style="float:right; margin-right: 60px;">' + complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].score + '</span>' +
+									'</div>';
+							}
+						}
+
+						document.getElementById('exercisebarComplect').innerHTML += '<div class="roomtype">Homework</div>' +
+							'<div class="boxwithslides" style="display:none">' +
+							'<div class="itemexerciseskids">' +
+							'<div style="text-align:center;">Информация по категории: Homework</div>' +
+							'Количество завершенных карточек: ' + complectationsData.homeworkCards[indexOfSlides].completedCardsCount + ' из ' + complectationsData.homeworkCards[indexOfSlides].cardsCount +
+							'<br>Общий % завершения слайдов: ' + complectationsData.homeworkCards[indexOfSlides].completeness + '%' +
+							'<br>Итоговый результат: ' + complectationsData.homeworkCards[indexOfSlides].score + ' баллов из 100<br>' +
+							'<div class="headerexplain">' +
+							'<span style="margin-left: 15px;">Название слайда</span>' +
+							'<span style="margin-left: 140px;">Балл</span>' +
+							'<span style="margin-left: 60px;">%</span>' +
+							'<span style="margin-left: 50px;">Ссылка</span>' +
+							'</div>' +
+							'</div>' +
+							hwarr +
+							'</div>';
+
+						let subjbtnsarr = document.getElementsByClassName('roomtype')
+						let slidesbar = document.getElementsByClassName('boxwithslides')
+						for (let i = 0; i < subjbtnsarr.length; i++) {
+							subjbtnsarr[i].onclick = function () {
+								if (slidesbar[i].style.display == 'none')
+									slidesbar[i].style.display = ''
+								else slidesbar[i].style.display = 'none'
+							}
+						}
+
+						let savelinkarr = document.getElementsByClassName('savelinktocms');
+
+						for (let z = 0; z < savelinkarr.length; z++) {
+							savelinkarr[z].onclick = function() {
+								let subtype = this.getAttribute('complectationsData-subtype');
+								let lessonid = this.getAttribute('complectationsData-lessonid');
+								let stepid = this.getAttribute('complectationsData-stepid');
+						
+								// Определение нужной ссылки в зависимости от наличия атрибута data-stepid
+								let link;
+								if (!stepid) {
+									link = `https://cms.skyeng.ru/${subtype}/cms/lesson/${lessonid}`;
+								} else {
+									link = `https://cms.skyeng.ru/${subtype}/cms/lesson/${lessonid}/cards/${stepid}/edit`;
+								}
+						
+								copyToClipboardTSM(link);
+							}
+						}
+
+						if (complectationsData.participants[0].role == 'student') {
+							document.getElementById('studnameComplect').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + complectationsData.participants[0].name
+							document.getElementById('studserviceidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 услуги: </span>' + complectationsData.participants[0].educationServiceId
+							document.getElementById('studidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[0].userId
+							document.getElementById('teachnameComplect').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + complectationsData.participants[1].name
+							document.getElementById('teachdidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[1].userId
+							document.getElementById('groupidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 гр: </span>' + complectationsData.groupInfo.externalGroupId
+							document.getElementById('RoomStatus').innerHTML = '<span style="user-select:none; font-size: 17px;">Статус комнаты: </span>' + (complectationsData.status == "success" ? '<span style="color:#00ff5c">success</span>' : `<span style="color:#daf50c">${complectationsData.status}</span>`)
+						} else if (complectationsData.participants[1].role == 'student') {
+							document.getElementById('studnameComplect').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + complectationsData.participants[1].name
+							document.getElementById('studserviceidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 услуги: </span>' + complectationsData.participants[1].educationServiceId
+							document.getElementById('studidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[1].userId
+							document.getElementById('teachnameComplect').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + complectationsData.participants[0].name
+							document.getElementById('teachdidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[0].userId
+							document.getElementById('groupidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 гр: </span>' + complectationsData.groupInfo.externalGroupId
+							document.getElementById('RoomStatus').innerHTML = '<span style="user-select:none; font-size: 17px;">Статус комнаты: </span>' + (complectationsData.status == "success" ? '<span style="color:#00ff5c">success</span>' : `<span style="color:#daf50c">${complectationsData.status}</span>`)
+						}
+					
+			}
+	
+}
+
