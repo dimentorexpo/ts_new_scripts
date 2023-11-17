@@ -236,15 +236,6 @@ function fillchatbox() { //функция наполнения элемента,
                     appendToInfoField(`<div class="event-name">${eventMsg}<span class="event-other-date">${extractTime(message.ts)}</span></div>`);
                 }
 
-                // Further mappings and conditions for "Event"
-                // ... (similar style as the above example)
-
-                // appendToInfoField(`
-                // <div class="event-container">
-                // ${eventmsg}
-                // <span class="event-date">${time}</span>
-                // </div>
-                // `);
                 break;
 
             case "AnswerOperatorWithBot":
@@ -285,187 +276,6 @@ function fillchatbox() { //функция наполнения элемента,
                 break;
         }
     }
-
-
-    /*for (let i = 0; i < convdata.messages.length; i++) {
-        timearr.push(new Date(convdata.messages[i].ts).toLocaleDateString('ru-RU', options))
-        timearr2.push(new Date(convdata.messages[i].ts).toLocaleTimeString('ru-RU', options2))
-        switch (convdata.messages[i].tpe) {
-            case "Question":
-                if (convdata.messages[i].click == undefined) {
-
-                    testarray = convdata.messages[i].txt.match(/<p>(.*?)<\/p>/gm);
-
-                    if (testarray == null) {
-                        brarray = [];
-                        if (convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpg/gm) != null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpeg/gm) == null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*png/gm) == null)
-                            brarray.push(convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpg/gm))
-                        else if (convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpg/gm) == null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpeg/gm) != null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*png/gm) == null)
-                            brarray.push(convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpeg/gm))
-                        else if (convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpg/gm) == null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpeg/gm) == null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*png/gm) != null)
-                            brarray.push(convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*png/gm))
-                        else if (convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpg/gm) == null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpeg/gm) != null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*png/gm) != null)
-                            brarray.push(convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpeg/gm), convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*png/gm))
-                        else if (convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpg/gm) != null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpeg/gm) == null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*png/gm) != null)
-                            brarray.push(convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpg/gm), convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*png/gm))
-                        else if (convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpg/gm) != null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpeg/gm) != null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*png/gm) == null)
-                            brarray.push(convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpeg/gm), convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpg/gm))
-                        else if (convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpg/gm) != null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpeg/gm) != null && convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*png/gm) != null)
-                            brarray.push(convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpeg/gm), convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*jpg/gm), convdata.messages[i].txt.match(/https:\/\/vimbox-resource.*png/gm))
-                        else brarray = null;
-                    }
-
-                    convdata.channelUser.fullName == undefined ? convdata.channelUser.fullName = "Widget" : convdata.channelUser.fullName = convdata.channelUser.fullName
-
-                    if (testarray != null) {
-                        temppics = [];
-
-                        for (let i = 0; i < testarray.length; i++) {
-                            if (testarray[i].match(/https:\/\/vimbox-resource.*jpg/gm) != null)
-                                temppics.push(testarray[i].match(/https:\/\/vimbox-resource.*jpg/gm)[0])
-                            else if (testarray[i].match(/https:\/\/vimbox-resource.*png/gm) != null)
-                                temppics.push(testarray[i].match(/https:\/\/vimbox-resource.*png/gm)[0])
-                            else if (testarray[i].match(/https:\/\/vimbox-resource.*jpeg/gm) != null)
-                                temppics.push(testarray[i].match(/https:\/\/vimbox-resource.*jpeg/gm)[0])
-                        }
-
-                        if (temppics.length == 1) {
-                            document.getElementById('infofield').innerHTML += '<br>' + '<div class="question-event">' + '<span class="question-event-name">' + convdata.channelUser.fullName + '</span>' + '<span class="question-event-date">' + timearr[i] + '</span>' + '<div  class="question-event-text">' + '<br>' + convdata.messages[i].txt.replace(convdata.messages[i].txt.match(/<p>(.*?)<\/p>/gm)[0], `<a href="${temppics[0]}" data-lightbox="pictures"><img src="${temppics[0]}" class="img-chat-history" alt="Изображение"></img></a>`) + '</a>' + '</div>' + '</div>'
-
-                        } else if (temppics.length > 1) {
-
-                            restul = convdata.messages[i].txt;
-                            for (let j = 0; j < temppics.length; j++) {
-                                restul = restul.replace(convdata.messages[i].txt.match(/<p>(.*?)<\/p>/gm)[j], `<a href="${temppics[j]}" data-lightbox="pictures"><img src="${temppics[j]}" class="img-chat-history" alt="Изображение"></img></a>`)
-
-                            }
-
-                            document.getElementById('infofield').innerHTML += '<br>' + '<div class="question-event">' + '<span class="question-event-name">' + convdata.channelUser.fullName + '</span>' + '<span class="question-event-date">' + timearr[i] + '</span>' + '<div  class="question-event-text">' + '<br>' + restul + '</div>' + '</div>'
-                        } else if (temppics.length == 0) {
-                            document.getElementById('infofield').innerHTML += '<br>' + '<div class="question-event">' + '<span class="question-event-name">' + convdata.channelUser.fullName + '</span>' + '<span class="question-event-date">' + timearr[i] + '</span>' + '<div  class="question-event-text">' + '<br>' + convdata.messages[i].txt + '</div>' + '</div>'
-                        }
-                    } else if (brarray != null) {
-
-                        if (brarray.length == 1)
-                            document.getElementById('infofield').innerHTML += '<br>' + '<div class="question-event">' + '<span class="question-event-name">' + convdata.channelUser.fullName + '</span>' + '<span class="question-event-date">' + timearr[i] + '</span>' + '<div  class="question-event-text">' + '<br>' + convdata.messages[i].txt.replace(convdata.messages[i].txt, `<img src="${brarray[0]}" class="img-chat-history"></img>`) + '</div>' + '</div>'
-
-                    } else {
-                        document.getElementById('infofield').innerHTML += '<br>' + '<div class="question-event">' + '<span class="question-event-name">' + convdata.channelUser.fullName + '</span>' + '<span class="question-event-date">' + timearr[i] + '</span>' + '<div  class="question-event-text">' + '<br>' + convdata.messages[i].txt + '</div>' + '</div>'
-                    }
-
-                } else {
-                    document.getElementById('infofield').innerHTML += '<br>' + '<div class="question-event">' + '<span class="question-event-name">' + convdata.channelUser.fullName + '</span>' + '<span class="question-event-date">' + timearr[i] + '</span>' + '<div  class="question-event-text">' + '<br>' + convdata.messages[i].click.clickLabel + '</div>' + '</div>'
-                }
-                break;
-
-            case "Event":
-                let eventmsg;
-
-                if (convdata.messages[i].eventTpe == 'NewConversation')
-                    eventmsg = 'Начат новый диалог'
-                else if (convdata.messages[i].eventTpe == 'RunScenario')
-                    eventmsg = 'Сценарий запущен'
-                else if (convdata.messages[i].eventTpe == 'FirstTimeInQueue')
-                    eventmsg = 'Диалог отправлен в очередь'
-                else if (convdata.messages[i].eventTpe == 'RunIntegration')
-                    eventmsg = 'Запущена интеграция ' + convdata.messages[i].payload.name
-                else if (convdata.messages[i].eventTpe == 'FinishIntegration')
-                    eventmsg = 'Интеграция успешно отработала'
-
-                if (convdata.messages[i].eventTpe != 'AssignToOperator' && convdata.messages[i].eventTpe != 'ReturnToQueue' && convdata.messages[i].eventTpe != 'CloseConversation' && convdata.messages[i].eventTpe != 'CreatedByOperator') {
-                    document.getElementById('infofield').innerHTML += '<div class="event-container">' + eventmsg + '<span class="event-date">' + timearr2[i] + '</span>' + '</div>'
-                } else if (convdata.messages[i].eventTpe == 'AssignToOperator' && convdata.messages[i].payload.status == 'OnOperator' && convdata.messages[i].payload.oid != undefined) {
-                    let operid = convdata.messages[i].payload.oid;
-                    let opername;
-                    opername = operatorsarray.filter(i => (i.operator != null && i.operator != undefined && i.operator.id == operid))
-                    if (opername != '') {
-                        document.getElementById('infofield').innerHTML += '<div class="event-container">' + 'Диалог назначен на ' + opername[0].operator.fullName + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                    } else document.getElementById('infofield').innerHTML += '<div class="event-container">' + 'Диалог назначен на оператора' + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                } else if (convdata.messages[i].eventTpe == 'AssignToOperator' && convdata.messages[i].payload.status == 'AssignedToOperator' && convdata.messages[i].payload.oid != undefined) {
-                    let operid = convdata.messages[i].payload.oid;
-                    let opername;
-                    opername = operatorsarray.filter(i => (i.operator != null && i.operator.id == operid))
-                    if (opername != '') {
-                        document.getElementById('infofield').innerHTML += '<div class="event-container">' + opername[0].operator.fullName + ' взял(а) диалог в работу' + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                    } else {
-                        document.getElementById('infofield').innerHTML += '<div class="event-container">' + 'Оператор взял(а) диалог в работу' + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                    }
-                } else if (convdata.messages[i].eventTpe == 'ReturnToQueue' && convdata.messages[i].payload.sender != undefined && convdata.messages[i].payload.sender != 'timer') {
-                    let operid = convdata.messages[i].payload.sender;
-                    let opername;
-                    opername = operatorsarray.filter(i => (i.operator != null && i.operator.id == operid))
-                    if (opername != '') {
-                        document.getElementById('infofield').innerHTML += '<div class="event-name">' + opername[0].operator.fullName + ' вернул(а) диалог в очередь с тематикой ' + '<br>' + convdata.messages[i].payload.afsName + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                    } else {
-                        document.getElementById('infofield').innerHTML += '<div class="event-name">' + 'Оператор вернул(а) диалог в очередь с тематикой ' + '<br>' + convdata.messages[i].payload.afsName + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                    }
-                } else if (convdata.messages[i].eventTpe == 'ReturnToQueue' && convdata.messages[i].payload.sender == undefined) {
-                    let operid = convdata.messages[i].payload.prevOid;
-                    let opername;
-                    opername = operatorsarray.filter(i => (i.operator != null && i.operator.id == operid))
-                    if (opername != '') {
-                        document.getElementById('infofield').innerHTML += '<div class="event-name">' + 'Диалог вернулся в общую очередь от ' + opername[0].operator.fullName + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                    } else {
-                        document.getElementById('infofield').innerHTML += '<div class="event-name">' + 'Диалог вернулся в общую очередь от оператора' + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                    }
-                } else if (convdata.messages[i].eventTpe == 'ReturnToQueue' && convdata.messages[i].payload.sender != undefined && convdata.messages[i].payload.sender == 'timer') {
-                    document.getElementById('infofield').innerHTML += '<div class="event-name">' + 'Диалог автоматически возвращен в очередь по отсутствию активности оператора' + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                } else if (convdata.messages[i].eventTpe == 'CloseConversation' && convdata.messages[i].payload.status != 'ClosedByBot' && convdata.messages[i].payload.sender == 'userAnswerTimer') {
-                    document.getElementById('infofield').innerHTML += '<div class="event-name">' + 'Диалог автоматически закрыт по отсутствию активности пользователя' + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                } else if (convdata.messages[i].eventTpe == 'CloseConversation' && Object.values(convdata.messages[i].payload) != '' && convdata.messages[i].payload.status != 'ClosedByBot' && convdata.messages[i].payload.sender != 'userAnswerTimer') {
-                    let operidcls = convdata.messages[i].payload.sender;
-                    let opernamecls;
-                    opernamecls = operatorsarray.filter(i => (i.operator != null && i.operator.id == operidcls))
-                    if (opernamecls != '') {
-                        document.getElementById('infofield').innerHTML += '<div class="event-name">' + opernamecls[0].operator.fullName + ' закрыл чат с тематикой:  ' + '<br>' + convdata.messages[i].payload.afsName + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                    } else {
-                        document.getElementById('infofield').innerHTML += '<div class="event-name">' + 'Оператор закрыл чат с тематикой:  ' + '<br>' + convdata.messages[i].payload.afsName + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                    }
-                } else if (convdata.messages[i].eventTpe == 'CloseConversation' && Object.values(convdata.messages[i].payload) == '') {
-                    document.getElementById('infofield').innerHTML += '<div class="event-name">' + convdata.messages[i].eventTpe + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                } else if (convdata.messages[i].eventTpe == 'CreatedByOperator') {
-                    let operid = convdata.messages[i].payload.oid;
-                    let opername;
-                    opername = operatorsarray.filter(i => (i.operator != null && i.operator.id == operid))
-                    if (opername != '') {
-                        document.getElementById('infofield').innerHTML += '<div class="event-name">' + opername[0].operator.fullName + ' открыл(а) новый диалог' + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                    } else {
-                        document.getElementById('infofield').innerHTML += '<div class="event-name">' + 'Оператор открыл(а) новый диалог' + '<span class="event-other-date">' + timearr2[i] + '</span>' + '</div>'
-                    }
-                }
-                break;
-
-            case "AnswerOperatorWithBot":
-                document.getElementById('infofield').innerHTML += '<br>' + '<div class="answer-bot-container">' + '<span class="answer-bot-name">' + 'AutoFAQ bot' + '</span>' + '<span class="answer-bot-date">' + timearr[i] + '</span>' + '<div  class="question-event-text">' + '<br>' + convdata.messages[i].txt + '</div>' + '</div>'
-                break;
-
-            case "AnswerBot":
-                document.getElementById('infofield').innerHTML += '<br>' + '<div class="answer-bot-container">' + '<span class="answer-bot-name">' + 'AutoFAQ bot' + '</span>' + '<span class="answer-bot-date">' + timearr[i] + '</span>' + '<div  class="question-event-text">' + '<br>' + convdata.messages[i].txt + '</div>' + '</div>'
-                break;
-
-            case "AnswerOperator":
-                let operidansw = convdata.messages[i].operatorId
-                let opernameansw;
-                opernameansw = operatorsarray.filter(i => (i.operator != null && i.operator.id == operidansw))
-                document.getElementById('infofield').innerHTML += '<br>' + '<div class="answer-oper-container">' + '<span class="answer-oper-name">' + opernameansw[0].operator.fullName + '</span>' + '<span class="question-event-date">' + timearr[i] + '</span>' + '<div  class="question-event-text">' + '<br>' + convdata.messages[i].txt + '</div>' + '</div>'
-                break;
-
-            case "OperatorComment":
-                if (convdata.messages[i].operatorId != 'autoFAQ') {
-                    let operidanswcom = convdata.messages[i].operatorId
-                    let opernameanswcom;
-                    opernameanswcom = operatorsarray.filter(i => (i.operator != null && i.operator.id == operidanswcom))
-                    if (opernameanswcom != '') {
-                        document.getElementById('infofield').innerHTML += '<br>' + '<div class="oper-comment-container">' + '<span class="oper-comment-name">' + opernameanswcom[0].operator.fullName + '</span>' + '<span class="question-event-date">' + timearr[i] + '</span>' + '<div class="question-event-text">' + '<br>' + convdata.messages[i].txt + '</div>' + '</div>'
-                    } else {
-                        document.getElementById('infofield').innerHTML += '<br>' + '<div class="oper-comment-container">' + '<span class="oper-comment-name">' + 'Оператор' + '</span>' + '<span class="question-event-date">' + timearr[i] + '</span>' + '<div class="question-event-text">' + '<br>' + convdata.messages[i].txt + '</div>' + '</div>'
-                    }
-                } else {
-                    document.getElementById('infofield').innerHTML += '<br>' + '<div class="oper-comment-container">' + '<span class="oper-comment-operator">' + convdata.messages[i].operatorId + '</span>' + '<span class="question-event-date">' + timearr[i] + '</span>' + '<div class="question-event-text">' + '<br>' + convdata.messages[i].txt + '</div>' + '</div>'
-                }
-                break;
-        }
-    }*/
 }
 
 function getFormattedDateComponent(dateComponent) { // функция добавляет 0 к месяцу, дню, минуте, часу если значение меньше 10 иначе просто размещает значение
@@ -474,14 +284,11 @@ function getFormattedDateComponent(dateComponent) { // функция добав
 
 async function findchatsoper() { // ищет активные чаты на выбранном операторе
     let objSel = document.getElementById("operatorstp");
-
     let getdateset = new Date();
-
     let hrs = getdateset.getUTCHours() < 10 ? "0" + (getdateset.getUTCHours()) : getdateset.getUTCHours() >= 24 ? '0' + ((getdateset.getUTCHours() - 24)) : getdateset.getUTCHours();
     let difhrs = hrs - 1 < 10 ? '0' + (hrs - 1) : hrs - 1;
     let mins = getFormattedDateComponent(getdateset.getMinutes());
     let secs = getFormattedDateComponent(getdateset.getUTCSeconds());
-
     flagsearch = 'searchbyoperator'
 
     if (foundarr != '')
@@ -501,7 +308,6 @@ async function findchatsoper() { // ищет активные чаты на вы
 
     if (document.getElementById('comentsbar').style.display == '')
         document.getElementById('comentsbar').style.display = 'none';
-
 
     document.getElementById('infofield').innerHTML = 'Загрузка'
 
@@ -525,7 +331,6 @@ async function findchatsoper() { // ищет активные чаты на вы
                     alert(`У выбранного пользователя ${objSel[i].innerText} нет активных чатов`)
 
                 for (let i = 0; i < operchatsdata.items.length; i++) {
-
                     let tmestmp = new Date((operchatsdata.items[i].ts.split('[GMT]'))[0])
                     let tshrs;
                     let tsmin
@@ -566,21 +371,18 @@ async function findchatsoper() { // ищет активные чаты на вы
                 }
 
                 document.getElementById('infofield').innerHTML = foundarr;
-                checkandchangestyle()
+                checkAndChangeStyle()
 
                 for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
                     document.getElementsByClassName('chatlist')[i].title = operchatsdata.items[i].conversationId
-
                     document.getElementsByClassName('chatlist')[i].onclick = async () => {
-
                         await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementsByClassName('chatlist')[i].title).then(r => r.json()).then(r => convdata = r)
-
                         if (convdata.status != null && convdata.status == 'AssignedToOperator')
                             isChatOnOperator = true
                         else isChatOnOperator = false;
 
                         fillchatbox();
-                        checkandchangestyle();
+                        checkAndChangeStyle();
                     } // конец функции клика по списку в найденном чате
                 }
             }
@@ -638,7 +440,6 @@ document.getElementById('gotocrmhis').onclick = () => { //открывает С�
     window.open(`https://crm2.skyeng.ru/persons/${fdata}`)
 }
 
-
 function changeviewtheme() { //функция переключения темы в истории чатов на светлую(классическуб в стиле АФ) и темную в зависимости от значения переменной полученной в локалсторедж
 
     if (localStorage.getItem('theme') == 'light') {
@@ -651,133 +452,36 @@ function changeviewtheme() { //функция переключения темы 
     }
 }
 
-function checkandchangestyle() { //функция проверки и переклоючения стиля при открытии  самого окна с историей чата
-
-    if (localStorage.getItem('theme') == 'light') {
-
-        for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
-            document.getElementsByClassName('chatlist')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('answer-bot-date').length; i++) {
-            document.getElementsByClassName('answer-bot-date')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('event-name').length; i++) {
-            document.getElementsByClassName('event-name')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('question-event-text').length; i++) {
-            document.getElementsByClassName('question-event-text')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('question-event-name').length; i++) {
-            document.getElementsByClassName('question-event-name')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('event-container').length; i++) {
-            document.getElementsByClassName('event-container')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('oper-comment-name').length; i++) {
-            document.getElementsByClassName('oper-comment-name')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('oper-comment-container').length; i++) {
-            document.getElementsByClassName('oper-comment-container')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('question-event-date').length; i++) {
-            document.getElementsByClassName('question-event-date')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('answer-oper-name').length; i++) {
-            document.getElementsByClassName('answer-oper-name')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('answer-bot-name').length; i++) {
-            document.getElementsByClassName('answer-bot-name')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('oper-comment-operator').length; i++) {
-            document.getElementsByClassName('oper-comment-operator')[i].classList.toggle('light')
-        }
-
-    } else if (localStorage.getItem('theme') == 'dark') {
-
-        for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
-            if (document.getElementsByClassName('chatlist')[i].classList.contains('light'))
-                document.getElementsByClassName('chatlist')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('answer-bot-date').length; i++) {
-            if (document.getElementsByClassName('answer-bot-date')[i].classList.contains('light'))
-                document.getElementsByClassName('answer-bot-date')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('event-name').length; i++) {
-            if (document.getElementsByClassName('event-name')[i].classList.contains('light'))
-                document.getElementsByClassName('event-name')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('question-event-text').length; i++) {
-            if (document.getElementsByClassName('question-event-text')[i].classList.contains('light'))
-                document.getElementsByClassName('question-event-text')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('question-event-name').length; i++) {
-            if (document.getElementsByClassName('question-event-name')[i].classList.contains('light'))
-                document.getElementsByClassName('question-event-name')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('event-container').length; i++) {
-            if (document.getElementsByClassName('event-container')[i].classList.contains('light'))
-                document.getElementsByClassName('event-container')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('oper-comment-name').length; i++) {
-            if (document.getElementsByClassName('oper-comment-name')[i].classList.contains('light'))
-                document.getElementsByClassName('oper-comment-name')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('oper-comment-container').length; i++) {
-            if (document.getElementsByClassName('oper-comment-container')[i].classList.contains('light'))
-                document.getElementsByClassName('oper-comment-container')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('question-event-date').length; i++) {
-            if (document.getElementsByClassName('question-event-date')[i].classList.contains('light'))
-                document.getElementsByClassName('question-event-date')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('answer-oper-name').length; i++) {
-            if (document.getElementsByClassName('answer-oper-name')[i].classList.contains('light'))
-                document.getElementsByClassName('answer-oper-name')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('answer-bot-name').length; i++) {
-            if (document.getElementsByClassName('answer-bot-name')[i].classList.contains('light'))
-                document.getElementsByClassName('answer-bot-name')[i].classList.toggle('light')
-        }
-
-        for (let i = 0; i < document.getElementsByClassName('oper-comment-operator').length; i++) {
-            if (document.getElementsByClassName('oper-comment-operator')[i].classList.contains('light'))
-                document.getElementsByClassName('oper-comment-operator')[i].classList.toggle('light')
+function toggleClassForElements(className, theme) {
+    const elements = document.getElementsByClassName(className);
+    for (let element of elements) {
+        if (theme === 'light') {
+            element.classList.add('light');
+        } else if (theme === 'dark' && element.classList.contains('light')) {
+            element.classList.remove('light');
         }
     }
 }
+
+function checkAndChangeStyle() {
+    const theme = localStorage.getItem('theme');
+    const classNames = ['chatlist', 'answer-bot-date', 'event-name', 'question-event-text', 'question-event-name', 'event-container', 'oper-comment-name', 'oper-comment-container', 'question-event-date', 'answer-oper-name', 'answer-bot-name', 'oper-comment-operator'];
+
+    classNames.forEach(className => toggleClassForElements(className, theme));
+}
+
 
 document.getElementById('chagetheme').onclick = () => { //функция переключения  по кнопке темы в истории чатов на светлую(классическуб в стиле АФ) и темную
     if (localStorage.getItem('theme') == 'light') {
         localStorage.setItem('theme', 'dark')
         document.getElementById('chagetheme').innerHTML = '🌛'
         document.getElementById('infofield').style.background = "#464451";
-        checkandchangestyle();
+        checkAndChangeStyle();
     } else if (localStorage.getItem('theme') == 'dark') {
         localStorage.setItem('theme', 'light')
         document.getElementById('chagetheme').innerHTML = '☀'
         document.getElementById('infofield').style.background = "#f5f5f5";
-        checkandchangestyle();
+        checkAndChangeStyle();
     }
 };
 
@@ -1056,7 +760,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
             }
 
             document.getElementById('infofield').innerHTML = foundarr;
-            checkandchangestyle()
+            checkAndChangeStyle()
 
             for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
                 document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
@@ -1069,7 +773,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
                     else isChatOnOperator = false;
 
                     fillchatbox();
-                    checkandchangestyle();
+                    checkAndChangeStyle();
                 } // конец функции клика по списку в найденном чате
             }
 
@@ -1082,7 +786,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
             else isChatOnOperator = false;
 
             fillchatbox();
-            checkandchangestyle();
+            checkAndChangeStyle();
 
         } else alert("Введено и ID пользователя и хеш чата, или оба поля пустые. Пожалуйста, выберите что-то одно и повторите попытку.")
     } // конец функции клика найти
@@ -1097,7 +801,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
 
         if (foundarr != '' && foundarr != null && foundarr != undefined) {
             document.getElementById('infofield').innerHTML = foundarr;
-            checkandchangestyle();
+            checkAndChangeStyle();
 
             for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
                 if (flagsearch == 'searchbyuser')
@@ -1121,7 +825,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
                     else isChatOnOperator = false;
 
                     fillchatbox();
-                    checkandchangestyle();
+                    checkAndChangeStyle();
                 } // конец функции клика по списку в найденном чате
             }
         }
@@ -1142,7 +846,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
             else isChatOnOperator = false;
 
             fillchatbox();
-            checkandchangestyle();
+            checkAndChangeStyle();
         }
     } // конец обработчика кнопки "Обновить"
 
@@ -1293,7 +997,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
                             await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
 
                             fillchatbox();
-                            checkandchangestyle();
+                            checkAndChangeStyle();
                         }
                     }, 1000);
 
@@ -1336,7 +1040,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
                             else isChatOnOperator = false;
 
                             fillchatbox();
-                            checkandchangestyle();
+                            checkAndChangeStyle();
                         }
                     }, 1000);
             }
@@ -1382,7 +1086,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
 
                             await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
                             fillchatbox();
-                            checkandchangestyle();
+                            checkAndChangeStyle();
                         }
                     }, 1000);
 
@@ -1425,7 +1129,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
                             else isChatOnOperator = false;
 
                             fillchatbox();
-                            checkandchangestyle();
+                            checkAndChangeStyle();
                         }
                     }, 1000);
             }
