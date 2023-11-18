@@ -1,41 +1,43 @@
 {
+  "manifest_version": 3,
   "name": "Technical Support Master",
   "short_name": "TSM",
-  "description": "Удобное контекстное меню с разными плюшками и опциями, помогающими в работе",
-  "version": "1.6.1",
+  "description": "Контекстное и вспомогательное меню с дополнительными функциями для личного кабинета пользователей",
+  "version": "2.0.0",
   "permissions": [
-		"contextMenus",
-		"tabs",
-		"storage",
-		"*://*.skyeng.ru/*",
-		"*://skyeng.autofaq.ai/*",
-		"*://*.slack.com/*",
-		"*://jira.skyeng.tech/*",
-		"*://mattermost.skyeng.tech/*",
-		"*://mm-time.skyeng.tech/*"
-	],
+    "contextMenus",
+    "tabs",
+    "*://*.skyeng.ru/*",
+    "*://skyeng.autofaq.ai/*",
+    "*://jira.skyeng.tech/*",
+    "*://mm-time.skyeng.tech/*"
+  ],
+  "host_permissions": [
+    "*://*.skyeng.ru/*",
+    "*://skyeng.autofaq.ai/*",
+    "*://jira.skyeng.tech/*",
+    "*://mm-time.skyeng.tech/*"
+  ],
   "background": {
-    "scripts": ["app.js"]
+    "service_worker": "app.js"
   },
-  "browser_action": {
-    "default_icon": "32.png"
+  "action": {
+    "default_icon": {
+      "32": "/Icons/32.png"
+    },
+    "default_title": "TSM - Technical Support Master Personal Cabinet Multitool"
   },
   "content_scripts": [
-	{
-		"js": ["stat.js"],
-		"matches": ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*"]
-	},
-		{
-		"js": ["content.js"],
-		"matches": ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*"],
-		"run_at": "document_end"
-	}
-	],
-  "icons" : {
-		"16" : "16.png",
-		"32" : "32.png",
-		"48" : "48.png",
-		"128" : "128.png"
-	},
-  "manifest_version": 2
+    {
+      "js": ["content.js"],
+      "matches": ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "/Icons/16.png",
+    "32": "/Icons/32.png",
+    "48": "/Icons/48.png",
+    "128": "/Icons/128.png"
+  }
 }
