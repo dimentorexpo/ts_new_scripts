@@ -31,7 +31,20 @@
     {
       "js": ["content.js"],
       "matches": ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*"],
-      "run_at": "document_end"
+      "run_at": "document_idle"
+    },
+    {	  
+      "js": [ 
+        "/Modules/chats.js",
+        "/Modules/exercises.js",
+        "/Modules/lessoninfo.js",
+        "/Modules/main.js",
+        "/Modules/students.js",
+        "/Modules/vocabulary.js"
+      ],
+      "css": ["/CSS/styles.css"],
+      "matches": ["*://*.skyeng.ru/*"],
+      "run_at": "document_idle"
     }
   ],
   "icons": {
