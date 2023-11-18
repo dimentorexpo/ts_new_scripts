@@ -1,8 +1,13 @@
 const messangerlink = "https://mm-time.skyeng.tech/skyeng/pl/";
-
 const servicesites = ["skyeng.autofaq.ai","crm2.skyeng.ru"];
+let isIframeListenerSet = false;
 let lastChatIdF = null; // Глобальная переменная для хранения последнего chatid
-
+let attemptCount = 0;
+const MAX_ATTEMPTS = 60;
+//From TSM.js
+let allowedSites = ["vimbox.skyeng.ru", "new-teachers.skyeng.ru", "teachers.skyeng.ru", "student.skyeng.ru", "ttc.skyeng.ru"];
+let token;
+// end of TSM.js global vars
 if (servicesites.includes(location.host)) { initTSM() }
 
 function initTSM() {
@@ -84,8 +89,6 @@ const copyToClipboardBack = str => { // функция копирования в
     document.body.removeChild(el);
 };
 
-let isIframeListenerSet = false;
-
 function setSelectionListener(doc) {
     doc.addEventListener('selectionchange', function() {
         let selectedText = doc.getSelection().toString().trim();
@@ -112,10 +115,6 @@ function setSelectionListener(doc) {
         isIframeListenerSet = true;
     }
 }
-
-
-let attemptCount = 0;
-const MAX_ATTEMPTS = 60;
 
 function checkIframeLoaded() {
     if (attemptCount >= MAX_ATTEMPTS) {
@@ -174,55 +173,6 @@ if (window.location.href === "https://skyeng.autofaq.ai/tickets/assigned") {
 }
 
 ////////////////////////////Added from TSM.js\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
-let allowedSites = ["vimbox.skyeng.ru", "new-teachers.skyeng.ru", "teachers.skyeng.ru", "student.skyeng.ru", "ttc.skyeng.ru"];
-let token;
-
-function loadmoduls(TSMScript){ // загрузка доп. модулей расширения
-    let create = (info) => {
-        return new Promise(function (resolve, reject) {
-            let gfgData = document.createElement("script");
-            gfgData.src = info;
-            gfgData.async = false;
-            gfgData.onload = () => {
-                resolve(info);
-            };
-            gfgData.onerror = () => {
-                reject(info);
-            };
-            document.body.appendChild(gfgData);
-        });
-    };
-
-    let promiseData = [];
-    TSMScript.forEach(function (info) {
-        promiseData.push(create(info));
-    });
-    Promise.all(promiseData).then(function () {
-        console.log('%c ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄       ▄▄ \n▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░▌     ▐░░▌\n ▀▀▀▀█░█▀▀▀▀ ▐░█▀▀▀▀▀▀▀▀▀ ▐░▌░▌   ▐░▐░▌\n     ▐░▌     ▐░▌          ▐░▌▐░▌ ▐░▌▐░▌\n     ▐░▌     ▐░█▄▄▄▄▄▄▄▄▄ ▐░▌ ▐░▐░▌ ▐░▌\n     ▐░▌     ▐░░░░░░░░░░░▌▐░▌  ▐░▌  ▐░▌\n     ▐░▌      ▀▀▀▀▀▀▀▀▀█░▌▐░▌   ▀   ▐░▌\n     ▐░▌               ▐░▌▐░▌       ▐░▌\n     ▐░▌      ▄▄▄▄▄▄▄▄▄█░▌▐░▌       ▐░▌\n     ▐░▌     ▐░░░░░░░░░░░▌▐░▌       ▐░▌\n      ▀       ▀▀▀▀▀▀▀▀▀▀▀  ▀         ▀  \n', 'color: Limegreen;');
-    }).catch(function (gfgData) {
-        console.log(gfgData + " failed to load!");
-    });
-}
-
-function firstLoad() { //первичаня загрузка страницы
-        let mystyles = document.createElement('link')
-		mystyles.rel = 'stylesheet'
-		mystyles.href = "https://dimentorexpo.github.io/TSM/CSS/styles.css" // подключаем модуль стилей 
-		document.querySelector('head').append(mystyles)
-
-        let TSMScript = [
-        "https://dimentorexpo.github.io/TSM/Modules/main.js", // подключаем модуль главного окна
-		"https://dimentorexpo.github.io/TSM/Modules/chats.js", // подключаем модуль окна работы с чатами
-        "https://dimentorexpo.github.io/TSM/Modules/lessoninfo.js", // подключаем модуль окна получения информации по уроку
-        "https://dimentorexpo.github.io/TSM/Modules/students.js", // подключаем модуль окна работы с учениками
-        "https://dimentorexpo.github.io/TSM/Modules/exercises.js", // подключаем модуль окна работы с домашками
-        "https://dimentorexpo.github.io/TSM/Modules/vocabulary.js" // подключаем модуль окна словаря
-		];
-    loadmoduls(TSMScript)
-}
-
-if (allowedSites.includes(location.host)) { firstLoad() } // если нужная страница загружаем расширение
 
 function checkelementt(a) { // проверка на какой элемент нажали
     let elem = document.elementFromPoint(a.clientX, a.clientY)
@@ -284,3 +234,12 @@ function fetchaddchat(userid1, userid2, method) { //вспомогательна
         "credentials": "include"
     });
 }
+
+// Контентный скрипт
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "copyToClipboard") {
+        navigator.clipboard.writeText(message.text)
+            .then(() => console.log('Текст скопирован в буфер обмена'))
+            .catch(err => console.error('Ошибка при копировании текста: ', err));
+    }
+});
