@@ -159,42 +159,42 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 // Функции для обработки действий
-function searchpayment(info, tab) {
+function searchpayment(info, tab) { //опция открывает поиск платежа
     const createProperties = {url: encodeURI("https://accounting.skyeng.ru/userpayment/search/transaction")};
     chrome.tabs.create(createProperties);
 }
 
-function balanceinfo(info, tab) {
+function balanceinfo(info, tab) { //опция открывает раздел Начислятор для просмотра баланса
     const createProperties = {url: encodeURI("https://billing-api.skyeng.ru/operations")};
     chrome.tabs.create(createProperties);
 }
 
-function certandpromo(info, tab){
+function certandpromo(info, tab){ //опция открывает раздел с сертификатом и промокодами
 	const createProperties = {url: encodeURI("https://billing-marketing.skyeng.ru/certificate/certSearch")};
 	chrome.tabs.create(createProperties);
 }
 
-function opentt(info, tab){
+function opentt(info, tab){ // опция открывает раздел Timetable
 	const createProperties = {url: encodeURI("https://timetable.skyeng.ru/")};
 	chrome.tabs.create(createProperties);
 }
 
-function opencalendar(info, tab){
+function opencalendar(info, tab){ // опция открывает datsy.info
 	const createProperties = {url: encodeURI("https://datsy.info/")};
 	chrome.tabs.create(createProperties);
 }
 
-function makecompens(info, tab){
+function makecompens(info, tab){ // опция открывает сайт с созданием компенсации
 	const createProperties = {url: encodeURI("https://billing-marketing.skyeng.ru/accrual-operations/create")};
 	chrome.tabs.create(createProperties);
 }
 
-function opentalksadm(info, tab){
+function opentalksadm(info, tab){ // опция открывает админку Talks
 	const createProperties = {url: encodeURI("https://vimbox.skyeng.ru/talks/admin/statistics")};
 	chrome.tabs.create(createProperties);
 }
 
-async function sendtodisaster(info, tab){
+async function sendtodisaster(info, tab){ // опция отправляет сообщение в дизастер канал
    if (!MMostOperId) { 
         MMostOperId = await getMMostOperId();
     }
@@ -282,7 +282,7 @@ function extractLoginLink(text) {
     return null;
 }
 
-function dologginer(info, tab) {
+function dologginer(info, tab) { // создание ссылки логинера
     let selid = info.selectionText.replace(/\D/g, '');
     let tokenId = null; // Установите соответствующий токен здесь
 
@@ -307,8 +307,6 @@ function dologginer(info, tab) {
     });
 }
 
-
-
 function opencrmid(info, tab){ //открытие СРМки по выделенному ID пользователя
 	let selid = info.selectionText.replace(/\D/g, '');
 	const createProperties = { url: encodeURI("https://crm2.skyeng.ru/persons/" + selid) };
@@ -330,23 +328,14 @@ function editadmacc(info, tab){ //открытие админки по выде�
 function copytoskipap(info, tab) { // копирование ссылки для пропуска АП
     let selid = info.selectionText.replace(/\D/g, '');
     let textToCopy = "https://student.skyeng.ru/product-stage?stage=auto-schedule&educationServiceId=" + selid;
-
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        console.log('Текст скопирован в буфер обмена: ' + textToCopy);
-    }).catch(err => {
-        console.error('Ошибка при копировании текста: ', err);
-    });
+	chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: textToCopy });
+	
 }
 
 function copytoskipob(info, tab) { // копирование ссылки для пропуска Onboarding
     let selid = info.selectionText.replace(/\D/g, '');
     let textToCopy = "https://student.skyeng.ru/product-stage?stage=onboarding&educationServiceId=" + selid;
-
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        console.log('Текст скопирован в буфер обмена: ' + textToCopy);
-    }).catch(err => {
-        console.error('Ошибка при копировании текста: ', err);
-    });
+	chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: textToCopy });
 }
 
 function opentrm(info, tab){ //опция для открытия TRM2
@@ -366,7 +355,7 @@ const createProperties = { url: encodeURI("https://video-trouble-shooter.skyeng.
 	chrome.tabs.create(createProperties);
 }
 
-async function cancelishodcall(info, tab){
+async function cancelishodcall(info, tab){ 
 	MMostOperId = await getMMostOperId();
 	if (MMostOperId) { 
 		const message = `@techsupport-1line-crm2 ${i.linkUrl} Охрана - отмена 🚫`;
