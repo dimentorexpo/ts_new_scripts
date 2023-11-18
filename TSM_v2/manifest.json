@@ -6,16 +6,11 @@
   "version": "2.0.0",
   "permissions": [
     "contextMenus",
-    "tabs",
-    "*://*.skyeng.ru/*",
-    "*://skyeng.autofaq.ai/*",
-    "*://jira.skyeng.tech/*",
-    "*://mm-time.skyeng.tech/*"
+    "tabs"
   ],
   "host_permissions": [
     "*://*.skyeng.ru/*",
     "*://skyeng.autofaq.ai/*",
-    "*://jira.skyeng.tech/*",
     "*://mm-time.skyeng.tech/*"
   ],
   "background": {
