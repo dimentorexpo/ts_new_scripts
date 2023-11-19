@@ -570,6 +570,8 @@ function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, s
     })
 }
 
+const inputsFieldsSD = document.getElementById('inputfieldsdiv');
+
 function getservDskPress() { // функция открытия главного окна SD +
     if (document.getElementById('AF_ServDsk').style.display == '') {
         document.getElementById('AF_ServDsk').style.display = 'none'
