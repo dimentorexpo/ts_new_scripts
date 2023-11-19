@@ -15,6 +15,8 @@ let flagpsis = 0;
 let msgissnd = 0;
 let varinfraOID; //переменная для хранения значения ID оператора в Infra
 
+const Paragrafsstyles = "color: bisque; font-size: 18px; position: relative; width: 95%; margin-top: 5px; margin-bottom: 5px;";
+
 const buttons = [ //array of buttonsnames
     '.edumodbtn',
     '.bilqabtn',
@@ -60,69 +62,69 @@ const otherOptions = [ // array of buttons categories id's
 ];
 
 var win_servicedesk = // описание элементов окна Service Desk
-    `<div style="display: flex; width: 480px;">
-		<span style="width: 480px">
+    `<div style="display: flex; width: 520px;">
+		<span style="width: 520px">
         <span style="cursor: -webkit-grab;">
-                <div style="margin: 5px; width: 480px;" id="SrvDskSummary">
+                <div style="margin: 5px; width: 510px;" id="SrvDskSummary">
                         <button id="hideMeSrvDsk" class="mainButton buttonHide">hide</button>
-						<button class="mainButton" id="refreshjiraauth" title="Перепроверить авторизацию в Jira">🔄</button>
-                        <button class="mainButton" id="infratasklist" title="Открыть список своих задач в Infra">📑</button>
-						<button class="mainButton" id="ServiceDeskinstr" title="Инструкция по этой форме">❓</button>
+						<button class="mainButton smallbtn" id="refreshjiraauth" title="Перепроверить авторизацию в Jira">🔄</button>
+                        <button class="mainButton smallbtn" id="infratasklist" title="Открыть список своих задач в Infra">📑</button>
+						<button class="mainButton smallbtn" id="ServiceDeskinstr" title="Инструкция по этой форме">❓</button>
 						<span style="color:bisque">Infra Id:</span>
 						<span id="jiratknstatus">🟢</span>
 						<span style="color:yellow">Prev.tsk</span>
-						<button class="mainButton" id="prevtask" style="width: 78px" title="Предыдущая задача"></button>
+						<button class="mainButton" id="prevtask" style="width: 85px" title="Предыдущая задача"></button>
 						<span style="color:cyan">Last tsk</span>
-						<button class="mainButton" id="newtask" style="width: 78px" title="Последняя задача"></button>
+						<button class="mainButton" id="newtask" style="width: 85px" title="Последняя задача"></button>
                 </div>
-                <div id="servicedeskinfo" style="margin-left:20px;">
-                    <button class="mainButton sdbtn" id="optionTeacher" value="36" style="margin-left:2px; width:80px;">👺Corp</button>
-                    <button class="mainButton sdbtn" id="optionCRM2" value="26" style="margin-left:2px; width:80px;">🧮CRM2</button>
-                    <button class="mainButton sdbtn" id="optionAuth" value="20" style="margin-left:2px; width:80px;">🔐Auth</button>
-                    <button class="mainButton sdbtn" id="optionSchedule" value="33" style="margin-left:2px; width:80px;">📆Schedul</button>
-                    <button class="mainButton sdbtn" id="optionBillingQA" value="22" style="margin-left:2px; width:80px;">💲Billing-QA</button>
-                    <button class="mainButton sdbtn" id="optionOnboarding" value="23" style="margin-left:2px; margin-top:2px; width:80px;">♻Onboard</button>
-                    <button class="mainButton sdbtn" id="optionBilling"  value="21" style="margin-left:2px; margin-top:2px; width:80px;">💰Billing</button>
-                    <button class="mainButton sdbtn" id="optionMrktbill"  value="31" style="margin-left:2px; margin-top:2px; width:80px;">📈Mrkt-Bill</button>
-                    <button class="mainButton sdbtn" id="optionVimbugs" value="38" style="margin-left:2px; margin-top:2px; width:80px;">🐞Vim-bug</button>
-                    <button class="mainButton sdbtn" id="optionVimvideocall" value="39" style="margin-left:2px; margin-top:2px; width:80px;">📸Vid-call</button>
-                    <button class="mainButton sdbtn" id="optionStudcab" value="34" style="margin-left:2px; margin-top:2px; width:80px;">👨‍🎓Studcab</button>
-                    <button class="mainButton sdbtn" id="optionChat" value="24" style="margin-left:2px; margin-top:2px; width:80px;">💬Chat</button>
-                    <button class="mainButton sdbtn" id="optionTripwire" value="27" style="margin-left:2px; margin-top:2px; width:80px;">🗣Tripwire</button>
-                    <button class="mainButton sdbtn" id="optionEdModel" value="28" style="margin-left:2px; margin-top:2px; width:80px;">🎓SmartL</button>
-                    <button class="mainButton sdbtn" id="optionStudcabmobbugs" value="35" style="margin-left:2px; margin-top:2px; width:80px;">👨‍🎓📱Bugs</button>
-					<button class="mainButton sdbtn" id="optionMobbugs" value="30" style="margin-left:2px; margin-top:2px; width:80px;">📱Mobil bug</button>
-                    <button class="mainButton sdbtn" id="optionAcademymobbugs" value="19" style="margin-left:2px; margin-top:2px; width:80px;">🅰📱🐞</button>
-                    <button class="mainButton sdbtn" id="optionCommProblems" value="75" style="margin-left:2px; margin-top:2px; width:80px;">📧Comm</button>
-                    <button class="mainButton sdbtn" id="optionAnalyst" value="18" style="margin-left:2px; margin-top:2px; width:80px; display: none;">TEST</button>
+                <div id="servicedeskinfo" style="margin-left:10px;">
+                    <button class="mainButton sdbtn" id="optionTeacher" value="36">👺Corp</button>
+                    <button class="mainButton sdbtn" id="optionCRM2" value="26" >🧮CRM2</button>
+                    <button class="mainButton sdbtn" id="optionAuth" value="20">🔐Auth</button>
+                    <button class="mainButton sdbtn" id="optionSchedule" value="33">📆Schedul</button>
+                    <button class="mainButton sdbtn" id="optionBillingQA" value="22">💲Billing-QA</button>
+                    <button class="mainButton sdbtn" id="optionOnboarding" value="23">♻Onboard</button>
+                    <button class="mainButton sdbtn" id="optionBilling" value="21">💰Billing</button>
+                    <button class="mainButton sdbtn" id="optionMrktbill" value="31">📈Mrkt-Bill</button>
+                    <button class="mainButton sdbtn" id="optionVimbugs" value="38">🐞Vim-bug</button>
+                    <button class="mainButton sdbtn" id="optionVimvideocall" value="39">📸Vid-call</button>
+                    <button class="mainButton sdbtn" id="optionStudcab" value="34">👨‍🎓Studcab</button>
+                    <button class="mainButton sdbtn" id="optionChat" value="24">💬Chat</button>
+                    <button class="mainButton sdbtn" id="optionTripwire" value="27">🗣Tripwire</button>
+                    <button class="mainButton sdbtn" id="optionEdModel" value="28">🎓SmartL</button>
+                    <button class="mainButton sdbtn" id="optionStudcabmobbugs" value="35">👨‍🎓📱Bugs</button>
+					<button class="mainButton sdbtn" id="optionMobbugs" value="30">📱Mobil bug</button>
+                    <button class="mainButton sdbtn" id="optionAcademymobbugs" value="19">🅰📱🐞</button>
+                    <button class="mainButton sdbtn" id="optionCommProblems" value="75">📧Comm</button>
+                    <button class="mainButton sdbtn" id="optionAnalyst" value="18" style="display: none;">TEST</button>
                 </div>
 				<div id="studcabmobbugskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#student-cabinet-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
+					<p style="${Paragrafsstyles}">#student-cabinet-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
 
 				</div>
 
 				<div id="teacherssrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#promise-keepers-qa-support; канал по вопросам corp учеников</p>
+					<p style="${Paragrafsstyles}">#promise-keepers-qa-support; канал по вопросам corp учеников</p>
 
 				</div>
 				<div id="crm2srvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:160px; width:90%;">#crm2-support</p>
+					<p style="${Paragrafsstyles}">#crm2-support</p>
 
 				</div>
 				<div id="authsrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#auth; Обсуждение общих вопросов по проектам Auth/ID (авторизация, роли и доступы, данные пользователей и т. д.)</p>
+					<p style="${Paragrafsstyles}">#auth; Обсуждение общих вопросов по проектам Auth/ID (авторизация, роли и доступы, данные пользователей и т. д.)</p>
 
 				</div>
 				<div id="schedulesrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#study-coordinations-qa-support Канал по вопросам расписания ученика, ТТ, TRM, автоподбора и ручного подбора</p>
+					<p style="${Paragrafsstyles}">#study-coordinations-qa-support Канал по вопросам расписания ученика, ТТ, TRM, автоподбора и ручного подбора</p>
 
 				</div>
 				<div id="billingqasrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#billing-qa-support; Канал для рассмотрения причины расхождений баланса учеников</p>
+					<p style="${Paragrafsstyles}">#billing-qa-support; Канал для рассмотрения причины расхождений баланса учеников</p>
 
 				</div>
 				<div id="c1srvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#c1-support; Поддержка витрины оплаты (Не виджет оплаты в pcs), Onboarding (Kids&Adult), Scoring, AutoIntroLesson (АвтоВУ)</p>
+					<p style="${Paragrafsstyles}">#c1-support; Поддержка витрины оплаты (Не виджет оплаты в pcs), Onboarding (Kids&Adult), Scoring, AutoIntroLesson (АвтоВУ)</p>
 
 				</div>
 				<div id="billingsrvdskoptions" style="display: none; margin-left:20px;">
@@ -130,19 +132,19 @@ var win_servicedesk = // описание элементов окна Service De
 
 				</div>
                 <div id="mrktbillrvdskoptions" style="display: none; margin-left:20px;">
-                    <p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#mrkt-bill-questions; Канал для вопросов по промокодам, сертификатам, реферальной программе</p>
+                    <p style="${Paragrafsstyles}">#mrkt-bill-questions; Канал для вопросов по промокодам, сертификатам, реферальной программе</p>
 
                 </div>
 				<div id="vimbugsoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#vim-bugs; Проблемы с Vimbox/Smartroom</p>
+					<p style="${Paragrafsstyles}">#vim-bugs; Проблемы с Vimbox/Smartroom</p>
 
 				</div>
 				<div id="edumodeloptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#smart-learning-qa-support: Канал для обращений по функционалу Educational Model</p>
+					<p style="${Paragrafsstyles}">#smart-learning-qa-support: Канал для обращений по функционалу Educational Model</p>
 
 				</div>
 				<div id="vimvidoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#vim-video-call; Разработка модуля видеосвязи</p>
+					<p style="${Paragrafsstyles}">#vim-video-call; Разработка модуля видеосвязи</p>
 
 				</div>
                 <div id="chatqaoptions" style="display: none; margin-left:20px;">
@@ -150,38 +152,38 @@ var win_servicedesk = // описание элементов окна Service De
 
                 </div>
 				<div id="tripwireoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#eco-tripwire-bugs; Life, Talks, РК adults, расширение переводчик для браузера</p>
+					<p style="${Paragrafsstyles}">#eco-tripwire-bugs; Life, Talks, РК adults, расширение переводчик для браузера</p>
 
 				</div>
 				<div id="analystoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#analysts-gm-tl; канал МЕРТВЫЙ НЕ ИСПОЛЬЗУЕМ В РАБОТЕ, ЭТО НЕ ШУТКА!, ТОЛЬКО ДЛЯ ТЕСТИРОВАНИЯ!</p>
+					<p style="${Paragrafsstyles}">#analysts-gm-tl; канал МЕРТВЫЙ НЕ ИСПОЛЬЗУЕМ В РАБОТЕ, ЭТО НЕ ШУТКА!, ТОЛЬКО ДЛЯ ТЕСТИРОВАНИЯ!</p>
 
 				</div>
 				<div id="mobbugsoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#mobile-bugs; Канал обработки обращений по мобильному приложению Skyeng и Teachers.</p>
+					<p style="${Paragrafsstyles}">#mobile-bugs; Канал обработки обращений по мобильному приложению Skyeng и Teachers.</p>
 
 				</div>
 
 				<div id="academymobbugsoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#academic-mobile-bugs; Канал обработки обращений по МП Skyeng связанных с обучением.</p>
+					<p style="${Paragrafsstyles}">#academic-mobile-bugs; Канал обработки обращений по МП Skyeng связанных с обучением.</p>
 
 				</div>
 
                 <div id="CommProblemsoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#communication-problems</p>
+					<p style="${Paragrafsstyles}">#communication-problems</p>
 
 				</div>
 
                 <div id="studcaboptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#student-cabinet-bugs; Сообщаем о проблемах во взрослом и детском ЛКУ (страницы на домене student.skyeng.ru), в ЛККК и в ЛКП</p>
+					<p style="${Paragrafsstyles}">#student-cabinet-bugs; Сообщаем о проблемах во взрослом и детском ЛКУ (страницы на домене student.skyeng.ru), в ЛККК и в ЛКП</p>
 
                 </div>
 
-				<div id="buttonsfromtest" style="margin-left: 4%; margin-bottom: 5px; max-height: 200px; overflow-x: hidden; overflow-y: auto;">
+				<div id="buttonsfromtest" style="margin-left: 2%; margin-bottom: 5px; max-height: 200px; overflow-x: hidden; overflow-y: auto;">
 				</div>
 
 				<div id="inputfieldsdiv" style="display: none;">
-					<select style="height:28px; margin-left: 21px; margin-top: 5px; display: none;" id="prioritymbugs">
+					<select style="height:28px; margin-left: 21px; margin-top: 5px; font-size: 14px; display: none;" id="prioritymbugs">
 							<option selected disabled="">Приоритет</option>
 							<option value="Blocker">Blocker</option>
 							<option value="Critical">Critical</option>
@@ -190,21 +192,21 @@ var win_servicedesk = // описание элементов окна Service De
 							<option value="Minor">Minor</option>
 							<option value="Trivial">Trivial</option>
 					    </select>
-                    <select style="height:28px; width: 420px; margin-left: 21px; margin-top: 5px; display: none;" id="categoryCommproblems">
+                    <select style="height:28px; width: 90%; font-size: 14px; margin-left: 21px; margin-top: 5px; display: none;" id="categoryCommproblems">
                             <option selected disabled="">Категория проблемы</option>
                         </select>
                     <input id="custom_CMS" placeholder="Ссылка на CMS" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
-					<input id="custom_id" placeholder="ID Пользователей (Id П, Id У)"  class="sdcustfieldformlines removefield" style="margin-left: 21px;">
+					<input id="custom_id" placeholder="ID Пользователей (Id П, Id У)" class="sdcustfieldformlines removefield" style="margin-left: 21px;">
                     <input id="custom_service" placeholder="ID Услуги" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
                     <input id="custom_hesh" placeholder="Хэш урока" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
-                    <input id="custom_email" placeholder="Почта пользователей"  class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
-                    <input id="custom_appinfo" placeholder="Приложение / Версия / Платформа"  class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;"></input>
-                    <input id="custom_deviceinfo" placeholder="Девайс / ОС"  class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;"></input>
-					<textarea id="custom_descr" placeholder="Описание проблемы"  class="sdcustfieldformlines removefield" style="margin-left: 21px;"></textarea>
-					<textarea id="custom_str" placeholder="Как воспроизвести ошибку?"  class="sdcustfieldformlines removefield" style="margin-left: 21px;"></textarea>
-					<textarea id="custom_er" placeholder="Ожидаемое поведение"  class="sdexpecactual removefield" style="margin-left: 21px;"></textarea>
-					<textarea id="custom_ar" placeholder="Фактическое поведение"  class="sdexpecactual removefield" style="margin-left: 21px;"></textarea>
-					<button class="mainButton" id="createsd" style="width: 150px; position:relative; left:30%; margin-bottom:5px;">Создать</button>
+                    <input id="custom_email" placeholder="Почта пользователей" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
+                    <input id="custom_appinfo" placeholder="Приложение / Версия / Платформа" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;"></input>
+                    <input id="custom_deviceinfo" placeholder="Девайс / ОС" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;"></input>
+					<textarea id="custom_descr" placeholder="Описание проблемы" class="sdcustfieldformlines removefield" style="margin-left: 21px;"></textarea>
+					<textarea id="custom_str" placeholder="Как воспроизвести ошибку?" class="sdcustfieldformlines removefield" style="margin-left: 21px;"></textarea>
+					<textarea id="custom_er" placeholder="Ожидаемое поведение" class="sdexpecactual removefield" style="margin-left: 21px;"></textarea>
+					<textarea id="custom_ar" placeholder="Фактическое поведение" class="sdexpecactual removefield" style="margin-left: 21px;"></textarea>
+					<button class="mainButton" id="createsd" style="width: 150px; position:relative; left:35%; margin-bottom:5px;">Создать</button>
 				</div>
 	        </span>
 		</span>

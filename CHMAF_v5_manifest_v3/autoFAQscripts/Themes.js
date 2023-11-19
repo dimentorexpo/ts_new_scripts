@@ -1,7 +1,7 @@
 var tableth;
-var btnthstyls = 'margin-left:2px; width:150px; height: 44px;';
-var btnTagsTPtyles = 'margin-left:2px; width:125px; height: 25px;';
-var btnTagsKCtyles = 'margin-left:2px; width:150px; height: 25px;';
+var btnthstyls = 'margin-left:5px; width:160px; height: 44px;';
+var btnTagsTPtyles = 'margin-left:5px; width:135px; height: 25px;';
+var btnTagsKCtyles = 'margin-left:5px; width:160px; height: 25px;';
 var chbxTagstyles = 'margin: 2px; width: 20px;';
 var KCThemesFlag = 0;
 
@@ -11,28 +11,28 @@ var win_Themes =  // описание элементов окна Тематик
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 350;" id="themes_header">
                                 <button class="mainButton buttonHide" title="скрывает меню" id="hideMeThemes">hide</button>
-								<button class="mainButton" id="ClearSmartroomData" title="Очищает выбранные тэги">🧹</button>
-								<button class="mainButton" id="backtomenu" style="width: 28px; height: 28px; font-size: 14px; display:none">🔙</button>
-								<button class="mainButton" id="themesinstr" style="float:right;" title="Инструкция по этой форме">❓</button>
-                                <button class="mainButton" id="getnewthdata" title="Обновляет тематики из документа с шаблонами без необходимости обновлять страницу для актуализации" style="width:27px; float: right; margin-right: 5px">🔄</button>
+								<button class="mainButton smallbtn" id="ClearSmartroomData" title="Очищает выбранные тэги">🧹</button>
+								<button class="mainButton smallbtn" id="backtomenu" style="display:none">🔙</button>
+								<button class="mainButton smallbtn" id="themesinstr" style="float:right;" title="Инструкция по этой форме">❓</button>
+                                <button class="mainButton smallbtn" id="getnewthdata" title="Обновляет тематики из документа с шаблонами без необходимости обновлять страницу для актуализации" style="float: right; margin-right: 5px">🔄</button>
                         </div>
 
 						<div>
 							<input id="linktojiracoment" placeholder="Ссылка на Jira" title="Введите сюда ссылку на Jira, чтобы по нажатию на ракету добавить ее и в заметки в чат и в поле АФ ссылка на Jira" style="margin-left: 20px; width: 78%; text-align: center; margin-bottom:5px;">
-							<button class="mainButton" id="linktojirasend" title="Отправить введеную ссылку в комментарий чата и в поле Ссылка на Jira в АФ">🚀</button>
+							<button class="mainButton smallbtn" id="linktojirasend" title="Отправить введеную ссылку в комментарий чата и в поле Ссылка на Jira в АФ">🚀</button>
 						</div>
 
-						<div id="themes_body" style="margin-left:20px;display:flex; flex-wrap:wrap;">
-							<label style="color:bisque; width:300px;text-align: center;border: 1px solid #3e4f55;background: chocolate;border-radius: 10px;font-weight: 700; font-size: 17px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); letter-spacing: .5rem;">Темы</label>
+						<div id="themes_body" style="margin-left:10px;display:flex; flex-wrap:wrap;">
+							<label style="color:bisque; width:330px; margin-bottom: 5px; text-align: center;border: 1px solid #3e4f55;background: chocolate;border-radius: 10px;font-weight: 700; font-size: 17px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); letter-spacing: .5rem;">Темы</label>
 							<br>
 						</div>
 
-						<div id="tags_body" style="margin-left:20px;display:flex; flex-wrap:wrap;">
-							<label style="color: #87ff5e; width:300px;text-align: center;border: 1px solid black;border-radius: 10px;margin-top: 5px;background: darkgray;font-weight: 700; font-size: 17px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); letter-spacing: .5rem;">Теги</label>
+						<div id="tags_body" style="margin-left:10px;display:flex; flex-wrap:wrap;">
+							<label style="color: #87ff5e; width:330px; margin-bottom: 5px;text-align: center;border: 1px solid black;border-radius: 10px;margin-top: 5px;background: darkgray;font-weight: 700; font-size: 17px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); letter-spacing: .5rem;">Теги</label>
 						</div>
-                        <div id="multitag_body" class="thonlyfortp" style="margin-left:20px;display:flex; flex-wrap:wrap;">
+                        <div id="multitag_body" class="thonlyfortp" style="margin-left:10px;display:flex; flex-wrap:wrap;">
                             <br>
-                            <button class="mainButton" id="multitag" style="width: 300px; margin-top:5px;">Мультитег</button>
+                            <button class="mainButton" id="multitag" style="width: 330px; margin-top:5px;">Мультитег</button>
                         </div>
                 </span>
         </span>
