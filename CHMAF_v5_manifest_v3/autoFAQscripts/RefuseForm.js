@@ -4,15 +4,15 @@ var win_refusefrom =  // описание элементов окна отказ
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 410px;" id="refuse_form_header">
                             <button class="mainButton buttonHide" title="скрывает меню" id="hideMeRefuseFormv2">hide</button>
-                            <button class="mainButton" title="По нажатию обновляет хеш чата в соответствующем поле, на случай, если при открытии формы вы открыли не тот чат, в котором обратился пользователь" id="refreshhashrefuseform" style="width:24px;">♻</button>
-                            <button class="mainButton" title="По нажатию обновляет перечень опций в разделе Проблема и Как решилось" id="refreshoptions" style="width:24px;">🔄</button>
-                            <button class="mainButton" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearrefuseform" style="width:24px;">🧹</button>
-							<button class="mainButton" title="Инструкция по этой форме" id="refuseforminstr" style="float:right">❓</button>
+                            <button class="mainButton smallbtn" title="По нажатию обновляет хеш чата в соответствующем поле, на случай, если при открытии формы вы открыли не тот чат, в котором обратился пользователь" id="refreshhashrefuseform" style="width:24px;">♻</button>
+                            <button class="mainButton smallbtn" title="По нажатию обновляет перечень опций в разделе Проблема и Как решилось" id="refreshoptions" style="width:24px;">🔄</button>
+                            <button class="mainButton smallbtn" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearrefuseform" style="width:24px;">🧹</button>
+							<button class="mainButton smallbtn" title="Инструкция по этой форме" id="refuseforminstr" style="float:right; margin-right: 5px;">❓</button>
                         </div>
                         <div style="margin: 5px; margin-top: 0px; width: 410px" id="refuse_form_menu">
-                            <input id="chatlnk" placeholder="Ссылка на чат" title="Вставьте сюда ссылку на чат" autocomplete="off" type="text" style="text-align: center; width: 410px; color: black; margin-top: 5px">
+                            <input id="chatlnk" placeholder="Ссылка на чат" title="Вставьте сюда ссылку на чат" autocomplete="off" type="text" style="text-align: center; width: 405px; color: black; margin-top: 5px">
 							<br>
-							<select id="userissue" style="height: 25px; width:410px; margin-top:5px;">
+							<select id="userissue" style="height: 25px; width:405px; margin-top:5px;">
 									<option selected disabled="" style="background-color:orange; color:white;" value="problclient">Проблема клиента</option>
 							</select>
 							<br>
@@ -21,7 +21,7 @@ var win_refusefrom =  // описание элементов окна отказ
 
 							<br>
 
-							<select id="howissuesolverd" style="width:410px; height: 25px;">
+							<select id="howissuesolverd" style="width:405px; height: 25px;">
 									<option selected disabled="" style="background-color:orange; color:white;" value="howsolved">Как решилась</option>
                             </select>
 

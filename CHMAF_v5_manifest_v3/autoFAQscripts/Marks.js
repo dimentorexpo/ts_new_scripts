@@ -4,7 +4,7 @@ var win_Marks =  // описание элементов окна оценок о
             <span style="cursor: -webkit-grab;">
                     <div style="margin: 5px; width: 320px;" id="marks_header">
                             <button class="mainButton buttonHide" title="скрывает меню" id="hideMeMarks">hide</button>
-                            <button class="mainButton" id="marksinstr" style="float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
+                            <button class="mainButton smallbtn" id="marksinstr" style="float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
                     </div>
                     <div>
                         <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">От </span>
@@ -13,9 +13,9 @@ var win_Marks =  // описание элементов окна оценок о
                         <input type="date" style="color:black; margin-left:5px; margin-right:10px; width:115px; text-align:center;" name="EndDataMarks" id="dateToMarks">
                     </div>
                     <div>
-                        <input id="useridsearch" placeholder="ID У/П для 🔎статистики оценок" title="Ввведите ID ученика или учителя для получения информации с начала года по выставляемым оценкам" autocomplete="off" type="text" style="text-align: center; width: 230px; color: black;margin-left:5px">
-                        <button class="mainButton" id="findmarksstat">🔎</button>
-                        <button class="mainButton" id="clearmarksstat">🧹</button>
+                        <input id="useridsearch" placeholder="ID У/П для 🔎статистики оценок" title="Ввведите ID ученика или учителя для получения информации с начала года по выставляемым оценкам" autocomplete="off" type="text" style="text-align: center; width: 235px; color: black;margin-left:7px">
+                        <button class="mainButton smallbtn" id="findmarksstat">🔎</button>
+                        <button class="mainButton smallbtn" id="clearmarksstat">🧹</button>
                     </div>
             </span>
                     <div style="margin: 5px; width: 300px" id="marks_box">
