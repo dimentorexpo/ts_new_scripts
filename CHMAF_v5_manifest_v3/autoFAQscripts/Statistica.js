@@ -4,7 +4,7 @@ var win_StatisticaAF =  // описание формы чтобы не дава�
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 750px; display:flex; justify-content:space-evenly;" id="stataaf_header">
                                 <button class="mainButton buttonHide" title="скрывает меню" id="hidestatisticaaf">hide</button>
-								<button class="mainButton" id="clearstatawindow">🧹</button>
+								<button class="mainButton smallbtn" id="clearstatawindow">🧹</button>
 								<input type="text" id="timeoutput" style="width:100px; text-align:center; background: blanchedalmond; font-weight: 700;" disabled></input>
 								<div style="width:450px;background: #5f7875;height: 21px;"><div id="progress-bar" style="width: 0%; height: 20px; background-color: #e38118; border: 1px solid black; text-align:center; font-weight:700; color:white;"></div></div>
 			    </span>

@@ -2,21 +2,17 @@ var win_LessonStatus =  // описание элементов окна стат
     `<div style="display: flex; width: 1060px;">
         <span style="width: 1060px">
                 <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 1060px;" id="lessomstatdata">
+                        <div style="margin: 5px; width: 1050px;" id="lessomstatdata">
                                 <button class="mainButton buttonHide" id="hideMeLessonStatus">hide</button>
+                                <button class="mainButton smallbtn" id="clearlessonstatus">🧹</button>
                         </div>
-						 <div style="margin: 5px; width: 1060px" id="databox">
-								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <input type="date" style="color:black; margin-left:20px;  width:125px;" name="StartDataLS" id="dateFromLS"></span>
-								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input type="date" style="color:black; float:right; margin-left:20px; margin-right:10px; width:125px;" name="EndDataLS" id="dateToLS"</span>
+						 <div style="margin: 5px; width: 1050px" id="databox">
+                            <span style="color:bisque; float:center; margin-top:5px; margin-left:5px;">Начальная дата<input type="date" style="color:black; margin-left:5px; width:125px;" name="StartDataLS" id="dateFromLS"></span>
+							<span style="color:bisque; margin-top:2px; margin-left: 10px; height:28px;">Конечная дата<input type="date" style="color:black; margin-left:5px; width:125px;" name="EndDataLS" id="dateToLS"></span>
+                            <input id="idteacherforsearch" placeholder="Teacher ID" title="Введите ID учителя, чтобы проверить информацию по урокам" autocomplete="off" type="text" style="position:relative;text-align: center;width: 100px;color: black;margin-left: 15%;">
+							<input id="idstudentforsearch" placeholder="Student ID" title="Введите ID ученика, чтобы отфильтровать поиск" autocomplete="off" type="text" style="position:relative; text-align: center; width: 100px; color: black;margin-left:5px">
+                            <button class="mainButton" title="Запускает процесс поиска информации по статусам урока (отменен, перенесен, удален)" id="startlookstatus" style="float: right; margin-right: 10px;">Получить инфо об уроках</button>
                         </div>
-						<div>
-							<input id="idteacherforsearch" placeholder="Teacher ID" title="Введите ID учителя, чтобы проверить информацию по урокам" autocomplete="off" type="text" style="position:relative; left:33%; text-align: center; width: 100px; color: black;margin-left:5px">
-							<input id="idstudentforsearch" placeholder="Student ID" title="Введите ID ученика, чтобы отфильтровать поиск" autocomplete="off" type="text" style="position:relative; left:32%; text-align: center; width: 100px; color: black;margin-left:115px">
-						</div>
-						<div style="position:relative; left:30%; margin-top:5px; margin-bottom:5px;">
-							 <button class="mainButton" title="Запускает процесс поиска информации по статусам урока (отменен, перенесен, удален)" id="startlookstatus">Получить инфо об уроках</button>
-							 <button class="mainButton" title="Очищает поле от полученной инфы" id="clearlessonstatus">Очистить</button>
-					    </div>
 				</span>
 						<div>
 							<p id="statustable" style="margin-top:5px; max-height:400px; overflow:auto; display:none; color:bisque; text-align:center"></p>

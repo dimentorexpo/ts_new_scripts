@@ -11,8 +11,8 @@ var win_serviceinfo =  // описание элементов окна инфо�
                         <div style="width: 320px; padding: 5px; border-bottom:1px solid #556B2F;" id="servicehead">
                                 <button title="скрывает меню" id="hideMeservice" class="mainButton buttonHide">hide</button>
                                 <button class="mainButton" title="открывает СРМ пользователя при введенном айди в поле" id="GotoCRM" style="width:50px;">CRM</button>
-                                <button class="mainButton" title="Начинает чат с пользователем" id="startnewchat" style="width: 25.23px;">💬</button>
-								<button class="mainButton" title="Делаем видимым номер телефона и почты" id='dounhidemailandphone'>👁‍🗨</button>
+                                <button class="mainButton smallbtn" title="Начинает чат с пользователем" id="startnewchat">💬</button>
+								<button class="mainButton smallbtn" title="Делаем видимым номер телефона и почты" id='dounhidemailandphone'>👁‍🗨</button>
                                 <button class="mainButton" title="Левый клик обновить статус. Легенда: 💥 - задача на исход уже создана или есть также задача на тп1л , 📵 - нет задачи на исход и на тп, 🛠 - нет задачи на исход, но есть задача на тп" id="CrmStatus" style="width:30px; display:none;"></button>
 								<span style="padding:7px; margin-left: 5px;height:28px; color:#ffff;  font-weight:700; border: 1px solid bisque;width: 82px; background-color:#1E90FF;display:none;" id="getcurrentstatus"></span>
                         </div>

@@ -4,14 +4,14 @@ var win_FrozeChat =  // описание формы чтобы не давала
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 395px;" id="froze_chat_header">
                                 <button class="mainButton buttonHide" title="скрывает меню" id="hidefrozechat">hide</button>
-								<button class="mainButton" id="clearallchathash">🧹</button>
-								<button class="mainButton" id="arinfo" style="float:right" title="При добавлении хеша чата и выборе времени, по умолчанию 6 минут, по истечению которого в этот чат автоматически будет отправлен ответ по умолчанию Извините, что заставляю вас ждать, но мне нужно еще несколько минут 🙏">❓</button>
+								<button class="mainButton smallbtn" id="clearallchathash">🧹</button>
+								<button class="mainButton smallbtn" id="arinfo" style="float:right; margin-right: 5px;" title="При добавлении хеша чата и выборе времени, по умолчанию 6 минут, по истечению которого в этот чат автоматически будет отправлен ответ по умолчанию Извините, что заставляю вас ждать, но мне нужно еще несколько минут 🙏">❓</button>
                         </div>
 						<div>
-							<input id="chatfrozehash" placeholder="Введите хэш чата" title="Введите хеш чата, которые хотите, чтобы через время скрипт отправил ответ от вашего имени" autocomplete="off" type="text" style="text-align: center; width: 300px; color: black;margin-left:5px">
+							<input id="chatfrozehash" placeholder="Введите хэш чата" title="Введите хеш чата, которые хотите, чтобы через время скрипт отправил ответ от вашего имени" autocomplete="off" type="text" style="text-align: center; width: 290px; color: black;margin-left:5px">
 							<input id="frozetimer" value="6" style="width:38px;" oninput="maxLengthCheck(this)" type="number" maxlength="2" min="0" max="59">
 							<span style="color:bisque;">min</span>
-							<button class="mainButton" id="freezechat" title="Задать таймер автоответа">❄</button>
+							<button class="mainButton smallbtn" id="freezechat" title="Задать таймер автоответа">❄</button>
 						</div>
 			    </span>
                         <div style="margin: 5px; width: 400px" id="chats_hash_box">

@@ -4,12 +4,12 @@ var win_Chathis =  // описание элементов окна Истори�
 			<span style="cursor: default;">
 				<div style="margin: 5px; width: 410px;" id="chathisheader">
 					<button class="mainButton buttonHide" title="Скрытие меню" id="hideMeChHis">hide</button>
-					<button class="mainButton" title="Очистка всех полей" id="clearallinfo" style="width:25px;">🧹</button>
+					<button class="mainButton smallbtn" title="Очистка всех полей" id="clearallinfo">🧹</button>
 					<select style="height:28px; width:260px; text-align:center" id="operatorstp" onchange="findchatsoper()">
 							<option selected="" disabled="">Операторы на линии</option>
 					</select>
-					<button class="mainButton" title="Обновляет список активных операторов, их статус, и количества чатов" id="RefrehOperators" style="width:25px;">♻</button>
-					<button class="mainButton" title="Показывает инеформацию по пользователю из чата, его айди, почту, телефон, характеристики устройства и тп" id="getdatafrchat" style="width:25px;">ℹ</button>
+					<button class="mainButton smallbtn" title="Обновляет список активных операторов, их статус, и количества чатов" id="RefrehOperators">♻</button>
+					<button class="mainButton smallbtn" title="Показывает инеформацию по пользователю из чата, его айди, почту, телефон, характеристики устройства и тп" id="getdatafrchat">ℹ</button>
 				</div>
 				<div style="margin: 5px; width: 410px; display:flex; justify-content:space-evenly;" id="chathismenu">
 					<button class="mainButton" title="Возвращает на экран просмотра списка чатов" id="back_to_chat_his" style="width:50px; font-size:22px; padding:0;">🔙</button>

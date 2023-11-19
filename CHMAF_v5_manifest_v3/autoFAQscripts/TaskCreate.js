@@ -4,8 +4,8 @@ var win_taskform = //описание формы создания задач в 
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 410px;" id="create_form_header">
                             <button class="mainButton buttonHide" title="скрывает меню" id="hideMeCreateForm">hide</button>
-                            <button class="mainButton" title="По нажатию обновляет хеш чата в соответствующем поле, на случай, если при открытии формы вы открыли не тот чат, в котором обратился пользователь" id="refreshhashcreateform" style="width:24px;">♻</button>
-							<button class="mainButton" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearcreateform" style="width:24px;">🧹</button>
+                            <button class="mainButton smallbtn" title="По нажатию обновляет хеш чата в соответствующем поле, на случай, если при открытии формы вы открыли не тот чат, в котором обратился пользователь" id="refreshhashcreateform">♻</button>
+							<button class="mainButton smallbtn" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearcreateform"">🧹</button>
 							<span style="color:bisque">Статус урока: </span>
 							<span id="statusuroka"></span>
                         </div>
@@ -74,7 +74,7 @@ var win_taskform = //описание формы создания задач в 
         </span>
 			<div id="servicehelper" class="srvhhelpnomove" style="position: absolute; top: -1px; left: -311px; width: 310px; max-height: 400px; overflow: auto; background: #464451; cursor:default;">
 				<input id="useriddata" placeholder="ID У для получения списка услуг" style="width:240px; margin:10px; text-align:center;">
-				<button class="mainButton" id="getuserservices">🔎</button>
+				<button class="mainButton smallbtn" id="getuserservices">🔎</button>
 				<p id="serviceinf"></p>
 			</div>
 </div>`;

@@ -5,14 +5,14 @@ var win_Calendar =  // описание формы чтобы не давала 
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 600px;" id="stataaf_header">
                                 <button class="mainButton buttonHide" title="Скрывает меню" id="hidecalendar">hide</button>
-								<button class="mainButton" title="Очищает окно календаря" id="clearcalendar">🧹</button>
-								<button class="mainButton" title="Обновляет информацию о слотах выбранной даты" id="refreshcalendar">♻</button>
-								<button class="mainButton" title="Открывает сайт datsy.info" id="opendatsy">📅</button>
+								<button class="mainButton smallbtn" title="Очищает окно календаря" id="clearcalendar">🧹</button>
+								<button class="mainButton smallbtn" title="Обновляет информацию о слотах выбранной даты" id="refreshcalendar">♻</button>
+								<button class="mainButton smallbtn" title="Открывает сайт datsy.info" id="opendatsy">📅</button>
 								<label title="Включение и отключение автоматического обновления информации в слотах с интервалом 30 секунд" class="checkbox-refresh">
 									<input id="autorefreshswitcher" type="checkbox" checked="">
 										<span class="checkbox-refresh-switch"></span>
 								</label>
-								<button class="mainButton" id="showOperActiveSlots" title="Открывает боковое дополнительное окно, чтобы просмотреть все добавленные за выбранную дату. Если есть знак ⚠ значит в этот день вы точно добавляли календарь и можете нажать кнопку, чтобы узнать на какое время">📑</button>
+								<button class="mainButton smallbtn" id="showOperActiveSlots" title="Открывает боковое дополнительное окно, чтобы просмотреть все добавленные за выбранную дату. Если есть знак ⚠ значит в этот день вы точно добавляли календарь и можете нажать кнопку, чтобы узнать на какое время">📑</button>
 								<span id="availableActiveSlots" style="display:none; position: absolute; top: -4px; left: 210px;" class="">⚠</span>
 			    </span>
                         </div>
