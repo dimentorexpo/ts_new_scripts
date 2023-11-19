@@ -5,7 +5,7 @@ var win_OperStatus =  // описание элементов окна стату
             <span style="cursor: -webkit-grab;">
                     <div style="margin: 5px; width: 400px;" id="OpSt_header">
                             <button class="mainButton buttonHide" title="скрывает меню" id="hideMeOpSt">hide</button>
-                            <button class="mainButton" id="clearopersinfo" style="width:24px; float: right; margin-right: 10px;">🧹</button>
+                            <button class="mainButton smallbtn" id="clearopersinfo" style="float: right; margin-right: 10px;">🧹</button>
                     </div>
         </span>
                     <div style="margin: 5px; width: 400px" id="opers_box">
@@ -16,11 +16,6 @@ var win_OperStatus =  // описание элементов окна стату
 
 const wintOperStatus = createWindow('AF_OperStat', 'winTopOpStat', 'winLeftOpStat', win_OperStatus);
 hideWindowOnDoubleClick('AF_OperStat');
-
-if (localStorage.getItem('winTopOpStat') == null) { //начальное положение окна оценко
-    localStorage.setItem('winTopOpStat', '120');
-    localStorage.setItem('winLeftOpStat', '295');
-}
 
 document.getElementById('clearopersinfo').onclick = function () { // кнопка очистки поля
     document.getElementById('operstatustable').innerHTML = "";
