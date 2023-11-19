@@ -8,14 +8,14 @@ var win_Jira =  // описание элементов окна Поиска п�
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 550;" id="jira_1str">
                                 <button class="mainButton buttonHide" title="скрывает меню" id="hideMej">hide</button>
-								<button class="mainButton" id="RefreshJiraStatus" title="Обновляет статус Токена Jira, чтобы проверить авторизованы вы или нет">🔄</button>
-								<button class="mainButton" id="ClearJiraData" title="Очищает поля с результатами и полем для ввода">🧹</button>
+								<button class="mainButton smallbtn" id="RefreshJiraStatus" title="Обновляет статус Токена Jira, чтобы проверить авторизованы вы или нет">🔄</button>
+								<button class="mainButton smallbtn" id="ClearJiraData" title="Очищает поля с результатами и полем для ввода">🧹</button>
 								<span style="color:bisque">Token Status: </span>
 								<span id="searchjiratknstatus"></span>
-								<button class="mainButton" id="jirainstr" style="float:right;" title="Инструкция по этой форме">❓</button>
+								<button class="mainButton smallbtn" id="jirainstr" style="float:right;" title="Инструкция по этой форме">❓</button>
                         </div>
 
-						<div id="control_jira_search">
+						<div id="control_jira_search" style="margin-left: 5px; margin-right: 5px;">
 							<button class="mainButton active-query" id="defaultQuery" title="Страница для поиска по умолчанию с заранее записанным JQL запросом">📇Default</button>
                             <button class="mainButton" id="ZBPQuery" title="Страница для поиска Zero Bug Policy">🙅‍♂️ZeroBug</button>
 							<button class="mainButton" id="freshQuery" title="Страница при поиске по ключевому слову, выводящая свежесозданные баги в порядке убывания и с 0 Support Tab с заранее записанным JQL запросом">🍀Fresh</button>
@@ -27,9 +27,9 @@ var win_Jira =  // описание элементов окна Поиска п�
                         </div>
 
                         <div id="fields_jira_search">
-							<textarea id="JQLquery" placeholder="JQL запрос" title="Введите сюда JQL запрос" autocomplete="off" type="text" style="text-align: center; width: 500px; color: black; margin-top: 5px; margin-left: 5%;"></textarea>
-							<input id="testJira" placeholder="Введите слово или фразу для поиска" title="введите слово или фразу для поиска по Jira при одном клике будет искать по багам, если ввести в поле номер задачи например VIM-7288 и дабл кликнуть на рокету будет поиск по номеру" autocomplete="off" type="text" style="text-align: center; width: 300px; color: black; margin-top: 5px; margin-left: 20%; border-radius: 20px;">
-							<button class="mainButton" id="getJiraTasks" style="width: 25.23px;">🚀</button>
+							<textarea id="JQLquery" placeholder="JQL запрос" title="Введите сюда JQL запрос" autocomplete="off" type="text" style="text-align: center; width: 96%; color: black; margin-top: 5px; margin-left: 2%;"></textarea>
+							<input id="testJira" placeholder="Введите слово или фразу для поиска" title="введите слово или фразу для поиска по Jira при одном клике будет искать по багам, если ввести в поле номер задачи например VIM-7288 и дабл кликнуть на рокету будет поиск по номеру" autocomplete="off" type="text" style="text-align: center; width: 90%; color: black; margin-top: 5px; margin-left: 2%; border-radius: 20px;">
+							<button class="mainButton smallbtn" id="getJiraTasks">🚀</button>
 						</div>
 
                         <div style="margin: 5px; width: 550px" id="jira_tasks_box">
@@ -71,10 +71,10 @@ function toggleAndDeactivateQueries(currentId) { // Смена класса кн
 
     queryIds.forEach(id => {
         let element = document.getElementById(id);
-        if (id === currentId) {
-            element.classList.toggle('active-query'); // Переключаем класс для текущего элемента
-        } else {
-            element.classList.remove('active-query'); // Деактивируем все остальные
+        if (id === currentId && !element.classList.contains('active-query')) {
+            element.classList.add('active-query'); // Добавляем класс, если его нет у текущего элемента
+        } else if (id !== currentId && element.classList.contains('active-query')) {
+            element.classList.remove('active-query'); // Удаляем класс, если он есть у других элементов
         }
     });
 }

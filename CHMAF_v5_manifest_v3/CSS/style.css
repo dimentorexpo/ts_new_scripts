@@ -798,11 +798,13 @@
 	}
 
 	#control_jira_search {
-		margin-left: 5px;
-		margin-right: 5px;
 		display: flex;
 		justify-content: space-evenly;
 	}
+	
+	#control_jira_search button {
+		font-size: 14px;
+	}	
 	
 	.activeTestUsrs {
 		background: green !important;
