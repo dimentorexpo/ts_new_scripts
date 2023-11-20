@@ -122,12 +122,13 @@ document.getElementById('createlink2less').addEventListener('click', function ()
         massagetexttoshow += 'Не выбран предмет\n'
     } else { lessonsubjecttype = document.getElementById('subjecttype2less').value }
 
-    if (document.getElementById('hashforroom').value.length < 12) { // проверяем введен ли хэш комнаты
+    if (!/^[a-zA-Z]{12,}$/.test(document.getElementById('hashforroom').value.trim())) {
         flagemptyttfields = '1';
-        massagetexttoshow += 'Не указан хэш комнаты\n'
+        massagetexttoshow += 'Хэш комнаты должен состоять из не менее чем 12 латинских символов\n'
     } else {
         hashforroomless = document.getElementById('hashforroom').value.trim();
     }
+    
 
     if (flagemptyttfields === '0') {
         if (itisvebinar.checked) {

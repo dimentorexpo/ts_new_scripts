@@ -12,7 +12,7 @@
   "host_permissions": [
     "*://*.skyeng.ru/*",
     "*://skyeng.autofaq.ai/*",
-    "*://mm-time.skyeng.tech/*"
+    "*://*.skyeng.tech/*"
   ],
   "background": {
     "service_worker": "app.js"
@@ -39,7 +39,7 @@
         "/Modules/vocabulary.js"
       ],
       "css": ["/CSS/styles.css"],
-      "matches": ["*://*.skyeng.ru/*"],
+      "matches": ["*://vimbox.skyeng.ru/*","*://new-teachers.skyeng.ru/*","*://teachers.skyeng.ru/*","*://ttc.skyeng.ru/*","*://student.skyeng.ru/*"],
       "run_at": "document_idle"
     }
   ],
