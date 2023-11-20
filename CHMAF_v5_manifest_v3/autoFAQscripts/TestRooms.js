@@ -58,6 +58,8 @@ var win_testrooms =  // описание элементов окна созда�
   </div>`;
 
 const winttestrooms  = createWindow('AF_testrooms', 'winToptestrooms', 'winLefttestrooms', win_testrooms);
+const messagefield = document.getElementById('testroomsmessage');
+messagefield.display = 'none';
 
 function getTestRoomsButtonPress() { //открывает окно создания тестовых комнат
     setDisplayStyle(document.getElementById('AF_testrooms'), document.getElementById('AF_testrooms').style.display === '' ? 'none' : '');

@@ -39,6 +39,7 @@
 			  "/autoFAQscripts/Knowledge.js",
 			  "/autoFAQscripts/LessonStatus.js",
 			  "/autoFAQscripts/Link.js",
+			  "/autoFAQscripts/Link2Lesson.js",
 			  "/autoFAQscripts/Linksdostup.js",
 			  "/autoFAQscripts/Marks.js",
 			  "/autoFAQscripts/OperatorStatuse.js",
