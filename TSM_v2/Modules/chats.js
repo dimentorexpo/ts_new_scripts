@@ -44,14 +44,14 @@ wintAddChatMenu.onmouseup = function () { document.removeEventListener('mousemov
 
 // end add chat menu
 
-document.getElementById('openchataddmenu').onclick = async function () { // открывает меню для удаления и добавления чатов
+async function OpenAddChatMenu() { // открывает меню для удаления и добавления чатов
     if (wintAddChatMenu.style.display == 'none') {
         wintAddChatMenu.style.display = ''
 
         let sidarr = [];
         document.getElementById('userid1').value = await getUserId();
 
-        document.getElementById('addChat').onclick = function () { //функция добавления чата
+        document.getElementById('addChat').addEventListener('click', function () { //функция добавления чата
 
 		    fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
 				"headers": {
@@ -75,9 +75,9 @@ document.getElementById('openchataddmenu').onclick = async function () { // от
                 document.getElementById('outputstatus').innerText = ""
                 document.getElementById('outputstatus').style.display = "none"
             }, 3000)
-        }
+        })
 
-        document.getElementById('RemoveChat').onclick = function () { //функция удаления чата
+        document.getElementById('RemoveChat').addEventListener('click', function () { //функция удаления чата
 		
 		
 		    fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
@@ -105,7 +105,7 @@ document.getElementById('openchataddmenu').onclick = async function () { // от
                 document.getElementById('outputstatus').style.display = "none"
             }, 3000)
 
-        }
+        })
 
         document.getElementById('hideMeAddChatMenu').onclick = function () { //функция скрытия меню чатов
             wintAddChatMenu.style.display = 'none'

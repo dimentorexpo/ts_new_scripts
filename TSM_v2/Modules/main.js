@@ -127,3 +127,5 @@ document.getElementById('backmainmenufromexercises').onclick = function () {
     document.getElementById('mainmenu').style.display = ''
     document.getElementById('exercisesmenu').style.display = 'none'
 }
+
+document.getElementById('openchataddmenu').onclick = OpenAddChatMenu
