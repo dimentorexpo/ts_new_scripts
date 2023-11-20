@@ -253,26 +253,39 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
         }
 
         document.getElementById('usersearchskysmart').oninput = function () {
-            var text2 = document.getElementById("usersearchskysmart");
-			var val2 = this.value.toLowerCase(); // Преобразуем введенный текст в нижний регистр для регистронезависимого поиска
-			s2 = '';
+			var val2 = this.value.toLowerCase();
+			var s2 = '';
 
-            for (let i = 0; i < Object.keys(kidsdata).length; i++) {
-                for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-					    let kidName = Object.values(kidsdata)[i][j].name.toLowerCase();
-						let kidId = Object.values(kidsdata)[i][j].id.toString();
-					
-                    if (kidName.includes(val2) || kidId.includes(val2)) {
-                        if (Object.values(kidsdata)[i][j].status == "sleep") {
-                            s2 += '<div class="kidsoutdata sleep">' + '<div class="sbjnamesearch">' + Object.keys(kidsdata)[i] + '</div>' + '<div class="studadultname">' + '<span title="💤 - ученик уснул">💤</span>' + ' ' + Object.values(kidsdata)[i][j].name + '</div>' + '<div class="idkidsstyle">' + 'ID: ' + Object.values(kidsdata)[i][j].id + '</div>' + '</div>' + (Object.values(kidsdata)[i][j].segmentBadge != null ? '<div class="badgename">' + Object.values(kidsdata)[i][j].segmentBadge + '</div>' : '') + 'Яз.обслуж: ' + (Object.values(kidsdata)[i][j].serviceLocale != null ? Object.values(kidsdata)[i][j].serviceLocale : 'Пусто') + '</div>' + '<div style="text-align:center;">' + '<span name="mvurkidseport" class="mvushka" title="По клику открывает отчет МВУ с новой ссылкой">📋</span>' + ' ' + '<span name="delkidschat" class="deletechat" title="По клику удаляет чат с учеником">❌</span>' + ' ' + '<span name="openkidsprofile" class="adultprofile" title="Открывает полный профиль ученика">🕵️‍♂️</span>' + ' ' + '<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>' + '</div>' + '</div>' + '</div>';
-                        } else if (Object.values(kidsdata)[i][j].status == "vacation") {
-                            s2 += '<div class="kidsoutdata vacation">' + '<div class="sbjnamesearch">' + Object.keys(kidsdata)[i] + '</div>' + '<div class="studadultname">' + '<span title="⛱ - ученик в отпуске">⛱</span>' + ' ' + Object.values(kidsdata)[i][j].name + '</div>' + '<div class="idkidsstyle">' + 'ID: ' + Object.values(kidsdata)[i][j].id + '</div>' + (Object.values(kidsdata)[i][j].segmentBadge != null ? '<div class="badgename">' + Object.values(kidsdata)[i][j].segmentBadge + '</div>' : '') + '<div class="languageobsl">' + 'Яз.обслуж: ' + (Object.values(kidsdata)[i][j].serviceLocale != null ? Object.values(kidsdata)[i][j].serviceLocale : 'Пусто') + '</div>' + '<div style="text-align:center;">' + '<span name="mvurkidseport" class="mvushka" title="По клику открывает отчет МВУ с новой ссылкой">📋</span>' + ' ' + '<span name="delkidschat" class="deletechat" title="По клику удаляет чат с учеником">❌</span>' + ' ' + '<span name="openkidsprofile" class="adultprofile" title="Открывает полный профиль ученика">🕵️‍♂️</span>' + ' ' + '<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>' + '</div>' + '</div>' + '</div>';
-                        } else {
-                            s2 += '<div class="kidsoutdata">' + '<div class="sbjnamesearch">' + Object.keys(kidsdata)[i] + '</div>' + '<div class="studadultname">' + Object.values(kidsdata)[i][j].name + '</div>' + '<div class="idkidsstyle">' + 'ID: ' + Object.values(kidsdata)[i][j].id + '</div>' + (Object.values(kidsdata)[i][j].segmentBadge != null ? '<div class="badgename">' + Object.values(kidsdata)[i][j].segmentBadge + '</div>' : '') + '<div class="languageobsl">' + 'Яз.обслуж: ' + (Object.values(kidsdata)[i][j].serviceLocale != null ? Object.values(kidsdata)[i][j].serviceLocale : 'Пусто') + '</div>' + '<div style="text-align:center;">' + '<span name="mvurkidseport" class="mvushka" title="По клику открывает отчет МВУ с новой ссылкой">📋</span>' + ' ' + '<span name="delkidschat" class="deletechat" title="По клику удаляет чат с учеником">❌</span>' + ' ' + '<span name="openkidsprofile" class="adultprofile" title="Открывает полный профиль ученика">🕵️‍♂️</span>' + ' ' + '<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>' + '</div>' + '</div>' + '</div>';
-                        }
-                    } 
-                }
-            }
+			for (let i = 0; i < Object.keys(kidsdata).length; i++) {
+				for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
+					let kidName = Object.values(kidsdata)[i][j].name.toLowerCase();
+					let kidId = Object.values(kidsdata)[i][j].id.toString();
+
+					if (kidName.includes(val2) || kidId.includes(val2)) {
+						// Теперь этот блок будет выполняться, если найдено соответствие
+						var kid = Object.values(kidsdata)[i][j];
+						var statusSymbol = kid.status === 'sleep' ? '💤' : (kid.status === 'vacation' ? '⛱' : '');
+						var statusTitle = kid.status === 'sleep' ? 'ученик уснул' : (kid.status === 'vacation' ? 'ученик в отпуске' : '');
+						var segmentBadge = kid.segmentBadge ? `<div class="badgename">${kid.segmentBadge}</div>` : '';
+						var serviceLocale = kid.serviceLocale ? kid.serviceLocale : 'Пусто';
+						s2 += `<div class="kidsoutdata ${kid.status}">
+									<div class="sbjnamesearch">${Object.keys(kidsdata)[i]}</div>
+									<div class="studadultname">
+										<span title="${statusTitle}">${statusSymbol}</span> ${kid.name}
+									</div>
+									<div class="idkidsstyle">ID: ${kid.id}</div>
+									${segmentBadge}
+									<div class="languageobsl">Яз.обслуж: ${serviceLocale}</div>
+									<div style="text-align:center;">
+										<span name="mvurkidseport" class="mvushka" title="По клику открывает отчет МВУ с новой ссылкой">📋</span>
+										<span name="delkidschat" class="deletechat" title="По клику удаляет чат с учеником">❌</span>
+										<span name="openkidsprofile" class="adultprofile" title="Открывает полный профиль ученика">🕵️‍♂️</span>
+										<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>
+									</div>
+								</div>`;
+					}
+				}
+			}
 
             document.getElementById('infobarskysmart').innerHTML = document.getElementById("usersearchskysmart").value != '' ? s2 : commonarr;
 
