@@ -25,17 +25,17 @@ var win_taskform = //описание формы создания задач в 
                             <button class="mainButton" id="lowcontrol" style="height:25px; width: 32%;">🛂 Контроль</button>
                         </div>
 
-                        <div style="margin: 5px; margin-top: 0px; width: 410px" id="create_form_menu">
+                        <div style="margin: 5px; margin-top: 0px; width: 405px" id="create_form_menu">
                             <input disabled="" required id="chathashlnk" placeholder="Хэш чата" title="Хеш чата, из которого будет создано обращение в СРМ" autocomplete="off" type="text" style="text-align: center; width: 410px; color: black; margin-top: 5px; text-align:center;background:#cac1b1; width:100%">
 							<br>
-							<select required id="priority" style="width: 100%; text-align: center; height: 25px;">
+							<select required id="priority" style="width: 100%; text-align: center; height: 28px;">
 								<option disabled="" selected="">Приоритет</option>
 								<option value="low" style="background: white; color:green; font-weight:600">🟢 Низкий</option>
 								<option value="high" style="background: white; color:orange; font-weight:600">🟡 Высокий</option>
 								<option value="highest" style="background: white; color:red; font-weight:600">🔴 Критический</option>
 							</select>
 
-							<select required id="customerservice" style="width: 100%; text-align: center; height: 25px;">
+							<select required id="customerservice" style="width: 100%; text-align: center; height: 28px;">
 								<option disabled="" selected="">Отдел</option>
 								<option value="tech_support_outgoing_crm2" style="background: white">Техподдержка 1Л CRM (исход)</option>
 								<option value="teachers_care_crm" style="background: white">Teachers Care</option>
@@ -47,9 +47,10 @@ var win_taskform = //описание формы создания задач в 
                                 <option value="tech_support_incoming_crm2" style="background: white">Техподдержка 1Л CRM (вход)</option>
 							</select>
 
-							<input id="taskserviceid" placeholder="🆔 ID услуги" style="width: 100%; height: 25px;">
+							<input id="taskserviceid" placeholder="🆔 ID услуги" style="width: 100%; height: 28px;">
 							<br>
-							<input required id="taskuserid" placeholder="🆔 ID пользователя" style="width: 100%; height: 25px;">
+							<input required id="taskuserid" placeholder="🆔 ID пользователя" style="width: 92%; height: 28px;">
+                            <button class="mainButton smallbtn" id="searchuserservices">⬅️</button>
 							<br>
                             <span id="NoteNotice" style="color:bisque; display:none;">Будет добавлена заметка: </span>
                             <span id="NoteNoticeText" title="Нажми для отмены отправки заметки" style="background:#69a4c7; color:#fff;  font-weight:300; border:1px solid black; display:none;"></span>
@@ -60,8 +61,8 @@ var win_taskform = //описание формы создания задач в 
 							<textarea required id="taskcomment" placeholder="Комментарий" title="Укажите комментарий к задаче, что было сделано, что требуется сделать" autocomplete="off" type="text" style="text-align: center; width: 100%; height:100px; color: black; margin-top: 5px"></textarea>
 
 							<br>
-							<button class="mainButton" id="studcontact" style="width: 115px;position: relative;left: 15%;margin-top: 5px;transform: translate(-50%, 0);">Обр П, связь с У</button>
-							<button class="mainButton" id="teachcontact" style="width: 115px;position: relative;left: 15%;margin-top: 5px;transform: translate(-50%, 0);">Обр У, связь с П</button>
+							<button class="mainButton" id="studcontact" style="width: 115px;position: relative;left: 14%;margin-top: 5px;transform: translate(-50%, 0);">Обр П, связь с У</button>
+							<button class="mainButton" id="teachcontact" style="width: 115px;position: relative;left: 14%;margin-top: 5px;transform: translate(-50%, 0);">Обр У, связь с П</button>
 							<button class="mainButton" id="nrteacher" style="width: 80px;position: relative;left: 11%;margin-top: 5px;transform: translate(-50%, 0);">Крит П Н.О</button>
 							<button class="mainButton" id="nrstudent" style="width: 80px;position: relative;left: 11%;margin-top: 5px;transform: translate(-50%, 0);">Крит У Н.О</button>
 
@@ -156,12 +157,21 @@ function gettaskButButtonPress() { // функция открытия окна �
                     }
                 }
             })
-
-
-
-
         }
+
         document.getElementById('refreshhashcreateform').click();
+
+        document.getElementById('searchuserservices').onclick = function () {
+            let inputValue = document.getElementById('taskuserid').value;
+            let idfieldvalue = inputValue.replace(/\D/g, ''); // Оставляем только цифры, удаляем все остальное
+            if (idfieldvalue.length > 4) {
+                document.getElementById('useriddata').value = idfieldvalue;
+                document.getElementById('getuserservices').click();
+            } else {
+                console.log('Введен не верный id');
+            }
+        }
+       
 
         let activeConvId = getChatId();
 
