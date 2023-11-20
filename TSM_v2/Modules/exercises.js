@@ -92,21 +92,21 @@ if (localStorage.getItem('winTopComplect') == null) { //additional complectation
 
 let wintExercSkysmart = document.createElement('div');
 document.body.append(wintExercSkysmart);
-wintExercSkysmart.className = 'wintInitializeSkysmartExercisesInfo'
+wintExercSkysmart.className = 'wintInitializeExercisesData'
 wintExercSkysmart.style = 'display:none;  top: ' + localStorage.getItem('winTopexercisesSkysmart') + 'px; left: ' + localStorage.getItem('winLeftexercisesSkysmart') + 'px;';
 wintExercSkysmart.setAttribute('id', 'AFMS_SkysmartExercInfo');
 wintExercSkysmart.innerHTML = win_kidsExercises;
 
 let wintExercTTC = document.createElement('div');
 document.body.append(wintExercTTC);
-wintExercTTC.className = 'wintInitializeTTCExercisesInfo'
+wintExercTTC.className = 'wintInitializeExercisesData'
 wintExercTTC.style = 'display:none;  top: ' + localStorage.getItem('winTopexercisesTTC') + 'px; left: ' + localStorage.getItem('winLeftexercisesTTC') + 'px;';
 wintExercTTC.setAttribute('id', 'AFMS_TTCExercInfo');
 wintExercTTC.innerHTML = win_TTCExercises;
 
 let wintComplect = document.createElement('div');
 document.body.append(wintComplect);
-wintComplect.className = 'wintInitializeComplectExercisesInfo'
+wintComplect.className = 'wintInitializeExercisesData'
 wintComplect.style = 'display:none;  top: ' + localStorage.getItem('winTopComplect') + 'px; left: ' + localStorage.getItem('winLeftComplect') + 'px;';
 wintComplect.setAttribute('id', 'AFMS_Complect');
 wintComplect.innerHTML = win_complectationExercises;
@@ -168,7 +168,7 @@ wintComplect.onmouseup = function () { document.removeEventListener('mousemove',
 
 // End Exercises complectation
 
-document.getElementById('exercisekysmart').onclick = async function () { // открывает менюшку скайсмарт упражнений
+async function OpenExercisesSmartroom() { // открывает менюшку скайсмарт упражнений
     if (wintExercSkysmart.style.display == 'none') {
         wintExercSkysmart.style.display = ''
         wintExercTTC.style.display = 'none'
@@ -408,7 +408,7 @@ function getkidsroominfo(data,subjecttype) {
 
 }
 
-document.getElementById('exercisesttc').onclick = async function () {
+async function OpenExercisesTTC() {
     if (wintExercTTC.style.display == 'none') {
         wintExercTTC.style.display = ''
         wintExercSkysmart.style.display = 'none'
@@ -477,7 +477,7 @@ document.getElementById('exercisesttc').onclick = async function () {
     }
 }
 
-document.getElementById('exercisesComplect').onclick = async function() {
+ async function OpenExercisesComplect() {
 	    if (document.getElementById('AFMS_Complect').style.display == 'none') {
         wintComplect.style.display = ''
 		wintExercSkysmart.style.display = 'none'

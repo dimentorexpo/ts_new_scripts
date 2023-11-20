@@ -75,7 +75,7 @@ wintLessonInfo.onmouseup = function () { document.removeEventListener('mousemove
 
 // end lesson info menu
 
-document.getElementById('openlesinfomenu').onclick = async function () { // открывает меню для просмотра информации об уроке
+async function OpenLessonmInfoMenu() { // открывает меню для просмотра информации об уроке
 
     if (wintLessonInfo.style.display == 'none') {
         wintLessonInfo.style.display = ''
