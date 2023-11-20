@@ -15,8 +15,6 @@ var win_getLessonInfo = `
 						<div style="margin-left: 5px; height: 25px;">
 							<span id="subjectname" style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Subject: </span>
 							<span id="subjectnamefield" style="width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #2569c3f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 11px; user-select:none;"></span>
-							<span id="vidserverfield" style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Video Serv: </span>
-							<span id="vidserverurl" style="width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #2569c3f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 12px; cursor:text; user-select: all;"></span>
 						</div>
 
 						<div style="margin: 5px; width: 490px; display:flex; flex-wrap: wrap; align-items:center;">
@@ -172,19 +170,16 @@ async function OpenLessonmInfoMenu() { // открывает меню для п�
                 vapi++;
                 api2 = findapi(subject, vapi)
                 loadinfo(api2)
-                getvideoconfigkids(api1)
 
             } else if (hashval != '' && flagplatf == 2) {
                 document.getElementById('hashroom').textContent = hashval[4];
                 document.getElementById('statusroom').textContent = "No status"
                 document.getElementById('subjectnamefield').textContent = "ENGLISH"
 
-                getvideoconfadults(hash = hashval[4]);
                 getusersadults(hash = hashval[4]);
                 getjoinadultsinfo(hash = hashval[4]);
 
             } else if (hashval != '' && flagplatf == 0 && hashval.length == 1) {
-                getvideoconfadults(hash = hashval[0]);
                 getusersadults(hash = hashval[0]);
                 getjoinadultsinfo(hash = hashval[0]);
 
@@ -205,7 +200,6 @@ async function OpenLessonmInfoMenu() { // открывает меню для п�
             document.getElementById('roomfor').style.display = 'none'
             document.getElementById('forstudentid').style.display = 'none'
             document.getElementById('subjectnamefield').textContent = ""
-            document.getElementById('vidserverurl').textContent = ""
             document.getElementById('statusroom').textContent = ""
             document.getElementById('hashroom').textContent = ""
             document.getElementById('partteachid').textContent = ""
@@ -255,41 +249,16 @@ async function getlesinfojoin() { // получает инфо об уроке �
         vapi++;
         api2 = findapi(subject, vapi)
         loadinfo(api2)
-        getvideoconfigkids(api1)
 
     } else if (document.location.origin == 'https://vimbox.skyeng.ru' && flagplatf == 2) {
 
         document.getElementById('hashroom').textContent = document.URL.split('/')[4];
         document.getElementById('statusroom').textContent = "No status"
         document.getElementById('subjectnamefield').textContent = "ENGLISH"
-
-        getvideoconfadults(hash = document.URL.split('/')[4]);
         getusersadults(hash = document.URL.split('/')[4]);
         getjoinadultsinfo(hash = document.URL.split('/')[4]);
 
     }
-}
-
-async function getvideoconfadults(hash) { //функция получения видеосервера на Adults
-    await fetch("https://rooms-vimbox.skyeng.ru/rooms/api/v1/rooms/" + hash + "/get-video-config?vendor=janus", {
-        "headers": {
-            "accept": "application/json, text/plain, */*",
-            "accept-language": "ru",
-            "authorization": "Bearer " + token.token_global,
-            "content-type": "application/json",
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-site"
-        },
-        "referrer": "https://vimbox.skyeng.ru/",
-        "referrerPolicy": "strict-origin-when-cross-origin",
-        "body": "{\"bannedServers\":[],\"recreateRoom\":false,\"forceServer\":null,\"rootDomain\":\"skyeng.ru\"}",
-        "method": "PATCH",
-        "credentials": "include"
-    }).then(r => r.json()).then(r => vidconfadults = r)
-
-    document.getElementById('vidserverurl').textContent = vidconfadults.endpoint.match(/video.*/)[0];
-
 }
 
 async function getusersadults(hash) { // функция получения информации для какого пользователя была создана комната на Adults
@@ -323,25 +292,6 @@ async function getjoinadultsinfo(hash) { // функция получает ин
     }
 
 
-}
-
-async function getvideoconfigkids(api1) { // функция получения информации о видеосервере для англ языка
-    let hashroom;
-    if (document.getElementById('hashfield').value == '')
-        hashroom = document.URL.split('/')[6]
-    else if (document.getElementById('hashfield').value != '')
-        hashroom = document.getElementById('hashfield').value.split('/')[6]
-
-    await fetch(api1 + hashroom + "/video-config", {
-        "body": "{\"bannedServers\":[],\"recreateRoom\":false,\"forceServer\":null,\"rootDomain\":\"skyeng.ru\"}",
-        "method": "POST",
-        "credentials": "include"
-    }).then(r => r.json()).then(r => vidconfresult = r)
-    console.log(vidconfresult)
-
-    if (vidconfresult != null && vidconfresult != undefined && vidconfresult.error == undefined) {
-        document.getElementById('vidserverurl').textContent = vidconfresult.endpoint.match(/video.*/)[0];
-    } else console.log(vidconfresult.error.code + ' ' + vidconfresult.error.message)
 }
 
 async function loadinfo(api2) { // инициализация функции для загрузки инфо о комнате
