@@ -279,7 +279,7 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
             let arrmvurepkid = document.getElementsByName('mvurkidseport') // функция открытия отчетов МВУ при работе со списком исходным после получения инфы об учениках
             for (let j = 0; j < arrmvurepkid.length; j++) {
                 arrmvurepkid[j].onclick = function () {
-                    window.open("https://marketing-core.skyeng.ru/report/html/report?student_id=" + document.getElementsByClassName('idkidsstyle')[j].textContent.match(/\d+/)[0])
+                    window.open("https://overbooking.skyeng.ru/html/report?student_id=" + document.getElementsByClassName('idkidsstyle')[j].textContent.match(/\d+/)[0])
                 }
             }
 
@@ -466,7 +466,7 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
             let arrmvurepkid = document.getElementsByName('mvurkidseport') // функция открытия отчетов МВУ при работе со списком фильтрации предметов
             for (let j = 0; j < arrmvurepkid.length; j++) {
                 arrmvurepkid[j].onclick = function () {
-                    window.open("https://marketing-core.skyeng.ru/report/html/report?student_id=" + document.getElementsByClassName('idkidsstyle')[j].textContent.match(/\d+/)[0])
+                    window.open("https://overbooking.skyeng.ru/html/report?student_id=" + document.getElementsByClassName('idkidsstyle')[j].textContent.match(/\d+/)[0])
                 }
             }
 
@@ -523,7 +523,7 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
         let arrmvurepkid = document.getElementsByName('mvurkidseport') // функция открытия отчетов МВУ при работе со списком исходным после получения инфы об учениках
         for (let j = 0; j < arrmvurepkid.length; j++) {
             arrmvurepkid[j].onclick = function () {
-                window.open("https://marketing-core.skyeng.ru/report/html/report?student_id=" + document.getElementsByClassName('idkidsstyle')[j].textContent.match(/\d+/)[0])
+                window.open("https://overbooking.skyeng.ru/html/report?student_id=" + document.getElementsByClassName('idkidsstyle')[j].textContent.match(/\d+/)[0])
             }
         }
 
