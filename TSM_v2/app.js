@@ -45,7 +45,7 @@ createContextMenu("openByHashId",{"id": "openByHashId", "title": "♐ Откры
 chrome.runtime.onMessage.addListener(function(message) {
     switch (message.type) {
         case 'NUMERIC_SELECTION':
-            chrome.contextMenus.update(selmain, {visible: true});
+            chrome.contextMenus.update("selMainOption", {visible: true});
             chrome.contextMenus.update("InfoID", {visible: true});
             chrome.contextMenus.update("LoginerLinkID", {visible: true});
             chrome.contextMenus.update("openCRMId", {visible: true});
@@ -55,11 +55,11 @@ chrome.runtime.onMessage.addListener(function(message) {
             chrome.contextMenus.update("skpiOnboaringId", {visible: true});
             chrome.contextMenus.update("openTRM2Id", {visible: true});
             chrome.contextMenus.update("openGroupAdminId", {visible: true});
-            chrome.contextMenus.update(hashMenuId, {visible: false});
+            chrome.contextMenus.update("openByHashId", {visible: false});
             break;
         case 'HASH_SELECTION':
-            chrome.contextMenus.update(selmain, {visible: true});
-            chrome.contextMenus.update(hashMenuId, {visible: true});
+            chrome.contextMenus.update("selMainOption", {visible: true});
+            chrome.contextMenus.update("openByHashId", {visible: true});
             chrome.contextMenus.update("InfoID", {visible: false});
             chrome.contextMenus.update("LoginerLinkID", {visible: false});
             chrome.contextMenus.update("openCRMId", {visible: false});
@@ -71,7 +71,7 @@ chrome.runtime.onMessage.addListener(function(message) {
             chrome.contextMenus.update("openGroupAdminId", {visible: false});
             break;
         default:
-            chrome.contextMenus.update(selmain, {visible: false});
+            chrome.contextMenus.update("selMainOption", {visible: false});
             chrome.contextMenus.update("InfoID", {visible: false});
             chrome.contextMenus.update("LoginerLinkID", {visible: false});
             chrome.contextMenus.update("openCRMId", {visible: false});
@@ -81,7 +81,7 @@ chrome.runtime.onMessage.addListener(function(message) {
             chrome.contextMenus.update("skpiOnboaringId", {visible: false});
             chrome.contextMenus.update("openTRM2Id", {visible: false});
             chrome.contextMenus.update("openGroupAdminId", {visible: false});
-            chrome.contextMenus.update(hashMenuId, {visible: false});
+            chrome.contextMenus.update("openByHashId", {visible: false});
             break;
     }
 });
