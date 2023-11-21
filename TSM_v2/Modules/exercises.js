@@ -408,28 +408,7 @@ function getkidsroominfo(data,subjecttype) {
 
 }
 
-async function OpenExercisesTTC() {
-    if (wintExercTTC.style.display == 'none') {
-        wintExercTTC.style.display = ''
-        wintExercSkysmart.style.display = 'none'
-
-        if (location.host == 'ttc.skyeng.ru') {
-            document.getElementById('roomhashttc').value = document.URL.split('/')[5];
-            document.getElementById('getroomdatakids').click();
-        } else document.getElementById('roomhashttc').value = "Не открыт TTC курс! Откройте и повторите Или введите хеш одним словом"
-
-        document.getElementById('hideExercisesTTCMenu').onclick = function () {
-            wintExercTTC.style.display = 'none'
-        }
-
-        document.getElementById('RefreshInfoExerciseTTC').onclick = function () {
-            if (location.host == 'ttc.skyeng.ru') {
-                document.getElementById('roomhashttc').value = document.URL.split('/')[5];
-                document.getElementById('getroomdatakids').click();
-            } else document.getElementById('roomhashttc').value = "Не открыт TTC курс! Откройте и повторите Или введите хеш одним словом"
-        }
-
-        document.getElementById('getroomdatattc').onclick = async function () {
+async function getTTCData() {
             let rhash = document.getElementById('roomhashttc').value
             if (rhash.length < 20) {
                 await fetch("https://ttc-api.skyeng.ru/api/v1/lesson/join", {
@@ -471,6 +450,29 @@ async function OpenExercisesTTC() {
 
             }
         }
+
+async function OpenExercisesTTC() {
+    if (wintExercTTC.style.display == 'none') {
+        wintExercTTC.style.display = ''
+        wintExercSkysmart.style.display = 'none'
+
+        if (location.host == 'ttc.skyeng.ru') {
+            document.getElementById('roomhashttc').value = document.URL.split('/')[5];
+            getTTCData()
+        } else document.getElementById('roomhashttc').value = "Не открыт TTC курс! Откройте и повторите Или введите хеш одним словом"
+
+        document.getElementById('hideExercisesTTCMenu').onclick = function () {
+            wintExercTTC.style.display = 'none'
+        }
+
+        document.getElementById('RefreshInfoExerciseTTC').onclick = function () {
+            if (location.host == 'ttc.skyeng.ru') {
+                document.getElementById('roomhashttc').value = document.URL.split('/')[5];
+                getTTCData()
+            } else document.getElementById('roomhashttc').value = "Не открыт TTC курс! Откройте и повторите Или введите хеш одним словом"
+        }
+
+        document.getElementById('getroomdatattc').onclick = getTTCData
     }
     else {
         wintExercTTC.style.display = 'none'
