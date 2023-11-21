@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Technical Support Master",
   "short_name": "TSM",
-  "description": "Контекстное и вспомогательное меню с дополнительными функциями для личного кабинета пользователей",
+  "description": "Контекстное и вспомогательное меню с дополнительными функциями для личного кабинета пользователей. В ЛК активируется двойным кликом левой кнопки мыши или же комбинацией клавиш ALT+0",
   "version": "2.0.0",
   "permissions": [
     "contextMenus",
@@ -10,9 +10,9 @@
 	"clipboardWrite"
   ],
   "host_permissions": [
-    "*://*.skyeng.ru/*",
+    "*://id.skyeng.ru//*",
     "*://skyeng.autofaq.ai/*",
-    "*://*.skyeng.tech/*"
+    "*://mm-time.skyeng.tech/*"
   ],
   "background": {
     "service_worker": "app.js"
@@ -26,7 +26,7 @@
   "content_scripts": [
     {
       "js": ["content.js"],
-      "matches": ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*"],
+      "matches": ["*://skyeng.autofaq.ai/*", "*://vimbox.skyeng.ru/*", "*://new-teachers.skyeng.ru/*", "*://teachers.skyeng.ru/*", "*://student.skyeng.ru/*", "*://ttc.skyeng.ru/*"],
       "run_at": "document_idle"
     },
     {	  
@@ -39,7 +39,7 @@
         "/Modules/vocabulary.js"
       ],
       "css": ["/CSS/styles.css"],
-      "matches": ["*://vimbox.skyeng.ru/*","*://new-teachers.skyeng.ru/*","*://teachers.skyeng.ru/*","*://ttc.skyeng.ru/*","*://student.skyeng.ru/*"],
+      "matches": ["*://vimbox.skyeng.ru/*", "*://new-teachers.skyeng.ru/*", "*://teachers.skyeng.ru/*", "*://student.skyeng.ru/*", "*://ttc.skyeng.ru/*"],
       "run_at": "document_idle"
     }
   ],
@@ -50,3 +50,4 @@
     "128": "/Icons/128.png"
   }
 }
+ 

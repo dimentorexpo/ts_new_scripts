@@ -235,7 +235,7 @@ button.dobig:active {
 
 .studadultname {
     text-align: center;
-    color: #2411df;
+    color: honeydew;
     font-weight: 600;
     margin: 5px;
     border-bottom: 2.5px solid;
@@ -244,7 +244,7 @@ button.dobig:active {
 
 .studkidstname {
     text-align: center;
-    color: #2411df;
+    color: honeydew;
     font-weight: 600;
     margin: 5px;
     border-bottom: 2.5px solid;
@@ -295,7 +295,14 @@ button.dobig:active {
 
 .kidsoutdata:hover .studkidstname {
     background: #6A5ACD;
-    color: #fff;
+    color: aqua;
+    font-weight:600;
+    cursor: default;
+}
+
+.kidsoutdata:hover .studadultname {
+    background: #6A5ACD;
+    color: aqua;
     font-weight:600;
     cursor: default;
 }
@@ -426,6 +433,7 @@ button.dobig:active {
     background:#2f7d35;
     margin-right:5px;
     color:bisque;
+	border-radius: 20px;
 }
 
 .languageobsl {
