@@ -9,30 +9,38 @@ const ChanelDev = "hg8rcub4pfg3dcae8jxkwzkq9h";
 const ChanelSupport = "pspyooisr3rd7qzx9as8uc96xc";
 let lastChatId = null; // Глобальная переменная для хранения последнего chatid
 let lastMessage = null; // Глобальная переменная для хранения последнего сообщения
-const main = chrome.contextMenus.create({"id":"mainoption","title": "Technical Support Master", "documentUrlPatterns":showForPages});
 
-chrome.contextMenus.create({"id": "searchPaymentId", "title": "💸 Поиск платежа", "contexts":["page"], "parentId": "mainoption"});
-chrome.contextMenus.create({"id": "balanceInfoId", "title": "💰 Начислятор / 📑 Подписки", "contexts":["page"], "parentId": "mainoption"});
-chrome.contextMenus.create({"id": "certAndPromoId", "title": "🧾 Сертификаты / 🎟 Промокоды", "contexts":["page"], "parentId": "mainoption"});
-chrome.contextMenus.create({"id": "opentTTId", "title": "📟 Timetable", "contexts":["page"], "parentId": "mainoption"});
-chrome.contextMenus.create({"id": "openCalendarId", "title": "📆 Календарь (Datsy)", "contexts":["page"], "parentId": "mainoption"});
-chrome.contextMenus.create({"id": "makeCompensId", "title": "💵 Компенсации", "contexts":["page"], "parentId": "mainoption"});
-chrome.contextMenus.create({"id": "openTalksAdminId", "title": "💋 Админка Talks", "contexts":["page"], "parentId": "mainoption"});
-chrome.contextMenus.create({"id": "sendToDisasterId", "title": "🆘 #dev-disaster", "contexts":["page"], "parentId": "mainoption"});
+function createContextMenu(id, options) {
+    chrome.contextMenus.remove(id, function() {
+        if (chrome.runtime.lastError) {
+            console.log(`Пункт меню с id=${id} не существует. Создаем новый.`);
+        }
+        chrome.contextMenus.create(options);
+    });
+}
 
-const selmain = chrome.contextMenus.create({"id":"selMainOption","title": "Technical Support Master", "contexts":["selection"], "documentUrlPatterns":showForPages, "visible": false});
+createContextMenu("mainoption", {"id":"mainoption","title": "Technical Support Master", "documentUrlPatterns":showForPages});
+createContextMenu("searchPaymentId", {"id": "searchPaymentId", "title": "💸 Поиск платежа", "contexts":["page"], "parentId": "mainoption"});
+createContextMenu("balanceInfoId", {"id": "balanceInfoId", "title": "💰 Начислятор / 📑 Подписки", "contexts":["page"], "parentId": "mainoption"});
+createContextMenu("certAndPromoId", {"id": "certAndPromoId", "title": "🧾 Сертификаты / 🎟 Промокоды", "contexts":["page"], "parentId": "mainoption"});
+createContextMenu("opentTTId", {"id": "opentTTId", "title": "📟 Timetable", "contexts":["page"], "parentId": "mainoption"});
+createContextMenu("openCalendarId", {"id": "openCalendarId", "title": "📆 Календарь (Datsy)", "contexts":["page"], "parentId": "mainoption"});
+createContextMenu("makeCompensId", {"id": "makeCompensId", "title": "💵 Компенсации", "contexts":["page"], "parentId": "mainoption"});
+createContextMenu("openTalksAdminId", {"id": "openTalksAdminId", "title": "💋 Админка Talks", "contexts":["page"], "parentId": "mainoption"});
+createContextMenu("sendToDisasterId", {"id": "sendToDisasterId", "title": "🆘 #dev-disaster", "contexts":["page"], "parentId": "mainoption"});
 
-chrome.contextMenus.create({"id": "InfoID", "title": "🔎Info ID: %s", "contexts": ["selection"], "parentId": selmain, "visible": false});
-chrome.contextMenus.create({"id": "LoginerLinkID", "title": "🏡 Ссылка-логинер для ID: %s", "contexts": ["selection"], "parentId": selmain, "visible": false});
-chrome.contextMenus.create({"id": "openCRMId", "title": "🕵️‍♂️ Открыть CRM для ID: %s", "contexts": ["selection"], "parentId": selmain, "visible": false});
-chrome.contextMenus.create({"id": "PartialPaymentId", "title": "💳 Список рассрочек для ID: %s", "contexts": ["selection"], "parentId": selmain, "visible": false});
-chrome.contextMenus.create({"id": "editAdminId", "title": "🆔 Отредактировать в админке ID: %s", "contexts": ["selection"], "parentId": selmain, "visible": false});
-chrome.contextMenus.create({"id": "serviceSkipId", "title": "💨 ID Услуги Skip АП", "contexts": ["selection"], "parentId": selmain, "visible": false});
-chrome.contextMenus.create({"id": "skpiOnboaringId", "title": "💨 ID Услуги Skip Onboarding", "contexts": ["selection"], "parentId": selmain, "visible": false});
-chrome.contextMenus.create({"id": "openTRM2Id", "title": "👨‍🏫 Открыть ТРМ2.0 ID: %s", "contexts": ["selection"], "parentId": selmain, "visible": false});
-chrome.contextMenus.create({"id": "openGroupAdminId", "title": "👩‍👧‍👧 Открыть админку группы: %s", "contexts": ["selection"], "parentId": selmain, "visible": false});
+createContextMenu("selMainOption",{"id":"selMainOption","title": "Technical Support Master", "contexts":["selection"], "documentUrlPatterns":showForPages, "visible": false});
+createContextMenu("InfoID", {"id": "InfoID", "title": "🔎Info ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
+createContextMenu("LoginerLinkID", {"id": "LoginerLinkID", "title": "🏡 Ссылка-логинер для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
+createContextMenu("openCRMId", {"id": "openCRMId", "title": "🕵️‍♂️ Открыть CRM для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
+createContextMenu("PartialPaymentId", {"id": "PartialPaymentId", "title": "💳 Список рассрочек для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
+createContextMenu("editAdminId", {"id": "editAdminId", "title": "🆔 Отредактировать в админке ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
+createContextMenu("serviceSkipId", {"id": "serviceSkipId", "title": "💨 ID Услуги Skip АП", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
+createContextMenu("skpiOnboaringId", {"id": "skpiOnboaringId", "title": "💨 ID Услуги Skip Onboarding", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
+createContextMenu("openTRM2Id", {"id": "openTRM2Id", "title": "👨‍🏫 Открыть ТРМ2.0 ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
+createContextMenu("openGroupAdminId", {"id": "openGroupAdminId", "title": "👩‍👧‍👧 Открыть админку группы: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
 
-const hashMenuId = chrome.contextMenus.create({"id": "openByHashId", "title": "♐ Открыть ТШ по хешу: %s", "contexts": ["selection"], "parentId": selmain, "visible": false});
+createContextMenu("openByHashId",{"id": "openByHashId", "title": "♐ Открыть ТШ по хешу: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
 
 chrome.runtime.onMessage.addListener(function(message) {
     switch (message.type) {
@@ -78,12 +86,12 @@ chrome.runtime.onMessage.addListener(function(message) {
     }
 });
 
-const linkparent = chrome.contextMenus.create( {"id":"linkOption","title": "Technical Support Master", "contexts":["link"], "documentUrlPatterns":showForPages, "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]} ); // обьявляем контекстное меню при выделении текста отвечает свойство selection
+createContextMenu("linkOption", {"id":"linkOption","title": "Technical Support Master", "contexts":["link"], "documentUrlPatterns":showForPages, "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]} ); // обьявляем контекстное меню при выделении текста отвечает свойство selection
 
-chrome.contextMenus.create({"id": "cancel1linebaseId", "title": "🚫 Отмена ТП1Л (исход)", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
-chrome.contextMenus.create({"id": "cancel1linewithtextId", "title": "💬 Написать ТП1Л (исход) со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
-chrome.contextMenus.create({"id": "cancel2linewithtextId", "title": "💬 Написать 2ЛТП со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
-chrome.contextMenus.create({"id": "cancel2linebaseId", "title": "🚫 Отмена 2ЛТП", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
+createContextMenu("cancel1linebaseId", {"id": "cancel1linebaseId", "title": "🚫 Отмена ТП1Л (исход)", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
+createContextMenu("cancel1linewithtextId", {"id": "cancel1linewithtextId", "title": "💬 Написать ТП1Л (исход) со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
+createContextMenu("cancel2linewithtextId", {"id": "cancel2linewithtextId", "title": "💬 Написать 2ЛТП со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
+createContextMenu("cancel2linebaseId", {"id": "cancel2linebaseId", "title": "🚫 Отмена 2ЛТП", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
 
 // Обработка кликов
 chrome.contextMenus.onClicked.addListener((info, tab) => {
