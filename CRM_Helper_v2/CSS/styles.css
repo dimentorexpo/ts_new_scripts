@@ -1,0 +1,284 @@
+.inputCRM {
+    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-size:14px;
+    min-height: 25px;
+}	
+.textareaCRM {
+    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-size:14px;
+    min-height: 55px;
+    resize: vertical;
+    max-height: 200px;
+}
+.spanCRM {
+    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-size:14px;
+}
+#MenubarCRM:hover:hover {
+    background: #102357;
+}
+.maindivst{
+    border: 2px double black;
+    background-color: #464451;
+}
+.btnCRM {
+    background-color:#768d87;
+    border-radius:5px;
+    border:1px solid #566963;
+    color:#ffffff;
+    padding:5px 5px;
+    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-size:14px;
+    min-height: 30px;
+}
+#ahttimercrm {
+    background-color:#768d87;
+    border-radius:5px;
+    border: 1px solid rgb(56, 56, 56);
+    color:lightgreen;
+    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-size:15px;
+    height: 30px;
+    width: 50px;
+    z-index: 9050; 
+    position: fixed;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.btnCRM:hover, .widthofsd:hover, #testuchenik:hover, #testprepod:hover  {
+    background: #6A5ACD;
+}
+.btnCRMsmall {
+    width:30px !important;
+}
+.buttonHide {
+    background:#228B22;
+    border-radius:5px;
+    border:1px solid #566963;
+    color:#ffffff;
+    padding:5px 5px;
+    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-size:14px;
+    min-height: 30px;
+    width:50px;
+}
+.buttonHide:hover {
+    background: #0d3f0d;
+}
+.widthofsd {
+    background:#768d87;
+    border-radius:5px;
+    border:1px solid #566963;
+    color:#ffffff;
+    padding:5px 5px;
+    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-size:14px;
+    min-height: 30px;
+    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+    width:490px;
+}
+.active-query {
+    border-left:6px solid #1ff400;
+    box-shadow: 0px 5px 5px rgb(0 0 0 / 55%);
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+    font-weight: 700;
+    color: greenyellow;
+    transition: all 1s ease;
+}
+.menubtnsCRM{
+    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 6px;
+    border-bottom: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+}
+.menubtnsCRM:hover {
+    background:DeepSkyBlue;
+    color:#ffffffe6;
+    font-weight:600;
+    font-size:16px;
+    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+}
+#jirafinder {
+    border-top: 1px solid black;
+}
+
+.radio {
+    width:15px;
+    height:15px;
+    font-size:14px;
+    transition: all 0.5s ease;
+}
+.radio:hover {
+    transform: scale(1.5);
+    font-weight: 600;
+}
+.sdcustfieldformlines {
+    width: 90%;
+}
+.sdbtn{
+    width: 95px;
+    margin-top:2px;
+    margin-left:2px;
+}
+.sdexpecactual {
+    width: 90%;
+}
+.activebtn {
+    background-color: #1e90ff;
+}
+.activebtnsd {
+    background-color: #ff6347;
+}
+.sugops {
+    margin-left:5px;
+    color:bisque;
+    font-size: 16px;
+    transition: all 0.5s ease;
+}
+.sugops:hover {
+    font-size:18px;
+    color: SteelBlue;
+    font-weight: 600;
+}
+.checkbox-audio {
+    display: inline-block;
+    height: 28px;
+    line-height: 28px;
+    position: relative;
+    vertical-align: middle;
+    font-size: 14px;
+    user-select: none;
+}
+.checkbox-audio .checkbox-audio-switch-CRM {
+    position: relative;
+    display: inline-block;
+    box-sizing: border-box;
+    width: 56px;
+    height: 28px;
+    border: 1px solid rgba(0, 0, 0, .1);
+    border-radius: 25%/50%;
+    vertical-align: top;
+    background: #eee;
+    transition: .2s;
+}
+.checkbox-audio .checkbox-audio-switch-CRM:before {
+    content: '🔈';
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, .3);
+    transition: .15s;
+}
+.checkbox-audio input[type=checkbox] {
+    display: block;
+    width: 0;
+    height: 0;
+    position: absolute;
+    z-index: -1;
+    opacity: 0;
+}
+.checkbox-audio input[type=checkbox]:not(:disabled):active + .checkbox-audio-switch-CRM:before {
+    box-shadow: inset 0 0 2px rgba(0, 0, 0, .3);
+}
+.checkbox-audio input[type=checkbox]:checked + .checkbox-audio-switch-CRM {
+    background: limegreen;
+}
+.checkbox-audio input[type=checkbox]:checked + .checkbox-audio-switch-CRM:before {
+    content: '🔊';
+    transform:translateX(28px);
+}
+
+#testuchenik {
+    writing-mode: vertical-lr;
+    text-orientation: upright;
+    position: absolute;
+    top: 0;
+    Left: -34px;
+    font-size: 20px;
+    padding: 5px;
+    color: bisque;
+    background: #547354;
+    min-height: 60px;
+    text-align: center;
+    border: 1px solid black;
+    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+    user-select: none;
+    cursor: pointer;
+}
+#testuchenik.active, #testprepod.active  {
+    background: coral;
+}
+
+#testprepod {
+    writing-mode: vertical-lr;
+    text-orientation: upright;
+    position: absolute;
+    top: 0;
+    right: -34px;
+    font-size: 20px;
+    padding: 5px;
+    color: bisque;
+    background: #547354;
+    min-height: 60px;
+    text-align: center;
+    border: 1px solid black;
+    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+    user-select: none;
+    cursor: pointer;
+}
+.testroomsCRMbtn {
+    background: #3c82b3;
+    margin-left: 2px;
+    margin:2px;
+    cursor: pointer;
+    border-radius: 20px;
+    width: 95px;
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 50%);
+    font-size: 15px;
+}
+.testroomsCRMbtn.active{
+    background: coral;
+}
+.testroomsCRMcreate {
+    background: #228B22;
+    margin-left: 5px;
+    margin:5px;
+    cursor: pointer;
+    border-radius: 20px;
+    width: 290px;
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 50%);
+    font-size: 15px;
+}
+.testroomsCRMcreate:hover {
+    background: #0d3f0d;
+} 
+.testroomsCRMcreate.active{
+    background: coral;
+}
+#control_jira_search, #dostupbnts {
+    display: flex;
+    justify-content: space-between;
+}
+#dostupbnts button{
+   flex: 1;
+}
+span[name=changeList].active {
+    background:SeaGreen !important;
+}
+
+span[name=changeList]:hover {
+    background:#af622c !important;
+}

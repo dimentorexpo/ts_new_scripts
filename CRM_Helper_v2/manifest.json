@@ -1,0 +1,42 @@
+{
+  "manifest_version": 2,
+  "name": "CRMHelper",
+  "version": "1.5",
+  
+    "background": {
+        "scripts": ["bg.js"]
+      },
+	"browser_action": {
+		"default_icon": "icon.png"
+	},
+	"externally_connectable": {
+        "matches": [
+            "*://crm2.skyeng.ru/*"
+        ]
+    },
+	"content_scripts": [
+	{
+		"js": ["content.js"],
+		"matches": ["*://*.skyeng.ru/*"]
+	},
+	{
+		"js": ["stat.js"],
+		"matches": ["*://*.skyeng.ru/*"]
+	}
+	],
+	  "icons" : {
+		"16" : "icon.png",
+		"32" : "icon.png",
+		"48" : "icon.png",
+		"128" : "icon.png"
+	},
+    "permissions": [ 
+		"contextMenus",
+		"tabs",
+		"storage",
+		"*://*.skyeng.ru/*",
+		"*://*.slack.com/*",
+		"*://jira.skyeng.tech/*",
+		"*://mattermost.skyeng.tech/*"
+    ]
+}
