@@ -106,7 +106,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 			certandpromo(info, tab);
 			break;	
 		case "opentTTId":
-			certandpromo(info, tab);
+			opentt(info, tab);
 			break;
 		case "openCalendarId":
 			opencalendar(info, tab);
