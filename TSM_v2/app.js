@@ -202,29 +202,39 @@ function opentalksadm(info, tab){ // опция открывает админк�
 	chrome.tabs.create(createProperties);
 }
 
-async function sendtodisaster(info, tab){ // опция отправляет сообщение в дизастер канал
-   if (!MMostOperId) { 
+async function sendtodisaster(info, tab) {
+    if (!MMostOperId) { 
         MMostOperId = await getMMostOperId();
     }
 
-    let answersend = confirm("Вы уверены, что хотите пробудить Древнее Зло и воззвать к команде Фиксиков для исправления катаклизма на платформе?\nОК - Для продолжения. Отмена закрыть форму.");
-    if (!answersend) return console.log("Не уверен, жаль, повезет в другой раз!");
+    // Запрос подтверждения от контентного скрипта
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {action: "showConfirmDialog"}, async function(response) {
+            if (response && response.confirmed) {
+                // Получение текста сообщения
+                const textmsg = response.textmsg;
 
-    const textmsg = prompt('Введите ваш текст в это поле');
-    if (!textmsg || textmsg.length <= 3) {
-        return alert("Текст слишком короткий или пустой");
-    }
+                if (!textmsg || textmsg.length <= 3) {
+                    console.error("Текст слишком короткий или пустой");
+                    return;
+                }
 
-    try {
-        let response = await sendFetchMessage(`:allert: ${textmsg}`, ChanelDev);
-        let tsresponse = response.id;
-        console.log(tsresponse);
+                try {
+                    let response = await sendFetchMessage(`:alert: ${textmsg}`, ChanelDev);
+                    let tsresponse = response.id;
+                    console.log(tsresponse);
 
-        await sendFetchMessage(`@techsupport-team @techsupport-leads @tech-curators @pk-chats @sos-inform-teachers @teacherscareteam @outbound-team-new @m-vhod @pm-team1 @premium-support @a-players @news`, ChanelDev, tsresponse);
-    } catch (error) {
-        console.error("Ошибка при отправке сообщения: ", error);
-    }
+                    await sendFetchMessage(`@techsupport-team @techsupport-leads @tech-curators @pk-chats @sos-inform-teachers @teacherscareteam @outbound-team-new @m-vhod @pm-team1 @premium-support @a-players @news`, ChanelDev, tsresponse);
+                } catch (error) {
+                    console.error("Ошибка при отправке сообщения: ", error);
+                }
+            } else {
+                console.log("Отправка сообщения отменена пользователем");
+            }
+        });
+    });
 }
+
 
 async function sendFetchMessage(message, channelId, rootId = "") {
     const headers = {
@@ -371,43 +381,54 @@ async function cancelishodcall(info, tab){
 	}
 }
 
-async function sendtestmsgcustommsg(info, tab){
-	MMostOperId = await getMMostOperId();
-	if (MMostOperId) { 
-		const textmsg = prompt('Введите ваш текст в это поле');
-		if (textmsg !== null && textmsg.length > 3) {
-			const message = `@techsupport-1line-crm2 ${i.linkUrl} ${textmsg}`;
-			sendMattermostMessage(message);
-		} else if (textmsg !== null) {
-			alert("Текст слишком короткий");
-		} else {
-			console.log("Нажата кнопка Отмена");
-		}
-	}
+async function sendtestmsgcustommsg(info, tab) {
+    MMostOperId = await getMMostOperId();
+    if (MMostOperId) {
+        // Запрос ввода текста от контентного скрипта
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, { action: "showPromptDialog", linkUrl: info.linkUrl }, function (response) {
+                if (response && response.textmsg) {
+                    const textmsg = response.textmsg;
+                    if (textmsg.length > 3) {
+                        const message = `@techsupport-1line-crm2 ${info.linkUrl} ${textmsg}`; // 
+                        sendMattermostMessage(message);
+                    } else {
+                        console.error("Текст слишком короткий");
+                    }
+                } else {
+                    console.log("Нажата кнопка Отмена или текст пустой");
+                }
+            });
+        });
+    }
 }
+
 
 async function cancelsecondline(info, tab){	MMostOperId = await getMMostOperId();
 	MMostOperId = await getMMostOperId();
 	if (MMostOperId) { 
-		const message = `@techsupport-2line ${i.linkUrl} Охрана - отмена 🚫`;
+		const message = `@techsupport-2line ${info.linkUrl} Охрана - отмена 🚫`;
 		sendMattermostMessage(message);
 	}
 }
 
-async function send2ndlinetestmsgcustommsg(info, tab){
-	MMostOperId = await getMMostOperId();
-	if (MMostOperId) { 
-		const textmsg = prompt('Введите ваш текст в это поле');
-		if (textmsg !== null && textmsg.length > 3) {
-			const message = `@techsupport-2line ${i.linkUrl} ${textmsg}`;
-			sendMattermostMessage(message);
-		} else if (textmsg !== null) {
-			alert("Текст слишком короткий");
-		} else {
-			console.log("Нажата кнопка Отмена");
-		}
-	}	
+// В фоновом скрипте
+async function send2ndlinetestmsgcustommsg(info, tab) {
+    MMostOperId = await getMMostOperId();
+    if (MMostOperId) {
+        chrome.tabs.sendMessage(tab.id, { action: "showPromptDialog2LTP", linkUrl: info.linkUrl }, response => {
+            if (response && response.confirmed) {
+                const message = `@techsupport-2line ${info.linkUrl} ${response.textmsg}`; 
+                sendMattermostMessage(message);
+            } else if (response && !response.confirmed) {
+                console.log("Текст слишком короткий");
+            } else {
+                console.log("Нажата кнопка Отмена");
+            }
+        });
+    }
 }
+
 
 // функция общения с stat.js чтобы отправлять запрос на получение какой либо инфы для обхода CORS
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -422,33 +443,46 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 async function getMMostOperId() {
-	return new Promise(async (resolve) => {
-	  let MMostOperId = localStorage.getItem('matermost_oid');
-  
-	  if (MMostOperId !== null) {
-		resolve(MMostOperId);
-	  } else {
-		try {
-		  const response = await fetch(OperId_API_URL);
-		  
-		  if (!response.ok) {
-			throw new Error("Failed to fetch user data.");
-		  }
-  
-		  const data = await response.json();
-		  MMostOperId = data.id;
-  
-		  if (MMostOperId) {
-			localStorage.setItem('matermost_oid', MMostOperId);
-			resolve(MMostOperId);
-		  }
-		} catch (error) {
-		  console.error("Error fetching user data:", error);
-		  resolve(null); // Если возникла ошибка, вернуть null
-		}
-	  }
-	});
+  try {
+    // Получаем значение из хранилища Chrome
+    const MMostOperId = await new Promise((resolve, reject) => {
+      chrome.storage.local.get(['matermost_oid'], function(result) {
+        if (chrome.runtime.lastError) {
+          return reject(chrome.runtime.lastError);
+        }
+        resolve(result.matermost_oid);
+      });
+    });
+
+    // Если значение найдено в хранилище, возвращаем его
+    if (MMostOperId) {
+      return MMostOperId;
+    } else {
+      // Запрашиваем данные из API
+      const response = await fetch(OperId_API_URL);
+      if (!response.ok) throw new Error("Failed to fetch user data.");
+
+      const data = await response.json();
+      const newMMostOperId = data.id;
+
+      // Сохраняем полученный ID в хранилище Chrome
+      await new Promise((resolve, reject) => {
+        chrome.storage.local.set({ 'matermost_oid': newMMostOperId }, function() {
+          if (chrome.runtime.lastError) {
+            return reject(chrome.runtime.lastError);
+          }
+          resolve();
+        });
+      });
+
+      return newMMostOperId;
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    return null;
   }
+}
+
 
 function sendMattermostMessage(message) {
     lastMessage = message; // Сохраняем каждое новое сообщение
