@@ -5,7 +5,7 @@ let lastChatIdF = null; // Глобальная переменная для хр
 let attemptCount = 0;
 const MAX_ATTEMPTS = 60;
 //From TSM.js
-let allowedSites = ["vimbox.skyeng.ru", "new-teachers.skyeng.ru", "teachers.skyeng.ru", "student.skyeng.ru", "ttc.skyeng.ru"];
+let allowedSites = ["vimbox.skyeng.ru", "new-teachers.skyeng.ru", "teachers.skyeng.ru", "student.skyeng.ru", "ttc.skyeng.ru", "skyeng.autofaq.ai", "crm2.skyeng.ru"];
 let token;
 // end of TSM.js global vars
 if (servicesites.includes(location.host)) { initTSM() }
