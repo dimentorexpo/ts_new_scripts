@@ -612,7 +612,10 @@ async function move_again_AF() { //с АФ шняга там стили шмил
 
     if ((scriptAdr == TP_addr || scriptAdr == TP_addrRzrv) && opsection != 'ТП' && opsection != 'ТП ОС') {
         localStorage.setItem('scriptAdr', KC_addr)
+        localStorage.setItem('hideTaskWindow','0')
         location.reload()
+    } else if (scriptAdr != TP_addr && scriptAdr != TP_addrRzrv && localStorage.getItem('hideTaskWindow') == 1){
+        localStorage.setItem('hideTaskWindow','0')
     }
 
     if (scriptAdr != TP_addr && scriptAdr != TP_addrRzrv) {
