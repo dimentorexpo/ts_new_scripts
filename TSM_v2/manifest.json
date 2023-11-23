@@ -3,7 +3,7 @@
   "name": "Technical Support Master",
   "short_name": "TSM",
   "description": "Контекстное и вспомогательное меню с доп.функциями для ЛК пользователей. Включается дабл кликом ЛКМ или комб. клавиш ALT+0",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "permissions": [
     "contextMenus",
     "tabs",
