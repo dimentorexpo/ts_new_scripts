@@ -32,37 +32,8 @@ var win_Vocabulary = `<div style="display: flex;">
 					</span>
 				   </div>`;
 
-
-if (localStorage.getItem('winTopVocabulary') == null) { //additional students Vocabulary
-    localStorage.setItem('winTopVocabulary', '118');
-    localStorage.setItem('winLeftVocabulary', '407');
-}
-
-let wintVocabulary = document.createElement('div');
-document.body.append(wintVocabulary);
-wintVocabulary.className = 'wintInitializeVocabulary'
-wintVocabulary.style = 'display:none;  top: ' + localStorage.getItem('winTopVocabulary') + 'px; left: ' + localStorage.getItem('winLeftVocabulary') + 'px;';
-wintVocabulary.setAttribute('id', 'AFMS_Vocabulary');
-wintVocabulary.innerHTML = win_Vocabulary;
-
-//Vocabulary
-
-var listenerVocabulary = function (e, a) {
-    wintVocabulary.style.left = Number(e.clientX - myX9992) + "px";
-    wintVocabulary.style.top = Number(e.clientY - myY9992) + "px";
-    localStorage.setItem('winTopVocabulary', String(Number(e.clientY - myY9992)));
-    localStorage.setItem('winLeftVocabulary', String(Number(e.clientX - myX9992)));
-};
-wintVocabulary.onmousedown = function (a) {
-    if (checkelementt(a)) {
-        window.myX9992 = a.layerX;
-        window.myY9992 = a.layerY;
-        document.addEventListener('mousemove', listenerVocabulary);
-    }
-}
-wintVocabulary.onmouseup = function () { document.removeEventListener('mousemove', listenerVocabulary); }
-
-//End of vocabulary
+const wintVocabulary  = createTSMWindow('AFMS_Vocabulary', 'winTopVocabulary', 'winLeftVocabulary', win_Vocabulary);
+wintVocabulary.className = 'wintInitializeVocabulary';
 
 document.getElementById('VocabularyMenu').onclick = function () { // открывает меню для работы со словарем
 

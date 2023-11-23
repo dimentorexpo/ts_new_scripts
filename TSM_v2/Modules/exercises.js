@@ -75,98 +75,14 @@ var win_complectationExercises = `<div style="display: flex;">
 					</span>
 				   </div>`;			   
 
-if (localStorage.getItem('winTopexercisesSkysmart') == null) { //additional skysmart students exercise menu
-    localStorage.setItem('winTopexercisesSkysmart', '118');
-    localStorage.setItem('winLeftexercisesSkysmart', '407');
-}
+const wintExercSkysmart  = createTSMWindow('AFMS_SkysmartExercInfo', 'winTopexercisesSkysmart', 'winLeftexercisesSkysmart', win_kidsExercises);
+wintExercSkysmart.className = 'wintInitializeExercisesData';
 
-if (localStorage.getItem('winTopexercisesTTC') == null) { //additional TTC info menu
-    localStorage.setItem('winTopexercisesTTC', '118');
-    localStorage.setItem('winLeftexercisesTTC', '407');
-}
+const wintExercTTC  = createTSMWindow('AFMS_TTCExercInfo', 'winTopexercisesTTC', 'winLeftexercisesTTC', win_TTCExercises);
+wintExercTTC.className = 'wintInitializeExercisesData';      
 
-if (localStorage.getItem('winTopComplect') == null) { //additional complectations info
-    localStorage.setItem('winTopComplect', '118');
-    localStorage.setItem('winLeftComplect', '407');
-}
-
-let wintExercSkysmart = document.createElement('div');
-document.body.append(wintExercSkysmart);
-wintExercSkysmart.className = 'wintInitializeExercisesData'
-wintExercSkysmart.style = 'display:none;  top: ' + localStorage.getItem('winTopexercisesSkysmart') + 'px; left: ' + localStorage.getItem('winLeftexercisesSkysmart') + 'px;';
-wintExercSkysmart.setAttribute('id', 'AFMS_SkysmartExercInfo');
-wintExercSkysmart.innerHTML = win_kidsExercises;
-
-let wintExercTTC = document.createElement('div');
-document.body.append(wintExercTTC);
-wintExercTTC.className = 'wintInitializeExercisesData'
-wintExercTTC.style = 'display:none;  top: ' + localStorage.getItem('winTopexercisesTTC') + 'px; left: ' + localStorage.getItem('winLeftexercisesTTC') + 'px;';
-wintExercTTC.setAttribute('id', 'AFMS_TTCExercInfo');
-wintExercTTC.innerHTML = win_TTCExercises;
-
-let wintComplect = document.createElement('div');
-document.body.append(wintComplect);
-wintComplect.className = 'wintInitializeExercisesData'
-wintComplect.style = 'display:none;  top: ' + localStorage.getItem('winTopComplect') + 'px; left: ' + localStorage.getItem('winLeftComplect') + 'px;';
-wintComplect.setAttribute('id', 'AFMS_Complect');
-wintComplect.innerHTML = win_complectationExercises;
-
-// Exercises skysmart
-
-var listenerExercSkysmart = function (e, a) {
-    wintExercSkysmart.style.left = Number(e.clientX - myX9993) + "px";
-    wintExercSkysmart.style.top = Number(e.clientY - myY9993) + "px";
-    localStorage.setItem('winTopexercisesSkysmart', String(Number(e.clientY - myY9993)));
-    localStorage.setItem('winLeftexercisesSkysmart', String(Number(e.clientX - myX9993)));
-};
-
-wintExercSkysmart.onmousedown = function (a) {
-    if (checkelementt(a)) {
-        window.myX9993 = a.layerX;
-        window.myY9993 = a.layerY;
-        document.addEventListener('mousemove', listenerExercSkysmart);
-    }
-}
-wintExercSkysmart.onmouseup = function () { document.removeEventListener('mousemove', listenerExercSkysmart); }
-
-// End Exercises skysmart
-
-// Exercises TTC
-
-var listenerExercTTC = function (e, a) {
-    wintExercTTC.style.left = Number(e.clientX - myX9992) + "px";
-    wintExercTTC.style.top = Number(e.clientY - myY9992) + "px";
-    localStorage.setItem('winTopexercisesTTC', String(Number(e.clientY - myY9992)));
-    localStorage.setItem('winLeftexercisesTTC', String(Number(e.clientX - myX9992)));
-};
-wintExercTTC.onmousedown = function (a) {
-    if (checkelementt(a)) {
-        window.myX9992 = a.layerX;
-        window.myY9992 = a.layerY;
-        document.addEventListener('mousemove', listenerExercTTC);
-    }
-}
-wintExercTTC.onmouseup = function () { document.removeEventListener('mousemove', listenerExercTTC); }
-
-// End Exercises TTC
-
-// Exercises complectations
-var listenerComplectations = function (e, a) {
-    wintComplect.style.left = Number(e.clientX - ComplectX) + "px";
-    wintComplect.style.top = Number(e.clientY - ComplectY) + "px";
-    localStorage.setItem('winTopComplect', String(Number(e.clientY - ComplectY)));
-    localStorage.setItem('winLeftComplect', String(Number(e.clientX - ComplectX)));
-};
-wintComplect.onmousedown = function (a) {
-    if (checkelementt(a)) {
-        window.ComplectX = a.layerX;
-        window.ComplectY = a.layerY;
-        document.addEventListener('mousemove', listenerComplectations);
-    }
-}
-wintComplect.onmouseup = function () { document.removeEventListener('mousemove', listenerComplectations); }
-
-// End Exercises complectation
+const wintComplect  = createTSMWindow('AFMS_Complect', 'winTopComplect', 'winLeftComplect', win_complectationExercises);
+wintComplect.className = 'wintInitializeExercisesData';  
 
 async function OpenExercisesSmartroom() { // открывает менюшку скайсмарт упражнений
     if (wintExercSkysmart.style.display == 'none') {
@@ -698,4 +614,3 @@ async function OpenExercisesTTC() {
 			}
 	
 }
-

@@ -42,36 +42,8 @@ var win_getLessonInfo = `
 					</span>
 				  </div>`;
 
-if (localStorage.getItem('winTopLessonInfo') == null) { //additional Lesson info menu
-    localStorage.setItem('winTopLessonInfo', '118');
-    localStorage.setItem('winLeftLessonInfo', '407');
-}
-
-let wintLessonInfo = document.createElement('div');
-document.body.append(wintLessonInfo);
-wintLessonInfo.className = 'wintInitializeLessonInfo'
-wintLessonInfo.style = 'display:none;  top: ' + localStorage.getItem('winTopLessonInfo') + 'px; left: ' + localStorage.getItem('winLeftLessonInfo') + 'px;';
-wintLessonInfo.setAttribute('id', 'AFMS_LessonInfo');
-wintLessonInfo.innerHTML = win_getLessonInfo;
-
-// lexxon info menu
-
-var listenerLessonInfo = function (e, a) {
-    wintLessonInfo.style.left = Number(e.clientX - myX9997) + "px";
-    wintLessonInfo.style.top = Number(e.clientY - myY9997) + "px";
-    localStorage.setItem('winTopLessonInfo', String(Number(e.clientY - myY9997)));
-    localStorage.setItem('winLeftLessonInfo', String(Number(e.clientX - myX9997)));
-};
-wintLessonInfo.onmousedown = function (a) {
-    if (checkelementt(a)) {
-        window.myX9997 = a.layerX;
-        window.myY9997 = a.layerY;
-        document.addEventListener('mousemove', listenerLessonInfo);
-    }
-}
-wintLessonInfo.onmouseup = function () { document.removeEventListener('mousemove', listenerLessonInfo); }
-
-// end lesson info menu
+const wintLessonInfo  = createTSMWindow('AFMS_LessonInfo', 'winTopLessonInfo', 'winLeftLessonInfo', win_getLessonInfo);
+wintLessonInfo.className = 'wintInitializeLessonInfo';        
 
 async function OpenLessonmInfoMenu() { // открывает меню для просмотра информации об уроке
 

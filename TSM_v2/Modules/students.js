@@ -34,68 +34,11 @@ var win_studentsSkysmart = `<div style="display: flex;">
 
 					</span>
 				   </div>`;
-                   
-if (localStorage.getItem('winTopstudentsAdults') == null) { //additional adults students info menu
-    localStorage.setItem('winTopstudentsAdults', '118');
-    localStorage.setItem('winLeftstudentsAdults', '407');
-}
+const wintStudAdults  = createTSMWindow('AFMS_AdultStudInfo', 'winTopstudentsAdults', 'winLeftstudentsAdults', win_studentsAdults);
+wintStudAdults.className = 'wintInitializeAdultsStudentsInfo';
 
-if (localStorage.getItem('winTopstudentsSkysmart') == null) { //additional skysmart students info menu
-    localStorage.setItem('winTopstudentsSkysmart', '118');
-    localStorage.setItem('winLeftstudentsSkysmart', '407');
-}
-
-let wintStudAdults = document.createElement('div');
-document.body.append(wintStudAdults);
-wintStudAdults.className = 'wintInitializeAdultsStudentsInfo'
-wintStudAdults.style = 'display:none;  top: ' + localStorage.getItem('winTopstudentsAdults') + 'px; left: ' + localStorage.getItem('winLeftstudentsAdults') + 'px;';
-wintStudAdults.setAttribute('id', 'AFMS_AdultStudInfo');
-wintStudAdults.innerHTML = win_studentsAdults;
-
-let wintStudSkysmart = document.createElement('div');
-document.body.append(wintStudSkysmart);
-wintStudSkysmart.className = 'wintInitializeSkysmartStudentsInfo'
-wintStudSkysmart.style = 'display:none;  top: ' + localStorage.getItem('winTopstudentsSkysmart') + 'px; left: ' + localStorage.getItem('winLeftstudentsSkysmart') + 'px;';
-wintStudSkysmart.setAttribute('id', 'AFMS_SkysmartStudInfo');
-wintStudSkysmart.innerHTML = win_studentsSkysmart;
-
-// info students adult
-
-var listenerStudAdults = function (e, a) {
-    wintStudAdults.style.left = Number(e.clientX - myX9996) + "px";
-    wintStudAdults.style.top = Number(e.clientY - myY9996) + "px";
-    localStorage.setItem('winTopstudentsAdults', String(Number(e.clientY - myY9996)));
-    localStorage.setItem('winLeftstudentsAdults', String(Number(e.clientX - myX9996)));
-};
-wintStudAdults.onmousedown = function (a) {
-    if (checkelementt(a)) {
-        window.myX9996 = a.layerX;
-        window.myY9996 = a.layerY;
-        document.addEventListener('mousemove', listenerStudAdults);
-    }
-}
-wintStudAdults.onmouseup = function () { document.removeEventListener('mousemove', listenerStudAdults); }
-
-// end info students adult
-
-// info students kids
-
-var listenerStudSkysmart = function (e, a) {
-    wintStudSkysmart.style.left = Number(e.clientX - myX9995) + "px";
-    wintStudSkysmart.style.top = Number(e.clientY - myY9995) + "px";
-    localStorage.setItem('winTopstudentsSkysmart', String(Number(e.clientY - myY9995)));
-    localStorage.setItem('winLeftstudentsSkysmart', String(Number(e.clientX - myX9995)));
-};
-wintStudSkysmart.onmousedown = function (a) {
-    if (checkelementt(a)) {
-        window.myX9995 = a.layerX;
-        window.myY9995 = a.layerY;
-        document.addEventListener('mousemove', listenerStudSkysmart);
-    }
-}
-wintStudSkysmart.onmouseup = function () { document.removeEventListener('mousemove', listenerStudSkysmart); }
-
-// end info students kids
+const wintStudSkysmart  = createTSMWindow('AFMS_SkysmartStudInfo', 'winTopstudentsSkysmart', 'winLeftstudentsSkysmart', win_studentsSkysmart);
+wintStudSkysmart.className = 'wintInitializeSkysmartStudentsInfo';
 
 document.getElementById('hidestudentsSkysmartMenu').onclick = function () {
     wintStudSkysmart.style.display = 'none'

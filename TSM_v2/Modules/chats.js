@@ -13,36 +13,8 @@ var win_addChatMenu = `<div style="display: flex;">
 					</span>
 				   </div>`;
 
-if (localStorage.getItem('winTopAddChatMenu') == null) { //additional Chat menu
-    localStorage.setItem('winTopAddChatMenu', '118');
-    localStorage.setItem('winLeftAddChatMenu', '407');
-}
-
-let wintAddChatMenu = document.createElement('div');
-document.body.append(wintAddChatMenu);
-wintAddChatMenu.className = 'wintInitializeChat'
-wintAddChatMenu.style = 'display:none;  top: ' + localStorage.getItem('winTopAddChatMenu') + 'px; left: ' + localStorage.getItem('winLeftAddChatMenu') + 'px;';
-wintAddChatMenu.setAttribute('id', 'AFMS_addChatMenu');
-wintAddChatMenu.innerHTML = win_addChatMenu;
-
-// add chat menu
-
-var listenerAddChatMenu = function (e, a) {
-    wintAddChatMenu.style.left = Number(e.clientX - myX9998) + "px";
-    wintAddChatMenu.style.top = Number(e.clientY - myY9998) + "px";
-    localStorage.setItem('winTopAddChatMenu', String(Number(e.clientY - myY9998)));
-    localStorage.setItem('winLeftAddChatMenu', String(Number(e.clientX - myX9998)));
-};
-wintAddChatMenu.onmousedown = function (a) {
-    if (checkelementt(a)) {
-        window.myX9998 = a.layerX;
-        window.myY9998 = a.layerY;
-        document.addEventListener('mousemove', listenerAddChatMenu);
-    }
-}
-wintAddChatMenu.onmouseup = function () { document.removeEventListener('mousemove', listenerAddChatMenu); }
-
-// end add chat menu
+const wintAddChatMenu  = createTSMWindow('AFMS_addChatMenu', 'winTopAddChatMenu', 'winLeftAddChatMenu', win_addChatMenu);
+wintAddChatMenu.className = 'wintInitializeChat';                
 
 async function OpenAddChatMenu() { // открывает меню для удаления и добавления чатов
     if (wintAddChatMenu.style.display == 'none') {

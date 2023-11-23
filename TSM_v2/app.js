@@ -376,7 +376,7 @@ const createProperties = { url: encodeURI("https://video-trouble-shooter.skyeng.
 async function cancelishodcall(info, tab){ 
 	MMostOperId = await getMMostOperId();
 	if (MMostOperId) { 
-		const message = `@techsupport-1line-crm2 ${i.linkUrl} Охрана - отмена 🚫`;
+		const message = `@techsupport-1line-crm2 ${info.linkUrl} Охрана - отмена 🚫`;
 		sendMattermostMessage(message);
 	}
 }

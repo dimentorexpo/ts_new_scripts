@@ -35,37 +35,56 @@ var win_addMenu = `<div style="display: flex;">
 					</span>
 				   </div>`;
 
-if (localStorage.getItem('winTopAddMenu') == null) { //additional menu
-    localStorage.setItem('winTopAddMenu', '120');
-    localStorage.setItem('winLeftAddMenu', '295');
-}
-
-let wintAddMenu = document.createElement('div');
-document.body.append(wintAddMenu);
+const wintAddMenu  = createTSMWindow('AFMS_addMenu', 'winTopAddMenu', 'winLeftAddMenu', win_addMenu);
 wintAddMenu.className = 'wintInitialize'
-wintAddMenu.style = 'display:none;  top: ' + localStorage.getItem('winTopAddMenu') + 'px; left: ' + localStorage.getItem('winLeftAddMenu') + 'px;';
-wintAddMenu.setAttribute('id', 'AFMS_addMenu');
-wintAddMenu.innerHTML = win_addMenu;
 
+function createTSMWindow(id, topKey, leftKey, content) { // Функция для создания окна и настройки стилей
+    const windowElement = document.createElement('div');
+    document.body.append(windowElement);
 
-//aditional menu
+    const storedTop = localStorage.getItem(topKey) || '118';
+    const storedLeft = localStorage.getItem(leftKey) || '407';
 
-var listenerAddMenu = function (e, a) {
-    wintAddMenu.style.left = Number(e.clientX - myX9999) + "px";
-    wintAddMenu.style.top = Number(e.clientY - myY9999) + "px";
-    localStorage.setItem('winTopAddMenu', String(Number(e.clientY - myY9999)));
-    localStorage.setItem('winLeftAddMenu', String(Number(e.clientX - myX9999)));
-};
-wintAddMenu.onmousedown = function (a) {
-    if (checkelementt(a)) {
-        window.myX9999 = a.layerX;
-        window.myY9999 = a.layerY;
-        document.addEventListener('mousemove', listenerAddMenu);
-    }
+    windowElement.style = `display:none; top: ${storedTop}px; left: ${storedLeft}px;`;
+    windowElement.style.display = 'none';
+    windowElement.setAttribute('id', id);
+    windowElement.innerHTML = content;
+
+    windowElement.onmousedown = function (event) {
+        if (checkelementtype(event)) {
+            let startX = event.clientX;
+            let startY = event.clientY;
+            let elemLeft = windowElement.offsetLeft;
+            let elemTop = windowElement.offsetTop;
+
+            function onMouseMove(event) {
+                if (!(event.buttons & 1)) {
+                    onMouseUp();
+                    return;
+                }
+                let deltaX = event.clientX - startX;
+                let deltaY = event.clientY - startY;
+
+                windowElement.style.left = `${elemLeft + deltaX}px`;
+                windowElement.style.top = `${elemTop + deltaY}px`;
+
+                localStorage.setItem(topKey, String(elemTop + deltaY));
+                localStorage.setItem(leftKey, String(elemLeft + deltaX));
+            }
+
+            document.addEventListener('mousemove', onMouseMove);
+
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+
+            document.addEventListener('mouseup', onMouseUp);
+        }
+    };
+
+    return windowElement;
 }
-wintAddMenu.onmouseup = function () { document.removeEventListener('mousemove', listenerAddMenu); }
-
-// end aditional menu
 
 document.querySelector('body').addEventListener('dblclick', (event) => {
     let tags = ["INPUT", "TEXTAREA", "BUTTON", "H1", "H2", "H3", "UL", "LI", "VIM-WORD", "P", "SPAN"];
@@ -131,3 +150,64 @@ document.getElementById('exercisekysmart').onclick = OpenExercisesSmartroom;
 document.getElementById('exercisesttc').onclick = OpenExercisesTTC;
 document.getElementById('exercisesComplect').onclick = OpenExercisesComplect;
 document.getElementById('openlesinfomenu').onclick = OpenLessonmInfoMenu;
+
+function checkelementt(a) { // проверка на какой элемент нажали
+    let elem = document.elementFromPoint(a.clientX, a.clientY)
+
+    if (elem.nodeName != 'BUTTON' && elem.nodeName != 'INPUT' && elem.nodeName != 'TEXTAREA' && elem.nodeName != 'SELECT') {
+        return true;
+    }
+    return false;
+}
+
+async function getUserId() { // получаем Id пользователя
+    try {
+        const response = await fetch("https://rooms-vimbox.skyeng.ru/users/api/v2/auth/config", {
+            credentials: "include",
+            method: "POST"
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const userId = data?.user?.id || '';
+            return userId;
+        } else {
+            throw new Error(`Failed to fetch data. Status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error(error);
+//        return '';
+    }
+}
+
+function addOption(oListbox, text, value) {  //функция добавления опции в список
+    var oOption = document.createElement("option");
+    oOption.appendChild(document.createTextNode(text));
+    oOption.setAttribute("value", value);
+    oListbox.appendChild(oOption);
+}
+
+const copyToClipboardTSM = str => { // функция копирования в буфер обмена
+    const el = document.createElement('textarea');
+    el.value = str;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+};
+
+function fetchaddchat(userid1, userid2, method) { //вспомогательная функция просто добавления чата мекжду пользователям
+    fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
+        "headers": {
+            "content-type": "application/json",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-site"
+        },
+        "referrer": "https://vimbox.skyeng.ru/",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": `{\"userId1\":${userid1},\"userId2\":${userid2}}`,
+        "method": method,
+        "mode": "cors",
+        "credentials": "include"
+    });
+}
