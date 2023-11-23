@@ -5,7 +5,7 @@ var win_Chathis =  // описание элементов окна Истори�
 				<div style="margin: 5px; width: 410px;" id="chathisheader">
 					<button class="mainButton buttonHide" title="Скрытие меню" id="hideMeChHis">hide</button>
 					<button class="mainButton smallbtn" title="Очистка всех полей" id="clearallinfo">🧹</button>
-					<select style="height:28px; width:260px; text-align:center" id="operatorstp" onchange="findchatsoper()">
+					<select style="height:28px; width:260px; text-align:center" id="operatorstp">
 							<option selected="" disabled="">Операторы на линии</option>
 					</select>
 					<button class="mainButton smallbtn" title="Обновляет список активных операторов, их статус, и количества чатов" id="RefrehOperators">♻</button>
@@ -389,6 +389,8 @@ async function findchatsoper() { // ищет активные чаты на вы
         }
     }
 }
+
+document.getElementById('operatorstp').addEventListener('change', findchatsoper);
 
 document.getElementById('hideMeChHis').onclick = () => { //форма hide
     if (document.getElementById('AF_ChatHis').style.display == '') {

@@ -19,7 +19,7 @@ var win_Calendar =  // описание формы чтобы не давала 
 
 						<div style="display: flex; justify-content: center;">
 								<button class="mainButton" id="prevDay" style="border-radius: 20px; padding: 5px; padding-top: 6px;">◀</button>
-								<input type="date" id="eventDate" onChange="getTimeSlots()" style="width:100px; text-align:center; background: blanchedalmond; font-weight: 700; border-radius: 20px;"></input>
+								<input type="date" id="eventDate" style="width:100px; text-align:center; background: blanchedalmond; font-weight: 700; border-radius: 20px;"></input>
 								<button class="mainButton" id="nextDay" style="border-radius: 20px; padding: 5px; padding-top: 6px;">▶</button>
 								<button class="mainButton" id="nowDay" style="margin-left: 5px; padding: 5px;">Сегодня</button>
 								<label style="margin-left: 5px; margin-right: 5px; margin-top: 5px; color: bisque;">Слоты по состоянию на: </label>
@@ -316,6 +316,8 @@ function getTimeSlots() { //функция получения информаци
     })
 
 }
+
+document.getElementById('eventDate').addEventListener('change', getTimeSlots);
 
 let operNamesAF = []
 let refreshintervalset;
