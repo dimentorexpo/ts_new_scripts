@@ -27,7 +27,7 @@
   "content_scripts": [
     {
       "js": ["content.js"],
-      "matches": ["*://skyeng.autofaq.ai/*", "*://vimbox.skyeng.ru/*", "*://new-teachers.skyeng.ru/*", "*://teachers.skyeng.ru/*", "*://student.skyeng.ru/*", "*://ttc.skyeng.ru/*"],
+      "matches": ["*://skyeng.autofaq.ai/*", "*://crm2.skyeng.ru/*"],
       "run_at": "document_idle"
     },
     {	  
@@ -51,4 +51,3 @@
     "128": "/Icons/128.png"
   }
 }
- 

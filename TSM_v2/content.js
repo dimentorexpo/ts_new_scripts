@@ -5,7 +5,6 @@ let lastChatIdF = null; // Глобальная переменная для хр
 let attemptCount = 0;
 const MAX_ATTEMPTS = 60;
 //From TSM.js
-let allowedSites = ["vimbox.skyeng.ru", "new-teachers.skyeng.ru", "teachers.skyeng.ru", "student.skyeng.ru", "ttc.skyeng.ru", "skyeng.autofaq.ai", "crm2.skyeng.ru"];
 let token;
 // end of TSM.js global vars
 if (servicesites.includes(location.host)) { initTSM() }
@@ -172,69 +171,6 @@ if (window.location.href === "https://skyeng.autofaq.ai/tickets/assigned") {
     }, 60000);
 }
 
-////////////////////////////Added from TSM.js\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
-function checkelementt(a) { // проверка на какой элемент нажали
-    let elem = document.elementFromPoint(a.clientX, a.clientY)
-
-    if (elem.nodeName != 'BUTTON' && elem.nodeName != 'INPUT' && elem.nodeName != 'TEXTAREA' && elem.nodeName != 'SELECT') {
-        return true;
-    }
-    return false;
-}
-
-async function getUserId() { // получаем Id пользователя
-    try {
-        const response = await fetch("https://rooms-vimbox.skyeng.ru/users/api/v2/auth/config", {
-            credentials: "include",
-            method: "POST"
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            const userId = data?.user?.id || '';
-            return userId;
-        } else {
-            throw new Error(`Failed to fetch data. Status: ${response.status}`);
-        }
-    } catch (error) {
-        console.error(error);
-//        return '';
-    }
-}
-
-function addOption(oListbox, text, value) {  //функция добавления опции в список
-    var oOption = document.createElement("option");
-    oOption.appendChild(document.createTextNode(text));
-    oOption.setAttribute("value", value);
-    oListbox.appendChild(oOption);
-}
-
-const copyToClipboardTSM = str => { // функция копирования в буфер обмена
-    const el = document.createElement('textarea');
-    el.value = str;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-};
-
-function fetchaddchat(userid1, userid2, method) { //вспомогательная функция просто добавления чата мекжду пользователям
-    fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
-        "headers": {
-            "content-type": "application/json",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-site"
-        },
-        "referrer": "https://vimbox.skyeng.ru/",
-        "referrerPolicy": "strict-origin-when-cross-origin",
-        "body": `{\"userId1\":${userid1},\"userId2\":${userid2}}`,
-        "method": method,
-        "mode": "cors",
-        "credentials": "include"
-    });
-}
-
 // Контентный скрипт
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "copyToClipboard") {
@@ -243,28 +179,3 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             .catch(err => console.error('Ошибка при копировании текста: ', err));
     }
 });
-
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.action === "showConfirmDialog") {
-        const confirmed = confirm("Вы уверены, что хотите пробудить Древнее Зло и воззвать к команде Фиксиков для исправления катаклизма на платформе?");
-        if (confirmed) {
-            const textmsg = prompt('Введите ваш текст в это поле');
-            sendResponse({ confirmed: true, textmsg: textmsg });
-        } else {
-            sendResponse({ confirmed: false });
-        }
-    }
-	
-	if (request.action === "showPromptDialog") {
-        const textmsg = prompt('Введите ваш текст в это поле');
-        sendResponse({ textmsg: textmsg, linkUrl: request.linkUrl });
-    }
-	
-	 if (request.action === "showPromptDialog2LTP") {
-        const textmsg = prompt('Введите ваш текст в это поле');
-        sendResponse({ textmsg: textmsg, confirmed: textmsg !== null && textmsg.length > 3 });
-    }
-	
-    return true; // Важно для асинхронного ответа
-});
-
