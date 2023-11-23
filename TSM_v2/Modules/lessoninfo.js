@@ -43,7 +43,7 @@ var win_getLessonInfo = `
 				  </div>`;
 
 const wintLessonInfo  = createTSMWindow('AFMS_LessonInfo', 'winTopLessonInfo', 'winLeftLessonInfo', win_getLessonInfo);
-wintLessonInfo.className = 'wintInitializeLessonInfo';        
+wintLessonInfo.className = 'wintInitializeLessonInfo';
 
 async function OpenLessonmInfoMenu() { // открывает меню для просмотра информации об уроке
 

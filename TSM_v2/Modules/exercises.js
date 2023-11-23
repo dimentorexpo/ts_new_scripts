@@ -79,10 +79,10 @@ const wintExercSkysmart  = createTSMWindow('AFMS_SkysmartExercInfo', 'winTopexer
 wintExercSkysmart.className = 'wintInitializeExercisesData';
 
 const wintExercTTC  = createTSMWindow('AFMS_TTCExercInfo', 'winTopexercisesTTC', 'winLeftexercisesTTC', win_TTCExercises);
-wintExercTTC.className = 'wintInitializeExercisesData';      
+wintExercTTC.className = 'wintInitializeExercisesData';
 
 const wintComplect  = createTSMWindow('AFMS_Complect', 'winTopComplect', 'winLeftComplect', win_complectationExercises);
-wintComplect.className = 'wintInitializeExercisesData';  
+wintComplect.className = 'wintInitializeExercisesData';
 
 async function OpenExercisesSmartroom() { // открывает менюшку скайсмарт упражнений
     if (wintExercSkysmart.style.display == 'none') {

@@ -14,7 +14,7 @@ var win_addChatMenu = `<div style="display: flex;">
 				   </div>`;
 
 const wintAddChatMenu  = createTSMWindow('AFMS_addChatMenu', 'winTopAddChatMenu', 'winLeftAddChatMenu', win_addChatMenu);
-wintAddChatMenu.className = 'wintInitializeChat';                
+wintAddChatMenu.className = 'wintInitializeChat';
 
 async function OpenAddChatMenu() { // открывает меню для удаления и добавления чатов
     if (wintAddChatMenu.style.display == 'none') {

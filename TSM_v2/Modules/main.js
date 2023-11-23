@@ -36,7 +36,7 @@ var win_addMenu = `<div style="display: flex;">
 				   </div>`;
 
 const wintAddMenu  = createTSMWindow('AFMS_addMenu', 'winTopAddMenu', 'winLeftAddMenu', win_addMenu);
-wintAddMenu.className = 'wintInitialize'
+wintAddMenu.className = 'wintInitialize';
 
 function createTSMWindow(id, topKey, leftKey, content) { // Функция для создания окна и настройки стилей
     const windowElement = document.createElement('div');
