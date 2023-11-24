@@ -120,7 +120,7 @@ const menuActions = {
     "cancel2linebaseId": cancelsecondline
     // Продолжите добавлять другие идентификаторы и функции здесь
 };
-
+ 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (menuActions[info.menuItemId]) {
         menuActions[info.menuItemId](info, tab);
