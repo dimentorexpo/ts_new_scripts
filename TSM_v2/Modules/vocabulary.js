@@ -6,13 +6,13 @@ var win_Vocabulary = `<div style="display: flex;">
 
 					     <div style="margin: 5px; width:500px;">
                             <button class="commonbtn hidebtns" title="скрывает меню" id="hideVocabularyMenu">hide</button>
-							<button class="commonbtn" id="ClearVocabulary" title = "Обновляет информацию по открытой комнате" style="margin: 5px; width: 30px; height: 30px; padding: 0">🧹</button>
+							<button class="commonbtn smallbtns" id="ClearVocabulary" title = "Обновляет информацию по открытой комнате" style="margin: 5px;">🧹</button>
                         </div>
 
 						<div id="vocabularbar" class="vocabularbarcls">
 							<div id="searchtoolswords" style="margin: 5px; width:500px;">
-								<input id="iduserwords" style="width: 360px;text-align: center; height: 23px;" placeholder="Enter student ID to get vocabulary info">
-								<button id="findwords" class="commonbtn" style="height: 30px;width: 30px; margin-left: 5px;">🔎</button>
+								<input id="iduserwords" style="width: 450px;text-align: center; height: 30px;" placeholder="Enter student ID to get vocabulary info">
+								<button id="findwords" class="commonbtn smallbtns">🔎</button>
 							</div>
 							<div class="vocabularremtools">
 								<button class="commonbtn" id="deleteallwords" title="Удаляет все выделенные слова">❌ Selected</button>
@@ -22,7 +22,7 @@ var win_Vocabulary = `<div style="display: flex;">
 								<button class="commonbtn" id="selectallwords" title="Выделяет все слова">☑ Select All</button>
 							</div>
                             <div class="vocabularremtools">
-                                <input id="searchwordinput" style="width: 470px; text-align: center; height: 23px; display: none; margin-top: 7px;" placeholder="Enter a word or part of it to search">
+                                <input id="searchwordinput" style="width: 470px; text-align: center; height: 30px; display: none; margin-top: 7px;" placeholder="Enter a word or part of it to search">
 							</div>
 						</div>
 

@@ -4,8 +4,8 @@ var win_getLessonInfo = `
 
 						<div style="margin: 5px; width: 490px;" id="LessonInfoHeader">
                             <button class="commonbtn hidebtns" title="скрывает меню" id="hideMeLessonInfo">hide</button>
-							<button class="commonbtn" id="RefreshInfo" title = "Обновляет информацию в полях, использовать при подключении к уроку! Если работаете на других страницах с формой есть кнопка Search позволяющая подтягивать актуальный статус" style="margin: 5px; width: 25px; height: 25px; padding: 0;">♻</button>
-							<button class="commonbtn" id="ClearInfo" title = "Очищает информацию в полях" style="width: 25px; height: 25px; padding: 0;">🧹</button>
+							<button class="commonbtn smallbtns" id="RefreshInfo" title = "Обновляет информацию в полях, использовать при подключении к уроку! Если работаете на других страницах с формой есть кнопка Search позволяющая подтягивать актуальный статус" style="margin: 5px;">♻</button>
+							<button class="commonbtn smallbtns" id="ClearInfo" title = "Очищает информацию в полях">🧹</button>
 							<span id="platform" style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Platform: </span>
 							<span id="platformname" style="width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #627998f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 12px; cursor:text;"></span>
 							<span id="roomfor" style="display: none; margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Room for Student ID: </span>

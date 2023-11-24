@@ -4,7 +4,7 @@ var win_studentsAdults = `<div style="display: flex;">
 					     <div style="margin: 5px;" id="studentsAdultsHeader">
                             <button class="commonbtn hidebtns" title="скрывает меню" id="hidestudentsAdultstMenu">hide</button>
 							<button class="commonbtn" id="addallchatswithadult" style="margin:5px" title="Добавляет чаты со всеми учениками из раздела "Уроки">➕💬</button>
-							<button class="commonbtn" id="actualizestudreportadult" style="margin:5px" title="Актуализирует отчеты по всем ученикам заполняя поля символами --">📝</button>
+							<button class="commonbtn smallbtns" id="actualizestudreportadult" style="margin:5px" title="Актуализирует отчеты по всем ученикам заполняя поля символами --">📝</button>
                         </div>
 
 						<input id="usersearch" style="margin-left: 8px;width: 628px; text-align:center;" placeholder="Enter user ID or name for search">

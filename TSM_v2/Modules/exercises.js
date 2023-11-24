@@ -4,7 +4,7 @@ var win_kidsExercises = `<div style="display: flex;">
 
 					     <div style="margin: 5px; width:550px;" id="exercisesSkysmartHeader">
                             <button class="commonbtn hidebtns" title="скрывает меню" id="hideExercisesSkysmartMenu">hide</button>
-							<button class="commonbtn" id="RefreshInfoExerciseKids" title = "Обновляет информацию по открытой комнате" style="margin: 5px; width: 25px; height: 25px; padding: 0;">♻</button>
+							<button class="commonbtn smallbtns" id="RefreshInfoExerciseKids" title = "Обновляет информацию по открытой комнате" style="margin: 5px;">♻</button>
 							<span id="studname" style="color:#d5f4ff; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
 							<span id="studserviceid" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
 							<span id="studid" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
@@ -17,8 +17,8 @@ var win_kidsExercises = `<div style="display: flex;">
 						</div>
 
 						<div style="margin: 5px; width:550px;">
-							<input id="roomhashhwkids" placeholder="homework link" style="width: 490px; margin-left: 15px; text-align: center;">
-							<button class="commonbtn" id="getroomdatakids">🔎</button>
+							<input id="roomhashhwkids" placeholder="homework link" style="width: 490px; margin-left: 15px; text-align: center; height: 30px;">
+							<button class="commonbtn smallbtns" id="getroomdatakids">🔎</button>
 						</div>
 
 						<div id="exercisebarskysmart" class="skysmartexcbar">
@@ -32,12 +32,12 @@ var win_TTCExercises = `<div style="display: flex;">
 
 					     <div style="margin: 5px; width:500px;" id="exercisesTTCHeader">
                             <button class="commonbtn hidebtns" title="скрывает меню" id="hideExercisesTTCMenu">hide</button>
-							<button class="commonbtn" id="RefreshInfoExerciseTTC" title = "Обновляет информацию по открытой комнате" style="margin: 5px; width: 25px; height: 25px; padding: 0;">♻</button>
+							<button class="commonbtn smallbtns" id="RefreshInfoExerciseTTC" title = "Обновляет информацию по открытой комнате" style="margin: 5px;">♻</button>
                         </div>
 
 						<div style="margin:5px;">
-							<input id="roomhashttc" placeholder="Room link" style="width: 500px; margin-left: 10px; text-align: center;">
-							<button class="commonbtn" id="getroomdatattc">🔎</button>
+							<input id="roomhashttc" placeholder="Room link" style="width: 500px; margin-left: 10px; text-align: center; height: 30px;">
+							<button class="commonbtn smallbtns" id="getroomdatattc">🔎</button>
 						</div>
 
 						<div id="exercisebarttc" class="skysmartexcbar">
@@ -51,7 +51,7 @@ var win_complectationExercises = `<div style="display: flex;">
 
 					     <div style="margin: 5px; width:550px;" id="exercisesComplectHeader">
                             <button class="commonbtn hidebtns" title="скрывает меню" id="hideExercisesComplectMenu">hide</button>
-							<button class="commonbtn" id="RefreshInfoExerciseComplect title = "Обновляет информацию по открытой комнате" style="margin: 5px; width: 25px; height: 25px; padding: 0;">♻</button>
+							<button class="commonbtn smallbtns" id="RefreshInfoExerciseComplect title = "Обновляет информацию по открытой комнате" style="margin: 5px;">♻</button>
 							<span id="studnameComplect" style="color:#d5f4ff; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
 							<span id="studserviceidComplect" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
 							<span id="studidComplect" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
@@ -65,8 +65,8 @@ var win_complectationExercises = `<div style="display: flex;">
 						</div>
 
 						<div style="margin: 5px; width:550px;">
-							<input id="roomhashhwComplect" placeholder="Room link" style="width: 490px; margin-left: 15px; text-align: center;">
-							<button class="commonbtn" id="getroomdataComplect">🔎</button>
+							<input id="roomhashhwComplect" placeholder="Room link" style="width: 490px; margin-left: 15px; text-align: center; height: 30px;">
+							<button class="commonbtn smallbtns" id="getroomdataComplect">🔎</button>
 						</div>
 
 						<div id="exercisebarComplect" class="skysmartexcbar">
