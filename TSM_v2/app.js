@@ -92,7 +92,7 @@ createContextMenu("cancel1linebaseId", {"id": "cancel1linebaseId", "title": "�
 createContextMenu("cancel1linewithtextId", {"id": "cancel1linewithtextId", "title": "💬 Написать ТП1Л (исход) со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
 createContextMenu("cancel2linewithtextId", {"id": "cancel2linewithtextId", "title": "💬 Написать 2ЛТП со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
 createContextMenu("cancel2linebaseId", {"id": "cancel2linebaseId", "title": "🚫 Отмена 2ЛТП", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
-
+    
 // Обработка кликов
 
 const menuActions = {
