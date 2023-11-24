@@ -3,7 +3,7 @@ var win_kidsExercises = `<div style="display: flex;">
 					<span style="cursor: -webkit-grab;">
 
 					     <div style="margin: 5px; width:550px;" id="exercisesSkysmartHeader">
-                            <button class="commonbtn" title="скрывает меню" id="hideExercisesSkysmartMenu" style="width:50px; height:30px; background: #228B22;">hide</button>
+                            <button class="commonbtn hidebtns" title="скрывает меню" id="hideExercisesSkysmartMenu">hide</button>
 							<button class="commonbtn" id="RefreshInfoExerciseKids" title = "Обновляет информацию по открытой комнате" style="margin: 5px; width: 25px; height: 25px; padding: 0;">♻</button>
 							<span id="studname" style="color:#d5f4ff; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
 							<span id="studserviceid" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
@@ -31,7 +31,7 @@ var win_TTCExercises = `<div style="display: flex;">
 					<span style="cursor: -webkit-grab;">
 
 					     <div style="margin: 5px; width:500px;" id="exercisesTTCHeader">
-                            <button class="commonbtn" title="скрывает меню" id="hideExercisesTTCMenu" style="width:50px; height:30px; background: #228B22;">hide</button>
+                            <button class="commonbtn hidebtns" title="скрывает меню" id="hideExercisesTTCMenu">hide</button>
 							<button class="commonbtn" id="RefreshInfoExerciseTTC" title = "Обновляет информацию по открытой комнате" style="margin: 5px; width: 25px; height: 25px; padding: 0;">♻</button>
                         </div>
 
@@ -50,7 +50,7 @@ var win_complectationExercises = `<div style="display: flex;">
 					<span style="cursor: -webkit-grab;">
 
 					     <div style="margin: 5px; width:550px;" id="exercisesComplectHeader">
-                            <button class="commonbtn" title="скрывает меню" id="hideExercisesComplectMenu" style="width:50px; height:30px; background: #228B22;">hide</button>
+                            <button class="commonbtn hidebtns" title="скрывает меню" id="hideExercisesComplectMenu">hide</button>
 							<button class="commonbtn" id="RefreshInfoExerciseComplect title = "Обновляет информацию по открытой комнате" style="margin: 5px; width: 25px; height: 25px; padding: 0;">♻</button>
 							<span id="studnameComplect" style="color:#d5f4ff; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
 							<span id="studserviceidComplect" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>

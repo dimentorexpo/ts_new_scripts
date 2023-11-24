@@ -3,7 +3,7 @@ var win_getLessonInfo = `
 					<span style="cursor: -webkit-grab;">
 
 						<div style="margin: 5px; width: 490px;" id="LessonInfoHeader">
-                            <button class="commonbtn" title="скрывает меню" id="hideMeLessonInfo" style="width:50px; background: #228B22; height: 25px;">hide</button>
+                            <button class="commonbtn hidebtns" title="скрывает меню" id="hideMeLessonInfo">hide</button>
 							<button class="commonbtn" id="RefreshInfo" title = "Обновляет информацию в полях, использовать при подключении к уроку! Если работаете на других страницах с формой есть кнопка Search позволяющая подтягивать актуальный статус" style="margin: 5px; width: 25px; height: 25px; padding: 0;">♻</button>
 							<button class="commonbtn" id="ClearInfo" title = "Очищает информацию в полях" style="width: 25px; height: 25px; padding: 0;">🧹</button>
 							<span id="platform" style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Platform: </span>

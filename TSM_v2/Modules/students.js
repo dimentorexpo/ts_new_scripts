@@ -2,7 +2,7 @@ var win_studentsAdults = `<div style="display: flex;">
 					<span style="cursor: -webkit-grab;">
 
 					     <div style="margin: 5px;" id="studentsAdultsHeader">
-                            <button class="commonbtn" title="скрывает меню" id="hidestudentsAdultstMenu" style="width:50px; height:30px; background: #228B22;">hide</button>
+                            <button class="commonbtn hidebtns" title="скрывает меню" id="hidestudentsAdultstMenu">hide</button>
 							<button class="commonbtn" id="addallchatswithadult" style="margin:5px" title="Добавляет чаты со всеми учениками из раздела "Уроки">➕💬</button>
 							<button class="commonbtn" id="actualizestudreportadult" style="margin:5px" title="Актуализирует отчеты по всем ученикам заполняя поля символами --">📝</button>
                         </div>
@@ -19,7 +19,7 @@ var win_studentsSkysmart = `<div style="display: flex;">
 					<span style="cursor: -webkit-grab;">
 
 					     <div style="margin: 5px;" id="studentsSkysmartHeader">
-                            <button class="commonbtn" title="скрывает меню" id="hidestudentsSkysmartMenu" style="width:50px; height:30px; background: #228B22;">hide</button>
+                            <button class="commonbtn hidebtns" title="скрывает меню" id="hidestudentsSkysmartMenu">hide</button>
 							<button class="commonbtn" id="addallchatsmulticlassrom" style="margin:5px" title="Добавляет чаты со всеми учениками из раздела Multiclassroom">➕💬</button>
 							<select id="listofsubjects">
 								<option value="all">Все</option>

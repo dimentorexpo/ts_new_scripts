@@ -2,7 +2,7 @@ var win_addChatMenu = `<div style="display: flex;">
 					<span style="cursor: -webkit-grab;">
 
 					     <div style="margin: 5px;" id="addChatMenuHeader">
-                            <button class="commonbtn" title="скрывает меню" id="hideMeAddChatMenu" style="width:50px; background: #228B22;">hide</button>
+                            <button class="commonbtn hidebtns" title="скрывает меню" id="hideMeAddChatMenu">hide</button>
 							<span id="outputstatus" style="display:none; background:#537068; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border-radius: 20px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); border: 1px solid black; font-weight:700;padding: 5px;"></span>
                         </div>
 

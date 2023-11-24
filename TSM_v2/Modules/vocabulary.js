@@ -5,7 +5,7 @@ var win_Vocabulary = `<div style="display: flex;">
 					<span style="cursor: -webkit-grab;">
 
 					     <div style="margin: 5px; width:500px;">
-                            <button class="commonbtn" title="скрывает меню" id="hideVocabularyMenu" style="width:50px; height:30px; background: #228B22;">hide</button>
+                            <button class="commonbtn hidebtns" title="скрывает меню" id="hideVocabularyMenu">hide</button>
 							<button class="commonbtn" id="ClearVocabulary" title = "Обновляет информацию по открытой комнате" style="margin: 5px; width: 30px; height: 30px; padding: 0">🧹</button>
                         </div>
 
