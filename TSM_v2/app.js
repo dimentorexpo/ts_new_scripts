@@ -5,10 +5,8 @@ const taskUrlPattern = "https://crm2.skyeng.ru/customer-support/task/*";
 const personTaskUrlPattern = "https://crm2.skyeng.ru/persons/*/customer-support/task/*";
 const ListTaskUrlPattern = "https://crm2.skyeng.ru/persons/*/customer-support/list";
 const showForPages = ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*", "*://*.skyeng.tech/*"];
-//const ChanelDev = "hg8rcub4pfg3dcae8jxkwzkq9h";
-//const ChanelSupport = "pspyooisr3rd7qzx9as8uc96xc";
-const ChanelDev = "9gmj89efo38o3doxzu19g3gk6r"; // тестовый канал
-const ChanelSupport = "9gmj89efo38o3doxzu19g3gk6r"; // тестовый канал
+const ChanelDev = "hg8rcub4pfg3dcae8jxkwzkq9h";
+const ChanelSupport = "pspyooisr3rd7qzx9as8uc96xc";
 let lastChatId = null; // Глобальная переменная для хранения последнего chatid
 let lastMessage = null; // Глобальная переменная для хранения последнего сообщения
 
