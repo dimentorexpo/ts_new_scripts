@@ -94,77 +94,36 @@ createContextMenu("cancel2linewithtextId", {"id": "cancel2linewithtextId", "titl
 createContextMenu("cancel2linebaseId", {"id": "cancel2linebaseId", "title": "🚫 Отмена 2ЛТП", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
 
 // Обработка кликов
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-    switch(info.menuItemId) {
-        case "searchPaymentId":
-            searchpayment(info, tab);
-            break;
-        case "balanceInfoId":
-            balanceinfo(info, tab);
-            break;
-		case "certAndPromoId":
-			certandpromo(info, tab);
-			break;	
-		case "opentTTId":
-			opentt(info, tab);
-			break;
-		case "openCalendarId":
-			opencalendar(info, tab);
-			break;
-		case "makeCompensId":
-			makecompens(info, tab);
-			break;
-		case "openTalksAdminId":
-			opentalksadm(info, tab);
-			break;
-		case "sendToDisasterId":
-			sendtodisaster(info, tab);
-			break;	
-		case "InfoID":
-			openinfo(info, tab);
-			break;
-		case "LoginerLinkID":
-			dologginer(info, tab);
-			break;
-		case "openCRMId":
-			opencrmid(info, tab);
-			break;
-		case "PartialPaymentId":
-			creditpayments(info, tab);
-			break;
-		case "editAdminId":
-			editadmacc(info, tab);
-			break;	
-		case "serviceSkipId":
-			copytoskipap(info, tab);
-			break;	
-		case "skpiOnboaringId":
-			copytoskipob(info, tab);
-			break;
-		case "openTRM2Id":
-			opentrm(info, tab);
-			break;	
-		case "openGroupAdminId":
-			openlgs(info, tab);
-			break;	
-		case "openByHashId":
-			opntshash(info, tab);
-			break;
-		case "cancel1linebaseId":
-			cancelishodcall(info, tab);
-			break;
-         case "cancel1linewithtextId":
-            sendCustomMessage(info, tab, "1line-crm2");
-            break;
-        case "cancel2linewithtextId":
-            sendCustomMessage(info, tab, "2line");
-            break;
-        default:
-            break;
-		case "cancel2linebaseId":
-			cancelsecondline(info, tab);
-			break;	
 
+const menuActions = {
+    "searchPaymentId": searchpayment,
+    "balanceInfoId": balanceinfo,
+    "certAndPromoId": certandpromo,
+    "opentTTId": opentt,
+    "openCalendarId": opencalendar,
+    "makeCompensId": makecompens,
+    "openTalksAdminId": opentalksadm,
+    "sendToDisasterId": sendtodisaster,
+    "InfoID": openinfo,
+    "LoginerLinkID": dologginer,
+    "openCRMId": opencrmid,
+    "PartialPaymentId": creditpayments,
+    "editAdminId": editadmacc,
+    "serviceSkipId": copytoskipap,
+    "skpiOnboaringId": copytoskipob,
+    "openTRM2Id": opentrm,
+    "openGroupAdminId": openlgs,
+    "openByHashId": opntshash,
+    "cancel1linebaseId": cancelishodcall,
+    "cancel1linewithtextId": sendCustomMessage1line,
+    "cancel2linewithtextId": sendCustomMessage2line,
+    "cancel2linebaseId": cancelsecondline
+    // Продолжите добавлять другие идентификаторы и функции здесь
+};
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (menuActions[info.menuItemId]) {
+        menuActions[info.menuItemId](info, tab);
     }
 });
 
@@ -415,6 +374,14 @@ async function sendCustomMessage(info, tab, recipient) {
     } catch (error) {
         console.error(error);
     }
+}
+
+function sendCustomMessage1line(info, tab) {
+    sendCustomMessage(info, tab, "1line-crm2");
+}
+
+function sendCustomMessage2line(info, tab) {
+    sendCustomMessage(info, tab, "2line");
 }
 
 async function getActiveTab() {
