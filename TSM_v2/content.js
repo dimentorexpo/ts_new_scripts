@@ -198,3 +198,51 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	
     return true; // Важно для асинхронного ответа
 });
+
+function createTSMWindow(id, topKey, leftKey, content) { // Функция для создания окна и настройки стилей
+    const windowElement = document.createElement('div');
+    document.body.append(windowElement);
+
+    const storedTop = localStorage.getItem(topKey) || '118';
+    const storedLeft = localStorage.getItem(leftKey) || '407';
+
+    windowElement.style = `display:none; top: ${storedTop}px; left: ${storedLeft}px;`;
+    windowElement.style.display = 'none';
+    windowElement.setAttribute('id', id);
+    windowElement.innerHTML = content;
+
+    windowElement.onmousedown = function (event) {
+        if (checkelementt(event)) {
+            let startX = event.clientX;
+            let startY = event.clientY;
+            let elemLeft = windowElement.offsetLeft;
+            let elemTop = windowElement.offsetTop;
+
+            function onMouseMove(event) {
+                if (!(event.buttons & 1)) {
+                    onMouseUp();
+                    return;
+                }
+                let deltaX = event.clientX - startX;
+                let deltaY = event.clientY - startY;
+
+                windowElement.style.left = `${elemLeft + deltaX}px`;
+                windowElement.style.top = `${elemTop + deltaY}px`;
+
+                localStorage.setItem(topKey, String(elemTop + deltaY));
+                localStorage.setItem(leftKey, String(elemLeft + deltaX));
+            }
+
+            document.addEventListener('mousemove', onMouseMove);
+
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+
+            document.addEventListener('mouseup', onMouseUp);
+        }
+    };
+
+    return windowElement;
+}
