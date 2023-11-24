@@ -4,9 +4,11 @@ let MMostOperId ='';
 const taskUrlPattern = "https://crm2.skyeng.ru/customer-support/task/*";
 const personTaskUrlPattern = "https://crm2.skyeng.ru/persons/*/customer-support/task/*";
 const ListTaskUrlPattern = "https://crm2.skyeng.ru/persons/*/customer-support/list";
-const showForPages = ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*", "*://.skyeng.tech/*"];
-const ChanelDev = "hg8rcub4pfg3dcae8jxkwzkq9h";
-const ChanelSupport = "pspyooisr3rd7qzx9as8uc96xc";
+const showForPages = ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*", "*://*.skyeng.tech/*"];
+//const ChanelDev = "hg8rcub4pfg3dcae8jxkwzkq9h";
+//const ChanelSupport = "pspyooisr3rd7qzx9as8uc96xc";
+const ChanelDev = "9gmj89efo38o3doxzu19g3gk6r"; // тестовый канал
+const ChanelSupport = "9gmj89efo38o3doxzu19g3gk6r"; // тестовый канал
 let lastChatId = null; // Глобальная переменная для хранения последнего chatid
 let lastMessage = null; // Глобальная переменная для хранения последнего сообщения
 
@@ -152,16 +154,18 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 			break;
 		case "cancel1linebaseId":
 			cancelishodcall(info, tab);
-			break;	
-		case "cancel1linewithtextId":
-			sendtestmsgcustommsg(info, tab);
 			break;
+         case "cancel1linewithtextId":
+            sendCustomMessage(info, tab, "1line-crm2");
+            break;
+        case "cancel2linewithtextId":
+            sendCustomMessage(info, tab, "2line");
+            break;
+        default:
+            break;
 		case "cancel2linebaseId":
 			cancelsecondline(info, tab);
 			break;	
-		case "cancel2linewithtextId":
-			send2ndlinetestmsgcustommsg(info, tab);
-			break;
 
     }
 });
@@ -381,26 +385,54 @@ async function cancelishodcall(info, tab){
 	}
 }
 
-async function sendtestmsgcustommsg(info, tab) {
-    MMostOperId = await getMMostOperId();
-    if (MMostOperId) {
-        // Запрос ввода текста от контентного скрипта
-        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, { action: "showPromptDialog", linkUrl: info.linkUrl }, function (response) {
-                if (response && response.textmsg) {
-                    const textmsg = response.textmsg;
-                    if (textmsg.length > 3) {
-                        const message = `@techsupport-1line-crm2 ${info.linkUrl} ${textmsg}`; // 
-                        sendMattermostMessage(message);
-                    } else {
-                        console.error("Текст слишком короткий");
-                    }
-                } else {
-                    console.log("Нажата кнопка Отмена или текст пустой");
-                }
-            });
+async function sendCustomMessage(info, tab, recipient) {
+    try {
+        const MMostOperId = await getMMostOperId();
+        if (!MMostOperId) {
+            console.error("MMostOperId не найден");
+            return;
+        }
+
+        const activeTab = await getActiveTab();
+        if (!activeTab) {
+            console.error("Активная вкладка не найдена");
+            return;
+        }
+
+        const response = await sendMessageToTab(activeTab.id, {
+            action: "showPromptDialog",
+            linkUrl: info.linkUrl,
         });
+
+        if (response && response.textmsg) {
+            if (response.textmsg.length > 3) {
+                const message = `@techsupport-${recipient} ${info.linkUrl} ${response.textmsg}`;
+                sendMattermostMessage(message);
+            } else {
+                console.error("Текст слишком короткий");
+            }
+        } else {
+            console.log("Нажата кнопка Отмена или текст пустой");
+        }
+    } catch (error) {
+        console.error(error);
     }
+}
+
+async function getActiveTab() {
+    return new Promise((resolve) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            resolve(tabs && tabs[0]);
+        });
+    });
+}
+
+async function sendMessageToTab(tabId, message) {
+    return new Promise((resolve) => {
+        chrome.tabs.sendMessage(tabId, message, (response) => {
+            resolve(response);
+        });
+    });
 }
 
 
@@ -411,24 +443,6 @@ async function cancelsecondline(info, tab){	MMostOperId = await getMMostOperId()
 		sendMattermostMessage(message);
 	}
 }
-
-// В фоновом скрипте
-async function send2ndlinetestmsgcustommsg(info, tab) {
-    MMostOperId = await getMMostOperId();
-    if (MMostOperId) {
-        chrome.tabs.sendMessage(tab.id, { action: "showPromptDialog2LTP", linkUrl: info.linkUrl }, response => {
-            if (response && response.confirmed) {
-                const message = `@techsupport-2line ${info.linkUrl} ${response.textmsg}`; 
-                sendMattermostMessage(message);
-            } else if (response && !response.confirmed) {
-                console.log("Текст слишком короткий");
-            } else {
-                console.log("Нажата кнопка Отмена");
-            }
-        });
-    }
-}
-
 
 // функция общения с stat.js чтобы отправлять запрос на получение какой либо инфы для обхода CORS
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {

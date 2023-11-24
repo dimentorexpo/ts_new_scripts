@@ -11,9 +11,9 @@
 	"storage"
   ],
   "host_permissions": [
-    "*://id.skyeng.ru//*",
-    "*://skyeng.autofaq.ai/*",
-    "*://mm-time.skyeng.tech/*"
+    "*://skyeng.autofaq.ai/*", 
+    "*://*.skyeng.ru/*", 
+    "*://*.skyeng.tech/*"
   ],
   "background": {
     "service_worker": "app.js"
@@ -27,7 +27,7 @@
   "content_scripts": [
     {
       "js": ["content.js"],
-      "matches": ["*://skyeng.autofaq.ai/*", "*://crm2.skyeng.ru/*"],
+      "matches": ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*", "*://*.skyeng.tech/*"],
       "run_at": "document_idle"
     },
     {	  

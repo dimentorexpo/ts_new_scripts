@@ -179,3 +179,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             .catch(err => console.error('Ошибка при копировании текста: ', err));
     }
 });
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    if (request.action === "showConfirmDialog") {
+        const confirmed = confirm("Вы уверены, что хотите пробудить Древнее Зло и воззвать к команде Фиксиков для исправления катаклизма на платформе?");
+        if (confirmed) {
+            const textmsg = prompt('Введите ваш текст в это поле');
+            sendResponse({ confirmed: true, textmsg: textmsg });
+        } else {
+            sendResponse({ confirmed: false });
+        }
+    }
+	
+	if (request.action === "showPromptDialog") {
+        const textmsg = prompt('Введите ваш текст в это поле');
+        sendResponse({ textmsg: textmsg, confirmed: textmsg !== null && textmsg.length > 3 });
+    }
+	
+    return true; // Важно для асинхронного ответа
+});
