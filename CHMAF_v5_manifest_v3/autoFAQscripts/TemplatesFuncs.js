@@ -780,7 +780,6 @@ function transfPageButtons(textFromTable) { //подстановка телеф�
     return textFromTable;
 }
 
-
 async function buttonsFromDoc(butName) { // функция отправки шаблона в зависимости от нажатой кнопки и также взаимодействут с другими функциями
     if (butName == "ус+брауз")
         if (!user || user == 'student')
