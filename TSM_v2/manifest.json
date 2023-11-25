@@ -6,7 +6,6 @@
   "version": "2.0.3",
   "permissions": [
     "contextMenus",
-    "tabs",
 	"clipboardWrite",
 	"storage"
   ],
