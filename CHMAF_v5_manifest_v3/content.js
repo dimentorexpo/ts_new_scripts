@@ -544,7 +544,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
 
     let sidePanel = document.createElement('div')
     sidePanel.id = "rightPanel"
-    sidePanel.style = 'position: fixed; top: 110px; right: 22px; z-index: 10000; width: 40px; font-size: 22px; cursor: pointer; transition: all 0.5s ease;'
+    sidePanel.style = 'position: fixed; top: 110px; right: 22px; z-index: 1000000; width: 40px; font-size: 22px; cursor: pointer; transition: all 0.5s ease;'
     document.body.append(sidePanel)
 
     let ScriptBut = document.createElement('button');

@@ -9,7 +9,7 @@ function customTemplates(language = '') { //собственные шаблон�
 
     if (document.getElementById('cstmTmplates') == undefined) {
         var cstmTmp = document.createElement('div')
-        cstmTmp.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winCstmTmpsTop') + 'px; left: ' + localStorage.getItem('winCstmTmpsLeft') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black; border-radius:5px; border:1px solid #768d87; ';
+        cstmTmp.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winCstmTmpsTop') + 'px; left: ' + localStorage.getItem('winCstmTmpsLeft') + 'px; font-size: 14px; z-index: 1000000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black; border-radius:5px; border:1px solid #768d87; ';
         cstmTmp.id = 'cstmTmplates'
         cstmTmp.style.display = 'none'
         document.body.append(cstmTmp);
