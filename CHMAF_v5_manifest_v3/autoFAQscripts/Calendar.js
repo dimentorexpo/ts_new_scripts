@@ -41,7 +41,7 @@ var win_Calendar =  // описание формы чтобы не давала 
         </span>
 </div>`;
 
-const wintCalendar  = createWindow('AF_Calendar', 'winTopCalendar', 'winLeftCalendar', win_Calendar);
+const wintCalendar = createWindow('AF_Calendar', 'winTopCalendar', 'winLeftCalendar', win_Calendar);
 hideWindowOnDoubleClick('AF_Calendar');
 
 function compareTimes(time1, time2) { //функция сравнения времени
@@ -396,8 +396,8 @@ function refreshActiveOperSlots() { // функция обновления ин�
                     if (podtvudal) {
 
                         chrome.runtime.sendMessage({ action: 'removeTimeSlot', slottodelete: allSlotsToDelete[j].title }, function (response) {
-							getTimeSlots()
-						})
+                            getTimeSlots()
+                        })
                     }
                 }
             }

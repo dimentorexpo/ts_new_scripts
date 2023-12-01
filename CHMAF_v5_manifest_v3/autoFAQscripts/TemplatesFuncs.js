@@ -263,32 +263,32 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
         }
     }
 
-	 iframeDoc.getElementById('CurUsScriptPac').onclick = function () {
-		 this.style.background = "lightgreen";
-		 setTimeout(() => {
-			 this.style.background = "";
-		 }, 1000);
-		 const idNode = SearchinAFnewUI("id");
-		 if (idNode) {
+    iframeDoc.getElementById('CurUsScriptPac').onclick = function () {
+        this.style.background = "lightgreen";
+        setTimeout(() => {
+            this.style.background = "";
+        }, 1000);
+        const idNode = SearchinAFnewUI("id");
+        if (idNode) {
             const editorExtensionId = localStorage.getItem('ext_id');
-			 chrome.runtime.sendMessage(
-				 editorExtensionId,
-				 {
-					 name: 'chm_message', question: 'send_event', messageValue: {
-						 message: 'open-user-info',
-						 userId: `${idNode}`,
-					 },
-				 },
-				 function(response) {
-					 if (chrome.runtime.lastError) {
-						 console.error('Ошибка при отправке сообщения:', chrome.runtime.lastError);
-					 } else {
-						 console.log('Ответ от бекграунд-скрипта:', response);
-					 }
-				 }
-			 );
-		 }
-	 }
+            chrome.runtime.sendMessage(
+                editorExtensionId,
+                {
+                    name: 'chm_message', question: 'send_event', messageValue: {
+                        message: 'open-user-info',
+                        userId: `${idNode}`,
+                    },
+                },
+                function (response) {
+                    if (chrome.runtime.lastError) {
+                        console.error('Ошибка при отправке сообщения:', chrome.runtime.lastError);
+                    } else {
+                        console.log('Ответ от бекграунд-скрипта:', response);
+                    }
+                }
+            );
+        }
+    }
 
 
     iframeDoc.getElementById('CurUsLoginer').onclick = function () {
@@ -417,27 +417,27 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
         }
     }
 
-     iframeDoc.getElementById('NextUsScriptPac').onclick = function () {
-         this.style.background = "lightgreen";
-         setTimeout(() => {
-             this.style.background = "";
-         }, 1000);
-         let requestargument = findrequestargument(usertypeis);
+    iframeDoc.getElementById('NextUsScriptPac').onclick = function () {
+        this.style.background = "lightgreen";
+        setTimeout(() => {
+            this.style.background = "";
+        }, 1000);
+        let requestargument = findrequestargument(usertypeis);
 
-         const idNode = SearchinAFnewUI(requestargument);
-         if (idNode) {
+        const idNode = SearchinAFnewUI(requestargument);
+        if (idNode) {
             const editorExtensionId = localStorage.getItem('ext_id');
-             chrome.runtime.sendMessage(
-                 editorExtensionId,
-                 {
-                     name: 'chm_message', question: 'send_event', messageValue: {
-                         message: 'open-user-info',
-                         userId: `${idNode}`,
-                     },
-                 },
-             );
-         }
-     }
+            chrome.runtime.sendMessage(
+                editorExtensionId,
+                {
+                    name: 'chm_message', question: 'send_event', messageValue: {
+                        message: 'open-user-info',
+                        userId: `${idNode}`,
+                    },
+                },
+            );
+        }
+    }
 
     iframeDoc.getElementById('NextUsLoginer').onclick = function () {
         this.style.background = "lightgreen";

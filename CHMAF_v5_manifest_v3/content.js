@@ -1,18 +1,18 @@
 ﻿//Импортировал с content.js
-		const message = {
-			question: 'get-extension-id'
-		}
-		chrome.runtime.sendMessage(message, (result) => {
-			if (localStorage.getItem('ext_id') == null)
-				localStorage.setItem('ext_id',result)
-			else localStorage.setItem('ext_id',result)
-		})
+const message = {
+    question: 'get-extension-id'
+}
+chrome.runtime.sendMessage(message, (result) => {
+    if (localStorage.getItem('ext_id') == null)
+        localStorage.setItem('ext_id', result)
+    else localStorage.setItem('ext_id', result)
+})
 //	
 
 // Функция для получения данных из хранилища
 async function getStorageData(keys) {
     return new Promise((resolve, reject) => {
-        chrome.storage.local.get(keys, function(result) {
+        chrome.storage.local.get(keys, function (result) {
             if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError);
             } else {
@@ -318,7 +318,7 @@ function prepTp() { //функция подготовки расширения �
         }
     }
     document.getElementById('rightPanel').appendChild(butServ)
-	
+
     let openKnowledge = document.createElement('button')
     openKnowledge.innerHTML = '💡'
     openKnowledge.id = 'knowledgeCenter'
@@ -333,11 +333,11 @@ function prepTp() { //функция подготовки расширения �
     taskBut.classList.add('onlyfortp', 'rightPanelBtn', 'mainButton')
     document.getElementById('rightPanel').appendChild(taskBut)
     document.getElementById('taskBut').onclick = gettaskButButtonPress;
-    
+
     setTimeout(() => {
-        document.getElementById('rightPanel').appendChild(maskBack) 
+        document.getElementById('rightPanel').appendChild(maskBack)
     }, 5000);
-	
+
     flagLangBut = 1
     setInterval(timerHideButtons, 500)
 }
@@ -381,7 +381,7 @@ function maxLengthCheck(object) { // функция ограничения ко�
 function checkelementtype(a) { // проверка на какой элемент нажали
     let elem = document.elementFromPoint(a.clientX, a.clientY)
 
-    if (elem.nodeName != 'BUTTON' && elem.nodeName != 'LABEL' && elem.nodeName != 'INPUT' && elem.nodeName != 'TEXTAREA' && elem.nodeName != 'SELECT' & elem.nodeName != 'P' && elem.className != 'checkbox-audio-switch' && elem.className != 'checkbox-refresh-switch' && elem.className != 'srvhhelpnomove' && elem.className != 'rowOfChatGrabbed' && elem.id !== 'CSATFilterField' && elem.id !== 'AgregatedDataThemes' && elem.nodeName !== 'TABLE' && elem.nodeName !== 'TH' && elem.nodeName !== 'TR' && elem.id !== 'AgregatedDataOut' && elem.nodeName !== 'CANVAS' && elem.id !== "ToolsPanel" && elem.id !=="ProblemsSolution") {
+    if (elem.nodeName != 'BUTTON' && elem.nodeName != 'LABEL' && elem.nodeName != 'INPUT' && elem.nodeName != 'TEXTAREA' && elem.nodeName != 'SELECT' & elem.nodeName != 'P' && elem.className != 'checkbox-audio-switch' && elem.className != 'checkbox-refresh-switch' && elem.className != 'srvhhelpnomove' && elem.className != 'rowOfChatGrabbed' && elem.id !== 'CSATFilterField' && elem.id !== 'AgregatedDataThemes' && elem.nodeName !== 'TABLE' && elem.nodeName !== 'TH' && elem.nodeName !== 'TR' && elem.id !== 'AgregatedDataOut' && elem.nodeName !== 'CANVAS' && elem.id !== "ToolsPanel" && elem.id !== "ProblemsSolution") {
         return true;
     }
     return false;
@@ -532,7 +532,7 @@ function addOption(oListbox, text, value) {  //функция добавлени
 
 async function move_again_AF() { //с АФ шняга там стили шмили скрипта отображение отправку сообщений
     getText()
-    await whoAmI()    
+    await whoAmI()
     const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
 
     // Присваиваем данные константам
@@ -612,10 +612,10 @@ async function move_again_AF() { //с АФ шняга там стили шмил
 
     if ((scriptAdr == TP_addr || scriptAdr == TP_addrRzrv) && opsection != 'ТП' && opsection != 'ТП ОС') {
         localStorage.setItem('scriptAdr', KC_addr)
-        localStorage.setItem('hideTaskWindow','0')
+        localStorage.setItem('hideTaskWindow', '0')
         location.reload()
-    } else if (scriptAdr != TP_addr && scriptAdr != TP_addrRzrv && localStorage.getItem('hideTaskWindow') == 1){
-        localStorage.setItem('hideTaskWindow','0')
+    } else if (scriptAdr != TP_addr && scriptAdr != TP_addrRzrv && localStorage.getItem('hideTaskWindow') == 1) {
+        localStorage.setItem('hideTaskWindow', '0')
     }
 
     if (scriptAdr != TP_addr && scriptAdr != TP_addrRzrv) {
@@ -656,16 +656,16 @@ function closeTerms() { // функция автоподтверждения у�
 }
 
 function changeNewUIStyle() {
-	const hrefisnow = window.location.href;
-	if (hrefisnow.includes('tickets/assigned')) {
-		if (document.getElementsByTagName('iframe').length != 0) {
-			document.getElementsByTagName('iframe')[0].style.zIndex = "999"
-		}
-		
-		if (document.getElementsByClassName('ant-modal-root').length != 0 && document.getElementsByClassName('ant-modal-confirm-title')[0].textContent != "Начать диалог") {
-			document.getElementsByClassName('ant-modal-root')[0].remove()
-		}
-	}
+    const hrefisnow = window.location.href;
+    if (hrefisnow.includes('tickets/assigned')) {
+        if (document.getElementsByTagName('iframe').length != 0) {
+            document.getElementsByTagName('iframe')[0].style.zIndex = "999"
+        }
+
+        if (document.getElementsByClassName('ant-modal-root').length != 0 && document.getElementsByClassName('ant-modal-confirm-title')[0].textContent != "Начать диалог") {
+            document.getElementsByClassName('ant-modal-root')[0].remove()
+        }
+    }
 }
 
 //Подключаем скрипт App Script с гугл таблиц, где содержаться шщаблоны, которыми пользуемся
@@ -690,7 +690,7 @@ maskBack.onclick = function () { // функция кнопки вернуть
     const NameInChat = getActiveConvUserName();
     const EmailInChat = SearchinAFnewUI("email");
     const PhoneInChat = SearchinAFnewUI("phone");
-    const modalMask = iframeDoc.getElementsByClassName('mantine-Modal-root')[0]; 
+    const modalMask = iframeDoc.getElementsByClassName('mantine-Modal-root')[0];
     const chatHeaderActionsInner = iframeDoc.querySelectorAll('#__next [class^="ConversationActions_Actions"]')[0];
     const chatNotesButton = iframeDoc.getElementsByClassName('mantine-RichTextEditor-control')[0];
 
@@ -702,7 +702,7 @@ maskBack.onclick = function () { // функция кнопки вернуть
     } else {
         maskBack.innerHTML = "❌";
         maskBack.title = "Открыт не тот чат"
-        setTimeout(function () { 
+        setTimeout(function () {
             maskBack.innerHTML = "↩️";
             maskBack.title = "Вернуть скрытое окно"
         }, 3000);
@@ -744,7 +744,7 @@ setInterval(closeTerms, 500);
 setInterval(changeNewUIStyle, 500);
 
 if (location.host == "skyeng.autofaq.ai") {
-	setTimeout(move_again_AF, 3500) //вызов функции первичной загрузки страницы с фомированием меню и наполнением его	
+    setTimeout(move_again_AF, 3500) //вызов функции первичной загрузки страницы с фомированием меню и наполнением его	
 }
 
 
@@ -931,11 +931,11 @@ function getActiveConvUserName() {
 
     // массив для исключения
     const predefinedNames = ["тьютор", "тютор", "тутор", "бадди", "tutor", "buddy"];
-    
+
     if (Usernamefield) {
         const namesParts = Usernamefield.textContent.split(/[\s_]+/);
         const firstPartInLowerCase = namesParts[0].toLowerCase();
-        
+
         if (predefinedNames.includes(firstPartInLowerCase) && !namesParts[1]) {
             return '';
         }
@@ -948,7 +948,7 @@ function getActiveConvUserName() {
             return namesParts[0];
         }
     }
-    
+
     return '';
 }
 
@@ -974,7 +974,7 @@ function convertToSeconds(timeStr, i) {
     return totalSeconds;
 }
 
-function checkchats(){
+function checkchats() {
     const allChats = getAllChatsList();
     const timers = allChats.chatsTimerList;
     const chats = allChats.chatsList;
@@ -1010,7 +1010,7 @@ window.addEventListener('CallNewComment', (event) => {
 
 function pageClick(pageId) { // по клику переключает страницы с шаблонами
     b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1]
-	let pageNum = pageId.split('_')[0]
+    let pageNum = pageId.split('_')[0]
     for (i = 0; i < b.childElementCount; i++) {
         try {
             b.children[1].children[i].style = 'background-color:#768d87; border-top:0px;'

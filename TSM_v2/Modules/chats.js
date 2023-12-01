@@ -13,19 +13,19 @@ var win_addChatMenu = `<div style="display: flex;">
 					</span>
 				   </div>`;
 
-const wintAddChatMenu  = createTSMWindow('AFMS_addChatMenu', 'winTopAddChatMenu', 'winLeftAddChatMenu', win_addChatMenu);
+const wintAddChatMenu = createTSMWindow('AFMS_addChatMenu', 'winTopAddChatMenu', 'winLeftAddChatMenu', win_addChatMenu);
 wintAddChatMenu.className = 'wintInitializeChat';
 
 async function OpenAddChatMenu() { // открывает меню для удаления и добавления чатов
-    if (wintAddChatMenu.style.display == 'none') {
-        wintAddChatMenu.style.display = ''
+	if (wintAddChatMenu.style.display == 'none') {
+		wintAddChatMenu.style.display = ''
 
-        let sidarr = [];
-        document.getElementById('userid1').value = await getUserId();
+		let sidarr = [];
+		document.getElementById('userid1').value = await getUserId();
 
-        document.getElementById('addChat').addEventListener('click', function () { //функция добавления чата
+		document.getElementById('addChat').addEventListener('click', function () { //функция добавления чата
 
-		    fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
+			fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
 				"headers": {
 					"content-type": "application/json",
 					"sec-fetch-mode": "cors",
@@ -38,21 +38,21 @@ async function OpenAddChatMenu() { // открывает меню для уда�
 				"mode": "cors",
 				"credentials": "include"
 			});
-			
-            console.log('%cChat was added successfully!', 'color:lightgreen; font-weight:700');
-            document.getElementById('outputstatus').innerText = "Чат добавлен"
-            document.getElementById('outputstatus').style.color = "#48e114"
-            document.getElementById('outputstatus').style.display = ""
-            setTimeout(() => {
-                document.getElementById('outputstatus').innerText = ""
-                document.getElementById('outputstatus').style.display = "none"
-            }, 3000)
-        })
 
-        document.getElementById('RemoveChat').addEventListener('click', function () { //функция удаления чата
-		
-		
-		    fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
+			console.log('%cChat was added successfully!', 'color:lightgreen; font-weight:700');
+			document.getElementById('outputstatus').innerText = "Чат добавлен"
+			document.getElementById('outputstatus').style.color = "#48e114"
+			document.getElementById('outputstatus').style.display = ""
+			setTimeout(() => {
+				document.getElementById('outputstatus').innerText = ""
+				document.getElementById('outputstatus').style.display = "none"
+			}, 3000)
+		})
+
+		document.getElementById('RemoveChat').addEventListener('click', function () { //функция удаления чата
+
+
+			fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
 				"headers": {
 					"content-type": "application/json",
 					"sec-fetch-mode": "cors",
@@ -65,23 +65,23 @@ async function OpenAddChatMenu() { // открывает меню для уда�
 				"mode": "cors",
 				"credentials": "include"
 			});
-		
-            console.log('%cChat was removed successfully!', 'color:orange; font-weight:700');
 
-            document.getElementById('outputstatus').innerText = "Чат удалён"
-            document.getElementById('outputstatus').style.color = "orange"
-            document.getElementById('outputstatus').style.display = ""
-            setTimeout(() => {
-                document.getElementById('outputstatus').innerText = ""
-                document.getElementById('outputstatus').style.color = "#48e114"
-                document.getElementById('outputstatus').style.display = "none"
-            }, 3000)
+			console.log('%cChat was removed successfully!', 'color:orange; font-weight:700');
 
-        })
+			document.getElementById('outputstatus').innerText = "Чат удалён"
+			document.getElementById('outputstatus').style.color = "orange"
+			document.getElementById('outputstatus').style.display = ""
+			setTimeout(() => {
+				document.getElementById('outputstatus').innerText = ""
+				document.getElementById('outputstatus').style.color = "#48e114"
+				document.getElementById('outputstatus').style.display = "none"
+			}, 3000)
 
-        document.getElementById('hideMeAddChatMenu').onclick = function () { //функция скрытия меню чатов
-            wintAddChatMenu.style.display = 'none'
-        }
-    }
-    else wintAddChatMenu.style.display = 'none'
+		})
+
+		document.getElementById('hideMeAddChatMenu').onclick = function () { //функция скрытия меню чатов
+			wintAddChatMenu.style.display = 'none'
+		}
+	}
+	else wintAddChatMenu.style.display = 'none'
 }

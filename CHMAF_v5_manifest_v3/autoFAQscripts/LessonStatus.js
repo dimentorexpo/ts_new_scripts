@@ -20,7 +20,7 @@ var win_LessonStatus =  // описание элементов окна стат
         </span>
 </div>`;
 
-const wintLessonStatus  = createWindow('AF_LessonStatus', 'winTopLessonStatus', 'winLeftLessonStatus', win_LessonStatus);
+const wintLessonStatus = createWindow('AF_LessonStatus', 'winTopLessonStatus', 'winLeftLessonStatus', win_LessonStatus);
 hideWindowOnDoubleClick('AF_LessonStatus');
 
 document.getElementById('hideMeLessonStatus').onclick = function () { // скрытие окна статус урока

@@ -38,7 +38,7 @@ var win_Themes =  // описание элементов окна Тематик
         </span>
 </div>`;
 
-const wintThemes  = createWindow('AF_Themes', 'winTopThemes', 'winLeftThemes', win_Themes);
+const wintThemes = createWindow('AF_Themes', 'winTopThemes', 'winLeftThemes', win_Themes);
 hideWindowOnDoubleClick('AF_Themes');
 
 async function startThemes() {

@@ -1,6 +1,6 @@
 const Messanger_API_URL = "https://mm-time.skyeng.tech/api/v4/posts";
 const OperId_API_URL = "https://mm-time.skyeng.tech/api/v4/users/me";
-let MMostOperId ='';
+let MMostOperId = '';
 const taskUrlPattern = "https://crm2.skyeng.ru/customer-support/task/*";
 const personTaskUrlPattern = "https://crm2.skyeng.ru/persons/*/customer-support/task/*";
 const ListTaskUrlPattern = "https://crm2.skyeng.ru/persons/*/customer-support/list";
@@ -11,7 +11,7 @@ let lastChatId = null; // Глобальная переменная для хр�
 let lastMessage = null; // Глобальная переменная для хранения последнего сообщения
 
 function createContextMenu(id, options) {
-    chrome.contextMenus.remove(id, function() {
+    chrome.contextMenus.remove(id, function () {
         if (chrome.runtime.lastError) {
             console.log(`Пункт меню с id=${id} не существует. Создаем новый.`);
         }
@@ -19,80 +19,80 @@ function createContextMenu(id, options) {
     });
 }
 
-createContextMenu("mainoption", {"id":"mainoption","title": "Technical Support Master", "documentUrlPatterns":showForPages});
-createContextMenu("searchPaymentId", {"id": "searchPaymentId", "title": "💸 Поиск платежа", "contexts":["page"], "parentId": "mainoption"});
-createContextMenu("balanceInfoId", {"id": "balanceInfoId", "title": "💰 Начислятор / 📑 Подписки", "contexts":["page"], "parentId": "mainoption"});
-createContextMenu("certAndPromoId", {"id": "certAndPromoId", "title": "🧾 Сертификаты / 🎟 Промокоды", "contexts":["page"], "parentId": "mainoption"});
-createContextMenu("opentTTId", {"id": "opentTTId", "title": "📟 Timetable", "contexts":["page"], "parentId": "mainoption"});
-createContextMenu("openCalendarId", {"id": "openCalendarId", "title": "📆 Календарь (Datsy)", "contexts":["page"], "parentId": "mainoption"});
-createContextMenu("makeCompensId", {"id": "makeCompensId", "title": "💵 Компенсации", "contexts":["page"], "parentId": "mainoption"});
-createContextMenu("openTalksAdminId", {"id": "openTalksAdminId", "title": "💋 Админка Talks", "contexts":["page"], "parentId": "mainoption"});
-createContextMenu("sendToDisasterId", {"id": "sendToDisasterId", "title": "🆘 #dev-disaster", "contexts":["page"], "parentId": "mainoption"});
+createContextMenu("mainoption", { "id": "mainoption", "title": "Technical Support Master", "documentUrlPatterns": showForPages });
+createContextMenu("searchPaymentId", { "id": "searchPaymentId", "title": "💸 Поиск платежа", "contexts": ["page"], "parentId": "mainoption" });
+createContextMenu("balanceInfoId", { "id": "balanceInfoId", "title": "💰 Начислятор / 📑 Подписки", "contexts": ["page"], "parentId": "mainoption" });
+createContextMenu("certAndPromoId", { "id": "certAndPromoId", "title": "🧾 Сертификаты / 🎟 Промокоды", "contexts": ["page"], "parentId": "mainoption" });
+createContextMenu("opentTTId", { "id": "opentTTId", "title": "📟 Timetable", "contexts": ["page"], "parentId": "mainoption" });
+createContextMenu("openCalendarId", { "id": "openCalendarId", "title": "📆 Календарь (Datsy)", "contexts": ["page"], "parentId": "mainoption" });
+createContextMenu("makeCompensId", { "id": "makeCompensId", "title": "💵 Компенсации", "contexts": ["page"], "parentId": "mainoption" });
+createContextMenu("openTalksAdminId", { "id": "openTalksAdminId", "title": "💋 Админка Talks", "contexts": ["page"], "parentId": "mainoption" });
+createContextMenu("sendToDisasterId", { "id": "sendToDisasterId", "title": "🆘 #dev-disaster", "contexts": ["page"], "parentId": "mainoption" });
 
-createContextMenu("selMainOption",{"id":"selMainOption","title": "Technical Support Master", "contexts":["selection"], "documentUrlPatterns":showForPages, "visible": false});
-createContextMenu("InfoID", {"id": "InfoID", "title": "🔎Info ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
-createContextMenu("LoginerLinkID", {"id": "LoginerLinkID", "title": "🏡 Ссылка-логинер для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
-createContextMenu("openCRMId", {"id": "openCRMId", "title": "🕵️‍♂️ Открыть CRM для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
-createContextMenu("PartialPaymentId", {"id": "PartialPaymentId", "title": "💳 Список рассрочек для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
-createContextMenu("editAdminId", {"id": "editAdminId", "title": "🆔 Отредактировать в админке ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
-createContextMenu("serviceSkipId", {"id": "serviceSkipId", "title": "💨 ID Услуги Skip АП", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
-createContextMenu("skpiOnboaringId", {"id": "skpiOnboaringId", "title": "💨 ID Услуги Skip Onboarding", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
-createContextMenu("openTRM2Id", {"id": "openTRM2Id", "title": "👨‍🏫 Открыть ТРМ2.0 ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
-createContextMenu("openGroupAdminId", {"id": "openGroupAdminId", "title": "👩‍👧‍👧 Открыть админку группы: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
+createContextMenu("selMainOption", { "id": "selMainOption", "title": "Technical Support Master", "contexts": ["selection"], "documentUrlPatterns": showForPages, "visible": false });
+createContextMenu("InfoID", { "id": "InfoID", "title": "🔎Info ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
+createContextMenu("LoginerLinkID", { "id": "LoginerLinkID", "title": "🏡 Ссылка-логинер для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
+createContextMenu("openCRMId", { "id": "openCRMId", "title": "🕵️‍♂️ Открыть CRM для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
+createContextMenu("PartialPaymentId", { "id": "PartialPaymentId", "title": "💳 Список рассрочек для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
+createContextMenu("editAdminId", { "id": "editAdminId", "title": "🆔 Отредактировать в админке ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
+createContextMenu("serviceSkipId", { "id": "serviceSkipId", "title": "💨 ID Услуги Skip АП", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
+createContextMenu("skpiOnboaringId", { "id": "skpiOnboaringId", "title": "💨 ID Услуги Skip Onboarding", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
+createContextMenu("openTRM2Id", { "id": "openTRM2Id", "title": "👨‍🏫 Открыть ТРМ2.0 ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
+createContextMenu("openGroupAdminId", { "id": "openGroupAdminId", "title": "👩‍👧‍👧 Открыть админку группы: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
 
-createContextMenu("openByHashId",{"id": "openByHashId", "title": "♐ Открыть ТШ по хешу: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false});
+createContextMenu("openByHashId", { "id": "openByHashId", "title": "♐ Открыть ТШ по хешу: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
 
-chrome.runtime.onMessage.addListener(function(message) {
+chrome.runtime.onMessage.addListener(function (message) {
     switch (message.type) {
         case 'NUMERIC_SELECTION':
-            chrome.contextMenus.update("selMainOption", {visible: true});
-            chrome.contextMenus.update("InfoID", {visible: true});
-            chrome.contextMenus.update("LoginerLinkID", {visible: true});
-            chrome.contextMenus.update("openCRMId", {visible: true});
-            chrome.contextMenus.update("PartialPaymentId", {visible: true});
-            chrome.contextMenus.update("editAdminId", {visible: true});
-            chrome.contextMenus.update("serviceSkipId", {visible: true});
-            chrome.contextMenus.update("skpiOnboaringId", {visible: true});
-            chrome.contextMenus.update("openTRM2Id", {visible: true});
-            chrome.contextMenus.update("openGroupAdminId", {visible: true});
-            chrome.contextMenus.update("openByHashId", {visible: false});
+            chrome.contextMenus.update("selMainOption", { visible: true });
+            chrome.contextMenus.update("InfoID", { visible: true });
+            chrome.contextMenus.update("LoginerLinkID", { visible: true });
+            chrome.contextMenus.update("openCRMId", { visible: true });
+            chrome.contextMenus.update("PartialPaymentId", { visible: true });
+            chrome.contextMenus.update("editAdminId", { visible: true });
+            chrome.contextMenus.update("serviceSkipId", { visible: true });
+            chrome.contextMenus.update("skpiOnboaringId", { visible: true });
+            chrome.contextMenus.update("openTRM2Id", { visible: true });
+            chrome.contextMenus.update("openGroupAdminId", { visible: true });
+            chrome.contextMenus.update("openByHashId", { visible: false });
             break;
         case 'HASH_SELECTION':
-            chrome.contextMenus.update("selMainOption", {visible: true});
-            chrome.contextMenus.update("openByHashId", {visible: true});
-            chrome.contextMenus.update("InfoID", {visible: false});
-            chrome.contextMenus.update("LoginerLinkID", {visible: false});
-            chrome.contextMenus.update("openCRMId", {visible: false});
-            chrome.contextMenus.update("PartialPaymentId", {visible: false});
-            chrome.contextMenus.update("editAdminId", {visible: false});
-            chrome.contextMenus.update("serviceSkipId", {visible: false});
-            chrome.contextMenus.update("skpiOnboaringId", {visible: false});
-            chrome.contextMenus.update("openTRM2Id", {visible: false});
-            chrome.contextMenus.update("openGroupAdminId", {visible: false});
+            chrome.contextMenus.update("selMainOption", { visible: true });
+            chrome.contextMenus.update("openByHashId", { visible: true });
+            chrome.contextMenus.update("InfoID", { visible: false });
+            chrome.contextMenus.update("LoginerLinkID", { visible: false });
+            chrome.contextMenus.update("openCRMId", { visible: false });
+            chrome.contextMenus.update("PartialPaymentId", { visible: false });
+            chrome.contextMenus.update("editAdminId", { visible: false });
+            chrome.contextMenus.update("serviceSkipId", { visible: false });
+            chrome.contextMenus.update("skpiOnboaringId", { visible: false });
+            chrome.contextMenus.update("openTRM2Id", { visible: false });
+            chrome.contextMenus.update("openGroupAdminId", { visible: false });
             break;
         default:
-            chrome.contextMenus.update("selMainOption", {visible: false});
-            chrome.contextMenus.update("InfoID", {visible: false});
-            chrome.contextMenus.update("LoginerLinkID", {visible: false});
-            chrome.contextMenus.update("openCRMId", {visible: false});
-            chrome.contextMenus.update("PartialPaymentId", {visible: false});
-            chrome.contextMenus.update("editAdminId", {visible: false});
-            chrome.contextMenus.update("serviceSkipId", {visible: false});
-            chrome.contextMenus.update("skpiOnboaringId", {visible: false});
-            chrome.contextMenus.update("openTRM2Id", {visible: false});
-            chrome.contextMenus.update("openGroupAdminId", {visible: false});
-            chrome.contextMenus.update("openByHashId", {visible: false});
+            chrome.contextMenus.update("selMainOption", { visible: false });
+            chrome.contextMenus.update("InfoID", { visible: false });
+            chrome.contextMenus.update("LoginerLinkID", { visible: false });
+            chrome.contextMenus.update("openCRMId", { visible: false });
+            chrome.contextMenus.update("PartialPaymentId", { visible: false });
+            chrome.contextMenus.update("editAdminId", { visible: false });
+            chrome.contextMenus.update("serviceSkipId", { visible: false });
+            chrome.contextMenus.update("skpiOnboaringId", { visible: false });
+            chrome.contextMenus.update("openTRM2Id", { visible: false });
+            chrome.contextMenus.update("openGroupAdminId", { visible: false });
+            chrome.contextMenus.update("openByHashId", { visible: false });
             break;
     }
 });
 
-createContextMenu("linkOption", {"id":"linkOption","title": "Technical Support Master", "contexts":["link"], "documentUrlPatterns":showForPages, "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]} ); // обьявляем контекстное меню при выделении текста отвечает свойство selection
+createContextMenu("linkOption", { "id": "linkOption", "title": "Technical Support Master", "contexts": ["link"], "documentUrlPatterns": showForPages, "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] }); // обьявляем контекстное меню при выделении текста отвечает свойство selection
 
-createContextMenu("cancel1linebaseId", {"id": "cancel1linebaseId", "title": "🚫 Отмена ТП1Л (исход)", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
-createContextMenu("cancel1linewithtextId", {"id": "cancel1linewithtextId", "title": "💬 Написать ТП1Л (исход) со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
-createContextMenu("cancel2linewithtextId", {"id": "cancel2linewithtextId", "title": "💬 Написать 2ЛТП со ссылкой", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
-createContextMenu("cancel2linebaseId", {"id": "cancel2linebaseId", "title": "🚫 Отмена 2ЛТП", "contexts":["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern]}); //опция для копирования ссылки для test msg
-    
+createContextMenu("cancel1linebaseId", { "id": "cancel1linebaseId", "title": "🚫 Отмена ТП1Л (исход)", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] }); //опция для копирования ссылки для test msg
+createContextMenu("cancel1linewithtextId", { "id": "cancel1linewithtextId", "title": "💬 Написать ТП1Л (исход) со ссылкой", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] }); //опция для копирования ссылки для test msg
+createContextMenu("cancel2linewithtextId", { "id": "cancel2linewithtextId", "title": "💬 Написать 2ЛТП со ссылкой", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] }); //опция для копирования ссылки для test msg
+createContextMenu("cancel2linebaseId", { "id": "cancel2linebaseId", "title": "🚫 Отмена 2ЛТП", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] }); //опция для копирования ссылки для test msg
+
 // Обработка кликов
 
 const menuActions = {
@@ -120,7 +120,7 @@ const menuActions = {
     "cancel2linebaseId": cancelsecondline
     // Продолжите добавлять другие идентификаторы и функции здесь
 };
- 
+
 chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (menuActions[info.menuItemId]) {
         menuActions[info.menuItemId](info, tab);
@@ -129,48 +129,48 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // Функции для обработки действий
 function searchpayment(info, tab) { //опция открывает поиск платежа
-    const createProperties = {url: encodeURI("https://accounting.skyeng.ru/userpayment/search/transaction")};
+    const createProperties = { url: encodeURI("https://accounting.skyeng.ru/userpayment/search/transaction") };
     chrome.tabs.create(createProperties);
 }
 
 function balanceinfo(info, tab) { //опция открывает раздел Начислятор для просмотра баланса
-    const createProperties = {url: encodeURI("https://billing-api.skyeng.ru/operations")};
+    const createProperties = { url: encodeURI("https://billing-api.skyeng.ru/operations") };
     chrome.tabs.create(createProperties);
 }
 
-function certandpromo(info, tab){ //опция открывает раздел с сертификатом и промокодами
-	const createProperties = {url: encodeURI("https://billing-marketing.skyeng.ru/certificate/certSearch")};
-	chrome.tabs.create(createProperties);
+function certandpromo(info, tab) { //опция открывает раздел с сертификатом и промокодами
+    const createProperties = { url: encodeURI("https://billing-marketing.skyeng.ru/certificate/certSearch") };
+    chrome.tabs.create(createProperties);
 }
 
-function opentt(info, tab){ // опция открывает раздел Timetable
-	const createProperties = {url: encodeURI("https://timetable.skyeng.ru/")};
-	chrome.tabs.create(createProperties);
+function opentt(info, tab) { // опция открывает раздел Timetable
+    const createProperties = { url: encodeURI("https://timetable.skyeng.ru/") };
+    chrome.tabs.create(createProperties);
 }
 
-function opencalendar(info, tab){ // опция открывает datsy.info
-	const createProperties = {url: encodeURI("https://datsy.info/")};
-	chrome.tabs.create(createProperties);
+function opencalendar(info, tab) { // опция открывает datsy.info
+    const createProperties = { url: encodeURI("https://datsy.info/") };
+    chrome.tabs.create(createProperties);
 }
 
-function makecompens(info, tab){ // опция открывает сайт с созданием компенсации
-	const createProperties = {url: encodeURI("https://billing-marketing.skyeng.ru/accrual-operations/create")};
-	chrome.tabs.create(createProperties);
+function makecompens(info, tab) { // опция открывает сайт с созданием компенсации
+    const createProperties = { url: encodeURI("https://billing-marketing.skyeng.ru/accrual-operations/create") };
+    chrome.tabs.create(createProperties);
 }
 
-function opentalksadm(info, tab){ // опция открывает админку Talks
-	const createProperties = {url: encodeURI("https://vimbox.skyeng.ru/talks/admin/statistics")};
-	chrome.tabs.create(createProperties);
+function opentalksadm(info, tab) { // опция открывает админку Talks
+    const createProperties = { url: encodeURI("https://vimbox.skyeng.ru/talks/admin/statistics") };
+    chrome.tabs.create(createProperties);
 }
 
 async function sendtodisaster(info, tab) {
-    if (!MMostOperId) { 
+    if (!MMostOperId) {
         MMostOperId = await getMMostOperId();
     }
 
     // Запрос подтверждения от контентного скрипта
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {action: "showConfirmDialog"}, async function(response) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: "showConfirmDialog" }, async function (response) {
             if (response && response.confirmed) {
                 // Получение текста сообщения
                 const textmsg = response.textmsg;
@@ -226,10 +226,10 @@ async function sendFetchMessage(message, channelId, rootId = "") {
     });
 
     return await response.json();
-}	
+}
 
-function openinfo(info, tab){ // открытие информации в scriptPackage
-	let selid = info.selectionText.replace(/\D/g, '');
+function openinfo(info, tab) { // открытие информации в scriptPackage
+    let selid = info.selectionText.replace(/\D/g, '');
     console.log(selid)
     const laserExtensionId = "kggpdmfnfmmkneemhknlojemcjmdlpjb";
     let messageValue = {
@@ -249,7 +249,7 @@ function openinfo(info, tab){ // открытие информации в script
     chrome.runtime.sendMessage(laserExtensionId,
         message,
     );
-} 
+}
 
 function extractLoginLink(text) {
     const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g;
@@ -266,7 +266,7 @@ function dologginer(info, tab) { // создание ссылки логинер
     let tokenId = null; // Установите соответствующий токен здесь
 
     fetch("https://id.skyeng.ru/admin/auth/login-links", {
-        headers: {"content-type": "application/x-www-form-urlencoded"},
+        headers: { "content-type": "application/x-www-form-urlencoded" },
         referrer: "https://id.skyeng.ru/admin/auth/login-links",
         referrerPolicy: "strict-origin-when-cross-origin",
         body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${selid}&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru&login_link_form%5Bpromocode%5D=&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=&login_link_form%5B_token%5D=${tokenId}`,
@@ -274,74 +274,74 @@ function dologginer(info, tab) { // создание ссылки логинер
         mode: "cors",
         credentials: "include"
     })
-    .then(res => res.text())
-    .then(textHtml => {
-        const loginLink = extractLoginLink(textHtml);
-        if (loginLink) {
-            console.log(`Loginner: ${loginLink}`);
-            chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: loginLink });
-        } else {
-            console.error('Ссылка для входа не найдена');
-        }
-    });
+        .then(res => res.text())
+        .then(textHtml => {
+            const loginLink = extractLoginLink(textHtml);
+            if (loginLink) {
+                console.log(`Loginner: ${loginLink}`);
+                chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: loginLink });
+            } else {
+                console.error('Ссылка для входа не найдена');
+            }
+        });
 }
 
-function opencrmid(info, tab){ //открытие СРМки по выделенному ID пользователя
-	let selid = info.selectionText.replace(/\D/g, '');
-	const createProperties = { url: encodeURI("https://crm2.skyeng.ru/persons/" + selid) };
-	chrome.tabs.create(createProperties);
+function opencrmid(info, tab) { //открытие СРМки по выделенному ID пользователя
+    let selid = info.selectionText.replace(/\D/g, '');
+    const createProperties = { url: encodeURI("https://crm2.skyeng.ru/persons/" + selid) };
+    chrome.tabs.create(createProperties);
 }
 
-function creditpayments(info, tab){ //открытие рассрочек по выделенному ID пользователя 
-	let selid = info.selectionText.replace(/\D/g, '');
-	const createProperties = { url: encodeURI("https://accounting.skyeng.ru/credit/list?studentId=" + selid) };
-	chrome.tabs.create(createProperties);
+function creditpayments(info, tab) { //открытие рассрочек по выделенному ID пользователя 
+    let selid = info.selectionText.replace(/\D/g, '');
+    const createProperties = { url: encodeURI("https://accounting.skyeng.ru/credit/list?studentId=" + selid) };
+    chrome.tabs.create(createProperties);
 }
 
-function editadmacc(info, tab){ //открытие админки по выделенному ID пользователя
-	let selid = info.selectionText.replace(/\D/g, '');
-	const createProperties = { url: encodeURI("https://id.skyeng.ru/admin/users/" + selid + "/update-contacts") };
-	chrome.tabs.create(createProperties);
+function editadmacc(info, tab) { //открытие админки по выделенному ID пользователя
+    let selid = info.selectionText.replace(/\D/g, '');
+    const createProperties = { url: encodeURI("https://id.skyeng.ru/admin/users/" + selid + "/update-contacts") };
+    chrome.tabs.create(createProperties);
 }
 
 function copytoskipap(info, tab) { // копирование ссылки для пропуска АП
     let selid = info.selectionText.replace(/\D/g, '');
     let textToCopy = "https://student.skyeng.ru/product-stage?stage=auto-schedule&educationServiceId=" + selid;
-	chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: textToCopy });
-	
+    chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: textToCopy });
+
 }
 
 function copytoskipob(info, tab) { // копирование ссылки для пропуска Onboarding
     let selid = info.selectionText.replace(/\D/g, '');
     let textToCopy = "https://student.skyeng.ru/product-stage?stage=onboarding&educationServiceId=" + selid;
-	chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: textToCopy });
+    chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: textToCopy });
 }
 
-function opentrm(info, tab){ //опция для открытия TRM2
-	let selid = info.selectionText.replace(/\D/g, '');
-	const createProperties = { url: encodeURI("https://trm.skyeng.ru/teacher/"  +  selid) }
-	chrome.tabs.create(createProperties);
+function opentrm(info, tab) { //опция для открытия TRM2
+    let selid = info.selectionText.replace(/\D/g, '');
+    const createProperties = { url: encodeURI("https://trm.skyeng.ru/teacher/" + selid) }
+    chrome.tabs.create(createProperties);
 }
 
-function openlgs(info, tab){ //опция для открытия LGS
-	let selid = info.selectionText.replace(/\D/g, '');
-	const createProperties = { url: encodeURI("https://learning-groups-storage.skyeng.ru/group/"  +  selid + "?cp=(section:participants)") }
-	chrome.tabs.create(createProperties);
+function openlgs(info, tab) { //опция для открытия LGS
+    let selid = info.selectionText.replace(/\D/g, '');
+    const createProperties = { url: encodeURI("https://learning-groups-storage.skyeng.ru/group/" + selid + "?cp=(section:participants)") }
+    chrome.tabs.create(createProperties);
 }
 
-function opntshash(info, tab){ //опция для открытия ТШ по хэш комнаты
-const createProperties = { url: encodeURI("https://video-trouble-shooter.skyeng.ru/?hash="  +  info.selectionText) }
-	chrome.tabs.create(createProperties);
+function opntshash(info, tab) { //опция для открытия ТШ по хэш комнаты
+    const createProperties = { url: encodeURI("https://video-trouble-shooter.skyeng.ru/?hash=" + info.selectionText) }
+    chrome.tabs.create(createProperties);
 }
 
-async function cancelishodcall(info, tab){ 
-	MMostOperId = await getMMostOperId();
-	if (MMostOperId) { 
-		const message = `@techsupport-1line-crm2 ${info.linkUrl} Охрана - отмена 🚫`;
-		sendMattermostMessage(message);
-	}
+async function cancelishodcall(info, tab) {
+    MMostOperId = await getMMostOperId();
+    if (MMostOperId) {
+        const message = `@techsupport-1line-crm2 ${info.linkUrl} Охрана - отмена 🚫`;
+        sendMattermostMessage(message);
+    }
 }
- 
+
 async function sendCustomMessage(info, tab, recipient) {
     try {
         const MMostOperId = await getMMostOperId();
@@ -401,65 +401,66 @@ async function sendMessageToTab(tabId, message) {
 }
 
 
-async function cancelsecondline(info, tab){	MMostOperId = await getMMostOperId();
-	MMostOperId = await getMMostOperId();
-	if (MMostOperId) { 
-		const message = `@techsupport-2line ${info.linkUrl} Охрана - отмена 🚫`;
-		sendMattermostMessage(message);
-	}
+async function cancelsecondline(info, tab) {
+    MMostOperId = await getMMostOperId();
+    MMostOperId = await getMMostOperId();
+    if (MMostOperId) {
+        const message = `@techsupport-2line ${info.linkUrl} Охрана - отмена 🚫`;
+        sendMattermostMessage(message);
+    }
 }
 
 // функция общения с stat.js чтобы отправлять запрос на получение какой либо инфы для обхода CORS
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-	    if (request.name === "Ctxt") {
-			if (request.question == 'sendResponse') {
-				fetch(request.addr, request.options)
-					.then(response => response.text())
-					.then(result => { sendResponse({answer: result, respName: request.respName}) });
-				return true;
-			}
-		}
+    if (request.name === "Ctxt") {
+        if (request.question == 'sendResponse') {
+            fetch(request.addr, request.options)
+                .then(response => response.text())
+                .then(result => { sendResponse({ answer: result, respName: request.respName }) });
+            return true;
+        }
+    }
 });
 
 async function getMMostOperId() {
-  try {
-    // Получаем значение из хранилища Chrome
-    const MMostOperId = await new Promise((resolve, reject) => {
-      chrome.storage.local.get(['matermost_oid'], function(result) {
-        if (chrome.runtime.lastError) {
-          return reject(chrome.runtime.lastError);
-        }
-        resolve(result.matermost_oid);
-      });
-    });
-
-    // Если значение найдено в хранилище, возвращаем его
-    if (MMostOperId) {
-      return MMostOperId;
-    } else {
-      // Запрашиваем данные из API
-      const response = await fetch(OperId_API_URL);
-      if (!response.ok) throw new Error("Failed to fetch user data.");
-
-      const data = await response.json();
-      const newMMostOperId = data.id;
-
-      // Сохраняем полученный ID в хранилище Chrome
-      await new Promise((resolve, reject) => {
-        chrome.storage.local.set({ 'matermost_oid': newMMostOperId }, function() {
-          if (chrome.runtime.lastError) {
-            return reject(chrome.runtime.lastError);
-          }
-          resolve();
+    try {
+        // Получаем значение из хранилища Chrome
+        const MMostOperId = await new Promise((resolve, reject) => {
+            chrome.storage.local.get(['matermost_oid'], function (result) {
+                if (chrome.runtime.lastError) {
+                    return reject(chrome.runtime.lastError);
+                }
+                resolve(result.matermost_oid);
+            });
         });
-      });
 
-      return newMMostOperId;
+        // Если значение найдено в хранилище, возвращаем его
+        if (MMostOperId) {
+            return MMostOperId;
+        } else {
+            // Запрашиваем данные из API
+            const response = await fetch(OperId_API_URL);
+            if (!response.ok) throw new Error("Failed to fetch user data.");
+
+            const data = await response.json();
+            const newMMostOperId = data.id;
+
+            // Сохраняем полученный ID в хранилище Chrome
+            await new Promise((resolve, reject) => {
+                chrome.storage.local.set({ 'matermost_oid': newMMostOperId }, function () {
+                    if (chrome.runtime.lastError) {
+                        return reject(chrome.runtime.lastError);
+                    }
+                    resolve();
+                });
+            });
+
+            return newMMostOperId;
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        return null;
     }
-  } catch (error) {
-    console.error("Error:", error);
-    return null;
-  }
 }
 
 
@@ -488,27 +489,27 @@ function sendMattermostMessage(message) {
         "mode": "cors",
         "credentials": "include"
     })
-    .then(response => response.json())
-    .then(data => {
-        transfertoTSM(data.id);
-    })
-    .catch(error => {
-        console.error("Ошибка:", error);
-    });
+        .then(response => response.json())
+        .then(data => {
+            transfertoTSM(data.id);
+        })
+        .catch(error => {
+            console.error("Ошибка:", error);
+        });
 }
 
 function transfertoTSM(Chatid) {
-	if (Chatid === lastChatId) { // Если текущий chatid такой же, как и передыдущий
+    if (Chatid === lastChatId) { // Если текущий chatid такой же, как и передыдущий
         sendMattermostMessage(lastMessage); // Пересылаем сообщение заново
         return; // Прекращаем выполнение функции, чтобы не отправлять сообщение в content.js
     }
 
     lastChatId = Chatid; // Обновляем последний chatid
 
-	chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-	  const activeTab = tabs[0];
-	  if (activeTab) {
-		chrome.tabs.sendMessage(activeTab.id, { action: "CallMMComment", Chatid: Chatid });
-	  }
-	});
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const activeTab = tabs[0];
+        if (activeTab) {
+            chrome.tabs.sendMessage(activeTab.id, { action: "CallMMComment", Chatid: Chatid });
+        }
+    });
 }

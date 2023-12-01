@@ -105,18 +105,18 @@ let versionsfromdoc;
 let versionscontainer;
 
 async function getversionsapp() { // получаем из файла список версий моб. приложений
-        
+
     versionsfromdoc = 'https://script.google.com/macros/s/AKfycbwgym7WoXavCcMa7mpzlA4GHGncpWixKwyxhSJT1TU8tZg4KmRemyZqyQ3c5G2cKTxDrQ/exec'
     await fetch(versionsfromdoc).then(r => r.json()).then(r => versionsdata = r)
     versionscontainer = versionsdata.result;
-    document.getElementById('curVeriOS').textContent  = versionscontainer[1][0] + ' : ' + versionscontainer[1][1]
+    document.getElementById('curVeriOS').textContent = versionscontainer[1][0] + ' : ' + versionscontainer[1][1]
     document.getElementById('curVerAndroid').innerText = versionscontainer[0][0] + ' : ' + versionscontainer[0][1]
 
 }
 
 async function checkOpsectionIs() {
-    let send_win_elements ='';
-    let checksection ='';
+    let send_win_elements = '';
+    let checksection = '';
     const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
 
     // Присваиваем данные константам
@@ -137,189 +137,189 @@ async function checkOpsectionIs() {
     wintLinks = createWindow('AF_Links', 'winTopLinks', 'winLeftLinks', send_win_elements);
     hideWindowOnDoubleClick('AF_Links');
     hideWindowOnClick('AF_Links', 'hideMe');
-        
+
     addfunctionsonclick(checksection)
-    
+
     document.getElementById('links').onclick = function () { //открывает окно ссылок
         if (document.getElementById('AF_Links').style.display == '')
             document.getElementById('AF_Links').style.display = 'none'
         else {
             document.getElementById('AF_Links').style.display = ''
-            if (checksection == 'TP'){
+            if (checksection == 'TP') {
                 getversionsapp()
             }
-            
+
         }
-    }  
+    }
 }
 
 checkOpsectionIs()
 
 function addfunctionsonclick(section) {
-    if (section ==='KC'){
+    if (section === 'KC') {
         document.getElementById('knoweledgebaseKC').addEventListener('click', function () { // открытие Confluence Customer Service WIKI для КЦ
             window.open("https://confluence.skyeng.tech/display/CSW/Customer+Service+WIKI")
-        }) 
-        
+        })
+
         document.getElementById('lessonrecordKC').addEventListener('click', function () { // открытие записи уроков для КЦ
             window.open("https://tramway.skyeng.ru/record")
-        }) 
-        
+        })
+
         document.getElementById('skyhomeKC').addEventListener('click', function () { // открытие Skyeng Home для КЦ
             window.open("https://home.skyeng.ru/dashboard")
         })
-        
+
         document.getElementById('timetableKC').addEventListener('click', function () { // открытие Timetable для КЦ
             window.open("https://timetable.skyeng.ru/")
         })
-        
+
         document.getElementById('CalcKC').addEventListener('click', function () { // открытие Калькулятор для КЦ
             window.open("https://billing-api.skyeng.ru/operations")
         })
-        
+
         document.getElementById('nachislyatorKC').addEventListener('click', function () { // открытие Начислятор для КЦ
             window.open("https://billing-marketing.skyeng.ru/accrual-operations/create")
         })
-        
+
         document.getElementById('rassrochKC').addEventListener('click', function () { // открытие Рассрочки для КЦ
             window.open("https://accounting.skyeng.ru/credit/list")
         })
-        
+
         document.getElementById('pondpisKC').addEventListener('click', function () { // открытие Подписки для КЦ
             window.open("https://billing-api.skyeng.ru/subscriptions")
         })
-        
+
         document.getElementById('omniKC').addEventListener('click', function () { // открытие Omni для КЦ
             window.open("https://skyeng.omnidesk.ru/")
         })
-        
+
         document.getElementById('RKKC').addEventListener('click', function () { // открытие админки РК для КЦ
             window.open("https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubMemberCrudController&signature=V8w5PW8LT3GcoYMoSYzprG1lCW8F5sb5y7Bdrxh08pc")
         })
-        
+
         document.getElementById('shablKC').addEventListener('click', function () { // открытие актуальных габлонов для КЦ
             window.open("https://docs.google.com/spreadsheets/d/14paTabjaJcRIvlpTQzdGePltiN0bsPaFjFEbn4DD3Ho/edit#gid=410124091")
         })
-        
+
         document.getElementById('narushKC').addEventListener('click', function () { // открытие формы нарушений для КЦ
             window.open("https://docs.google.com/forms/d/e/1FAIpQLSeAxtdad9yc5iLo-7v4rqMj5M2wdaJKOpzy5X_eWkHqHWY9sg/viewform")
         })
-        
+
         document.getElementById('grafKC').addEventListener('click', function () { // открытие гркфика работы для КЦ
             window.open("https://docs.google.com/spreadsheets/d/1SiD1yfpzIEF8ZafVXnq0Z-hyF0b45aAQ8s6BWgy-s0c/edit#gid=1933422994")
         })
 
-    } else if (section ==='TP'){
+    } else if (section === 'TP') {
         document.getElementById('knoweledgebase').onclick = function () { // открытие Confluence БЗ 2.0
             window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=25407293")
         }
-        
+
         document.getElementById('essayadmin').onclick = function () { // открытие админки эссе
             window.open("https://api-english.skyeng.ru/admin/platform/openanswer/list")
         }
-        
+
         document.getElementById('timetable').addEventListener('click', function () { // копируем в буфер ссылку на Timetable
-            window.open("https://timetable.skyeng.ru/")    
+            window.open("https://timetable.skyeng.ru/")
         })
-        
+
         document.getElementById('faqext').addEventListener('click', function () { // открываем инструкцию по расширению
-            window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971")    
+            window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971")
         })
-        
+
         document.getElementById('curVeriOS').addEventListener('click', function () { // открываем актуальную версию приложения iOS
             window.open("https://apps.apple.com/ru/app/skyeng-%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%8F%D0%B7%D1%8B%D0%BA-%D0%BE%D0%BD%D0%BB%D0%B0%D0%B9%D0%BD/id1065290732")
         })
-        
+
         document.getElementById('curVerAndroid').addEventListener('click', function () { // открываем актуальную версию приложения Android
             window.open("https://play.google.com/store/apps/details?id=skyeng.words.prod")
         })
-        
+
         document.getElementById('talksadm').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Talks админку
             window.open("https://vimbox.skyeng.ru/talks/admin/statistics")
         })
-        
+
         document.getElementById('billingadm').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Начислятор
-            window.open("https://billing-api.skyeng.ru/operations")    
+            window.open("https://billing-api.skyeng.ru/operations")
         })
-        
+
         document.getElementById('compens').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Компенсации
             window.open("https://billing-marketing.skyeng.ru/accrual-operations/create")
         })
-        
+
         document.getElementById('useradm').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Пользовательская админка
             window.open("https://id.skyeng.ru/admin/users")
         })
-        
+
         document.getElementById('suggestions').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Предложения/пожелания
             window.open("https://docs.google.com/forms/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/viewform")
         })
-        
+
         document.getElementById('transactions').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Поиск транзакций
-            window.open("https://accounting.skyeng.ru/userpayment/search/transaction")    
+            window.open("https://accounting.skyeng.ru/userpayment/search/transaction")
         })
-        
+
         document.getElementById('CMS').addEventListener('click', function () { // открываем ссылку в новой вкладке на CMS
-            window.open("https://cms-vimbox.skyeng.ru/vim")    
+            window.open("https://cms-vimbox.skyeng.ru/vim")
         })
-        
+
         document.getElementById('subscribebilling').addEventListener('click', function () { // открываем ссылку в новой вкладке на Необоснованные оценки ТП АФ
-            window.open("https://billing-api.skyeng.ru/subscriptions")    
+            window.open("https://billing-api.skyeng.ru/subscriptions")
         })
-        
+
         document.getElementById('apelation').addEventListener('click', function () { // открываем ссылку в новой вкладке на Форма для апелляций чатов ТП АФ
-            window.open("https://docs.google.com/forms/d/e/1FAIpQLSdgsb6pte1H1dz15Eb5NjDe0gj3kEnh0hTe6Cgy8d81mT7NUA/viewform")    
+            window.open("https://docs.google.com/forms/d/e/1FAIpQLSdgsb6pte1H1dz15Eb5NjDe0gj3kEnh0hTe6Cgy8d81mT7NUA/viewform")
         })
-        
+
         document.getElementById('confbugs').addEventListener('click', function () { // открываем ссылку список багов в confluence
-            window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=96042583")    
+            window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=96042583")
         })
-        
+
         document.getElementById('restartlesson').addEventListener('click', function () { // копируем ссылку в буфер для перезапуска урока
-            copyToClipboard("setStatus('classwork')")   
+            copyToClipboard("setStatus('classwork')")
             document.getElementById('restartlesson').innerHTML = "Copied!";
             setTimeout(function () { document.getElementById('restartlesson').innerHTML = "Redo MAT💾" }, 2000);
         })
-        
+
         document.getElementById('browserstack').addEventListener('click', function () { // открываем ссылку в новой вкладке на Browserstak
-            window.open("https://www.browserstack.com/users/sign_in")    
+            window.open("https://www.browserstack.com/users/sign_in")
         })
-        
+
         document.getElementById('trshoothing').addEventListener('click', function () { // открываем ссылку в новой вкладке на TRM 2.0
-            window.open("https://video-trouble-shooter.skyeng.ru/")    
+            window.open("https://video-trouble-shooter.skyeng.ru/")
         })
-        
+
         document.getElementById('lesrecords').addEventListener('click', function () { // открываем ссылку в новой вкладке на Tramway Lesson Records
-            window.open("https://tramway.skyeng.ru/record")    
+            window.open("https://tramway.skyeng.ru/record")
         })
-        
+
         document.getElementById('testroom').addEventListener('click', function () { // открываем ссылку в админку тестовых комнат
-            window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=82244638")    
+            window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=82244638")
         })
-        
+
         document.getElementById('certificates').addEventListener('click', function () { // открываем ссылку в новой вкладке на Подарочные сертификаты
-            window.open("https://billing-marketing.skyeng.ru/certificate/certSearch")    
+            window.open("https://billing-marketing.skyeng.ru/certificate/certSearch")
         })
-        
+
         document.getElementById('promocodes').addEventListener('click', function () { // открываем ссылку в новой вкладке на Промокоды
-            window.open("https://billing-marketing.skyeng.ru/promocode/list")    
+            window.open("https://billing-marketing.skyeng.ru/promocode/list")
         })
-        
+
         document.getElementById('helpocentrteach').addEventListener('click', function () { // открываем ссылку в новой вкладке на Help Centr для П
-            window.open("https://helpcenter.skyeng.ru/teachers")    
+            window.open("https://helpcenter.skyeng.ru/teachers")
         })
-        
+
         document.getElementById('helpocentrstud').addEventListener('click', function () { // открываем ссылку в новой вкладке на Help Centr для У
-            window.open("https://helpcenter.skyeng.ru/students")    
+            window.open("https://helpcenter.skyeng.ru/students")
         })
 
         document.getElementById('kidscms').addEventListener('click', function () { // открываем ссылку в новой вкладке Kids CMS
-            window.open("https://vimbox.skyeng.ru/kids/math/cms/lessons/1")    
+            window.open("https://vimbox.skyeng.ru/kids/math/cms/lessons/1")
         })
-        
+
         document.getElementById('userfeatures').addEventListener('click', function () { // открываем ссылку в новой вкладке на проверку фичей пользователя
-            window.open("https://vimbox.skyeng.ru/circles/editor")    
+            window.open("https://vimbox.skyeng.ru/circles/editor")
         })
-        
+
         document.getElementById('benchmark').onclick = function () {                  //поиск по имени процессора на сайте cpubenchmark
             let lnkgr = 'https://www.cpubenchmark.net/cpu_lookup.php?cpu=';
             if (cpuname.value == "")
@@ -329,7 +329,7 @@ function addfunctionsonclick(section) {
             };
             cpuname.value = "";
         }
-            
+
         document.getElementById('cmsid').onclick = function () {                     // переход на степID в CMSке
             if (cmsstepid.value == "")
                 alert('Введите STEPUUID в поле')
@@ -338,25 +338,25 @@ function addfunctionsonclick(section) {
             };
             cmsstepid.value = "";
         }
-        
-        document.getElementById('getschemes').onclick = function() { // переход на просмотра подключенных схем вознаграждения преподавателей
-                if (schemesteacher.value == "")
+
+        document.getElementById('getschemes').onclick = function () { // переход на просмотра подключенных схем вознаграждения преподавателей
+            if (schemesteacher.value == "")
                 alert('Введите ID П в поле')
             else {
                 window.open('https://teacher-incentive.skyeng.ru/incentive/teacher/' + schemesteacher.value);
             };
             schemesteacher.value = "";
         }
-        
-        document.getElementById('getpushes').onclick = function() { // переход на просмотр статусов пушей ученику в МП
-                if (pushes.value == "")
+
+        document.getElementById('getpushes').onclick = function () { // переход на просмотр статусов пушей ученику в МП
+            if (pushes.value == "")
                 alert('Введите ID У в поле')
             else {
                 window.open('https://push-notifications.skyeng.ru/cms/logs?page=1&paginateBy=100&id=&userId=' + pushes.value + '&status=&useCase=&notificationSource=&createdAtFrom=&createdAtTo=');
             };
             pushes.value = "";
         }
-                
+
         document.getElementById('credits').onclick = function () {                  // проверка рассрочки у ученика она же поэтапная оплата (ПО)
             let lnkscredits = 'https://accounting.skyeng.ru/credit/list?studentId=';
             if (creditstatus.value == "")
@@ -366,7 +366,7 @@ function addfunctionsonclick(section) {
             };
             creditstatus.value = "";
         }
-            
+
         document.getElementById('gettrshinfo').onclick = function () {               // сохранение в буфере айди ученика для просмотра всего списка ДЗ по нему
             let trshootlnk = 'https://video-trouble-shooter.skyeng.ru/?hash=';
             if (trshooterhash.value == "")
@@ -376,7 +376,7 @@ function addfunctionsonclick(section) {
             };
             trshooterhash.value = "";
         }
-            
+
         document.getElementById('getenablerAP').onclick = function () {               // сохранение в буфере ссылки для активации АП
             let enableAPlnk = 'https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=';
             if (enablerAP.value == "")
@@ -388,7 +388,7 @@ function addfunctionsonclick(section) {
             setTimeout(function () { document.getElementById('getenablerAP').innerHTML = "💾" }, 2000);
             enablerAP.value = "";
         }
-        
+
         document.getElementById('getskipAP').onclick = function () {               // сохранение в буфере ссылки для активации АП
             let skipAPlnk = 'https://student.skyeng.ru/product-stage?stage=auto-schedule&educationServiceId=';
             if (skipAP.value == "")
@@ -400,8 +400,8 @@ function addfunctionsonclick(section) {
             setTimeout(function () { document.getElementById('getskipAP').innerHTML = "💾" }, 2000);
             skipAP.value = "";
         }
-        
-        
+
+
         document.getElementById('doskiponboard').onclick = function () {               // сохранение в буфере ссылки для активации АП
             let skiponblnk = 'https://student.skyeng.ru/product-stage?stage=onboarding&educationServiceId=';
             if (skiponboarding.value == "")
@@ -413,7 +413,7 @@ function addfunctionsonclick(section) {
             setTimeout(function () { document.getElementById('doskiponboard').innerHTML = "💾" }, 2000);
             skiponboarding.value = "";
         }
-            
+
         document.getElementById('setservicelocaleru').onclick = function () { // меняет язык обслуживания выбранного пользователя в вензеле на русский но через кнопку в "L"
             document.getElementById('responseTextarea1').value = `{
                 "headers": {
@@ -435,22 +435,22 @@ function addfunctionsonclick(section) {
             idforservicelocaleru.value = "";
             setTimeout(function () { document.getElementById('setservicelocaleru').innerHTML = "🚀" }, 2000);
         }
-            
+
         document.getElementById('deleteaclnk').addEventListener('click', function () { // открываем ссылку в новой вкладке для создания задачи на удаление аккаунта
-            window.open("https://infra.skyeng.ru/request/create/166")    
+            window.open("https://infra.skyeng.ru/request/create/166")
         })
-        
+
         document.getElementById('resetMMPassword').addEventListener('click', function () { // 
-            window.open("https://infra.skyeng.ru/request/create/233")    
+            window.open("https://infra.skyeng.ru/request/create/233")
         })
-        
+
         document.getElementById('bankCheck').addEventListener('click', function () { // открывает окно просмотра информации о групповых уроков
             if (document.getElementById('AF_BankCheck').style.display == '')
                 document.getElementById('AF_BankCheck').style.display = 'none'
             else
                 document.getElementById('AF_BankCheck').style.display = ''
         })
-            
+
         document.getElementById('gotolookip').onclick = function () { // проверка информации по айпишнику ученика/препода/ хостинга
             let iplink = 'https://check-host.net/ip-info?host=';
             if (iplookup.value == "")
@@ -460,7 +460,7 @@ function addfunctionsonclick(section) {
             };
             iplookup.value = "";
         }
-            
+
         document.getElementById('getlgsinfo').onclick = function () { // открытие админки LGS по ID группы
             let lgslink = 'https://learning-groups-storage.skyeng.ru/group/';
             if (lgssearch.value == "")
@@ -470,7 +470,7 @@ function addfunctionsonclick(section) {
             };
             lgssearch.value = "";
         }
-                
+
         getmobpasscode.onclick = function () {
             const getmobpasscode = document.querySelector('#getmobpasscode');
             const setidformobpass = document.querySelector('#setidformobpass');
@@ -479,7 +479,7 @@ function addfunctionsonclick(section) {
             } else {
                 getmobpasscode.innerHTML = '✅';
                 setTimeout(() => getmobpasscode.innerHTML = '🚀', 2000);
-        
+
                 chrome.runtime.sendMessage({ action: 'generateMobileOTP', userId: setidformobpass.value }, function (response) {
                     if (response) {
                         var convertres11 = response.match(/div class="alert alert-success" role="alert".*?([0-9]{5}).*/);
@@ -494,15 +494,15 @@ function addfunctionsonclick(section) {
                         console.error('Ответ от background script пуст или не определен');
                     }
                 });
-        
+
             };
-            setTimeout(() => setidformobpass.value = "", 15000);            
+            setTimeout(() => setidformobpass.value = "", 15000);
         };
 
-        document.getElementById('GrListData').onclick = getGrListDataButtonPress;	
+        document.getElementById('GrListData').onclick = getGrListDataButtonPress;
         document.getElementById('getStats').onclick = getStatsButtonPress;
         document.getElementById('openGrabber').onclick = getopenGrabberButtonPress;
     }
 }
-                            
+
 

@@ -74,7 +74,7 @@ function createAudioElement(url, name) {
             localStorage.setItem("audioUrls", JSON.stringify(audioUrls));
             localStorage.setItem("audioNames", JSON.stringify(audioNames));
             audioList.removeChild(newAudio);
-        } 
+        }
     });
     return newAudio;
 }

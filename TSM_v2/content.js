@@ -1,5 +1,5 @@
 const messangerlink = "https://mm-time.skyeng.tech/skyeng/pl/";
-const servicesites = ["skyeng.autofaq.ai","crm2.skyeng.ru"];
+const servicesites = ["skyeng.autofaq.ai", "crm2.skyeng.ru"];
 let isIframeListenerSet = false;
 let lastChatIdF = null; // Глобальная переменная для хранения последнего chatid
 let attemptCount = 0;
@@ -21,7 +21,7 @@ function initTSM() {
                 const messlink = messangerlink + Chatid;
                 const SendMessage = `Передано в канал #techsupport: <a href="${messlink}" target="_blank" rel="noopener">ссылка</a>`;
                 const SendMessageCRM = `Передано в канал #techsupport и ссылка скопирована в буфер обмена: ${messlink}`;
-                    
+
                 if (location.href.includes('crm2.skyeng.ru')) {
                     copyToClipboardBack(messlink);
                     alert(SendMessageCRM);
@@ -52,11 +52,11 @@ async function sendCommentTSM(txt) { // функция отправки комм
 
 async function getInfoTSM() { //функция получения инфо о чате и сервис айди
     let activeConvId = getChatIdTSM();
-	let sessionId = "";
- 
+    let sessionId = "";
+
     await fetch("https://skyeng.autofaq.ai/api/conversations/" + activeConvId)
         .then(response => response.json())
-        .then(result => { sessionId = result.sessionId;});
+        .then(result => { sessionId = result.sessionId; });
 
     return [activeConvId, sessionId]
 }
@@ -89,7 +89,7 @@ const copyToClipboardBack = str => { // функция копирования в
 };
 
 function setSelectionListener(doc) {
-    doc.addEventListener('selectionchange', function() {
+    doc.addEventListener('selectionchange', function () {
         let selectedText = doc.getSelection().toString().trim();
         console.log(selectedText);
 
@@ -103,7 +103,7 @@ function setSelectionListener(doc) {
                 messageType = 'OTHER_SELECTION';
             }
 
-            chrome.runtime.sendMessage({type: messageType});
+            chrome.runtime.sendMessage({ type: messageType });
         }
     });
 
@@ -128,7 +128,7 @@ function checkIframeLoaded() {
         if (iframeDocument.readyState === 'complete') {
             setSelectionListener(iframeDocument);
         } else {
-            iframeElement.onload = function() {
+            iframeElement.onload = function () {
                 setSelectionListener(iframeDocument);
             };
         }
@@ -180,7 +180,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.action === "showConfirmDialog") {
         const confirmed = confirm("Вы уверены, что хотите пробудить Древнее Зло и воззвать к команде Фиксиков для исправления катаклизма на платформе?");
         if (confirmed) {
@@ -190,12 +190,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             sendResponse({ confirmed: false });
         }
     }
-	
-	if (request.action === "showPromptDialog") {
+
+    if (request.action === "showPromptDialog") {
         const textmsg = prompt('Введите ваш текст в это поле');
         sendResponse({ textmsg: textmsg, confirmed: textmsg !== null && textmsg.length > 3 });
     }
-	
+
     return true; // Важно для асинхронного ответа
 });
 

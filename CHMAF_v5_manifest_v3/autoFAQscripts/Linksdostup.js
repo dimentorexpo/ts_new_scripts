@@ -27,7 +27,7 @@ var win_linksd =  // описание элементов окна доступо
         </span>
 </div>`;
 
-const wintLinksd= createWindow('AF_Linksd', 'winTopLinksd', 'winLeftLinksd', win_linksd);
+const wintLinksd = createWindow('AF_Linksd', 'winTopLinksd', 'winLeftLinksd', win_linksd);
 hideWindowOnDoubleClick('AF_Linksd');
 hideWindowOnClick('AF_Linksd', 'hideMeLinksd');
 

@@ -34,10 +34,10 @@ var win_studentsSkysmart = `<div style="display: flex;">
 
 					</span>
 				   </div>`;
-const wintStudAdults  = createTSMWindow('AFMS_AdultStudInfo', 'winTopstudentsAdults', 'winLeftstudentsAdults', win_studentsAdults);
+const wintStudAdults = createTSMWindow('AFMS_AdultStudInfo', 'winTopstudentsAdults', 'winLeftstudentsAdults', win_studentsAdults);
 wintStudAdults.className = 'wintInitializeAdultsStudentsInfo';
 
-const wintStudSkysmart  = createTSMWindow('AFMS_SkysmartStudInfo', 'winTopstudentsSkysmart', 'winLeftstudentsSkysmart', win_studentsSkysmart);
+const wintStudSkysmart = createTSMWindow('AFMS_SkysmartStudInfo', 'winTopstudentsSkysmart', 'winLeftstudentsSkysmart', win_studentsSkysmart);
 wintStudSkysmart.className = 'wintInitializeSkysmartStudentsInfo';
 
 document.getElementById('hidestudentsSkysmartMenu').onclick = function () {
@@ -196,22 +196,22 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
         }
 
         document.getElementById('usersearchskysmart').oninput = function () {
-			var val2 = this.value.toLowerCase();
-			var s2 = '';
+            var val2 = this.value.toLowerCase();
+            var s2 = '';
 
-			for (let i = 0; i < Object.keys(kidsdata).length; i++) {
-				for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-					let kidName = Object.values(kidsdata)[i][j].name.toLowerCase();
-					let kidId = Object.values(kidsdata)[i][j].id.toString();
+            for (let i = 0; i < Object.keys(kidsdata).length; i++) {
+                for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
+                    let kidName = Object.values(kidsdata)[i][j].name.toLowerCase();
+                    let kidId = Object.values(kidsdata)[i][j].id.toString();
 
-					if (kidName.includes(val2) || kidId.includes(val2)) {
-						// Теперь этот блок будет выполняться, если найдено соответствие
-						var kid = Object.values(kidsdata)[i][j];
-						var statusSymbol = kid.status === 'sleep' ? '💤' : (kid.status === 'vacation' ? '⛱' : '');
-						var statusTitle = kid.status === 'sleep' ? 'ученик уснул' : (kid.status === 'vacation' ? 'ученик в отпуске' : '');
-						var segmentBadge = kid.segmentBadge ? `<div class="badgename">${kid.segmentBadge}</div>` : '';
-						var serviceLocale = kid.serviceLocale ? kid.serviceLocale : 'Пусто';
-						s2 += `<div class="kidsoutdata ${kid.status}">
+                    if (kidName.includes(val2) || kidId.includes(val2)) {
+                        // Теперь этот блок будет выполняться, если найдено соответствие
+                        var kid = Object.values(kidsdata)[i][j];
+                        var statusSymbol = kid.status === 'sleep' ? '💤' : (kid.status === 'vacation' ? '⛱' : '');
+                        var statusTitle = kid.status === 'sleep' ? 'ученик уснул' : (kid.status === 'vacation' ? 'ученик в отпуске' : '');
+                        var segmentBadge = kid.segmentBadge ? `<div class="badgename">${kid.segmentBadge}</div>` : '';
+                        var serviceLocale = kid.serviceLocale ? kid.serviceLocale : 'Пусто';
+                        s2 += `<div class="kidsoutdata ${kid.status}">
 									<div class="sbjnamesearch">${Object.keys(kidsdata)[i]}</div>
 									<div class="studadultname">
 										<span title="${statusTitle}">${statusSymbol}</span> ${kid.name}
@@ -226,9 +226,9 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
 										<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>
 									</div>
 								</div>`;
-					}
-				}
-			}
+                    }
+                }
+            }
 
             document.getElementById('infobarskysmart').innerHTML = document.getElementById("usersearchskysmart").value != '' ? s2 : commonarr;
 

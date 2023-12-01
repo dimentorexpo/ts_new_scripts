@@ -45,7 +45,7 @@ var win_link2less =  // описание элементов окна созда�
         </span>
     </div>`;
 
-const wintlink2less  = createWindow('AF_link2less', 'winToplink2less', 'winLeftlink2less', win_link2less);
+const wintlink2less = createWindow('AF_link2less', 'winToplink2less', 'winLeftlink2less', win_link2less);
 const link2lessfield = document.getElementById('link2lessmessage');
 link2lessfield.display = 'none';
 const itisvebinar = document.getElementById('itisvebinar');
@@ -100,12 +100,12 @@ function openlink2lesshelp() { // Открывает раздел в Confluence 
 
 document.getElementById("clrlink2less").addEventListener("click", clearlink2lessfields);
 document.getElementById("aboutlink2less").addEventListener("click", openlink2lesshelp);
-document.getElementById("hideMelink2less").addEventListener("click", function(){
-	    if (document.getElementById('AF_link2less').style.display == '')
+document.getElementById("hideMelink2less").addEventListener("click", function () {
+    if (document.getElementById('AF_link2less').style.display == '')
         document.getElementById('AF_link2less').style.display = 'none'
 });
-document.getElementById('link2lesshead').addEventListener('dblclick', function(){
-	document.getElementById('AF_link2less').style.display = 'none'; 
+document.getElementById('link2lesshead').addEventListener('dblclick', function () {
+    document.getElementById('AF_link2less').style.display = 'none';
 })
 
 document.getElementById('createlink2less').addEventListener('click', function () { // добавляем тестовую комнату
@@ -115,7 +115,7 @@ document.getElementById('createlink2less').addEventListener('click', function ()
     let massagetexttoshow = '';
     let otheroptions = '';
     let link2lesson = '';
-    
+
 
     if (document.getElementById('subjecttype2less').value == 'subjnotselect') { // проверяем выбран ли предмет
         flagemptyttfields = '1';
@@ -128,7 +128,7 @@ document.getElementById('createlink2less').addEventListener('click', function ()
     } else {
         hashforroomless = document.getElementById('hashforroom').value.trim();
     }
-    
+
 
     if (flagemptyttfields === '0') {
         if (itisvebinar.checked) {

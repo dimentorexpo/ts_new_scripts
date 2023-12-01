@@ -18,7 +18,7 @@ var win_GrList =  // описание элементов окна Списка �
         </span>
 </div>`;
 
-const wintGrList= createWindow('AF_GrList', 'winTopGrList', 'winTopGrList', win_GrList);
+const wintGrList = createWindow('AF_GrList', 'winTopGrList', 'winTopGrList', win_GrList);
 hideWindowOnDoubleClick('AF_GrList');
 
 function getGrListDataButtonPress() {
@@ -30,24 +30,24 @@ function getGrListDataButtonPress() {
 }
 document.getElementById('getidgrouptolist').addEventListener('click', async function () {
     let dataarr = [];
-	let userIdsarray = [];
+    let userIdsarray = [];
     document.getElementById('grlistinfo').innerHTML = "Загрузка...";
     let tempgrid = document.getElementById('idgrouptolist').value;
     tempgrid = tempgrid.trim();
 
     chrome.runtime.sendMessage({ action: 'getGroupList', tmp: tempgrid }, function (response) {
-		userIdsarray = [];
+        userIdsarray = [];
         for (let i = 0; i < response.data.students.length; i++) {
             dataarr += [i + 1] + "." + '<span class="grstdcrm" style="cursor:pointer" title="открывает профиль в CRM">ℹID У:</span>' + response.data.students[i].userId + " ID услуги: " + response.data.students[i].educationServiceId + " " + '<span class="stname"></span>' + '<br>';
-			userIdsarray.push(response.data.students[i].userId)
+            userIdsarray.push(response.data.students[i].userId)
         }
-		
-		chrome.runtime.sendMessage({action: "getGroupUserNames", userIds: userIdsarray}, function(response) {
-			  let allStudents = document.getElementsByClassName('stname')
-			  for (let i=0; i <allStudents.length;i++) {
-				  allStudents[i].textContent = response.data[i].name.first + " " + response.data[i].name.last
-			  }
-			});
+
+        chrome.runtime.sendMessage({ action: "getGroupUserNames", userIds: userIdsarray }, function (response) {
+            let allStudents = document.getElementsByClassName('stname')
+            for (let i = 0; i < allStudents.length; i++) {
+                allStudents[i].textContent = response.data[i].name.first + " " + response.data[i].name.last
+            }
+        });
 
         document.getElementById('grlistinfo').innerHTML = !response.data.teachers ? dataarr : dataarr + '<br>ID П ' + response.data.teachers[0].userId;
 

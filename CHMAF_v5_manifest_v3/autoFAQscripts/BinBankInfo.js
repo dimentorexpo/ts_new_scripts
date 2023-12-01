@@ -19,7 +19,7 @@ var win_BankInfo =  // описание элементов окна Списка
         </span>
 </div>`;
 
-const wintBankInfo  = createWindow('AF_BankCheck', 'winTopBankInfo', 'winLeftBankInfo', win_BankInfo);
+const wintBankInfo = createWindow('AF_BankCheck', 'winTopBankInfo', 'winLeftBankInfo', win_BankInfo);
 hideWindowOnDoubleClick('AF_BankCheck');
 
 document.getElementById('hideMeBinBank').addEventListener('click', function () { // скрытие окна Список группы

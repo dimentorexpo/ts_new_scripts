@@ -212,7 +212,7 @@ var win_servicedesk = // описание элементов окна Service De
 		</span>
 </div>`;
 
-const wintServDsk  = createWindow('AF_ServDsk', 'winTopServDsk', 'winLeftServDsk', win_servicedesk);
+const wintServDsk = createWindow('AF_ServDsk', 'winTopServDsk', 'winLeftServDsk', win_servicedesk);
 
 //func getOperInfraId
 function getInfraOId() {

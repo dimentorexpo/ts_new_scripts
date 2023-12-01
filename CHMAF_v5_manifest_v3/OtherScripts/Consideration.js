@@ -19,17 +19,17 @@ let wintInfoconsid = document.createElement('div'); // создание окна
 wintInfoconsid.style.display = 'none';
 wintInfoconsid.innerHTML = win_Infoconsid;
 
-function startchecking(){
+function startchecking() {
     if (document.URL == 'https://billing-marketing.skyeng.ru/accrual-operations/create') {
         document.getElementById('selectedOperation').addEventListener("change", addinformationform)
-    }   
+    }
 }
 
 function addinformationform() {
-    let TPcomp = document.getElementsByClassName('card-header')    
+    let TPcomp = document.getElementsByClassName('card-header')
     for (y = 0; y < TPcomp.length; y++) {
         if (TPcomp[y].innerText == 'Компенсация за технические проблемы') {
-            if (flaginsert == 0){
+            if (flaginsert == 0) {
                 let formtoin = document.getElementsByClassName('card-body')[0]
                 formtoin.insertBefore(wintInfoconsid, formtoin.children[0])
                 flaginsert = 1

@@ -83,7 +83,7 @@ var win_taskform = //описание формы создания задач в 
 var NoteFlag = 0; // флаг отправлять заметку или нет
 var NoteText = ''; // какой текст отправим в заметку
 
-const wintCreateTask   = createWindow('AF_Createtask', 'winTopTaskCreate', 'winLeftTaskCreate', win_taskform);
+const wintCreateTask = createWindow('AF_Createtask', 'winTopTaskCreate', 'winLeftTaskCreate', win_taskform);
 
 document.getElementById('AF_Createtask').ondblclick = function (a) { // скрытие окна создания задачи в CRM2 по двойному клику
     if (checkelementtype(a)) { document.getElementById('hideMeCreateForm').click(); }
@@ -171,7 +171,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                 console.log('Введен не верный id');
             }
         }
-       
+
 
         let activeConvId = getChatId();
 

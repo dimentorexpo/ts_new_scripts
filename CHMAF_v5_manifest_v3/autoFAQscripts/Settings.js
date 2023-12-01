@@ -92,9 +92,9 @@ async function init_settings() {
         </span>
 </span>`;
 
-const wintStataAF  = createWindow('AF_Settings', 'winTopSettings', 'winLeftSettings', win_Settings);
-hideWindowOnDoubleClick('AF_Settings');
-hideWindowOnClick('AF_Settings', 'hideMeSettings');
+    const wintStataAF = createWindow('AF_Settings', 'winTopSettings', 'winLeftSettings', win_Settings);
+    hideWindowOnDoubleClick('AF_Settings');
+    hideWindowOnClick('AF_Settings', 'hideMeSettings');
 
     function ShowMustGoOn() { //функция вносит в локалсторедж адрес скрипта с гугл таблиц шаблонов для КЦ
         localStorage.setItem('scriptAdr', KC_addr)
@@ -153,7 +153,7 @@ hideWindowOnClick('AF_Settings', 'hideMeSettings');
 
     function changesoundaddr() { //функция изменения адреса звука
         let objSoundList = document.getElementById('soundlistaddr');
-    
+
         if (objSoundList.length > 1) {
             for (let i = 1; i < objSoundList.length; i++) {
                 if (objSoundList[i].selected == true) {

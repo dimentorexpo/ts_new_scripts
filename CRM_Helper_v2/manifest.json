@@ -28,8 +28,8 @@
 				"/Modules/Smartroom.js",
 				"/Modules/TestRooms.js",
 				"/Lightbox/dist/js/lightbox.min.js"],
-		"css": ["/CSS/style.css", "/Lightbox/dist/css/lightbox.min.css"],
-		"matches": ["*://skyeng.autofaq.ai/*"],
+		"css": ["/CSS/styles.css", "/Lightbox/dist/css/lightbox.min.css"],
+		"matches": ["*://crm2.skyeng.ru/*"],
 		"run_at": "document_idle"
 	}
 	],

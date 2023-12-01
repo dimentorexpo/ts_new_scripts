@@ -1,9 +1,9 @@
 .commonbtn {
-    background-color:#768d87;
-    border-radius:5px;
-    border:1px solid #566963;
-    color:#ffffff;
-    padding:2px 2px;
+    background-color: #768d87;
+    border-radius: 5px;
+    border: 1px solid #566963;
+    color: #ffffff;
+    padding: 2px 2px;
     box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
     text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
 }
@@ -18,7 +18,7 @@
 }
 
 button.dobig:hover {
-    transform:scale(1.15);
+    transform: scale(1.15);
 }
 
 button.dobig:active {
@@ -26,18 +26,18 @@ button.dobig:active {
 }
 
 .hidebtns {
-    width:50px;
-    height:30px;
+    width: 50px;
+    height: 30px;
     background: #228B22;
 }
 
 .hidebtns:hover {
-    background: #187018!important;
+    background: #187018 !important;
 }
 
 .smallbtns {
-    width:30px!important;
-    height:30px!important;
+    width: 30px !important;
+    height: 30px !important;
     padding: 0;
 }
 
@@ -52,7 +52,7 @@ button.dobig:active {
     border: 1px solid rgb(56, 56, 56);
     background: rgb(70, 68, 81);
     color: white;
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
 }
 
 .wintInitializeChat {
@@ -64,7 +64,7 @@ button.dobig:active {
     border: 1px solid rgb(56, 56, 56);
     background: rgb(70, 68, 81);
     color: white;
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
 }
 
 .wintInitializeLessonInfo {
@@ -75,8 +75,8 @@ button.dobig:active {
     position: fixed;
     border: 1px solid rgb(56, 56, 56);
     background: rgb(70, 68, 81);
-    color:black;
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    color: black;
+    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
 }
 
 .wintInitializeAdultsStudentsInfo {
@@ -89,7 +89,7 @@ button.dobig:active {
     border: 1px solid rgb(56, 56, 56);
     background: rgb(70, 68, 81);
     color: black;
-    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
 }
 
 .wintInitializeSkysmartStudentsInfo {
@@ -102,7 +102,7 @@ button.dobig:active {
     border: 1px solid rgb(56, 56, 56);
     background: rgb(70, 68, 81);
     color: black;
-    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
 }
 
 .wintInitializeVocabulary {
@@ -115,7 +115,7 @@ button.dobig:active {
     border: 1px solid rgb(56, 56, 56);
     background: rgb(70, 68, 81);
     color: black;
-    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
 }
 
 .wintInitializeExercisesData {
@@ -128,7 +128,7 @@ button.dobig:active {
     border: 1px solid rgb(56, 56, 56);
     background: rgb(70, 68, 81);
     color: black;
-    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
 }
 
 .lesson-field-name {
@@ -140,23 +140,23 @@ button.dobig:active {
 }
 
 .lesson-field-value {
-     width: 150px;
-     min-height: 20px;
-     text-align: center;
-     color: #fff;
-     border-radius: 5px;
-     background: #2569c3f0;
-     padding: 5px;
-     margin: 5px;
-     border: 1px solid white;
-     font-weight: 500;
-     padding-top: 7px;
-     box-shadow: 0px 5px 5px rgb(0 0 0 / 55%);
-     cursor: text;
+    width: 150px;
+    min-height: 20px;
+    text-align: center;
+    color: #fff;
+    border-radius: 5px;
+    background: #2569c3f0;
+    padding: 5px;
+    margin: 5px;
+    border: 1px solid white;
+    font-weight: 500;
+    padding-top: 7px;
+    box-shadow: 0px 5px 5px rgb(0 0 0 / 55%);
+    cursor: text;
 }
 
 .lesson-field-value:hover {
-    background:#65227f70;
+    background: #65227f70;
 }
 
 .lesson-field-value::selection {
@@ -182,7 +182,7 @@ button.dobig:active {
 
 #hidemainmenu:hover {
     opacity: 1;
-    font-size:11px;
+    font-size: 11px;
     background: #16fe55bf;
     color: rgb(69 57 192 / 80%);
     font-weight: 700;
@@ -233,20 +233,20 @@ button.dobig:active {
 .rowadultdata:hover .studadultname {
     background: #6A5ACD;
     color: #fff;
-    font-weight:600;
+    font-weight: 600;
     cursor: default;
 }
 
 .rowadultdata:hover {
     background: #6A5ACD;
     color: #fff;
-    font-weight:600;
+    font-weight: 600;
 }
 
 .kidsoutdata:hover {
     background: #6A5ACD;
     color: #fff;
-    font-weight:600;
+    font-weight: 600;
 }
 
 .studadultname {
@@ -268,14 +268,14 @@ button.dobig:active {
 }
 
 .idadultstyle {
-    text-align:center;
-    margin-top:5px;
+    text-align: center;
+    margin-top: 5px;
     cursor: default;
 }
 
 .idkidsstyle {
-    text-align:center;
-    margin-top:5px;
+    text-align: center;
+    margin-top: 5px;
     cursor: default;
 }
 
@@ -290,7 +290,7 @@ button.dobig:active {
     font-weight: 600;
 }
 
-.kidsoutdata.sleep > .studkidstname {
+.kidsoutdata.sleep>.studkidstname {
     color: gainsboro;
 }
 
@@ -305,81 +305,84 @@ button.dobig:active {
     font-weight: 600;
 }
 
-.kidsoutdata.vacation > .studkidstname {
+.kidsoutdata.vacation>.studkidstname {
     color: gainsboro;
 }
 
 .kidsoutdata:hover .studkidstname {
     background: #6A5ACD;
     color: aqua;
-    font-weight:600;
+    font-weight: 600;
     cursor: default;
 }
 
 .kidsoutdata:hover .studadultname {
     background: #6A5ACD;
     color: aqua;
-    font-weight:600;
+    font-weight: 600;
     cursor: default;
 }
 
 .mvushka {
-    cursor:pointer;
-    transition:all 0.7s ease;
+    cursor: pointer;
+    transition: all 0.7s ease;
 }
 
 .mvushka:hover {
-    font-size: 20px;;
+    font-size: 20px;
+    ;
 }
 
 .deletechat {
-    cursor:pointer;
-    transition:all 0.7s ease;
+    cursor: pointer;
+    transition: all 0.7s ease;
 }
 
 .deletechat:hover {
-    font-size: 20px;;
+    font-size: 20px;
+    ;
 }
 
 .adultprofile {
-    cursor:pointer;
-    transition:all 0.7s ease;
+    cursor: pointer;
+    transition: all 0.7s ease;
 }
 
 .adultprofile:hover {
-    font-size: 20px;;
+    font-size: 20px;
+    ;
 }
 
 .paymenthistory {
-    cursor:pointer;
-    transition:all 0.7s ease;
+    cursor: pointer;
+    transition: all 0.7s ease;
 }
 
 .paymenthistory:hover {
     font-size: 20px;
 }
 
-.homeworklist  {
-    cursor:pointer;
-    transition:all 0.7s ease;
+.homeworklist {
+    cursor: pointer;
+    transition: all 0.7s ease;
 }
 
 .homeworklist:hover {
     font-size: 20px;
 }
 
-.portfoliolist  {
-    cursor:pointer;
-    transition:all 0.7s ease;
+.portfoliolist {
+    cursor: pointer;
+    transition: all 0.7s ease;
 }
 
 .portfoliolist:hover {
     font-size: 20px;
 }
 
-.removestudent  {
-    cursor:pointer;
-    transition:all 0.7s ease;
+.removestudent {
+    cursor: pointer;
+    transition: all 0.7s ease;
 }
 
 .removestudent:hover {
@@ -395,7 +398,7 @@ button.dobig:active {
     background: #647b7b;
     font-weight: 700;
     text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    border-radius:20px;
+    border-radius: 20px;
     box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
 }
 
@@ -408,7 +411,7 @@ button.dobig:active {
     background: #647b7b;
     font-weight: 700;
     text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    border-radius:20px;
+    border-radius: 20px;
     box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
 }
 
@@ -429,7 +432,7 @@ button.dobig:active {
     border: 1px solid #7d5e5e;
 }
 
-#listofsubjects > option {
+#listofsubjects>option {
     background: rgb(70, 68, 81);
 }
 
@@ -440,27 +443,27 @@ button.dobig:active {
     border: 1px solid black;
     margin: 2px;
     background: #2b6da5;
-    margin-right:5px;
+    margin-right: 5px;
 }
 
 .badgename {
-    text-align:center;
+    text-align: center;
     border: 1px solid black;
-    background:#2f7d35;
-    margin-right:5px;
-    color:bisque;
-	border-radius: 20px;
+    background: #2f7d35;
+    margin-right: 5px;
+    color: bisque;
+    border-radius: 20px;
 }
 
 .languageobsl {
-    text-align:center;
-    padding:2px;
-    font-weight:600;
+    text-align: center;
+    padding: 2px;
+    font-weight: 600;
     text-shadow: 1px 0 1px #000,
         0 1px 1px #000,
         -1px 0 1px #000,
         0 -1px 1px #000;
-    color:gainsboro;
+    color: gainsboro;
 }
 
 .homeworklistkids {
@@ -473,32 +476,40 @@ button.dobig:active {
 }
 
 .vocabularbarcls {
-    text-align:center;
+    text-align: center;
     justify-content: space-between;
-    padding: 0 5px; 
-}    
+    padding: 0 5px;
+}
 
-.vocabularremtools, #searchtoolswords {
+.vocabularremtools,
+#searchtoolswords {
     margin: 5px 0;
     display: flex;
     justify-content: space-between;
 }
 
-#searchwordinput, #iduserwords, #deleteallwords, #unlearnallwords, #delunlearnallwords, #learncheckedwords, #selectallwords, #findwords {
+#searchwordinput,
+#iduserwords,
+#deleteallwords,
+#unlearnallwords,
+#delunlearnallwords,
+#learncheckedwords,
+#selectallwords,
+#findwords {
     flex-grow: 1;
     margin: 0 5px;
 }
 
-.vocabularremtools > button {
+.vocabularremtools>button {
     padding: 3px;
     min-width: 80px;
 }
 
-.wordsout  {
+.wordsout {
     width: 515px;
     max-height: 500px;
     overflow-x: hidden;
-    margin-top:5px;
+    margin-top: 5px;
 }
 
 .checkdel {
@@ -542,14 +553,14 @@ button.dobig:active {
     width: 535px;
     max-height: 500px;
     overflow-x: hidden;
-    margin-top:5px;
+    margin-top: 5px;
 }
 
 .skysmartexcbar {
     width: 560px;
     max-height: 500px;
     overflow-x: hidden;
-    margin-top:5px;
+    margin-top: 5px;
 }
 
 .roomtype {
@@ -561,9 +572,9 @@ button.dobig:active {
     background: #647b7b;
     font-weight: 700;
     text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    border-radius:20px;
+    border-radius: 20px;
     box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    cursor:pointer;
+    cursor: pointer;
 }
 
 .roomtype:hover {
@@ -579,22 +590,23 @@ button.dobig:active {
     background: #ac7b30;
     font-weight: 700;
     text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    border-radius:20px;
+    border-radius: 20px;
     box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    cursor:pointer;
+    cursor: pointer;
 }
 
 .itemexercises {
-    color:bisque;
-    margin:5px;
+    color: bisque;
+    margin: 5px;
 }
 
 .itemexerciseskids {
-    color:bisque;
-    margin:5px;
+    color: bisque;
+    margin: 5px;
 }
 
-.savelinktocms, .savelinktocmsttc {
+.savelinktocms,
+.savelinktocmsttc {
     cursor: pointer;
     float: right;
     font-size: 14px;
@@ -616,13 +628,13 @@ button.dobig:active {
     margin-top: 2px;
 }
 
-#toolsforslides > button {
-    padding:3px;
-    min-width:100px;
+#toolsforslides>button {
+    padding: 3px;
+    min-width: 100px;
 }
 
-#toolsforroom > button {
-    padding:3px;
-    min-width:100px;
-    height:27px;
+#toolsforroom>button {
+    padding: 3px;
+    min-width: 100px;
+    height: 27px;
 }

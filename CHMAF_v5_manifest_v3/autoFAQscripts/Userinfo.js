@@ -98,9 +98,9 @@ var win_Timetable = // описание элементов окна предст
 </span>
 </div>`;
 
-const wintServices  = createWindow('AF_Service', 'winTopService', 'winLeftService', win_serviceinfo);
+const wintServices = createWindow('AF_Service', 'winTopService', 'winLeftService', win_serviceinfo);
 
-const wintTimetable  = createWindow('AF_Timetable', 'winTopTimetable', 'winLeftTimetable', win_Timetable);
+const wintTimetable = createWindow('AF_Timetable', 'winTopTimetable', 'winLeftTimetable', win_Timetable);
 
 document.getElementById('servicehead').ondblclick = function (a) { // скрытие окна вензель user info по двойному клику
     if (checkelementtype(a)) {
@@ -376,73 +376,73 @@ document.getElementById('getlessonfuture').onclick = function () { // показ
 
     document.getElementById('timetabledata').innerHTML = "";
     let idShka = document.getElementById('idstudent').value.trim();
-	if (idShka.length > 0) {
-		    let futurelessondata = "";
-    chrome.runtime.sendMessage({ action: "checkLessonHistoryFuture", uchIdNew: idShka }, function (responseFuture) {
-        if (responseFuture != null) {
-            if (responseFuture.data == "") {
-                document.getElementById('timetabledata').innerHTML = "Уроки не запланированы";
-            } else {
-                for (let i = 0; i < responseFuture.data.length; i++) {
-                    let d = new Date(responseFuture.data[i].startedAt)
-                    let minutka;
-                    let denek;
-                    let mesacok;
-                    let chasok;
-                    if (d.getHours() < 10) {
-                        chasok = "0" + (d.getUTCHours() + 3);
-                    } else {
-                        chasok = (d.getUTCHours() + 3);
-                    }
-                    if (d.getMinutes() < 10) {
-                        minutka = "0" + d.getMinutes();
-                    } else {
-                        minutka = d.getMinutes();
-                    }
-                    if (d.getDate() < 10) {
-                        denek = "0" + d.getDate();
-                    } else {
-                        denek = d.getDate();
-                    }
-                    if (d.getMonth() + 1 < 10) {
-                        mesacok = "0" + (d.getMonth() + 1);
-                    } else {
-                        mesacok = d.getMonth() + 1;
-                    }
+    if (idShka.length > 0) {
+        let futurelessondata = "";
+        chrome.runtime.sendMessage({ action: "checkLessonHistoryFuture", uchIdNew: idShka }, function (responseFuture) {
+            if (responseFuture != null) {
+                if (responseFuture.data == "") {
+                    document.getElementById('timetabledata').innerHTML = "Уроки не запланированы";
+                } else {
+                    for (let i = 0; i < responseFuture.data.length; i++) {
+                        let d = new Date(responseFuture.data[i].startedAt)
+                        let minutka;
+                        let denek;
+                        let mesacok;
+                        let chasok;
+                        if (d.getHours() < 10) {
+                            chasok = "0" + (d.getUTCHours() + 3);
+                        } else {
+                            chasok = (d.getUTCHours() + 3);
+                        }
+                        if (d.getMinutes() < 10) {
+                            minutka = "0" + d.getMinutes();
+                        } else {
+                            minutka = d.getMinutes();
+                        }
+                        if (d.getDate() < 10) {
+                            denek = "0" + d.getDate();
+                        } else {
+                            denek = d.getDate();
+                        }
+                        if (d.getMonth() + 1 < 10) {
+                            mesacok = "0" + (d.getMonth() + 1);
+                        } else {
+                            mesacok = d.getMonth() + 1;
+                        }
 
-                    if (responseFuture.data[i].lessonType == "regular") {
-                        responseFuture.data[i].lessonType = "Регулярный";
-                    } else if (responseFuture.data[i].lessonType == "single") {
-                        responseFuture.data[i].lessonType = "Одиночный";
-                    } else if (responseFuture.data[i].lessonType == "trial") {
-                        responseFuture.data[i].lessonType = "Пробный";
-                    }
+                        if (responseFuture.data[i].lessonType == "regular") {
+                            responseFuture.data[i].lessonType = "Регулярный";
+                        } else if (responseFuture.data[i].lessonType == "single") {
+                            responseFuture.data[i].lessonType = "Одиночный";
+                        } else if (responseFuture.data[i].lessonType == "trial") {
+                            responseFuture.data[i].lessonType = "Пробный";
+                        }
 
-                    for (let j = 0; j < servicecontainer.data.length; j++) {
-                        if (servicecontainer.data[j].serviceTypeKey == responseFuture.data[i].educationService.serviceTypeKey)
-                            responseFuture.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
-                    }
+                        for (let j = 0; j < servicecontainer.data.length; j++) {
+                            if (servicecontainer.data[j].serviceTypeKey == responseFuture.data[i].educationService.serviceTypeKey)
+                                responseFuture.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
+                        }
 
-                    if (responseFuture.data[i].teacher != null) {
-                        futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
-                            + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + responseFuture.data[i].lessonType + '<br>'
-                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + responseFuture.data[i].educationService.id + " " + responseFuture.data[i].educationService.serviceTypeKey + '<br>'
-                            + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + responseFuture.data[i].teacher.general.id + " " + responseFuture.data[i].teacher.general.name + " " + responseFuture.data[i].teacher.general.surname + '<br>'
-                            + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
-                    } else {
-                        futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
-                            + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + responseFuture.data[i].lessonType + '<br>'
-                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + responseFuture.data[i].educationService.id + " " + responseFuture.data[i].educationService.serviceTypeKey + '<br>'
-                            + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
-                    }
+                        if (responseFuture.data[i].teacher != null) {
+                            futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
+                                + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + responseFuture.data[i].lessonType + '<br>'
+                                + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + responseFuture.data[i].educationService.id + " " + responseFuture.data[i].educationService.serviceTypeKey + '<br>'
+                                + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + responseFuture.data[i].teacher.general.id + " " + responseFuture.data[i].teacher.general.name + " " + responseFuture.data[i].teacher.general.surname + '<br>'
+                                + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
+                        } else {
+                            futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
+                                + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + responseFuture.data[i].lessonType + '<br>'
+                                + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + responseFuture.data[i].educationService.id + " " + responseFuture.data[i].educationService.serviceTypeKey + '<br>'
+                                + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
+                        }
 
+                    }
+                    document.getElementById('timetabledata').innerHTML = futurelessondata;
+                    futurelessondata = "";
                 }
-                document.getElementById('timetabledata').innerHTML = futurelessondata;
-                futurelessondata = "";
             }
-        }
-    })
-	} else alert('Запрос не выполнен. Введите ID в поле!')
+        })
+    } else alert('Запрос не выполнен. Введите ID в поле!')
 }
 
 document.getElementById('changelocalelng').onclick = function () { // меняет язык обслуживания выбранного пользователя в вензеле на русский

@@ -35,7 +35,7 @@ var win_addMenu = `<div style="display: flex;">
 					</span>
 				   </div>`;
 
-const wintAddMenu  = createTSMWindow('AFMS_addMenu', 'winTopAddMenu', 'winLeftAddMenu', win_addMenu);
+const wintAddMenu = createTSMWindow('AFMS_addMenu', 'winTopAddMenu', 'winLeftAddMenu', win_addMenu);
 wintAddMenu.className = 'wintInitialize';
 
 document.querySelector('body').addEventListener('dblclick', (event) => {
@@ -60,10 +60,10 @@ document.querySelector('body').addEventListener('click', (event) => {
 });
 
 document.getElementById('hidemainmenu').onclick = function () {
-        wintAddMenu.style.display = 'none';
+    wintAddMenu.style.display = 'none';
 }
 
-document.onkeydown = function(event) {
+document.onkeydown = function (event) {
     if ((event.altKey && event.code == 'Numpad0') || (event.altKey && event.code == 'Digit0')) {
         if (wintAddMenu.style.display == 'none') {
             wintAddMenu.style.display = '';
@@ -128,7 +128,7 @@ async function getUserId() { // получаем Id пользователя
         }
     } catch (error) {
         console.error(error);
-//        return '';
+        //        return '';
     }
 }
 

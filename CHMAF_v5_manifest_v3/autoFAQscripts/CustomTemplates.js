@@ -176,7 +176,7 @@ function customTemplates(language = '') { //собственные шаблон�
         newDiv.append(newButton2)
         cstmTmp.insertBefore(newDiv, cstmTmp.lastElementChild)
     }
-	
+
     countOfTemplates = localStorage.getItem('cntTmplts' + language)
 
     var listenercstmTmp = function (e, a) {

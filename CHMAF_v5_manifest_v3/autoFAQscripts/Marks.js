@@ -24,7 +24,7 @@ var win_Marks =  // описание элементов окна оценок о
     </span>
 </div>`;
 
-const wintMarks= createWindow('AF_Marks', 'winTopMarks', 'winLeftMarks', win_Marks);
+const wintMarks = createWindow('AF_Marks', 'winTopMarks', 'winLeftMarks', win_Marks);
 hideWindowOnDoubleClick('AF_Marks');
 hideWindowOnClick('AF_Marks', 'hideMeMarks');
 

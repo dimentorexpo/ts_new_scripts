@@ -34,7 +34,7 @@ var win_StatisticaAF =  // описание формы чтобы не дава�
         </span>
 </div>`;
 
-const wintStataAF  = createWindow('AF_StataAF', 'winTopStataAF', 'winLeftStataAF', win_StatisticaAF);
+const wintStataAF = createWindow('AF_StataAF', 'winTopStataAF', 'winLeftStataAF', win_StatisticaAF);
 hideWindowOnDoubleClick('AF_StataAF');
 hideWindowOnClick('AF_StataAF', 'hidestatisticaaf');
 
@@ -536,7 +536,7 @@ async function checkCSAT() { // функция проверки CSAT и чато
                     str.innerHTML = firstpart + 'Оценка 1 🤬: ' + count[1] + '<br>' + 'Оценка 2 🤢: ' + count[2] + '<br>' + flagbad + '<br>' + 'Оценка 3 😐: ' + count[3] + '<br>' + flagmid + '<br>' + 'Оценка 4 🥴: ' + count[4] + '<br>' + 'Оценка 5 😊: ' + count[5] + '<br>' + secondpart
                 else if (flagvbad != "" && flagbad != "" && flagmid != "")
                     str.innerHTML = firstpart + 'Оценка 1 🤬: ' + count[1] + '<br>' + flagvbad + '<br>' + 'Оценка 2 🤢: ' + count[2] + '<br>' + flagbad + '<br>' + 'Оценка 3 😐: ' + count[3] + '<br>' + flagmid + '<br>' + 'Оценка 4 🥴: ' + count[4] + '<br>' + 'Оценка 5 😊: ' + count[5] + '<br>' + secondpart
-               break
+                break
             }
         }
     } catch (e) {

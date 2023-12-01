@@ -3,7 +3,7 @@ let dropdown0;
 let dropdown1;
 
 var win_Knowledge =  // описание элементов окна ссылок
-    `<div style="display: flex; width: 550px;">
+	`<div style="display: flex; width: 550px;">
         <span style="width: 550px">
 			<span style="cursor: -webkit-grab;">
 				<div style="margin: 5px; width: 550;">
@@ -32,9 +32,9 @@ var win_Knowledge =  // описание элементов окна ссыло�
 	</span>
 </div>`;
 
-const wintKnowledge   = createWindow('AF_Knowledge', 'winTopKnwoledge', 'winLeftKnowledge', win_Knowledge);
+const wintKnowledge = createWindow('AF_Knowledge', 'winTopKnwoledge', 'winLeftKnowledge', win_Knowledge);
 
-document.getElementById('IndicatorLoadData').onclick = async function() {
+document.getElementById('IndicatorLoadData').onclick = async function () {
 	document.getElementById('ProblemsName').innerHTML = ''
 	document.getElementById('ProblemsSolution').style.display = 'none'
 	document.getElementById('IndicatorLoadData').textContent = "⏳"
@@ -46,108 +46,108 @@ document.getElementById('IndicatorLoadData').onclick = async function() {
 
 async function getKnowData() { // получаем из файла список версий моб. приложений
 	let knowData;
-	
+
 	if (dropdown0) {
-    while(dropdown0.options.length > 1) {
-        dropdown0.remove(1);
-    }
-	
-	while(dropdown1.options.length > 1) {
-        dropdown1.remove(1);
-    }
-}
+		while (dropdown0.options.length > 1) {
+			dropdown0.remove(1);
+		}
+
+		while (dropdown1.options.length > 1) {
+			dropdown1.remove(1);
+		}
+	}
 
 	knowData = 'https://script.google.com/macros/s/AKfycbySlhuMPHSKHiI6Rhoyg797id3lbPg_zdeG_iBoEvYxwqlxkD4QizWm8OJDEucma7tGyg/exec'
 	await fetch(knowData).then(r => r.json()).then(r => versionsdata = r)
-	if (versionsdata && versionsdata.result.length>0) {
+	if (versionsdata && versionsdata.result.length > 0) {
 		knowDataContainer = versionsdata.result;
 		document.getElementById('IndicatorLoadData').textContent = "🟢"
 	}
-	
-// Наполняем первый dropdown
-		const uniqueValues0 = [...new Set(knowDataContainer.map(item => item[0]))];
-		dropdown0 = document.getElementById("lessonTypeList");
-		uniqueValues0.forEach(value => {
+
+	// Наполняем первый dropdown
+	const uniqueValues0 = [...new Set(knowDataContainer.map(item => item[0]))];
+	dropdown0 = document.getElementById("lessonTypeList");
+	uniqueValues0.forEach(value => {
+		const option = document.createElement("option");
+		option.value = value;
+		option.textContent = value;
+		dropdown0.appendChild(option);
+	});
+
+	dropdown1 = document.getElementById("CategoryNameList");
+
+	// Функция обновления второго dropdown на основе выбора в первом
+	dropdown0.addEventListener("change", function () {
+		const selectedValue = this.value;
+
+		document.getElementById('textToSearchSolution').value = ''
+		document.getElementById('ProblemsNameFromSearch').textContent = ''
+		document.getElementById('ProblemsSolution').style.display = 'none'
+
+		// Проверяем, существует ли опция "Категория"
+		let catOptionExists = false;
+		for (let i = 0; i < dropdown1.options.length; i++) {
+			if (dropdown1.options[i].value === "CatType") {
+				catOptionExists = true;
+				break;
+			}
+		}
+
+		// Если опции "Категория" нет, то добавляем её
+		if (!catOptionExists) {
+			const catOption = document.createElement("option");
+			catOption.style = "background-color:DeepSkyBlue; text-align: center; color: white; font-weight: 700;";
+			catOption.value = "CatType";
+			catOption.textContent = "Категория";
+			dropdown1.appendChild(catOption);
+		}
+
+		// Очищаем второй dropdown
+		while (dropdown1.options.length > 1) {
+			dropdown1.remove(1);
+		}
+
+		// Получаем значения для второго dropdown на основе выбранного значения в первом
+		const secondDropdownValues = [...new Set(knowDataContainer
+			.filter(item => item[0] === selectedValue)
+			.map(item => item[1]))];
+
+		// Наполняем второй dropdown
+		secondDropdownValues.forEach(value => {
 			const option = document.createElement("option");
 			option.value = value;
 			option.textContent = value;
-			dropdown0.appendChild(option);
+			dropdown1.appendChild(option);
 		});
+	});
 
-		dropdown1 = document.getElementById("CategoryNameList");
+	const problemsDiv = document.getElementById("ProblemsName");
 
-		// Функция обновления второго dropdown на основе выбора в первом
-		dropdown0.addEventListener("change", function() {
-			const selectedValue = this.value;
-			
-			document.getElementById('textToSearchSolution').value = ''
-			document.getElementById('ProblemsNameFromSearch').textContent = ''
-			document.getElementById('ProblemsSolution').style.display = 'none'
-			
-			    // Проверяем, существует ли опция "Категория"
-				let catOptionExists = false;
-				for(let i = 0; i < dropdown1.options.length; i++) {
-					if(dropdown1.options[i].value === "CatType") {
-						catOptionExists = true;
-						break;
-					}
-				}
+	dropdown1.addEventListener("change", function () {
+		const selectedType = dropdown0.value;
+		const selectedCategory = this.value;
 
-				// Если опции "Категория" нет, то добавляем её
-				if(!catOptionExists) {
-					const catOption = document.createElement("option");
-					catOption.style = "background-color:DeepSkyBlue; text-align: center; color: white; font-weight: 700;";
-					catOption.value = "CatType";
-					catOption.textContent = "Категория";
-					dropdown1.appendChild(catOption);
-				}
+		// Очистить div перед добавлением новых данных
+		problemsDiv.innerHTML = '';
 
-			// Очищаем второй dropdown
-			while(dropdown1.options.length > 1) {
-				dropdown1.remove(1);
-			}
+		// Найти соответствующие проблемы для выбранной категории
+		const problems = knowDataContainer
+			.filter(item => item[0] === selectedType && item[1] === selectedCategory)
+			.map(item => item[2]);
 
-			// Получаем значения для второго dropdown на основе выбранного значения в первом
-			const secondDropdownValues = [...new Set(knowDataContainer
-				.filter(item => item[0] === selectedValue)
-				.map(item => item[1]))];
+		// Добавить каждую проблему в div
 
-			// Наполняем второй dropdown
-			secondDropdownValues.forEach(value => {
-				const option = document.createElement("option");
-				option.value = value;
-				option.textContent = value;
-				dropdown1.appendChild(option);
-			});
-		});
-		
-		const problemsDiv = document.getElementById("ProblemsName");
-
-	dropdown1.addEventListener("change", function() {
-			const selectedType = dropdown0.value;
-			const selectedCategory = this.value;
-
-			// Очистить div перед добавлением новых данных
-			problemsDiv.innerHTML = '';
-
-			// Найти соответствующие проблемы для выбранной категории
-			const problems = knowDataContainer
-				.filter(item => item[0] === selectedType && item[1] === selectedCategory)
-				.map(item => item[2]);
-
-			// Добавить каждую проблему в div
-			
-			problems.forEach((problem, index) => {
+		problems.forEach((problem, index) => {
 			const problemElem = document.createElement("div");
 			problemElem.style = "background: lightsteelblue;   width: 96%;    border-radius: 10px;    text-align: center;    font-weight: 800; border-bottom: 1px solid black;";
-			problemElem.setAttribute('name','exploreSolution');
+			problemElem.setAttribute('name', 'exploreSolution');
 			problemElem.textContent = problem;
-			
+
 			// Добавляем обработчик события клика
-			problemElem.addEventListener('click', function() {
+			problemElem.addEventListener('click', function () {
 				// Получаем все элементы с именем exploreSolution
 				const allProblemElems = document.querySelectorAll('[name="exploreSolution"]');
-				
+
 				// Удаляем класс active у всех элементов
 				allProblemElems.forEach(elem => {
 					elem.classList.remove("active");
@@ -155,7 +155,7 @@ async function getKnowData() { // получаем из файла список 
 
 				// Добавляем класс active к текущему элементу
 				this.classList.add("active");
-				
+
 				const solutionElem = document.getElementById("ProblemsSolution");
 				solutionElem.style.display = ""; // показываем элемент
 				// Ищем соответствующее решение
@@ -167,61 +167,61 @@ async function getKnowData() { // получаем из файла список 
 			problemsDiv.appendChild(problemElem);
 		});
 	});
-				
-		    // Получаем элементы DOM
-		const searchInput = document.getElementById("textToSearchSolution");
-		const resultsDiv = document.getElementById("ProblemsNameFromSearch");
 
-		// Обработчик события input
-		searchInput.addEventListener('input', function() {
-			
-			document.getElementById('ProblemsName').textContent = ''
-			document.getElementById('lessonTypeList').children[0].selected = true
-			document.getElementById('CategoryNameList').children[0].selected = true
+	// Получаем элементы DOM
+	const searchInput = document.getElementById("textToSearchSolution");
+	const resultsDiv = document.getElementById("ProblemsNameFromSearch");
 
-			// Получаем введенный текст
-			const query = this.value.toLowerCase();
+	// Обработчик события input
+	searchInput.addEventListener('input', function () {
 
-			// Очищаем результаты
-			resultsDiv.innerHTML = '';
+		document.getElementById('ProblemsName').textContent = ''
+		document.getElementById('lessonTypeList').children[0].selected = true
+		document.getElementById('CategoryNameList').children[0].selected = true
 
-			// Если поле ввода пусто, просто завершаем выполнение функции
-			if (query.length === 0) return;
+		// Получаем введенный текст
+		const query = this.value.toLowerCase();
 
-			// Фильтруем массив
-			const filteredResults = knowDataContainer.filter(arrayItem => {
-				return arrayItem[2].toLowerCase().includes(query);
-			});
+		// Очищаем результаты
+		resultsDiv.innerHTML = '';
 
-			// Выводим результаты
-			for (let item of filteredResults) {
-				const index = knowDataContainer.indexOf(item); // получаем индекс элемента в массиве knowDataContainer
-				const div = document.createElement('div');
-				div.style = "background: lightsteelblue; width: 96%; border-radius: 10px; text-align: center; font-weight: 800; border-bottom: 1px solid black;"
-				div.setAttribute('name', 'foundToSolution');
-				div.setAttribute('data-index', index); // сохраняем индекс в атрибуте data-index
-				div.textContent = item[2];
-				resultsDiv.appendChild(div);
+		// Если поле ввода пусто, просто завершаем выполнение функции
+		if (query.length === 0) return;
 
-				div.addEventListener('click', function() {						
-					// Получаем все элементы с именем foundToSolution
-					const allFoundElems = document.querySelectorAll('[name="foundToSolution"]');
-					
-					// Удаляем класс active у всех элементов
-					allFoundElems.forEach(elem => {
-						elem.classList.remove("active");
-					});
-
-					// Добавляем класс active к текущему элементу
-					this.classList.add("active");
-					
-					const solutionElem = document.getElementById("ProblemsSolution");
-					solutionElem.style.display = ""; // показываем элемент
-					const clickedIndex = +this.getAttribute('data-index'); // извлекаем индекс из атрибута data-index
-					solutionElem.innerHTML = knowDataContainer[clickedIndex][3]; // устанавливаем текст решения
-				});
-			}
+		// Фильтруем массив
+		const filteredResults = knowDataContainer.filter(arrayItem => {
+			return arrayItem[2].toLowerCase().includes(query);
 		});
+
+		// Выводим результаты
+		for (let item of filteredResults) {
+			const index = knowDataContainer.indexOf(item); // получаем индекс элемента в массиве knowDataContainer
+			const div = document.createElement('div');
+			div.style = "background: lightsteelblue; width: 96%; border-radius: 10px; text-align: center; font-weight: 800; border-bottom: 1px solid black;"
+			div.setAttribute('name', 'foundToSolution');
+			div.setAttribute('data-index', index); // сохраняем индекс в атрибуте data-index
+			div.textContent = item[2];
+			resultsDiv.appendChild(div);
+
+			div.addEventListener('click', function () {
+				// Получаем все элементы с именем foundToSolution
+				const allFoundElems = document.querySelectorAll('[name="foundToSolution"]');
+
+				// Удаляем класс active у всех элементов
+				allFoundElems.forEach(elem => {
+					elem.classList.remove("active");
+				});
+
+				// Добавляем класс active к текущему элементу
+				this.classList.add("active");
+
+				const solutionElem = document.getElementById("ProblemsSolution");
+				solutionElem.style.display = ""; // показываем элемент
+				const clickedIndex = +this.getAttribute('data-index'); // извлекаем индекс из атрибута data-index
+				solutionElem.innerHTML = knowDataContainer[clickedIndex][3]; // устанавливаем текст решения
+			});
+		}
+	});
 }
 
 function getknowledgeCenterButtonPress() {
@@ -238,7 +238,7 @@ function getknowledgeCenterButtonPress() {
 	}
 }
 
-document.getElementById('hideMeKnowledge').onclick = function(){
+document.getElementById('hideMeKnowledge').onclick = function () {
 	document.getElementById('AF_Knowledge').style.display = "none"
 	document.getElementById('knowledgeCenter').classList.remove('activeScriptBtn');
 	document.getElementById('ProblemsName').innerHTML = ''
