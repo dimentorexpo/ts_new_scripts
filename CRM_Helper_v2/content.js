@@ -90,6 +90,16 @@ async function getText() { // обьявление функции получаю
 }
 
 function logginerfortestsCRM(polzovatel) {
+    const fetchURL = 'https://id.skyeng.ru/admin/auth/login-links';
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${polzovatel}&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=`,
+        mode: 'cors',
+        credentials: 'include',
+    };
     chrome.runtime.sendMessage({ action: 'getLoginer', userid: polzovatel }, function (response) {
         if (response.success) {
             // Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
@@ -105,6 +115,19 @@ function logginerfortestsCRM(polzovatel) {
             alert('Не удалось получить логиннер: ' + response.error);
         }
     });
+}
+
+function extractLoginLink(text) {
+    // Используем глобальный поиск для нахождения всех URL
+    const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g;
+    let matches = text.match(regex);
+    // Проверяем наличие совпадений
+    if (matches && matches.length) {
+        // Получаем последний URL и удаляем кавычки в конце, если они есть
+        let lastMatch = matches[matches.length - 1];
+        return lastMatch.replace(/["']+$/, ''); // Удаляем кавычки в конце строки
+    }
+    return null; // Возвращаем null, если совпадений нет
 }
 
 function initialize() { //функция инициализации кнопки меню в верхней области CRM
