@@ -266,7 +266,7 @@ function gettaskButButtonPress() { // функция открытия окна �
 
             document.getElementById('taskuserid').value = SearchinAFnewUI("nextClass-studentId")
             document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
-            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nПроверил связь с П, все ок, свяжитесь с У!"
+            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nПроверил связь с П, все ок, свяжитесь с У! КРИТ"
         }
 
         document.getElementById('critstudenttoteacher').onclick = function () {
@@ -280,7 +280,7 @@ function gettaskButButtonPress() { // функция открытия окна �
 
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
             document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
-            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nПроверил связь с У, все ок, свяжитесь с П!"
+            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nПроверил связь с У, все ок, свяжитесь с П! КРИТ"
         }
 
         document.getElementById('critteacherno').onclick = function () {
@@ -292,7 +292,7 @@ function gettaskButButtonPress() { // функция открытия окна �
             NoteNoticeSet();
             document.getElementById('taskuserid').value = SearchinAFnewUI("nextClass-studentId")
             document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
-            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nНеполадка со стороны П. в чате н.о. Пожалуйста, свяжитесь с П"
+            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nНеполадка со стороны П. в чате н.о. Пожалуйста, свяжитесь с П КРИТ"
         }
 
         document.getElementById('critstudentno').onclick = function () {
@@ -304,7 +304,7 @@ function gettaskButButtonPress() { // функция открытия окна �
             NoteNoticeSet();
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
             document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
-            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nНеполадка со стороны У. в чате н.о. Пожалуйста, свяжитесь с У"
+            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nНеполадка со стороны У. в чате н.о. Пожалуйста, свяжитесь с У КРИТ"
         }
 
         document.getElementById('highsecondline').onclick = function () {
