@@ -12,11 +12,11 @@ async function getStorageData(keys) {
 }
 
 let tableres;
-var soundsconteinerCRM;
-var soundintervalsetCRM = null
-var appverresult;
+let soundsconteinerCRM;
+let soundintervalsetCRM = null
+let appverresult;
 
-var win_Menu = // описание кнопок меню
+const win_Menu = // описание кнопок меню
     `
     <div id="jirafinder" class="menubtnsCRM">🔎Jira search</div>
     <div id="SrvDskCRMbtn" class="menubtnsCRM">🛠 Service Desk</div>
@@ -32,14 +32,85 @@ var win_Menu = // описание кнопок меню
 `;
 
 //Объявление кнопки в верхней панели CRM
-var upmenubtn = document.createElement('span')
+let upmenubtn = document.createElement('span')
 upmenubtn.innerText = "Меню"
 upmenubtn.id = 'MenubarCRM'
 upmenubtn.style = "cursor:pointer;font-weight:500; text-shadow: 1px 0 1px #000, 0 1px 1px #000, -1px 0 1px #000, 0 -1px 1px #000; border: 1px solid black; padding: 8px; background: #5083ff; border-radius:18px"
 //конец обьявления кнопки
 
+function createWindow(id, topKey, leftKey, content) { // Функция для создания окна и настройки стилей
+    const windowElement = document.createElement('div');
+    document.body.append(windowElement);
+
+    const storedTop = localStorage.getItem(topKey) || '120';
+    const storedLeft = localStorage.getItem(leftKey) || '295';
+
+    windowElement.classList.add('showedwindows');
+    windowElement.style = `top: ${storedTop}px; left: ${storedLeft}px;`;
+    windowElement.style.display = 'none';
+    windowElement.setAttribute('id', id);
+    windowElement.innerHTML = content;
+
+    windowElement.onmousedown = function (event) {
+        if (checkelementtype(event)) {
+            let startX = event.clientX;
+            let startY = event.clientY;
+            let elemLeft = windowElement.offsetLeft;
+            let elemTop = windowElement.offsetTop;
+
+            function onMouseMove(event) {
+                if (!(event.buttons & 1)) {
+                    onMouseUp();
+                    return;
+                }
+                let deltaX = event.clientX - startX;
+                let deltaY = event.clientY - startY;
+
+                windowElement.style.left = `${elemLeft + deltaX}px`;
+                windowElement.style.top = `${elemTop + deltaY}px`;
+
+                localStorage.setItem(topKey, String(elemTop + deltaY));
+                localStorage.setItem(leftKey, String(elemLeft + deltaX));
+            }
+
+            document.addEventListener('mousemove', onMouseMove);
+
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+
+            document.addEventListener('mouseup', onMouseUp);
+        }
+    };
+
+    return windowElement;
+}
+
+function setDisplayStyle(element, value) { // функция изменения отображения
+    element.style.display = value;
+}
+
+function hideWindowOnDoubleClick(id) { // Функция для скрытия окна по двойному клику
+    const windowElement = document.getElementById(id);
+    windowElement.ondblclick = function (a) {
+        if (checkelementtype(a)) {
+            setDisplayStyle(windowElement, 'none');
+        }
+    };
+}
+
+function hideWindowOnClick(windowId, buttonId) { // Функция для скрытия окна по клику на кнопку
+    const windowElement = document.getElementById(windowId);
+    const buttonElement = document.getElementById(buttonId);
+
+    buttonElement.onclick = function () {
+        setDisplayStyle(windowElement, 'none');
+    };
+}
+
 function addOptionCRM(oListboxCRM, text, value) {  //функция добавления опции в список
-    var oOptionCRM = document.createElement("option");
+    let oOptionCRM = document.createElement("option");
     oOptionCRM.appendChild(document.createTextNode(text));
     oOptionCRM.setAttribute("value", value);
     oListboxCRM.appendChild(oOptionCRM);
@@ -54,10 +125,21 @@ function checkelementtype(a) { // проверка на какой элемен�
     return false;
 }
 
-function maxLengthCheck(object) // функция ограничения кол-ва символов в полях
-{
+function maxLengthCheck(object) { // функция ограничения кол-ва символов в полях
     if (object.value.length > object.maxLength)
         object.value = object.value.slice(0, object.maxLength)
+}
+
+function checkMinMaxValue(input) {     // функция првоерки находится ли значение вводиміе значения в допустимом диапазоне
+    const minValue = parseInt(input.min, 10);
+    const maxValue = parseInt(input.max, 10);
+    let currentValue = parseInt(input.value, 10);
+
+    if (currentValue < minValue) {
+        input.value = minValue;
+    } else if (currentValue > maxValue) {
+        input.value = maxValue;
+    }
 }
 
 function onlyNumbers(object) { // функция для разрешения ввода только цифр
@@ -77,7 +159,7 @@ async function getText() { // обьявление функции получаю
 
         if (xhr.status == 200) {
             try {
-                var r = JSON.parse(xhr.responseText),
+                let r = JSON.parse(xhr.responseText),
                     appverresult = r["result"];
 
                 tableres = appverresult;
@@ -90,30 +172,37 @@ async function getText() { // обьявление функции получаю
 }
 
 function logginerfortestsCRM(polzovatel) {
-    const fetchURL = 'https://id.skyeng.ru/admin/auth/login-links';
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${polzovatel}&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=`,
-        mode: 'cors',
-        credentials: 'include',
-    };
-    chrome.runtime.sendMessage({ action: 'getLoginer', userid: polzovatel }, function (response) {
-        if (response.success) {
-            // Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
-            navigator.clipboard.writeText(response.loginLink).then(() => {
-                // Уведомляем пользователя об успешном копировании
-                console.log('Логинер создан для пользователя: ' + polzovatel);
-            }).catch(err => {
-                // Обрабатываем ошибки, связанные с буфером обмена
-                console.error('Не удалось скопировать текст: ', err);
-            });
-        } else {
-            // Обрабатываем ошибки, связанные с получением логиннера
-            alert('Не удалось получить логиннер: ' + response.error);
-        }
+    return new Promise((resolve, reject) => {
+        const fetchURL = 'https://id.skyeng.ru/admin/auth/login-links';
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${polzovatel}&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=`,
+            mode: 'cors',
+            credentials: 'include',
+        };
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+            if (response.success) {
+                const link = extractLoginLink(response.fetchansver);
+                if (link) {
+                    navigator.clipboard.writeText(link).then(() => {
+                        console.log('Логинер создан для пользователя: ' + polzovatel);
+                        resolve(true);
+                    }).catch(err => {
+                        console.error('Не удалось скопировать текст: ', err);
+                        reject(err);
+                    });
+                } else {
+                    console.log('Ссылка логинера не найдена в ответе');
+                    reject(new Error('Ссылка логинера не найдена'));
+                }
+            } else {
+                alert('Не удалось получить логиннер: ' + response.error);
+                reject(new Error(response.error));
+            }
+        });
     });
 }
 
@@ -156,7 +245,7 @@ function initialize() { //функция инициализации кнопки
     catch (e) { console.error(e, e.stack); }
 }
 
-var init = setInterval(initialize, 3000) //заносим в переменную чтобы ее потом в функции можно было удалить интервал
+let init = setInterval(initialize, 3000) //заносим в переменную чтобы ее потом в функции можно было удалить интервал
 
 getText() //вызов функции получающей текст из гугл таблицы страницы Версии приложений
 
@@ -169,35 +258,53 @@ document.body.append(menubarcrm)
 
 if (document.querySelector('crm-container') != null) {
     document.querySelector('crm-container').addEventListener('click', function (event) {
-        var e = document.getElementById('idmymenucrm');
+        let e = document.getElementById('idmymenucrm');
         if (!e.contains(event.target)) e.style.display = 'none';
     });
 }
 
 document.getElementById('testuchenik').onclick = function () {
-    document.getElementById('testuchenik').classList.add('active')
-    logginerfortestsCRM(localStorage.getItem('test_studCRM'))
-    setTimeout(function () { document.getElementById('testuchenik').classList.remove('active') }, 1000)
-}
+    document.getElementById('testuchenik').classList.add('active');
+
+    logginerfortestsCRM(localStorage.getItem('test_studCRM')).then(() => {
+        // Успешное завершение асинхронной операции
+        document.getElementById('testuchenik').classList.remove('active');
+    })
+        .catch(() => {
+            // Ошибка в асинхронной операции
+            document.getElementById('testuchenik').classList.remove('active');
+            document.getElementById('testuchenik').classList.add('falseerror');
+            setTimeout(function () { document.getElementById('testuchenik').classList.remove('falseerror') }, 1000);
+        });
+};
+
 
 document.getElementById('testprepod').onclick = function () {
-    document.getElementById('testprepod').classList.add('active')
-    logginerfortestsCRM(localStorage.getItem('test_teachCRM'))
-    setTimeout(function () { document.getElementById('testprepod').classList.remove('active') }, 1000)
-}
+    document.getElementById('testprepod').classList.add('active');
 
+    logginerfortestsCRM(localStorage.getItem('test_teachCRM')).then(() => {
+        // Успешное завершение асинхронной операции
+        document.getElementById('testprepod').classList.remove('active');
+    })
+        .catch(() => {
+            // Ошибка в асинхронной операции
+            document.getElementById('testprepod').classList.remove('active');
+            document.getElementById('testprepod').classList.add('falseerror');
+            setTimeout(function () { document.getElementById('testprepod').classList.remove('falseerror') }, 1000);
+        });
+};
 
 
 function screenshotsCRM() { //просмотр и трансформация скриншотов в активном чате
     if (document.getElementsByTagName('crm-row').length != 0 || document.getElementsByTagName('crm-row') != null || document.getElementsByTagName('crm-row').length != undefined) {
         for (let i = 0; i < document.getElementsByTagName('crm-row').length; i++) {
             if (document.getElementsByTagName('crm-row')[i].children.length != 0 && document.getElementsByTagName('crm-row')[i].children[0].innerText == 'Комментарий') {
-                var divimg = document.getElementsByTagName('crm-row')[i]
+                let divimg = document.getElementsByTagName('crm-row')[i]
                 for (let j = 0; j < divimg.querySelectorAll('a').length; j++) {
                     if (divimg.querySelectorAll('a')[j].host == 'vimbox-resource-chat-prod.imgix.net' || divimg.querySelectorAll('a')[j].host == 'vimbox-resource-storage-prod-ru-1.storage.yandexcloud.net' || divimg.querySelectorAll('a')[j].host == 'math-prod.storage.yandexcloud.net' || divimg.querySelectorAll('a')[j].host == 'i.imgur.com' || divimg.querySelectorAll('a')[j].host == 'joxi.ru' || divimg.querySelectorAll('a')[j].host == 'skr.sh' && divimg.querySelectorAll('a')[j].hasAttribute('data-lightbox') == false) {
-                        var img = document.createElement('img')
+                        let img = document.createElement('img')
                         img.style.width = '100px'
-                        var alink = document.createElement('a')
+                        let alink = document.createElement('a')
                         alink.setAttribute('data-lightbox', 'imgs');
                         alink.append(img)
                         img.src = divimg.querySelectorAll('a')[j].href
@@ -227,7 +334,7 @@ function checkforsoundplay() {
                 } else {
                     if (!soundintervalsetCRM) {
                         audioCRM.oncanplaythrough = (event) => {
-                            var playedPromise = audioCRM.play();
+                            let playedPromise = audioCRM.play();
                             if (playedPromise) {
                                 playedPromise.catch((e) => {
                                     console.log(e)

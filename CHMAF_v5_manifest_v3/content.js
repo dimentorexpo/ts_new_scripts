@@ -378,6 +378,18 @@ function maxLengthCheck(object) { // функция ограничения ко�
         object.value = object.value.slice(0, object.maxLength)
 }
 
+function checkMinMaxValue(input) {     // функция првоерки находится ли значение вводиміе значения в допустимом диапазоне
+    const minValue = parseInt(input.min, 10);
+    const maxValue = parseInt(input.max, 10);
+    let currentValue = parseInt(input.value, 10);
+
+    if (currentValue < minValue) {
+        input.value = minValue;
+    } else if (currentValue > maxValue) {
+        input.value = maxValue;
+    }
+}
+
 function checkelementtype(a) { // проверка на какой элемент нажали
     let elem = document.elementFromPoint(a.clientX, a.clientY)
 

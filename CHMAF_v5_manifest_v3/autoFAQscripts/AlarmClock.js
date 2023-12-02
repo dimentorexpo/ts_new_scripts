@@ -6,10 +6,10 @@ var win_Alarmclock =  // описание элементов окна будил
 				<div style="margin: 5px; width: 350px">
 					<label style="color:bisque">__Будильник №1</label> <label style="color:bisque">........................... Будильник №2__</label>
 				<br>
-					<input title="Ввод часа от 0 до 23 для будильника" "="" id="setchas" placeholder="HH" autocomplete="off" type="number" maxlength="2" min="0" max="23" style="text-align: center; margin-top: 5px; width: 50px; color: black;"> <span style="color: white; margin-top: 5px;">:</span>
+					<input title="Ввод часа от 0 до 23 для будильника" id="setchas" placeholder="HH" autocomplete="off" type="number" maxlength="2" min="0" max="23" style="text-align: center; margin-top: 5px; width: 50px; color: black;"> <span style="color: white; margin-top: 5px;">:</span>
 					<input title="Ввод минут от 0 до 59 для будильника" id="setminuta" placeholder="MM" autocomplete="off"  type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px;  width: 50px; color: black;">
 					<button class="mainButton" title="Запуск будильника при устаноовленном времени" id="setreminder" style="margin-top: 5px">SET🔔</button>
-					<input title="Ввод часа от 0 до 23 для будильника" "="" id="setchas1" placeholder="HH" autocomplete="off"  type="number" maxlength="2" min="0" max="23" style="text-align: center; margin-top: 5px; width: 50px; color: black;"> <span style="color: white; margin-top: 5px;">:</span>
+					<input title="Ввод часа от 0 до 23 для будильника" id="setchas1" placeholder="HH" autocomplete="off"  type="number" maxlength="2" min="0" max="23" style="text-align: center; margin-top: 5px; width: 50px; color: black;"> <span style="color: white; margin-top: 5px;">:</span>
 					<input title="Ввод минут от 0 до 59 для будильника" id="setminuta1" placeholder="MM" autocomplete="off"  type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px;  width: 50px; color: black;">
 					<button class="mainButton" title="Запуск будильника при устаноовленном времени" id="setreminder1" style="margin-top: 5px">SET🔔</button>
 				<br>
@@ -22,6 +22,14 @@ var win_Alarmclock =  // описание элементов окна будил
 const wintAlarmclock = createWindow('AF_AlarmClock', 'winTopAlarmclock', 'winLeftAlarmclock', win_Alarmclock);
 hideWindowOnDoubleClick('AF_AlarmClock');
 hideWindowOnClick('AF_AlarmClock', 'hideMeAlarm');
+
+document.getElementById('AF_AlarmClock').addEventListener('input', function (event) {
+    // Проверяем, что событие произошло в интересующем нас input с типом 'number'
+    if (event.target.type === 'number') {
+        maxLengthCheck(event.target);
+        checkMinMaxValue(event.target);
+    }
+});
 
 function clock_on_javascript_1() {  //таймер обычного отсчета текущего времени
     // Get the current date and time
@@ -274,20 +282,3 @@ setInterval(clock_on_javascript_1, 1000);
 setInterval(clock_on_javascript_2, 1000);
 setInterval(clock_on_javascript_3, 1000);
 // конец блока работы с будильником
-
-// Добавьте обработчики событий для ограничения максимальной длины
-setchas.addEventListener('input', function () {
-    maxLengthCheck(this);
-});
-
-setminuta.addEventListener('input', function () {
-    maxLengthCheck(this);
-});
-
-setchas1.addEventListener('input', function () {
-    maxLengthCheck(this);
-});
-
-setminuta1.addEventListener('input', function () {
-    maxLengthCheck(this);
-});
