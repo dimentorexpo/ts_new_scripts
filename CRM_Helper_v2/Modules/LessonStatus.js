@@ -29,7 +29,7 @@ if (localStorage.getItem('winTopLessonStatus') == null) { // начальное 
 
 let wintLessonStatus = document.createElement('div'); // создание окна статус урока
 document.body.append(wintLessonStatus);
-wintLessonStatus.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopLessonStatus') + 'px; left: ' + localStorage.getItem('winLeftLessonStatus') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
+wintLessonStatus.style = 'min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopLessonStatus') + 'px; left: ' + localStorage.getItem('winLeftLessonStatus') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
 wintLessonStatus.style.display = 'none';
 wintLessonStatus.setAttribute('id', 'AF_LessonStatus');
 wintLessonStatus.innerHTML = win_LessonStatus;

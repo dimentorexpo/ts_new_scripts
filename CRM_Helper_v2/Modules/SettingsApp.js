@@ -70,7 +70,7 @@ if (localStorage.getItem('winTopSettingsApp') == null) { // началоное �
     
 let wintSettingsApp = document.createElement('div'); // создание окна настроек
 document.body.append(wintSettingsApp);
-wintSettingsApp.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopSettingsApp') + 'px; left: ' + localStorage.getItem('winLeftSettingsApp') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
+wintSettingsApp.style = 'min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopSettingsApp') + 'px; left: ' + localStorage.getItem('winLeftSettingsApp') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
 wintSettingsApp.style.display = 'none';
 wintSettingsApp.setAttribute('id', 'winSettingsApp');
 wintSettingsApp.innerHTML = win_SettingsApp;

@@ -31,7 +31,7 @@ if (localStorage.getItem('winTopLinksd') == null) { // началоное пол
 
 let wintLinksd = document.createElement('div'); // создание окна доступов
 document.body.append(wintLinksd);
-wintLinksd.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopLinksd') + 'px; left: ' + localStorage.getItem('winLeftLinksd') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
+wintLinksd.style = 'min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopLinksd') + 'px; left: ' + localStorage.getItem('winLeftLinksd') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
 wintLinksd.style.display = 'none';
 wintLinksd.setAttribute('id', 'AF_Linksd');
 wintLinksd.innerHTML = win_linksd;

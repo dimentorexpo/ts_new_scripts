@@ -65,7 +65,7 @@ if (localStorage.getItem('winToptestroomsCRM') == null) { // началоное 
 
 let winttestroomsCRM = document.createElement('div'); // создание окна создания тестовых комнат
 document.body.append(winttestroomsCRM);
-winttestroomsCRM.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winToptestroomsCRM') + 'px; left: ' + localStorage.getItem('winLefttestroomsCRM') + 'px; font-size: 14px; z-index: 21; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
+winttestroomsCRM.style = 'min-width: 65px; background: #464451; top: ' + localStorage.getItem('winToptestroomsCRM') + 'px; left: ' + localStorage.getItem('winLefttestroomsCRM') + 'px; font-size: 14px; z-index: 21; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
 winttestroomsCRM.style.display = 'none';
 winttestroomsCRM.setAttribute('id', 'testroomsCRM');
 winttestroomsCRM.innerHTML = win_testroomsCRM;

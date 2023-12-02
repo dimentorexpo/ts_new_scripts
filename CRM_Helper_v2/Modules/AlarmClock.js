@@ -21,7 +21,7 @@ var win_Alarmclock =  // описание элементов окна будил
 		</div>
 </div>`;
 
-const wintAlarmclock = createWindow('winAlarmclock', 'winTopAlarmclock', 'winLeftAlarmclock', win_Alarmclock);
+const wintAlarmclock = createWindowCRM('winAlarmclock', 'winTopAlarmclock', 'winLeftAlarmclock', win_Alarmclock);
 hideWindowOnDoubleClick('winAlarmclock');
 hideWindowOnClick('winAlarmclock', 'hideAlarmclock');
 

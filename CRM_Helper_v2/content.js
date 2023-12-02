@@ -38,7 +38,7 @@ upmenubtn.id = 'MenubarCRM'
 upmenubtn.style = "cursor:pointer;font-weight:500; text-shadow: 1px 0 1px #000, 0 1px 1px #000, -1px 0 1px #000, 0 -1px 1px #000; border: 1px solid black; padding: 8px; background: #5083ff; border-radius:18px"
 //конец обьявления кнопки
 
-function createWindow(id, topKey, leftKey, content) { // Функция для создания окна и настройки стилей
+function createWindowCRM(id, topKey, leftKey, content) { // Функция для создания окна и настройки стилей
     const windowElement = document.createElement('div');
     document.body.append(windowElement);
 

@@ -21,7 +21,7 @@ if (localStorage.getItem('winTopOpStat') == null) { //начальное пол�
 	
 let wintOperStatus = document.createElement('div'); // создание окна поиска оценок от пользователя
 document.body.append(wintOperStatus);
-wintOperStatus.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopOpStat') + 'px; left: ' + localStorage.getItem('winLeftOpStat') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
+wintOperStatus.style = 'min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopOpStat') + 'px; left: ' + localStorage.getItem('winLeftOpStat') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
 wintOperStatus.style.display = 'none';
 wintOperStatus.setAttribute('id', 'CRM_OperStat');
 wintOperStatus.innerHTML = win_OperStatus;

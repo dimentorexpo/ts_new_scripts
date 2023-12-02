@@ -105,7 +105,7 @@ if (localStorage.getItem('winTopSmartroom') == null) { //начальное по
 
 let wintSmartroom = document.createElement('div'); // создание окна Мультирум пожелания/баги
 document.body.append(wintSmartroom);
-wintSmartroom.style = 'min-height: 25px; width: 420px; background: #464451; top: ' + localStorage.getItem('winTopSmartroom') + 'px; left: ' + localStorage.getItem('winLeftSmartroom') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
+wintSmartroom.style = 'width: 420px; background: #464451; top: ' + localStorage.getItem('winTopSmartroom') + 'px; left: ' + localStorage.getItem('winLeftSmartroom') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
 wintSmartroom.style.display = 'none';
 wintSmartroom.setAttribute('id', 'AF_Smartroomform');
 wintSmartroom.innerHTML = win_smartroomform;

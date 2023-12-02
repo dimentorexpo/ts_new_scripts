@@ -49,53 +49,9 @@ var win_Jira =  // описание элементов окна Поиска п�
         </span>
 </div>`;
 
-if (localStorage.getItem('winTopJira') == null) { // началоное положение окна поиска по Jira (если не задано ранее)
-    localStorage.setItem('winTopJira', '120');
-    localStorage.setItem('winLeftJira', '295');
-}
-
-let wintJira = document.createElement('div'); // создание окна поиска по Jira
-document.body.append(wintJira);
-wintJira.style = 'min-height: 25px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopJira') + 'px; left: ' + localStorage.getItem('winLeftJira') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintJira.style.display = 'none';
-wintJira.setAttribute('id', 'AF_Jira');
-wintJira.innerHTML = win_Jira;
-
-// начало изменения позиции окна поиска по Jira
-wintJira.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = wintJira.offsetLeft;
-    let elemTop = wintJira.offsetTop;
-
-    function onMouseMove(event) {
-		if (!(event.buttons & 1)) {
-			onMouseUp();
-			return;
-		  }
-		  
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
-
-      wintJira.style.left = (elemLeft + deltaX) + "px";
-      wintJira.style.top = (elemTop + deltaY) + "px";
-
-      localStorage.setItem('winTopJira', String(elemTop + deltaY));
-      localStorage.setItem('winLeftJira', String(elemLeft + deltaX));
-    }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
-};
-// прекращение изменения позиции окна поиска по Jira
+const wintJira = createWindowCRM('AF_Jira', 'winTopJira', 'winLeftJira', win_Jira);
+hideWindowOnDoubleClick('AF_Jira');
+hideWindowOnClick('AF_Jira', 'hideMej');
 
 function optionsforfetch(queryName, indexStart) {
 	let tempvar;
@@ -431,15 +387,6 @@ function switchJiraPages() {
     });
 }
 
-document.getElementById('AF_Jira').ondblclick = function (a) { // скрытие окна Jira по двойному клику
-    if (checkelementtype(a)) { document.getElementById('AF_Jira').style.display = 'none'; }
-}
-
-document.getElementById('hideMej').onclick = function () { // скрытие окна поиска по Jira
-    if (document.getElementById('AF_Jira').style.display == '')
-        document.getElementById('AF_Jira').style.display = 'none'
-}
-
 document.getElementById('ClearJiraData').onclick = function () {  // функция очистки полей в форме
     document.getElementById('testJira').value = '';
     document.getElementById('issuetable').innerText = '';
@@ -467,38 +414,23 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
         document.getElementById('idmymenucrm').style.display = 'none'
 
         document.getElementById('JQLquery').innerText = defqueryitem;
-
-        function checkJiraToken() {
-            // Set initial values for the textarea elements
-            textArea1.value = '{}';
-            textArea2.value = "https://jira.skyeng.tech/";
-            textArea3.value = 'getjiratoken';
-
-            // Click the 'sendResponse' element to trigger the DOMSubtreeModified event
-            sendRespbtn.click();
-
-            // Add an event listener for the DOMSubtreeModified event
-            document.getElementById("responseTextarea1").addEventListener("DOMSubtreeModified", function () {
-                // Get the 'getjiratoken' attribute from the 'responseTextarea1' element
-                const jiratknAttr = textArea1.getAttribute('getjiratoken');
-
-                // Check if the 'getjiratoken' attribute is not null
-                if (jiratknAttr) {
-                    // Check if the 'getjiratoken' attribute matches the regex pattern
-                    const regexMatch = jiratknAttr.match(/name="atlassian-token" content="(.*lin)/);
-                    if (regexMatch) {
-                        // Set the 'jiratkn' variable to the first capturing group of the regex match
-                        const jiratkn = regexMatch[1];
-                        // Set the inner text of the 'searchjiratknstatus' element to a green checkmark
-                        document.getElementById('searchjiratknstatus').innerText = "🟢";
-                        console.log(`TOKEN: ${jiratkn}`);
-                    } else {
-                        // If the regex pattern is not found, show an alert and set the inner text of the 'searchjiratknstatus' element to a red cross
-                        alert("Авторизуйтесь в системе Jira, чтобы при поиске запрос был отправлен");
-                        document.getElementById('searchjiratknstatus').innerText = "🔴";
-                    }
-                    // Remove the 'getjiratoken'
-                    textArea1.removeAttribute('getjiratoken');
+        
+        function checkJiraToken() { // Функция проверки авторизации в Jira
+            const fetchURL = 'https://jira.skyeng.tech/';
+            const requestOptions = {
+                method: 'GET'
+            };
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (responseAuth) {
+                const regexMatch = responseAuth.fetchansver.match(/name="atlassian-token" content="(.*lin)/);
+                if (regexMatch) {
+                    // Set the 'jiratkn' variable to the first capturing group of the regex match
+                    const jiratkn = regexMatch[1];
+                    // Set the inner text of the 'searchjiratknstatus' element to a green checkmark
+                    document.getElementById('searchjiratknstatus').innerText = "🟢";
+                } else {
+                    // If the regex pattern is not found, show an alert and set the inner text of the 'searchjiratknstatus' element to a red circle
+                    alert("Авторизуйтесь в системе Jira, чтобы при поиске запрос был отправлен");
+                    document.getElementById('searchjiratknstatus').innerText = "🔴";
                 }
             })
         }
