@@ -667,19 +667,6 @@ function closeTerms() { // функция автоподтверждения у�
     }
 }
 
-function changeNewUIStyle() {
-    const hrefisnow = window.location.href;
-    if (hrefisnow.includes('tickets/assigned')) {
-        if (document.getElementsByTagName('iframe').length != 0) {
-            document.getElementsByTagName('iframe')[0].style.zIndex = "999"
-        }
-
-        if (document.getElementsByClassName('ant-modal-root').length != 0 && document.getElementsByClassName('ant-modal-confirm-title')[0].textContent != "Начать диалог") {
-            document.getElementsByClassName('ant-modal-root')[0].remove()
-        }
-    }
-}
-
 //Подключаем скрипт App Script с гугл таблиц, где содержаться шщаблоны, которыми пользуемся
 if (localStorage.getItem('scriptAdr') == null) {
     localStorage.setItem('scriptAdr', 'https://script.google.com/macros/s/AKfycbzsf72GllYQdCGg-L4Jw1qx9iv9Vz3eyiQ9QO81HEnlr0K2DKqy6zvi7IYu77GB6EMU/exec');
@@ -753,7 +740,6 @@ maskBackHide.onclick = function () { // функция кнопки скрыть
 
 setInterval(screenshots, 5000)
 setInterval(closeTerms, 500);
-setInterval(changeNewUIStyle, 500);
 
 if (location.host == "skyeng.autofaq.ai") {
     setTimeout(move_again_AF, 3500) //вызов функции первичной загрузки страницы с фомированием меню и наполнением его	

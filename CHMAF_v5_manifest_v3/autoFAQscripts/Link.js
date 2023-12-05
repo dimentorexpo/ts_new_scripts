@@ -62,6 +62,8 @@ var win_Links =  // описание элементов окна ссылок
 					<button class="mainButton" id="getskipAP" style="width: 25.23px;">💾</button>
 					<input id="skiponboarding" placeholder="ID ус(skip Onbo)" title="копируем услуги, где нужно отключить онбоардинг в ЛКУ" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
 					<button class="mainButton" id="doskiponboard" style="width: 25.23px;">💾</button>
+                    <input id="pushmp" placeholder="ID У/П Push" title="Вводим ID У или П для просмотра Push в МП" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
+					<button class="mainButton" id="getpushmp" style="width: 25.23px;">💾</button>
 				</div>
 				<div style="margin: 5px; width: 550px" id="links_butd">
 					<button class="mainButton" title="копирует в буфер обмена команду setstatus('classwork') для перезапуска уроков" id="restartlesson" style="width:100px">Redo MAT💾</button>
@@ -330,13 +332,13 @@ function addfunctionsonclick(section) {
             cpuname.value = "";
         }
 
-        document.getElementById('cmsid').onclick = function () {                     // переход на степID в CMSке
-            if (cmsstepid.value == "")
-                alert('Введите STEPUUID в поле')
+        document.getElementById('getpushmp').onclick = function () {                     // переход на страницу просмотра Push уведомлени в мобильном приложении
+            if (pushmp.value == "")
+                alert('Введите ID в поле')
             else {
-                window.open('https://content.vimbox.skyeng.ru/cms/stepStore/update/stepId/' + cmsstepid.value);
+                window.open('https://push-notifications.skyeng.ru/cms/logs?page=1&paginateBy=100&id=&userId=' + pushmp.value);
             };
-            cmsstepid.value = "";
+            pushmp.value = "";
         }
 
         document.getElementById('getschemes').onclick = function () { // переход на просмотра подключенных схем вознаграждения преподавателей
@@ -469,6 +471,15 @@ function addfunctionsonclick(section) {
                 window.open(lgslink + lgssearch.value + '?cp=(section:participants)');
             };
             lgssearch.value = "";
+        }
+
+        document.getElementById('cmsid').onclick = function () {                     // переход на степID в CMSке
+            if (cmsstepid.value == "")
+                alert('Введите STEPUUID в поле')
+            else {
+                window.open('https://content.vimbox.skyeng.ru/cms/stepStore/update/stepId/' + cmsstepid.value);
+            };
+            cmsstepid.value = "";
         }
 
         getmobpasscode.onclick = function () {
