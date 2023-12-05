@@ -198,8 +198,6 @@ document.getElementById('reminderstatus').onclick = function () { // откры�
         document.getElementById('AF_AlarmClock').style.display = 'none'
     else {
         document.getElementById('AF_AlarmClock').style.display = ''
-        document.getElementById('AF_Settings').style.display = 'none'
-        document.getElementById('addTmp').style.display = 'none'
     }
 }
 
