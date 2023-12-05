@@ -153,13 +153,11 @@ document.getElementById('setreminderCRM1').onclick = function () {  // выст�
     document.getElementById('btnAlarmclock').textContent = "🔔Reminder";
     localStorage.setItem('remindertextCRM1', remindertextCRM1.value);
     localStorage.setItem('setchasCRM1', setchasCRM1.value);
-    var cleanMinuta1 = parseInt(setminuta1.value, 10).toString();
-    localStorage.setItem('setminuta1', cleanMinuta1);
+    var cleanMinuta1 = parseInt(setminutaCRM1.value, 10).toString();
+    localStorage.setItem('setminutaCRM1', cleanMinuta1);
     var timearr1 = new Date()
     var chronostamp1 = (((localStorage.getItem('setchasCRM1') - timearr1.getHours()) * 60 * 60) + ((localStorage.getItem('setminutaCRM1') - timearr1.getMinutes()) * 60) + (0 - timearr1.getSeconds())) * 1000;
     localStorage.setItem('chronostamp1', chronostamp1);
-    //		setchasCRM.value = "";
-    //		setminutaCRM.value = "";
     alert("Напоминание установлено на " + setchasCRM1.value + ":" + setminutaCRM1.value + ":" + "00");
     CRMabortTimeOut1 = setTimeout(function () {
         setRemindCRM('chronostamp1');
@@ -239,6 +237,7 @@ function setRemindCRM(tsname) {
         // Очищаем поля ввода
         document.getElementById(activeReminder.hourInput).value = "";
         document.getElementById(activeReminder.minuteInput).value = "";
+        document.getElementById(activeReminder.textKey).value = "";
         localStorage.removeItem(activeReminder.hourInput);
         localStorage.removeItem(activeReminder.minuteInput);
     }
@@ -247,7 +246,6 @@ function setRemindCRM(tsname) {
     const reminderstatus = document.getElementById('btnAlarmclock');
     reminderstatus.textContent = (!localStorage.getItem('chronostamp') && !localStorage.getItem('chronostamp1')) ? "🔕Reminder" : "🔔Reminder";
 }
-
 
 function removeAlarm(clockElem, timeoutVar, chronostampKey, chronostamp2Key, Mestextkey, chasKey, minutaKey) {
     if (localStorage.getItem(chronostampKey) !== null && localStorage.getItem(chronostampKey) > 0) {
@@ -261,16 +259,8 @@ function removeAlarm(clockElem, timeoutVar, chronostampKey, chronostamp2Key, Mes
         localStorage.removeItem(minutaKey);
         localStorage.removeItem(Mestextkey)
         alert("Напоминание удалено");
-        checkAlarmsStatus();
-    }
-}
-
-function checkAlarmsStatus() {
-    var chronostamp = localStorage.getItem('chronostamp');
-    var chronostamp1 = localStorage.getItem('chronostamp1');
-
-    if ((!chronostamp || chronostamp <= 0) && (!chronostamp1 || chronostamp1 <= 0)) {
-        document.getElementById('btnAlarmclock').textContent = "🔕Reminder";
+        const reminderstatus = document.getElementById('btnAlarmclock');
+        reminderstatus.textContent = (!localStorage.getItem('chronostamp') && !localStorage.getItem('chronostamp1')) ? "🔕Reminder" : "🔔Reminder";
     }
 }
 
@@ -279,4 +269,3 @@ setInterval(CRM_clock_on_javascript_2, 1000);
 setInterval(CRM_clock_on_javascript_3, 1000);
 
 CRMrefreshTimerReminder(); //обновляет оставшееся время до будильника
-
