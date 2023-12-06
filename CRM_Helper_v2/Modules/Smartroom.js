@@ -199,37 +199,39 @@ document.getElementById('smartroomformCRM').onclick = function () {
 					checkedquestion = document.getElementsByName('whatobratform')[i].value;
 			}
 
-			let body2 = 'entry.466256037=' + encodeURIComponent(checkedclienttype) + '&entry.505070950=' + encodeURIComponent(document.getElementById('clientid').value) + '&entry.876256156=' + encodeURIComponent(checkedquestion) + '&entry.1879097323=' + encodeURIComponent(document.getElementById('fullcomentsmartroom').value) + '&entry.156405977=' + encodeURIComponent(document.getElementsByName('catsmartroom')[0].value) + '&entry.1625340245=' + encodeURIComponent(cat2selected) + '&entry.478427702=' + encodeURIComponent(cat3selected)
+			const body2 = 'entry.466256037=' + encodeURIComponent(checkedclienttype) + '&entry.505070950=' + encodeURIComponent(document.getElementById('clientid').value) + '&entry.876256156=' + encodeURIComponent(checkedquestion) + '&entry.1879097323=' + encodeURIComponent(document.getElementById('fullcomentsmartroom').value) + '&entry.156405977=' + encodeURIComponent(document.getElementsByName('catsmartroom')[0].value) + '&entry.1625340245=' + encodeURIComponent(cat2selected) + '&entry.478427702=' + encodeURIComponent(cat3selected)
 
-			let options2 = {
+			const requestOptions = {
 				"headers": {
 					"content-type": "application/x-www-form-urlencoded",
 				},
 				"body": body2,
 				"method": "POST",
 			}
+			const requestAdr = 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse';
 
-			document.getElementById('responseTextarea1').value = JSON.stringify(options2)
-			document.getElementById('responseTextarea2').value = 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse'
-			if (document.getElementById('responseTextarea3') != null)
-				document.getElementById('responseTextarea3').value = ''
-			document.getElementById('sendResponse').click()
+			chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: requestAdr, requestOptions: requestOptions }, function (response) {
+				if (response.success) {
+					document.getElementById('send2smartroom').innerText = "Отправлено✅"
+					setTimeout(() => {
+						document.getElementById('send2smartroom').innerText = "Отправить"
+						document.getElementById('AF_Smartroomform').style.display = 'none'
+						document.getElementById('clientid').value = ''
+						document.getElementById('fullcomentsmartroom').value = ''
+						clearradio()
+					}, 3000)
+				} else {
+					alert('Не удалось отправить пожелания ' + response.error);
+				}
+			});
 
-			document.getElementById('send2smartroom').innerText = "Отправлено✅"
-			setTimeout(() => {
-				document.getElementById('send2smartroom').innerText = "Отправить"
-				document.getElementById('AF_Smartroomform').style.display = 'none'
-				document.getElementById('clientid').value = ''
-				document.getElementById('fullcomentsmartroom').value = ''
-				clearradio()
-			}, 3000)
+			
 		}
 	}
 
 	document.getElementById('clearsmartroomform').onclick = function () {
 		document.getElementById('clientid').value = ''
 		document.getElementById('fullcomentsmartroom').value = ''
-		document.getElementById('otheroptionsmartchecked').value = ''
 		document.getElementById('smartroomuser').style.background = '';
 		document.getElementById('clientid').style.background = '';
 		document.getElementById('smartroomquestion').style.background = '';
@@ -242,8 +244,15 @@ document.getElementById('smartroomformCRM').onclick = function () {
 	}
 
 	document.getElementById('refreshhashsmartform').onclick = function () {
-		if (document.URL.split('/')[3] == 'persons')
-			document.getElementById('clientid').value = document.URL.split('/')[4]
+		if (document.URL.split('/')[3] == 'persons') {
+			var clientId = document.URL.split('/')[4];
+			// Регулярное выражение для проверки, что clientId является числом от 4 до 10 цифр
+			var regex = /^\d{4,10}$/;
+	
+			if (regex.test(clientId)) {
+				document.getElementById('clientid').value = clientId;
+			}
+		}
 		if (location.pathname.split('/')[4] == 'task')
 			document.getElementById('fullcomentsmartroom').value = document.getElementsByTagName('crm-grid')[8].children[0].innerText.replace('Комментарий\n', '')
 	}
