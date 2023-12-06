@@ -199,7 +199,6 @@ document.getElementById('starttestroom').onclick = function () { // добавл
         cleartestroomsCRMfields()
       } else {
           alert('Не удалось создать урок ' + response.error);
-          reject(new Error(response.error));
       }
     });
 
