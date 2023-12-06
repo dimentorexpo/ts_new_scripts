@@ -148,7 +148,7 @@ var win_servicedesk = // описание элементов окна Service De
 
 				</div>
                 <div id="chatqaoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque; font-size:18px; position:relative; top:7px; left:10px; width:90%;">#chat-qa-support; Решают проблемы с чатами в ЛКП и ЛКУ</p>
+					<p style="${Paragrafsstyles} top:7px;">#chat-qa-support; Решают проблемы с чатами в ЛКП и ЛКУ</p>
 
                 </div>
 				<div id="tripwireoptions" style="display: none; margin-left:20px;">

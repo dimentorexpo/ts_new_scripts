@@ -193,12 +193,12 @@ document.getElementById('starttestroom').onclick = function () { // добавл
       credentials: 'include',
     };
 
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: requestAdr, requestOptions: requestOptions }, function (response) {
-      if (response.success) {
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: requestAdr, requestOptions: requestOptions }, function (roomresponse) {
+      if (roomresponse.success) {
         testroomsCRMshowmessage('message', 'Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
         cleartestroomsCRMfields()
       } else {
-        alert('Не удалось создать урок ' + response.error);
+        alert('Не удалось создать урок ' + roomresponse.error);
       }
     });
 

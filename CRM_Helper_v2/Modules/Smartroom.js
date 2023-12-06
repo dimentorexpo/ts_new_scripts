@@ -210,8 +210,8 @@ document.getElementById('smartroomformCRM').onclick = function () {
 			}
 			const requestAdr = 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse';
 
-			chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: requestAdr, requestOptions: requestOptions }, function (response) {
-				if (response.success) {
+			chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: requestAdr, requestOptions: requestOptions }, function (offerresponse) {
+				if (offerresponse.success) {
 					document.getElementById('send2smartroom').innerText = "Отправлено✅"
 					setTimeout(() => {
 						document.getElementById('send2smartroom').innerText = "Отправить"
@@ -221,11 +221,9 @@ document.getElementById('smartroomformCRM').onclick = function () {
 						clearradio()
 					}, 3000)
 				} else {
-					alert('Не удалось отправить пожелания ' + response.error);
+					alert('Не удалось отправить пожелания ' + offerresponse.error);
 				}
 			});
-
-
 		}
 	}
 

@@ -162,9 +162,9 @@ function logginerfortestsCRM(polzovatel) {
             mode: 'cors',
             credentials: 'include',
         };
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
-            if (response.success) {
-                const link = extractLoginLink(response.fetchansver);
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (loginresponse) {
+            if (loginresponse.success) {
+                const link = extractLoginLink(loginresponse.fetchansver);
                 if (link) {
                     navigator.clipboard.writeText(link).then(() => {
                         console.log('Логинер создан для пользователя: ' + polzovatel);
@@ -178,8 +178,8 @@ function logginerfortestsCRM(polzovatel) {
                     reject(new Error('Ссылка логинера не найдена'));
                 }
             } else {
-                alert('Не удалось получить логиннер: ' + response.error);
-                reject(new Error(response.error));
+                alert('Не удалось получить логиннер: ' + loginresponse.error);
+                reject(new Error(loginresponse.error));
             }
         });
     });

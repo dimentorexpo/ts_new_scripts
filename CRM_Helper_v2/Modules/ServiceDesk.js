@@ -14,10 +14,8 @@ let prevtsk;
 let flagpsis = 0;
 let msgissnd = 0;
 let varinfraOID; //переменная для хранения значения ID оператора в Infra
-const responseTextarea1 = document.getElementById('responseTextarea1');
-const responseTextarea2 = document.getElementById('responseTextarea2');
-const responseTextarea3 = document.getElementById('responseTextarea3');
-const sendResponse = document.getElementById('sendResponse');
+
+const Paragrafsstyles = "color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;";
 
 const buttons = [ //array of buttonsnames
     '.edumodbtn',
@@ -101,83 +99,83 @@ var win_servicedesk = // описание элементов окна Service De
                     <button class="sdbtn btnCRM" id="optionAnalyst"  value="18" style="display: none;">TEST</button>
                 </div>
 				<div id="studcabmobbugskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#student-cabinet-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
+					<p style="${Paragrafsstyles}">#student-cabinet-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
 
 				</div>
 
 				<div id="teacherssrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#promise-keepers-qa-support; канал по вопросам corp учеников</p>
+					<p style="${Paragrafsstyles}">#promise-keepers-qa-support; канал по вопросам corp учеников</p>
 
 				</div>
 				<div id="crm2srvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#crm2-support</p>
+					<p style="${Paragrafsstyles}">#crm2-support</p>
 
 				</div>
 				<div id="authsrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#auth; Обсуждение общих вопросов по проектам Auth/ID (авторизация, роли и доступы, данные пользователей и т. д.)</p>
+					<p style="${Paragrafsstyles}">#auth; Обсуждение общих вопросов по проектам Auth/ID (авторизация, роли и доступы, данные пользователей и т. д.)</p>
 
 				</div>
 				<div id="schedulesrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#study-coordinations-qa-support Канал по вопросам расписания ученика, ТТ, TRM, автоподбора и ручного подбора</p>
+					<p style="${Paragrafsstyles}">#study-coordinations-qa-support Канал по вопросам расписания ученика, ТТ, TRM, автоподбора и ручного подбора</p>
 
 				</div>
 				<div id="billingqasrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#billing-qa-support; Канал для рассмотрения причины расхождений баланса учеников</p>
+					<p style="${Paragrafsstyles}">#billing-qa-support; Канал для рассмотрения причины расхождений баланса учеников</p>
 
 				</div>
 				<div id="c1srvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#c1-support; Поддержка витрины оплаты (Не виджет оплаты в pcs), Onboarding (Kids&Adult), Scoring, AutoIntroLesson (АвтоВУ)</p>
+					<p style="${Paragrafsstyles}">#c1-support; Поддержка витрины оплаты (Не виджет оплаты в pcs), Onboarding (Kids&Adult), Scoring, AutoIntroLesson (АвтоВУ)</p>
 
 				</div>
 				<div id="billingsrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; width:95%;margin-top: 5px;margin-bottom: 5px;">#billing</p>
+					<p style="${Paragrafsstyles} top:7px;">#billing</p>
 
 				</div>
                 <div id="mrktbillrvdskoptions" style="display: none; margin-left:20px;">
-                    <p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#mrkt-bill-questions; Канал для вопросов по промокодам, сертификатам, реферальной программе</p>
+                    <p style="${Paragrafsstyles}">#mrkt-bill-questions; Канал для вопросов по промокодам, сертификатам, реферальной программе</p>
 
                 </div>
 				<div id="vimbugsoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#vim-bugs; Проблемы с Vimbox/Smartroom</p>
+					<p style="${Paragrafsstyles}">#vim-bugs; Проблемы с Vimbox/Smartroom</p>
 
 				</div>				
 				<div id="edumodeloptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#smart-learning-qa-support: Канал для обращений по функционалу Educational Model</p>
+					<p style="${Paragrafsstyles}">#smart-learning-qa-support: Канал для обращений по функционалу Educational Model</p>
 
 				</div>
 				<div id="vimvidoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#vim-video-call; Разработка модуля видеосвязи</p>
+					<p style="${Paragrafsstyles}">#vim-video-call; Разработка модуля видеосвязи</p>
 
 				</div>
                 <div id="chatqaoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque; font-size:18px; position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#chat-qa-support; Решают проблемы с чатами в ЛКП и ЛКУ</p>
+					<p style="${Paragrafsstyles}">#chat-qa-support; Решают проблемы с чатами в ЛКП и ЛКУ</p>
 
                 </div>
 				<div id="tripwireoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#eco-tripwire-bugs; Life, Talks, РК adults, расширение переводчик для браузера</p>
+					<p style="${Paragrafsstyles}">#eco-tripwire-bugs; Life, Talks, РК adults, расширение переводчик для браузера</p>
 
 				</div>
 				<div id="analystoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#analysts-gm-tl; канал МЕРТВЫЙ НЕ ИСПОЛЬЗУЕМ В РАБОТЕ, ЭТО НЕ ШУТКА!, ТОЛЬКО ДЛЯ ТЕСТИРОВАНИЯ!</p>
+					<p style="${Paragrafsstyles}">#analysts-gm-tl; канал МЕРТВЫЙ НЕ ИСПОЛЬЗУЕМ В РАБОТЕ, ЭТО НЕ ШУТКА!, ТОЛЬКО ДЛЯ ТЕСТИРОВАНИЯ!</p>
 
 				</div>
 				<div id="mobbugsoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#mobile-bugs; Канал обработки обращений по мобильному приложению Skyeng и Teachers.</p>
+					<p style="${Paragrafsstyles}">#mobile-bugs; Канал обработки обращений по мобильному приложению Skyeng и Teachers.</p>
 
 				</div>
 
 				<div id="academymobbugsoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#academic-mobile-bugs; Канал обработки обращений по МП Skyeng связанных с обучением.</p>
+					<p style="${Paragrafsstyles}">#academic-mobile-bugs; Канал обработки обращений по МП Skyeng связанных с обучением.</p>
 
 				</div>
 
                 <div id="CommProblemsoptions" style="display: none; margin-left:20px;">
-                    <p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;"">#communication-problems</p>
+                    <p style="${Paragrafsstyles}"">#communication-problems</p>
 
                 </div>
 
                 <div id="studcaboptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; width:95%;margin-top: 5px;margin-bottom: 5px;">#student-cabinet-bugs; Сообщаем о проблемах во взрослом и детском ЛКУ (страницы на домене student.skyeng.ru), в ЛККК и в ЛКП</p>
+					<p style="${Paragrafsstyles}">#student-cabinet-bugs; Сообщаем о проблемах во взрослом и детском ЛКУ (страницы на домене student.skyeng.ru), в ЛККК и в ЛКП</p>
 
                 </div>
 								
@@ -215,119 +213,138 @@ var win_servicedesk = // описание элементов окна Service De
 		</span>
 </div>`;
 
+const wintSrvDskCRM = createWindowCRM('CRMServDsk', 'winTopSrvDskCRM', 'winLeftSrvDskCRM', win_servicedesk);
+const inputsFieldsSD = document.getElementById('inputfieldsdiv');
+
 //func getOperInfraId
 function getInfraOId() {
-	responseTextarea1.value = `{}`
-    responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/session";
-    responseTextarea3.value = 'infradata'
-    sendResponse.click()
-	
-	responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-        const rsparray = JSON.parse(responseTextarea1.getAttribute('infradata'));
-        if (rsparray) {
-			localStorage.setItem('infraOID',rsparray.id);
-			document.getElementById('jiratknstatus').innerText = "🟢"
+    const fetchURL = 'https://api-infra.skyeng.ru/api/v1/session';
+    const requestOptions = {
+        method: 'GET'
+    };
+
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (OIDresponse) {
+        if (OIDresponse.success) {
+            const rsparray = JSON.parse(OIDresponse.fetchansver);
+            if (rsparray.id) {
+                localStorage.setItem('infraOID', rsparray.id);
+                document.getElementById('jiratknstatus').innerText = "🟢";
+            } else {
+                console.log('infraOID не найдена в ответе');
+            }
+        } else {
+            alert('Не удалось получить infraOID: ' + OIDresponse.error);
         }
-        responseTextarea1.removeAttribute('infradata');
     });
 }
 
 function getprsuplasttask() { //функция для получения ссылки на последний созданный после отправки в канал тикет в джира +
     const prevtask = document.getElementById('prevtask');
+    const fetchURL = `https://api-infra.skyeng.ru/api/v1/rs/requests?reporterId=${varinfraOID}&approverId=${varinfraOID}&maxResults=40&page=1`;
+    const requestOptions = {
+        method: 'GET'
+    };
 
-    responseTextarea1.value = `{}`;
-    responseTextarea2.value = `https://api-infra.skyeng.ru/api/v1/rs/requests?reporterId=${varinfraOID}&approverId=${varinfraOID}&maxResults=40&page=1`;
-    responseTextarea3.value = 'pstickets';
-    sendResponse.click();
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (taskresponse) {
+        if (taskresponse.success) {
+            const psarr = JSON.parse(taskresponse.fetchansver);
+            if (psarr) {
+                prevtsk = psarr.items[0].jiraIssueKey;
+                prevtask.innerText = prevtsk;
 
-    responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-        const psarr = JSON.parse(responseTextarea1.getAttribute('pstickets'));
-        if (psarr) {
-            prevtsk = psarr.items[0].jiraIssueKey;
-            prevtask.innerText = prevtsk;
-
-            prevtask.onclick = function () {
-                if (prevtask.innerText === "") {
-                    console.log('Задача не найдена');
-                } else {
-                    window.open(`https://jira.skyeng.tech/browse/${prevtsk}`);
+                prevtask.onclick = function () {
+                    if (prevtask.innerText === "") {
+                        console.log('Задача не найдена');
+                    } else {
+                        window.open(`https://jira.skyeng.tech/browse/${prevtsk}`);
+                    }
                 }
+            } else {
+                console.log('Предыдущая задача в Jira не найдена');
             }
+        } else {
+            alert('Не удалось получить предыдущую задачу в Jira: ' + taskresponse.error);
         }
-        responseTextarea1.removeAttribute('pstickets');
     });
 }
 
 function getmmlink() {
-	        if (newtask.innerText != '') {
-            responseTextarea1.value = `{}`
-            responseTextarea2.value = "https://jira.skyeng.tech/browse/" + newtask.innerText ;
-            responseTextarea3.value = 'mmlinkhere'
-            sendResponse.click()
-			
-			    responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-				const infoarr = responseTextarea1.getAttribute('mmlinkhere');
-				if (infoarr) {
+    const newtasktext = newtask.innerText;
+    if (newtasktext != '') {
+        const fetchURL = `https://jira.skyeng.tech/browse/${newtasktext}`;
+        const requestOptions = {
+            method: 'GET'
+        };
+
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (mmlinkresponse) {
+            if (mmlinkresponse.success) {
+                const infoarr = mmlinkresponse.fetchansver;
+                if (infoarr) {
                     mmlink = infoarr.match(messregexPattern)[1];
-					console.log("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
+                    console.log("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
                     console.log(`${messanger_name} link ${mmlink}`);
                     document.getElementById('custom_ar').value = "Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk + "\n" + messanger_name + " link: " + mmlink;
-				}
-				responseTextarea1.removeAttribute('mmlinkhere');
-			});
-
-        } else console.log("Задача не была создана, поэтому в заметки нечего размещать")
+                } else {
+                    console.log('Ссылка на TiMe не найдена в ответе');
+                }
+            } else {
+                alert('Не удалось получить ссылка на TiMe: ' + mmlinkresponse.error);
+            }
+        });
+    } else console.log("Задача не была создана, поэтому в заметки нечего размещать")
 }
 
-function sendRequest(idstdserv, dscr, str, erx, ary, code) {
-  let formData = new URLSearchParams();
-  formData.append('requestTypeId', code);
-  formData.append('reporterId', varinfraOID);
-  formData.append('initiatorId', varinfraOID);
-  formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-  formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-  formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-  formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-  formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
+function sendfetchtojira(requestOptions) {
+    const fetchURL = 'https://api-infra.skyeng.ru/api/v1/rs/request';
 
-  let requestOptions = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formData.toString(),
-    mode: 'cors',
-    credentials: 'include',
-  };
-
-  let requestOptionsString = JSON.stringify(requestOptions);
-
-  responseTextarea1.value = requestOptionsString;
-  responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
-  responseTextarea3.value = 'responseRequest';
-
-  // логируем входящие переменные и значение полей отправки запроса
-  console.log(`${idstdserv} ${dscr} ${str} ${erx} ${ary} ${code}`);
-  console.log(responseTextarea1.value);
-  console.log(responseTextarea2.value);
-
-  sendResponse.click();
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (createresponse) {
+        if (createresponse.success) {
+            const reqvarr = JSON.parse(createresponse.success);
+            if (reqvarr) {
+                lasttsk = reqvarr.jiraIssueKey;
+                newtask.innerText = lasttsk;
     
-      responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-        const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-        if (reqvarr) {
-            lasttsk = reqvarr.jiraIssueKey;
-            newtask.innerText = lasttsk;
-			
-			const removefields = document.getElementsByClassName('removefield');
-            for (let i = 0; i < removefields.length; i++) {
-                removefields[i].value = '';
+                const removefields = document.getElementsByClassName('removefield');
+                for (let i = 0; i < removefields.length; i++) {
+                    removefields[i].value = '';
+                }
+                setTimeout(getmmlink, 8000);
+            } else {
+                console.log('В ответе не получена ссілка на задачу');
             }
+        } else {
+            alert('Не удалось создать задачу: ' + createresponse.error);
         }
-        responseTextarea1.removeAttribute('responseRequest');
     });
+}
 
-   setTimeout(getmmlink, 8000);
+
+function sendRequest(idstdserv, dscr, str, erx, ary, code) {
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+
+    let requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+        mode: 'cors',
+        credentials: 'include',
+    };
+
+    let requestOptionsString = JSON.stringify(requestOptions);
+
+    console.log(`${idstdserv} ${dscr} ${str} ${erx} ${ary} ${code}`);
+    console.log(requestOptionsString);
+    sendfetchtojira(requestOptionsString)
 }
 
 function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code) {
@@ -335,275 +352,275 @@ function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code) {
     formData.append('requestTypeId', code);
     formData.append('reporterId', varinfraOID);
     formData.append('initiatorId', varinfraOID);
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
     formData.append('data[hashLesson]', hesh)
-  
+
     let requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-      mode: 'cors',
-      credentials: 'include',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+        mode: 'cors',
+        credentials: 'include',
     };
-  
+
     let requestOptionsString = JSON.stringify(requestOptions);
-  
+
     responseTextarea1.value = requestOptionsString;
     responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
     responseTextarea3.value = 'responseRequest';
-  
+
     // логируем входящие переменные и значение полей отправки запроса
     console.log(`${idstdserv} ${hesh} ${dscr} ${str} ${erx} ${ary} ${code}`);
     console.log(responseTextarea1.value);
     console.log(responseTextarea2.value);
-  
+
     sendResponse.click();
-      
-        responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-          const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-          if (reqvarr) {
-              lasttsk = reqvarr.jiraIssueKey;
-              newtask.innerText = lasttsk;
-              
-              const removefields = document.getElementsByClassName('removefield');
-              for (let i = 0; i < removefields.length; i++) {
-                  removefields[i].value = '';
-              }
-          }
-          responseTextarea1.removeAttribute('responseRequest');
-      });
-  
-     setTimeout(getmmlink, 8000);
-  }
+
+    responseTextarea1.addEventListener("DOMSubtreeModified", function () {
+        const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
+        if (reqvarr) {
+            lasttsk = reqvarr.jiraIssueKey;
+            newtask.innerText = lasttsk;
+
+            const removefields = document.getElementsByClassName('removefield');
+            for (let i = 0; i < removefields.length; i++) {
+                removefields[i].value = '';
+            }
+        }
+        responseTextarea1.removeAttribute('responseRequest');
+    });
+
+    setTimeout(getmmlink, 8000);
+}
 
 function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code) {
     let formData = new URLSearchParams();
     formData.append('requestTypeId', code);
     formData.append('reporterId', varinfraOID);
     formData.append('initiatorId', varinfraOID);
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-    formData.append('data[serviceId]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-  
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+    formData.append('data[serviceId]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+
     let requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-      mode: 'cors',
-      credentials: 'include',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+        mode: 'cors',
+        credentials: 'include',
     };
-  
+
     let requestOptionsString = JSON.stringify(requestOptions);
-  
+
     responseTextarea1.value = requestOptionsString;
     responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
     responseTextarea3.value = 'responseRequest';
-  
+
     // логируем входящие переменные и значение полей отправки запроса
     console.log(`${idstdserv} ${service} ${dscr} ${str} ${erx} ${ary} ${code}`);
     console.log(responseTextarea1.value);
     console.log(responseTextarea2.value);
-  
+
     sendResponse.click();
-      
-        responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-          const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-          if (reqvarr) {
-              lasttsk = reqvarr.jiraIssueKey;
-              newtask.innerText = lasttsk;
-              
-              const removefields = document.getElementsByClassName('removefield');
-              for (let i = 0; i < removefields.length; i++) {
-                  removefields[i].value = '';
-              }
-          }
-          responseTextarea1.removeAttribute('responseRequest');
-      });
-  
-     setTimeout(getmmlink, 8000);
-  }
+
+    responseTextarea1.addEventListener("DOMSubtreeModified", function () {
+        const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
+        if (reqvarr) {
+            lasttsk = reqvarr.jiraIssueKey;
+            newtask.innerText = lasttsk;
+
+            const removefields = document.getElementsByClassName('removefield');
+            for (let i = 0; i < removefields.length; i++) {
+                removefields[i].value = '';
+            }
+        }
+        responseTextarea1.removeAttribute('responseRequest');
+    });
+
+    setTimeout(getmmlink, 8000);
+}
 
 function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code) {
     let formData = new URLSearchParams();
     formData.append('requestTypeId', code);
     formData.append('reporterId', varinfraOID);
     formData.append('initiatorId', varinfraOID);
-    formData.append('data[category]', decodeURIComponent(categoryvalue).replaceAll('<br>','\n'))
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-    formData.append('data[user_id]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-    formData.append('data[user_email]', decodeURIComponent(usermail).replaceAll('<br>','\n'))    
-  
+    formData.append('data[category]', decodeURIComponent(categoryvalue).replaceAll('<br>', '\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[user_id]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+    formData.append('data[user_email]', decodeURIComponent(usermail).replaceAll('<br>', '\n'))
+
     let requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-      mode: 'cors',
-      credentials: 'include',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+        mode: 'cors',
+        credentials: 'include',
     };
-  
+
     let requestOptionsString = JSON.stringify(requestOptions);
-  
+
     responseTextarea1.value = requestOptionsString;
     responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
     responseTextarea3.value = 'responseRequest';
-  
+
     // логируем входящие переменные и значение полей отправки запроса
     console.log(`${idstdserv} ${dscr} ${categoryvalue} ${usermail} ${code}`);
     console.log(responseTextarea1.value);
     console.log(responseTextarea2.value);
-  
+
     sendResponse.click();
-      
-        responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-          const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-          if (reqvarr) {
-              lasttsk = reqvarr.jiraIssueKey;
-              newtask.innerText = lasttsk;
-              
-              const removefields = document.getElementsByClassName('removefield');
-              for (let i = 0; i < removefields.length; i++) {
-                  removefields[i].value = '';
-              }
-              document.getElementById('categoryCommproblems').children[0].selected = true;
-          }
-          responseTextarea1.removeAttribute('responseRequest');
-      });
-  
-     setTimeout(getmmlink, 8000);
+
+    responseTextarea1.addEventListener("DOMSubtreeModified", function () {
+        const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
+        if (reqvarr) {
+            lasttsk = reqvarr.jiraIssueKey;
+            newtask.innerText = lasttsk;
+
+            const removefields = document.getElementsByClassName('removefield');
+            for (let i = 0; i < removefields.length; i++) {
+                removefields[i].value = '';
+            }
+            document.getElementById('categoryCommproblems').children[0].selected = true;
+        }
+        responseTextarea1.removeAttribute('responseRequest');
+    });
+
+    setTimeout(getmmlink, 8000);
 }
 
 let checkingId = [];
-function getthemesfrominfra(categoryId,index) {
-  responseTextarea1.value = '{}';
-  responseTextarea2.value = `https://api-infra.skyeng.ru/api/v1/rs/categories/${categoryId}/request-types`;
-  responseTextarea3.value = 'sendrequest';
+function getthemesfrominfra(categoryId, index) {
+    responseTextarea1.value = '{}';
+    responseTextarea2.value = `https://api-infra.skyeng.ru/api/v1/rs/categories/${categoryId}/request-types`;
+    responseTextarea3.value = 'sendrequest';
 
-  sendResponse.click();
+    sendResponse.click();
 
-  responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-    const reqvarr = JSON.parse(responseTextarea1.getAttribute('sendrequest'));
-    if (reqvarr) {
-      checkingId = [];
-      for (let i = 0; i < reqvarr.length; i++) {
-        checkingId.push({ id: reqvarr[i].id, summary: reqvarr[i].summary });
-      }
-	  buttonsfromtest.innerHTML = ''
-	  for (let j=0; j<checkingId.length; j++) {
-			buttonsfromtest.innerHTML += `<button class="${buttons[index].replace('.','')} widthofsd" value=${checkingId[j].id}>${checkingId[j].summary}</button>`
-		}
-	      buttons.forEach(button => {
-        $(button).click(function () {
-            remres(this);
-        });
+    responseTextarea1.addEventListener("DOMSubtreeModified", function () {
+        const reqvarr = JSON.parse(responseTextarea1.getAttribute('sendrequest'));
+        if (reqvarr) {
+            checkingId = [];
+            for (let i = 0; i < reqvarr.length; i++) {
+                checkingId.push({ id: reqvarr[i].id, summary: reqvarr[i].summary });
+            }
+            buttonsfromtest.innerHTML = ''
+            for (let j = 0; j < checkingId.length; j++) {
+                buttonsfromtest.innerHTML += `<button class="${buttons[index].replace('.', '')} widthofsd" value=${checkingId[j].id}>${checkingId[j].summary}</button>`
+            }
+            buttons.forEach(button => {
+                $(button).click(function () {
+                    remres(this);
+                });
+            });
+        }
+        responseTextarea1.removeAttribute('sendrequest');
     });
-    }
-    responseTextarea1.removeAttribute('sendrequest');
-  });
 }
 
-function getcommproboptions(){
+function getcommproboptions() {
     const commprobselect = document.getElementById('categoryCommproblems');
     let addoptflag = 0;
-    if (commprobselect.length < 2){
-    
-    let infraOID = localStorage.getItem('infraOID')
-    const requestopt = {
-        headers: {
-            'accept': 'application/json',
-            'content-type': 'application/json'
-        },
-        referrer: 'https://infra.skyeng.ru/',
-        body: `{\"reporterId\":${infraOID},\"data\":{}}`,
-        method: 'PATCH',
-        credentials: 'include'
-    };
+    if (commprobselect.length < 2) {
+
+        let infraOID = localStorage.getItem('infraOID')
+        const requestopt = {
+            headers: {
+                'accept': 'application/json',
+                'content-type': 'application/json'
+            },
+            referrer: 'https://infra.skyeng.ru/',
+            body: `{\"reporterId\":${infraOID},\"data\":{}}`,
+            method: 'PATCH',
+            credentials: 'include'
+        };
 
         responseTextarea1.value = JSON.stringify(requestopt);
         responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request-types/541/form";
         responseTextarea3.value = 'getoptionscomm';
-      
+
         sendResponse.click();
-      
+
         responseTextarea1.addEventListener("DOMSubtreeModified", function () {
             const commprobarr = JSON.parse(responseTextarea1.getAttribute('getoptionscomm'));
             if (commprobarr !== '') {
                 commprobarr.forEach((item) => {
                     if (item.label == "Категория проблемы") {
-                      const commprobarropt = item.attributes.options;
-                      if (addoptflag < commprobarropt.length) {
-                        addoptflag = commprobarropt.length;
-                        commprobarropt.forEach((option) => {
-                          if (option !== '') {
-                            let opt = JSON.stringify(option);
-                            const [value, text] = opt.split(":").map(item => item.replace(/["{\\}]/g, '').trim());
-                            addOption(commprobselect, text, value);
-                          }
-                        });
-                      }
-                    responseTextarea1.removeAttribute('getoptionscomm');
+                        const commprobarropt = item.attributes.options;
+                        if (addoptflag < commprobarropt.length) {
+                            addoptflag = commprobarropt.length;
+                            commprobarropt.forEach((option) => {
+                                if (option !== '') {
+                                    let opt = JSON.stringify(option);
+                                    const [value, text] = opt.split(":").map(item => item.replace(/["{\\}]/g, '').trim());
+                                    addOption(commprobselect, text, value);
+                                }
+                            });
+                        }
+                        responseTextarea1.removeAttribute('getoptionscomm');
                     }
-                  }); 
+                });
             }
         });
     }
 }
 
-function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo , appinfo, code) {
-		
-  let formData = new URLSearchParams();
-  formData.append('requestTypeId', code);
-  formData.append('reporterId', varinfraOID);
-  formData.append('initiatorId', varinfraOID);
-  formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>','\n'))
-  formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>','\n'))
-  formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-  formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-  formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-  formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-  formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
+function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, appinfo, code) {
 
-  let requestOptions = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formData.toString(),
-    mode: 'cors',
-    credentials: 'include',
-  };
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
+    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
 
-  let requestOptionsString = JSON.stringify(requestOptions);
+    let requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+        mode: 'cors',
+        credentials: 'include',
+    };
 
-  responseTextarea1.value = requestOptionsString;
-  responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
-  responseTextarea3.value = 'responseRequest';
-	
+    let requestOptionsString = JSON.stringify(requestOptions);
+
+    responseTextarea1.value = requestOptionsString;
+    responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
+    responseTextarea3.value = 'responseRequest';
+
 
     // логируем входящие переменные и значение полей отправки запроса
     console.log(appinfo + " " + deviceinfo + " " + dscr + " " + str + " " + erx + " " + ary + " " + idstdserv + " " + code)
 
     sendResponse.click()
-	
-	      responseTextarea1.addEventListener("DOMSubtreeModified", function () {
+
+    responseTextarea1.addEventListener("DOMSubtreeModified", function () {
         const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
         if (reqvarr) {
             lasttsk = reqvarr.jiraIssueKey;
             newtask.innerText = lasttsk;
-			
-			const removefields = document.getElementsByClassName('removefield');
+
+            const removefields = document.getElementsByClassName('removefield');
             for (let i = 0; i < removefields.length; i++) {
                 removefields[i].value = '';
             }
@@ -615,49 +632,49 @@ function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo , a
 }
 
 function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code) {
-	
-  let formData = new URLSearchParams();
-  formData.append('requestTypeId', code);
-  formData.append('reporterId', varinfraOID);
-  formData.append('initiatorId', varinfraOID);
-  formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>','\n'))
-  formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>','\n'))
-  formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-  formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-  formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-  formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-  formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-  formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>','\n'))
 
-  let requestOptions = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formData.toString(),
-    mode: 'cors',
-    credentials: 'include',
-  };
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
+    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+    formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>', '\n'))
 
-  let requestOptionsString = JSON.stringify(requestOptions);
+    let requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+        mode: 'cors',
+        credentials: 'include',
+    };
 
-  responseTextarea1.value = requestOptionsString;
-  responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
-  responseTextarea3.value = 'responseRequest';
-	
-	
+    let requestOptionsString = JSON.stringify(requestOptions);
+
+    responseTextarea1.value = requestOptionsString;
+    responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
+    responseTextarea3.value = 'responseRequest';
+
+
     // логируем входящие переменные и значение полей отправки запроса
     console.log(priorvalue + " " + appinfo + " " + deviceinfo + " " + dscr + " " + str + " " + erx + " " + ary + " " + idstdserv + " " + code)
 
     sendResponse.click()
-	
-	      responseTextarea1.addEventListener("DOMSubtreeModified", function () {
+
+    responseTextarea1.addEventListener("DOMSubtreeModified", function () {
         const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
         if (reqvarr) {
             lasttsk = reqvarr.jiraIssueKey;
             newtask.innerText = lasttsk;
-			
-			const removefields = document.getElementsByClassName('removefield');
+
+            const removefields = document.getElementsByClassName('removefield');
             for (let i = 0; i < removefields.length; i++) {
                 removefields[i].value = '';
             }
@@ -669,90 +686,61 @@ function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, 
 }
 
 function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code) {
-	
+
     let formData = new URLSearchParams();
     formData.append('requestTypeId', code);
     formData.append('reporterId', varinfraOID);
     formData.append('initiatorId', varinfraOID);
     formData.append('data[cms_link]', CMSvalue);
-	formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>','\n'))
-    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>','\n'))
-    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>','\n'))
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-  
+    formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>', '\n'))
+    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
+    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+
     let requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-      mode: 'cors',
-      credentials: 'include',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+        mode: 'cors',
+        credentials: 'include',
     };
-  
+
     let requestOptionsString = JSON.stringify(requestOptions);
-  
+
     responseTextarea1.value = requestOptionsString;
     responseTextarea2.value = "https://api-infra.skyeng.ru/api/v1/rs/request";
     responseTextarea3.value = 'responseRequest';
-      
-      
-      // логируем входящие переменные и значение полей отправки запроса
-      console.log(CMSvalue + " "  + priorvalue + " " + appinfo + " " + deviceinfo + " " + dscr + " " + str + " " + erx + " " + ary + " " + idstdserv + " " + code)
-  
-      sendResponse.click()
-      
-            responseTextarea1.addEventListener("DOMSubtreeModified", function () {
-          const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
-          if (reqvarr) {
-              lasttsk = reqvarr.jiraIssueKey;
-              newtask.innerText = lasttsk;
-              
-              const removefields = document.getElementsByClassName('removefield');
-              for (let i = 0; i < removefields.length; i++) {
-                  removefields[i].value = '';
-              }
-          }
-          responseTextarea1.removeAttribute('responseRequest');
-      });
-  
-      setTimeout(getmmlink, 8000);
-  }
+
+
+    // логируем входящие переменные и значение полей отправки запроса
+    console.log(CMSvalue + " " + priorvalue + " " + appinfo + " " + deviceinfo + " " + dscr + " " + str + " " + erx + " " + ary + " " + idstdserv + " " + code)
+
+    sendResponse.click()
+
+    responseTextarea1.addEventListener("DOMSubtreeModified", function () {
+        const reqvarr = JSON.parse(responseTextarea1.getAttribute('responseRequest'));
+        if (reqvarr) {
+            lasttsk = reqvarr.jiraIssueKey;
+            newtask.innerText = lasttsk;
+
+            const removefields = document.getElementsByClassName('removefield');
+            for (let i = 0; i < removefields.length; i++) {
+                removefields[i].value = '';
+            }
+        }
+        responseTextarea1.removeAttribute('responseRequest');
+    });
+
+    setTimeout(getmmlink, 8000);
+}
 
 //main
-
-if (localStorage.getItem('winTopSrvDskCRM') == null) { // начальное положение окна Service Desk
-    localStorage.setItem('winTopSrvDskCRM', '120');
-    localStorage.setItem('winLeftSrvDskCRM', '295');
-}
-
-let wintSrvDskCRM = document.createElement('div'); // создание окна ServiceDesk
-document.body.append(wintSrvDskCRM);
-wintSrvDskCRM.style = 'min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopSrvDskCRM') + 'px; left: ' + localStorage.getItem('winLeftSrvDskCRM') + 'px; font-size: 14px; z-index: 21; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintSrvDskCRM.style.display = 'none';
-wintSrvDskCRM.setAttribute('id', 'CRMServDsk');
-wintSrvDskCRM.innerHTML = win_servicedesk;
-
-const inputsFieldsSD = document.getElementById('inputfieldsdiv');
-var listenerSrvDskCRM = function (e, a) { // сохранение позиции окна ServiceDesk
-    wintSrvDskCRM.style.left = Number(e.clientX - myX12) + "px";
-    wintSrvDskCRM.style.top = Number(e.clientY - myY12) + "px";
-    localStorage.setItem('winTopSrvDskCRM', String(Number(e.clientY - myY12)));
-    localStorage.setItem('winLeftSrvDskCRM', String(Number(e.clientX - myX12)));
-};
-
-wintSrvDskCRM.onmousedown = function (a) { // изменение позиции окна ServiceDesk
-    if (checkelementtype(a)) {
-        window.myX12 = a.layerX;
-        window.myY12 = a.layerY;
-        document.addEventListener('mousemove', listenerSrvDskCRM);
-    }
-}
-wintSrvDskCRM.onmouseup = function () { document.removeEventListener('mousemove', listenerSrvDskCRM); } // прекращение изменения позиции окна ServiceDesk
 
 document.getElementById('SrvDskCRMbtn').onclick = function () { // функция открытия главного окна SD +
     if (document.getElementById('CRMServDsk').style.display == '') {
@@ -765,11 +753,11 @@ document.getElementById('SrvDskCRMbtn').onclick = function () { // функци�
         document.getElementById('idmymenucrm').style.display = 'none'
     }
 
-	if (localStorage.getItem('infraOID') == null) {
-		document.getElementById('jiratknstatus').innerText = "🔴"
-		getInfraOId()
-	} else varinfraOID = localStorage.getItem('infraOID');
-	
+    if (localStorage.getItem('infraOID') == null) {
+        document.getElementById('jiratknstatus').innerText = "🔴"
+        getInfraOId()
+    } else varinfraOID = localStorage.getItem('infraOID');
+
     setTimeout(getprsuplasttask, 2000)
 
     const sdbtn = document.getElementsByClassName('sdbtn');
@@ -777,7 +765,7 @@ document.getElementById('SrvDskCRMbtn').onclick = function () { // функци�
         sdbtn[i].onclick = function () {
             let index = i;
             inputsFieldsSD.style.display = 'none';
-			getthemesfrominfra(this.value,index)
+            getthemesfrominfra(this.value, index)
             let activeBtnsd = document.getElementsByClassName('activebtnsd');
             for (let j = 0; j < activeBtnsd.length; j++) {
                 activeBtnsd[j].classList.remove('activebtnsd');
@@ -806,7 +794,7 @@ document.getElementById('SrvDskCRMbtn').onclick = function () { // функци�
                 document.getElementById('custom_email').style.display = 'none';
                 document.getElementById('custom_hesh').style.display = 'none';
                 document.getElementById('custom_service').style.display = 'none';
-            }else if (elementId === "mobbugsoptions") {
+            } else if (elementId === "mobbugsoptions") {
                 document.getElementById('prioritymbugs').style.display = '';
                 document.getElementById('custom_appinfo').style.display = '';
                 document.getElementById('custom_deviceinfo').style.display = '';
@@ -836,7 +824,7 @@ document.getElementById('SrvDskCRMbtn').onclick = function () { // функци�
                 document.getElementById('custom_CMS').style.display = 'none';
                 document.getElementById('custom_hesh').style.display = 'none';
                 document.getElementById('custom_service').style.display = 'none';
-            } else if(elementId === 'CommProblemsoptions') {
+            } else if (elementId === 'CommProblemsoptions') {
                 getcommproboptions();
                 document.getElementById('categoryCommproblems').style.display = '';
                 document.getElementById('custom_email').style.display = '';
@@ -921,10 +909,6 @@ document.getElementById('infratasklist').onclick = function () { // открыв
 
 document.getElementById('hideMeSrvDsk').onclick = function () { //форма hide
     if (document.getElementById('CRMServDsk').style.display == '') {
-        // $('.sdbtn').click(function () {
-            // $('.sdbtn').not(this).removeClass('activebtnsd');
-            // $(this).toggleClass('activebtnsd');
-        // });
 
         buttons.forEach(button => {
             $(button).click(function () {
@@ -941,23 +925,23 @@ document.getElementById('hideMeSrvDsk').onclick = function () { //форма hid
 document.getElementById('refreshjiraauth').onclick = getInfraOId; //функция обновления статуса авторизации
 
 function remres(a) { // функция переключения класса по нажатию на кнопку
-  let isActive = $(a).hasClass('activebtn');
+    let isActive = $(a).hasClass('activebtn');
     let isThemeBtn = $(a).hasClass('sdbtn');
-  
+
     if (isActive || isThemeBtn) {
-    buttons.forEach(button => {
-      $(button).show().removeClass('activebtn');
-    });
-      inputsFieldsSD.style.display = 'none';
-  } else {
-    buttons.forEach(button => {
-      if (button !== a) {
-        $(button).hide().removeClass('activebtn');
-      }
-    });
-    $(a).addClass('activebtn').show();
-      inputsFieldsSD.style.display = 'block';
-  }
+        buttons.forEach(button => {
+            $(button).show().removeClass('activebtn');
+        });
+        inputsFieldsSD.style.display = 'none';
+    } else {
+        buttons.forEach(button => {
+            if (button !== a) {
+                $(button).hide().removeClass('activebtn');
+            }
+        });
+        $(a).addClass('activebtn').show();
+        inputsFieldsSD.style.display = 'block';
+    }
 }
 
 document.getElementById('createsd').addEventListener('click', function () { //функция создания задачи на сервис деск
@@ -993,7 +977,7 @@ document.getElementById('createsd').addEventListener('click', function () { //ф
     }))
     let activeButtons = document.querySelectorAll('.activebtn');
 
-    if (catcommprob.style.display == ''){
+    if (catcommprob.style.display == '') {
         for (const button of activeButtons) {
             sendRequestCommprob(catcommprob.value, usermail.value, idUser.value, descriptionField, button.value);
             console.log(`Selected topic: ${button.innerText}`);
@@ -1003,12 +987,12 @@ document.getElementById('createsd').addEventListener('click', function () { //ф
             sendRequestmrktbill(idUser.value, userservice.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value);
             console.log(`Selected topic: ${button.innerText}`);
         }
-    }else if (lessonHesh.style.display == '') {
+    } else if (lessonHesh.style.display == '') {
         for (const button of activeButtons) {
             sendRequestVimVid(idUser.value, lessonHesh.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value);
             console.log(`Selected topic: ${button.innerText}`);
         }
-    }else if (priorityMobile.style.display == 'none' && appInfo.style.display == 'none' && deviceInfo.style.display == 'none') {
+    } else if (priorityMobile.style.display == 'none' && appInfo.style.display == 'none' && deviceInfo.style.display == 'none') {
         for (const button of activeButtons) {
             sendRequest(idUser.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value);
             console.log(`Selected topic: ${button.innerText}`);
@@ -1033,12 +1017,12 @@ document.getElementById('createsd').addEventListener('click', function () { //ф
 });
 
 function SDtestbtn() {
-    if (document.getElementById('optionAnalyst').style.display == 'none'){
+    if (document.getElementById('optionAnalyst').style.display == 'none') {
         document.getElementById('optionAnalyst').style.display = ''
-    } else {document.getElementById('optionAnalyst').style.display = 'none'}
+    } else { document.getElementById('optionAnalyst').style.display = 'none' }
 }
 
-function clearfields(){
+function clearfields() {
     $("#CRMServDsk input, #CRMServDsk textarea").val('');
 }
 	//End of script
