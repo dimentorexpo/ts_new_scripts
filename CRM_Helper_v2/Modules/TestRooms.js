@@ -66,63 +66,63 @@ messagefield.display = 'none';
 
 document.getElementById('btnCreateTestRoom').onclick = function () { // открытие окна создания тестовых комнат
   if (document.getElementById('testroomsCRM').style.display == 'none') {
-      document.getElementById('testroomsCRM').style.display = ''
-      document.getElementById('idmymenucrm').style.display = 'none'
+    document.getElementById('testroomsCRM').style.display = ''
+    document.getElementById('idmymenucrm').style.display = 'none'
   } else {
-      document.getElementById('testroomsCRM').style.display = 'none'
-      document.getElementById('idmymenucrm').style.display = 'none'
+    document.getElementById('testroomsCRM').style.display = 'none'
+    document.getElementById('idmymenucrm').style.display = 'none'
   }
 }
 
-function cleartestroomsCRMfields(){ // очистка полей окно создания тестовых комнат
+function cleartestroomsCRMfields() { // очистка полей окно создания тестовых комнат
   document.getElementById('teachforroom').value = '';
   document.getElementById('studforroom').value = '';
   document.getElementById('subjecttypeselect').children[0].selected = true;
   document.getElementById('lessontypeselect').children[0].selected = true;
 }
 
-function testteachertofield(){ // подставить тестового П
+function testteachertofield() { // подставить тестового П
   if (localStorage.getItem('test_teachCRM') != '' && localStorage.getItem('test_teachCRM') != null) {
     document.getElementById('teachforroom').value = localStorage.getItem('test_teachCRM');
   } else {
     document.getElementById('teachforroom').placeholder = "Не указан ID П";
-    testroomsCRMshowmessage('error','В настройках расширения не указан id тестового преподавателя')
+    testroomsCRMshowmessage('error', 'В настройках расширения не указан id тестового преподавателя')
   }
 }
 
-function teststudenttofield(){ // подставить тестового У
+function teststudenttofield() { // подставить тестового У
   if (localStorage.getItem('test_studCRM') != '' && localStorage.getItem('test_studCRM') != null) {
     document.getElementById('studforroom').value = localStorage.getItem('test_studCRM');
   } else {
     document.getElementById('studforroom').placeholder = "Не указан ID У";
-    testroomsCRMshowmessage('error','В настройках расширения не указан id тестового ученика')
+    testroomsCRMshowmessage('error', 'В настройках расширения не указан id тестового ученика')
   }
 }
 
 document.getElementById('userfromchatid').onclick = function () { // добавить id пользователя из активного чата и добавить id тестовго У или П
   let userIDfromCRM = document.getElementsByClassName('id')[0].innerText;
-  if (userIDfromCRM){
+  if (userIDfromCRM) {
     let flagwhouser = 0;
-      let insertionfield = document.getElementById('studforroom');
-      let UserTypeBages = document.querySelectorAll('div[data-qa]');
+    let insertionfield = document.getElementById('studforroom');
+    let UserTypeBages = document.querySelectorAll('div[data-qa]');
 
-      UserTypeBages.forEach(div => {
-        let bagetype = div.getAttribute('data-qa');
-          if (bagetype == 'is-teacher-badge') {
-            
-            insertionfield = document.getElementById('teachforroom')
-            flagwhouser = 1;
-          }
-      });
-      insertionfield.value = userIDfromCRM;
+    UserTypeBages.forEach(div => {
+      let bagetype = div.getAttribute('data-qa');
+      if (bagetype == 'is-teacher-badge') {
 
-      if (flagwhouser == 1){
-        teststudenttofield()
-      } else {
-        testteachertofield()
+        insertionfield = document.getElementById('teachforroom')
+        flagwhouser = 1;
       }
+    });
+    insertionfield.value = userIDfromCRM;
+
+    if (flagwhouser == 1) {
+      teststudenttofield()
+    } else {
+      testteachertofield()
+    }
   } else {
-    testroomsCRMshowmessage('error','Нет открытой задачи')
+    testroomsCRMshowmessage('error', 'Нет открытой задачи')
   }
 }
 
@@ -138,59 +138,59 @@ document.getElementById('starttestroom').onclick = function () { // добавл
   if (document.getElementById('lessontypeselect').value == 'lessonnotselect') { // проверяем выбран ли тип урока
     flagemptyttfields = '1';
     massagetexttoshow += 'Не выбран тип урока\n'
-    console.log ('Не выбран тип урока');
+    console.log('Не выбран тип урока');
   } else { lessontype = document.getElementById('lessontypeselect').value }
 
   if (document.getElementById('subjecttypeselect').value == 'subjnotselect') { // проверяем выбран ли предмет
-      flagemptyttfields = '1';
-      massagetexttoshow += 'Не выбран предмет\n'
-      console.log ('Не выбран предмет');
+    flagemptyttfields = '1';
+    massagetexttoshow += 'Не выбран предмет\n'
+    console.log('Не выбран предмет');
   } else { lessonsubjecttype = document.getElementById('subjecttypeselect').value }
 
-  if ( document.getElementById('teachforroom').value.length <4){ // проверяем введен ли id П
-      flagemptyttfields = '1';
-      massagetexttoshow += 'Не указан id преподавателя\n'
-      console.log ('Не указан id преподавателя');
-  } else { 
-      teacheridforroom =  document.getElementById('teachforroom').value
-          .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой
-  }
-
-  if ( document.getElementById('studforroom').value.length <4){ // проверяем введен ли id У
-      flagemptyttfields = '1';
-      massagetexttoshow += 'Не указан id ученика\n'
-      console.log ('Не указан id ученика');
+  if (document.getElementById('teachforroom').value.length < 4) { // проверяем введен ли id П
+    flagemptyttfields = '1';
+    massagetexttoshow += 'Не указан id преподавателя\n'
+    console.log('Не указан id преподавателя');
   } else {
-      studentidforroom = document.getElementById('studforroom').value
-          .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой
-          .replace(/,/g, '%2C');    // Заменить запятую на %2C
+    teacheridforroom = document.getElementById('teachforroom').value
+      .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой
   }
 
-  if (flagemptyttfields === '0'){
+  if (document.getElementById('studforroom').value.length < 4) { // проверяем введен ли id У
+    flagemptyttfields = '1';
+    massagetexttoshow += 'Не указан id ученика\n'
+    console.log('Не указан id ученика');
+  } else {
+    studentidforroom = document.getElementById('studforroom').value
+      .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой
+      .replace(/,/g, '%2C');    // Заменить запятую на %2C
+  }
+
+  if (flagemptyttfields === '0') {
     randomHash = GenerateHash(14);
 
     const requestBody = `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacheridforroom}&${randomHash}%5BstudentIds%5D=${studentidforroom}&btn_create_and_list=`;
     const requestreferrer = `https://${lessonsubjecttype}.skyeng.ru/admin/tech-support-room/create`;
     const requestAdr = `https://${lessonsubjecttype}.skyeng.ru/admin/tech-support-room/create?uniqid=${randomHash}`;
     const requestHeaders = {
-          "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-          "accept-language": "en-US,en;q=0.9,ru;q=0.8",
-          "cache-control": "max-age=0",
-          "content-type": "application/x-www-form-urlencoded",
-          "sec-fetch-dest": "document",
-          "sec-fetch-mode": "navigate",
-          "sec-fetch-site": "same-origin",
-          "sec-fetch-user": "?1",
-          "upgrade-insecure-requests": "1"
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "accept-language": "en-US,en;q=0.9,ru;q=0.8",
+      "cache-control": "max-age=0",
+      "content-type": "application/x-www-form-urlencoded",
+      "sec-fetch-dest": "document",
+      "sec-fetch-mode": "navigate",
+      "sec-fetch-site": "same-origin",
+      "sec-fetch-user": "?1",
+      "upgrade-insecure-requests": "1"
     };
     const requestOptions = {
-          headers: requestHeaders,
-          referrer: requestreferrer,
-          referrerPolicy: 'strict-origin-when-cross-origin',
-          body: requestBody,
-          method: 'POST',
-          mode: 'cors',
-          credentials: 'include',
+      headers: requestHeaders,
+      referrer: requestreferrer,
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      body: requestBody,
+      method: 'POST',
+      mode: 'cors',
+      credentials: 'include',
     };
 
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: requestAdr, requestOptions: requestOptions }, function (response) {
@@ -198,13 +198,13 @@ document.getElementById('starttestroom').onclick = function () { // добавл
         testroomsCRMshowmessage('message', 'Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
         cleartestroomsCRMfields()
       } else {
-          alert('Не удалось создать урок ' + response.error);
+        alert('Не удалось создать урок ' + response.error);
       }
     });
 
   } else {
-    testroomsCRMshowmessage('error',massagetexttoshow);
-  }        
+    testroomsCRMshowmessage('error', massagetexttoshow);
+  }
 }
 
 function GenerateHash(length) { // генерируем случайный хэш
@@ -219,25 +219,25 @@ function GenerateHash(length) { // генерируем случайный хэ�
   return result;
 }
 
-function testroomsCRMshowmessage(type,text){ // вывод уведомлений
-    if (type == 'error'){
-      messagefield.style.background = '#d5484f';
-    } else if (type == 'message'){
-      messagefield.style.background = '#46d17e';
-    } else {
-      console.log ('Получен неизвестный тип сообщения');
-      messagefield.style.background = 'rgb(70, 68, 81)';
-    }
+function testroomsCRMshowmessage(type, text) { // вывод уведомлений
+  if (type == 'error') {
+    messagefield.style.background = '#d5484f';
+  } else if (type == 'message') {
+    messagefield.style.background = '#46d17e';
+  } else {
+    console.log('Получен неизвестный тип сообщения');
+    messagefield.style.background = 'rgb(70, 68, 81)';
+  }
 
-    messagefield.innerText = text;
-    messagefield.display = '';
-    setTimeout(testroomsCRMhidemessage, 7000)
+  messagefield.innerText = text;
+  messagefield.display = '';
+  setTimeout(testroomsCRMhidemessage, 7000)
 }
 
-function testroomsCRMhidemessage(){ //скрытие уведомлений
-    messagefield.display = 'none';
-    messagefield.innerText = '';
-    messagefield.style.background = 'rgb(70, 68, 81)';
+function testroomsCRMhidemessage() { //скрытие уведомлений
+  messagefield.display = 'none';
+  messagefield.innerText = '';
+  messagefield.style.background = 'rgb(70, 68, 81)';
 }
 
 function opentestroomsCRMconf() { // Открывает раздел в Confluence по созданию тестовых комнат

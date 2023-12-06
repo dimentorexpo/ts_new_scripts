@@ -11,7 +11,7 @@ async function getStorageData(keys) {
     });
 }
 
-let tableres;
+var tableres;
 let soundsconteinerCRM;
 let soundintervalsetCRM = null
 let appverresult;
@@ -150,27 +150,6 @@ function onlyNumbersAndComma(object) { // функция для разрешен
     object.value = object.value.replace(/[^0-9,]/g, '');
 }
 
-async function getText() { // обьявление функции получающей текст из гугл таблицы страницы Версии приложений
-    const appdata = await getStorageData(['scriptAdrAppVers']); // Получаем данные из хранилища
-    xhr = new XMLHttpRequest();
-    xhr.open('GET', appdata);
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState !== 4) return;
-
-        if (xhr.status == 200) {
-            try {
-                let r = JSON.parse(xhr.responseText),
-                    appverresult = r["result"];
-
-                tableres = appverresult;
-                console.log('Версии приложений получены')
-
-            } catch (e) { console.log(e) }
-        }
-    }
-    xhr.send()
-}
-
 function logginerfortestsCRM(polzovatel) {
     return new Promise((resolve, reject) => {
         const fetchURL = 'https://id.skyeng.ru/admin/auth/login-links';
@@ -246,8 +225,6 @@ function initialize() { //функция инициализации кнопки
 }
 
 let init = setInterval(initialize, 3000) //заносим в переменную чтобы ее потом в функции можно было удалить интервал
-
-getText() //вызов функции получающей текст из гугл таблицы страницы Версии приложений
 
 let menubarcrm = document.createElement('div')
 menubarcrm.style = `background: white; position:absolute; left: 950px; top: 50px; border: 0px solid #000000; display:none; min-height: 60px; min-width:170px; box-shadow: -1px 4px 16px 7px rgba(34, 60, 80, 0.09); z-index:999;`

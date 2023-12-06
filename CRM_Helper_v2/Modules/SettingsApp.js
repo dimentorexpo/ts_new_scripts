@@ -4,7 +4,7 @@ var win_SettingsApp =  // описание элементов главного �
             <button class="buttonHide" title="скрывает меню" id="hideSettingsApp">hide</button>
         </div>
 		<div style="margin: 5px; width: 350px">
-                <select class="inputCRM" style="height:28px; width:242px; text-align:center" id="soundlistaddrCRM" onchange="changesoundaddrCRM()">
+                <select class="inputCRM" style="height:28px; width:242px; text-align:center" id="soundlistaddrCRM">
                     <option selected="" disabled="">Звук нового сообщения</option>
                     <option value="othersound">Выбрать свой звук</option>
                     </select>
@@ -19,10 +19,10 @@ var win_SettingsApp =  // описание элементов главного �
 				<span class="spanCRM" style="color:bisque; margin-top: 5px;">Громкость звука</span>
 				<input id="rangeCRM" min="0" max="1" value="1.0" step="0.1" type="range">
                     <br>
-				<label class="spanCRM" style="color:bisque"><input type="checkbox" onchange="changerepeatsoundCRM()" id="repeatsoundselectCRM">Повторять звук новой задачи</label>
+				<label class="spanCRM" style="color:bisque"><input type="checkbox" id="repeatsoundselectCRM">Повторять звук новой задачи</label>
                     <br>
 				<span class="spanCRM" style="color:bisque">Интервал воспроизведения звука:</span>
-				<input class="inputCRM" title="Ввод интервала в секундах между повторами звука нового чата" id="soundplayintervalCRM" placeholder="N" autocomplete="off" oninput="maxLengthCheck(this)" type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px; width: 50px; color: black;">
+				<input class="inputCRM" title="Ввод интервала в секундах между повторами звука нового чата" id="soundplayintervalCRM" placeholder="N" autocomplete="off" type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px; width: 50px; color: black;">
 				<button class="btnCRM" title="Внести изменения в интервал между повторами звука нового чата" id="setsoundplayintervalCRM" style="margin-top: 5px">SET⌚</button>
 					<br>
 				<div style="margin-top: 5px; width: 350px">
@@ -31,7 +31,7 @@ var win_SettingsApp =  // описание элементов главного �
                     <input class="inputCRM" id="test_teachCRM" placeholder="ID тест П" autocomplete="off" title = "ID личного тестового преподавателя" type="text" style="text-align: center; width: 130px; color: black;">
                     <button class="btnCRM btnCRMsmall" id="settestteachCRM" title="Добавить в localstorage ID тестового П" style="margin-top: 5px">💾</button>
                 </div>
-				<button class="btnCRM" id="savesettingstofileCRM" onclick="getLocalstorageToFileCRM('settings-CRMhelp')" title="Сохраняет все настройки из localstorage в отдельный .json файл" style="color: #e5ece6; margin-top: 5px">💾 Сохранить настройки</button>
+				<button class="btnCRM" id="savesettingstofileCRM" title="Сохраняет все настройки из localstorage в отдельный .json файл" style="color: #e5ece6; margin-top: 5px">💾 Сохранить настройки</button>
 				<input class="btnCRM" type="file" id="fileinputCRM" title="Загружает все настройки в localstorage из ранее сохраненного файла настроек в формте .json" style="display:none;">
 				<label class="btnCRM" style="color: #e5ece6; background: #768d87; padding: 5px; border-radius: 5px; border: 1px solid #566963;" for="fileinputCRM">⤵ Загрузить настройки</label>
 			</div>
@@ -55,56 +55,36 @@ if (localStorage.getItem('audioCRMvol') != null) { //Задаем громкос
     audioCRM.volume = localStorage.getItem('audioCRMvol');
 } else localStorage.setItem('audioCRMvol', 1);
 
-if (localStorage.getItem('audioCRM') == null){ // Задаем переключатель вкл/выкл звук
+if (localStorage.getItem('audioCRM') == null) { // Задаем переключатель вкл/выкл звук
     localStorage.setItem('audioCRM', 1);
 }
 
-if (localStorage.getItem('repeatsound') == null){ // Задаем переключатель повторять/не повторять звук
+if (localStorage.getItem('repeatsound') == null) { // Задаем переключатель повторять/не повторять звук
     localStorage.setItem('repeatsound', 0);
 }
 
-if (localStorage.getItem('winTopSettingsApp') == null) { // началоное положение окна настроек (если не задано ранее)
-    localStorage.setItem('winTopSettingsApp', '120');
-    localStorage.setItem('winLeftSettingsApp', '295');
-}
-    
-let wintSettingsApp = document.createElement('div'); // создание окна настроек
-document.body.append(wintSettingsApp);
-wintSettingsApp.style = 'min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopSettingsApp') + 'px; left: ' + localStorage.getItem('winLeftSettingsApp') + 'px; font-size: 14px; z-index: 20; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintSettingsApp.style.display = 'none';
-wintSettingsApp.setAttribute('id', 'winSettingsApp');
-wintSettingsApp.innerHTML = win_SettingsApp;
+const wintSettingsApp = createWindowCRM('winSettingsApp', 'winTopSettingsApp', 'winLeftSettingsApp', win_SettingsApp);
+hideWindowOnDoubleClick('winSettingsApp');
+hideWindowOnClick('winSettingsApp', 'hideSettingsApp');
+
+document.getElementById('winSettingsApp').addEventListener('input', function (event) {
+    // Проверяем, что событие произошло на интересующем нас элементе
+    if (event.target.matches('.inputCRM[type="number"]')) {
+        maxLengthCheck(event.target);
+        checkMinMaxValue(event.target);
+    }
+    // Дополнительная проверка для элементов с определёнными id, не зависимо от их типа
+    if (event.target.id === 'test_stdCRM' || event.target.id === 'test_teachCRM') {
+        onlyNumbers(event.target);
+    }
+});
+
 
 let objSoundListCRM = document.getElementById('soundlistaddrCRM')
 if (objSoundListCRM.length < 3) { // если не загружен спискок звуков - загружаем
     getsoundsfromdocCRM()
 }
-    
-var listenerSettingsApp = function (e, a) { // сохранение позиции окна настроек
-    wintSettingsApp.style.left = Number(e.clientX - myX5) + "px";
-    wintSettingsApp.style.top = Number(e.clientY - myY5) + "px";
-    localStorage.setItem('winTopSettingsApp', String(Number(e.clientY - myY5)));
-    localStorage.setItem('winLeftSettingsApp', String(Number(e.clientX - myX5)));
-};
-    
-wintSettingsApp.onmousedown = function (a) { // изменение позиции окна настроек
-    if (checkelementtype(a)) {
-        window.myX5 = a.layerX;
-        window.myY5 = a.layerY;
-        document.addEventListener('mousemove', listenerSettingsApp);
-    }
-}
-wintSettingsApp.onmouseup = function () { document.removeEventListener('mousemove', listenerSettingsApp); } // прекращение изменения позиции окна настроек
-    
-document.getElementById('winSettingsApp').ondblclick = function (a) { // скрытие окна настроек по двойному клику
-    if (checkelementtype(a)) { document.getElementById('winSettingsApp').style.display = 'none'; }
-}
-    
-document.getElementById('hideSettingsApp').onclick = function () { // скрытие окна настроек
-    if (document.getElementById('winSettingsApp').style.display == '')
-        document.getElementById('winSettingsApp').style.display = 'none'
-}
-    
+
 document.getElementById('btnSettingsApp').onclick = function () { // открытие окна настроек
     if (document.getElementById('winSettingsApp').style.display == '') {
         document.getElementById('winSettingsApp').style.display = 'none'
@@ -116,10 +96,10 @@ document.getElementById('btnSettingsApp').onclick = function () { // откры�
         if (localStorage.getItem('test_studCRM') != "" || localStorage.getItem('test_studCRM') != null) { // если в localStorage записан тестовый У отобразить
             document.getElementById('test_stdCRM').value = localStorage.getItem('test_studCRM');
         } else document.getElementById('test_stdCRM').value = "";
-        
+
         if (localStorage.getItem('test_teachCRM') != "" || localStorage.getItem('test_teachCRM') != null) { // если в localStorage записан тестовый У отобразить
             document.getElementById('test_teachCRM').value = localStorage.getItem('test_teachCRM');
-        } else document.getElementById('test_teachCRM').value = "";   
+        } else document.getElementById('test_teachCRM').value = "";
 
         if (localStorage.getItem('splinterCRM') != null || localStorage.getItem('splinterCRM') != "") { //Загружаем интервал между воспроизведением звука
             document.getElementById('soundplayintervalCRM').value = localStorage.getItem('splinterCRM');
@@ -168,7 +148,7 @@ async function getsoundsfromdocCRM() { // загрузка списка звук
         document.getElementById('sound_adrCRM').value = localStorage.getItem('sound_strCRM')
     }
 }
-    
+
 function changesoundaddrCRM() { // сохранение измнений адресса звука    
     if (objSoundListCRM.length > 1) {
         for (let i = 1; i < objSoundListCRM.length; i++) {
@@ -188,6 +168,7 @@ function changesoundaddrCRM() { // сохранение измнений адр�
         }
     }
 }
+document.getElementById('soundlistaddrCRM').addEventListener('change', changesoundaddrCRM);
 
 function changerepeatsoundCRM() {
     if (localStorage.getItem('repeatsound') == 1) {
@@ -195,9 +176,9 @@ function changerepeatsoundCRM() {
         localStorage.setItem('repeatsound', 0)
         document.getElementById('setsoundplayintervalCRM').setAttribute('disabled', 'disabled')
         document.getElementById('soundplayintervalCRM').setAttribute('disabled', 'disabled')
-        if (soundintervalsetCRM != null){
+        if (soundintervalsetCRM != null) {
             clearInterval(soundintervalsetCRM)
-            soundintervalsetCRM = null    
+            soundintervalsetCRM = null
         }
     } else {
         document.getElementById("repeatsoundselectCRM").checked = true;
@@ -206,6 +187,7 @@ function changerepeatsoundCRM() {
         document.getElementById('soundplayintervalCRM').removeAttribute('disabled')
     }
 }
+document.getElementById('repeatsoundselectCRM').addEventListener('change', changerepeatsoundCRM);
 
 document.getElementById('setsoundplayintervalCRM').onclick = function () { // сохранение изменения интервала воспроизведения звука
     if (document.getElementById('soundplayintervalCRM').value != '') {
@@ -234,7 +216,7 @@ document.getElementsByClassName('checkbox-audio-switch-CRM')[0].onclick = functi
 }
 
 document.getElementById('sound_testCRM').onclick = function () { // кнопка тест звука
-    if (document.getElementById('sound_testCRM').innerHTML == '▶'){
+    if (document.getElementById('sound_testCRM').innerHTML == '▶') {
         document.getElementById('sound_testCRM').innerHTML = '⏹'
         document.getElementById('sound_testCRM').title = 'Остановить воспроизведение'
         audioCRM.play()
@@ -294,6 +276,9 @@ function getLocalstorageToFileCRM(fileName) { //функция сохранен�
     document.body.appendChild(downloadLink);
     downloadLink.click();
 
+}
+document.getElementById('savesettingstofileCRM').onclick = function () {
+    getLocalstorageToFileCRM('settings-CRMhelp')
 }
 
 document.getElementById('fileinputCRM').onclick = function () { // по клику на кнопку Загрузить настройки предлагает выбрать файл настроек, добавлять при этом ранее сохраненный в формате .json

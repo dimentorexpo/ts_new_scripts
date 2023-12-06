@@ -225,7 +225,7 @@ document.getElementById('smartroomformCRM').onclick = function () {
 				}
 			});
 
-			
+
 		}
 	}
 
@@ -248,7 +248,7 @@ document.getElementById('smartroomformCRM').onclick = function () {
 			var clientId = document.URL.split('/')[4];
 			// Регулярное выражение для проверки, что clientId является числом от 4 до 10 цифр
 			var regex = /^\d{4,10}$/;
-	
+
 			if (regex.test(clientId)) {
 				document.getElementById('clientid').value = clientId;
 			}

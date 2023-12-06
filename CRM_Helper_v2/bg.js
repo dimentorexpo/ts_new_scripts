@@ -1,11 +1,8 @@
-chrome.storage.local.set({ scriptAdrAppVers: 'https://script.google.com/macros/s/AKfycbwgym7WoXavCcMa7mpzlA4GHGncpWixKwyxhSJT1TU8tZg4KmRemyZqyQ3c5G2cKTxDrQ/exec' });
-
-
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	if (request.action === 'getFetchRequest') {
-		const url = request.fetchURL;				
+		const url = request.fetchURL;
 		const requestOptions = request.requestOptions;
-		
+
 		fetch(url, requestOptions)
 			.then(response => {
 				if (!response.ok) {
@@ -23,7 +20,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			.catch(error => {
 				sendResponse({ success: false, error: error.message });
 			});
-		
-			return true; // Возвращаем true для асинхронной отправки ответа
-		}
+
+		return true; // Возвращаем true для асинхронной отправки ответа
+	}
 });
