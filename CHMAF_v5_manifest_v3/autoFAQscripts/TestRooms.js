@@ -58,6 +58,8 @@ var win_testrooms =  // описание элементов окна созда�
   </div>`;
 
 const winttestrooms = createWindow('AF_testrooms', 'winToptestrooms', 'winLefttestrooms', win_testrooms);
+hideWindowOnDoubleClick('AF_testrooms');
+hideWindowOnClick('AF_testrooms', 'hideMetestrooms');
 const messagefield = document.getElementById('testroomsmessage');
 messagefield.display = 'none';
 
@@ -144,13 +146,6 @@ document.getElementById("insertstudid").addEventListener("click", teststudenttof
 document.getElementById("clrTestRooms").addEventListener("click", cleartestroomsfields);
 document.getElementById("aboutTestRooms").addEventListener("click", opentestroomshelp);
 document.getElementById("confluenceTestRooms").addEventListener("click", opentestroomsconf);
-document.getElementById("hideMetestrooms").addEventListener("click", function () {
-    if (document.getElementById('AF_testrooms').style.display == '')
-        document.getElementById('AF_testrooms').style.display = 'none'
-});
-document.getElementById('testroomshead').addEventListener('dblclick', function () {
-    document.getElementById('AF_testrooms').style.display = 'none';
-})
 
 document.getElementById('userfromchatid').addEventListener('click', function () { // добавить id пользователя из активного чата и добавить id тестовго У или П
     let whoisuser = SearchinAFnewUI("userType");

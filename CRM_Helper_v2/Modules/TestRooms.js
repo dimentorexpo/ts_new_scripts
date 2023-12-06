@@ -4,9 +4,9 @@ var win_testroomsCRM =  // описание элементов окна созд
           <span style="cursor: -webkit-grab;">
               <div style="width: 310px; margin: 5px;" id="testroomsCRMhead">
                   <button class="buttonHide" title="скрывает меню" id="hideMetestroomsCRM">hide</button>
-                  <button class="btnCRM btnCRMsmall" onclick="cleartestroomsCRMfields()" title="По нажатию очищает поля" style="width:30px;">🧹</button>
-                  <button class="btnCRM btnCRMsmall" onclick="opentestroomsCRMhelp()" style="width:30px; float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
-                  <button class="btnCRM btnCRMsmall" onclick="opentestroomsCRMconf()" title="Открывает раздел в Confluence по созданию тестовых комнат" style="width:30px; float: right; margin-right: 5px;">📋</button>
+                  <button class="btnCRM btnCRMsmall" id="clrTestRooms" title="По нажатию очищает поля" style="width:30px;">🧹</button>
+                  <button class="btnCRM btnCRMsmall" id="aboutTestRooms" style="width:30px; float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
+                  <button class="btnCRM btnCRMsmall" id="confluenceTestRooms" title="Открывает раздел в Confluence по созданию тестовых комнат" style="width:30px; float: right; margin-right: 5px;">📋</button>
               </div>
 
               <div style="width: 310px; margin:5px; display:flex; justify-content:left;">
@@ -38,13 +38,13 @@ var win_testroomsCRM =  // описание элементов окна созд
               </div>
 
               <div style="width: 310px; margin:5px; display:flex; justify-content:left;">
-                  <input class="inputCRM" id="teachforroom" placeholder="Введи ID П" title="Введи id П для кого создать тестовую комнату" oninput="onlyNumbers(this)" autocomplete="off" type="text" style="text-align: center; width: 135px; color: black; margin-left: 5px;">
-                  <input class="inputCRM" id="studforroom" placeholder="Введи ID У" title="Введи id У для кого создать тестовую комнату(Если У несколько, вводите через запятую)" oninput="onlyNumbersAndComma(this)" autocomplete="off" type="text" style="text-align: center; width: 135px; color: black; margin-left: 5px;">
+                  <input class="inputCRM" id="teachforroom" placeholder="Введи ID П" title="Введи id П для кого создать тестовую комнату" autocomplete="off" type="text" style="text-align: center; width: 135px; color: black; margin-left: 5px;">
+                  <input class="inputCRM" id="studforroom" placeholder="Введи ID У" title="Введи id У для кого создать тестовую комнату(Если У несколько, вводите через запятую)" autocomplete="off" type="text" style="text-align: center; width: 135px; color: black; margin-left: 5px;">
     					</div>
 
               <div style="width: 310px; margin:2px; display:flex; justify-content:left;">
-                  <button id="insertteachid" title="Поставить id вашего тестового П" onclick="testteachertofield()" class="btnCRM testroomsCRMbtn" style="margin-left:5px;">Тест П</button>
-                  <button id="insertstudid" title="Поставить id вашего тестового У" onclick="teststudenttofield()" class="btnCRM testroomsCRMbtn">Тест У</button>
+                  <button id="insertteachid" title="Поставить id вашего тестового П" class="btnCRM testroomsCRMbtn" style="margin-left:5px;">Тест П</button>
+                  <button id="insertstudid" title="Поставить id вашего тестового У" class="btnCRM testroomsCRMbtn">Тест У</button>
                   <button id="userfromchatid" title="Подставить id пользователя из активной задачи и подставить id вашего тестового У или П" class="btnCRM testroomsCRMbtn">User ID</button>
               </div>
               <div style="width: 310px; margin:5px; display:flex; justify-content:left;">
@@ -57,47 +57,12 @@ var win_testroomsCRM =  // описание элементов окна созд
       </span>
   </div>`;
 
-
-if (localStorage.getItem('winToptestroomsCRM') == null) { // началоное положение окна создания тестовых комнат
-  localStorage.setItem('winToptestroomsCRM', '120');
-  localStorage.setItem('winLefttestroomsCRM', '295');
-}
-
-let winttestroomsCRM = document.createElement('div'); // создание окна создания тестовых комнат
-document.body.append(winttestroomsCRM);
-winttestroomsCRM.style = 'min-width: 65px; background: #464451; top: ' + localStorage.getItem('winToptestroomsCRM') + 'px; left: ' + localStorage.getItem('winLefttestroomsCRM') + 'px; font-size: 14px; z-index: 21; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-winttestroomsCRM.style.display = 'none';
-winttestroomsCRM.setAttribute('id', 'testroomsCRM');
-winttestroomsCRM.innerHTML = win_testroomsCRM;
+const winttestroomsCRM = createWindowCRM('testroomsCRM', 'winToptestroomsCRM', 'winLefttestroomsCRM', win_testroomsCRM);
+hideWindowOnDoubleClick('testroomsCRMhead');
+hideWindowOnClick('testroomsCRM', 'hideMetestroomsCRM');
 
 const messagefield = document.getElementById('testroomsCRMmessage');
 messagefield.display = 'none';
-
-
-var listenertestroomsCRM = function (e, a) { // сохранение позиции окна создания тестовых комнат
-  winttestroomsCRM.style.left = Number(e.clientX - myX7) + "px";
-  winttestroomsCRM.style.top = Number(e.clientY - myY7) + "px";
-  localStorage.setItem('winToptestroomsCRM', String(Number(e.clientY - myY7)));
-  localStorage.setItem('winLefttestroomsCRM', String(Number(e.clientX - myX7)));
-};
-
-winttestroomsCRM.onmousedown = function (a) { // изменение позиции окна создания тестовых комнат
-  if (checkelementtype(a)) {
-    window.myX7 = a.layerX;
-    window.myY7 = a.layerY;
-    document.addEventListener('mousemove', listenertestroomsCRM); 
-  }
-}
-winttestroomsCRM.onmouseup = function () { document.removeEventListener('mousemove', listenertestroomsCRM); } // прекращение изменения позиции окна создания тестовых комнат
-
-document.getElementById('testroomsCRMhead').ondblclick = function (a) { // скрытие окна создания тестовых комнат по двойному клику
-  if (checkelementtype(a)) { document.getElementById('testroomsCRM').style.display = 'none'; }
-}
-
-document.getElementById('hideMetestroomsCRM').onclick = function () { // скрытие окна создания тестовых комнат
-  if (document.getElementById('testroomsCRM').style.display == '')
-    document.getElementById('testroomsCRM').style.display = 'none'
-}
 
 document.getElementById('btnCreateTestRoom').onclick = function () { // открытие окна создания тестовых комнат
   if (document.getElementById('testroomsCRM').style.display == 'none') {
@@ -217,8 +182,8 @@ document.getElementById('starttestroom').onclick = function () { // добавл
           "sec-fetch-site": "same-origin",
           "sec-fetch-user": "?1",
           "upgrade-insecure-requests": "1"
-      };
-      const request = {
+    };
+    const requestOptions = {
           headers: requestHeaders,
           referrer: requestreferrer,
           referrerPolicy: 'strict-origin-when-cross-origin',
@@ -226,24 +191,21 @@ document.getElementById('starttestroom').onclick = function () { // добавл
           method: 'POST',
           mode: 'cors',
           credentials: 'include',
-      };
-  
-      document.getElementById('responseTextarea1').value = JSON.stringify(request);
-      document.getElementById('responseTextarea2').value = requestAdr;
-      document.getElementById('responseTextarea3').value = 'postdata';
-      document.getElementById('sendResponse').click();
+    };
 
-      document.getElementById('responseTextarea1').addEventListener('DOMSubtreeModified', () => {
-        let responseRoomCreate = document.getElementById('responseTextarea1').getAttribute('postdata');
-        if (responseRoomCreate) {
-          testroomsCRMshowmessage('message','Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
-          document.getElementById('responseTextarea1').removeAttribute('postdata');
-          cleartestroomsCRMfields()
-        }
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: requestAdr, requestOptions: requestOptions }, function (response) {
+      if (response.success) {
+        testroomsCRMshowmessage('message', 'Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
+        cleartestroomsCRMfields()
+      } else {
+          alert('Не удалось создать урок ' + response.error);
+          reject(new Error(response.error));
+      }
     });
-    } else {
-      testroomsCRMshowmessage('error',massagetexttoshow);
-    }        
+
+  } else {
+    testroomsCRMshowmessage('error',massagetexttoshow);
+  }        
 }
 
 function GenerateHash(length) { // генерируем случайный хэш
@@ -283,6 +245,19 @@ function opentestroomsCRMconf() { // Открывает раздел в Confluen
   window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=82244638")
 }
 
-function opentestroomsCRMhelp() { // Открывает раздел в Confluence по созданию тестовых комнат
+function opentestroomsCRMhelp() { // Открывает раздел в Confluence инструкцию
   window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-testrooms%D0%9E%D0%BA%D0%BD%D0%BE%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F%D1%82%D0%B5%D1%81%D1%82%D0%BE%D0%B2%D1%8B%D1%85%D1%83%D1%80%D0%BE%D0%BA%D0%BE%D0%B2")
 }
+teachforroom.addEventListener('input', function () {
+  onlyNumbers(this);
+});
+
+studforroom.addEventListener('input', function () {
+  onlyNumbersAndComma(this);
+});
+
+document.getElementById("insertteachid").addEventListener("click", testteachertofield);
+document.getElementById("insertstudid").addEventListener("click", teststudenttofield);
+document.getElementById("clrTestRooms").addEventListener("click", cleartestroomsCRMfields);
+document.getElementById("aboutTestRooms").addEventListener("click", opentestroomsCRMhelp);
+document.getElementById("confluenceTestRooms").addEventListener("click", opentestroomsCRMconf);

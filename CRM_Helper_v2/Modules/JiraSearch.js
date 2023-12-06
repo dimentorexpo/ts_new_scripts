@@ -2,10 +2,7 @@ let indexStart;
 let customquery = '';
 let requesttojiratext;
 let favissues = [];
-const textArea1 = document.getElementById('responseTextarea1');
-const textArea2 = document.getElementById('responseTextarea2');
-const textArea3 = document.getElementById('responseTextarea3');
-const sendRespbtn = document.getElementById('sendResponse');
+
 var win_Jira =  // описание элементов окна Поиска по Jira
     `<div class="maindivst" style="display: flex; width: 550px;">
         <span style="width: 550px">
@@ -164,31 +161,6 @@ function addPageSwitcher(spanCount) { // добавляем страницы д�
     document.getElementById('pagesSwitcher').innerHTML = spanElements;
 }
 
-function addJiraIssueOnClickEvent(barray, issueKeys) { // обработчик нажатия на задачу
-	for (let j = 0; j < barray.length; j++) {
-		barray[j].onclick = function () {
-			let chatId = getChatId();
-			if (chatId){
-				if (window.location.href.includes('tickets/assigned')) {
-				sendComment("https://jira.skyeng.tech/browse/" + issueKeys[j])
-			}
-			fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
-				"headers": {
-					"accept": "*/*",
-					"content-type": "application/json",
-					"sec-fetch-dest": "empty",
-					"sec-fetch-mode": "cors",
-					"sec-fetch-site": "same-origin"
-				},
-				"body": "{\"conversationId\":\"${b[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"https://jira.skyeng.tech/browse/" + issueKeys[j] + "\"}]}",
-				"method": "POST",
-				"mode": "cors",
-				"credentials": "include"
-			})
-		}
-	}
-	}
-}
 
 function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputTable) { // добавление в избранное
 	for (let v = 0; v < addtofarr.length; v++) {
