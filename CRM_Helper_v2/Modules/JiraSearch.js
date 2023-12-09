@@ -51,22 +51,20 @@ hideWindowOnDoubleClick('AF_Jira');
 hideWindowOnClick('AF_Jira', 'hideMej');
 
 function optionsforfetch(queryName, indexStart) {
-    let tempvar;
-    tempvar = `
-		"headers": {
-			"__amdmodulename": "jira/issue/utils/xsrf-token-header",
-		   "accept": "*/*",
-			"sec-fetch-mode": "cors",
-		   "sec-fetch-site": "same-origin",
-		   "x-atlassian-token": "no-check",
-		   "x-requested-with": "XMLHttpRequest"
-		 },
-		 "body": "startIndex=${indexStart}&filterId=21266&jql=${queryName}&layoutKey=list-view",
-		 "method": "POST",
-		 "mode": "cors",
-		 "credentials": "include"
-		`
-    return tempvar;
+    return {
+        headers: {
+            "__amdmodulename": "jira/issue/utils/xsrf-token-header",
+            "accept": "*/*",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-atlassian-token": "no-check",
+            "x-requested-with": "XMLHttpRequest"
+        },
+        body: `startIndex=${indexStart}&filterId=21266&jql=${encodeURIComponent(queryName)}&layoutKey=list-view`,
+        method: "POST",
+        mode: "cors",
+        credentials: "include"
+    };
 }
 
 const JQLTemplates = { // шаблоны JQL запросов
@@ -576,8 +574,8 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
             for (let id in queries) {
                 if (document.getElementById(id).classList.contains('active-query')) {
                     document.getElementById('JQLquery').value = queries[id];
-                    requesttojiratext = encodeURI(document.getElementById('JQLquery').value);
-                    requestOptions = `{${optionsforfetch(requesttojiratext, 0)}}`;
+                    requesttojiratext = encodeURIComponent(document.getElementById('JQLquery').value);
+                    requestOptions = optionsforfetch(requesttojiratext, 0);
                     break;
                 }
             }
