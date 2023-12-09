@@ -35,8 +35,7 @@ const buttons = [ //array of buttonsnames
     '.mobbugsbtn',
     '.academymobbugsbtn',
     '.stcabmbsbtn',
-    '.CommProblemsbtn',
-    '.analystbtn'
+    '.CommProblemsbtn'
 ];
 
 const otherOptions = [ // array of buttons categories id's
@@ -57,8 +56,7 @@ const otherOptions = [ // array of buttons categories id's
     'studcabmobbugskoptions',
     'mobbugsoptions',
     'academymobbugsoptions',
-    'CommProblemsoptions',
-    'analystoptions'
+    'CommProblemsoptions'
 ];
 
 var win_servicedesk = // описание элементов окна Service Desk
@@ -96,7 +94,6 @@ var win_servicedesk = // описание элементов окна Service De
 					<button class="mainButton sdbtn" id="optionMobbugs" value="30">📱Mobil bug</button>
                     <button class="mainButton sdbtn" id="optionAcademymobbugs" value="19">🅰📱🐞</button>
                     <button class="mainButton sdbtn" id="optionCommProblems" value="75">📧Comm</button>
-                    <button class="mainButton sdbtn" id="optionAnalyst" value="18" style="display: none;">TEST</button>
                 </div>
 				<div id="studcabmobbugskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#student-cabinet-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
@@ -153,10 +150,6 @@ var win_servicedesk = // описание элементов окна Service De
                 </div>
 				<div id="tripwireoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#eco-tripwire-bugs; Life, Talks, РК adults, расширение переводчик для браузера</p>
-
-				</div>
-				<div id="analystoptions" style="display: none; margin-left:20px;">
-					<p style="${Paragrafsstyles}">#analysts-gm-tl; канал МЕРТВЫЙ НЕ ИСПОЛЬЗУЕМ В РАБОТЕ, ЭТО НЕ ШУТКА!, ТОЛЬКО ДЛЯ ТЕСТИРОВАНИЯ!</p>
 
 				</div>
 				<div id="mobbugsoptions" style="display: none; margin-left:20px;">
@@ -850,11 +843,4 @@ document.getElementById('createsd').addEventListener('click', function () { //ф
         }
     }
 });
-
-function SDtestbtn() {
-    if (document.getElementById('optionAnalyst').style.display == 'none') {
-        document.getElementById('optionAnalyst').style.display = ''
-    } else { document.getElementById('optionAnalyst').style.display = 'none' }
-}
 	//End of script
-// }
