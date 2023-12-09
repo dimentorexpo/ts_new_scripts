@@ -51,8 +51,8 @@ hideWindowOnDoubleClick('AF_Jira');
 hideWindowOnClick('AF_Jira', 'hideMej');
 
 function optionsforfetch(queryName, indexStart) {
-	let tempvar;
-	tempvar = `
+    let tempvar;
+    tempvar = `
 		"headers": {
 			"__amdmodulename": "jira/issue/utils/xsrf-token-header",
 		   "accept": "*/*",
@@ -66,7 +66,7 @@ function optionsforfetch(queryName, indexStart) {
 		 "mode": "cors",
 		 "credentials": "include"
 		`
-	return tempvar;
+    return tempvar;
 }
 
 const JQLTemplates = { // шаблоны JQL запросов
@@ -80,7 +80,7 @@ const JQLTemplates = { // шаблоны JQL запросов
 
 for (const [key, template] of Object.entries(JQLTemplates)) { // передача запросов в форму
     Object.defineProperty(window, key, {
-        get: function() {
+        get: function () {
             return template.replace('${testJira.value}', testJira.value);
         }
     });
@@ -88,7 +88,7 @@ for (const [key, template] of Object.entries(JQLTemplates)) { // передач�
 
 function toggleAndDeactivateQueries(currentId) { // Смена класса кнопок типа запросов
     let queryIds = ['defaultQuery', 'getiosbugs', 'getandroidbugs', 'customQuery', 'favouriteBugs', 'ZBPQuery', 'freshQuery', 'PSquery'];
-    
+
     queryIds.forEach(id => {
         let element = document.getElementById(id);
         if (id === currentId) {
@@ -101,11 +101,11 @@ function toggleAndDeactivateQueries(currentId) { // Смена класса кн
 
 function showelemonpages() { // открываем элементы окна если они скрыты
     document.getElementById('testJira').value = ""
-	document.getElementById('fields_jira_search').style.display = ""
-	document.getElementById('issuetable').style.display = ""
-	document.getElementById('foundIssuesAmount').style.display = "";
-	document.getElementById('pagesSwitcher').style.display = "flex";
-	document.getElementById('favouriteissuetable').style.display = "none"
+    document.getElementById('fields_jira_search').style.display = ""
+    document.getElementById('issuetable').style.display = ""
+    document.getElementById('foundIssuesAmount').style.display = "";
+    document.getElementById('pagesSwitcher').style.display = "flex";
+    document.getElementById('favouriteissuetable').style.display = "none"
 }
 
 // Функция для фильтрации элементов списка.
@@ -121,10 +121,10 @@ function replaceItem(item) { // Функция заменяет '">', на ' –
 }
 
 function formatIssue(item, currentNumber, issueKey, searchText, currentpic, currentIds) {
-    const temporarka = isSearchTextMatched(item, searchText) 
-        ? highlightSearchText(item, searchText) 
+    const temporarka = isSearchTextMatched(item, searchText)
+        ? highlightSearchText(item, searchText)
         : replaceItem(item);
-    
+
     return `
         <span style="color: #00FA9A">&#5129;</span>
         <img src="${currentpic}" style="width:20px; height:25px;" title="Приоритеты: ⛔ - Blocker, полностью залитая красная стрелка вверх - Critical, три красные стрелки вверх - Major, три синие вниз - Minor, ⭕ - Trivial">
@@ -163,136 +163,141 @@ function addPageSwitcher(spanCount) { // добавляем страницы д�
 
 
 function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputTable) { // добавление в избранное
-	for (let v = 0; v < addtofarr.length; v++) {
-		addtofarr[v].onclick = function () {
-			addtofarr[v].innerText = "❤";
-			for (let x = 0; x < tagsarray.length; x++) {
-				if (x == v) {
-					let testvar = document.createElement('div');
-					testvar.innerHTML = '<p style="margin-bottom:0">' + '<span style="color: #00FA9A">&#5129;</span>' +
-						`<a name="favbugs" href="${tagsarray[x].href}" target="_blank" style="color:bisque;">` +
-						tagsarray[x].innerHTML + '</a>' +
-						`<span name="favissuemassive" style="display:none">${massivissueids[x].innerText}</span>` +
-						'<span name="addtonotesbug" style="cursor:pointer;" title="Добавить в комментарий в чат и в ссылку на Jira">💬</span>' +
-						'<span name="removefromfavourites" style="cursor:pointer;" title="Удалить задачу из Избранного">❌</span>' +
-						'<span name = "increasecount" style="color:#ADFF2F; margin-left: 5px; cursor: pointer">&#69717;&#120783;</span>' + '</p>';
-					outputTable.appendChild(testvar);
-					favissues.push(testvar.innerHTML);
-					localStorage.setItem('bugsarray', JSON.stringify(favissues));
-				}
-			}
-		}
-	}
+    for (let v = 0; v < addtofarr.length; v++) {
+        addtofarr[v].onclick = function () {
+            addtofarr[v].innerText = "❤";
+            for (let x = 0; x < tagsarray.length; x++) {
+                if (x == v) {
+                    let testvar = document.createElement('div');
+                    testvar.innerHTML = '<p style="margin-bottom:0">' + '<span style="color: #00FA9A">&#5129;</span>' +
+                        `<a name="favbugs" href="${tagsarray[x].href}" target="_blank" style="color:bisque;">` +
+                        tagsarray[x].innerHTML + '</a>' +
+                        `<span name="favissuemassive" style="display:none">${massivissueids[x].innerText}</span>` +
+                        '<span name="removefromfavourites" style="cursor:pointer;" title="Удалить задачу из Избранного">❌</span>' +
+                        '<span name = "increasecount" style="color:#ADFF2F; margin-left: 5px; cursor: pointer">&#69717;&#120783;</span>' + '</p>';
+                    outputTable.appendChild(testvar);
+                    favissues.push(testvar.innerHTML);
+                    localStorage.setItem('bugsarray', JSON.stringify(favissues));
+                }
+            }
+        }
+    }
 }
 
 function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
-	for (let f = 0; f < refreshissuesarr.length; f++) {
-		refreshissuesarr[f].onclick = function () {
+    for (let f = 0; f < refreshissuesarr.length; f++) {
+        refreshissuesarr[f].onclick = function () {
+            const fetchURL = `https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueIds[f]}`;
+            const requestOptions = {
+                method: 'GET'
+            };
 
-			textArea1.value = '{}'
-			textArea2.value = "https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=" + issueIds[f]
-			textArea3.value = 'reportscount'
-			sendRespbtn.click()
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (authresponse) {
+                if (authresponse.success) {
+                    const refiss = authresponse.fetchansver;
+                    if (refiss) {
+                        let count;
+                        let jira_token;
+                        let increasedcount;
 
-                                let count;
-                                let jira_token;
-                                let increasedcount;
-                                setTimeout(async function () {
+                        jira_token = refiss.match(/"atl_token":"(.*lin)/)[1]
+                        count = refiss.match(/customfield_15410.*?value=.*?(\d+)/)[1];
+                        count = parseInt(count);
+                        increasedcount = count + 1;
+                        increasedcount = increasedcount.toString();
+                        console.log("count=" + count + " increasedcount " + increasedcount);
 
-				let repcount = textArea1.getAttribute('reportscount')
-                                    repcount = await repcount;
-                                    jira_token = repcount.match(/"atl_token":"(.*lin)/)[1]
-				textArea1.removeAttribute('reportscount')
+                        const fetchURL2 = 'https://jira.skyeng.tech/secure/AjaxIssueAction.jspa?decorator=none';
+                        const requestOptions2 = `{
+                            "headers": {
+                                "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                "sec-fetch-mode": "cors",
+                                "sec-fetch-site": "same-origin",
+                                "x-requested-with": "XMLHttpRequest",
+                                "x-sitemesh-off": "true"
+                                        },
+                            "body": "customfield_15410=${increasedcount}&issueId=${issueIds[f]}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410",
+                              "method": "POST",
+                              "mode": "cors",
+                              "credentials": "include"
+                                }`;
 
-                                    count = repcount.match(/customfield_15410.*?value=.*?(\d+)/)[1];
-                                    count = parseInt(count);
-                                    increasedcount = count + 1;
-                                    increasedcount = increasedcount.toString();
-                                    console.log("count=" + count + " increasedcount " + increasedcount);
-
-                                    setTimeout(function () {
-
-					textArea1.value = `{
-											"headers": {
-												"content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-												"sec-fetch-mode": "cors",
-												"sec-fetch-site": "same-origin",
-												"x-requested-with": "XMLHttpRequest",
-												"x-sitemesh-off": "true"
-														},
-						"body": "customfield_15410=${increasedcount}&issueId=${issueIds[f]}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410",
-											  "method": "POST",
-											  "mode": "cors",
-											  "credentials": "include"
-												}`
-					textArea2.value = "https://jira.skyeng.tech/secure/AjaxIssueAction.jspa?decorator=none"
-					textArea3.value = ''
-					sendRespbtn.click()
-					let newinfocount = document.querySelectorAll('.newcount');
-					newinfocount[f].innerHTML = increasedcount;
-					increasedcount = "";
-                                    }, 1000);
-                                }, 1000)
+                        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL2, requestOptions: requestOptions2 }, function (refissresponse) {
+                            if (refissresponse.success) {
+                                let newinfocount = document.querySelectorAll('.newcount');
+                                newinfocount[f].innerHTML = increasedcount;
+                                increasedcount = "";
+                            } else {
+                                alert('Не удалось добавить SupportTab: ' + refissresponse.error);
                             }
-                        }
+                        });
                     }
+                } else {
+                    alert('Не удалось добавить SupportTab: ' + authresponse.error);
+                }
+            });
+        }
+    }
+}
+
 
 let firstJiraParse = false;
 
-function getJiraTask() { // поиск задач в jira
-    const rezissuetable = JSON.parse(textArea1.getAttribute('getissuetable'));
+function getJiraTask(requestOptions) { // поиск задач в jira
+    const fetchURL = 'https://jira.skyeng.tech/rest/issueNav/1/issueTable';
 
-    if (!rezissuetable) {
-        setTimeout(getJiraTask, 1000);
-        return;
-    }
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (tasksresponse) {
+        if (tasksresponse.success) {
+            const rezissuetable = JSON.parse(tasksresponse.fetchansver)
+            console.log(tasksresponse)
+            const { issueKeys, table, issueIds } = rezissuetable.issueTable;
+            if (!table) {
+                document.getElementById('issuetable').innerHTML = '<a style="margin-left:5px; color: #ffe4c4">Задач не найдено</a>'
+                return;
+            }
+            const matchedItems = table.match(/(\w+-\d+">.*?).<\/a>/gmi).filter(filterItems);
+            const matchedNumbers = table.match(/(">.)*?([0-9]+)\n/gm);
+            const searchText = document.getElementById('testJira').value;
 
-    textArea1.removeAttribute('getissuetable');
+            let issues = '';
+            for (let i = 0; i < Math.min(issueKeys.length, 50); i++) {
+                const currentNumber = matchedNumbers ? matchedNumbers[i] : null;
+                const currentIssue = matchedItems[i];
+                const currentKey = issueKeys[i];
+                const currentIds = issueIds[i];
+                const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
 
-    const { issueKeys, table, issueIds } = rezissuetable.issueTable;
-    if (!table) {
-        document.getElementById('issuetable').innerHTML = '<a style="margin-left:5px; color: #ffe4c4">Задач не найдено</a>'
-        return;
-    }
-    const matchedItems = table.match(/(\w+-\d+">.*?).<\/a>/gmi).filter(filterItems);
-    const matchedNumbers = table.match(/(">.)*?([0-9]+)\n/gm);
-    const searchText = document.getElementById('testJira').value;
+                if (currentIssue && currentKey) {
+                    issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
+                } else {
+                    console.error(`Не удалось найти соответствие для индекса: ${i}`);
+                }
+            }
 
-    let issues = '';
-    for (let i = 0; i < Math.min(issueKeys.length, 50); i++) {
-        const currentNumber = matchedNumbers ? matchedNumbers[i] : null;
-        const currentIssue = matchedItems[i];
-        const currentKey = issueKeys[i];
-		const currentIds = issueIds[i];
-		const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
+            document.getElementById('issuetable').innerHTML = issues;
 
-        if (currentIssue && currentKey) {
-            issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
+            const foundIssuesAmount = issueKeys.length;
+            addPageSwitcher(Math.floor(foundIssuesAmount / 50) + 1);
+
+            document.getElementById('foundIssuesAmount').innerHTML = `Всего найдено задач: ${foundIssuesAmount}`;
+
+            addFavouritesOnClickEvent(
+                document.getElementsByName('addtofavourites'),
+                document.getElementsByName('buglinks'),
+                document.getElementsByName('issueIds'),
+                document.getElementById('favouriteissuetable')
+            );
+
+            const refreshissuesarr = document.querySelectorAll('.refreshissues');
+            addRefreshIssueOnClickEvent(refreshissuesarr, issueIds);
+
+            setTimeout(() => { issues = []; }, 5000);
+
+            switchJiraPages();
         } else {
-            console.error(`Не удалось найти соответствие для индекса: ${i}`);
+            alert('Не удалось получить задачи: ' + tasksresponse.error);
         }
-    }
-
-    document.getElementById('issuetable').innerHTML = issues;
-    
-    const foundIssuesAmount = issueKeys.length;
-    addPageSwitcher(Math.floor(foundIssuesAmount / 50) + 1);
-
-    document.getElementById('foundIssuesAmount').innerHTML = `Всего найдено задач: ${foundIssuesAmount}`;
-
-    addFavouritesOnClickEvent(
-        document.getElementsByName('addtofavourites'),
-        document.getElementsByName('buglinks'),
-        document.getElementsByName('issueIds'),
-        document.getElementById('favouriteissuetable')
-    );
-
-	const refreshissuesarr = document.querySelectorAll('.refreshissues');
-	addRefreshIssueOnClickEvent(refreshissuesarr, issueIds);
-
-    setTimeout(() => { issues = []; }, 5000);
-    
-    switchJiraPages();
+    });
 }
 function switchJiraPages() {
     if (!requesttojiratext) {
@@ -301,59 +306,62 @@ function switchJiraPages() {
     }
 
     const pageSwArr = document.getElementsByName('changeList');
+    const fetchURL = 'https://jira.skyeng.tech/rest/issueNav/1/issueTable';
 
     pageSwArr.forEach((page, d) => {
-        page.onclick = async function() {
+        page.onclick = async function () {
             if (!this.classList.contains('active')) {
                 document.getElementById('issuetable').innerHTML = '<span style="color:bisque">Загрузка...</span>';
-                
+
                 pageSwArr.forEach(p => p.classList.remove('active'));
                 this.classList.add('active');
 
-                const optionsValue = optionsforfetch(requesttojiratext, page.getAttribute('value'));
+                const requestOptions = optionsforfetch(requesttojiratext, page.getAttribute('value'));
 
-                textArea1.value = `{${optionsValue}}`;
-                textArea2.value = "https://jira.skyeng.tech/rest/issueNav/1/issueTable";
-                textArea3.value = 'newPageIssue';
-                sendRespbtn.click();
+                chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (tasksresponse2) {
+                    if (tasksresponse2.success) {
+                        const rezissuetable = JSON.parse(tasksresponse2.fetchansver)
+                        console.log(tasksresponse2)
+                        const { issueKeys, table, issueIds } = rezissuetable.issueTable;
+                        const matchedItems = table.match(/(\w+-\d+">.*?).<\/a>/gmi).filter(filterItems);
+                        const matchedNumbers = table.match(/(">.)*?([0-9]+)\n/gm);
 
-                setTimeout(function() {
-                    const rezissuetable = JSON.parse(textArea1.getAttribute('newPageIssue'));
-                    textArea1.removeAttribute('newPageIssue');
+                        const regex = /<tr id="issuerow(\d+)"/g;
+                        const matches = table.matchAll(regex);
+                        const ids = Array.from(matches, m => m[1]);
+                        console.log(ids)
+                        const searchText = document.getElementById('testJira').value;
 
-                    const { issueKeys, table, issueIds } = rezissuetable.issueTable;
-                    const matchedItems = table.match(/(\w+-\d+">.*?).<\/a>/gmi).filter(filterItems);
-                    const matchedNumbers = table.match(/(">.)*?([0-9]+)\n/gm);
-                    const searchText = document.getElementById('testJira').value;
-                    
-                    let issues = '';
-                    for (let i = 0; i < rezissuetable.issueTable.displayed; i++) {
-                        const currentNumber = matchedNumbers ? matchedNumbers[i] : null;
-                        const currentIssue = matchedItems[i];
-                        const currentKey = issueKeys[i];
-                        const currentIds = issueIds[i];
-                        const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
-
-                        if (currentIssue && currentKey) {
-                            issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
-                        } else {
-                            console.error("Не удалось найти соответствие для индекса: " + i);
+                        let issues = '';
+                        let switcher = Number(page.getAttribute('value'))
+                        for (let i = 0; i < rezissuetable.issueTable.displayed; i++) {
+                            const currentNumber = matchedNumbers ? matchedNumbers[i] : null;
+                            const currentIssue = matchedItems[i];
+                            const currentKey = issueKeys[+i + switcher];
+                            const currentIds = ids[i];
+                            const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
+                            if (currentIssue && currentKey) {
+                                issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
+                            } else {
+                                console.error("Не удалось найти соответствие для индекса: " + i);
+                            }
                         }
+
+                        document.getElementById('issuetable').innerHTML = issues;
+
+                        addFavouritesOnClickEvent(
+                            document.getElementsByName('addtofavourites'),
+                            document.getElementsByName('buglinks'),
+                            document.getElementsByName('issueIds'),
+                            document.getElementById('favouriteissuetable')
+                        );
+
+                        const refreshissuesarr = document.querySelectorAll('.refreshissues');
+                        addRefreshIssueOnClickEvent(refreshissuesarr, ids);
+                    } else {
+                        alert('Не удалось получить задачи: ' + tasksresponse2.error);
                     }
-
-                    document.getElementById('issuetable').innerHTML = issues;
-
-                    addFavouritesOnClickEvent(
-                        document.getElementsByName('addtofavourites'),
-                        document.getElementsByName('buglinks'),
-                        document.getElementsByName('issueIds'),
-                        document.getElementById('favouriteissuetable')
-                    );
-
-                    const refreshissuesarr = document.querySelectorAll('.refreshissues');
-                    addRefreshIssueOnClickEvent(refreshissuesarr, issueIds);
-                    
-                }, 1000);
+                });
             }
         }
     });
@@ -363,17 +371,17 @@ document.getElementById('ClearJiraData').onclick = function () {  // функц�
     document.getElementById('testJira').value = '';
     document.getElementById('issuetable').innerText = '';
     document.getElementById('foundIssuesAmount').innerText = '';
-	ClearPages();
+    ClearPages();
 }
 
 function ClearPages() { // Удаляем страницы найденных задачь
-	var pagesSwitcher = document.getElementById('pagesSwitcher');
+    var pagesSwitcher = document.getElementById('pagesSwitcher');
 
-	if (pagesSwitcher.children.length !== 0) {
-		while (pagesSwitcher.firstChild) {
-			pagesSwitcher.removeChild(pagesSwitcher.firstChild);
-		}
-	}
+    if (pagesSwitcher.children.length !== 0) {
+        while (pagesSwitcher.firstChild) {
+            pagesSwitcher.removeChild(pagesSwitcher.firstChild);
+        }
+    }
 }
 
 document.getElementById('jirainstr').onclick = function () {
@@ -386,7 +394,7 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
         document.getElementById('idmymenucrm').style.display = 'none'
 
         document.getElementById('JQLquery').innerText = defqueryitem;
-        
+
         function checkJiraToken() { // Функция проверки авторизации в Jira
             const fetchURL = 'https://jira.skyeng.tech/';
             const requestOptions = {
@@ -420,56 +428,56 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
             document.getElementById('JQLquery').value = defqueryitem;
             showelemonpages();
         }
-		
-		document.getElementById('PSquery').onclick = function() { //Если выбрана PS
+
+        document.getElementById('PSquery').onclick = function () { //Если выбрана PS
             toggleAndDeactivateQueries(this.id);
-			document.getElementById('JQLquery').value = PSqueryitem;
-			showelemonpages();
-		}
+            document.getElementById('JQLquery').value = PSqueryitem;
+            showelemonpages();
+        }
 
         document.getElementById('getiosbugs').onclick = function () { // если выбрана ios
             toggleAndDeactivateQueries(this.id);
-			showelemonpages();
-			document.getElementById('testJira').value = "ios";
+            showelemonpages();
+            document.getElementById('testJira').value = "ios";
             document.getElementById('getJiraTasks').click();
         }
 
         document.getElementById('getandroidbugs').onclick = function () { // если выбрана android
             toggleAndDeactivateQueries(this.id);
-			showelemonpages();
-			document.getElementById('testJira').value = "android";
+            showelemonpages();
+            document.getElementById('testJira').value = "android";
             document.getElementById('getJiraTasks').click();
         }
 
         document.getElementById('freshQuery').onclick = function () {  // если выбрана fresh
             toggleAndDeactivateQueries(this.id);
             document.getElementById('JQLquery').value = frqueryitem;
-			showelemonpages();
+            showelemonpages();
         }
 
         document.getElementById('ZBPQuery').onclick = function () {  // если выбрана fresh
             toggleAndDeactivateQueries(this.id);
-			document.getElementById('JQLquery').value = zbpqueryitem;
-			showelemonpages();
+            document.getElementById('JQLquery').value = zbpqueryitem;
+            showelemonpages();
         }
 
         document.getElementById('customQuery').onclick = function () { // если выбрана custom
-			toggleAndDeactivateQueries(this.id);
+            toggleAndDeactivateQueries(this.id);
             document.getElementById('JQLquery').oninput = function () {
                 localStorage.setItem('customquery', this.value)
             }
             document.getElementById('JQLquery').value = localStorage.getItem('customquery');
-			showelemonpages();
+            showelemonpages();
         }
 
         document.getElementById('favouriteBugs').onclick = function () { // если выбрана ❤ favourite
             if (document.getElementById('favouriteissuetable').style.display != "") {
-				toggleAndDeactivateQueries(this.id);
+                toggleAndDeactivateQueries(this.id);
                 document.getElementById('issuetable').style.display = "none";
                 document.getElementById('fields_jira_search').style.display = "none";
-				document.getElementById('foundIssuesAmount').style.display = "none";
-				document.getElementById('pagesSwitcher').style.display = "none";
-				document.getElementById('favouriteissuetable').style.display = "";
+                document.getElementById('foundIssuesAmount').style.display = "none";
+                document.getElementById('pagesSwitcher').style.display = "none";
+                document.getElementById('favouriteissuetable').style.display = "";
 
                 for (let i = 0; i < document.getElementsByName('removefromfavourites').length; i++) {
                     document.getElementsByName('removefromfavourites')[i].onclick = function () {
@@ -477,37 +485,7 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                         favissues.splice(favissues.indexOf(this.value), 1);
                         localStorage.setItem('bugsarray', JSON.stringify(favissues));
                         parent.removeChild(this.parentNode);
-                        sndmsgafterdeletebug() //test
                         plusonecount() // test
-                    }
-                }
-
-                for (let j = 0; j < document.getElementsByName('addtonotesbug').length; j++) {
-                    document.getElementsByName('addtonotesbug')[j].onclick = function () {
-                        sendComment('https://jira.skyeng.tech/browse/' + favissues[j].match(/browse.(\S+)"/)[1])
-
-                        let Chatid = getChatId();
-                        fetch("https://skyeng.autofaq.ai/api/conversation/" + Chatid + "/payload", {
-                            "headers": {
-                                "accept": "*/*",
-                                "content-type": "application/json",
-                                "sec-fetch-dest": "empty",
-                                "sec-fetch-mode": "cors",
-                                "sec-fetch-site": "same-origin"
-                            },
-                            "body": `{\"conversationId\":\"${Chatid}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"https://jira.skyeng.tech/browse/${favissues[j].match(/browse.(\S+)"/)[1]}\"}]}`,
-                            "method": "POST",
-                            "mode": "cors",
-                            "credentials": "include"
-                        })
-                    }
-                }
-
-                function sndmsgafterdeletebug() {
-                    for (let j = 0; j < document.getElementsByName('addtonotesbug').length; j++) {
-                        document.getElementsByName('addtonotesbug')[j].onclick = function () {
-                            sendComment(favissues[j].match(/href.=(\S+)/)[1])
-                        }
                     }
                 }
 
@@ -523,52 +501,55 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                     for (let c = 0; c < cnttoincrease.length; c++) {
                         cnttoincrease[c].onclick = function () {
                             console.log('clicked')
+                            const fetchURL = `https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${itarrs[c].innerText}`;
+                            const requestOptions = {
+                                method: 'GET'
+                            };
 
-                            textArea1.value = '{}'
-                            textArea2.value = "https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=" + itarrs[c].innerText
-                            textArea3.value = 'suptabcnt'
-                            sendRespbtn.click()
+                            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (authresponse2) {
+                                if (authresponse2.success) {
+                                    const repcount = authresponse2.fetchansver;
+                                    if (repcount) {
+                                        let count;
+                                        let jira_token;
+                                        let increasedcount;
 
-                                let count;
-                                let jira_token;
-                                let increasedcount;
-                                setTimeout(async function () {
+                                        jira_token = repcount.match(/"atl_token":"(.*lin)/)[1];
+                                        count = repcount.match(/customfield_15410.*?value=.*?(\d+)/)[1];
+                                        count = parseInt(count);
+                                        increasedcount = count + 1;
+                                        increasedcount = increasedcount.toString();
+                                        console.log("count=" + count + " increasedcount " + increasedcount);
 
-                                let repcount = textArea1.getAttribute('suptabcnt')
-                                    repcount = await repcount;
-                                    jira_token = repcount.match(/"atl_token":"(.*lin)/)[1]
-                                textArea1.removeAttribute('suptabcnt')
+                                        const fetchURL2 = 'https://jira.skyeng.tech/secure/AjaxIssueAction.jspa?decorator=none';
+                                        const requestOptions2 = `{
+                                            "headers": {
+                                                "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                                "sec-fetch-mode": "cors",
+                                                "sec-fetch-site": "same-origin",
+                                                "x-requested-with": "XMLHttpRequest",
+                                                "x-sitemesh-off": "true"
+                                                        },
+                                                "body": "customfield_15410=${increasedcount}&issueId=${itarrs[c].innerText}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410",
+                                              "method": "POST",
+                                              "mode": "cors",
+                                              "credentials": "include"
+                                                }`;
 
-                                    count = repcount.match(/customfield_15410.*?value=.*?(\d+)/)[1];
-                                    count = parseInt(count);
-                                    increasedcount = count + 1;
-                                    increasedcount = increasedcount.toString();
-                                    console.log("count=" + count + " increasedcount " + increasedcount);
-
-                                    setTimeout(function () {
-
-                                    textArea1.value = `{
-										"headers": {
-											"content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-											"sec-fetch-mode": "cors",
-											"sec-fetch-site": "same-origin",
-											"x-requested-with": "XMLHttpRequest",
-											"x-sitemesh-off": "true"
-													},
-											"body": "customfield_15410=${increasedcount}&issueId=${itarrs[c].innerText}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410",
-										  "method": "POST",
-										  "mode": "cors",
-										  "credentials": "include"
-											}`
-                                    textArea2.value = "https://jira.skyeng.tech/secure/AjaxIssueAction.jspa?decorator=none"
-                                    textArea3.value = ''
-                                    sendRespbtn.click()
-
-                                    alert(`Support Tab для задачи ${document.getElementsByName('favbugs')[c].href} увеличен на 1 и сейчас равен: ${increasedcount}`)
-                                    }, 1000);
-                                }, 1000)
-                            }
+                                        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL2, requestOptions: requestOptions2 }, function (refissplusresponse) {
+                                            if (refissplusresponse.success) {
+                                                alert(`Support Tab для задачи ${document.getElementsByName('favbugs')[c].href} увеличен на 1 и сейчас равен: ${increasedcount}`)
+                                            } else {
+                                                alert('Не удалось добавить SupportTab: ' + refissplusresponse.error);
+                                            }
+                                        });
+                                    }
+                                } else {
+                                    alert('Не удалось добавить SupportTab: ' + refissresponse.error);
+                                }
+                            });
                         }
+                    }
                 }
             } else {
                 document.getElementById('issuetable').style.display = "none"
@@ -576,85 +557,80 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                 document.getElementById('favouriteBugs').classList.remove('active-query')
             }
         }
-		// end of favouritebugs
+        // end of favouritebugs
 
-		document.getElementById('getJiraTasks').onclick = function () {
-			ClearPages();
+        document.getElementById('getJiraTasks').onclick = function () {
+            ClearPages();
+            let requestOptions;
 
-			const queries = {
-				'defaultQuery': defqueryitem,
-				'PSquery': PSqueryitem,
-				'freshQuery': frqueryitem,
-				'customQuery': localStorage.getItem('customquery'),
-				'getiosbugs': iosbugsqueryitem,
-				'getandroidbugs': androidbugsqueryitem,
-				'ZBPQuery': zbpqueryitem
-			};
-		
-			for (let id in queries) {
-				if (document.getElementById(id).classList.contains('active-query')) {
-					document.getElementById('JQLquery').value = queries[id];
-					requesttojiratext = encodeURI(document.getElementById('JQLquery').value);
-					textArea1.value = `{${optionsforfetch(requesttojiratext, 0)}}`;
-					break;
-				}
-			}
-		
-			textArea2.value = "https://jira.skyeng.tech/rest/issueNav/1/issueTable";
-			textArea3.value = 'getissuetable';
-			sendRespbtn.click();
-		
-			setTimeout(getJiraTask, 1000);					
-		}		
+            const queries = {
+                'defaultQuery': defqueryitem,
+                'PSquery': PSqueryitem,
+                'freshQuery': frqueryitem,
+                'customQuery': localStorage.getItem('customquery'),
+                'getiosbugs': iosbugsqueryitem,
+                'getandroidbugs': androidbugsqueryitem,
+                'ZBPQuery': zbpqueryitem
+            };
 
-            // Просмотр таски по джира по ее коду и номеру
-            document.getElementById('getJiraTasks').ondblclick = function () {
-                if (document.getElementById('AF_Jira').style.display == 'none') {
-                    document.getElementById('AF_Jira').style.display = ''
+            for (let id in queries) {
+                if (document.getElementById(id).classList.contains('active-query')) {
+                    document.getElementById('JQLquery').value = queries[id];
+                    requesttojiratext = encodeURI(document.getElementById('JQLquery').value);
+                    requestOptions = `{${optionsforfetch(requesttojiratext, 0)}}`;
+                    break;
                 }
+            }
 
-                let rezissuetable;
+            getJiraTask(requestOptions);
+        }
 
-            textArea1.value = `{}`
-            textArea2.value = "https://jira.skyeng.tech/rest/quicksearch/1.0/productsearch/search?q=" + document.getElementById('testJira').value;
-            textArea3.value = 'getissuetable1'
-            sendRespbtn.click()
+        // Просмотр таски по джира по ее коду и номеру
+        document.getElementById('getJiraTasks').ondblclick = function () {
+            if (document.getElementById('AF_Jira').style.display == 'none') {
+                document.getElementById('AF_Jira').style.display = ''
+            }
 
-                async function getJiraTask1() {
+            let rezissuetable;
+            let tasksearch = document.getElementById('testJira').value;
 
-                rezissuetable = JSON.parse(textArea1.getAttribute('getissuetable1'))
-                    rezissuetable = await rezissuetable;
-                textArea1.removeAttribute('getissuetable1')
-                    if (rezissuetable != null) {
+            const fetchURL = `https://jira.skyeng.tech/rest/quicksearch/1.0/productsearch/search?q=${tasksearch}`;
+            const requestOptions = {
+                method: 'GET'
+            };
+
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (searchissresponse) {
+                if (searchissresponse.success) {
+                    const rezissuetable = JSON.parse(searchissresponse.fetchansver);
+                    if (rezissuetable) {
                         let issues = [];
-                    issues = '<span style="color: #00FA9A">&#5129;</span>' + '<a href="' + rezissuetable[0].items[0].url + '" onclick="" target="_blank" style="color: #ffe4c4">' + rezissuetable[0].items[0].subtitle + " - " + rezissuetable[0].items[0].title + '</a>';
-
+                        issues = '<span style="color: #00FA9A">&#5129;</span>' + '<a href="' + rezissuetable[0].items[0].url + '" onclick="" target="_blank" style="color: #ffe4c4">' + rezissuetable[0].items[0].subtitle + " - " + rezissuetable[0].items[0].title + '</a>';
                         document.getElementById('issuetable').innerHTML = issues;
-
                         setTimeout(function () { issues = []; testJira.value = ""; }, 5000)
                     }
+                } else {
+                    alert('Не удалось найти задачу: ' + refissresponse.error);
                 }
-
-                setTimeout(getJiraTask1, 1000)
-            }
+            });
+        }           
 
         const searchJiraByEnter = document.querySelector('#testJira');
         const searchJiraByEnterInput = document.querySelector('#JQLquery');
         const getJiraTasksBtn = document.querySelector('#getJiraTasks');
 
         function handleSearchJiraByEnter(event) { //по Enter запускает поиск по Jira
-                if (event.key === "Enter") {
+            if (event.key === "Enter") {
                 getJiraTasksBtn.click();
-                }
+            }
         }
 
         searchJiraByEnter.addEventListener('keydown', handleSearchJiraByEnter);
         searchJiraByEnterInput.addEventListener('keydown', handleSearchJiraByEnter);
 
-        } else if (document.getElementById('AF_Jira').style.display == '') {
-            document.getElementById('AF_Jira').style.display = 'none'
-		document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-        }
-	
-	 document.getElementById('idmymenucrm').style.display = 'none'
+    } else if (document.getElementById('AF_Jira').style.display == '') {
+        document.getElementById('AF_Jira').style.display = 'none'
+        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+    }
+
+    document.getElementById('idmymenucrm').style.display = 'none'
 }
