@@ -296,7 +296,7 @@ function sendfetchtojira(requestOptions) {
             if (reqvarr) {
                 lasttsk = reqvarr.jiraIssueKey;
                 newtask.innerText = lasttsk;
-    
+
                 const removefields = document.getElementsByClassName('removefield');
                 for (let i = 0; i < removefields.length; i++) {
                     removefields[i].value = '';
@@ -470,7 +470,7 @@ function getcommproboptions() {
             method: 'PATCH',
             credentials: 'include'
         };
-    
+
         chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (commoptresponse) {
             if (commoptresponse.success) {
                 const commprobarr = JSON.parse(commoptresponse.fetchansver);
