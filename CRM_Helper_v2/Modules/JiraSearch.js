@@ -60,7 +60,7 @@ function optionsforfetch(queryName, indexStart) {
             "x-atlassian-token": "no-check",
             "x-requested-with": "XMLHttpRequest"
         },
-        body: `startIndex=${indexStart}&filterId=21266&jql=${encodeURIComponent(queryName)}&layoutKey=list-view`,
+        body: `startIndex=${indexStart}&filterId=21266&jql=${queryName}&layoutKey=list-view`,
         method: "POST",
         mode: "cors",
         credentials: "include"
@@ -89,10 +89,10 @@ function toggleAndDeactivateQueries(currentId) { // Смена класса кн
 
     queryIds.forEach(id => {
         let element = document.getElementById(id);
-        if (id === currentId) {
-            element.classList.toggle('active-query'); // Переключаем класс для текущего элемента
-        } else {
-            element.classList.remove('active-query'); // Деактивируем все остальные
+        if (id === currentId && !element.classList.contains('active-query')) {
+            element.classList.add('active-query'); // Добавляем класс, если его нет у текущего элемента
+        } else if (id !== currentId && element.classList.contains('active-query')) {
+            element.classList.remove('active-query'); // Удаляем класс, если он есть у других элементов
         }
     });
 }
