@@ -246,12 +246,14 @@ document.getElementById('testuchenik').onclick = function () {
     logginerfortestsCRM(localStorage.getItem('test_studCRM')).then(() => {
         // Успешное завершение асинхронной операции
         document.getElementById('testuchenik').classList.remove('active');
+        document.getElementById('testuchenik').classList.add('successbtn');
+        setTimeout(function () { document.getElementById('testuchenik').classList.remove('successbtn') }, 1000);
     })
         .catch(() => {
             // Ошибка в асинхронной операции
             document.getElementById('testuchenik').classList.remove('active');
-            document.getElementById('testuchenik').classList.add('falseerror');
-            setTimeout(function () { document.getElementById('testuchenik').classList.remove('falseerror') }, 1000);
+            document.getElementById('testuchenik').classList.add('errorbtn');
+            setTimeout(function () { document.getElementById('testuchenik').classList.remove('errorbtn') }, 1000);
         });
 };
 
@@ -262,12 +264,14 @@ document.getElementById('testprepod').onclick = function () {
     logginerfortestsCRM(localStorage.getItem('test_teachCRM')).then(() => {
         // Успешное завершение асинхронной операции
         document.getElementById('testprepod').classList.remove('active');
+        document.getElementById('testprepod').classList.add('successbtn');
+        setTimeout(function () { document.getElementById('testprepod').classList.remove('successbtn') }, 1000);
     })
         .catch(() => {
             // Ошибка в асинхронной операции
             document.getElementById('testprepod').classList.remove('active');
-            document.getElementById('testprepod').classList.add('falseerror');
-            setTimeout(function () { document.getElementById('testprepod').classList.remove('falseerror') }, 1000);
+            document.getElementById('testprepod').classList.add('errorbtn');
+            setTimeout(function () { document.getElementById('testprepod').classList.remove('errorbtn') }, 1000);
         });
 };
 

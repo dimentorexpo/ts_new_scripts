@@ -234,7 +234,11 @@
     background: coral;
 }
 
-#testuchenik.falseerror, #testprepod.falseerror  {
+#testuchenik.successbtn, #testprepod.successbtn  {
+    background: rgb(29, 235, 10);
+}
+
+#testuchenik.errorbtn, #testprepod.errorbtn  {
     background: rgb(201, 17, 17);
 }
 

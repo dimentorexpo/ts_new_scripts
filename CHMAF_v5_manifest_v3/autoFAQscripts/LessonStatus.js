@@ -10,7 +10,7 @@ var win_LessonStatus =  // описание элементов окна стат
                             <span style="color:bisque; float:center; margin-top:5px; margin-left:5px;">Начальная дата<input type="date" style="color:black; margin-left:5px; width:125px;" name="StartDataLS" id="dateFromLS"></span>
 							<span style="color:bisque; margin-top:2px; margin-left: 10px; height:28px;">Конечная дата<input type="date" style="color:black; margin-left:5px; width:125px;" name="EndDataLS" id="dateToLS"></span>
                             <input id="idteacherforsearch" placeholder="Teacher ID" title="Введите ID учителя, чтобы проверить информацию по урокам" autocomplete="off" type="text" style="position:relative;text-align: center;width: 100px;color: black;margin-left: 15%;">
-							<input id="idstudentforsearch" placeholder="Student ID" title="Введите ID ученика, чтобы отфильтровать поиск" autocomplete="off" type="text" style="position:relative; text-align: center; width: 100px; color: black;margin-left:5px">
+							<input id="idstudentforsearch" placeholder="Student ID" title="Введите ID ученика, чтобы отфильтровать поиск" autocomplete="off" type="text" style="position:relative; text-align: center; width: 100px; color: black;margin-left:5px;">
                             <button class="mainButton" title="Запускает процесс поиска информации по статусам урока (отменен, перенесен, удален)" id="startlookstatus" style="float: right; margin-right: 10px;">Получить инфо об уроках</button>
                         </div>
 				</span>
@@ -252,7 +252,6 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
                 alert("Уроков нет");
             }
         })
-
 
     } else {
         alert("Введите ID учителя в поле");
