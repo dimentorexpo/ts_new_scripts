@@ -458,7 +458,6 @@ document.getElementById('changelocalelng').onclick = function () {
     });
 }
 
-
 document.getElementById('catchathistory').onclick = function () { // открывает в вензеле историю чатов введеного айди пользователя
 
     if (document.getElementById('AF_ChatHis').style.display == 'none') {
