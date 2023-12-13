@@ -47,7 +47,7 @@ document.getElementById('getidgrouptolist').addEventListener('click', async func
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
         if (response && response.success) {
             const responseData = JSON.parse(response.fetchansver);
-
+            console.log(responseData);
             // Обработка полученных данных
             userIdsarray = [];
             for (let i = 0; i < responseData.data.students.length; i++) {
@@ -55,8 +55,48 @@ document.getElementById('getidgrouptolist').addEventListener('click', async func
                 userIdsarray.push(responseData.data.students[i].userId)
             }
 
-            // Дальнейшие действия...
-            // [Оставлено без изменений для краткости]
+            // Формирование запроса для получения данных пользователей
+            const userNamesURL = "https://learning-groups-storage-api.skyeng.ru/api/v1/userInfo/findByIds";
+            const userNamesRequestOptions = {
+                headers: {
+                    "accept": "application/json, text/plain, */*",
+                    "content-type": "application/json; charset=UTF-8",
+                    "sec-fetch-dest": "empty",
+                    "sec-fetch-mode": "cors",
+                    "sec-fetch-site": "same-site"
+                },
+                referrer: "https://learning-groups-storage.skyeng.ru/",
+                referrerPolicy: "strict-origin-when-cross-origin",
+                body: JSON.stringify({ ids: userIdsarray }),
+                method: "POST",
+                mode: "cors",
+                credentials: "include"
+            };
+
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: userNamesURL, requestOptions: userNamesRequestOptions }, function (response) {
+                if (response && response.success) {
+                    const userNamesResponse = JSON.parse(response.fetchansver);
+                    console.log(userNamesResponse);
+                    // Обработка данных пользователей
+                    let allStudents = document.getElementsByClassName('stname')
+                    for (let i = 0; i < allStudents.length; i++) {
+                        allStudents[i].textContent = userNamesResponse.data[i].name.first + " " + userNamesResponse.data[i].name.last
+                    }
+                } else {
+                    console.error('Ошибка при получении данных пользователей', response.error);
+                }
+            });
+
+            document.getElementById('grlistinfo').innerHTML = !responseData.data.teachers ? dataarr : dataarr + '<br>ID П ' + responseData.data.teachers[0].userId;
+
+            let grstdcrmarr = document.querySelectorAll('.grstdcrm');
+            for (let f = 0; f < grstdcrmarr.length; f++) {
+                grstdcrmarr[f].addEventListener('click', function () {
+                    window.open("https://crm2.skyeng.ru/persons/" + responseData.data.students[f].userId)
+                })
+            }
+
+            dataarr = '';
 
         } else {
             console.error('Ошибка в получении данных', response.error);
