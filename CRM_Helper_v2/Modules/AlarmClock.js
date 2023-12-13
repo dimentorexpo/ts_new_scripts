@@ -136,14 +136,18 @@ if (localStorage.getItem('chronostamp') == null && localStorage.getItem('chronos
 
 document.getElementById('setreminderCRM').onclick = function () {  // выставляем будильник
     document.getElementById('btnAlarmclock').textContent = "🔔Reminder";
-    localStorage.setItem('remindertextCRM', remindertextCRM.value);
-    localStorage.setItem('setchasCRM', setchasCRM.value);
+    var cleanChas = parseInt(setchasCRM.value, 10).toString();
     var cleanMinuta = parseInt(setminutaCRM.value, 10).toString();
+
+    localStorage.setItem('remindertextCRM', remindertextCRM.value);
+    localStorage.setItem('setchasCRM', cleanChas);
     localStorage.setItem('setminutaCRM', cleanMinuta);
+
     var timearr = new Date()
     var chronostamp = (((localStorage.getItem('setchasCRM') - timearr.getHours()) * 60 * 60) + ((localStorage.getItem('setminutaCRM') - timearr.getMinutes()) * 60) + (0 - timearr.getSeconds())) * 1000;
     localStorage.setItem('chronostamp', chronostamp);
     alert("Напоминание установлено на " + setchasCRM.value + ":" + setminutaCRM.value + ":" + "00");
+
     CRMabortTimeOut = setTimeout(function () {
         setRemindCRM('chronostamp');
     }, localStorage.getItem('chronostamp'));
@@ -151,14 +155,18 @@ document.getElementById('setreminderCRM').onclick = function () {  // выста
 
 document.getElementById('setreminderCRM1').onclick = function () {  // выставляем будильник
     document.getElementById('btnAlarmclock').textContent = "🔔Reminder";
-    localStorage.setItem('remindertextCRM1', remindertextCRM1.value);
-    localStorage.setItem('setchasCRM1', setchasCRM1.value);
+    var cleanChas1 = parseInt(setchasCRM1.value, 10).toString();
     var cleanMinuta1 = parseInt(setminutaCRM1.value, 10).toString();
+
+    localStorage.setItem('remindertextCRM1', remindertextCRM1.value);
+    localStorage.setItem('setchasCRM1', cleanChas1);
     localStorage.setItem('setminutaCRM1', cleanMinuta1);
+
     var timearr1 = new Date()
     var chronostamp1 = (((localStorage.getItem('setchasCRM1') - timearr1.getHours()) * 60 * 60) + ((localStorage.getItem('setminutaCRM1') - timearr1.getMinutes()) * 60) + (0 - timearr1.getSeconds())) * 1000;
     localStorage.setItem('chronostamp1', chronostamp1);
     alert("Напоминание установлено на " + setchasCRM1.value + ":" + setminutaCRM1.value + ":" + "00");
+    
     CRMabortTimeOut1 = setTimeout(function () {
         setRemindCRM('chronostamp1');
     }, localStorage.getItem('chronostamp1'));

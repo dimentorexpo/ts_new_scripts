@@ -257,7 +257,6 @@ document.getElementById('testuchenik').onclick = function () {
         });
 };
 
-
 document.getElementById('testprepod').onclick = function () {
     document.getElementById('testprepod').classList.add('active');
 

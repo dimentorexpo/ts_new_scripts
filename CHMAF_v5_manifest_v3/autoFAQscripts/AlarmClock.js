@@ -207,9 +207,10 @@ if (localStorage.getItem('chronostamp') == null && localStorage.getItem('chronos
 
 document.getElementById('setreminder').onclick = function () {
     document.getElementById('reminderstatus').textContent = "🔔";
-    localStorage.setItem('setchas', setchas.value);
-
+    var cleanChas = parseInt(setchas.value, 10).toString();
     var cleanMinuta = parseInt(setminuta.value, 10).toString();
+
+    localStorage.setItem('setchas', cleanChas);
     localStorage.setItem('setminuta', cleanMinuta);
 
     var timearr = new Date();
@@ -226,9 +227,10 @@ document.getElementById('setreminder').onclick = function () {
 
 document.getElementById('setreminder1').onclick = function () {  // выставляем будильник 2
     document.getElementById('reminderstatus').textContent = "🔔";
-    localStorage.setItem('setchas1', setchas1.value);
-
+    var cleanChas1 = parseInt(setchas1.value, 10).toString();
     var cleanMinuta1 = parseInt(setminuta1.value, 10).toString();
+
+    localStorage.setItem('setchas1', cleanChas1);
     localStorage.setItem('setminuta1', cleanMinuta1);
 
     var timearr1 = new Date()
