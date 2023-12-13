@@ -230,6 +230,7 @@
     user-select: none;
     cursor: pointer;
 }
+
 #testuchenik.active, #testprepod.active  {
     background: coral;
 }

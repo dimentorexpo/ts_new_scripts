@@ -938,6 +938,14 @@
 		font-size: 14px;
 	}
 
-	.activeTestUsrs {
-		background: green !important;
+	#sidcode.active, #tidcode.active {
+		background: coral!important;
+	}
+	
+	#sidcode.successbtn, #tidcode.successbtn {
+		background: rgb(29, 235, 10)!important;
+	}
+	
+	#sidcode.errorbtn, #tidcode.errorbtn {
+		background: rgb(201, 17, 17)!important;
 	}

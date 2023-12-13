@@ -64,20 +64,26 @@ let btntid = document.getElementById('tidcode');
 btnsid.addEventListener("click", (event) => {
     let teststudid = localStorage.getItem('test_stud');
     if (teststudid != null && teststudid !== '') {
+        document.getElementById('sidcode').classList.add('active');
         chrome.runtime.sendMessage({ action: 'getLoginer', userid: teststudid }, function (response) {
             if (response.success) {
-                // Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
                 navigator.clipboard.writeText(response.loginLink).then(() => {
-                    // Уведомляем пользователя об успешном копировании
-                    document.getElementById('sidcode').classList.add('activeTestUsrs');
-                    setTimeout(() => { document.getElementById('sidcode').classList.remove('activeTestUsrs'); }, 1000);
+                    document.getElementById('sidcode').classList.remove('active');
+                    document.getElementById('sidcode').classList.add('successbtn');
+                    setTimeout(function () { document.getElementById('sidcode').classList.remove('successbtn') }, 1000);
                 }).catch(err => {
                     // Обрабатываем ошибки, связанные с буфером обмена
                     console.error('Не удалось скопировать текст: ', err);
+                    document.getElementById('sidcode').classList.remove('active');
+                    document.getElementById('sidcode').classList.add('errorbtn');
+                    setTimeout(function () { document.getElementById('sidcode').classList.remove('errorbtn') }, 1000);
                 });
             } else {
                 // Обрабатываем ошибки, связанные с получением логиннера
                 alert('Не удалось получить логиннер: ' + response.error);
+                document.getElementById('sidcode').classList.remove('active');
+                document.getElementById('sidcode').classList.add('errorbtn');
+                setTimeout(function () { document.getElementById('sidcode').classList.remove('errorbtn') }, 1000);
             }
         });
     } else {
@@ -91,28 +97,34 @@ btnsid.addEventListener("contextmenu", (event) => { // копирует в бу�
     let teststudid = localStorage.getItem('test_stud');
     if (teststudid != null || teststudid != '') {
         copyToClipboard(teststudid)
-        document.getElementById('sidcode').classList.add('activeTestUsrs');
-        setTimeout(function () { document.getElementById('sidcode').classList.remove('activeTestUsrs') }, 1000);
+        document.getElementById('sidcode').classList.add('successbtn');
+        setTimeout(function () { document.getElementById('sidcode').classList.remove('successbtn') }, 1000);
     } else alert("Введите ID тестового ученика в настройках ⚙");
 });
 
 btntid.addEventListener("click", (event) => { // копирует в буфер логиннер для П
     let testteachid = localStorage.getItem('test_teach');
     if (testteachid != null || testteachid != '') {
+        document.getElementById('tidcode').classList.add('active');
         chrome.runtime.sendMessage({ action: 'getLoginer', userid: testteachid }, function (response) {
             if (response.success) {
-                // Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
                 navigator.clipboard.writeText(response.loginLink).then(() => {
-                    // Уведомляем пользователя об успешном копировании
-                    document.getElementById('tidcode').classList.add('activeTestUsrs');
-                    setTimeout(function () { document.getElementById('tidcode').classList.remove('activeTestUsrs') }, 1000);
+                    document.getElementById('tidcode').classList.remove('active');
+                    document.getElementById('tidcode').classList.add('successbtn');
+                    setTimeout(function () { document.getElementById('tidcode').classList.remove('successbtn') }, 1000);
                 }).catch(err => {
                     // Обрабатываем ошибки, связанные с буфером обмена
                     console.error('Не удалось скопировать текст: ', err);
+                    document.getElementById('tidcode').classList.remove('active');
+                    document.getElementById('tidcode').classList.add('errorbtn');
+                    setTimeout(function () { document.getElementById('tidcode').classList.remove('errorbtn') }, 1000);
                 });
             } else {
                 // Обрабатываем ошибки, связанные с получением логиннера
                 alert('Не удалось получить логиннер: ' + response.error);
+                document.getElementById('tidcode').classList.remove('active');
+                document.getElementById('tidcode').classList.add('errorbtn');
+                setTimeout(function () { document.getElementById('tidcode').classList.remove('errorbtn') }, 1000);
             }
         });
 
@@ -124,7 +136,7 @@ btntid.addEventListener("contextmenu", (event) => { // копирует в бу�
     let testteachid = localStorage.getItem('test_teach');
     if (testteachid != null || testteachid != '') {
         copyToClipboard(testteachid)
-        document.getElementById('tidcode').classList.add('activeTestUsrs');
-        setTimeout(function () { document.getElementById('tidcode').classList.remove('activeTestUsrs') }, 1000);
+        document.getElementById('tidcode').classList.add('successbtn');
+        setTimeout(function () { document.getElementById('tidcode').classList.remove('successbtn') }, 1000);
     } else alert("Введите ID тестового преподавателя в настройках ⚙");
 });

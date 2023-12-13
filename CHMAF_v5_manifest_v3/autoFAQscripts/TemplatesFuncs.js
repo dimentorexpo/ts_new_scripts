@@ -10,7 +10,7 @@ chrome.storage.local.get({ TP_addrRzrv: '' }, function (result) {
 });
 const editorExtensionId = localStorage.getItem('ext_id');
 var nameContainer = '';
-const StylesElemValues = "cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;";
+const StylesElemValues = "cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji; border-radius: 15px;";
 var win_UsersInfo = // описание окна тестовых пользователей
     `<span style="display: block;">
         <span id="CurrUser" title="Открыть в CRM обратившегося пользователя" style="cursor:pointer;"></span>
@@ -292,27 +292,32 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
 
 
     iframeDoc.getElementById('CurUsLoginer').onclick = function () {
-        this.style.background = "lightgreen";
-        setTimeout(() => {
-            this.style.background = "";
-        }, 1000);
+        const thisbnt = this.style;
         const idNode = SearchinAFnewUI("id");
 
         if (idNode) {
+            thisbnt.background = "coral";
             chrome.runtime.sendMessage({ action: 'getLoginer', userid: idNode }, function (response) {
                 if (response.success) {
-                    // Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
                     navigator.clipboard.writeText(response.loginLink).then(() => {
-                        // Уведомляем пользователя об успешном копировании
+                        thisbnt.background = "rgb(29, 235, 10)";
+                        setTimeout(function () { thisbnt.background = "" }, 1000);
                     }).catch(err => {
                         // Обрабатываем ошибки, связанные с буфером обмена
                         console.error('Не удалось скопировать текст: ', err);
+                        thisbnt.background = "rgb(201, 17, 17)";
+                        setTimeout(function () { thisbnt.background = "" }, 1000);
                     });
                 } else {
                     // Обрабатываем ошибки, связанные с получением логиннера
                     alert('Не удалось получить логиннер: ' + response.error);
+                    thisbnt.background = "rgb(201, 17, 17)";
+                    setTimeout(function () { thisbnt.background = "" }, 1000);
                 }
             });
+        } else {
+            thisbnt.background = "rgb(201, 17, 17)";
+            setTimeout(function () { thisbnt.background = "" }, 1000);
         }
     }
 
@@ -440,30 +445,34 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
     }
 
     iframeDoc.getElementById('NextUsLoginer').onclick = function () {
-        this.style.background = "lightgreen";
-        setTimeout(() => {
-            this.style.background = "";
-        }, 1000);
+        const thisbnt = this.style;
         let requestargument = findrequestargument(usertypeis);
         const idNode = SearchinAFnewUI(requestargument);
 
         if (idNode) {
+            thisbnt.background = "coral";
             chrome.runtime.sendMessage({ action: 'getLoginer', userid: idNode }, function (response) {
                 if (response.success) {
-                    // Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
                     navigator.clipboard.writeText(response.loginLink).then(() => {
-                        // Уведомляем пользователя об успешном копировании
+                        thisbnt.background = "rgb(29, 235, 10)";
+                        setTimeout(function () { thisbnt.background = "" }, 1000);
                     }).catch(err => {
                         // Обрабатываем ошибки, связанные с буфером обмена
                         console.error('Не удалось скопировать текст: ', err);
+                        thisbnt.background = "rgb(201, 17, 17)";
+                        setTimeout(function () { thisbnt.background = "" }, 1000);
                     });
                 } else {
                     // Обрабатываем ошибки, связанные с получением логиннера
                     alert('Не удалось получить логиннер: ' + response.error);
+                    thisbnt.background = "rgb(201, 17, 17)";
+                    setTimeout(function () { thisbnt.background = "" }, 1000);
                 }
             });
+        } else {
+            thisbnt.background = "rgb(201, 17, 17)";
+            setTimeout(function () { thisbnt.background = "" }, 1000);
         }
-
     }
 
     iframeDoc.getElementById('NextUstroublesh').onclick = function () {
