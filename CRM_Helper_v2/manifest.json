@@ -22,9 +22,11 @@
             "js": [
                 "/Extras/jquery-3.7.1.js",
                 "/Modules/AlarmClock.js",
+                "/Modules/BinBankInfo.js",
+                "/Modules/GrList.js",
                 "/Modules/JiraSearch.js",
                 "/Modules/LessonStatus.js",
-                "/Modules/Linksdostup.js",
+                "/Modules/Link.js",
                 "/Modules/OperatorStatuse.js",
                 "/Modules/ServiceDesk.js",
                 "/Modules/SettingsApp.js",

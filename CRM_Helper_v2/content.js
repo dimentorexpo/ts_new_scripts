@@ -185,6 +185,15 @@ function logginerfortestsCRM(polzovatel) {
     });
 }
 
+const copyToClipboard = str => { // функция копирования в буфер обмена
+    const el = document.createElement('textarea');
+    el.value = str;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+};
+
 function extractLoginLink(text) {
     // Используем глобальный поиск для нахождения всех URL
     const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g;

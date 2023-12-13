@@ -289,17 +289,22 @@
 .testroomsCRMcreate.active{
     background: coral;
 }
-#control_jira_search, #dostupbnts {
+#control_jira_search, #dostupbnts{
     display: flex;
     justify-content: space-between;
 }
 #dostupbnts button{
    flex: 1;
 }
+
 span[name=changeList].active {
     background:SeaGreen !important;
 }
 
 span[name=changeList]:hover {
     background:#af622c !important;
+}
+
+.uplinksbar {
+    width: 50px;
 }

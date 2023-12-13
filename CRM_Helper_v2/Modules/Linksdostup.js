@@ -59,8 +59,7 @@ document.getElementById('butdiagtoolsCRM').onclick = function () { //откры�
         document.getElementById('curVerAndroidCRM').addEventListener('click', function () { // открываем актуальную версию приложения Android
             window.open("https://play.google.com/store/apps/details?id=skyeng.words.prod")
         })
-    }
-    // }            
+    }          
 }
 
 

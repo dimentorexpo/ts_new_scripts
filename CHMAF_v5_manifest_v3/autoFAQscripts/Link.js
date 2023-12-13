@@ -406,25 +406,13 @@ function addfunctionsonclick(section) {
         }
 
         document.getElementById('setservicelocaleru').onclick = function () { // меняет язык обслуживания выбранного пользователя в вензеле на русский но через кнопку в "L"
-            document.getElementById('responseTextarea1').value = `{
-                "headers": {
-                    "content-type": "application/json",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-site"
-                },
-                "referrer": "https://crm2.skyeng.ru/",
-                "referrerPolicy": "strict-origin-when-cross-origin",
-                "body": "{\\"serviceLocale\\":\\"ru\\"}",
-                "method": "PUT",
-                "mode": "cors",
-                "credentials": "include"
-            }`
-            document.getElementById('responseTextarea2').value = "https://backend.skyeng.ru/api/persons/general/" + idforservicelocaleru.value
-            document.getElementById('responseTextarea3').value = ''
-            document.getElementById('sendResponse').click()
-            document.getElementById('setservicelocaleru').innerHTML = "✅"
-            idforservicelocaleru.value = "";
-            setTimeout(function () { document.getElementById('setservicelocaleru').innerHTML = "🚀" }, 2000);
+            let userOk = idforservicelocaleru.value;
+
+            chrome.runtime.sendMessage({ action: "changeLocaleToRu", userId: userOk }, function (response) {
+                document.getElementById('setservicelocaleru').innerHTML = "✅"
+                idforservicelocaleru.value = "";
+                setTimeout(function () { document.getElementById('setservicelocaleru').innerHTML = "🚀" }, 2000);
+            })
         }
 
         document.getElementById('deleteaclnk').addEventListener('click', function () { // открываем ссылку в новой вкладке для создания задачи на удаление аккаунта

@@ -3,12 +3,12 @@ var win_BankInfo =  // описание элементов окна Списка
         <span style="width: 450px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 400;" id="grlistdata">
-                                <button class="mainButton buttonHide" id="hideMeBinBank">hide</button>
+                                <button class="buttonHide" id="hideMeBinBank">hide</button>
                         </div>
 						<div>
-                        <input oninput="onlyNumbers(this)" required id="carddigits" placeholder="6 первых цифр карты" title="Введите 6 первых цифр карты" autocomplete="off" type="text" style="text-align: center; width: 160px; color: black;margin-left:5px; position:relative; left:20%;">
-							<button class="mainButton" title="Запуск получения информации о карте" id="getBankInfoData" style="position:relative; left:20%;">Get info</button>
-							<button class="mainButton" title="Открыть сайт с просмотром информации по введеному ID" id="openSiteBin" style="position:relative; left:20%;">Look on site</button>
+                        <input class="inputCRM" required id="carddigits" placeholder="6 первых цифр карты" title="Введите 6 первых цифр карты" autocomplete="off" type="text" style="text-align: center; width: 160px; color: black;margin-left:5px; position:relative; left:20%;">
+							<button class="btnCRM" title="Запуск получения информации о карте" id="getBankInfoData" style="position:relative; left:20%;">Get info</button>
+							<button class="btnCRM" title="Открыть сайт с просмотром информации по введеному ID" id="openSiteBin" style="position:relative; left:20%;">Look on site</button>
 						</div>
 				</span>
 						<div id="grlstdiv">
@@ -19,7 +19,7 @@ var win_BankInfo =  // описание элементов окна Списка
         </span>
 </div>`;
 
-const wintBankInfo = createWindow('AF_BankCheck', 'winTopBankInfo', 'winLeftBankInfo', win_BankInfo);
+const wintBankInfo = createWindowCRM('AF_BankCheck', 'winTopBankInfo', 'winLeftBankInfo', win_BankInfo);
 hideWindowOnDoubleClick('AF_BankCheck');
 
 document.getElementById('carddigits').addEventListener('input', function (event) {
