@@ -19,7 +19,7 @@
    {
 	    "js": ["content.js"],
 		 "matches": ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*"],
-		"run_at": "document_idle"
+		"run_at": "document_end"
 	  },
   {	  
 	  "js": [ "/Extras/chart.js",
