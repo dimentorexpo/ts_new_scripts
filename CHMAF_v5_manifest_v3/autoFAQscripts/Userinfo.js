@@ -445,14 +445,19 @@ document.getElementById('getlessonfuture').onclick = function () { // показ
     } else alert('Запрос не выполнен. Введите ID в поле!')
 }
 
-document.getElementById('changelocalelng').onclick = function () { // меняет язык обслуживания выбранного пользователя в вензеле на русский
+document.getElementById('changelocalelng').onclick = function () {
     let userOk = document.getElementById('idstudent').value;
 
     chrome.runtime.sendMessage({ action: "changeLocaleToRu", userId: userOk }, function (response) {
-        document.getElementById('changelocalelng').innerHTML = "✅"
-        setTimeout(function () { document.getElementById('changelocalelng').innerHTML = "🌍" }, 2000);
-    })
+        if (response && response.success) {
+            document.getElementById('changelocalelng').innerHTML = "✅";
+            setTimeout(function () { document.getElementById('changelocalelng').innerHTML = "🌍";}, 2000);
+        } else {
+            console.error('Ошибка при смене локали:', response.error);
+        }
+    });
 }
+
 
 document.getElementById('catchathistory').onclick = function () { // открывает в вензеле историю чатов введеного айди пользователя
 

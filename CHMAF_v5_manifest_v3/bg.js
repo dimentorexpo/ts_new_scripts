@@ -114,8 +114,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		return true;
 	}
 
-	if (request.action === "changeLocaleToRu") { // Поменять локаль на "русский"
-		let userid = request.userid;
+	if (request.action === "changeLocaleToRu") {
+		let userid = request.userId;
 		fetch(`https://backend.skyeng.ru/api/persons/general/${userid}`, {
 			"headers": {
 				"content-type": "application/json",
@@ -129,19 +129,19 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			"mode": "cors",
 			"credentials": "include"
 		})
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('Network response was not ok ' + response.statusText);
-				}
-				return response.json();
-			})
-			.then(data => sendResponse(data))
-			.catch(error => {
-				console.error('Ошибка при смене локали:', error);
-				sendErrorResponse('Произошла ошибка при смене локали: ' + error.message);
-			});
+		.then(response => {
+			if (!response.ok) {
+				throw new Error('Network response was not ok ' + response.statusText);
+			}
+			sendResponse({ success: true });
+		})
+		.catch(error => {
+			console.error('Ошибка при смене локали:', error);
+			sendErrorResponse('Произошла ошибка при смене локали: ' + error.message);
+		});
 		return true; // Это необходимо для асинхронной обработки sendResponse
 	}
+	
 
 	if (request.action === 'checkLessonHistoryPast') { // Просмотреть прошедшие  уроки
 		const uchId = request.uchId;

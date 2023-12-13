@@ -409,10 +409,14 @@ function addfunctionsonclick(section) {
             let userOk = idforservicelocaleru.value;
 
             chrome.runtime.sendMessage({ action: "changeLocaleToRu", userId: userOk }, function (response) {
-                document.getElementById('setservicelocaleru').innerHTML = "✅"
-                idforservicelocaleru.value = "";
-                setTimeout(function () { document.getElementById('setservicelocaleru').innerHTML = "🚀" }, 2000);
-            })
+                if (response && response.success) {
+                    document.getElementById('setservicelocaleru').innerHTML = "✅";
+                    idforservicelocaleru.value = "";
+                    setTimeout(function () { document.getElementById('setservicelocaleru').innerHTML = "🌍";}, 2000);
+                } else {
+                    console.error('Ошибка при смене локали:', response.error);
+                }
+            });
         }
 
         document.getElementById('deleteaclnk').addEventListener('click', function () { // открываем ссылку в новой вкладке для создания задачи на удаление аккаунта
