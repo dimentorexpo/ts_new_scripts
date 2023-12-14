@@ -321,29 +321,28 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	//Конец блока с Testrooms
 
 	// Блок отправки в Google forms отказы от помощи, или же пожелания предложения, поэтому должен универсальный быть, чтобы входящие данные были разные но функция была одна по сути
-	function sendDataToForm(url, body) {
-		return fetch(url, {
+	if (request.action === 'sentToForms') {
+		const url = request.url;
+		const body = request.body;
+		fetch(url, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
 			},
 			body: body,
 		})
-			.then(response => response.json())
-			.catch(error => {
-				console.error(error);
-				return { error: error };
-			});
-	}
-
-	if (request.action === 'sentToForms') {
-		const url = request.url;
-		const body = request.body;
-
-		sendDataToForm(url, body)
-			.then(data => sendResponse(data));
-
-		return true;
+		.then(response => {
+			if (!response.ok) {
+				throw new Error('Network response was not ok ' + response.statusText);
+			}
+			// Отправляем статус успешности запроса
+			sendResponse({ success: true });
+		})
+		.catch(error => {
+			console.error('Ошибка при отправке данных в форму:', error);
+			sendErrorResponse('Произошла при отправке данных в форму: ' + error.message);
+		});
+		return true; // Это необходимо для асинхронной обработки sendResponse
 	};
 	//конец блока отправки в google forms
 
