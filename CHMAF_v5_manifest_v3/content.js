@@ -144,7 +144,12 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
     const storedTop = localStorage.getItem(topKey) || '120';
     const storedLeft = localStorage.getItem(leftKey) || '295';
 
-    windowElement.classList.add('extwindows');
+    if (id === 'TestUsers') {
+        windowElement.classList.add('onlyfortp', 'testuserwindow');
+    } else {
+        windowElement.classList.add('extwindows');
+    }
+
     windowElement.style = `top: ${storedTop}px; left: ${storedLeft}px;`;
     windowElement.style.display = 'none';
     windowElement.setAttribute('id', id);
@@ -229,7 +234,7 @@ function changeStatus(status) { // функция изменения стату�
         });
 }
 
-if (window.location.href.indexOf('skyeng.autofaq.ai') !== -1) {
+if (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") {
     document.onkeydown = (event) => {
         if (event.altKey && event.code === 'KeyO') { // горячие клавиши для смены статуса в Оффлайн
             changeStatus('Offline');
@@ -283,11 +288,11 @@ async function whoAmI() {
         if (operator) {
             afopername = operator.operator.fullName;
             opsection = operator.operator.fullName.split('-')[0];
+            return true;
         }
-    } else {
-        console.log('JWT token not found, retrying in 3 seconds...');
-        setTimeout(whoAmI, 3000);
     }
+    console.log('JWT token not found or operator not found');
+    return false;
 }
 
 function timerHideButtons() { //функция добавления кнопки скрытия
@@ -548,8 +553,12 @@ function addOption(oListbox, text, value) {  //функция добавлени
 }
 
 async function move_again_AF() { //с АФ шняга там стили шмили скрипта отображение отправку сообщений
-    getText()
-    await whoAmI()
+    getText();
+    let whoAmISuccess = await whoAmI();
+    while (!whoAmISuccess) {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Ожидание секунду перед повторным вызовом
+        whoAmISuccess = await whoAmI();
+    }
     const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
 
     // Присваиваем данные константам
@@ -664,6 +673,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     setInterval(checkchats, 1000);;
 }
 
+
 function closeTerms() { // функция автоподтверждения условий пользования при входе в ЛКП
     if (document.URL == 'https://new-teachers.skyeng.ru/') {
         for (let i = 0; i < document.getElementsByClassName('terms-popup-accept-button').length; i++) {
@@ -746,7 +756,7 @@ maskBackHide.onclick = function () { // функция кнопки скрыть
 setInterval(screenshots, 5000)
 setInterval(closeTerms, 500);
 
-if (location.host == "skyeng.autofaq.ai") {
+if (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") {
     setTimeout(move_again_AF, 3500) //вызов функции первичной загрузки страницы с фомированием меню и наполнением его	
 }
 
@@ -1022,4 +1032,9 @@ function pageClick(pageId) { // по клику переключает стра�
     }
     document.getElementById(pageId).style = 'background-color: green; border-top:4px solid orange'
     document.getElementById(pageNum + "page").style.display = ''
+}
+
+function toggleButtonState(buttonId, className) { // Функция для переключения состояния кнопки
+    const button = document.getElementById(buttonId);
+    button.classList.toggle(className);
 }

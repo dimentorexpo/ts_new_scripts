@@ -11,132 +11,64 @@ var win_TestUsers = // описание окна тестовых пользов
         </span>
     </div>
     `;
-
-if (localStorage.getItem('winTopTestUsers') == null) {
-    localStorage.setItem('winTopTestUsers', '120');
-    localStorage.setItem('winLeftTestUsers', '295');
-}
-
-let TestUsersdiv = document.createElement('div'); // добавляем окно тестовых поьзователей
-document.body.append(TestUsersdiv);
-TestUsersdiv.style = 'min-height: 20px; max-height: 750px; min-width: 35px; max-width: 370px; background: #464451; top: ' + localStorage.getItem('winTopTestUsers') + 'px; left: ' + localStorage.getItem('winLeftTestUsers') + 'px; font-size: 14px; z-index: 1250000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-TestUsersdiv.setAttribute('id', 'TestUsers');
-TestUsersdiv.classList = 'onlyfortp';
-TestUsersdiv.innerHTML = win_TestUsers;
+    
+const TestUsersdiv = createWindow('TestUsers', 'winTopTestUsers', 'winLeftTestUsers', win_TestUsers);
+let addInfoUser = document.getElementById('addInfoUser');
+let btnsid = document.getElementById('sidcode');
+let btntid = document.getElementById('tidcode');
 
 document.getElementById('TestRooms').onclick = getTestRoomsButtonPress;
 document.getElementById('link2lessbtn').onclick = getlink2lessButtonPress;
 
-setDisplayStyle(TestUsersdiv, localStorage.getItem('disablelpmwindow') === '1' ? 'none' : '');
-
-let addInfoUser = document.getElementById('addInfoUser');
-
-TestUsersdiv.onmousedown = function (event) {
-    if (checkelementtype(event)) {
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = TestUsersdiv.offsetLeft;
-        let elemTop = TestUsersdiv.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-            TestUsersdiv.style.left = (elemLeft + deltaX) + "px";
-            TestUsersdiv.style.top = (elemTop + deltaY) + "px";
-            localStorage.setItem('winTopTestUsers', String(elemTop + deltaY));
-            localStorage.setItem('winLeftTestUsers', String(elemLeft + deltaX));
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mouseup', onMouseUp);
-    }
-};
-// прекращение изменения позиции окна тестовых поьзователей
-
-let btnsid = document.getElementById('sidcode');
-let btntid = document.getElementById('tidcode');
-btnsid.addEventListener("click", (event) => {
-    let teststudid = localStorage.getItem('test_stud');
-    if (teststudid != null && teststudid !== '') {
-        document.getElementById('sidcode').classList.add('active');
-        chrome.runtime.sendMessage({ action: 'getLoginer', userid: teststudid }, function (response) {
+function handleButtonClick(buttonId, storageKey, actionType) { // Функция для обработки нажатий на кнопки
+    const userId = localStorage.getItem(storageKey);
+    if (userId) {
+        toggleButtonState(buttonId, 'active');
+        chrome.runtime.sendMessage({ action: actionType, userid: userId }, function (response) {
             if (response.success) {
-                navigator.clipboard.writeText(response.loginLink).then(() => {
-                    document.getElementById('sidcode').classList.remove('active');
-                    document.getElementById('sidcode').classList.add('successbtn');
-                    setTimeout(function () { document.getElementById('sidcode').classList.remove('successbtn') }, 1000);
-                }).catch(err => {
-                    // Обрабатываем ошибки, связанные с буфером обмена
-                    console.error('Не удалось скопировать текст: ', err);
-                    document.getElementById('sidcode').classList.remove('active');
-                    document.getElementById('sidcode').classList.add('errorbtn');
-                    setTimeout(function () { document.getElementById('sidcode').classList.remove('errorbtn') }, 1000);
-                });
+                copyToClipboard(response.loginLink);
+                toggleButtonState(buttonId, 'active');
+                toggleButtonState(buttonId, 'successbtn');
+                setTimeout(() => toggleButtonState(buttonId, 'successbtn'), 1000);
             } else {
-                // Обрабатываем ошибки, связанные с получением логиннера
                 alert('Не удалось получить логиннер: ' + response.error);
-                document.getElementById('sidcode').classList.remove('active');
-                document.getElementById('sidcode').classList.add('errorbtn');
-                setTimeout(function () { document.getElementById('sidcode').classList.remove('errorbtn') }, 1000);
+                toggleButtonState(buttonId, 'active');
+                toggleButtonState(buttonId, 'errorbtn');
+                setTimeout(() => toggleButtonState(buttonId, 'errorbtn'), 1000);
             }
         });
+    } else {
+        alert(`Введите ID в настройках ⚙`);
+    }
+}
+
+// Привязка событий к кнопкам
+btnsid.addEventListener("click", () => handleButtonClick('sidcode', 'test_stud', 'getLoginer'));
+btnsid.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    const userId = localStorage.getItem('test_stud');
+    if (userId) {
+        copyToClipboard(userId);
+        toggleButtonState('sidcode', 'successbtn');
+        setTimeout(() => toggleButtonState('sidcode', 'successbtn'), 1000);
     } else {
         alert("Введите ID тестового ученика в настройках ⚙");
     }
 });
 
-
-btnsid.addEventListener("contextmenu", (event) => { // копирует в буфер id У
+btntid.addEventListener("click", () => handleButtonClick('tidcode', 'test_teach', 'getLoginer'));
+btntid.addEventListener("contextmenu", (event) => {
     event.preventDefault();
-    let teststudid = localStorage.getItem('test_stud');
-    if (teststudid != null || teststudid != '') {
-        copyToClipboard(teststudid)
-        document.getElementById('sidcode').classList.add('successbtn');
-        setTimeout(function () { document.getElementById('sidcode').classList.remove('successbtn') }, 1000);
-    } else alert("Введите ID тестового ученика в настройках ⚙");
+    const userId = localStorage.getItem('test_teach');
+    if (userId) {
+        copyToClipboard(userId);
+        toggleButtonState('tidcode', 'successbtn');
+        setTimeout(() => toggleButtonState('tidcode', 'successbtn'), 1000);
+    } else {
+        alert("Введите ID тестового преподавателя в настройках ⚙");
+    }
 });
 
-btntid.addEventListener("click", (event) => { // копирует в буфер логиннер для П
-    let testteachid = localStorage.getItem('test_teach');
-    if (testteachid != null || testteachid != '') {
-        document.getElementById('tidcode').classList.add('active');
-        chrome.runtime.sendMessage({ action: 'getLoginer', userid: testteachid }, function (response) {
-            if (response.success) {
-                navigator.clipboard.writeText(response.loginLink).then(() => {
-                    document.getElementById('tidcode').classList.remove('active');
-                    document.getElementById('tidcode').classList.add('successbtn');
-                    setTimeout(function () { document.getElementById('tidcode').classList.remove('successbtn') }, 1000);
-                }).catch(err => {
-                    // Обрабатываем ошибки, связанные с буфером обмена
-                    console.error('Не удалось скопировать текст: ', err);
-                    document.getElementById('tidcode').classList.remove('active');
-                    document.getElementById('tidcode').classList.add('errorbtn');
-                    setTimeout(function () { document.getElementById('tidcode').classList.remove('errorbtn') }, 1000);
-                });
-            } else {
-                // Обрабатываем ошибки, связанные с получением логиннера
-                alert('Не удалось получить логиннер: ' + response.error);
-                document.getElementById('tidcode').classList.remove('active');
-                document.getElementById('tidcode').classList.add('errorbtn');
-                setTimeout(function () { document.getElementById('tidcode').classList.remove('errorbtn') }, 1000);
-            }
-        });
-
-    } else alert("Введите ID тестового преподавателя в настройках ⚙");
-});
-
-btntid.addEventListener("contextmenu", (event) => { // копирует в буфер id П
-    event.preventDefault();
-    let testteachid = localStorage.getItem('test_teach');
-    if (testteachid != null || testteachid != '') {
-        copyToClipboard(testteachid)
-        document.getElementById('tidcode').classList.add('successbtn');
-        setTimeout(function () { document.getElementById('tidcode').classList.remove('successbtn') }, 1000);
-    } else alert("Введите ID тестового преподавателя в настройках ⚙");
-});
+// Установка стиля для TestUsersdiv
+let TestUsersdivstyle = (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") && localStorage.getItem('disablelpmwindow') !== '1' ? '' : 'none';
+setDisplayStyle(TestUsersdiv, TestUsersdivstyle);

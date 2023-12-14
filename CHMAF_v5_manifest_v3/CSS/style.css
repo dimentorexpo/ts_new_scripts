@@ -41,6 +41,19 @@
 		color: black;
 		box-shadow: 0px 0px 10px #000;
 	}
+	
+	.testuserwindow {
+		min-height: 20px; 
+		max-height: 750px; 
+		min-width: 35px; 
+		max-width: 370px; 
+		background: #464451;
+		font-size: 14px; 
+		z-index: 1250000; 
+		position: fixed; 
+		border: 1px solid rgb(56, 56, 56); 
+		color: black;
+	}
 
 	.activebtn {
 		background-color: #1e90ff;
@@ -573,7 +586,7 @@
 
 	.teststudteach.active,
 	#pushToTalk.active {
-		background: coral;
+		background: coral!important;
 	}
 
 	.testroomsbtn {
@@ -936,10 +949,6 @@
 
 	#control_jira_search button {
 		font-size: 14px;
-	}
-
-	#sidcode.active, #tidcode.active {
-		background: coral!important;
 	}
 	
 	#sidcode.successbtn, #tidcode.successbtn {

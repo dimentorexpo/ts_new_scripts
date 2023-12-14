@@ -52,7 +52,10 @@ const itisvebinar = document.getElementById('itisvebinar');
 const itishomework = document.getElementById('itishomework');
 
 function getlink2lessButtonPress() { //открывает окно создания тестовых комнат
-    setDisplayStyle(document.getElementById('AF_link2less'), document.getElementById('AF_link2less').style.display === '' ? 'none' : '');
+    const AF_link2less = document.getElementById('AF_link2less');
+    setDisplayStyle(AF_link2less, AF_link2less.style.display === '' ? 'none' : '');
+    toggleButtonState('link2lessbtn', 'active');
+    setTimeout(() => toggleButtonState('link2lessbtn', 'active'), 500);
 }
 
 function clearlink2lessfields() { // очистка полей окно создания тестовых комнат

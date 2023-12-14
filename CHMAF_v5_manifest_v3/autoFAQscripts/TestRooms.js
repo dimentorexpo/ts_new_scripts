@@ -64,7 +64,10 @@ const messagefield = document.getElementById('testroomsmessage');
 messagefield.display = 'none';
 
 function getTestRoomsButtonPress() { //открывает окно создания тестовых комнат
-    setDisplayStyle(document.getElementById('AF_testrooms'), document.getElementById('AF_testrooms').style.display === '' ? 'none' : '');
+    const AF_testrooms = document.getElementById('AF_testrooms');
+    setDisplayStyle(AF_testrooms, AF_testrooms.style.display === '' ? 'none' : '');
+    toggleButtonState('TestRooms', 'active');
+    setTimeout(() => toggleButtonState('TestRooms', 'active'), 500);
 }
 
 function cleartestroomsfields() { // очистка полей окно создания тестовых комнат

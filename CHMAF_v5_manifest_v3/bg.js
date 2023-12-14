@@ -324,6 +324,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	if (request.action === 'sentToForms') {
 		const url = request.url;
 		const body = request.body;
+		console.log(url, body);
 		fetch(url, {
 			method: 'POST',
 			headers: {
