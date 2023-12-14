@@ -207,12 +207,17 @@ function getsmartroomformButtonPress() {
                 action: 'sentToForms',
                 url: 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse',
                 body: body2
-            }, function (response) {
+            }, function (response) {if (response && response.success) {
                 document.getElementById('AF_Smartroomform').style.display = 'none'
                 document.getElementById('clientid').value = ''
                 document.getElementById('fullcomentsmartroom').value = ''
                 clearradio()
                 sendComment('Отправка в документ "Пожелания Смартрум" прошла успешно')
+            } else {
+                // В случае ошибки
+                console.error('Ошибка при отправке в документ "Пожелания Смартрум":', response.error);
+            }
+
             });
         }
     }

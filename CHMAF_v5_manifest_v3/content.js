@@ -263,25 +263,30 @@ function noDoubts(object) { // функция для разрешения вво
 
 async function whoAmI() {
     const tokenis = document.cookie.match(/jwt=(.*)/);
-    const token = tokenis[1];
+    if (tokenis && tokenis.length > 1) {
+        const token = tokenis[1];
 
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c => {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    operatorId = JSON.parse(jsonPayload).user.id;
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c => {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        operatorId = JSON.parse(jsonPayload).user.id;
 
-    const response = await fetch('https://skyeng.autofaq.ai/api/operators/statistic/currentState', {
-        credentials: 'include'
-    });
-    const data = await response.json();
-    operatorsarray = data.onOperator;
+        const response = await fetch('https://skyeng.autofaq.ai/api/operators/statistic/currentState', {
+            credentials: 'include'
+        });
+        const data = await response.json();
+        operatorsarray = data.onOperator;
 
-    const operator = operatorsarray.find(s => s.operator !== null && operatorId && s.operator.id === operatorId);
-    if (operator) {
-        afopername = operator.operator.fullName;
-        opsection = operator.operator.fullName.split('-')[0];
+        const operator = operatorsarray.find(s => s.operator !== null && operatorId && s.operator.id === operatorId);
+        if (operator) {
+            afopername = operator.operator.fullName;
+            opsection = operator.operator.fullName.split('-')[0];
+        }
+    } else {
+        console.log('JWT token not found, retrying in 3 seconds...');
+        setTimeout(whoAmI, 3000);
     }
 }
 

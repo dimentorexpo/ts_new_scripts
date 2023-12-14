@@ -14,8 +14,8 @@ var win_Alarmclock =  // описание элементов окна будил
 					<button class="mainButton" title="Запуск будильника при устаноовленном времени" id="setreminder1" style="margin-top: 5px">SET🔔</button>
 				<br>
 					<button class="mainButton" title="Отображение текущего времени" id="clock_js" style="color: white; margin-top: 5px"></button>
-					<button class="mainButton" id="clock_remin" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: lightgreen; margin-top: 5px">00 : 00 : 00</button>
-					<button class="mainButton" id="clock_remin1" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: MediumSpringGreen; margin-left:28px; margin-top: 5px">00 : 00 : 00</button>
+					<button class="mainButton" id="clock_remin" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: lightgreen!important; margin-top: 5px">00 : 00 : 00</button>
+					<button class="mainButton" id="clock_remin1" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: MediumSpringGreen!important; margin-left:28px; margin-top: 5px">00 : 00 : 00</button>
 				</div>
 			</div>`;
 

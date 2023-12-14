@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CRMHelper",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "background": {
         "service_worker": "bg.js"
     },

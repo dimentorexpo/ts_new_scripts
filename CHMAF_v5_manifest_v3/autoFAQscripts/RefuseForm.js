@@ -295,25 +295,31 @@ let intervalotak = setInterval(function () {
                             url: 'https://docs.google.com/forms/d/e/1FAIpQLScXLf0uRuESjzpu0gR-kE7T5LcCblOQtqzadtcwnTUb4_vpnQ/formResponse',
                             body: body2
                         }, function (response) {
-                            sendComment('Отправка в документ "Отказ от помощи" прошла успешно')
-                            document.getElementById('send2doc').textContent = "Отправлено✅"
-
-                            setTimeout(() => {
-                                document.getElementById('send2doc').textContent = "Отправить"
-                                document.getElementById('AF_Refuseformnew').style.display = 'none'
-                            }, 3000)
-
-                            document.getElementById('chatlnk').value = ''
-                            document.getElementById('userissue').children[0].selected = true
-                            document.getElementById('howissuesolverd').children[0].selected = true
-                            document.getElementById('othersolved').classList.add('otherfieldoff')
-                            document.getElementById('othersolved').classList.remove('otherfieldon')
-                            document.getElementById('othersolved').setAttribute('disabled', 'disabled')
-                            document.getElementById('otherproblem').classList.add('otherfieldoff')
-                            document.getElementById('otherproblem').classList.remove('otherfieldon')
-                            document.getElementById('otherproblem').setAttribute('disabled', 'disabled')
-                            document.getElementById('otherproblem').value = ''
-                            document.getElementById('othersolved').value = ''
+                            if (response && response.success) {
+                                // Запрос успешно выполнен
+                                sendComment('Отправка в документ "Отказ от помощи" прошла успешно')
+                                document.getElementById('send2doc').textContent = "Отправлено✅"
+    
+                                setTimeout(() => {
+                                    document.getElementById('send2doc').textContent = "Отправить"
+                                    document.getElementById('AF_Refuseformnew').style.display = 'none'
+                                }, 3000)
+    
+                                document.getElementById('chatlnk').value = ''
+                                document.getElementById('userissue').children[0].selected = true
+                                document.getElementById('howissuesolverd').children[0].selected = true
+                                document.getElementById('othersolved').classList.add('otherfieldoff')
+                                document.getElementById('othersolved').classList.remove('otherfieldon')
+                                document.getElementById('othersolved').setAttribute('disabled', 'disabled')
+                                document.getElementById('otherproblem').classList.add('otherfieldoff')
+                                document.getElementById('otherproblem').classList.remove('otherfieldon')
+                                document.getElementById('otherproblem').setAttribute('disabled', 'disabled')
+                                document.getElementById('otherproblem').value = ''
+                                document.getElementById('othersolved').value = ''
+                            } else {
+                                // В случае ошибки
+                                console.error('Ошибка при отправке в документ "Отказ от помощи":', response.error);
+                            }
                         });
                     }
                 }
