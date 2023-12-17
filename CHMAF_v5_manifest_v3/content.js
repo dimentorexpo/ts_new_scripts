@@ -295,14 +295,21 @@ async function whoAmI() {
     return false;
 }
 
-function timerHideButtons() { //функция добавления кнопки скрытия
-    const iframeDoc = document.querySelector('[class^="NEW_FRONTEND"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND"]').contentWindow.document;
-    const modalMasks = iframeDoc.getElementsByClassName('mantine-Modal-root')[0];
-    const modalContent = iframeDoc.getElementsByClassName('mantine-Modal-header')[0];
-    const modalClose = iframeDoc.getElementsByClassName('mantine-Modal-close')[0];
-    const Hidebtn = iframeDoc.getElementById('maskBackHide');
-    if (modalMasks && !Hidebtn) {
-        modalContent.insertBefore(maskBackHide, modalClose)
+function timerHideButtons() {
+    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+    
+    if (iframe) {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        if (iframeDoc) {
+            const modalMasks = iframeDoc.getElementsByClassName('mantine-Modal-root')[0];
+            const modalContent = iframeDoc.getElementsByClassName('mantine-Modal-header')[0];
+            const modalClose = iframeDoc.getElementsByClassName('mantine-Modal-close')[0];
+            const Hidebtn = iframeDoc.getElementById('maskBackHide');
+
+            if (modalMasks && modalContent && modalClose && !Hidebtn) {
+                modalContent.insertBefore(maskBackHide, modalClose);
+            }
+        }
     }
 }
 

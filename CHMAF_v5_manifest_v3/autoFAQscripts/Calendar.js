@@ -129,7 +129,10 @@ function getSlotData(name) {
     for (let b = 0; b < spisok.length; b++) {
         spisok[b].ondblclick = function () {
             if (spisok[b].value != '') {
-                window.open(spisok[b].value.match(/(https?:\/\/[^\s]+)/g)[0])
+                const matches = spisok[b].value.match(/(https?:\/\/[^\s]+)/g);
+                if (matches && matches.length > 0) {
+                    window.open(matches[0]);
+                }
             }
         }
     }

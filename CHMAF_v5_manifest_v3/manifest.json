@@ -1,4 +1,7 @@
-{ "manifest_version": 3, "name": "ChMAF", "version": "5.0.8",
+{ "manifest_version": 3, 
+"name": "ChMAF", 
+"version": "5.0.9",
+"description": "Твой мультитул в работе с чатами",
 
 "background": {
 	  "service_worker": "bg.js"
