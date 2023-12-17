@@ -59,7 +59,10 @@
 			  "/autoFAQscripts/Themes.js",
 			  "/autoFAQscripts/Userinfo.js",
 			  "/autoFAQscripts/VoiceHelper.js",
-			  "/Lightbox/dist/js/lightbox.min.js"],
+			  "/Lightbox/dist/js/lightbox.min.js",
+			  "/NG/Chekgirlyanda.js",
+			  "/NG/gerljanda1.js",
+			  "/NG/gerljanda2.js"],
 	  "css": ["/CSS/style.css", "/Lightbox/dist/css/lightbox.min.css"],
 	  "matches": ["*://skyeng.autofaq.ai/*"],
 	  "run_at": "document_idle"
@@ -82,7 +85,7 @@
   },
   "web_accessible_resources": [
 	  {
-		  "resources": ["OtherScripts/*", "autoFAQscripts/*", "Images/*"],
+		  "resources": ["OtherScripts/*", "autoFAQscripts/*", "Images/*", "/NG/*"],
 		  "matches": ["<all_urls>"]
 	  }
   ],

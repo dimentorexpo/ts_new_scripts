@@ -297,7 +297,7 @@ async function whoAmI() {
 
 function timerHideButtons() {
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-    
+
     if (iframe) {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
         if (iframeDoc) {
@@ -677,7 +677,8 @@ async function move_again_AF() { //с АФ шняга там стили шмил
             bool = 0;
         }
     }
-    setInterval(checkchats, 1000);;
+    setInterval(checkchats, 1000);
+    setTimeout(checkAndSetGirlyanda, 1000);
 }
 
 
@@ -704,29 +705,32 @@ maskBack.style = 'display: none;'
 maskBack.classList.add('rightPanelBtn', 'mainButton')
 
 maskBack.onclick = function () { // функция кнопки вернуть
-    const iframeDoc = document.querySelector('[class^="NEW_FRONTEND"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND"]').contentWindow.document;
-    const name = document.getElementById('maskBack').getAttribute('name');
-    const email = document.getElementById('maskBack').getAttribute('email');
-    const phone = document.getElementById('maskBack').getAttribute('phone');
-    const NameInChat = getActiveConvUserName();
-    const EmailInChat = SearchinAFnewUI("email");
-    const PhoneInChat = SearchinAFnewUI("phone");
-    const modalMask = iframeDoc.getElementsByClassName('mantine-Modal-root')[0];
-    const chatHeaderActionsInner = iframeDoc.querySelectorAll('#__next [class^="ConversationActions_Actions"]')[0];
-    const chatNotesButton = iframeDoc.getElementsByClassName('mantine-RichTextEditor-control')[0];
+    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+    if (iframe) {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const name = document.getElementById('maskBack').getAttribute('name');
+        const email = document.getElementById('maskBack').getAttribute('email');
+        const phone = document.getElementById('maskBack').getAttribute('phone');
+        const NameInChat = getActiveConvUserName();
+        const EmailInChat = SearchinAFnewUI("email");
+        const PhoneInChat = SearchinAFnewUI("phone");
+        const modalMask = iframeDoc.getElementsByClassName('mantine-Modal-root')[0];
+        const chatHeaderActionsInner = iframeDoc.querySelectorAll('#__next [class^="ConversationActions_Actions"]')[0];
+        const chatNotesButton = iframeDoc.getElementsByClassName('mantine-RichTextEditor-control')[0];
 
-    if (NameInChat === name && EmailInChat === email && PhoneInChat === phone) {
-        modalMask.style.display = '';
-        chatHeaderActionsInner.style.display = ''; // кнопки сверху
-        chatNotesButton.style.display = ''; // кнопка заметок
-        maskBack.style.display = 'none';
-    } else {
-        maskBack.innerHTML = "❌";
-        maskBack.title = "Открыт не тот чат"
-        setTimeout(function () {
-            maskBack.innerHTML = "↩️";
-            maskBack.title = "Вернуть скрытое окно"
-        }, 3000);
+        if (NameInChat === name && EmailInChat === email && PhoneInChat === phone) {
+            modalMask.style.display = '';
+            chatHeaderActionsInner.style.display = ''; // кнопки сверху
+            chatNotesButton.style.display = ''; // кнопка заметок
+            maskBack.style.display = 'none';
+        } else {
+            maskBack.innerHTML = "❌";
+            maskBack.title = "Открыт не тот чат"
+            setTimeout(function () {
+                maskBack.innerHTML = "↩️";
+                maskBack.title = "Вернуть скрытое окно"
+            }, 3000);
+        }
     }
 };
 
@@ -737,26 +741,27 @@ maskBackHide.style = 'margin-left: auto;margin-right: 10px;'
 maskBackHide.style.display = "";
 
 maskBackHide.onclick = function () { // функция кнопки скрыть
-    const iframeDoc = document.querySelector('[class^="NEW_FRONTEND"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND"]').contentWindow.document;
-    //const modalContent = iframeDoc.getElementsByClassName('mantine-Modal-header')[0]; // строка описания окна в АФ
-    //const modalWraps = iframeDoc.getElementsByClassName('mantine-Modal-overlay'); // затемнение
-    const modalMasks = iframeDoc.getElementsByClassName('mantine-Modal-root')[0]; // открытое окно c затемнением
-    const chatHeaderActionsInner = iframeDoc.querySelectorAll('#__next [class^="ConversationActions_Actions"]')[0]; // кнопки действий в чате
-    const chatNotesButton = iframeDoc.getElementsByClassName('mantine-RichTextEditor-control')[0]; // кнопка заметок
-    const NameInChat = getActiveConvUserName();
-    const EmailInChat = SearchinAFnewUI("email");
-    const PhoneInChat = SearchinAFnewUI("phone");
+    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+    if (iframe) {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const modalMasks = iframeDoc.getElementsByClassName('mantine-Modal-root')[0]; // открытое окно c затемнением
+        const chatHeaderActionsInner = iframeDoc.querySelectorAll('#__next [class^="ConversationActions_Actions"]')[0]; // кнопки действий в чате
+        const chatNotesButton = iframeDoc.getElementsByClassName('mantine-RichTextEditor-control')[0]; // кнопка заметок
+        const NameInChat = getActiveConvUserName();
+        const EmailInChat = SearchinAFnewUI("email");
+        const PhoneInChat = SearchinAFnewUI("phone");
 
 
-    if (modalMasks) {
-        modalMasks.style.display = 'none';
-        chatHeaderActionsInner.style.display = 'none'; // кнопки сверху
-        chatNotesButton.style.display = 'none'; // кнопка заметок
-        maskBack.style.display = '';
+        if (modalMasks) {
+            modalMasks.style.display = 'none';
+            chatHeaderActionsInner.style.display = 'none'; // кнопки сверху
+            chatNotesButton.style.display = 'none'; // кнопка заметок
+            maskBack.style.display = '';
 
-        maskBack.setAttribute('name', NameInChat);
-        maskBack.setAttribute('email', EmailInChat);
-        maskBack.setAttribute('phone', PhoneInChat);
+            maskBack.setAttribute('name', NameInChat);
+            maskBack.setAttribute('email', EmailInChat);
+            maskBack.setAttribute('phone', PhoneInChat);
+        }
     }
 };
 
@@ -877,41 +882,44 @@ document.getElementById('hideMenuMain').onclick = function () { // кнопка 
 }
 
 function SearchinAFnewUI(whatsearch) {
-    const iframeDocument = document.querySelector('[class^="NEW_FRONTEND"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND"]').contentWindow.document;
-    const elemwheresearc = iframeDocument.querySelector('#__next ul[class*="Variables_List"]');
-    const Alternativewheresearc = iframeDocument.querySelectorAll('#__next div[class*="List_ListWrapper"]');
+    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+    if (iframe) {
+        const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+        const elemwheresearc = iframeDocument.querySelector('#__next ul[class*="Variables_List"]');
+        const Alternativewheresearc = iframeDocument.querySelectorAll('#__next div[class*="List_ListWrapper"]');
 
-    if (elemwheresearc) {
-        const children = elemwheresearc.children;
-        const ElemCount = children.length;
+        if (elemwheresearc) {
+            const children = elemwheresearc.children;
+            const ElemCount = children.length;
 
-        for (let i = 0; i < ElemCount; i++) {
-            const [key, value] = children[i].textContent.split(':');
+            for (let i = 0; i < ElemCount; i++) {
+                const [key, value] = children[i].textContent.split(':');
 
-            if (key.trim() === whatsearch || key.trim() === whatsearch.toUpperCase()) {
-                return value.trim();
+                if (key.trim() === whatsearch || key.trim() === whatsearch.toUpperCase()) {
+                    return value.trim();
+                }
             }
         }
-    }
 
-    if (whatsearch === 'id' && Alternativewheresearc) {
-        for (let i = 0; i < Alternativewheresearc.length; i++) {
-            if (Alternativewheresearc[i].textContent.split(':')[0].trim() === whatsearch || Alternativewheresearc[i].textContent.split(':')[0].trim() === whatsearch.toUpperCase()) {
-                const children = Alternativewheresearc[i].children;
-                const ElemCount = children.length;
+        if (whatsearch === 'id' && Alternativewheresearc) {
+            for (let i = 0; i < Alternativewheresearc.length; i++) {
+                if (Alternativewheresearc[i].textContent.split(':')[0].trim() === whatsearch || Alternativewheresearc[i].textContent.split(':')[0].trim() === whatsearch.toUpperCase()) {
+                    const children = Alternativewheresearc[i].children;
+                    const ElemCount = children.length;
 
-                for (let j = 0; j < ElemCount; j++) {
-                    const [key, value] = children[j].textContent.split(':');
+                    for (let j = 0; j < ElemCount; j++) {
+                        const [key, value] = children[j].textContent.split(':');
 
-                    if (key.trim() === whatsearch || key.trim() === whatsearch.toUpperCase()) {
-                        return value.trim();
+                        if (key.trim() === whatsearch || key.trim() === whatsearch.toUpperCase()) {
+                            return value.trim();
+                        }
                     }
                 }
             }
         }
-    }
 
-    return '';
+        return '';
+    }
 }
 
 function getChatId() {
@@ -922,13 +930,16 @@ function getChatId() {
     if (hrefnow.includes('skyeng.autofaq.ai/logs')) {
         chatId = pathname[2];
     } else if (hrefnow.includes('tickets/assigned')) {
-        const iframeDocument = document.querySelector('[class^="NEW_FRONTEND"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND"]').contentWindow.document;
-        const ConvArray = iframeDocument.querySelectorAll('#__next [class^="DialogsCard_Card"]');
+        const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+        if (iframe) {
+            const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+            const ConvArray = iframeDocument.querySelectorAll('#__next [class^="DialogsCard_Card"]');
 
-        for (let i = 0; i < ConvArray.length; i++) {
-            if (ConvArray[i].getAttribute('aria-selected') === 'true') {
-                chatId = ConvArray[i].getAttribute('data-conv-id');
-                break;
+            for (let i = 0; i < ConvArray.length; i++) {
+                if (ConvArray[i].getAttribute('aria-selected') === 'true') {
+                    chatId = ConvArray[i].getAttribute('data-conv-id');
+                    break;
+                }
             }
         }
     } else if (hrefnow.includes('tickets/archive')) {
@@ -945,41 +956,47 @@ function getChatId() {
 }
 
 function getActiveConvUserName() {
-    const iframeDocument = document.querySelector('[class^="NEW_FRONTEND"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND"]').contentWindow.document;
-    const Usernamefield = iframeDocument.querySelectorAll('[class^="User_Preview"]')[0];
-    let ConvUsername = null;
+    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+    if (iframe) {
+        const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+        const Usernamefield = iframeDocument.querySelectorAll('[class^="User_Preview"]')[0];
+        let ConvUsername = null;
 
-    // массив для исключения
-    const predefinedNames = ["тьютор", "тютор", "тутор", "бадди", "tutor", "buddy"];
+        // массив для исключения
+        const predefinedNames = ["тьютор", "тютор", "тутор", "бадди", "tutor", "buddy"];
 
-    if (Usernamefield) {
-        const namesParts = Usernamefield.textContent.split(/[\s_]+/);
-        const firstPartInLowerCase = namesParts[0].toLowerCase();
+        if (Usernamefield) {
+            const namesParts = Usernamefield.textContent.split(/[\s_]+/);
+            const firstPartInLowerCase = namesParts[0].toLowerCase();
 
-        if (predefinedNames.includes(firstPartInLowerCase) && !namesParts[1]) {
-            return '';
+            if (predefinedNames.includes(firstPartInLowerCase) && !namesParts[1]) {
+                return '';
+            }
+
+            if (predefinedNames.includes(firstPartInLowerCase) && namesParts[1]) {
+                return namesParts[1];
+            }
+
+            if (firstPartInLowerCase) {
+                return namesParts[0];
+            }
         }
 
-        if (predefinedNames.includes(firstPartInLowerCase) && namesParts[1]) {
-            return namesParts[1];
-        }
-
-        if (firstPartInLowerCase) {
-            return namesParts[0];
-        }
+        return '';
     }
-
-    return '';
 }
 
 
 // окрашивание чатов при остатке времени <2 min
 
 function getAllChatsList() {
-    const iframeDocument = document.querySelector('[class^="NEW_FRONTEND"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND"]').contentWindow.document;
-    const chatsTimerList = iframeDocument.querySelectorAll('[class^="DialogsCard_Timers"]');
-    const chatsList = iframeDocument.querySelectorAll('[class^="DialogsCard_Card"]');
-    return { chatsTimerList, chatsList };
+    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+    if (iframe) {
+        const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+        const chatsTimerList = iframeDocument.querySelectorAll('[class^="DialogsCard_Timers"]');
+        const chatsList = iframeDocument.querySelectorAll('[class^="DialogsCard_Card"]');
+        return { chatsTimerList, chatsList };
+    }
 }
 
 function convertToSeconds(timeStr, i) {
