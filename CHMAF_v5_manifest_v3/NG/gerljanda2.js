@@ -1,7 +1,6 @@
 let mstl_gerljanda2 = document.createElement('style');
 document.body.append(mstl_gerljanda2);
 var style_gerljanda2 = `
-.b-page__content{min-height:200px}
 .b-head-decor{display:none}
 .b-page_newyear .b-head-decor{
    position:absolute;
@@ -11,7 +10,7 @@ var style_gerljanda2 = `
    height:115px;
    width:100%;
    overflow:hidden;
-   z-index:1000000;
+   z-index:9999;
    background-color: #001529;
    background:url('chrome-extension://${editorExtensionId}/NG/Gir2/11648.png') repeat-x 0 0
 }
@@ -223,6 +222,7 @@ function startgirlyand2() {
   document.body.style.paddingTop = '70px';
   document.body.style.backgroundColor = "#001529";
   document.getElementById('AF_ChatHis').style.paddingTop = '70px';
+  document.getElementsByClassName('b-head-decor')[0].style.top = '-15px'
   girlyanda2started();
 }
 

@@ -87,14 +87,6 @@ async function init_settings() {
                     <input type="file" id="fileinput" title="Загружает все настройки в localstorage из ранее сохраненного файла настроек в формте .json" style="display:none;">
                     <label style="color: #e5ece6; background: #768d87; padding: 5px; border-radius: 5px; border: 1px solid #566963;" for="fileinput">⤵ Загрузить настройки</label>
                 </div>
-                <div>
-                    <label style="color:bisque; margin: 5px;">Создать новогоднее настроение ?</label>
-                    <select id="NGgirlyand" style="text-align: center; width: 240px; height: 26px; color: black; margin-left: 7px;">
-                        <option value="0">Нет</option>
-                        <option value="1">Гирлянда №1</option>
-                        <option value="2">Елочные игрушки</option>
-                    </select>
-                </div>
             </div>
         </span>
 </span>`;
@@ -180,32 +172,6 @@ async function init_settings() {
     }
 
     document.getElementById('soundlistaddr').addEventListener('change', changesoundaddr);
-
-    function handleGirlyandChange() {
-        const girlyandSelect = document.getElementById('NGgirlyand');
-        const selectedValue = girlyandSelect.value;
-
-        localStorage.setItem('girlyanda', selectedValue);
-
-        if (selectedValue === "0") {
-            stopgirlyand1();
-            stopgirlyand2();
-        } else if (selectedValue === "1") {
-            stopgirlyand2();
-            startgirlyand1();
-        } else if (selectedValue === "2") {
-            stopgirlyand1();
-            startgirlyand2();
-        }
-    }
-    const savedValuegirl = localStorage.getItem('girlyanda');
-    const girlyandSelect = document.getElementById('NGgirlyand');
-    if (girlyandSelect && savedValuegirl !== null) {
-        girlyandSelect.value = savedValuegirl;
-    }
-
-    document.getElementById('NGgirlyand').addEventListener('change', handleGirlyandChange);
-
 
     function paintstatus() { //функция перекрашивания статуса оператора онлайн зеленый, занят желтый, офлайн и перерыв красные
         const statusElem = document.querySelectorAll('.user_menu-status-name')[1];
