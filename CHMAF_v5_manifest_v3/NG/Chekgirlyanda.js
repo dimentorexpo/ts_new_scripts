@@ -155,15 +155,91 @@ function handleelkaChange() {
 if (localStorage.getItem('snowcursor') == '1') {
     (function (k, c) {
         function y() {
-            var b; if (r !== v || s !== w) for (v = r, w = s, b = 0; b < x; b++)if (!l[b]) { h[b].style.left = (e[b] = r) + "px"; h[b].style.top = (f[b] = s) + "px"; h[b].style.clip = "rect(2px, 5px, 5px, 2px)"; h[b].style.visibility = "visible"; l[b] = 110; break } for (b = 0; b < x; b++) {
+            var b; if (r !== v || s !== w) for (v = r, w = s, b = 0; b < x; b++)if (!l[b]) { h[b].style.left = (e[b] = r) + "px"; h[b].style.top = (f[b] = s) + "px"; h[b].style.clip = "rect(2px, 5px, 5px, 2px)"; h[b].style.visibility = "visible"; l[b] = 110; break } 
+            for (b = 0; b < x; b++) {
                 if (l[b]) {
-                    var a = b; 25 === --l[a] && (h[a].style.clip = "rect(1px, 5px, 3px, 2px)"); l[a] ? (f[a] += 1 + 3 * Math.random(), f[a] < n + g ? (h[a].style.top = f[a] + "px", e[a] += (a % 5 - 2) / 5, h[a].style.left = e[a] + "px") : (h[a].style.visibility = "hidden", l[a] = 0)) : (m[a] = 50, d[a].style.top = (p[a] =
-                        f[a]) + "px", d[a].style.left = (t[a] = e[a]) + "px", d[a].style.width = "2px", d[a].style.height = "2px", h[a].style.visibility = "hidden", d[a].style.visibility = "visible")
-                } m[b] && (a = b, 25 === --m[a] && (d[a].style.width = "1px", d[a].style.height = "1px"), m[a] ? (p[a] += 1 + 3 * Math.random(), p[a] < n + g ? (d[a].style.top = p[a] + "px", t[a] += (a % 5 - 2) / 5, d[a].style.left = t[a] + "px") : (d[a].style.visibility = "hidden", m[a] = 0)) : d[a].style.visibility = "hidden")
+                    var a = b;
+            
+                    // Уменьшение жизненного цикла снежинки и изменение ее внешнего вида
+                    if (--l[a] === 25) {
+                        h[a].style.clip = "rect(1px, 5px, 3px, 2px)";
+                    }
+            
+                    // Если снежинка активна
+                    if (l[a]) {
+                        // Обновление вертикальной позиции снежинки
+                        f[a] += 1 + 3 * Math.random();
+            
+                        // Если снежинка находится в пределах 40 пикселей от нижнего края, убрать ее
+                        if (f[a] > n - 40) {
+                            h[a].style.visibility = "hidden";
+                            l[a] = 0;
+                            continue;
+                        }
+            
+                        // Проверка, не выходит ли снежинка за пределы области
+                        if (f[a] < n + g) {
+                            h[a].style.top = f[a] + "px";
+            
+                            // Расчет горизонтального движения
+                            var horizontalMove = (a % 5 - 2) / 5;
+                            // Если снежинка находится в пределах 60 пикселей от правого края, двигать только влево
+                            if (e[a] > r - 60) {
+                                horizontalMove = Math.min(horizontalMove, 0);
+                            }
+                            e[a] += horizontalMove;
+                            h[a].style.left = e[a] + "px";
+                        } else {
+                            // Скрыть снежинку, если она выходит за пределы области
+                            h[a].style.visibility = "hidden";
+                            l[a] = 0;
+                        }
+                    } else {
+                        // Логика для обработки конечного состояния снежинки
+                        m[a] = 50;
+                        d[a].style.top = (p[a] = f[a]) + "px";
+                        d[a].style.left = (t[a] = e[a]) + "px";
+                        d[a].style.width = "2px";
+                        d[a].style.height = "2px";
+                        h[a].style.visibility = "hidden";
+                        d[a].style.visibility = "visible";
+                    }
+                }
+            
+                // Логика для управления "таянием" снежинок
+                if (m[b]) {
+                    var a = b;
+                    if (--m[a] === 25) {
+                        d[a].style.width = "1px";
+                        d[a].style.height = "1px";
+                    }
+            
+                    if (m[a]) {
+                        p[a] += 1 + 3 * Math.random();
+                        if (p[a] < n + g) {
+                            d[a].style.top = p[a] + "px";
+                            t[a] += (a % 5 - 2) / 5;
+                            d[a].style.left = t[a] + "px";
+                        } else {
+                            d[a].style.visibility = "hidden";
+                            m[a] = 0;
+                        }
+                    } else {
+                        d[a].style.visibility = "hidden";
+                    }
+                }
             } k.setTimeout(y, 50)
         } function z() {
-            "number" === typeof k.innerWidth ? n = k.innerHeight : c.documentElement &&
-                c.documentElement.clientWidth ? n = c.documentElement.clientHeight : c.body.clientWidth && (n = c.body.clientHeight)
+            if (typeof window.innerWidth === 'number') {
+                n = window.innerHeight - 40; // Вычитаем 40 пикселей снизу
+                r = window.innerWidth - 50;  // Вычитаем 50 пикселей справа
+            } else if (document.documentElement && document.documentElement.clientWidth) {
+                n = document.documentElement.clientHeight - 40; // Вычитаем 40 пикселей снизу
+                r = document.documentElement.clientWidth - 50;  // Вычитаем 50 пикселей справа
+            } else if (document.body.clientWidth) {
+                n = document.body.clientHeight - 40; // Вычитаем 40 пикселей снизу
+                r = document.body.clientWidth - 50;  // Вычитаем 50 пикселей справа
+            }
         } function u(b, a) { var d = c.createElement("div"); d.style.position = "absolute"; d.style.height = b + "px"; d.style.width = a + "px"; d.style.overflow = "hidden"; d.style.backgroundColor = A; d.style.zIndex = "1251000"; return d } var A = "#00BFFF", x = 150, v = 600, w = 300, r = v, s = w, n = 600, q = 0, g = q, d = [], h = [], l = [], e = [], f = [], t = [], p = [], m = [], B = k.setInterval(function () {
             if ("complete" === c.readyState) {
                 if (c.getElementById) {
@@ -182,24 +258,72 @@ if (localStorage.getItem('AF_elka') == '1') {
     elkaadd()
 }
 
+var slejeniezaelkoy; // Переменная для хранения экземпляра MutationObserver
+
+var slejeniezaelkoy; // Глобальная переменная для хранения экземпляра MutationObserver
+
 function elkaadd() {
+    // Проверяем, существует ли элемент app-sider
+    var appSider = document.getElementsByClassName('app-sider')[0];
+    if (appSider) {
+        addElka(appSider);
+    } else {
+        // Если элемента пока нет, создаем новый MutationObserver для отслеживания его появления
+        var observerForAppSider = new MutationObserver(function(mutations, observer) {
+            appSider = document.getElementsByClassName('app-sider')[0];
+            if (appSider) {
+                observer.disconnect(); // Отключаем наблюдение, когда нашли элемент
+                addElka(appSider);
+            }
+        });
+
+        observerForAppSider.observe(document.body, { childList: true, subtree: true });
+    }
+}
+
+function addElka(appSider) {
     var img = document.createElement('img');
     img.src = `chrome-extension://${editorExtensionId}/NG/Elka.gif`;
     img.setAttribute('id', 'AF_elka');
     img.style.zIndex = '1250000';
     img.style.position = 'fixed';
-    img.style.left = '20%';
     img.style.bottom = '10px';
     img.style.opacity = '0.5';
-    img.style.maxHeight = '250px';
+    img.style.maxHeight = '200px';
     img.style.pointerEvents = 'none';
 
     document.body.appendChild(img);
+
+    function adjustImagePosition() {
+        var appSiderWidth = appSider.offsetWidth;
+        var newLeft = appSiderWidth + 5; // Прибавляем 5 пикселей к ширине
+        img.style.left = newLeft + 'px'; // Применяем новое значение left
+    }
+
+    // Начальная настройка позиции
+    adjustImagePosition();
+
+    // Создаем экземпляр MutationObserver для слежения за изменениями в app-sider
+    slejeniezaelkoy = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'style') {
+                setTimeout(adjustImagePosition,500);
+            }
+        });
+    });
+
+    // Настройка и запуск слежения
+    var config = { attributes: true };
+    slejeniezaelkoy.observe(appSider, config);
 }
 
 function elkaremove() {
     let AFelka = document.getElementById('AF_elka');
     if (AFelka) {
         AFelka.remove();
+        // Отключаем наблюдение, если наблюдатель был инициализирован
+        if (slejeniezaelkoy) {
+            slejeniezaelkoy.disconnect();
+        }
     }
 }

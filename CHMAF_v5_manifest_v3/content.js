@@ -1013,24 +1013,26 @@ function convertToSeconds(timeStr, i) {
 
 function checkchats() {
     const allChats = getAllChatsList();
-    const timers = allChats.chatsTimerList;
-    const chats = allChats.chatsList;
-
-    // Set default background for all chats
-    for (let j = 0; j < chats.length; j++) {
-        chats[j].style.background = "white"; // replace "" with your default color
-    }
-
-    for (let i = 0; i < timers.length; i++) {
-        const child = timers[i].children[1];
-        if (child) {
-            try {
-                convertToSeconds(child.textContent, i);
-            } catch (error) {
-                console.error(`Error with timer ${i}: ${error.message}`);
+    if (allChats) {
+        const timers = allChats.chatsTimerList;
+        const chats = allChats.chatsList;
+    
+        // Set default background for all chats
+        for (let j = 0; j < chats.length; j++) {
+            chats[j].style.background = "white"; // replace "" with your default color
+        }
+    
+        for (let i = 0; i < timers.length; i++) {
+            const child = timers[i].children[1];
+            if (child) {
+                try {
+                    convertToSeconds(child.textContent, i);
+                } catch (error) {
+                    console.error(`Error with timer ${i}: ${error.message}`);
+                }
             }
         }
-    }
+    }    
 }
 
 // ловим вызов newTaggg из iframe
