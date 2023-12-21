@@ -7,7 +7,7 @@
 		"service_worker": "bg.js"
 	},
 	"action": {
-		"default_icon": "/icons/38.png",
+		"default_icon": "/Icons/38.png",
 		"default_title": "ChMAF - Your Professional Multitool"
 	},
 	"externally_connectable": {
@@ -111,9 +111,9 @@
 		}
 	],
 	"icons": {
-		"32": "/icons/32.png",
-		"48": "/icons/48.png",
-		"128": "/icons/128.png"
+		"32": "/Icons/32.png",
+		"48": "/Icons/48.png",
+		"128": "/Icons/128.png"
 	},
 	"web_accessible_resources": [
 		{
