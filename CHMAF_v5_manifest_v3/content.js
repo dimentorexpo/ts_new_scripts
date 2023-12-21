@@ -146,6 +146,8 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
 
     if (id === 'TestUsers') {
         windowElement.classList.add('onlyfortp', 'testuserwindow');
+    } else if (id === 'AF_addChatMenu') {
+        windowElement.classList.add('wintInitializeChat');
     } else {
         windowElement.classList.add('extwindows');
     }

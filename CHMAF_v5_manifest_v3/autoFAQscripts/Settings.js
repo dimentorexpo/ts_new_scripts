@@ -28,6 +28,11 @@ async function init_settings() {
         localStorage.setItem('hideTaskWindow', 1)
     }
 
+    // Для отображения окна работы с чатами в ЛК
+    if (!localStorage.getItem('showchatswindows')) {
+        localStorage.setItem('showchatswindows', 0)
+    }
+
     // Для отображения быстрых тэгов
     if (!localStorage.getItem('showquicktags')) {
         localStorage.setItem('showquicktags', 0)
@@ -61,12 +66,14 @@ async function init_settings() {
                     <button class="mainButton" title="Внести изменения в интервал между повторами звука нового чата" id="setsoundplayinterval" style="margin-top: 5px">SET⌚</button>
                     <br>
                     <div class="onlyfortp">
-                    <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hidelpmwindow">Скрыть окно с У П</label>
-                    <label style="color:bisque; margin-left: 5px;" title="Добавить тэги в боковое меню"><input type="checkbox" id="showquicktags">Добавить тэги</label>
-                    <br>
-                    <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hideInnerTaskCreate">Скрыть окно АФ при создании задачи</label>
-                    <br>
+                        <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hidelpmwindow">Скрыть окно с У П</label>
+                        <label style="color:bisque; margin-left: 5px;" title="Добавить тэги в боковое меню"><input type="checkbox" id="showquicktags">Добавить тэги</label>
+                        <br>
+                        <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hideInnerTaskCreate">Скрыть окно АФ при создании задачи</label>
+                        <br>
                     </div>
+                    <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="showchatswindows">Отображать в ЛКУ кнопку работы с чатами</label>
+                    <br>
                     <label style="color:bisque;"><input type="color" id="aclstimepicker">Цвет заливки закрытия чата</label>
                     <button class="mainButton onlyfortp" id="activateVoiceCommands" title="Позволяет изменить кнопку для активации голосовых командю По умолчанию SHIFT" style="margin-left:10px;">Shift</button>
                     <br>
@@ -430,6 +437,29 @@ async function init_settings() {
                 hideTaskSelector.checked = false;
             } else {
                 hideTaskSelector.checked = true;
+            }
+            //
+
+            let flagshowchatswindows = 0;
+            let showchatswindowsSelector = document.getElementById('showchatswindows');
+
+            showchatswindowsSelector.onclick = function () {
+
+                if (!showchatswindowsSelector.checked) {
+
+                    flagshowchatswindows = 0;
+                    localStorage.setItem('showchatswindows', flagshowchatswindows)
+
+                } else {
+                    flagshowchatswindows = 1;
+                    localStorage.setItem('showchatswindows', flagshowchatswindows)
+                }
+            }
+
+            if (localStorage.getItem('showchatswindows') == 0) {
+                showchatswindowsSelector.checked = false;
+            } else {
+                showchatswindowsSelector.checked = true;
             }
             //
 
