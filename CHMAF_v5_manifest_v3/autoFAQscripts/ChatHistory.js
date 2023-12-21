@@ -852,19 +852,51 @@ function getopennewcatButtonPress() { // открывает меню для ра
         }
     } // конец обработчика кнопки "Обновить"
 
-    document.getElementById('takechat').onclick = function () { //обработчик функции взятия чата
+    document.getElementById('takechat').onclick = function () {
         var result = confirm("Вы действительно желаете забрать чат?");
         if (result) {
             let chat_id = document.getElementById('placechatid').innerText;
             let operator_id = operatorId;
-
+    
             fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
                 "headers": {
-                    "content-type": "application/json"
+                    "content-type": "application/json",
+                    "sec-fetch-dest": "empty",
+                    "sec-fetch-mode": "cors",
+                    "sec-fetch-site": "same-origin"
                 },
+                "referrer": "https://skyeng.autofaq.ai/active-tickets",
                 "credentials": "include",
-                "body": `{\"command\":\"DO_ASSIGN_CONVERSATION\",\"conversationId\":\"${chat_id}\",\"assignToOperatorId\":\"${operator_id}\"}`,
+                "body": `{\"command\":\"DO_ASSIGN_CONVERSATION\",\"conversationId\":\"${chat_id}\",\"assignToOperatorId\":\"null\"}`,
                 "method": "POST"
+            })
+            .then(response => {
+                if (response.ok) {
+                    return fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+                        "headers": {
+                            "content-type": "application/json",
+                            "sec-fetch-dest": "empty",
+                            "sec-fetch-mode": "cors",
+                            "sec-fetch-site": "same-origin"
+                        },
+                        "referrer": "https://skyeng.autofaq.ai/active-tickets",
+                        "credentials": "include",
+                        "body": `{\"command\":\"DO_ASSIGN_CONVERSATION\",\"conversationId\":\"${chat_id}\",\"assignToOperatorId\":\"${operator_id}\"}`,
+                        "method": "POST"
+                    });
+                } else {
+                    throw new Error('Произошла ошибка при выполнении запроса отправки чата в очередь');
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Чат назначен успешно');
+                } else {
+                    throw new Error('Произошла ошибка при назначении чата');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
             });
         }
     } // конец обработчика нажатия кнопки "Забрать"
