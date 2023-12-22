@@ -375,14 +375,13 @@ function prepKC() { //функция подготовки расширения �
     flagLangBut = 1
 }
 
-const copyToClipboard = str => { // функция копирования в буфер обмена
-    const el = document.createElement('textarea');
-    el.value = str;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-};
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        console.log('Text copied to clipboard');
+    }).catch(err => {
+        console.error('Failed to copy text: ', err);
+    });
+}
 
 function include(url) { // функция подключения дополнительных скриптов/модулей
     var script = document.createElement('script');

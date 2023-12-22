@@ -498,7 +498,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
         document.getElementById('rightPanel').style.right = "422px";
         document.getElementById('opennewcat').classList.add('activeScriptBtn');
     }
-
+    let data;
     changeviewtheme()
 
     flagsearch = ''
@@ -565,292 +565,205 @@ function getopennewcatButtonPress() { // открывает меню для ра
         oListbox.appendChild(oOption);
     }
 
-    async function currstate() { // функция получает массив операторов ТП, которые не в офлайне
-        let opsflag;
-        let operdepchist = document.getElementsByClassName('user_menu-dropdown-user_name')[0].innerText.split('-')[0];
-
-        switch (operdepchist) {
-            case 'ТП':
-                opsflag = 'ТП';
-                break;
-            case 'КЦ':
-                opsflag = 'КЦ';
-                break;
-            case 'КМ':
-                opsflag = 'КМ';
-                break;
-            case 'ТС':
-                opsflag = 'ТС';
-                break;
-            case 'ТПPrem':
-                opsflag = 'ТПPrem';
-                break;
-            default:
-                opsflag = 'Unknown';
-                break;
-        }
-
+    async function currstate() {
+        let departmentPrefix = document.getElementsByClassName('user_menu-dropdown-user_name')[0].innerText.split('-')[0];
+        let opsflag = ['ТП', 'ТП ОС', 'КЦ', 'КМ', 'ТС', 'ТПPrem'].includes(departmentPrefix) ? departmentPrefix : 'Unknown';
         console.log(`Подразделение для Chat history: ${opsflag}`);
+
         activetechopers = []
         objSel.length = 1
         objSel[0].selected = true;
-        await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
+
+        let result = await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
             "credentials": "include"
-        }).then(r => r.json()).then(result => {
+        }).then(r => r.json());
 
-            for (let i = 0; i < result.onOperator.length; i++) {
-                if (opsflag == 'ТП' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/ТП\D/)) {
-                    activetechopers.push(result.onOperator[i])
-                } else if (opsflag == 'КЦ' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/КЦ\D/)) {
-                    activetechopers.push(result.onOperator[i])
-                } else if (opsflag == 'КМ' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/КМ\D/)) {
-                    activetechopers.push(result.onOperator[i])
-                } else if (opsflag == 'ТС' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/ТС\D/)) {
-                    activetechopers.push(result.onOperator[i])
-                } else if (opsflag == 'ТПPrem' && result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(/ТПPrem\D/)) {
-                    activetechopers.push(result.onOperator[i])
-                } // end of if state
-            } // end of for
-        })
-
-        // if (activetechopers.length != 0) {
-        // for (let i = 0; i < activetechopers.length; i++) {
-        // if (activetechopers[i].aCnt == null)
-        // activetechopers[i].aCnt = 0;
-
-        // if (activetechopers[i].operator.status == "Online") {
-        // addOption(objSel, `🟢 ${activetechopers[i].operator.fullName} (${activetechopers[i].aCnt})`, `${activetechopers[i].operator.id}`)
-        // } else if (activetechopers[i].operator.status == "Busy") {
-        // addOption(objSel, `🟡 ${activetechopers[i].operator.fullName} (${activetechopers[i].aCnt})`, `${activetechopers[i].operator.id}`)
-        // } else if (activetechopers[i].operator.status == "Pause") {
-        // addOption(objSel, `🔴 ${activetechopers[i].operator.fullName} (${activetechopers[i].aCnt})`, `${activetechopers[i].operator.id}`)
-        // }
-        // }
-        // }
+        result.onOperator.forEach(operatorInfo => {
+            if (operatorInfo.operator && operatorInfo.operator.status !== "Offline" && operatorInfo.operator.fullName.includes(opsflag)) {
+                activetechopers.push(operatorInfo);
+            }
+        });
 
         if (activetechopers.length) {
-            let statusMap = {
-                Online: '🟢',
-                Busy: '🟡',
-                Pause: '🔴'
-            };
-            activetechopers.forEach(activetechoper => {
-                let { operator, aCnt = 0 } = activetechoper;
-                if (operator) {
-                    addOption(objSel, `${statusMap[operator.status]} ${operator.fullName} (${aCnt})`, operator.id);
-                }
+            let statusMap = { Online: '🟢', Busy: '🟡', Pause: '🔴' };
+            activetechopers.forEach(({ operator, aCnt = 0 }) => {
+                addOption(objSel, `${statusMap[operator.status]} ${operator.fullName} (${aCnt})`, operator.id);
             });
         }
     }
 
-    document.getElementById('getdatafrchat').onclick = () => { //открывает окно с информацией об обратившемся пользователе
-
-
+    document.getElementById('getdatafrchat').onclick = () => {
         if (typeof (convdata) !== 'undefined') {
+            document.getElementById('userchatdata').style.display = document.getElementById('userchatdata').style.display == 'none' ? '' : 'none';
+            let userData = convdata.channelUser.payload;
+            let techScreeningData = userData.techScreeningData || userData["Тех.инфа об устройствах"] || "";
+            let userFullName = userData.userFullName || convdata.channelUser.fullName;
+            let userType = userData.userType || "";
+            let userEmail = userData.email || "";
+            let userPhone = userData.phone || "";
 
-            if (document.getElementById('userchatdata').style.display == 'none')
-                document.getElementById('userchatdata').style.display = ''
-            else document.getElementById('userchatdata').style.display = 'none'
-
-            if (convdata.channelUser.payload.techScreeningData == undefined)
-                convdata.channelUser.payload.techScreeningData = convdata.channelUser.payload["Тех.инфа об устройствах"]
-
-            if (convdata.channelUser.payload.userFullName != undefined)
-                document.getElementById('datafield').innerHTML = '<span style="color:#00BFFF; font-weight:700;">' + convdata.channelUser.payload.userFullName + '</span>' + '<br>' + '<span style="color: #00FA9A;">' + '(' + convdata.channelUser.payload.userType + ')' + '</span>' + ' ID: ' + convdata.channelUser.payload.id + '<br>' + '<span style="user-select: none;">' + '📧: ' + '</span>' + convdata.channelUser.payload.email + '<br>' + '<span style="user-select: none;">' + '📞:' + '</span>' + convdata.channelUser.payload.phone + '<br>' + "Tech Screening Data: " + '<br>' + convdata.channelUser.payload.techScreeningData;
-            else
-                document.getElementById('datafield').innerHTML = '<span style="color:#00BFFF; font-weight:700;">' + convdata.channelUser.fullName + '</span>' + '<br>' + '<span style="color: #00FA9A;">' + '(' + convdata.channelUser.payload.userType + ')' + '</span>' + ' ID: ' + convdata.channelUser.payload.id + '<br>' + '<span style="user-select: none;">' + '📧: ' + '</span>' + convdata.channelUser.payload.email + '<br>' + '<span style="user-select: none;">' + '📞:' + '</span>' + convdata.channelUser.payload.phone + '<br>' + "Tech Screening Data: " + '<br>' + convdata.channelUser.payload.techScreeningData;
-        } else alert("Не выбран активный чат")
+            document.getElementById('datafield').innerHTML = `
+                <span style="color:#00BFFF; font-weight:700;">${userFullName}</span><br>
+                <span style="color: #00FA9A;">(${userType})</span> ID: ${userData.id}<br>
+                <span style="user-select: none;">📧:</span> ${userEmail}<br>
+                <span style="user-select: none;">📞:</span> ${userPhone}<br>
+                Tech Screening Data:<br>${techScreeningData}
+            `;
+        } else {
+            alert("Не выбран активный чат");
+        }
     }
 
     currstate();
-    for (let i = 0; i < radiobtnsarray.length; i++) {
-        if (radiobtnsarray[i].value == 'Notes' && radiobtnsarray[i].checked == true) {
-            document.getElementById('msgftochatornotes').style.background = 'LightGrey';
-        } else if (radiobtnsarray[i].value == 'Chat' && radiobtnsarray[i].checked == true) {
-            document.getElementById('msgftochatornotes').style.background = 'white';
-        }
 
-        radiobtnsarray[i].onclick = () => {
-            if (radiobtnsarray[i].value == 'Notes' && radiobtnsarray[i].checked == true) {
-                document.getElementById('msgftochatornotes').style.background = 'LightGrey';
-            } else if (radiobtnsarray[i].value == 'Chat' && radiobtnsarray[i].checked == true) {
-                document.getElementById('msgftochatornotes').style.background = 'white';
-            }
-        }
-    }
+    document.getElementById('btn_search_history').onclick = async () => {
+        let userId = document.getElementById('chatuserhis').value.trim();
+        let chatHash = document.getElementById('hashchathis').value.trim();
+        let dateFrom = document.getElementById('dateFromChHis').value;
+        let dateTo = document.getElementById('dateToChHis').value;
 
-    document.getElementById('btn_search_history').onclick = async () => { //функця обработки нажатия "Найти"
+        if (foundarr != '')
+            foundarr = ''
 
-        if (document.getElementById('chatuserhis').value != '' && document.getElementById('hashchathis').value == '') { // если айди пользователя введен, а хеш чата не введен
-            flagsearch = 'searchbyuser'
-            let lusid = document.getElementById('chatuserhis').value.trim();
-            let from = document.getElementById('dateFromChHis').value
-            let to = document.getElementById('dateToChHis').value
-            document.getElementById('chatuserhis').value = ''
+        if (document.getElementById('placeusid').innerText != '')
+            document.getElementById('placeusid').innerText = ''
 
-            if (foundarr != '')
-                foundarr = ''
+        if (document.getElementById('placechatid').innerText != '')
+            document.getElementById('placechatid').innerText = ''
 
-            if (document.getElementById('placeusid').innerText != '')
-                document.getElementById('placeusid').innerText = ''
+        if (document.getElementById('somechatinfo').style.display == '')
+            document.getElementById('somechatinfo').style.display = 'none';
 
-            if (document.getElementById('placechatid').innerText != '')
-                document.getElementById('placechatid').innerText = ''
+        if (document.getElementById('bottommenuchhis').style.display == '')
+            document.getElementById('bottommenuchhis').style.display = 'none';
 
-            if (document.getElementById('somechatinfo').style.display == '')
-                document.getElementById('somechatinfo').style.display = 'none';
+        if (document.getElementById('comentsbar').style.display == '')
+            document.getElementById('comentsbar').style.display = 'none';
 
-            if (document.getElementById('bottommenuchhis').style.display == '')
-                document.getElementById('bottommenuchhis').style.display = 'none';
+        document.getElementById('infofield').innerHTML = 'Загрузка'
 
-            if (document.getElementById('comentsbar').style.display == '')
-                document.getElementById('comentsbar').style.display = 'none';
+        if (userId && !chatHash) {
+            flagsearch = 'searchbyuser';
+            document.getElementById('chatuserhis').value = '';
 
-            document.getElementById('infofield').innerHTML = 'Загрузка'
-
-            await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                "headers": {
-                    "content-type": "application/json",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-origin"
-                },
-                "body": `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"channelUserFullTextLike\":\"${lusid}\",\"tsFrom\":\"${from}T00:00:00.000Z\",\"tsTo\":\"${to}T23:59:59.059Z\",\"orderBy\":\"ts\",\"orderDirection\":\"Desc\",\"page\":1,\"limit\":10}`,
+            let response = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
+                "headers": { "content-type": "application/json", "sec-fetch-mode": "cors", "sec-fetch-site": "same-origin" },
+                "body": JSON.stringify({
+                    "serviceId": "361c681b-340a-4e47-9342-c7309e27e7b5",
+                    "mode": "Json",
+                    "channelUserFullTextLike": userId,
+                    "tsFrom": `${dateFrom}T00:00:00.000Z`,
+                    "tsTo": `${dateTo}T23:59:59.059Z`,
+                    "orderBy": "ts",
+                    "orderDirection": "Desc",
+                    "page": 1,
+                    "limit": 10
+                }),
                 "method": "POST",
                 "mode": "cors",
                 "credentials": "include"
-            }).then(r => r.json()).then(r => data = r)
-            if (data.total == 0)
+            }).then(r => r.json()).then(r => data = r);
+            if (data.total == 0) {
                 alert("В выбранном диапазоне чатов от пользователя не найдено. Попробуйте, пожалуйста, выбрать другой, либо пользователь не обращался вовсе.")
-
-            for (let i = 0; i < data.items.length; i++) {
-
-                let tmestmp = new Date((data.items[i].ts.split('[GMT]'))[0]);
-                let tshrs;
-                let tsmin;
-                let day;
-                let month;
-                let actstatus = '';
-                let marksarr;
-
-                month = (tmestmp.getMonth() < 9) ? "0" + (tmestmp.getMonth() + 1) : (tmestmp.getMonth() + 1);
-                day = (tmestmp.getDate() < 10) ? "0" + tmestmp.getDate() : tmestmp.getDate();
-                let year = tmestmp.getFullYear();
-                tshrs = (tmestmp.getUTCHours() + 3 < 10) ? "0" + (tmestmp.getUTCHours() + 3) : ((tmestmp.getUTCHours() + 3 >= 24) ? '0' + ((tmestmp.getUTCHours() + 3 - 24)) : (tmestmp.getUTCHours() + 3));
-                tsmin = (tmestmp.getMinutes() < 10) ? "0" + tmestmp.getMinutes() : tmestmp.getMinutes();
-
-
-                if (data.items[i].stats.rate == undefined || data.items[i].stats.rate.rate == undefined)
-                    marksarr = '⭕'
-                else
-                    marksarr = data.items[i].stats.rate.rate
-
-                if (data.items[i].stats.usedStatuses == "AssignedToOperator")
-                    actstatus = "🛠"
-                else actstatus = '';
-
-                //сюда также допилить классы и  менять их в зависимости от темы
-
-                if (data.items[i].channelUser.payload != undefined && data.items[i].channelUser.payload.userFullName == undefined) {
-                    foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700;">' + data.items[i].channelUser.payload.userType + '</span>' + ' ' + data.items[i].channelUser.fullName + '<span style="color: MediumSeaGreen; font-weight:700;">' + ' Оценка: ' + '</span>' + marksarr + actstatus + '</span>' + '<br>'
-                } else if (data.items[i].channelUser.payload != undefined && data.items[i].channelUser.payload.userFullName != undefined) {
-                    foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700;">' + data.items[i].channelUser.payload.userType + '</span>' + ' ' + data.items[i].channelUser.payload.userFullName + '<span style="color: MediumSeaGreen; font-weight:700;">' + ' Оценка: ' + '</span>' + marksarr + actstatus + '</span>' + '<br>'
-                } else if (data.items[i].channelUser.payload == undefined) {
-                    foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700;">' + data.items[i].channel.name + '</span>' + ' ' + data.items[i].channelUser.channelTpe + '<span style="color: MediumSeaGreen; font-weight:700;">' + ' Оценка: ' + '</span>' + marksarr + actstatus + '</span>' + '<br>'
-                }
-
-
+                return;
             }
+            processChatList(response);
+        } else if (!userId && chatHash) {
+            flagsearch = 'searchbyhash';
+            updateChatInfo(chatHash);
+        } else {
+            alert("Введено и ID пользователя и хеш чата, или оба поля пустые. Пожалуйста, выберите что-то одно и повторите попытку.");
+        }
+    }
 
-            document.getElementById('infofield').innerHTML = foundarr;
-            checkAndChangeStyle()
+    function processChatList(data) {
+        foundarr = '';
+        data.items.forEach(item => {
+            let timestamp = new Date(item.ts.split('[GMT]')[0]);
+            let formattedDate = timestamp.toLocaleDateString('ru-RU');
+            let formattedTime = timestamp.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            let rating = item.stats.rate?.rate || '⭕';
+            let statusIcon = item.stats.usedStatuses === "AssignedToOperator" ? "🛠" : '';
+            let userName = item.channelUser.payload?.userFullName || item.channelUser.fullName;
+            let userType = item.channelUser.payload?.userType || "";
 
-            for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
-                document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
+            foundarr += `
+                <span class="chatlist" style="cursor:pointer;" title="${item.conversationId}">
+                    ${formattedDate} ${formattedTime} 
+                    <span style="color:#00BFFF; font-weight:700;">${userType}</span> ${userName}
+                    <span style="color: MediumSeaGreen; font-weight:700;"> Оценка: </span> ${rating} ${statusIcon}
+                </span><br>
+            `;
+        });
 
-                document.getElementsByClassName('chatlist')[i].onclick = async () => {
+        document.getElementById('infofield').innerHTML = foundarr;
+        checkAndChangeStyle();
 
-                    await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementsByClassName('chatlist')[i].title).then(r => r.json()).then(r => convdata = r)
-                    if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                        isChatOnOperator = true
-                    else isChatOnOperator = false;
+        Array.from(document.getElementsByClassName('chatlist')).forEach(element => {
+            element.onclick = () => updateChatInfo(element.title);
+            element.addEventListener('contextmenu', event => {
+                event.preventDefault();
+                copyToClipboard(element.title);
+            });
+        });
+    }
 
-                    fillchatbox();
-                    checkAndChangeStyle();
-                } // конец функции клика по списку в найденном чате
-            }
-
-        } else if (document.getElementById('chatuserhis').value == '' && document.getElementById('hashchathis').value != '') { //если пользователь не введен, но введн хеш чата
-            flagsearch = 'searchbyhash'
-            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('hashchathis').value.trim()).then(r => r.json()).then(r => convdata = r)
-
-            if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                isChatOnOperator = true
-            else isChatOnOperator = false;
-
-            fillchatbox();
-            checkAndChangeStyle();
-
-        } else alert("Введено и ID пользователя и хеш чата, или оба поля пустые. Пожалуйста, выберите что-то одно и повторите попытку.")
-    } // конец функции клика найти
-
-    document.getElementById('back_to_chat_his').onclick = () => { // функция обработки нажатия кнопки "Вернуться"
-        document.getElementById('infofield').innerHTML = '';
+    document.getElementById('back_to_chat_his').onclick = () => {
+        document.getElementById('infofield').innerHTML = foundarr || '';
         document.getElementById('placeusid').innerText = '';
         document.getElementById('placechatid').innerText = '';
         document.getElementById('somechatinfo').style.display = 'none';
         document.getElementById('bottommenuchhis').style.display = 'none';
         document.getElementById('comentsbar').style.display = 'none';
 
-        if (foundarr != '' && foundarr != null && foundarr != undefined) {
-            document.getElementById('infofield').innerHTML = foundarr;
+        if (foundarr) {
             checkAndChangeStyle();
-
-            for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
-                if (flagsearch == 'searchbyuser')
-                    document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
-                else if (flagsearch == 'searchbyoperator')
-                    document.getElementsByClassName('chatlist')[i].title = operchatsdata.items[i].conversationId
-                else if (flagsearch == 'searchbyhash') {
-                    if (typeof (operchatsdata) !== 'undefined' && typeof (data) === 'undefined')
-                        document.getElementsByClassName('chatlist')[i].title = operchatsdata.items[i].conversationId
-                    else if (typeof (data) !== 'undefined' && typeof (operchatsdata) === 'undefined')
-                        document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
-                    else if (typeof (data) !== 'undefined' && typeof (operchatsdata) !== 'undefined')
-                        document.getElementsByClassName('chatlist')[i].title = data.items[i].conversationId
+            Array.from(document.getElementsByClassName('chatlist')).forEach((element, i) => {
+                let chatId = '';
+                if (flagsearch === 'searchbyuser' && data && data.items) {
+                    chatId = data.items[i].conversationId;
+                } else if (flagsearch === 'searchbyoperator' && operchatsdata && operchatsdata.items) {
+                    chatId = operchatsdata.items[i].conversationId;
+                } else if (flagsearch === 'searchbyhash') {
+                    chatId = (typeof operchatsdata !== 'undefined' && typeof data === 'undefined') ? operchatsdata.items[i].conversationId :
+                        (typeof data !== 'undefined' && typeof operchatsdata === 'undefined') ? data.items[i].conversationId :
+                            (typeof data !== 'undefined' && typeof operchatsdata !== 'undefined') ? data.items[i].conversationId : '';
                 }
 
-                document.getElementsByClassName('chatlist')[i].onclick = async () => {
-
-                    await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementsByClassName('chatlist')[i].title).then(r => r.json()).then(r => convdata = r)
-                    if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                        isChatOnOperator = true
-                    else isChatOnOperator = false;
-
-                    fillchatbox();
-                    checkAndChangeStyle();
-                } // конец функции клика по списку в найденном чате
-            }
+                if (chatId) {
+                    element.title = chatId;
+                    element.onclick = () => updateChatInfo(chatId);
+                    // Добавляем обработчик для контекстного меню отдельно
+                    element.oncontextmenu = (event) => {
+                        event.preventDefault();
+                        copyToClipboard(chatId);
+                    };
+                }
+            });
         }
-    } // конец обработки функции нажатия "Вернуться"
+    };
 
-    document.getElementById('chhisinstr').onclick = function () {
-        window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-chathistory%F0%9F%92%ACChatHistory')
+    document.getElementById('chhisinstr').onclick = () => {
+        window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-chathistory%F0%9F%92%ACChatHistory');
     }
 
-    document.getElementById('refreshchat').onclick = async () => { // функция обработки нажатия кнопки "обновить"
-        if (document.getElementById('placechatid').innerText != '') {
+    document.getElementById('refreshchat').onclick = async () => {
+        const chatId = document.getElementById('placechatid').innerText;
+        if (chatId) {
             document.getElementById('infofield').innerHTML = '';
-
-            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
-
-            if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                isChatOnOperator = true
-            else isChatOnOperator = false;
-
-            fillchatbox();
-            checkAndChangeStyle();
+            await updateChatInfo(chatId);
         }
-    } // конец обработчика кнопки "Обновить"
+    }
+
+    async function updateChatInfo(chatId) {
+        const response = await fetch("https://skyeng.autofaq.ai/api/conversations/" + chatId);
+        convdata = await response.json();
+
+        isChatOnOperator = convdata.status != null && convdata.status == 'AssignedToOperator';
+
+        fillchatbox();
+        checkAndChangeStyle();
+    }
 
     document.getElementById('takechat').onclick = function () {
         var result = confirm("Вы действительно желаете забрать чат?");
