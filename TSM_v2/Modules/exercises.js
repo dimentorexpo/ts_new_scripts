@@ -418,23 +418,22 @@ async function OpenExercisesComplect() {
 		document.getElementById('exercisebarComplect').innerHTML = ''
 		let rhash = document.getElementById('roomhashhwComplect').value
 		let urlComponents = rhash.split('/');
-		let hashroomkids = urlComponents[6].split('?')[0];
-		let kidsselector = urlComponents[4];
+		if (urlComponents[6].split('?')[0] != "test") {
+			let hashroomkids = urlComponents[6].split('?')[0];
+			let kidsselector = urlComponents[4];
 
-		const baseURL = `https://api-${kidsselector}.skyeng.ru/api/v2/rooms/${hashroomkids}?verbosity=only_mine_participants`;
+			const baseURL = `https://api-${kidsselector}.skyeng.ru/api/v2/rooms/${hashroomkids}?verbosity=only_mine_participants`;
 
-		await fetch(baseURL, {
-			"headers": {
-				"content-type": "application/json",
-			},
-			"body": "{\"roomHash\":\"" + rhash + "\"}",
-			"method": "POST",
-			"mode": "cors",
-			"credentials": "include"
-		}).then(r => r.json()).then(r => complectationsData = r)
-
-		console.log(complectationsData)
-
+			await fetch(baseURL, {
+				"headers": {
+					"content-type": "application/json",
+				},
+				"body": "{\"roomHash\":\"" + rhash + "\"}",
+				"method": "POST",
+				"mode": "cors",
+				"credentials": "include"
+			}).then(r => r.json()).then(r => complectationsData = r)
+			
 		let temparr = [];
 		let hwarr = [];
 		let indexOfSlides = ''
@@ -468,6 +467,7 @@ async function OpenExercisesComplect() {
 					'<div class="roomtypekids" style="cursor:default;">' + complectationsData.lessonCards[indexOfSlides].themes[i].name + ' ' + '<br>' +
 					'</div></div>'
 			}
+			
 			for (let j = 0; j < complectationsData.lessonCards[indexOfSlides].themes[i].cards.length; j++) {
 				(complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].completeness == 100 && complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].score == null) ? complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].score = 100 : complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].score;
 				if (complectationsData.lessonCards[indexOfSlides].themes[i].cards[j].completeness == null) {
@@ -519,6 +519,7 @@ async function OpenExercisesComplect() {
 					'<div class="roomtypekids" style="cursor:default;">' + complectationsData.homeworkCards[indexOfSlides].themes[i].name + '<br>' +
 					'</div></div>'
 			}
+			
 			for (let j = 0; j < complectationsData.homeworkCards[indexOfSlides].themes[i].cards.length; j++) {
 				(complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].completeness == 100 && complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].score == null) ? complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].score = 100 : complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].score;
 				if (complectationsData.homeworkCards[indexOfSlides].themes[i].cards[j].completeness == null) {
@@ -562,6 +563,141 @@ async function OpenExercisesComplect() {
 			'</div>' +
 			hwarr +
 			'</div>';
+			
+			console.log(complectationsData)
+			
+					if (complectationsData.participants[0].role == 'student') {
+			document.getElementById('studnameComplect').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + complectationsData.participants[0].name
+			document.getElementById('studserviceidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 услуги: </span>' + complectationsData.participants[0].educationServiceId
+			document.getElementById('studidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[0].userId
+			document.getElementById('teachnameComplect').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + complectationsData.participants[1].name
+			document.getElementById('teachdidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[1].userId
+			document.getElementById('groupidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 гр: </span>' + complectationsData.groupInfo.externalGroupId
+			document.getElementById('RoomStatus').innerHTML = '<span style="user-select:none; font-size: 17px;">Статус комнаты: </span>' + (complectationsData.status == "success" ? '<span style="color:#00ff5c">success</span>' : `<span style="color:#daf50c">${complectationsData.status}</span>`)
+		} else if (complectationsData.participants[1].role == 'student') {
+			document.getElementById('studnameComplect').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + complectationsData.participants[1].name
+			document.getElementById('studserviceidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 услуги: </span>' + complectationsData.participants[1].educationServiceId
+			document.getElementById('studidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[1].userId
+			document.getElementById('teachnameComplect').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + complectationsData.participants[0].name
+			document.getElementById('teachdidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[0].userId
+			document.getElementById('groupidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 гр: </span>' + complectationsData.groupInfo.externalGroupId
+			document.getElementById('RoomStatus').innerHTML = '<span style="user-select:none; font-size: 17px;">Статус комнаты: </span>' + (complectationsData.status == "success" ? '<span style="color:#00ff5c">success</span>' : `<span style="color:#daf50c">${complectationsData.status}</span>`)
+		}
+			
+		} else {
+			let kidsselector = urlComponents[4];
+			let hashroomkids = urlComponents[7]
+			const baseURL = `https://api-${kidsselector}.skyeng.ru/api/v2/rooms/${hashroomkids}`;
+							
+			await fetch(baseURL, {
+				"method": "GET",
+				"mode": "cors",
+				"credentials": "include"
+			}).then(r => r.json()).then(r => complectationsData = r)
+			
+			console.log(complectationsData)
+			
+					let testarr = [];
+				let indexOfSlides = ''
+
+				let flagofuser = '';
+
+				for (let z = 0; z < complectationsData.participants.length; z++) {
+					if (complectationsData.participants[z].role == 'student')
+						flagofuser = complectationsData.participants[z].userId;
+				}
+
+				for (let usId = 0; usId < complectationsData.lessonCards.length; usId++) {
+					if (flagofuser == complectationsData.lessonCards[usId].userId) {
+						indexOfSlides = usId
+					}
+				}
+					
+				//DiagnosticCards
+			for (let i = 0; i < complectationsData.diagnosticsCards[indexOfSlides].themes.length; i++) {
+				if (localStorage.getItem("Nullcards") == 1 && complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards.length > 0) {
+					testarr += '<div style="margin: 5px">' +
+						'<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого урока" ' +
+						'complectationsData-subtype="' + kidsselector + '" ' +
+						'complectationsData-lessonid="' + complectationsData.diagnosticsCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' + '"> 💾 </span>' +
+						'<div class="roomtypekids" style="cursor:default;">' + complectationsData.diagnosticsCards[indexOfSlides].themes[i].name + '<br>' +
+						'</div></div>'
+				} else if (localStorage.getItem("Nullcards") == 0) {
+					testarr += '<div style="margin: 5px">' +
+						'<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого урока" ' +
+						'complectationsData-subtype="' + kidsselector + '" ' +
+						'complectationsData-lessonid="' + complectationsData.diagnosticsCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' + '"> 💾 </span>' +
+						'<div class="roomtypekids" style="cursor:default;">' + complectationsData.diagnosticsCards[indexOfSlides].themes[i].name + '<br>' +
+						'</div></div>'
+				}
+				
+				for (let j = 0; j < complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards.length; j++) {
+					(complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].completeness == 100 && complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].score == null) ? complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].score = 100 : complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].score;
+					if (complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].completeness == null) {
+						complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].completeness = '——'
+						complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].score = '—'
+					}
+
+					if (complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].emphasis == 'writing') {
+						complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].name = complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].name + '✏'
+					} else if (complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].emphasis == 'pronunciation') {
+						complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].name = complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].name + '🎧'
+					} else if (complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].emphasis == 'speaking') {
+						complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].name = complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].name + '🎙'
+					}
+
+					testarr += '<div class="itemexerciseskids">' + [j + 1] + '.' +
+						complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].name + ' ' +
+						'<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого слайда" ' +
+						'complectationsData-subtype="' + kidsselector + '" ' +
+						'complectationsData-lessonid="' + complectationsData.diagnosticsCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' +
+						'complectationsData-stepid="' + complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].id + '"> 💾 </span>' +
+						'<span style="float:right; margin-right: 80px;">' + complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].completeness + '</span>' +
+						'<span style="float:right; margin-right: 60px;">' + complectationsData.diagnosticsCards[indexOfSlides].themes[i].cards[j].score + '</span>' +
+						'</div>';
+				}
+			}
+
+			document.getElementById('exercisebarComplect').innerHTML += '<div class="roomtype">Тест/Пробник</div>' +
+				'<div class="boxwithslides" style="display:none">' +
+				'<div class="itemexerciseskids">' +
+				'<div style="text-align:center;">Информация по категории: Тест/Пробник</div>' +
+				'Количество завершенных карточек: ' + complectationsData.diagnosticsCards[indexOfSlides].completedCardsCount + ' из ' + complectationsData.diagnosticsCards[indexOfSlides].cardsCount +
+				'<br>Общий % завершения слайдов: ' + complectationsData.diagnosticsCards[indexOfSlides].completeness + '%' +
+				'<br>Итоговый результат: ' + complectationsData.diagnosticsCards[indexOfSlides].score + ' баллов из 100<br>' +
+				'<div class="headerexplain">' +
+				'<span style="margin-left: 15px;">Название слайда</span>' +
+				'<span style="margin-left: 140px;">Балл</span>' +
+				'<span style="margin-left: 60px;">%</span>' +
+				'<span style="margin-left: 50px;">Ссылка</span>' +
+				'</div>' +
+				'</div>' +
+				testarr +
+				'</div>';
+		//End of DiagnosticCards	
+		
+				if (complectationsData.participants[0].role == 'student') {
+			document.getElementById('studnameComplect').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + complectationsData.participants[0].name
+			document.getElementById('studserviceidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 услуги: </span>' + complectationsData.participants[0].educationServiceId
+			document.getElementById('studidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[0].userId
+			document.getElementById('teachnameComplect').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + complectationsData.participants[1].name
+			document.getElementById('teachdidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[1].userId
+			document.getElementById('RoomStatus').innerHTML = '<span style="user-select:none; font-size: 17px;">Статус комнаты: </span>' + (complectationsData.status == "success" ? '<span style="color:#00ff5c">success</span>' : `<span style="color:#daf50c">${complectationsData.status}</span>`)
+		} else if (complectationsData.participants[1].role == 'student') {
+			document.getElementById('studnameComplect').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + complectationsData.participants[1].name
+			document.getElementById('studserviceidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 услуги: </span>' + complectationsData.participants[1].educationServiceId
+			document.getElementById('studidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[1].userId
+			document.getElementById('teachnameComplect').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + complectationsData.participants[0].name
+			document.getElementById('teachdidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[0].userId
+			document.getElementById('RoomStatus').innerHTML = '<span style="user-select:none; font-size: 17px;">Статус комнаты: </span>' + (complectationsData.status == "success" ? '<span style="color:#00ff5c">success</span>' : `<span style="color:#daf50c">${complectationsData.status}</span>`)
+		}
+		}
+		
+		console.log(complectationsData)
+			
+		
+			
+			
 
 		let subjbtnsarr = document.getElementsByClassName('roomtype')
 		let slidesbar = document.getElementsByClassName('boxwithslides')
@@ -591,24 +727,6 @@ async function OpenExercisesComplect() {
 
 				copyToClipboardTSM(link);
 			}
-		}
-
-		if (complectationsData.participants[0].role == 'student') {
-			document.getElementById('studnameComplect').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + complectationsData.participants[0].name
-			document.getElementById('studserviceidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 услуги: </span>' + complectationsData.participants[0].educationServiceId
-			document.getElementById('studidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[0].userId
-			document.getElementById('teachnameComplect').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + complectationsData.participants[1].name
-			document.getElementById('teachdidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[1].userId
-			document.getElementById('groupidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 гр: </span>' + complectationsData.groupInfo.externalGroupId
-			document.getElementById('RoomStatus').innerHTML = '<span style="user-select:none; font-size: 17px;">Статус комнаты: </span>' + (complectationsData.status == "success" ? '<span style="color:#00ff5c">success</span>' : `<span style="color:#daf50c">${complectationsData.status}</span>`)
-		} else if (complectationsData.participants[1].role == 'student') {
-			document.getElementById('studnameComplect').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + complectationsData.participants[1].name
-			document.getElementById('studserviceidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 услуги: </span>' + complectationsData.participants[1].educationServiceId
-			document.getElementById('studidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[1].userId
-			document.getElementById('teachnameComplect').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + complectationsData.participants[0].name
-			document.getElementById('teachdidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + complectationsData.participants[0].userId
-			document.getElementById('groupidComplect').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 гр: </span>' + complectationsData.groupInfo.externalGroupId
-			document.getElementById('RoomStatus').innerHTML = '<span style="user-select:none; font-size: 17px;">Статус комнаты: </span>' + (complectationsData.status == "success" ? '<span style="color:#00ff5c">success</span>' : `<span style="color:#daf50c">${complectationsData.status}</span>`)
 		}
 
 	}
