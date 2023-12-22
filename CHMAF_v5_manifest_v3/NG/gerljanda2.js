@@ -221,7 +221,6 @@ function startgirlyand2() {
   wintgerljanda2.setAttribute('id', 'AF_girlyanda2');
   document.body.style.paddingTop = '70px';
   document.body.style.backgroundColor = "#001529";
-  document.getElementById('AF_ChatHis').style.paddingTop = '70px';
   document.getElementsByClassName('b-head-decor')[0].style.top = '-15px'
   girlyanda2started();
 }
@@ -232,7 +231,6 @@ function stopgirlyand2() {
     wintgerljanda2.remove();
     document.body.style.paddingTop = '0px';
     document.body.style.backgroundColor = '';
-    document.getElementById('AF_ChatHis').style.paddingTop = '0px';
   }
 }
 

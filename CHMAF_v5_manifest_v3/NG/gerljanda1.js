@@ -39,6 +39,7 @@ function startgirlyand1() {
     document.body.style.paddingTop = '35px';
     document.body.style.backgroundColor = "#001529";
     document.getElementById('AF_ChatHis').style.paddingTop = '35px';
+    document.getElementById('infofield').style.height = "70vh";
     girlyand1isstart = setInterval(function () { gir() }, 500);
 }
 
@@ -53,6 +54,7 @@ function stopgirlyand1() {
             document.body.style.backgroundColor = '';
             document.body.style.paddingTop = '0px';
             document.getElementById('AF_ChatHis').style.paddingTop = '0px';
+            document.getElementById('infofield').style.height = '75vh';
         }
     }
 }
