@@ -15,12 +15,8 @@
     },
     "content_scripts": [
         {
-            "js": ["content.js"],
-            "matches": ["*://crm2.skyeng.ru/*"],
-            "run_at": "document_idle"
-        },
-        {
             "js": [
+                "content.js",
                 "/Extras/jquery-3.7.1.js",
                 "/Modules/AlarmClock.js",
                 "/Modules/BinBankInfo.js",
