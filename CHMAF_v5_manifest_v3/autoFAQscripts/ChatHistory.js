@@ -88,8 +88,20 @@ wintChatHis.setAttribute('id', 'AF_ChatHis');
 wintChatHis.innerHTML = win_Chathis;
 
 function fillchatbox() { //функция наполнения элемента, где выводится история чатов
+    const groupIdToSection = {
+        'c7bbb211-a217-4ed3-8112-98728dc382d8': 'ТП',
+        '8266dbb1-db44-4910-8b5f-a140deeec5c0': 'ТП ОС',
+        'b6f7f34d-2f08-fc19-3661-29ac00842898': 'КЦ'
+    };
 
-    document.getElementById('infofield').innerHTML = ''
+    if (convdata && convdata.groupId && groupIdToSection[convdata.groupId]) {
+        document.getElementById('infofield').setAttribute('opsetction', groupIdToSection[convdata.groupId]);
+    }
+    
+    const now = new Date();
+    document.getElementById('infofield').setAttribute('openhistorytime', now.toISOString());
+
+    document.getElementById('infofield').innerHTML = '';
 
     let timearr = [];
     let options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
@@ -392,32 +404,32 @@ async function findchatsoper() { // ищет активные чаты на вы
 
 document.getElementById('operatorstp').addEventListener('change', findchatsoper);
 
-document.getElementById('hideMeChHis').onclick = () => { //форма hide
-    if (document.getElementById('AF_ChatHis').style.display == '') {
-        document.getElementById('AF_ChatHis').style.display = 'none'
-        document.getElementById('opennewcat').classList.remove('activeScriptBtn');
-        document.getElementById('rightPanel').style.right = "22px";
-        document.getElementById('infofield').innerText = ''
-        document.getElementById('placeusid').innerText = ''
-        document.getElementById('placechatid').innerText = ''
-        document.getElementById('somechatinfo').style.display = 'none';
-        document.getElementById('bottommenuchhis').style.display = 'none';
-        document.getElementById('comentsbar').style.display = 'none';
-        document.getElementById('chatuserhis').value = ''
-        document.getElementById('hashchathis').value = ''
-    }
-}
-
-document.getElementById('clearallinfo').onclick = () => { //кнопка очистки
-    document.getElementById('infofield').innerText = ''
-    document.getElementById('placeusid').innerText = ''
-    document.getElementById('placechatid').innerText = ''
+function resetChatHistoryUI() {
+    document.getElementById('infofield').innerText = '';
+    document.getElementById('placeusid').innerText = '';
+    document.getElementById('placechatid').innerText = '';
     document.getElementById('somechatinfo').style.display = 'none';
     document.getElementById('bottommenuchhis').style.display = 'none';
     document.getElementById('comentsbar').style.display = 'none';
-    document.getElementById('chatuserhis').value = ''
-    document.getElementById('hashchathis').value = ''
+    document.getElementById('chatuserhis').value = '';
+    document.getElementById('hashchathis').value = '';
+    document.getElementById('infofield').removeAttribute('opsetction');
+    document.getElementById('infofield').removeAttribute('openhistorytime');
 }
+
+document.getElementById('hideMeChHis').onclick = () => {
+    if (document.getElementById('AF_ChatHis').style.display == '') {
+        document.getElementById('AF_ChatHis').style.display = 'none';
+        document.getElementById('opennewcat').classList.remove('activeScriptBtn');
+        document.getElementById('rightPanel').style.right = "22px";
+        resetChatHistoryUI();
+    }
+};
+
+document.getElementById('clearallinfo').onclick = () => {
+    resetChatHistoryUI();
+};
+
 
 document.getElementById('chatuserhis').addEventListener('input', function () {
     onlyNumbers(this);
@@ -566,9 +578,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
     }
 
     async function currstate() {
-        let departmentPrefix = document.getElementsByClassName('user_menu-dropdown-user_name')[0].innerText.split('-')[0];
-        let opsflag = ['ТП', 'ТП ОС', 'КЦ', 'КМ', 'ТС', 'ТПPrem'].includes(departmentPrefix) ? departmentPrefix : 'Unknown';
-        console.log(`Подразделение для Chat history: ${opsflag}`);
+        let opsflag = getopsection();
 
         activetechopers = []
         objSel.length = 1
@@ -590,6 +600,13 @@ function getopennewcatButtonPress() { // открывает меню для ра
                 addOption(objSel, `${statusMap[operator.status]} ${operator.fullName} (${aCnt})`, operator.id);
             });
         }
+    }
+
+    function getopsection() {
+        let departmentPrefix = document.getElementsByClassName('user_menu-dropdown-user_name')[0].innerText.split('-')[0];
+        let opsflag = ['ТП', 'ТП ОС', 'КЦ', 'КМ', 'ТС', 'ТПPrem'].includes(departmentPrefix) ? departmentPrefix : 'Unknown';
+        console.log(`Подразделение для Chat history: ${opsflag}`);
+        return opsflag;
     }
 
     document.getElementById('getdatafrchat').onclick = () => {
@@ -617,6 +634,8 @@ function getopennewcatButtonPress() { // открывает меню для ра
     currstate();
 
     document.getElementById('btn_search_history').onclick = async () => {
+        document.getElementById('infofield').removeAttribute('opsetction');
+        document.getElementById('infofield').removeAttribute('openhistorytime');
         let userId = document.getElementById('chatuserhis').value.trim();
         let chatHash = document.getElementById('hashchathis').value.trim();
         let dateFrom = document.getElementById('dateFromChHis').value;
@@ -709,6 +728,8 @@ function getopennewcatButtonPress() { // открывает меню для ра
     }
 
     document.getElementById('back_to_chat_his').onclick = () => {
+        document.getElementById('infofield').removeAttribute('opsetction');
+        document.getElementById('infofield').removeAttribute('openhistorytime');
         document.getElementById('infofield').innerHTML = foundarr || '';
         document.getElementById('placeusid').innerText = '';
         document.getElementById('placechatid').innerText = '';
@@ -748,6 +769,8 @@ function getopennewcatButtonPress() { // открывает меню для ра
     }
 
     document.getElementById('refreshchat').onclick = async () => {
+        document.getElementById('infofield').removeAttribute('opsetction');
+        document.getElementById('infofield').removeAttribute('openhistorytime');
         const chatId = document.getElementById('placechatid').innerText;
         if (chatId) {
             document.getElementById('infofield').innerHTML = '';
@@ -766,32 +789,44 @@ function getopennewcatButtonPress() { // открывает меню для ра
     }
 
     document.getElementById('takechat').onclick = function () {
-        var result = confirm("Вы действительно желаете забрать чат?");
-        if (result) {
+        const openHistoryTime = document.getElementById('infofield').getAttribute('openhistorytime');
+        const openHistoryDate = new Date(openHistoryTime);
+        const now = new Date();
+    
+        if ((now - openHistoryDate) / 1000 > 60) {
+            alert("История чата открыта слишком долго. Пожалуйста, обновите чат.");
+            return;
+        }
+    
+        let opsflag = getopsection();
+        let opschat = document.getElementById('infofield').getAttribute('opsetction');
+    
+        if (opschat !== opsflag) {
+            alert('Чат в другой группе, забрать чат нельзя');
+            return;
+        }
+    
+        if (confirm("Вы действительно желаете забрать чат?")) {
             let chat_id = document.getElementById('placechatid').innerText;
             let operator_id = operatorId;
-
-            fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-                "headers": {
-                    "content-type": "application/json"
-                },
-                "credentials": "include",
-                "body": `{\"command\":\"DO_ASSIGN_CONVERSATION\",\"conversationId\":\"${chat_id}\",\"assignToOperatorId\":\"null\"}`,
-                "method": "POST"
-            });
-            setTimeout(() => {
+    
+            const assignChat = (assignToOperatorId) => {
                 fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-                    "headers": {
-                        "content-type": "application/json"
-                    },
-                    "credentials": "include",
-                    "body": `{\"command\":\"DO_ASSIGN_CONVERSATION\",\"conversationId\":\"${chat_id}\",\"assignToOperatorId\":\"${operator_id}\"}`,
-                    "method": "POST"
+                    headers: { "content-type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ 
+                        command: "DO_ASSIGN_CONVERSATION",
+                        conversationId: chat_id,
+                        assignToOperatorId: assignToOperatorId 
+                    }),
+                    method: "POST"
                 });
-            }, 2000);
+            };
+    
+            assignChat("null");
+            setTimeout(() => assignChat(operator_id), 2000);
         }
-    } // конец обработчика нажатия кнопки "Забрать"
-
+    };// конец обработчика нажатия кнопки "Забрать"
 
     async function startnewchatfast(polzid) { //открывает быстро чат с пользователем
         if (operatorId == "") {
