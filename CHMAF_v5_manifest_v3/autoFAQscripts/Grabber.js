@@ -5,33 +5,46 @@ let cleanedarray = [];
 let themesarray = []
 let avgCsatCountVar;
 let countsArray = [];
+let countsCountryArray = [];
 let countsArrayInterval = [];
 let isDescending;
 let testarray = [];
 // let convDurationArr=[];
 var win_Grabber =  // описание элементов окна Grabber
-    `<div style="display: flex; width: 800px;">
-        <span style="width: 800px">
+    `<div style="display: flex; width: 960px;">
+        <span style="width: 960px">
                 <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 800px; display:flex; justify-content:space-evenly;" id="grabdata">
+                        <div style="margin: 5px; width: 960px; display:flex; justify-content:space-evenly;" id="grabdata">
                                 <button class="mainButton buttonHide" id="hideMeGrabber">hide</button>
                                 <button class="mainButton" id="GatherStatByThemes" disabled>🧮</button>
 								<div style="width:450px;background: #5f7875;height: 21px;"><div id="progressBarGrabber" style="width: 0%; height: 20px; background-color: #e38118; border: 1px solid black; text-align:center; font-weight:700; color:white;"></div></div>
                         </div>
-
+						
 						<div id="AgregatedDataThemes" style="display:none; width:400px; min-height:100px; max-height:800px; background: rgb(70, 68, 81); position:absolute; top:-1px; left:-400px; overflow-y:auto">
-							<div id="ToolsPanel" style="padding:5px;">
+							<div style="margin:5px;">
 								<button class="mainButton buttonHide" id="HideToolsPanel">hide</button>
+							</div>
+						
+							<div id="ToolsPanel" style="padding:5px;">
+								<div style="color:bisque">Графическое и табличное представление подтематик</div>
 								<button class="mainButton" id="SwitchToGraph">🔀📊</button>
 								<button class="mainButton" id="SwitchToTable">🔀🧮</button>
 								<button class="mainButton" id="SwitchToIntervalGraph">🔀📊〰</button>
 								<button class="mainButton" id="SwitchToIntervalTable">🔀🧮〰</button>
 								<button class="mainButton" id="SaveIntervalCSV" disabled>〰💾CSV</button>
+							<div style="color:bisque">Графическое и табличное представление по странам пользователей</div>
+								<button class="mainButton" id="SwitchToGraphCountry">🔀📊</button>
+								<button class="mainButton" id="SwitchToTableCountry">🔀🧮</button>
+								<button class="mainButton" title="Сохраняет в CSV обобщенные значения по странам" id="SaveСountryTableCSV">〰💾🧮CSV</button>
+								<br>
+								<button class="mainButton" id="SwitchToIntervalGraphCountry" >〰📊Country</button>
+								<button class="mainButton" id="SwitchToIntervalTableCountry" >〰🧮Country</button>
+								<button class="mainButton" title="Сохраняет в CSVзначения по странам за разные периоды времени"  id="SaveIntervalСountryCSV" disabled>〰💾CSV</button>
 							</div>
 							<div id="AgregatedDataOut" style="color: bisque; padding: 5px; text-align: center;"></div>
 						</div>
 
-                        <div style="margin: 5px; width: 800px" id="grabbox">
+                        <div style="margin: 5px; width: 960px" id="grabbox">
 								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <input type="date" style="color:black; margin-left:20px;  width:125px;" name="FirstData" id="dateFromGrab"></span>
 								 <button class="mainButton" style="margin-left:15%" id="dayminus">◀</button>
 								 <button class="mainButton" id="dayplus">▶</button>
@@ -220,7 +233,7 @@ var win_Grabber =  // описание элементов окна Grabber
 						</span>
 
 						<div id="grabbedchats" style="margin-left: 15px;">
-							 <p id="themesgrabbeddata" style="width:800px; max-height:400px; color:bisque; margin-left:5px; overflow:auto"></p>
+							 <p id="themesgrabbeddata" style="width:960px; max-height:400px; color:bisque; margin-left:5px; overflow:auto"></p>
 							 <p id="foundcount"></p>
 							 <p id="avgCsatCount"></p>
 							 <p id="avgSLAClosedData"></p>
@@ -500,6 +513,59 @@ function buildTable() {
     tableContainer.appendChild(table);
 }
 
+function buildTableCountry() {
+    document.getElementById('AgregatedDataThemes').style.width = "400px"
+    document.getElementById('themesgrabbeddata').style.display = ''
+    const tableContainer = document.getElementById('AgregatedDataOut');
+    tableContainer.innerHTML = ''; // Очищаем содержимое контейнера перед построением таблицы
+
+    // Создаем таблицу
+    const table = document.createElement('table');
+
+    // Создаем заголовок таблицы
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    const headers = ['№п.п', 'Страна', 'Количество'];
+
+    headers.forEach((headerText, index) => {
+        const th = document.createElement('th');
+        th.textContent = headerText;
+        th.style = "text-align: center; font-weight: 700; background: dimgrey; border: 1px solid black; padding: 5px; position: sticky; top: 0px;"
+        if (index === 2) {
+            th.style = "text-align: center; font-weight: 700; background: dimgrey; border: 1px solid black; padding: 5px; position: sticky; top: 0px; cursor:pointer"
+            th.title = "При клике сортирует список либо по возрастанию либо по убыванию, повторый клик также изменяет направление сортировки!"
+            th.addEventListener('click', sortTableCountryByCount);
+        }
+        headerRow.appendChild(th);
+    });
+
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // Создаем тело таблицы
+    const tbody = document.createElement('tbody');
+
+    countsCountryArray.forEach((item, index) => {
+        const row = document.createElement('tr');
+        const numberCell = document.createElement('td');
+        const countryCell = document.createElement('td');
+        const countCell = document.createElement('td');
+
+        numberCell.textContent = (index + 1).toString();
+        countryCell.textContent = item.Country;
+        countCell.textContent = item.Count.toString();
+
+        row.appendChild(numberCell);
+        row.appendChild(countryCell);
+        row.appendChild(countCell);
+        tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
+
+    // Добавляем таблицу в контейнер
+    tableContainer.appendChild(table);
+}
 function drawGraph() {
     document.getElementById('AgregatedDataThemes').style.width = "1200px"
     document.getElementById('themesgrabbeddata').style.display = 'none'
@@ -522,6 +588,52 @@ function drawGraph() {
                 {
                     label: 'Количество',
                     data: counts,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'bisque' // Цвет текста по оси Y
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: 'bisque' // Цвет текста по оси X
+                    }
+                }
+            }
+        }
+    });
+}
+
+function drawGraphCountry() {
+    document.getElementById('AgregatedDataThemes').style.width = "1200px"
+    document.getElementById('themesgrabbeddata').style.display = 'none'
+    const countryValues = countsCountryArray.map(item => item.Country);
+    const countryCounts = countsCountryArray.map(item => item.Count);
+
+    // Создаем контейнер для графика
+    const graphContainer = document.getElementById('AgregatedDataOut');
+    graphContainer.innerHTML = ''; // Очищаем содержимое контейнера перед отрисовкой графика
+    const canvas = document.createElement('canvas');
+    graphContainer.appendChild(canvas);
+
+    // Отрисовываем график
+    const ctx = canvas.getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: countryValues,
+            datasets: [
+                {
+                    label: 'Количество',
+                    data: countryCounts,
                     backgroundColor: 'rgba(54, 162, 235, 0.5)',
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1
@@ -635,11 +747,6 @@ function buildIntervalTable() {
         const th = document.createElement('th');
         th.textContent = headerText;
         th.style = "text-align: center; font-weight: 700; background: dimgrey; border: 1px solid black; padding: 5px; position: sticky; top: 0px;"
-        if (headerText === 'Интервал') {
-            th.style.cursor = 'pointer';
-            th.title = "При клике сортирует список либо по возрастанию либо по убыванию, повторный клик также изменяет направление сортировки!";
-            th.addEventListener('click', sortTableByInterval);
-        }
         headerRow.appendChild(th);
     });
 
@@ -676,6 +783,131 @@ function buildIntervalTable() {
 
 }
 
+function buildIntervalTableCountry() {
+
+    const intervals = [
+        '07:00 - 07:30',
+        '07:30 - 08:00',
+        '08:00 - 08:30',
+        '08:30 - 09:00',
+        '09:00 - 09:30',
+        '09:30 - 10:00',
+        '10:00 - 10:30',
+        '10:30 - 11:00',
+        '11:00 - 11:30',
+        '11:30 - 12:00',
+        '12:00 - 12:30',
+        '12:30 - 13:00',
+        '13:00 - 13:30',
+        '13:30 - 14:00',
+        '14:00 - 14:30',
+        '14:30 - 15:00',
+        '15:00 - 15:30',
+        '15:30 - 16:00',
+        '16:00 - 16:30',
+        '16:30 - 17:00',
+        '17:00 - 17:30',
+        '17:30 - 18:00',
+        '18:00 - 18:30',
+        '18:30 - 19:00',
+        '19:00 - 19:30',
+        '19:30 - 20:00',
+        '20:00 - 20:30',
+        '20:30 - 21:00',
+        '21:00 - 21:30',
+        '21:30 - 22:00',
+        '22:00 - 22:30',
+        '22:30 - 23:00',
+        '23:00 - 23:30',
+        '23:30 - 00:00'
+    ];
+
+    const result = payloadarray.reduce((acc, obj) => {
+        const Country = obj.Country;
+        const timeStamp = obj.timeStamp;
+        const timeKey = moment(timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
+        const interval = intervals.find((interval) => {
+            const [start, end] = interval.split(' - ');
+            return moment(timeKey, 'HH:mm').isBetween(moment(start, 'HH:mm'), moment(end, 'HH:mm'), null, '[]');
+        });
+
+        if (interval) {
+            acc.counts[interval] = acc.counts[interval] || {};
+            acc.counts[interval][Country] = (acc.counts[interval][Country] || 0) + 1;
+        }
+
+        acc.uniqueValues.add(Country);
+        return acc;
+    }, { uniqueValues: new Set(), counts: {} });
+
+    const uniqueValuesArray = Array.from(result.uniqueValues);
+    countsArrayInterval = Object.entries(result.counts).flatMap(([interval, counts]) => {
+        return Object.entries(counts).map(([Country, count]) => ({
+            TimeStamp: interval,
+            Country: Country,
+            Count: count,
+        }));
+    });
+
+    countsArrayInterval.sort((a, b) => {
+        const timeA = a.TimeStamp.split(" - ")[0];
+        const timeB = b.TimeStamp.split(" - ")[0];
+        return moment(timeA, "HH:mm").diff(moment(timeB, "HH:mm"));
+    });
+
+    document.getElementById('AgregatedDataThemes').style.width = "400px"
+    document.getElementById('themesgrabbeddata').style.display = ''
+    const tableContainer = document.getElementById('AgregatedDataOut');
+    tableContainer.innerHTML = ''; // Очищаем содержимое контейнера перед построением таблицы
+
+    // Создаем таблицу
+    const table = document.createElement('table');
+
+    // Создаем заголовок таблицы
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    const headers = ['№п.п', 'Страна', 'Интервал', 'Количество'];
+
+    headers.forEach((headerText, index) => {
+        const th = document.createElement('th');
+        th.textContent = headerText;
+        th.style = "text-align: center; font-weight: 700; background: dimgrey; border: 1px solid black; padding: 5px; position: sticky; top: 0px;"
+        headerRow.appendChild(th);
+    });
+
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // Создаем тело таблицы
+    const tbody = document.createElement('tbody');
+
+    countsArrayInterval.forEach((item, index) => {
+        const row = document.createElement('tr');
+        const numberCell = document.createElement('td');
+        const themeCell = document.createElement('td');
+        const intervalCell = document.createElement('td');
+        const countCell = document.createElement('td');
+
+        numberCell.textContent = (index + 1).toString();
+        themeCell.textContent = item.Country;
+        intervalCell.textContent = item.TimeStamp;
+        countCell.textContent = item.Count.toString();
+
+        row.appendChild(numberCell);
+        row.appendChild(themeCell);
+        row.appendChild(intervalCell);
+        row.appendChild(countCell);
+        tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
+
+    // Добавляем таблицу в контейнер
+    tableContainer.appendChild(table);
+    document.getElementById('SaveIntervalСountryCSV').removeAttribute('disabled')
+
+}
+
 function sortTableByCount() {
     countsArray.sort((a, b) => {
         if (isDescending) {
@@ -690,14 +922,18 @@ function sortTableByCount() {
     buildTable(); // Перестраиваем таблицу с новым порядком
 }
 
-function sortTableByInterval() {
-    countsArrayInterval.sort((a, b) => {
-        const timeA = a.TimeStamp.split(" - ")[0];
-        const timeB = b.TimeStamp.split(" - ")[0];
-        return moment(timeA, "HH:mm").diff(moment(timeB, "HH:mm"));
+function sortTableCountryByCount() {
+    countsCountryArray.sort((a, b) => {
+        if (isDescending) {
+            return b.Count - a.Count;
+        } else {
+            return a.Count - b.Count;
+        }
     });
 
-    buildIntervalTable();
+    isDescending = !isDescending; // Инвертируем флаг сортировки
+
+    buildTableCountry(); // Перестраиваем таблицу с новым порядком
 }
 
 function drawIntervalGraph() {
@@ -841,6 +1077,147 @@ function drawIntervalGraph() {
     document.getElementById('SaveIntervalCSV').removeAttribute('disabled')
 }
 
+function drawIntervalCountryGraph() {
+    const intervals = [
+        '07:00 - 07:30',
+        '07:30 - 08:00',
+        '08:00 - 08:30',
+        '08:30 - 09:00',
+        '09:00 - 09:30',
+        '09:30 - 10:00',
+        '10:00 - 10:30',
+        '10:30 - 11:00',
+        '11:00 - 11:30',
+        '11:30 - 12:00',
+        '12:00 - 12:30',
+        '12:30 - 13:00',
+        '13:00 - 13:30',
+        '13:30 - 14:00',
+        '14:00 - 14:30',
+        '14:30 - 15:00',
+        '15:00 - 15:30',
+        '15:30 - 16:00',
+        '16:00 - 16:30',
+        '16:30 - 17:00',
+        '17:00 - 17:30',
+        '17:30 - 18:00',
+        '18:00 - 18:30',
+        '18:30 - 19:00',
+        '19:00 - 19:30',
+        '19:30 - 20:00',
+        '20:00 - 20:30',
+        '20:30 - 21:00',
+        '21:00 - 21:30',
+        '21:30 - 22:00',
+        '22:00 - 22:30',
+        '22:30 - 23:00',
+        '23:00 - 23:30',
+        '23:30 - 00:00'
+    ];
+
+    const result = payloadarray.reduce((acc, obj) => {
+        const countryValue = obj.Country;
+        const timeStamp = obj.timeStamp;
+        const timeKey = moment(timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
+        const interval = intervals.find((interval) => {
+            const [start, end] = interval.split(' - ');
+            return moment(timeKey, 'HH:mm').isBetween(moment(start, 'HH:mm'), moment(end, 'HH:mm'), null, '[]');
+        });
+
+        if (interval) {
+            acc.counts[interval] = acc.counts[interval] || {};
+            acc.counts[interval][countryValue] = (acc.counts[interval][countryValue] || 0) + 1;
+        }
+
+        acc.uniqueValues.add(countryValue);
+        return acc;
+    }, { uniqueValues: new Set(), counts: {} });
+
+    const uniqueValuesArray = Array.from(result.uniqueValues);
+    countsArrayInterval = Object.entries(result.counts).flatMap(([interval, counts]) => {
+        return Object.entries(counts).map(([countryValue, count]) => ({
+            TimeStamp: interval,
+            Country: countryValue,
+            Count: count,
+        }));
+    });
+
+    countsArrayInterval.sort((a, b) => {
+        const timeA = a.TimeStamp.split(" - ")[0];
+        const timeB = b.TimeStamp.split(" - ")[0];
+        return moment(timeA, "HH:mm").diff(moment(timeB, "HH:mm"));
+    });
+
+    document.getElementById('AgregatedDataThemes').style.width = "1200px";
+    document.getElementById('themesgrabbeddata').style.display = 'none';
+
+    const countryValues = uniqueValuesArray;
+    const datasets = countryValues.map((country, index) => {
+        const counts = intervals.map(interval => {
+            const countObj = countsArrayInterval.find(item => item.TimeStamp.startsWith(interval) && item.Country === country);
+            return countObj ? countObj.Count : 0;
+        });
+
+        const color = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+
+        return {
+            label: country,
+            data: counts,
+            backgroundColor: color,
+            borderColor: color,
+            borderWidth: 1,
+            pointRadius: 4, // Hide data points for a smooth line
+        };
+    });
+
+    const graphContainer = document.getElementById('AgregatedDataOut');
+    graphContainer.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    graphContainer.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    new Chart(ctx, {
+        type: 'line', // Set the chart type to 'line'
+        data: {
+            labels: intervals,
+            datasets: datasets
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'bisque',
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: 'bisque',
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'LightSalmon',
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    document.getElementById('SaveIntervalСountryCSV').removeAttribute('disabled')
+}
+
 function saveToCSVInterval() {
     let csvContent = "\uFEFF"; // Добавление BOM символа для корректной кодировки UTF-8
 
@@ -865,6 +1242,56 @@ function saveToCSVInterval() {
 
     // Удаление ссылки из DOM
     document.body.removeChild(downloadLink);
+}
+
+function SaveIntervalСountryCSV() {
+    let csvContent = "\uFEFF"; // Добавление BOM символа для корректной кодировки UTF-8
+    // Добавление заголовков столбцов
+    csvContent += "TimeStamp,Country,Count\n";
+    // Добавление данных
+    countsArrayInterval.forEach(item => {
+        const { TimeStamp, Country, Count } = item;
+        const row = `${TimeStamp},${Country},${Count}\n`;
+        csvContent += row;
+    });
+    // Создание элемента ссылки для скачивания CSV-файла
+    const downloadLink = document.createElement("a");
+    downloadLink.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
+    downloadLink.setAttribute("download", "data.csv");
+    document.body.appendChild(downloadLink);
+    // Нажатие на ссылку для скачивания файла
+    downloadLink.click();
+    // Удаление ссылки из DOM
+    document.body.removeChild(downloadLink);
+}
+function SaveСountryCSV(filename) {
+    const csvRows = [];
+    // Получаем заголовки таблицы
+    const headers = Array.from(document.querySelectorAll('#AgregatedDataOut thead th')).map(header => header.innerText);
+    csvRows.push(headers.join(','));
+    // Получаем строки таблицы
+    const rows = document.querySelectorAll('#AgregatedDataOut tbody tr');
+    for (const row of rows) {
+        const values = Array.from(row.querySelectorAll('td')).map(cell => cell.innerText);
+        csvRows.push(values.join(','));
+    }
+    // Создаем CSV строку
+    const csvString = csvRows.join('\n');
+    // Создаем Blob объект
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    // Создаем ссылку для скачивания
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    // Эмулируем нажатие на ссылку для скачивания файла
+    document.body.appendChild(link);
+    link.click();
+    // document.body.removeChild(link);
+        
+        setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(link.href); // Освободить память
+        }, 0);
 }
 
 let chekopersarr = [];
@@ -1040,7 +1467,8 @@ document.getElementById('stargrab').onclick = async function () {
                                         timeStamp: new Date(+r.tsCreate + tmponlyoperhashes[j].Duration).toLocaleString('ru-RU', timeOptions),
                                         CSAT: csat,
                                         ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
-                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1"
+                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
+										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
                                     });
 
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
@@ -1059,7 +1487,8 @@ document.getElementById('stargrab').onclick = async function () {
                                         timeStamp: "Active chat, ⏳",
                                         CSAT: csat,
                                         ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
-                                        SLACompleted: "undefined"
+                                        SLACompleted: "undefined",
+										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
                                     });
 
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
@@ -1096,7 +1525,8 @@ document.getElementById('stargrab').onclick = async function () {
                                         timeStamp: "Active chat, ⏳",
                                         CSAT: csat,
                                         ThemeValue: '⁉No theme',
-                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1"
+                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
+										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
                                     });
                                 } else if (r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration != undefined) {
                                     payloadarray.push({
@@ -1105,7 +1535,8 @@ document.getElementById('stargrab').onclick = async function () {
                                         timeStamp: new Date(+r.tsCreate + tmponlyoperhashes[j].Duration).toLocaleString('ru-RU', timeOptions),
                                         CSAT: csat,
                                         ThemeValue: '⁉No theme',
-                                        SLACompleted: "undefined"
+                                        SLACompleted: "undefined",
+										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
                                     });
 
                                 }
@@ -1147,7 +1578,8 @@ document.getElementById('stargrab').onclick = async function () {
                                         timeStamp: new Date(+r.tsCreate + tmponlyoperhashes[j].Duration).toLocaleString('ru-RU', timeOptions),
                                         CSAT: csat,
                                         ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
-                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1"
+                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
+										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
                                     });
 
                                 } else if (r.payload && r.payload.topicId && r.payload.topicId.value != '' && tmponlyoperhashes[j].Duration == undefined) {
@@ -1157,7 +1589,8 @@ document.getElementById('stargrab').onclick = async function () {
                                         timeStamp: "Active chat, ⏳",
                                         CSAT: csat,
                                         ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
-                                        SLACompleted: "undefined"
+                                        SLACompleted: "undefined",
+										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
                                     });
 
                                 } else if (r.payload && r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration == undefined) {
@@ -1167,7 +1600,8 @@ document.getElementById('stargrab').onclick = async function () {
                                         timeStamp: "Active chat, ⏳",
                                         CSAT: csat,
                                         ThemeValue: '⁉No theme',
-                                        SLACompleted: "undefined"
+                                        SLACompleted: "undefined",
+										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
                                     });
                                 } else if (r.payload && r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration != undefined) {
 
@@ -1177,7 +1611,8 @@ document.getElementById('stargrab').onclick = async function () {
                                         timeStamp: new Date(+r.tsCreate + tmponlyoperhashes[j].Duration).toLocaleString('ru-RU', timeOptions),
                                         CSAT: csat,
                                         ThemeValue: '⁉No theme',
-                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1"
+                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
+										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
                                     });
 
                                 }
@@ -1229,7 +1664,7 @@ document.getElementById('stargrab').onclick = async function () {
 
     // Create the table header row
     const headerRow = document.createElement('tr');
-    const columnNames = ['№', 'Date', 'Operator', 'ChatId', '🏁 CSAT', 'Тема', 'SLACompleted'];
+    const columnNames = ['№', 'Date', 'Operator', 'ChatId', '🏁 CSAT', 'Тема', 'SLACompl', 'Country'];
 
     // Add column names to the header row
     columnNames.forEach(columnName => {
@@ -1329,6 +1764,12 @@ document.getElementById('stargrab').onclick = async function () {
         SLAcompl.style = 'text-align:center; border: 1px solid black; font-size: 12px;'
         SLAcompl.setAttribute('name', 'SLACompletedValue')
         row.appendChild(SLAcompl);
+		
+		//Add Country column
+		const CountryCol = document.createElement('td');
+		CountryCol.textContent = element.Country;
+		CountryCol.style = 'text-align:center; border: 1px solid black; font-size: 12px;'
+		row.appendChild(CountryCol);
 
         // Append the row to the table
         table.appendChild(row);
@@ -1339,15 +1780,23 @@ document.getElementById('stargrab').onclick = async function () {
 
     //
 
-    const result = payloadarray.reduce((acc, obj) => {
+  const result = payloadarray.reduce((acc, obj) => {
         const themeValue = obj.ThemeValue;
         acc.uniqueValues.add(themeValue);
         acc.counts[themeValue] = (acc.counts[themeValue] || 0) + 1;
         return acc;
     }, { uniqueValues: new Set(), counts: {} });
+	
+	const resultCountry = pureArray.reduce((acc, obj) => {
+        const countryValue = obj.Country;
+        acc.uniqueValues.add(countryValue);
+        acc.countryCounts[countryValue] = (acc.countryCounts[countryValue] || 0) + 1;
+        return acc;
+    }, { uniqueValues: new Set(), countryCounts: {} });
 
     const uniqueValuesArray = Array.from(result.uniqueValues);
     countsArray = Object.entries(result.counts).map(([themeValue, count]) => ({ ThemeValue: themeValue, Count: count }));
+    countsCountryArray = Object.entries(resultCountry.countryCounts).map(([countryValue, count]) => ({ Country: countryValue, Count: count }));
 
     isDescending = true; // Флаг для определения порядка сортировки
 
@@ -1357,6 +1806,12 @@ document.getElementById('stargrab').onclick = async function () {
     const switchToGraphButton = document.getElementById('SwitchToGraph');
     switchToGraphButton.addEventListener('click', drawGraph);
 
+    const switchToTableCountryButton = document.getElementById('SwitchToTableCountry');
+    switchToTableCountryButton.addEventListener('click', buildTableCountry);
+
+    const switchToGraphCountryButton = document.getElementById('SwitchToGraphCountry');
+    switchToGraphCountryButton.addEventListener('click', drawGraphCountry);
+
     const switchToIntervalTableButton = document.getElementById('SwitchToIntervalTable');
     switchToIntervalTableButton.addEventListener('click', buildIntervalTable);
 
@@ -1365,6 +1820,15 @@ document.getElementById('stargrab').onclick = async function () {
 
     const SaveIntervalCSVButton = document.getElementById('SaveIntervalCSV');
     SaveIntervalCSVButton.addEventListener('click', saveToCSVInterval);
+	
+	const switchToIntervalTableCountryButton = document.getElementById('SwitchToIntervalTableCountry');
+    switchToIntervalTableCountryButton.addEventListener('click', buildIntervalTableCountry);
+	
+	const switchToIntervalGraphCountryButton = document.getElementById('SwitchToIntervalGraphCountry');
+    switchToIntervalGraphCountryButton.addEventListener('click', drawIntervalCountryGraph);
+	
+	const SaveIntervalСountryCSVButton = document.getElementById('SaveIntervalСountryCSV');
+    SaveIntervalСountryCSVButton.addEventListener('click', SaveIntervalСountryCSV);
 
     ///
     function filterTableRowsByTags() {
@@ -1476,8 +1940,10 @@ document.getElementById('stargrab').onclick = async function () {
             saveFilteredTableCSV()
         }
     }
-
-
+	  
+        document.getElementById('SaveСountryTableCSV').onclick = function(){
+                SaveСountryCSV('Country_Aggregated.csv');
+        }
 
     ///
 
