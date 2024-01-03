@@ -44,7 +44,6 @@ var win_taskform = //описание формы создания задач в 
 								<option value="outgoing_calls_crm2" style="background: white">Исходящие звонки</option>
 								<option value="tech_support_second_line_crm2" style="background: white">Техподдержка 2Л CRM</option>
                                 <option value="crisis_manager" style="background: white">Кризис менеджеры</option>
-                                <option value="tech_support_incoming_crm2" style="background: white">Техподдержка 1Л CRM (вход)</option>
 							</select>
 
 							<input id="taskserviceid" placeholder="🆔 ID услуги" style="width: 100%; height: 28px;">
@@ -347,7 +346,7 @@ function gettaskButButtonPress() { // функция открытия окна �
         document.getElementById('lowcontrol').onclick = function () {
             document.getElementById('priority').children[1].selected = true;
             document.getElementById('priority').style = "color:green;font-weight:600; width: 100%; height: 25px; text-align: center;"
-            document.getElementById('customerservice').children[8].selected = true;
+            document.getElementById('customerservice').children[1].selected = true;
             NoteNoticeClear()
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
             document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nКонтроль"
