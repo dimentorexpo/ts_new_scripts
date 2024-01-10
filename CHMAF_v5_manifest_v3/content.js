@@ -679,7 +679,6 @@ async function move_again_AF() { //с АФ шняга там стили шмил
         }
     }
     setInterval(checkchats, 1000);
-    setTimeout(checkAndSetGirlyanda, 1000);
 }
 
 

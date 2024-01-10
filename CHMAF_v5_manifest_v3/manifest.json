@@ -20,9 +20,7 @@
 	},
 	"content_scripts": [
 		{
-			"js": [
-				"content.js"
-			],
+			"js": ["content.js"],
 			"matches": [
 				"*://skyeng.autofaq.ai/*",
 				"*://*.skyeng.ru/*"
@@ -65,48 +63,34 @@
 				"/autoFAQscripts/Themes.js",
 				"/autoFAQscripts/Userinfo.js",
 				"/autoFAQscripts/VoiceHelper.js",
-				"/Lightbox/dist/js/lightbox.min.js",
-				"/NG/Chekgirlyanda.js",
-				"/NG/gerljanda1.js",
-				"/NG/gerljanda2.js"
+				"/Lightbox/dist/js/lightbox.min.js"
 			],
 			"css": [
 				"/CSS/style.css",
 				"/Lightbox/dist/css/lightbox.min.css"
 			],
-			"matches": [
-				"*://skyeng.autofaq.ai/*"
-			],
+			"matches": ["*://skyeng.autofaq.ai/*"],
 			"run_at": "document_idle"
 		},
 		{
-			"js": [
-				"/OtherScripts/chats.js"
-			],
-			"css": [
-				"/CSS/style.css"
-			],
-			"matches": [
-				"*://student.skyeng.ru/*"
-			],
+			"js": ["/OtherScripts/chats.js"],
+			"css": ["/CSS/style.css"],
+			"matches": ["*://student.skyeng.ru/*"],
 			"run_at": "document_end"
 		},
 		{
-			"js": [
-				"/OtherScripts/Consideration.js"
-			],
-			"matches": [
-				"*://billing-marketing.skyeng.ru/*"
-			],
+			"js": ["/OtherScripts/Consideration.js"],
+			"matches": ["*://billing-marketing.skyeng.ru/*"],
 			"run_at": "document_end"
 		},
 		{
-			"js": [
-				"/OtherScripts/Multiclassroom.js"
-			],
-			"matches": [
-				"*://vimbox.skyeng.ru/*"
-			],
+			"js": ["/OtherScripts/Multiclassroom.js"],
+			"matches": ["*://vimbox.skyeng.ru/kids/english/teacher/multi-classroom/*"],
+			"run_at": "document_end"
+		},
+		{
+			"js": ["/OtherScripts/lessonrestart.js"],
+			"matches": ["*://vimbox.skyeng.ru/kids/*/room/*"],
 			"run_at": "document_end"
 		}
 	],

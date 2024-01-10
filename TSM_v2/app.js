@@ -10,6 +10,42 @@ const ChanelSupport = "pspyooisr3rd7qzx9as8uc96xc";
 let lastChatId = null; // Глобальная переменная для хранения последнего chatid
 let lastMessage = null; // Глобальная переменная для хранения последнего сообщения
 
+function createRetryLogic(maxRetries) {
+    let retries = 0;
+  
+    function sendMessageToActiveTab(details) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        if (tabs.length > 0 && tabs[0]) {
+          chrome.tabs.sendMessage(tabs[0].id, { message: 'logRequest', details: details });
+        } else {
+          retries++;
+          if (retries < maxRetries) {
+            console.log(`Не удалось найти активную вкладку. Попробуем еще раз через 1 секунду. Попытка ${retries}`);
+            setTimeout(() => sendMessageToActiveTab(details), 3000);
+          } else {
+            console.log(`Не удалось найти активную вкладку после ${maxRetries} попыток.`);
+          }
+        }
+      });
+    }
+  
+    return sendMessageToActiveTab;
+  }
+
+  const sendMessageToActiveTab = createRetryLogic(3);
+  
+  // Добавляем обработчик для сетевых запросов
+  chrome.webRequest.onCompleted.addListener(
+    function(details) {
+      sendMessageToActiveTab(details);
+    },
+    {urls: [  
+        "*://skyeng.autofaq.ai/*", 
+        "*://*.skyeng.ru/*", 
+        "*://*.skyeng.tech/*"
+      ]}
+  );
+
 function createContextMenu(id, options) {
     chrome.contextMenus.remove(id, function () {
         if (chrome.runtime.lastError) {
