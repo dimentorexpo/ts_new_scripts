@@ -27,8 +27,7 @@
   "content_scripts": [
     {
       "js": [
-        "/Modules/requesterrors.js",
-        "content.js"
+        "content.js"  
       ],
       "matches": ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*", "*://*.skyeng.tech/*"],
       "run_at": "document_idle"
