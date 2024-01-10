@@ -425,7 +425,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                 else usluga = document.getElementById('taskserviceid').value
 
 
-                if (SearchinAFnewUI("id")) {
+                if (SearchinAFnewUI("userType")) {
                     idflagempty = 1;
                 }
 
