@@ -85,6 +85,7 @@ var win_Grabber =  // описание элементов окна Grabber
 								  <label><input type="checkbox" name="tagsforfilter" value="queue"> Очередь</label>
 								  <label><input type="checkbox" name="tagsforfilter" value="oo"> Ошибка КЦ</label>
 								  <label><input type="checkbox" name="tagsforfilter" value="#configuration"> Комплектации</label>
+								  <label><input type="checkbox" name="tagsforfilter" value="#transfer"> Смена корп почты П</label>
 							  </div>
 							  <div style="display: flex;">
 								  <button class="mainButton" id="hideselecalltags" style="flex-grow:1">🚀Apply</button>
