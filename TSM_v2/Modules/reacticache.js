@@ -47,7 +47,7 @@ function ClearReactCashe() {
     const urlBase = 'https://academic-gateway.skyeng.ru/academic/api/teacher-classroom/get-data/';
     const urlSegments = document.URL.split('/');
     const urlmatches = ['personal', 'parallel', 'group', 'webinar'];
-    const currentSegment = urlSegments[7];
+    const currentSegment = urlSegments[7].split("?")[0];
 
     if (urlmatches.includes(currentSegment)) {
         let fullUrl = urlBase + currentSegment;

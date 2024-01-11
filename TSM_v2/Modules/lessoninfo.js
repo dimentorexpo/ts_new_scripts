@@ -302,124 +302,79 @@ async function loadinfo(api2) { // инициализация функции д�
     console.log(joinresult)
 }
 
-function findapi(subject, vapi) {
-    let findapiv1;
-    let findapiv2;
+function findApi(subject, vapi) {
+    const baseURL = "https://api-";
+    const subjects = {     // Маппинг предметов к их путям
+        "english": "english",
+        "math": "math",
+        "computer-science": "computer-science",
+        "geography": "geography",
+        "chess": "chess",
+        "social-science": "social-science",
+        "history": "history",
+        "biology": "biology",
+        "physics": "physics",
+        "literature": "literature",
+        "chemistry": "chemistry",
+        "russian": "russian",
+        "preschool": "preschool"
+    };
 
-    switch (subject) {
-        case "english/room":
-            findapiv1 = ("https://api-english.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-english.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "math/room":
-            findapiv1 = ("https://api-math.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-math.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "computer-science/room":
-            findapiv1 = ("https://api-computer-science.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-computer-science.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "geography/room":
-            findapiv1 = ("https://api-geography.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-geography.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "chess/room":
-            findapiv1 = ("https://api-chess.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-chess.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "social-science/room":
-            findapiv1 = ("https://api-social-science.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-social-science.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "history/room":
-            findapiv1 = ("https://api-history.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-history.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "biology/room":
-            findapiv1 = ("https://api-biology.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-biology.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "physics/room":
-            findapiv1 = ("https://api-physics.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-physics.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "literature/room":
-            findapiv1 = ("https://api-literature.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-literature.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "chemistry/room":
-            findapiv1 = ("https://api-chemistry.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-chemistry.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "russian/room":
-            findapiv1 = ("https://api-russian.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-russian.skyeng.ru/api/v2/rooms/")
-            break;
-
-        case "preschool/room":
-            findapiv1 = ("https://api-preschool.skyeng.ru/api/v1/rooms/")
-            findapiv2 = ("https://api-preschool.skyeng.ru/api/v2/rooms/")
-            break;
+    // Проверка, существует ли такой предмет
+    let subjectName = subject.split("/")[0]; // Получаем название предмета из subject
+    if (!subjects[subjectName]) {
+        console.log(`Ошибка: предмет ${subjectName} не найден.`);
+        return;
     }
-    if (vapi == '1') {
-        return (findapiv1)
-    } else if (vapi == '2') {
-        return (findapiv2)
+
+    // Формирование URL
+    let findApiUrl = `${baseURL}${subjects[subjectName]}.skyeng.ru/api/v${vapi}/rooms/`;
+
+    // Проверка версии API
+    if (vapi === '1' || vapi === '2') {
+        return findApiUrl;
     } else {
-        console.log(vapi + 'ошибка определения api');
+        console.log(`${vapi} - ошибка определения api`);
+        return;
     }
 }
 
 function setstclasswork(api, status) { // функция изменяющая статус комнаты
+    let hashval = document.getElementById('hashfield').value.split('/');
+    let roomId = hashval[6] || document.URL.split('/')[6]; // Указываем roomId в зависимости от условия
 
-    let hashval = document.getElementById('hashfield').value.split('/')
+    let isTeacherPath = location.pathname.split('/')[3] === 'teacher';
+    let isCorrectOrigin = location.origin === 'https://vimbox.skyeng.ru';
 
-    if (location.origin == 'https://vimbox.skyeng.ru' && hashval == '' && location.pathname.split('/')[3] != 'teacher') {
-
-        fetch(api + document.URL.split('/')[6], {
-            "headers": {
-                "accept": "application/json",
+    if (isCorrectOrigin && !isTeacherPath) {
+        let requestOptions = {
+            headers: {
+                accept: "application/json",
                 "content-type": "application/json",
                 "sec-fetch-mode": "cors",
                 "sec-fetch-site": "same-site"
             },
-            "body": "{\"status\":\"" + status + "\",\"name\":\"\"}",
-            "method": "PATCH",
-            "mode": "cors",
-            "credentials": "include"
+            body: JSON.stringify({ status: status, name: "" }),
+            method: "PATCH",
+            mode: "cors",
+            credentials: "include"
+        };
+
+        fetch(api + roomId, requestOptions).then(response => {
+            if (response.ok) {
+                alert('Выставлен статус ' + status + ' !');
+                location.reload();
+            } else {
+                alert('Ошибка при изменении статуса.');
+            }
+        }).catch(error => {
+            console.error('Ошибка при выполнении запроса:', error);
         });
-
-        alert('Выставлен статус ' + status + ' !')
-        location.reload();
-    } else if (hashval != '') {
-
-        fetch(api + hashval[6], {
-            "headers": {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-site"
-            },
-            "body": "{\"status\":\"" + status + "\",\"name\":\"\"}",
-            "method": "PATCH",
-            "mode": "cors",
-            "credentials": "include"
-        });
-
+    } else if (!isCorrectOrigin || isTeacherPath) {
+        console.log('Функция не может быть выполнена из-за неверного пути или домена.');
     }
-
 }
+
 
 async function joinroom(item) { //функция сканирования комнаты по запросу на join
     await fetch("https://rooms-vimbox.skyeng.ru/rooms/api/v1/rooms/" + item + "/join", {

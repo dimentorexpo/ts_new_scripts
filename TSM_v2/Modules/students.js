@@ -289,7 +289,6 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
             }
         }
 
-
         function showselectedsubject() { // функция переключения отображения списка учеников в мультиклассруме только один предмет выводит или все
             document.getElementById('infobarskysmart').innerHTML = ''
             arraytoshow = [];
@@ -518,7 +517,6 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
                 window.open('https://vimbox.skyeng.ru/profile/student/' + document.getElementsByClassName('idkidsstyle')[l].textContent.match(/\d+/)[0] + '/last-classes')
             }
         }
-
 
         document.getElementById('listofsubjects').onchange = showselectedsubject;
 

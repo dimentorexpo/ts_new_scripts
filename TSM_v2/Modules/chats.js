@@ -20,7 +20,6 @@ async function OpenAddChatMenu() { // открывает меню для уда�
 	if (wintAddChatMenu.style.display == 'none') {
 		wintAddChatMenu.style.display = ''
 
-		let sidarr = [];
 		document.getElementById('userid1').value = await getUserId();
 
 		document.getElementById('addChat').addEventListener('click', function () { //функция добавления чата
