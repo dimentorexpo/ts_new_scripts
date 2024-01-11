@@ -746,7 +746,5 @@ async function OpenExercisesComplect() {
                 copyToClipboardTSM(link);
             }
         }
-
     }
-
 }
