@@ -45,266 +45,213 @@ var win_getLessonInfo = `
 const wintLessonInfo = createTSMWindow('AFMS_LessonInfo', 'winTopLessonInfo', 'winLeftLessonInfo', win_getLessonInfo);
 wintLessonInfo.className = 'wintInitializeLessonInfo';
 
-async function OpenLessonmInfoMenu() { // открывает меню для просмотра информации об уроке
+async function OpenLessonmInfoMenu() {
+    const menuVisible = wintLessonInfo.style.display !== 'none';
+    wintLessonInfo.style.display = menuVisible ? 'none' : '';
 
-    if (wintLessonInfo.style.display == 'none') {
-        wintLessonInfo.style.display = ''
-
-        getlesinfojoin()
-
-        //	Start
-
-        document.getElementById('setstclass').onclick = function () { //изменяет статус комнаты на classwork
-            let status = 'classwork'
-            let subject;
-            let api;
-            let vapi = '1';
-            if (document.getElementById('hashfield').value.split('/') == '')
-                subject = document.URL.split('/')[4] + "/" + document.URL.split('/')[5]
-            else if (document.getElementById('hashfield').value.split('/') != '') {
-                subject = document.getElementById('hashfield').value.split('/')[4] + '/' + document.getElementById('hashfield').value.split('/')[5];
-                alert('Комната была перезапущена. Можете нажать на кнопку Searсh и увидеть актуальный статус комнаты')
-            }
-            api = findapi(subject, vapi)
-            setstclasswork(api, status)
-        }
-
-        // End
-
-        //	Start
-
-        document.getElementById('setstsucc').onclick = function () { //изменяет статус комнаты на success
-            let status = 'success'
-            let subject;
-            let api;
-            let vapi = '1';
-            if (document.getElementById('hashfield').value.split('/') == '')
-                subject = document.URL.split('/')[4] + "/" + document.URL.split('/')[5]
-            else if (document.getElementById('hashfield').value.split('/') != '') {
-                subject = document.getElementById('hashfield').value.split('/')[4] + '/' + document.getElementById('hashfield').value.split('/')[5];
-                alert('Комната была перезапущена. Можете нажать на кнопку Searсh и увидеть актуальный статус комнаты')
-            }
-            api = findapi(subject, vapi)
-            setstclasswork(api, status)
-        }
-
-        // End
-
-        // Start
-
-        document.getElementById('hashroom').onclick = function () { // копируепт по клику ссылку на комнату в skysmart в буфер обмена
-            if (document.getElementById('subjectnamefield').textContent != '' && document.getElementById('platformname').textContent == 'Skysmart') {
-                copyToClipboardTSM('https://vimbox.skyeng.ru/kids/' + document.getElementById('subjectnamefield').textContent.toLowerCase() + '/room/' + document.getElementById('hashroom').textContent)
-                alert('Ссылка на комнату скопирована в буфер обмена!')
-            } else if (document.getElementById('subjectnamefield').textContent != '' && document.getElementById('platformname').textContent == 'Adults') {
-                copyToClipboardTSM('https://vimbox.skyeng.ru/lesson/' + document.getElementById('hashroom').textContent)
-                alert('Ссылка на комнату скопирована в буфер обмена!')
-            }
-        }
-
-        // End
-
-        // Start
-        document.getElementById('searchHash').onclick = async function () { // функция ищет информацию о комнате по полному хешу
-            let vapi = '1';
-            let api1;
-            let api2;
-            let hashval = document.getElementById('hashfield').value.split('/')
-
-            let flagplatf = 0; // unknown platform, for example main page or other page (1) - skysmart, (2) - adults
-            if (hashval[3] == 'kids') {
-                document.getElementById('platformname').textContent = "Skysmart";
-                flagplatf = 1;
-                document.getElementById('roomfor').style.display = 'none'
-                document.getElementById('forstudentid').style.display = 'none'
-                document.getElementById('setstclass').style.display = ''
-                document.getElementById('setstsucc').style.display = ''
-            } else if (hashval[3] == 'lesson') {
-                document.getElementById('platformname').textContent = "Adults";
-                flagplatf = 2;
-                document.getElementById('roomfor').style.display = ''
-                document.getElementById('forstudentid').style.display = ''
-                document.getElementById('setstclass').style.display = 'none'
-                document.getElementById('setstsucc').style.display = 'none'
-            } else {
-                flagplatf = 0
-                document.getElementById('platformname').textContent = "";
-                document.getElementById('roomfor').style.display = 'none'
-                document.getElementById('forstudentid').style.display = 'none'
-                document.getElementById('setstclass').style.display = 'none'
-                document.getElementById('setstsucc').style.display = 'none'
-            }
-
-            if (hashval != '' && flagplatf == 1) {
-                let subject = hashval[4] + '/' + hashval[5]
-
-                api1 = findapi(subject, vapi)
-                vapi++;
-                api2 = findapi(subject, vapi)
-                loadinfo(api2)
-
-            } else if (hashval != '' && flagplatf == 2) {
-                document.getElementById('hashroom').textContent = hashval[4];
-                document.getElementById('statusroom').textContent = "No status"
-                document.getElementById('subjectnamefield').textContent = "ENGLISH"
-
-                getusersadults(hash = hashval[4]);
-                getjoinadultsinfo(hash = hashval[4]);
-
-            } else if (hashval != '' && flagplatf == 0 && hashval.length == 1) {
-                getusersadults(hash = hashval[0]);
-                getjoinadultsinfo(hash = hashval[0]);
-
-                document.getElementById('platformname').textContent = "Adults"
-                document.getElementById('hashroom').textContent = hashval[0];
-                document.getElementById('statusroom').textContent = "No status"
-                document.getElementById('subjectnamefield').textContent = "ENGLISH"
-                document.getElementById('roomfor').style.display = ''
-                document.getElementById('forstudentid').style.display = ''
-            }
-        }
-        //end
-
-        document.getElementById('RefreshInfo').onclick = getlesinfojoin; //функция обновляет информацию о комнате
-
-        document.getElementById('ClearInfo').onclick = function () { // Очиска полей ввода
-            document.getElementById('platformname').textContent = ""
-            document.getElementById('roomfor').style.display = 'none'
-            document.getElementById('forstudentid').style.display = 'none'
-            document.getElementById('subjectnamefield').textContent = ""
-            document.getElementById('statusroom').textContent = ""
-            document.getElementById('hashroom').textContent = ""
-            document.getElementById('partteachid').textContent = ""
-            document.getElementById('partstudid').textContent = ""
-            document.getElementById('hashfield').value = ""
-            document.getElementById('setstclass').style.display = 'none'
-            document.getElementById('setstsucc').style.display = 'none'
-        }
-
-        document.getElementById('hideMeLessonInfo').onclick = function () { // функция скрывает меню статуса уроков
-            wintLessonInfo.style.display = 'none'
-        }
-
-    } else wintLessonInfo.style.display = 'none'
-
+    if (!menuVisible) {
+        handleRoomInfo('join');
+        setupEventHandlers();
+    }
 }
 
-async function getlesinfojoin() { // получает инфо об уроке и записывает в поля
-    let vapi = '1';
-    let api1;
-    let api2;
-    let flagplatf = 0; // unknown platform, for example main page or other page (1) - skysmart, (2) - adults
-    if (location.pathname.split('/')[1] == 'kids') {
-        document.getElementById('platformname').textContent = "Skysmart";
-        flagplatf = 1;
-        document.getElementById('roomfor').style.display = 'none'
-        document.getElementById('forstudentid').style.display = 'none'
-        document.getElementById('setstclass').style.display = ''
-    } else if (location.pathname.split('/')[1] == 'lesson') {
-        document.getElementById('platformname').textContent = "Adults";
-        flagplatf = 2;
-        document.getElementById('roomfor').style.display = ''
-        document.getElementById('forstudentid').style.display = ''
-        document.getElementById('setstclass').style.display = 'none'
+function setupEventHandlers() {
+    document.getElementById('setstclass').addEventListener('click', () => changeRoomStatus('classwork'));
+    document.getElementById('setstsucc').addEventListener('click', () => changeRoomStatus('success'));
+    document.getElementById('hashroom').addEventListener('click', copyRoomLink);
+    document.getElementById('searchHash').addEventListener('click', () => handleRoomInfo('search'));
+    document.getElementById('RefreshInfo').addEventListener('click', () => handleRoomInfo('join'));
+    document.getElementById('ClearInfo').addEventListener('click', clearInfoFields);
+    document.getElementById('hideMeLessonInfo').addEventListener('click', () => wintLessonInfo.style.display = 'none');
+}
+
+function handleRoomInfo(action) {
+    let platformType, subject, hash;
+    if (action === 'search') {
+        const hashval = document.getElementById('hashfield').value.split('/');
+        platformType = determinePlatformType(hashval);
+        subject = hashval[4] + '/' + hashval[5];
+        hash = hashval[4];
     } else {
-        flagplatf = 0
-        document.getElementById('platformname').textContent = "";
-        document.getElementById('roomfor').style.display = 'none'
-        document.getElementById('forstudentid').style.display = 'none'
-        document.getElementById('setstclass').style.display = 'none'
+        platformType = getPlatformType();
+        subject = document.URL.split('/')[4] + "/" + document.URL.split('/')[5];
+        hash = document.URL.split('/')[4];
     }
 
-    if (document.location.origin == 'https://vimbox.skyeng.ru' && flagplatf == 1) {
-        let subject = document.URL.split('/')[4] + "/" + document.URL.split('/')[5]
+    setPlatformUI(platformType);
+    const api = findapi(subject, 1);
 
-        api1 = findapi(subject, vapi)
-        vapi++;
-        api2 = findapi(subject, vapi)
-        loadinfo(api2)
-
-    } else if (document.location.origin == 'https://vimbox.skyeng.ru' && flagplatf == 2) {
-
-        document.getElementById('hashroom').textContent = document.URL.split('/')[4];
-        document.getElementById('statusroom').textContent = "No status"
-        document.getElementById('subjectnamefield').textContent = "ENGLISH"
-        getusersadults(hash = document.URL.split('/')[4]);
-        getjoinadultsinfo(hash = document.URL.split('/')[4]);
-
-    }
-}
-
-async function getusersadults(hash) { // функция получения информации для какого пользователя была создана комната на Adults
-    await fetch("https://rooms.vimbox.skyeng.ru/rooms/api/v1/workbooks/last?roomHash=" + hash, {
-        "method": "GET",
-        "credentials": "include"
-    }).then(r => r.json()).then(r => usersadults = r)
-
-    console.log(usersadults)
-
-    document.getElementById('forstudentid').textContent = usersadults.studentId;
-
-    document.getElementById('forstudentid').onclick = function () {
-        copyToClipboardTSM(document.getElementById('forstudentid').textContent)
-    }
-}
-
-async function getjoinadultsinfo(hash) { // функция получает информацию пользователйе на Adults
-    await joinroom(hash)
-
-    document.getElementById('partteachid').textContent = joinresult.teacher.id
-    document.getElementById('partteachid').title = joinresult.teacher.name + " " + joinresult.teacher.surname
-
-    if (joinresult.students == '') {
-        document.getElementById('partstudid').textContent = "New Student"
-        document.getElementById('partstudid').title = "No name, because student didn't join the room"
-    }
-    else {
-        document.getElementById('partstudid').textContent = joinresult.students[0].id
-        document.getElementById('partstudid').title = joinresult.students[0].name + " " + joinresult.students[0].surname
-    }
-
-
-}
-
-async function loadinfo(api2) { // инициализация функции для загрузки инфо о комнате
-    let hashroom;
-    let subjname;
-    if (document.getElementById('hashfield').value == '') {
-        hashroom = document.URL.split('/')[6]
-        subjname = document.URL.split('/')[4]
-    } else if (document.getElementById('hashfield').value != '') {
-        hashroom = document.getElementById('hashfield').value.split('/')[6]
-        subjname = document.getElementById('hashfield').value.split('/')[4]
-    }
-
-
-    await fetch(api2 + hashroom, {
-        "body": null,
-        "method": "GET",
-        "credentials": "include"
-    }).then(r => r.json()).then(r => joinresult = r)
-    document.getElementById('statusroom').textContent = joinresult.status
-    document.getElementById('hashroom').textContent = joinresult.hash
-
-    for (let i = 0; i < joinresult.participants.length; i++) {
-        if (joinresult.participants[i].role == 'teacher') {
-            document.getElementById('partteachid').textContent = joinresult.participants[i].userId
-            document.getElementById('partteachid').title = "Имя " + joinresult.participants[i].name + ' Время создания комнаты: ' + joinresult.participants[i].startAt + ' Время подключения: ' + joinresult.participants[i].joinedAt
-        } else if (joinresult.participants[i].role == 'student') {
-            document.getElementById('partstudid').textContent = joinresult.participants[i].userId
-            document.getElementById('partstudid').title = "Имя " + joinresult.participants[i].name + ' Время создания комнаты: ' + joinresult.participants[i].startAt + ' Время подключения: ' + joinresult.participants[i].joinedAt
+    if (document.location.origin === 'https://vimbox.skyeng.ru') {
+        switch (platformType) {
+            case 1:
+                loadinfo(api);
+                break;
+            case 2:
+                document.getElementById('hashroom').textContent = hash;
+                document.getElementById('statusroom').textContent = "No status";
+                document.getElementById('subjectnamefield').textContent = "ENGLISH";
+                getusersadults(hash);
+                getjoinadultsinfo(hash);
+                break;
+            default:
+                resetPlatformUI();
+                break;
         }
     }
-
-    document.getElementById('subjectnamefield').textContent = subjname.toUpperCase();
-
-    console.log('%cИнформация об уроке получена!', 'color:lightgreen; font-weight:700')
-    console.log(joinresult)
 }
 
-function findApi(subject, vapi) {
+function determinePlatformType(hashval) {
+    return hashval[3] === 'kids' ? 1 : hashval[3] === 'lesson' ? 2 : 0;
+}
+
+function getPlatformType() {
+    const path = location.pathname.split('/');
+    return path[1] === 'kids' ? 1 : path[1] === 'lesson' ? 2 : 0;
+}
+
+function setPlatformUI(platformType) {
+    const platformNameElem = document.getElementById('platformname');
+    const roomForElem = document.getElementById('roomfor');
+    const forStudentIdElem = document.getElementById('forstudentid');
+    const setStClassElem = document.getElementById('setstclass');
+    const setStSuccElem = document.getElementById('setstsucc');
+
+    if (platformType === 1) {
+        platformNameElem.textContent = "Skysmart";
+        roomForElem.style.display = 'none';
+        forStudentIdElem.style.display = 'none';
+        setStClassElem.style.display = '';
+        setStSuccElem.style.display = '';
+    } else if (platformType === 2) {
+        platformNameElem.textContent = "Adults";
+        roomForElem.style.display = '';
+        forStudentIdElem.style.display = '';
+        setStClassElem.style.display = 'none';
+        setStSuccElem.style.display = 'none';
+    } else {
+        resetPlatformUI();
+    }
+}
+
+function resetPlatformUI() {
+    document.getElementById('platformname').textContent = "";
+    document.getElementById('roomfor').style.display = 'none';
+    document.getElementById('forstudentid').style.display = 'none';
+    document.getElementById('setstclass').style.display = 'none';
+    document.getElementById('setstsucc').style.display = 'none';
+}
+
+function changeRoomStatus(status) {
+    let subject, api;
+    const hashFieldVal = document.getElementById('hashfield').value.split('/');
+
+    if (!hashFieldVal[0]) {
+        subject = document.URL.split('/')[4] + "/" + document.URL.split('/')[5];
+    } else {
+        subject = hashFieldVal[4] + '/' + hashFieldVal[5];
+        alert('Комната была перезапущена. Можете нажать на кнопку Search и увидеть актуальный статус комнаты');
+    }
+
+    api = findapi(subject, 1);
+    setstclasswork(api, status);
+}
+
+function copyRoomLink() {
+    const subjectNameField = document.getElementById('subjectnamefield').textContent;
+    const platformName = document.getElementById('platformname').textContent;
+    const hashRoom = document.getElementById('hashroom').textContent;
+    let link;
+
+    if (subjectNameField && platformName === 'Skysmart') {
+        link = `https://vimbox.skyeng.ru/kids/${subjectNameField.toLowerCase()}/room/${hashRoom}`;
+    } else if (subjectNameField && platformName === 'Adults') {
+        link = `https://vimbox.skyeng.ru/lesson/${hashRoom}`;
+    }
+
+    if (link) {
+        copyToClipboardTSM(link);
+        alert('Ссылка на комнату скопирована в буфер обмена!');
+    }
+}
+
+function clearInfoFields() {
+    document.getElementById('platformname').textContent = "";
+    document.getElementById('roomfor').style.display = 'none';
+    document.getElementById('forstudentid').style.display = 'none';
+    document.getElementById('subjectnamefield').textContent = "";
+    document.getElementById('statusroom').textContent = "";
+    document.getElementById('hashroom').textContent = "";
+    document.getElementById('partteachid').textContent = "";
+    document.getElementById('partstudid').textContent = "";
+    document.getElementById('hashfield').value = "";
+    document.getElementById('setstclass').style.display = 'none';
+    document.getElementById('setstsucc').style.display = 'none';
+}
+
+async function getusersadults(hash) {
+    try {
+        const response = await fetch("https://rooms.vimbox.skyeng.ru/rooms/api/v1/workbooks/last?roomHash=" + hash, {
+            method: "GET",
+            credentials: "include"
+        });
+        const usersadults = await response.json();
+        console.log(usersadults);
+        document.getElementById('forstudentid').textContent = usersadults.studentId;
+
+        document.getElementById('forstudentid').onclick = () => {
+            copyToClipboardTSM(usersadults.studentId);
+        };
+    } catch (error) {
+        console.error('Ошибка при получении информации о пользователе:', error);
+    }
+}
+
+async function getjoinadultsinfo(hash) {
+    try {
+        const joinresult = await joinroom(hash);
+        document.getElementById('partteachid').textContent = joinresult.teacher.id;
+        document.getElementById('partteachid').title = joinresult.teacher.name + " " + joinresult.teacher.surname;
+
+        const studentInfo = joinresult.students.length > 0 ? joinresult.students[0] : { id: "New Student", name: "No name", surname: "Student didn't join the room" };
+        document.getElementById('partstudid').textContent = studentInfo.id;
+        document.getElementById('partstudid').title = studentInfo.name + " " + studentInfo.surname;
+    } catch (error) {
+        console.error('Ошибка при получении информации о комнате:', error);
+    }
+}
+
+async function loadinfo(api) {
+    const hashroom = document.getElementById('hashfield').value.split('/')[6] || document.URL.split('/')[6];
+    const subjname = document.getElementById('hashfield').value.split('/')[4] || document.URL.split('/')[4];
+
+    try {
+        const response = await fetch(api + hashroom, {
+            method: "GET",
+            credentials: "include"
+        });
+        const joinresult = await response.json();
+        document.getElementById('statusroom').textContent = joinresult.status;
+        document.getElementById('hashroom').textContent = joinresult.hash;
+        // Обновление информации об участниках
+        updateParticipantsInfo(joinresult.participants);
+        document.getElementById('subjectnamefield').textContent = subjname.toUpperCase();
+        console.log('Информация об уроке получена:', joinresult);
+    } catch (error) {
+        console.error('Ошибка при загрузке информации о комнате:', error);
+    }
+}
+
+function updateParticipantsInfo(participants) {
+    participants.forEach(participant => {
+        const idField = participant.role === 'teacher' ? 'partteachid' : 'partstudid';
+        document.getElementById(idField).textContent = participant.userId;
+        document.getElementById(idField).title = `Имя ${participant.name}, Время создания комнаты: ${participant.startAt}, Время подключения: ${participant.joinedAt}`;
+    });
+}
+
+function findapi(subject, vapi) {
     const baseURL = "https://api-";
-    const subjects = {     // Маппинг предметов к их путям
+    const subjects = {
         "english": "english",
         "math": "math",
         "computer-science": "computer-science",
@@ -320,66 +267,55 @@ function findApi(subject, vapi) {
         "preschool": "preschool"
     };
 
-    // Проверка, существует ли такой предмет
-    let subjectName = subject.split("/")[0]; // Получаем название предмета из subject
+    let subjectName = subject.split("/")[0];
     if (!subjects[subjectName]) {
-        console.log(`Ошибка: предмет ${subjectName} не найден.`);
-        return;
+        console.error(`Ошибка: предмет ${subjectName} не найден.`);
+        return null;
     }
 
-    // Формирование URL
-    let findApiUrl = `${baseURL}${subjects[subjectName]}.skyeng.ru/api/v${vapi}/rooms/`;
-
-    // Проверка версии API
-    if (vapi === '1' || vapi === '2') {
-        return findApiUrl;
-    } else {
-        console.log(`${vapi} - ошибка определения api`);
-        return;
-    }
+    return `${baseURL}${subjects[subjectName]}.skyeng.ru/api/v${vapi}/rooms/`;
 }
 
-function setstclasswork(api, status) { // функция изменяющая статус комнаты
-    let hashval = document.getElementById('hashfield').value.split('/');
-    let roomId = hashval[6] || document.URL.split('/')[6]; // Указываем roomId в зависимости от условия
+async function setstclasswork(api, status) {
+    const hashval = document.getElementById('hashfield').value.split('/');
+    const roomId = hashval[6] || document.URL.split('/')[6];
 
-    let isTeacherPath = location.pathname.split('/')[3] === 'teacher';
-    let isCorrectOrigin = location.origin === 'https://vimbox.skyeng.ru';
+    if (location.origin === 'https://vimbox.skyeng.ru' && location.pathname.split('/')[3] !== 'teacher') {
+        try {
+            const response = await fetch(api + roomId, {
+                headers: {
+                    accept: "application/json",
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify({ status, name: "" }),
+                method: "PATCH",
+                mode: "cors",
+                credentials: "include"
+            });
 
-    if (isCorrectOrigin && !isTeacherPath) {
-        let requestOptions = {
-            headers: {
-                accept: "application/json",
-                "content-type": "application/json",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-site"
-            },
-            body: JSON.stringify({ status: status, name: "" }),
-            method: "PATCH",
-            mode: "cors",
-            credentials: "include"
-        };
-
-        fetch(api + roomId, requestOptions).then(response => {
             if (response.ok) {
-                alert('Выставлен статус ' + status + ' !');
+                alert('Статус комнаты изменён на ' + status + '!');
                 location.reload();
             } else {
                 alert('Ошибка при изменении статуса.');
             }
-        }).catch(error => {
-            console.error('Ошибка при выполнении запроса:', error);
-        });
-    } else if (!isCorrectOrigin || isTeacherPath) {
-        console.log('Функция не может быть выполнена из-за неверного пути или домена.');
+        } catch (error) {
+            console.error('Ошибка при изменении статуса комнаты:', error);
+        }
+    } else {
+        console.error('Невозможно изменить статус комнаты: неверный путь или домен.');
     }
 }
 
-
-async function joinroom(item) { //функция сканирования комнаты по запросу на join
-    await fetch("https://rooms-vimbox.skyeng.ru/rooms/api/v1/rooms/" + item + "/join", {
-        "method": "PATCH",
-        "credentials": "include"
-    }).then(r => r.json()).then(r => joinresult = r)
-    console.log(joinresult)
+async function joinroom(item) {
+    try {
+        const response = await fetch(`https://rooms-vimbox.skyeng.ru/rooms/api/v1/rooms/${item}/join`, {
+            method: "PATCH",
+            credentials: "include"
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Ошибка при подключении к комнате:', error);
+        return null;
+    }
 }
