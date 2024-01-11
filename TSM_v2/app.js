@@ -9,6 +9,19 @@ const ChanelDev = "hg8rcub4pfg3dcae8jxkwzkq9h";
 const ChanelSupport = "pspyooisr3rd7qzx9as8uc96xc";
 let lastChatId = null; // Глобальная переменная для хранения последнего chatid
 let lastMessage = null; // Глобальная переменная для хранения последнего сообщения
+
+chrome.webRequest.onCompleted.addListener(
+    function(details) {
+      if ((details.statusCode >= 400) && (details.statusCode <= 511)) {
+        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+          if (tabs[0]) {
+            chrome.tabs.sendMessage(tabs[0].id, { message: 'logRequest', details: details });
+          }
+        });
+      }
+    },
+    {urls: ["<all_urls>"]}
+  );
   
 function createContextMenu(id, options) {
     chrome.contextMenus.remove(id, function () {
