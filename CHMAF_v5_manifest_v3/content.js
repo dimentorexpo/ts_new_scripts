@@ -1023,7 +1023,7 @@ function checkchats() {
         }
     
         for (let i = 0; i < timers.length; i++) {
-            const child = timers[i].children[1];
+            const child = timers[i].children[2]; //в children [2] индекс поставили для таймера АЗ, чтобы его закрашивало, если меньше 2 минут; ранее был 1
             if (child) {
                 try {
                     convertToSeconds(child.textContent, i);
