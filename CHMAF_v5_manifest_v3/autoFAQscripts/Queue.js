@@ -5,7 +5,7 @@ var win_Queue =  // описание элементов окна Чаты в о�
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 600px;">
                                 <button class="mainButton buttonHide" id="hideMeQueue">hide</button>
-								<span style="color:orange; font-weight:800">Всего в ожидании:</span>
+								<span style="color:orange; font-weight:800">Всего чатов:</span>
 								<span id="waitingCount" style="color:coral; font-weight:800"></span>
                         </div>
 						<div>
@@ -92,8 +92,6 @@ function startTimerForDialog(startTime, element) {
     }, 1000);
 }
 
-
-
 async function fetchAllPages(url, initialBodyContent) {
     let allData = []; // Массив для хранения всех данных
     let page = 1; // Начинаем с первой страницы
@@ -134,6 +132,28 @@ async function fetchAllPages(url, initialBodyContent) {
     return allData; // Возвращаем накопленные данные
 }
 
+function takeOnMe(chatID) {
+	  
+            let chat_id = chatID;
+            let operator_id = operatorId;
+    
+            const assignChat = (assignToOperatorId) => {
+                fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+                    headers: { "content-type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ 
+                        command: "DO_ASSIGN_CONVERSATION",
+                        conversationId: chat_id,
+                        assignToOperatorId: assignToOperatorId 
+                    }),
+                    method: "POST"
+                });
+            };
+    
+            assignChat("null");
+            setTimeout(() => assignChat(operator_id), 2000);
+        
+} ;// конец обработчика нажатия кнопки "Забрать"
 
 let getOptions = document.getElementById('AFStatusType')
 async function getAllChatsByStatus() {
@@ -150,17 +170,34 @@ async function getAllChatsByStatus() {
 
     // Получаем текущую дату и время в UTC
     // Текущая дата в UTC
-    const now = new Date();
-    // Установка tsFrom на начало предыдущего дня в 21:00 UTC
-    const tsFrom = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 21, 0, 0, 0)).toISOString();
-    // Установка tsTo на конец текущего дня в 20:59:59.059 UTC
-    const tsTo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 20, 59, 59, 59)).toISOString();
+	const now = new Date(); // Текущее время в UTC
+	const mskOffset = 3 * 60 * 60 * 1000; // Смещение Москвы в миллисекундах (UTC+3)
+
+	// Текущее время по Москве
+	const mskTime = new Date(now.getTime() + mskOffset);
+
+	// Установка tsFrom и tsTo с учетом времени в Москве
+	let tsFrom, tsTo;
+	if (mskTime.getUTCHours() < 21) {
+	  // Если в Москве еще не наступило 21:00 UTC, отсчитываем от вчерашнего дня
+	  tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() - 1, 21, 0, 0, 0)).toISOString();
+	  tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 20, 59, 59, 59)).toISOString();
+	} else {
+	  // Если в Москве уже прошло 21:00 UTC, отсчитываем от текущего дня
+	  tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 21, 0, 0, 0)).toISOString();
+	  tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() + 1, 20, 59, 59, 59)).toISOString();
+	}
+
+	console.log(tsFrom);
+	console.log(tsTo);
+
 
     // Пример использования функции
     const initialBodyContent = {
         serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
         mode: "Json",
-        groupList: ["c7bbb211-a217-4ed3-8112-98728dc382d8"],
+        groupList: ["c7bbb211-a217-4ed3-8112-98728dc382d8"], // ТП
+        // groupList: ["b6f7f34d-2f08-fc19-3661-29ac00842898"], // КЦ
         tsFrom: tsFrom,
         tsTo: tsTo,
         usedStatuses: [statusToFetch],
@@ -244,6 +281,7 @@ async function getAllChatsByStatus() {
 
         let getThisChat = document.createElement('button');
         getThisChat.className = 'mainButton';
+		getThisChat.name = 'assignToMe'
         getThisChat.textContent = ' 🫳';
 
         // Добавление созданных элементов в queueItemDiv
@@ -307,6 +345,16 @@ async function getAllChatsByStatus() {
             }
         })
     }
+	
+	let allAssignBtns = document.getElementsByName('assignToMe')
+		for (let z=0; z<allAssignBtns.length;z++) {
+			allAssignBtns[z].addEventListener('click', function(event) {
+				event.stopPropagation();
+				takeOnMe(dataChts[z].conversationId)
+				console.log(dataChts[z].conversationId)
+			})
+		}
+	
 };
 
 async function writeThemAll() {
