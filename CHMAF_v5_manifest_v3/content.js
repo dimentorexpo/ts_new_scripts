@@ -116,6 +116,7 @@ var win_mainmenu = // описание кнопок меню
 		<div id="butFrozeChat">❄ Auto Respond</div>
         <div id="radioPlayer">📻 Radio</div>
         <div id="buttonGetStat">📊 Статистика</div>
+		<div id="buttonGetQueue">🚧 Очередь</div>
     </div>`;
 
 flag = 0
@@ -635,6 +636,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     document.getElementById('radioPlayer').onclick = getradioPlayerButtonPress;
     document.getElementById('buttonGetStat').onclick = getbuttonGetStatButtonPress;
     document.getElementById('butFrozeChat').onclick = getbutFrozeChatButtonPress;
+	document.getElementById('buttonGetQueue').onclick = getQueuePress;
 
     let openchhis = document.createElement('button')
     openchhis.innerHTML = '☢'

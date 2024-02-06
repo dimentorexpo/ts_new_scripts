@@ -401,7 +401,8 @@
 	#buttonGetStat,
 	#servDsk,
 	#crmopersstatuses,
-	#radioPlayer {
+	#radioPlayer,
+	#buttonGetQueue	{
 		display: flex;
 		align-items: center;
 		cursor: pointer;
@@ -426,7 +427,8 @@
 	#butFrozeChat:hover,
 	#buttonGetStat:hover,
 	#crmopersstatuses:hover,
-	#radioPlayer:hover {
+	#radioPlayer:hover,
+	#buttonGetQueue:hover	{
 		background: DeepSkyBlue;
 		color: #ffffffe6;
 		font-weight: 600;
@@ -997,4 +999,42 @@
 	
 	#AF_chatbtnmenu:hover {
 		background: #00aefa;
+	}
+	
+	.queue-item {
+		display: flex;
+		align-items: center;
+		justify-content: start; /* Изменено с space-between на start */
+		margin-bottom: 10px;
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+
+	.queue-item:hover {
+		background:grey;
+		font-weight:800;
+		cursor:pointer;
+	}
+
+	.queue-item span, .queue-item .timer {
+		white-space: nowrap; /* Гарантирует, что текст не переносится на новую строку */
+		margin-right: 10px; /* Обеспечивает равные отступы между элементами */
+	}
+
+	.queue-item .timer {
+		margin-left: auto; /* Толкает таймер вправо */
+		color: Tomato;
+		font-weight:700;
+		text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.55);
+		min-width: 75px; /* Минимальная ширина для таймера */
+	}
+
+	.queue-item .usrName {
+		flex-grow: 1; /* Заполняет доступное пространство и предотвращает сжатие */
+		min-width: 100px; /* Минимальная ширина для имени пользователя */
+	}
+
+	.queue-item button {
+		flex-shrink: 0;
+		margin-left: 5px; /* Отступ слева для кнопок */
 	}
