@@ -360,6 +360,28 @@ function prepTp() { //функция подготовки расширения �
 
     flagLangBut = 1
     setInterval(timerHideButtons, 500)
+	
+	if(location.pathname.split('/')[1]  == "logs" &&  document.getElementsByClassName('ant-empty-description')[0].innerHTML == "Нет данных") { // Добавляет кнопку при просмотре логов, если они были не в отделе ТП закрыты, чтобы открыть в Chat History модуле
+		let parent = document.getElementsByClassName('ant-table-title')[0].children[0];
+		let btnOpenInChatHis = document.createElement('button')
+		btnOpenInChatHis.textContent = "☢️"
+		btnOpenInChatHis.classList.add('mainButton')
+		btnOpenInChatHis.style = "width:40px; height:30px; margin-left:5px; font-size:16px; cursor:pointer"
+
+		let child = parent.children[3]; // Получаем третьего ребенка
+		parent.insertBefore(btnOpenInChatHis, child); // Вставляем перед третьим ребенком
+		
+		btnOpenInChatHis.addEventListener('click', function(){
+			if (document.getElementById('AF_ChatHis').style.display == 'none') {
+                document.getElementById('opennewcat').click();
+                document.getElementById('hashchathis').value = location.pathname.split('/')[2];
+                btn_search_history.click();
+            } else {
+                document.getElementById('hashchathis').value = location.pathname.split('/')[2];
+                btn_search_history.click();
+            }
+		})
+	}
 }
 
 function prepKC() { //функция подготовки расширения КЦ
