@@ -1,0 +1,52 @@
+{
+    "manifest_version": 3,
+    "name": "Chat & Status Helper",
+    "version": "1.0.0",
+    "description": "Твой удобный инструмент",
+    "background": {
+        "service_worker": "bg.js"
+    },
+    "action": {
+        "default_icon": "/Icons/32.png",
+        "default_title": "Твой удобный инструмент"
+    },
+    "externally_connectable": {
+        "matches": ["*://crm2.skyeng.ru/*"]
+    },
+    "content_scripts": [
+        {
+            "js": [
+                "content.js",
+                "Modules/LessonStatus.js"
+            ],
+            "css": [
+                "CSS/styles.css"
+            ],
+            "matches": ["*://crm2.skyeng.ru/*"],
+            "run_at": "document_idle"
+        },
+		{
+			"js": ["content.js", "Modules/Chat.js"],
+			"css": ["CSS/styles.css"],
+			"matches": ["*://student.skyeng.ru/*", "*://new-teachers.skyeng.ru/*"],
+			"run_at": "document_end"
+		}
+    ],
+    "icons": {
+        "32": "/Icons/32.png",
+        "48": "/Icons/48.png",
+        "128": "/Icons/128.png"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": ["Modules/*"],
+            "matches": ["<all_urls>"]
+        }
+    ],
+    "permissions": [
+        "clipboardWrite"
+    ],
+    "host_permissions": [
+        "https://*.skyeng.ru/*"
+    ]
+}
