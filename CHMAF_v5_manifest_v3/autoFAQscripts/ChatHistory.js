@@ -253,6 +253,7 @@ function fillchatbox() { //функция наполнения элемента,
             case "AnswerOperatorWithBot":
             case "AnswerSystem":
             case "AnswerBot":
+            case "AnswerChatterbox":
                 appendToInfoField(`
                 <br>
                 <div class="answer-bot-container">

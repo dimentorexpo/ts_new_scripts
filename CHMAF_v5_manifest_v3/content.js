@@ -361,7 +361,7 @@ function prepTp() { //функция подготовки расширения �
     flagLangBut = 1
     setInterval(timerHideButtons, 500)
 	
-	if(location.pathname.split('/')[1]  == "logs" &&  document.getElementsByClassName('ant-empty-description')[0].innerHTML == "Нет данных") { // Добавляет кнопку при просмотре логов, если они были не в отделе ТП закрыты, чтобы открыть в Chat History модуле
+	if(location.pathname.split('/')[1]  == "logs" && document.getElementsByClassName('ant-empty-description').length > 0 && document.getElementsByClassName('ant-empty-description')[0].innerHTML == "Нет данных") { // Добавляет кнопку при просмотре логов, если они были не в отделе ТП закрыты, чтобы открыть в Chat History модуле
 		let parent = document.getElementsByClassName('ant-table-title')[0].children[0];
 		let btnOpenInChatHis = document.createElement('button')
 		btnOpenInChatHis.textContent = "☢️"
