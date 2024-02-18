@@ -638,3 +638,42 @@ button.dobig:active {
     min-width: 100px;
     height: 27px;
 }
+
+.sucsbtn {
+	z-index:999999;
+	position: fixed;
+	bottom: 15px;
+	font-size:18px;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: green;
+	color: white;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	display: none;
+	box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+}
+
+.countdown-bar {
+	z-index:999999;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	background-color: coral;
+	height: 5px;
+	animation: countdown 3.5s linear forwards;
+}
+
+/* Анимация для уменьшения полоски */
+@keyframes countdown {
+	from {
+		width: 100%;
+	}
+
+	to {
+		width: 0;
+	}
+}

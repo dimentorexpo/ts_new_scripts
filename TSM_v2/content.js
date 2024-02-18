@@ -187,8 +187,16 @@ if (window.location.href === "https://skyeng.autofaq.ai/tickets/assigned") {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "copyToClipboard") {
         navigator.clipboard.writeText(message.text)
-            .then(() => console.log('Текст скопирован в буфер обмена'))
-            .catch(err => console.error('Ошибка при копировании текста: ', err));
+            .then(() => {
+                console.log('Текст скопирован в буфер обмена');
+                createAndShowButton(); // Убедитесь, что функция createAndShowButton() определена в этом же скрипте или доступна ему.
+                sendResponse({ success: true }); // Отправляем положительный ответ обратно в background script
+            })
+            .catch(err => {
+                console.error('Ошибка при копировании текста: ', err);
+                sendResponse({ success: false, error: err }); // Отправляем отрицательный ответ обратно в background script
+            });
+        return true; // Возвращаем true, чтобы указать, что `sendResponse` будет вызван позже
     }
 });
 
@@ -257,4 +265,26 @@ function createTSMWindow(id, topKey, leftKey, content) { // Функция дл�
     };
 
     return windowElement;
+}
+
+function createAndShowButton() {
+    let btnSuccess = document.createElement("button");
+    btnSuccess.id = "successButton";
+    btnSuccess.className = "sucsbtn";
+    btnSuccess.textContent = "💾 Успешно";
+
+    let countdownBar = document.createElement("div");
+    countdownBar.id = "countdownBar";
+    countdownBar.className = "countdown-bar";
+    btnSuccess.appendChild(countdownBar);
+
+    document.body.appendChild(btnSuccess);
+
+    // Установка display в block для отображения кнопки
+    btnSuccess.style.display = 'block';
+
+    // Добавляем логику для скрытия кнопки после некоторого времени, если это необходимо
+    setTimeout(() => {
+        btnSuccess.remove(); // или btnSuccess.style.display = 'none'; если вы хотите скрыть, а не удалять
+    }, 3500); // Время до скрытия/удаления кнопки в миллисекундах
 }
