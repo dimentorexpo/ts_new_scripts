@@ -38,37 +38,6 @@ const wintStataAF = createWindow('AF_StataAF', 'winTopStataAF', 'winLeftStataAF'
 hideWindowOnDoubleClick('AF_StataAF');
 hideWindowOnClick('AF_StataAF', 'hidestatisticaaf');
 
-function calculateAverageResponseTime(data) {
-    let responseTimeSum = 0;
-    let responseCount = 0;
-    let previousQuestionTimestamp = null;
-
-    for (let i = data.length - 1; i >= 0; i--) {
-        if (data[i].tpe === "Question") {
-            previousQuestionTimestamp = new Date(data[i].ts).getTime();
-        } else if (
-            (data[i].tpe === "AnswerOperator" || data[i].tpe === "AnswerOperatorWithBot") &&
-            previousQuestionTimestamp !== null
-        ) {
-            const responseTimestamp = new Date(data[i].ts).getTime();
-            const responseTimeInSeconds = (responseTimestamp - previousQuestionTimestamp) / 1000;
-
-            responseTimeSum += responseTimeInSeconds;
-            responseCount++;
-            previousQuestionTimestamp = null; // Сбросить метку предыдущего вопроса
-        }
-    }
-
-    if (responseCount > 0) {
-        const averageResponseTime = responseTimeSum / responseCount;
-        return averageResponseTime;
-    } else {
-        return 0;
-    }
-}
-
-
-
 let activeopersId;
 let summclsd
 
@@ -162,7 +131,7 @@ async function getStats() { // функция получения статист�
     table.style = 'table-layout: auto; width:750px;'
     table.style.textAlign = 'center'
     table.id = 'tableStats'
-    let columnNames = ["👨‍💻Оператор", "💪Закрыто", "⚡Пощупано", "🕒SLA закрытия", "⚠AvgCSAT", "💬ART"]
+    let columnNames = ["👨‍💻Оператор", "💪Закрыто", "⚡Пощупано", "🕒SLA закрытия", "⚠AvgCSAT"]
     let trHead = document.createElement('tr')
     for (let i = 0; i < columnNames.length; i++) {
         var th = document.createElement('th')
@@ -266,10 +235,6 @@ async function getStats() { // функция получения статист�
                     td.textContent = "⏳ Loading";
                     td.setAttribute('name', 'csatdata');
                     break;
-                case 5:
-                    td.textContent = "⏳ Loading";
-                    td.setAttribute('name', 'artdata');
-                    break;
             }
             tr.append(td)
         }
@@ -328,11 +293,6 @@ async function getStats() { // функция получения статист�
     averageAFRTGroup.innerHTML = 'AFRT по отделу: ' + '<span id ="AFRTGroup">⏳ Loading</span>';
     averageAFRTGroup.style.marginLeft = '50px'
     document.getElementById('outputstatafield').append(averageAFRTGroup)
-
-    let averageARTGroup = document.createElement('div')
-    averageARTGroup.innerHTML = 'ART по отделу: ' + '<span id ="ARTGroup">⏳ Loading</span>';
-    averageARTGroup.style.marginLeft = '50px'
-    document.getElementById('outputstatafield').append(averageARTGroup)
 
     getopersSLA();
 
@@ -536,7 +496,7 @@ async function checkCSAT() { // функция проверки CSAT и чато
                     str.innerHTML = firstpart + 'Оценка 1 🤬: ' + count[1] + '<br>' + 'Оценка 2 🤢: ' + count[2] + '<br>' + flagbad + '<br>' + 'Оценка 3 😐: ' + count[3] + '<br>' + flagmid + '<br>' + 'Оценка 4 🥴: ' + count[4] + '<br>' + 'Оценка 5 😊: ' + count[5] + '<br>' + secondpart
                 else if (flagvbad != "" && flagbad != "" && flagmid != "")
                     str.innerHTML = firstpart + 'Оценка 1 🤬: ' + count[1] + '<br>' + flagvbad + '<br>' + 'Оценка 2 🤢: ' + count[2] + '<br>' + flagbad + '<br>' + 'Оценка 3 😐: ' + count[3] + '<br>' + flagmid + '<br>' + 'Оценка 4 🥴: ' + count[4] + '<br>' + 'Оценка 5 😊: ' + count[5] + '<br>' + secondpart
-                break
+               break
             }
         }
     } catch (e) {
@@ -701,7 +661,6 @@ async function getopersSLA() {
     let operafrtcount;
     let operclschatcount;
     let totalChatsClosed = [];
-    let arrayartcount = [];
     let arrayafrtcount = [];
     let arrayafrtcountwithqueue = [];
     let arraycsatcount = [];
@@ -715,13 +674,18 @@ async function getopersSLA() {
     let alloperCSATsumma = 0;
     let alloperCSATcount = 0;
     let accumulator = 0;
+	let massivchikUntarget = new Set(); // Инициализация Set вне и перед циклами
+	let massivchikTarget = new Set(); // Инициализация Set вне и перед циклами
+	let uniqueIdsArrayUntarget  = []
+	let uniqueIdsArrayTarget = []
+	let uniquedArrayAllLength
+
     alloperSLAclsed = 0;
     alloperChatsclsed = 0;
     alloperaboveART = 0;
     alloperaboveAFRT = 0;
     let slarows = document.getElementsByName('sladata');
     let csatrows = document.getElementsByName('csatdata');
-    let artrows = document.getElementsByName('artdata');
 
     const padStart = (string, targetLength, padString) => {
         return String(string).padStart(targetLength, padString);
@@ -742,8 +706,6 @@ async function getopersSLA() {
     const selectedEndDate = new Date(dateToStatInput.value);
     const rightDateToGrab = `${selectedEndDate.getFullYear()}-${padStart(selectedEndDate.getMonth() + 1, 2, '0')}-${padStart(selectedEndDate.getDate(), 2, '0')}T20:59:59.059z`;
 
-
-
     // getyesterdayandtoday();
     let operdata;
     filteredarray = [];
@@ -758,6 +720,7 @@ async function getopersSLA() {
             csatsumma = 0;
             overduecount = 0;
             page = 1;
+
             do {
                 await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
                     headers: {
@@ -785,7 +748,42 @@ async function getopersSLA() {
                     await fetch("https://skyeng.autofaq.ai/api/conversations/" + operdata.items[j].conversationId)
                         .then((r) => r.json())
                         .then((r) => fres = r);
-                    if (fres.operatorId == activeopersId[i]) {
+						
+				//ЦИКЛ НАЧАЛО
+				if (fres.messages[fres.messages.length - 1].tpe == "Question") {
+					let groupFoundIndex = -1; // Индекс сообщения с нужной группой
+					let firstMessageTime = fres.messages[fres.messages.length - 1].ts;
+
+					// Сначала ищем сообщение с нужной группой
+					for (let z = fres.messages.length - 1; z >= 0; z--) {
+						const message = fres.messages[z];
+						if (message.payload.prevGroup === undefined && message.payload.group === "c7bbb211-a217-4ed3-8112-98728dc382d8") {
+							groupFoundIndex = z;
+							break; // Находим первое с конца сообщение с нужной группой и запоминаем его индекс
+						}
+					}
+
+					// Если сообщение с нужной группой найдено, ищем следующее по условию
+					if (groupFoundIndex !== -1) {
+						for (let z = groupFoundIndex; z >= 0; z--) {
+							const message = fres.messages[z];
+							if (message.tpe === "AnswerOperatorWithBot" || message.tpe === "AnswerOperator") {
+								let remember = message.ts;
+								let differInSecs = (new Date(remember) - new Date(firstMessageTime)) / 1000;
+								if (differInSecs > 60.9) {
+									//console.log(fres.id, firstMessageTime, remember, differInSecs);
+									massivchikUntarget.add(fres.id)
+								} else {
+									massivchikTarget.add(fres.id)
+								}
+								break; // Прерываем цикл после нахождения и выполнения условий
+							}
+						}
+					}
+				}
+				
+/// ЦИКЛ КОНЕЦ
+                   if (fres.operatorId == activeopersId[i]) {
                         operclschatcount++;
                         totalChatsClosed[i] = operclschatcount;
                         filteredarray.push({
@@ -798,80 +796,6 @@ async function getopersSLA() {
                                 ? operdata.items[j].stats.rate.rate
                                 : null,
                         });
-
-                        if (calculateAverageResponseTime(fres.messages) > 120) {
-                            console.log('%c (ART)' + ' ' + operdata.items[j].conversationId + ' ' + calculateAverageResponseTime(fres.messages), 'color:green')
-                            operartcount++;
-                            arrayartcount[i] = operartcount
-                        } else {
-                            arrayartcount[i] += 0;
-                        }
-
-                        for (let z = fres.messages.length - 1; z >= 0; z--) {
-                            if (flagFoundOperGroup === 0) {
-                                if (fres.messages[z].eventTpe && fres.messages[z].eventTpe === "ChangeGroup" && fres.messages[z].payload.prevGroup == undefined && fres.messages[z].payload.group == "c7bbb211-a217-4ed3-8112-98728dc382d8") {
-                                    flagFoundOperGroup = 1;
-                                    indexOfChangeGroup = z;
-                                }
-                            }
-
-                            if (flagFoundOperGroup == 1) {
-                                if (flagFoundQueue === 0) {
-                                    if (fres.messages[z].eventTpe && fres.messages[z].eventTpe === "FirstTimeInQueue") {
-                                        foundQueue = fres.messages[z].ts;
-                                        flagFoundQueue = 1;
-                                        indexOfFirstTimeInQueue = z;
-                                    }
-                                }
-
-                                if (flagFoundOperAnswer === 0) {
-                                    if (fres.messages[z].tpe && (fres.messages[z].tpe === "AnswerOperator" || fres.messages[z].tpe === "AnswerOperatorWithBot")) {
-                                        foundOperAnswer = fres.messages[z].ts;
-                                        flagFoundOperAnswer = 1;
-                                    }
-                                }
-                            }
-
-                            if (flagChatIsInQueue === 0) {
-                                if (fres.messages[z].tpe && fres.messages[z].tpe === "AnswerSystem" && fres.messages[z].txt === "Ищем для вас лучшего оператора, подождите, пожалуйста.") {
-                                    flagChatIsInQueue = 1;
-                                }
-                            }
-
-                            if (flagIsOnTPOper === 0) {
-                                if (fres.messages[z].eventTpe === "AssignToOperator" && fres.messages[z].payload.oid != undefined) {
-                                    let filterOperObj = operatorsarray.filter(el => el.operator.id == fres.messages[z].payload.oid);
-
-                                    if (filterOperObj.length > 0) { // проверка на наличие элементов в массиве
-                                        operFuckUpName = filterOperObj[0].operator.fullName;
-                                        flagIsOnTPOper = 1;
-                                    }
-                                }
-                            }
-                        }
-
-
-                        if (fres.answers.length > 0 && flagChatIsInQueue === 0 && indexOfChangeGroup > indexOfFirstTimeInQueue) {
-                            foundQueueTime = new Date(foundQueue).getTime();
-                            foundOperAnswerTime = new Date(foundOperAnswer).getTime();
-
-                            differenceInSeconds = (foundOperAnswerTime - foundQueueTime) / 1000;
-
-                            if (differenceInSeconds > 60) {
-                                arrayafrtcount.push(1)
-                                console.log('%c (AFRT) ' + operFuckUpName + ' ' + fres.id + ' ' + differenceInSeconds + ' ' + "Общее кол-во чатов без очереди: " + arrayafrtcount.length, 'color:coral')
-                            }
-                        } else if (fres.answers.length > 0 && flagChatIsInQueue === 1 && indexOfChangeGroup > indexOfFirstTimeInQueue) {
-                            foundQueueTime = new Date(foundQueue).getTime();
-                            foundOperAnswerTime = new Date(foundOperAnswer).getTime();
-
-                            differenceInSeconds = (foundOperAnswerTime - foundQueueTime) / 1000;
-
-                            if (differenceInSeconds > 60) {
-                                arrayafrtcountwithqueue.push(1)
-                                console.log('%c [Очередь ТП] | (AFRT) ' + operFuckUpName + ' ' + fres.id + ' ' + differenceInSeconds + ' ' + "Общее кол-во чатов в очереди: " + arrayafrtcountwithqueue.length, 'color:coral')
-                            }
-                        }
 
                         if (operdata.items[j].stats.rate.rate) {
                             csatcount++;
@@ -890,15 +814,17 @@ async function getopersSLA() {
                 page++;
                 maxpage = operdata.total / 100;
             } while (page - 1 < maxpage);
+			
+				uniqueIdsArrayUntarget = Array.from(massivchikUntarget);
+				console.log(uniqueIdsArrayUntarget);
+				uniqueIdsArrayTarget = Array.from(massivchikTarget);
+				//console.log(uniqueIdsArrayTarget);
+				uniquedArrayAllLength  = +(uniqueIdsArrayUntarget.length + uniqueIdsArrayTarget.length)
+				console.log(uniquedArrayAllLength);
 
             currentWidth += step;
             progressBar.style.width = Number(currentWidth.toFixed(1)) + "%";
             progressBar.textContent = Number(currentWidth.toFixed(1)) + "%";
-
-            if (arrayartcount[i]) {
-                artrows[i].textContent = (100 - (arrayartcount[i] / totalChatsClosed[i]) * 100).toFixed(1) + '%';
-            } else artrows[i].textContent = '100%';
-
 
 
             if (arraycsatcount[i] && arraycsatsumma[i]) {
@@ -917,20 +843,14 @@ async function getopersSLA() {
                 slarows[i].textContent = "100%"
             }
 
-            if (arrayartcount[i]) {
-                alloperaboveART += arrayartcount[i]
-            }
-
             if (arrayafrtcount[i]) {
                 alloperaboveAFRT = (+arrayafrtcount.length + arrayafrtcountwithqueue.length)
             }
         }
         document.getElementById('avgCsatonGroup').textContent = (alloperCSATsumma / alloperCSATcount).toFixed(2);
-        document.getElementById('SLAonGroup').textContent = (100 - (alloperSLAclsed / summclsd) * 100).toFixed(1) + '%'
-        document.getElementById('ARTGroup').textContent = (100 - (alloperaboveART / summclsd) * 100).toFixed(1) + '%'
-        document.getElementById('AFRTGroup').textContent = (100 - (alloperaboveAFRT / summclsd) * 100).toFixed(1) + '%'
+        document.getElementById('SLAonGroup').innerHTML = ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' + "Всего влияли на SLA Completed: " + alloperChatsclsed + " из них: " + `<div>` + "•🚫Вне таргета: " + alloperSLAclsed + "• ✅В таргете: " + (alloperChatsclsed - alloperSLAclsed) + " 🎯Для таргета 81% можем позволить просрочить:" + ((((alloperChatsclsed - alloperSLAclsed)  * 100) /81) - alloperChatsclsed).toFixed(1) + " чатов" + `</div>`
+        document.getElementById('AFRTGroup').innerHTML = ((uniqueIdsArrayTarget.length / uniquedArrayAllLength) * 100).toFixed(1) + '%' + " Всего влияли на AFRT: "  + uniquedArrayAllLength + " из них: " + `<div>` + "•🚫Вне таргета: " + uniqueIdsArrayUntarget.length + "• ✅В таргете: " + uniqueIdsArrayTarget.length + " 🎯Для таргета 86% можем позволить просрочить:" + (((uniqueIdsArrayTarget.length * 100) /86) - uniquedArrayAllLength).toFixed(1) + " чатов" + `</div>`
 
-        console.log('Chats above ART: ' + alloperaboveART)
         console.log('Chats above AFRT: ' + alloperaboveAFRT)
         console.log('All chats closed: ' + alloperChatsclsed)
     }
