@@ -53,7 +53,7 @@ function setdatesfilds(){
     const prevDay = String(prevDate.getDate()).padStart(2, "0");
 
     // set date values in form inputs
-    document.getElementById("dateFromLS").value = `${prevYear}-${prevMonth}-${prevDay}`;
+    document.getElementById("dateFromLS").value = `${prevYear}-${prevMonth}-${curDay}`;
     document.getElementById("dateToLS").value = `${curYear}-${curMonth}-${curDay}`;
 
     document.getElementById('statustable').innerText = "";
@@ -78,12 +78,19 @@ document.getElementById('startlookstatus').addEventListener('click', function ()
         document.querySelector('#statustable').style.display = "";
         document.querySelector('#statustable').innerText = "Загрузка. Если информация не появилась нажмите повторно на кнопку получить инфа";
         let ticherid = document.getElementById('idteacherforsearch').value.trim();
-        let startdate = document.querySelector('#dateFromLS').value;
-        startdate = startdate.split('-');
-        startdate = `${startdate[2]}-${startdate[1]}-${startdate[0]} 21`;
-        let enddate = document.querySelector('#dateToLS').value;
-        enddate = enddate.split('-');
-        enddate = `${enddate[2]}-${enddate[1]}-${enddate[0]} 21`;
+		let startdateElement = document.querySelector('#dateFromLS');
+		let enddateElement = document.querySelector('#dateToLS');
+
+		// Преобразуем значение в объект Date
+		let startdate = new Date(startdateElement.value);
+		let enddate = new Date(enddateElement.value);
+
+		// Уменьшаем startdate на один день
+		startdate.setDate(startdate.getDate() - 1);
+
+		// Форматируем даты в требуемый формат
+		startdate = `${('0' + startdate.getDate()).slice(-2)}-${('0' + (startdate.getMonth() + 1)).slice(-2)}-${startdate.getFullYear()} 21`;
+		enddate = `${('0' + enddate.getDate()).slice(-2)}-${('0' + (enddate.getMonth() + 1)).slice(-2)}-${enddate.getFullYear()} 20`;
 
         const fetchURL = 'https://timetable.skyeng.ru/api/teachers/search';
         const requestOptions = {
@@ -91,7 +98,7 @@ document.getElementById('startlookstatus').addEventListener('click', function ()
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded"
 			},
-			body: `from=${startdate}:00:00&to=${enddate}:00:00&offset=0&filters[teacherIds][]=${ticherid}&callback=getJSONP`,
+			body: `from=${startdate}:00:00&to=${enddate}:59:59&offset=0&filters[teacherIds][]=${ticherid}&callback=getJSONP`,
 			credentials: "include"
 		};
 
@@ -136,13 +143,24 @@ document.getElementById('startlookstatus').addEventListener('click', function ()
                             cell.style = "border: 1px solid black; font-size:12px;"
                             row.appendChild(cell);
     
-                            let classStatus = lessonsarray[0].result[0].classes[i].classStatus;
-                            cell = document.createElement('td');
-                            cell.textContent = classStatus ? classStatus.status : "";
-                            if (classStatus) {
-                                classStatus.status == "success" ? cell.style = "border: 1px solid black; font-size:12px; color:#50e850; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);" : cell.style = "border: 1px solid black; font-size:12px; color:tomato; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);"
-                            }
-                            row.appendChild(cell);
+							let classStatus = lessonsarray[0].result[0].classes[i].classStatus;
+							cell = document.createElement('td');
+							cell.style.border = "1px solid black";
+							cell.style.fontSize = "12px";
+							cell.style.textShadow = "1px 2px 5px rgb(0 0 0 / 55%)";
+
+							if (classStatus) {
+								cell.textContent = classStatus.status;
+								cell.style.color = classStatus.status === "success" ? "#50e850" : "tomato";
+							} else if (typeof lessonsarray[0].result[0].classes[i].removedAt !== 'undefined') {
+								cell.textContent = "removed";
+								cell.style.color = "tomato";
+							} else {
+								cell.textContent = "unknown";
+							}
+
+							row.appendChild(cell);
+
     
                             cell = document.createElement('td');
                             cell.textContent = classStatus ? new Date(classStatus.createdAt).toLocaleString("ru-RU", { timeZone: 'Europe/Moscow' }) : "";
@@ -193,14 +211,25 @@ document.getElementById('startlookstatus').addEventListener('click', function ()
                             cell.textContent = startAt ? new Date(startAt).toLocaleString("ru-RU", { timeZone: 'Europe/Moscow' }).slice(0, 17) : "";
                             cell.style = "border: 1px solid black; font-size:12px;"
                             row.appendChild(cell);
-    
-                            let classStatus = lessonsarray[0].result[0].classes[i].classStatus;
-                            cell = document.createElement('td');
-                            cell.textContent = classStatus ? classStatus.status : "";
-                            if (classStatus) {
-                                classStatus.status == "success" ? cell.style = "border: 1px solid black; font-size:12px; color:#50e850; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);" : cell.style = "border: 1px solid black; font-size:12px; color:tomato; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);"
-                            }
-                            row.appendChild(cell);
+    						
+							let classStatus = lessonsarray[0].result[0].classes[i].classStatus;
+							cell = document.createElement('td');
+							cell.style.border = "1px solid black";
+							cell.style.fontSize = "12px";
+							cell.style.textShadow = "1px 2px 5px rgb(0 0 0 / 55%)";
+
+							if (classStatus) {
+								cell.textContent = classStatus.status;
+								cell.style.color = classStatus.status === "success" ? "#50e850" : "tomato";
+							} else if (typeof lessonsarray[0].result[0].classes[i].removedAt !== 'undefined') {
+								cell.textContent = "removed";
+								cell.style.color = "tomato";
+							} else {
+								cell.textContent = "unknown";
+								cell.style.color = "orange"
+							}
+
+							row.appendChild(cell);
     
                             cell = document.createElement('td');
                             cell.textContent = classStatus ? new Date(classStatus.createdAt).toLocaleString("ru-RU", { timeZone: 'Europe/Moscow' }) : "";
