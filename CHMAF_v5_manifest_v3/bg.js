@@ -357,7 +357,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded"
 			},
-			body: `from=${startdate}:00:00&to=${enddate}:00:00&offset=0&filters[teacherIds][]=${ticherid}&callback=getJSONP`,
+			body: `from=${startdate}:00:00&to=${enddate}:59:59&offset=0&filters[teacherIds][]=${ticherid}&callback=getJSONP`,
 			credentials: "include"
 		})
 			.then(response => response.json())
