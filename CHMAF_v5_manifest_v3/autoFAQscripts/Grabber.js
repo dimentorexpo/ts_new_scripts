@@ -403,7 +403,7 @@ function getopenGrabberButtonPress() {
         dateToGrab = new Date(year, getcurdate.getMonth(), 1);
     }
 
-    document.getElementById("dateFromGrab").value = `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, "0")}-${String(fromDate.getDate()).padStart(2, "0")}`;
+    document.getElementById("dateFromGrab").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
     document.getElementById("dateToGrab").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
 
     getlistofopers()
@@ -1335,6 +1335,7 @@ document.getElementById('stargrab').onclick = async function () {
     }
 
     const getFormattedDate = (date) => {
+		date.setDate(date.getDate() - 1); // Уменьшаем день на один
         const year = date.getFullYear();
         const month = padStart(date.getMonth() + 1, 2, '0');
         const day = padStart(date.getDate(), 2, '0');
@@ -1458,7 +1459,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                     //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                     //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                    if (r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
+                                    if (r.channelUser && r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
                                         console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList);
                                     }
 
@@ -1478,7 +1479,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                     //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                     // (r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                    if (r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
+                                    if (r.channelUser && r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
                                         console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList);
                                     }
 
@@ -1512,7 +1513,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                 //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                 //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                if (r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
+                                if (r.channelUser && r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
                                     console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList);
                                 }
 
@@ -1561,7 +1562,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                 //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                 //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                if (r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
+                                if (r.channelUser && r.channelUser && r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
                                     console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList);
                                 }
 
@@ -1580,7 +1581,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
                                         SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
-										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
+										Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ?  r.channelUser.payload.country : "-"
                                     });
 
                                 } else if (r.payload && r.payload.topicId && r.payload.topicId.value != '' && tmponlyoperhashes[j].Duration == undefined) {
@@ -1591,7 +1592,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
                                         SLACompleted: "undefined",
-										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
+										Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ?  r.channelUser.payload.country : "-"
                                     });
 
                                 } else if (r.payload && r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration == undefined) {
@@ -1602,7 +1603,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: '⁉No theme',
                                         SLACompleted: "undefined",
-										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
+										Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ?  r.channelUser.payload.country : "-"
                                     });
                                 } else if (r.payload && r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration != undefined) {
 
@@ -1613,7 +1614,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: '⁉No theme',
                                         SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
-										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
+										Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ?  r.channelUser.payload.country : "-"
                                     });
 
                                 }
@@ -2092,28 +2093,24 @@ document.getElementById('webtoCSV').onclick = function () {
     downloadCSV(pureArray, filename);
 }
 
-document.getElementById('dayplus').onclick = function () { // обработчик нажатия на кнопку следующего дня
-    let dateInputIshod = document.getElementById('dateFromGrab').value;
-    let dateInputKonez = document.getElementById('dateToGrab').value;
-    let datestart = new Date(dateInputIshod);
-    let dateend = new Date(dateInputKonez);
-    datestart.setDate(datestart.getDate() + 1);
-    dateend.setDate(dateend.getDate() + 1);
-    let newDateStart = datestart.toISOString().split('T')[0];
-    let newDateEnd = dateend.toISOString().split('T')[0];
-    document.getElementById('dateFromGrab').value = newDateStart;
-    document.getElementById('dateToGrab').value = newDateEnd;
+document.getElementById('dayplus').onclick = function () {
+    const adjustDate = (dateId) => {
+        let date = new Date(document.getElementById(dateId).value);
+        date.setDate(date.getDate() + 1);
+        return date.toISOString().split('T')[0];
+    };
+
+    document.getElementById('dateFromGrab').value = adjustDate('dateFromGrab');
+    document.getElementById('dateToGrab').value = adjustDate('dateToGrab');
 }
 
-document.getElementById('dayminus').onclick = function () { // обработчик нажатия на кнопку предыдущего дня
-    let dateInputIshod = document.getElementById('dateFromGrab').value;
-    let dateInputKonez = document.getElementById('dateToGrab').value;
-    let datestart = new Date(dateInputIshod);
-    let dateend = new Date(dateInputKonez);
-    datestart.setDate(datestart.getDate() - 1);
-    dateend.setDate(dateend.getDate() - 1);
-    let newDateStart = datestart.toISOString().split('T')[0];
-    let newDateEnd = dateend.toISOString().split('T')[0];
-    document.getElementById('dateFromGrab').value = newDateStart;
-    document.getElementById('dateToGrab').value = newDateEnd;
+document.getElementById('dayminus').onclick = function () {
+    const adjustDate = (dateId) => {
+        let date = new Date(document.getElementById(dateId).value);
+        date.setDate(date.getDate() - 1);
+        return date.toISOString().split('T')[0];
+    };
+
+    document.getElementById('dateFromGrab').value = adjustDate('dateFromGrab');
+    document.getElementById('dateToGrab').value = adjustDate('dateToGrab');
 }

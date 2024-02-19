@@ -11,6 +11,8 @@ var win_StatisticaAF =  // описание формы чтобы не дава�
                         </div>
 						<div style="margin: 5px; width: 750px" id="periodOfStata">
 								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <input type="date" style="color:black; margin-left:20px;  width:125px;" name="stData" id="dateFromStat"></span>
+								 <button class="mainButton" style="margin-left:15%" id="dayminusminus">◀</button>
+								 <button class="mainButton" id="dayplusplus">▶</button>
 								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input type="date" style="color:black; float:right; margin-left:20px; margin-right:10px; width:125px;" name="finData" id="dateToStat" <="" span="">
                         </span>
 						</div>
@@ -891,3 +893,26 @@ document.getElementById("buttonKCpower").addEventListener("click", function () {
 document.getElementById("buttonTPpower").addEventListener("click", function () {
     checkload(/ТП/, 'ТП');
 });
+
+document.getElementById('dayplusplus').onclick = function () {
+    const adjustDate = (dateId) => {
+        let date = new Date(document.getElementById(dateId).value);
+        date.setDate(date.getDate() + 1);
+        return date.toISOString().split('T')[0];
+    };
+
+    document.getElementById('dateFromStat').value = adjustDate('dateFromStat');
+    document.getElementById('dateToStat').value = adjustDate('dateToStat');
+}
+
+
+document.getElementById('dayminusminus').onclick = function () {
+    const adjustDate = (dateId) => {
+        let date = new Date(document.getElementById(dateId).value);
+        date.setDate(date.getDate() - 1);
+        return date.toISOString().split('T')[0];
+    };
+
+    document.getElementById('dateFromStat').value = adjustDate('dateFromStat');
+    document.getElementById('dateToStat').value = adjustDate('dateToStat');
+}
