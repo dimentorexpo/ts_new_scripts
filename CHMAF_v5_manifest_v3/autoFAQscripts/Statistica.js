@@ -66,7 +66,6 @@ function getbuttonGetStatButtonPress() {
     let day = String(getcurdate.getDate()).padStart(2, "0");
 
     let lastDayOfPrevMonth = new Date(year, getcurdate.getMonth(), 0).getDate();
-    let fromDate = new Date(year, getcurdate.getMonth(), day - 1);
     let toDate = new Date(year, getcurdate.getMonth(), day);
 
     if (day === "01") {
@@ -75,7 +74,7 @@ function getbuttonGetStatButtonPress() {
         dateToStat = new Date(year, getcurdate.getMonth(), 1);
     }
 
-    document.getElementById("dateFromStat").value = `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, "0")}-${String(fromDate.getDate()).padStart(2, "0")}`;
+    document.getElementById("dateFromStat").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
     document.getElementById("dateToStat").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
     //
 
@@ -145,10 +144,11 @@ async function getStats() { // функция получения статист�
     }
 
     const getFormattedDate = (date) => {
+        date.setDate(date.getDate() - 1); // Уменьшаем день на один
         const year = date.getFullYear();
         const month = padStart(date.getMonth() + 1, 2, '0');
         const day = padStart(date.getDate(), 2, '0');
-        return `${year}-${month}-${day}T21:00:00.000z`;
+        return `${year}-${month}-${day}T21:00:00.000Z`;
     }
 
     const dateFromStatInput = document.getElementById("dateFromStat");
@@ -338,6 +338,7 @@ async function checkCSAT() { // функция проверки CSAT и чато
     }
 
     const getFormattedDate = (date) => {
+        date.setDate(date.getDate() - 1); // Уменьшаем день на один
         const year = date.getFullYear();
         const month = padStart(date.getMonth() + 1, 2, '0');
         const day = padStart(date.getDate(), 2, '0');
@@ -496,7 +497,7 @@ async function checkCSAT() { // функция проверки CSAT и чато
                     str.innerHTML = firstpart + 'Оценка 1 🤬: ' + count[1] + '<br>' + 'Оценка 2 🤢: ' + count[2] + '<br>' + flagbad + '<br>' + 'Оценка 3 😐: ' + count[3] + '<br>' + flagmid + '<br>' + 'Оценка 4 🥴: ' + count[4] + '<br>' + 'Оценка 5 😊: ' + count[5] + '<br>' + secondpart
                 else if (flagvbad != "" && flagbad != "" && flagmid != "")
                     str.innerHTML = firstpart + 'Оценка 1 🤬: ' + count[1] + '<br>' + flagvbad + '<br>' + 'Оценка 2 🤢: ' + count[2] + '<br>' + flagbad + '<br>' + 'Оценка 3 😐: ' + count[3] + '<br>' + flagmid + '<br>' + 'Оценка 4 🥴: ' + count[4] + '<br>' + 'Оценка 5 😊: ' + count[5] + '<br>' + secondpart
-               break
+                break
             }
         }
     } catch (e) {
@@ -640,7 +641,6 @@ let alloperaboveART = 0;
 let alloperaboveAFRT = 0;
 let flagFoundQueue = 0;
 let flagFoundOperGroup = 0;
-let flagChatIsInQueue = 0;
 let flagIsOnTPOper = 0;
 let operFuckUpName = 0;
 let flagFoundOperAnswer = 0;
@@ -674,11 +674,13 @@ async function getopersSLA() {
     let alloperCSATsumma = 0;
     let alloperCSATcount = 0;
     let accumulator = 0;
-	let massivchikUntarget = new Set(); // Инициализация Set вне и перед циклами
-	let massivchikTarget = new Set(); // Инициализация Set вне и перед циклами
+	let massivchikUntarget = new Set(); // Массив уникальный для чатов АФРТ вне таргета
+	let massivchikTarget = new Set(); // Массив уникальный для чатов АФРТ в таргете
+	let massivchikQueue = new Set(); // Массив уникальный для чатов в очередях
 	let uniqueIdsArrayUntarget  = []
 	let uniqueIdsArrayTarget = []
 	let uniquedArrayAllLength
+	let uniqueArrayQueue = []
 
     alloperSLAclsed = 0;
     alloperChatsclsed = 0;
@@ -692,6 +694,7 @@ async function getopersSLA() {
     }
 
     const getFormattedDate = (date) => {
+        date.setDate(date.getDate() - 1); // Уменьшаем день на один
         const year = date.getFullYear();
         const month = padStart(date.getMonth() + 1, 2, '0');
         const day = padStart(date.getDate(), 2, '0');
@@ -737,7 +740,6 @@ async function getopersSLA() {
                 for (let j = 0; j < operdata.items.length; j++) {
                     flagFoundQueue = 0;
                     flagFoundOperGroup = 0;
-                    flagChatIsInQueue = 0;
                     flagIsOnTPOper = 0;
                     operFuckUpName = '';
                     flagFoundOperAnswer = 0;
@@ -745,45 +747,70 @@ async function getopersSLA() {
                     indexOfFirstTimeInQueue = -1;
                     differenceInSeconds = 0;
 
-                    await fetch("https://skyeng.autofaq.ai/api/conversations/" + operdata.items[j].conversationId)
-                        .then((r) => r.json())
-                        .then((r) => fres = r);
-						
-				//ЦИКЛ НАЧАЛО
-				if (fres.messages[fres.messages.length - 1].tpe == "Question") {
-					let groupFoundIndex = -1; // Индекс сообщения с нужной группой
-					let firstMessageTime = fres.messages[fres.messages.length - 1].ts;
+					const response = await fetch("https://skyeng.autofaq.ai/api/conversations/" + operdata.items[j].conversationId);
+					const fres = await response.json();
 
-					// Сначала ищем сообщение с нужной группой
-					for (let z = fres.messages.length - 1; z >= 0; z--) {
-						const message = fres.messages[z];
-						if (message.payload.prevGroup === undefined && message.payload.group === "c7bbb211-a217-4ed3-8112-98728dc382d8") {
-							groupFoundIndex = z;
-							break; // Находим первое с конца сообщение с нужной группой и запоминаем его индекс
-						}
-					}
+                    //ЦИКЛ НАЧАЛО
+                    if (fres.messages[fres.messages.length - 1].tpe == "Question") {
+                        let groupFoundIndex = -1; // Индекс сообщения с нужной группой
+						let flagChatIsInQueue = -1; // Индекс сообщения с "Ищем для вас..."
+                        let firstMessageTime = fres.messages[fres.messages.length - 1].ts;
 
-					// Если сообщение с нужной группой найдено, ищем следующее по условию
-					if (groupFoundIndex !== -1) {
-						for (let z = groupFoundIndex; z >= 0; z--) {
-							const message = fres.messages[z];
-							if (message.tpe === "AnswerOperatorWithBot" || message.tpe === "AnswerOperator") {
-								let remember = message.ts;
-								let differInSecs = (new Date(remember) - new Date(firstMessageTime)) / 1000;
-								if (differInSecs > 60.9) {
-									//console.log(fres.id, firstMessageTime, remember, differInSecs);
-									massivchikUntarget.add(fres.id)
-								} else {
-									massivchikTarget.add(fres.id)
+                        // Сначала ищем сообщение с нужной группой
+                        for (let z = fres.messages.length - 1; z >= 0; z--) {
+                            const message = fres.messages[z];
+                            if (message.payload && message.payload.prevGroup === undefined && message.payload.group === "c7bbb211-a217-4ed3-8112-98728dc382d8") {
+                                groupFoundIndex = z;	
+                                break; // Находим первое с конца сообщение с нужной группой и запоминаем его индекс
+                            }
+                        }
+
+                        // Если сообщение с нужной группой найдено, ищем следующее по условию
+                        if (groupFoundIndex !== -1) {
+                            for (let b = groupFoundIndex; b >= 0; b--) {
+                                const message = fres.messages[b];
+								
+								if (message.tpe && typeof message.txt === 'string' && message.txt.includes("Ищем для вас")) {
+									flagChatIsInQueue = b
+									console.log(fres.id, flagChatIsInQueue)
+
+								
+									if (flagChatIsInQueue !== -1) {
+										for (let v=flagChatIsInQueue; v >= 0; v--) {
+											const message = fres.messages[v];
+												if (message.tpe === "AnswerOperatorWithBot" || message.tpe === "AnswerOperator") {
+													let remember = message.ts;
+													let differInSecs = (new Date(remember) - new Date(firstMessageTime)) / 1000;
+													if (differInSecs > 60) {
+														//console.log(fres.id, firstMessageTime, remember, differInSecs);
+														massivchikQueue.add(fres.id)
+														break; // Прерываем цикл после нахождения и выполнения условий
+													} 
+
+												}
+										}
+									}
+									//break;
 								}
-								break; // Прерываем цикл после нахождения и выполнения условий
-							}
-						}
-					}
-				}
-				
-/// ЦИКЛ КОНЕЦ
-                   if (fres.operatorId == activeopersId[i]) {
+									                               
+								
+								if (message.tpe === "AnswerOperatorWithBot" || message.tpe === "AnswerOperator") {
+                                    let remember = message.ts;
+                                    let differInSecs = (new Date(remember) - new Date(firstMessageTime)) / 1000;
+                                    if (differInSecs > 60) {
+                                        //console.log(fres.id, firstMessageTime, remember, differInSecs);
+                                        massivchikUntarget.add(fres.id)
+                                    } else {
+                                        massivchikTarget.add(fres.id)
+                                    }
+                                    break; // Прерываем цикл после нахождения и выполнения условий
+                                }
+                            }
+                        }
+                    }
+
+                    /// ЦИКЛ КОНЕЦ
+                    if (fres.operatorId == activeopersId[i]) {
                         operclschatcount++;
                         totalChatsClosed[i] = operclschatcount;
                         filteredarray.push({
@@ -814,18 +841,19 @@ async function getopersSLA() {
                 page++;
                 maxpage = operdata.total / 100;
             } while (page - 1 < maxpage);
-			
-				uniqueIdsArrayUntarget = Array.from(massivchikUntarget);
-				console.log(uniqueIdsArrayUntarget);
-				uniqueIdsArrayTarget = Array.from(massivchikTarget);
-				//console.log(uniqueIdsArrayTarget);
-				uniquedArrayAllLength  = +(uniqueIdsArrayUntarget.length + uniqueIdsArrayTarget.length)
-				console.log(uniquedArrayAllLength);
+
+            uniqueIdsArrayUntarget = Array.from(massivchikUntarget);
+            console.log("Массив нетаргета по АФРТ", uniqueIdsArrayUntarget);
+            uniqueIdsArrayTarget = Array.from(massivchikTarget);
+            //console.log(uniqueIdsArrayTarget);
+            uniquedArrayAllLength = +(uniqueIdsArrayUntarget.length + uniqueIdsArrayTarget.length)
+            console.log(uniquedArrayAllLength);
+			uniqueArrayQueue = Array.from(massivchikQueue)
+			console.log("Массив очереди", uniqueArrayQueue)
 
             currentWidth += step;
             progressBar.style.width = Number(currentWidth.toFixed(1)) + "%";
             progressBar.textContent = Number(currentWidth.toFixed(1)) + "%";
-
 
             if (arraycsatcount[i] && arraycsatsumma[i]) {
                 csatrows[i].textContent = (arraycsatsumma[i] / arraycsatcount[i]).toFixed(2);
@@ -848,8 +876,8 @@ async function getopersSLA() {
             }
         }
         document.getElementById('avgCsatonGroup').textContent = (alloperCSATsumma / alloperCSATcount).toFixed(2);
-        document.getElementById('SLAonGroup').innerHTML = ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' + "Всего влияли на SLA Completed: " + alloperChatsclsed + " из них: " + `<div>` + "•🚫Вне таргета: " + alloperSLAclsed + "• ✅В таргете: " + (alloperChatsclsed - alloperSLAclsed) + " 🎯Для таргета 81% можем позволить просрочить:" + ((((alloperChatsclsed - alloperSLAclsed)  * 100) /81) - alloperChatsclsed).toFixed(1) + " чатов" + `</div>`
-        document.getElementById('AFRTGroup').innerHTML = ((uniqueIdsArrayTarget.length / uniquedArrayAllLength) * 100).toFixed(1) + '%' + " Всего влияли на AFRT: "  + uniquedArrayAllLength + " из них: " + `<div>` + "•🚫Вне таргета: " + uniqueIdsArrayUntarget.length + "• ✅В таргете: " + uniqueIdsArrayTarget.length + " 🎯Для таргета 86% можем позволить просрочить:" + (((uniqueIdsArrayTarget.length * 100) /86) - uniquedArrayAllLength).toFixed(1) + " чатов" + `</div>`
+        document.getElementById('SLAonGroup').innerHTML = ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' + " Всего влияли на SLA Completed: " + alloperChatsclsed + " из них: " + `<div>` + "•🚫Вне таргета: " + alloperSLAclsed + "• ✅В таргете: " + (alloperChatsclsed - alloperSLAclsed) + " 🎯Для таргета 81% можем позволить просрочить:" + ((((alloperChatsclsed - alloperSLAclsed) * 100) / 81) - alloperChatsclsed).toFixed(1) + " чатов" + `</div>`
+        document.getElementById('AFRTGroup').innerHTML = ((uniqueIdsArrayTarget.length / uniquedArrayAllLength) * 100).toFixed(1) + '%' + " Всего влияли на AFRT: " + uniquedArrayAllLength + " из них: " + `<div>` + "•🚫Вне таргета: " + uniqueIdsArrayUntarget.length + "• ✅В таргете: " + uniqueIdsArrayTarget.length + " 🎯Для таргета 86% можем позволить просрочить:" + (((uniqueIdsArrayTarget.length * 100) / 86) - uniquedArrayAllLength).toFixed(1) + " чатов" + `</div>`
 
         console.log('Chats above AFRT: ' + alloperaboveAFRT)
         console.log('All chats closed: ' + alloperChatsclsed)
