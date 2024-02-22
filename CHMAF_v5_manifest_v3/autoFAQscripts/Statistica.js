@@ -895,7 +895,7 @@ async function getopersSLA() {
 				  "•🚫Вне таргета: " + uniqueIdsArrayUntarget.length +
 				  "• ✅В таргете: " + uniqueIdsArrayTarget.length +
 				  " 🎯Для таргета 86% можем позволить просрочить:" +
-				  (Number(calcAFRTContainer) < 0 ? (`<span style="color:coral; font-weight:700">` + calcAFRTContainer + `</span>`) + (`<span>` + " (чтобы выйти  в таргет, необходимо вовремя дать ответ в: " + (calcAFRTContainer * 6).toFixed(1) + `</span>` + `</span>`) : `<span style="color:rgb(83, 219, 75); font-weight:700">` + calcAFRTContainer + `</span>`) +
+				  (Number(calcAFRTContainer) < 0 ? (`<span style="color:coral; font-weight:700">` + calcAFRTContainer + `</span>`) + (`<span>` + " (чтобы выйти  в таргет, необходимо вовремя дать ответ в: " + Math.abs((calcAFRTContainer * 6.2)).toFixed(1) + `</span>` + `</span>`) : `<span style="color:rgb(83, 219, 75); font-weight:700">` + calcAFRTContainer + `</span>`) +
 				  " чатов" +
 				  `</div>`;
 
