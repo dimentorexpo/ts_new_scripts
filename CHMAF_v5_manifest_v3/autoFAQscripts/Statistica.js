@@ -272,7 +272,7 @@ async function getStats() { // функция получения статист�
     }
 
     let sumchatclosed = document.createElement('div') // сумма закрытых чатов за сутки
-    sumchatclosed.textContent = 'Общая сумма закрытых чатов за сутки по отделу: ' + summclsd;
+    sumchatclosed.innerHTML = 'Общая сумма закрытых чатов за сутки по отделу: ' + '<span id ="allChatsClsd">⏳ Loading</span>' 
     sumchatclosed.style.marginLeft = '50px'
     document.getElementById('outputstatafield').append(sumchatclosed)
 
@@ -773,10 +773,7 @@ async function getopersSLA() {
                                 const message = fres.messages[b];
 								
 								if (message.tpe && typeof message.txt === 'string' && message.txt.includes("Ищем для вас")) {
-									flagChatIsInQueue = b
-									console.log(fres.id, flagChatIsInQueue)
-
-								
+									flagChatIsInQueue = b							
 									if (flagChatIsInQueue !== -1) {
 										for (let v=flagChatIsInQueue; v >= 0; v--) {
 											const message = fres.messages[v];
@@ -792,7 +789,6 @@ async function getopersSLA() {
 												}
 										}
 									}
-									//break;
 								}
 									                               
 								
@@ -877,11 +873,33 @@ async function getopersSLA() {
                 alloperaboveAFRT = (+arrayafrtcount.length + arrayafrtcountwithqueue.length)
             }
         }
-        document.getElementById('avgCsatonGroup').textContent = (alloperCSATsumma / alloperCSATcount).toFixed(2);
-        document.getElementById('SLAonGroup').innerHTML = ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' + " Всего влияли на SLA Completed: " + alloperChatsclsed + " из них: " + `<div>` + "•🚫Вне таргета: " + alloperSLAclsed + "• ✅В таргете: " + (alloperChatsclsed - alloperSLAclsed) + " 🎯Для таргета 81% можем позволить просрочить:" + ((((alloperChatsclsed - alloperSLAclsed) * 100) / 81) - alloperChatsclsed).toFixed(1) + " чатов" + `</div>`
-        document.getElementById('AFRTGroup').innerHTML = ((uniqueIdsArrayTarget.length / uniquedArrayAllLength) * 100).toFixed(1) + '%' + " Всего влияли на AFRT: " + uniquedArrayAllLength + " из них: " + `<div>` + "•🚫Вне таргета: " + uniqueIdsArrayUntarget.length + "• ✅В таргете: " + uniqueIdsArrayTarget.length + " 🎯Для таргета 86% можем позволить просрочить:" + (((uniqueIdsArrayTarget.length * 100) / 86) - uniquedArrayAllLength).toFixed(1) + " чатов" + `</div>`
+				let calcChatsClsContainer = ((((alloperChatsclsed - alloperSLAclsed) * 100) / 81) - alloperChatsclsed).toFixed(1);
+				let calcAFRTContainer = (((uniqueIdsArrayTarget.length * 100) / 86) - uniquedArrayAllLength).toFixed(1);
 
-        console.log('Chats above AFRT: ' + alloperaboveAFRT)
+				document.getElementById('avgCsatonGroup').textContent = (alloperCSATsumma / alloperCSATcount).toFixed(2);
+				document.getElementById('allChatsClsd').textContent = alloperChatsclsed;
+
+				document.getElementById('SLAonGroup').innerHTML = ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' +
+				  " Всего влияли на SLA Completed: " + alloperChatsclsed + " из них: " +
+				  `<div>` +
+				  "•🚫Вне таргета: " + alloperSLAclsed +
+				  "• ✅В таргете: " + (alloperChatsclsed - alloperSLAclsed) +
+				  " 🎯Для таргета 81% можем позволить просрочить:" +
+				  (Number(calcChatsClsContainer) < 0 ? `<span style="color:coral; font-weight:700">` + calcChatsClsContainer + `</span>` : `<span style="color:rgb(83, 219, 75); font-weight:700">` + calcChatsClsContainer + `</span>`) +
+				  " чатов" +
+				  `</div>`;
+
+				document.getElementById('AFRTGroup').innerHTML = ((uniqueIdsArrayTarget.length / uniquedArrayAllLength) * 100).toFixed(1) + '%' +
+				  " Всего влияли на AFRT: " + uniquedArrayAllLength + " из них: " +
+				  `<div>` +
+				  "•🚫Вне таргета: " + uniqueIdsArrayUntarget.length +
+				  "• ✅В таргете: " + uniqueIdsArrayTarget.length +
+				  " 🎯Для таргета 86% можем позволить просрочить:" +
+				  (Number(calcAFRTContainer) < 0 ? (`<span style="color:coral; font-weight:700">` + calcAFRTContainer + `</span>`) + (`<span>` + " (чтобы выйти  в таргет, необходимо вовремя дать ответ в: " + (calcAFRTContainer * 6).toFixed(1) + `</span>` + `</span>`) : `<span style="color:rgb(83, 219, 75); font-weight:700">` + calcAFRTContainer + `</span>`) +
+				  " чатов" +
+				  `</div>`;
+
+        console.log('Chats above AFRT: ' + uniqueIdsArrayUntarget.length)
         console.log('All chats closed: ' + alloperChatsclsed)
     }
 }
