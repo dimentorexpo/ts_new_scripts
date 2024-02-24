@@ -32,6 +32,7 @@ var win_serviceinfo =  // описание элементов окна инфо�
 							<button title="Генерирует одноразовый код для входа в мобильное приложение и выводит его в спец поле" id="getonetimepass" class="mainButton usinfoops">📱</button>
 							<button title="Открывает админку редактирования пользователя/просмотра ролей" id="editadmbtn" class="mainButton usinfoops">✏</button>
 							<button title="Открывает кота для просмотра истории чатов" id="catchathistory" class="mainButton usinfoops">🗄</button>
+							<button title="Открывает окно для просмотра когда и кто открывал/закрывал набор учеников для П" id="butTeacherNabor" class="mainButton" style="margin-left: 5px; display: none; width: 25.23px;"> 🚷</button>
 							<button title="Открывает меню для просмотра рассрочки" id="partialpaymentinfo" class="mainButton usinfoops">💸</button>
 							<button title="Открывает меню для просмотра статуса подписки" id="subscriptioninfo" class="mainButton usinfoops">💵</button>
 						</div>
@@ -481,6 +482,7 @@ function getusernamecrm() {
     const subscriptioninfoElement = document.getElementById('subscriptioninfo');
     const getPastAndFutureLessonsElement = document.getElementById('getpastandfuturelessons');
     const newTrmElement = document.getElementById('newtrm');
+	const TeachNabElement = document.getElementById('butTeacherNabor')
     const personalTeacherPageElement = document.getElementById('personalteacherpage');
     avatarofuser = '';
 
@@ -514,6 +516,7 @@ function getusernamecrm() {
                 subscriptioninfoElement.style.display = "";
                 getPastAndFutureLessonsElement.style.display = "";
                 newTrmElement.style.display = "none";
+                TeachNabElement.style.display = "none";
                 personalTeacherPageElement.style.display = "none";
                 if (response.data.avatarUrl) {
                     avatarofuser = response.data.avatarUrl.match(/(https:\/\/auth-avatars-skyeng.imgix.net.*?\d+.\S+).auto/)[1];
@@ -542,6 +545,7 @@ function getusernamecrm() {
                 subscriptioninfoElement.style.display = "none";
                 getPastAndFutureLessonsElement.style.display = "none";
                 newTrmElement.style.display = "";
+				TeachNabElement.style.display = "";
                 personalTeacherPageElement.style.display = "";
                 if (response.data.avatarUrl) {
                     avatarofuser = response.data.avatarUrl.match(/(https:\/\/auth-avatars-skyeng.imgix.net.*?\d+.\S+).auto/)[1];
