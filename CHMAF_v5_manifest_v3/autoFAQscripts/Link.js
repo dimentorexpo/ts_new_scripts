@@ -104,82 +104,12 @@ let wintLinks; // Объявляем переменную в области ви
 let versionsfromdoc;
 let versionscontainer;
 
-/*
-
 async function getversionsapp() { // получаем из файла список версий моб. приложений
     versionsfromdoc = 'https://script.google.com/macros/s/AKfycbwgym7WoXavCcMa7mpzlA4GHGncpWixKwyxhSJT1TU8tZg4KmRemyZqyQ3c5G2cKTxDrQ/exec'
     await fetch(versionsfromdoc).then(r => r.json()).then(r => versionsdata = r)
     versionscontainer = versionsdata.result;
     document.getElementById('curVeriOS').textContent = versionscontainer[1][0] + ' : ' + versionscontainer[1][1]
     document.getElementById('curVerAndroid').innerText = versionscontainer[0][0] + ' : ' + versionscontainer[0][1]
-}
-*/
-
-async function getversionsapp() {
-    const fetchURL = 'https://apps.apple.com/us/app/skyeng-learn-english/id1065290732';
-    const requestOptions = {
-        method: 'GET',
-        mode: 'cors',
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (getiOSver) {
-        if (getiOSver.success) {
-            const html = getiOSver.fetchansver;
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, "text/html");
-            const versionElement = doc.querySelector(".whats-new__latest__version");
-            if (versionElement) {
-                const versionIOS = versionElement.textContent.split(' ')[1].trim();
-                document.getElementById('curVeriOS').textContent = `iOS: ${versionIOS}`;
-                console.log("Номер версии:", versionIOS);
-            } else {
-                console.log("Элемент с номером версии не найден");
-                document.getElementById('curVeriOS').innerText = 'iOS: Не найдено';
-            }
-        } else {
-            console.error('Не удалось получить версию приложения iOS: ' + response.error);
-            document.getElementById('curVeriOS').innerText = 'iOS: Не найдено';
-        }
-    });
-
-    const fetchURLAndroid = 'https://play.google.com/store/apps/details?id=skyeng.words.prod';
-    const requestOptionsAndroid = {
-        method: 'GET',
-        mode: 'cors',
-    };
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLAndroid, requestOptions: requestOptionsAndroid }, function (responseAndroid) {
-        if (responseAndroid.success) {
-            const html = responseAndroid.fetchansver;
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, "text/html");
-            const scriptTags = doc.querySelectorAll('script'); // Получаем все теги <script> в документе
-            let foundScriptContent = null; // Переменная для хранения найденного содержимого
-            scriptTags.forEach((script) => {  // Итерируем по всем тегам <script>
-                if (script.textContent.includes('AF_initDataCallback') && script.textContent.includes("key: 'ds:7'")) { // Проверяем содержимое скрипта на наличие нужного шаблона
-                    foundScriptContent = script.textContent;
-                }
-            });
-            if (foundScriptContent) {
-                const versionRegex = /,?\[\[\["(\d{1,3}\.\d{1,3}\.\d{1,3})"\]\],?/;
-                const match = versionRegex.exec(foundScriptContent);
-
-                if (match && match[1]) {
-                    const versionAndroid = match[1]; // Версия приложения найдена
-                    console.log('Найденная версия:', versionAndroid); // Вывод для отладки
-                    document.getElementById('curVerAndroid').innerText = `Android: ${versionAndroid}`;
-                } else {
-                    console.error('Версия приложения Android не найдена');
-                    document.getElementById('curVerAndroid').innerText = 'Android: Не найдено';
-                }
-            } else {
-                console.log('Скрипт не найден');
-                document.getElementById('curVerAndroid').innerText = 'Android: Не найдено';
-            }
-        } else {
-            console.error('Не удалось получить версию приложения Android: ' + responseAndroid.error);
-            document.getElementById('curVerAndroid').innerText = 'Android: Не найдено';
-        }
-    });
 }
 
 async function checkOpsectionIs() {

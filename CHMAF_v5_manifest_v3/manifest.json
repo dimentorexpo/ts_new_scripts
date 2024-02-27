@@ -124,8 +124,6 @@
 		"https://jira.skyeng.tech/*",
 		"https://mm-time.skyeng.tech/*",
 		"https://*.datsy.info/*",
-		"https://docs.google.com/forms/*",
-		"https://play.google.com/",
-		"https://apps.apple.com/"
+		"https://docs.google.com/forms/*"
 	]
 }
