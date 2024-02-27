@@ -283,12 +283,14 @@ async function getAllChatsByStatus() {
         let writeToChat = document.createElement('button');
         writeToChat.className = 'mainButton';
         writeToChat.textContent = ' 📝';
+        writeToChat.title = "Написать в этот чат";
         writeToChat.name = "allWriteToChatBtns"
 
         let getThisChat = document.createElement('button');
         getThisChat.className = 'mainButton';
-		getThisChat.name = 'assignToMe'
-        getThisChat.textContent = ' 🫳';
+		getThisChat.name = 'assignToMe';
+        getThisChat.title = "Забрать этот чат";
+        getThisChat.textContent = '😵';
 
         // Добавление созданных элементов в queueItemDiv
         queueItemDiv.appendChild(timeSpan);
