@@ -71,6 +71,7 @@ function getNaborStatus() {
 		chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (NabStatusResponse) {
 			if (NabStatusResponse.success) {
 				const nabStatArr = JSON.parse(NabStatusResponse.fetchansver);
+				if (nabStatArr.data) {
 				let formattedNabStatArr = nabStatArr.data.changelog;
 				console.log(nabStatArr)
 				
@@ -150,6 +151,10 @@ function getNaborStatus() {
 					
 					document.getElementById('naborStatusTable').innerHTML = '';
                     document.getElementById('naborStatusTable').appendChild(table);
+				} else {
+					alert("Teacher not found or used student ID")
+				}
+
 					
 			} else {
 				alert("Не удалось получить статусы набора: " + NabStatusResponse.error)
