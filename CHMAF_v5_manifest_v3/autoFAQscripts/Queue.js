@@ -191,12 +191,18 @@ async function getAllChatsByStatus() {
 	console.log(tsFrom);
 	console.log(tsTo);
 
+    let setgroupList = '';
+    if (opsection == "ТП" || opsection == "ТП ОС") {
+        setgroupList = "c7bbb211-a217-4ed3-8112-98728dc382d8"
+    } else {
+        setgroupList = "b6f7f34d-2f08-fc19-3661-29ac00842898"
+    }
 
     // Пример использования функции
     const initialBodyContent = {
         serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
         mode: "Json",
-        groupList: ["c7bbb211-a217-4ed3-8112-98728dc382d8"], // ТП
+        groupList: [setgroupList], // ТП
         // groupList: ["b6f7f34d-2f08-fc19-3661-29ac00842898"], // КЦ
         tsFrom: tsFrom,
         tsTo: tsTo,
