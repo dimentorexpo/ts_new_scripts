@@ -439,8 +439,8 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
     }
 
     iframeDoc.getElementById('NextUsLoginer').onclick = async function () {
-        let requestArgument = findRequestArgument(usertypeis);
-        const idNode = SearchinAFnewUI(requestArgument);
+        let requestargument = findrequestargument(usertypeis);
+        const idNode = SearchinAFnewUI(requestargument);
     
         if (idNode) {
             await handleLoginLinkClick(idNode, this.style);
