@@ -252,6 +252,20 @@ function startTimer() {
 }
 
 function buttonsfunctionsinfo(iframeDoc, usertypeis) {
+    async function handleLoginLinkClick(idNode, buttonStyle) { // Функция для обновления стиля кнопки и обработки результата
+        buttonStyle.background = "coral";
+        try {
+            await getLoginLink(idNode);
+            buttonStyle.background = "rgb(29, 235, 10)";
+        } catch (error) {
+            console.error('Ошибка: ', error);
+            buttonStyle.background = "rgb(201, 17, 17)";
+            alert('Не удалось получить логиннер: ' + error.message);
+        } finally {
+            setTimeout(() => { buttonStyle.background = ""; }, 1000);
+        }
+    }
+    
     iframeDoc.getElementById('CurrUser').onclick = function () {
         this.style.background = "lightgreen";
         setTimeout(() => {
@@ -291,35 +305,15 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
     }
 
 
-    iframeDoc.getElementById('CurUsLoginer').onclick = function () {
-        const thisbnt = this.style;
+    iframeDoc.getElementById('CurUsLoginer').onclick = async function () {
         const idNode = SearchinAFnewUI("id");
-
         if (idNode) {
-            thisbnt.background = "coral";
-            chrome.runtime.sendMessage({ action: 'getLoginer', userid: idNode }, function (response) {
-                if (response.success) {
-                    navigator.clipboard.writeText(response.loginLink).then(() => {
-                        thisbnt.background = "rgb(29, 235, 10)";
-                        setTimeout(function () { thisbnt.background = "" }, 1000);
-                    }).catch(err => {
-                        // Обрабатываем ошибки, связанные с буфером обмена
-                        console.error('Не удалось скопировать текст: ', err);
-                        thisbnt.background = "rgb(201, 17, 17)";
-                        setTimeout(function () { thisbnt.background = "" }, 1000);
-                    });
-                } else {
-                    // Обрабатываем ошибки, связанные с получением логиннера
-                    alert('Не удалось получить логиннер: ' + response.error);
-                    thisbnt.background = "rgb(201, 17, 17)";
-                    setTimeout(function () { thisbnt.background = "" }, 1000);
-                }
-            });
+            await handleLoginLinkClick(idNode, this.style);
         } else {
-            thisbnt.background = "rgb(201, 17, 17)";
-            setTimeout(function () { thisbnt.background = "" }, 1000);
+            this.style.background = "rgb(201, 17, 17)";
+            setTimeout(() => { this.style.background = ""; }, 1000);
         }
-    }
+    };
 
     iframeDoc.getElementById('CurUstroublesh').onclick = function () {
         this.style.background = "lightgreen";
@@ -444,36 +438,17 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
         }
     }
 
-    iframeDoc.getElementById('NextUsLoginer').onclick = function () {
-        const thisbnt = this.style;
-        let requestargument = findrequestargument(usertypeis);
-        const idNode = SearchinAFnewUI(requestargument);
-
+    iframeDoc.getElementById('NextUsLoginer').onclick = async function () {
+        let requestArgument = findRequestArgument(usertypeis);
+        const idNode = SearchinAFnewUI(requestArgument);
+    
         if (idNode) {
-            thisbnt.background = "coral";
-            chrome.runtime.sendMessage({ action: 'getLoginer', userid: idNode }, function (response) {
-                if (response.success) {
-                    navigator.clipboard.writeText(response.loginLink).then(() => {
-                        thisbnt.background = "rgb(29, 235, 10)";
-                        setTimeout(function () { thisbnt.background = "" }, 1000);
-                    }).catch(err => {
-                        // Обрабатываем ошибки, связанные с буфером обмена
-                        console.error('Не удалось скопировать текст: ', err);
-                        thisbnt.background = "rgb(201, 17, 17)";
-                        setTimeout(function () { thisbnt.background = "" }, 1000);
-                    });
-                } else {
-                    // Обрабатываем ошибки, связанные с получением логиннера
-                    alert('Не удалось получить логиннер: ' + response.error);
-                    thisbnt.background = "rgb(201, 17, 17)";
-                    setTimeout(function () { thisbnt.background = "" }, 1000);
-                }
-            });
+            await handleLoginLinkClick(idNode, this.style);
         } else {
-            thisbnt.background = "rgb(201, 17, 17)";
-            setTimeout(function () { thisbnt.background = "" }, 1000);
+            this.style.background = "rgb(201, 17, 17)";
+            setTimeout(() => { this.style.background = ""; }, 1000);
         }
-    }
+    };
 
     iframeDoc.getElementById('NextUstroublesh').onclick = function () {
         this.style.background = "lightgreen";

@@ -556,19 +556,22 @@ function getusernamecrm() {
 
             if (document.getElementById('getloginer') != null) {
                 document.getElementById('getloginer').onclick = async function () {
-                    document.getElementById('getloginer').style.color = "orange"
-                    await postuderdatatologin();
-
-                    setTimeout(function () {
-                        if (flaggetlogginer == 1)
-                            document.getElementById('getloginer').style.color = "green"
-                        else document.getElementById('getloginer').style.color = "red"
-
+                    const button = document.getElementById('getloginer');
+                    button.style.color = "orange";
+            
+                    try {
+                        await getLoginLink(document.getElementById('idstudent').value.trim());
+                        button.style.color = "green";
+                    } catch (error) {
+                        console.error('Ошибка: ', error);
+                        button.style.color = "red";
+                        alert('Не удалось получить логиннер: ' + error.message);
+                    } finally {
                         setTimeout(() => {
-                            document.getElementById('getloginer').style.color = "bisque"
-                        }, 5000)
-                    }, 2000)
-                }
+                            button.style.color = "bisque";
+                        }, 2000);
+                    }
+                };
             }
 
             if (document.getElementById('getusremail') != null) {
@@ -626,31 +629,6 @@ function getusernamecrm() {
 
         }
     })
-}
-
-let tokenlogginer;
-let logginerinfo;
-function postuderdatatologin() { // логгинер для У П , переработать нужно!
-    logginerinfo = '';
-    let useriddata = document.getElementById('idstudent').value;
-    useriddata = useriddata.trim();
-
-    chrome.runtime.sendMessage({ action: 'getLoginer', userid: useriddata }, function (response) {
-        if (response.success) {
-            // Теперь, когда мы обратно в контексте страницы, копируем в буфер обмена
-            navigator.clipboard.writeText(response.loginLink).then(() => {
-                // Уведомляем пользователя об успешном копировании
-                flaggetlogginer = 1;
-            }).catch(err => {
-                // Обрабатываем ошибки, связанные с буфером обмена
-                console.error('Не удалось скопировать текст: ', err);
-            });
-        } else {
-            // Обрабатываем ошибки, связанные с получением логиннера
-            alert('Не удалось получить логиннер: ' + response.error);
-            flaggetlogginer = 0;
-        }
-    });
 }
 
 let getcrmstatusinfo;
@@ -828,20 +806,24 @@ async function checkServiceAndUserInfo() {
 
                     if (document.getElementById('getloginer') != null) {
                         document.getElementById('getloginer').onclick = async function () {
-                            document.getElementById('getloginer').style.color = "orange"
-                            await postuderdatatologin();
-
-                            setTimeout(function () {
-                                if (flaggetlogginer == 1)
-                                    document.getElementById('getloginer').style.color = "green"
-                                else document.getElementById('getloginer').style.color = "red"
-
+                            const button = document.getElementById('getloginer');
+                            button.style.color = "orange";
+                    
+                            try {
+                                await getLoginLink(document.getElementById('idstudent').value.trim());
+                                button.style.color = "green";
+                            } catch (error) {
+                                console.error('Ошибка: ', error);
+                                button.style.color = "red";
+                                alert('Не удалось получить логиннер: ' + error.message);
+                            } finally {
                                 setTimeout(() => {
-                                    document.getElementById('getloginer').style.color = "bisque"
-                                }, 5000)
-                            }, 2000)
-                        }
+                                    button.style.color = "bisque";
+                                }, 2000);
+                            }
+                        };
                     }
+                    
                 } else {
                     document.getElementById('servicetable').innerHTML = '<div style="text-align:center; background:coral; font-weight:700;border: 1px solid black; color: floralwhite;">Услуг вообще нет!</div>'
                 }

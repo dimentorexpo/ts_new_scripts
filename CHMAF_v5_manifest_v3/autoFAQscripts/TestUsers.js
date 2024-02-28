@@ -11,7 +11,7 @@ var win_TestUsers = // описание окна тестовых пользов
         </span>
     </div>
     `;
-    
+
 const TestUsersdiv = createWindow('TestUsers', 'winTopTestUsers', 'winLeftTestUsers', win_TestUsers);
 let addInfoUser = document.getElementById('addInfoUser');
 let btnsid = document.getElementById('sidcode');
@@ -20,30 +20,31 @@ let btntid = document.getElementById('tidcode');
 document.getElementById('TestRooms').onclick = getTestRoomsButtonPress;
 document.getElementById('link2lessbtn').onclick = getlink2lessButtonPress;
 
-function handleButtonClick(buttonId, storageKey, actionType) { // Функция для обработки нажатий на кнопки
+function handleButtonClick(buttonId, storageKey) { // Функция для обработки нажатий на кнопки
     const userId = localStorage.getItem(storageKey);
-    if (userId) {
-        toggleButtonState(buttonId, 'active');
-        chrome.runtime.sendMessage({ action: actionType, userid: userId }, function (response) {
-            if (response.success) {
-                copyToClipboard(response.loginLink);
-                toggleButtonState(buttonId, 'active');
-                toggleButtonState(buttonId, 'successbtn');
-                setTimeout(() => toggleButtonState(buttonId, 'successbtn'), 1000);
-            } else {
-                alert('Не удалось получить логиннер: ' + response.error);
-                toggleButtonState(buttonId, 'active');
-                toggleButtonState(buttonId, 'errorbtn');
-                setTimeout(() => toggleButtonState(buttonId, 'errorbtn'), 1000);
-            }
-        });
-    } else {
+    if (!userId) {
         alert(`Введите ID в настройках ⚙`);
+        return;
     }
+
+    toggleButtonState(buttonId, 'active');
+
+    getLoginLink(userId).then(() => {
+        toggleButtonState(buttonId, 'active');
+        toggleButtonState(buttonId, 'successbtn');
+        setTimeout(() => toggleButtonState(buttonId, 'successbtn'), 1000);
+    }).catch((error) => {
+        console.error('Ошибка: ', error);
+        alert('Не удалось получить логиннер: ' + error.message);
+        toggleButtonState(buttonId, 'active');
+        toggleButtonState(buttonId, 'errorbtn');
+        setTimeout(() => toggleButtonState(buttonId, 'errorbtn'), 1000);
+    });
 }
 
+
 // Привязка событий к кнопкам
-btnsid.addEventListener("click", () => handleButtonClick('sidcode', 'test_stud', 'getLoginer'));
+btnsid.addEventListener("click", () => handleButtonClick('sidcode', 'test_stud'));
 btnsid.addEventListener("contextmenu", (event) => {
     event.preventDefault();
     const userId = localStorage.getItem('test_stud');
@@ -56,7 +57,7 @@ btnsid.addEventListener("contextmenu", (event) => {
     }
 });
 
-btntid.addEventListener("click", () => handleButtonClick('tidcode', 'test_teach', 'getLoginer'));
+btntid.addEventListener("click", () => handleButtonClick('tidcode', 'test_teach'));
 btntid.addEventListener("contextmenu", (event) => {
     event.preventDefault();
     const userId = localStorage.getItem('test_teach');
