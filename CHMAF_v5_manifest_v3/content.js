@@ -31,7 +31,6 @@ let isChatOnOperator = false;
 var audio // переменнай для проигрывания звука при поступлении нового чата
 var soundintervalset; //интервал между проигрыванием звука
 let flagusertype;
-let flaggetlogginer;
 let chatneraspcount; // переменная для получения колчества нераспределенных чатов в очереди
 let chattpquecount; // переменная для получения колчества нераспределенных чатов в очереди тематики ТП v1
 idk = 0
