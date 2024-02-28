@@ -28,39 +28,75 @@ function getGrListDataButtonPress() {
         document.getElementById('AF_GrList').style.display = '';
     }
 }
+
 document.getElementById('getidgrouptolist').addEventListener('click', async function () {
     let dataarr = [];
     let userIdsarray = [];
     document.getElementById('grlistinfo').innerHTML = "Загрузка...";
-    let tempgrid = document.getElementById('idgrouptolist').value;
-    tempgrid = tempgrid.trim();
+    let tempgrid = document.getElementById('idgrouptolist').value.trim();
 
-    chrome.runtime.sendMessage({ action: 'getGroupList', tmp: tempgrid }, function (response) {
+    // Первый запрос: получение списка учеников группы
+    const fetchURL = `https://learning-groups-storage-api.skyeng.ru/api/v1/groupParticipants/getParticipants/${tempgrid}`;
+    const requestOptions = {
+        method: 'GET'
+    };
+
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+        if (!response.success) {
+            alert('Не удалось получить список группы: ' + response.error);
+            return;
+        }
+        const groupData = JSON.parse(response.fetchansver);
         userIdsarray = [];
-        for (let i = 0; i < response.data.students.length; i++) {
-            dataarr += [i + 1] + "." + '<span class="grstdcrm" style="cursor:pointer" title="открывает профиль в CRM">ℹID У:</span>' + response.data.students[i].userId + " ID услуги: " + response.data.students[i].educationServiceId + " " + '<span class="stname"></span>' + '<br>';
-            userIdsarray.push(response.data.students[i].userId)
+        for (let i = 0; i < groupData.data.students.length; i++) {
+            dataarr += [i + 1] + "." + '<span class="grstdcrm" style="cursor:pointer" title="открывает профиль в CRM">ℹID У:</span>' + groupData.data.students[i].userId + " ID услуги: " + groupData.data.students[i].educationServiceId + " " + '<span class="stname"></span>' + '<br>';
+            userIdsarray.push(groupData.data.students[i].userId);
         }
 
-        chrome.runtime.sendMessage({ action: "getGroupUserNames", userIds: userIdsarray }, function (response) {
-            let allStudents = document.getElementsByClassName('stname')
+        // Второй запрос: получение имен учеников группы
+        const userNamesURL = "https://learning-groups-storage-api.skyeng.ru/api/v1/userInfo/findByIds";
+            const userNamesRequestOptions = {
+                headers: {
+                    "accept": "application/json, text/plain, */*",
+                    "content-type": "application/json; charset=UTF-8",
+                    "sec-fetch-dest": "empty",
+                    "sec-fetch-mode": "cors",
+                    "sec-fetch-site": "same-site"
+                },
+                referrer: "https://learning-groups-storage.skyeng.ru/",
+                referrerPolicy: "strict-origin-when-cross-origin",
+                body: JSON.stringify({ ids: userIdsarray }),
+                method: "POST",
+                mode: "cors",
+                credentials: "include"
+            };
+
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: userNamesURL, requestOptions: userNamesRequestOptions }, function (response) {
+            if (!response.success) {
+                console.error('Не удалось получить имена учеников: ', response.error);
+                return;
+            }
+
+            const namesData = JSON.parse(response.fetchansver);
+            let allStudents = document.getElementsByClassName('stname');
             for (let i = 0; i < allStudents.length; i++) {
-                allStudents[i].textContent = response.data[i].name.first + " " + response.data[i].name.last
+                allStudents[i].textContent = namesData.data[i].name.first + " " + namesData.data[i].name.last;
             }
         });
 
-        document.getElementById('grlistinfo').innerHTML = !response.data.teachers ? dataarr : dataarr + '<br>ID П ' + response.data.teachers[0].userId;
+        document.getElementById('grlistinfo').innerHTML = !groupData.teachers ? dataarr : dataarr + '<br>ID П ' + groupData.teachers[0].userId;
 
         let grstdcrmarr = document.querySelectorAll('.grstdcrm');
         for (let f = 0; f < grstdcrmarr.length; f++) {
             grstdcrmarr[f].addEventListener('click', function () {
-                window.open("https://crm2.skyeng.ru/persons/" + response.data.students[f].userId)
-            })
+                window.open("https://crm2.skyeng.ru/persons/" + groupData.data.students[f].userId);
+            });
         }
 
         dataarr = '';
     });
-})
+});
+
 // end of func getidgrouptolist
 
 document.getElementById('hideList').addEventListener('click', function () { // скрытие окна Список группы
