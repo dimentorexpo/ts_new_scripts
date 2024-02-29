@@ -228,7 +228,7 @@ function removeSlot(slotId) {
 
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // удаление занятого слота
         if (!response.success) {
-            alert('Не удалось проверить авторизацию на Datsy: ' + response.error);
+            alert('Не удалось удалить слот: ' + response.error);
             return;
         } else {
             getTimeSlots()
