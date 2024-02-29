@@ -52,16 +52,26 @@ function compareTimes(time1, time2) { //функция сравнения вре
 
 let parsedData;
 function checkAuth() { //функция проверки авторизации на datsy.info
+    const fetchURL = `https://api.datsy.info/api/auth/check.php`;
+    const requestOptions = {
+        method: 'GET'
+    };
 
-    chrome.runtime.sendMessage({ action: 'checkAuthDatsy' }, function (response) {
-        if (response['value-status'] == "Не авторизован") {
-            alert("Вы не авторизованы на datsy.info Проверьте, пожалуйста, авторизацию и повторите попытку после переоткрытия виджета в расширении или кнопкой обновить ♻, иначе слоты могут не добавляться!")
-            window.open("https://datsy.info/")
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось проверить авторизацию на Datsy: ' + response.error);
+            return;
         } else {
-            console.log("Вы авторизованы, смело продолжайте работу с календарем")
-            getTimeSlots()
-        }
+            const otvetCheckAuth = JSON.parse(response.fetchansver);
 
+            if (otvetCheckAuth['value-status'] == "Не авторизован") {
+                alert("Вы не авторизованы на datsy.info Проверьте, пожалуйста, авторизацию и повторите попытку после переоткрытия виджета в расширении или кнопкой обновить ♻, иначе слоты могут не добавляться!")
+                window.open("https://datsy.info/")
+            } else {
+                console.log("Вы авторизованы, смело продолжайте работу с календарем")
+                getTimeSlots()
+            }
+        }
     })
 }
 
@@ -143,18 +153,49 @@ function getSlotData(name) {
     let curSlotDate = document.getElementById('chosenSlot').textContent.split(' ')[1]
     for (let v = 0; v < saveBtns.length; v++) {
         saveBtns[v].onclick = function () {
-
             if (spisok[v].title == '') { // функция добавления нового слота
-                chrome.runtime.sendMessage({ action: 'addTimeSlot', value: spisok[v].value, time: curSlotTime, date: curSlotDate }, function (response) {
-                    getTimeSlots()
+
+                const value = spisok[v].value;
+                const time = curSlotTime;
+                const date = curSlotDate;
+                const fetchURL = `https://api.datsy.info/api/slot-event/add.php`;
+                const requestOptions = {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `addinput=${value}&slotname=${time}&date=${date}`,
+                    credentials: "include"
+                };
+
+                chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+                    if (!response.success) {
+                        alert('Не удалось добавить слот: ' + response.error);
+                        return;
+                    } else {
+                        getTimeSlots()
+                    }
                 })
-
-
-
             } else if (spisok[v].title != '') { //функция модификации информации в слоте
+                const textval = spisok[v].value;
+                const value = spisok[v].title
+                const fetchURL = `https://api.datsy.info/api/slot-event/save.php`;
+                const requestOptions = {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `event-text=${textval}&save-slot=${value}`,
+                    credentials: "include"
+                };
 
-                chrome.runtime.sendMessage({ action: 'saveTimeSlot', textval: spisok[v].value, value: spisok[v].title }, function (response) {
-                    getTimeSlots()
+                chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+                    if (!response.success) {
+                        alert('Не удалось сохранить слот: ' + response.error);
+                        return;
+                    } else {
+                        getTimeSlots()
+                    }
                 })
             }
         }
@@ -165,18 +206,34 @@ function getSlotData(name) {
             if (spisok[f].title != '') {
                 let podtvudal = confirm("Вы действительно хотите удалить этот слот из календаря?")
                 if (podtvudal) {
-
-                    chrome.runtime.sendMessage({ action: 'removeTimeSlot', slottodelete: spisok[f].title }, function (response) {
-                        spisok[f].title = ''
-                        spisok[f].value = ''
-                    })
-
-                    getTimeSlots()
+                    removeSlot(slotId = spisok[f].title)
+                    spisok[f].title = ''
+                    spisok[f].value = ''
                 }
             }
-
         }
     }
+}
+
+function removeSlot(slotId) {
+    const fetchURL = `https://api.datsy.info/api/slot-event/delete.php`;
+    const requestOptions = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `deleteslot=${slotId}`,
+        credentials: "include"
+    };
+
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // удаление занятого слота
+        if (!response.success) {
+            alert('Не удалось проверить авторизацию на Datsy: ' + response.error);
+            return;
+        } else {
+            getTimeSlots()
+        }
+    })
 }
 
 let responseslotsdata;
@@ -201,123 +258,133 @@ function getTimeSlots() { //функция получения информаци
     let textvar = 0;
     let searchDate = document.getElementById('eventDate').value;
 
-    chrome.runtime.sendMessage({ action: 'getTimeSlots', date: searchDate }, function (timeFromDatsy) {
-        arrayOfEvents = [];
-        document.getElementById('outputcalendarfield').innerHTML = ''
-        arrayOfMyEvents = [];
-        uniqueEvents = new Set();
-        document.getElementById('datenowtime').value = timeFromDatsy.nowDateTime;
-        const unwantedTimes = [
-            "00:00", "00:20", "00:40",
-            "01:00", "01:20", "01:40",
-            "02:00", "02:20", "02:40",
-            "03:00", "03:20", "03:40",
-            "04:00", "04:20", "04:40",
-            "05:00", "05:20", "05:40",
-            "06:00", "06:20", "06:40",
-            "07:00", "07:20", "07:40",
-            "23:00", "23:20", "23:40"
-        ];
+    const fetchURL = `https://api.datsy.info/api/main-events/?date=${searchDate}`;
+    const requestOptions = {
+        method: 'GET'
+    };
 
-        let availableslotsentries = Object.entries(timeFromDatsy.DataTimeSlot)
-        for (let i = 0; i < availableslotsentries.length; i++) {
-            if (!unwantedTimes.includes(availableslotsentries[i][0])) {
-                if (availableslotsentries[i][1].EventList.length != 0) {
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации по слотам
+        if (!response.success) {
+            alert('Не удалось получить слоты: ' + response.error);
+            return;
+        } else {
+            const otvetDatsySlots = JSON.parse(response.fetchansver);
 
-                    for (let k = 0; k < Object.keys(availableslotsentries[i][1].EventList).length; k++) {
-                        const event = Object.values(availableslotsentries[i][1].EventList)[k];
+            arrayOfEvents = [];
+            document.getElementById('outputcalendarfield').innerHTML = ''
+            arrayOfMyEvents = [];
+            uniqueEvents = new Set();
+            document.getElementById('datenowtime').value = otvetDatsySlots.nowDateTime;
+            const unwantedTimes = [
+                "00:00", "00:20", "00:40",
+                "01:00", "01:20", "01:40",
+                "02:00", "02:20", "02:40",
+                "03:00", "03:20", "03:40",
+                "04:00", "04:20", "04:40",
+                "05:00", "05:20", "05:40",
+                "06:00", "06:20", "06:40",
+                "07:00", "07:20", "07:40",
+                "23:00", "23:20", "23:40"
+            ];
 
-                        if (!uniqueEvents.has(event.id)) {
-                            arrayOfEvents.push({
-                                'eventId': event.id,
-                                'eventText': event.text,
-                                'slotTime': event.slot,
-                                'slotDate': event.new_date_slot,
-                                'createdBy': event.created_by_name
-                            });
+            let availableslotsentries = Object.entries(otvetDatsySlots.DataTimeSlot)
+            for (let i = 0; i < availableslotsentries.length; i++) {
+                if (!unwantedTimes.includes(availableslotsentries[i][0])) {
+                    if (availableslotsentries[i][1].EventList.length != 0) {
 
-                            uniqueEvents.add(event.id);
+                        for (let k = 0; k < Object.keys(availableslotsentries[i][1].EventList).length; k++) {
+                            const event = Object.values(availableslotsentries[i][1].EventList)[k];
 
-                            if (
-                                operNamesAF[0] == event.created_by_name ||
-                                operNamesAF[1] == event.created_by_name
-                            ) {
-                                arrayOfMyEvents.push({
+                            if (!uniqueEvents.has(event.id)) {
+                                arrayOfEvents.push({
                                     'eventId': event.id,
                                     'eventText': event.text,
                                     'slotTime': event.slot,
                                     'slotDate': event.new_date_slot,
                                     'createdBy': event.created_by_name
                                 });
+
+                                uniqueEvents.add(event.id);
+
+                                if (
+                                    operNamesAF[0] == event.created_by_name ||
+                                    operNamesAF[1] == event.created_by_name
+                                ) {
+                                    arrayOfMyEvents.push({
+                                        'eventId': event.id,
+                                        'eventText': event.text,
+                                        'slotTime': event.slot,
+                                        'slotDate': event.new_date_slot,
+                                        'createdBy': event.created_by_name
+                                    });
+                                }
                             }
                         }
+                    } else {
+                        for (let k = 0; k < Object.keys(availableslotsentries[i][1].EventList).length; k++) {
+                            arrayOfEvents.push({
+                                'eventId': null,
+                                'eventText': null,
+                                'slotTime': null,
+                                'slotDate': null,
+                                'createdBy': null
+                            });
+                        }
                     }
-                } else {
-                    for (let k = 0; k < Object.keys(availableslotsentries[i][1].EventList).length; k++) {
-                        arrayOfEvents.push({
-                            'eventId': null,
-                            'eventText': null,
-                            'slotTime': null,
-                            'slotDate': null,
-                            'createdBy': null
-                        });
+
+                    textvar = '<span style = "background: #2058cb; border-radius:10px; padding-left: 5px; padding-right: 5px;">' + availableslotsentries[i][0] + '</span>' + ' ' + document.getElementById('eventDate').value
+                    let tempor = document.createElement('p');
+                    document.getElementById('outputcalendarfield').append(tempor);
+
+                    if (availableslotsentries[i][1].CountEvent / availableslotsentries[i][1].CountSlot == 1) {
+                        tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(171 65 62); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px;padding-top:2px; font-family: cursive; margin-right:5px;');
+                    } else if (availableslotsentries[i][1].CountEvent / availableslotsentries[i][1].CountSlot == 0) {
+                        tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(62 158 83); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px;padding-top:2px; font-family: cursive; margin-right:5px;');
+                    } else if (availableslotsentries[i][1].CountEvent / availableslotsentries[i][1].CountSlot > 0 && availableslotsentries[i][1].CountEvent / availableslotsentries[i][1].CountSlot < 1) {
+                        tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(62 158 83); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px;padding-top:2px; font-family: cursive; margin-right:5px;');
+                        tempor.setAttribute('title', '⚠ Есть как занятые так и свободные слоты')
+                    } else if (availableslotsentries[i][1].CountEvent == 0 && availableslotsentries[i][1].CountSlot == 0) {
+                        tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(171 65 62); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px;padding-top:2px; font-family: cursive; margin-right:5px;');
+                        tempor.setAttribute('title', '🚫 Свободных слотов изначально и не было')
+                    } else if (availableslotsentries[i][1].AssignSlot == 0 && availableslotsentries[i][1].CountEvent == 0 && availableslotsentries[i][1].CountSlot == availableslotsentries[i][1].FreeSlot) {
+                        tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(171 65 62); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px; padding-top:2px; font-family: cursive; margin-right:5px;');
+                    } else if (availableslotsentries[i][1].FreeSlot < 0) {
+                        tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(171 65 62); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px; padding-top:2px; font-family: cursive; margin-right:5px;');
                     }
+
+                    if (eventDate < curentDate || compareTimes(availableslotsentries[i][0], currentTimeCalendar) <= 0 && eventDate == curentDate) {
+                        tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #cbcbcb; font-weight:700; background:rgb(126 113 113); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px; padding-top:2px; font-family: cursive; margin-right:5px;');
+                    }
+
+                    tempor.setAttribute('name', 'slotRow');
+                    tempor.setAttribute('dlina', `${availableslotsentries[i][1].CountSlot}`)
+                    tempor.innerHTML = textvar;
+
                 }
+            }
 
-                textvar = '<span style = "background: #2058cb; border-radius:10px; padding-left: 5px; padding-right: 5px;">' + availableslotsentries[i][0] + '</span>' + ' ' + document.getElementById('eventDate').value
-                let tempor = document.createElement('p');
-                document.getElementById('outputcalendarfield').append(tempor);
+            let allRows = document.getElementsByName('slotRow')
 
-                if (availableslotsentries[i][1].CountEvent / availableslotsentries[i][1].CountSlot == 1) {
-                    tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(171 65 62); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px;padding-top:2px; font-family: cursive; margin-right:5px;');
-                } else if (availableslotsentries[i][1].CountEvent / availableslotsentries[i][1].CountSlot == 0) {
-                    tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(62 158 83); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px;padding-top:2px; font-family: cursive; margin-right:5px;');
-                } else if (availableslotsentries[i][1].CountEvent / availableslotsentries[i][1].CountSlot > 0 && availableslotsentries[i][1].CountEvent / availableslotsentries[i][1].CountSlot < 1) {
-                    tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(62 158 83); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px;padding-top:2px; font-family: cursive; margin-right:5px;');
-                    tempor.setAttribute('title', '⚠ Есть как занятые так и свободные слоты')
-                } else if (availableslotsentries[i][1].CountEvent == 0 && availableslotsentries[i][1].CountSlot == 0) {
-                    tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(171 65 62); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px;padding-top:2px; font-family: cursive; margin-right:5px;');
-                    tempor.setAttribute('title', '🚫 Свободных слотов изначально и не было')
-                } else if (availableslotsentries[i][1].AssignSlot == 0 && availableslotsentries[i][1].CountEvent == 0 && availableslotsentries[i][1].CountSlot == availableslotsentries[i][1].FreeSlot) {
-                    tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(171 65 62); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px; padding-top:2px; font-family: cursive; margin-right:5px;');
-                } else if (availableslotsentries[i][1].FreeSlot < 0) {
-                    tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #ececec; font-weight:700; background:rgb(171 65 62); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px; padding-top:2px; font-family: cursive; margin-right:5px;');
-                }
-
-                if (eventDate < curentDate || compareTimes(availableslotsentries[i][0], currentTimeCalendar) <= 0 && eventDate == curentDate) {
-                    tempor.setAttribute('style', 'width: 32%; cursor:pointer; color: #cbcbcb; font-weight:700; background:rgb(126 113 113); border:1px solid black; font-size:14px; height:25px; margin-bottom:6px; text-align:center; text-shadow:rgb(0 0 0 / 75%) 1px 2px 5px; padding-top:2px; font-family: cursive; margin-right:5px;');
-                }
-
-                tempor.setAttribute('name', 'slotRow');
-                tempor.setAttribute('dlina', `${availableslotsentries[i][1].CountSlot}`)
-                tempor.innerHTML = textvar;
+            if (flagRemember != '') {
+                getSlotData(flagRemember)
 
             }
-        }
 
-        let allRows = document.getElementsByName('slotRow')
+            for (let i = 0; i < allRows.length; i++) {
+                allRows[i].onclick = function () {
 
-        if (flagRemember != '') {
-            getSlotData(flagRemember)
+                    flagRemember = i;
 
-        }
+                    for (let j = 0; j < allRows.length; j++) {
+                        allRows[j].classList.remove('glowing-border-animation');
+                    }
+                    getSlotData(i)
 
-        for (let i = 0; i < allRows.length; i++) {
-            allRows[i].onclick = function () {
-
-                flagRemember = i;
-
-                for (let j = 0; j < allRows.length; j++) {
-                    allRows[j].classList.remove('glowing-border-animation');
                 }
-                getSlotData(i)
-
             }
+            refreshActiveOperSlots()
         }
-        refreshActiveOperSlots()
-
     })
-
 }
 
 document.getElementById('eventDate').addEventListener('change', getTimeSlots);
@@ -397,10 +464,7 @@ function refreshActiveOperSlots() { // функция обновления ин�
                 if (allSlotsToDelete[j].title != '') {
                     let podtvudal = confirm("Вы действительно хотите удалить этот слот из календаря?")
                     if (podtvudal) {
-
-                        chrome.runtime.sendMessage({ action: 'removeTimeSlot', slottodelete: allSlotsToDelete[j].title }, function (response) {
-                            getTimeSlots()
-                        })
+                        removeSlot(slotId = allSlotsToDelete[j].title)
                     }
                 }
             }
