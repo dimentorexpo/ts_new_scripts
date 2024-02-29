@@ -97,9 +97,25 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
 		// Форматируем даты в требуемый формат
 		startdate = `${('0' + startdate.getDate()).slice(-2)}-${('0' + (startdate.getMonth() + 1)).slice(-2)}-${startdate.getFullYear()} 21`;
 		enddate = `${('0' + enddate.getDate()).slice(-2)}-${('0' + (enddate.getMonth() + 1)).slice(-2)}-${enddate.getFullYear()} 20`;
+					
+			    const fetchURL = `https://timetable.skyeng.ru/api/teachers/search`;
+				const requestOptions = {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					body: `from=${startdate}:00:00&to=${enddate}:59:59&offset=0&filters[teacherIds][]=${ticherid}&callback=getJSONP`,
+					credentials: "include"
+				};
 
-        chrome.runtime.sendMessage({ action: 'getTimeData', startdate: startdate, enddate: enddate, ticherid: ticherid }, function (response) {
-            if (response && response[0].result[0].classes) {
+				chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+					if (!response.success) {
+						alert('Не удалось проверить авторизацию на Datsy: ' + response.error);
+						return;
+					} else {
+						const otvetTimeTable = JSON.parse(response.fetchansver);
+						
+						if (otvetTimeTable && otvetTimeTable[0].result[0].classes) {
                 const table = document.createElement('table');
                 table.style.width = '99.4%';
                 table.style.color = 'bisque';
@@ -118,8 +134,8 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
                 });
                 table.appendChild(headerRow);
 
-                for (let i = 0; i < response[0].result[0].classes.length; i++) {
-                    let studentId = response[0].result[0].classes[i].studentId;
+                for (let i = 0; i < otvetTimeTable[0].result[0].classes.length; i++) {
+                    let studentId = otvetTimeTable[0].result[0].classes[i].studentId;
                     if (document.getElementById('idstudentforsearch').value.trim().length != 0 && studentId && studentId == document.getElementById('idstudentforsearch').value.trim()) {
                         let row = document.createElement('tr');
                         row.classList = "rowOfLessonStatus"
@@ -131,13 +147,13 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
                         cell.setAttribute('name', 'idToCRM')
                         row.appendChild(cell);
 
-                        let startAt = response[0].result[0].classes[i].startAt;
+                        let startAt = otvetTimeTable[0].result[0].classes[i].startAt;
                         cell = document.createElement('td');
                         cell.textContent = startAt ? new Date(startAt).toLocaleString("ru-RU", { timeZone: 'Europe/Moscow' }).slice(0, 17) : "";
                         cell.style = "border: 1px solid black; font-size:12px;"
                         row.appendChild(cell);
 
-						let classStatus = response[0].result[0].classes[i].classStatus;
+						let classStatus = otvetTimeTable[0].result[0].classes[i].classStatus;
 						cell = document.createElement('td');
 						cell.style.border = "1px solid black";
 						cell.style.fontSize = "12px";
@@ -146,7 +162,7 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
 						if (classStatus) {
 							cell.textContent = classStatus.status;
 							cell.style.color = classStatus.status === "success" ? "#50e850" : "tomato";
-						} else if (typeof response[0].result[0].classes[i].removedAt !== 'undefined') {
+						} else if (typeof otvetTimeTable[0].result[0].classes[i].removedAt !== 'undefined') {
 							cell.textContent = "removed";
 							cell.style.color = "tomato";
 						} else {
@@ -164,7 +180,7 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
                         cell.style = "border: 1px solid black; font-size:12px;"
                         row.appendChild(cell);
 
-                        let type = response[0].result[0].classes[i].type;
+                        let type = otvetTimeTable[0].result[0].classes[i].type;
                         cell = document.createElement('td');
                         cell.textContent = type || "";
                         cell.style = "border: 1px solid black; font-size:10px;"
@@ -175,7 +191,7 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
                         cell.style = "border: 1px solid black; font-size:10px;"
                         row.appendChild(cell);
 
-                        let removedAt = response[0].result[0].classes[i].removedAt;
+                        let removedAt = otvetTimeTable[0].result[0].classes[i].removedAt;
                         cell = document.createElement('td');
                         cell.textContent = removedAt ? studentId : "";
                         cell.style = "border: 1px solid black;  font-size:12px;"
@@ -198,13 +214,13 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
                         cell.setAttribute('name', 'idToCRM')
                         row.appendChild(cell);
 
-                        let startAt = response[0].result[0].classes[i].startAt;
+                        let startAt = otvetTimeTable[0].result[0].classes[i].startAt;
                         cell = document.createElement('td');
                         cell.textContent = startAt ? new Date(startAt).toLocaleString("ru-RU", { timeZone: 'Europe/Moscow' }).slice(0, 17) : "";
                         cell.style = "border: 1px solid black; font-size:12px;"
                         row.appendChild(cell);
 
-						let classStatus = response[0].result[0].classes[i].classStatus;
+						let classStatus = otvetTimeTable[0].result[0].classes[i].classStatus;
 						cell = document.createElement('td');
 						cell.style.border = "1px solid black";
 						cell.style.fontSize = "12px";
@@ -213,7 +229,7 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
 						if (classStatus) {
 							cell.textContent = classStatus.status;
 							cell.style.color = classStatus.status === "success" ? "#50e850" : "tomato";
-						} else if (typeof response[0].result[0].classes[i].removedAt !== 'undefined') {
+						} else if (typeof otvetTimeTable[0].result[0].classes[i].removedAt !== 'undefined') {
 							cell.textContent = "removed";
 							cell.style.color = "tomato";
 						} else {
@@ -231,7 +247,7 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
                         cell.style = "border: 1px solid black; font-size:12px;"
                         row.appendChild(cell);
 
-                        let type = response[0].result[0].classes[i].type;
+                        let type = otvetTimeTable[0].result[0].classes[i].type;
                         cell = document.createElement('td');
                         cell.textContent = type || "";
                         cell.style = "border: 1px solid black; font-size:10px;"
@@ -242,7 +258,7 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
                         cell.style = "border: 1px solid black; font-size:10px;"
                         row.appendChild(cell);
 
-                        let removedAt = response[0].result[0].classes[i].removedAt;
+                        let removedAt = otvetTimeTable[0].result[0].classes[i].removedAt;
                         cell = document.createElement('td');
                         cell.textContent = removedAt ? studentId : "";
                         cell.style = "border: 1px solid black; font-size:12px;"
@@ -276,8 +292,8 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
             } else {
                 alert("Уроков нет");
             }
-        })
-
+					}
+				})
     } else {
         alert("Введите ID учителя в поле");
     }

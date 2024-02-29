@@ -176,26 +176,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	};
 	//конец блока отправки в google forms
 
-	//Блок работы с Timetable
-	if (request.action === 'getTimeData') { // удаление занятого слота
-		const startdate = request.startdate;
-		const enddate = request.enddate;
-		const ticherid = request.ticherid;
-		fetch("https://timetable.skyeng.ru/api/teachers/search", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/x-www-form-urlencoded"
-			},
-			body: `from=${startdate}:00:00&to=${enddate}:59:59&offset=0&filters[teacherIds][]=${ticherid}&callback=getJSONP`,
-			credentials: "include"
-		})
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-	//Конец блока с Timetable
-
 	//Блок работы с Jira
 	if (request.action === 'checkJiraAuth') { // Проверка авторизации в Jira
 		makeFetchRequest("https://jira.skyeng.tech", 'GET')
@@ -270,39 +250,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	}
 
 	// Конец блока с Jira
-
-	// Блок работы с ID
-
-	if (request.action === "generateMobileOTP") { // для создания OTP по МП
-		const userId = request.userId;
-		fetch("https://id.skyeng.ru/admin/auth/one-time-password", {
-			"headers": {
-				"content-type": "application/x-www-form-urlencoded",
-				"sec-fetch-site": "same-origin",
-				"sec-fetch-user": "?1",
-				"upgrade-insecure-requests": "1"
-			},
-			"body": `user_id_or_identity_for_one_time_password_form%5BuserIdOrIdentity%5D=${userId}&user_id_or_identity_for_one_time_password_form%5Bgenerate%5D=&user_id_or_identity_for_one_time_password_form%5B_token%5D=null`,
-			"method": "POST",
-			"mode": "cors",
-			"credentials": "include"
-		})
-			.then(response => response.text())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-
-	if (request.action === "checkEmailAndPhone") { // проверка включена ли авторизация по телефону , почте или обоим
-		const idUser = request.idUser;
-		makeFetchRequest(`https://id.skyeng.ru/admin/users/${idUser}/update-contacts`, 'GET')
-			.then(response => response.text())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-
-	// Конец работы с ID
 
 	// Блок с инфрой и Jira
 	if (request.action === "checkInfraAuth") { // проверка авторизации в системе, чтобы делать запросы

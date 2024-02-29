@@ -182,21 +182,29 @@ document.getElementById('getonetimepass').onclick = function () { //функци
     else {
         document.getElementById('getonetimepass').innerHTML = "✅";
         setTimeout(function () { document.getElementById('getonetimepass').innerHTML = "📱" }, 2000);
+			
+	const fetchURL = `https://id.skyeng.ru/admin/auth/one-time-password`;
+    const requestOptions = {
+        			"headers": {
+				"content-type": "application/x-www-form-urlencoded",
+			},
+			"body": `user_id_or_identity_for_one_time_password_form%5BuserIdOrIdentity%5D=${userId}&user_id_or_identity_for_one_time_password_form%5Bgenerate%5D=&user_id_or_identity_for_one_time_password_form%5B_token%5D=null`,
+			"method": "POST",
+			"mode": "cors",
+			"credentials": "include"
+    };
 
-        chrome.runtime.sendMessage({ action: 'generateMobileOTP', userId: userId }, function (response) {
-            if (response) {
-                var convertres11 = response.match(/div class="alert alert-success" role="alert".*?([0-9]{5}).*/);
-                if (convertres11 && convertres11.length > 1) {
-                    onetimepassout.value = convertres11[1];
-                } else {
-                    // Обрабатываем случай, когда совпадение не найдено
-                    console.error('OTP не найден в ответе');
-                }
-            } else {
-                // Обрабатываем случай, когда ответ пустой или не содержит нужной информации
-                console.error('Ответ от background script пуст или не определен');
-            }
-        });
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        } else {
+            const otvetOTPMob= response.fetchansver;
+			     const convertres11 = otvetOTPMob.match(/Одноразовый пароль: (\d+)\./);
+				 const otp = convertres11 ? convertres11[1] : null;
+				 onetimepassout.value = otp;
+        }
+    })
 
     };
     setTimeout(function () { document.getElementById('onetimepassout').value = "" }, 15000);
