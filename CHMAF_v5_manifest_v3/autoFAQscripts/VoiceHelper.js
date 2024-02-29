@@ -3,6 +3,30 @@ recognition.lang = 'ru-RU';
 const test_stud_spech = localStorage.getItem('test_stud');
 const test_teach_spech = localStorage.getItem('test_teach');
 
+let isRecognizing = false; // Флаг для отслеживания состояния распознавания
+
+// Функция для запуска распознавания
+function startRecognition() {
+    if (!isRecognizing) {
+        try {
+            recognition.start();
+            isRecognizing = true;
+            document.getElementById('pushToTalk').classList.add('active');
+        } catch (error) {
+            console.log(error.message); // Логирование ошибки, если распознавание не может быть запущено
+        }
+    }
+}
+
+// Функция для остановки распознавания
+function stopRecognition() {
+    if (isRecognizing) {
+        recognition.stop();
+        isRecognizing = false;
+        document.getElementById('pushToTalk').classList.remove('active');
+    }
+}
+
 // Listen for the result event to get the user's voice input
 recognition.addEventListener('result', (event) => {
     const command = event.results[0][0].transcript.toLowerCase();
@@ -24,7 +48,7 @@ recognition.addEventListener('result', (event) => {
                 document.getElementById('voicetext').textContent = ''
             }, 5000)
             break;
-        case command.includes('админка'):
+        case command.includes('адм'):
             openUrl('админка', "https://id.skyeng.ru/admin/users/");
             document.getElementById('voicetext').textContent = command + ' ✔';
             setTimeout(function () {
@@ -110,22 +134,9 @@ recognition.addEventListener('result', (event) => {
     }
 });
 
-let isRecording = false;
-
-
-document.getElementById('pushToTalk').addEventListener('mousedown', () => {
-    isRecording = true;
-    recognition.start();
-    document.getElementById('pushToTalk').classList.add('active');
-});
-
-document.getElementById('pushToTalk').addEventListener('mouseup', () => {
-    if (isRecording) {
-        isRecording = false;
-        document.getElementById('pushToTalk').classList.remove('active');
-        recognition.stop();
-    }
-});
+// Обработчики событий для кнопки 'pushToTalk'
+document.getElementById('pushToTalk').addEventListener('mousedown', startRecognition);
+document.getElementById('pushToTalk').addEventListener('mouseup', stopRecognition);
 
 function openUrl(flagName, link) {
     const iframeDocument = document.querySelector('[class^="NEW_FRONTEND"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND"]').contentWindow.document;
@@ -187,21 +198,22 @@ function openUrl(flagName, link) {
 }
 
 
+// Обработчики событий для клавиатуры
 document.addEventListener('keydown', (event) => {
-    if (event.keyCode === parseInt(localStorage.getItem('pushToTalkKeyCode'))) { // default keyCode for LeftShift is 16
-        try {
-            recognition.start();
-        } catch (error) {
-            console.log(error.message);
-        }
-        document.getElementById('pushToTalk').classList.add('active');
+    if (event.keyCode === parseInt(localStorage.getItem('pushToTalkKeyCode'), 10)) {
+        startRecognition();
     }
 });
 
 document.addEventListener('keyup', (event) => {
-    if (event.keyCode === parseInt(localStorage.getItem('pushToTalkKeyCode'))) {
-        document.getElementById('pushToTalk').classList.remove('active');
-        recognition.stop();
+    if (event.keyCode === parseInt(localStorage.getItem('pushToTalkKeyCode'), 10)) {
+        stopRecognition();
     }
 });
 
+// Обработчик события завершения распознавания
+recognition.addEventListener('end', () => {
+    isRecognizing = false;
+    document.getElementById('pushToTalk').classList.remove('active');
+	console.log('END SUCCESs')
+});
