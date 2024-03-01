@@ -534,15 +534,32 @@ document.getElementById('getlessonfuture').onclick = function () { // показ
 
 document.getElementById('changelocalelng').onclick = function () {
     let userOk = document.getElementById('idstudent').value;
+		
+	const fetchURL = `https://backend.skyeng.ru/api/persons/general/${userOk}`;
+    const requestOptions = {
+			"headers": {
+			"content-type": "application/json",
+			"sec-fetch-mode": "cors",
+			"sec-fetch-site": "same-site"
+		},
+		"referrer": "https://crm2.skyeng.ru/",
+		"referrerPolicy": "strict-origin-when-cross-origin",
+		"body": "{\"serviceLocale\":\"ru\"}",
+		"method": "PUT",
+		"mode": "cors",
+		"credentials": "include"
+    };
 
-    chrome.runtime.sendMessage({ action: "changeLocaleToRu", userId: userOk }, function (response) {
-        if (response && response.success) {
-            document.getElementById('changelocalelng').innerHTML = "✅";
-            setTimeout(function () { document.getElementById('changelocalelng').innerHTML = "🌍";}, 2000);
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            console.log('Не удалось выполнить запрос: ' + response.error);
+            return;
         } else {
-            console.error('Ошибка при смене локали:', response.error);
+           console.log("Язык обслуживания Successfully changed")
+			document.getElementById('changelocalelng').innerHTML = "✅";
+            setTimeout(function () { document.getElementById('changelocalelng').innerHTML = "🌍";}, 2000);
         }
-    });
+    })
 }
 
 document.getElementById('catchathistory').onclick = function () { // открывает в вензеле историю чатов введеного айди пользователя

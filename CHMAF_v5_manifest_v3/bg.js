@@ -26,58 +26,22 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		const url = request.fetchURL;
 		const requestOptions = request.requestOptions;
 
-		fetch(url, requestOptions)
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('Network response was not ok: ' + response.statusText);
-				}
-				return response.text();
-			})
-			.then(text => {
-				if (text) {
-					sendResponse({ success: true, fetchansver: text });
-				} else {
-					throw new Error('Fetch response not found');
-				}
-			})
-			.catch(error => {
-				sendResponse({ success: false, error: error.message });
-			});
+        fetch(url, requestOptions)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.text();
+            })
+            .then(text => {
+                sendResponse({ success: true, fetchansver: text });
+            })
+            .catch(error => {
+                sendResponse({ success: false, error: error.message });
+            });
 
-		return true; // Возвращаем true для асинхронной отправки ответа
+        return true; // Возвращаем true для асинхронной отправки ответа
 	}
-
-	//Блок запросов в CRM2
-
-	if (request.action === "changeLocaleToRu") {
-		let userid = request.userId;
-		fetch(`https://backend.skyeng.ru/api/persons/general/${userid}`, {
-			"headers": {
-				"content-type": "application/json",
-				"sec-fetch-mode": "cors",
-				"sec-fetch-site": "same-site"
-			},
-			"referrer": "https://crm2.skyeng.ru/",
-			"referrerPolicy": "strict-origin-when-cross-origin",
-			"body": "{\"serviceLocale\":\"ru\"}",
-			"method": "PUT",
-			"mode": "cors",
-			"credentials": "include"
-		})
-		.then(response => {
-			if (!response.ok) {
-				throw new Error('Network response was not ok ' + response.statusText);
-			}
-			sendResponse({ success: true });
-		})
-		.catch(error => {
-			console.error('Ошибка при смене локали:', error);
-			sendErrorResponse('Произошла ошибка при смене локали: ' + error.message);
-		});
-		return true; // Это необходимо для асинхронной обработки sendResponse
-	}
-	
-	//Конец блока запросов в CRM2
 
 	// Блок отправки в Google forms отказы от помощи, или же пожелания предложения, поэтому должен универсальный быть, чтобы входящие данные были разные но функция была одна по сути
 	if (request.action === 'sentToForms') {
