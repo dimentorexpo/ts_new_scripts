@@ -48,58 +48,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	}
 
 	//Блок запросов в CRM2
-	if (request.action === 'getUserCrmName') { // Получение информации об ФИ
-		const sid = request.sid;
-		makeFetchRequest(`https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`, 'GET')
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-
-	if (request.action === 'getEducationSrv') { // получение общего списка услуг
-		makeFetchRequest("https://backend.skyeng.ru/api/products/configurations/", 'GET')
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-
-	if (request.action === 'getUserServices') { // Получение информации об ФИ
-		const userid = request.userid;
-		makeFetchRequest(`https://backend.skyeng.ru/api/persons/${userid}/education-services/`, 'GET')
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-
-	if (request.action === "getUserTasks") { // Получение списка активных задач на пользователе
-		const userid = request.userid;
-		makeFetchRequest(`https://customer-support.skyeng.ru/task/user/${userid}`, 'GET')
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-
-	if (request.action === "getUserPhone") { // Получение телефона пользователя
-		const userid = request.userid;
-		makeFetchRequest(`https://backend.skyeng.ru/api/persons/${userid}/personal-data/?pdType=phone&source=persons.profile`, 'GET')
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-
-	if (request.action === "getUserEmail") { // Получение email пользователя
-		const userid = request.userid;
-		makeFetchRequest(`https://backend.skyeng.ru/api/persons/${userid}/personal-data/?pdType=email&source=persons.profile`, 'GET')
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
 
 	if (request.action === "changeLocaleToRu") {
 		let userid = request.userId;

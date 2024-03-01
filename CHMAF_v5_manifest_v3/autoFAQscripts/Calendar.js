@@ -59,7 +59,7 @@ function checkAuth() { //функция проверки авторизации 
 
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
         if (!response.success) {
-            alert('Не удалось проверить авторизацию на Datsy: ' + response.error);
+            alert('Не удалось выполнить запрос: ' + response.error);
             return;
         } else {
             const otvetCheckAuth = JSON.parse(response.fetchansver);

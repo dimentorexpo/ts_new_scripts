@@ -267,32 +267,71 @@ function checkemailandphoneidentity() {
 
 function getunhidephone() { //открывает телефон пользователя
     const polzID = document.getElementById('idstudent').value.trim();
-    chrome.runtime.sendMessage({ action: "getUserPhone", userid: polzID }, function (responsePhone) {
-        if (responsePhone && responsePhone.data && 'value' in responsePhone.data) {
-            document.getElementById('phoneunhidden').textContent = responsePhone.data.value;
-        } else {
-            // Handle the case where responsePhone or responsePhone.data is undefined, or value is not present
-            console.error('Failed to get user phone', responsePhone);
-        }
-    });
+	
+	    const fetchURL = `https://backend.skyeng.ru/api/persons/${polzID}/personal-data/?pdType=phone&source=persons.profile`;
+		const requestOptions = {
+			method: 'GET'
+		};
+
+		chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+			if (!response.success) {
+				alert('Не удалось выполнить запрос: ' + response.error);
+				return;
+			} else {
+				const otvetPhone = JSON.parse(response.fetchansver);
+			       
+				   if (otvetPhone && otvetPhone.data && 'value' in otvetPhone.data) {
+					document.getElementById('phoneunhidden').textContent = otvetPhone.data.value;
+				} else {
+					// Handle the case where responsePhone or responsePhone.data is undefined, or value is not present
+					console.error('Failed to get user phone', otvetPhone);
+				}
+
+			}
+		})
+	
 }
 
 function getunhideemail() { //открывает почту пользователя
     const polzIDNew = document.getElementById('idstudent').value.trim();
-    chrome.runtime.sendMessage({ action: "getUserEmail", userid: polzIDNew }, function (responseEmail) {
-        if (responseEmail && responseEmail.data && 'value' in responseEmail.data) {
-            document.getElementById('mailunhidden').textContent = responseEmail.data.value;
+		
+	const fetchURL = `https://backend.skyeng.ru/api/persons/${polzIDNew}/personal-data/?pdType=email&source=persons.profile`;
+    const requestOptions = {
+        method: 'GET'
+    };
+
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
         } else {
-            // Handle the case where responseEmail or responseEmail.data is undefined, or value is not present
-            console.error('Failed to get user email', responseEmail);
+            const otvetEmail = JSON.parse(response.fetchansver);
+			        if (otvetEmail && otvetEmail.data && 'value' in otvetEmail.data) {
+						document.getElementById('mailunhidden').textContent = otvetEmail.data.value;
+					} else {
+						// Handle the case where responseEmail or responseEmail.data is undefined, or value is not present
+						console.error('Failed to get user email', otvetEmail);
+					}
         }
-    });
+    })
+
 }
 
 let servicecontainer;
-chrome.runtime.sendMessage({ action: "getEducationSrv" }, function (response) {
-    servicecontainer = response;
-})
+	const fetchURL = `https://backend.skyeng.ru/api/products/configurations/`;
+    const requestOptions = {
+        method: 'GET'
+    };
+
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        } else {
+            const otvet = JSON.parse(response.fetchansver);
+			servicecontainer = otvet
+        }
+    })
 
 let pochtaStatus = document.getElementById('pochtaIdentity')
 let telefonStatus = document.getElementById('telefonIdentity')
@@ -507,11 +546,21 @@ function getusernamecrm() {
 
     let filteredid = document.getElementById('idstudent').value.trim();
     flagusertype = '';
+		
+	const fetchURL = `https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`;
+    const requestOptions = {
+        method: 'GET'
+    };
 
-    chrome.runtime.sendMessage({ action: "getUserCrmName", sid: sid }, function (response) {
-        if (response) {
-            let name = response.data.name + (response.data.surname ? ` ${response.data.surname}` : '');
-            if (response.data.type == "student") {
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        } else {
+            const otvetUsrCrmName = JSON.parse(response.fetchansver);
+
+		let name = otvetUsrCrmName.data.name + (otvetUsrCrmName.data.surname ? ` ${otvetUsrCrmName.data.surname}` : '');
+            if (otvetUsrCrmName.data.type == "student") {
                 pochtaStatus.innerText = "hidden"
                 telefonStatus.innerText = "hidden"
 
@@ -537,11 +586,11 @@ function getusernamecrm() {
                 newTrmElement.style.display = "none";
                 TeachNabElement.style.display = "none";
                 personalTeacherPageElement.style.display = "none";
-                if (response.data.avatarUrl) {
-                    avatarofuser = response.data.avatarUrl.match(/(https:\/\/auth-avatars-skyeng.imgix.net.*?\d+.\S+).auto/)[1];
+                if (otvetUsrCrmName.data.avatarUrl) {
+                    avatarofuser = otvetUsrCrmName.data.avatarUrl.match(/(https:\/\/auth-avatars-skyeng.imgix.net.*?\d+.\S+).auto/)[1];
                 }
 
-            } else if (response.data.type == "teacher") {
+            } else if (otvetUsrCrmName.data.type == "teacher") {
                 teachername = name;
 
                 usrName.textContent = teachername;
@@ -566,8 +615,8 @@ function getusernamecrm() {
                 newTrmElement.style.display = "";
 				TeachNabElement.style.display = "";
                 personalTeacherPageElement.style.display = "";
-                if (response.data.avatarUrl) {
-                    avatarofuser = response.data.avatarUrl.match(/(https:\/\/auth-avatars-skyeng.imgix.net.*?\d+.\S+).auto/)[1];
+                if (otvetUsrCrmName.data.avatarUrl) {
+                    avatarofuser = otvetUsrCrmName.data.avatarUrl.match(/(https:\/\/auth-avatars-skyeng.imgix.net.*?\d+.\S+).auto/)[1];
                 }
 
                 document.getElementById('servicetable').innerHTML = ''
@@ -605,8 +654,8 @@ function getusernamecrm() {
                 };
             }
 
-            servlocalestatus = response.data.serviceLocale || "⭕";
-            countryofuser = response.data.country || null;
+            servlocalestatus = otvetUsrCrmName.data.serviceLocale || "⭕";
+            countryofuser = otvetUsrCrmName.data.country || null;
 
             usrServLanguage.textContent = servlocalestatus;
             usrCountry.textContent = countryofuser;
@@ -628,7 +677,7 @@ function getusernamecrm() {
             let MSKdifference = document.getElementById('UTCtoMSK')
             let localMSKTime = document.getElementById('localTime')
             let curdate = new Date();
-            utczone = response.data.utcOffset;
+            utczone = otvetUsrCrmName.data.utcOffset;
             utcZoneLnk.textContent = utczone
             MSKdifference.textContent = (utczone - 3)
             let curhours = (curdate.getUTCHours() + 3);
@@ -637,15 +686,14 @@ function getusernamecrm() {
 
 
             let currentYear = curdate.getFullYear();
-            if (response.data.birthday) {
-                let birthYear = parseInt(response.data.birthday.split('-')[0]);
+            if (otvetUsrCrmName.data.birthday) {
+                let birthYear = parseInt(otvetUsrCrmName.data.birthday.split('-')[0]);
                 let age = currentYear - birthYear;
                 ageofuser = age < 18 ? "🔞" : (age >= 18 && age < 99 ? "🅰" : "❓");
             } else {
                 ageofuser = "❓";
             }
             usrAge.textContent = ageofuser;
-
         }
     })
 }
@@ -665,10 +713,20 @@ function crmstatus() {
 
     document.getElementById('getcurrentstatus').style.display = 'none';
     document.getElementById('CrmStatus').style.display = 'none';
+	
+	    const fetchURL = `https://customer-support.skyeng.ru/task/user/${tempvarcrm}`;
+		const requestOptions = {
+			method: 'GET'
+		};
 
-    chrome.runtime.sendMessage({ action: "getUserTasks", userid: tempvarcrm }, function (response) {
-
-        for (const data of response.data) {
+		chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+			if (!response.success) {
+				alert('Не удалось выполнить запрос: ' + response.error);
+				return;
+			} else {
+				const otveUserTasks = JSON.parse(response.fetchansver);
+				
+			for (const data of otveUserTasks.data) {
             switch (data.operatorGroup.name) {
                 case 'technical_support_outgoing':
                     flagtpout = true;
@@ -732,7 +790,9 @@ function crmstatus() {
             document.getElementById('CrmStatus').innerText = '📵';
             console.log('No DATA');
         }
-    })
+			}
+		})
+    
 }
 
 async function checkServiceAndUserInfo() {
@@ -744,8 +804,20 @@ async function checkServiceAndUserInfo() {
             arrservice = null;
         } else {
             document.getElementById('servicetable').innerHTML = "Загрузка..."
-            chrome.runtime.sendMessage({ action: "getUserServices", userid: stidNew }, function (response) {
-                if (response.data.length != 0) {
+					
+			    const fetchURL = `https://backend.skyeng.ru/api/persons/${stidNew}/education-services/`;
+				const requestOptions = {
+					method: 'GET'
+				};
+
+				chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+					if (!response.success) {
+						alert('Не удалось выполнить запрос: ' + response.error);
+						return;
+					} else {
+						const otvetEdServ = JSON.parse(response.fetchansver);
+						
+					if (otvetEdServ.data.length != 0) {
                     let tinfo = ""; // инфо о постоянном П
                     let temtinfo = ""; // инфо о временном П
                     let servinfo = ""; //инфо об услуге
@@ -753,7 +825,7 @@ async function checkServiceAndUserInfo() {
                     let arrservice = []; // пустой массив, куда будет передавать ID отобранных услуг по условию
 
                     let srvKeyMap = new Map(servicecontainer.data.map(d => [d.serviceTypeKey, d.shortTitle]));
-                    response.data.forEach((service, i) => {
+                    otvetEdServ.data.forEach((service, i) => {
                         if (srvKeyMap.has(service.serviceTypeKey)) {
                             service.serviceTypeKey = srvKeyMap.get(service.serviceTypeKey);
                         }
@@ -846,7 +918,13 @@ async function checkServiceAndUserInfo() {
                 } else {
                     document.getElementById('servicetable').innerHTML = '<div style="text-align:center; background:coral; font-weight:700;border: 1px solid black; color: floralwhite;">Услуг вообще нет!</div>'
                 }
-            })
+
+					}
+				})
+			
+		
+
+            
         }
     }, 1000)
 }
