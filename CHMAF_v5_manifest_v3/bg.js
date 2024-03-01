@@ -77,24 +77,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		return true; // Это необходимо для асинхронной обработки sendResponse
 	}
 	
-
-	if (request.action === 'checkLessonHistoryPast') { // Просмотреть прошедшие  уроки
-		const uchId = request.uchId;
-		makeFetchRequest(`https://backend.skyeng.ru/api/students/${uchId}/timetable/lessons-history/?page=0`, 'GET')
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-
-	if (request.action === 'checkLessonHistoryFuture') { // Просмотреть предстоящие уроки
-		const uchIdNew = request.uchIdNew;
-		makeFetchRequest(`https://backend.skyeng.ru/api/students/${uchIdNew}/timetable/future-lessons/`, 'GET')
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
 	//Конец блока запросов в CRM2
 
 	// Блок отправки в Google forms отказы от помощи, или же пожелания предложения, поэтому должен универсальный быть, чтобы входящие данные были разные но функция была одна по сути
