@@ -230,24 +230,35 @@ function checkemailandphoneidentity() {
     let idUser = document.getElementById('idstudent').value.trim()
     pochtaStatus.textContent = ''
     telefonStatus.textContent = ''
+	
+	
+	const fetchURL = `https://id.skyeng.ru/admin/users/${idUser}/update-contacts`;
+    const requestOptions = {
+        method: 'GET'
+    };
 
-    chrome.runtime.sendMessage({ action: "checkEmailAndPhone", idUser: idUser }, function (response) {
-        if (response) {
-            if (flagusertype === "teacher") {
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        } else {
+            const checkEmailAndIdty = response.fetchansver;
+			
+			if (flagusertype === "teacher") {
                 console.log('It is a teacher!');
             } else if (flagusertype === "student") {
-                if (response.includes('"identityEmail" disabled data-value=""') && response.includes('"identityPhone" disabled data-value=""')) {
-                    pochtaStatus.textContent = "📧✖";
-                    telefonStatus.textContent = "☎✖";
-                } else if (response.includes('"identityEmail" disabled data-value=""') && !response.includes('"identityPhone" disabled data-value=""')) {
-                    pochtaStatus.textContent = "📧✖";
-                    telefonStatus.textContent = "☎✔";
-                } else if (!response.includes('"identityEmail" disabled data-value=""') && response.includes('"identityPhone" disabled data-value=""')) {
-                    pochtaStatus.textContent = "📧✔";
-                    telefonStatus.textContent = "☎✖";
+                if (checkEmailAndIdty.includes('"identityEmail" disabled data-value=""') && checkEmailAndIdty.includes('"identityPhone" disabled data-value=""')) {
+                    pochtaStatus.textContent = "📧❌";
+                    telefonStatus.textContent = "☎❌";
+                } else if (checkEmailAndIdty.includes('"identityEmail" disabled data-value=""') && !checkEmailAndIdty.includes('"identityPhone" disabled data-value=""')) {
+                    pochtaStatus.textContent = "📧❌";
+                    telefonStatus.textContent = "☎✅";
+                } else if (!checkEmailAndIdty.includes('"identityEmail" disabled data-value=""') && checkEmailAndIdty.includes('"identityPhone" disabled data-value=""')) {
+                    pochtaStatus.textContent = "📧✅";
+                    telefonStatus.textContent = "☎❌";
                 } else {
-                    pochtaStatus.textContent = "📧✔";
-                    telefonStatus.textContent = "☎✔";
+                    pochtaStatus.textContent = "📧✅";
+                    telefonStatus.textContent = "☎✅";
                 }
             }
         }
