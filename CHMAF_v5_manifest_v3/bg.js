@@ -44,7 +44,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	}
 
 	// Блок отправки в Google forms отказы от помощи, или же пожелания предложения, поэтому должен универсальный быть, чтобы входящие данные были разные но функция была одна по сути
-	if (request.action === 'sentToForms') {
+	if (request.action === 'sentToForms') { // Для RefuseForm заменил, но еще надо поискать где мы отправляем, пожелания смартрум по идее и все
 		const url = request.url;
 		const body = request.body;
 		console.log(url, body);
