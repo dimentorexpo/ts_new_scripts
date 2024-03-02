@@ -192,27 +192,42 @@ function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputT
 }
 
 function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
-    for (let f = 0; f < refreshissuesarr.length; f++) {
-        refreshissuesarr[f].addEventListener('click', function () {
+    refreshissuesarr.forEach((issueElement, index) => {
+        issueElement.addEventListener('click', function () {
+            const fetchURLToken = `https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueIds[index]}`;
+            const requestOptionsToken = { method: 'GET', credentials: 'include',}
 
-            chrome.runtime.sendMessage({ action: 'getTokenToCreate', issueId: issueIds[f] }, function (responseAuth) {
-                let count;
-                let jira_token;
-                let increasedcount;
-                jira_token = responseAuth.match(/"atl_token":"(.*lin)/)[1]
-                count = responseAuth.match(/customfield_15410.*?value=.*?(\d+)/)[1];
-                count = parseInt(count);
-                increasedcount = count + 1;
-                increasedcount = increasedcount.toString();
-                console.log("count=" + count + " increasedcount " + increasedcount);
-                chrome.runtime.sendMessage({ action: 'increaseSupportTab', newcount: increasedcount, issueId: issueIds[f], jirakey: jira_token }, function (responseAuth) {
-                    let newinfocount = document.querySelectorAll('.newcount');
-                    newinfocount[f].innerHTML = increasedcount;
-                    increasedcount = "";
-                })
-            })
-        })
-    }
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLToken, requestOptions: requestOptionsToken}, function (responseToken) {
+                if (responseToken.success) {
+                    let responseAuth = responseToken.fetchansver;
+                    let jira_token = responseAuth.match(/"atl_token":"(.*lin)/)[1];
+                    let count = parseInt(responseAuth.match(/customfield_15410.*?value=.*?(\d+)/)[1]);
+                    let increasedcount = (count + 1).toString();
+
+                    const fetchURLIncrease = "https://jira.skyeng.tech/secure/AjaxIssueAction.jspa?decorator=none";
+                    const requestOptionsIncrease = {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                        },
+                        body: `customfield_15410=${increasedcount}&issueId=${issueIds[index]}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410`,
+                        credentials: 'include',
+                    }
+
+                    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLIncrease, requestOptions: requestOptionsIncrease}, function (responseIncrease) {
+                        if (responseIncrease.success) {
+                            let newinfocount = document.querySelectorAll('.newcount');
+                            newinfocount[index].innerHTML = increasedcount;
+                        } else {
+                            console.error('Ошибка при увеличении счетчика Support Tab:', responseIncrease.error);
+                        }
+                    });
+                } else {
+                    console.error('Ошибка при получении токена и счетчика:', responseToken.error);
+                }
+            });
+        });
+    });
 }
 
 let firstJiraParse = false;
@@ -276,57 +291,83 @@ function switchJiraPages() {
 
     const pageSwArr = document.getElementsByName('changeList');
 
-    pageSwArr.forEach((page, d) => {
+    pageSwArr.forEach((page) => {
         page.addEventListener('click', function () {
             if (!this.classList.contains('active')) {
                 document.getElementById('issuetable').innerHTML = '<span style="color:bisque">Загрузка...</span>';
 
                 pageSwArr.forEach(p => p.classList.remove('active'));
                 this.classList.add('active');
-                chrome.runtime.sendMessage({ action: 'startJiraSearch', startIndex: page.getAttribute('value'), textQuery: requesttojiratext }, function (response) {
-                    console.log(response)
-                    const { issueKeys, table, issueIds } = response.issueTable;
-                    const matchedItems = table.match(/(\w+-\d+">.*?).<\/a>/gmi).filter(filterItems);
-                    const matchedNumbers = table.match(/(">.)*?([0-9]+)\n/gm);
 
-                    const regex = /<tr id="issuerow(\d+)"/g;
-                    const matches = table.matchAll(regex);
-                    const ids = Array.from(matches, m => m[1]);
-                    console.log(ids)
-                    const searchText = document.getElementById('testJira').value;
+                const startIndex = page.getAttribute('value');
+                const bodyData = `startIndex=${startIndex}&filterId=21266&jql=${encodeURIComponent(requesttojiratext)}&layoutKey=list-view`;
 
-                    let issues = '';
-                    let switcher = Number(page.getAttribute('value'))
-                    for (let i = 0; i < response.issueTable.displayed; i++) {
-                        const currentNumber = matchedNumbers ? matchedNumbers[i] : null;
-                        const currentIssue = matchedItems[i];
-                        const currentKey = issueKeys[+i + switcher];
-                        const currentIds = ids[i];
-                        const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
-                        if (currentIssue && currentKey) {
-                            issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
-                        } else {
-                            console.error("Не удалось найти соответствие для индекса: " + i);
+                const fetchURL = "https://jira.skyeng.tech/rest/issueNav/1/issueTable";
+                const requestOptions = {
+                    method: "POST",
+                    headers: {
+                        "__amdmodulename": "jira/issue/utils/xsrf-token-header",
+                        "accept": "*/*",
+                        "sec-fetch-mode": "cors",
+                        "sec-fetch-site": "same-origin",
+                        "x-atlassian-token": "no-check",
+                        "x-requested-with": "XMLHttpRequest",
+                        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    body: bodyData,
+                    mode: "cors",
+                    credentials: "include"
+                };
+
+                chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions}, function (response) {
+                    if (response && response.success) {
+                        const responseData = JSON.parse(response.fetchansver);
+                        console.log(responseData);
+                        const { issueKeys, table, issueIds } = responseData.issueTable;
+                        const matchedItems = table.match(/(\w+-\d+">.*?).<\/a>/gmi).filter(filterItems);
+                        const matchedNumbers = table.match(/(">.)*?([0-9]+)\n/gm);
+    
+                        const regex = /<tr id="issuerow(\d+)"/g;
+                        const matches = table.matchAll(regex);
+                        const ids = Array.from(matches, m => m[1]);
+                        console.log(ids)
+                        const searchText = document.getElementById('testJira').value;
+    
+                        let issues = '';
+                        let switcher = Number(page.getAttribute('value'))
+                        for (let i = 0; i < responseData.issueTable.displayed; i++) {
+                            const currentNumber = matchedNumbers ? matchedNumbers[i] : null;
+                            const currentIssue = matchedItems[i];
+                            const currentKey = issueKeys[+i + switcher];
+                            const currentIds = ids[i];
+                            const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
+                            if (currentIssue && currentKey) {
+                                issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
+                            } else {
+                                console.error("Не удалось найти соответствие для индекса: " + i);
+                            }
                         }
+    
+                        document.getElementById('issuetable').innerHTML = issues;
+    
+                        const barray = document.querySelectorAll('.jiraissues');
+                        addJiraIssueOnClickEvent(barray, issueKeys);
+    
+                        addFavouritesOnClickEvent(
+                            document.getElementsByName('addtofavourites'),
+                            document.getElementsByName('buglinks'),
+                            document.getElementsByName('issueIds'),
+                            document.getElementById('favouriteissuetable')
+                        );
+    
+                        const refreshissuesarr = document.querySelectorAll('.refreshissues');
+                        addRefreshIssueOnClickEvent(refreshissuesarr, ids);
+                    } else {
+                        console.error('Ошибка при запросе: ', response.error);
                     }
-
-                    document.getElementById('issuetable').innerHTML = issues;
-
-                    const barray = document.querySelectorAll('.jiraissues');
-                    addJiraIssueOnClickEvent(barray, issueKeys);
-
-                    addFavouritesOnClickEvent(
-                        document.getElementsByName('addtofavourites'),
-                        document.getElementsByName('buglinks'),
-                        document.getElementsByName('issueIds'),
-                        document.getElementById('favouriteissuetable')
-                    );
-
-                    const refreshissuesarr = document.querySelectorAll('.refreshissues');
-                    addRefreshIssueOnClickEvent(refreshissuesarr, ids);
-                })
+                });
             }
-        })
+        });
     });
 }
 

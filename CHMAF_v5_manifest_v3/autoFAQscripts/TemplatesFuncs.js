@@ -265,7 +265,7 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
             setTimeout(() => { buttonStyle.background = ""; }, 1000);
         }
     }
-    
+
     iframeDoc.getElementById('CurrUser').onclick = function () {
         this.style.background = "lightgreen";
         setTimeout(() => {
@@ -441,7 +441,7 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
     iframeDoc.getElementById('NextUsLoginer').onclick = async function () {
         let requestargument = findrequestargument(usertypeis);
         const idNode = SearchinAFnewUI(requestargument);
-    
+
         if (idNode) {
             await handleLoginLinkClick(idNode, this.style);
         } else {
@@ -1068,13 +1068,14 @@ function refreshTemplates() { // функция обновляет шаблон�
                 }
                 break
         }
-    } document.getElementById('0page').ondblclick = function () {
-        if (document.getElementById('addTmp').style.display == 'none') {
-            document.getElementById('addTmp').style.display = '';
-        }
-        else
-            document.getElementById('addTmp').style.display = 'none';
     }
+    document.getElementById('0page').addEventListener('dblclick', function (event) {
+        if (checkelementtype(event)) {
+            const addTmp = document.getElementById('addTmp');
+            addTmp.style.display = addTmp.style.display === 'none' ? '' : 'none';
+        }
+    });
+
     document.getElementById('0_page_button').click()
 }
 
