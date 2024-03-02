@@ -42,34 +42,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
         return true; // Возвращаем true для асинхронной отправки ответа
 	}
-
-	// Блок отправки в Google forms отказы от помощи, или же пожелания предложения, поэтому должен универсальный быть, чтобы входящие данные были разные но функция была одна по сути
-	if (request.action === 'sentToForms') { // Для RefuseForm заменил, но еще надо поискать где мы отправляем, пожелания смартрум по идее и все
-		const url = request.url;
-		const body = request.body;
-		console.log(url, body);
-		fetch(url, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-			body: body,
-		})
-		.then(response => {
-			if (!response.ok) {
-				throw new Error('Network response was not ok ' + response.statusText);
-			}
-			// Отправляем статус успешности запроса
-			sendResponse({ success: true });
-		})
-		.catch(error => {
-			console.error('Ошибка при отправке данных в форму:', error);
-			sendErrorResponse('Произошла при отправке данных в форму: ' + error.message);
-		});
-		return true; // Это необходимо для асинхронной обработки sendResponse
-	};
-	//конец блока отправки в google forms
-
+	
 	//Блок работы с Jira
 	if (request.action === 'checkJiraAuth') { // Проверка авторизации в Jira
 		makeFetchRequest("https://jira.skyeng.tech", 'GET')

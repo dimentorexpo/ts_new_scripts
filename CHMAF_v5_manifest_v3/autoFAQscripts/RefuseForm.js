@@ -289,30 +289,30 @@ let intervalotak = setInterval(function () {
                             othersolvedtext = encodeURIComponent(document.getElementById('othersolved').value)
                             body2 = 'entry.1040202788=' + chatlink + '&entry.763930179=' + textaskclient + '&entry.870072493=' + textclientsolution + '&entry.917004094=' + othersolvedtext + '&entry.8206738=' + otherproblemtext
                         }
-										
-						
-						    const fetchURL = `https://docs.google.com/forms/d/e/1FAIpQLScXLf0uRuESjzpu0gR-kE7T5LcCblOQtqzadtcwnTUb4_vpnQ/formResponse`;
-							const requestOptions = {
-								method: 'POST',
-								headers: {
-									'Content-Type': 'application/x-www-form-urlencoded',
-								},
-								body: body2,
-							};
 
-							chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-								if (!response.success) {
-									alert('Не удалось выполнить запрос: ' + response.error);
-									return;
-								} else {
-								sendComment('Отправка в документ "Отказ от помощи" прошла успешно')
+
+                        const fetchURL = 'https://docs.google.com/forms/d/e/1FAIpQLScXLf0uRuESjzpu0gR-kE7T5LcCblOQtqzadtcwnTUb4_vpnQ/formResponse';
+                        const requestOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: body2,
+                        };
+
+                        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+                            if (!response.success) {
+                                alert('Не удалось выполнить запрос: ' + response.error);
+                                return;
+                            } else {
+                                sendComment('Отправка в документ "Отказ от помощи" прошла успешно')
                                 document.getElementById('send2doc').textContent = "Отправлено✅"
-    
+
                                 setTimeout(() => {
                                     document.getElementById('send2doc').textContent = "Отправить"
                                     document.getElementById('AF_Refuseformnew').style.display = 'none'
                                 }, 3000)
-    
+
                                 document.getElementById('chatlnk').value = ''
                                 document.getElementById('userissue').children[0].selected = true
                                 document.getElementById('howissuesolverd').children[0].selected = true
@@ -324,10 +324,8 @@ let intervalotak = setInterval(function () {
                                 document.getElementById('otherproblem').setAttribute('disabled', 'disabled')
                                 document.getElementById('otherproblem').value = ''
                                 document.getElementById('othersolved').value = ''
-
-
-								}
-							})
+                            }
+                        })
                     }
                 }
             }
