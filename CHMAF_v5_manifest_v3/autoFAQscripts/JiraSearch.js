@@ -211,7 +211,6 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
                     increasedcount = "";
                 })
             })
-
         })
     }
 }
