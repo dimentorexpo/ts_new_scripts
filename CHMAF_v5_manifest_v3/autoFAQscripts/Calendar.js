@@ -52,7 +52,7 @@ function compareTimes(time1, time2) { //функция сравнения вре
 
 let parsedData;
 function checkAuth() { //функция проверки авторизации на datsy.info
-    const fetchURL = `https://api.datsy.info/api/auth/check.php`;
+    const fetchURL = 'https://api.datsy.info/api/auth/check.php';
     const requestOptions = {
         method: 'GET'
     };

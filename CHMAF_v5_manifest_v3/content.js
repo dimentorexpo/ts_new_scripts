@@ -152,8 +152,10 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
         windowElement.classList.add('extwindows');
     }
 
-    windowElement.style = `top: ${storedTop}px; left: ${storedLeft}px;`;
-    windowElement.style.display = 'none';
+    windowElement.style = `top: ${storedTop}px; left: ${storedLeft}px; display: none;`;
+    if (id === 'AF_Timetable' || id === 'AF_Grabber' || id === 'AF_GrList' || id === 'AF_BankCheck') {
+        windowElement.style.zIndex = '1100000'; // Установка z-index для специфических окон
+    }
     windowElement.setAttribute('id', id);
     windowElement.innerHTML = content;
 

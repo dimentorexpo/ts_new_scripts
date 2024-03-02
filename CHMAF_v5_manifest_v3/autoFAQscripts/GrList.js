@@ -55,23 +55,23 @@ document.getElementById('getidgrouptolist').addEventListener('click', async func
 
         // Второй запрос: получение имен учеников группы
         const userNamesURL = "https://learning-groups-storage-api.skyeng.ru/api/v1/userInfo/findByIds";
-            const userNamesRequestOptions = {
-                headers: {
-                    "accept": "application/json, text/plain, */*",
-                    "content-type": "application/json; charset=UTF-8",
-                    "sec-fetch-dest": "empty",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-site"
-                },
-                referrer: "https://learning-groups-storage.skyeng.ru/",
-                referrerPolicy: "strict-origin-when-cross-origin",
-                body: JSON.stringify({ ids: userIdsarray }),
-                method: "POST",
-                mode: "cors",
-                credentials: "include"
-            };
+        const userNamesRequestOptions = {
+            headers: {
+                "accept": "application/json, text/plain, */*",
+                "content-type": "application/json; charset=UTF-8",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site"
+            },
+            referrer: "https://learning-groups-storage.skyeng.ru/",
+            referrerPolicy: "strict-origin-when-cross-origin",
+            body: JSON.stringify({ ids: userIdsarray }),
+            method: "POST",
+            mode: "cors",
+            credentials: "include"
+        };
 
-            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: userNamesURL, requestOptions: userNamesRequestOptions }, function (response) {
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: userNamesURL, requestOptions: userNamesRequestOptions }, function (response) {
             if (!response.success) {
                 console.error('Не удалось получить имена учеников: ', response.error);
                 return;
@@ -80,8 +80,13 @@ document.getElementById('getidgrouptolist').addEventListener('click', async func
             const namesData = JSON.parse(response.fetchansver);
             let allStudents = document.getElementsByClassName('stname');
             for (let i = 0; i < allStudents.length; i++) {
-                allStudents[i].textContent = namesData.data[i].name.first + " " + namesData.data[i].name.last;
+                // Проверяем, что last name существует и не пустое
+                const lastName = namesData.data[i].name.last;
+                const fullName = lastName ? namesData.data[i].name.first + " " + lastName : namesData.data[i].name.first;
+
+                allStudents[i].textContent = fullName;
             }
+
         });
 
         document.getElementById('grlistinfo').innerHTML = !groupData.teachers ? dataarr : dataarr + '<br>ID П ' + groupData.teachers[0].userId;
