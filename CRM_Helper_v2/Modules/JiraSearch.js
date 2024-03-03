@@ -584,12 +584,13 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
         }
 
         // Просмотр таски по джира по ее коду и номеру
-        document.getElementById('getJiraTasks').ondblclick = function () {
+        document.getElementById('getJiraTasks').addEventListener('contextmenu', function (event) {
+            event.preventDefault(); // Предотвращаем появление стандартного контекстного меню
+
             if (document.getElementById('AF_Jira').style.display == 'none') {
                 document.getElementById('AF_Jira').style.display = ''
             }
 
-            let rezissuetable;
             let tasksearch = document.getElementById('testJira').value;
 
             const fetchURL = `https://jira.skyeng.tech/rest/quicksearch/1.0/productsearch/search?q=${tasksearch}`;
@@ -610,7 +611,7 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                     alert('Не удалось найти задачу: ' + refissresponse.error);
                 }
             });
-        }           
+        });           
 
         const searchJiraByEnter = document.querySelector('#testJira');
         const searchJiraByEnterInput = document.querySelector('#JQLquery');
