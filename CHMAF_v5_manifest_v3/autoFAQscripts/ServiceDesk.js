@@ -207,7 +207,6 @@ var win_servicedesk = // описание элементов окна Service De
 
 const wintServDsk = createWindow('AF_ServDsk', 'winTopServDsk', 'winLeftServDsk', win_servicedesk);
 
-//func getOperInfraId
 function getInfraOId() {
     chrome.runtime.sendMessage({ action: "checkInfraAuth" }, function (response) {
         if (response) {

@@ -15,20 +15,35 @@ function dosetclasswork(subject) {
 }
 
 function setupClassworkButton() {
-    let targetButton = document.querySelector('button.header-item.ng-star-inserted');
+    if (!document.getElementById('clwbtn')) {
+        let targetButton = document.querySelector('button.header-item.ng-star-inserted');
+        let elements = document.querySelectorAll(".-without-border");
+        let attachmentsContainer;
+        let subject = document.URL.split('/')[4];
 
-    if (targetButton && !document.getElementById('clwbtn')) {
+        // Ищем контейнер, содержащий "Вложения"
+        Array.from(elements).forEach((el) => {
+            if (el.innerText.includes('Вложения')) {
+                attachmentsContainer = el;
+            }
+        });
+
         let classworkbtn = document.createElement('div');
         classworkbtn.id = "clwbtn";
         classworkbtn.textContent = "Classwork";
-        classworkbtn.style = "position:absolute; right:10%; cursor: pointer; color:green; text-shadow: 1px 2px 5px rgb(0 0 0 / 20%);";
-        let subject = document.URL.split('/')[4];
+        classworkbtn.style = "position: fixed; right: 10%; cursor: pointer; color: green; text-shadow: rgba(0, 0, 0, 0.2) 1px 2px 5px;";
 
-        targetButton.parentNode.insertBefore(classworkbtn, targetButton);
-        classworkbtn.onclick = function() {
+        if (targetButton) {
+            targetButton.parentNode.insertBefore(classworkbtn, targetButton);
+        } else if (attachmentsContainer) {
+            let parent = attachmentsContainer.parentNode;
+            parent.parentNode.appendChild(classworkbtn); // Если контейнер последний, просто добавляем в конец
+        }
+
+        classworkbtn.onclick = function () {
             dosetclasswork(subject);
             location.reload();
-        }
+        };
     }
 }
 

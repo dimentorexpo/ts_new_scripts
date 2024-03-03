@@ -107,15 +107,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	}
 	// Конец блока с инфрой
 	if (request.name === "ChM") {
-
-
 		if (request.question == 'sendResponse') {
 			fetch(request.addr, request.options)
 				.then(response => response.text())
 				.then(result => { sendResponse({ answer: result, respName: request.respName }) });
 			return true;
 		}
-
 	}
 	const extensionId = chrome.runtime.id
 	if (request.question === "get-extension-id") {
@@ -143,6 +140,5 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 				callback
 			);
 		}
-	}
-	
+	}	
 });
