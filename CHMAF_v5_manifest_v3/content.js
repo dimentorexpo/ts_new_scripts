@@ -110,7 +110,6 @@ var win_mainmenu = // описание кнопок меню
         <div id="crmopersstatuses" class="onlyfortp">🧮Статусы CRM2</div>
         <div id="butMarks">🎭 Оценки</div>
         <div id="otkaz" class="onlyfortp">❌Отказ от помощи</div>
-        <div id="smartroomform" class="onlyfortp">🦐Smartroom</div>
         <div id="butLessonInfo">🎓 Lesson Info</div>
 		<div id="butFrozeChat">❄ Auto Respond</div>
         <div id="radioPlayer">📻 Radio</div>
@@ -654,7 +653,6 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     document.getElementById('JiraOpenForm').onclick = getJiraOpenFormPress;
     document.getElementById('crmopersstatuses').onclick = getcrmopersstatusesButtonPress;
     document.getElementById('butMarks').onclick = getbutMarksButtonPress;
-    document.getElementById('smartroomform').onclick = getsmartroomformButtonPress;
     document.getElementById('butLessonInfo').onclick = getbutLessonInfoButtonPress;
     document.getElementById('radioPlayer').onclick = getradioPlayerButtonPress;
     document.getElementById('buttonGetStat').onclick = getbuttonGetStatButtonPress;
