@@ -22,7 +22,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		});
 	}
 
-	if (request.action === 'getFetchRequest') { // обработчик универсального запроса
+/* 	if (request.action === 'getFetchRequest') { // обработчик универсального запроса
 		const url = request.fetchURL;
 		const requestOptions = request.requestOptions;
 
@@ -41,71 +41,28 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             });
 
         return true; // Возвращаем true для асинхронной отправки ответа
-	}
+	} */
+	
+	if (request.action === 'getFetchRequest') {
+    const url = request.fetchURL;
+    const requestOptions = request.requestOptions;
 
-	// Блок с инфрой и Jira
-	if (request.action === "checkInfraAuth") { // проверка авторизации в системе, чтобы делать запросы
-		makeFetchRequest(`https://api-infra.skyeng.ru/api/v1/session`, 'GET')
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
+    (async () => {
+        try {
+            const response = await fetch(url, requestOptions);
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.statusText);
+            }
+            const text = await response.text(); // Или response.json(), если ожидается JSON
+            sendResponse({ success: true, fetchansver: text });
+        } catch (error) {
+            sendResponse({ success: false, error: error.message });
+        }
+    })();
 
-	if (request.action === "checkInfraHistory") { // проверка истории обращений
-		const infraOID = request.infraOID;
-		makeFetchRequest(`https://api-infra.skyeng.ru/api/v1/rs/requests?reporterId=${infraOID}&approverId=${infraOID}&maxResults=40&page=1`, 'GET')
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
+    return true; // Возвращаем true для асинхронной отправки ответа
+}
 
-	if (request.action === "checkTimeLinkInTask") { // проверка ссылки на обращение в Time в задаче Jira
-		const taskId = request.taskId;
-		makeFetchRequest(`https://jira.skyeng.tech/browse/${taskId}`, 'GET')
-			.then(response => response.text())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-
-	if (request.action === "sendRequestToCreate") { // отправка запроса на создание задачи в QA
-		const requestOptions = request.requestOptions
-		fetch("https://api-infra.skyeng.ru/api/v1/rs/request", requestOptions)
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-
-	if (request.action === "getListOfTypes") { // получение перечня тематика QA канала
-		const category = request.category;
-		makeFetchRequest(`https://api-infra.skyeng.ru/api/v1/rs/categories/${category}/request-types`, 'GET')
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-
-	if (request.action === "getOptionsCommunication") { // получение опций выпадающего списка для communication problems
-		const ioperId = request.ioperId;
-		fetch(`https://api-infra.skyeng.ru/api/v1/rs/request-types/541/form`, {
-			headers: {
-				'accept': 'application/json',
-				'content-type': 'application/json'
-			},
-			referrer: 'https://infra.skyeng.ru/',
-			body: `{\"reporterId\":${ioperId},\"data\":{}}`,
-			method: 'PATCH',
-			credentials: 'include'
-		})
-			.then(response => response.json())
-			.then(data => sendResponse(data))
-			.catch(sendErrorResponse);
-		return true;
-	}
-	// Конец блока с инфрой
 	if (request.name === "ChM") {
 		if (request.question == 'sendResponse') {
 			fetch(request.addr, request.options)
