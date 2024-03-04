@@ -1,3 +1,4 @@
+let configsObj;
 var win_Autoschedule =  // описание элементов окна статуса уроков
     `<div class="maindivst" style="display: flex; width: 700px;">
         <span style="width: 1060px">
@@ -20,134 +21,154 @@ var win_Autoschedule =  // описание элементов окна стат
 const wintAutoSchedule = createWindowCRM('AF_Autoschedule', 'winTopAutoSchedule', 'winLeftAutoSchedule', win_Autoschedule);
 hideWindowOnDoubleClick('AF_Autoschedule');
 
-document.getElementById('hideMeLessonStatus').onclick = function () { // скрытие окна статус урока
-    if (document.getElementById('AF_Autoschedule').style.display == '') {
-        document.getElementById('AF_Autoschedule').style.display = 'none'
-        document.getElementById('aptabledata').innerText = "";
-    }
+document.getElementById('hideMeAutoSchedule').onclick = function () { // скрытие окна статус урока
+    document.getElementById('AF_Autoschedule').style.display = 'none'
+    document.querySelector('#aptabledata').innerText = "";
+    document.querySelector('#studentAPSearch').value = "";
+}
+
+document.getElementById('clearAutoSchedule').onclick = function () { // скрытие окна статус урока
+    document.querySelector('#aptabledata').innerText = "";
+    document.querySelector('#studentAPSearch').value = "";
 }
 
 document.getElementById('butAutoschedule').onclick = function () {
-    //setdatesfilds();
-
     if (document.getElementById('AF_Autoschedule').style.display == '') {
         document.getElementById('AF_Autoschedule').style.display = 'none'
         document.getElementById('idmymenucrm').style.display = 'none'
     } else {
         document.getElementById('AF_Autoschedule').style.display = ''
         document.getElementById('idmymenucrm').style.display = 'none'
+		configsObj = ''
+		
+		const fetchURL = `https://backend.skyeng.ru/api/products/configurations/`;
+        const requestOptions = {
+            method: 'GET'
+        };
+
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+            if (!response.success) {
+                alert('Не удалось выполнить запрос: ' + response.error);
+                return;
+            } else {
+                const otvetConfigs = JSON.parse(response.fetchansver);
+				configsObj = new Map(otvetConfigs.data.map(d => [d.serviceTypeKey, d.shortTitle]));
+				console.log(configsObj)
+            }
+        })	
     }
 }
 
 function parseSrvAndAP() {
-	const studid = document.getElementById('studentAPSearch').value.trim()
-	let massivOfSrvIDs = []
-	if (studid.length < 3) {
-		alert("ID не введен или меньше трех символов. Пожалуйста, введите корректный ID и повторите попытку!")
-	} else {
-		    const fetchURL = `https://backend.skyeng.ru/api/students/${studid}/education-services/`;
-			const requestOptions = {
-				method: 'GET'
-			};
 
-			chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-				if (!response.success) {
-					alert('Не удалось выполнить запрос: ' + response.error);
-					return;
-				} else {
-					document.querySelector('#aptabledata').style.display = "";
-					document.querySelector('#aptabledata').innerText = "Загрузка. Если информация не появилась нажмите повторно на кнопку получить инфа";
-					const otvetServices = JSON.parse(response.fetchansver);
-					console.log(otvetServices)
-					if (otvetServices.data.length !=0)  {
-						checkAPAvailability(otvetServices.data)
-					} else {
-						document.querySelector('#aptabledata').innerText = "Услуги отсутствуют или не прошли фильтр";
-					}
-					
-				
-				}
-			})
-		
-	}
+    const studid = document.getElementById('studentAPSearch').value.trim()
+    let massivOfSrvIDs = []
+    if (studid.length < 3) {
+        alert("ID не введен или меньше трех символов. Пожалуйста, введите корректный ID и повторите попытку!")
+    } else {
+        const fetchURL = `https://backend.skyeng.ru/api/students/${studid}/education-services/`;
+        const requestOptions = {
+            method: 'GET'
+        };
+
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+            if (!response.success) {
+                alert('Не удалось выполнить запрос: ' + response.error);
+                return;
+            } else {
+                document.querySelector('#aptabledata').style.display = "";
+                document.querySelector('#aptabledata').innerText = "Загрузка. Если информация не появилась нажмите повторно на кнопку получить инфа";
+                const otvetServices = JSON.parse(response.fetchansver);
+                console.log(otvetServices)
+                if (otvetServices.data.length != 0) {
+                    checkAPAvailability(otvetServices.data)
+                } else {
+                    document.querySelector('#aptabledata').innerText = "Услуги отсутствуют или не прошли фильтр";
+                }
+            }
+        })
+
+    }
 }
 
 function checkAPAvailability(items) {
-	const table = document.createElement('table');
-	table.style.width = '99.4%';
-	table.style.color = 'bisque';
-	table.style.fontWeight = '500';
-	table.style.backgroundColor = '#464451';
-	table.style.borderStyle = 'double';
-	table.style.fontSize = '13px';
+    const table = document.createElement('table');
+    table.style.width = '99.4%';
+    table.style.color = 'bisque';
+    table.style.fontWeight = '500';
+    table.style.backgroundColor = '#464451';
+    table.style.borderStyle = 'double';
+    table.style.fontSize = '13px';
 
-	const headers = ["ID услуги", "STK услуги", "Статус АП", "Причина недоступности"];
-	let headerRow = document.createElement('tr');
-	headers.forEach(header => {
-		let th = document.createElement('th');
-		th.textContent = header;
-		th.style = 'text-align:center; font-weight:700; background:dimgrey; border:1px solid black; padding:5px; position: sticky; top: 0;'
-		headerRow.appendChild(th);
-	});
-	table.appendChild(headerRow);
-					
-	if (items) {
-		items.forEach(item => {
-			if (item.serviceTypeKey !== 'english_adult_self_study' && item.serviceTypeKey !== 'english_adult_not_native_speaker_talks_15min') {
-			  // Здесь ваш код для обработки элемента, который не соответствует условию
-			  
-				const fetchURL = `https://teachers-schedule.skyeng.ru/api/education-services/${item.id}/auto-schedule/is-available/`;
-				const requestOptions = {
-					method: 'GET'
-				};
+    const headers = ["ID услуги", "STK услуги", "Статус АП", "Причина недоступности"];
+    let headerRow = document.createElement('tr');
+    headers.forEach(header => {
+        let th = document.createElement('th');
+        th.textContent = header;
+        th.style = 'text-align:center; font-weight:700; background:dimgrey; border:1px solid black; padding:5px; position: sticky; top: 0;'
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
 
-				chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-					if (!response.success) {
-						alert('Не удалось выполнить запрос: ' + response.error);
-						return;
-					} else {
-						const otvetAPstatus = JSON.parse(response.fetchansver);
-						console.log(otvetAPstatus)
+    if (items) {
+        items.forEach(item => {
+            if (item.serviceTypeKey !== 'english_adult_self_study' && item.serviceTypeKey !== 'english_adult_not_native_speaker_talks_15min' && item.serviceTypeKey !==  'life_adult') {
+                // Здесь ваш код для обработки элемента, который не соответствует условию
+
+                const fetchURL = `https://teachers-schedule.skyeng.ru/api/education-services/${item.id}/auto-schedule/is-available/`;
+                const requestOptions = {
+                    method: 'GET'
+                };
+
+                chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+                    if (!response.success) {
+                        alert('Не удалось выполнить запрос: ' + response.error);
+                        return;
+                    } else {
+                        const otvetAPstatus = JSON.parse(response.fetchansver);
+                        console.log(otvetAPstatus)
+
+                        let serviceId = item.id;
+						 let STKname
+						if (configsObj.has(item.serviceTypeKey)) {
+                            STKname = configsObj.get(item.serviceTypeKey);
+                        }
 						
-							let serviceId = item.id;
-							let STKname = item.serviceTypeKey
-                            let row = document.createElement('tr');
-                            row.classList = "rowOfLessonStatus"
-                            let cell;
-    
-                            cell = document.createElement('td');
-                            cell.textContent = serviceId;
-                            cell.style = "border: 1px solid black; font-size:12px;"
-                            row.appendChild(cell);
-							
-							 cell = document.createElement('td');
-                            cell.textContent = STKname;
-                            cell.style = "border: 1px solid black; font-size:12px;"
-                            row.appendChild(cell);
-    
-                            let isDostupenAP = otvetAPstatus.data.isAvailable;
-                            cell = document.createElement('td');
-                            cell.innerHTML = isDostupenAP == true ? `<span style="color:#1de51d; font-weight: 700; font-size: 13px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">Доступен</span>` : `<span style="color:coral;  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); font-weight: 700; font-size: 13px;">Не доступен</span>`
-                            cell.style = "border: 1px solid black; font-size:12px;"
-                            row.appendChild(cell);
-    
-                            let reasonNedostupen = otvetAPstatus.data.reasons;
-                            cell = document.createElement('td');
-                            cell.textContent = reasonNedostupen.length == 0 ? "➖"  : reasonNedostupen
-							cell.style = "border: 1px solid black; font-size:12px;"
-                            row.appendChild(cell);
-        
-                            table.appendChild(row);
-                       
+                      //  let STKname = item.serviceTypeKey
+                        let row = document.createElement('tr');
+                        row.classList = "rowOfLessonStatus"
+                        let cell;
 
-                    document.getElementById('aptabledata').innerHTML = '';
-                    document.getElementById('aptabledata').appendChild(table);
-						
-					}
-				})
-			}
-		  });
-	}
+                        cell = document.createElement('td');
+                        cell.textContent = serviceId;
+                        cell.style = "border: 1px solid black; font-size:12px;"
+                        row.appendChild(cell);
+
+                        cell = document.createElement('td');
+                        cell.textContent = STKname;
+                        cell.style = "border: 1px solid black; font-size:12px;"
+                        row.appendChild(cell);
+
+                        let isDostupenAP = otvetAPstatus.data.isAvailable;
+                        cell = document.createElement('td');
+                        cell.innerHTML = isDostupenAP == true ? `<span style="color:#1de51d; font-weight: 700; font-size: 13px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">Доступен</span>` : `<span style="color:coral;  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); font-weight: 700; font-size: 13px;">Недоступен</span>`
+                        cell.style = "border: 1px solid black; font-size:12px;"
+                        row.appendChild(cell);
+
+                        let reasonNedostupen = otvetAPstatus.data.reasons;
+                        cell = document.createElement('td');
+                        cell.textContent = reasonNedostupen.length == 0 ? "➖" : reasonNedostupen
+                        cell.style = "border: 1px solid black; font-size:12px;"
+                        row.appendChild(cell);
+                        table.appendChild(row);
+                        document.getElementById('aptabledata').innerHTML = '';
+                        document.getElementById('aptabledata').appendChild(table);
+
+                    }
+                })
+            }
+        });
+    }
 }
 
 let btnStartSearchAP = document.getElementById('startlookAPstatus')
