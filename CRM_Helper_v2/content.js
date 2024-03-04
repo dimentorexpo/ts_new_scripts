@@ -22,6 +22,7 @@ const win_Menu = // описание кнопок меню
     <div id="SrvDskCRMbtn" class="menubtnsCRM">🛠 Service Desk</div>
     <div id="smartroomformCRM" class="menubtnsCRM">🦐Smartroom</div>
     <div id="butLessonInfoCRM" class="menubtnsCRM">🎓 Lesson Info</div>
+    <div id="butAutoschedule" class="menubtnsCRM">👽 Автоподбор</div>
     <div id="butdiagtoolsCRM" class="menubtnsCRM">🛠 Diagnostic tools</div>
     <div id="btnOperStatus" class="menubtnsCRM">🕵️‍♀️ OperStatus</div>
     <div id="btnCreateTestRoom" class="menubtnsCRM">🎲 Create Test Room</div>

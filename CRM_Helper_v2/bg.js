@@ -1,5 +1,5 @@
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-	if (request.action === 'getFetchRequest') {
+/* 	if (request.action === 'getFetchRequest') {
 		const url = request.fetchURL;
 		const requestOptions = request.requestOptions;
 
@@ -22,5 +22,25 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			});
 
 		return true; // Возвращаем true для асинхронной отправки ответа
-	}
+	} */
+	
+		if (request.action === 'getFetchRequest') {
+    const url = request.fetchURL;
+    const requestOptions = request.requestOptions;
+
+    (async () => {
+        try {
+            const response = await fetch(url, requestOptions);
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.statusText);
+            }
+            const text = await response.text(); // Или response.json(), если ожидается JSON
+            sendResponse({ success: true, fetchansver: text });
+        } catch (error) {
+            sendResponse({ success: false, error: error.message });
+        }
+    })();
+
+    return true; // Возвращаем true для асинхронной отправки ответа
+}
 });
