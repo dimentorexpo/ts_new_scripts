@@ -122,29 +122,51 @@ function gettaskButButtonPress() { // функция открытия окна �
     if (document.getElementById('AF_Createtask').style.display == 'none') {
         document.getElementById('AF_Createtask').style.display = ''
         taskBut.classList.add('activeScriptBtn')
+		
+			const fetchURL = `https://backend.skyeng.ru/api/products/configurations/`;
+			const requestOptions = {
+				method: 'GET'
+			};
 
-        chrome.runtime.sendMessage({ action: 'getEducationSrv' }, function (allUserSTK) {
-            srvcont = allUserSTK;
-        })
-
+			chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+				if (!response.success) {
+					alert('Не удалось выполнить запрос: ' + response.error);
+					return;
+				} else {
+					const otvet = JSON.parse(response.fetchansver);
+					srvcont = otvet
+				}
+			})
+		
         document.getElementById('getuserservices').onclick = function () {
             if (document.getElementById('serviceinf').innerHTML != '')
                 document.getElementById('serviceinf').innerHTML = '';
 
             let idshka = document.getElementById('useriddata').value.trim();
-            chrome.runtime.sendMessage({ action: 'getUserServices', userid: idshka }, function (userServices) {
+			
+				const fetchURL = `https://backend.skyeng.ru/api/persons/${idshka}/education-services/`;
+				const requestOptions = {
+					method: 'GET'
+				};
 
-                for (let i = 0; i < userServices.data.length; +i++) {
+				chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+						if (!response.success) {
+							alert('Не удалось выполнить запрос: ' + response.error);
+								return;
+							} else {
+								const otvetEdServ = JSON.parse(response.fetchansver);
+								
+					for (let i = 0; i < otvetEdServ.data.length; +i++) {
                     for (let j = 0; j < srvcont.data.length; j++) {
-                        if (srvcont.data[j].serviceTypeKey == userServices.data[i].serviceTypeKey) {
-                            userServices.data[i].serviceTypeKey = srvcont.data[j].shortTitle
-                            if (userServices.data[i].incorrectnessReason == null) {
-                                if (userServices.data[i].stage == 'regular_lessons') {
-                                    document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${userServices.data[i].id}" style="background: #2b602b; color:bisque;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Регулярные занятия |' + ' 💰 Баланс: ' + (userServices.data[i].balance != null ? userServices.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + userServices.data[i].id + ' — ' + userServices.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + userServices.data[i].student.general.id + ' ' + (userServices.data[i].student.general.name != null ? userServices.data[i].student.general.name : '') + ' ' + (userServices.data[i].student.general.surname != null ? userServices.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: ' + (userServices.data[i].teacher != null ? userServices.data[i].teacher.general.id + ' ' + userServices.data[i].teacher.general.name + ' ' + userServices.data[i].teacher.general.surname : ' —') + '<br>' + '</div>'
-                                } else if (userServices.data[i].stage == 'lost') {
-                                    document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${userServices.data[i].id}" style="background: #5a0f77; color:bisque;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Потерянная услуга |' + ' 💰 Баланс: ' + (userServices.data[i].balance != null ? userServices.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + userServices.data[i].id + ' — ' + userServices.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + userServices.data[i].student.general.id + ' ' + (userServices.data[i].student.general.name != null ? userServices.data[i].student.general.name : '') + ' ' + (userServices.data[i].student.general.surname != null ? userServices.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: —' + '</div>'
-                                } else if (userServices.data[i].stage == "after_trial" || userServices.data[i].stage == "before_call") {
-                                    document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${userServices.data[i].id}" style="background: #d59f34; color:#ffffff;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Этап ВУ |' + ' 💰 Баланс: ' + (userServices.data[i].balance != null ? userServices.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + userServices.data[i].id + ' — ' + userServices.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + userServices.data[i].student.general.id + ' ' + (userServices.data[i].student.general.name != null ? userServices.data[i].student.general.name : '') + ' ' + (userServices.data[i].student.general.surname != null ? userServices.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: —' + '</div>'
+                        if (srvcont.data[j].serviceTypeKey == otvetEdServ.data[i].serviceTypeKey) {
+                            otvetEdServ.data[i].serviceTypeKey = srvcont.data[j].shortTitle
+                            if (otvetEdServ.data[i].incorrectnessReason == null) {
+                                if (otvetEdServ.data[i].stage == 'regular_lessons') {
+                                    document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${otvetEdServ.data[i].id}" style="background: #2b602b; color:bisque;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Регулярные занятия |' + ' 💰 Баланс: ' + (otvetEdServ.data[i].balance != null ? otvetEdServ.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + otvetEdServ.data[i].id + ' — ' + otvetEdServ.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + otvetEdServ.data[i].student.general.id + ' ' + (otvetEdServ.data[i].student.general.name != null ? otvetEdServ.data[i].student.general.name : '') + ' ' + (otvetEdServ.data[i].student.general.surname != null ? otvetEdServ.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: ' + (otvetEdServ.data[i].teacher != null ? otvetEdServ.data[i].teacher.general.id + ' ' + otvetEdServ.data[i].teacher.general.name + ' ' + otvetEdServ.data[i].teacher.general.surname : ' —') + '<br>' + '</div>'
+                                } else if (otvetEdServ.data[i].stage == 'lost') {
+                                    document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${otvetEdServ.data[i].id}" style="background: #5a0f77; color:bisque;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Потерянная услуга |' + ' 💰 Баланс: ' + (otvetEdServ.data[i].balance != null ? otvetEdServ.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + otvetEdServ.data[i].id + ' — ' + otvetEdServ.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + otvetEdServ.data[i].student.general.id + ' ' + (otvetEdServ.data[i].student.general.name != null ? otvetEdServ.data[i].student.general.name : '') + ' ' + (otvetEdServ.data[i].student.general.surname != null ? otvetEdServ.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: —' + '</div>'
+                                } else if (otvetEdServ.data[i].stage == "after_trial" || otvetEdServ.data[i].stage == "before_call") {
+                                    document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${otvetEdServ.data[i].id}" style="background: #d59f34; color:#ffffff;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Этап ВУ |' + ' 💰 Баланс: ' + (otvetEdServ.data[i].balance != null ? otvetEdServ.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + otvetEdServ.data[i].id + ' — ' + otvetEdServ.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + otvetEdServ.data[i].student.general.id + ' ' + (otvetEdServ.data[i].student.general.name != null ? otvetEdServ.data[i].student.general.name : '') + ' ' + (otvetEdServ.data[i].student.general.surname != null ? otvetEdServ.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: —' + '</div>'
                                 }
                             }
                         }
@@ -156,7 +178,10 @@ function gettaskButButtonPress() { // функция открытия окна �
                         document.getElementById('taskserviceid').value = document.getElementsByName('outservfield')[z].title
                     }
                 }
-            })
+						}
+
+					})
+  
         }
 
         document.getElementById('refreshhashcreateform').click();
