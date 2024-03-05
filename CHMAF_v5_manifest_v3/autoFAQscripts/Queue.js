@@ -76,12 +76,12 @@ function updateTimer(startTime, element) {
     seconds = (seconds < 10) ? '0' + seconds : seconds;
 
     element.textContent = `${hours}:${minutes}:${seconds}`;
-	
-	if (hours == "00" && minutes == "00" && seconds <= 60) {
-		element.style = "color:#f9ff00; font-weight:700"
-	} else {
-		element.style.color = ""
-	}
+
+    if (hours == "00" && minutes == "00" && seconds <= 60) {
+        element.style = "color:#f9ff00; font-weight:700"
+    } else {
+        element.style.color = ""
+    }
 }
 
 // Функция для инициализации таймера
@@ -133,27 +133,27 @@ async function fetchAllPages(url, initialBodyContent) {
 }
 
 function takeOnMe(chatID) {
-	  
-            let chat_id = chatID;
-            let operator_id = operatorId;
-    
-            const assignChat = (assignToOperatorId) => {
-                fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-                    headers: { "content-type": "application/json" },
-                    credentials: "include",
-                    body: JSON.stringify({ 
-                        command: "DO_ASSIGN_CONVERSATION",
-                        conversationId: chat_id,
-                        assignToOperatorId: assignToOperatorId 
-                    }),
-                    method: "POST"
-                });
-            };
-    
-            assignChat("null");
-            setTimeout(() => assignChat(operator_id), 2000);
-        
-} ;// конец обработчика нажатия кнопки "Забрать"
+
+    let chat_id = chatID;
+    let operator_id = operatorId;
+
+    const assignChat = (assignToOperatorId) => {
+        fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+            headers: { "content-type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+                command: "DO_ASSIGN_CONVERSATION",
+                conversationId: chat_id,
+                assignToOperatorId: assignToOperatorId
+            }),
+            method: "POST"
+        });
+    };
+
+    assignChat("null");
+    setTimeout(() => assignChat(operator_id), 2000);
+
+};// конец обработчика нажатия кнопки "Забрать"
 
 let getOptions = document.getElementById('AFStatusType')
 async function getAllChatsByStatus() {
@@ -170,26 +170,26 @@ async function getAllChatsByStatus() {
 
     // Получаем текущую дату и время в UTC
     // Текущая дата в UTC
-	const now = new Date(); // Текущее время в UTC
-	const mskOffset = 3 * 60 * 60 * 1000; // Смещение Москвы в миллисекундах (UTC+3)
+    const now = new Date(); // Текущее время в UTC
+    const mskOffset = 3 * 60 * 60 * 1000; // Смещение Москвы в миллисекундах (UTC+3)
 
-	// Текущее время по Москве
-	const mskTime = new Date(now.getTime() + mskOffset);
+    // Текущее время по Москве
+    const mskTime = new Date(now.getTime() + mskOffset);
 
-	// Установка tsFrom и tsTo с учетом времени в Москве
-	let tsFrom, tsTo;
-	if (mskTime.getUTCHours() < 21) {
-	  // Если в Москве еще не наступило 21:00 UTC, отсчитываем от вчерашнего дня
-	  tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() - 1, 21, 0, 0, 0)).toISOString();
-	  tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 20, 59, 59, 59)).toISOString();
-	} else {
-	  // Если в Москве уже прошло 21:00 UTC, отсчитываем от текущего дня
-	  tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 21, 0, 0, 0)).toISOString();
-	  tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() + 1, 20, 59, 59, 59)).toISOString();
-	}
+    // Установка tsFrom и tsTo с учетом времени в Москве
+    let tsFrom, tsTo;
+    if (mskTime.getUTCHours() < 21) {
+        // Если в Москве еще не наступило 21:00 UTC, отсчитываем от вчерашнего дня
+        tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() - 1, 21, 0, 0, 0)).toISOString();
+        tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 20, 59, 59, 59)).toISOString();
+    } else {
+        // Если в Москве уже прошло 21:00 UTC, отсчитываем от текущего дня
+        tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 21, 0, 0, 0)).toISOString();
+        tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() + 1, 20, 59, 59, 59)).toISOString();
+    }
 
-	console.log(tsFrom);
-	console.log(tsTo);
+    console.log(tsFrom);
+    console.log(tsTo);
 
     let setgroupList = '';
     if (opsection == "ТП" || opsection == "ТП ОС") {
@@ -288,7 +288,7 @@ async function getAllChatsByStatus() {
 
         let getThisChat = document.createElement('button');
         getThisChat.className = 'mainButton';
-		getThisChat.name = 'assignToMe';
+        getThisChat.name = 'assignToMe';
         getThisChat.title = "Забрать этот чат";
         getThisChat.textContent = '😵';
 
@@ -353,16 +353,16 @@ async function getAllChatsByStatus() {
             }
         })
     }
-	
-	let allAssignBtns = document.getElementsByName('assignToMe')
-		for (let z=0; z<allAssignBtns.length;z++) {
-			allAssignBtns[z].addEventListener('click', function(event) {
-				event.stopPropagation();
-				takeOnMe(dataChts[z].conversationId)
-				console.log(dataChts[z].conversationId)
-			})
-		}
-	
+
+    let allAssignBtns = document.getElementsByName('assignToMe')
+    for (let z = 0; z < allAssignBtns.length; z++) {
+        allAssignBtns[z].addEventListener('click', function (event) {
+            event.stopPropagation();
+            takeOnMe(dataChts[z].conversationId)
+            console.log(dataChts[z].conversationId)
+        })
+    }
+
 };
 
 async function writeThemAll() {
@@ -391,7 +391,7 @@ async function writeThemAll() {
                     allFlags[i].textContent = "✅"
                 }
             } else {
-                console.log(dataChts[i].conversationId,"Чат исходящий или первый ответ уже есть, сбивать таймер AFRT для этого чата нет необходимости!")
+                console.log(dataChts[i].conversationId, "Чат исходящий или первый ответ уже есть, сбивать таймер AFRT для этого чата нет необходимости!")
             }
         }
 

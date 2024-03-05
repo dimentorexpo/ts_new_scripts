@@ -215,5 +215,5 @@ document.addEventListener('keyup', (event) => {
 recognition.addEventListener('end', () => {
     isRecognizing = false;
     document.getElementById('pushToTalk').classList.remove('active');
-	console.log('END SUCCESs')
+    console.log('END SUCCESs')
 });

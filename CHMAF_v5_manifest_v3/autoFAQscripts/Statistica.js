@@ -272,7 +272,7 @@ async function getStats() { // функция получения статист�
     }
 
     let sumchatclosed = document.createElement('div') // сумма закрытых чатов за сутки
-    sumchatclosed.innerHTML = 'Общая сумма закрытых чатов за сутки по отделу: ' + '<span id ="allChatsClsd">⏳ Loading</span>' 
+    sumchatclosed.innerHTML = 'Общая сумма закрытых чатов за сутки по отделу: ' + '<span id ="allChatsClsd">⏳ Loading</span>'
     sumchatclosed.style.marginLeft = '50px'
     document.getElementById('outputstatafield').append(sumchatclosed)
 
@@ -676,13 +676,13 @@ async function getopersSLA() {
     let alloperCSATsumma = 0;
     let alloperCSATcount = 0;
     let accumulator = 0;
-	let massivchikUntarget = new Set(); // Массив уникальный для чатов АФРТ вне таргета
-	let massivchikTarget = new Set(); // Массив уникальный для чатов АФРТ в таргете
-	let massivchikQueue = new Set(); // Массив уникальный для чатов в очередях
-	let uniqueIdsArrayUntarget  = []
-	let uniqueIdsArrayTarget = []
-	let uniquedArrayAllLength
-	let uniqueArrayQueue = []
+    let massivchikUntarget = new Set(); // Массив уникальный для чатов АФРТ вне таргета
+    let massivchikTarget = new Set(); // Массив уникальный для чатов АФРТ в таргете
+    let massivchikQueue = new Set(); // Массив уникальный для чатов в очередях
+    let uniqueIdsArrayUntarget = []
+    let uniqueIdsArrayTarget = []
+    let uniquedArrayAllLength
+    let uniqueArrayQueue = []
 
     alloperSLAclsed = 0;
     alloperChatsclsed = 0;
@@ -749,20 +749,20 @@ async function getopersSLA() {
                     indexOfFirstTimeInQueue = -1;
                     differenceInSeconds = 0;
 
-					const response = await fetch("https://skyeng.autofaq.ai/api/conversations/" + operdata.items[j].conversationId);
-					const fres = await response.json();
+                    const response = await fetch("https://skyeng.autofaq.ai/api/conversations/" + operdata.items[j].conversationId);
+                    const fres = await response.json();
 
                     //ЦИКЛ НАЧАЛО
                     if (fres.messages[fres.messages.length - 1].tpe == "Question") {
                         let groupFoundIndex = -1; // Индекс сообщения с нужной группой
-						let flagChatIsInQueue = -1; // Индекс сообщения с "Ищем для вас..."
+                        let flagChatIsInQueue = -1; // Индекс сообщения с "Ищем для вас..."
                         let firstMessageTime = fres.messages[fres.messages.length - 1].ts;
 
                         // Сначала ищем сообщение с нужной группой
                         for (let z = fres.messages.length - 1; z >= 0; z--) {
                             const message = fres.messages[z];
                             if (message.payload && message.payload.prevGroup === undefined && message.payload.group === "c7bbb211-a217-4ed3-8112-98728dc382d8") {
-                                groupFoundIndex = z;	
+                                groupFoundIndex = z;
                                 break; // Находим первое с конца сообщение с нужной группой и запоминаем его индекс
                             }
                         }
@@ -771,28 +771,28 @@ async function getopersSLA() {
                         if (groupFoundIndex !== -1) {
                             for (let b = groupFoundIndex; b >= 0; b--) {
                                 const message = fres.messages[b];
-								
-								if (message.tpe && typeof message.txt === 'string' && message.txt.includes("Ищем для вас")) {
-									flagChatIsInQueue = b							
-									if (flagChatIsInQueue !== -1) {
-										for (let v=flagChatIsInQueue; v >= 0; v--) {
-											const message = fres.messages[v];
-												if (message.tpe === "AnswerOperatorWithBot" || message.tpe === "AnswerOperator") {
-													let remember = message.ts;
-													let differInSecs = (new Date(remember) - new Date(firstMessageTime)) / 1000;
-													if (differInSecs > 60) {
-														//console.log(fres.id, firstMessageTime, remember, differInSecs);
-														massivchikQueue.add(fres.id)
-														break; // Прерываем цикл после нахождения и выполнения условий
-													} 
 
-												}
-										}
-									}
-								}
-									                               
-								
-								if (message.tpe === "AnswerOperatorWithBot" || message.tpe === "AnswerOperator") {
+                                if (message.tpe && typeof message.txt === 'string' && message.txt.includes("Ищем для вас")) {
+                                    flagChatIsInQueue = b
+                                    if (flagChatIsInQueue !== -1) {
+                                        for (let v = flagChatIsInQueue; v >= 0; v--) {
+                                            const message = fres.messages[v];
+                                            if (message.tpe === "AnswerOperatorWithBot" || message.tpe === "AnswerOperator") {
+                                                let remember = message.ts;
+                                                let differInSecs = (new Date(remember) - new Date(firstMessageTime)) / 1000;
+                                                if (differInSecs > 60) {
+                                                    //console.log(fres.id, firstMessageTime, remember, differInSecs);
+                                                    massivchikQueue.add(fres.id)
+                                                    break; // Прерываем цикл после нахождения и выполнения условий
+                                                }
+
+                                            }
+                                        }
+                                    }
+                                }
+
+
+                                if (message.tpe === "AnswerOperatorWithBot" || message.tpe === "AnswerOperator") {
                                     let remember = message.ts;
                                     let differInSecs = (new Date(remember) - new Date(firstMessageTime)) / 1000;
                                     if (differInSecs > 60) {
@@ -846,8 +846,8 @@ async function getopersSLA() {
             //console.log(uniqueIdsArrayTarget);
             uniquedArrayAllLength = +(uniqueIdsArrayUntarget.length + uniqueIdsArrayTarget.length)
             console.log(uniquedArrayAllLength);
-			uniqueArrayQueue = Array.from(massivchikQueue)
-			console.log("Массив очереди", uniqueArrayQueue)
+            uniqueArrayQueue = Array.from(massivchikQueue)
+            console.log("Массив очереди", uniqueArrayQueue)
 
             currentWidth += step;
             progressBar.style.width = Number(currentWidth.toFixed(1)) + "%";
@@ -873,31 +873,31 @@ async function getopersSLA() {
                 alloperaboveAFRT = (+arrayafrtcount.length + arrayafrtcountwithqueue.length)
             }
         }
-				let calcChatsClsContainer = ((((alloperChatsclsed - alloperSLAclsed) * 100) / 81) - alloperChatsclsed).toFixed(1);
-				let calcAFRTContainer = (((uniqueIdsArrayTarget.length * 100) / 86) - uniquedArrayAllLength).toFixed(1);
+        let calcChatsClsContainer = ((((alloperChatsclsed - alloperSLAclsed) * 100) / 81) - alloperChatsclsed).toFixed(1);
+        let calcAFRTContainer = (((uniqueIdsArrayTarget.length * 100) / 86) - uniquedArrayAllLength).toFixed(1);
 
-				document.getElementById('avgCsatonGroup').textContent = (alloperCSATsumma / alloperCSATcount).toFixed(2);
-				document.getElementById('allChatsClsd').textContent = alloperChatsclsed;
+        document.getElementById('avgCsatonGroup').textContent = (alloperCSATsumma / alloperCSATcount).toFixed(2);
+        document.getElementById('allChatsClsd').textContent = alloperChatsclsed;
 
-				document.getElementById('SLAonGroup').innerHTML = ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' +
-				  " Всего влияли на SLA Completed: " + alloperChatsclsed + " из них: " +
-				  `<div>` +
-				  "•🚫Вне таргета: " + alloperSLAclsed +
-				  "• ✅В таргете: " + (alloperChatsclsed - alloperSLAclsed) +
-				  " 🎯Для таргета 81% можем позволить просрочить:" +
-				  (Number(calcChatsClsContainer) < 0 ? `<span style="color:coral; font-weight:700">` + calcChatsClsContainer + `</span>` : `<span style="color:rgb(83, 219, 75); font-weight:700">` + calcChatsClsContainer + `</span>`) +
-				  " чатов" +
-				  `</div>`;
+        document.getElementById('SLAonGroup').innerHTML = ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' +
+            " Всего влияли на SLA Completed: " + alloperChatsclsed + " из них: " +
+            `<div>` +
+            "•🚫Вне таргета: " + alloperSLAclsed +
+            "• ✅В таргете: " + (alloperChatsclsed - alloperSLAclsed) +
+            " 🎯Для таргета 81% можем позволить просрочить:" +
+            (Number(calcChatsClsContainer) < 0 ? `<span style="color:coral; font-weight:700">` + calcChatsClsContainer + `</span>` : `<span style="color:rgb(83, 219, 75); font-weight:700">` + calcChatsClsContainer + `</span>`) +
+            " чатов" +
+            `</div>`;
 
-				document.getElementById('AFRTGroup').innerHTML = ((uniqueIdsArrayTarget.length / uniquedArrayAllLength) * 100).toFixed(1) + '%' +
-				  " Всего влияли на AFRT: " + uniquedArrayAllLength + " из них: " +
-				  `<div>` +
-				  "•🚫Вне таргета: " + uniqueIdsArrayUntarget.length +
-				  "• ✅В таргете: " + uniqueIdsArrayTarget.length +
-				  " 🎯Для таргета 86% можем позволить просрочить:" +
-				  (Number(calcAFRTContainer) < 0 ? (`<span style="color:coral; font-weight:700">` + calcAFRTContainer + `</span>`) + (`<span>` + " (чтобы выйти  в таргет, необходимо вовремя дать ответ в: " + Math.abs((calcAFRTContainer * 6.2)).toFixed(1) + `</span>` + `</span>`) : `<span style="color:rgb(83, 219, 75); font-weight:700">` + calcAFRTContainer + `</span>`) +
-				  " чатов" +
-				  `</div>`;
+        document.getElementById('AFRTGroup').innerHTML = ((uniqueIdsArrayTarget.length / uniquedArrayAllLength) * 100).toFixed(1) + '%' +
+            " Всего влияли на AFRT: " + uniquedArrayAllLength + " из них: " +
+            `<div>` +
+            "•🚫Вне таргета: " + uniqueIdsArrayUntarget.length +
+            "• ✅В таргете: " + uniqueIdsArrayTarget.length +
+            " 🎯Для таргета 86% можем позволить просрочить:" +
+            (Number(calcAFRTContainer) < 0 ? (`<span style="color:coral; font-weight:700">` + calcAFRTContainer + `</span>`) + (`<span>` + " (чтобы выйти  в таргет, необходимо вовремя дать ответ в: " + Math.abs((calcAFRTContainer * 6.2)).toFixed(1) + `</span>` + `</span>`) : `<span style="color:rgb(83, 219, 75); font-weight:700">` + calcAFRTContainer + `</span>`) +
+            " чатов" +
+            `</div>`;
 
         console.log('Chats above AFRT: ' + uniqueIdsArrayUntarget.length)
         console.log('All chats closed: ' + alloperChatsclsed)

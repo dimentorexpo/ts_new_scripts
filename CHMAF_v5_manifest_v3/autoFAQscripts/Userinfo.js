@@ -182,29 +182,29 @@ document.getElementById('getonetimepass').onclick = function () { //функци
     else {
         document.getElementById('getonetimepass').innerHTML = "✅";
         setTimeout(function () { document.getElementById('getonetimepass').innerHTML = "📱" }, 2000);
-			
-	const fetchURL = `https://id.skyeng.ru/admin/auth/one-time-password`;
-    const requestOptions = {
-        			"headers": {
-				"content-type": "application/x-www-form-urlencoded",
-			},
-			"body": `user_id_or_identity_for_one_time_password_form%5BuserIdOrIdentity%5D=${userId}&user_id_or_identity_for_one_time_password_form%5Bgenerate%5D=&user_id_or_identity_for_one_time_password_form%5B_token%5D=null`,
-			"method": "POST",
-			"mode": "cors",
-			"credentials": "include"
-    };
 
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otvetOTPMob= response.fetchansver;
-			     const convertres11 = otvetOTPMob.match(/Одноразовый пароль: (\d+)\./);
-				 const otp = convertres11 ? convertres11[1] : null;
-				 onetimepassout.value = otp;
-        }
-    })
+        const fetchURL = `https://id.skyeng.ru/admin/auth/one-time-password`;
+        const requestOptions = {
+            "headers": {
+                "content-type": "application/x-www-form-urlencoded",
+            },
+            "body": `user_id_or_identity_for_one_time_password_form%5BuserIdOrIdentity%5D=${userId}&user_id_or_identity_for_one_time_password_form%5Bgenerate%5D=&user_id_or_identity_for_one_time_password_form%5B_token%5D=null`,
+            "method": "POST",
+            "mode": "cors",
+            "credentials": "include"
+        };
+
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+            if (!response.success) {
+                alert('Не удалось выполнить запрос: ' + response.error);
+                return;
+            } else {
+                const otvetOTPMob = response.fetchansver;
+                const convertres11 = otvetOTPMob.match(/Одноразовый пароль: (\d+)\./);
+                const otp = convertres11 ? convertres11[1] : null;
+                onetimepassout.value = otp;
+            }
+        })
 
     };
     setTimeout(function () { document.getElementById('onetimepassout').value = "" }, 15000);
@@ -230,9 +230,9 @@ function checkemailandphoneidentity() {
     let idUser = document.getElementById('idstudent').value.trim()
     pochtaStatus.textContent = ''
     telefonStatus.textContent = ''
-	
-	
-	const fetchURL = `https://id.skyeng.ru/admin/users/${idUser}/update-contacts`;
+
+
+    const fetchURL = `https://id.skyeng.ru/admin/users/${idUser}/update-contacts`;
     const requestOptions = {
         method: 'GET'
     };
@@ -243,8 +243,8 @@ function checkemailandphoneidentity() {
             return;
         } else {
             const checkEmailAndIdty = response.fetchansver;
-			
-			if (flagusertype === "teacher") {
+
+            if (flagusertype === "teacher") {
                 console.log('It is a teacher!');
             } else if (flagusertype === "student") {
                 if (checkEmailAndIdty.includes('"identityEmail" disabled data-value=""') && checkEmailAndIdty.includes('"identityPhone" disabled data-value=""')) {
@@ -267,35 +267,35 @@ function checkemailandphoneidentity() {
 
 function getunhidephone() { //открывает телефон пользователя
     const polzID = document.getElementById('idstudent').value.trim();
-	
-	    const fetchURL = `https://backend.skyeng.ru/api/persons/${polzID}/personal-data/?pdType=phone&source=persons.profile`;
-		const requestOptions = {
-			method: 'GET'
-		};
 
-		chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-			if (!response.success) {
-				alert('Не удалось выполнить запрос: ' + response.error);
-				return;
-			} else {
-				const otvetPhone = JSON.parse(response.fetchansver);
-			       
-				   if (otvetPhone && otvetPhone.data && 'value' in otvetPhone.data) {
-					document.getElementById('phoneunhidden').textContent = otvetPhone.data.value;
-				} else {
-					// Handle the case where responsePhone or responsePhone.data is undefined, or value is not present
-					console.error('Failed to get user phone', otvetPhone);
-				}
+    const fetchURL = `https://backend.skyeng.ru/api/persons/${polzID}/personal-data/?pdType=phone&source=persons.profile`;
+    const requestOptions = {
+        method: 'GET'
+    };
 
-			}
-		})
-	
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        } else {
+            const otvetPhone = JSON.parse(response.fetchansver);
+
+            if (otvetPhone && otvetPhone.data && 'value' in otvetPhone.data) {
+                document.getElementById('phoneunhidden').textContent = otvetPhone.data.value;
+            } else {
+                // Handle the case where responsePhone or responsePhone.data is undefined, or value is not present
+                console.error('Failed to get user phone', otvetPhone);
+            }
+
+        }
+    })
+
 }
 
 function getunhideemail() { //открывает почту пользователя
     const polzIDNew = document.getElementById('idstudent').value.trim();
-		
-	const fetchURL = `https://backend.skyeng.ru/api/persons/${polzIDNew}/personal-data/?pdType=email&source=persons.profile`;
+
+    const fetchURL = `https://backend.skyeng.ru/api/persons/${polzIDNew}/personal-data/?pdType=email&source=persons.profile`;
     const requestOptions = {
         method: 'GET'
     };
@@ -306,32 +306,32 @@ function getunhideemail() { //открывает почту пользовате
             return;
         } else {
             const otvetEmail = JSON.parse(response.fetchansver);
-			        if (otvetEmail && otvetEmail.data && 'value' in otvetEmail.data) {
-						document.getElementById('mailunhidden').textContent = otvetEmail.data.value;
-					} else {
-						// Handle the case where responseEmail or responseEmail.data is undefined, or value is not present
-						console.error('Failed to get user email', otvetEmail);
-					}
+            if (otvetEmail && otvetEmail.data && 'value' in otvetEmail.data) {
+                document.getElementById('mailunhidden').textContent = otvetEmail.data.value;
+            } else {
+                // Handle the case where responseEmail or responseEmail.data is undefined, or value is not present
+                console.error('Failed to get user email', otvetEmail);
+            }
         }
     })
 
 }
 
 let servicecontainer;
-	const fetchURL = `https://backend.skyeng.ru/api/products/configurations/`;
-    const requestOptions = {
-        method: 'GET'
-    };
+const fetchURL = `https://backend.skyeng.ru/api/products/configurations/`;
+const requestOptions = {
+    method: 'GET'
+};
 
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otvet = JSON.parse(response.fetchansver);
-			servicecontainer = otvet
-        }
-    })
+chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+    if (!response.success) {
+        alert('Не удалось выполнить запрос: ' + response.error);
+        return;
+    } else {
+        const otvet = JSON.parse(response.fetchansver);
+        servicecontainer = otvet
+    }
+})
 
 let pochtaStatus = document.getElementById('pochtaIdentity')
 let telefonStatus = document.getElementById('telefonIdentity')
@@ -340,7 +340,7 @@ document.getElementById('getlessonpast').onclick = function () { // показы
     document.getElementById('timetabledata').innerHTML = "";
     let stid = document.getElementById('idstudent').value.trim();
     let pastlessondata = "";
-	
+
     const fetchURL = `https://backend.skyeng.ru/api/students/${stid}/timetable/lessons-history/?page=0`;
     const requestOptions = {
         method: 'GET'
@@ -353,121 +353,12 @@ document.getElementById('getlessonpast').onclick = function () { // показы
         } else {
             const otvetHistoryPast = JSON.parse(response.fetchansver);
 
-			        if (otvetHistoryPast != null) {
-            if (otvetHistoryPast.data == "") {
-                document.getElementById('timetabledata').innerHTML = "Еще не было уроков";
-            } else {
-                for (let i = 0; i < otvetHistoryPast.data.length; i++) {
-                    let d = new Date(otvetHistoryPast.data[i].startedAt)
-                    let minutka;
-                    let denek;
-                    let mesacok;
-                    let chasok;
-                    if (d.getHours() < 10) {
-                        chasok = "0" + (d.getUTCHours() + 3);
-                    } else {
-                        chasok = (d.getUTCHours() + 3);
-                    }
-                    if (d.getMinutes() < 10) {
-                        minutka = "0" + d.getMinutes();
-                    } else {
-                        minutka = d.getMinutes();
-                    }
-                    if (d.getDate() < 10) {
-                        denek = "0" + d.getDate();
-                    } else {
-                        denek = d.getDate();
-                    }
-                    if (d.getMonth() + 1 < 10) {
-                        mesacok = "0" + (d.getMonth() + 1);
-                    } else {
-                        mesacok = d.getMonth() + 1;
-                    }
-                    if (otvetHistoryPast.data[i].status == "missed_by_student") {
-                        otvetHistoryPast.data[i].status = "Пропущен учеником";
-                    } else if (otvetHistoryPast.data[i].status == "canceled_by_student") {
-                        otvetHistoryPast.data[i].status = "Отменен учеником";
-                    } else if (otvetHistoryPast.data[i].status == "success") {
-                        otvetHistoryPast.data[i].status = "Прошел";
-                    } else if (otvetHistoryPast.data[i].status == "moved_by_student") {
-                        otvetHistoryPast.data[i].status = "Перенесен учеником";
-                    } else if (otvetHistoryPast.data[i].status == "canceled_by_teacher") {
-                        otvetHistoryPast.data[i].status = "Отменен учителем";
-                    } else if (otvetHistoryPast.data[i].status == "student_refused_to_study") {
-                        otvetHistoryPast.data[i].status = "Отказался от обучения"
-                    } else if (otvetHistoryPast.data[i].status == "interrupted") {
-                        otvetHistoryPast.data[i].status = "Прерван"
-                    } else if (otvetHistoryPast.data[i].status == "did_not_get_through_student") {
-                        otvetHistoryPast.data[i].status = "Не смогли связаться с У"
-                    } else if (otvetHistoryPast.data[i].status == "canceled_not_marked") {
-                        otvetHistoryPast.data[i].status = "Не отмечен учителем вовремя"
-                    }
-
-                    if (otvetHistoryPast.data[i].lessonType == "regular") {
-                        otvetHistoryPast.data[i].lessonType = "Регулярный";
-                    } else if (otvetHistoryPast.data[i].lessonType == "single") {
-                        otvetHistoryPast.data[i].lessonType = "Одиночный";
-                    } else if (otvetHistoryPast.data[i].lessonType == "trial") {
-                        otvetHistoryPast.data[i].lessonType = "Пробный";
-                    }
-
-                    for (let j = 0; j < servicecontainer.data.length; j++) {
-                        if (servicecontainer.data[j].serviceTypeKey == otvetHistoryPast.data[i].educationService.serviceTypeKey)
-                            otvetHistoryPast.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
-                    }
-
-                    if (otvetHistoryPast.data[i].educationService.serviceTypeKey == null) {
-                        otvetHistoryPast.data[i].educationService.serviceTypeKey = "Услуга была в CRM1, см позднее обозначение!"
-                    }
-
-                    if (otvetHistoryPast.data[i].teacher != null) {
-                        pastlessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka +
-                            '<span style="color:#c9dbd2; font-weight:900;"> Статус: </span>' + (otvetHistoryPast.data[i].status == "Прошел" ? ('<span style="color:#00FF7F;">' + otvetHistoryPast.data[i].status + '</span>') : ('<span style="color:coral; font-weight:700">' + otvetHistoryPast.data[i].status + '</span>')) + '<span style="color:#c9dbd2; font-weight:900;"> Урок: </span>' + otvetHistoryPast.data[i].lessonType + '<br>'
-                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryPast.data[i].educationService.id + " " + otvetHistoryPast.data[i].educationService.serviceTypeKey + '<br>'
-                            + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + otvetHistoryPast.data[i].teacher.general.id + " " + otvetHistoryPast.data[i].teacher.general.name + " " + otvetHistoryPast.data[i].teacher.general.surname + '<br>'
-                            + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
-                    } else {
-                        pastlessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka +
-                            '<span style="color:#c9dbd2; font-weight:900;"> Статус: </span>' + otvetHistoryPast.data[i].status + '<span style="color:#c9dbd2; font-weight:900;"> Урок: </span>' + otvetHistoryPast.data[i].lessonType + '<br>'
-                            + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryPast.data[i].educationService.id + " " + otvetHistoryPast.data[i].educationService.serviceTypeKey + '<br>'
-                            + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
-                    }
-                }
-
-                document.getElementById('timetabledata').innerHTML = pastlessondata;
-                pastlessondata = ""
-            }
-        }
-        }
-    })
-
-}
-
-document.getElementById('getlessonfuture').onclick = function () { // показывает предстоящие уроки
-
-    document.getElementById('timetabledata').innerHTML = "";
-    let idShka = document.getElementById('idstudent').value.trim();
-    if (idShka.length > 0) {
-        let futurelessondata = "";
-		
-	    const fetchURL = `https://backend.skyeng.ru/api/students/${idShka}/timetable/future-lessons/`;
-		const requestOptions = {
-			method: 'GET'
-		};
-
-		chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-			if (!response.success) {
-				alert('Не удалось выполнить запрос: ' + response.error);
-				return;
-			} else {
-				const otvetHistoryFuture = JSON.parse(response.fetchansver);
-
-			if (otvetHistoryFuture != null) {
-                if (otvetHistoryFuture.data == "") {
-                    document.getElementById('timetabledata').innerHTML = "Уроки не запланированы";
+            if (otvetHistoryPast != null) {
+                if (otvetHistoryPast.data == "") {
+                    document.getElementById('timetabledata').innerHTML = "Еще не было уроков";
                 } else {
-                    for (let i = 0; i < otvetHistoryFuture.data.length; i++) {
-                        let d = new Date(otvetHistoryFuture.data[i].startedAt)
+                    for (let i = 0; i < otvetHistoryPast.data.length; i++) {
+                        let d = new Date(otvetHistoryPast.data[i].startedAt)
                         let minutka;
                         let denek;
                         let mesacok;
@@ -492,62 +383,171 @@ document.getElementById('getlessonfuture').onclick = function () { // показ
                         } else {
                             mesacok = d.getMonth() + 1;
                         }
+                        if (otvetHistoryPast.data[i].status == "missed_by_student") {
+                            otvetHistoryPast.data[i].status = "Пропущен учеником";
+                        } else if (otvetHistoryPast.data[i].status == "canceled_by_student") {
+                            otvetHistoryPast.data[i].status = "Отменен учеником";
+                        } else if (otvetHistoryPast.data[i].status == "success") {
+                            otvetHistoryPast.data[i].status = "Прошел";
+                        } else if (otvetHistoryPast.data[i].status == "moved_by_student") {
+                            otvetHistoryPast.data[i].status = "Перенесен учеником";
+                        } else if (otvetHistoryPast.data[i].status == "canceled_by_teacher") {
+                            otvetHistoryPast.data[i].status = "Отменен учителем";
+                        } else if (otvetHistoryPast.data[i].status == "student_refused_to_study") {
+                            otvetHistoryPast.data[i].status = "Отказался от обучения"
+                        } else if (otvetHistoryPast.data[i].status == "interrupted") {
+                            otvetHistoryPast.data[i].status = "Прерван"
+                        } else if (otvetHistoryPast.data[i].status == "did_not_get_through_student") {
+                            otvetHistoryPast.data[i].status = "Не смогли связаться с У"
+                        } else if (otvetHistoryPast.data[i].status == "canceled_not_marked") {
+                            otvetHistoryPast.data[i].status = "Не отмечен учителем вовремя"
+                        }
 
-                        if (otvetHistoryFuture.data[i].lessonType == "regular") {
-                            otvetHistoryFuture.data[i].lessonType = "Регулярный";
-                        } else if (otvetHistoryFuture.data[i].lessonType == "single") {
-                            otvetHistoryFuture.data[i].lessonType = "Одиночный";
-                        } else if (otvetHistoryFuture.data[i].lessonType == "trial") {
-                            otvetHistoryFuture.data[i].lessonType = "Пробный";
+                        if (otvetHistoryPast.data[i].lessonType == "regular") {
+                            otvetHistoryPast.data[i].lessonType = "Регулярный";
+                        } else if (otvetHistoryPast.data[i].lessonType == "single") {
+                            otvetHistoryPast.data[i].lessonType = "Одиночный";
+                        } else if (otvetHistoryPast.data[i].lessonType == "trial") {
+                            otvetHistoryPast.data[i].lessonType = "Пробный";
                         }
 
                         for (let j = 0; j < servicecontainer.data.length; j++) {
-                            if (servicecontainer.data[j].serviceTypeKey == otvetHistoryFuture.data[i].educationService.serviceTypeKey)
-                                otvetHistoryFuture.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
+                            if (servicecontainer.data[j].serviceTypeKey == otvetHistoryPast.data[i].educationService.serviceTypeKey)
+                                otvetHistoryPast.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
                         }
 
-                        if (otvetHistoryFuture.data[i].teacher != null) {
-                            futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
-                                + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + otvetHistoryFuture.data[i].lessonType + '<br>'
-                                + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryFuture.data[i].educationService.id + " " + otvetHistoryFuture.data[i].educationService.serviceTypeKey + '<br>'
-                                + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + otvetHistoryFuture.data[i].teacher.general.id + " " + otvetHistoryFuture.data[i].teacher.general.name + " " + otvetHistoryFuture.data[i].teacher.general.surname + '<br>'
+                        if (otvetHistoryPast.data[i].educationService.serviceTypeKey == null) {
+                            otvetHistoryPast.data[i].educationService.serviceTypeKey = "Услуга была в CRM1, см позднее обозначение!"
+                        }
+
+                        if (otvetHistoryPast.data[i].teacher != null) {
+                            pastlessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka +
+                                '<span style="color:#c9dbd2; font-weight:900;"> Статус: </span>' + (otvetHistoryPast.data[i].status == "Прошел" ? ('<span style="color:#00FF7F;">' + otvetHistoryPast.data[i].status + '</span>') : ('<span style="color:coral; font-weight:700">' + otvetHistoryPast.data[i].status + '</span>')) + '<span style="color:#c9dbd2; font-weight:900;"> Урок: </span>' + otvetHistoryPast.data[i].lessonType + '<br>'
+                                + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryPast.data[i].educationService.id + " " + otvetHistoryPast.data[i].educationService.serviceTypeKey + '<br>'
+                                + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + otvetHistoryPast.data[i].teacher.general.id + " " + otvetHistoryPast.data[i].teacher.general.name + " " + otvetHistoryPast.data[i].teacher.general.surname + '<br>'
                                 + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
                         } else {
-                            futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
-                                + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + otvetHistoryFuture.data[i].lessonType + '<br>'
-                                + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryFuture.data[i].educationService.id + " " + otvetHistoryFuture.data[i].educationService.serviceTypeKey + '<br>'
+                            pastlessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka +
+                                '<span style="color:#c9dbd2; font-weight:900;"> Статус: </span>' + otvetHistoryPast.data[i].status + '<span style="color:#c9dbd2; font-weight:900;"> Урок: </span>' + otvetHistoryPast.data[i].lessonType + '<br>'
+                                + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryPast.data[i].educationService.id + " " + otvetHistoryPast.data[i].educationService.serviceTypeKey + '<br>'
                                 + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
                         }
-
                     }
-                    document.getElementById('timetabledata').innerHTML = futurelessondata;
-                    futurelessondata = "";
+
+                    document.getElementById('timetabledata').innerHTML = pastlessondata;
+                    pastlessondata = ""
                 }
             }
-			}
-		})
-		
-		
+        }
+    })
+
+}
+
+document.getElementById('getlessonfuture').onclick = function () { // показывает предстоящие уроки
+
+    document.getElementById('timetabledata').innerHTML = "";
+    let idShka = document.getElementById('idstudent').value.trim();
+    if (idShka.length > 0) {
+        let futurelessondata = "";
+
+        const fetchURL = `https://backend.skyeng.ru/api/students/${idShka}/timetable/future-lessons/`;
+        const requestOptions = {
+            method: 'GET'
+        };
+
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+            if (!response.success) {
+                alert('Не удалось выполнить запрос: ' + response.error);
+                return;
+            } else {
+                const otvetHistoryFuture = JSON.parse(response.fetchansver);
+
+                if (otvetHistoryFuture != null) {
+                    if (otvetHistoryFuture.data == "") {
+                        document.getElementById('timetabledata').innerHTML = "Уроки не запланированы";
+                    } else {
+                        for (let i = 0; i < otvetHistoryFuture.data.length; i++) {
+                            let d = new Date(otvetHistoryFuture.data[i].startedAt)
+                            let minutka;
+                            let denek;
+                            let mesacok;
+                            let chasok;
+                            if (d.getHours() < 10) {
+                                chasok = "0" + (d.getUTCHours() + 3);
+                            } else {
+                                chasok = (d.getUTCHours() + 3);
+                            }
+                            if (d.getMinutes() < 10) {
+                                minutka = "0" + d.getMinutes();
+                            } else {
+                                minutka = d.getMinutes();
+                            }
+                            if (d.getDate() < 10) {
+                                denek = "0" + d.getDate();
+                            } else {
+                                denek = d.getDate();
+                            }
+                            if (d.getMonth() + 1 < 10) {
+                                mesacok = "0" + (d.getMonth() + 1);
+                            } else {
+                                mesacok = d.getMonth() + 1;
+                            }
+
+                            if (otvetHistoryFuture.data[i].lessonType == "regular") {
+                                otvetHistoryFuture.data[i].lessonType = "Регулярный";
+                            } else if (otvetHistoryFuture.data[i].lessonType == "single") {
+                                otvetHistoryFuture.data[i].lessonType = "Одиночный";
+                            } else if (otvetHistoryFuture.data[i].lessonType == "trial") {
+                                otvetHistoryFuture.data[i].lessonType = "Пробный";
+                            }
+
+                            for (let j = 0; j < servicecontainer.data.length; j++) {
+                                if (servicecontainer.data[j].serviceTypeKey == otvetHistoryFuture.data[i].educationService.serviceTypeKey)
+                                    otvetHistoryFuture.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
+                            }
+
+                            if (otvetHistoryFuture.data[i].teacher != null) {
+                                futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
+                                    + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + otvetHistoryFuture.data[i].lessonType + '<br>'
+                                    + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryFuture.data[i].educationService.id + " " + otvetHistoryFuture.data[i].educationService.serviceTypeKey + '<br>'
+                                    + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + otvetHistoryFuture.data[i].teacher.general.id + " " + otvetHistoryFuture.data[i].teacher.general.name + " " + otvetHistoryFuture.data[i].teacher.general.surname + '<br>'
+                                    + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
+                            } else {
+                                futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
+                                    + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + otvetHistoryFuture.data[i].lessonType + '<br>'
+                                    + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryFuture.data[i].educationService.id + " " + otvetHistoryFuture.data[i].educationService.serviceTypeKey + '<br>'
+                                    + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
+                            }
+
+                        }
+                        document.getElementById('timetabledata').innerHTML = futurelessondata;
+                        futurelessondata = "";
+                    }
+                }
+            }
+        })
+
+
 
     } else alert('Запрос не выполнен. Введите ID в поле!')
 }
 
 document.getElementById('changelocalelng').onclick = function () {
     let userOk = document.getElementById('idstudent').value;
-		
-	const fetchURL = `https://backend.skyeng.ru/api/persons/general/${userOk}`;
+
+    const fetchURL = `https://backend.skyeng.ru/api/persons/general/${userOk}`;
     const requestOptions = {
-			"headers": {
-			"content-type": "application/json",
-			"sec-fetch-mode": "cors",
-			"sec-fetch-site": "same-site"
-		},
-		"referrer": "https://crm2.skyeng.ru/",
-		"referrerPolicy": "strict-origin-when-cross-origin",
-		"body": "{\"serviceLocale\":\"ru\"}",
-		"method": "PUT",
-		"mode": "cors",
-		"credentials": "include"
+        "headers": {
+            "content-type": "application/json",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-site"
+        },
+        "referrer": "https://crm2.skyeng.ru/",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": "{\"serviceLocale\":\"ru\"}",
+        "method": "PUT",
+        "mode": "cors",
+        "credentials": "include"
     };
 
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
@@ -555,9 +555,9 @@ document.getElementById('changelocalelng').onclick = function () {
             console.log('Не удалось выполнить запрос: ' + response.error);
             return;
         } else {
-           console.log("Язык обслуживания Successfully changed")
-			document.getElementById('changelocalelng').innerHTML = "✅";
-            setTimeout(function () { document.getElementById('changelocalelng').innerHTML = "🌍";}, 2000);
+            console.log("Язык обслуживания Successfully changed")
+            document.getElementById('changelocalelng').innerHTML = "✅";
+            setTimeout(function () { document.getElementById('changelocalelng').innerHTML = "🌍"; }, 2000);
         }
     })
 }
@@ -585,14 +585,14 @@ function getusernamecrm() {
     const subscriptioninfoElement = document.getElementById('subscriptioninfo');
     const getPastAndFutureLessonsElement = document.getElementById('getpastandfuturelessons');
     const newTrmElement = document.getElementById('newtrm');
-	const TeachNabElement = document.getElementById('butTeacherNabor')
+    const TeachNabElement = document.getElementById('butTeacherNabor')
     const personalTeacherPageElement = document.getElementById('personalteacherpage');
     avatarofuser = '';
 
     let filteredid = document.getElementById('idstudent').value.trim();
     flagusertype = '';
-		
-	const fetchURL = `https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`;
+
+    const fetchURL = `https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`;
     const requestOptions = {
         method: 'GET'
     };
@@ -604,7 +604,7 @@ function getusernamecrm() {
         } else {
             const otvetUsrCrmName = JSON.parse(response.fetchansver);
 
-		let name = otvetUsrCrmName.data.name + (otvetUsrCrmName.data.surname ? ` ${otvetUsrCrmName.data.surname}` : '');
+            let name = otvetUsrCrmName.data.name + (otvetUsrCrmName.data.surname ? ` ${otvetUsrCrmName.data.surname}` : '');
             if (otvetUsrCrmName.data.type == "student") {
                 pochtaStatus.innerText = "hidden"
                 telefonStatus.innerText = "hidden"
@@ -658,7 +658,7 @@ function getusernamecrm() {
                 subscriptioninfoElement.style.display = "none";
                 getPastAndFutureLessonsElement.style.display = "none";
                 newTrmElement.style.display = "";
-				TeachNabElement.style.display = "";
+                TeachNabElement.style.display = "";
                 personalTeacherPageElement.style.display = "";
                 if (otvetUsrCrmName.data.avatarUrl) {
                     avatarofuser = otvetUsrCrmName.data.avatarUrl.match(/(https:\/\/auth-avatars-skyeng.imgix.net.*?\d+.\S+).auto/)[1];
@@ -671,7 +671,7 @@ function getusernamecrm() {
                 document.getElementById('getloginer').onclick = async function () {
                     const button = document.getElementById('getloginer');
                     button.style.color = "orange";
-            
+
                     try {
                         await getLoginLink(document.getElementById('idstudent').value.trim());
                         button.style.color = "green";
@@ -758,86 +758,86 @@ function crmstatus() {
 
     document.getElementById('getcurrentstatus').style.display = 'none';
     document.getElementById('CrmStatus').style.display = 'none';
-	
-	    const fetchURL = `https://customer-support.skyeng.ru/task/user/${tempvarcrm}`;
-		const requestOptions = {
-			method: 'GET'
-		};
 
-		chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-			if (!response.success) {
-				alert('Не удалось выполнить запрос: ' + response.error);
-				return;
-			} else {
-				const otveUserTasks = JSON.parse(response.fetchansver);
-				
-			for (const data of otveUserTasks.data) {
-            switch (data.operatorGroup.name) {
-                case 'technical_support_outgoing':
-                    flagtpout = true;
-                    if (data.status === 'waiting') flagstatuswait = true;
-                    if (data.status === 'processing') {
-                        flagstatusprocessing = true;
-                        opername = data.operator.name;
-                    }
-                    break;
-                case 'technical_support_first_line':
-                    flagtp = true;
-                    break;
-                default:
-                    flagnottp = true;
-                    break;
+    const fetchURL = `https://customer-support.skyeng.ru/task/user/${tempvarcrm}`;
+    const requestOptions = {
+        method: 'GET'
+    };
+
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        } else {
+            const otveUserTasks = JSON.parse(response.fetchansver);
+
+            for (const data of otveUserTasks.data) {
+                switch (data.operatorGroup.name) {
+                    case 'technical_support_outgoing':
+                        flagtpout = true;
+                        if (data.status === 'waiting') flagstatuswait = true;
+                        if (data.status === 'processing') {
+                            flagstatusprocessing = true;
+                            opername = data.operator.name;
+                        }
+                        break;
+                    case 'technical_support_first_line':
+                        flagtp = true;
+                        break;
+                    default:
+                        flagnottp = true;
+                        break;
+                }
+            }
+
+            // Оставшаяся часть вашей функции...
+            if (flagstatuswait) {
+                document.getElementById('getcurrentstatus').style.display = '';
+                document.getElementById('getcurrentstatus').innerText = 'В ожидании';
+                document.getElementById('getcurrentstatus').style.backgroundColor = '#1E90FF';
+            } else if (flagstatusprocessing) {
+                document.getElementById('getcurrentstatus').style.display = '';
+                document.getElementById('getcurrentstatus').innerText = 'Решается';
+                document.getElementById('getcurrentstatus').title = opername;
+                document.getElementById('getcurrentstatus').style.backgroundColor = '#DC143C';
+            }
+
+            if (flagtpout && !flagtp && !flagnottp) {
+                document.getElementById('CrmStatus').style.display = '';
+                document.getElementById('CrmStatus').innerText = '💥';
+                console.log('Есть активные задачи');
+            } else if (!flagtpout && flagtp && !flagnottp) {
+                document.getElementById('CrmStatus').style.display = '';
+                document.getElementById('CrmStatus').innerText = '🛠';
+                console.log('Входящий звонок или с др отдела на ТП была создана задача');
+            } else if (!flagtpout && !flagtp && flagnottp) {
+                document.getElementById('CrmStatus').style.display = '';
+                document.getElementById('CrmStatus').innerText = '📵';
+                console.log('Нет активных задач по ТП линии');
+            } else if (flagtpout && flagtp && !flagnottp) {
+                document.getElementById('CrmStatus').style.display = '';
+                document.getElementById('CrmStatus').innerText = '💥';
+                console.log('Есть активные задачи на исход и на ТП 1 линии')
+            } else if (flagtpout && flagtp && flagnottp) {
+                document.getElementById('CrmStatus').style.display = '';
+                document.getElementById('CrmStatus').innerText = '💥';
+                console.log('Есть активные задачи на исход и на ТП 1 линии и на др отделы');
+            } else if (flagtp == true && flagnottp == true && flagtpout == false) {
+                document.getElementById('CrmStatus').style.display = '';
+                document.getElementById('CrmStatus').innerText = '🛠';
+                console.log('Входящий звонок или с др отдела на ТП была создана задача. И есть задача на др отдел');
+            } else if (flagtp == false && flagnottp == true && flagtpout == true) {
+                document.getElementById('CrmStatus').style.display = '';
+                document.getElementById('CrmStatus').innerText = '💥';
+                console.log('Есть задача на ТП Исход. И есть задача на др отдел');
+            } else {
+                document.getElementById('CrmStatus').style.display = '';
+                document.getElementById('CrmStatus').innerText = '📵';
+                console.log('No DATA');
             }
         }
+    })
 
-        // Оставшаяся часть вашей функции...
-        if (flagstatuswait) {
-            document.getElementById('getcurrentstatus').style.display = '';
-            document.getElementById('getcurrentstatus').innerText = 'В ожидании';
-            document.getElementById('getcurrentstatus').style.backgroundColor = '#1E90FF';
-        } else if (flagstatusprocessing) {
-            document.getElementById('getcurrentstatus').style.display = '';
-            document.getElementById('getcurrentstatus').innerText = 'Решается';
-            document.getElementById('getcurrentstatus').title = opername;
-            document.getElementById('getcurrentstatus').style.backgroundColor = '#DC143C';
-        }
-
-        if (flagtpout && !flagtp && !flagnottp) {
-            document.getElementById('CrmStatus').style.display = '';
-            document.getElementById('CrmStatus').innerText = '💥';
-            console.log('Есть активные задачи');
-        } else if (!flagtpout && flagtp && !flagnottp) {
-            document.getElementById('CrmStatus').style.display = '';
-            document.getElementById('CrmStatus').innerText = '🛠';
-            console.log('Входящий звонок или с др отдела на ТП была создана задача');
-        } else if (!flagtpout && !flagtp && flagnottp) {
-            document.getElementById('CrmStatus').style.display = '';
-            document.getElementById('CrmStatus').innerText = '📵';
-            console.log('Нет активных задач по ТП линии');
-        } else if (flagtpout && flagtp && !flagnottp) {
-            document.getElementById('CrmStatus').style.display = '';
-            document.getElementById('CrmStatus').innerText = '💥';
-            console.log('Есть активные задачи на исход и на ТП 1 линии')
-        } else if (flagtpout && flagtp && flagnottp) {
-            document.getElementById('CrmStatus').style.display = '';
-            document.getElementById('CrmStatus').innerText = '💥';
-            console.log('Есть активные задачи на исход и на ТП 1 линии и на др отделы');
-        } else if (flagtp == true && flagnottp == true && flagtpout == false) {
-            document.getElementById('CrmStatus').style.display = '';
-            document.getElementById('CrmStatus').innerText = '🛠';
-            console.log('Входящий звонок или с др отдела на ТП была создана задача. И есть задача на др отдел');
-        } else if (flagtp == false && flagnottp == true && flagtpout == true) {
-            document.getElementById('CrmStatus').style.display = '';
-            document.getElementById('CrmStatus').innerText = '💥';
-            console.log('Есть задача на ТП Исход. И есть задача на др отдел');
-        } else {
-            document.getElementById('CrmStatus').style.display = '';
-            document.getElementById('CrmStatus').innerText = '📵';
-            console.log('No DATA');
-        }
-			}
-		})
-    
 }
 
 async function checkServiceAndUserInfo() {
@@ -849,127 +849,127 @@ async function checkServiceAndUserInfo() {
             arrservice = null;
         } else {
             document.getElementById('servicetable').innerHTML = "Загрузка..."
-					
-			    const fetchURL = `https://backend.skyeng.ru/api/persons/${stidNew}/education-services/`;
-				const requestOptions = {
-					method: 'GET'
-				};
 
-				chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-					if (!response.success) {
-						alert('Не удалось выполнить запрос: ' + response.error);
-						return;
-					} else {
-						const otvetEdServ = JSON.parse(response.fetchansver);
-						
-					if (otvetEdServ.data.length != 0) {
-                    let tinfo = ""; // инфо о постоянном П
-                    let temtinfo = ""; // инфо о временном П
-                    let servinfo = ""; //инфо об услуге
-                    let noservinfo = ""; //нет инфо об услугах, обычно если профиль П или оператора
-                    let arrservice = []; // пустой массив, куда будет передавать ID отобранных услуг по условию
+            const fetchURL = `https://backend.skyeng.ru/api/persons/${stidNew}/education-services/`;
+            const requestOptions = {
+                method: 'GET'
+            };
 
-                    let srvKeyMap = new Map(servicecontainer.data.map(d => [d.serviceTypeKey, d.shortTitle]));
-                    otvetEdServ.data.forEach((service, i) => {
-                        if (srvKeyMap.has(service.serviceTypeKey)) {
-                            service.serviceTypeKey = srvKeyMap.get(service.serviceTypeKey);
-                        }
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+                if (!response.success) {
+                    alert('Не удалось выполнить запрос: ' + response.error);
+                    return;
+                } else {
+                    const otvetEdServ = JSON.parse(response.fetchansver);
 
-                        if (service.student.general.id == stid) {
-                            if (service.incorrectnessReason == null) {
+                    if (otvetEdServ.data.length != 0) {
+                        let tinfo = ""; // инфо о постоянном П
+                        let temtinfo = ""; // инфо о временном П
+                        let servinfo = ""; //инфо об услуге
+                        let noservinfo = ""; //нет инфо об услугах, обычно если профиль П или оператора
+                        let arrservice = []; // пустой массив, куда будет передавать ID отобранных услуг по условию
 
-                                if ((service.stage === "after_trial" || service.stage === "before_call") && service.serviceTypeKey != "Англ Talks 15 min" && service.serviceTypeKey != "Skyeng Space" && service.serviceTypeKey != "Групповые онлайн-мероприятия Life" && service.serviceTypeKey != "Скрининг" && service.serviceTypeKey != "Англ adult АЯ Даунсейл") {
-                                    servinfo += '<div style="text-align:center; background:#c26919; color:#ffffff; font-weight:700;border: 1px solid black;">Этап ВУ |' + ' 💰 Баланс: ' + service.balance + '</div>' + '<div style="background: #c26919; color:#000000;  margin-left: 5px; border: 1px solid bisque;">' + [i + 1] + ") " + '<span>🆔 Услуги: </span>' + service.id + '<span class = "copyserviceid">💾</span>' + '<br>' + '💡:' + service.serviceTypeKey + '</div>'
-                                    arrservice += service.id + ", ";
-                                }
+                        let srvKeyMap = new Map(servicecontainer.data.map(d => [d.serviceTypeKey, d.shortTitle]));
+                        otvetEdServ.data.forEach((service, i) => {
+                            if (srvKeyMap.has(service.serviceTypeKey)) {
+                                service.serviceTypeKey = srvKeyMap.get(service.serviceTypeKey);
+                            }
 
-                                if (service.stage === "regular_lessons" && service.serviceTypeKey != "Англ Talks 15 min" && service.serviceTypeKey != "Skyeng Space" && service.serviceTypeKey != "Групповые онлайн-мероприятия Life" && service.serviceTypeKey != "Скрининг" && service.serviceTypeKey != "Англ adult АЯ Даунсейл") {
-                                    const teacherInfo = service.teacher
-                                        ? "👽 Teacher: " + service.teacher.general.id + "," + " " + service.teacher.general.name + " " + service.teacher.general.surname
-                                        : "👽 Teacher: Не закреплен!";
-                                    const tmpTeacherInfo = service.temporaryTeacher
-                                        ? "⏳👽 Teacher: " + service.temporaryTeacher.general.id + "," + " " + service.temporaryTeacher.general.name + " " + service.temporaryTeacher.general.surname
-                                        : "NoTmp";
+                            if (service.student.general.id == stid) {
+                                if (service.incorrectnessReason == null) {
 
-                                    if (tmpTeacherInfo != "NoTmp") {
-                                        servinfo += '<div style="text-align:center; background:#30508c; font-weight:700;border: 1px solid black;">Регулярные занятия |' + ' 💰 Баланс: ' + service.balance + '</div>' + '<div style="background: #2b602b; color:navajowhite;  margin-left: 5px; border: 1px solid bisque;">' + [i + 1] + ") " + '<span>🆔 Услуги: </span>' + service.id + '<span class = "copyserviceid">💾</span>' + '<br>' + '💡:' + service.serviceTypeKey + '<br>' + teacherInfo + '<br>' + tmpTeacherInfo + '</div>';
+                                    if ((service.stage === "after_trial" || service.stage === "before_call") && service.serviceTypeKey != "Англ Talks 15 min" && service.serviceTypeKey != "Skyeng Space" && service.serviceTypeKey != "Групповые онлайн-мероприятия Life" && service.serviceTypeKey != "Скрининг" && service.serviceTypeKey != "Англ adult АЯ Даунсейл") {
+                                        servinfo += '<div style="text-align:center; background:#c26919; color:#ffffff; font-weight:700;border: 1px solid black;">Этап ВУ |' + ' 💰 Баланс: ' + service.balance + '</div>' + '<div style="background: #c26919; color:#000000;  margin-left: 5px; border: 1px solid bisque;">' + [i + 1] + ") " + '<span>🆔 Услуги: </span>' + service.id + '<span class = "copyserviceid">💾</span>' + '<br>' + '💡:' + service.serviceTypeKey + '</div>'
                                         arrservice += service.id + ", ";
-                                    } else {
-                                        servinfo += '<div style="text-align:center; background:#30508c; font-weight:700;border: 1px solid black;">Регулярные занятия |' + ' 💰 Баланс: ' + service.balance + '</div>' + '<div style="background: #2b602b; color:navajowhite;  margin-left: 5px; border: 1px solid bisque;">' + [i + 1] + ") " + '<span>🆔 Услуги: </span>' + service.id + '<span class = "copyserviceid">💾</span>' + '<br>' + '💡:' + service.serviceTypeKey + '<br>' + teacherInfo + '</div>';
+                                    }
+
+                                    if (service.stage === "regular_lessons" && service.serviceTypeKey != "Англ Talks 15 min" && service.serviceTypeKey != "Skyeng Space" && service.serviceTypeKey != "Групповые онлайн-мероприятия Life" && service.serviceTypeKey != "Скрининг" && service.serviceTypeKey != "Англ adult АЯ Даунсейл") {
+                                        const teacherInfo = service.teacher
+                                            ? "👽 Teacher: " + service.teacher.general.id + "," + " " + service.teacher.general.name + " " + service.teacher.general.surname
+                                            : "👽 Teacher: Не закреплен!";
+                                        const tmpTeacherInfo = service.temporaryTeacher
+                                            ? "⏳👽 Teacher: " + service.temporaryTeacher.general.id + "," + " " + service.temporaryTeacher.general.name + " " + service.temporaryTeacher.general.surname
+                                            : "NoTmp";
+
+                                        if (tmpTeacherInfo != "NoTmp") {
+                                            servinfo += '<div style="text-align:center; background:#30508c; font-weight:700;border: 1px solid black;">Регулярные занятия |' + ' 💰 Баланс: ' + service.balance + '</div>' + '<div style="background: #2b602b; color:navajowhite;  margin-left: 5px; border: 1px solid bisque;">' + [i + 1] + ") " + '<span>🆔 Услуги: </span>' + service.id + '<span class = "copyserviceid">💾</span>' + '<br>' + '💡:' + service.serviceTypeKey + '<br>' + teacherInfo + '<br>' + tmpTeacherInfo + '</div>';
+                                            arrservice += service.id + ", ";
+                                        } else {
+                                            servinfo += '<div style="text-align:center; background:#30508c; font-weight:700;border: 1px solid black;">Регулярные занятия |' + ' 💰 Баланс: ' + service.balance + '</div>' + '<div style="background: #2b602b; color:navajowhite;  margin-left: 5px; border: 1px solid bisque;">' + [i + 1] + ") " + '<span>🆔 Услуги: </span>' + service.id + '<span class = "copyserviceid">💾</span>' + '<br>' + '💡:' + service.serviceTypeKey + '<br>' + teacherInfo + '</div>';
+                                            arrservice += service.id + ", ";
+                                        }
+                                    }
+
+                                    if (service.stage === "lost" && service.serviceTypeKey != "Англ Talks 15 min" && service.serviceTypeKey != "Skyeng Space" && service.serviceTypeKey != "Групповые онлайн-мероприятия Life" && service.serviceTypeKey != "Скрининг" && service.serviceTypeKey != "Англ adult АЯ Даунсейл") {
+                                        servinfo += '<div style="text-align:center; background:#626367; font-weight:700;border: 1px solid black;">Потерянная услуга |' + ' 💰 Баланс: ' + service.balance + '</div>' + '<div style="background: #5a0f77; color:#c6c5c5;  margin-left: 5px; border: 1px solid bisque;">' + [i + 1] + ") " + '<span>🆔 Услуги: </span>' + service.id + '<span class = "copyserviceid">💾</span>' + '<br>' + '💡:' + service.serviceTypeKey + '</div>'
                                         arrservice += service.id + ", ";
                                     }
                                 }
+                            }
 
-                                if (service.stage === "lost" && service.serviceTypeKey != "Англ Talks 15 min" && service.serviceTypeKey != "Skyeng Space" && service.serviceTypeKey != "Групповые онлайн-мероприятия Life" && service.serviceTypeKey != "Скрининг" && service.serviceTypeKey != "Англ adult АЯ Даунсейл") {
-                                    servinfo += '<div style="text-align:center; background:#626367; font-weight:700;border: 1px solid black;">Потерянная услуга |' + ' 💰 Баланс: ' + service.balance + '</div>' + '<div style="background: #5a0f77; color:#c6c5c5;  margin-left: 5px; border: 1px solid bisque;">' + [i + 1] + ") " + '<span>🆔 Услуги: </span>' + service.id + '<span class = "copyserviceid">💾</span>' + '<br>' + '💡:' + service.serviceTypeKey + '</div>'
-                                    arrservice += service.id + ", ";
+                            document.getElementById('servicetable').innerHTML = '<span style="color:#00BFFF; font-weight:900;">Информация об услугах:</span><br>' + servinfo;
+
+                        });
+
+                        if (arrservice != null && arrservice.length > 0 && arrservice != undefined) {
+                            arrservice = arrservice.split(', ')
+                        }
+
+                        let tmparr = document.querySelectorAll('.copyserviceid');
+                        for (let j = 0; j < tmparr.length; j++) {
+                            tmparr[j].onclick = function () {
+                                copyToClipboard(arrservice[j])
+                            }
+                        }
+
+                        if (document.getElementById('getusremail') != null) {
+                            document.getElementById('getusremail').onclick = function () {
+                                copyToClipboard(document.getElementById('mailunhidden').textContent);
+                            };
+                        }
+
+                        if (document.getElementById('getusrphone') != null) {
+                            document.getElementById('getusrphone').onclick = function () {
+                                copyToClipboard(document.getElementById('phoneunhidden').textContent);
+                            };
+                        }
+
+                        if (document.getElementById('getshowcase') != null) {
+                            document.getElementById('getshowcase').onclick = function () {
+                                copyToClipboard("https://profile.skyeng.ru/profile/" + stid + "/showcase");
+                            };
+                        }
+
+                        if (document.getElementById('getloginer') != null) {
+                            document.getElementById('getloginer').onclick = async function () {
+                                const button = document.getElementById('getloginer');
+                                button.style.color = "orange";
+
+                                try {
+                                    await getLoginLink(document.getElementById('idstudent').value.trim());
+                                    button.style.color = "green";
+                                } catch (error) {
+                                    console.error('Ошибка: ', error);
+                                    button.style.color = "red";
+                                    alert('Не удалось получить логиннер: ' + error.message);
+                                } finally {
+                                    setTimeout(() => {
+                                        button.style.color = "bisque";
+                                    }, 2000);
                                 }
-                            }
+                            };
                         }
 
-                        document.getElementById('servicetable').innerHTML = '<span style="color:#00BFFF; font-weight:900;">Информация об услугах:</span><br>' + servinfo;
-
-                    });
-
-                    if (arrservice != null && arrservice.length > 0 && arrservice != undefined) {
-                        arrservice = arrservice.split(', ')
+                    } else {
+                        document.getElementById('servicetable').innerHTML = '<div style="text-align:center; background:coral; font-weight:700;border: 1px solid black; color: floralwhite;">Услуг вообще нет!</div>'
                     }
 
-                    let tmparr = document.querySelectorAll('.copyserviceid');
-                    for (let j = 0; j < tmparr.length; j++) {
-                        tmparr[j].onclick = function () {
-                            copyToClipboard(arrservice[j])
-                        }
-                    }
-
-                    if (document.getElementById('getusremail') != null) {
-                        document.getElementById('getusremail').onclick = function () {
-                            copyToClipboard(document.getElementById('mailunhidden').textContent);
-                        };
-                    }
-
-                    if (document.getElementById('getusrphone') != null) {
-                        document.getElementById('getusrphone').onclick = function () {
-                            copyToClipboard(document.getElementById('phoneunhidden').textContent);
-                        };
-                    }
-
-                    if (document.getElementById('getshowcase') != null) {
-                        document.getElementById('getshowcase').onclick = function () {
-                            copyToClipboard("https://profile.skyeng.ru/profile/" + stid + "/showcase");
-                        };
-                    }
-
-                    if (document.getElementById('getloginer') != null) {
-                        document.getElementById('getloginer').onclick = async function () {
-                            const button = document.getElementById('getloginer');
-                            button.style.color = "orange";
-                    
-                            try {
-                                await getLoginLink(document.getElementById('idstudent').value.trim());
-                                button.style.color = "green";
-                            } catch (error) {
-                                console.error('Ошибка: ', error);
-                                button.style.color = "red";
-                                alert('Не удалось получить логиннер: ' + error.message);
-                            } finally {
-                                setTimeout(() => {
-                                    button.style.color = "bisque";
-                                }, 2000);
-                            }
-                        };
-                    }
-                    
-                } else {
-                    document.getElementById('servicetable').innerHTML = '<div style="text-align:center; background:coral; font-weight:700;border: 1px solid black; color: floralwhite;">Услуг вообще нет!</div>'
                 }
+            })
 
-					}
-				})
-			
-		
 
-            
+
+
         }
     }, 1000)
 }

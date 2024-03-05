@@ -19,12 +19,12 @@ var win_Grabber =  // описание элементов окна Grabber
                                 <button class="mainButton" id="GatherStatByThemes" disabled>🧮</button>
 								<div style="width:450px;background: #5f7875;height: 21px;"><div id="progressBarGrabber" style="width: 0%; height: 20px; background-color: #e38118; border: 1px solid black; text-align:center; font-weight:700; color:white;"></div></div>
                         </div>
-						
+
 						<div id="AgregatedDataThemes" style="display:none; width:400px; min-height:100px; max-height:800px; background: rgb(70, 68, 81); position:absolute; top:-1px; left:-400px; overflow-y:auto">
 							<div style="margin:5px;">
 								<button class="mainButton buttonHide" id="HideToolsPanel">hide</button>
 							</div>
-						
+
 							<div id="ToolsPanel" style="padding:5px;">
 								<div style="color:bisque">Графическое и табличное представление подтематик</div>
 								<button class="mainButton" id="SwitchToGraph">🔀📊</button>
@@ -1288,11 +1288,11 @@ function SaveСountryCSV(filename) {
     document.body.appendChild(link);
     link.click();
     // document.body.removeChild(link);
-        
-        setTimeout(() => {
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(link.href); // Освободить память
-        }, 0);
+
+    setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(link.href); // Освободить память
+    }, 0);
 }
 
 let chekopersarr = [];
@@ -1335,7 +1335,7 @@ document.getElementById('stargrab').onclick = async function () {
     }
 
     const getFormattedDate = (date) => {
-		date.setDate(date.getDate() - 1); // Уменьшаем день на один
+        date.setDate(date.getDate() - 1); // Уменьшаем день на один
         const year = date.getFullYear();
         const month = padStart(date.getMonth() + 1, 2, '0');
         const day = padStart(date.getDate(), 2, '0');
@@ -1470,7 +1470,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
                                         SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
-										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
+                                        Country: r.channelUser.payload.country ? r.channelUser.payload.country : "-"
                                     });
 
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
@@ -1490,7 +1490,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
                                         SLACompleted: "undefined",
-										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
+                                        Country: r.channelUser.payload.country ? r.channelUser.payload.country : "-"
                                     });
 
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
@@ -1528,7 +1528,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: '⁉No theme',
                                         SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
-										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
+                                        Country: r.channelUser.payload.country ? r.channelUser.payload.country : "-"
                                     });
                                 } else if (r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration != undefined) {
                                     payloadarray.push({
@@ -1538,7 +1538,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: '⁉No theme',
                                         SLACompleted: "undefined",
-										Country: r.channelUser.payload.country ?  r.channelUser.payload.country : "-"
+                                        Country: r.channelUser.payload.country ? r.channelUser.payload.country : "-"
                                     });
 
                                 }
@@ -1581,7 +1581,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
                                         SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
-										Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ?  r.channelUser.payload.country : "-"
+                                        Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ? r.channelUser.payload.country : "-"
                                     });
 
                                 } else if (r.payload && r.payload.topicId && r.payload.topicId.value != '' && tmponlyoperhashes[j].Duration == undefined) {
@@ -1592,7 +1592,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
                                         SLACompleted: "undefined",
-										Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ?  r.channelUser.payload.country : "-"
+                                        Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ? r.channelUser.payload.country : "-"
                                     });
 
                                 } else if (r.payload && r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration == undefined) {
@@ -1603,7 +1603,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: '⁉No theme',
                                         SLACompleted: "undefined",
-										Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ?  r.channelUser.payload.country : "-"
+                                        Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ? r.channelUser.payload.country : "-"
                                     });
                                 } else if (r.payload && r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration != undefined) {
 
@@ -1614,7 +1614,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         CSAT: csat,
                                         ThemeValue: '⁉No theme',
                                         SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
-										Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ?  r.channelUser.payload.country : "-"
+                                        Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ? r.channelUser.payload.country : "-"
                                     });
 
                                 }
@@ -1766,12 +1766,12 @@ document.getElementById('stargrab').onclick = async function () {
         SLAcompl.style = 'text-align:center; border: 1px solid black; font-size: 12px;'
         SLAcompl.setAttribute('name', 'SLACompletedValue')
         row.appendChild(SLAcompl);
-		
-		//Add Country column
-		const CountryCol = document.createElement('td');
-		CountryCol.textContent = element.Country;
-		CountryCol.style = 'text-align:center; border: 1px solid black; font-size: 12px;'
-		row.appendChild(CountryCol);
+
+        //Add Country column
+        const CountryCol = document.createElement('td');
+        CountryCol.textContent = element.Country;
+        CountryCol.style = 'text-align:center; border: 1px solid black; font-size: 12px;'
+        row.appendChild(CountryCol);
 
         // Append the row to the table
         table.appendChild(row);
@@ -1782,14 +1782,14 @@ document.getElementById('stargrab').onclick = async function () {
 
     //
 
-  const result = payloadarray.reduce((acc, obj) => {
+    const result = payloadarray.reduce((acc, obj) => {
         const themeValue = obj.ThemeValue;
         acc.uniqueValues.add(themeValue);
         acc.counts[themeValue] = (acc.counts[themeValue] || 0) + 1;
         return acc;
     }, { uniqueValues: new Set(), counts: {} });
-	
-	const resultCountry = pureArray.reduce((acc, obj) => {
+
+    const resultCountry = pureArray.reduce((acc, obj) => {
         const countryValue = obj.Country;
         acc.uniqueValues.add(countryValue);
         acc.countryCounts[countryValue] = (acc.countryCounts[countryValue] || 0) + 1;
@@ -1822,14 +1822,14 @@ document.getElementById('stargrab').onclick = async function () {
 
     const SaveIntervalCSVButton = document.getElementById('SaveIntervalCSV');
     SaveIntervalCSVButton.addEventListener('click', saveToCSVInterval);
-	
-	const switchToIntervalTableCountryButton = document.getElementById('SwitchToIntervalTableCountry');
+
+    const switchToIntervalTableCountryButton = document.getElementById('SwitchToIntervalTableCountry');
     switchToIntervalTableCountryButton.addEventListener('click', buildIntervalTableCountry);
-	
-	const switchToIntervalGraphCountryButton = document.getElementById('SwitchToIntervalGraphCountry');
+
+    const switchToIntervalGraphCountryButton = document.getElementById('SwitchToIntervalGraphCountry');
     switchToIntervalGraphCountryButton.addEventListener('click', drawIntervalCountryGraph);
-	
-	const SaveIntervalСountryCSVButton = document.getElementById('SaveIntervalСountryCSV');
+
+    const SaveIntervalСountryCSVButton = document.getElementById('SaveIntervalСountryCSV');
     SaveIntervalСountryCSVButton.addEventListener('click', SaveIntervalСountryCSV);
 
     ///
@@ -1942,10 +1942,10 @@ document.getElementById('stargrab').onclick = async function () {
             saveFilteredTableCSV()
         }
     }
-	  
-        document.getElementById('SaveСountryTableCSV').onclick = function(){
-                SaveСountryCSV('Country_Aggregated.csv');
-        }
+
+    document.getElementById('SaveСountryTableCSV').onclick = function () {
+        SaveСountryCSV('Country_Aggregated.csv');
+    }
 
     ///
 

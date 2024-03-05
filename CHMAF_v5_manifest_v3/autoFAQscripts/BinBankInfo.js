@@ -23,7 +23,7 @@ const wintBankInfo = createWindow('AF_BankCheck', 'winTopBankInfo', 'winLeftBank
 hideWindowOnDoubleClick('AF_BankCheck');
 
 document.getElementById('carddigits').addEventListener('input', function (event) {
-        onlyNumbers(event.target);
+    onlyNumbers(event.target);
 });
 
 document.getElementById('hideMeBinBank').addEventListener('click', function () { // скрытие окна Список группы

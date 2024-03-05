@@ -215,26 +215,26 @@ document.getElementById('starttestroom').addEventListener('click', function () {
 
     if (flagemptyttfields === '0') {
         randomHash = GenerateHash(14);
-		
-		const fetchURL = `https://${lessonsubjecttype}.skyeng.ru/admin/tech-support-room/create?uniqid=${randomHash}`;
-		const requestOptions = {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/x-www-form-urlencoded"
-			},
-			body: `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacheridforroom}&${randomHash}%5BstudentIds%5D=${studentidforroom}&btn_create_and_list=`,
-			credentials: "include"
-		};
 
-		chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-			if (!response.success) {
-				alert('Не удалось создать комнату: ' + response.error);
-				return;
-			} else {
-            testroomsshowmessage('message', 'Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
-            cleartestroomsfields()
-			}
-		})
+        const fetchURL = `https://${lessonsubjecttype}.skyeng.ru/admin/tech-support-room/create?uniqid=${randomHash}`;
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacheridforroom}&${randomHash}%5BstudentIds%5D=${studentidforroom}&btn_create_and_list=`,
+            credentials: "include"
+        };
+
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+            if (!response.success) {
+                alert('Не удалось создать комнату: ' + response.error);
+                return;
+            } else {
+                testroomsshowmessage('message', 'Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
+                cleartestroomsfields()
+            }
+        })
     } else {
         testroomsshowmessage('error', massagetexttoshow);
     }

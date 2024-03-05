@@ -97,7 +97,7 @@ function fillchatbox() { //функция наполнения элемента,
     if (convdata && convdata.groupId && groupIdToSection[convdata.groupId]) {
         document.getElementById('infofield').setAttribute('opsetction', groupIdToSection[convdata.groupId]);
     }
-    
+
     const now = new Date();
     document.getElementById('infofield').setAttribute('openhistorytime', now.toISOString());
 
@@ -709,7 +709,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
 
             foundarr += `
                 <span class="chatlist" style="cursor:pointer;" title="${item.conversationId}">
-                    ${formattedDate} ${formattedTime} 
+                    ${formattedDate} ${formattedTime}
                     <span style="color:#00BFFF; font-weight:700;">${userType}</span> ${userName}
                     <span style="color: MediumSeaGreen; font-weight:700;"> Оценка: </span> ${rating} ${statusIcon}
                 </span><br>
@@ -793,37 +793,37 @@ function getopennewcatButtonPress() { // открывает меню для ра
         const openHistoryTime = document.getElementById('infofield').getAttribute('openhistorytime');
         const openHistoryDate = new Date(openHistoryTime);
         const now = new Date();
-    
+
         if ((now - openHistoryDate) / 1000 > 60) {
             alert("История чата открыта слишком долго. Пожалуйста, обновите чат.");
             return;
         }
-    
+
         let opsflag = getopsection();
         let opschat = document.getElementById('infofield').getAttribute('opsetction');
-    
+
         if (opschat !== opsflag) {
             alert('Чат в другой группе, забрать чат нельзя');
             return;
         }
-    
+
         if (confirm("Вы действительно желаете забрать чат?")) {
             let chat_id = document.getElementById('placechatid').innerText;
             let operator_id = operatorId;
-    
+
             const assignChat = (assignToOperatorId) => {
                 fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
                     headers: { "content-type": "application/json" },
                     credentials: "include",
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         command: "DO_ASSIGN_CONVERSATION",
                         conversationId: chat_id,
-                        assignToOperatorId: assignToOperatorId 
+                        assignToOperatorId: assignToOperatorId
                     }),
                     method: "POST"
                 });
             };
-    
+
             assignChat("null");
             setTimeout(() => assignChat(operator_id), 2000);
         }

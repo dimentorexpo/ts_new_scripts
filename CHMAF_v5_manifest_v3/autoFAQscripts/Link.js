@@ -32,7 +32,7 @@ var win_Links =  // описание элементов окна ссылок
 					<button class="mainButton" title="Открывает раздел для проверки сертификата" id="certificates" style="width:105px; margin-top: 3px">Сертификаты</button>
 					<button class="mainButton" title="Открывает раздел для проверки промокодов" id="promocodes" style="width:105px; margin-top: 3px">Промокоды</button>
 					<button class="mainButton" title="Открывает Help Centr для учеников" id="helpocentrstud" style="width:105px; margin-top: 3px">Help Center У</button>
-					<button class="mainButton" title="Открывает Help Centr для преподавателей" id="helpocentrteach" style="width:105px; margin-top: 3px">Help Center П</button>	
+					<button class="mainButton" title="Открывает Help Centr для преподавателей" id="helpocentrteach" style="width:105px; margin-top: 3px">Help Center П</button>
 					<button class="mainButton" title="Открывает сайт для просмотра ошибок и логов в комнате" id="trshoothing" style="width:105px; margin-top: 3px">Troubleshooting</button>
 				</div>
 				<div style="margin: 5px; width: 550px" id="links_box">
@@ -47,7 +47,7 @@ var win_Links =  // описание элементов окна ссылок
 					<input id="cmsstepid" placeholder="CMS stepUUID" title="вводим stepUUID, чтобы сразу попасть в ЦМС на нужный урок и найти на нем наш слайд и проверить" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
 					<button class="mainButton" id="cmsid">🔎</button>
 					<input id="schemesteacher" placeholder="ID П схем возн" title="Вводим ID П, чтобы открытть ресурс с подключенными схемами вознаграждения П" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="mainButton" id="getschemes">🔎</button>	
+					<button class="mainButton" id="getschemes">🔎</button>
 					<input id="pushes" placeholder="ID У пуши" title="Вводим ID У, чтобы увидеть были отправлены пуши ученику или нет" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
 					<button class="mainButton" id="getpushes">🔎</button>
 					<input id="idforservicelocaleru" placeholder="ID У обсл RU" title="вводим ID У и по нажатию изменяем сразу ему язык обслуживания на русский" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
@@ -420,7 +420,7 @@ function addfunctionsonclick(section) {
             window.open("https://infra.skyeng.ru/request/create/166")
         })
 
-        document.getElementById('resetMMPassword').addEventListener('click', function () { // 
+        document.getElementById('resetMMPassword').addEventListener('click', function () { //
             window.open("https://infra.skyeng.ru/request/create/233")
         })
 
