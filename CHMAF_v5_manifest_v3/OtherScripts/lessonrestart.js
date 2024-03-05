@@ -4,7 +4,7 @@ function dosetclasswork(subject) {
             "accept": "application/json",
             "content-type": "application/json",
         },
-        body: JSON.stringify({ status: "classwork", name: "" }),
+        body: JSON.stringify({ status: "classwork"}),
         method: "PATCH",
         mode: "cors",
         credentials: "include"
@@ -42,7 +42,10 @@ function setupClassworkButton() {
 
         classworkbtn.onclick = function () {
             dosetclasswork(subject);
-            location.reload();
+            setTimeout(function() {
+				location.reload()
+			}, 1000
+			)
         };
     }
 }
