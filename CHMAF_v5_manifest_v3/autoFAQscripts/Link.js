@@ -11,17 +11,18 @@ var win_Links =  // описание элементов окна ссылок
 					<button title="Открывает Infra для запроса сброса пароля в Mattermost Teacher" id="resetMMPassword" class="mainButton uplinksbar">🔐</button>
 					<button title="Открывает менюшку для просмотра информации по BIN банка, чтобы узнать тип карты, страну происхождения, название банка" id="bankCheck" class="mainButton uplinksbar">💳</button>
 					<button title="Открывает просмотр список группы" id="GrListData" class="mainButton uplinksbar">👩‍👩‍👧‍👦</button>
+					<button title="Открывает документ просмотра статуса компенсаций реальных уроков" id="CompensRequests" class="mainButton uplinksbar">📖</button>
                     <button title="Открывает известные баги на платформе" id="confbugs" style="width: 50px; float: right; margin-right: 5px" class="mainButton uplinksbar">🐞</button>
 				</div>
 				<div style="margin: 5px; width: 550px;" id="links_but">
 					<button class="mainButton" title="Открывает Timetable" id="timetable" style="width:105px">TimeTable</button>
-					<button class="mainButton" title="Открывает админку Talks для поиска по ID П ID У , с которым идет урок" id="talksadm" style="width:105px">Talks</button>
-					<button class="mainButton" title="Открывает начислятор билинга для просмотра реального баланса у ученика и зависших уроков не на той STK" id="billingadm" style="width:105px">Начислятор</button>
+					<button class="mainButton" title="Открывает админку Talks для поиска по ID П ID У, с которым идет урок" id="talksadm" style="width:105px">Talks</button>
+					<button class="mainButton" title="Открывает форму передачи запросов на компенсацию реальных уроков ученику по массовым неполадкам/багам, из-за которых У потерял занятие" id="compensNew" style="width:105px; margin-top: 3px">Компенс NEW</button>
 					<button class="mainButton" title="Открывает раздел для создания операции компенсации ученику" id="compens" style="width:105px">Компенсация</button>
 					<button class="mainButton" title="Открывает CMS хранилище материалов уроков" id="CMS" style="width:105px">CMS</button>
 					<button class="mainButton" title="Открывает админку пользователей" id="useradm" style="width:105px; margin-top: 3px">Админка</button>
 					<button class="mainButton" title="Открывает поиск платежа по данным карте, сумме, дате платежа" id="transactions" style="width:105px; margin-top: 3px">Поиск $</button>
-					<button class="mainButton" title="Открывает форму передачи предложений от пользователей" id="suggestions" style="width:105px; margin-top: 3px">Предложения</button>
+					<button class="mainButton" title="Открывает начислятор билинга для просмотра реального баланса у ученика и зависших уроков не на той STK" id="billingadm" style="width:105px">Начислятор</button>
 					<button class="mainButton" title="Открывает раздел с проверкой фичей(кругов), подключенных пользователю и добавление/удаление их" id="userfeatures" style="width:105px; margin-top: 3px">User Фичи</button>
 					<button class="mainButton" title="Открывает  CMS детских предметов" id="kidscms" style="width:105px; margin-top: 3px">Kids CMS</button>
 					<button class="mainButton" title="Открывает раздел в Confluence по созданию тестовых комнат" id="testroom" style="width:105px; margin-top: 3px">TestRooms</button>
@@ -248,8 +249,12 @@ function addfunctionsonclick(section) {
             window.open("https://id.skyeng.ru/admin/users")
         })
 
-        document.getElementById('suggestions').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Предложения/пожелания
-            window.open("https://docs.google.com/forms/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/viewform")
+        document.getElementById('compensNew').addEventListener('click', function () { // открываем ссылку в новой вкладке для создания операции компенсации
+            window.open("https://docs.google.com/forms/d/e/1FAIpQLSeNQHfwYwHYRSb1RoBhkTYz6NMeVzaubwFEMWGNJQcgo_319g/viewform")
+        })
+
+        document.getElementById('CompensRequests').addEventListener('click', function () { // открываем ссылку просмотра статусов компенсаций
+            window.open("https://docs.google.com/spreadsheets/u/1/d/1gfwEYsHlmOcb8uyfmutfmeARU_L1uKhfuI6__9fjIXk/edit?resourcekey#gid=1317742738")
         })
 
         document.getElementById('transactions').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Поиск транзакций
