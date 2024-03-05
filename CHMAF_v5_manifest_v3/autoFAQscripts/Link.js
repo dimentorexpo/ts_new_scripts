@@ -29,7 +29,6 @@ var win_Links =  // описание элементов окна ссылок
 					<button class="mainButton" title="Открывает билинг для просмотра и редактирования подписок" id="subscribebilling" style="width:105px; margin-top: 3px">$Подписки</button>
 					<button class="mainButton" title="Открывает форму по аппеляциям аудита" id="apelation" style="width:105px; margin-top: 3px">Апелляции</button>
 					<button class="mainButton" title="Открывает сайт BrowserStack" id="browserstack" style="width:105px; margin-top: 3px">BrowserStaсk</button>
-					<button class="mainButton" title="Открывает сайт для поиска записей уроков" id="lesrecords" style="width:105px; margin-top: 3px">LessonRecords</button>
 					<button class="mainButton" title="Открывает раздел для проверки сертификата" id="certificates" style="width:105px; margin-top: 3px">Сертификаты</button>
 					<button class="mainButton" title="Открывает раздел для проверки промокодов" id="promocodes" style="width:105px; margin-top: 3px">Промокоды</button>
 					<button class="mainButton" title="Открывает Help Centr для учеников" id="helpocentrstud" style="width:105px; margin-top: 3px">Help Center У</button>
@@ -289,10 +288,6 @@ function addfunctionsonclick(section) {
 
         document.getElementById('trshoothing').addEventListener('click', function () { // открываем ссылку в новой вкладке на TRM 2.0
             window.open("https://video-trouble-shooter.skyeng.ru/")
-        })
-
-        document.getElementById('lesrecords').addEventListener('click', function () { // открываем ссылку в новой вкладке на Tramway Lesson Records
-            window.open("https://tramway.skyeng.ru/record")
         })
 
         document.getElementById('testroom').addEventListener('click', function () { // открываем ссылку в админку тестовых комнат
