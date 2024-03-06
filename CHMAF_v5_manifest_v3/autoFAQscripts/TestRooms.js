@@ -233,6 +233,9 @@ document.getElementById('starttestroom').addEventListener('click', function () {
             } else {
                 testroomsshowmessage('message', 'Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
                 cleartestroomsfields()
+                setTimeout(() => {
+                    document.getElementById('AF_testrooms').style.display = 'none'; 
+                }, 5000);
             }
         })
     } else {

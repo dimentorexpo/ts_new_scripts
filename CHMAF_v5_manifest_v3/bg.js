@@ -9,19 +9,6 @@ chrome.storage.local.set({ KC_addrth: 'https://script.google.com/macros/s/AKfycb
 
 //Block of requests
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-	function sendErrorResponse(error) {
-		console.error(error);
-		sendResponse({ error: error });
-	}
-
-	function makeFetchRequest(url, method, data) {
-		return fetch(url, {
-			method,
-			credentials: 'include',
-			...(data ? { body: JSON.stringify(data) } : {}),
-		});
-	}
-
 /* 	if (request.action === 'getFetchRequest') { // обработчик универсального запроса
 		const url = request.fetchURL;
 		const requestOptions = request.requestOptions;

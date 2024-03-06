@@ -143,6 +143,9 @@ document.getElementById('createlink2less').addEventListener('click', function ()
         copyToClipboard(link2lesson);
         link2lessshowmessage('message', 'Ссылка скопирована в буфер обмена');
         clearlink2lessfields()
+        setTimeout(() => {
+            document.getElementById('AF_link2less').style.display = 'none'; 
+        }, 5000);
 
     } else {
         link2lessshowmessage('error', massagetexttoshow);
