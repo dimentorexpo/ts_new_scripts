@@ -440,17 +440,20 @@ function checkelementtype(a) { // проверка на какой элемен�
     return false;
 }
 
-async function sendComment(txt) { // функция отправки комментария
-    var values = await getInfo(0)
-    adr = values[0]; adr1 = values[1]; uid = values[2]
-    var txt2 = txt.split('\n').join('\\n')
-    var txt2 = txt2.split("\"").join("\\\"")
-    resetFlags()
+async function sendComment(txt, activeConvId) { // Функция отправки комментария
+    var values = await getInfo(0);
+    var adr = values[0]; 
+    // Определяем adr1 на основе наличия activeConvId
+    var adr1 = activeConvId ? activeConvId : values[1]; 
+    var uid = values[2];
+    var txt2 = txt.split('\n').join('\\n');
+    txt2 = txt2.split("\"").join("\\\""); // Обратите внимание: переопределение переменной без 'var' для избежания повторного объявления
+    resetFlags();
     fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
         "headers": {
             "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
         },
-        "body": "------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + uid + "\",\"conversationId\":\"" + adr1 + "\",\"text\":\"" + txt2 + "\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n",
+        "body": `------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name="payload"\r\n\r\n{\"sessionId\":\"${uid}\",\"conversationId\":\"${adr1}\",\"text\":\"${txt2}\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n`,
         "method": "POST",
         "credentials": "include"
     });

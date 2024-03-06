@@ -222,7 +222,6 @@ function getInfraOId() {
             const otvetCheckAuthJira = JSON.parse(response.fetchansver);
             localStorage.setItem('infraOID', otvetCheckAuthJira.id);
             document.getElementById('jiratknstatus').innerText = "🟢"
-
         }
     })
 }
@@ -254,7 +253,7 @@ function getprsuplasttask() { //функция для получения ссы�
         }
     })
 }
-
+/*
 function getmmlink() {
     if (newtask.innerText != '') {
 
@@ -276,6 +275,31 @@ function getmmlink() {
 
     }
 }
+*/
+function getmmlink(lasttsk, activeConvId) {
+    if (lasttsk) {
+        const fetchURL = `https://jira.skyeng.tech/browse/${lasttsk}`;
+        const requestOptions = { method: 'GET' };
+        
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+            if (!response.success) {
+                alert('Не удалось выполнить запрос: ' + response.error);
+                return;
+            } else {
+                const otvetTimeLink = response.fetchansver;
+                const matchResult = otvetTimeLink.match(messregexPattern);
+                if (matchResult === null) {
+                    setTimeout(function() { getmmlink(lasttsk, activeConvId); }, 2000);
+                    return;
+                } else {
+                    const mmlink = matchResult[1];
+                    sendComment(`${messanger_name} link: ${mmlink}`, activeConvId);
+                }
+            }
+        });        
+    }
+}
+
 
 function sendRequest(idstdserv, dscr, str, erx, ary, code) {
     let formData = new URLSearchParams();
@@ -315,7 +339,10 @@ function sendRequest(idstdserv, dscr, str, erx, ary, code) {
                 removefields[i].value = '';
             }
 
-            setTimeout(getmmlink, 8000);
+            let activeConvId = getChatId();
+
+            getmmlink(lasttsk, activeConvId);
+            //setTimeout(getmmlink, 8000);
         }
     })
 
@@ -360,7 +387,10 @@ function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code) {
                 removefields[i].value = '';
             }
 
-            setTimeout(getmmlink, 8000);
+            let activeConvId = getChatId();
+            
+            getmmlink(lasttsk, activeConvId);
+            //setTimeout(getmmlink, 8000);
         }
     })
 }
@@ -404,7 +434,10 @@ function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code) {
                 removefields[i].value = '';
             }
 
-            setTimeout(getmmlink, 8000);
+            let activeConvId = getChatId();
+            
+            getmmlink(lasttsk, activeConvId);
+            //setTimeout(getmmlink, 8000);
         }
     })
 }
@@ -446,7 +479,10 @@ function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code) {
                 removefields[i].value = '';
             }
 
-            setTimeout(getmmlink, 8000);
+            let activeConvId = getChatId();
+            
+            getmmlink(lasttsk, activeConvId);
+            //setTimeout(getmmlink, 8000);
         }
     })
 }
@@ -571,7 +607,10 @@ function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, ap
                 removefields[i].value = '';
             }
 
-            setTimeout(getmmlink, 8000);
+            let activeConvId = getChatId();
+            
+            getmmlink(lasttsk, activeConvId);
+            //setTimeout(getmmlink, 8000);
         }
     })
 }
@@ -618,7 +657,10 @@ function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, 
                 removefields[i].value = '';
             }
 
-            setTimeout(getmmlink, 8000);
+            let activeConvId = getChatId();
+            
+            getmmlink(lasttsk, activeConvId);
+            //setTimeout(getmmlink, 8000);
         }
     })
 }
@@ -666,7 +708,10 @@ function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, s
                 removefields[i].value = '';
             }
 
-            setTimeout(getmmlink, 8000);
+            let activeConvId = getChatId();
+            
+            getmmlink(lasttsk, activeConvId);
+            //setTimeout(getmmlink, 8000);
         }
     })
 }
