@@ -8,7 +8,6 @@ let mmlink;
 const messanger_name = "TiMe";
 const messanger_URL = "https://mm-time.skyeng.tech";
 const messregexPattern = new RegExp(`">(${messanger_URL}.*?)<\/a>`);
-let prevtsk;
 let flagpsis = 0;
 let msgissnd = 0;
 let varinfraOID; //переменная для хранения значения ID оператора в Infra
