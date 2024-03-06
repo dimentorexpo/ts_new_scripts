@@ -360,19 +360,19 @@ function prepTp() { //функция подготовки расширения �
 
     flagLangBut = 1
     setInterval(timerHideButtons, 500)
-	
-	if(location.pathname.split('/')[1]  == "logs" && document.getElementsByClassName('ant-empty-description').length > 0 && document.getElementsByClassName('ant-empty-description')[0].innerHTML == "Нет данных") { // Добавляет кнопку при просмотре логов, если они были не в отделе ТП закрыты, чтобы открыть в Chat History модуле
-		let parent = document.getElementsByClassName('ant-table-title')[0].children[0];
-		let btnOpenInChatHis = document.createElement('button')
-		btnOpenInChatHis.textContent = "☢️"
-		btnOpenInChatHis.classList.add('mainButton')
-		btnOpenInChatHis.style = "width:40px; height:30px; margin-left:5px; font-size:16px; cursor:pointer"
 
-		let child = parent.children[3]; // Получаем третьего ребенка
-		parent.insertBefore(btnOpenInChatHis, child); // Вставляем перед третьим ребенком
-		
-		btnOpenInChatHis.addEventListener('click', function(){
-			if (document.getElementById('AF_ChatHis').style.display == 'none') {
+    if (location.pathname.split('/')[1] == "logs" && document.getElementsByClassName('ant-empty-description').length > 0 && document.getElementsByClassName('ant-empty-description')[0].innerHTML == "Нет данных") { // Добавляет кнопку при просмотре логов, если они были не в отделе ТП закрыты, чтобы открыть в Chat History модуле
+        let parent = document.getElementsByClassName('ant-table-title')[0].children[0];
+        let btnOpenInChatHis = document.createElement('button')
+        btnOpenInChatHis.textContent = "☢️"
+        btnOpenInChatHis.classList.add('mainButton')
+        btnOpenInChatHis.style = "width:40px; height:30px; margin-left:5px; font-size:16px; cursor:pointer"
+
+        let child = parent.children[3]; // Получаем третьего ребенка
+        parent.insertBefore(btnOpenInChatHis, child); // Вставляем перед третьим ребенком
+
+        btnOpenInChatHis.addEventListener('click', function () {
+            if (document.getElementById('AF_ChatHis').style.display == 'none') {
                 document.getElementById('opennewcat').click();
                 document.getElementById('hashchathis').value = location.pathname.split('/')[2];
                 btn_search_history.click();
@@ -380,8 +380,8 @@ function prepTp() { //функция подготовки расширения �
                 document.getElementById('hashchathis').value = location.pathname.split('/')[2];
                 btn_search_history.click();
             }
-		})
-	}
+        })
+    }
 }
 
 function prepKC() { //функция подготовки расширения КЦ
@@ -442,9 +442,8 @@ function checkelementtype(a) { // проверка на какой элемен�
 
 async function sendComment(txt, activeConvId) { // Функция отправки комментария
     var values = await getInfo(0);
-    var adr = values[0]; 
-    // Определяем adr1 на основе наличия activeConvId
-    var adr1 = activeConvId ? activeConvId : values[1]; 
+    var adr = values[0];
+    var adr1 = activeConvId ? activeConvId : values[1];
     var uid = values[2];
     var txt2 = txt.split('\n').join('\\n');
     txt2 = txt2.split("\"").join("\\\""); // Обратите внимание: переопределение переменной без 'var' для избежания повторного объявления
@@ -660,7 +659,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     document.getElementById('radioPlayer').onclick = getradioPlayerButtonPress;
     document.getElementById('buttonGetStat').onclick = getbuttonGetStatButtonPress;
     document.getElementById('butFrozeChat').onclick = getbutFrozeChatButtonPress;
-	document.getElementById('buttonGetQueue').onclick = getQueuePress;
+    document.getElementById('buttonGetQueue').onclick = getQueuePress;
 
     let openchhis = document.createElement('button')
     openchhis.innerHTML = '☢'
@@ -1084,12 +1083,12 @@ function checkchats() {
     if (allChats) {
         const timers = allChats.chatsTimerList;
         const chats = allChats.chatsList;
-    
+
         // Set default background for all chats
         for (let j = 0; j < chats.length; j++) {
             chats[j].style.background = "white"; // replace "" with your default color
         }
-    
+
         for (let i = 0; i < timers.length; i++) {
             const child = timers[i].children[2]; //в children [2] индекс поставили для таймера АЗ, чтобы его закрашивало, если меньше 2 минут; ранее был 1
             if (child) {
@@ -1100,7 +1099,7 @@ function checkchats() {
                 }
             }
         }
-    }    
+    }
 }
 
 // ловим вызов newTaggg из iframe
