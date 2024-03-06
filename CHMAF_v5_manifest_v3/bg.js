@@ -9,46 +9,26 @@ chrome.storage.local.set({ KC_addrth: 'https://script.google.com/macros/s/AKfycb
 
 //Block of requests
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-/* 	if (request.action === 'getFetchRequest') { // обработчик универсального запроса
+
+	if (request.action === 'getFetchRequest') {
 		const url = request.fetchURL;
 		const requestOptions = request.requestOptions;
 
-        fetch(url, requestOptions)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok: ' + response.statusText);
-                }
-                return response.text();
-            })
-            .then(text => {
-                sendResponse({ success: true, fetchansver: text });
-            })
-            .catch(error => {
-                sendResponse({ success: false, error: error.message });
-            });
+		(async () => {
+			try {
+				const response = await fetch(url, requestOptions);
+				if (!response.ok) {
+					throw new Error('Network response was not ok: ' + response.statusText);
+				}
+				const text = await response.text(); // Или response.json(), если ожидается JSON
+				sendResponse({ success: true, fetchansver: text });
+			} catch (error) {
+				sendResponse({ success: false, error: error.message });
+			}
+		})();
 
-        return true; // Возвращаем true для асинхронной отправки ответа
-	} */
-	
-	if (request.action === 'getFetchRequest') {
-    const url = request.fetchURL;
-    const requestOptions = request.requestOptions;
-
-    (async () => {
-        try {
-            const response = await fetch(url, requestOptions);
-            if (!response.ok) {
-                throw new Error('Network response was not ok: ' + response.statusText);
-            }
-            const text = await response.text(); // Или response.json(), если ожидается JSON
-            sendResponse({ success: true, fetchansver: text });
-        } catch (error) {
-            sendResponse({ success: false, error: error.message });
-        }
-    })();
-
-    return true; // Возвращаем true для асинхронной отправки ответа
-}
+		return true; // Возвращаем true для асинхронной отправки ответа
+	}
 
 	if (request.name === "ChM") {
 		if (request.question == 'sendResponse') {
@@ -84,5 +64,5 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 				callback
 			);
 		}
-	}	
+	}
 });

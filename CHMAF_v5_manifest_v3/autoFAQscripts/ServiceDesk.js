@@ -3,13 +3,9 @@ let jiratoken;
 let jiratokennew;
 let responsejira;
 let psarr = [];
-let firstEl;
-let mmlink;
 const messanger_name = "TiMe";
 const messanger_URL = "https://mm-time.skyeng.tech";
 const messregexPattern = new RegExp(`">(${messanger_URL}.*?)<\/a>`);
-let flagpsis = 0;
-let msgissnd = 0;
 let varinfraOID; //переменная для хранения значения ID оператора в Infra
 
 const Paragrafsstyles = "color: bisque; font-size: 18px; position: relative; width: 95%; margin-top: 5px; margin-bottom: 5px;";
@@ -294,9 +290,10 @@ function MakeFetch(bodyrequst,activeConvId) {
 
             const lasttsk = otvetCreateIssue.jiraIssueKey;
             newtask.innerText = lasttsk;
-            sendComment(`Jira PS link: https://jira.skyeng.tech/browse/${lasttsk}`, activeConvId);
-            getmmlink(lasttsk, activeConvId);
-
+            if (activeConvId){
+                sendComment(`Jira PS link: https://jira.skyeng.tech/browse/${lasttsk}`, activeConvId);
+                getmmlink(lasttsk, activeConvId);
+            }
             const removefields = document.getElementsByClassName('removefield');
             for (let i = 0; i < removefields.length; i++) {
                 removefields[i].value = '';
