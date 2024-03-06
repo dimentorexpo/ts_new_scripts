@@ -8,8 +8,6 @@ let mmlink;
 const messanger_name = "TiMe";
 const messanger_URL = "https://mm-time.skyeng.tech";
 const messregexPattern = new RegExp(`">(${messanger_URL}.*?)<\/a>`);
-// let infoarr;
-let lasttsk;
 let prevtsk;
 let flagpsis = 0;
 let msgissnd = 0;
@@ -241,7 +239,7 @@ function getprsuplasttask() { //функция для получения ссы�
             return;
         } else {
             const otvetInfraHis = JSON.parse(response.fetchansver);
-            prevtsk = otvetInfraHis.items[0].jiraIssueKey;
+            const prevtsk = otvetInfraHis.items[0].jiraIssueKey;
             prevtask.innerText = prevtsk;
             prevtask.onclick = function () {
                 if (prevtask.innerText === "") {
@@ -253,29 +251,7 @@ function getprsuplasttask() { //функция для получения ссы�
         }
     })
 }
-/*
-function getmmlink() {
-    if (newtask.innerText != '') {
 
-        const fetchURL = `https://jira.skyeng.tech/browse/${newtask.innerText}`;
-        const requestOptions = {
-            method: 'GET'
-        };
-
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-            if (!response.success) {
-                alert('Не удалось выполнить запрос: ' + response.error);
-                return;
-            } else {
-                const otvetTimeLink = response.fetchansver;
-                mmlink = otvetTimeLink.match(messregexPattern)[1];
-                sendComment(`${messanger_name} link: ${mmlink}`);
-            }
-        })
-
-    }
-}
-*/
 function getmmlink(lasttsk, activeConvId) {
     if (lasttsk) {
         const fetchURL = `https://jira.skyeng.tech/browse/${lasttsk}`;
@@ -300,25 +276,12 @@ function getmmlink(lasttsk, activeConvId) {
     }
 }
 
-
-function sendRequest(idstdserv, dscr, str, erx, ary, code) {
-    let formData = new URLSearchParams();
-    formData.append('requestTypeId', code);
-    formData.append('reporterId', varinfraOID);
-    formData.append('initiatorId', varinfraOID);
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
-
+function MakeFetch(bodyrequst,activeConvId) {
     const fetchURL = 'https://api-infra.skyeng.ru/api/v1/rs/request';
     const requestOptions = {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formData.toString(),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded',},
+        body: bodyrequst,
         mode: 'cors',
         credentials: 'include',
     };
@@ -330,25 +293,35 @@ function sendRequest(idstdserv, dscr, str, erx, ary, code) {
         } else {
             const otvetCreateIssue = JSON.parse(response.fetchansver);
 
-            lasttsk = otvetCreateIssue.jiraIssueKey;
+            const lasttsk = otvetCreateIssue.jiraIssueKey;
             newtask.innerText = lasttsk;
-            sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
+            sendComment(`Jira PS link: https://jira.skyeng.tech/browse/${lasttsk}`, activeConvId);
+            getmmlink(lasttsk, activeConvId);
 
             const removefields = document.getElementsByClassName('removefield');
             for (let i = 0; i < removefields.length; i++) {
                 removefields[i].value = '';
             }
-
-            let activeConvId = getChatId();
-
-            getmmlink(lasttsk, activeConvId);
-            //setTimeout(getmmlink, 8000);
         }
     })
-
 }
 
-function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code) {
+function sendRequest(idstdserv, dscr, str, erx, ary, code, activeConvId) {
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst,activeConvId);
+}
+
+function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code, activeConvId) {
     let formData = new URLSearchParams();
     formData.append('requestTypeId', code);
     formData.append('reporterId', varinfraOID);
@@ -360,42 +333,11 @@ function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code) {
     formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
     formData.append('data[serviceId]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
 
-    const fetchURL = 'https://api-infra.skyeng.ru/api/v1/rs/request';
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formData.toString(),
-        mode: 'cors',
-        credentials: 'include',
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otvetCreateIssue = JSON.parse(response.fetchansver);
-
-            lasttsk = otvetCreateIssue.jiraIssueKey;
-            newtask.innerText = lasttsk;
-            sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-
-            const removefields = document.getElementsByClassName('removefield');
-            for (let i = 0; i < removefields.length; i++) {
-                removefields[i].value = '';
-            }
-
-            let activeConvId = getChatId();
-            
-            getmmlink(lasttsk, activeConvId);
-            //setTimeout(getmmlink, 8000);
-        }
-    })
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst,activeConvId);
 }
 
-function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code) {
+function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code, activeConvId) {
     let formData = new URLSearchParams();
     formData.append('requestTypeId', code);
     formData.append('reporterId', varinfraOID);
@@ -407,42 +349,11 @@ function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code) {
     formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
     formData.append('data[hashLesson]', hesh)
 
-    const fetchURL = 'https://api-infra.skyeng.ru/api/v1/rs/request';
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formData.toString(),
-        mode: 'cors',
-        credentials: 'include',
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otvetCreateIssue = JSON.parse(response.fetchansver);
-
-            lasttsk = otvetCreateIssue.jiraIssueKey;
-            newtask.innerText = lasttsk;
-            sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-
-            const removefields = document.getElementsByClassName('removefield');
-            for (let i = 0; i < removefields.length; i++) {
-                removefields[i].value = '';
-            }
-
-            let activeConvId = getChatId();
-            
-            getmmlink(lasttsk, activeConvId);
-            //setTimeout(getmmlink, 8000);
-        }
-    })
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst,activeConvId);
 }
 
-function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code) {
+function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code, activeConvId) {
     let formData = new URLSearchParams();
     formData.append('requestTypeId', code);
     formData.append('reporterId', varinfraOID);
@@ -452,39 +363,8 @@ function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code) {
     formData.append('data[user_id]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
     formData.append('data[user_email]', decodeURIComponent(usermail).replaceAll('<br>', '\n'))
 
-    const fetchURL = 'https://api-infra.skyeng.ru/api/v1/rs/request';
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formData.toString(),
-        mode: 'cors',
-        credentials: 'include',
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otvetCreateIssue = JSON.parse(response.fetchansver);
-
-            lasttsk = otvetCreateIssue.jiraIssueKey;
-            newtask.innerText = lasttsk;
-            sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-
-            const removefields = document.getElementsByClassName('removefield');
-            for (let i = 0; i < removefields.length; i++) {
-                removefields[i].value = '';
-            }
-
-            let activeConvId = getChatId();
-            
-            getmmlink(lasttsk, activeConvId);
-            //setTimeout(getmmlink, 8000);
-        }
-    })
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst,activeConvId);
 }
 
 let checkingId = [];
@@ -566,7 +446,7 @@ function getcommproboptions() {
     }
 }
 
-function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, appinfo, code) {
+function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, appinfo, code, activeConvId) {
 
     let formData = new URLSearchParams();
     formData.append('requestTypeId', code);
@@ -579,43 +459,12 @@ function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, ap
     formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
     formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
     formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
-
-    const fetchURL = 'https://api-infra.skyeng.ru/api/v1/rs/request';
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formData.toString(),
-        mode: 'cors',
-        credentials: 'include',
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otvetCreateIssue = JSON.parse(response.fetchansver);
-
-            lasttsk = otvetCreateIssue.jiraIssueKey;
-            newtask.innerText = lasttsk;
-            sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-
-            const removefields = document.getElementsByClassName('removefield');
-            for (let i = 0; i < removefields.length; i++) {
-                removefields[i].value = '';
-            }
-
-            let activeConvId = getChatId();
-            
-            getmmlink(lasttsk, activeConvId);
-            //setTimeout(getmmlink, 8000);
-        }
-    })
+    
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst,activeConvId);
 }
 
-function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code) {
+function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code, activeConvId) {
 
     let formData = new URLSearchParams();
     formData.append('requestTypeId', code);
@@ -630,42 +479,11 @@ function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, 
     formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
     formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>', '\n'))
 
-    const fetchURL = 'https://api-infra.skyeng.ru/api/v1/rs/request';
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formData.toString(),
-        mode: 'cors',
-        credentials: 'include',
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otvetCreateIssue = JSON.parse(response.fetchansver);
-
-            lasttsk = otvetCreateIssue.jiraIssueKey;
-            newtask.innerText = lasttsk;
-            sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-
-            const removefields = document.getElementsByClassName('removefield');
-            for (let i = 0; i < removefields.length; i++) {
-                removefields[i].value = '';
-            }
-
-            let activeConvId = getChatId();
-            
-            getmmlink(lasttsk, activeConvId);
-            //setTimeout(getmmlink, 8000);
-        }
-    })
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst,activeConvId);
 }
 
-function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code) {
+function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code, activeConvId) {
 
     let formData = new URLSearchParams();
     formData.append('requestTypeId', code);
@@ -681,39 +499,8 @@ function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, s
     formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
     formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
 
-    const fetchURL = 'https://api-infra.skyeng.ru/api/v1/rs/request';
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formData.toString(),
-        mode: 'cors',
-        credentials: 'include',
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otvetCreateIssue = JSON.parse(response.fetchansver);
-
-            lasttsk = otvetCreateIssue.jiraIssueKey;
-            newtask.innerText = lasttsk;
-            sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-
-            const removefields = document.getElementsByClassName('removefield');
-            for (let i = 0; i < removefields.length; i++) {
-                removefields[i].value = '';
-            }
-
-            let activeConvId = getChatId();
-            
-            getmmlink(lasttsk, activeConvId);
-            //setTimeout(getmmlink, 8000);
-        }
-    })
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst,activeConvId);
 }
 
 const inputsFieldsSD = document.getElementById('inputfieldsdiv');
@@ -722,7 +509,6 @@ function getservDskPress() { // функция открытия главного
     if (document.getElementById('AF_ServDsk').style.display == '') {
         document.getElementById('AF_ServDsk').style.display = 'none'
         document.getElementById('newtask').textContent = ''
-        lasttsk = '';
         document.getElementById('idmymenu').style.display = 'none'
         document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
     } else {
@@ -925,6 +711,7 @@ function remres(a) { // функция переключения класса п�
 }
 
 document.getElementById('createsd').addEventListener('click', function () { //функция создания задачи на сервис деск
+    let activeConvId = getChatId();
 
     let priorityMobile = document.getElementById('prioritymbugs')
     let catcommprob = document.getElementById('categoryCommproblems')
@@ -959,37 +746,37 @@ document.getElementById('createsd').addEventListener('click', function () { //ф
 
     if (catcommprob.style.display == '') {
         for (const button of activeButtons) {
-            sendRequestCommprob(catcommprob.value, usermail.value, idUser.value, descriptionField, button.value);
+            sendRequestCommprob(catcommprob.value, usermail.value, idUser.value, descriptionField, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     } else if (userservice.style.display == '') {
         for (const button of activeButtons) {
-            sendRequestmrktbill(idUser.value, userservice.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value);
+            sendRequestmrktbill(idUser.value, userservice.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     } else if (lessonHesh.style.display == '') {
         for (const button of activeButtons) {
-            sendRequestVimVid(idUser.value, lessonHesh.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value);
+            sendRequestVimVid(idUser.value, lessonHesh.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     } else if (priorityMobile.style.display == 'none' && appInfo.style.display == 'none' && deviceInfo.style.display == 'none') {
         for (const button of activeButtons) {
-            sendRequest(idUser.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value);
+            sendRequest(idUser.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     } else if (priorityMobile.style.display == '' && appInfo.style.display == '' && deviceInfo.style.display == '' && CMSlink.style.display == '') {
         for (const button of activeButtons) {
-            sendRequestAcademMob(CMSlink.value, priorityMobile.value, appInfo.value, deviceInfo.value, descriptionField, stepsToReproduce, expectedResult, actualResult, idUser.value, button.value);
+            sendRequestAcademMob(CMSlink.value, priorityMobile.value, appInfo.value, deviceInfo.value, descriptionField, stepsToReproduce, expectedResult, actualResult, idUser.value, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     } else if (priorityMobile.style.display == '' && appInfo.style.display == '' && deviceInfo.style.display == '' && CMSlink.style.display == 'none') {
         for (const button of activeButtons) {
-            sendRequestMobWithPriority(priorityMobile.value, appInfo.value, deviceInfo.value, descriptionField, stepsToReproduce, expectedResult, actualResult, idUser.value, button.value);
+            sendRequestMobWithPriority(priorityMobile.value, appInfo.value, deviceInfo.value, descriptionField, stepsToReproduce, expectedResult, actualResult, idUser.value, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     } else if (priorityMobile.style.display == 'none' && appInfo.style.display == '' && deviceInfo.style.display == '') {
         for (const button of activeButtons) {
-            sendRequestMobNoPriority(idUser.value, actualResult, expectedResult, stepsToReproduce, descriptionField, deviceInfo.value, appInfo.value, button.value);
+            sendRequestMobNoPriority(idUser.value, actualResult, expectedResult, stepsToReproduce, descriptionField, deviceInfo.value, appInfo.value, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     }
