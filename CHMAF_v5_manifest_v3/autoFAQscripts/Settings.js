@@ -80,7 +80,7 @@ async function init_settings() {
                     <label style="color:bisque;"><input type="color" id="aclstimepicker">Цвет заливки закрытия чата</label>
                     <button class="mainButton onlyfortp" id="activateVoiceCommands" title="Позволяет изменить кнопку для активации голосовых командю По умолчанию SHIFT" style="margin-left:10px;">Shift</button>
                     <br>
-                    <label style="color:bisque;"><input type="color" id="answtimepicker">Цвет заливки переведенного чата</label>
+                    <label style="color:bisque;"><input type="color" id="answtimepicker">Цвет заливки нового чата</label>
                     <br>
                     <label style="color:bisque;"><input type="color" id="responstimepicker">Цвет заливки неотвеченного чата</label>
                     <br>
