@@ -1066,16 +1066,22 @@ function getAllChatsList() {
     }
 }
 
-function convertToSeconds(timeStr, i) {
-    if (!timeStr) {
+function convertToSeconds(TimeToClose, TimeToAnswer, i) {
+    if (!TimeToClose && !TimeToAnswer) {
         const cardElements = getAllChatsList().chatsList;
         if (cardElements[i]) {
             cardElements[i].style.background = "#DED718";
         }
         return 0;
+    } else if (!TimeToClose && TimeToAnswer) {
+        const cardElements = getAllChatsList().chatsList;
+        if (cardElements[i]) {
+            cardElements[i].style.background = "#1E90FF";
+        }
+        return 0;
     }
 
-    const [h, m, s] = timeStr.split(':').map(Number);
+    const [h, m, s] = TimeToClose.split(':').map(Number);
     const totalSeconds = h * 3600 + m * 60 + s;
 
     const cardElements = getAllChatsList().chatsList;
@@ -1100,10 +1106,11 @@ function checkchats() {
         }
 
         for (let i = 0; i < timers.length; i++) {
-            const child = timers[i].children[2]; //в children [2] индекс поставили для таймера АЗ, чтобы его закрашивало, если меньше 2 минут; ранее был 1
-            if (child) {
+            const TimeToClose = timers[i].children[2]; //в children [2] индекс поставили для таймера АЗ, чтобы его закрашивало, если меньше 2 минут; ранее был 1
+            const TimeToAnswer = timers[i].children[1];
+            if (TimeToClose) {
                 try {
-                    convertToSeconds(child.textContent, i);
+                    convertToSeconds(TimeToClose.textContent,TimeToAnswer.textContent, i);
                 } catch (error) {
                     console.error(`Error with timer ${i}: ${error.message}`);
                 }
