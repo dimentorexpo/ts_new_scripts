@@ -1065,25 +1065,7 @@ function getAllChatsList() {
         return { chatsTimerList, chatsList };
     }
 }
-/*
-function convertToSeconds(timeStr, i) {
-    const [h, m, s] = timeStr.split(':').map(Number);
-    const totalSeconds = h * 3600 + m * 60 + s;
-    if (totalSeconds < 120) {
-        const cardElements = getAllChatsList().chatsList;
-        if (cardElements[i]) {
-            cardElements[i].style.background = localStorage.getItem('defaclschatcolor');
-        }
-    }
-    if (!timeStr){
-        const cardElements = getAllChatsList().chatsList;
-        if (cardElements[i]) {
-            cardElements[i].style.background = "DED718";
-        }
-    }
-    return totalSeconds;
-}
-*/
+
 function convertToSeconds(timeStr, i) {
     if (!timeStr) {
         const cardElements = getAllChatsList().chatsList;
@@ -1105,7 +1087,6 @@ function convertToSeconds(timeStr, i) {
 
     return totalSeconds;
 }
-
 
 function checkchats() {
     const allChats = getAllChatsList();
