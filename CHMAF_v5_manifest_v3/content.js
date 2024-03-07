@@ -1065,7 +1065,7 @@ function getAllChatsList() {
         return { chatsTimerList, chatsList };
     }
 }
-
+/*
 function convertToSeconds(timeStr, i) {
     const [h, m, s] = timeStr.split(':').map(Number);
     const totalSeconds = h * 3600 + m * 60 + s;
@@ -1075,8 +1075,37 @@ function convertToSeconds(timeStr, i) {
             cardElements[i].style.background = localStorage.getItem('defaclschatcolor');
         }
     }
+    if (!timeStr){
+        const cardElements = getAllChatsList().chatsList;
+        if (cardElements[i]) {
+            cardElements[i].style.background = "DED718";
+        }
+    }
     return totalSeconds;
 }
+*/
+function convertToSeconds(timeStr, i) {
+    if (!timeStr) {
+        const cardElements = getAllChatsList().chatsList;
+        if (cardElements[i]) {
+            cardElements[i].style.background = "#DED718";
+        }
+        return 0;
+    }
+
+    const [h, m, s] = timeStr.split(':').map(Number);
+    const totalSeconds = h * 3600 + m * 60 + s;
+
+    const cardElements = getAllChatsList().chatsList;
+    if (cardElements[i]) {
+        if (totalSeconds < 120) {
+            cardElements[i].style.background = localStorage.getItem('defaclschatcolor');
+        }
+    }
+
+    return totalSeconds;
+}
+
 
 function checkchats() {
     const allChats = getAllChatsList();
