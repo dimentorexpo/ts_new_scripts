@@ -1070,13 +1070,13 @@ function convertToSeconds(TimeToClose, TimeToAnswer, i) {
     if (!TimeToClose && !TimeToAnswer) {
         const cardElements = getAllChatsList().chatsList;
         if (cardElements[i]) {
-            cardElements[i].style.background = "sienna";
+            cardElements[i].style.background = localStorage.getItem('answchatcolor');
         }
         return 0;
     } else if (!TimeToClose && TimeToAnswer) {
         const cardElements = getAllChatsList().chatsList;
         if (cardElements[i]) {
-            cardElements[i].style.background = "plum";
+            cardElements[i].style.background = localStorage.getItem('responschatcolor');
         }
         return 0;
     }

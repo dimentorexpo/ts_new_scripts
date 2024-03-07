@@ -13,6 +13,16 @@ async function init_settings() {
         localStorage.setItem('defaclschatcolor', '#FF47CA')
     }
 
+    // Цвет заливки чата только взятого в работу
+    if (localStorage.getItem('answchatcolor') == null || localStorage.getItem('answchatcolor') == undefined) {
+        localStorage.setItem('answchatcolor', '#A0522D')
+    }
+
+    // Цвет заливки чата ожидающего ответа
+    if (localStorage.getItem('responschatcolor') == null || localStorage.getItem('responschatcolor') == undefined) {
+        localStorage.setItem('responschatcolor', '#DDA0DD')
+    }
+
     //Для интервала воспроизведения звука
     if (localStorage.getItem('splinter') == null) {
         localStorage.setItem('splinter', 3);
@@ -69,6 +79,10 @@ async function init_settings() {
                     </div>
                     <label style="color:bisque;"><input type="color" id="aclstimepicker">Цвет заливки закрытия чата</label>
                     <button class="mainButton onlyfortp" id="activateVoiceCommands" title="Позволяет изменить кнопку для активации голосовых командю По умолчанию SHIFT" style="margin-left:10px;">Shift</button>
+                    <br>
+                    <label style="color:bisque;"><input type="color" id="answtimepicker">Цвет заливки переведенного чата</label>
+                    <br>
+                    <label style="color:bisque;"><input type="color" id="responstimepicker">Цвет заливки неотвеченного чата</label>
                     <br>
                     <input class="onlyfortp" id="test_std" placeholder="ID тест У" autocomplete="off" title = "ID личного тестового ученика" type="text" style="text-align: center; width: 100px; color: black;">
                     <button class="mainButton onlyfortp" id="setteststd" title="Добавить в localstorage ID тестового У" style="margin-top: 5px">💾</button>
@@ -284,6 +298,38 @@ async function init_settings() {
             document.getElementById('aclstimepicker').ondblclick = function () {
                 localStorage.setItem('defaclschatcolor', '#FF47CA')
                 document.getElementById('aclstimepicker').value = localStorage.getItem('defaclschatcolor')
+            }
+
+            if (localStorage.getItem('answchatcolor') != null || localStorage.getItem('answchatcolor') != undefined) {
+                document.getElementById('answtimepicker').value = localStorage.getItem('answchatcolor')
+            } else {
+                localStorage.setItem('answchatcolor', '#A0522D')
+                document.getElementById('answtimepicker').value = localStorage.getItem('answchatcolor')
+            }
+
+            document.getElementById('answtimepicker').onchange = function () {
+                localStorage.setItem('answchatcolor', this.value)
+            }
+
+            document.getElementById('answtimepicker').ondblclick = function () {
+                localStorage.setItem('answchatcolor', '#A0522D')
+                document.getElementById('answtimepicker').value = localStorage.getItem('answchatcolor')
+            }
+
+            if (localStorage.getItem('responschatcolor') != null || localStorage.getItem('responschatcolor') != undefined) {
+                document.getElementById('responstimepicker').value = localStorage.getItem('responschatcolor')
+            } else {
+                localStorage.setItem('responschatcolor', '#DDA0DD')
+                document.getElementById('responstimepicker').value = localStorage.getItem('responschatcolor')
+            }
+
+            document.getElementById('responstimepicker').onchange = function () {
+                localStorage.setItem('responschatcolor', this.value)
+            }
+
+            document.getElementById('responstimepicker').ondblclick = function () {
+                localStorage.setItem('responschatcolor', '#DDA0DD')
+                document.getElementById('responstimepicker').value = localStorage.getItem('responschatcolor')
             }
 
             // скрываем от других отделов возможность включать расширение с ТП  плююшками и шаблонами
