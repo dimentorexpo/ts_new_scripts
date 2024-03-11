@@ -1892,7 +1892,7 @@ document.getElementById('stargrab').onclick = async function () {
                     // Не допускаем другие типы кроме массивов
                     if (!Array.isArray(parsed)) throw new Error('Not an array');
                 } catch (e) {
-                    console.error('Invalid JSON for:', str, 'Error:', e.message);
+                    console.log('Invalid JSON for:', str, 'Error:', e.message);
                     return false;
                 }
                 return true;

@@ -284,7 +284,7 @@ function getunhidephone() { //открывает телефон пользова
                 document.getElementById('phoneunhidden').textContent = otvetPhone.data.value;
             } else {
                 // Handle the case where responsePhone or responsePhone.data is undefined, or value is not present
-                console.error('Failed to get user phone', otvetPhone);
+                console.log('Failed to get user phone', otvetPhone);
             }
 
         }
@@ -310,7 +310,7 @@ function getunhideemail() { //открывает почту пользовате
                 document.getElementById('mailunhidden').textContent = otvetEmail.data.value;
             } else {
                 // Handle the case where responseEmail or responseEmail.data is undefined, or value is not present
-                console.error('Failed to get user email', otvetEmail);
+                console.log('Failed to get user email', otvetEmail);
             }
         }
     })
@@ -676,7 +676,7 @@ function getusernamecrm() {
                         await getLoginLink(document.getElementById('idstudent').value.trim());
                         button.style.color = "green";
                     } catch (error) {
-                        console.error('Ошибка: ', error);
+                        console.log('Ошибка: ', error);
                         button.style.color = "red";
                         alert('Не удалось получить логиннер: ' + error.message);
                     } finally {
@@ -949,7 +949,7 @@ async function checkServiceAndUserInfo() {
                                     await getLoginLink(document.getElementById('idstudent').value.trim());
                                     button.style.color = "green";
                                 } catch (error) {
-                                    console.error('Ошибка: ', error);
+                                    console.log('Ошибка: ', error);
                                     button.style.color = "red";
                                     alert('Не удалось получить логиннер: ' + error.message);
                                 } finally {

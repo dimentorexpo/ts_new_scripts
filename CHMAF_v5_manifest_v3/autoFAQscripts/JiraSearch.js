@@ -236,11 +236,11 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
                             let newinfocount = document.querySelectorAll('.newcount');
                             newinfocount[index].innerHTML = increasedcount;
                         } else {
-                            console.error('Ошибка при увеличении счетчика Support Tab:', responseIncrease.error);
+                            console.log('Ошибка при увеличении счетчика Support Tab:', responseIncrease.error);
                         }
                     });
                 } else {
-                    console.error('Ошибка при получении токена и счетчика:', responseToken.error);
+                    console.log('Ошибка при получении токена и счетчика:', responseToken.error);
                 }
             });
         });
@@ -275,7 +275,7 @@ function getJiraTask(requestOptions) { // поиск задач в jira
                 if (currentIssue && currentKey) {
                     issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
                 } else {
-                    console.error(`Не удалось найти соответствие для индекса: ${i}`);
+                    console.log(`Не удалось найти соответствие для индекса: ${i}`);
                 }
             }
 
@@ -352,7 +352,7 @@ function switchJiraPages() {
                             if (currentIssue && currentKey) {
                                 issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
                             } else {
-                                console.error("Не удалось найти соответствие для индекса: " + i);
+                                console.log("Не удалось найти соответствие для индекса: " + i);
                             }
                         }
 
@@ -371,7 +371,7 @@ function switchJiraPages() {
                         const refreshissuesarr = document.querySelectorAll('.refreshissues');
                         addRefreshIssueOnClickEvent(refreshissuesarr, ids);
                     } else {
-                        console.error('Ошибка при запросе: ', response.error);
+                        console.log('Ошибка при запросе: ', response.error);
                     }
                 });
             }
@@ -422,7 +422,7 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                         document.getElementById('searchjiratknstatus').innerText = "🔴";
                     }
                 } else {
-                    console.error('Ошибка при проверке авторизации в Jira:', response.error);
+                    console.log('Ошибка при проверке авторизации в Jira:', response.error);
                 }
             });
         }

@@ -220,7 +220,7 @@ async function getAllChatsByStatus() {
             queueCnt.textContent = `${dataChts.length}`;
         })
         .catch(error => {
-            console.error('Произошла ошибка при получении данных: ', error);
+            console.log('Произошла ошибка при получении данных: ', error);
         });
 
     // Преобразование и отображение данных

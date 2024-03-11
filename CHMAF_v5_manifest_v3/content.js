@@ -233,7 +233,7 @@ function changeStatus(status) { // функция изменения стату�
             console.log(`Status changed to ${status}`);
         })
         .catch((err) => {
-            console.error(err);
+            console.log(err);
         });
 }
 
@@ -402,7 +402,7 @@ function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
         console.log('Text copied to clipboard');
     }).catch(err => {
-        console.error('Failed to copy text: ', err);
+        console.log('Failed to copy text: ', err);
     });
 }
 
@@ -1023,18 +1023,18 @@ function getLoginLink(userid) { // функция получения ссылк�
         };
         chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions }, (response) => {
             if (!response.success) {
-                console.error('Ошибка при получении логиннера: ', response.error);
+                console.log('Ошибка при получении логиннера: ', response.error);
                 return reject(new Error(response.error));
             }
             const link = extractLoginLink(response.fetchansver);
             if (!link) {
-                console.error('Ссылка логинера не найдена');
+                console.log('Ссылка логинера не найдена');
                 return reject(new Error('Ссылка логинера не найдена'));
             }
             navigator.clipboard.writeText(link)
                 .then(() => resolve(true))
                 .catch((err) => {
-                    console.error('Не удалось скопировать текст: ', err);
+                    console.log('Не удалось скопировать текст: ', err);
                     reject(err);
                 });
         });
@@ -1112,7 +1112,7 @@ function checkchats() {
                 try {
                     convertToSeconds(TimeToClose.textContent,TimeToAnswer.textContent, i);
                 } catch (error) {
-                    console.error(`Error with timer ${i}: ${error.message}`);
+                    console.log(`Error with timer ${i}: ${error.message}`);
                 }
             }
         }

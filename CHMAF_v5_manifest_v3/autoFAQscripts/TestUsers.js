@@ -23,7 +23,6 @@ document.getElementById('link2lessbtn').onclick = getlink2lessButtonPress;
 function handleButtonClick(buttonId, storageKey) { // Функция для обработки нажатий на кнопки
     const userId = localStorage.getItem(storageKey);
     if (!userId) {
-        alert(`Введите ID в настройках ⚙`);
         return;
     }
 
@@ -34,8 +33,7 @@ function handleButtonClick(buttonId, storageKey) { // Функция для об
         toggleButtonState(buttonId, 'successbtn');
         setTimeout(() => toggleButtonState(buttonId, 'successbtn'), 1000);
     }).catch((error) => {
-        console.error('Ошибка: ', error);
-        alert('Не удалось получить логиннер: ' + error.message);
+        console.log('Ошибка: ', error);
         toggleButtonState(buttonId, 'active');
         toggleButtonState(buttonId, 'errorbtn');
         setTimeout(() => toggleButtonState(buttonId, 'errorbtn'), 1000);

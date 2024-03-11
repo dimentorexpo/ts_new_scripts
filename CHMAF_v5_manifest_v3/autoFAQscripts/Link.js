@@ -411,7 +411,7 @@ function addfunctionsonclick(section) {
                     idforservicelocaleru.value = "";
                     setTimeout(function () { document.getElementById('setservicelocaleru').innerHTML = "🌍"; }, 2000);
                 } else {
-                    console.error('Ошибка при смене локали:', response.error);
+                    console.log('Ошибка при смене локали:', response.error);
                 }
             });
         }
@@ -476,11 +476,11 @@ function addfunctionsonclick(section) {
                             setidformobpass.value = convertres11[1];
                         } else {
                             // Обрабатываем случай, когда совпадение не найдено
-                            console.error('OTP не найден в ответе');
+                            console.log('OTP не найден в ответе');
                         }
                     } else {
                         // Обрабатываем случай, когда ответ пустой или не содержит нужной информации
-                        console.error('Ответ от background script пуст или не определен');
+                        console.log('Ответ от background script пуст или не определен');
                     }
                 });
 

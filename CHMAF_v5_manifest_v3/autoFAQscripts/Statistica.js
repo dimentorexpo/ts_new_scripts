@@ -503,7 +503,7 @@ async function checkCSAT() { // функция проверки CSAT и чато
             }
         }
     } catch (e) {
-        console.error(e, e.stack);
+        console.log(e, e.stack);
     }
 
     const slaclchatcontainer = document.querySelectorAll('.lookchat');

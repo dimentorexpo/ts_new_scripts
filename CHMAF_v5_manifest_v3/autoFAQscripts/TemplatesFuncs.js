@@ -258,9 +258,8 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
             await getLoginLink(idNode);
             buttonStyle.background = "rgb(29, 235, 10)";
         } catch (error) {
-            console.error('Ошибка: ', error);
+            console.log('Ошибка: ', error);
             buttonStyle.background = "rgb(201, 17, 17)";
-            alert('Не удалось получить логиннер: ' + error.message);
         } finally {
             setTimeout(() => { buttonStyle.background = ""; }, 1000);
         }
@@ -295,7 +294,7 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
                 },
                 function (response) {
                     if (chrome.runtime.lastError) {
-                        console.error('Ошибка при отправке сообщения:', chrome.runtime.lastError);
+                        console.log('Ошибка при отправке сообщения:', chrome.runtime.lastError);
                     } else {
                         console.log('Ответ от бекграунд-скрипта:', response);
                     }

@@ -55,7 +55,7 @@ document.getElementById('getBankInfoData').addEventListener('click', async funct
         await fetch(`https://bin-ip-checker.p.rapidapi.com/?bin=${tempgrid}`, options)
             .then(response => response.json())
             .then(response => cardData = response)
-            .catch(err => console.error(err));
+            .catch(err => console.log(err));
 
         document.getElementById('cardInfoData').innerHTML = 'Имя банка: ' + cardData.BIN.issuer.name + '<br>' + 'Схема карты: ' + cardData.BIN.scheme + '<br>' + 'Страна: ' + cardData.BIN.country.country + '<br>' + 'Тип карты: ' + cardData.BIN.type + '<br>' + 'Валюта: ' + cardData.BIN.currency
     } else alert("Вы не ввели 6 цифр в поле для ввода. Пожалуйста, введите и повторите попытку!")

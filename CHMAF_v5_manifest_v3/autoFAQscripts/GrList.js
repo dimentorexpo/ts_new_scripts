@@ -73,7 +73,7 @@ document.getElementById('getidgrouptolist').addEventListener('click', async func
 
         chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: userNamesURL, requestOptions: userNamesRequestOptions }, function (response) {
             if (!response.success) {
-                console.error('Не удалось получить имена учеников: ', response.error);
+                console.log('Не удалось получить имена учеников: ', response.error);
                 return;
             }
 
