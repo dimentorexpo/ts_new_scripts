@@ -184,8 +184,8 @@ async function getAllChatsByStatus() {
         tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 20, 59, 59, 59)).toISOString();
     } else {
         // Если в Москве уже прошло 21:00 UTC, отсчитываем от текущего дня
-        tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 21, 0, 0, 0)).toISOString();
-        tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() + 1, 20, 59, 59, 59)).toISOString();
+        tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() - 1, 21, 0, 0, 0)).toISOString();
+        tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 20, 59, 59, 59)).toISOString();
     }
 
     console.log(tsFrom);
