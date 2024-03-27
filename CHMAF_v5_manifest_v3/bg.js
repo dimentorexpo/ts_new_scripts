@@ -18,7 +18,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			try {
 				const response = await fetch(url, requestOptions);
 				if (!response.ok) {
-					throw new Error('Network response was not ok: ' + response.statusText);
+					throw new Error('Network response was not ok (проверь авторизацию в CRM, после чего повтори попытку): ' + response.statusText);
 				}
 				const text = await response.text(); // Или response.json(), если ожидается JSON
 				sendResponse({ success: true, fetchansver: text });
