@@ -1413,5 +1413,220 @@ async function sendAnswer(txt, flag = 1) { //функция отправки о�
     }
 }
 // конец блока для работы с шаблонами из гугл таблиц и в целом отправки ответа с обновлением таймера автозакрытия чата
+/*
+let activeTimers = {};
+
+function formatTime(value) {
+    return value.toString().padStart(2, '0');
+}
+
+async function CountTechSupTimmer() {
+    let massivTimes = [];
+    await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
+        "headers": {
+            "content-type": "application/json",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin"
+        },
+        "referrer": "https://skyeng.autofaq.ai/logs",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${operatorId}"],\"tsFrom\":\"2024-04-04T21:00:00.000Z\",\"tsTo\":\"2024-04-05T20:59:59.059Z\",\"usedStatuses\":[\"AssignedToOperator\"],\"orderBy\":\"ts\",\"orderDirection\":\"Desc\",\"page\":1,\"limit\":10}`,
+        "method": "POST",
+        "mode": "cors",
+        "credentials": "include"
+    }).then(r => r.json()).then(r => testo = r)
+
+    let bArr = testo.items.map(el => el.conversationId)
+
+    for (let i = 0; i < bArr.length; i++) {
+        await fetch(`https://skyeng.autofaq.ai/api/conversations/${bArr[i]}`, {
+            "headers": {
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin"
+            },
+            "referrerPolicy": "strict-origin-when-cross-origin",
+            "method": "GET",
+            "mode": "cors",
+            "credentials": "include"
+        }).then(r => r.json()).then(data => {
+            // Сначала фильтруем сообщения
+            let filteredMessages = data.messages.filter(el => el.eventTpe == "ChangeGroup" && el.payload.prevGroup == "c7bbb211-a217-4ed3-8112-98728dc382d8");
+            filteredMessages.forEach(message => {
+                massivTimes.push({
+                    TimeStamp: message.ts,
+                    ChatHash: message.conversationId
+                });
+            });
+
+            console.log(massivTimes)
+        });
+    }
+	
+		const iframeDoc = document.querySelector('[class^="NEW_FRONTEND__frame"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND__frame]').contentWindow.document;
+			const Convlist = iframeDoc.querySelectorAll('#__next [class^="DialogsCard_Card"]');
+						
+			if (Convlist.length > 0) {
+				for (let i = 0; i < Convlist.length; i++) {
+					for (let j = 0; j < massivTimes.length; j++) {
+						if (massivTimes[j].ChatHash == Convlist[i].getAttribute('data-conv-id')) {
+							// Проверяем, существует ли уже элемент piska
+							if (!Convlist[i].querySelector('.piska-class')) {
+								
+								    const targetTime = new Date(massivTimes[j].TimeStamp);
+
+									const timer = setInterval(() => {
+										const now = new Date();
+										const diff = now - targetTime;
+
+										// Если разница отрицательна, значит заданное время еще не наступило
+										if (diff < 0) {
+											console.log(`Заданное время для ${chatHash} еще не наступило.`);
+											clearInterval(timer);
+											delete activeTimers[chatHash]; // Удаляем таймер из активных
+											return;
+										}
+
+										// Преобразуем разницу из миллисекунд в часы, минуты и секунды
+										const hours = Math.floor(diff / (1000 * 60 * 60));
+										const minutes = Math.floor((diff / (1000 * 60)) % 60);
+										const seconds = Math.floor((diff / 1000) % 60);
+										
+										let piska = document.createElement('div');
+										piska.textContent = `${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)}`
+										piska.style = "background-color:#31b731; font-weight:700"
+										piska.classList.add('piska-class'); // Добавляем класс для уникальности
+										Convlist[i].append(piska);
+
+										//console.log(`[${chatHash}] ${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)}`);
+									}, 1000);
+
+
+								
+
+								return timer;
+							}
+						}
+					}
+				}
+			}
+}
+
+setInterval(CountTechSupTimmer, 5000)
+
+*/
+
+
+let activeTimers = {};
+
+function formatTime(value) {
+    return value.toString().padStart(2, '0');
+}
+
+function updateTimerDisplay(chatHash, text) {
+    const iframeDoc = document.querySelector('[class^="NEW_FRONTEND__frame"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND__frame]').contentWindow.document;
+    const convElement = iframeDoc.querySelector(`[data-conv-id="${chatHash}"] .piska-class`);
+    if (convElement) {
+        convElement.textContent = text;
+    } else {
+        // Создаем элемент piska, если он не найден
+        const piska = document.createElement('div');
+        piska.classList.add('piska-class');
+        piska.style = "background-color:#31b731; font-weight:700";
+        piska.textContent = text;
+        // Добавляем data-conv-id для привязки к беседе
+        piska.setAttribute('data-conv-id', chatHash);
+        iframeDoc.querySelector(`[data-conv-id="${chatHash}"]`).append(piska);
+    }
+}
+
+function startTimerForTimestamp(timestamp, chatHash) {
+    const targetTime = new Date(timestamp);
+    activeTimers[chatHash] = setInterval(() => {
+        const now = new Date();
+        const diff = now - targetTime;
+
+        if (diff < 0) {
+            clearInterval(activeTimers[chatHash]);
+            delete activeTimers[chatHash];
+            return;
+        }
+
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+        const timeString = `⛑️ ${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)}`;
+        updateTimerDisplay(chatHash, timeString);
+    }, 1000);
+}
+
+async function CountTechSupTimmer() {
+    // Предположим, что данные уже были получены и массив massivTimes заполнен
+    let massivTimes = []; // Этот массив должен быть обновлен данными из запросов к API
+
+    // ... код для получения данных и заполнения massivTimes ...
+	    await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
+        "headers": {
+            "content-type": "application/json",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin"
+        },
+        "referrer": "https://skyeng.autofaq.ai/logs",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${operatorId}"],\"tsFrom\":\"2024-04-04T21:00:00.000Z\",\"tsTo\":\"2024-04-05T20:59:59.059Z\",\"usedStatuses\":[\"AssignedToOperator\"],\"orderBy\":\"ts\",\"orderDirection\":\"Desc\",\"page\":1,\"limit\":10}`,
+        "method": "POST",
+        "mode": "cors",
+        "credentials": "include"
+    }).then(r => r.json()).then(r => testo = r)
+
+    let bArr = testo.items.map(el => el.conversationId)
+
+    for (let i = 0; i < bArr.length; i++) {
+        await fetch(`https://skyeng.autofaq.ai/api/conversations/${bArr[i]}`, {
+            "headers": {
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin"
+            },
+            "referrerPolicy": "strict-origin-when-cross-origin",
+            "method": "GET",
+            "mode": "cors",
+            "credentials": "include"
+        }).then(r => r.json()).then(data => {
+            // Сначала фильтруем сообщения
+            let filteredMessages = data.messages.filter(el => el.eventTpe == "ChangeGroup" && el.payload.prevGroup == "c7bbb211-a217-4ed3-8112-98728dc382d8");
+            filteredMessages.forEach(message => {
+                massivTimes.push({
+                    TimeStamp: message.ts,
+                    ChatHash: message.conversationId
+                });
+            });
+
+            console.log(massivTimes)
+        });
+    }
+
+    const iframeDoc = document.querySelector('[class^="NEW_FRONTEND__frame"]').contentDocument ||
+                      document.querySelector('[class^="NEW_FRONTEND__frame"]').contentWindow.document;
+    const Convlist = iframeDoc.querySelectorAll('#__next [class^="DialogsCard_Card"]');
+
+    Convlist.forEach(conv => {
+        const chatHash = conv.getAttribute('data-conv-id');
+        const massivTime = massivTimes.find(mt => mt.ChatHash === chatHash);
+        if (massivTime && !activeTimers[massivTime.ChatHash]) {
+            startTimerForTimestamp(massivTime.TimeStamp, massivTime.ChatHash);
+        }
+    });
+}
+
+// Периодическое обновление данных и таймеров
+setInterval(CountTechSupTimmer, 5000);
+
 
 setInterval(startTimer, 500)
+
+
+
+

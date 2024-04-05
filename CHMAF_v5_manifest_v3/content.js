@@ -503,8 +503,6 @@ function newTags(tagName) { //функция добавления несколь
     }
 }
 
-
-
 function screenshots() {  //просмотр и трансформация скриншотов в активном чате
     // Select the expert-chat-display-inner element
     const expertChatDisplayInner = document.getElementsByClassName('expert-chat-display-inner')[0];
@@ -706,7 +704,6 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     setInterval(checkchats, 1000);
 }
 
-
 function closeTerms() { // функция автоподтверждения условий пользования при входе в ЛКП
     if (document.URL == 'https://new-teachers.skyeng.ru/') {
         for (let i = 0; i < document.getElementsByClassName('terms-popup-accept-button').length; i++) {
@@ -796,7 +793,6 @@ setInterval(closeTerms, 500);
 if (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") {
     setTimeout(move_again_AF, 3500) //вызов функции первичной загрузки страницы с фомированием меню и наполнением его	
 }
-
 
 if (localStorage.getItem('msg') != null) {
     document.getElementById('msg').innerHTML = localStorage.getItem('msg')
