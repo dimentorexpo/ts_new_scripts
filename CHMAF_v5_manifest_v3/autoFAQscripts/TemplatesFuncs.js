@@ -1524,22 +1524,27 @@ function formatTime(value) {
     return value.toString().padStart(2, '0');
 }
 
-function updateTimerDisplay(chatHash, text) {
-    const iframeDoc = document.querySelector('[class^="NEW_FRONTEND__frame"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND__frame]').contentWindow.document;
-    const convElement = iframeDoc.querySelector(`[data-conv-id="${chatHash}"] .piska-class`);
+function updateTimerDisplay(chatHash, timeString) {
+    const iframeDoc = document.querySelector('[class^="NEW_FRONTEND__frame"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND__frame"]').contentWindow.document;
+    const convElement = iframeDoc.querySelector(`[data-conv-id="${chatHash}"]`);
     if (convElement) {
-        convElement.textContent = text;
+        let piska = convElement.querySelector('.piska-class');
+        if (!piska) {
+            piska = document.createElement('div');
+            piska.classList.add('piska-class');
+            piska.style = "background-color:#31b731; font-weight:700; text-align:center; border-radius:20px; margin-top: 3px;";
+            convElement.append(piska);
+        }
+        piska.textContent = timeString;
     } else {
-        // Создаем элемент piska, если он не найден
-        const piska = document.createElement('div');
-        piska.classList.add('piska-class');
-        piska.style = "background-color:#31b731; font-weight:700; text-align:center; border-radius:20px;";
-        piska.textContent = text;
-        // Добавляем data-conv-id для привязки к беседе
-        piska.setAttribute('data-conv-id', chatHash);
-        iframeDoc.querySelector(`[data-conv-id="${chatHash}"]`).append(piska);
+        console.error(`Element with data-conv-id="${chatHash}" not found.`);
+        if (activeTimers[chatHash]) {
+            clearInterval(activeTimers[chatHash]);
+            delete activeTimers[chatHash];
+        }
     }
 }
+
 
 function startTimerForTimestamp(timestamp, chatHash) {
     const targetTime = new Date(timestamp);
@@ -1608,8 +1613,7 @@ async function CountTechSupTimmer() {
         });
     }
 
-    const iframeDoc = document.querySelector('[class^="NEW_FRONTEND__frame"]').contentDocument ||
-                      document.querySelector('[class^="NEW_FRONTEND__frame"]').contentWindow.document;
+    const iframeDoc = document.querySelector('[class^="NEW_FRONTEND__frame"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND__frame"]').contentWindow.document;
     const Convlist = iframeDoc.querySelectorAll('#__next [class^="DialogsCard_Card"]');
 
     Convlist.forEach(conv => {
