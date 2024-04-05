@@ -90,7 +90,7 @@ async function operstatusleftbar() { // функция замены Script Packa
                     }
                 } // end of if state small
             } else { // end of if state big
-                if (flagtpkc == 'ТП' && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/ТП\D/)) {
+                if ((flagtpkc == 'ТП' || flagtpkc == 'ТП ОС') && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/ТП\D/)) {
                     for (let j = 0; result.unAssigned[j] != undefined; j++) {
                         if (result.unAssigned[j].groupId == 'c7bbb211-a217-4ed3-8112-98728dc382d8') {
                             chattpquecountleft = result.unAssigned[j].count
@@ -181,7 +181,7 @@ async function operstatusleftbar() { // функция замены Script Packa
 
 
 
-    if (flagtpkc == 'ТП' && localStorage.getItem('hidesummaryflag') == '1') {
+    if ((flagtpkc == 'ТП' || flagtpkc == 'ТП ОС') && localStorage.getItem('hidesummaryflag') == '1') {
 
         peoplestatus.innerHTML =
             '<div style="background:#792525; font-weight: 700; text-align: center; letter-spacing: .2rem; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border: 1px solid #464343; margin-bottom: 5px;">' + '🚧 Нераспред: ' + chattpquecountleft + '</div>' +
@@ -194,7 +194,7 @@ async function operstatusleftbar() { // функция замены Script Packa
             '<div  style="background:#492579; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '⚡ Всего: ' + (+pausecnt + busycnt + operonlinecnt) + '</div>' +
             '</div>'
 
-    } else if (flagtpkc == 'ТП' && localStorage.getItem('hidesummaryflag') == '0') {
+    } else if ((flagtpkc == 'ТП' || flagtpkc == 'ТП ОС') && localStorage.getItem('hidesummaryflag') == '0') {
         peoplestatus.innerHTML =
             '<div style="background:#792525; font-weight: 700; text-align: center; letter-spacing: .2rem; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border: 1px solid #464343; margin-bottom: 5px;">' + '🚧 Нераспред: ' + chattpquecountleft + '</div>' +
             moderresult + '<br>' +
@@ -205,7 +205,7 @@ async function operstatusleftbar() { // функция замены Script Packa
             '<div style="background:#cf4615; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '🍔 Перерыв: ' + pausecnt + '</div>' +
             '<div style="background:#492579; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '⚡ Всего: ' + (+pausecnt + busycnt + operonlinecnt) + '</div>' +
             '</div>'
-    } else if (flagtpkc != 'ТП' && localStorage.getItem('hidesummaryflag') == '1') {
+    } else if (flagtpkc != 'ТП' && flagtpkc != 'ТП ОС' && localStorage.getItem('hidesummaryflag') == '1') {
         peoplestatus.innerHTML =
             '<div style="background:#792525; font-weight: 700; text-align: center; letter-spacing: .2rem; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border: 1px solid #464343; margin-bottom: 5px;">' + '🚧 Нераспред: ' + chatneraspcountleft + '</div>' +
             moderresult + '<br>' +
@@ -215,7 +215,7 @@ async function operstatusleftbar() { // функция замены Script Packa
             '<div style="background:#cf4615; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '🍔 Перерыв: ' + pausecnt + '</div>' +
             '<div  style="background:#492579; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '⚡ Всего: ' + (+pausecnt + busycnt + operonlinecnt) + '</div>' +
             '</div>'
-    } else if (flagtpkc != 'ТП' && localStorage.getItem('hidesummaryflag') == '0') {
+    } else if (flagtpkc != 'ТП' && flagtpkc != 'ТП ОС' && localStorage.getItem('hidesummaryflag') == '0') {
         peoplestatus.innerHTML =
             '<div style="background:#792525; font-weight: 700; text-align: center; letter-spacing: .2rem; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border: 1px solid #464343; margin-bottom: 5px;">' + '🚧 Нераспред: ' + chatneraspcountleft + '</div>' +
             moderresult + '<br>' +
