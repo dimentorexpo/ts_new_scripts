@@ -1533,7 +1533,7 @@ function updateTimerDisplay(chatHash, text) {
         // Создаем элемент piska, если он не найден
         const piska = document.createElement('div');
         piska.classList.add('piska-class');
-        piska.style = "background-color:#31b731; font-weight:700";
+        piska.style = "background-color:#31b731; font-weight:700; text-align:center; border-radius:20px;";
         piska.textContent = text;
         // Добавляем data-conv-id для привязки к беседе
         piska.setAttribute('data-conv-id', chatHash);
