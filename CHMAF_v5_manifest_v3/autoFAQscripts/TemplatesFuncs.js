@@ -1537,7 +1537,7 @@ function updateTimerDisplay(chatHash, timeString) {
         }
         piska.textContent = timeString;
     } else {
-        console.error(`Element with data-conv-id="${chatHash}" not found.`);
+        //console.error(`Element with data-conv-id="${chatHash}" not found.`);
         if (activeTimers[chatHash]) {
             clearInterval(activeTimers[chatHash]);
             delete activeTimers[chatHash];
