@@ -1513,7 +1513,7 @@ async function CountTechSupTimmer() {
             "credentials": "include"
         }).then(r => r.json()).then(data => {
             // Сначала фильтруем сообщения
-            let filteredMessages = data.messages.filter(el => el.eventTpe == "ChangeGroup" && el.payload.prevGroup == "c7bbb211-a217-4ed3-8112-98728dc382d8");
+            let filteredMessages = data.messages.filter(el => el.eventTpe == "ChangeGroup" && (el.payload.prevGroup == "b6f7f34d-2f08-fc19-3661-29ac00842898" || el.payload.prevGroup == "7b443078-a05f-4c8f-827b-4db2bf7c5d01")); // ТП - c7bbb211-a217-4ed3-8112-98728dc382d8 ; КЦ - b6f7f34d-2f08-fc19-3661-29ac00842898 ; Прод - 7b443078-a05f-4c8f-827b-4db2bf7c5d01
             filteredMessages.forEach(message => {
                 massivTimes.push({
                     TimeStamp: message.ts,
