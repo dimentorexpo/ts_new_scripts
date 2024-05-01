@@ -318,12 +318,15 @@ async function getwordsets(studentId) { // поиск всех слов в сл�
         }).then(r => r.json());
 
         for (let j = 0; j < objectwdsets.data.length; j++) {
-            wordSetData.words.push({
+		if (wordsnames[j] != undefined) {
+			            wordSetData.words.push({
                 text: wordsnames[j].text || '',
                 isLearned: objectwdsets.data[j].isLearned,
                 progress: objectwdsets.data[j].progress,
                 meaningId: objectwdsets.data[j].meaningId
             });
+		}
+
         }
 
         allWordSets.push(wordSetData);
