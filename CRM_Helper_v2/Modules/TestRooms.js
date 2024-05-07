@@ -15,6 +15,7 @@ var win_testroomsCRM =  // описание элементов окна созд
                     <option value="test">1 - 1</option>
                     <option value="test-parallel">Паралельный</option>
                     <option value="test-webinar">Вебинар</option>
+					<option value="test-group">Групповой</option>
                 </select>
               </div>
 
@@ -169,7 +170,7 @@ document.getElementById('starttestroom').onclick = function () { // добавл
   if (flagemptyttfields === '0') {
     randomHash = GenerateHash(14);
 
-    const requestBody = `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacheridforroom}&${randomHash}%5BstudentIds%5D=${studentidforroom}&btn_create_and_list=`;
+    const requestBody = `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacheridforroom}&${randomHash}%5BstudentIds%5D=${studentidforroom}&${randomHash}%5BisOpenEntryEnabled%5D=1&btn_create_and_list=`;
     const requestreferrer = `https://${lessonsubjecttype}.skyeng.ru/admin/tech-support-room/create`;
     const requestAdr = `https://${lessonsubjecttype}.skyeng.ru/admin/tech-support-room/create?uniqid=${randomHash}`;
     const requestHeaders = {
