@@ -15,6 +15,7 @@ var win_testrooms =  // описание элементов окна созда�
                     <option value="test">1 - 1</option>
                     <option value="test-parallel">Паралельный</option>
                     <option value="test-webinar">Вебинар</option>
+                    <option value="test-group">Групповой</option>
                 </select>
               </div>
 
@@ -222,7 +223,7 @@ document.getElementById('starttestroom').addEventListener('click', function () {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacheridforroom}&${randomHash}%5BstudentIds%5D=${studentidforroom}&btn_create_and_list=`,
+            body: `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacheridforroom}&${randomHash}%5BstudentIds%5D=${studentidforroom}&${randomHash}%5BisOpenEntryEnabled%5D=1&btn_create_and_list=`,
             credentials: "include"
         };
 
