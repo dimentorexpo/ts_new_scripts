@@ -1,5 +1,6 @@
 let allWordSets = [];  // Массив для хранения всех данных о наборах слов
 let checkedarray = [];
+let globalWordsCounter = 0;
 
 var win_Vocabulary = `<div style="display: flex;">
 					<span style="cursor: -webkit-grab;">
@@ -7,6 +8,12 @@ var win_Vocabulary = `<div style="display: flex;">
 					     <div style="margin: 5px; width:500px;">
                             <button class="commonbtn hidebtns" title="скрывает меню" id="hideVocabularyMenu">hide</button>
 							<button class="commonbtn smallbtns" id="ClearVocabulary" title = "Обновляет информацию по открытой комнате" style="margin: 5px;">🧹</button>
+
+							<div style="width:470px;background: #5f7875;height: 21px; margin-left:5px; border-radius:20px">
+								<div id="progressBarDeleteWords" style="width: 0%; height: 20px; background-color: #e38118; border: 1px solid black; text-align:center; font-weight:700; color:bisque; border-radius:20px">
+								</div>
+							</div>
+
                         </div>
 
 						<div id="vocabularbar" class="vocabularbarcls">
@@ -29,6 +36,9 @@ var win_Vocabulary = `<div style="display: flex;">
 						<div id="wordsout" class="wordsout">
 						</div>
 
+						<div id="totalWords">
+						</div>
+
 					</span>
 				   </div>`;
 
@@ -46,6 +56,7 @@ document.getElementById('VocabularyMenu').onclick = function () { // откры�
 
     document.getElementById('findwords').onclick = async function () {
         document.getElementById('searchwordinput').value = ''
+        globalWordsCounter = 0;
         document.getElementById('searchwordinput').style.display = 'none'
         getwordsets(document.getElementById('iduserwords').value.trim())
 
@@ -238,6 +249,10 @@ async function deleteSelectedWords() { // функция удаленя слов
         if (checks[i].checked == true)
             flagselected.push(i)
     }
+	
+	let progressBar = document.getElementById("progressBarDeleteWords");
+	let currentWidth = 100;
+	let step = globalWordsCounter > 0 ? 100 / globalWordsCounter : (() => { console.log('Division by zero'); return 0; })();
 
     if (!flagselected.length) {
         const confirmDeleteAll = confirm("Не был выбран ниодин пункт. Будут автоматически удалены все слова из словаря. Продолжить?");
@@ -255,10 +270,16 @@ async function deleteSelectedWords() { // функция удаленя слов
                 } catch (err) {
                     console.error("Error deleting word: ", err);
                 }
+                globalWordsCounter--;
+                //document.getElementById('progressBarDeleteWords').innerHTML = globalWordsCounter + ' (слов)'
+				
+				currentWidth -= step;
+				progressBar.style.width = Number(currentWidth.toFixed(1)) + "%";
+				progressBar.textContent = Number(currentWidth.toFixed(1)) + "%" + " (" + globalWordsCounter + " слов)";		
             }
             alert("Все слова были успешно удалены! 🤠");
             await getwordsets(userstud);
-            liveSearch(document.getElementById('searchwordinput').value);
+           // liveSearch(document.getElementById('searchwordinput').value);
         }
     } else {
         const confirmDeleteSelected = confirm("Вы выбрали некоторые пункты для удаления слов. Продолжить?");
@@ -276,6 +297,11 @@ async function deleteSelectedWords() { // функция удаленя слов
                 } catch (err) {
                     console.error("Error deleting selected word: ", err);
                 }
+                globalWordsCounter--;
+                //document.getElementById('progressBarDeleteWords').innerHTML = globalWordsCounter + ' (слов)'
+				currentWidth -= step;
+				progressBar.style.width = Number(currentWidth.toFixed(1)) + "%";
+				progressBar.textContent = Number(currentWidth.toFixed(1)) + "%" + " (" + globalWordsCounter + " слов)";		
             }
             alert("Выбранные слова были успешно удалены! 🤠");
             await getwordsets(userstud);
@@ -287,53 +313,70 @@ async function deleteSelectedWords() { // функция удаленя слов
 async function getwordsets(studentId) { // поиск всех слов в словаре У
     allWordSets = [];
     document.getElementById('wordsout').innerHTML = '';
-
-    let wordsetsarr = await fetch("https://api-words.skyeng.ru/api/for-vimbox/v1/wordsets.json?studentId=" + studentId + "&pageSize=500", {
+    globalWordsCounter = 0;
+	
+    let wordsetsarr = await fetch("https://api-words.skyeng.ru/api/for-vimbox/v1/wordsets.json?studentId=" + studentId + "&pageSize=500", { //Получаем ID всез словарных вордсетов, чтобы в дальнейшем их можно было по очереди парсить
         "headers": {
             "accept": "application/json, text/plain, */*",
             "authorization": "Bearer " + token.token_global,
         },
     }).then(r => r.json());
+	
+	let progressBar = document.getElementById("progressBarDeleteWords");
+    let currentWidth = 0;
 
-    for (let wordset of wordsetsarr.data) {
-        let wordSetData = {
-            title: wordset.title,
-            words: []
-        };
+	if (wordsetsarr.meta.total > 0) {
+			let step = 100 / wordsetsarr.meta.total;
+		    for (let wordset of wordsetsarr.data) { // Запускаем парсинг каждого вордсета
+				let wordSetData = { // создаем объект, где будем хранить title - название вордсета, и words список слов, по умолчанию пустой будет поэтому квадратные пустые скобки
+					title: wordset.title,
+					words: []
+				};
 
-        let objectwdsets = await fetch("https://api-words.skyeng.ru/api/v1/wordsets/" + wordset.id + "/words.json?wordsetId=" + wordset.id + "&studentId=" + studentId + "&page=1&pageSize=500", {
-            "headers": {
-                "accept": "application/json, text/plain, */*",
-                "authorization": "Bearer " + token.token_global,
-            },
-        }).then(r => r.json());
+				let objectwdsets = await fetch("https://api-words.skyeng.ru/api/v1/wordsets/" + wordset.id + "/words.json?wordsetId=" + wordset.id + "&studentId=" + studentId + "&page=1&pageSize=500", { // получаем объект вордсета c его определенным ID, с ключами meaningId, progress, status, isLearned. И так перебирая все вордсеты.
+					"headers": {
+						"accept": "application/json, text/plain, */*",
+						"authorization": "Bearer " + token.token_global,
+					},
+				}).then(r => r.json());
 
-        let meanings = objectwdsets.data.map(word => word.meaningId).toString();
+				globalWordsCounter += objectwdsets.data.length; // либо можно objectwdsets.meta.total
 
-        let wordsnames = await fetch("https://dictionary.skyeng.ru/api/for-services/v2/meanings?ids=" + meanings + "&acceptLanguage=ru", {
-            "headers": {
-                "accept": "application/json, text/plain, */*",
-                "authorization": "Bearer " + token.token_global,
-            },
-        }).then(r => r.json());
+				let meanings = objectwdsets.data.map(word => word.meaningId).toString(); // записываем уникальные айдишники слов, с приведением их к строчному типу
 
-        for (let j = 0; j < objectwdsets.data.length; j++) {
-		if (wordsnames[j] != undefined) {
-			            wordSetData.words.push({
-                text: wordsnames[j].text || '',
-                isLearned: objectwdsets.data[j].isLearned,
-                progress: objectwdsets.data[j].progress,
-                meaningId: objectwdsets.data[j].meaningId
-            });
-		}
+				let wordsnames = await fetch("https://dictionary.skyeng.ru/api/for-services/v2/meanings?ids=" + meanings + "&acceptLanguage=ru", { // парсим одним запросом айдишники слов, чтобы получить информацию о названии слова, его прогрессе изучения, выучено оно или нет
+					"headers": {
+						"accept": "application/json, text/plain, */*",
+						"authorization": "Bearer " + token.token_global,
+					},
+				}).then(r => r.json());
 
-        }
+				for (let j = 0; j < objectwdsets.data.length; j++) { // после парсинга каждого слова по его meaningId собираем объект с названием слова, выучено оно или нет, прогресс и сохраняем meaningId для манипуляций конкретно с этим словом - удаление слова, сброс прогреса и тп
+					if (wordsnames[j] != undefined) {
+						wordSetData.words.push({
+							text: wordsnames[j].text || '',
+							isLearned: objectwdsets.data[j].isLearned,
+							progress: objectwdsets.data[j].progress,
+							meaningId: objectwdsets.data[j].meaningId
+						});
+					}
 
-        allWordSets.push(wordSetData);
-        renderWordSets(allWordSets, false);
+				}
 
-        document.getElementById('searchwordinput').style.display = ''
-    }
+				allWordSets.push(wordSetData);
+				renderWordSets(allWordSets, false);
+
+				document.getElementById('searchwordinput').style.display = ''
+				
+				currentWidth += step;
+				progressBar.style.width = Number(currentWidth.toFixed(1)) + "%";
+				progressBar.textContent = Number(currentWidth.toFixed(1)) + "%" + " (" + globalWordsCounter + " слов)";
+			}
+	} else {
+		document.getElementById('wordsout').innerHTML = '<span style="margin-left:40%; color:bisque;">' + "Словарь пустой!" + '</span>'
+	}
+	
+
 }
 
 function renderWordSets(wordSets, isSearch = false) { //отображение списка слов с добавлением доп функций
@@ -375,6 +418,9 @@ function renderWordSets(wordSets, isSearch = false) { //отображение �
     }
 
     document.getElementById('wordsout').innerHTML = htmlContent;
+		
+    // document.getElementById('totalWords').innerHTML = '<span style="color:bisque; margin-left:5px">Total Words Count:</span>' + '<span style="color:bisque; margin-left:5px">' + globalWordsCounter + '</span>'
+    // document.getElementById('progressBarDeleteWords').innerHTML = globalWordsCounter + ' (слов)'
     setupWordSetToggle();
     setupSelectAllWordsInSet();
     setupLinkCopyToClipboard();
