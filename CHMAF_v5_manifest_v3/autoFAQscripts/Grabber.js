@@ -1295,6 +1295,19 @@ function SaveСountryCSV(filename) {
     }, 0);
 }
 
+function searchTeachersAndRates(main) {
+		if (main.channelUser && main.channelUser.payload && main.channelUser.payload.userType == "teacher" && (main.channelUser.payload.teacherSTKList?.includes('homeschooling') || main.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
+		
+		if (main.messages.length > 0) {
+			 for (let z = 0; z < main.messages.length; z++) {
+			 if (main.messages[z].txt && typeof main.messages[z].txt === 'string' && main.messages[z].tpe == "Rate") {
+				  console.log(main.id, main.channelUser.payload.id, main.messages[z].txt);
+			 }
+			 }
+		}
+	}
+}
+
 let chekopersarr = [];
 let newarray = [];
 let arrofthemes = [];
@@ -1459,9 +1472,8 @@ document.getElementById('stargrab').onclick = async function () {
 
                                     //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                     //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                    if (r.channelUser && r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
-                                        console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList);
-                                    }
+
+									searchTeachersAndRates(main = r)
 
                                     payloadarray.push({
                                         ChatId: conversationId,
@@ -1479,9 +1491,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                     //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                     // (r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                    if (r.channelUser && r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
-                                        console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList);
-                                    }
+									searchTeachersAndRates(main = r)
 
                                     payloadarray.push({
                                         ChatId: conversationId,
@@ -1513,11 +1523,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                 //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                 //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                if (r.channelUser && r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
-                                    console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList);
-                                }
-
-
+								searchTeachersAndRates(main = r)
 
                                 operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
                                 if (r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration == undefined) {
@@ -1562,9 +1568,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                 //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                 //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                if (r.channelUser && r.channelUser && r.channelUser.payload && r.channelUser.payload.userType == "teacher" && (r.channelUser.payload.teacherSTKList?.includes('homeschooling') || r.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
-                                    console.log("П", r.id, r.channelUser.payload.id, r.channelUser.payload.teacherSTKList);
-                                }
+								searchTeachersAndRates(main = r)
 
                                 if (r.payload && r.payload.tags) {
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
