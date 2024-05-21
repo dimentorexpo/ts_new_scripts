@@ -874,7 +874,10 @@ document.getElementById('insertlinktotext').onclick = function () { // функ�
 }
 
 document.getElementById('sndbot').onclick = async function () { //отправить сообщение от автофак бота
-    let txt = document.getElementById('inp').value;
+    const inp = document.getElementById('inp');
+    const phoneTr = document.getElementById('phone_tr');
+    const emailTr = document.getElementById('email_tr');
+    const txt = inp.value;
     var values = await getInfo(flag)
     var adr = values[0]; var adr1 = values[1]; var uid = values[2]
     var txt2 = txt.split('\n')
@@ -893,7 +896,10 @@ document.getElementById('sndbot').onclick = async function () { //отправи
             "method": "POST",
             "credentials": "include"
         });
-    document.getElementById('inp').value = "";
+
+    inp.value = '';
+    if (phoneTr) phoneTr.value = '';
+    if (emailTr) emailTr.value = '';
 }
 
 document.getElementById('hideMenuMain').onclick = function () { // кнопка hide на главном окне скрипта
@@ -1106,7 +1112,7 @@ function checkchats() {
             const TimeToAnswer = timers[i].children[1];
             if (TimeToClose) {
                 try {
-                    convertToSeconds(TimeToClose.textContent,TimeToAnswer.textContent, i);
+                    convertToSeconds(TimeToClose.textContent, TimeToAnswer.textContent, i);
                 } catch (error) {
                     console.log(`Error with timer ${i}: ${error.message}`);
                 }
