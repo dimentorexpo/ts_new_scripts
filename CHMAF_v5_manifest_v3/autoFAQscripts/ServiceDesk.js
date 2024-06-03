@@ -24,7 +24,6 @@ const buttons = [ //array of buttonsnames
     '.vimvidsbtn',
     '.studcabbtn',
     '.chatqabtn',
-    '.tripwbtn',
     '.mobbugsbtn',
     '.academymobbugsbtn',
     '.stcabmbsbtn',
@@ -44,7 +43,6 @@ const otherOptions = [ // array of buttons categories id's
     'vimvidoptions',
     'studcaboptions',
     'chatqaoptions',
-    'tripwireoptions',
     'edumodeloptions',
     'studcabmobbugskoptions',
     'mobbugsoptions',
@@ -69,7 +67,7 @@ var win_servicedesk = // описание элементов окна Service De
 						<button class="mainButton" id="newtask" style="width: 85px" title="Последняя задача"></button>
                 </div>
                 <div id="servicedeskinfo" style="margin-left:10px;">
-                    <button class="mainButton sdbtn" id="optionTeacher" value="36">👺Corp</button>
+                    <button class="mainButton sdbtn" id="optionTeacher" value="36">👽Teacher&C</button>
                     <button class="mainButton sdbtn" id="optionCRM2" value="26" >🧮CRM2</button>
                     <button class="mainButton sdbtn" id="optionAuth" value="20">🔐Auth</button>
                     <button class="mainButton sdbtn" id="optionSchedule" value="33">📆Schedul</button>
@@ -79,22 +77,21 @@ var win_servicedesk = // описание элементов окна Service De
                     <button class="mainButton sdbtn" id="optionMrktbill" value="31">📈Mrkt-Bill</button>
                     <button class="mainButton sdbtn" id="optionVimbugs" value="38">🐞Vim-bug</button>
                     <button class="mainButton sdbtn" id="optionVimvideocall" value="39">📸Vid-call</button>
-                    <button class="mainButton sdbtn" id="optionStudcab" value="34">👨‍🎓Studcab</button>
+                    <button class="mainButton sdbtn" id="optionStudcab" value="34">👨‍🎓Erp</button>
                     <button class="mainButton sdbtn" id="optionChat" value="24">💬Chat</button>
-                    <button class="mainButton sdbtn" id="optionTripwire" value="27">🗣Tripwire</button>
-                    <button class="mainButton sdbtn" id="optionEdModel" value="28">🎓SmartL</button>
-                    <button class="mainButton sdbtn" id="optionStudcabmobbugs" value="35">👨‍🎓📱Bugs</button>
+                    <button class="mainButton sdbtn" id="optionEdModel" value="28">🎓LearnPers</button>
+                    <button class="mainButton sdbtn" id="optionStudcabmobbugs" value="35"> ErpMobBugs</button>
 					<button class="mainButton sdbtn" id="optionMobbugs" value="30">📱Mobil bug</button>
                     <button class="mainButton sdbtn" id="optionAcademymobbugs" value="19">🅰📱🐞</button>
                     <button class="mainButton sdbtn" id="optionCommProblems" value="75">📧Comm</button>
                 </div>
 				<div id="studcabmobbugskoptions" style="display: none; margin-left:20px;">
-					<p style="${Paragrafsstyles}">#student-cabinet-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
+					<p style="${Paragrafsstyles}">#erp-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
 
 				</div>
 
 				<div id="teacherssrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="${Paragrafsstyles}">#promise-keepers-qa-support; канал по вопросам corp учеников</p>
+					<p style="${Paragrafsstyles}">#tp-qa-support; канал по вопросам Teacher & Corp пользователей</p>
 
 				</div>
 				<div id="crm2srvdskoptions" style="display: none; margin-left:20px;">
@@ -130,7 +127,7 @@ var win_servicedesk = // описание элементов окна Service De
 
 				</div>
 				<div id="edumodeloptions" style="display: none; margin-left:20px;">
-					<p style="${Paragrafsstyles}">#smart-learning-qa-support: Канал для обращений по функционалу Educational Model</p>
+					<p style="${Paragrafsstyles}">#learning-personalization-qa-support: Канал для обращений по функционалу learning personalization</p>
 
 				</div>
 				<div id="vimvidoptions" style="display: none; margin-left:20px;">
@@ -141,12 +138,9 @@ var win_servicedesk = // описание элементов окна Service De
 					<p style="${Paragrafsstyles} top:7px;">#chat-qa-support; Решают проблемы с чатами в ЛКП и ЛКУ</p>
 
                 </div>
-				<div id="tripwireoptions" style="display: none; margin-left:20px;">
-					<p style="${Paragrafsstyles}">#eco-tripwire-bugs; Life, Talks, РК adults, расширение переводчик для браузера</p>
 
-				</div>
 				<div id="mobbugsoptions" style="display: none; margin-left:20px;">
-					<p style="${Paragrafsstyles}">#mobile-bugs; Канал обработки обращений по мобильному приложению Skyeng и Teachers.</p>
+					<p style="${Paragrafsstyles}">#common-components-mobile-bugs; Канал обработки обращений по мобильному приложению Skyeng и Teachers.</p>
 
 				</div>
 
@@ -161,7 +155,7 @@ var win_servicedesk = // описание элементов окна Service De
 				</div>
 
                 <div id="studcaboptions" style="display: none; margin-left:20px;">
-					<p style="${Paragrafsstyles}">#student-cabinet-bugs; Сообщаем о проблемах во взрослом и детском ЛКУ (страницы на домене student.skyeng.ru), в ЛККК и в ЛКП</p>
+					<p style="${Paragrafsstyles}">#erp-bugs; Сообщаем о проблемах во взрослом и детском ЛКУ (страницы на домене student.skyeng.ru), в ЛККК и в ЛКП</p>
 
                 </div>
 
