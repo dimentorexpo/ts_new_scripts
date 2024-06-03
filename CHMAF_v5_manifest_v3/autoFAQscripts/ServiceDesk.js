@@ -507,8 +507,6 @@ function getservDskPress() { // функция открытия главного
         document.getElementById('idmymenu').style.display = 'none'
     }
 
-
-
     if (localStorage.getItem('infraOID') == null) {
         document.getElementById('jiratknstatus').innerText = "🔴"
         getInfraOId()
@@ -534,111 +532,8 @@ function getservDskPress() { // функция открытия главного
             for (let k = 0; k < otherElements.length; k++) {
                 otherElements[k].style.display = 'none';
             }
-
-            if (elementId === "academymobbugsoptions") {
-                document.getElementById('prioritymbugs').style.display = '';
-                document.getElementById('custom_CMS').style.display = '';
-                document.getElementById('custom_appinfo').style.display = '';
-                document.getElementById('custom_deviceinfo').style.display = '';
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            } else if (elementId === "mobbugsoptions") {
-                document.getElementById('prioritymbugs').style.display = '';
-                document.getElementById('custom_appinfo').style.display = '';
-                document.getElementById('custom_deviceinfo').style.display = '';
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            } else if (elementId === 'studcabmobbugskoptions') {
-                document.getElementById('custom_appinfo').style.display = '';
-                document.getElementById('custom_deviceinfo').style.display = '';
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('prioritymbugs').style.display = 'none';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            } else if (elementId === 'CommProblemsoptions') {
-                getcommproboptions();
-                document.getElementById('categoryCommproblems').style.display = '';
-                document.getElementById('custom_email').style.display = '';
-                document.getElementById('prioritymbugs').style.display = 'none';
-                document.getElementById('custom_appinfo').style.display = 'none';
-                document.getElementById('custom_deviceinfo').style.display = 'none';
-                document.getElementById('custom_str').style.display = 'none';
-                document.getElementById('custom_er').style.display = 'none';
-                document.getElementById('custom_ar').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            } else if (elementId === 'vimvidoptions') {
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_hesh').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('prioritymbugs').style.display = 'none';
-                document.getElementById('custom_appinfo').style.display = 'none';
-                document.getElementById('custom_deviceinfo').style.display = 'none';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            } else if (elementId === 'mrktbillrvdskoptions') {
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('custom_service').style.display = '';
-                document.getElementById('prioritymbugs').style.display = 'none';
-                document.getElementById('custom_appinfo').style.display = 'none';
-                document.getElementById('custom_deviceinfo').style.display = 'none';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-            } else {
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('prioritymbugs').style.display = 'none';
-                document.getElementById('custom_appinfo').style.display = 'none';
-                document.getElementById('custom_deviceinfo').style.display = 'none';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            }
+            
+            updateDisplay(elementId); // Вызов функции обновления отображения здесь
         }
     }
 
@@ -649,7 +544,68 @@ function getservDskPress() { // функция открытия главного
         });
     });
 
-} // tested
+    // Определение функций setDisplayStyleSD и updateDisplay на уровне всей функции getservDskPress
+    function setDisplayStyleSD(elementIds, style) {
+        elementIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = style;
+            }
+        });
+    }
+
+    function setDefaultOptions() {
+        const categoryElement = document.getElementById('categoryCommproblems');
+        if (categoryElement && categoryElement.children[0]) {
+            categoryElement.children[0].selected = true;
+        }
+    }
+
+    const config = {
+        academymobbugsoptions: {
+            show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
+        },
+        mobbugsoptions: {
+            show: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh', 'custom_service']
+        },
+        studcabmobbugskoptions: {
+            show: ['custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['prioritymbugs', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh', 'custom_service']
+        },
+        CommProblemsoptions: {
+            show: ['categoryCommproblems', 'custom_email'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'custom_str', 'custom_er', 'custom_ar', 'custom_CMS', 'custom_hesh', 'custom_service'],
+            callback: getcommproboptions
+        },
+        vimvidoptions: {
+            show: ['custom_id', 'custom_hesh', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_service']
+        },
+        mrktbillrvdskoptions: {
+            show: ['custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar', 'custom_service'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh']
+        },
+        default: {
+            show: ['custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh', 'custom_service']
+        }
+    };
+
+    function updateDisplay(elementId) {
+        const conf = config[elementId] || config.default;
+
+        setDisplayStyleSD(conf.show, '');
+        setDisplayStyleSD(conf.hide, 'none');
+        setDefaultOptions();
+
+        if (conf.callback) {
+            conf.callback();
+        }
+    }
+}
+ // tested
 
 document.getElementById('AF_ServDsk').ondblclick = function (a) { // скрытие окна ServiceDesk по двойному клику
     if (checkelementtype(a)) { document.getElementById('hideMeSrvDsk').click(); }
