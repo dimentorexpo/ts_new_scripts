@@ -24,7 +24,6 @@ const buttons = [ //array of buttonsnames
     '.vimvidsbtn',
     '.studcabbtn',
     '.chatqabtn',
-    '.mobbugsbtn',
     '.academymobbugsbtn',
     '.stcabmbsbtn',
     '.CommProblemsbtn'
@@ -45,7 +44,6 @@ const otherOptions = [ // array of buttons categories id's
     'chatqaoptions',
     'edumodeloptions',
     'studcabmobbugskoptions',
-    'mobbugsoptions',
     'academymobbugsoptions',
     'CommProblemsoptions'
 ];
@@ -81,7 +79,6 @@ var win_servicedesk = // описание элементов окна Service De
                     <button class="mainButton sdbtn" id="optionChat" value="24">💬Chat</button>
                     <button class="mainButton sdbtn" id="optionEdModel" value="28">🎓LearnPers</button>
                     <button class="mainButton sdbtn" id="optionStudcabmobbugs" value="35"> ErpMobBugs</button>
-					<button class="mainButton sdbtn" id="optionMobbugs" value="30">📱Mobil bug</button>
                     <button class="mainButton sdbtn" id="optionAcademymobbugs" value="19">🅰📱🐞</button>
                     <button class="mainButton sdbtn" id="optionCommProblems" value="75">📧Comm</button>
                 </div>
@@ -138,11 +135,6 @@ var win_servicedesk = // описание элементов окна Service De
 					<p style="${Paragrafsstyles} top:7px;">#chat-qa-support; Решают проблемы с чатами в ЛКП и ЛКУ</p>
 
                 </div>
-
-				<div id="mobbugsoptions" style="display: none; margin-left:20px;">
-					<p style="${Paragrafsstyles}">#common-components-mobile-bugs; Канал обработки обращений по мобильному приложению Skyeng и Teachers.</p>
-
-				</div>
 
 				<div id="academymobbugsoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#academic-mobile-bugs; Канал обработки обращений по МП Skyeng связанных с обучением.</p>
@@ -565,10 +557,6 @@ function getservDskPress() { // функция открытия главного
         academymobbugsoptions: {
             show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
             hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
-        },
-        mobbugsoptions: {
-            show: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
-            hide: ['categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh', 'custom_service']
         },
         studcabmobbugskoptions: {
             show: ['custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
