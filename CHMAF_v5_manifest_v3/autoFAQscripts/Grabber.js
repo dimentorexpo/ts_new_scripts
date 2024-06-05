@@ -1315,6 +1315,7 @@ let payloadarray = [];
 let chatswithmarksarray = [];
 let checkmarksarr = [];
 let operstagsarray = [];
+//let keyMatch = "Техподдержка вход"
 document.getElementById('stargrab').onclick = async function () {
 
 
@@ -1506,10 +1507,10 @@ document.getElementById('stargrab').onclick = async function () {
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
                                 }
 
-                                //test
+                                //test поиск входа 
                                 // if (r.messages.length > 0) {
                                 // for (let z = 0; z < r.messages.length; z++) {
-                                // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.match(keyMatch)) {
+                                // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
                                 // console.log("Вход найден: ", conversationId);
                                 // }
                                 // }
@@ -1550,13 +1551,14 @@ document.getElementById('stargrab').onclick = async function () {
                                 }
 
                                 //test
-                                /* 									if (r.messages.length > 0) {
-                                                                      for (let z = 0; z < r.messages.length; z++) {
-                                                                        if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.match(keyMatch)) {
-                                                                          console.log("Вход найден: ", conversationId);
-                                                                        }
-                                                                      }
-                                                                    } */
+                                							
+								// if (r.messages.length > 0) {
+								  // for (let z = 0; z < r.messages.length; z++) {
+									// if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
+									  // console.log("Вход найден: ", conversationId);
+									// }
+								  // }
+								// }			
                                 // end test
                             });
 
@@ -1626,7 +1628,7 @@ document.getElementById('stargrab').onclick = async function () {
                                 //test
                                 // if (r.messages.length > 0) {
                                 // for (let z = 0; z < r.messages.length; z++) {
-                                // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.match(keyMatch)) {
+                                // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
                                 // console.log("Вход найден: ", conversationId);
                                 // }
                                 // }
