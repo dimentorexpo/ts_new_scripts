@@ -89,6 +89,8 @@ function Lessonisnow(iframeDoc) { // добавляем красную надп�
 }
 
 function autoStatusSwitch(){ // функция автосмены статуса при авторизации в АФ в своотетствии с базовыми настройками в модуле Settings
+
+try {
 	if (location.href == "https://skyeng.autofaq.ai/tickets/common") {
 		let checkOperatorName = document.querySelector('.user_menu-dropdown-user_name').textContent.includes("Обратная связь");
 			if (checkOperatorName  && checkOperatorName == true) {
@@ -109,6 +111,9 @@ function autoStatusSwitch(){ // функция автосмены статуса
 				
 			}
 		}
+	}
+	} catch (error) {
+		console.log("Произошла ошибка:", error.message);
 	}
 }
 

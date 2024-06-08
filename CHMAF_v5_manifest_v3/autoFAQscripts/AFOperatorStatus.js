@@ -136,7 +136,8 @@ async function operstatusleftbar() { // функция замены Script Packa
             if (prev.operator.status < next.operator.status) return 1;
         });
     }
-
+	
+	let addedFullNames = new Set();
     if (opstats.length) {
         for (let i = 0; i < opstats.length; i++) {
             opstats[i].aCnt = opstats[i].aCnt || 0;
@@ -168,12 +169,16 @@ async function operstatusleftbar() { // функция замены Script Packa
                 default:
                     continue;
             }
-            moderresult += `<div class="${divClass}" style="${divStyle}" name="operrow" value="${operator.id}">` +
-                `<span style="color: ${spanText}; font-size: 13px; background: ${spanBackground}; width: 25px; height: 25px; padding-top:2px; text-align: center; border-radius: 50%; border: 1px solid black;">` +
-                `${opstats[i].aCnt}` +
-                `</span>` +
-                `${operator.fullName}` +
-                '</div>';
+			    if (!addedFullNames.has(operator.fullName)) {
+				moderresult += `<div class="${divClass}" style="${divStyle}" name="operrow" value="${operator.id}">` +
+					`<span style="color: ${spanText}; font-size: 13px; background: ${spanBackground}; width: 25px; height: 25px; padding-top:2px; text-align: center; border-radius: 50%; border: 1px solid black;">` +
+					`${opstats[i].aCnt}` +
+					`</span>` +
+					`${operator.fullName}` +
+					'</div>';
+				addedFullNames.add(operator.fullName);
+				}
+
         }
     } else {
         moderresult = '';
