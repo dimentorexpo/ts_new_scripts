@@ -88,6 +88,32 @@ function Lessonisnow(iframeDoc) { // добавляем красную надп�
     }
 }
 
+function autoStatusSwitch(){ // функция автосмены статуса при авторизации в АФ в своотетствии с базовыми настройками в модуле Settings
+	if (location.href == "https://skyeng.autofaq.ai/tickets/common") {
+		let checkOperatorName = document.querySelector('.user_menu-dropdown-user_name').textContent.includes("Обратная связь");
+			if (checkOperatorName  && checkOperatorName == true) {
+			console.log("Это ТП ОС, тут не нужен автостатус никакой!")
+			clearInterval(statusCheckInt)
+		} else {
+					let aStatusVar = localStorage.getItem('afterLoginFunction');
+			if (aStatusVar == null) {
+				localStorage.setItem('afterLoginFunction', 'Online')
+				console.log("variable was not found and setted by default value Online ")
+				changeStatus(aStatusVar)
+				clearInterval(statusCheckInt)
+				console.log('Interval timer stopped',  'status was changed to ' +  aStatusVar)
+			} else {
+					changeStatus(aStatusVar)
+					clearInterval(statusCheckInt)
+					console.log('Interval timer stopped',  'status was changed to ' +  aStatusVar)
+				
+			}
+		}
+	}
+}
+
+const statusCheckInt = setInterval(autoStatusSwitch, 500)
+
 function startTimer() {
     let tagsshowflag = localStorage.getItem('showquicktags');
     const trigertestchat = localStorage.getItem('trigertestchat');
@@ -302,7 +328,6 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
             );
         }
     }
-
 
     iframeDoc.getElementById('CurUsLoginer').onclick = async function () {
         const idNode = SearchinAFnewUI("id");
@@ -596,12 +621,6 @@ function showTaggs(iframeDoc) {
         btn8.innerHTML = '<a style="float: left; margin-right: 5px; margin-top: 10px; color: black; cursor: pointer;">Очередь</a>';
         btn8.setAttribute('data-tagname', 'queue')
 
-        let btn15 = iframeDoc.createElement('span');
-        btn15.id = 'ochered'
-        quickTagsdiv.append(btn15)
-        btn15.innerHTML = '<a style="float: left; margin-right: 5px; margin-top: 10px; color: black; cursor: pointer;">Сброскорп📨</a>';
-        btn15.setAttribute('data-tagname', '#corpmail')
-
         let btn9 = iframeDoc.createElement('span');
         btn9.id = 'svyazsU'
         quickTagsdiv.append(btn9)
@@ -625,18 +644,6 @@ function showTaggs(iframeDoc) {
         quickTagsdiv.append(btn12)
         btn12.innerHTML = '<a style="float: left;margin-right: 5px;margin-top: 10px;color: #c92e52;cursor: pointer;font-weight: 700;">У НО</a>';
         btn12.setAttribute('comment-text', 'Крит Н.О. У')
-
-        let btn13 = iframeDoc.createElement('span');
-        btn13.id = 'wanoanswer'
-        quickTagsdiv.append(btn13)
-        btn13.innerHTML = '<a style="float: left;margin-right: 5px;margin-top: 10px;color: #ff18da;cursor: pointer;font-weight: 700;">WA_NotAns</a>';
-        btn13.setAttribute('data-tagname', '#wanoanswer')
-
-        let btn14 = iframeDoc.createElement('span');
-        btn14.id = 'wafirstlesson'
-        quickTagsdiv.append(btn14)
-        btn14.innerHTML = '<a style="float: left;margin-right: 5px;margin-top: 10px;color: #ff18da;cursor: pointer;font-weight: 700;">WA_First</a>';
-        btn14.setAttribute('data-tagname', '#wafirstlesson')
 
         // Делаем вызов newTaggg из iframe
         function callNewTaggg(tagName) {

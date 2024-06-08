@@ -599,7 +599,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     const KC_addrRzrv = data.KC_addrRzrv;
     const TP_addrRzrv = data.TP_addrRzrv;
 
-    let sidePanel = document.createElement('div')
+    let sidePanel = document.createElement('div') // добавляем невидимую боковую панель, на которой будем размещать кнопки
     sidePanel.id = "rightPanel"
     sidePanel.style = 'position: fixed; top: 110px; right: 22px; z-index: 1000000; width: 40px; font-size: 22px; cursor: pointer; transition: all 0.5s ease;'
     document.body.append(sidePanel)
@@ -618,7 +618,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
         }
 
     }
-    document.getElementById('rightPanel').appendChild(ScriptBut)
+    document.getElementById('rightPanel').appendChild(ScriptBut) // добавляем на панель кнопку для открытия окна с шаблонами
 
     let butThemes = document.createElement('button')
     butThemes.id = "themes"
@@ -642,7 +642,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
             this.classList.remove('activeScriptBtn')
         }
     }
-    document.getElementById('rightPanel').appendChild(MainMenuBtn)
+    document.getElementById('rightPanel').appendChild(MainMenuBtn) // добавляем на панель кнопку Меню, которая содержит в себе при клики пункты подменю
 
     let menubar = document.createElement('div')
     menubar.style = `background: white; position:absolute; right:50px; top: 50px; border: 0px solid #000000; display:none; min-height: 60px; min-width:165px; box-shadow: -1px 4px 16px 7px rgba(34, 60, 80, 0.09)`
@@ -664,7 +664,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     openchhis.id = 'opennewcat'
     openchhis.title = 'Открывает виджет просмотра истории чатов'
     openchhis.classList.add('rightPanelBtn', 'mainButton')
-    document.getElementById('rightPanel').appendChild(openchhis)
+    document.getElementById('rightPanel').appendChild(openchhis) // добавляем на панель кнопку открытия формы просмотра истории чата
     document.getElementById('opennewcat').onclick = getopennewcatButtonPress;
 
     if ((scriptAdr == TP_addr || scriptAdr == TP_addrRzrv) && opsection != 'ТП' && opsection != 'ТП ОС') {
@@ -1133,18 +1133,6 @@ window.addEventListener('CallNewComment', (event) => {
     sendComment(ComemntText);
 });
 
-function pageClick(pageId) { // по клику переключает страницы с шаблонами
-    b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1]
-    let pageNum = pageId.split('_')[0]
-    for (i = 0; i < b.childElementCount; i++) {
-        try {
-            b.children[1].children[i].style = 'background-color:#768d87; border-top:0px;'
-            document.getElementById(i + "page").style.display = 'none'
-        } catch (e) { }
-    }
-    document.getElementById(pageId).style = 'background-color: green; border-top:4px solid orange'
-    document.getElementById(pageNum + "page").style.display = ''
-}
 
 function toggleButtonState(buttonId, className) { // Функция для переключения состояния кнопки
     const button = document.getElementById(buttonId);

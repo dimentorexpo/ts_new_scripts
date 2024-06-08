@@ -76,6 +76,13 @@ async function init_settings() {
                         <br>
                         <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hideInnerTaskCreate">Скрыть окно АФ при создании задачи</label>
                         <br>
+						<label style="color:bisque"> Автостатус при авторизации в AF</label>
+						<select style="height:28px; width:140px; text-align:center" id="defaultStatusAfterLogin">
+							<option value="Online" style="background: green;">Онлайн</option>
+							<option value="Busy" style="background: yellow;">Занят</option>
+							<option value="Offline" style="background: red;">Офлайн</option>
+						</select>
+						 <br>
                     </div>
                     <label style="color:bisque;"><input type="color" id="aclstimepicker">Цвет заливки закрытия чата</label>
                     <button class="mainButton onlyfortp" id="activateVoiceCommands" title="Позволяет изменить кнопку для активации голосовых командю По умолчанию SHIFT" style="margin-left:10px;">Shift</button>
@@ -184,8 +191,35 @@ async function init_settings() {
             }
         }
     }
+	
+	function changeAutoStatus(){ //функция изменения статуса в АФ по умолчанию
+		let objStatusList = document.getElementById('defaultStatusAfterLogin');
+				
+		        if (objStatusList.length > 1) {
+            for (let i = 0; i < objStatusList.length; i++) {
+                if (objStatusList[i].selected == true) {
+					localStorage.setItem('afterLoginFunction', objStatusList[i].value) 
+					console.log(localStorage.getItem('afterLoginFunction'))
+					switch (objStatusList[i].value) {
+						case "Offline":
+							objStatusList.style = "background:red; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+							break;
+						case "Busy":
+							objStatusList.style = "background:yellow; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+							break;
+						default:
+							objStatusList.style = "background:green; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+							break;
+					}
 
-    document.getElementById('soundlistaddr').addEventListener('change', changesoundaddr);
+                }
+            }
+        }
+		
+	}  
+
+    document.getElementById('soundlistaddr').addEventListener('change', changesoundaddr); // функция запоминания выбранного нового звука
+    document.getElementById('defaultStatusAfterLogin').addEventListener('change', changeAutoStatus); // функция запоминания дефолтного статуса при его смене
 
     function paintstatus() { //функция перекрашивания статуса оператора онлайн зеленый, занят желтый, офлайн и перерыв красные
         const statusElem = document.querySelectorAll('.user_menu-status-name')[1];
@@ -403,6 +437,30 @@ async function init_settings() {
                 document.getElementById('test_teach').value = localStorage.getItem('test_teach');
             } else document.getElementById('test_teach').value = "";
 
+			//Для автостатуса меняем настройку сверяя с сохраненной в localstorage
+			let objStatusListMain = document.getElementById('defaultStatusAfterLogin');
+			
+			 Array.prototype.forEach.call(objStatusListMain.children, (option) => { // проверяем какой статус выбран
+					if (option.value === localStorage.getItem('afterLoginFunction')) {
+                        option.selected = true;
+						
+						switch (option.value) {
+						case "Offline":
+							objStatusListMain.style = "background:red; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+							break;
+						case "Busy":
+							objStatusListMain.style = "background:yellow; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+							break;
+						default:
+							objStatusListMain.style = "background:green; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+							break;
+					}
+						
+						
+                    }
+				}
+			);
+			
 
             //Для интервала между воспроизведением звука
             if (localStorage.getItem('splinter') != null || localStorage.getItem('splinter') != "") {
