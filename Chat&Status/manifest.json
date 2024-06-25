@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Chat & Status Helper",
-    "version": "1.0.2",
+    "version": "1.0.5",
     "description": "Твой удобный инструмент",
     "background": {
         "service_worker": "bg.js"
@@ -17,7 +17,9 @@
         {
             "js": [
                 "content.js",
-                "Modules/LessonStatus.js"
+                "Modules/LessonStatus.js",
+				"Modules/Nabor.js",
+				"Modules/Autoschedule.js"
             ],
             "css": [
                 "CSS/styles.css"

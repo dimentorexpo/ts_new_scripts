@@ -82,3 +82,35 @@ const copyToClipboard = str => { // функция копирования в б�
     document.execCommand('copy');
     document.body.removeChild(el);
 };
+
+if (location.host == "crm2.skyeng.ru") {
+	let sidePanel = document.createElement('div') // Боковая панель
+	sidePanel.id = "rightPane"
+	sidePanel.style = 'position: fixed; top: 75px; right: 22px; z-index: 5; width: 40px; font-size: 22px; cursor: pointer; transition: all 0.5s ease;'
+	sidePanel.classList.add('side-panel')
+	document.body.append(sidePanel)
+
+	let LessonInfoCRM = document.createElement('button') // Кнопка открытия меню просмотра статусов
+	LessonInfoCRM.innerHTML = '🎓'
+	LessonInfoCRM.style = 'width: 42px; height: 42px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
+	LessonInfoCRM.id = 'butLessonInfoCRM'
+	LessonInfoCRM.title = 'Проверка статуса уроков отмены, переносы, удаления'
+	LessonInfoCRM.classList.add('rightPanelBtn','btnCRM')
+	document.getElementById('rightPane').appendChild(LessonInfoCRM)
+	
+	let teacherNabor = document.createElement('button') 
+	teacherNabor.innerHTML = '🚷'
+	teacherNabor.style = 'width: 42px; height: 42px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
+	teacherNabor.id = 'butTeacherNaborCRM'
+	teacherNabor.title = 'Проверка открытия или закрытия набора учеников для П. ✅ - набор закрыт, ❌ - набор открыт'
+	teacherNabor.classList.add('rightPanelBtn','btnCRM')
+	document.getElementById('rightPane').appendChild(teacherNabor)
+
+	let studentAP = document.createElement('button') 
+	studentAP.innerHTML = '👽'
+	studentAP.style = 'width: 42px; height: 42px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
+	studentAP.id = 'butStudentAPCRM'
+	studentAP.title = "Проверка доступности автоподбора для ученика"
+	studentAP.classList.add('rightPanelBtn','btnCRM')
+	document.getElementById('rightPane').appendChild(studentAP)
+}

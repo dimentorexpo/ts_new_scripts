@@ -84,3 +84,7 @@ td[name="idToCRM"]:hover {
     cursor: pointer;
     background: rgb(51, 116, 54) !important;
 }
+
+.activeScriptBtn {
+	opacity: 1 !important;
+}

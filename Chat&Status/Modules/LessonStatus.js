@@ -1,16 +1,3 @@
-let sidePanel = document.createElement('div') // Боковая панель
-	sidePanel.id = "rightPane"
-	sidePanel.style = 'position: fixed; top: 75px; right: 22px; z-index: 5; width: 40px; font-size: 22px; cursor: pointer; transition: all 0.5s ease;'
-	sidePanel.classList.add('side-panel')
-document.body.append(sidePanel)
-
-let LessonInfoCRM = document.createElement('button') // Кнопка открытия меню просмотра статусов
-LessonInfoCRM.innerHTML = '🎓'
-LessonInfoCRM.style = 'width: 42px; height: 42px; margin-bottom:4px; font-size: 22px; cursor: pointer; border-radius: 50%; opacity:0.5; transition: all 0.5s ease;'
-LessonInfoCRM.id = 'butLessonInfoCRM'
-LessonInfoCRM.classList.add('rightPanelBtn','btnCRM')
-document.getElementById('rightPane').appendChild(LessonInfoCRM)
-
 var win_LessonStatus =  // описание элементов окна статуса уроков
     `<div class="maindivst" style="display: flex; width: 1060px;">
         <span style="width: 1060px">
@@ -61,15 +48,18 @@ function setdatesfilds(){
     document.getElementById('idstudentforsearch').value = "";
 }
 	
-document.getElementById('butLessonInfoCRM').onclick = function () {
+let btnLesInfo = document.getElementById('butLessonInfoCRM');
+btnLesInfo.addEventListener('click', function () {
     setdatesfilds();
 
     if (document.getElementById('AF_LessonStatus').style.display == '') {
         document.getElementById('AF_LessonStatus').style.display = 'none'
+		btnLesInfo.classList.remove('activeScriptBtn')
     } else {
         document.getElementById('AF_LessonStatus').style.display = ''
+		btnLesInfo.classList.add('activeScriptBtn')
     }
-}	
+})
 
 //Функция проверки статусов урока
 
@@ -295,10 +285,9 @@ document.getElementById('startlookstatus').addEventListener('click', function ()
 })
 
 document.getElementById('hideMeLessonStatus').addEventListener('click', function () { // скрытие окна статус урока
-    if (document.getElementById('AF_LessonStatus').style.display == '') {
         document.getElementById('AF_LessonStatus').style.display = 'none'
         document.getElementById('statustable').innerText = "";
-    }
+		btnLesInfo.classList.remove('activeScriptBtn')
 })
 
 document.getElementById('clearlessonstatus').onclick = function () { // очистить поля проверки статуса урока
