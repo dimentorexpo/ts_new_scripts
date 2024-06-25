@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Chat & Status Helper",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Твой удобный инструмент",
     "background": {
         "service_worker": "bg.js"
@@ -28,7 +28,7 @@
 		{
 			"js": ["content.js", "Modules/Chat.js"],
 			"css": ["CSS/styles.css"],
-			"matches": ["*://student.skyeng.ru/*", "*://new-teachers.skyeng.ru/*"],
+			"matches": ["*://student.skyeng.ru/*", "*://new-teachers.skyeng.ru/*", "*://teacher.skyeng.ru/*"],
 			"run_at": "document_end"
 		}
     ],
