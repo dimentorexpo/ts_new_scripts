@@ -121,6 +121,7 @@
 		"https://*.skyeng.ru/*",
 		"https://skyeng.autofaq.ai/*",
 		"https://jira.skyeng.tech/*",
+		"https://jira.skyeng.link/*",
 		"https://mm-time.skyeng.tech/*",
 		"https://*.datsy.info/*",
 		"https://docs.google.com/forms/*"

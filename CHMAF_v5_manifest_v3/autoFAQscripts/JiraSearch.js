@@ -126,7 +126,7 @@ function formatIssue(item, currentNumber, issueKey, searchText, currentpic, curr
         <span style="color: #00FA9A">&#5129;</span>
         <img src="${currentpic}" style="width:20px; height:25px;" title="Приоритеты: ⛔ - Blocker, полностью залитая красная стрелка вверх - Critical, три красные стрелки вверх - Major, три синие вниз - Minor, ⭕ - Trivial">
         ${currentNumber ? `<span class="newcount" style="width:20px; margin-left: 5px; background:#3CB371; padding:2px; padding-left:6px; font-weight:700; border-radius:10px;">${currentNumber} </span>` : ""}
-        <a name="buglinks" href="https://jira.skyeng.tech/browse/${issueKey}" target="_blank" style="margin-left:5px; color: #ffe4c4">${temporarka}</a>
+        <a name="buglinks" href="https://jira.skyeng.link/browse/${issueKey}" target="_blank" style="margin-left:5px; color: #ffe4c4">${temporarka}</a>
         <span name="issueIds" style="display:none">${currentIds}</span>
         <span class="jiraissues" style="margin-left: 5px; cursor: pointer">💬</span>
         ${currentNumber ? `
@@ -165,7 +165,7 @@ function addJiraIssueOnClickEvent(barray, issueKeys) { // обработчик �
             let chatId = getChatId();
             if (chatId) {
                 if (window.location.href.includes('tickets/assigned')) {
-                    sendComment("https://jira.skyeng.tech/browse/" + issueKeys[j])
+                    sendComment("https://jira.skyeng.link/browse/" + issueKeys[j])
                 }
                 fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
                     "headers": {
@@ -175,7 +175,7 @@ function addJiraIssueOnClickEvent(barray, issueKeys) { // обработчик �
                         "sec-fetch-mode": "cors",
                         "sec-fetch-site": "same-origin"
                     },
-                    "body": "{\"conversationId\":\"${b[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"https://jira.skyeng.tech/browse/" + issueKeys[j] + "\"}]}",
+                    "body": "{\"conversationId\":\"${b[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"https://jira.skyeng.link/browse/" + issueKeys[j] + "\"}]}",
                     "method": "POST",
                     "mode": "cors",
                     "credentials": "include"
@@ -211,7 +211,7 @@ function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputT
 function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
     refreshissuesarr.forEach((issueElement, index) => {
         issueElement.addEventListener('click', function () {
-            const fetchURLToken = `https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueIds[index]}`;
+            const fetchURLToken = `https://jira.skyeng.link/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueIds[index]}`;
             const requestOptionsToken = { method: 'GET', credentials: 'include', }
 
             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLToken, requestOptions: requestOptionsToken }, function (responseToken) {
@@ -221,7 +221,7 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
                     let count = parseInt(responseAuth.match(/customfield_15410.*?value=.*?(\d+)/)[1]);
                     let increasedcount = (count + 1).toString();
 
-                    const fetchURLIncrease = "https://jira.skyeng.tech/secure/AjaxIssueAction.jspa?decorator=none";
+                    const fetchURLIncrease = "https://jira.skyeng.link/secure/AjaxIssueAction.jspa?decorator=none";
                     const requestOptionsIncrease = {
                         method: 'POST',
                         headers: {
@@ -250,7 +250,7 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
 let firstJiraParse = false;
 
 function getJiraTask(requestOptions) { // поиск задач в jira
-    const fetchURL = 'https://jira.skyeng.tech/rest/issueNav/1/issueTable';
+    const fetchURL = 'https://jira.skyeng.link/rest/issueNav/1/issueTable';
 
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (tasksresponse) {
         if (tasksresponse.success) {
@@ -270,7 +270,7 @@ function getJiraTask(requestOptions) { // поиск задач в jira
                 const currentIssue = matchedItems[i];
                 const currentKey = issueKeys[i];
                 const currentIds = issueIds[i];
-                const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
+                const currentpic = table.match(/https:\/\/jira.skyeng.link\/images\/icons\/priorities\/.*svg/gm)[i];
 
                 if (currentIssue && currentKey) {
                     issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
@@ -315,7 +315,7 @@ function switchJiraPages() {
     }
 
     const pageSwArr = document.getElementsByName('changeList');
-    const fetchURL = 'https://jira.skyeng.tech/rest/issueNav/1/issueTable';
+    const fetchURL = 'https://jira.skyeng.link/rest/issueNav/1/issueTable';
 
     pageSwArr.forEach((page) => {
         page.addEventListener('click', function () {
@@ -348,7 +348,7 @@ function switchJiraPages() {
                             const currentIssue = matchedItems[i];
                             const currentKey = issueKeys[+i + switcher];
                             const currentIds = ids[i];
-                            const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
+                            const currentpic = table.match(/https:\/\/jira.skyeng.link\/images\/icons\/priorities\/.*svg/gm)[i];
                             if (currentIssue && currentKey) {
                                 issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
                             } else {
@@ -409,7 +409,7 @@ function getJiraOpenFormPress() { // открывает поле для рабо
         document.getElementById('JQLquery').innerText = defqueryitem;
 
         function checkJiraToken() { // Функция проверки авторизации в Jira
-            const fetchURL = "https://jira.skyeng.tech";
+            const fetchURL = "https://jira.skyeng.link";
             const requestOptions = { method: 'GET' };
             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
                 if (response.success) {
@@ -505,7 +505,7 @@ function getJiraOpenFormPress() { // открывает поле для рабо
 
                 for (let j = 0; j < document.getElementsByName('addtonotesbug').length; j++) {
                     document.getElementsByName('addtonotesbug')[j].addEventListener('click', function () {
-                        sendComment('https://jira.skyeng.tech/browse/' + favissues[j].match(/browse.(\S+)"/)[1])
+                        sendComment('https://jira.skyeng.link/browse/' + favissues[j].match(/browse.(\S+)"/)[1])
 
                         let Chatid = getChatId();
                         fetch("https://skyeng.autofaq.ai/api/conversation/" + Chatid + "/payload", {
@@ -516,7 +516,7 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                                 "sec-fetch-mode": "cors",
                                 "sec-fetch-site": "same-origin"
                             },
-                            "body": `{\"conversationId\":\"${Chatid}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"https://jira.skyeng.tech/browse/${favissues[j].match(/browse.(\S+)"/)[1]}\"}]}`,
+                            "body": `{\"conversationId\":\"${Chatid}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"https://jira.skyeng.link/browse/${favissues[j].match(/browse.(\S+)"/)[1]}\"}]}`,
                             "method": "POST",
                             "mode": "cors",
                             "credentials": "include"
@@ -543,7 +543,7 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                     let itarrs = document.getElementsByName('favissuemassive')
                     for (let c = 0; c < cnttoincrease.length; c++) {
                         cnttoincrease[c].addEventListener('click', function () {
-                            const fetchURL = `https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${itarrs[c].innerText}`;
+                            const fetchURL = `https://jira.skyeng.link/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${itarrs[c].innerText}`;
                             const requestOptions = { method: 'GET' };
 
                             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (authresponse2) {
@@ -561,7 +561,7 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                                         increasedcount = increasedcount.toString();
                                         console.log("count=" + count + " increasedcount " + increasedcount);
 
-                                        const fetchURL2 = 'https://jira.skyeng.tech/secure/AjaxIssueAction.jspa?decorator=none';
+                                        const fetchURL2 = 'https://jira.skyeng.link/secure/AjaxIssueAction.jspa?decorator=none';
                                         const requestOptions2 = `{
                                             "headers": {
                                                 "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -634,7 +634,7 @@ function getJiraOpenFormPress() { // открывает поле для рабо
 
             let tasksearch = document.getElementById('testJira').value;
 
-            const fetchURL = `https://jira.skyeng.tech/rest/quicksearch/1.0/productsearch/search?q=${tasksearch}`;
+            const fetchURL = `https://jira.skyeng.link/rest/quicksearch/1.0/productsearch/search?q=${tasksearch}`;
             const requestOptions = {
                 method: 'GET'
             };
