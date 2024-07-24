@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CRMHelper",
-    "version": "2.0.6",
+    "version": "2.0.7",
     "description": "Твой мультитул в работе с обращениями",
     "background": {
         "service_worker": "bg.js"
@@ -59,6 +59,7 @@
         "https://*.skyeng.ru/*",
         "https://skyeng.autofaq.ai/*",
         "https://jira.skyeng.tech/*",
+        "https://jira.skyeng.link/*",
         "https://mm-time.skyeng.tech/*",
         "https://*.datsy.info/*",
         "https://docs.google.com/forms/*"

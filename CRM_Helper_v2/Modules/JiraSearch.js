@@ -127,7 +127,7 @@ function formatIssue(item, currentNumber, issueKey, searchText, currentpic, curr
         <span style="color: #00FA9A">&#5129;</span>
         <img src="${currentpic}" style="width:20px; height:25px;" title="Приоритеты: ⛔ - Blocker, полностью залитая красная стрелка вверх - Critical, три красные стрелки вверх - Major, три синие вниз - Minor, ⭕ - Trivial">
         ${currentNumber ? `<span class="newcount" style="width:20px; margin-left: 5px; background:#3CB371; padding:2px; padding-left:6px; font-weight:700; border-radius:10px;">${currentNumber} </span>` : ""}
-        <a name="buglinks" href="https://jira.skyeng.tech/browse/${issueKey}" target="_blank" style="margin-left:5px; color: #ffe4c4">${temporarka}</a>
+        <a name="buglinks" href="https://jira.skyeng.link/browse/${issueKey}" target="_blank" style="margin-left:5px; color: #ffe4c4">${temporarka}</a>
         <span name="issueIds" style="display:none">${currentIds}</span>
         ${currentNumber ? `
             <span class="refreshissues" style="color:#ADFF2F; margin-left: 1px; cursor: pointer">&#69717;&#120783;</span>
@@ -185,7 +185,7 @@ function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputT
 function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
     for (let f = 0; f < refreshissuesarr.length; f++) {
         refreshissuesarr[f].onclick = function () {
-            const fetchURL = `https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueIds[f]}`;
+            const fetchURL = `https://jira.skyeng.link/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueIds[f]}`;
             const requestOptions = {
                 method: 'GET'
             };
@@ -205,7 +205,7 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
                         increasedcount = increasedcount.toString();
                         console.log("count=" + count + " increasedcount " + increasedcount);
 
-                        const fetchURL2 = 'https://jira.skyeng.tech/secure/AjaxIssueAction.jspa?decorator=none';
+                        const fetchURL2 = 'https://jira.skyeng.link/secure/AjaxIssueAction.jspa?decorator=none';
                         const requestOptions2 = `{
                             "headers": {
                                 "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -242,7 +242,7 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
 let firstJiraParse = false;
 
 function getJiraTask(requestOptions) { // поиск задач в jira
-    const fetchURL = 'https://jira.skyeng.tech/rest/issueNav/1/issueTable';
+    const fetchURL = 'https://jira.skyeng.link/rest/issueNav/1/issueTable';
 
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (tasksresponse) {
         if (tasksresponse.success) {
@@ -263,7 +263,7 @@ function getJiraTask(requestOptions) { // поиск задач в jira
                 const currentIssue = matchedItems[i];
                 const currentKey = issueKeys[i];
                 const currentIds = issueIds[i];
-                const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
+                const currentpic = table.match(/https:\/\/jira.skyeng.link\/images\/icons\/priorities\/.*svg/gm)[i];
 
                 if (currentIssue && currentKey) {
                     issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
@@ -304,7 +304,7 @@ function switchJiraPages() {
     }
 
     const pageSwArr = document.getElementsByName('changeList');
-    const fetchURL = 'https://jira.skyeng.tech/rest/issueNav/1/issueTable';
+    const fetchURL = 'https://jira.skyeng.link/rest/issueNav/1/issueTable';
 
     pageSwArr.forEach((page, d) => {
         page.onclick = async function () {
@@ -337,7 +337,7 @@ function switchJiraPages() {
                             const currentIssue = matchedItems[i];
                             const currentKey = issueKeys[+i + switcher];
                             const currentIds = ids[i];
-                            const currentpic = table.match(/https:\/\/jira.skyeng.tech\/images\/icons\/priorities\/.*svg/gm)[i];
+                            const currentpic = table.match(/https:\/\/jira.skyeng.link\/images\/icons\/priorities\/.*svg/gm)[i];
                             if (currentIssue && currentKey) {
                                 issues += formatIssue(currentIssue, currentNumber, currentKey, searchText, currentpic, currentIds);
                             } else {
@@ -394,7 +394,7 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
         document.getElementById('JQLquery').innerText = defqueryitem;
 
         function checkJiraToken() { // Функция проверки авторизации в Jira
-            const fetchURL = 'https://jira.skyeng.tech/';
+            const fetchURL = 'https://jira.skyeng.link/';
             const requestOptions = {
                 method: 'GET'
             };
@@ -499,7 +499,7 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                     for (let c = 0; c < cnttoincrease.length; c++) {
                         cnttoincrease[c].onclick = function () {
                             console.log('clicked')
-                            const fetchURL = `https://jira.skyeng.tech/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${itarrs[c].innerText}`;
+                            const fetchURL = `https://jira.skyeng.link/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${itarrs[c].innerText}`;
                             const requestOptions = {
                                 method: 'GET'
                             };
@@ -519,7 +519,7 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                                         increasedcount = increasedcount.toString();
                                         console.log("count=" + count + " increasedcount " + increasedcount);
 
-                                        const fetchURL2 = 'https://jira.skyeng.tech/secure/AjaxIssueAction.jspa?decorator=none';
+                                        const fetchURL2 = 'https://jira.skyeng.link/secure/AjaxIssueAction.jspa?decorator=none';
                                         const requestOptions2 = `{
                                             "headers": {
                                                 "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -593,7 +593,7 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
 
             let tasksearch = document.getElementById('testJira').value;
 
-            const fetchURL = `https://jira.skyeng.tech/rest/quicksearch/1.0/productsearch/search?q=${tasksearch}`;
+            const fetchURL = `https://jira.skyeng.link/rest/quicksearch/1.0/productsearch/search?q=${tasksearch}`;
             const requestOptions = {
                 method: 'GET'
             };
