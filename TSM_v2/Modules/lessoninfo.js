@@ -8,6 +8,9 @@ var win_getLessonInfo = `
 							<button class="commonbtn smallbtns" id="ClearInfo" title = "Очищает информацию в полях">🧹</button>
 							<span id="platform" style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Platform: </span>
 							<span id="platformname" style="width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #627998f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 12px; cursor:text;"></span>
+							<span style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Создана: </span>
+							<span id="creationType" style="width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #627998f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 12px; cursor:text;" title="auto - автоматически в назначенное по расписанию время, manually - вручную"></span>
+							
 							<span id="roomfor" style="display: none; margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Room for Student ID: </span>
 							<span id="forstudentid" style="display:none; width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #627998f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 12px; cursor:pointer;" title="При клике копирует в буфер обмена айди ученика"></span>
                         </div>
@@ -211,6 +214,7 @@ async function getjoinadultsinfo(hash) {
         const joinresult = await joinroom(hash);
         document.getElementById('partteachid').textContent = joinresult.teacher.id;
         document.getElementById('partteachid').title = joinresult.teacher.name + " " + joinresult.teacher.surname;
+		document.getElementById('creationType').textContent = joinresult.meta.creationType
 
         const studentInfo = joinresult.students.length > 0 ? joinresult.students[0] : { id: "New Student", name: "No name", surname: "Student didn't join the room" };
         document.getElementById('partstudid').textContent = studentInfo.id;
@@ -235,6 +239,7 @@ async function loadinfo(api) {
         // Обновление информации об участниках
         updateParticipantsInfo(joinresult.participants);
         document.getElementById('subjectnamefield').textContent = subjname.toUpperCase();
+		document.getElementById('creationType').textContent = joinresult.meta.creationType
         console.log('Информация об уроке получена:', joinresult);
     } catch (error) {
         console.error('Ошибка при загрузке информации о комнате:', error);
