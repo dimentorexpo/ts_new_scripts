@@ -205,7 +205,8 @@ function gettaskButButtonPress() { // функция открытия окна �
 
             fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/click", {
                 "headers": {
-                    "content-type": "application/json",
+                    "accept": "application/json, text/plain, */*",
+                    "content-type": "application/json"
                 },
                 "body": `{\"buttonId\":\"b49609f3-9ff7-4ba5-a8a8-f2cef770bf19\",\"conversationId\":\"${activeConvId}\"}`,
                 "method": "POST",
@@ -240,9 +241,10 @@ function gettaskButButtonPress() { // функция открытия окна �
 
             fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
                 "headers": {
-                    "content-type": "application/json",
+                    "accept": "application/json, text/plain, */*",
+                    "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr"
                 },
-                "body": `{\"conversationId\":\"${activeConvId}\"}`,
+				"body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
                 "method": "POST",
                 "mode": "cors",
                 "credentials": "include"
@@ -459,9 +461,13 @@ function gettaskButButtonPress() { // функция открытия окна �
                 if (idflagempty == 1) {
                     fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
                         "headers": {
-                            "content-type": "application/json",
+                        "accept": "application/json, text/plain, */*",
+						"content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG"
                         },
-                        "body": `{\"conversationId\":\"${conversid}",\"elements\":[{\"name\":\"priority\",\"value\":\"${prioritystate}\"},{\"name\":\"category\",\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"value\":${usluga}},{\"name\":\"userId\",\"value\":${document.getElementById('taskuserid').value.trim()}},{\"name\":\"comment\",\"value\":\"${document.getElementById('taskcomment').value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}`,
+				
+						  "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${document.getElementById('taskuserid').value.trim()}\"},{\"name\":\"comment\",\"isFile\":false,\"value\":\"${document.getElementById('taskcomment').value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
+						  
+						  
                         "method": "POST",
                         "mode": "cors",
                         "credentials": "include"
@@ -469,9 +475,11 @@ function gettaskButButtonPress() { // функция открытия окна �
                 } else {
                     fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
                         "headers": {
-                            "content-type": "application/json",
+                        "accept": "application/json, text/plain, */*",
+						"content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG"
                         },
-                        "body": `{\"conversationId\":\"${conversid}",\"elements\":[{\"name\":\"priority\",\"value\":\"${prioritystate}\"},{\"name\":\"category\",\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"value\":${usluga}},{\"name\":\"userId\",\"value\":${document.getElementById('taskuserid').value.trim()}},{\"name\":\"initiatorId\",\"value\":${document.getElementById('taskuserid').value.trim()}},{\"name\":\"comment\",\"value\":\"${document.getElementById('taskcomment').value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}`,
+						"body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${document.getElementById('taskuserid').value.trim()}\"},{\"name\":\"initiatorId\",\"isFile\":false,\"value\":${document.getElementById('taskuserid').value.trim()}}, {\"name\":\"comment\",\"isFile\":false,\"value\":\"${document.getElementById('taskcomment').value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,					  
+						  
                         "method": "POST",
                         "mode": "cors",
                         "credentials": "include"
@@ -506,15 +514,16 @@ function gettaskButButtonPress() { // функция открытия окна �
         document.getElementById('AF_Createtask').style.display = 'none'
         taskBut.classList.remove('activeScriptBtn')
         conversid = document.getElementById('chathashlnk').value;
-        fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
-            "headers": {
-                "content-type": "application/json",
-            },
-            "body": `{\"conversationId\":\"${conversid}\"}`,
-            "method": "POST",
-            "mode": "cors",
-            "credentials": "include"
-        });
+            fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
+                "headers": {
+					"accept": "application/json, text/plain, */*",
+                    "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr"
+                },
+				"body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
+                "method": "POST",
+                "mode": "cors",
+                "credentials": "include"
+            });
     }
 
     studcontact.onclick = function () {
