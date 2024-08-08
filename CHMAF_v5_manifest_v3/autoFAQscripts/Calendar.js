@@ -206,23 +206,27 @@ function getSlotData(name) {
             if (spisok[f].title != '') {
                 let podtvudal = confirm("Вы действительно хотите удалить этот слот из календаря?")
                 if (podtvudal) {
-                    removeSlot(slotId = spisok[f].title)
-                    spisok[f].title = ''
-                    spisok[f].value = ''
+					let reasonDescription = encodeURIComponent(prompt("Слот будет удален, укажи причину удаления:"))
+						if (reasonDescription){
+							removeSlot(slotId = spisok[f].title, reasonDescription)
+							spisok[f].title = ''
+							spisok[f].value = ''
+						}
+
                 }
             }
         }
     }
 }
 
-function removeSlot(slotId) {
+function removeSlot(slotId, reason) {
     const fetchURL = `https://api.datsy.info/api/slot-event/delete.php`;
     const requestOptions = {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: `deleteslot=${slotId}`,
+        body: `deleteslot=${slotId}&reason=${reason}`,
         credentials: "include"
     };
 
@@ -464,7 +468,10 @@ function refreshActiveOperSlots() { // функция обновления ин�
                 if (allSlotsToDelete[j].title != '') {
                     let podtvudal = confirm("Вы действительно хотите удалить этот слот из календаря?")
                     if (podtvudal) {
-                        removeSlot(slotId = allSlotsToDelete[j].title)
+						let reasonDescription = encodeURIComponent(prompt("Слот будет удален, укажи причину удаления:"))
+						if (reasonDescription){
+							removeSlot(slotId = allSlotsToDelete[j].title, reasonDescription)
+						}
                     }
                 }
             }
