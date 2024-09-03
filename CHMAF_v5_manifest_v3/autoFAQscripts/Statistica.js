@@ -6,7 +6,7 @@ var win_StatisticaAF =  // описание формы чтобы не дава�
                                 <button class="mainButton buttonHide" title="скрывает меню" id="hidestatisticaaf">hide</button>
 								<button class="mainButton smallbtn" id="clearstatawindow">🧹</button>
 								<input type="text" id="timeoutput" style="width:100px; text-align:center; background: blanchedalmond; font-weight: 700;" disabled></input>
-								<div style="width:450px;background: #5f7875;height: 21px;"><div id="progress-bar" style="width: 0%; height: 20px; background-color: #e38118; border: 1px solid black; text-align:center; font-weight:700; color:white;"></div></div>
+								<div style="width:450px;background: #5f7875;height: 21px; border-radius:20px;"><div id="progress-bar" style="border-radius:20px; width: 0%; height: 20px; background-color: #e38118; border: 1px solid black; text-align:center; font-weight:700; color:white;"></div></div>
 			    </span>
                         </div>
 						<div style="margin: 5px; width: 750px" id="periodOfStata">
@@ -820,9 +820,10 @@ async function getopersSLA() {
                             ["Rate"]: operdata.items[j].stats.rate.rate
                                 ? operdata.items[j].stats.rate.rate
                                 : null,
+							["Channel"]:operdata.items[j].channel.name
                         });
 
-                        if (operdata.items[j].stats.rate.rate) {
+                        if (operdata.items[j].stats.rate.rate && operdata.items[j].channel.name != "Telegram techsup acquisition") {
                             csatcount++;
                             csatsumma += operdata.items[j].stats.rate.rate
                             arraycsatcount[i] = csatcount
@@ -839,8 +840,8 @@ async function getopersSLA() {
                 page++;
                 maxpage = operdata.total / 100;
             } while (page - 1 < maxpage);
-
-            uniqueIdsArrayUntarget = Array.from(massivchikUntarget);
+			
+			uniqueIdsArrayUntarget = Array.from(massivchikUntarget);
             console.log("Массив нетаргета по АФРТ", uniqueIdsArrayUntarget);
             uniqueIdsArrayTarget = Array.from(massivchikTarget);
             //console.log(uniqueIdsArrayTarget);
