@@ -1442,6 +1442,16 @@ document.getElementById('stargrab').onclick = async function () {
                             Rate: el.stats.rate.rate
                         };
                         chatswithmarksarray.push(obj);
+                    } else if (
+                        el.stats.rate.rate !== undefined &&
+						el.channel.name == "Telegram techsup acquisition" &&
+                        checkmarksarr.includes(el.stats.rate.rate)
+                    ) {
+                        const obj = {
+                            ConvId: el.conversationId,
+                            Rate: "-"
+                        };
+                        chatswithmarksarray.push(obj);
                     }
                 } else {
                     if (
