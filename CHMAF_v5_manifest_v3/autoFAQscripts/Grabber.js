@@ -1434,6 +1434,7 @@ document.getElementById('stargrab').onclick = async function () {
                 if (markscheklist[5].checked == false) {
                     if (
                         el.stats.rate.rate !== undefined &&
+						el.channel.name != "Telegram techsup acquisition" &&
                         checkmarksarr.includes(el.stats.rate.rate)
                     ) {
                         const obj = {
@@ -1444,14 +1445,22 @@ document.getElementById('stargrab').onclick = async function () {
                     }
                 } else {
                     if (
-                        checkmarksarr.includes(el.stats.rate.rate) || el.stats.rate.rate == undefined
+                        (checkmarksarr.includes(el.stats.rate.rate) || el.stats.rate.rate == undefined) && el.channel.name != "Telegram techsup acquisition"
                     ) {
                         const obj = {
                             ConvId: el.conversationId,
                             Rate: el.stats.rate.rate
                         };
                         chatswithmarksarray.push(obj);
-                    }
+                    } else if (
+						(checkmarksarr.includes(el.stats.rate.rate) || el.stats.rate.rate == undefined) && el.channel.name == "Telegram techsup acquisition"
+						) {
+						const obj = {
+                            ConvId: el.conversationId,
+                            Rate: "-"
+                        };
+                        chatswithmarksarray.push(obj);
+					}
                 }
 
                 if (items[k].operatorId == chekopersarr[i]) {
