@@ -1431,47 +1431,23 @@ document.getElementById('stargrab').onclick = async function () {
             const items = opgrdata.items;
             for (let k = 0; k < items.length; k++) {
                 const el = items[k];
-                if (markscheklist[5].checked == false) {
-                    if (
-                        el.stats.rate.rate !== undefined &&
-						el.channel.name != "Telegram techsup acquisition" &&
-                        checkmarksarr.includes(el.stats.rate.rate)
-                    ) {
-                        const obj = {
-                            ConvId: el.conversationId,
-                            Rate: el.stats.rate.rate
-                        };
-                        chatswithmarksarray.push(obj);
-                    } else if (
-                        el.stats.rate.rate !== undefined &&
-						el.channel.name == "Telegram techsup acquisition" &&
-                        checkmarksarr.includes(el.stats.rate.rate)
-                    ) {
-                        const obj = {
-                            ConvId: el.conversationId,
-                            Rate: "-"
-                        };
-                        chatswithmarksarray.push(obj);
-                    }
-                } else {
-                    if (
-                        (checkmarksarr.includes(el.stats.rate.rate) || el.stats.rate.rate == undefined) && el.channel.name != "Telegram techsup acquisition"
-                    ) {
-                        const obj = {
-                            ConvId: el.conversationId,
-                            Rate: el.stats.rate.rate
-                        };
-                        chatswithmarksarray.push(obj);
-                    } else if (
-						(checkmarksarr.includes(el.stats.rate.rate) || el.stats.rate.rate == undefined) && el.channel.name == "Telegram techsup acquisition"
-						) {
+				if (markscheklist[5].checked === false) { // Если "No marks" не выбрана
+					if (el.stats.rate.rate !== undefined && checkmarksarr.includes(el.stats.rate.rate)) {
 						const obj = {
-                            ConvId: el.conversationId,
-                            Rate: "-"
-                        };
-                        chatswithmarksarray.push(obj);
+							ConvId: el.conversationId,
+							Rate: el.channel.name === "Telegram techsup acquisition" ? "-" : el.stats.rate.rate
+						};
+						chatswithmarksarray.push(obj);
 					}
-                }
+				} else { // Если выбрана "No marks"
+					if (el.stats.rate.rate === undefined || checkmarksarr.includes(el.stats.rate.rate)) {
+						const obj = {
+							ConvId: el.conversationId,
+							Rate: el.channel.name === "Telegram techsup acquisition" ? "-" : el.stats.rate.rate
+						};
+						chatswithmarksarray.push(obj);
+					}
+				}
 
                 if (items[k].operatorId == chekopersarr[i]) {
                     tmponlyoperhashes.push({ HashId: el.conversationId, Duration: el.stats.conversationDuration })
