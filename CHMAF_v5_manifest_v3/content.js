@@ -109,6 +109,7 @@ var win_mainmenu = // описание кнопок меню
         <div id="JiraOpenForm" class="onlyfortp">🔎Jira Search</div>
         <div id="crmopersstatuses" class="onlyfortp">🧮Статусы CRM2</div>
         <div id="butMarks">🎭 Оценки</div>
+        <div id="otkaz" class="onlyfortp">❌Отказ от помощи</div>
         <div id="butLessonInfo">🎓 Lesson Info</div>
 		<div id="butFrozeChat">❄ Auto Respond</div>
         <div id="radioPlayer">📻 Radio</div>
