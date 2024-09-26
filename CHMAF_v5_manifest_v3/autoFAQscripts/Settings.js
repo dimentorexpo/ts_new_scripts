@@ -85,7 +85,6 @@ async function init_settings() {
 						 <br>
                     </div>
                     <label style="color:bisque;"><input type="color" id="aclstimepicker">Цвет заливки закрытия чата</label>
-                    <button class="mainButton onlyfortp" id="activateVoiceCommands" title="Позволяет изменить кнопку для активации голосовых командю По умолчанию SHIFT" style="margin-left:10px;">Shift</button>
                     <br>
                     <label style="color:bisque;"><input type="color" id="answtimepicker">Цвет заливки нового чата</label>
                     <br>
@@ -299,24 +298,6 @@ async function init_settings() {
             document.getElementById('AF_Settings').style.display = 'none'
         else {
             document.getElementById('AF_Settings').style.display = ''
-            let pushToTalkButton = document.getElementById('activateVoiceCommands');
-            if (localStorage.getItem('pushToTalkKeyName')) {
-                pushToTalkButton.textContent = localStorage.getItem('pushToTalkKeyName')
-            } else {
-                localStorage.setItem('pushToTalkKeyCode', 16)
-            }
-
-            pushToTalkButton.addEventListener('click', () => {
-                pushToTalkButton.textContent = 'Press a key...';
-                document.addEventListener('keydown', (event) => {
-                    pushToTalkButton.textContent = event.code;
-                    let pushToTalkValue = event.code;
-                    let pushToTalkKeyCode = event.keyCode;
-                    localStorage.setItem('pushToTalkKeyName', pushToTalkValue);
-                    localStorage.setItem('pushToTalkKeyCode', pushToTalkKeyCode)
-                    document.removeEventListener('keydown', event);
-                }, { once: true });
-            });
 
             if (localStorage.getItem('defaclschatcolor') != null || localStorage.getItem('defaclschatcolor') != undefined) {
                 document.getElementById('aclstimepicker').value = localStorage.getItem('defaclschatcolor')
