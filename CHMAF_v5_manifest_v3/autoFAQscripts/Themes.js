@@ -254,9 +254,6 @@ document.getElementById('backtomenu').onclick = function () { // возврат 
 }
 
 function RefBtnTag(BtnValue) { // при теге отказ открывает окно отказа
-    if (document.getElementById('AF_Refuseformnew').style.display == 'none') {
-        document.getElementById('otkaz').click();
-    }
     newTaggg(BtnValue)
 }
 
@@ -291,9 +288,6 @@ document.getElementById('multitag').onclick = function () { // откправк�
         for (let i = 0; i < allcheckboxtags.length; i++) {
             if (allcheckboxtags[i].checked) {
                 tagsvaluesarr.push('\"' + alltagsbtns[i].value + '\"')
-                if (alltagsbtns[i].value == 'refusal_of_help' && document.getElementById('AF_Refuseformnew').style.display == 'none') {
-                    document.getElementById('otkaz').click()
-                }
                 if (alltagsbtns[i].value == 'smartroom' && document.getElementById('AF_Smartroomform').style.display == 'none') {
                     document.getElementById('smartroomform').click()
                 }

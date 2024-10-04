@@ -584,11 +584,6 @@ function showTaggs(iframeDoc) {
         quickTagsdiv.append(btn2)
         btn2.innerHTML = '<a style="float: left; margin-right: 5px; margin-top: 10px; color: black; cursor: pointer;">Отказ</a>';
         btn2.setAttribute('data-tagname', 'refusal_of_help')
-        btn2.addEventListener('click', function () {
-            if (document.getElementById('AF_Refuseformnew').style.display == 'none') {
-                document.getElementById('otkaz').click();
-            }
-        })
 
         let btn3 = iframeDoc.createElement('span');
         btn3.id = 'TPcallsend'
@@ -807,8 +802,6 @@ async function buttonsFromDoc(butName) { // функция отправки ша
 
         return
     }
-    if (butName == '❌Отказ' && document.getElementById('AF_Refuseformnew').style.display == 'none') // если кнопка отказ открывает форму отказа и если повторно нажали не закрываем форму
-        document.getElementById('otkaz').click();
 
     if (((butName == '🤬Негатив ОС') || (butName == '🖼Нет изобр в ДЗ ЛК') || (butName == '💨Сброс ответов ДЗ ЛК') || (butName == '🔇Звук ответов ЛК') || (butName == '🖥Размер видео') || butName == ('🖼📱Нет изобр ДЗ в МП')) && document.getElementById('AF_Smartroomform').style.display == 'none')
         document.getElementById('smartroomform').click();
