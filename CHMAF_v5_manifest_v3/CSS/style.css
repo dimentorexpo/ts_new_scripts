@@ -464,18 +464,6 @@
 		font-weight: 600;
 	}
 
-	.catsmartroom {
-		color: bisque;
-		font-size: 16px;
-		transition: all 0.5s ease;
-	}
-
-	.catsmartroom:hover {
-		font-size: 18px;
-		color: SteelBlue;
-		font-weight: 600;
-	}
-
 	.otherfieldoff {
 		text-align: center;
 		width: 400px;
@@ -521,6 +509,23 @@
 	.radio:hover {
 		transform: scale(1.5);
 		font-weight: 600;
+	}
+
+	.smartroom-radio {
+		width: 15px;
+		height: 15px;
+	}
+	
+	.smartroom-label {
+		color: bisque;
+		font-size: 14px;
+		font-weight: normal;
+	}
+	
+	.smartroom-radio:hover + .smartroom-label,
+	.smartroom-label:hover {
+		color: #ffcc99;
+		font-weight: 400;
 	}
 
 	.widthofsd {

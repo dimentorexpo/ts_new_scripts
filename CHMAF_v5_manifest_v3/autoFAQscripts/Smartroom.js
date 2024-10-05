@@ -13,28 +13,29 @@ var win_smartroomform =  // описание элементов окна Мул�
 
 							<label style="color:#c4ffd3; padding:5px; font-weight: 600;">Тип клиента</label>
 							<br>
-							<div style="margin-top:5px; color:bisque;" id = "smartroomuser">
-								<input type="radio" id="typestudadults" name="typetoform" value="Ученик Adults">
-								<label for="typestud">Ученик Adults</label>
-								<input type="radio" id="typestudkids" name="typetoform" value="Ученик Kids">
-								<label for="typestud">Ученик Kids</label>
-								<input type="radio" id="typestudprem" name="typetoform" value="Ученик Premium">
-								<label for="typestudprem">Ученик Premium</label>
+							<div style="margin-top:5px" id = "smartroomuser">
+								<input class = "smartroom-radio" type="radio" id="typestudadults" name="typetoform" value="Ученик Adults">
+								<label class = "smartroom-label" for="typestudadults">Ученик Adults</label>
+								<input class = "smartroom-radio" type="radio" id="typestudkids" name="typetoform" value="Ученик Kids">
+								<label class = "smartroom-label" for="typestudkids">Ученик Kids</label>
+								<input class = "smartroom-radio" type="radio" id="typestudprem" name="typetoform" value="Ученик Premium">
+								<label class = "smartroom-label" for="typestudprem">Ученик Premium</label>
 								<br>
-							    <input type="radio" id="typeteach" name="typetoform" value="Преподаватель">
-								<label for="typeteach">Преподаватель</label>
+							    <input class = "smartroom-radio" type="radio" id="typeteach" name="typetoform" value="Преподаватель">
+								<label class = "smartroom-label" for="typeteach">Преподаватель</label>
 							</div>
 							<input id="clientid" placeholder="ID пользователя" autocomplete="off" type="text">
 							<br>
 							<div style="margin-top:5px; color:#c4ffd3; padding:5px; font-weight: 600;">С чем обратились?</div>
-							<div style="margin-top:5px; color:bisque;" id = "smartroomquestion">
-								<input type="radio" id="whatobratsugest" name="whatobratform" value="Пожелание по мультирум" checked>
-								<label for="whatobratsugest">Пожелание по мультирум</label>
-								<input type="radio" id="whattonegative" name="whatobratform" value="Негатив по мультирум">
-								<label for="whattonegative">Негатив по мультирум</label>
+							<div style="margin-top:5px" id = "smartroomquestion">
+								<input class = "smartroom-radio" type="radio" id="whatobratsugest" name="whatobratform" value="Пожелание по мультирум" checked>
+								<label class = "smartroom-label" for="whatobratsugest">Пожелание по мультирум</label>
+								<input class = "smartroom-radio" type="radio" id="whattonegative" name="whatobratform" value="Негатив по мультирум">
+								<label class = "smartroom-label" for="whattonegative">Негатив по мультирум</label>
 							</div>
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600;">Категория 1</div>
-								<label class="catsmartroom"><input class="radio" type="radio" name="catsmartroom" value="Обновление платформы" resolved="" checked> Обновление платформы</label>
+                                <input class = "smartroom-radio" type="radio" id="catsmartroomin" name="catsmartroom" value="Обновление платформы" resolved="" checked> 
+                                <label class = "smartroom-label" for="catsmartroomin"> Обновление платформы</label>
 							</div>
 
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600;">Категория 2</div>
@@ -129,9 +130,9 @@ function getsmartroomformButtonPress() {
             document.getElementsByName('typetoform')[1].checked = true
         } else if (userType === 'student') {
             let verticalis = SearchinAFnewUI("supportVertical");
-            if (verticalis === 'Adult') {
+            if (verticalis === 'Adult' || verticalis === 'Adults') {
                 document.getElementsByName('typetoform')[0].checked = true
-            } else if (verticalis === 'Kids') {
+            } else if (verticalis === 'Kids' || verticalis === 'Kid') {
                 document.getElementsByName('typetoform')[1].checked = true
             }
         }
