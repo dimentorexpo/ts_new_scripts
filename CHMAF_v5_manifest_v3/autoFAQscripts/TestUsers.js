@@ -5,7 +5,6 @@ var win_TestUsers = // описание окна тестовых пользов
             <button id="tidcode" title="При клике ЛКМ генерирует ссылку логинер для входа в учетку с заранее сохраненным ID тестового преподавателя в настройках и копирует ее в буфер обмена. При клике ПКМ копирует в буфер обмена ID преподавателя, может пригодиться в админке создания тестовых уроков." class="mainButton teststudteach">👽</button>
             <button id="TestRooms" class="mainButton teststudteach" title="Открыть окно создания тестовых уроков">🎲</button>
             <button id="link2lessbtn" class="mainButton teststudteach" title="Открыть окно получения ссылки на урок">📟</button>
-            <div id="voicetext" style="color: bisque; width: 110px; text-align: center;"></div>
             <div id="addInfoUser" style="color: white; text-align: center; cursor: -webkit-grab;"></div>
         </span>
     </div>
