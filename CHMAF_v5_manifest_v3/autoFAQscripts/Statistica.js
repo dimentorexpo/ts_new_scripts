@@ -772,7 +772,7 @@ async function getopersSLA() {
                             for (let b = groupFoundIndex; b >= 0; b--) {
                                 const message = fres.messages[b];
 
-                                if (message.tpe && typeof message.txt === 'string' && message.txt.includes("Ищем для вас")) {
+                                if (message.tpe && typeof message.txt === 'string' && message.txt.includes("специалисты заняты")) {
                                     flagChatIsInQueue = b
                                     if (flagChatIsInQueue !== -1) {
                                         for (let v = flagChatIsInQueue; v >= 0; v--) {
