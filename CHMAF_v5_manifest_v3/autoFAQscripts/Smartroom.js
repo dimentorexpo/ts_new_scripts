@@ -130,6 +130,8 @@ function getsmartroomformButtonPress() {
         for (let j = 0; j < cheksradio.length; j++) {
             cheksradio[j].checked = false
         }
+        document.getElementById('cattwosmatrtoom').selectedIndex = 0;
+		document.getElementById('catthreesmatrtoom').selectedIndex = 0;
     }
 
     let useridis = SearchinAFnewUI('id');

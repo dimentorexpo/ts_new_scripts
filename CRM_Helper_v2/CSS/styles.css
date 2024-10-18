@@ -315,3 +315,19 @@ span[name=changeList]:hover {
     font-size:14px !important;
     color:bisque !important;  
 }
+
+.smartroom-radio {
+    width: 15px;
+    height: 15px;
+}
+
+.smartroom-label {
+    color: bisque;
+    font-weight: normal;
+}
+
+.smartroom-radio:hover + .smartroom-label,
+.smartroom-label:hover {
+    color: #ffcc99;
+    font-weight: 400;
+}

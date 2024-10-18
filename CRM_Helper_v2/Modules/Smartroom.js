@@ -13,32 +13,49 @@ var win_smartroomform =  // описание элементов окна Мул�
                         <div style="margin: 5px; margin-top: 0px; width: 410px" id="smartroom_form_menu">
 							<label style="color:#c4ffd3; padding:5px; font-weight: 500;">Тип клиента</label>
 							<br>
-							<div style="margin-top:5px; color:bisque;" id = "smartroomuser">
-								<input type="radio" id="typestudadults" name="typetoform" value="Ученик Adults">
-								<label class="spanCRM" for="typestud">Ученик Adults</label>
-								<input type="radio" id="typestudkids" name="typetoform" value="Ученик Kids">
-								<label class="spanCRM" for="typestud">Ученик Kids</label>
-								<input type="radio" id="typestudprem" name="typetoform" value="Ученик Premium">
-								<label class="spanCRM" for="typestudprem">Ученик Premium</label>
+							<div style="margin-top:5px; margin-bottom:5px;" id = "smartroomuser">
+								<input class = "smartroom-radio" type="radio" id="typestudadults" name="typetoform" value="Ученик Adults">
+								<label class = "smartroom-label spanCRM" for="typestudadults">Ученик Adults</label>
+								<input class = "smartroom-radio" type="radio" id="typestudkids" name="typetoform" value="Ученик Kids">
+								<label class = "smartroom-label spanCRM" for="typestudkids">Ученик Kids</label>
+								<input class = "smartroom-radio" type="radio" id="typestudprem" name="typetoform" value="Ученик Premium">
+								<label class = "smartroom-label spanCRM" for="typestudprem">Ученик Premium</label>
 								<br>
-							    <input type="radio" id="typeteach" name="typetoform" value="Преподаватель">
-								<label class="spanCRM" for="typeteach">Преподаватель</label>
-							</div>
-							<input class="inputCRM" id="clientid" style="margin-top:5px;" placeholder="ID пользователя" autocomplete="off" type="text">
-							<br>
-							<div style="margin-top:5px; color:#c4ffd3; padding:5px; font-weight: 500;">С чем обратились?</div>
-							<div style="margin-top:5px; color:bisque;" id = "smartroomquestion">
-								<input type="radio" id="whatobratsugest" name="whatobratform" value="Пожелание по мультирум" checked>
-								<label class="spanCRM" for="whatobratsugest">Пожелание по мультирум</label>
-								<input type="radio" id="whattonegative" name="whatobratform" value="Негатив по мультирум">
-								<label class="spanCRM" for="whattonegative">Негатив по мультирум</label>
-							</div>
-							<div style="color:#c4ffd3; padding:5px; font-weight: 500;">Категория 1</div>
-							<div>
-								<label class="spanCRM catsmartroom" style="color:bisque;"><input type="radio" name="catsmartroom" value="Обновление платформы" resolved="" checked> Обновление платформы</label>
+							    <input class = "smartroom-radio" type="radio" id="typeteach" name="typetoform" value="Преподаватель">
+								<label class = "smartroom-label spanCRM" for="typeteach">Преподаватель</label>
 							</div>
 
-							<div style="color:#c4ffd3; padding:5px; font-weight: 500;">Категория 2</div>
+                            <label style="margin-top: 5px; color:#c4ffd3; padding:5px; font-weight: 500;">Формат обучения</label>
+							<br>
+							<div style="margin-top:5px; margin-bottom: 5px;" id = "smartroomformat">
+								<input class = "smartroom-radio" type="radio" id="formatF2F" name="formattoform" value="F2F">
+								<label class = "smartroom-label spanCRM" for="formatF2F">F2F</label>
+								<input class = "smartroom-radio" type="radio" id="formatF2G" name="formattoform" value="F2G">
+								<label class = "smartroom-label spanCRM" for="formatF2G">F2G</label>
+								<input class = "smartroom-radio" type="radio" id="formatvebinar" name="formattoform" value="Вебинар">
+								<label class = "smartroom-label spanCRM" for="formatvebinar">Вебинар</label>
+							    <input class = "smartroom-radio" type="radio" id="formatPU" name="formattoform" value="ПУ">
+								<label class = "smartroom-label spanCRM" for="formatPU">ПУ</label>
+							</div>
+
+							<input class="inputCRM" id="clientid" style="margin-top:5px;" placeholder="ID пользователя" autocomplete="off" type="text">
+							<br>
+
+							<div style="margin-top:5px; color:#c4ffd3; padding:5px; font-weight: 500;" id = "smartroomquestion">С чем обратились?</div>
+								<input class = "smartroom-radio" type="radio" id="whatobratsugest" name="whatobratform" value="Пожелание по улучшению">
+								<label class = "smartroom-label spanCRM" for="whatobratsugest">Пожелания</label>
+								<input class = "smartroom-radio" type="radio" id="whattonegative" name="whatobratform" value="Негатив по работе функционала платформы">
+								<label class = "smartroom-label spanCRM" for="whattonegative">Негатив</label>
+							
+							<div style="color:#c4ffd3; padding:5px; font-weight: 500;" id = "smartroomecosysrem">Экосистема</div>
+                                <input class = "smartroom-radio" type="radio" id="ecosystemplat" name="smartroomecos" value="Функционал платформы"> 
+                                <label class = "smartroom-label spanCRM" for="ecosystemplat">Функционал платформы</label>
+                                <input class = "smartroom-radio" type="radio" id="ecosystemios" name="smartroomecos" value="Мобильное приложение IOS"> 
+                                <label class = "smartroom-label spanCRM" for="ecosystemios">МП IOS</label>
+                                <input class = "smartroom-radio" type="radio" id="ecosystemandr" name="smartroomecos" value="Мобильное приложение Android"> 
+                                <label class = "smartroom-label spanCRM" for="ecosystemandr">МП Android</label>
+
+							<div style="color:#c4ffd3; padding:5px; font-weight: 500;">Тема</div>
 							<div>
 								<select class="inputCRM" id="cattwosmatrtoom" style="margin-left: 5px; padding-top: 5px; vertical-align: middle; color: black;">
 									<option style="background-color:DarkKhaki;" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
@@ -51,7 +68,7 @@ var win_smartroomform =  // описание элементов окна Мул�
                                 </select>
 							</div>	
 
-							<div style="color:#c4ffd3; padding:5px; font-weight: 500;">Категория 3</div>
+							<div style="color:#c4ffd3; padding:5px; font-weight: 500;">Подтема</div>
 							<div>
 								<select class="inputCRM" id="catthreesmatrtoom" style="margin-left: 5px; padding-top: 5px; vertical-align: middle; color: black;">
 									<option style="background-color:DarkKhaki;" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
@@ -112,15 +129,14 @@ document.getElementById('smartroomformCRM').onclick = function () {
 		document.getElementById('idmymenucrm').style.display = 'none'
 	}
 
-	function clearradio() { // функция очистки радиобатонов
-		for (let j = 0; j < 4; j++) {
-			document.getElementsByName('typetoform')[j].checked = false
-		}
-
-		document.getElementById('cattwosmatrtoom')[0].selected = true
-		document.getElementById('catthreesmatrtoom')[0].selected = true
-
-	}
+    function clearradio() { // функция очистки радиобатонов
+        let cheksradio = document.getElementsByClassName('smartroom-radio');
+        for (let j = 0; j < cheksradio.length; j++) {
+            cheksradio[j].checked = false
+        }
+		document.getElementById('cattwosmatrtoom').selectedIndex = 0;
+		document.getElementById('catthreesmatrtoom').selectedIndex = 0;
+    }
 
 	if (location.pathname.split('/')[4] == 'task')
 		document.getElementById('fullcomentsmartroom').value = document.getElementsByTagName('crm-grid')[8].children[0].innerText.replace('Комментарий\n', '')
@@ -137,69 +153,97 @@ document.getElementById('smartroomformCRM').onclick = function () {
 
 	document.getElementById('send2smartroom').onclick = function () {
 
-		let checkedclienttype;
-		let checkedquestion;
-		let alloptions;
-		let cat2selected;
-		let cat3selected;
+        let checkedclienttype;
+        let checkedquestion;
+        let checkeducformat;
+        let checkecosystem;
+        let cat2selected;
+        let cat3selected;
 
-		let flagemptysmart = 0;
+        let flagemptysmart = 0;
 
-		if (!document.getElementsByName('typetoform')[0].checked && !document.getElementsByName('typetoform')[1].checked && !document.getElementsByName('typetoform')[2].checked && !document.getElementsByName('typetoform')[3].checked) {
-			document.getElementById('smartroomuser').style.backgroundColor = 'Coral';
-			document.getElementById('smartroomuser').style.color = 'black';
-			flagemptysmart = 1;
-		} else {
-			document.getElementById('smartroomuser').style.backgroundColor = '';
-			document.getElementById('smartroomuser').style.color = '#c4ffd3';
-		}
+        if (!document.getElementsByName('typetoform')[0].checked && !document.getElementsByName('typetoform')[1].checked && !document.getElementsByName('typetoform')[2].checked && !document.getElementsByName('typetoform')[3].checked) {
+            document.getElementById('smartroomuser').style.backgroundColor = 'Coral';
+            document.getElementById('smartroomuser').style.color = 'black';
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('smartroomuser').style.backgroundColor = '';
+            document.getElementById('smartroomuser').style.color = '#c4ffd3';
+        }
+        
+        if (!document.getElementsByName('formattoform')[0].checked && !document.getElementsByName('formattoform')[1].checked && !document.getElementsByName('formattoform')[2].checked && !document.getElementsByName('formattoform')[3].checked) {
+            document.getElementById('smartroomformat').style.backgroundColor = 'Coral';
+            document.getElementById('smartroomformat').style.color = 'black';
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('smartroomformat').style.backgroundColor = '';
+            document.getElementById('smartroomformat').style.color = '#c4ffd3';
+        }
 
-		if (document.getElementById('clientid').value.length < 3) {
-			document.getElementById('clientid').style.backgroundColor = 'Coral';
-			flagemptysmart = 1;
-		} else {
-			document.getElementById('clientid').style.backgroundColor = '';
-		}
+        if (document.getElementById('clientid').value.length < 3) {
+            document.getElementById('clientid').style.backgroundColor = 'Coral';
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('clientid').style.backgroundColor = '';
+        }
 
-		if (!document.getElementsByName('whatobratform')[0].checked && !document.getElementsByName('whatobratform')[1].checked) {
-			document.getElementById('smartroomquestion').style.backgroundColor = 'Coral';
-			document.getElementById('smartroomquestion').style.color = 'black';
-			flagemptysmart = 1;
-		} else {
-			document.getElementById('smartroomquestion').style.backgroundColor = '';
-			document.getElementById('smartroomquestion').style.color = '#c4ffd3';
-		}
+        if (!document.getElementsByName('whatobratform')[0].checked && !document.getElementsByName('whatobratform')[1].checked) {
+            document.getElementById('smartroomquestion').style.backgroundColor = 'Coral';
+            document.getElementById('smartroomquestion').style.color = 'black';
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('smartroomquestion').style.backgroundColor = '';
+            document.getElementById('smartroomquestion').style.color = '#c4ffd3';
+        }
 
-		if (document.getElementById('fullcomentsmartroom').value.length < 3) {
-			document.getElementById('fullcomentsmartroom').style.backgroundColor = 'Coral';
-			flagemptysmart = 1;
-		} else {
-			document.getElementById('fullcomentsmartroom').style.backgroundColor = '';
-		}
+        if (!document.getElementsByName('smartroomecos')[0].checked && !document.getElementsByName('smartroomecos')[1].checked && !document.getElementsByName('smartroomecos')[2].checked) {
+            document.getElementById('smartroomecosysrem').style.backgroundColor = 'Coral';
+            document.getElementById('smartroomecosysrem').style.color = 'black';
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('smartroomecosysrem').style.backgroundColor = '';
+            document.getElementById('smartroomecosysrem').style.color = '#c4ffd3';
+        }
 
-		if (flagemptysmart == 0) {
-			for (let i = 0; i < document.getElementsByName('typetoform').length; i++) {
-				if (document.getElementsByName('typetoform')[i].checked == true)
-					checkedclienttype = document.getElementsByName('typetoform')[i].value;
-			}
+        if (document.getElementById('fullcomentsmartroom').value.length < 3) {
+            document.getElementById('fullcomentsmartroom').style.backgroundColor = 'Coral';
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('fullcomentsmartroom').style.backgroundColor = '';
+        }
 
-			for (let i = 0; i < document.getElementById('cattwosmatrtoom').length; i++) {
-				if (document.getElementById('cattwosmatrtoom')[i].selected == true)
-					cat2selected = document.getElementById('cattwosmatrtoom')[i].value
-			}
+        if (flagemptysmart == 0) {
+            for (let i = 0; i < document.getElementsByName('typetoform').length; i++) {
+                if (document.getElementsByName('typetoform')[i].checked == true)
+                    checkedclienttype = document.getElementsByName('typetoform')[i].value;
+            }
 
-			for (let i = 0; i < document.getElementById('catthreesmatrtoom').length; i++) {
-				if (document.getElementById('catthreesmatrtoom')[i].selected == true)
-					cat3selected = document.getElementById('catthreesmatrtoom')[i].value
-			}
+            for (let i = 0; i < document.getElementsByName('formattoform').length; i++) {
+                if (document.getElementsByName('formattoform')[i].checked == true)
+                    checkeducformat = document.getElementsByName('formattoform')[i].value;
+            }
 
+            for (let i = 0; i < document.getElementsByName('smartroomecos').length; i++) {
+                if (document.getElementsByName('smartroomecos')[i].checked == true)
+                    checkecosystem = document.getElementsByName('smartroomecos')[i].value;
+            }
 
-			for (let i = 0; i < document.getElementsByName('whatobratform').length; i++) {
-				if (document.getElementsByName('whatobratform')[i].checked == true)
-					checkedquestion = document.getElementsByName('whatobratform')[i].value;
-			}
+            for (let i = 0; i < document.getElementById('cattwosmatrtoom').length; i++) {
+                if (document.getElementById('cattwosmatrtoom')[i].selected == true)
+                    cat2selected = document.getElementById('cattwosmatrtoom')[i].value
+            }
 
-			const body2 = 'entry.466256037=' + encodeURIComponent(checkedclienttype) + '&entry.505070950=' + encodeURIComponent(document.getElementById('clientid').value) + '&entry.876256156=' + encodeURIComponent(checkedquestion) + '&entry.1879097323=' + encodeURIComponent(document.getElementById('fullcomentsmartroom').value) + '&entry.156405977=' + encodeURIComponent(document.getElementsByName('catsmartroom')[0].value) + '&entry.1625340245=' + encodeURIComponent(cat2selected) + '&entry.478427702=' + encodeURIComponent(cat3selected)
+            for (let i = 0; i < document.getElementById('catthreesmatrtoom').length; i++) {
+                if (document.getElementById('catthreesmatrtoom')[i].selected == true)
+                    cat3selected = document.getElementById('catthreesmatrtoom')[i].value
+            }
+
+            for (let i = 0; i < document.getElementsByName('whatobratform').length; i++) {
+                if (document.getElementsByName('whatobratform')[i].checked == true)
+                    checkedquestion = document.getElementsByName('whatobratform')[i].value;
+            }
+
+            let body2 = 'entry.505070950=' + encodeURIComponent(document.getElementById('clientid').value) + '&entry.1879097323=' + encodeURIComponent(document.getElementById('fullcomentsmartroom').value) + '&entry.1625340245=' + encodeURIComponent(cat2selected) + '&entry.478427702=' + encodeURIComponent(cat3selected) + '&entry.466256037=' + encodeURIComponent(checkedclienttype) + '&entry.685236831=' + encodeURIComponent(checkeducformat) + '&entry.876256156=' + encodeURIComponent(checkedquestion) + '&entry.156405977=' + encodeURIComponent(checkecosystem)
 
 			const requestOptions = {
 				"headers": {
