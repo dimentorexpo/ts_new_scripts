@@ -24,12 +24,13 @@ const buttons = [ //array of buttonsnames
     '.vimvidsbtn',
     '.studcabbtn',
     '.chatqabtn',
-    '.academymobbugsbtn',
     '.stcabmbsbtn',
+	'.mobilebugsbtn',
+	'.academyselfstudybugsbtn',
     '.CommProblemsbtn'
 ];
 
-const otherOptions = [ // array of buttons categories id's
+const otherOptions = [ // array of buttons categories id's, важен порядок размещения, так как иначе может открываться описание не для того канала!
     'teacherssrvdskoptions',
     'crm2srvdskoptions',
     'authsrvdskoptions',
@@ -44,7 +45,8 @@ const otherOptions = [ // array of buttons categories id's
     'chatqaoptions',
     'edumodeloptions',
     'studcabmobbugskoptions',
-    'academymobbugsoptions',
+	'mobilebugsoptions',
+    'academyselfstudysoptions',
     'CommProblemsoptions'
 ];
 
@@ -79,77 +81,78 @@ var win_servicedesk = // описание элементов окна Service De
                     <button class="mainButton sdbtn" id="optionChat" value="24">💬Chat</button>
                     <button class="mainButton sdbtn" id="optionEdModel" value="28">🎓LearnPers</button>
                     <button class="mainButton sdbtn" id="optionStudcabmobbugs" value="35"> ErpMobBugs</button>
-                    <button class="mainButton sdbtn" id="optionAcademymobbugs" value="19">🅰📱🐞</button>
-                    <button class="mainButton sdbtn" id="optionCommProblems" value="75">📧Comm</button>
+					<button class="mainButton sdbtn" id="optionMobileAppbugs" value="136">📱Mob Bugs</button>
+                    <button class="mainButton sdbtn" id="optionAcademyselfstudybbugs" value="19">Academy-Self</button>
+					<button class="mainButton sdbtn" id="optionCommProblems" value="75">📧Comm</button>
+
                 </div>
 				<div id="studcabmobbugskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#erp-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
-
 				</div>
 
 				<div id="teacherssrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#tp-qa-support; канал по вопросам Teacher & Corp пользователей</p>
-
 				</div>
+				
 				<div id="crm2srvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#crm2-support</p>
-
 				</div>
+				
 				<div id="authsrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#auth; Обсуждение общих вопросов по проектам Auth/ID (авторизация, роли и доступы, данные пользователей и т. д.)</p>
-
 				</div>
+				
 				<div id="schedulesrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#study-coordinations-qa-support Канал по вопросам расписания ученика, ТТ, TRM, автоподбора и ручного подбора</p>
-
 				</div>
+				
 				<div id="billingqasrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#billing-qa-support; Канал для рассмотрения причины расхождений баланса учеников</p>
-
 				</div>
+				
 				<div id="c1srvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#c1-support; Поддержка витрины оплаты (Не виджет оплаты в pcs), Onboarding (Kids&Adult), Scoring, AutoIntroLesson (АвтоВУ)</p>
-
 				</div>
+				
 				<div id="billingsrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:180px; width:90%;">#billing</p>
-
 				</div>
+				
                 <div id="mrktbillrvdskoptions" style="display: none; margin-left:20px;">
                     <p style="${Paragrafsstyles}">#mrkt-bill-questions; Канал для вопросов по промокодам, сертификатам, реферальной программе</p>
-
                 </div>
+				
 				<div id="vimbugsoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#vim-bugs; Проблемы с Vimbox/Smartroom</p>
-
 				</div>
+				
 				<div id="edumodeloptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#learning-personalization-qa-support: Канал для обращений по функционалу learning personalization</p>
-
 				</div>
+				
 				<div id="vimvidoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#vim-video-call; Разработка модуля видеосвязи</p>
-
 				</div>
+				
                 <div id="chatqaoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles} top:7px;">#chat-qa-support; Решают проблемы с чатами в ЛКП и ЛКУ</p>
-
                 </div>
-
-				<div id="academymobbugsoptions" style="display: none; margin-left:20px;">
-					<p style="${Paragrafsstyles}">#academic-mobile-bugs; Канал обработки обращений по МП Skyeng связанных с обучением.</p>
-
-				</div>
-
-                <div id="CommProblemsoptions" style="display: none; margin-left:20px;">
-					<p style="${Paragrafsstyles}">#communication-problems</p>
-
+				
+				 <div id="CommProblemsoptions" style="display: none; margin-left:20px;">
+					<p style="${Paragrafsstyles}">#communication-problems  - вопросы по коммуниациям</p>
 				</div>
 
                 <div id="studcaboptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#erp-bugs; Сообщаем о проблемах во взрослом и детском ЛКУ (страницы на домене student.skyeng.ru), в ЛККК и в ЛКП</p>
-
                 </div>
+
+				<div id="academyselfstudysoptions" style="display: none; margin-left:20px;">
+					<p style="${Paragrafsstyles}">#academic-selfstudy-bugs; Канал обработки обращений по ВЕБ тренажерам, расширениями Subtly и Vimbox Переводчик</p>
+				</div>	
+
+				<div id="mobilebugsoptions" style="display: none; margin-left:20px;">
+					<p style="${Paragrafsstyles}">#mobile-app-bugs; Канал обработки обращений по МП Skyeng связанных с обучением.</p>
+				</div>
 
 				<div id="buttonsfromtest" style="margin-left: 2%; margin-bottom: 5px; max-height: 200px; overflow-x: hidden; overflow-y: auto;">
 				</div>
@@ -554,7 +557,11 @@ function getservDskPress() { // функция открытия главного
     }
 
     const config = {
-        academymobbugsoptions: {
+        academyselfstudysoptions: {
+            show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
+        },
+		mobilebugsoptions: {
             show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
             hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
         },
