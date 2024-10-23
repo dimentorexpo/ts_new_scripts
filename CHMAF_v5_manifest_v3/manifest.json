@@ -92,6 +92,11 @@
 			"js": ["/OtherScripts/lessonrestart.js"],
 			"matches": ["*://vimbox.skyeng.ru/kids/*/room/*"],
 			"run_at": "document_end"
+		},
+		{
+			"js": ["/OtherScripts/Troubleshooter.js"],
+			"matches": ["*://video-trouble-shooter.skyeng.ru/*"],
+			"run_at": "document_end"
 		}
 	],
 	"icons": {

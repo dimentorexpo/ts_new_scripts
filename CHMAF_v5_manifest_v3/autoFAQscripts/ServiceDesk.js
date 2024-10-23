@@ -84,8 +84,8 @@ var win_servicedesk = // описание элементов окна Service De
 					<button class="mainButton sdbtn" id="optionMobileAppbugs" value="136">📱Mob Bugs</button>
                     <button class="mainButton sdbtn" id="optionAcademyselfstudybbugs" value="19">Academy-Self</button>
 					<button class="mainButton sdbtn" id="optionCommProblems" value="75">📧Comm</button>
-
                 </div>
+                
 				<div id="studcabmobbugskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#erp-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
 				</div>
@@ -188,6 +188,7 @@ var win_servicedesk = // описание элементов окна Service De
 </div>`;
 
 const wintServDsk = createWindow('AF_ServDsk', 'winTopServDsk', 'winLeftServDsk', win_servicedesk);
+const inputsFieldsSD = document.getElementById('inputfieldsdiv');
 
 function getInfraOId() {
 
@@ -352,6 +353,63 @@ function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code, act
     MakeFetch(bodyrequst,activeConvId);
 }
 
+function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, appinfo, code, activeConvId) {
+
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
+    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+    
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst,activeConvId);
+}
+
+function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code, activeConvId) {
+
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
+    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+    formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>', '\n'))
+
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst,activeConvId);
+}
+
+function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code, activeConvId) {
+
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[cms_link]', CMSvalue);
+    formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>', '\n'))
+    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
+    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst,activeConvId);
+}
+
 let checkingId = [];
 function getthemesfrominfra(categoryId, index) {
 
@@ -430,65 +488,6 @@ function getcommproboptions() {
 
     }
 }
-
-function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, appinfo, code, activeConvId) {
-
-    let formData = new URLSearchParams();
-    formData.append('requestTypeId', code);
-    formData.append('reporterId', varinfraOID);
-    formData.append('initiatorId', varinfraOID);
-    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
-    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
-    
-    let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst,activeConvId);
-}
-
-function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code, activeConvId) {
-
-    let formData = new URLSearchParams();
-    formData.append('requestTypeId', code);
-    formData.append('reporterId', varinfraOID);
-    formData.append('initiatorId', varinfraOID);
-    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
-    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
-    formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>', '\n'))
-
-    let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst,activeConvId);
-}
-
-function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code, activeConvId) {
-
-    let formData = new URLSearchParams();
-    formData.append('requestTypeId', code);
-    formData.append('reporterId', varinfraOID);
-    formData.append('initiatorId', varinfraOID);
-    formData.append('data[cms_link]', CMSvalue);
-    formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>', '\n'))
-    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
-    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
-
-    let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst,activeConvId);
-}
-
-const inputsFieldsSD = document.getElementById('inputfieldsdiv');
 
 function getservDskPress() { // функция открытия главного окна SD +
     if (document.getElementById('AF_ServDsk').style.display == '') {

@@ -135,6 +135,7 @@
     width: 90%;
 }
 .sdbtn{
+    font-size: 13px !important;
     width: 95px;
     margin-top:2px;
     margin-left:2px;
