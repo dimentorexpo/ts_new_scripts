@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CRMHelper",
-    "version": "2.0.8",
+    "version": "2.0.9",
     "description": "Твой мультитул в работе с обращениями",
     "background": {
         "service_worker": "bg.js"
@@ -38,7 +38,12 @@
             ],
             "matches": ["*://crm2.skyeng.ru/*"],
             "run_at": "document_idle"
-        }
+        },
+        {
+			"js": ["/Modules/Troubleshooter.js"],
+			"matches": ["*://video-trouble-shooter.skyeng.ru/*"],
+			"run_at": "document_end"
+		}
     ],
     "icons": {
         "32": "/Icons/32.png",
