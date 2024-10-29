@@ -62,7 +62,7 @@ async function init_settings() {
                         <span class="checkbox-audio-switch"></span>
                     </label>
                     <span style="color:bisque">Громкость</span>
-                    <input id="range" min="0" max="1" value="1.0" step="0.1" type="range">
+                    <input id="range" min="0" max="1" value="1.0" step="0.025" type="range">
                     <input id="sound_adr" placeholder="Введи адрес звука" autocomplete="off" type="text" style="display: none; text-align: center; width: 210px; color: black;">
                     <button class="mainButton" title="Сохраняет ссылки на новый источник звука для входящего запроса в АФ" id="sound_save" style="display: none">💾</button>
                     <br>
