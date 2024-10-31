@@ -46,7 +46,7 @@ function addinginfo(pageelement, flagusertype, nameofuser, userid) {
     span.title = nameofuser;
     span.innerText = text;
 
-    pageelement.style.width = '100px';
+    pageelement.style.width = '105px';
     pageelement.style.color = 'blue';
     pageelement.style.textDecoration = 'underline';
     pageelement.style.cursor = 'pointer';
