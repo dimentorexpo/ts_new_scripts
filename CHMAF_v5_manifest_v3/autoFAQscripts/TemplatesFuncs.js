@@ -6,7 +6,7 @@ chrome.storage.local.get({ TP_addr: '' }, function (result) {
 });
 
 chrome.storage.local.get({ TP_addrRzrv: '' }, function (result) {
-    TP_addresRzrv = result.TP_addr;
+    TP_addresRzrv = result.TP_addrRzrv;
 });
 const editorExtensionId = localStorage.getItem('ext_id');
 var nameContainer = '';
