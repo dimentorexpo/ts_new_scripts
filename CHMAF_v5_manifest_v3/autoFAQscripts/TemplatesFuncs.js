@@ -1214,9 +1214,16 @@ async function loadTemplates(template, word) { //загрузка шаблоно
                         queryId = b.queryId
                         AFsessionId = b.sessionId
                         tmpText = b.text
+                        tmpText = tmpText.split("<br>").join('\n')
                         tmpText = tmpText.split("<br>↵").join('\n')
                         tmpText = tmpText.split("&nbsp;").join(' ')
                         tmpText = tmpText.split("<br />").join('\n')
+                        // Проверяем, начинается ли текст с <p class="TextEditor_Paragraph__68XKv">, и если да, то заменяем на ''
+                        if (tmpText.startsWith('<p class="TextEditor_Paragraph__68XKv">')) {
+                            tmpText = tmpText.replace('<p class="TextEditor_Paragraph__68XKv">', '');
+                        }
+                        tmpText = tmpText.split('<p class="TextEditor_Paragraph__68XKv">').join('\n');
+                        tmpText = tmpText.split('</p>').join('')
                         tmpText = tmpText.split('<a').join('TMPaTMP').split('</a').join('TMPENDaTMEPEND')
                         tmpText = tmpText.replace(/<\/?[^>]+>/g, '')
                         tmpText = tmpText.split('TMPaTMP').join('<a').split('TMPENDaTMEPEND').join('</a')
@@ -1254,9 +1261,16 @@ async function loadTemplates(template, word) { //загрузка шаблоно
                         queryId = b.queryId
                         AFsessionId = b.sessionId
                         tmpText = b.text
+                        tmpText = tmpText.split("<br>").join('\n')
                         tmpText = tmpText.split("<br>↵").join('\n')
                         tmpText = tmpText.split("&nbsp;").join(' ')
                         tmpText = tmpText.split("<br />").join('\n')
+                        // Проверяем, начинается ли текст с <p class="TextEditor_Paragraph__68XKv">, и если да, то заменяем на ''
+                        if (tmpText.startsWith('<p class="TextEditor_Paragraph__68XKv">')) {
+                            tmpText = tmpText.replace('<p class="TextEditor_Paragraph__68XKv">', '');
+                        }
+                        tmpText = tmpText.split('<p class="TextEditor_Paragraph__68XKv">').join('\n');
+                        tmpText = tmpText.split('</p>').join('')
                         tmpText = tmpText.split('<a').join('TMPaTMP').split('</a').join('TMPENDaTMEPEND')
                         tmpText = tmpText.replace(/<\/?[^>]+>/g, '')
                         tmpText = tmpText.split('TMPaTMP').join('<a').split('TMPENDaTMEPEND').join('</a')
@@ -1360,7 +1374,7 @@ async function sendAnswerTemplate(template, word, flag = 0, newText = "", flag2 
     var values = await getInfo(0)
     var adr = values[0]; var adr1 = values[1]; var uid = values[2]
     if (document.getElementById('msg1').innerHTML == "Доработать" && flag2 == 0) {
-        document.getElementById('inp').value = tmpText
+        document.getElementById('inp').value = tmpText.replace(/\\n/g, '\n');
         template_text = template
         word_text = word
         template_flag = 1
