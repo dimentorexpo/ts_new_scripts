@@ -1,6 +1,9 @@
 var win_TestUsers = // описание окна тестовых пользователей
     `<div style="display: flex;">
         <span style="cursor: -webkit-grab; margin:7px;">
+            <input id="iduserinfo" placeholder="ID У/П" title="Введите ID У/П для получения информации" class="teststudteachinp" autocomplete="off" type="text">
+            <button id="openuserinfo" title="Открыть User Info указанного id" class="mainButton teststudteach">🔍</button>
+            <br>
             <button id="sidcode" title="При клике ЛКМ генерирует ссылку логинер для входа в учетку с заранее сохраненным ID тестового ученика в настройках и копирует ее в буфер обмена. При клике ПКМ копирует в буфер обмена ID ученика, может пригодиться в админке создания тестовых уроков." class="mainButton teststudteach" style="margin-left:2px">👨‍🎓</button>
             <button id="tidcode" title="При клике ЛКМ генерирует ссылку логинер для входа в учетку с заранее сохраненным ID тестового преподавателя в настройках и копирует ее в буфер обмена. При клике ПКМ копирует в буфер обмена ID преподавателя, может пригодиться в админке создания тестовых уроков." class="mainButton teststudteach">👽</button>
             <button id="TestRooms" class="mainButton teststudteach" title="Открыть окно создания тестовых уроков">🎲</button>
@@ -65,6 +68,22 @@ btntid.addEventListener("contextmenu", (event) => {
         alert("Введите ID тестового преподавателя в настройках ⚙");
     }
 });
+
+document.getElementById('iduserinfo').addEventListener('input', function () {
+    onlyNumber(this);
+});
+
+document.getElementById('openuserinfo').onclick = function () { // открытие окна вензель user info
+    let idforinfo = document.getElementById('iduserinfo').value.trim()
+    if (idforinfo !== ''){
+        if (document.getElementById('AF_Service').style.display == 'none'){
+            document.getElementById('AF_Service').style.display = ''
+            document.getElementById('butServ').classList.add('activeScriptBtn')
+        }
+        document.getElementById('idstudent').value = idforinfo;
+        document.getElementById('getidstudent').click();                            
+    }
+}
 
 // Установка стиля для TestUsersdiv
 let TestUsersdivstyle = (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") && localStorage.getItem('disablelpmwindow') !== '1' ? '' : 'none';

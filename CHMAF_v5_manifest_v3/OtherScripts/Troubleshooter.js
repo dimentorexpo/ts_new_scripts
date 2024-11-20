@@ -1,13 +1,24 @@
+// Массив для хранения обработанных ID пользователей
+const processedUserIds = [];
 function addusersinfo() {
     let usersfields = document.getElementsByClassName('p-10 w-85');
     let infofields = document.querySelectorAll('[info-added]');
+    
     
     if (usersfields.length > 0 && infofields.length < usersfields.length) {
         Array.from(usersfields).forEach((field) => {
             if (!field.hasAttribute('info-added')) {
                 let userid = field.innerText;
-                getuserinfocrm(userid, field);
-                field.setAttribute('info-added', 'true');
+
+                // Проверяем, есть ли уже ID в массиве
+                if (!processedUserIds.includes(userid)) {
+                    processedUserIds.push(userid); // Добавляем ID в массив
+                    getuserinfocrm(userid, field);
+                } else {
+                    // Если ID уже есть, используем данные из массива
+                    addinginfo(field, userid);
+                    field.setAttribute('info-added', 'true');
+                }
             }
         });
     }
@@ -29,11 +40,12 @@ function getuserinfocrm(userid, pageelement) {
         const nameofuser = `${userInfo.data.name}${userInfo.data.surname ? ` ${userInfo.data.surname}` : ''}`;
         const flagusertype = userInfo.data.type;
 
-        addinginfo(pageelement, flagusertype, nameofuser, userid);
+        processedUserIds[userid] = { nameofuser, flagusertype };
+        console.log(processedUserIds)
     });
 }
 
-function addinginfo(pageelement, flagusertype, nameofuser, userid) {
+function addinginfo(pageelement, userid, elemtype) {
     const userTypeStyles = {
         student: { text: '(У)', color: '#DC143C' },
         teacher: { text: '(П)', color: '#1E90FF' }
@@ -56,11 +68,6 @@ function addinginfo(pageelement, flagusertype, nameofuser, userid) {
     pageelement.addEventListener('click', () => {
         window.open(`https://crm2.skyeng.ru/persons/${userid}`);
     });
-
-    const headerCell = document.querySelector(`.mat-column-${userid}.cdk-header-cell`);
-    if (headerCell) {
-        headerCell.appendChild(span.cloneNode(true));
-    }
 }
 
 const observer = new MutationObserver(mutations => {
@@ -71,3 +78,10 @@ const observer = new MutationObserver(mutations => {
 });
 
 observer.observe(document.body, { childList: true, subtree: true });
+
+/*
+    const headerCell = document.querySelector(`.mat-column-${userid}.cdk-header-cell`);
+    if (headerCell) {
+        headerCell.appendChild(span.cloneNode(true));
+    }
+*/
