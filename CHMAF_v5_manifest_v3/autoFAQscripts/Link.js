@@ -44,16 +44,10 @@ var win_Links =  // описание элементов окна ссылок
 					<button class="mainButton" id="gotolookip">🔎</button>
 					<input id="lgssearch" placeholder="ID Группы LGS" title="Введите ID LGS или обычной группы KGL для просмотра информации" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
 					<button class="mainButton" id="getlgsinfo">🔎</button>
-					<input id="cmsstepid" placeholder="CMS stepUUID" title="вводим stepUUID, чтобы сразу попасть в ЦМС на нужный урок и найти на нем наш слайд и проверить" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="mainButton" id="cmsid">🔎</button>
 					<input id="schemesteacher" placeholder="ID П схем возн" title="Вводим ID П, чтобы открытть ресурс с подключенными схемами вознаграждения П" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
 					<button class="mainButton" id="getschemes">🔎</button>
 					<input id="pushes" placeholder="ID У пуши" title="Вводим ID У, чтобы увидеть были отправлены пуши ученику или нет" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
 					<button class="mainButton" id="getpushes">🔎</button>
-					<input id="idforservicelocaleru" placeholder="ID У обсл RU" title="вводим ID У и по нажатию изменяем сразу ему язык обслуживания на русский" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="mainButton" id="setservicelocaleru">🚀</button>
-					<input id="setidformobpass" placeholder="ID У/П МП" title="введите ID У/П для генерации разового пароля он будет отображен в поле ввода ID и скопирован в  буфер обмена" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="mainButton" id="getmobpasscode" style="width: 25.23px;">🚀</button>
 					<input id="trshooterhash" placeholder="hash trshooter" title="Вводим хеш комнаты чтобы посмотреть сразу инфу в трабл шутере" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
 					<button class="mainButton" id="gettrshinfo" style="width: 25.23px;">🚀</button>
 					<input id="enablerAP" placeholder="ID услуги(АП)" title="копируем услуги, где нужно активировать АП и сохраняем в буфер, в ЛКУ переходим по ссылке для активации" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
@@ -347,12 +341,15 @@ function addfunctionsonclick(section) {
         }
 
         document.getElementById('credits').onclick = function () {                  // проверка рассрочки у ученика она же поэтапная оплата (ПО)
-            let lnkscredits = 'https://accounting.skyeng.ru/credit/list?studentId=';
+            let useid;
             if (creditstatus.value == "")
                 alert('Введите id  ученика в поле')
-            else {
-                window.open(lnkscredits + creditstatus.value);
+            else { 
+                useid = creditstatus.value
+                
             };
+            let lnkscredits = `https://billing-api.skyeng.ru/installments?ownerId=${useid}&state=&perPage=10`;
+            window.open(lnkscredits);
             creditstatus.value = "";
         }
 
@@ -402,20 +399,6 @@ function addfunctionsonclick(section) {
             skiponboarding.value = "";
         }
 
-        document.getElementById('setservicelocaleru').onclick = function () { // меняет язык обслуживания выбранного пользователя в вензеле на русский но через кнопку в "L"
-            let userOk = idforservicelocaleru.value;
-
-            chrome.runtime.sendMessage({ action: "changeLocaleToRu", userId: userOk }, function (response) {
-                if (response && response.success) {
-                    document.getElementById('setservicelocaleru').innerHTML = "✅";
-                    idforservicelocaleru.value = "";
-                    setTimeout(function () { document.getElementById('setservicelocaleru').innerHTML = "🌍"; }, 2000);
-                } else {
-                    console.log('Ошибка при смене локали:', response.error);
-                }
-            });
-        }
-
         document.getElementById('deleteaclnk').addEventListener('click', function () { // открываем ссылку в новой вкладке для создания задачи на удаление аккаунта
             window.open("https://infra.skyeng.ru/request/create/166")
         })
@@ -450,43 +433,6 @@ function addfunctionsonclick(section) {
             };
             lgssearch.value = "";
         }
-
-        document.getElementById('cmsid').onclick = function () {                     // переход на степID в CMSке
-            if (cmsstepid.value == "")
-                alert('Введите STEPUUID в поле')
-            else {
-                window.open('https://content.vimbox.skyeng.ru/cms/stepStore/update/stepId/' + cmsstepid.value);
-            };
-            cmsstepid.value = "";
-        }
-
-        getmobpasscode.onclick = function () {
-            const getmobpasscode = document.querySelector('#getmobpasscode');
-            const setidformobpass = document.querySelector('#setidformobpass');
-            if (setidformobpass.value.trim() == "") {
-                alert('Введите id в поле');
-            } else {
-                getmobpasscode.innerHTML = '✅';
-                setTimeout(() => getmobpasscode.innerHTML = '🚀', 2000);
-
-                chrome.runtime.sendMessage({ action: 'generateMobileOTP', userId: setidformobpass.value }, function (response) {
-                    if (response) {
-                        var convertres11 = response.match(/div class="alert alert-success" role="alert".*?([0-9]{5}).*/);
-                        if (convertres11 && convertres11.length > 1) {
-                            setidformobpass.value = convertres11[1];
-                        } else {
-                            // Обрабатываем случай, когда совпадение не найдено
-                            console.log('OTP не найден в ответе');
-                        }
-                    } else {
-                        // Обрабатываем случай, когда ответ пустой или не содержит нужной информации
-                        console.log('Ответ от background script пуст или не определен');
-                    }
-                });
-
-            };
-            setTimeout(() => setidformobpass.value = "", 15000);
-        };
 
         document.getElementById('GrListData').onclick = getGrListDataButtonPress;
         document.getElementById('getStats').onclick = getStatsButtonPress;
