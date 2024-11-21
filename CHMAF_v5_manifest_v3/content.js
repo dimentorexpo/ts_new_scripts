@@ -76,8 +76,8 @@ var win_AFhelper =  // описание элементов главного ок
 					<button id="addsrc" class="mainButton onlyfortp" title="Открывает доп меню для работы с сервисами школы, требующими запрос на выдачу доступа" style="width:16px; float: right; margin-right: 5px">*</button>
 					<button class="mainButton" id="getnewtmpldata" title="Обновляет шаблоны из документа с шаблонами без необходимости обновлять страницу для актуализации" style="width:27px; float: right; margin-right: 5px">🔄</button>
 					<button class="mainButton" id="reminderstatus" title="Статус будильника 🔔 - вкл, 🔕 - выкл" style="width:25px; float: right; margin-right: 5px"></button>
-					<input id ="phone_tr" class="onlyfortp" placeholder="Телефон" autocomplete="off" type="text" style = "text-align: center; width: 150px; color: black; margin-left: 15px; margin-top: 5px;"></input>
-                    <input id ="email_tr" class="onlyfortp" placeholder="Почта" autocomplete="off" type="text" style = "text-align: center; width: 150px; color: black; margin-left: 12px; margin-top: 5px;"></input>
+					<input id ="phone_tr" class="onlyfortp" placeholder="Телефон" autocomplete="off" type="text" style = "text-align: center; width: 150px; color: black; margin-left: 15px; margin-top: 5px; border-radius: 20px;"></input>
+                    <input id ="email_tr" class="onlyfortp" placeholder="Почта" autocomplete="off" type="text" style = "text-align: center; width: 150px; color: black; margin-left: 12px; margin-top: 5px; border-radius: 20px;"></input>
 				</div>
 				<div style="margin-left: 5px; margin-right: 5px; margin-bottom:5px;" id="pages">
 				</div>
@@ -96,7 +96,7 @@ var win_AFhelper =  // описание элементов главного ок
 				<button class="mainButton" title="Отправить текст" id="snd" style="width:50px; margin-left: 10px">send</button>
 				<button class="mainButton msgtype" title="Переключает между отправкой текста в заметки или в чат пользователю" id="msg">Чат</button>
 			</div>
-		<div style="border: 2px double black; display: none; background-color: #464451" id="addTmp">
+		<div style="border: 2px double black; display: none; background-color: #464451; cursor: -webkit-grab;" id="addTmp">
 			<div style="margin: 5px; width: 350px">
 			</div>
 		</div>
