@@ -7,7 +7,7 @@ chrome.runtime.sendMessage(message, (result) => {
         localStorage.setItem('ext_id', result)
     else localStorage.setItem('ext_id', result)
 })
-//	
+//
 
 // Функция для получения данных из хранилища
 async function getStorageData(keys) {
@@ -166,10 +166,6 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
             let elemTop = windowElement.offsetTop;
 
             function onMouseMove(event) {
-                if (!(event.buttons & 1)) {
-                    onMouseUp();
-                    return;
-                }
                 let deltaX = event.clientX - startX;
                 let deltaY = event.clientY - startY;
 
@@ -179,15 +175,15 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
                 localStorage.setItem(topKey, String(elemTop + deltaY));
                 localStorage.setItem(leftKey, String(elemLeft + deltaX));
             }
-
-            document.addEventListener('mousemove', onMouseMove);
-
             function onMouseUp() {
                 document.removeEventListener('mousemove', onMouseMove);
                 document.removeEventListener('mouseup', onMouseUp);
+                document.removeEventListener('mouseleave', onMouseUp);
             }
 
+            document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
+            document.addEventListener('mouseleave', onMouseUp);
         }
     };
 
@@ -792,7 +788,7 @@ setInterval(screenshots, 5000)
 setInterval(closeTerms, 500);
 
 if (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") {
-    setTimeout(move_again_AF, 3500) //вызов функции первичной загрузки страницы с фомированием меню и наполнением его	
+    setTimeout(move_again_AF, 3500) //вызов функции первичной загрузки страницы с фомированием меню и наполнением его
 }
 
 if (localStorage.getItem('msg') != null) {
