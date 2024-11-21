@@ -103,7 +103,7 @@ const copyToClipboardBack = str => { // функция копирования в
 function setSelectionListener(doc) {
     doc.addEventListener('selectionchange', function () {
         let selectedText = doc.getSelection().toString().trim();
-        console.log(selectedText);
+        //console.log(selectedText);
 
         if (selectedText) {
             let messageType;
