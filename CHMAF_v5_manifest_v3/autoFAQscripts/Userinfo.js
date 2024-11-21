@@ -45,7 +45,8 @@ var win_serviceinfo =  // описание элементов окна инфо�
 									 <div style="text-align: center;">
 										<span id="getshowcase" title="При клике на кнопку копирует в буфер шоукейс ученика" style="cursor:pointer;">ℹ</span>
 										<span id="usrAge"></span>
-										<span id="getloginer" title="При клике делает ссылку-логгинер и копирует в буфер обмена для авторизации" class="cursor-userinfobtns"> Имя: </span>
+										<span id="getloginer" title="При клике делает ссылку-логгинер и копирует в буфер обмена для авторизации" class="cursor-userinfobtns"> 🔑 </span>
+                                        <span> Имя: </span>
 										<span id="usrName"></span>
 									</div>
 									<div style="text-align: center;">
@@ -673,18 +674,18 @@ function getusernamecrm() {
             if (document.getElementById('getloginer') != null) {
                 document.getElementById('getloginer').onclick = async function () {
                     const button = document.getElementById('getloginer');
-                    button.style.color = "orange";
+                    button.style = "background:orange; padding: 2px; border-radius:20%";
 
                     try {
                         await getLoginLink(document.getElementById('idstudent').value.trim());
-                        button.style.color = "green";
+                        button.style = "background:green; padding: 2px; border-radius:20%";
                     } catch (error) {
                         console.log('Ошибка: ', error);
-                        button.style.color = "red";
+                        button.style = "background:red; padding: 2px; border-radius:20%";
                         alert('Не удалось получить логиннер: ' + error.message);
                     } finally {
                         setTimeout(() => {
-                            button.style.color = "bisque";
+                            button.style.background = "none";
                         }, 2000);
                     }
                 };
@@ -952,18 +953,18 @@ async function getservices(stidNew) {
                 if (document.getElementById('getloginer') != null) {
                     document.getElementById('getloginer').onclick = async function () {
                         const button = document.getElementById('getloginer');
-                        button.style.color = "orange";
+                        button.style = "background:orange; padding: 2px; border-radius:20%";
 
                         try {
                             await getLoginLink(document.getElementById('idstudent').value.trim());
-                            button.style.color = "green";
+                            button.style = "background:green; padding: 2px; border-radius:20%";
                         } catch (error) {
                             console.log('Ошибка: ', error);
-                            button.style.color = "red";
+                            button.style = "background:red; padding: 2px; border-radius:20%";
                             alert('Не удалось получить логиннер: ' + error.message);
                         } finally {
                             setTimeout(() => {
-                                button.style.color = "bisque";
+                                button.style.background = "none";
                             }, 2000);
                         }
                     };
