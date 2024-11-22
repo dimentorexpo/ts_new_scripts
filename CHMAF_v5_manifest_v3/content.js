@@ -430,7 +430,7 @@ function checkMinMaxValue(input) {     // функция првоерки нах
 function checkelementtype(a) { // проверка на какой элемент нажали для выполнения перетягивания Drag'n'Drop, убрал && elem.nodeName != 'INPUT'
     let elem = document.elementFromPoint(a.clientX, a.clientY)
 
-    if (elem.className == 'teststudteachinp') {
+    if (elem.className == 'teststudteachinp') { // делает возможным перетягивать элемент с этим классом, по аналогии можно для других элементов сделать
         return true;
     }
 
@@ -438,10 +438,7 @@ function checkelementtype(a) { // проверка на какой элемен�
         return true;
     }
     return false;
-
-
 }
-
 
 async function sendComment(txt, activeConvId) { // Функция отправки комментария
     var values = await getInfo(0);
