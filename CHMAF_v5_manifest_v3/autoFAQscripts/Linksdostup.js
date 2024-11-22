@@ -11,8 +11,9 @@ var win_linksd =  // описание элементов окна доступо
                             <button class="mainButton" id="GetWidgetLessonStatus">🔎</button>
                             <button class="mainButton" title="Открывает Графану с состоянием видеосерверов, при наплыве обращений проверяйте его" id="grafanalnk" style="width:130px">Видео сервера</button>
                             <button class="mainButton" title="Открывает Графану с отображением пула задачь на группе Техподдержка Исход CRM2" id="grafanapoolCRM2" style="width:130px">Пул исход CRM2</button>
-							<p style="margin-left: 42%; margin-bottom: 0px; margin-top: 0px; color: #F6358A; font-size: 16px">KPI Teachers</p>
-							<button class="mainButton" title="Открывает Datalens для просмотра информации по KPI teachers" id="kpiteachersdashboard" style="width:150px">Datalens Dashboard</button>
+							<p style="margin-left: 42%; margin-bottom: 0px; margin-top: 0px; color: #F6358A; font-size: 16px">Datalens Dashboard</p>
+							<button class="mainButton" title="Открывает Datalens для просмотра информации по KPI teachers" id="kpiteachersdashboard" style="width:48%">KPI Teachers</button>
+                            <button class="mainButton" title="Открывает Datalens для просмотра информации по действия пользвоателя в ЛК/МП" id="lkmpdashboard" style="width:48%">Действия П/У ЛК/МП</button>
                         </div>
                 </span>
         </span>
@@ -50,4 +51,8 @@ document.getElementById('GetWidgetLessonStatus').onclick = function () { // Гр
 
 document.getElementById('kpiteachersdashboard').addEventListener('click', function () {
     window.open("https://datalens.yandex.ru/lupggqkv0uewa-kpi-p-dlya-tp?tab=GrW&state=684e0be1371")    // копируем открываем дашборд КПИ тичерсов
+})
+
+document.getElementById('lkmpdashboard').addEventListener('click', function () {
+    window.open("https://datalens.yandex.cloud/b4ut2mi8b8z8y-deystvie-polzovateley-v-lk-mp")
 })
