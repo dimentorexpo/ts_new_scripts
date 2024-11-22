@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CRMHelper",
-    "version": "2.0.9",
+    "version": "2.0.10",
     "description": "Твой мультитул в работе с обращениями",
     "background": {
         "service_worker": "bg.js"
@@ -15,8 +15,15 @@
     },
     "content_scripts": [
         {
+            "js": ["content.js"],
+            "matches": [
+                "*://crm2.skyeng.ru/*",
+                "*://video-trouble-shooter.skyeng.ru/*"
+            ],
+            "run_at": "document_end"
+        },
+        {
             "js": [
-                "content.js",
                 "/Extras/jquery-3.7.1.js",
                 "/Modules/AlarmClock.js",
                 "/Modules/BinBankInfo.js",

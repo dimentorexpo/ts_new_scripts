@@ -65,15 +65,6 @@ var win_Links =  // описание элементов окна ссылок
 					<button class="btnCRM" title="отображает актуальную версию iOS приложения" id="curVeriOSCRM" style="float: right; margin-right: 10px;"></button>
 			  	    <button class="btnCRM" title="Отображает актуальную версию Android приложения" id="curVerAndroidCRM" style="float: right; margin-right: 5px;"></button>
 				</div>
-                    <div style="margin: 5px; margin-top: 0px; width: 600px">
-                    <p style="margin-left: 44%; margin-bottom: 0px; margin-top: 0px; color: #F6358A; font-size: 16px">Redash</p>
-                    <input class="inputCRM" id="mobappid" placeholder="ID mob.app" title="Вводим id пользователя для открытия действий в приложении" autocomplete="off" type="text" style="text-align: center; width: 150px; color: black; margin-top: 5px">
-                    <button class="btnCRM btnCRMsmall" id="mobappidbut">🔎</button>
-                    <input class="inputCRM" id="rpayid" placeholder="ID платежи" title="Вводим id пользователя для открытия лога платежей" autocomplete="off" type="text" style="text-align: center; width: 150px; color: black; margin-top: 5px">
-                    <button class="btnCRM btnCRMsmall" id="rpayidbut">🔎</button>
-                    <input class="inputCRM" id="UserActions" placeholder="ID У/П действ" title="Вводим id пользователя для открытия информации о действиях в личном кабинете" autocomplete="off" type="text" style="text-align: center; width: 150px; color: black; margin-top: 5px">
-                    <button class="btnCRM btnCRMsmall" id="GetUserActions">🔎</button>
-                </div>
                 <div id="dostupbnts" style="margin: 5px; width: 590px">
                     <button class="btnCRM" title="Открывает Графану с состоянием видеосерверов, при наплыве обращений проверяйте его" id="grafanalnk">Видео сервера в Grafana</button>
                     <button class="btnCRM" title="Открывает Datalens для просмотра информации по KPI teachers" id="kpiteachersdashboard">KPI Teachers Dashboard</button>
@@ -245,12 +236,15 @@ document.getElementById('getpushes').onclick = function () { // переход �
 }
 
 document.getElementById('credits').onclick = function () {                  // проверка рассрочки у ученика она же поэтапная оплата (ПО)
-    let lnkscredits = 'https://accounting.skyeng.ru/credit/list?studentId=';
+    let useid;
     if (creditstatus.value == "")
         alert('Введите id  ученика в поле')
-    else {
-        window.open(lnkscredits + creditstatus.value);
+    else { 
+        useid = creditstatus.value
+        
     };
+    let lnkscredits = `https://billing-api.skyeng.ru/installments?ownerId=${useid}&state=&perPage=10`;
+    window.open(lnkscredits);
     creditstatus.value = "";
 }
 
@@ -390,33 +384,6 @@ getmobpasscode.onclick = function () {
 
 
 document.getElementById('GrListData').onclick = getGrListDataButtonPress;
-
-document.getElementById('mobappidbut').onclick = function () { // Редаш логи действий мобилки
-    if (mobappid.value == "") {
-        console.log('Введите id в поле')
-    } else {
-        window.open("https://redash.skyeng.ru/queries/13000?p_end_at=d_now&p_id=" + mobappid.value + "&p_start_at=d_yesterday");
-    };
-    mobappid.value = "";
-}
-
-document.getElementById('rpayidbut').onclick = function () { // Редаш логи платежей
-    if (rpayid.value == "") {
-        console.log('Введите id в поле')
-    } else {
-        window.open("https://redash.skyeng.ru/queries/22630?p_ID%20%D0%A1%D1%82%D1%83%D0%B4%D0%B5%D0%BD%D1%82%D0%B0=" + rpayid.value);
-    };
-    rpayid.value = "";
-}
-
-document.getElementById('GetUserActions').onclick = function () { // Редаш логи платежей
-    if (UserActions.value == "") {
-        console.log('Введите id в поле')
-    } else {
-        window.open("https://redash.skyeng.ru/queries/30681?p_end_at=d_now&p_id=" + UserActions.value + "&p_start_at=d_yesterday");
-    };
-    UserActions.value = "";
-}
 
 document.getElementById('grafanalnk').addEventListener('click', function () {
     window.open("https://grafana.skyeng.link/d/NZkMHsVMk/video-servers-health-check?orgId=1&refresh=1m")    // открываем Grafana
