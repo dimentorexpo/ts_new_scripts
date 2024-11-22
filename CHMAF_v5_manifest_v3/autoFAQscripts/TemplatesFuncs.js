@@ -210,6 +210,7 @@ function startTimer() {
                     copyCrmFromName.onclick = function () {
                         const getidafuser = SearchinAFnewUI("id");
                         copyToClipboard("https://crm2.skyeng.ru/persons/" + getidafuser);
+                        createAndShowButton('💾 Cкопировано')
                     }
                     let testchatbtn = iframeDoc.createElement('span')
                     testchatbtn.textContent = ' test';

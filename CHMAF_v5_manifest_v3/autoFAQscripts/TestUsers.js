@@ -49,6 +49,7 @@ btnsid.addEventListener("contextmenu", (event) => {
     const userId = localStorage.getItem('test_stud');
     if (userId) {
         copyToClipboard(userId);
+        createAndShowButton('💾 ID cкопировано')
         toggleButtonState('sidcode', 'successbtn');
         setTimeout(() => toggleButtonState('sidcode', 'successbtn'), 1000);
     } else {
@@ -62,6 +63,7 @@ btntid.addEventListener("contextmenu", (event) => {
     const userId = localStorage.getItem('test_teach');
     if (userId) {
         copyToClipboard(userId);
+        createAndShowButton('💾 ID cкопировано')
         toggleButtonState('tidcode', 'successbtn');
         setTimeout(() => toggleButtonState('tidcode', 'successbtn'), 1000);
     } else {

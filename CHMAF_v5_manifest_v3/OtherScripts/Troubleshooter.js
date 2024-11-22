@@ -1,4 +1,3 @@
-// Объект для хранения обработанных ID пользователей
 const processedUserIds = {};
 
 function addusersinfo() {
@@ -27,8 +26,8 @@ function addusersinfo() {
     let listfieldsinfo = Array.from(document.querySelectorAll('.mat-option-text[info-added]')).filter(cell => /^\d+$/.test(cell.innerText));
 
     // Окно с id в статистике
-    let letstatfield1 = document.getElementById('mat-input-0');
-    let letstatfield2 = document.getElementById('mat-input-1');
+    let statfield = Array.from(document.querySelectorAll('[id^="mat-input-"]')).filter(cell => /^\d+$/.test(cell.value));
+    let statfieldinfo = Array.from(document.querySelectorAll('[id^="mat-input-"][info-added]')).filter(cell => /^\d+$/.test(cell.value));
 
     // Обрабатываем usersfields
     if (usersfields.length > 0 && infofields.length < usersfields.length) {
@@ -45,18 +44,12 @@ function addusersinfo() {
         processFields(listfields, 'other');
     }
 
-    // Обрабатываем letstatfield1
-    if (letstatfield1 && !letstatfield1.hasAttribute('info-added')) {
-        let userid = letstatfield1.value;
-        processFields([letstatfield1], 'input');
-    }
-
-    // Обрабатываем letstatfield2
-    if (letstatfield2 && !letstatfield2.hasAttribute('info-added')) {
-        let userid = letstatfield2.value;
-        processFields([letstatfield2], 'input');
+    // Обрабатываем statfield
+    if (statfield.length > 0 && statfieldinfo.length < statfield.length) {
+        processFields(statfield, 'input');
     }
 }
+
 
 function getuserinfocrm(userid, pageelement, elemtype) {
     // Проверяем, есть ли уже информация в объекте
@@ -119,6 +112,7 @@ function addinginfo(pageelement, userid, elemtype) {
         pageelement.style.textDecoration = 'underline';
         pageelement.style.cursor = 'pointer';
         pageelement.tagName = 'A';
+        pageelement.title = "ЛКМ - открыть пользователя в CRM. ПКМ - скопировать id"
 
         pageelement.addEventListener('click', () => {
             window.open(`https://crm2.skyeng.ru/persons/${userid}`);
@@ -126,7 +120,8 @@ function addinginfo(pageelement, userid, elemtype) {
 
         pageelement.addEventListener('contextmenu', (event) => {
             event.preventDefault();
-            copyToClipboard(userid);
+            copyToClipboard(userid)
+            createAndShowButton();
         });
     }
 
@@ -142,11 +137,24 @@ const observer = new MutationObserver(mutations => {
 
 observer.observe(document.body, { childList: true, subtree: true });
 
+function createAndShowButton() {
+    let btnSuccess = document.createElement("button");
+    btnSuccess.id = "successButton";
+    btnSuccess.className = "sucsbtn";
+    btnSuccess.textContent = "💾 Скопировано";
 
+    let countdownBar = document.createElement("div");
+    countdownBar.id = "countdownBar";
+    countdownBar.className = "countdown-bar";
+    btnSuccess.appendChild(countdownBar);
 
-/*
-    const headerCell = document.querySelector(`.mat-column-${userid}.cdk-header-cell`);
-    if (headerCell) {
-        headerCell.appendChild(span.cloneNode(true));
-    }
-*/
+    document.body.appendChild(btnSuccess);
+
+    // Установка display в block для отображения кнопки
+    btnSuccess.style.display = 'block';
+
+    // Добавляем логику для скрытия кнопки после некоторого времени, если это необходимо
+    setTimeout(() => {
+        btnSuccess.remove(); // или btnSuccess.style.display = 'none'; если вы хотите скрыть, а не удалять
+    }, 3500); // Время до скрытия/удаления кнопки в миллисекундах
+}
