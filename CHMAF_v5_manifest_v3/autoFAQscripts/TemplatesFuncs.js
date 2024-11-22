@@ -88,33 +88,33 @@ function Lessonisnow(iframeDoc) { // добавляем красную надп�
     }
 }
 
-function autoStatusSwitch(){ // функция автосмены статуса при авторизации в АФ в своотетствии с базовыми настройками в модуле Settings
+function autoStatusSwitch() { // функция автосмены статуса при авторизации в АФ в своотетствии с базовыми настройками в модуле Settings
 
-try {
-	if (location.href == "https://skyeng.autofaq.ai/tickets/common") {
-		let checkOperatorName = document.querySelector('.user_menu-dropdown-user_name').textContent.includes("Обратная связь");
-			if (checkOperatorName  && checkOperatorName == true) {
-			console.log("Это ТП ОС, тут не нужен автостатус никакой!")
-			clearInterval(statusCheckInt)
-		} else {
-					let aStatusVar = localStorage.getItem('afterLoginFunction');
-			if (aStatusVar == null) {
-				localStorage.setItem('afterLoginFunction', 'Online')
-				console.log("variable was not found and setted by default value Online ")
-				changeStatus(aStatusVar)
-				clearInterval(statusCheckInt)
-				console.log('Interval timer stopped',  'status was changed to ' +  aStatusVar)
-			} else {
-					changeStatus(aStatusVar)
-					clearInterval(statusCheckInt)
-					console.log('Interval timer stopped',  'status was changed to ' +  aStatusVar)
-				
-			}
-		}
-	}
-	} catch (error) {
-		console.log("Произошла ошибка:", error.message);
-	}
+    try {
+        if (location.href == "https://skyeng.autofaq.ai/tickets/common") {
+            let checkOperatorName = document.querySelector('.user_menu-dropdown-user_name').textContent.includes("Обратная связь");
+            if (checkOperatorName && checkOperatorName == true) {
+                console.log("Это ТП ОС, тут не нужен автостатус никакой!")
+                clearInterval(statusCheckInt)
+            } else {
+                let aStatusVar = localStorage.getItem('afterLoginFunction');
+                if (aStatusVar == null) {
+                    localStorage.setItem('afterLoginFunction', 'Online')
+                    console.log("variable was not found and setted by default value Online ")
+                    changeStatus(aStatusVar)
+                    clearInterval(statusCheckInt)
+                    console.log('Interval timer stopped', 'status was changed to ' + aStatusVar)
+                } else {
+                    changeStatus(aStatusVar)
+                    clearInterval(statusCheckInt)
+                    console.log('Interval timer stopped', 'status was changed to ' + aStatusVar)
+
+                }
+            }
+        }
+    } catch (error) {
+        console.log("Произошла ошибка:", error.message);
+    }
 }
 
 const statusCheckInt = setInterval(autoStatusSwitch, 500)
@@ -1374,36 +1374,43 @@ async function sendAnswerTemplate(template, word, flag = 0, newText = "", flag2 
     var accuracy = curTemplate[7]
     var values = await getInfo(0)
     var adr = values[0]; var adr1 = values[1]; var uid = values[2]
-    if (document.getElementById('msg1').innerHTML == "Доработать" && flag2 == 0) {
+    if (document.getElementById('msg1').innerHTML === "Доработать" && flag2 === 0) {
         document.getElementById('inp').value = tmpText.replace(/\\n/g, '\n');
-        template_text = template
-        word_text = word
-        template_flag = 1
-    }
-    else if (tmpText == "")
-        console.log('Шаблон не найден')
-    else {
-        if (flag == 1) {
-            tmpText = newText
+        template_text = template;
+        word_text = word;
+        template_flag = 1;
+    } else if (tmpText === "") {
+        console.log('Шаблон не найден');
+    } else {
+        if (flag === 1) {
+            tmpText = newText;
         }
-        tmpText = tmpText.split("\"").join("\\\"")
-        txt2 = tmpText.split('\n')
-        txt3 = ""
-        txt2.forEach(el => txt3 += "<p>" + el + "</p>\\n")
-        tmpText = txt3
-        tmpText = tmpText.split('<p></p>').join("<p><br></p>")
-        tmpText = tmpText.substr(0, tmpText.length - 2)
 
-        resetFlags()
+        // Экранирование всех нужных символов
+        tmpText = tmpText.replace(/\\/g, '\\\\')
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, '\\n');
+
+        // Преобразование текста в HTML формат
+        const txt2 = tmpText.split('\\n');
+        let txt3 = "";
+        txt2.forEach(el => txt3 += "<p>" + el + "</p>\\n");
+        tmpText = txt3;
+        tmpText = tmpText.replace(/<p><\/p>/g, "<p><br></p>");
+        tmpText = tmpText.substr(0, tmpText.length - 2);
+
+        resetFlags();
+
         fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-            "headers": {
+            headers: {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryZ3ivsA3aU80QEBST",
             },
-            "body": "------WebKitFormBoundaryZ3ivsA3aU80QEBST\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + uid + "\",\"conversationId\":\"" + adr1 + "\",\"text\":\"" + tmpText + "\",\"ext\":null,\"files\":[],\"suggestedAnswerDocId\":" + documentId + ",\"autoFaqServiceId\":" + serviceId + ",\"autoFaqSessionId\":\"" + AFsessionId + "\",\"autoFaqQueryId\":\"" + queryId + "\",\"autoFaqTitle\":\"" + title + "\",\"autoFaqQuery\":\"" + word + "\",\"autoFaqAccuracy\":" + accuracy + "}\r\n------WebKitFormBoundaryZ3ivsA3aU80QEBST--\r\n",
-            "method": "POST",
-            "credentials": "include"
+            body: `------WebKitFormBoundaryZ3ivsA3aU80QEBST\r\nContent-Disposition: form-data; name="payload"\r\n\r\n{"sessionId":"${uid}","conversationId":"${adr1}","text":"${tmpText}","ext":null,"files":[],"suggestedAnswerDocId":${documentId},"autoFaqServiceId":${serviceId},"autoFaqSessionId":"${AFsessionId}","autoFaqQueryId":"${queryId}","autoFaqTitle":"${title}","autoFaqQuery":"${word}","autoFaqAccuracy":${accuracy}}\r\n------WebKitFormBoundaryZ3ivsA3aU80QEBST--\r\n`,
+            method: "POST",
+            credentials: "include"
         });
     }
+
 }
 
 async function sendAnswer(txt, flag = 1) { //функция отправки ответа
@@ -1441,7 +1448,7 @@ function formatTime(value) {
 }
 
 function formatISOStringWithoutMillis(date) {
-  return date.toISOString().split('.')[0] + '.000Z'; // Форматируем и убираем миллисекунды
+    return date.toISOString().split('.')[0] + '.000Z'; // Форматируем и убираем миллисекунды
 }
 
 function updateTimerDisplay(chatHash, timeString) {
@@ -1486,81 +1493,81 @@ function startTimerForTimestamp(timestamp, chatHash) {
 }
 
 async function CountTechSupTimmer() {
-	if (opsection == "ТП ОС" || opsection == "ТП") {
-    // Предположим, что данные уже были получены и массив massivTimes заполнен
-    let massivTimes = []; // Этот массив должен быть обновлен данными из запросов к API
-	
-	const now = new Date(); // Текущее время
+    if (opsection == "ТП ОС" || opsection == "ТП") {
+        // Предположим, что данные уже были получены и массив massivTimes заполнен
+        let massivTimes = []; // Этот массив должен быть обновлен данными из запросов к API
 
-	// Вычисляем начало предыдущего дня в UTC (21:00 предыдущего дня)
-	const prevDayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 21, 0, 0, 0));
+        const now = new Date(); // Текущее время
 
-	// Вычисляем конец текущего дня в UTC (20:59:59 текущего дня)
-	const currentDayEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 20, 59, 59, 0));
+        // Вычисляем начало предыдущего дня в UTC (21:00 предыдущего дня)
+        const prevDayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 21, 0, 0, 0));
 
-	const prevDayTime = formatISOStringWithoutMillis(prevDayStart);
-	const currentDayTime = formatISOStringWithoutMillis(currentDayEnd);
+        // Вычисляем конец текущего дня в UTC (20:59:59 текущего дня)
+        const currentDayEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 20, 59, 59, 0));
 
-    // ... код для получения данных и заполнения massivTimes ...
-	    await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-        "headers": {
-            "content-type": "application/json",
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin"
-        },
-        "referrer": "https://skyeng.autofaq.ai/logs",
-        "referrerPolicy": "strict-origin-when-cross-origin",
-        "body": `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${operatorId}"],\"tsFrom\":\"${prevDayTime}\",\"tsTo\":\"${currentDayTime}\",\"usedStatuses\":[\"AssignedToOperator\"],\"orderBy\":\"ts\",\"orderDirection\":\"Desc\",\"page\":1,\"limit\":100}`,
-        "method": "POST",
-        "mode": "cors",
-        "credentials": "include"
-    }).then(r => r.json()).then(r => testo = r)
+        const prevDayTime = formatISOStringWithoutMillis(prevDayStart);
+        const currentDayTime = formatISOStringWithoutMillis(currentDayEnd);
 
-    let bArr = testo.items.map(el => el.conversationId)
-
-    for (let i = 0; i < bArr.length; i++) {
-        await fetch(`https://skyeng.autofaq.ai/api/conversations/${bArr[i]}`, {
+        // ... код для получения данных и заполнения massivTimes ...
+        await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
             "headers": {
+                "content-type": "application/json",
                 "sec-fetch-dest": "empty",
                 "sec-fetch-mode": "cors",
                 "sec-fetch-site": "same-origin"
             },
+            "referrer": "https://skyeng.autofaq.ai/logs",
             "referrerPolicy": "strict-origin-when-cross-origin",
-            "method": "GET",
+            "body": `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${operatorId}"],\"tsFrom\":\"${prevDayTime}\",\"tsTo\":\"${currentDayTime}\",\"usedStatuses\":[\"AssignedToOperator\"],\"orderBy\":\"ts\",\"orderDirection\":\"Desc\",\"page\":1,\"limit\":100}`,
+            "method": "POST",
             "mode": "cors",
             "credentials": "include"
-        }).then(r => r.json()).then(data => {
-            // Сначала фильтруем сообщения
-            let filteredMessages = data.messages.filter(el => el.eventTpe == "ChangeGroup" && (el.payload.prevGroup == "b6f7f34d-2f08-fc19-3661-29ac00842898" || el.payload.prevGroup == "7b443078-a05f-4c8f-827b-4db2bf7c5d01")); // ТП - c7bbb211-a217-4ed3-8112-98728dc382d8 ; КЦ - b6f7f34d-2f08-fc19-3661-29ac00842898 ; Прод - 7b443078-a05f-4c8f-827b-4db2bf7c5d01
-            filteredMessages.forEach(message => {
-                massivTimes.push({
-                    TimeStamp: message.ts,
-                    ChatHash: message.conversationId
+        }).then(r => r.json()).then(r => testo = r)
+
+        let bArr = testo.items.map(el => el.conversationId)
+
+        for (let i = 0; i < bArr.length; i++) {
+            await fetch(`https://skyeng.autofaq.ai/api/conversations/${bArr[i]}`, {
+                "headers": {
+                    "sec-fetch-dest": "empty",
+                    "sec-fetch-mode": "cors",
+                    "sec-fetch-site": "same-origin"
+                },
+                "referrerPolicy": "strict-origin-when-cross-origin",
+                "method": "GET",
+                "mode": "cors",
+                "credentials": "include"
+            }).then(r => r.json()).then(data => {
+                // Сначала фильтруем сообщения
+                let filteredMessages = data.messages.filter(el => el.eventTpe == "ChangeGroup" && (el.payload.prevGroup == "b6f7f34d-2f08-fc19-3661-29ac00842898" || el.payload.prevGroup == "7b443078-a05f-4c8f-827b-4db2bf7c5d01")); // ТП - c7bbb211-a217-4ed3-8112-98728dc382d8 ; КЦ - b6f7f34d-2f08-fc19-3661-29ac00842898 ; Прод - 7b443078-a05f-4c8f-827b-4db2bf7c5d01
+                filteredMessages.forEach(message => {
+                    massivTimes.push({
+                        TimeStamp: message.ts,
+                        ChatHash: message.conversationId
+                    });
                 });
+
+                //console.log(massivTimes)
             });
-
-            //console.log(massivTimes)
-        });
-    }
-
-    const iframeDoc = document.querySelector('[class^="NEW_FRONTEND__frame"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND__frame"]').contentWindow.document;
-    const Convlist = iframeDoc.querySelectorAll('#__next [class^="DialogsCard_Card"]');
-
-    Convlist.forEach(conv => {
-        const chatHash = conv.getAttribute('data-conv-id');
-        const massivTime = massivTimes.find(mt => mt.ChatHash === chatHash);
-        if (massivTime && !activeTimers[massivTime.ChatHash]) {
-            startTimerForTimestamp(massivTime.TimeStamp, massivTime.ChatHash);
         }
-    });
-	} else {
-		console.log("Для не ТП отдела эта функция не будет работать!")
-		if (updateInterval) {
+
+        const iframeDoc = document.querySelector('[class^="NEW_FRONTEND__frame"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND__frame"]').contentWindow.document;
+        const Convlist = iframeDoc.querySelectorAll('#__next [class^="DialogsCard_Card"]');
+
+        Convlist.forEach(conv => {
+            const chatHash = conv.getAttribute('data-conv-id');
+            const massivTime = massivTimes.find(mt => mt.ChatHash === chatHash);
+            if (massivTime && !activeTimers[massivTime.ChatHash]) {
+                startTimerForTimestamp(massivTime.TimeStamp, massivTime.ChatHash);
+            }
+        });
+    } else {
+        console.log("Для не ТП отдела эта функция не будет работать!")
+        if (updateInterval) {
             clearInterval(updateInterval); // Останавливаем интервал обновления, если условие не выполняется
             updateInterval = null; // Сбрасываем ссылку на интервал
         }
-	} 
+    }
 }
 
 // Периодическое обновление данных и таймеров
