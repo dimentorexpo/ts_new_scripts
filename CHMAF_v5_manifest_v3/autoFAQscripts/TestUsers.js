@@ -14,80 +14,79 @@ var win_TestUsers = // описание окна тестовых пользов
     `;
 
 const TestUsersdiv = createWindow('TestUsers', 'winTopTestUsers', 'winLeftTestUsers', win_TestUsers);
-let addInfoUser = document.getElementById('addInfoUser');
-let btnsid = document.getElementById('sidcode');
-let btntid = document.getElementById('tidcode');
+const addInfoUser = document.getElementById('addInfoUser');
+const btnsid = document.getElementById('sidcode');
+const btntid = document.getElementById('tidcode');
+const idUserInfoInput = document.getElementById('iduserinfo');
+const openUserInfoButton = document.getElementById('openuserinfo');
 
-document.getElementById('TestRooms').onclick = getTestRoomsButtonPress;
-document.getElementById('link2lessbtn').onclick = getlink2lessButtonPress;
-
-function handleButtonClick(buttonId, storageKey) { // Функция для обработки нажатий на кнопки
+// Универсальная функция обработки действий кнопок
+function handleButtonClick(buttonId, storageKey) {
     const userId = localStorage.getItem(storageKey);
-    if (!userId) {
-        return;
-    }
+    if (!userId) return;
 
     toggleButtonState(buttonId, 'active');
-
     getLoginLink(userId).then(() => {
-        toggleButtonState(buttonId, 'active');
-        toggleButtonState(buttonId, 'successbtn');
-        setTimeout(() => toggleButtonState(buttonId, 'successbtn'), 1000);
+        updateButtonState(buttonId, 'successbtn');
     }).catch((error) => {
-        console.log('Ошибка: ', error);
-        toggleButtonState(buttonId, 'active');
-        toggleButtonState(buttonId, 'errorbtn');
-        setTimeout(() => toggleButtonState(buttonId, 'errorbtn'), 1000);
+        console.error('Ошибка: ', error);
+        updateButtonState(buttonId, 'errorbtn');
     });
 }
 
-
-// Привязка событий к кнопкам
-btnsid.addEventListener("click", () => handleButtonClick('sidcode', 'test_stud'));
-btnsid.addEventListener("contextmenu", (event) => {
+// Копирование ID в буфер обмена с отображением уведомления
+function handleContextMenu(event, storageKey, buttonId) {
     event.preventDefault();
-    const userId = localStorage.getItem('test_stud');
+    const userId = localStorage.getItem(storageKey);
     if (userId) {
         copyToClipboard(userId);
-        createAndShowButton('💾 ID cкопировано')
-        toggleButtonState('sidcode', 'successbtn');
-        setTimeout(() => toggleButtonState('sidcode', 'successbtn'), 1000);
+        createAndShowButton('💾 ID cкопировано');
+        updateButtonState(buttonId, 'successbtn');
     } else {
-        alert("Введите ID тестового ученика в настройках ⚙");
-    }
-});
-
-btntid.addEventListener("click", () => handleButtonClick('tidcode', 'test_teach'));
-btntid.addEventListener("contextmenu", (event) => {
-    event.preventDefault();
-    const userId = localStorage.getItem('test_teach');
-    if (userId) {
-        copyToClipboard(userId);
-        createAndShowButton('💾 ID cкопировано')
-        toggleButtonState('tidcode', 'successbtn');
-        setTimeout(() => toggleButtonState('tidcode', 'successbtn'), 1000);
-    } else {
-        alert("Введите ID тестового преподавателя в настройках ⚙");
-    }
-});
-
-document.getElementById('iduserinfo').addEventListener('input', function () {
-    onlyNumber(this);
-});
-
-document.getElementById('openuserinfo').onclick = function () { // открытие окна вензель user info
-    let idforinfo = document.getElementById('iduserinfo').value.trim()
-    if (idforinfo !== ''){
-        if (document.getElementById('AF_Service').style.display == 'none'){
-            document.getElementById('AF_Service').style.display = ''
-            document.getElementById('butServ').classList.add('activeScriptBtn')
-        }
-        document.getElementById('idstudent').value = idforinfo;
-        document.getElementById('getidstudent').click();
-        document.getElementById('iduserinfo').value = '';                
+        alert("Введите ID в настройках ⚙");
     }
 }
 
+// Универсальная функция обновления стиля кнопки
+function updateButtonState(buttonId, stateClass) {
+    toggleButtonState(buttonId, 'active');
+    toggleButtonState(buttonId, stateClass);
+    setTimeout(() => toggleButtonState(buttonId, stateClass), 1000);
+}
+
+// Привязка событий к кнопкам
+btnsid.addEventListener("click", () => handleButtonClick('sidcode', 'test_stud'));
+btnsid.addEventListener("contextmenu", (event) => handleContextMenu(event, 'test_stud', 'sidcode'));
+
+btntid.addEventListener("click", () => handleButtonClick('tidcode', 'test_teach'));
+btntid.addEventListener("contextmenu", (event) => handleContextMenu(event, 'test_teach', 'tidcode'));
+
+// Обработка вставки, перетаскивания и фильтрации чисел в поле ввода
+function handleInput(event) {
+    setTimeout(() => {
+        const idforinfo = idUserInfoInput.value.trim();
+        if (idforinfo) openUserInfoButton.click();
+    }, 0);
+}
+idUserInfoInput.addEventListener('paste', handleInput);
+idUserInfoInput.addEventListener('drop', handleInput);
+idUserInfoInput.addEventListener('input', () => onlyNumber(idUserInfoInput));
+
+// Открытие окна User Info
+openUserInfoButton.onclick = () => {
+    const idforinfo = idUserInfoInput.value.trim();
+    if (idforinfo) {
+        const serviceElement = document.getElementById('AF_Service');
+        if (serviceElement.style.display === 'none') {
+            serviceElement.style.display = '';
+            document.getElementById('butServ').classList.add('activeScriptBtn');
+        }
+        document.getElementById('idstudent').value = idforinfo;
+        document.getElementById('getidstudent').click();
+        idUserInfoInput.value = '';
+    }
+};
+
 // Установка стиля для TestUsersdiv
-let TestUsersdivstyle = (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") && localStorage.getItem('disablelpmwindow') !== '1' ? '' : 'none';
+const TestUsersdivstyle = (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") && localStorage.getItem('disablelpmwindow') !== '1' ? '' : 'none';
 setDisplayStyle(TestUsersdiv, TestUsersdivstyle);
