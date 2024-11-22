@@ -167,7 +167,7 @@ document.getElementById('GotoCRM').onclick = function () {
 }
 
 document.getElementById('partialpaymentinfo').onclick = function () {
-    window.open("https://accounting.skyeng.ru/credit/list?studentId=" + document.getElementById('idstudent').value.trim())
+    window.open(`https://billing-api.skyeng.ru/installments?ownerId=${document.getElementById('idstudent').value.trim()}&state=&perPage=50&currentPage=1`)
 }
 
 document.getElementById('subscriptioninfo').onclick = function () {  // открываем ссылку в новой вкладке на просмотр Подписки
