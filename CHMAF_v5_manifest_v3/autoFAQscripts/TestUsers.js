@@ -83,7 +83,8 @@ document.getElementById('openuserinfo').onclick = function () { // открыт�
             document.getElementById('butServ').classList.add('activeScriptBtn')
         }
         document.getElementById('idstudent').value = idforinfo;
-        document.getElementById('getidstudent').click();                            
+        document.getElementById('getidstudent').click();
+        document.getElementById('iduserinfo').value = '';                
     }
 }
 
