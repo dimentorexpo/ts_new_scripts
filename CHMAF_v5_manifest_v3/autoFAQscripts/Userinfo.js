@@ -242,13 +242,17 @@ document.getElementById('hideMeTT').onclick = function () { // скрытие о
     document.getElementById('timetabledata').innerHTML = "";
 }
 
+document.getElementById('hideComplecations').onclick = function () { // скрытие окна предстоящих и прошедших занятиях
+    if (document.getElementById('AF_Complectations').style.display == '')
+        document.getElementById('AF_Complectations').style.display = 'none'
+}
+
 let responseinfo;
 
 function checkemailandphoneidentity() {
     let idUser = document.getElementById('idstudent').value.trim()
     pochtaStatus.textContent = ''
     telefonStatus.textContent = ''
-
 
     const fetchURL = `https://id.skyeng.ru/admin/users/${idUser}/update-contacts`;
     const requestOptions = {
