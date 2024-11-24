@@ -103,9 +103,23 @@ var win_Timetable = // описание элементов окна предст
 </span>
 </div>`;
 
-const wintServices = createWindow('AF_Service', 'winTopService', 'winLeftService', win_serviceinfo);
+var win_Complectations = //описание элементов окна с комплектациями
+    `<div style="display: flex; width: 500px;">
+<span style="width: 500px">
+        <span style="cursor: -webkit-grab;">
+                <div style="margin: 5px; width: 500;" id="headComplectations">
+                        <button class="mainButton buttonHide" id="hideComplecations" style="width:50px; background: #228B22;">hide</button>
+                </div>
+        </span>
+                <div id="cmplInfo">
+                     <p id="cmplData" style="width:500px;color:bisque; max-height:400px; margin-left:5px; margin-top:5px; overflow:auto;text-align:center;"></p>
+                </div>
+</span>
+</div>`;
 
+const wintServices = createWindow('AF_Service', 'winTopService', 'winLeftService', win_serviceinfo);
 const wintTimetable = createWindow('AF_Timetable', 'winTopTimetable', 'winLeftTimetable', win_Timetable);
+const wintComplectations = createWindow('AF_Complectations', 'winTopComplectations', 'winLeftComplectations', win_Complectations);
 
 document.getElementById('servicehead').ondblclick = function (a) { // скрытие окна вензель user info по двойному клику
     if (checkelementtype(a)) {
@@ -592,8 +606,6 @@ function getusernamecrm() {
     const TeachNabElement = document.getElementById('butTeacherNabor')
     const personalTeacherPageElement = document.getElementById('personalteacherpage');
     avatarofuser = '';
-
-    let filteredid = document.getElementById('idstudent').value.trim();
     flagusertype = '';
 
     const fetchURL = `https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`;
@@ -601,7 +613,7 @@ function getusernamecrm() {
         method: 'GET'
     };
 
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
         if (!response.success) {
             alert('Не удалось выполнить запрос: ' + response.error);
             return;
@@ -806,38 +818,28 @@ function crmstatus() {
                 document.getElementById('getcurrentstatus').style.backgroundColor = '#DC143C';
             }
 
+            function updateCrmStatus(innerText, consoleText) {
+                document.getElementById('CrmStatus').style.display = '';
+                document.getElementById('CrmStatus').innerText = innerText;
+                console.log(consoleText);
+            }
+
             if (flagtpout && !flagtp && !flagnottp) {
-                document.getElementById('CrmStatus').style.display = '';
-                document.getElementById('CrmStatus').innerText = '💥';
-                console.log('Есть активные задачи');
+                updateCrmStatus('💥', 'Есть активные задачи');
             } else if (!flagtpout && flagtp && !flagnottp) {
-                document.getElementById('CrmStatus').style.display = '';
-                document.getElementById('CrmStatus').innerText = '🛠';
-                console.log('Входящий звонок или с др отдела на ТП была создана задача');
+                updateCrmStatus('🛠', 'Входящий звонок или с др отдела на ТП была создана задача');
             } else if (!flagtpout && !flagtp && flagnottp) {
-                document.getElementById('CrmStatus').style.display = '';
-                document.getElementById('CrmStatus').innerText = '📵';
-                console.log('Нет активных задач по ТП линии');
+                updateCrmStatus('📵', 'Нет активных задач по ТП линии');
             } else if (flagtpout && flagtp && !flagnottp) {
-                document.getElementById('CrmStatus').style.display = '';
-                document.getElementById('CrmStatus').innerText = '💥';
-                console.log('Есть активные задачи на исход и на ТП 1 линии')
+                updateCrmStatus('💥', 'Есть активные задачи на исход и на ТП 1 линии');
             } else if (flagtpout && flagtp && flagnottp) {
-                document.getElementById('CrmStatus').style.display = '';
-                document.getElementById('CrmStatus').innerText = '💥';
-                console.log('Есть активные задачи на исход и на ТП 1 линии и на др отделы');
+                updateCrmStatus('💥', 'Есть активные задачи на исход и на ТП 1 линии и на др отделы');
             } else if (flagtp == true && flagnottp == true && flagtpout == false) {
-                document.getElementById('CrmStatus').style.display = '';
-                document.getElementById('CrmStatus').innerText = '🛠';
-                console.log('Входящий звонок или с др отдела на ТП была создана задача. И есть задача на др отдел');
+                updateCrmStatus('🛠', 'Входящий звонок или с др отдела на ТП была создана задача. И есть задача на др отдел');
             } else if (flagtp == false && flagnottp == true && flagtpout == true) {
-                document.getElementById('CrmStatus').style.display = '';
-                document.getElementById('CrmStatus').innerText = '💥';
-                console.log('Есть задача на ТП Исход. И есть задача на др отдел');
+                updateCrmStatus('💥', 'Есть задача на ТП Исход. И есть задача на др отдел');
             } else {
-                document.getElementById('CrmStatus').style.display = '';
-                document.getElementById('CrmStatus').innerText = '📵';
-                console.log('No DATA');
+                updateCrmStatus('📵', 'No DATA');
             }
         }
     })
@@ -859,11 +861,81 @@ async function checkServiceAndUserInfo() {
 
 async function getservices(stidNew) {
     document.getElementById('servicetable').innerHTML = "Загрузка..."
+    let complectationServInfo = document.getElementById('cmplData');
+    complectationServInfo.innerHTML = ""
+    let linkToComplectationtable = document.getElementById('complekttable')
+    linkToComplectationtable.innerHTML = ""
+    let operatorNote = "";
+
 
     const fetchURL = `https://backend.skyeng.ru/api/persons/${stidNew}/education-services/`;
     const requestOptions = {
         method: 'GET'
     };
+
+    const fetchURLComplectations = `https://backend.skyeng.ru/api/v1/students/${stidNew}/education-service-kits/`;
+    const requestOptionsComplectations = {
+        method: 'GET'
+    };
+
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLComplectations, requestOptions: requestOptionsComplectations }, function (response) { // получение информации по комплектациям
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        } else {
+            const chechkComplectations = JSON.parse(response.fetchansver);
+
+            if (chechkComplectations.data.length > 0) {
+                linkToComplectationtable.innerHTML += '<div id="openOneComplectation" style="background: #4e7891; text-align:center; cursor:pointer; text-shadow: 1px 1px 2px black;">✅Есть комплектации >>></div>'
+
+                const openOneCompl = document.getElementById('openOneComplectation');
+                openOneCompl.addEventListener('click', function () {
+                    let getComplWindow = document.getElementById('AF_Complectations');
+                    if (getComplWindow.style.display == "none") {
+                        getComplWindow.style.display = "";
+                    } else {
+                        getComplWindow.style.display = "none";
+                    }
+                });
+
+                console.log(chechkComplectations.data);
+
+                chechkComplectations.data.forEach((service) => {
+                    if (service.operatorNote) {
+                         operatorNote = service.operatorNote.replace(/\/\//g, ' ').replace(/\//g, '&#47;');
+                         console.log(operatorNote);
+                    }
+
+                    let gatheredInfoComplSrvs = '<table style="width: 98%; margin: 10px 0; border-collapse: collapse;">';
+                    gatheredInfoComplSrvs += `
+                        <tr style="background: #776d69; color: white;">
+                            <th style="border: 1px solid black; padding: 5px;">ID Услуги</th>
+                            <th style="border: 1px solid black; padding: 5px;">STK</th>
+                            <th style="border: 1px solid black; padding: 5px;">💰</th>
+                        </tr>`;
+
+                const allEduServicesCompl = service.educationServices;
+                allEduServicesCompl.forEach((el) => {
+                    gatheredInfoComplSrvs += `
+                    <tr>
+                    <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">
+                    <a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:#32b5f5; text-decoration: none;">${el.id}</a>
+                </td>
+                        <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.serviceTypeKey}</td>
+                        <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.balance}</td>
+                    </tr>`;
+                });
+                gatheredInfoComplSrvs += '</table>';
+
+                    complectationServInfo.innerHTML += `<div style="background: #4a7d55; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; font-weight: 800; margin-bottom:5px;" title="${operatorNote}">${service.productKit.title} | ${service.stage == "regular_lessons" ? "Регулярные занятия" : service.stage == "lost" ? "Потерянная" : service.stage}</div>` + gatheredInfoComplSrvs;
+                });
+
+            } else {
+                linkToComplectationtable.innerHTML += '<div style="background: #4e7891; text-align:center; text-shadow: 1px 1px 2px black;">❌Нет комплектаций</div>';
+                console.log("Нет услуг комплектаций Домашний Лицей, Large Classes Exams и других");
+            }
+        }
+    });
 
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
         if (!response.success) {
@@ -873,10 +945,7 @@ async function getservices(stidNew) {
             const otvetEdServ = JSON.parse(response.fetchansver);
 
             if (otvetEdServ.data.length != 0) {
-                let tinfo = ""; // инфо о постоянном П
-                let temtinfo = ""; // инфо о временном П
                 let servinfo = ""; //инфо об услуге
-                let noservinfo = ""; //нет инфо об услугах, обычно если профиль П или оператора
                 let arrservice = []; // пустой массив, куда будет передавать ID отобранных услуг по условию
 
                 let srvKeyMap = new Map(servicecontainer.data.map(d => [d.serviceTypeKey, d.shortTitle]));
