@@ -20,17 +20,25 @@ const btntid = document.getElementById('tidcode');
 const idUserInfoInput = document.getElementById('iduserinfo');
 const openUserInfoButton = document.getElementById('openuserinfo');
 
+document.getElementById('TestRooms').onclick = getTestRoomsButtonPress;
+document.getElementById('link2lessbtn').onclick = getlink2lessButtonPress;
+
 // Универсальная функция обработки действий кнопок
 function handleButtonClick(buttonId, storageKey) {
     const userId = localStorage.getItem(storageKey);
     if (!userId) return;
+    const button = document.getElementById(buttonId);
+    button.classList.add('active');
 
-    toggleButtonState(buttonId, 'active');
     getLoginLink(userId).then(() => {
-        updateButtonState(buttonId, 'successbtn');
+        button.classList.remove('active'); // Убираем класс active
+        button.classList.add('successbtn'); // Добавляем successbtn
+        setTimeout(() => button.classList.remove('successbtn'), 1000);
     }).catch((error) => {
-        console.error('Ошибка: ', error);
-        updateButtonState(buttonId, 'errorbtn');
+        console.log('Ошибка: ', error);
+        button.classList.remove('active'); // Убираем класс active
+        button.classList.add('errorbtn'); // Добавляем errorbtn
+        setTimeout(() => button.classList.remove('errorbtn'), 1000);
     });
 }
 
@@ -38,20 +46,15 @@ function handleButtonClick(buttonId, storageKey) {
 function handleContextMenu(event, storageKey, buttonId) {
     event.preventDefault();
     const userId = localStorage.getItem(storageKey);
+    const button = document.getElementById(buttonId);
     if (userId) {
         copyToClipboard(userId);
         createAndShowButton('💾 ID cкопировано');
-        updateButtonState(buttonId, 'successbtn');
+        button.classList.add('successbtn'); // Добавляем successbtn
+        setTimeout(() => button.classList.remove('successbtn'), 1000);
     } else {
-        alert("Введите ID в настройках ⚙");
+        alert("Введите ID тестового ученика в настройках ⚙");
     }
-}
-
-// Универсальная функция обновления стиля кнопки
-function updateButtonState(buttonId, stateClass) {
-    toggleButtonState(buttonId, 'active');
-    toggleButtonState(buttonId, stateClass);
-    setTimeout(() => toggleButtonState(buttonId, stateClass), 1000);
 }
 
 // Привязка событий к кнопкам
