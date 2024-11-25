@@ -169,12 +169,31 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
                 let deltaX = event.clientX - startX;
                 let deltaY = event.clientY - startY;
 
-                windowElement.style.left = `${elemLeft + deltaX}px`;
-                windowElement.style.top = `${elemTop + deltaY}px`;
+                // Вычисляем новые координаты с учетом границ экрана
+                let newLeft = elemLeft + deltaX;
+                let newTop = elemTop + deltaY;
 
-                localStorage.setItem(topKey, String(elemTop + deltaY));
-                localStorage.setItem(leftKey, String(elemLeft + deltaX));
+                // Ограничения по ширине экрана
+                if (newLeft < 0) {
+                    newLeft = 0;
+                } else if (newLeft + windowElement.offsetWidth > window.innerWidth) {
+                    newLeft = window.innerWidth - windowElement.offsetWidth;
+                }
+
+                // Ограничения по высоте экрана
+                if (newTop < 0) {
+                    newTop = 0;
+                } else if (newTop + windowElement.offsetHeight > window.innerHeight) {
+                    newTop = window.innerHeight - windowElement.offsetHeight;
+                }
+
+                windowElement.style.left = `${newLeft}px`;
+                windowElement.style.top = `${newTop}px`;
+
+                localStorage.setItem(topKey, String(newTop));
+                localStorage.setItem(leftKey, String(newLeft));
             }
+
             function onMouseUp() {
                 document.removeEventListener('mousemove', onMouseMove);
                 document.removeEventListener('mouseup', onMouseUp);
@@ -186,6 +205,7 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
             document.addEventListener('mouseleave', onMouseUp);
         }
     };
+
 
     return windowElement;
 }
