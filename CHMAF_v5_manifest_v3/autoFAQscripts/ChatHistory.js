@@ -30,11 +30,10 @@ var win_Chathis =  // описание элементов окна Истори�
 
 				<div style="width: 410px;display:none" id="somechatinfo">
 					<span id="usidchat" style="color:bisque; margin-left:10px; margin-top:5px; user-select:none; cursor:pointer" title="При клике копирует сам айдишник">User ID: </span> <span id="placeusid" style="color:bisque; margin-left:5px; margin-top:5px;"></span>
-					<button class="mainButton" id="startchat" style="margin-left:10px;" title="Начать новый чат с пользователем">💬</button>
 					<button class="mainButton" id="opencmtbar" style="margin-left:5px;" title="Открыть инструмент добавления комментария к чату (для тех у кого внизу в самом модуле не отображается это поле)">🚧</button>
-					<button class="mainButton" id="takechat" style="margin-left: 117px; margin-top:5px;" title="Забирает чат и назначает на вас,но некоторые чаты или у других коллег забраться не получится">Забрать</button>
+					<button class="mainButton" id="takechat" style="margin-left: 155px; margin-top:5px;" title="Забирает чат и назначает на вас,но некоторые чаты или у других коллег забраться не получится">Забрать</button>
 					<br>
-					<span id="chid" style="color:bisque; margin-left:10px; margin-top:5px; user-select:none; cursor:pointer" title="При клике копирует ссылку с добавлением HDI">Chat ID: </span> <span id="placechatid" style="color:bisque; margin-left:5px; margin-top:5px;"></span>
+					<span id="chid" style="color:bisque; margin-left:10px; margin-top:5px; user-select:none; cursor:pointer" title="При клике копирует ссылку на лог чата">Chat ID: </span> <span id="placechatid" style="color:bisque; margin-left:5px; margin-top:5px;"></span>
 					<button class="mainButton" id="reassign" title="По нажатию на кнопку переведет чат на сотрудника. Порядок такой: выбираете из списка операторы на линии того, кому желаете перевести, после чего открываете чат по хешу в поле хеш чата вводите его и нажимаете найти, и затем уже после этого жмете на кнопку и скрипт отработает" style="width:45px; margin-left:5px; font-size:16px; margin-top:2px;user-select:none;">🔀</button>
 				</div>
 
@@ -437,7 +436,7 @@ document.getElementById('chatuserhis').addEventListener('input', function () {
 })
 
 document.getElementById('chid').onclick = () => { // копирует в буфер айди чата
-    copyToClipboard('https://hdi.skyeng.ru/autofaq/conversation/-11/' + document.getElementById('placechatid').innerText)
+    copyToClipboard('https://skyeng.autofaq.ai/logs/' + document.getElementById('placechatid').innerText)
 }
 
 document.getElementById('usidchat').onclick = () => { //копирует в буфер айди пользователя
@@ -851,20 +850,6 @@ function getopennewcatButtonPress() { // открывает меню для ра
                 })
         } else alert('Не введен id пользователя');
     }
-
-    document.getElementById('startchat').onclick = () => { //обработчик функции начала чата с пользователем
-        let answer = confirm("Вы действительно желаете начать чат с пользователем?");
-        if (answer) {
-            if (isChatOnOperator == false) {
-                let polzid = document.getElementById('placeusid').innerText.trim();
-                document.getElementById('startchat').style.background = 'green';
-                startnewchatfast(polzid)
-                setTimeout(() => {
-                    document.getElementById('startchat').style.background = '';
-                }, 3000)
-            } else alert('Чат не открыт, так как есть активный чат на операторе!')
-        }
-    } // конец обработчика нажатия кнопки Начать чат с пользователем
 
     document.getElementById('opencmtbar').onclick = function () { //обработчик функции начала чата с пользователем
         if (document.getElementById('comentsbar').style.display == '')

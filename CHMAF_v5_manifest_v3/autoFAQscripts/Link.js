@@ -44,6 +44,8 @@ var win_Links =  // описание элементов окна ссылок
 					<button class="mainButton" id="gotolookip">🔎</button>
 					<input id="lgssearch" placeholder="ID Группы LGS" title="Введите ID LGS или обычной группы KGL для просмотра информации" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
 					<button class="mainButton" id="getlgsinfo">🔎</button>
+                    <input id="cmsstepid" placeholder="CMS stepUUID" title="вводим stepUUID, чтобы сразу попасть в ЦМС на нужный урок и найти на нем наш слайд и проверить" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
+					<button class="mainButton" id="cmsid">🔎</button>
 					<input id="schemesteacher" placeholder="ID П схем возн" title="Вводим ID П, чтобы открытть ресурс с подключенными схемами вознаграждения П" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
 					<button class="mainButton" id="getschemes">🔎</button>
 					<input id="pushes" placeholder="ID У пуши" title="Вводим ID У, чтобы увидеть были отправлены пуши ученику или нет" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
@@ -432,6 +434,15 @@ function addfunctionsonclick(section) {
                 window.open(lgslink + lgssearch.value + '?cp=(section:participants)');
             };
             lgssearch.value = "";
+        }
+
+        document.getElementById('cmsid').onclick = function () {// переход на степID в CMSке
+            if (cmsstepid.value == "")
+                alert('Введите STEPUUID в поле')
+            else {
+                window.open('https://content.vimbox.skyeng.ru/cms/step-store/update/id/' + cmsstepid.value);
+            };
+            cmsstepid.value = "";
         }
 
         document.getElementById('GrListData').onclick = getGrListDataButtonPress;

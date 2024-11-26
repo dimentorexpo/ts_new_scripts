@@ -589,6 +589,20 @@
 		display: none !important;
 	}
 
+	.darkinputs {
+		color: bisque;
+		background-color: black;
+	}
+
+	.teststudteachinp {
+		text-align: center; 
+		width: 100px; 
+		border-radius: 10px;
+		margin-top: 3px;
+		margin-left: 3px;
+		margin-bottom: 10px;
+	}
+
 	.teststudteach {
 		background: #3c82b3 !important;
 		cursor: pointer;
@@ -596,16 +610,6 @@
 		width: 30px;
 		text-shadow: 1px 2px 5px rgb(0 0 0 / 50%);
 		font-size: 15px;
-	}
-	.teststudteachinp {
-		text-align: center; 
-		width: 100px; 
-		border-radius: 10px;
-		color: white;
-		background-color: black;
-		margin-top: 3px;
-		margin-left: 3px;
-		margin-bottom: 10px;
 	}
 
 	.teststudteach:hover {

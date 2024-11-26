@@ -1,7 +1,7 @@
 var win_TestUsers = // описание окна тестовых пользователей
     `<div style="display: flex;">
         <span style="cursor: -webkit-grab; margin:7px;">
-            <input id="iduserinfo" placeholder="ID У/П" title="Введите ID У/П для получения информации" class="teststudteachinp" autocomplete="off" type="text">
+            <input id="iduserinfo" placeholder="ID У/П" title="Введите ID У/П для получения информации" class="teststudteachinp darkinputs" autocomplete="off" type="text">
             <button id="openuserinfo" title="Открыть User Info указанного id" class="mainButton teststudteach">🔍</button>
             <br>
             <button id="sidcode" title="При клике ЛКМ генерирует ссылку логинер для входа в учетку с заранее сохраненным ID тестового ученика в настройках и копирует ее в буфер обмена. При клике ПКМ копирует в буфер обмена ID ученика, может пригодиться в админке создания тестовых уроков." class="mainButton teststudteach" style="margin-left:2px">👨‍🎓</button>
@@ -66,11 +66,16 @@ btntid.addEventListener("contextmenu", (event) => handleContextMenu(event, 'test
 
 // Обработка вставки, перетаскивания и фильтрации чисел в поле ввода
 function handleInput(event) {
+    idUserInfoInput.value = '';
+    const pastedValue = (event.clipboardData || event.dataTransfer).getData('text').trim();
     setTimeout(() => {
-        const idforinfo = idUserInfoInput.value.trim();
-        if (idforinfo) openUserInfoButton.click();
+        if (/^\d+$/.test(pastedValue)) {
+            idUserInfoInput.value = pastedValue;
+            openUserInfoButton.click();
+        }
     }, 0);
 }
+
 idUserInfoInput.addEventListener('paste', handleInput);
 idUserInfoInput.addEventListener('drop', handleInput);
 idUserInfoInput.addEventListener('input', () => onlyNumber(idUserInfoInput));

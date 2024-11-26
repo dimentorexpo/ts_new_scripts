@@ -11,7 +11,6 @@ var win_serviceinfo =  // описание элементов окна инфо�
                         <div style="width: 320px; padding: 5px; border-bottom:1px solid #556B2F;" id="servicehead">
                                 <button title="скрывает меню" id="hideMeservice" class="mainButton buttonHide">hide</button>
                                 <button class="mainButton" title="открывает СРМ пользователя при введенном айди в поле" id="GotoCRM" style="width:50px;">CRM</button>
-                                <button class="mainButton smallbtn" title="Начинает чат с пользователем" id="startnewchat">💬</button>
 								<button class="mainButton smallbtn" title="Делаем видимым номер телефона и почты" id='dounhidemailandphone'>👁‍🗨</button>
                                 <button class="mainButton" title="Левый клик обновить статус. Легенда: 💥 - задача на исход уже создана или есть также задача на тп1л , 📵 - нет задачи на исход и на тп, 🛠 - нет задачи на исход, но есть задача на тп" id="CrmStatus" style="width:30px; display:none;"></button>
 								<span style="padding:7px; margin-left: 5px;height:28px; color:#ffff;  font-weight:700; border: 1px solid bisque;width: 82px; background-color:#1E90FF;display:none;" id="getcurrentstatus"></span>
@@ -31,7 +30,7 @@ var win_serviceinfo =  // описание элементов окна инфо�
 							<input readonly id="onetimepassout"  placeholder="One time pass" title="Вывод разового пароля после выполнения команды" autocomplete="off" type="text" style="float:left; text-align: center; width: 100px; color: black;" class="">
 							<button title="Генерирует одноразовый код для входа в мобильное приложение и выводит его в спец поле" id="getonetimepass" class="mainButton usinfoops">📱</button>
 							<button title="Открывает админку редактирования пользователя/просмотра ролей" id="editadmbtn" class="mainButton usinfoops">✏</button>
-							<button title="Открывает кота для просмотра истории чатов" id="catchathistory" class="mainButton usinfoops">🗄</button>
+							<button title="Открывает историю чатов" id="catchathistory" class="mainButton usinfoops">🗄</button>
 							<button title="Открывает окно для просмотра когда и кто открывал/закрывал набор учеников для П" id="butTeacherNabor" class="mainButton" style="margin-left: 5px; display: none; width: 25.23px;"> 🚷</button>
 							<button title="Открывает меню для просмотра рассрочки" id="partialpaymentinfo" class="mainButton usinfoops">💸</button>
 							<button title="Открывает меню для просмотра статуса подписки" id="subscriptioninfo" class="mainButton usinfoops">💵</button>
@@ -121,6 +120,9 @@ const wintServices = createWindow('AF_Service', 'winTopService', 'winLeftService
 const wintTimetable = createWindow('AF_Timetable', 'winTopTimetable', 'winLeftTimetable', win_Timetable);
 const wintComplectations = createWindow('AF_Complectations', 'winTopComplectations', 'winLeftComplectations', win_Complectations);
 
+const idstudentField = document.getElementById('idstudent');
+const getidstudentbtn = document.getElementById('getidstudent');
+
 document.getElementById('servicehead').ondblclick = function (a) { // скрытие окна вензель user info по двойному клику
     if (checkelementtype(a)) {
         document.getElementById('AF_Service').style.display = 'none';
@@ -134,38 +136,6 @@ document.getElementById('hideMeservice').onclick = function () { // скрыти
     document.getElementById('butServ').classList.remove('activeScriptBtn')
 }
 
-async function startnewchat(polzid) { //открывает чат с пользователем
-    if (operatorId == "") {
-        await whoAmI()
-    }
-
-    if (polzid) {
-        await fetch(`https://skyeng.autofaq.ai/api/conversation/start?channelId=eca64021-d5e9-4c25-b6e9-03c24s638d4d&userId=${polzid}&operatorId=${operatorId}&groupId=c7bbb211-a217-4ed3-8112-98728dc382d8`, {
-            headers: {
-            },
-            referrer: "https://skyeng.autofaq.ai/tickets/assigned/",
-            referrerPolicy: "strict-origin-when-cross-origin",
-            body: null,
-            method: "POST",
-            mode: "cors",
-            credentials: "include"
-        })
-            .then(response => response.json())
-            .then(data => {
-                chatId = data.conversationId
-                if (data.conversationId != undefined) {
-                    alert(`Чат начат c пользователем ${polzid}`);
-                } else alert('Чат не был открыт по причине: ' + data.message + ' ' + data.textCode + ' ' + 'code: ' + data.code)
-            })
-
-    } else alert('Не введен id пользователя');
-}
-
-document.getElementById('startnewchat').onclick = async function () { // нажатие на начать новый чат
-    let polzid = document.getElementById('idstudent').value.trim();
-    startnewchat(polzid)
-}
-
 document.getElementById('dounhidemailandphone').onclick = function () {
     getunhideemail();
     getunhidephone();
@@ -173,28 +143,28 @@ document.getElementById('dounhidemailandphone').onclick = function () {
 }
 
 document.getElementById('checkbalance').onclick = function () {
-    window.open("https://billing-api.skyeng.ru/operations/user/" + document.getElementById('idstudent').value.trim() + "/info")
+    window.open("https://billing-api.skyeng.ru/operations/user/" + idstudentField.value.trim() + "/info")
 }
 
 document.getElementById('GotoCRM').onclick = function () {
-    window.open("https://crm2.skyeng.ru/persons/" + document.getElementById('idstudent').value.trim()) 	// открываем ссылку в новой вкладке на  Пользовательская админка
+    window.open("https://crm2.skyeng.ru/persons/" + idstudentField.value.trim()) 	// открываем ссылку в новой вкладке на  Пользовательская админка
 }
 
 document.getElementById('partialpaymentinfo').onclick = function () {
-    window.open(`https://billing-api.skyeng.ru/installments?ownerId=${document.getElementById('idstudent').value.trim()}&state=&perPage=50&currentPage=1`)
+    window.open(`https://billing-api.skyeng.ru/installments?ownerId=${idstudentField.value.trim()}&state=&perPage=50&currentPage=1`)
 }
 
 document.getElementById('subscriptioninfo').onclick = function () {  // открываем ссылку в новой вкладке на просмотр Подписки
-    window.open(`https://billing-api.skyeng.ru/subscriptions/user/${document.getElementById('idstudent').value}/info`)
+    window.open(`https://billing-api.skyeng.ru/subscriptions/user/${idstudentField.value}/info`)
 }
 
 document.getElementById('editadmbtn').onclick = function () {
-    let stuid = document.getElementById('idstudent').value.trim();
+    let stuid = idstudentField.value.trim();
     window.open("https://id.skyeng.ru/admin/users/" + stuid + "/update-contacts")
 }
 
 document.getElementById('getonetimepass').onclick = function () { //функция генерации разового пароля для МП
-    let userId = document.getElementById('idstudent').value.trim();
+    let userId = idstudentField.value.trim();
     if (userId == "")
         console.log('Введите id в поле')
     else {
@@ -250,7 +220,7 @@ document.getElementById('hideComplecations').onclick = function () { // скры
 let responseinfo;
 
 function checkemailandphoneidentity() {
-    let idUser = document.getElementById('idstudent').value.trim()
+    let idUser = idstudentField.value.trim()
     pochtaStatus.textContent = ''
     telefonStatus.textContent = ''
 
@@ -288,7 +258,7 @@ function checkemailandphoneidentity() {
 }
 
 function getunhidephone() { //открывает телефон пользователя
-    const polzID = document.getElementById('idstudent').value.trim();
+    const polzID = idstudentField.value.trim();
 
     const fetchURL = `https://backend.skyeng.ru/api/persons/${polzID}/personal-data/?pdType=phone&source=persons.profile`;
     const requestOptions = {
@@ -315,7 +285,7 @@ function getunhidephone() { //открывает телефон пользова
 }
 
 function getunhideemail() { //открывает почту пользователя
-    const polzIDNew = document.getElementById('idstudent').value.trim();
+    const polzIDNew = idstudentField.value.trim();
 
     const fetchURL = `https://backend.skyeng.ru/api/persons/${polzIDNew}/personal-data/?pdType=email&source=persons.profile`;
     const requestOptions = {
@@ -360,7 +330,7 @@ let telefonStatus = document.getElementById('telefonIdentity')
 
 document.getElementById('getlessonpast').onclick = function () { // показывает прошедшие уроки
     document.getElementById('timetabledata').innerHTML = "";
-    let stid = document.getElementById('idstudent').value.trim();
+    let stid = idstudentField.value.trim();
     let pastlessondata = "";
 
     const fetchURL = `https://backend.skyeng.ru/api/students/${stid}/timetable/lessons-history/?page=0`;
@@ -468,7 +438,7 @@ document.getElementById('getlessonpast').onclick = function () { // показы
 document.getElementById('getlessonfuture').onclick = function () { // показывает предстоящие уроки
 
     document.getElementById('timetabledata').innerHTML = "";
-    let idShka = document.getElementById('idstudent').value.trim();
+    let idShka = idstudentField.value.trim();
     if (idShka.length > 0) {
         let futurelessondata = "";
 
@@ -555,7 +525,7 @@ document.getElementById('getlessonfuture').onclick = function () { // показ
 }
 
 document.getElementById('changelocalelng').onclick = function () {
-    let userOk = document.getElementById('idstudent').value;
+    let userOk = idstudentField.value;
 
     const fetchURL = `https://backend.skyeng.ru/api/persons/general/${userOk}`;
     const requestOptions = {
@@ -588,10 +558,10 @@ document.getElementById('catchathistory').onclick = function () { // откры�
 
     if (document.getElementById('AF_ChatHis').style.display == 'none') {
         document.getElementById('opennewcat').click();
-        document.getElementById('chatuserhis').value = document.getElementById('idstudent').value.trim();
+        document.getElementById('chatuserhis').value = idstudentField.value.trim();
         btn_search_history.click()
     } else {
-        document.getElementById('chatuserhis').value = document.getElementById('idstudent').value.trim();
+        document.getElementById('chatuserhis').value = idstudentField.value.trim();
         btn_search_history.click()
     }
 }
@@ -600,7 +570,7 @@ let nameofuser, teachername, studentname, responsedata, utczone, localtime;
 let servlocalestatus, avatarofuser, countryofuser, ageofuser;
 
 function getusernamecrm() {
-    const sid = document.getElementById('idstudent').value.trim()
+    const sid = idstudentField.value.trim()
     const changeLocaleLngElement = document.getElementById('changelocalelng');
     const checkBalanceElement = document.getElementById('checkbalance');
     const partialPaymentInfoElement = document.getElementById('partialpaymentinfo');
@@ -693,7 +663,7 @@ function getusernamecrm() {
                     button.style = "background:orange; padding: 2px; border-radius:20%";
 
                     try {
-                        await getLoginLink(document.getElementById('idstudent').value.trim());
+                        await getLoginLink(idstudentField.value.trim());
                         button.style = "background:green; padding: 2px; border-radius:20%";
                     } catch (error) {
                         console.log('Ошибка: ', error);
@@ -767,7 +737,7 @@ let getcrmstatusinfo;
 let crmresponseinfo;
 
 function crmstatus() {
-    const tempvarcrm = document.getElementById('idstudent').value.trim();
+    const tempvarcrm = idstudentField.value.trim();
 
     let flagtpout = false;
     let flagtp = false;
@@ -851,7 +821,7 @@ function crmstatus() {
 }
 
 async function checkServiceAndUserInfo() {
-    let stidNew = document.getElementById('idstudent').value.trim()
+    let stidNew = idstudentField.value.trim()
 
     setTimeout(function () {
         if (flagusertype == "teacher") {
@@ -906,8 +876,8 @@ async function getservices(stidNew) {
 
                 chechkComplectations.data.forEach((service) => {
                     if (service.operatorNote) {
-                         operatorNote = service.operatorNote.replace(/\/\//g, ' ').replace(/\//g, '&#47;');
-                         console.log(operatorNote);
+                        operatorNote = service.operatorNote.replace(/\/\//g, ' ').replace(/\//g, '&#47;');
+                        console.log(operatorNote);
                     }
 
                     let gatheredInfoComplSrvs = '<table style="width: 98%; margin: 10px 0; border-collapse: collapse;">';
@@ -918,9 +888,9 @@ async function getservices(stidNew) {
                             <th style="border: 1px solid black; padding: 5px;">💰</th>
                         </tr>`;
 
-                const allEduServicesCompl = service.educationServices;
-                allEduServicesCompl.forEach((el) => {
-                    gatheredInfoComplSrvs += `
+                    const allEduServicesCompl = service.educationServices;
+                    allEduServicesCompl.forEach((el) => {
+                        gatheredInfoComplSrvs += `
                     <tr>
                     <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">
                     <a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:#32b5f5; text-decoration: none;">${el.id}</a>
@@ -928,8 +898,8 @@ async function getservices(stidNew) {
                         <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.serviceTypeKey}</td>
                         <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.balance}</td>
                     </tr>`;
-                });
-                gatheredInfoComplSrvs += '</table>';
+                    });
+                    gatheredInfoComplSrvs += '</table>';
 
                     complectationServInfo.innerHTML += `<div style="background: #4a7d55; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; font-weight: 800; margin-bottom:5px;" title="${operatorNote}">${service.productKit.title} | ${service.stage == "regular_lessons" ? "Регулярные занятия" : service.stage == "lost" ? "Потерянная" : service.stage}</div>` + gatheredInfoComplSrvs;
                 });
@@ -1029,7 +999,7 @@ async function getservices(stidNew) {
                         button.style = "background:orange; padding: 2px; border-radius:20%";
 
                         try {
-                            await getLoginLink(document.getElementById('idstudent').value.trim());
+                            await getLoginLink(idstudentField.value.trim());
                             button.style = "background:green; padding: 2px; border-radius:20%";
                         } catch (error) {
                             console.log('Ошибка: ', error);
@@ -1071,14 +1041,14 @@ function getuserinfo() {
         document.querySelector('#useravatar').style.display = "none";
 
     document.getElementById('getcurrentstatus').title = "";
-    stid = document.getElementById('idstudent').value.trim();
+    stid = idstudentField.value.trim();
 
     setTimeout(getusernamecrm, 640);
     setTimeout(crmstatus, 700);
     setTimeout(checkServiceAndUserInfo, 720)
 }
 
-document.getElementById('getidstudent').onclick = function () { // нажатие на ракету
+getidstudentbtn.onclick = function () { // нажатие на ракету
     getuserinfo()
     setTimeout(function () {
         if (document.getElementById('servicetable').innerHTML == "Загрузка...") {
@@ -1087,26 +1057,37 @@ document.getElementById('getidstudent').onclick = function () { // нажати�
     }, 4000)
 }
 
-document.getElementById('idstudent').addEventListener('input', function () {
-    onlyNumber(this);
-});
+function handleInput(event) {
+    idstudentField.value = '';
+    const pastedValue = (event.clipboardData || event.dataTransfer).getData('text').trim();
+    setTimeout(() => {
+        if (/^\d+$/.test(pastedValue)) {
+            idstudentField.value = pastedValue;
+            getidstudentbtn.click();
+        }
+    }, 0);
+}
+
+idstudentField.addEventListener('paste', handleInput);
+idstudentField.addEventListener('drop', handleInput);
+idstudentField.addEventListener('input', () => onlyNumber(idstudentField));
 
 document.getElementById('CrmStatus').onclick = crmstatus;
 
 document.getElementById('crmactivetasks').onclick = function () { //открыват СРМ с активными задачами
-    window.open("https://crm2.skyeng.ru/persons/" + document.getElementById('idstudent').value.trim() + "/customer-support/list")
+    window.open("https://crm2.skyeng.ru/persons/" + idstudentField.value.trim() + "/customer-support/list")
 }
 
 document.getElementById('newtrm').onclick = function () { //открывает новый TRM 2.0 п
-    window.open("https://trm.skyeng.ru/teacher/" + document.getElementById('idstudent').value.trim())
+    window.open("https://trm.skyeng.ru/teacher/" + idstudentField.value.trim())
 }
 
 document.getElementById('personalteacherpage').onclick = function () { //открывает личную страницу П
-    window.open("https://skyeng.ru/teachers/id/" + document.getElementById('idstudent').value.trim())
+    window.open("https://skyeng.ru/teachers/id/" + idstudentField.value.trim())
 }
 
 document.getElementById('clearservinfo').onclick = function () { //очищает все в вензеле
-    document.getElementById('idstudent').value = "";
+    idstudentField.value = "";
     document.getElementById('servicetable').innerHTML = "";
     document.getElementById('CrmStatus').style.display = "none";
     document.getElementById('getcurrentstatus').style.display = "none";
