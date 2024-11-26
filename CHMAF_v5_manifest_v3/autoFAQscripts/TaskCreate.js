@@ -77,6 +77,7 @@ var win_taskform = //описание формы создания задач в 
 				<input id="useriddata" placeholder="ID У для получения списка услуг" style="width:240px; margin:10px; text-align:center;">
 				<button class="mainButton smallbtn" id="getuserservices">🔎</button>
 				<p id="serviceinf"></p>
+                <p id="serviceComplinf"></p>
 			</div>
 </div>`;
 
@@ -142,10 +143,23 @@ function gettaskButButtonPress() { // функция открытия окна �
             if (document.getElementById('serviceinf').innerHTML != '')
                 document.getElementById('serviceinf').innerHTML = '';
 
+            if (document.getElementById('serviceComplinf').innerHTML != '')
+                document.getElementById('serviceComplinf').innerHTML = ""
+
+            let complectationServInfo = document.getElementById('cmplData');
+            complectationServInfo.innerHTML = ""
+
+
             let idshka = document.getElementById('useriddata').value.trim();
+            let lnkTaskCrCompl = document.getElementById('serviceComplinf')
 
             const fetchURL = `https://backend.skyeng.ru/api/persons/${idshka}/education-services/`;
             const requestOptions = {
+                method: 'GET'
+            };
+
+            const fetchURLComplectations = `https://backend.skyeng.ru/api/v1/students/${idshka}/education-service-kits/`;
+            const requestOptionsComplectations = {
                 method: 'GET'
             };
 
@@ -181,6 +195,65 @@ function gettaskButButtonPress() { // функция открытия окна �
                 }
 
             })
+
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLComplectations, requestOptions: requestOptionsComplectations }, function (response) { // получение информации по комплектациям
+                if (!response.success) {
+                    alert('Не удалось выполнить запрос: ' + response.error);
+                    return;
+                } else {
+                    const chechkComplectations = JSON.parse(response.fetchansver);
+
+                    if (chechkComplectations.data.length > 0) {
+                        lnkTaskCrCompl.innerHTML += '<div id="openComplectationTaskCreate" style="background: #4e7891; text-align:center; cursor:pointer; text-shadow: 1px 1px 2px black; color:bisque;">✅Есть комплектации >>></div>'
+
+                        const openOneCompl = document.getElementById('openComplectationTaskCreate');
+                        openOneCompl.addEventListener('click', function () {
+                            let getComplWindow = document.getElementById('AF_Complectations');
+                            if (getComplWindow.style.display == "none") {
+                                getComplWindow.style.display = "";
+                            } else {
+                                getComplWindow.style.display = "none";
+                            }
+                        });
+
+                        console.log(chechkComplectations.data);
+
+                        chechkComplectations.data.forEach((service) => {
+                            if (service.operatorNote) {
+                                operatorNote = service.operatorNote.replace(/\/\//g, ' ').replace(/\//g, '&#47;');
+                                console.log(operatorNote);
+                            }
+
+                            let gatheredInfoComplSrvs = '<table style="width: 98%; margin: 10px 0; border-collapse: collapse;">';
+                            gatheredInfoComplSrvs += `
+                                <tr style="background: #776d69; color: white;">
+                                    <th style="border: 1px solid black; padding: 5px;">ID Услуги</th>
+                                    <th style="border: 1px solid black; padding: 5px;">STK</th>
+                                    <th style="border: 1px solid black; padding: 5px;">💰</th>
+                                </tr>`;
+
+                            const allEduServicesCompl = service.educationServices;
+                            allEduServicesCompl.forEach((el) => {
+                                gatheredInfoComplSrvs += `
+                            <tr>
+                            <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">
+                            <a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:#32b5f5; text-decoration: none;">${el.id}</a>
+                        </td>
+                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.serviceTypeKey}</td>
+                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.balance}</td>
+                            </tr>`;
+                            });
+                            gatheredInfoComplSrvs += '</table>';
+
+                            complectationServInfo.innerHTML += `<div style="background: #4a7d55; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; font-weight: 800; margin-bottom:5px;" title="${operatorNote}">${service.productKit.title} | ${service.stage == "regular_lessons" ? "Регулярные занятия" : service.stage == "lost" ? "Потерянная" : service.stage}</div>` + gatheredInfoComplSrvs;
+                        });
+
+                    } else {
+                        linkToComplectationtable.innerHTML += '<div style="background: #4e7891; text-align:center; text-shadow: 1px 1px 2px black;">❌Нет комплектаций</div>';
+                        console.log("Нет услуг комплектаций Домашний Лицей, Large Classes Exams и других");
+                    }
+                }
+            });
 
         }
 
@@ -244,7 +317,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                     "accept": "application/json, text/plain, */*",
                     "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr"
                 },
-				"body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
+                "body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
                 "method": "POST",
                 "mode": "cors",
                 "credentials": "include"
@@ -461,13 +534,13 @@ function gettaskButButtonPress() { // функция открытия окна �
                 if (idflagempty == 1) {
                     fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
                         "headers": {
-                        "accept": "application/json, text/plain, */*",
-						"content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG"
+                            "accept": "application/json, text/plain, */*",
+                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG"
                         },
-				
-						  "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${document.getElementById('taskuserid').value.trim()}\"},{\"name\":\"comment\",\"isFile\":false,\"value\":\"${document.getElementById('taskcomment').value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
-						  
-						  
+
+                        "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${document.getElementById('taskuserid').value.trim()}\"},{\"name\":\"comment\",\"isFile\":false,\"value\":\"${document.getElementById('taskcomment').value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
+
+
                         "method": "POST",
                         "mode": "cors",
                         "credentials": "include"
@@ -475,11 +548,11 @@ function gettaskButButtonPress() { // функция открытия окна �
                 } else {
                     fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
                         "headers": {
-                        "accept": "application/json, text/plain, */*",
-						"content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG"
+                            "accept": "application/json, text/plain, */*",
+                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG"
                         },
-						"body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${document.getElementById('taskuserid').value.trim()}\"},{\"name\":\"initiatorId\",\"isFile\":false,\"value\":${document.getElementById('taskuserid').value.trim()}}, {\"name\":\"comment\",\"isFile\":false,\"value\":\"${document.getElementById('taskcomment').value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,					  
-						  
+                        "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${document.getElementById('taskuserid').value.trim()}\"},{\"name\":\"initiatorId\",\"isFile\":false,\"value\":${document.getElementById('taskuserid').value.trim()}}, {\"name\":\"comment\",\"isFile\":false,\"value\":\"${document.getElementById('taskcomment').value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
+
                         "method": "POST",
                         "mode": "cors",
                         "credentials": "include"
@@ -514,16 +587,16 @@ function gettaskButButtonPress() { // функция открытия окна �
         document.getElementById('AF_Createtask').style.display = 'none'
         taskBut.classList.remove('activeScriptBtn')
         conversid = document.getElementById('chathashlnk').value;
-            fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
-                "headers": {
-					"accept": "application/json, text/plain, */*",
-                    "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr"
-                },
-				"body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
-                "method": "POST",
-                "mode": "cors",
-                "credentials": "include"
-            });
+        fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
+            "headers": {
+                "accept": "application/json, text/plain, */*",
+                "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr"
+            },
+            "body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
+            "method": "POST",
+            "mode": "cors",
+            "credentials": "include"
+        });
     }
 
     studcontact.onclick = function () {
