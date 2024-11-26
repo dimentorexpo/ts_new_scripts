@@ -8,40 +8,39 @@ async function init_settings() {
     const KC_addrRzrv = data.KC_addrRzrv;
     const TP_addrRzrv = data.TP_addrRzrv;
 
-    // Цвет заливки чата перед автозакрытием
-    if (localStorage.getItem('defaclschatcolor') == null || localStorage.getItem('defaclschatcolor') == undefined) {
-        localStorage.setItem('defaclschatcolor', '#FF47CA')
+    // Универсальная функция для проверки и установки значений по умолчанию
+    function setDefaultValue(key, defaultValue) {
+        if (localStorage.getItem(key) == null) {
+            localStorage.setItem(key, defaultValue);
+        }
     }
+
+    // Светлая/темная тема
+    setDefaultValue('extentiontheme', 'light');
+
+    // Цвет заливки чата перед автозакрытием
+    setDefaultValue('defaclschatcolor', '#FF47CA');
 
     // Цвет заливки чата только взятого в работу
-    if (localStorage.getItem('answchatcolor') == null || localStorage.getItem('answchatcolor') == undefined) {
-        localStorage.setItem('answchatcolor', '#A0522D')
-    }
+    setDefaultValue('answchatcolor', '#A0522D');
 
     // Цвет заливки чата ожидающего ответа
-    if (localStorage.getItem('responschatcolor') == null || localStorage.getItem('responschatcolor') == undefined) {
-        localStorage.setItem('responschatcolor', '#DDA0DD')
-    }
+    setDefaultValue('responschatcolor', '#DDA0DD');
 
-    //Для интервала воспроизведения звука
-    if (localStorage.getItem('splinter') == null) {
-        localStorage.setItem('splinter', 3);
-    }
+    // Для интервала воспроизведения звука
+    setDefaultValue('splinter', 3);
 
     // Для переключателя вкл/выкл звук
-    if (localStorage.getItem('audio') == null) {
-        localStorage.setItem('audio', 1);
-    }
+    setDefaultValue('audio', 1);
+
+    // Громкость звука 
+    setDefaultValue('audiovol', 1);
 
     // Для скрытия окна создания задач
-    if (!localStorage.getItem('hideTaskWindow')) {
-        localStorage.setItem('hideTaskWindow', 1)
-    }
+    setDefaultValue('hideTaskWindow', 1);
 
     // Для отображения быстрых тэгов
-    if (!localStorage.getItem('showquicktags')) {
-        localStorage.setItem('showquicktags', 0)
-    }
+    setDefaultValue('showquicktags', 0);
 
     var win_Settings =  // описание элементов окна ссылок
         `<span style="width: 500px">
@@ -73,8 +72,7 @@ async function init_settings() {
                     <div class="onlyfortp">
                         <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hidelpmwindow">Скрыть окно с У П</label>
                         <label style="color:bisque; margin-left: 5px;" title="Добавить тэги в боковое меню"><input type="checkbox" id="showquicktags">Добавить тэги</label>
-                        <br>
-                        <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hideInnerTaskCreate">Скрыть окно АФ при создании задачи</label>
+                        <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hideInnerTaskCreate">Скрыть окно АФ создании задачи</label>
                         <br>
 						<label style="color:bisque"> Автостатус при авторизации в AF</label>
 						<select style="height:28px; width:140px; text-align:center" id="defaultStatusAfterLogin">
@@ -84,24 +82,35 @@ async function init_settings() {
 						</select>
 						 <br>
                     </div>
-                    <label style="color:bisque;"><input type="color" id="aclstimepicker">Цвет заливки закрытия чата</label>
-                    <br>
-                    <label style="color:bisque;"><input type="color" id="answtimepicker">Цвет заливки нового чата</label>
-                    <br>
-                    <label style="color:bisque;"><input type="color" id="responstimepicker">Цвет заливки неотвеченного чата</label>
-                    <br>
-                    <input class="onlyfortp" id="test_std" placeholder="ID тест У" autocomplete="off" title = "ID личного тестового ученика" type="text" style="text-align: center; width: 100px; color: black;">
-                    <button class="mainButton onlyfortp" id="setteststd" title="Добавить в localstorage ID тестового У" style="margin-top: 5px">💾</button>
-                    <input class="onlyfortp" id="test_teach" placeholder="ID тест П" autocomplete="off" title = "ID личного тестового преподавателя" type="text" style="text-align: center; width: 100px; color: black;">
-                    <button class="mainButton onlyfortp" id="settestteach" title="Добавить в localstorage ID тестового П" style="margin-top: 5px">💾</button>
+                    <div>
+                        <div style="float: left;">
+                            <label style="color:bisque;"><input type="color" id="aclstimepicker">Цвет заливки закрытия чата</label>
+                            <br>
+                            <label style="color:bisque;"><input type="color" id="answtimepicker">Цвет заливки нового чата</label>
+                            <br>
+                            <label style="color:bisque;"><input type="color" id="responstimepicker">Цвет заливки неотвеченного чата</label>
+                            <br>
+                        </div>
+                        
+                        <div style="float: left; margin-left: 20px;">
+                            <label style="color:bisque;">Выбор темы расширения</label>
+                            <button class="mainButton" style="width:30px;" id="chagethemeextention" title="Переключение на светлую ☀ или темную 🌛 тему"></button>
+                        </div>
+                    </div>
 
-                <div style="margin-top: 5px; width: 500px">
+                <div style="margin-top: 5px; width: 500px; clear: both;">
                     <span style="color:bisque;">Выберите отдел:</span>
                     <button class="mainButton onlyfortp" id="set_TPrezerv" title="Нажмите если вы из ТП и в АФ не работает Базы Знаний" style="margin-top: 5px">ТП рез</button>
                     <button class="mainButton onlyfortp" id="set_TP" title="Нажмите если вы из ТП" style="margin-top: 5px">ТП</button>
                     <button class="mainButton" id="set_KC" title="Нажмите если вы из КЦ" style="margin-top: 5px">КЦ</button>
                     <button class="mainButton" id="set_KCrezerv" title="Нажмите если вы из КЦ и в АФ не работает Базы Знаний" style="margin-top: 5px">КЦ рез</button>
                     <br>
+                </div>
+                <div class="onlyfortp">
+                    <input id="test_std" placeholder="ID тест У" autocomplete="off" title = "ID личного тестового ученика" type="text" style="text-align: center; width: 100px; color: black;">
+                    <button class="mainButton" id="setteststd" title="Добавить в localstorage ID тестового У" style="margin-top: 5px">💾</button>
+                    <input id="test_teach" placeholder="ID тест П" autocomplete="off" title = "ID личного тестового преподавателя" type="text" style="text-align: center; width: 100px; color: black;">
+                    <button class="mainButton" id="settestteach" title="Добавить в localstorage ID тестового П" style="margin-top: 5px">💾</button>
                 </div>
                     <button class="mainButton" id="savesettingstofile" title="Сохраняет все настройки из localstorage в отдельный .json файл" style="color: #e5ece6; margin-top: 5px">💾 Сохранить настройки</button>
                     <input type="file" id="fileinput" title="Загружает все настройки в localstorage из ранее сохраненного файла настроек в формте .json" style="display:none;">
@@ -190,32 +199,32 @@ async function init_settings() {
             }
         }
     }
-	
-	function changeAutoStatus(){ //функция изменения статуса в АФ по умолчанию
-		let objStatusList = document.getElementById('defaultStatusAfterLogin');
-				
-		        if (objStatusList.length > 1) {
+
+    function changeAutoStatus() { //функция изменения статуса в АФ по умолчанию
+        let objStatusList = document.getElementById('defaultStatusAfterLogin');
+
+        if (objStatusList.length > 1) {
             for (let i = 0; i < objStatusList.length; i++) {
                 if (objStatusList[i].selected == true) {
-					localStorage.setItem('afterLoginFunction', objStatusList[i].value) 
-					console.log(localStorage.getItem('afterLoginFunction'))
-					switch (objStatusList[i].value) {
-						case "Offline":
-							objStatusList.style = "background:red; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-							break;
-						case "Busy":
-							objStatusList.style = "background:yellow; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-							break;
-						default:
-							objStatusList.style = "background:green; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-							break;
-					}
+                    localStorage.setItem('afterLoginFunction', objStatusList[i].value)
+                    console.log(localStorage.getItem('afterLoginFunction'))
+                    switch (objStatusList[i].value) {
+                        case "Offline":
+                            objStatusList.style = "background:red; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+                            break;
+                        case "Busy":
+                            objStatusList.style = "background:yellow; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+                            break;
+                        default:
+                            objStatusList.style = "background:green; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+                            break;
+                    }
 
                 }
             }
         }
-		
-	}  
+
+    }
 
     document.getElementById('soundlistaddr').addEventListener('change', changesoundaddr); // функция запоминания выбранного нового звука
     document.getElementById('defaultStatusAfterLogin').addEventListener('change', changeAutoStatus); // функция запоминания дефолтного статуса при его смене
@@ -288,10 +297,81 @@ async function init_settings() {
         }
     }
 
+    // Универсальная функция для установки и отображения цвета
+    function setupColorPicker(elementId, localStorageKey, defaultColor) {
+        const element = document.getElementById(elementId);
+        const savedColor = localStorage.getItem(localStorageKey) || defaultColor;
 
-    if (localStorage.getItem('audiovol') != null) {
-        audio.volume = localStorage.getItem('audiovol');
-    } else localStorage.setItem('audiovol', 1);
+        localStorage.setItem(localStorageKey, savedColor);
+        element.value = savedColor;
+
+        element.onchange = function () {
+            localStorage.setItem(localStorageKey, this.value);
+        };
+
+        element.ondblclick = function () {
+            localStorage.setItem(localStorageKey, defaultColor);
+            element.value = defaultColor;
+        };
+    }
+
+    // Универсальная функция для установки значений input
+    function setupInputValue(elementId, localStorageKey, defaultValue = '') {
+        const element = document.getElementById(elementId);
+        const savedValue = localStorage.getItem(localStorageKey) || defaultValue;
+        element.value = savedValue;
+    }
+
+    // Настройка темы интерфейса
+    function setupThemeButton(buttonId, localStorageKey) {
+        const button = document.getElementById(buttonId);
+        const currentTheme = localStorage.getItem(localStorageKey) || 'light';
+
+        const updateButtonIcon = (theme) => {
+            button.innerHTML = theme === 'light' ? '☀' : theme === 'dark' ? '🌛' : '🌚';
+        };
+
+        updateButtonIcon(currentTheme);
+        localStorage.setItem(localStorageKey, currentTheme);
+
+        // Можно добавить обработчик клика для изменения темы
+        button.onclick = function () {
+            const currentTheme = localStorage.getItem(localStorageKey) || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem(localStorageKey, newTheme);
+            updateButtonIcon(newTheme);ы
+        };        
+    }
+
+    // Универсальная функция для настройки чекбоксов
+    function setupCheckbox(checkboxId, localStorageKey, callback = () => { }) {
+        const checkbox = document.getElementById(checkboxId);
+        const savedValue = localStorage.getItem(localStorageKey) || '0';
+
+        checkbox.checked = savedValue === '1';
+
+        checkbox.onclick = function () {
+            const isChecked = checkbox.checked ? '1' : '0';
+            localStorage.setItem(localStorageKey, isChecked);
+            callback(isChecked);
+        };
+        callback(savedValue);
+    }
+
+    // Настройка громкости
+    function setupRange(rangeId, localStorageKey, defaultValue = 1, callback = () => { }) {
+        const range = document.getElementById(rangeId);
+        const savedValue = localStorage.getItem(localStorageKey) || defaultValue;
+
+        range.value = savedValue;
+        callback(savedValue);
+
+        range.onchange = function () {
+            const newValue = this.value;
+            localStorage.setItem(localStorageKey, newValue);
+            callback(newValue);
+        };
+    }
 
     document.getElementById('setting').onclick = function () { // открывает параметры
         if (document.getElementById('AF_Settings').style.display == '')
@@ -299,53 +379,65 @@ async function init_settings() {
         else {
             document.getElementById('AF_Settings').style.display = ''
 
-            if (localStorage.getItem('defaclschatcolor') != null || localStorage.getItem('defaclschatcolor') != undefined) {
-                document.getElementById('aclstimepicker').value = localStorage.getItem('defaclschatcolor')
-            } else {
-                localStorage.setItem('defaclschatcolor', '#FF47CA')
-                document.getElementById('aclstimepicker').value = localStorage.getItem('defaclschatcolor')
-            }
+            setupColorPicker('aclstimepicker', 'defaclschatcolor', '#FF47CA');
+            setupColorPicker('answtimepicker', 'answchatcolor', '#A0522D');
+            setupColorPicker('responstimepicker', 'responschatcolor', '#DDA0DD');
 
-            document.getElementById('aclstimepicker').onchange = function () {
-                localStorage.setItem('defaclschatcolor', this.value)
-            }
+            setupInputValue('test_std', 'test_stud');
+            setupInputValue('test_teach', 'test_teach');
+            setupInputValue('soundplayinterval', 'splinter', 3);
+            setupThemeButton('chagethemeextention', 'extentiontheme');
 
-            document.getElementById('aclstimepicker').ondblclick = function () {
-                localStorage.setItem('defaclschatcolor', '#FF47CA')
-                document.getElementById('aclstimepicker').value = localStorage.getItem('defaclschatcolor')
-            }
+            // Настройка чекбокса для скрытия окна задач
+            setupCheckbox('hideInnerTaskCreate', 'hideTaskWindow');
 
-            if (localStorage.getItem('answchatcolor') != null || localStorage.getItem('answchatcolor') != undefined) {
-                document.getElementById('answtimepicker').value = localStorage.getItem('answchatcolor')
-            } else {
-                localStorage.setItem('answchatcolor', '#A0522D')
-                document.getElementById('answtimepicker').value = localStorage.getItem('answchatcolor')
-            }
+            // Настройка чекбокса для отображения/скрытия дополнительных тэгов
+            setupCheckbox('showquicktags', 'showquicktags');
 
-            document.getElementById('answtimepicker').onchange = function () {
-                localStorage.setItem('answchatcolor', this.value)
-            }
+            // Настройка чекбокса для скрытия окна Л П МВУ
+            setupCheckbox('hidelpmwindow', 'disablelpmwindow', (isChecked) => {
+                document.getElementById('TestUsers').style.display = isChecked === '1' ? 'none' : '';
+            });
 
-            document.getElementById('answtimepicker').ondblclick = function () {
-                localStorage.setItem('answchatcolor', '#A0522D')
-                document.getElementById('answtimepicker').value = localStorage.getItem('answchatcolor')
-            }
+            // Настройка громкости звука
+            setupRange('range', 'audiovol', 1, (volume) => {
+                audio.volume = volume;
+            });
 
-            if (localStorage.getItem('responschatcolor') != null || localStorage.getItem('responschatcolor') != undefined) {
-                document.getElementById('responstimepicker').value = localStorage.getItem('responschatcolor')
-            } else {
-                localStorage.setItem('responschatcolor', '#DDA0DD')
-                document.getElementById('responstimepicker').value = localStorage.getItem('responschatcolor')
-            }
+            // Настройка переключателя звука
+            setupCheckbox('audioswitcher', 'audio', (isChecked) => {
+                if (isChecked === '1') {
+                    // Логика для включенного звука
+                    console.log("Звук включен");
+                } else {
+                    // Логика для выключенного звука
+                    if (typeof soundintervalset !== 'undefined' && soundintervalset !== null) {
+                        clearInterval(soundintervalset);
+                        soundintervalset = null;
+                    }
+                    console.log("Звук выключен");
+                }
+            });
 
-            document.getElementById('responstimepicker').onchange = function () {
-                localStorage.setItem('responschatcolor', this.value)
-            }
+            // Сохранение ID тестового ученика
+            document.getElementById('setteststd').onclick = function () {
+                const value = document.getElementById('test_std').value;
+                if (value) {
+                    localStorage.setItem('test_stud', value);
+                } else {
+                    console.log("Введите ID тестового ученика");
+                }
+            };
 
-            document.getElementById('responstimepicker').ondblclick = function () {
-                localStorage.setItem('responschatcolor', '#DDA0DD')
-                document.getElementById('responstimepicker').value = localStorage.getItem('responschatcolor')
-            }
+            // Сохранение ID тестового преподавателя
+            document.getElementById('settestteach').onclick = function () {
+                const value = document.getElementById('test_teach').value;
+                if (value) {
+                    localStorage.setItem('test_teach', value);
+                } else {
+                    console.log("Введите ID тестового преподавателя");
+                }
+            };
 
             // скрываем от других отделов возможность включать расширение с ТП  плююшками и шаблонами
 
@@ -410,47 +502,31 @@ async function init_settings() {
                 getsoundsfromdoc()
             }
 
-            if (localStorage.getItem('test_stud') != "" || localStorage.getItem('test_stud') != null) {
-                document.getElementById('test_std').value = localStorage.getItem('test_stud');
-            } else document.getElementById('test_std').value = "";
+            //Для автостатуса меняем настройку сверяя с сохраненной в localstorage
+            let objStatusListMain = document.getElementById('defaultStatusAfterLogin');
 
-            if (localStorage.getItem('test_teach') != "" || localStorage.getItem('test_teach') != null) {
-                document.getElementById('test_teach').value = localStorage.getItem('test_teach');
-            } else document.getElementById('test_teach').value = "";
+            Array.prototype.forEach.call(objStatusListMain.children, (option) => { // проверяем какой статус выбран
+                if (option.value === localStorage.getItem('afterLoginFunction')) {
+                    option.selected = true;
 
-			//Для автостатуса меняем настройку сверяя с сохраненной в localstorage
-			let objStatusListMain = document.getElementById('defaultStatusAfterLogin');
-			
-			 Array.prototype.forEach.call(objStatusListMain.children, (option) => { // проверяем какой статус выбран
-					if (option.value === localStorage.getItem('afterLoginFunction')) {
-                        option.selected = true;
-						
-						switch (option.value) {
-						case "Offline":
-							objStatusListMain.style = "background:red; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-							break;
-						case "Busy":
-							objStatusListMain.style = "background:yellow; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-							break;
-						default:
-							objStatusListMain.style = "background:green; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-							break;
-					}
-						
-						
+                    switch (option.value) {
+                        case "Offline":
+                            objStatusListMain.style = "background:red; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+                            break;
+                        case "Busy":
+                            objStatusListMain.style = "background:yellow; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+                            break;
+                        default:
+                            objStatusListMain.style = "background:green; height: 28px; width: 140px; text-align: center; border-radius:20px;";
+                            break;
                     }
-				}
-			);
-			
+
+
+                }
+            }
+            );
 
             //Для интервала между воспроизведением звука
-            if (localStorage.getItem('splinter') != null || localStorage.getItem('splinter') != "") {
-                document.getElementById('soundplayinterval').value = localStorage.getItem('splinter');
-            } else {
-                localStorage.setItem('splinter', 3);
-                document.getElementById('soundplayinterval').value = localStorage.getItem('splinter');
-            }
-
             document.getElementById('setsoundplayinterval').onclick = function () {
                 if (document.getElementById('soundplayinterval').value != '') {
                     localStorage.setItem('splinter', document.getElementById('soundplayinterval').value);
@@ -482,100 +558,6 @@ async function init_settings() {
                 }
             }
 
-            //
-
-            let range = document.getElementById('range');
-            range.value = localStorage.getItem('audiovol');
-
-            range.onchange = function () {
-                if (localStorage.getItem('audiovol') != null) {
-                    audio.volume = this.value;
-                    localStorage.setItem('audiovol', audio.volume);
-                } else localStorage.setItem('audiovol', this.value);
-            }
-
-            //
-            let flagHideTask = 0;
-            let hideTaskSelector = document.getElementById('hideInnerTaskCreate');
-
-            hideTaskSelector.onclick = function () {
-
-                if (!hideTaskSelector.checked) {
-
-                    flagHideTask = 0;
-                    localStorage.setItem('hideTaskWindow', flagHideTask)
-
-                } else {
-                    flagHideTask = 1;
-                    localStorage.setItem('hideTaskWindow', flagHideTask)
-                }
-            }
-
-            if (localStorage.getItem('hideTaskWindow') == 0) {
-                hideTaskSelector.checked = false;
-            } else {
-                hideTaskSelector.checked = true;
-            }
-            //
-
-            // Отображение/скрытие дополнительных тэгов
-            let flagshowtags = 0;
-            let showtagsSelector = document.getElementById('showquicktags');
-
-            showtagsSelector.onclick = function () {
-
-                if (!showtagsSelector.checked) {
-
-                    flagshowtags = 0;
-                    localStorage.setItem('showquicktags', flagshowtags)
-
-                } else {
-                    flagshowtags = 1;
-                    localStorage.setItem('showquicktags', flagshowtags)
-                }
-            }
-
-            if (localStorage.getItem('showquicktags') == 0) {
-                showtagsSelector.checked = false;
-            } else {
-                showtagsSelector.checked = true;
-            }
-
-            //Скрыть окно Л П МВУ
-            let flaglpm = 0;   // функция чекбокса вкл и откл  информационного окна
-            var lpmboxstatus = document.getElementById('hidelpmwindow');
-            lpmboxstatus.onclick = function () {
-
-                if (!lpmboxstatus.checked) {
-                    document.getElementById('TestUsers').style.display = "";
-                    flaglpm = 0;
-                    localStorage.setItem('disablelpmwindow', flaglpm)
-                } else {   // поставить checked, если он не установлен
-                    document.getElementById('TestUsers').style.display = "none";
-                    flaglpm = 1;
-                    localStorage.setItem('disablelpmwindow', flaglpm)
-                }
-            }
-
-            if (localStorage.getItem('disablelpmwindow') == 1) {
-                document.getElementById('TestUsers').style.display = "none";
-                lpmboxstatus.checked = true;
-            } else {
-                lpmboxstatus.checked = false;
-            }
-
-            document.getElementById('setteststd').onclick = function () { // сохраняется ID в настройках расширения тестового ученика в localstorage
-                if (document.getElementById('test_std').value != '') {
-                    localStorage.setItem('test_stud', document.getElementById('test_std').value);
-                } else console.log("Ведите ID тестового ученика")
-            }
-
-            document.getElementById('settestteach').onclick = function () { // сохраняется ID в настройках расширения тестового учителя в localstorage
-                if (document.getElementById('test_teach').value != '') {
-                    localStorage.setItem('test_teach', document.getElementById('test_teach').value);
-                } else console.log("Ведите ID тестового преподавателя")
-            }
-
             document.getElementById('savesettingstofile').onclick = function () {  // по клику на кнопку Сохранить настройки сохраянется на жесткомм диске файл с содержимым localstorage
                 getLocalstorageToFile('settings-af')
             }
@@ -604,28 +586,6 @@ async function init_settings() {
                         console.log("File not supported!")
                     }
                 });
-            }
-
-            if (localStorage.getItem('audio') == '0')
-                document.getElementById('audioswitcher').checked = false;
-            else
-                document.getElementById('audioswitcher').checked = true;
-
-            document.getElementsByClassName('checkbox-audio-switch')[0].onclick = function () {  // функция переключатели звука ВКЛ и ВЫКЛ
-
-                if (localStorage.getItem('audio') != null) {
-                    if (localStorage.getItem('audio') == '0') {
-                        document.getElementById('audioswitcher').checked = false;
-                        localStorage.setItem('audio', '1');
-                    } else if (localStorage.getItem('audio') == '1') {
-                        document.getElementById('audioswitcher').checked = true;
-                        localStorage.setItem('audio', '0');
-                        if (soundintervalset != null) {
-                            clearInterval(soundintervalset)
-                            soundintervalset = null
-                        }
-                    }
-                }
             }
         }
     }
