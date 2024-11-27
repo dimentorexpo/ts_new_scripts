@@ -8,8 +8,8 @@ var win_FrozeChat =  // описание формы чтобы не давала
 								<button class="mainButton smallbtn" id="arinfo" style="float:right; margin-right: 5px;" title="При добавлении хеша чата и выборе времени, по умолчанию 6 минут, по истечению которого в этот чат автоматически будет отправлен ответ по умолчанию Извините, что заставляю вас ждать, но мне нужно еще несколько минут 🙏">❓</button>
                         </div>
 						<div>
-							<input id="chatfrozehash" placeholder="Введите хэш чата" title="Введите хеш чата, которые хотите, чтобы через время скрипт отправил ответ от вашего имени" autocomplete="off" type="text" style="text-align: center; width: 290px; color: black;margin-left:5px">
-							<input id="frozetimer" value="6" style="width:38px;" oninput="maxLengthCheck(this)" type="number" maxlength="2" min="0" max="59">
+							<input id="chatfrozehash" class="${exttheme}" placeholder="Введите хэш чата" title="Введите хеш чата, которые хотите, чтобы через время скрипт отправил ответ от вашего имени" autocomplete="off" type="text" style="text-align: center; width: 290px; margin-left:5px">
+							<input id="frozetimer" class="${exttheme}" value="6" style="width:38px;" oninput="maxLengthCheck(this)" type="number" maxlength="2" min="0" max="59">
 							<span style="color:bisque;">min</span>
 							<button class="mainButton smallbtn" id="freezechat" title="Задать таймер автоответа">❄</button>
 						</div>

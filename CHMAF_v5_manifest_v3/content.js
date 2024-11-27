@@ -63,7 +63,37 @@ localStorage.setItem('tpflag', localStorage.getItem('tpflag') || 'ТП');
 localStorage.setItem('extentiontheme', localStorage.getItem('extentiontheme') || 'light');
 
 var exttheme = localStorage.getItem('extentiontheme') === 'dark' ? 'darkinputs' : 'lightinputs';
+var selectedinpth = exttheme === 'lightinputs' ? 'calendarmyinputslight' : 'calendarmyinputsdark';
+var otherinpth = exttheme === 'lightinputs' ? 'othercalendarlight' : 'othercalendardark';
+var selecttheme = exttheme === 'lightinputs' ? 'lightopts' : 'darkopts';
 
+function applyCalendarIconInversion() {
+    if (exttheme === 'darkinputs') {
+        const css = [
+            "input[type='date']::-webkit-calendar-picker-indicator {",
+            "    filter: invert(1) !important;",
+            "}"
+        ].join("\n");
+        const styleElement = document.createElement("style");
+        styleElement.textContent = css;
+        styleElement.id = 'calendarIconInversion'; // Добавляем id для идентификации
+        document.head.appendChild(styleElement);
+    }
+}
+
+// Функция для удаления инвертирования значка календаря
+function removeCalendarIconInversion() {
+    const styleElement = document.getElementById('calendarIconInversion');
+    if (styleElement) {
+        styleElement.remove(); // Удаляем элемент <style> из head
+    }
+}
+
+// Применяем инвертирование значка календаря, если темная тема активна
+applyCalendarIconInversion();
+
+// Для удаления инвертирования при смене темы:
+// removeCalendarIconInversion(); // Вызываем эту функцию для удаления инвертирования
 
 var win_AFhelper =  // описание элементов главного окна
     `<div style="width: 351px;">

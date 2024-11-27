@@ -325,43 +325,72 @@ async function init_settings() {
     // Настройка темы интерфейса
     function setupThemeButton(buttonId, localStorageKey) {
         const button = document.getElementById(buttonId);
-
+    
         // Функция для обновления иконки кнопки
         const updateButtonIcon = (theme) => {
-            button.innerHTML = theme === 'light' ? '☀' : theme === 'dark' ? '🌛' : '🌚';
+            button.innerHTML = theme === 'light' ? '☀' : '🌛';
         };
-
-        // Функция для смены класса элементов
+    
+        // Функция для смены классов элементов и обновления переменных
         const updateElementClasses = (newTheme) => {
+            // Определяем новые классы в зависимости от темы
             const newClass = newTheme === 'dark' ? 'darkinputs' : 'lightinputs';
-            const elements = document.querySelectorAll(`.${exttheme}`);
-
-            elements.forEach(element => {
-                if (element.id !== 'iduserinfo') { // Исключаем элемент с id iduserinfo
+            const newSelectClass = newTheme === 'dark' ? 'darkopts' : 'lightopts';
+            selectedinpth = newTheme === 'dark' ? 'calendarmyinputsdark' : 'calendarmyinputslight';
+            otherinpth = newTheme === 'dark' ? 'othercalendardark' : 'othercalendarlight';
+    
+            // Меняем класс для элементов с классом exttheme
+            const inputElements = document.querySelectorAll(`.${exttheme}`);
+            inputElements.forEach(element => {
+                if (element.id !== 'iduserinfo') {
                     element.classList.remove(exttheme);
                     element.classList.add(newClass);
                 }
             });
-
-            // Обновляем текущую тему
+    
+            // Меняем класс для элементов с классом selecttheme
+            const selectElements = document.querySelectorAll(`.${selecttheme}`);
+            selectElements.forEach(element => {
+                element.classList.remove(selecttheme);
+                element.classList.add(newSelectClass);
+            });
+    
+            // Обновляем классы элементов с selectedinpth
+            document.querySelectorAll('.calendarmyinputslight, .calendarmyinputsdark').forEach(element => {
+                element.classList.remove('calendarmyinputslight', 'calendarmyinputsdark');
+                element.classList.add(selectedinpth);
+            });
+    
+            // Обновляем классы элементов с otherinpth
+            document.querySelectorAll('.othercalendarlight, .othercalendardark').forEach(element => {
+                element.classList.remove('othercalendarlight', 'othercalendardark');
+                element.classList.add(otherinpth);
+            });
+    
+            // Обновляем глобальные переменные текущей темы
             exttheme = newClass;
+            selecttheme = newSelectClass;
         };
-
+    
         // Устанавливаем текущую тему из localStorage
         let currentTheme = localStorage.getItem(localStorageKey) || 'light';
         exttheme = currentTheme === 'dark' ? 'darkinputs' : 'lightinputs';
+        selecttheme = currentTheme === 'dark' ? 'darkopts' : 'lightopts';
+        selectedinpth = currentTheme === 'dark' ? 'calendarmyinputsdark' : 'calendarmyinputslight';
+        otherinpth = currentTheme === 'dark' ? 'othercalendardark' : 'othercalendarlight';
+    
         updateButtonIcon(currentTheme);
-
+    
         // Обработчик клика для смены темы
         button.onclick = function () {
             currentTheme = localStorage.getItem(localStorageKey) || 'light';
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
+    
             localStorage.setItem(localStorageKey, newTheme);
             updateButtonIcon(newTheme);
             updateElementClasses(newTheme);
         };
-    }
+    }    
 
     // Универсальная функция для настройки чекбоксов
     function setupCheckbox(checkboxId, localStorageKey, callback = () => { }) {

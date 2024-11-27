@@ -6,7 +6,7 @@ var win_BankInfo =  // описание элементов окна Списка
                                 <button class="mainButton buttonHide" id="hideMeBinBank">hide</button>
                         </div>
 						<div>
-                        <input oninput="onlyNumbers(this)" required id="carddigits" placeholder="6 первых цифр карты" title="Введите 6 первых цифр карты" autocomplete="off" type="text" style="text-align: center; width: 160px; color: black;margin-left:5px; position:relative; left:20%;">
+                        <input oninput="onlyNumbers(this)" required id="carddigits" class="${exttheme}" placeholder="6 первых цифр карты" title="Введите 6 первых цифр карты" autocomplete="off" type="text" style="text-align: center; width: 160px; margin-left:5px; position:relative; left:20%;">
 							<button class="mainButton" title="Запуск получения информации о карте" id="getBankInfoData" style="position:relative; left:20%;">Get info</button>
 							<button class="mainButton" title="Открыть сайт с просмотром информации по введеному ID" id="openSiteBin" style="position:relative; left:20%;">Look on site</button>
 						</div>

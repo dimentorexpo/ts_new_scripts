@@ -19,11 +19,11 @@ var win_Calendar =  // описание формы чтобы не давала 
 
 						<div style="display: flex; justify-content: center;">
 								<button class="mainButton" id="prevDay" style="border-radius: 20px; padding: 5px; padding-top: 6px;">◀</button>
-								<input type="date" id="eventDate" style="width:100px; text-align:center; background: blanchedalmond; font-weight: 700; border-radius: 20px;"></input>
+								<input class="${otherinpth}" type="date" id="eventDate" style="width:100px; text-align:center; font-weight: 700; border-radius: 20px;"></input>
 								<button class="mainButton" id="nextDay" style="border-radius: 20px; padding: 5px; padding-top: 6px;">▶</button>
 								<button class="mainButton" id="nowDay" style="margin-left: 5px; padding: 5px;">Сегодня</button>
 								<label style="margin-left: 5px; margin-right: 5px; margin-top: 5px; color: bisque;">Слоты по состоянию на: </label>
-								<input type="text" id="datenowtime" style="text-align:center; background: cornsilk; border-radius: 20px;" disabled></input>
+								<input class="${otherinpth}" type="text" id="datenowtime" style="text-align:center; border-radius: 20px;" disabled></input>
 						</div>
 
 						<div id="outputcalendarfield" style="color:bisque; display:flex; flex-wrap:wrap; justify-content: center; align-items: center; padding-bottom: 5px; margin-top: 5px">
@@ -114,7 +114,7 @@ function getSlotData(name) {
     for (let j = 0; j < parseInt(allRows[name].getAttribute('dlina')); j++) {
         let testd = document.createElement('div')
         testd.style = "margin-top: 5px;"
-        testd.innerHTML = '<input name="slotInfo" style="width: 478px;">' + ' ' + '<button class="mainButton" name="saveToCalend">💾</button>' + ' ' + '<button class="mainButton" name="deleteFromCalend">❌</button>'
+        testd.innerHTML = `<input class="${exttheme}" name="slotInfo" style="width: 478px;"><button class="mainButton" name="saveToCalend">💾</button><button class="mainButton" name="deleteFromCalend">❌</button>`;
         document.getElementById('slotData').appendChild(testd)
     }
 
@@ -131,7 +131,8 @@ function getSlotData(name) {
             spisok[n].title = tempVarMatches[n].eventId
             spisok[n].setAttribute('createdByOperator', `${tempVarMatches[n].createdBy}`)
             if (spisok[n].getAttribute('createdByOperator') == operNamesAF[0] || spisok[n].getAttribute('createdByOperator') == operNamesAF[1]) {
-                spisok[n].style.background = "#afdbaf"
+                spisok[n].classList.remove(exttheme);
+                spisok[n].classList.add(selectedinpth);
             }
         }
     }
@@ -451,7 +452,7 @@ function refreshActiveOperSlots() { // функция обновления ин�
 			<div style="margin-left:5px; margin-top:5px; background: darkgray;">
 			  <span style="background: #2058cb; padding: 6px; margin-top: 5px; padding-bottom: 8px; color: white; font-weight: 700;">${slotTime}</span>
 			  <span style="background: darkseagreen; padding: 5px; font-weight: 700;">${slotDate}</span>
-			  <input name="slotToDelete" title="${eventId}" value="${slotToDelete}" style="width: 80px; text-align: center;">
+			  <input class="${exttheme}" name="slotToDelete" title="${eventId}" value="${slotToDelete}" style="width: 80px; text-align: center;">
 			  <button class="mainButton" name="deleMySlot">❌</button>
 			  <span style="width: 90px;">${statusLabel}</span>
 			</div>

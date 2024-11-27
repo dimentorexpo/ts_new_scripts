@@ -5,7 +5,7 @@ var win_Chathis =  // описание элементов окна Истори�
 				<div style="margin: 5px; width: 410px;" id="chathisheader">
 					<button class="mainButton buttonHide" title="Скрытие меню" id="hideMeChHis">hide</button>
 					<button class="mainButton smallbtn" title="Очистка всех полей" id="clearallinfo">🧹</button>
-					<select style="height:28px; width:260px; text-align:center" id="operatorstp">
+					<select style="height:28px; width:260px; text-align:center" id="operatorstp" class="${exttheme}">
 							<option selected="" disabled="">Операторы на линии</option>
 					</select>
 					<button class="mainButton smallbtn" title="Обновляет список активных операторов, их статус, и количества чатов" id="RefrehOperators">♻</button>
@@ -13,17 +13,17 @@ var win_Chathis =  // описание элементов окна Истори�
 				</div>
 				<div style="margin: 5px; width: 410px; display:flex; justify-content:space-evenly;" id="chathismenu">
 					<button class="mainButton" title="Возвращает на экран просмотра списка чатов" id="back_to_chat_his" style="width:50px; font-size:22px; padding:0;">🔙</button>
-					 <input id="chatuserhis" placeholder="ID пользователя" autocomplete="off" type="text" style="text-align: center; width: 130px; color: black; margin-top: 5px">
-					 <input id="hashchathis" placeholder="Хеш чата" title="" autocomplete="off" type="text" style="text-align: center; width: 130px; color: black; margin-top: 5px">
+					 <input id="chatuserhis" class="${exttheme}" placeholder="ID пользователя" autocomplete="off" type="text" style="text-align: center; width: 130px; margin-top: 5px">
+					 <input id="hashchathis" class="${exttheme}" placeholder="Хеш чата" title="" autocomplete="off" type="text" style="text-align: center; width: 130px; margin-top: 5px">
 					<button class="mainButton" title="Находит историю чатов или открывает по хешу чата диалог" id="btn_search_history" style="width:50px;font-size:22px;padding:0;">🔎</button>
 				</div>
 				<div style="margin-top: 5px; width: 410px;display:flex; justify-content:center;margin-bottom:5px;" id="databoxchathis">
 					<button class="mainButton" title="Инструкция по этой форме" id="chhisinstr" style="margin-right: 5px;">❓</button>
 					<button class="mainButton" id="refreshchat" style="width:30px; font-size:16px;" title="Обновляет содержимое окна с чатом, если он активный, чтобы увидеть новые записи">🔄</button>
 					<span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">От </span>
-					<input type="date" style="color:black; margin-left:5px;  width:115px; text-align:center; " name="StartDataChHis" id="dateFromChHis">
+					<input class="${exttheme}" type="date" style="margin-left:5px;  width:115px; text-align:center; " name="StartDataChHis" id="dateFromChHis">
 					<span style="color:bisque; margin-top:5px; margin-left:10px; float:right; height:28px;">До </span>
-					<input type="date" style="color:black; float:right; margin-left:5px; margin-right:10px; width:115px; text-align:center; " name="EndDataChHis" id="dateToChHis">
+					<input class="${exttheme}" type="date" style="float:right; margin-left:5px; margin-right:10px; width:115px; text-align:center; " name="EndDataChHis" id="dateToChHis">
 					<button class="mainButton" style="width:30px;" id="chagetheme" title="Переключается светлую тему ☀ и темную🌛 вывода чата с пользователем">🌛</button>
 				</div>
 			</span>

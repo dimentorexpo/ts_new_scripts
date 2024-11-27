@@ -1,23 +1,38 @@
 var win_Alarmclock =  // описание элементов окна будильника
-    `<div style="border: 2px double black; background-color: #464451; cursor: -webkit-grab;" id="reminder_bar">
-				<div>
-					<button title="Скрытие меню" id="hideMeAlarm" class="mainButton buttonHide">hide</button>
-				</div>
-				<div style="margin: 5px; width: 350px">
-					<label style="color:bisque">__Будильник №1</label> <label style="color:bisque">........................... Будильник №2__</label>
-				<br>
-					<input title="Ввод часа от 0 до 23 для будильника" id="setchas" placeholder="HH" autocomplete="off" type="number" maxlength="2" min="0" max="23" style="text-align: center; margin-top: 5px; width: 50px; color: black;"> <span style="color: white; margin-top: 5px;">:</span>
-					<input title="Ввод минут от 0 до 59 для будильника" id="setminuta" placeholder="MM" autocomplete="off"  type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px;  width: 50px; color: black;">
-					<button class="mainButton" title="Запуск будильника при устаноовленном времени" id="setreminder" style="margin-top: 5px">SET🔔</button>
-					<input title="Ввод часа от 0 до 23 для будильника" id="setchas1" placeholder="HH" autocomplete="off"  type="number" maxlength="2" min="0" max="23" style="text-align: center; margin-top: 5px; width: 50px; color: black;"> <span style="color: white; margin-top: 5px;">:</span>
-					<input title="Ввод минут от 0 до 59 для будильника" id="setminuta1" placeholder="MM" autocomplete="off"  type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px;  width: 50px; color: black;">
-					<button class="mainButton" title="Запуск будильника при устаноовленном времени" id="setreminder1" style="margin-top: 5px">SET🔔</button>
-				<br>
-					<button class="mainButton" title="Отображение текущего времени" id="clock_js" style="color: white; margin-top: 5px"></button>
-					<button class="mainButton" id="clock_remin" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: lightgreen!important; margin-top: 5px">00 : 00 : 00</button>
-					<button class="mainButton" id="clock_remin1" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: MediumSpringGreen!important; margin-left:28px; margin-top: 5px">00 : 00 : 00</button>
-				</div>
-			</div>`;
+    `<div style="border: 2px double black; background-color: #464451; cursor: -webkit-grab; width: 350px;" id="reminder_bar">
+        <div>
+            <button title="Скрытие меню" id="hideMeAlarm" class="mainButton buttonHide" style="margin: 5px; float: left;">hide</button>
+            <button class="mainButton" title="Отображение текущего времени" id="clock_js" style="margin: 5px; float: right;"></button>
+        </div>
+
+        <div style="display: flex; margin: 5px; width: 100%; max-width: 700px;">
+            <div style="width: 49%; display: inline-block;">
+                <div style="text-align: center;">
+                    <label style="color: bisque;">Будильник №1</label>
+                </div>
+                <input class="${exttheme}" title="Ввод часа от 0 до 23 для будильника" id="setchas" placeholder="HH" autocomplete="off" type="number" maxlength="2" min="0" max="23" style="text-align: left; margin-top: 5px; width: 50px;"> 
+                <span style="color: white; margin-top: 5px;">:</span>
+                <input class="${exttheme}" title="Ввод минут от 0 до 59 для будильника" id="setminuta" placeholder="MM" autocomplete="off" type="number" maxlength="2" min="0" max="59" style="text-align: left; margin-top: 5px; width: 50px;">
+                <button class="mainButton" title="Запуск будильника при установленном времени" id="setreminder" style="margin-top: 5px;">SET🔔</button>
+                <div style="text-align: center;">
+                    <button class="mainButton" id="clock_remin" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: lightgreen!important; margin-top: 5px;">00 : 00 : 00</button>
+                </div>
+            </div>
+
+            <div style="width: 49%; display: inline-block; margin-left: 2px;">
+                <div style="text-align: center;">
+                    <label style="color: bisque;">Будильник №2</label>
+                </div>
+                <input class="${exttheme}" title="Ввод часа от 0 до 23 для будильника" id="setchas1" placeholder="HH" autocomplete="off" type="number" maxlength="2" min="0" max="23" style="text-align: left; margin-top: 5px; width: 50px;"> 
+                <span style="color: white; margin-top: 5px;">:</span>
+                <input class="${exttheme}" title="Ввод минут от 0 до 59 для будильника" id="setminuta1" placeholder="MM" autocomplete="off" type="number" maxlength="2" min="0" max="59" style="text-align: left; margin-top: 5px; width: 50px;">
+                <button class="mainButton" title="Запуск будильника при установленном времени" id="setreminder1" style="margin-top: 5px;">SET🔔</button>
+                <div style="text-align: center;">
+                    <button class="mainButton" id="clock_remin1" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: MediumSpringGreen!important; margin-top: 5px;">00 : 00 : 00</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
 
 const wintAlarmclock = createWindow('AF_AlarmClock', 'winTopAlarmclock', 'winLeftAlarmclock', win_Alarmclock);
 hideWindowOnDoubleClick('AF_AlarmClock');
