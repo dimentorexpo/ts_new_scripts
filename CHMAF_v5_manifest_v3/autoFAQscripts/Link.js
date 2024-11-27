@@ -52,6 +52,8 @@ var win_Links =  // описание элементов окна ссылок
 					<button class="mainButton" id="getpushes">🔎</button>
 					<input id="trshooterhash" placeholder="hash trshooter" title="Вводим хеш комнаты чтобы посмотреть сразу инфу в трабл шутере" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
 					<button class="mainButton" id="gettrshinfo" style="width: 25.23px;">🚀</button>
+                    <input id="sIdSynchronize" placeholder="ID Ус синхр" title="Вводим ID услуги комплектации для синхронизации по ДЗ при кейсах когда все слайды выполнены, но не отображаются завершенными. Если не будет токена авторизации вас перенаправит на страницу с инструментом и там уже вставите ID" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
+					<button class="mainButton" id="doSynchrozine" style="width: 25.23px;">🚀</button>
 					<input id="enablerAP" placeholder="ID услуги(АП)" title="копируем услуги, где нужно активировать АП и сохраняем в буфер, в ЛКУ переходим по ссылке для активации" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
 					<button class="mainButton" id="getenablerAP" style="width: 25.23px;">💾</button>
 					<input id="skipAP" placeholder="ID ус(skipАП)" title="копируем услуги, где нужно пропустить АП и сохраняем в буфер, в ЛКУ переходим по ссылке для деактивации" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
@@ -346,9 +348,9 @@ function addfunctionsonclick(section) {
             let useid;
             if (creditstatus.value == "")
                 alert('Введите id  ученика в поле')
-            else { 
+            else {
                 useid = creditstatus.value
-                
+
             };
             let lnkscredits = `https://billing-api.skyeng.ru/installments?ownerId=${useid}&state=&perPage=10`;
             window.open(lnkscredits);
@@ -364,6 +366,47 @@ function addfunctionsonclick(section) {
             };
             trshooterhash.value = "";
         }
+
+        let lnkToSync = document.getElementById('doSynchrozine'); // Выполнение синхронизации ДЗ вебинаров, Large Classes Exams (подготовка к ОГЕ, ЕГЭ)
+        lnkToSync.addEventListener('click', function () {
+            let lnkToSIDForSync = document.getElementById('sIdSynchronize').value.trim();
+            lnkToSync.innerHTML = "⏳"
+            if (lnkToSIDForSync.length < 4) {
+                alert("ID короткий, будет автоматически открыт ресурс, где сможете ввести корректный ID услуги для синхронизации");
+                lnkToSync.innerHTML = "🚀";
+                window.open('https://learning.skyeng.ru/upsert-history');
+                return;
+            }
+
+            if (localStorage.getItem('token_global') == null) {
+                alert("Токен не найден, будет открыт ресурс, где сможете ввести ID услуги для синхронизации");
+                lnkToSync.innerHTML = "🚀";
+                window.open('https://learning.skyeng.ru/upsert-history');
+                return;
+            }
+
+            const gToken = localStorage.getItem('token_global');
+            const fetchURL = `https://skysmart-core.skyeng.ru/api/v1/academic-activity/upsert-education-service-history/${lnkToSIDForSync}`;
+            const requestOptions = {
+                headers: {
+                    "accept": "application/json, text/plain, */*",
+                    "authorization": `Bearer ${gToken}`
+                },
+                method: "POST",
+                mode: "cors"
+            };
+
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+                if (!response.success) {
+                    alert('Не удалось выполнить запрос: ' + response.error);
+                    lnkToSync.innerHTML = "❌";
+                } else {
+                    lnkToSync.innerHTML = "✅";
+                    setTimeout(function () { lnkToSync.innerHTML = "🚀"; }, 5000);
+                }
+            });
+        });
+
 
         document.getElementById('getenablerAP').onclick = function () {               // сохранение в буфере ссылки для активации АП
             let enableAPlnk = 'https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=';
