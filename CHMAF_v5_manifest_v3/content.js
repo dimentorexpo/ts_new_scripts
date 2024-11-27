@@ -129,6 +129,10 @@ Object.keys(localStorage).forEach(function (key) { // чистка localstorage 
     if (/^(SMART_TABLE.)/.test(key)) {
         localStorage.removeItem(key);
     }
+
+    if (/^(messageContent.)/.test(key)) {
+        localStorage.removeItem(key);
+    }
 });
 
 localStorage.setItem('SMART_TABLE_SORTED_INFO(/tickets/archive)', '{\"columnKey\":\"ts\",\"order\":\"descend\"}')
@@ -286,6 +290,14 @@ function noDoubts(object) { // функция для разрешения вво
     object.value = object.value.replace(/["'\\]/gi, '');
 }
 
+function getGblToken() { // получение токена глобал
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.get(["token_global"], function (result) {
+            resolve(result.token_global);
+        });
+    });
+}
+
 async function whoAmI() {
     const tokenis = document.cookie.match(/jwt=(.*)/);
     if (tokenis && tokenis.length > 1) {
@@ -313,6 +325,10 @@ async function whoAmI() {
     }
     console.log('JWT token not found or operator not found');
     return false;
+
+    let test;
+    test = getGblToken()
+    console.log(test)
 }
 
 function timerHideButtons() {
@@ -1182,3 +1198,98 @@ function createAndShowButton(text) {
         btnSuccess.remove(); // или btnSuccess.style.display = 'none'; если вы хотите скрыть, а не удалять
     }, 3500); // Время до скрытия/удаления кнопки в миллисекундах
 }
+
+// делаем глобальную переменную с токеном
+/* let flagTokenGlobal = null;
+if (localStorage.getItem('token_global')) {
+    flagTokenGlobal = localStorage.getItem('token_global')
+}
+console.log(flagTokenGlobal)
+
+
+// Создаем интервал и сохраняем его ID в переменную
+let checkCRMLS = setInterval(function () {
+    if (flagTokenGlobal == null && location.host == 'crm2.skyeng.ru') {
+        chrome.storage.local.set({ token_global: localStorage.getItem('token_global') });
+        console.log("Успешно получен токен");
+
+        // Останавливаем интервал после выполнения условия
+        clearInterval(checkCRMLS);
+        console.log("Интервал остановлен");
+    }
+}, 3000);
+
+function getToken() {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.get(["token_global"], function (result) {
+            resolve(result.token_global);
+        });
+    });
+}
+
+let checkRespondToken = setInterval(function () {
+    if (flagTokenGlobal == null && location.host == 'skyeng.autofaq.ai' && chrome.storage.local.get(["token_global"])) {
+        flagTokenGlobal = chrome.storage.local.get(["token_global"])
+        localStorage.setItem('token_global', flagTokenGlobal)
+        console.log("All intervals finished successfully")
+        clearInterval(checkRespondToken)
+    }
+}, 6000) */
+
+///////////////
+// Функция для получения токена из chrome.storage
+function getToken() {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.get(["token_global"], function (result) {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+            } else {
+                resolve(result.token_global);
+            }
+        });
+    });
+}
+
+// Функция для установки токена в chrome.storage
+function setToken(token) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.set({ token_global: token }, function () {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
+// Интервал для получения токена с сайта CRM
+let checkCRMLS = setInterval(async function () {
+    if (location.host == 'crm2.skyeng.ru') {
+        let token = localStorage.getItem('token_global');
+        if (token) {
+            await setToken(token);
+            console.log("Успешно получен токен");
+
+            // Останавливаем интервал после выполнения условия
+            clearInterval(checkCRMLS);
+            console.log("Интервал остановлен");
+        }
+    }
+}, 3000);
+
+// Интервал для установки токена на другом сайте
+let checkRespondToken = setInterval(async function () {
+    if (location.host == 'skyeng.autofaq.ai') {
+        let token = await getToken();
+        if (token) {
+            flagTokenGlobal = token;
+            localStorage.setItem('token_global', flagTokenGlobal);
+            console.log("Токен успешно установлен на другом сайте");
+
+            // Останавливаем интервал после выполнения условия
+            clearInterval(checkRespondToken);
+            console.log("Интервал остановлен");
+        }
+    }
+}, 4000);
