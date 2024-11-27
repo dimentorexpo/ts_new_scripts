@@ -1,6 +1,4 @@
 //Global variables
-let jiratoken;
-let jiratokennew;
 let responsejira;
 let psarr = [];
 const messanger_name = "TiMe";
@@ -25,8 +23,8 @@ const buttons = [ //array of buttonsnames
     '.studcabbtn',
     '.chatqabtn',
     '.stcabmbsbtn',
-	'.mobilebugsbtn',
-	'.academyselfstudybugsbtn',
+    '.mobilebugsbtn',
+    '.academyselfstudybugsbtn',
     '.CommProblemsbtn'
 ];
 
@@ -45,7 +43,7 @@ const otherOptions = [ // array of buttons categories id's, важен поря�
     'chatqaoptions',
     'edumodeloptions',
     'studcabmobbugskoptions',
-	'mobilebugsoptions',
+    'mobilebugsoptions',
     'academyselfstudysoptions',
     'CommProblemsoptions'
 ];
@@ -85,7 +83,7 @@ var win_servicedesk = // описание элементов окна Service De
                     <button class="mainButton sdbtn" id="optionAcademyselfstudybbugs" value="19">Academy-Self</button>
 					<button class="mainButton sdbtn" id="optionCommProblems" value="75">📧Comm</button>
                 </div>
-                
+
 				<div id="studcabmobbugskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#erp-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
 				</div>
@@ -93,51 +91,51 @@ var win_servicedesk = // описание элементов окна Service De
 				<div id="teacherssrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#tp-qa-support; канал по вопросам Teacher & Corp пользователей</p>
 				</div>
-				
+
 				<div id="crm2srvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#crm2-support</p>
 				</div>
-				
+
 				<div id="authsrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#auth; Обсуждение общих вопросов по проектам Auth/ID (авторизация, роли и доступы, данные пользователей и т. д.)</p>
 				</div>
-				
+
 				<div id="schedulesrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#study-coordinations-qa-support Канал по вопросам расписания ученика, ТТ, TRM, автоподбора и ручного подбора</p>
 				</div>
-				
+
 				<div id="billingqasrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#billing-qa-support; Канал для рассмотрения причины расхождений баланса учеников</p>
 				</div>
-				
+
 				<div id="c1srvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#c1-support; Поддержка витрины оплаты (Не виджет оплаты в pcs), Onboarding (Kids&Adult), Scoring, AutoIntroLesson (АвтоВУ)</p>
 				</div>
-				
+
 				<div id="billingsrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:180px; width:90%;">#billing</p>
 				</div>
-				
+
                 <div id="mrktbillrvdskoptions" style="display: none; margin-left:20px;">
                     <p style="${Paragrafsstyles}">#mrkt-bill-questions; Канал для вопросов по промокодам, сертификатам, реферальной программе</p>
                 </div>
-				
+
 				<div id="vimbugsoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#vim-bugs; Проблемы с Vimbox/Smartroom</p>
 				</div>
-				
+
 				<div id="edumodeloptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#learning-personalization-qa-support: Канал для обращений по функционалу learning personalization</p>
 				</div>
-				
+
 				<div id="vimvidoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#vim-video-call; Разработка модуля видеосвязи</p>
 				</div>
-				
+
                 <div id="chatqaoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles} top:7px;">#chat-qa-support; Решают проблемы с чатами в ЛКП и ЛКУ</p>
                 </div>
-				
+
 				 <div id="CommProblemsoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#communication-problems  - вопросы по коммуниациям</p>
 				</div>
@@ -148,7 +146,7 @@ var win_servicedesk = // описание элементов окна Service De
 
 				<div id="academyselfstudysoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#academic-selfstudy-bugs; Канал обработки обращений по ВЕБ тренажерам, расширениями Subtly и Vimbox Переводчик</p>
-				</div>	
+				</div>
 
 				<div id="mobilebugsoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#mobile-app-bugs; Канал обработки обращений по МП Skyeng связанных с обучением.</p>
@@ -241,7 +239,7 @@ function getmmlink(lasttsk, activeConvId) {
     if (lasttsk) {
         const fetchURL = `https://jira.skyeng.tech/browse/${lasttsk}`;
         const requestOptions = { method: 'GET' };
-        
+
         chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
             if (!response.success) {
                 alert('Не удалось выполнить запрос: ' + response.error);
@@ -250,22 +248,22 @@ function getmmlink(lasttsk, activeConvId) {
                 const otvetTimeLink = response.fetchansver;
                 const matchResult = otvetTimeLink.match(messregexPattern);
                 if (matchResult === null) {
-                    setTimeout(function() { getmmlink(lasttsk, activeConvId); }, 2000);
+                    setTimeout(function () { getmmlink(lasttsk, activeConvId); }, 2000);
                     return;
                 } else {
                     const mmlink = matchResult[1];
                     sendComment(`${messanger_name} link: ${mmlink}`, activeConvId);
                 }
             }
-        });        
+        });
     }
 }
 
-function MakeFetch(bodyrequst,activeConvId) {
+function MakeFetch(bodyrequst, activeConvId) {
     const fetchURL = 'https://api-infra.skyeng.ru/api/v1/rs/request';
     const requestOptions = {
         method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded',},
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', },
         body: bodyrequst,
         mode: 'cors',
         credentials: 'include',
@@ -280,7 +278,7 @@ function MakeFetch(bodyrequst,activeConvId) {
 
             const lasttsk = otvetCreateIssue.jiraIssueKey;
             newtask.innerText = lasttsk;
-            if (activeConvId){
+            if (activeConvId) {
                 sendComment(`Jira PS link: https://jira.skyeng.tech/browse/${lasttsk}`, activeConvId);
                 getmmlink(lasttsk, activeConvId);
             }
@@ -304,7 +302,7 @@ function sendRequest(idstdserv, dscr, str, erx, ary, code, activeConvId) {
     formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
 
     let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst,activeConvId);
+    MakeFetch(bodyrequst, activeConvId);
 }
 
 function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code, activeConvId) {
@@ -320,7 +318,7 @@ function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code, acti
     formData.append('data[serviceId]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
 
     let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst,activeConvId);
+    MakeFetch(bodyrequst, activeConvId);
 }
 
 function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code, activeConvId) {
@@ -336,7 +334,7 @@ function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code, activeCon
     formData.append('data[hashLesson]', hesh)
 
     let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst,activeConvId);
+    MakeFetch(bodyrequst, activeConvId);
 }
 
 function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code, activeConvId) {
@@ -350,7 +348,7 @@ function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code, act
     formData.append('data[user_email]', decodeURIComponent(usermail).replaceAll('<br>', '\n'))
 
     let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst,activeConvId);
+    MakeFetch(bodyrequst, activeConvId);
 }
 
 function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, appinfo, code, activeConvId) {
@@ -366,9 +364,9 @@ function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, ap
     formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
     formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
     formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
-    
+
     let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst,activeConvId);
+    MakeFetch(bodyrequst, activeConvId);
 }
 
 function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code, activeConvId) {
@@ -387,7 +385,7 @@ function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, 
     formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>', '\n'))
 
     let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst,activeConvId);
+    MakeFetch(bodyrequst, activeConvId);
 }
 
 function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code, activeConvId) {
@@ -407,7 +405,7 @@ function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, s
     formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
 
     let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst,activeConvId);
+    MakeFetch(bodyrequst, activeConvId);
 }
 
 let checkingId = [];
@@ -526,7 +524,7 @@ function getservDskPress() { // функция открытия главного
             for (let k = 0; k < otherElements.length; k++) {
                 otherElements[k].style.display = 'none';
             }
-            
+
             updateDisplay(elementId); // Вызов функции обновления отображения здесь
         }
     }
@@ -560,7 +558,7 @@ function getservDskPress() { // функция открытия главного
             show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
             hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
         },
-		mobilebugsoptions: {
+        mobilebugsoptions: {
             show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
             hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
         },
@@ -599,7 +597,7 @@ function getservDskPress() { // функция открытия главного
         }
     }
 }
- // tested
+// tested
 
 document.getElementById('AF_ServDsk').ondblclick = function (a) { // скрытие окна ServiceDesk по двойному клику
     if (checkelementtype(a)) { document.getElementById('hideMeSrvDsk').click(); }
