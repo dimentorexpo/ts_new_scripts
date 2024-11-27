@@ -596,18 +596,18 @@
 
 	.darkinputs::placeholder {
 		color: bisque;
-		font-weight: bold; 
+		font-weight: 500; 
 		opacity: 0.7; 
 	}
 
 	.lightinputs {
 		color: black;
-		background-color: bisque;
+		background-color: white;
 	}
 
 	.lightinputs::placeholder {
 		color: black;
-		font-weight: bold; 
+		font-weight: 500; 
 		opacity: 0.7; 
 	}
 
