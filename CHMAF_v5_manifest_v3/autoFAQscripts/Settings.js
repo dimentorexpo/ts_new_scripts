@@ -325,22 +325,42 @@ async function init_settings() {
     // Настройка темы интерфейса
     function setupThemeButton(buttonId, localStorageKey) {
         const button = document.getElementById(buttonId);
-        const currentTheme = localStorage.getItem(localStorageKey) || 'light';
 
+        // Функция для обновления иконки кнопки
         const updateButtonIcon = (theme) => {
             button.innerHTML = theme === 'light' ? '☀' : theme === 'dark' ? '🌛' : '🌚';
         };
 
-        updateButtonIcon(currentTheme);
-        localStorage.setItem(localStorageKey, currentTheme);
+        // Функция для смены класса элементов
+        const updateElementClasses = (newTheme) => {
+            const newClass = newTheme === 'dark' ? 'darkinputs' : 'lightinputs';
+            const elements = document.querySelectorAll(`.${exttheme}`);
 
-        // Можно добавить обработчик клика для изменения темы
+            elements.forEach(element => {
+                if (element.id !== 'iduserinfo') { // Исключаем элемент с id iduserinfo
+                    element.classList.remove(exttheme);
+                    element.classList.add(newClass);
+                }
+            });
+
+            // Обновляем текущую тему
+            exttheme = newClass;
+        };
+
+        // Устанавливаем текущую тему из localStorage
+        let currentTheme = localStorage.getItem(localStorageKey) || 'light';
+        exttheme = currentTheme === 'dark' ? 'darkinputs' : 'lightinputs';
+        updateButtonIcon(currentTheme);
+
+        // Обработчик клика для смены темы
         button.onclick = function () {
-            const currentTheme = localStorage.getItem(localStorageKey) || 'light';
+            currentTheme = localStorage.getItem(localStorageKey) || 'light';
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
             localStorage.setItem(localStorageKey, newTheme);
-            updateButtonIcon(newTheme);ы
-        };        
+            updateButtonIcon(newTheme);
+            updateElementClasses(newTheme);
+        };
     }
 
     // Универсальная функция для настройки чекбоксов

@@ -58,10 +58,11 @@ var modulesarray = [];
 var chatsArray = [];
 var scriptAdr = localStorage.getItem('scriptAdr');
 
-if (localStorage.getItem('tpflag') == null || localStorage.getItem('tpflag' == undefined)) {
-    localStorage.setItem('tpflag', 'ТП')
-}
+localStorage.setItem('tpflag', localStorage.getItem('tpflag') || 'ТП');
 
+localStorage.setItem('extentiontheme', localStorage.getItem('extentiontheme') || 'light');
+
+var exttheme = localStorage.getItem('extentiontheme') === 'dark' ? 'darkinputs' : 'lightinputs';
 
 
 var win_AFhelper =  // описание элементов главного окна
@@ -76,8 +77,8 @@ var win_AFhelper =  // описание элементов главного ок
 					<button id="addsrc" class="mainButton onlyfortp" title="Открывает доп меню для работы с сервисами школы, требующими запрос на выдачу доступа" style="width:16px; float: right; margin-right: 5px">*</button>
 					<button class="mainButton" id="getnewtmpldata" title="Обновляет шаблоны из документа с шаблонами без необходимости обновлять страницу для актуализации" style="width:27px; float: right; margin-right: 5px">🔄</button>
 					<button class="mainButton" id="reminderstatus" title="Статус будильника 🔔 - вкл, 🔕 - выкл" style="width:25px; float: right; margin-right: 5px"></button>
-					<input id ="phone_tr" class="onlyfortp" placeholder="Телефон" autocomplete="off" type="text" style = "text-align: center; width: 150px; color: black; margin-left: 15px; margin-top: 5px; border-radius: 20px;"></input>
-                    <input id ="email_tr" class="onlyfortp" placeholder="Почта" autocomplete="off" type="text" style = "text-align: center; width: 150px; color: black; margin-left: 12px; margin-top: 5px; border-radius: 20px;"></input>
+					<input id ="phone_tr" class="onlyfortp ${exttheme}" placeholder="Телефон" autocomplete="off" type="text" style = "text-align: center; width: 150px; margin-left: 15px; margin-top: 5px; border-radius: 10px;"></input>
+                    <input id ="email_tr" class="onlyfortp ${exttheme}" placeholder="Почта" autocomplete="off" type="text" style = "text-align: center; width: 150px; margin-left: 12px; margin-top: 5px; border-radius: 10px;"></input>
 				</div>
 				<div style="margin-left: 5px; margin-right: 5px; margin-bottom:5px;" id="pages">
 				</div>
@@ -85,9 +86,9 @@ var win_AFhelper =  // описание элементов главного ок
 			<div style="margin: 5px;" id="6str">
 			</div>
 			<div style="margin: 5px;" id="7str">
-				<textarea style="width: 341px; height: 56px;" id="inp"></textarea>
+				<textarea class="${exttheme}" style="width: 341px; height: 56px; border-radius: 10px;" id="inp"></textarea>
 			<div id="hyperlnk" class="hyperlnk">
-				<input type="text" placeholder="Enter your link 🔗 here" style="margin-bottom:5px;width:270px;text-align:center;" id="bindlinktotext" title="Вводите в это поле ссылку, после чего в общем поле выделяете слово или фразу и кнопкой Insert встраиваете ссылку в текст шаблона"></input>
+				<input id="bindlinktotext" class="${exttheme}" type="text" placeholder="Enter your link 🔗 here" style="margin-bottom:5px;width:270px;text-align:center;border-radius: 10px;" title="Вводите в это поле ссылку, после чего в общем поле выделяете слово или фразу и кнопкой Insert встраиваете ссылку в текст шаблона"></input>
 				<button class="mainButton" id="insertlinktotext" title="Добавляет ссылку из поля слева в выделеное слово или фразу в тексте шаблона">Insert ✅</button>
 			</div>
 				<button class="mainButton" title="Переключение для выбора отправить или доработать сообщение" id="msg1" style="width:100px;">Доработать</button>
