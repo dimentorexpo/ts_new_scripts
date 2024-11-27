@@ -887,6 +887,7 @@ async function getservices(stidNew) {
                                 <th style="border: 1px solid black; padding: 5px;">ID Услуги</th>
                                 <th style="border: 1px solid black; padding: 5px;">STK</th>
                                 <th style="border: 1px solid black; padding: 5px;">💰</th>
+                                <th style="border: 1px solid black; padding: 5px;">Sync</th>
                             </tr>`;
 
                         const allEduServicesCompl = service.educationServices;
@@ -898,12 +899,15 @@ async function getservices(stidNew) {
                     </td>
                             <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.serviceTypeKey}</td>
                             <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.balance}</td>
+                            <td class="syncBtn" name="btnSynchro"><span class="emoji">♻️</span></td>
                         </tr>`;
                         });
                         gatheredInfoComplSrvs += '</table>';
 
                         complectationServInfo.innerHTML += `<div style="background: #4a7d55; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; font-weight: 800; margin-bottom:5px;" title="${operatorNote}">${service.productKit.title} | ${service.stage == "regular_lessons" ? "Регулярные занятия" : service.stage == "lost" ? "Потерянная" : service.stage}</div>` + gatheredInfoComplSrvs;
 
+                    } else {
+                        complectationServInfo.innerHTML += `<div style="background: #8d310f; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; font-weight: 800; margin-bottom:5px;">'${service.productKit.title}' - некорректна</div>`
                     }
 
                 });

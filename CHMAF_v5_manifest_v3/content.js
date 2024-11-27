@@ -1229,44 +1229,6 @@ function createAndShowButton(text) {
     }, 3500); // Время до скрытия/удаления кнопки в миллисекундах
 }
 
-// делаем глобальную переменную с токеном
-/* let flagTokenGlobal = null;
-if (localStorage.getItem('token_global')) {
-    flagTokenGlobal = localStorage.getItem('token_global')
-}
-console.log(flagTokenGlobal)
-
-
-// Создаем интервал и сохраняем его ID в переменную
-let checkCRMLS = setInterval(function () {
-    if (flagTokenGlobal == null && location.host == 'crm2.skyeng.ru') {
-        chrome.storage.local.set({ token_global: localStorage.getItem('token_global') });
-        console.log("Успешно получен токен");
-
-        // Останавливаем интервал после выполнения условия
-        clearInterval(checkCRMLS);
-        console.log("Интервал остановлен");
-    }
-}, 3000);
-
-function getToken() {
-    return new Promise((resolve, reject) => {
-        chrome.storage.local.get(["token_global"], function (result) {
-            resolve(result.token_global);
-        });
-    });
-}
-
-let checkRespondToken = setInterval(function () {
-    if (flagTokenGlobal == null && location.host == 'skyeng.autofaq.ai' && chrome.storage.local.get(["token_global"])) {
-        flagTokenGlobal = chrome.storage.local.get(["token_global"])
-        localStorage.setItem('token_global', flagTokenGlobal)
-        console.log("All intervals finished successfully")
-        clearInterval(checkRespondToken)
-    }
-}, 6000) */
-
-///////////////
 // Функция для получения токена из chrome.storage
 function getToken() {
     return new Promise((resolve, reject) => {

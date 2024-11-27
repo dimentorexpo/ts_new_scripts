@@ -407,7 +407,6 @@ function addfunctionsonclick(section) {
             });
         });
 
-
         document.getElementById('getenablerAP').onclick = function () {               // сохранение в буфере ссылки для активации АП
             let enableAPlnk = 'https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=';
             if (enablerAP.value == "")
