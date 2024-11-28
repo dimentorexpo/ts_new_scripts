@@ -892,12 +892,19 @@ async function getservices(stidNew) {
 
                         const allEduServicesCompl = service.educationServices;
                         allEduServicesCompl.forEach((el) => {
+                            let text = el.serviceTypeKey; // "homeschooling_6_biology_webinar" // Разделим строку по символу "_"
+                            let parts = text.split('_'); // Если частей достаточно, чтобы выполнить задачу
+                            if (parts.length > 2) { // Возьмем слово после второго подчеркивания и обернем его в <span>
+                                parts[2] = `<span style="font-weight: bold; color: #00b8ff; text-transform: uppercase">${parts[2]}</span>`;
+                                parts[3] = parts[3] == "webinar" ? "Вебинар" : parts[3] == "f2g" ? "F2G" : parts[3]
+                            } // Соединим обратно части строки
+                            let formattedText = parts.join('_');
                             gatheredInfoComplSrvs += `
                         <tr>
                         <td name="idServForSync" style="border: 1px solid black; padding: 5px; background: #4f4c4c;">
                         <a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:#32b5f5; text-decoration: none;">${el.id}</a>
                     </td>
-                            <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.serviceTypeKey}</td>
+                            <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${formattedText}</td>
                             <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.balance}</td>
                             <td class="syncBtn" name="btnSynchro"><span class="emoji">♻️</span></td>
                         </tr>`;
