@@ -75,13 +75,29 @@ function checkcalendaricon() {
 // Функция для добавления инвертирования значка календаря
 function applyCalendarIconInversion() {
     const css = [
+        // Инвертирование для календаря (input[type='date'])
         "input[type='date']::-webkit-calendar-picker-indicator {",
+        "    filter: invert(1) !important;",
+        "}",
+        // Инвертирование для чекбоксов (input[type='checkbox'])
+        "input[type='checkbox'] {",
+        "    filter: invert(1) !important;",
+        "}",
+        // Инвертирование для радиокнопок (input[type='radio'])
+        "input[type='radio'] {",
+        "    filter: invert(1) !important;",
+        "}",
+        // Инвертирование для ползунков (input[type='range'])
+        "input[type='range']::-webkit-slider-thumb,",
+        "input[type='range']::-moz-range-thumb {",
         "    filter: invert(1) !important;",
         "}"
     ].join("\n");
+
+    // Создаем стиль и добавляем его в head
     const styleElement = document.createElement("style");
     styleElement.textContent = css;
-    styleElement.id = 'calendarIconInversion';
+    styleElement.id = 'calendarIconInversion'; // Уникальный ID для поиска и удаления
     document.head.appendChild(styleElement);
 }
 
@@ -89,7 +105,7 @@ function applyCalendarIconInversion() {
 function removeCalendarIconInversion() {
     const styleElement = document.getElementById('calendarIconInversion');
     if (styleElement) {
-        styleElement.remove(); // Удаляем элемент <style> из head
+        styleElement.remove();
     }
 }
 
