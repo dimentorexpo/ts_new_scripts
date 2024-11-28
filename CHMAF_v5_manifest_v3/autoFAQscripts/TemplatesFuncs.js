@@ -962,7 +962,8 @@ function refreshTemplates() { // функция обновляет шаблон�
                     newInputAlink.placeholder = 'Ссылка на трэд или Jira северных'
                     newInputAlink.autocomplete = 'off'
                     newInputAlink.type = 'text'
-                    newInputAlink.style = 'text-align: center; width: 300px; color: black; margin-left: 7px'
+                    newInputAlink.classList.add(exttheme)
+                    newInputAlink.style = 'text-align: center; width: 300px; margin-left: 7px'
 
                     newDiv.appendChild(newInputAlink)
 
@@ -976,7 +977,8 @@ function refreshTemplates() { // функция обновляет шаблон�
 
                     var newSelectAThemes = document.createElement('select')
                     newSelectAThemes.id = 'avariyatema'
-                    newSelectAThemes.style = 'text-align: center; width: 300px; height: 26px; color: black; margin-left: 7px; margin-top: 5px'
+                    newSelectAThemes.classList.add(exttheme)
+                    newSelectAThemes.style = 'text-align: center; width: 300px; height: 26px; margin-left: 7px; margin-top: 5px'
                     newSelectAThemes.type = 'text'
 
                     var newthemeoption = document.createElement('option')
