@@ -884,10 +884,10 @@ async function getservices(stidNew) {
                         let gatheredInfoComplSrvs = '<table style="width: 98%; margin: 10px 0; border-collapse: collapse;">';
                         gatheredInfoComplSrvs += `
                             <tr style="background: #776d69; color: white; position: sticky; top: 0px; z-index:10">
-                                <th style="border: 1px solid black; padding: 5px;">ID Услуги</th>
-                                <th style="border: 1px solid black; padding: 5px;">STK</th>
-                                <th style="border: 1px solid black; padding: 5px;">💰</th>
-                                <th style="border: 1px solid black; padding: 5px;">Sync</th>
+                                <th style="border: 1px solid black; padding: 5px; position: sticky;">ID Услуги</th>
+                                <th style="border: 1px solid black; padding: 5px; position: sticky;">STK</th>
+                                <th style="border: 1px solid black; padding: 5px; position: sticky;">💰</th>
+                                <th style="border: 1px solid black; padding: 5px; position: sticky;">Sync</th>
                             </tr>`;
 
                         const allEduServicesCompl = service.educationServices;
