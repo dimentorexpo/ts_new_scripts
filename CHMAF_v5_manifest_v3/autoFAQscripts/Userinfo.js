@@ -911,10 +911,10 @@ async function getservices(stidNew) {
                         });
                         gatheredInfoComplSrvs += '</table>';
 
-                        complectationServInfo.innerHTML += `<div style="background: #4a7d55; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; font-weight: 800; margin-bottom:5px;" title="${operatorNote}">${service.productKit.title} | ${service.stage == "regular_lessons" ? "Регулярные занятия" : service.stage == "lost" ? "Потерянная" : service.stage}</div>` + gatheredInfoComplSrvs;
+                        complectationServInfo.innerHTML += `<div style="background: #4a7d55; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; margin-bottom:5px;" title="${operatorNote}">[${service.id}] ${service.productKit.title} | ${service.stage == "regular_lessons" ? "Регулярные занятия" : service.stage == "lost" ? "Потерянная" : service.stage}</div>` + gatheredInfoComplSrvs;
 
                     } else {
-                        complectationServInfo.innerHTML += `<div style="background: #8d310f; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; font-weight: 800; margin-bottom:5px;">'${service.productKit.title}' - некорректна</div>`
+                        complectationServInfo.innerHTML += `<div style="background: #8d310f; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; margin-bottom:5px;">[${service.id}] '${service.productKit.title}' - некорректна</div>`
                     }
 
                 });
