@@ -42,6 +42,18 @@ hideWindowOnClick('AF_StataAF', 'hidestatisticaaf');
 
 let activeopersId;
 let summclsd
+let rateCounts = {} // создали обьект для подсчета количества 1,2,3,4,5 оценок
+
+function resetRateCounts() {
+    rateCounts = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0
+    };
+    console.log("Rate counts reset.");
+}
 
 function getbuttonGetStatButtonPress() {
     if (document.getElementById('AF_StataAF').style.display == 'none') {
@@ -285,6 +297,11 @@ async function getStats() { // функция получения статист�
     averageCSATonGroup.innerHTML = 'Средний CSAT по отделу: ' + '<span id ="avgCsatonGroup">⏳ Loading</span>';
     averageCSATonGroup.style.marginLeft = '50px'
     document.getElementById('outputstatafield').append(averageCSATonGroup)
+
+    let CSATdetalization = document.createElement('div')
+    CSATdetalization.innerHTML = "Разбивка по оценкам: " + '<span id ="CSATDetails">⏳ Loading</span>';
+    CSATdetalization.style.marginLeft = '50px'
+    document.getElementById('outputstatafield').append(CSATdetalization)
 
     let averageSLAclsGroup = document.createElement('div')
     averageSLAclsGroup.innerHTML = 'SLA закрытия по отделу: ' + '<span id ="SLAonGroup">⏳ Loading</span>';
@@ -650,7 +667,6 @@ let indexOfChangeGroup = -1;
 let indexOfFirstTimeInQueue = -1;
 let foundQueue;
 let foundOperAnswer;
-
 let foundQueueTime;
 let foundOperAnswerTime;
 let differenceInSeconds;
@@ -874,10 +890,27 @@ async function getopersSLA() {
                 alloperaboveAFRT = (+arrayafrtcount.length + arrayafrtcountwithqueue.length)
             }
         }
+
+        resetRateCounts()
+        filteredarray.forEach(item => {
+            if (item.Rate !== null) {
+                rateCounts[item.Rate]++;
+            }
+        });
+
+        console.log(rateCounts) //check output
         let calcChatsClsContainer = ((((alloperChatsclsed - alloperSLAclsed) * 100) / 81) - alloperChatsclsed).toFixed(1);
         let calcAFRTContainer = (((uniqueIdsArrayTarget.length * 100) / 86) - uniquedArrayAllLength).toFixed(1);
 
         document.getElementById('avgCsatonGroup').textContent = (alloperCSATsumma / alloperCSATcount).toFixed(2);
+        document.getElementById('CSATDetails').innerText = `
+        Оценка 5 😊: ${rateCounts['5']} (${rateCounts['5'] * 5})
+        Оценка 4 🥴: ${rateCounts['4']} (${rateCounts['4'] * 4})
+        Оценка 3 😐: ${rateCounts['3']} (${rateCounts['3'] * 3})
+        Оценка 2 🤢: ${rateCounts['2']} (${rateCounts['2'] * 2})
+        Оценка 1 🤬: ${rateCounts['1']} (${rateCounts['1'] * 1})
+    `;
+
         document.getElementById('allChatsClsd').textContent = alloperChatsclsed;
 
         document.getElementById('SLAonGroup').innerHTML = ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' +
