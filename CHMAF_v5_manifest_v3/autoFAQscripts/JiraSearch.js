@@ -27,8 +27,8 @@ var win_Jira =  // описание элементов окна Поиска п�
                         </div>
 
                         <div id="fields_jira_search">
-							<textarea id="JQLquery" placeholder="JQL запрос" title="Введите сюда JQL запрос" autocomplete="off" type="text" style="text-align: center; width: 96%; color: black; margin-top: 5px; margin-left: 2%;"></textarea>
-							<input id="testJira" placeholder="Введите слово или фразу для поиска" title="введите слово или фразу для поиска по Jira при одном клике будет искать по багам, если ввести в поле номер задачи например VIM-7288 и дабл кликнуть на рокету будет поиск по номеру" autocomplete="off" type="text" style="text-align: center; width: 90%; color: black; margin-top: 5px; margin-left: 2%; border-radius: 20px;">
+							<textarea id="JQLquery" class="${exttheme}" placeholder="JQL запрос" title="Введите сюда JQL запрос" autocomplete="off" type="text" style="text-align: center; width: 96%; margin-top: 5px; margin-left: 2%;"></textarea>
+							<input id="testJira" class="${exttheme}" placeholder="Введите слово или фразу для поиска" title="введите слово или фразу для поиска по Jira при одном клике будет искать по багам, если ввести в поле номер задачи например VIM-7288 и дабл кликнуть на рокету будет поиск по номеру" autocomplete="off" type="text" style="text-align: center; width: 90%; margin-top: 5px; margin-left: 2%; border-radius: 20px;">
 							<button class="mainButton smallbtn" id="getJiraTasks">🚀</button>
 						</div>
 

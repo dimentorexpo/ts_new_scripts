@@ -5,15 +5,15 @@ var win_StatisticaAF =  // описание формы чтобы не дава�
                         <div style="margin: 5px; width: 750px; display:flex; justify-content:space-evenly;" id="stataaf_header">
                                 <button class="mainButton buttonHide" title="скрывает меню" id="hidestatisticaaf">hide</button>
 								<button class="mainButton smallbtn" id="clearstatawindow">🧹</button>
-								<input type="text" id="timeoutput" style="width:100px; text-align:center; background: blanchedalmond; font-weight: 700;" disabled></input>
+								<input class="${otherinpth}" type="text" id="timeoutput" style="width:100px; text-align:center; font-weight: 700;" disabled></input>
 								<div style="width:450px;background: #5f7875;height: 21px; border-radius:20px;"><div id="progress-bar" style="border-radius:20px; width: 0%; height: 20px; background-color: #e38118; border: 1px solid black; text-align:center; font-weight:700; color:white;"></div></div>
 			    </span>
                         </div>
 						<div style="margin: 5px; width: 750px" id="periodOfStata">
-								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <input type="date" style="color:black; margin-left:20px;  width:125px;" name="stData" id="dateFromStat"></span>
+								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <inputclass="${exttheme}" type="date" style="margin-left:20px;  width:125px;" name="stData" id="dateFromStat"></span>
 								 <button class="mainButton" style="margin-left:15%" id="dayminusminus">◀</button>
 								 <button class="mainButton" id="dayplusplus">▶</button>
-								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input type="date" style="color:black; float:right; margin-left:20px; margin-right:10px; width:125px;" name="finData" id="dateToStat" <="" span="">
+								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input class="${exttheme}" type="date" style="float:right; margin-left:20px; margin-right:10px; width:125px;" name="finData" id="dateToStat" <="" span="">
                         </span>
 						</div>
 						<div style="width: 750px; display:flex; justify-content: space-evenly; margin-bottom:5px;">

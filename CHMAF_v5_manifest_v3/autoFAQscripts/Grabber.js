@@ -45,10 +45,10 @@ var win_Grabber =  // описание элементов окна Grabber
 						</div>
 
                         <div style="margin: 5px; width: 960px" id="grabbox">
-								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <input type="date" style="color:black; margin-left:20px;  width:125px;" name="FirstData" id="dateFromGrab"></span>
+								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <input class="${exttheme}" type="date" style="margin-left:20px;  width:125px;" name="FirstData" id="dateFromGrab"></span>
 								 <button class="mainButton" style="margin-left:15%" id="dayminus">◀</button>
 								 <button class="mainButton" id="dayplus">▶</button>
-								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input type="date" style="color:black; float:right; margin-left:20px; margin-right:10px; width:125px;" name="LastData" id="dateToGrab"</span>
+								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input class="${exttheme}" type="date" style="float:right; margin-left:20px; margin-right:10px; width:125px;" name="LastData" id="dateToGrab"</span>
                         </div>
 
 						<div style="display:flex; justify-content: space-evenly; margin-bottom: 5px;">
@@ -94,10 +94,10 @@ var win_Grabber =  // описание элементов окна Grabber
 							</div>
 
 						<div style="padding-bottom: 5px;">
-								<select id="ThemesToSearch" style="margin-left:150px; margin-top:10px;">
+								<select id="ThemesToSearch" class="${exttheme}" style="margin-left:150px; margin-top:10px;">
 									<option style="background-color:#69b930; text-align: center;  color: white; font-weight: 700;" value="parseallthemes">ALL</option>
 									<option style="background-color:coral; text-align: center;  color: white; font-weight: 700;" value="parsenothemes">Without themes</option>
-									<option style="background-color:DarkKhaki;" value="skmob">Skyeng👨‍🎓Mob</option>
+									<option class="${selecttheme}" value="skmob">Skyeng👨‍🎓Mob</option>
 									<option value="1804">📱‍👨‍🎓Авторизация</option>
 									<option value="1805">📱‍👨‍🎓Домашка</option>
 									<option value="1806">📱‍👨‍🎓Оплата</option>
@@ -105,7 +105,7 @@ var win_Grabber =  // описание элементов окна Grabber
 									<option value="1808">📱‍👨‍🎓Тренажер слов</option>
 									<option value="1809">📱‍👨‍🎓Уроки</option>
 									<option value="1810">📱‍👨‍🎓Чат</option>
-									<option style="background-color:DarkKhaki;" value="tmob">Teachers👽Mob</option>
+									<option class="${selecttheme}" value="tmob">Teachers👽Mob</option>
                                     <option value="1833">📱👽Авторизация</option>
 									<option value="1836">📱👽Виджет расписания</option>
 									<option value="1839">📱👽Чат</option>
@@ -114,31 +114,31 @@ var win_Grabber =  // описание элементов окна Grabber
 									<option value="1840">📱👽3Сторис</option>
 									<option value="1837">📱👽Страница расписания</option>
 									<option value="1834">📱👽Страница финансов</option>
-									<option style="background-color:DarkKhaki;" value="sksmpartapp">Skysmart👪родит</option>
+									<option class="${selecttheme}" value="sksmpartapp">Skysmart👪родит</option>
                                     <option value="1884">📱👪Другое</option>
 									<option value="1883">📱👪Материалы</option>
 									<option value="1880">📱👪Предметы и баланс</option>
 									<option value="1881">📱👪Профиль родителя</option>
 									<option value="1879">📱👪Расписание</option>
 									<option value="1882">📱👪Чат</option>
-									<option style="background-color:DarkKhaki;" value="skyproapp">Приложение Skypro</option>
+									<option class="${selecttheme}" value="skyproapp">Приложение Skypro</option>
                                     <option value="1904">Skypro App - Виджет входа на урок</option>
-									<option style="background-color:DarkKhaki;" value="solanka">Different</option>
+									<option class="${selecttheme}" value="solanka">Different</option>
                                     <option value="2034">🚫Прочее</option>
 									<option value="2030">ⓂSlack-проблемы со входом</option>
 									<option value="69">☎Проблемы с телефонией</option>
-									<option style="background-color:DarkKhaki;" value="payf">Проблемы с оплатой</option>
+									<option class="${selecttheme}" value="payf">Проблемы с оплатой</option>
                                     <option value="1077">💳Вина школы</option>
 									<option value="1658">💳Консультация</option>
 									<option value="1661">💳Карта У</option>
 									<option value="1662">💳Сбой оплаты</option>
 									<option value="1660">💳Подписки</option>
-									<option style="background-color:DarkKhaki;" value="hwtr">Проблемы с ДЗ</option>
+									<option class="${selecttheme}" value="hwtr">Проблемы с ДЗ</option>
                                     <option value="1744">💼Контент</option>
 									<option value="1745">💼Оценка</option>
 									<option value="1746">💼Словарь</option>
 									<option value="1747">💼Упражнение</option>
-									<option style="background-color:DarkKhaki;" value="svyaz">Проблемы связь</option>
+									<option class="${selecttheme}" value="svyaz">Проблемы связь</option>
                                     <option value="1581">💻ОС/брауз ниж мин</option>
 									<option value="1589">💻Консультация работы связи</option>
 									<option value="1582">💻Корп сеть/ус-во</option>
@@ -155,7 +155,7 @@ var win_Grabber =  // описание элементов окна Grabber
 									<option value="1590">💻Сб плат блок прерыв связь</option>
 									<option value="1588">💻Хар ниж мин</option>
 									<option value="1591">💻Сб задерж звука</option>
-									<option style="background-color:DarkKhaki;" value="lkp">Проблемы ЛКП</option>
+									<option class="${selecttheme}" value="lkp">Проблемы ЛКП</option>
                                     <option value="1721">👽ЛКП - Группа</option>
 									<option value="1714">👽ЛКП - Чат</option>
 									<option value="1719">👽ЛКП - Финансы</option>
@@ -166,7 +166,7 @@ var win_Grabber =  // описание элементов окна Grabber
 									<option value="1715">👽ЛКП - Профиль</option>
 									<option value="1720">👽ЛКП - Работы на проверку</option>
 									<option value="1713">👽ЛКП - Расписание</option>
-									<option style="background-color:DarkKhaki;" value="lku">Проблемы ЛКУ</option>
+									<option class="${selecttheme}" value="lku">Проблемы ЛКУ</option>
                                     <option value="1708">👨‍🎓ЛКУ - Чат</option>
 									<option value="1710">👨‍🎓ЛКУ - Профиль</option>
 									<option value="1706">👨‍🎓ЛКУ - Виджет прогресса</option>
@@ -175,13 +175,13 @@ var win_Grabber =  // описание элементов окна Grabber
 									<option value="1711">👨‍🎓ЛКУ - Настройки</option>
 									<option value="1705">👨‍🎓ЛКУ - Навыки</option>
 									<option value="1704">👨‍🎓ЛКУ - Грамматика</option>
-									<option style="background-color:DarkKhaki;" value="problvh">Проблемы вход</option>
+									<option class="${selecttheme}" value="problvh">Проблемы вход</option>
                                     <option value="1632">🔐Не привяз почт/тел</option>
 									<option value="1635">🔐Данные для входа</option>
 									<option value="1634">🔐Сброс пароля</option>
 									<option value="1631">🔐Консультация авторизации</option>
                                     <option value="1633">🔐Сбой авторизации</option>
-									<option style="background-color:DarkKhaki;" value="problpodk">Проблемы подкл</option>
+									<option class="${selecttheme}" value="problpodk">Проблемы подкл</option>
                                     <option value="1624">🔌Истекла подписка</option>
 									<option value="1627">🔌Консультациия</option>
 									<option value="1629">🔌Нет кнопки входа</option>
@@ -189,7 +189,7 @@ var win_Grabber =  // описание элементов окна Grabber
                                     <option value="1625">🔌Ур в др вр</option>
 									<option value="1626">🔌У отпуск</option>
                                     <option value="1630">🔌Неактивна кнопка входа</option>
-									<option style="background-color:DarkKhaki;" value="lesfunc">Функционал урок</option>
+									<option class="${selecttheme}" value="lesfunc">Функционал урок</option>
                                     <option value="1772">👨‍🎓STT</option>
 									<option value="1773">👽TTT</option>
 									<option value="1767">📎Вложения</option>
@@ -201,7 +201,7 @@ var win_Grabber =  // описание элементов окна Grabber
 									<option value="1776">🎵/📽Ауд/вид плеер</option>
                                     <option value="1769">📙Словарь на уроке</option>
                                     <option value="1774">🎯Упражнения на уроке</option>
-									<option style="background-color:DarkKhaki;" value="feedbk">Отзывы и пожел</option>
+									<option class="${selecttheme}" value="feedbk">Отзывы и пожел</option>
                                     <option value="1970">💭Vim-контент</option>
 									<option value="1971">💭Vim-оценка</option>
 									<option value="1972">💭Vim-словарь</option>
@@ -218,7 +218,7 @@ var win_Grabber =  // описание элементов окна Grabber
 									<option value="1977">💭App решения</option>
                                     <option value="1978">💭App Skysmart род</option>
                                     <option value="1980">💭Прочее</option>
-									<option style="background-color:DarkKhaki;" value="difCCthemes">Разные тематики с КЦ</option>
+									<option class="${selecttheme}" value="difCCthemes">Разные тематики с КЦ</option>
 									<option value="479">💰КЦ-Проблемы с оплатой</option>
 									<option value="63">💻КЦ-Нет видео или звука</option>
 									<option value="68">📍КЦ-Другие тех проблемы</option>

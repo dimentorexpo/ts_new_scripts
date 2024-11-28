@@ -26,30 +26,30 @@ var win_taskform = //описание формы создания задач в 
                         </div>
 
                         <div style="margin: 5px; margin-top: 0px; width: 405px" id="create_form_menu">
-                            <input disabled="" required id="chathashlnk" placeholder="Хэш чата" title="Хеш чата, из которого будет создано обращение в СРМ" autocomplete="off" type="text" style="text-align: center; width: 410px; color: black; margin-top: 5px; text-align:center;background:#cac1b1; width:100%">
+                            <input class="${exttheme}" disabled="" required id="chathashlnk" placeholder="Хэш чата" title="Хеш чата, из которого будет создано обращение в СРМ" autocomplete="off" type="text" style="text-align: center; width: 410px; margin-top: 5px; text-align:center; width:100%">
 							<br>
-							<select required id="priority" style="width: 100%; text-align: center; height: 28px;">
+							<select class="${exttheme}" required id="priority" style="width: 100%; text-align: center; height: 28px;">
 								<option disabled="" selected="">Приоритет</option>
-								<option value="low" style="background: white; color:green; font-weight:600">🟢 Низкий</option>
-								<option value="high" style="background: white; color:orange; font-weight:600">🟡 Высокий</option>
-								<option value="highest" style="background: white; color:red; font-weight:600">🔴 Критический</option>
+								<option value="low" style="color:green; font-weight:600">🟢 Низкий</option>
+								<option value="high" style="color:orange; font-weight:600">🟡 Высокий</option>
+								<option value="highest" style="color:red; font-weight:600">🔴 Критический</option>
 							</select>
 
-							<select required id="customerservice" style="width: 100%; text-align: center; height: 28px;">
+							<select class="${exttheme}" required id="customerservice" style="width: 100%; text-align: center; height: 28px;">
 								<option disabled="" selected="">Отдел</option>
-								<option value="tech_support_outgoing_crm2" style="background: white">Техподдержка 1Л CRM (исход)</option>
-								<option value="teachers_care_crm" style="background: white">Teachers Care</option>
-								<option value="content_management_dictionary" style="background: white">Словарь</option>
-								<option value="content_management" style="background: white">Контент</option>
-								<option value="outgoing_calls_crm2" style="background: white">Исходящие звонки</option>
-								<option value="tech_support_second_line_crm2" style="background: white">Техподдержка 2Л CRM</option>
-                                <option value="crisis_manager" style="background: white">Кризис менеджеры</option>
-                                <option value="tech_support_incoming_crm2" style="background: white">Техподдержка 1Л CRM (вход)</option>
+								<option value="tech_support_outgoing_crm2" style="color:red;">Техподдержка 1Л CRM (исход)</option>
+								<option value="teachers_care_crm">Teachers Care</option>
+								<option value="content_management_dictionary">Словарь</option>
+								<option value="content_management">Контент</option>
+								<option value="outgoing_calls_crm2">Исходящие звонки</option>
+								<option value="tech_support_second_line_crm2" style="color:green;">Техподдержка 2Л CRM</option>
+                                <option value="crisis_manager">Кризис менеджеры</option>
+                                <option value="tech_support_incoming_crm2">Техподдержка 1Л CRM (вход)</option>
 							</select>
 
-							<input id="taskserviceid" placeholder="🆔 ID услуги" style="width: 100%; height: 28px;">
+							<input class="${exttheme}" id="taskserviceid" placeholder="🆔 ID услуги" style="width: 100%; height: 28px;">
 							<br>
-							<input required id="taskuserid" placeholder="🆔 ID пользователя" style="width: 92%; height: 28px;">
+							<input class="${exttheme}" required id="taskuserid" placeholder="🆔 ID пользователя" style="width: 92%; height: 28px;">
                             <button class="mainButton smallbtn" id="searchuserservices">⬅️</button>
 							<br>
                             <span id="NoteNotice" style="color:bisque; display:none;">Будет добавлена заметка: </span>
@@ -58,7 +58,7 @@ var win_taskform = //описание формы создания задач в 
 							<br>
 							<button class="mainButton" style="margin-left: 70px; display:none;" id="taskcreate2linecrm">Создать задачу на 2ЛТП по календарю</button>
 
-							<textarea required id="taskcomment" placeholder="Комментарий" title="Укажите комментарий к задаче, что было сделано, что требуется сделать" autocomplete="off" type="text" style="text-align: center; width: 100%; height:100px; color: black; margin-top: 5px"></textarea>
+							<textarea class="${exttheme}" required id="taskcomment" placeholder="Комментарий" title="Укажите комментарий к задаче, что было сделано, что требуется сделать" autocomplete="off" type="text" style="text-align: center; width: 100%; height:100px; margin-top: 5px"></textarea>
 
 							<br>
 							<button class="mainButton" id="studcontact" style="width: 115px;position: relative;left: 14%;margin-top: 5px;transform: translate(-50%, 0);">Обр П, связь с У</button>
@@ -74,7 +74,7 @@ var win_taskform = //описание формы создания задач в 
 		</span>
         </span>
 			<div id="servicehelper" class="srvhhelpnomove" style="position: absolute; top: -1px; left: -311px; width: 310px; max-height: 400px; overflow: auto; background: #464451; cursor:default;">
-				<input id="useriddata" placeholder="ID У для получения списка услуг" style="width:240px; margin:10px; text-align:center;">
+				<input class="${exttheme}" id="useriddata" placeholder="ID У для получения списка услуг" style="width:240px; margin:10px; text-align:center;">
 				<button class="mainButton smallbtn" id="getuserservices">🔎</button>
 				<p id="serviceinf"></p>
                 <p id="serviceComplinf"></p>
@@ -89,6 +89,10 @@ const wintCreateTask = createWindow('AF_Createtask', 'winTopTaskCreate', 'winLef
 document.getElementById('AF_Createtask').ondblclick = function (a) { // скрытие окна создания задачи в CRM2 по двойному клику
     if (checkelementtype(a)) { document.getElementById('hideMeCreateForm').click(); }
 }
+
+document.getElementById('taskserviceid').addEventListener('input', () => onlyNumber(document.getElementById('taskserviceid')));
+document.getElementById('taskuserid').addEventListener('input', () => onlyNumber(document.getElementById('taskuserid')));
+document.getElementById('useriddata').addEventListener('input', () => onlyNumber(document.getElementById('useriddata')));
 
 function doHideForm(flag = localStorage.getItem('hideTaskWindow')) {
     if (location.href.indexOf('skyeng.autofaq.ai/tickets/assigned') !== -1) {

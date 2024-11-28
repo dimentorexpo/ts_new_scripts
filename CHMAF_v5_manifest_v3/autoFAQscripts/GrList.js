@@ -6,7 +6,7 @@ var win_GrList =  // описание элементов окна Списка �
                                 <button class="mainButton buttonHide" id="hideList">hide</button>
                         </div>
 						<div>
-                        <input id="idgrouptolist" placeholder="ID группы" title="Введите ID группы для получения списка учеников" autocomplete="off" type="text" style="text-align: center; width: 80px; color: black;margin-left:5px; position:relative; left:30%;">
+                        <input id="idgrouptolist" class="${exttheme}" placeholder="ID группы" title="Введите ID группы для получения списка учеников" autocomplete="off" type="text" style="text-align: center; width: 80px; margin-left:5px; position:relative; left:30%;">
 							<button class="mainButton" title="Запуск получения списка учеников группы" id="getidgrouptolist" style="position:relative; left:30%;">Get info</button>
 						</div>
 				</span>

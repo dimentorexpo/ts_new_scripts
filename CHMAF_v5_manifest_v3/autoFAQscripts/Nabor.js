@@ -7,7 +7,7 @@ var win_NaborStatus =  // описание элементов окна стат�
                                 <button class="mainButton" id="openTrmTeacher" title="Очищает поля с результатами и полем для ввода">🧑‍🏫 TRM</button>
                         </div>
                         <div style="margin: 5px; width: 700px" id="databoNabor">
-                            <input id="tidNabor" placeholder="Teacher ID" title="Введите ID учителя, чтобы проверить информацию по статусу набора" autocomplete="off" type="text" style="position:relative; text-align:center; width:100px; color:black; margin-left:40%; font-size:14px; min-height:25px">
+                            <input class="${exttheme}" id="tidNabor" placeholder="Teacher ID" title="Введите ID учителя, чтобы проверить информацию по статусу набора" autocomplete="off" type="text" style="position:relative; text-align:center; width:100px; margin-left:40%; font-size:14px; min-height:25px">
                             <button class="mainButton" title="Запускает процесс поиска информации по статусам набора" id="getNaborInfo">🔍</button>
 						</div>
 				</span>

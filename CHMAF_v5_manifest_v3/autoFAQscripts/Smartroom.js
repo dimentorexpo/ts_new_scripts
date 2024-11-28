@@ -36,7 +36,7 @@ var win_smartroomform =  // описание элементов окна Мул�
 							    <input class = "smartroom-radio" type="radio" id="formatPU" name="formattoform" value="ПУ">
 								<label class = "smartroom-label" for="formatPU">ПУ</label>
 							</div>
-							<input id="clientid" placeholder="ID пользователя" autocomplete="off" type="text">
+							<input class="${exttheme}" id="clientid" placeholder="ID пользователя" autocomplete="off" type="text">
 							<br>
 							<div style="margin-top:5px; color:#c4ffd3; padding:5px; font-weight: 600;" id = "smartroomquestion">С чем обратились?</div>
 								<input class = "smartroom-radio" type="radio" id="whatobratsugest" name="whatobratform" value="Пожелание по улучшению">
@@ -54,7 +54,7 @@ var win_smartroomform =  // описание элементов окна Мул�
 							</div>
 
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600;">Тема</div>
-								<select id="cattwosmatrtoom" style="margin-left: 5px; padding-top: 5px; font-size: 16px; vertical-align: middle; color: black;">
+								<select class="${exttheme}" id="cattwosmatrtoom" style="margin-left: 5px; padding-top: 5px; font-size: 16px; vertical-align: middle;">
 									<option style="background-color:DarkKhaki;" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
 									<option value="Домашние задания">-Домашние задания</option>
 									<option value="Интерфейс платформы">-Интерфейс платформы</option>
@@ -66,7 +66,7 @@ var win_smartroomform =  // описание элементов окна Мул�
 							</div>
 
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600;">Подтема</div>
-								<select id="catthreesmatrtoom" style="margin-left: 5px; padding-top: 5px; font-size: 16px; vertical-align: middle; color: black;">
+								<select class="${exttheme}" id="catthreesmatrtoom" style="margin-left: 5px; padding-top: 5px; font-size: 16px; vertical-align: middle;">
 									<option style="background-color:DarkKhaki;" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
 									<option value="Интерфейс раздела домашки">-Интерфейс раздела домашки</option>
 									<option value="Нет">-Нет</option>
@@ -103,7 +103,7 @@ var win_smartroomform =  // описание элементов окна Мул�
 							</div>
 
 						<div>
-							<textarea id="fullcomentsmartroom" placeholder="Полный комментарий предложения по улучшению" autocomplete="off" type="text" style="text-align: center; width: 405px; color: black; margin-top: 5px" data-gramm="false" wt-ignore-input="true"></textarea>
+							<textarea class="${exttheme}" id="fullcomentsmartroom" placeholder="Полный комментарий предложения по улучшению" autocomplete="off" type="text" style="text-align: center; width: 405px; margin-top: 5px" data-gramm="false" wt-ignore-input="true"></textarea>
 						<br>
 							<button class="mainButton" title="Отправляет заполненные поля формы в док" id="send2smartroom" style="width:105px; position: relative; left: 50%; margin-top: 5px; transform: translate(-50%, 0);">Отправить</button>
 						</div>

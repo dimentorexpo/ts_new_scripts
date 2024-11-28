@@ -11,9 +11,9 @@ var win_Radio =  // описание элементов окна радио
             </div>
             <div id="audioPlayer" class="mainplayer">
                 <div id="audioControls">
-                    <input type="text" id="audioUrl" style="text-align: center; border-radius: 10px; color:black;"
+                    <input class="${exttheme}" type="text" id="audioUrl" style="text-align: center; border-radius: 10px;"
                         placeholder="Enter Radio URL">
-                    <input type="text" id="audioName" style="text-align: center; border-radius: 10px; width:120px; color:black;"
+                    <input class="${exttheme}" type="text" id="audioName" style="text-align: center; border-radius: 10px; width:120px;"
                         placeholder="Enter Radio name">
                     <button class="mainButton" id="addAudio">➕</button>
                     <button class="mainButton" id="playAudio">▶</button>

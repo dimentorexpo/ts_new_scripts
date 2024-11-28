@@ -8,12 +8,12 @@ var win_Marks =  // описание элементов окна оценок о
                     </div>
                     <div>
                         <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">От </span>
-                        <input type="date" style="color:black; margin-left:5px;  width:115px; text-align:center;" name="StartDataMarks" id="dateFromMarks">
+                        <input class="${exttheme}" type="date" style="margin-left:5px;  width:115px; text-align:center;" name="StartDataMarks" id="dateFromMarks">
                         <span style="color:bisque; margin-top:5px; margin-left:10px; height:28px;">До </span>
-                        <input type="date" style="color:black; margin-left:5px; margin-right:10px; width:115px; text-align:center;" name="EndDataMarks" id="dateToMarks">
+                        <input class="${exttheme}" type="date" style="margin-left:5px; margin-right:10px; width:115px; text-align:center;" name="EndDataMarks" id="dateToMarks">
                     </div>
                     <div>
-                        <input id="useridsearch" placeholder="ID У/П для 🔎статистики оценок" title="Ввведите ID ученика или учителя для получения информации с начала года по выставляемым оценкам" autocomplete="off" type="text" style="text-align: center; width: 235px; color: black;margin-left:7px">
+                        <input class="${exttheme}" id="useridsearch" placeholder="ID У/П для 🔎статистики оценок" title="Ввведите ID ученика или учителя для получения информации с начала года по выставляемым оценкам" autocomplete="off" type="text" style="text-align: center; width: 235px; margin-left:7px">
                         <button class="mainButton smallbtn" id="findmarksstat">🔎</button>
                         <button class="mainButton smallbtn" id="clearmarksstat">🧹</button>
                     </div>

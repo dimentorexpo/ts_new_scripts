@@ -67,18 +67,22 @@ var selectedinpth = exttheme === 'lightinputs' ? 'calendarmyinputslight' : 'cale
 var otherinpth = exttheme === 'lightinputs' ? 'othercalendarlight' : 'othercalendardark';
 var selecttheme = exttheme === 'lightinputs' ? 'lightopts' : 'darkopts';
 
-function applyCalendarIconInversion() {
+function checkcalendaricon() {
     if (exttheme === 'darkinputs') {
-        const css = [
-            "input[type='date']::-webkit-calendar-picker-indicator {",
-            "    filter: invert(1) !important;",
-            "}"
-        ].join("\n");
-        const styleElement = document.createElement("style");
-        styleElement.textContent = css;
-        styleElement.id = 'calendarIconInversion'; // Добавляем id для идентификации
-        document.head.appendChild(styleElement);
+        applyCalendarIconInversion();
     }
+}
+// Функция для добавления инвертирования значка календаря
+function applyCalendarIconInversion() {
+    const css = [
+        "input[type='date']::-webkit-calendar-picker-indicator {",
+        "    filter: invert(1) !important;",
+        "}"
+    ].join("\n");
+    const styleElement = document.createElement("style");
+    styleElement.textContent = css;
+    styleElement.id = 'calendarIconInversion';
+    document.head.appendChild(styleElement);
 }
 
 // Функция для удаления инвертирования значка календаря
@@ -90,10 +94,7 @@ function removeCalendarIconInversion() {
 }
 
 // Применяем инвертирование значка календаря, если темная тема активна
-applyCalendarIconInversion();
-
-// Для удаления инвертирования при смене темы:
-// removeCalendarIconInversion(); // Вызываем эту функцию для удаления инвертирования
+checkcalendaricon();
 
 var win_AFhelper =  // описание элементов главного окна
     `<div style="width: 351px;">

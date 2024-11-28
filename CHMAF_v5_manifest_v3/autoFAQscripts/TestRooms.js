@@ -10,7 +10,7 @@ var win_testrooms =  // описание элементов окна созда�
               </div>
 
 					    <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                <select id="lessontypeselect" style="text-align: center; width: 240px; height: 26px; color: black; margin-left: 7px;">
+                <select class="${exttheme}" id="lessontypeselect" style="text-align: center; width: 240px; height: 26px; margin-left: 7px;">
                     <option disabled="" selected="" value="lessonnotselect" style="background-color: orange; color: white;">Выбери тип урока</option>
                     <option value="test">1 - 1</option>
                     <option value="test-parallel">Паралельный</option>
@@ -20,7 +20,7 @@ var win_testrooms =  // описание элементов окна созда�
               </div>
 
 					    <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                  <select id="subjecttypeselect" style="text-align: center; width: 240px; height: 26px; color: black; margin-left: 7px;">
+                  <select class="${exttheme}" id="subjecttypeselect" style="text-align: center; width: 240px; height: 26px; margin-left: 7px;">
                       <option disabled="" selected="" value="subjnotselect" style="background-color: orange; color: white;">Выбери предмет</option>
                       <option value="api-english">Английский</option>
                       <option value="api-biology">Биология</option>
@@ -39,8 +39,8 @@ var win_testrooms =  // описание элементов окна созда�
               </div>
 
               <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                  <input id="teachforroom" placeholder="Введи ID П" title="Введи id П для кого создать тестовую комнату" autocomplete="off" type="text" style="text-align: center; width: 120px; color: black; margin-left: 5px;">
-                  <input id="studforroom" placeholder="Введи ID У" title="Введи id У для кого создать тестовую комнату(Если У несколько, вводите через запятую)" autocomplete="off" type="text" style="text-align: center; width: 120px; color: black; margin-left: 5px;">
+                  <input class="${exttheme}" id="teachforroom" placeholder="Введи ID П" title="Введи id П для кого создать тестовую комнату" autocomplete="off" type="text" style="text-align: center; width: 120px; margin-left: 5px;">
+                  <input class="${exttheme}" id="studforroom" placeholder="Введи ID У" title="Введи id У для кого создать тестовую комнату(Если У несколько, вводите через запятую)" autocomplete="off" type="text" style="text-align: center; width: 120px; margin-left: 5px;">
     					</div>
 
               <div style="width: 260px; margin:2px; display:flex; justify-content:left;">

@@ -9,7 +9,7 @@ var win_link2less =  // описание элементов окна созда�
                 </div>
 
 				<div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                    <select id="subjecttype2less" style="text-align: center; width: 240px; height: 26px; color: black; margin-left: 7px;">
+                    <select class="${exttheme}" id="subjecttype2less" style="text-align: center; width: 240px; height: 26px; margin-left: 7px;">
                         <option disabled="" selected="" value="subjnotselect" style="background-color: orange; color: white;">Выбери предмет</option>
                         <option value="english">Английский</option>
                         <option value="biology">Биология</option>
@@ -28,7 +28,7 @@ var win_link2less =  // описание элементов окна созда�
                 </div>
 
                 <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                    <input id="hashforroom" placeholder="Введи хэш комнаты" title="Введи хэш комнаты на которую получить ссылку" autocomplete="off" type="text" style="text-align: center; width: 240px; color: black; margin-left: 5px;">
+                    <input class="${exttheme}" id="hashforroom" placeholder="Введи хэш комнаты" title="Введи хэш комнаты на которую получить ссылку" autocomplete="off" type="text" style="text-align: center; width: 240px; margin-left: 5px;">
     			</div>
 
                 <div style="width: 260px; margin:2px; display:flex; justify-content:left;">

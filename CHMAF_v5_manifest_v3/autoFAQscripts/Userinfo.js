@@ -16,7 +16,7 @@ var win_serviceinfo =  // описание элементов окна инфо�
 								<span style="padding:7px; margin-left: 5px;height:28px; color:#ffff;  font-weight:700; border: 1px solid bisque;width: 82px; background-color:#1E90FF;display:none;" id="getcurrentstatus"></span>
                         </div>
 						<div style="width: 320px; margin:5px; display:flex; justify-content:left;" id="input_field">
-							<input id="idstudent" placeholder="ID У/П" title="Введите ID ученика для получения информации по услугам" autocomplete="off" type="text" style="text-align: center; width: 100px; color: black;">
+							<input class="${exttheme}" id="idstudent" placeholder="ID У/П" title="Введите ID ученика для получения информации по услугам" autocomplete="off" type="text" style="text-align: center; width: 100px;">
 							<button title="запускает поиск по услугам" id="getidstudent" class="mainButton usinfoops">🚀</button>
 							<button title="Открывает список со всеми задачами пользователя" id="crmactivetasks" class="mainButton usinfoops">📋</button>
 							<button class="mainButton" title="TRM 2.0 для информации по П" id="newtrm" style="margin-left: 5px; display: none; width: 25.23px;">🗿</button>
@@ -27,7 +27,7 @@ var win_serviceinfo =  // описание элементов окна инфо�
 							<button title="очищает все поля" id="clearservinfo" class="mainButton usinfoops">🧹</button>
 				       	</div>
 						<div style="width: 320px; margin:5px; display:flex; justify-content:left;" id="input_field2">
-							<input readonly id="onetimepassout"  placeholder="One time pass" title="Вывод разового пароля после выполнения команды" autocomplete="off" type="text" style="float:left; text-align: center; width: 100px; color: black;">
+							<input class="${exttheme}" readonly id="onetimepassout"  placeholder="One time pass" title="Вывод разового пароля после выполнения команды" autocomplete="off" type="text" style="float:left; text-align: center; width: 100px;">
 							<button title="Генерирует одноразовый код для входа в мобильное приложение и выводит его в спец поле" id="getonetimepass" class="mainButton usinfoops">📱</button>
 							<button title="Открывает админку редактирования пользователя/просмотра ролей" id="editadmbtn" class="mainButton usinfoops">✏</button>
 							<button title="Открывает историю чатов" id="catchathistory" class="mainButton usinfoops">🗄</button>

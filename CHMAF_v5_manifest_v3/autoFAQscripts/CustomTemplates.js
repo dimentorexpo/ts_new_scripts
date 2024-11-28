@@ -56,12 +56,14 @@ function customTemplates(language = '') { //собственные шаблон�
         var newInput = document.createElement('input')
         newInput.id = 'cstmTmpInp' + language + index
         newInput.value = template == undefined ? "" : template
+        newInput.classList.add(exttheme);
         newInput.style.marginRight = '5px'
         newInput.style.width = '500px'
 
         var template = localStorage.getItem('tmp_name_' + language + index)
         var newInputTmpName = document.createElement('input')
         newInputTmpName.value = template == undefined ? "" : template
+        newInputTmpName.classList.add(exttheme);
         newInputTmpName.style.marginRight = '5px'
         newInputTmpName.style.width = '150px'
 

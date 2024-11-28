@@ -51,7 +51,7 @@ async function init_settings() {
 
             <div style="border: 2px double black; background-color: #464451" id="set_bar">
                 <div style="margin: 5px; width: 500px">
-                    <select style="height:28px; width:140px; text-align:center" id="soundlistaddr">
+                    <select class="${exttheme}" style="height:28px; width:140px; text-align:center" id="soundlistaddr">
                         <option selected="" disabled="">Звук нового сообщения</option>
                         <option value="othersound">Выбрать свой звук</option>
                      </select>
@@ -62,11 +62,11 @@ async function init_settings() {
                     </label>
                     <span style="color:bisque">Громкость</span>
                     <input id="range" min="0" max="1" value="1.0" step="0.025" type="range">
-                    <input id="sound_adr" placeholder="Введи адрес звука" autocomplete="off" type="text" style="display: none; text-align: center; width: 210px; color: black;">
+                    <input class="${exttheme}" id="sound_adr" placeholder="Введи адрес звука" autocomplete="off" type="text" style="display: none; text-align: center; width: 210px;">
                     <button class="mainButton" title="Сохраняет ссылки на новый источник звука для входящего запроса в АФ" id="sound_save" style="display: none">💾</button>
                     <br>
                     <span style="color:bisque">Интервал воспроизведения звука:</span>
-                    <input title="Ввод интервала в секундах между повторами звука нового чата" id="soundplayinterval" placeholder="N" autocomplete="off" oninput="maxLengthCheck(this)" type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px; width: 50px; color: black;">
+                    <input class="${exttheme}" title="Ввод интервала в секундах между повторами звука нового чата" id="soundplayinterval" placeholder="N" autocomplete="off" oninput="maxLengthCheck(this)" type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px; width: 50px;">
                     <button class="mainButton" title="Внести изменения в интервал между повторами звука нового чата" id="setsoundplayinterval" style="margin-top: 5px">SET⌚</button>
                     <br>
                     <div class="onlyfortp">
@@ -84,11 +84,11 @@ async function init_settings() {
                     </div>
                     <div>
                         <div style="float: left;">
-                            <label style="color:bisque;"><input type="color" id="aclstimepicker">Цвет заливки закрытия чата</label>
+                            <label style="color:bisque;"><input class="${exttheme}" type="color" id="aclstimepicker">Цвет заливки закрытия чата</label>
                             <br>
-                            <label style="color:bisque;"><input type="color" id="answtimepicker">Цвет заливки нового чата</label>
+                            <label style="color:bisque;"><input class="${exttheme}" type="color" id="answtimepicker">Цвет заливки нового чата</label>
                             <br>
-                            <label style="color:bisque;"><input type="color" id="responstimepicker">Цвет заливки неотвеченного чата</label>
+                            <label style="color:bisque;"><input class="${exttheme}" type="color" id="responstimepicker">Цвет заливки неотвеченного чата</label>
                             <br>
                         </div>
                         
@@ -107,9 +107,9 @@ async function init_settings() {
                     <br>
                 </div>
                 <div class="onlyfortp">
-                    <input id="test_std" placeholder="ID тест У" autocomplete="off" title = "ID личного тестового ученика" type="text" style="text-align: center; width: 100px; color: black;">
+                    <input class="${exttheme}" id="test_std" placeholder="ID тест У" autocomplete="off" title = "ID личного тестового ученика" type="text" style="text-align: center; width: 100px;">
                     <button class="mainButton" id="setteststd" title="Добавить в localstorage ID тестового У" style="margin-top: 5px">💾</button>
-                    <input id="test_teach" placeholder="ID тест П" autocomplete="off" title = "ID личного тестового преподавателя" type="text" style="text-align: center; width: 100px; color: black;">
+                    <input class="${exttheme}" id="test_teach" placeholder="ID тест П" autocomplete="off" title = "ID личного тестового преподавателя" type="text" style="text-align: center; width: 100px;">
                     <button class="mainButton" id="settestteach" title="Добавить в localstorage ID тестового П" style="margin-top: 5px">💾</button>
                 </div>
                     <button class="mainButton" id="savesettingstofile" title="Сохраняет все настройки из localstorage в отдельный .json файл" style="color: #e5ece6; margin-top: 5px">💾 Сохранить настройки</button>
@@ -367,6 +367,13 @@ async function init_settings() {
                 element.classList.add(otherinpth);
             });
     
+            // Выполняем инверсию иконок календаря в зависимости от темы
+            if (newTheme === 'dark') {
+                applyCalendarIconInversion();
+            } else {
+                removeCalendarIconInversion();
+            }
+    
             // Обновляем глобальные переменные текущей темы
             exttheme = newClass;
             selecttheme = newSelectClass;
@@ -379,6 +386,13 @@ async function init_settings() {
         selectedinpth = currentTheme === 'dark' ? 'calendarmyinputsdark' : 'calendarmyinputslight';
         otherinpth = currentTheme === 'dark' ? 'othercalendardark' : 'othercalendarlight';
     
+        // Изначально применяем инверсию или удаляем её в зависимости от текущей темы
+        if (currentTheme === 'dark') {
+            applyCalendarIconInversion();
+        } else {
+            removeCalendarIconInversion();
+        }
+    
         updateButtonIcon(currentTheme);
     
         // Обработчик клика для смены темы
@@ -390,8 +404,8 @@ async function init_settings() {
             updateButtonIcon(newTheme);
             updateElementClasses(newTheme);
         };
-    }    
-
+    }  
+    
     // Универсальная функция для настройки чекбоксов
     function setupCheckbox(checkboxId, localStorageKey, callback = () => { }) {
         const checkbox = document.getElementById(checkboxId);

@@ -600,6 +600,12 @@
 		opacity: 0.7;
 	}
 
+	.darkinputs:disabled {
+		color: gray;
+		background-color: #3d3d3d;
+		opacity: 0.6;
+	}
+
 	.lightinputs {
 		color: black;
 		background-color: white;
@@ -609,6 +615,12 @@
 		color: black;
 		font-weight: 500;
 		opacity: 0.7;
+	}
+
+	.lightinputs:disabled {
+		color: gray;
+		background-color: #cac1b1; /* Более светлый оттенок для отключенного состояния */
+		opacity: 0.6;
 	}
 
 	.calendarmyinputslight {

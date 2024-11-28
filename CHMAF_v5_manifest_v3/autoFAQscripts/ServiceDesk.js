@@ -156,7 +156,7 @@ var win_servicedesk = // описание элементов окна Service De
 				</div>
 
 				<div id="inputfieldsdiv" style="display: none;">
-					<select style="height:28px; margin-left: 21px; margin-top: 5px; font-size: 14px; display: none;" id="prioritymbugs">
+					<select class="${exttheme}" style="height:28px; margin-left: 21px; margin-top: 5px; font-size: 14px; display: none;" id="prioritymbugs">
 							<option selected disabled="">Приоритет</option>
 							<option value="Blocker">Blocker</option>
 							<option value="Critical">Critical</option>
@@ -165,20 +165,20 @@ var win_servicedesk = // описание элементов окна Service De
 							<option value="Minor">Minor</option>
 							<option value="Trivial">Trivial</option>
 					    </select>
-                    <select style="height:28px; width: 90%; font-size: 14px; margin-left: 21px; margin-top: 5px; display: none;" id="categoryCommproblems">
+                    <select class="${exttheme}" style="height:28px; width: 90%; font-size: 14px; margin-left: 21px; margin-top: 5px; display: none;" id="categoryCommproblems">
                             <option selected disabled="">Категория проблемы</option>
                         </select>
-                    <input id="custom_CMS" placeholder="Ссылка на CMS" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
-					<input id="custom_id" placeholder="ID Пользователей (Id П, Id У)" class="sdcustfieldformlines removefield" style="margin-left: 21px;">
-                    <input id="custom_service" placeholder="ID Услуги" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
-                    <input id="custom_hesh" placeholder="Хэш урока" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
-                    <input id="custom_email" placeholder="Почта пользователей" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
-                    <input id="custom_appinfo" placeholder="Приложение / Версия / Платформа" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;"></input>
-                    <input id="custom_deviceinfo" placeholder="Девайс / ОС" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;"></input>
-					<textarea id="custom_descr" placeholder="Описание проблемы" class="sdcustfieldformlines removefield" style="margin-left: 21px;"></textarea>
-					<textarea id="custom_str" placeholder="Как воспроизвести ошибку?" class="sdcustfieldformlines removefield" style="margin-left: 21px;"></textarea>
-					<textarea id="custom_er" placeholder="Ожидаемое поведение" class="sdexpecactual removefield" style="margin-left: 21px;"></textarea>
-					<textarea id="custom_ar" placeholder="Фактическое поведение" class="sdexpecactual removefield" style="margin-left: 21px;"></textarea>
+                    <input id="custom_CMS" placeholder="Ссылка на CMS" class="sdcustfieldformlines removefield ${exttheme}" style="margin-left: 21px; display: none;">
+					<input id="custom_id" placeholder="ID Пользователей (Id П, Id У)" class="sdcustfieldformlines removefield ${exttheme}" style="margin-left: 21px;">
+                    <input id="custom_service" placeholder="ID Услуги" class="sdcustfieldformlines removefield ${exttheme}" style="margin-left: 21px; display: none;">
+                    <input id="custom_hesh" placeholder="Хэш урока" class="sdcustfieldformlines removefield ${exttheme}" style="margin-left: 21px; display: none;">
+                    <input id="custom_email" placeholder="Почта пользователей" class="sdcustfieldformlines removefield ${exttheme}" style="margin-left: 21px; display: none;">
+                    <input id="custom_appinfo" placeholder="Приложение / Версия / Платформа" class="sdcustfieldformlines removefield ${exttheme}" style="margin-left: 21px; display: none;"></input>
+                    <input id="custom_deviceinfo" placeholder="Девайс / ОС" class="sdcustfieldformlines removefield ${exttheme}" style="margin-left: 21px; display: none;"></input>
+					<textarea id="custom_descr" placeholder="Описание проблемы" class="sdcustfieldformlines removefield ${exttheme}" style="margin-left: 21px;"></textarea>
+					<textarea id="custom_str" placeholder="Как воспроизвести ошибку?" class="sdcustfieldformlines removefield ${exttheme}" style="margin-left: 21px;"></textarea>
+					<textarea id="custom_er" placeholder="Ожидаемое поведение" class="sdexpecactual removefield ${exttheme}" style="margin-left: 21px;"></textarea>
+					<textarea id="custom_ar" placeholder="Фактическое поведение" class="sdexpecactual removefield ${exttheme}" style="margin-left: 21px;"></textarea>
 					<button class="mainButton" id="createsd" style="width: 150px; position:relative; left:35%; margin-bottom:5px;">Создать</button>
 				</div>
 	        </span>

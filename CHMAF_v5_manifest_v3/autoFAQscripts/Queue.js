@@ -9,7 +9,7 @@ var win_Queue =  // описание элементов окна Чаты в о�
 								<span id="waitingCount" style="color:coral; font-weight:800"></span>
                         </div>
 						<div>
-							<select id="AFStatusType" style="margin-left:220px; margin-top:10px;">
+							<select class="${exttheme}" id="AFStatusType" style="margin-left:220px; margin-top:10px;">
 								<option value="AssignedToOperator">В работе у оператора</option>
 								<option value="OnOperator">В очереди</option>
 								<option value="ClosedByOperator">Закрытые</option>
@@ -17,7 +17,7 @@ var win_Queue =  // описание элементов окна Чаты в о�
 							</select>
 						</div>
 						<div>
-							<textarea id="inputTextForUser" style="margin-left: 16.5%;; width: 400px; height: 56px;" placeholder="Введите текст сообщения для пользователя"></textarea>
+							<textarea class="${exttheme}" id="inputTextForUser" style="margin-left: 16.5%;; width: 400px; height: 56px;" placeholder="Введите текст сообщения для пользователя"></textarea>
 						</div>
 
 						<div style="display:flex; justify-content:space-evenly; padding-bottom:5px">
