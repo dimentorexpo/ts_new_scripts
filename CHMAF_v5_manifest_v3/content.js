@@ -842,7 +842,6 @@ maskBackHide.onclick = function () { // функция кнопки скрыть
         const EmailInChat = SearchinAFnewUI("email");
         const PhoneInChat = SearchinAFnewUI("phone");
 
-
         if (modalMasks) {
             modalMasks.style.display = 'none';
             chatHeaderActionsInner.style.display = 'none'; // кнопки сверху

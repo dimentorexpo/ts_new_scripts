@@ -915,9 +915,30 @@ async function getservices(stidNew) {
 
                 let allBtns = document.getElementsByName('btnSynchro')
                 let allIdSrv = document.getElementsByName('idServForSync')
+                let allSyncEmojis = document.getElementsByClassName('emoji')
                 for (let i = 0; i < allBtns.length; i++) {
                     allBtns[i].onclick = function () {
-                        console.log('Clicked ' + [i] + ' button' + allIdSrv[i].textContent)
+                        allSyncEmojis[i].innerText = "⏳"
+                        const gToken = localStorage.getItem('token_global');
+                        const fetchURL = `https://skysmart-core.skyeng.ru/api/v1/academic-activity/upsert-education-service-history/${allIdSrv[i].innerText}`;
+                        const requestOptions = {
+                            headers: {
+                                "accept": "application/json, text/plain, */*",
+                                "authorization": `Bearer ${gToken}`
+                            },
+                            method: "POST",
+                            mode: "cors"
+                        };
+
+                        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+                            if (!response.success) {
+                                alert('Не удалось выполнить запрос: ' + response.error);
+                                allSyncEmojis[i].innerText = "❌";
+                            } else {
+                                allSyncEmojis[i].innerText = "✅";
+                                setTimeout(function () { allSyncEmojis[i].innerText = "♻️"; }, 5000);
+                            }
+                        });
                     }
                 }
 
