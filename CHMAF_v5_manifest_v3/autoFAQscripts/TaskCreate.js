@@ -231,10 +231,12 @@ function gettaskButButtonPress() { // функция открытия окна �
 
                                 let gatheredInfoComplSrvs = '<table style="width: 98%; margin: 10px 0; border-collapse: collapse;">';
                                 gatheredInfoComplSrvs += `
-                                    <tr style="background: #776d69; color: white;">
+                                    <tr style="background: #776d69; color: white; position: sticky; top: 0;">
                                         <th style="border: 1px solid black; padding: 5px;">ID Услуги</th>
                                         <th style="border: 1px solid black; padding: 5px;">STK</th>
                                         <th style="border: 1px solid black; padding: 5px;">💰</th>
+                                        <th style="border: 1px solid black; padding: 5px;">Урок</th>
+                                        <th style="border: 1px solid black; padding: 5px;"></th>
                                     </tr>`;
 
                                 const allEduServicesCompl = service.educationServices;
