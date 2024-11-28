@@ -10,7 +10,7 @@ var win_StatisticaAF =  // описание формы чтобы не дава�
 			    </span>
                         </div>
 						<div style="margin: 5px; width: 750px" id="periodOfStata">
-								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <inputclass="${exttheme}" type="date" style="margin-left:20px;  width:125px;" name="stData" id="dateFromStat"></span>
+								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <input class="${exttheme}" type="date" style="margin-left:20px;  width:125px;" name="stData" id="dateFromStat"></span>
 								 <button class="mainButton" style="margin-left:15%" id="dayminusminus">◀</button>
 								 <button class="mainButton" id="dayplusplus">▶</button>
 								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input class="${exttheme}" type="date" style="float:right; margin-left:20px; margin-right:10px; width:125px;" name="finData" id="dateToStat" <="" span="">
@@ -820,7 +820,7 @@ async function getopersSLA() {
                             ["Rate"]: operdata.items[j].stats.rate.rate
                                 ? operdata.items[j].stats.rate.rate
                                 : null,
-							["Channel"]:operdata.items[j].channel.name
+                            ["Channel"]: operdata.items[j].channel.name
                         });
 
                         if (operdata.items[j].stats.rate.rate && operdata.items[j].channel.name != "Telegram techsup acquisition") {
@@ -840,8 +840,8 @@ async function getopersSLA() {
                 page++;
                 maxpage = operdata.total / 100;
             } while (page - 1 < maxpage);
-			
-			uniqueIdsArrayUntarget = Array.from(massivchikUntarget);
+
+            uniqueIdsArrayUntarget = Array.from(massivchikUntarget);
             console.log("Массив нетаргета по АФРТ", uniqueIdsArrayUntarget);
             uniqueIdsArrayTarget = Array.from(massivchikTarget);
             //console.log(uniqueIdsArrayTarget);
