@@ -894,7 +894,7 @@ async function getservices(stidNew) {
                         allEduServicesCompl.forEach((el) => {
                             gatheredInfoComplSrvs += `
                         <tr>
-                        <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">
+                        <td name="idServForSync" style="border: 1px solid black; padding: 5px; background: #4f4c4c;">
                         <a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:#32b5f5; text-decoration: none;">${el.id}</a>
                     </td>
                             <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.serviceTypeKey}</td>
@@ -911,6 +911,36 @@ async function getservices(stidNew) {
                     }
 
                 });
+
+
+                let allBtns = document.getElementsByName('btnSynchro')
+                let allIdSrv = document.getElementsByName('idServForSync')
+                let allSyncEmojis = document.getElementsByClassName('emoji')
+                for (let i = 0; i < allBtns.length; i++) {
+                    allBtns[i].onclick = function () {
+                        allSyncEmojis[i].innerText = "⏳"
+                        const gToken = localStorage.getItem('token_global');
+                        const fetchURL = `https://skysmart-core.skyeng.ru/api/v1/academic-activity/upsert-education-service-history/${allIdSrv[i].innerText}`;
+                        const requestOptions = {
+                            headers: {
+                                "accept": "application/json, text/plain, */*",
+                                "authorization": `Bearer ${gToken}`
+                            },
+                            method: "POST",
+                            mode: "cors"
+                        };
+
+                        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+                            if (!response.success) {
+                                alert('Не удалось выполнить запрос: ' + response.error);
+                                allSyncEmojis[i].innerText = "❌";
+                            } else {
+                                allSyncEmojis[i].innerText = "✅";
+                                setTimeout(function () { allSyncEmojis[i].innerText = "♻️"; }, 5000);
+                            }
+                        });
+                    }
+                }
 
             } else {
                 linkToComplectationtable.innerHTML += '<div style="background: #4e7891; text-align:center; text-shadow: 1px 1px 2px black;">❌Нет комплектаций</div>';
