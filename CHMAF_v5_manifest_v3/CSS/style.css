@@ -1,3 +1,7 @@
+	body {
+		overflow: hidden;
+	}
+
 	.mainButton {
 		background: #768d87;
 		border-radius: 5px;
@@ -619,7 +623,8 @@
 
 	.lightinputs:disabled {
 		color: gray;
-		background-color: #cac1b1; /* Более светлый оттенок для отключенного состояния */
+		background-color: #cac1b1;
+		/* Более светлый оттенок для отключенного состояния */
 		opacity: 0.6;
 	}
 

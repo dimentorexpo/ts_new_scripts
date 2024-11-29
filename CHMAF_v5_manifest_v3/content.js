@@ -514,7 +514,7 @@ function checkMinMaxValue(input) {     // функция првоерки нах
 function checkelementtype(a) { // проверка на какой элемент нажали для выполнения перетягивания Drag'n'Drop, убрал && elem.nodeName != 'INPUT'
     let elem = document.elementFromPoint(a.clientX, a.clientY)
 
-    if (elem.className == 'teststudteachinp') { // делает возможным перетягивать элемент с этим классом, по аналогии можно для других элементов сделать
+    if (elem.className == 'teststudteachinp' || elem.className == "teststudteachinp darkinputs") { // делает возможным перетягивать элемент с этим классом, по аналогии можно для других элементов сделать
         return true;
     }
 
