@@ -120,8 +120,6 @@ var usersrvparsed;
 function gettaskButButtonPress() { // функция открытия окна для работы с созданием задач на СРМ
 
     let conversid;
-
-    document.getElementById('useriddata').value = '';
     document.getElementById('serviceinf').innerHTML = '';
 
     if (document.getElementById('AF_Createtask').style.display == 'none') {
@@ -284,7 +282,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                                         nextlessondate = chechkComplectationsTT[0].startedAt;
                                         nextlessondate = nextlessondate.replace('T', ' ').replace(/\+00:00$/, '');
                                         let dateObj = new Date(nextlessondate);
-                                        dateObj.setHours(dateObj.getHours() + 3); // Добавляем 3 часа для MSK                        
+                                        dateObj.setHours(dateObj.getHours() + 3); // Приводим время к MSK
                                         nextlessondate = dateObj.toLocaleString('ru-RU', {
                                             hour: '2-digit',
                                             minute: '2-digit',
@@ -297,32 +295,44 @@ function gettaskButButtonPress() { // функция открытия окна �
                                 } else {
                                     alert('Не удалось выполнить запрос: ' + response.error);
                                 }
-
+                            
                                 // Получаем текущее время устройства и приводим его к +3 МСК
                                 let currentDateObj = new Date();
                                 currentDateObj.setMinutes(currentDateObj.getMinutes() + currentDateObj.getTimezoneOffset()); // Приводим к UTC
                                 currentDateObj.setHours(currentDateObj.getHours() + 3); // Приводим к +3 МСК
-
-                                // Форматируем текущее время для сравнения
-                                let currentTime = currentDateObj.toLocaleString('ru-RU', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    second: '2-digit',
-                                    year: 'numeric',
-                                    month: '2-digit',
-                                    day: '2-digit'
-                                });
-
-                                // Преобразуем строки дат для корректного сравнения
-                                let currentDateTime = new Date(currentDateObj).getTime();
-                                let nextLessonDateTime = new Date(nextlessondate.split('.').reverse().join('-')).getTime(); // Преобразуем дату для корректного формата
-
-                                // Проверяем, если текущее время в диапазоне от -10 минут до +50 минут относительно nextlessondate
-                                if (currentDateTime >= nextLessonDateTime - 10 * 60 * 1000 &&
-                                    currentDateTime <= nextLessonDateTime + 50 * 60 * 1000) {
-                                    element.style.background = 'red'; // Красим элемент в красный цвет
+                            
+                                let currentDateTime = currentDateObj.getTime(); // Текущее время в миллисекундах
+                            
+                                // Разделяем строку nextlessondate на дату и время
+                                let nextLessonDateParts = nextlessondate.split(' ');
+                                if (nextLessonDateParts.length === 2) {
+                                    let dateParts = nextLessonDateParts[0].split('.'); // Разделяем дату на [дд, мм, гггг]
+                                    let timeParts = nextLessonDateParts[1].split(':'); // Разделяем время на [чч, мм, сс]
+                            
+                                    // Проверяем, что все части корректно распарсились
+                                    if (dateParts.length === 3 && timeParts.length >= 2) {
+                                        // Создаем объект Date из частей даты и времени
+                                        let nextLessonDateTime = new Date(
+                                            parseInt(dateParts[2], 10),            // Год
+                                            parseInt(dateParts[1], 10) - 1,        // Месяц (0-based)
+                                            parseInt(dateParts[0], 10),            // День
+                                            parseInt(timeParts[0], 10),            // Часы
+                                            parseInt(timeParts[1], 10),            // Минуты
+                                            timeParts[2] ? parseInt(timeParts[2], 10) : 0 // Секунды (если есть)
+                                        ).getTime();
+                            
+                                        // Проверяем диапазон времени
+                                        if (currentDateTime >= nextLessonDateTime - 10 * 60 * 1000 &&
+                                            currentDateTime <= nextLessonDateTime + 50 * 60 * 1000) {
+                                            element.style.background = 'red'; // Красим элемент в красный цвет
+                                        }
+                                    } else {
+                                        console.error("Ошибка разбора даты/времени: некорректный формат nextlessondate");
+                                    }
+                                } else {
+                                    console.error("Ошибка: Некорректный формат nextlessondate");
                                 }
-
+                            
                                 element.innerText = nextlessondate;
                             });
                         });
@@ -333,7 +343,6 @@ function gettaskButButtonPress() { // функция открытия окна �
                     }
                 }
             });
-
         }
 
         document.getElementById('refreshhashcreateform').click();
@@ -390,6 +399,9 @@ function gettaskButButtonPress() { // функция открытия окна �
             document.getElementById('AF_Createtask').style.display = 'none'
             taskBut.classList.remove('activeScriptBtn')
             document.getElementById('chathashlnk').value = '';
+            if (document.getElementById('AF_Service').style.display == 'none') {
+                document.getElementById('AF_Complectations').style.display ='none';
+            }
 
             fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
                 "headers": {
@@ -431,6 +443,9 @@ function gettaskButButtonPress() { // функция открытия окна �
             document.getElementById('priority').style = "color:#000;font-weight:400;width: 100%; height: 25px; text-align: center;"
             document.getElementById('customerservice').children[0].selected = true
             document.getElementById('customerservice').style.background = '';
+            document.getElementById('useriddata').value = '';
+            document.getElementById('openComplectationTaskCreate')?.remove();
+            document.getElementById('AF_Complectations').style.display ='none';
             NoteNoticeClear();
         }
 
@@ -643,13 +658,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                     NoteNoticeClear();
                 }
 
-                document.getElementById('taskcomment').value = '';
-                document.getElementById('chathashlnk').value = '';
-                document.getElementById('taskserviceid').value = '';
-                document.getElementById('taskuserid').value = '';
-                document.getElementById('priority').children[0].selected = true
-                document.getElementById('customerservice').children[0].selected = true
-                document.getElementById('AF_Createtask').style.display = 'none'
+                document.getElementById('clearcreateform').click();
                 document.getElementById('taskBut').classList.remove('activeScriptBtn')
 
             } else alert("Задача не была создана, проверьте, пожалуйста, заполнение полей")
