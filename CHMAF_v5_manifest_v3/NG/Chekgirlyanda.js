@@ -1,7 +1,7 @@
 const checkgirlyanda = `
     <div>
         <label style="color:bisque; margin: 10px;">Создать новогоднее настроение ?</label>
-        <select id="NGgirlyand" style="text-align: center; width: 240px; height: 26px; color: black; margin-left: 7px;">
+        <select class="${exttheme}" id="NGgirlyand" style="text-align: center; width: 240px; height: 26px; margin-left: 7px;">
             <option value="0">Нет</option>
             <option value="1">Гирлянда</option>
             <option value="2">Елочные игрушки</option>
@@ -155,47 +155,43 @@ function handleelkaChange() {
 if (localStorage.getItem('snowcursor') == '1') {
     (function (k, c) {
         function y() {
-            var b; if (r !== v || s !== w) for (v = r, w = s, b = 0; b < x; b++)if (!l[b]) { h[b].style.left = (e[b] = r) + "px"; h[b].style.top = (f[b] = s) + "px"; h[b].style.clip = "rect(2px, 5px, 5px, 2px)"; h[b].style.visibility = "visible"; l[b] = 110; break } 
+            var b; if (r !== v || s !== w) for (v = r, w = s, b = 0; b < x; b++)if (!l[b]) { 
+                h[b].style.left = (e[b] = r) + "px"; 
+                h[b].style.top = (f[b] = s) + "px"; 
+                h[b].style.clip = "rect(2px, 5px, 5px, 2px)"; 
+                h[b].style.visibility = "visible"; 
+                l[b] = 110; 
+                break 
+            } 
             for (b = 0; b < x; b++) {
                 if (l[b]) {
                     var a = b;
-            
-                    // Уменьшение жизненного цикла снежинки и изменение ее внешнего вида
+
                     if (--l[a] === 25) {
                         h[a].style.clip = "rect(1px, 5px, 3px, 2px)";
                     }
-            
-                    // Если снежинка активна
+
                     if (l[a]) {
-                        // Обновление вертикальной позиции снежинки
                         f[a] += 1 + 3 * Math.random();
-            
-                        // Если снежинка находится в пределах 40 пикселей от нижнего края, убрать ее
                         if (f[a] > n - 40) {
                             h[a].style.visibility = "hidden";
                             l[a] = 0;
                             continue;
                         }
-            
-                        // Проверка, не выходит ли снежинка за пределы области
+
                         if (f[a] < n + g) {
                             h[a].style.top = f[a] + "px";
-            
-                            // Расчет горизонтального движения
                             var horizontalMove = (a % 5 - 2) / 5;
-                            // Если снежинка находится в пределах 60 пикселей от правого края, двигать только влево
                             if (e[a] > r - 60) {
                                 horizontalMove = Math.min(horizontalMove, 0);
                             }
                             e[a] += horizontalMove;
                             h[a].style.left = e[a] + "px";
                         } else {
-                            // Скрыть снежинку, если она выходит за пределы области
                             h[a].style.visibility = "hidden";
                             l[a] = 0;
                         }
                     } else {
-                        // Логика для обработки конечного состояния снежинки
                         m[a] = 50;
                         d[a].style.top = (p[a] = f[a]) + "px";
                         d[a].style.left = (t[a] = e[a]) + "px";
@@ -205,15 +201,14 @@ if (localStorage.getItem('snowcursor') == '1') {
                         d[a].style.visibility = "visible";
                     }
                 }
-            
-                // Логика для управления "таянием" снежинок
+
                 if (m[b]) {
                     var a = b;
                     if (--m[a] === 25) {
                         d[a].style.width = "1px";
                         d[a].style.height = "1px";
                     }
-            
+
                     if (m[a]) {
                         p[a] += 1 + 3 * Math.random();
                         if (p[a] < n + g) {
@@ -229,30 +224,77 @@ if (localStorage.getItem('snowcursor') == '1') {
                     }
                 }
             } k.setTimeout(y, 50)
-        } function z() {
+        } 
+        function z() {
             if (typeof window.innerWidth === 'number') {
-                n = window.innerHeight - 40; // Вычитаем 40 пикселей снизу
-                r = window.innerWidth - 50;  // Вычитаем 50 пикселей справа
+                n = window.innerHeight - 40; 
+                r = window.innerWidth - 50;  
             } else if (document.documentElement && document.documentElement.clientWidth) {
-                n = document.documentElement.clientHeight - 40; // Вычитаем 40 пикселей снизу
-                r = document.documentElement.clientWidth - 50;  // Вычитаем 50 пикселей справа
+                n = document.documentElement.clientHeight - 40; 
+                r = document.documentElement.clientWidth - 50;  
             } else if (document.body.clientWidth) {
-                n = document.body.clientHeight - 40; // Вычитаем 40 пикселей снизу
-                r = document.body.clientWidth - 50;  // Вычитаем 50 пикселей справа
+                n = document.body.clientHeight - 40; 
+                r = document.body.clientWidth - 50;  
             }
-        } function u(b, a) { var d = c.createElement("div"); d.style.position = "absolute"; d.style.height = b + "px"; d.style.width = a + "px"; d.style.overflow = "hidden"; d.style.backgroundColor = A; d.style.zIndex = "1251000"; return d } var A = "#00BFFF", x = 150, v = 600, w = 300, r = v, s = w, n = 600, q = 0, g = q, d = [], h = [], l = [], e = [], f = [], t = [], p = [], m = [], B = k.setInterval(function () {
+        } 
+        function u(b, a) { 
+            var d = c.createElement("div"); 
+            d.style.position = "absolute"; 
+            d.style.height = b + "px"; 
+            d.style.width = a + "px"; 
+            d.style.overflow = "hidden"; 
+            d.style.backgroundColor = A; 
+            d.style.zIndex = "2147483647"; 
+            return d 
+        } 
+        var A = "#00BFFF", x = 150, v = 600, w = 300, r = v, s = w, n = 600, q = 0, g = q, d = [], h = [], l = [], e = [], f = [], t = [], p = [], m = [], 
+
+        B = k.setInterval(function () {
             if ("complete" === c.readyState) {
                 if (c.getElementById) {
-                    var b = 0, a, f, g, e; e = c.createElement("div"); c.body.appendChild(e);
-                    e.setAttribute("class", "snowcursor"); for (b = 0; b < x; b++)a = u(3, 3), a.style.visibility = "hidden", e.appendChild(d[b] = a), l[b] = 0, m[b] = 0, a = u(5, 5), a.style.backgroundColor = "transparent", a.style.visibility = "hidden", f = u(1, 5), g = u(5, 1), a.appendChild(f), a.appendChild(g), f.style.top = "3px", f.style.left = "0px", g.style.top = "0px", g.style.left = "3px", e.appendChild(h[b] = a); z(); y()
-                } k.clearInterval(B)
+                    var b = 0, a, f, g, e; 
+                    e = c.createElement("div"); 
+                    c.body.appendChild(e);
+                    e.setAttribute("class", "snowcursor"); 
+                    e.style.position = "fixed";  // Фиксированная позиция
+                    e.style.pointerEvents = "none"; // Отключение взаимодействия
+                    e.style.top = 0; 
+                    e.style.left = 0; 
+                    e.style.width = "100vw"; 
+                    e.style.height = "100vh"; 
+                    for (b = 0; b < x; b++)
+                        a = u(3, 3), 
+                        a.style.visibility = "hidden", 
+                        e.appendChild(d[b] = a), 
+                        l[b] = 0, 
+                        m[b] = 0, 
+                        a = u(5, 5), 
+                        a.style.backgroundColor = "transparent", 
+                        a.style.visibility = "hidden", 
+                        f = u(1, 5), 
+                        g = u(5, 1), 
+                        a.appendChild(f), 
+                        a.appendChild(g), 
+                        f.style.top = "3px", 
+                        f.style.left = "0px", 
+                        g.style.top = "0px", 
+                        g.style.left = "3px", 
+                        e.appendChild(h[b] = a); 
+                    z(); y()
+                } 
+                k.clearInterval(B)
             }
-        }, 100); c.onmousemove = function (b) {
+        }, 100); 
+        c.onmousemove = function (b) {
             "number" === typeof k.pageYOffset ? (g = k.pageYOffset, q = k.pageXOffset) : c.body.scrollTop || c.body.scrollLeft ?
-                (g = c.body.scrollTop, q = c.body.scrollLeft) : c.documentElement && (c.documentElement.scrollTop || c.documentElement.scrollLeft) ? (q = c.documentElement.scrollLeft, g = c.documentElement.scrollTop) : q = g = 0; s = "undefined" !== typeof b ? b.pageY : event.clientY; r = "undefined" !== typeof b ? b.pageX : event.clientX
-        }; k.onresize = z
+                (g = c.body.scrollTop, q = c.body.scrollLeft) : c.documentElement && (c.documentElement.scrollTop || c.documentElement.scrollLeft) ? (q = c.documentElement.scrollLeft, g = c.documentElement.scrollTop) : q = g = 0; 
+            s = "undefined" !== typeof b ? b.pageY : event.clientY; 
+            r = "undefined" !== typeof b ? b.pageX : event.clientX
+        }; 
+        k.onresize = z
     })(window, document);
 }
+
 
 if (localStorage.getItem('AF_elka') == '1') {
     elkaadd()
