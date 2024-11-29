@@ -220,8 +220,6 @@ function gettaskButButtonPress() { // функция открытия окна �
                             }
                         });
 
-                        console.log(chechkComplectations.data);
-
                         chechkComplectations.data.forEach((service) => {
                             if (service.incorrectnessReason == null) {
                                 if (service.operatorNote) {
@@ -234,27 +232,99 @@ function gettaskButButtonPress() { // функция открытия окна �
                                     <tr style="background: #776d69; color: white; position: sticky; top: 0;">
                                         <th style="border: 1px solid black; padding: 5px;">ID Услуги</th>
                                         <th style="border: 1px solid black; padding: 5px;">STK</th>
-                                        <th style="border: 1px solid black; padding: 5px;">💰</th>
                                         <th style="border: 1px solid black; padding: 5px;">Урок</th>
                                         <th style="border: 1px solid black; padding: 5px;"></th>
                                     </tr>`;
 
                                 const allEduServicesCompl = service.educationServices;
                                 allEduServicesCompl.forEach((el) => {
+                                    let text = el.serviceTypeKey; // "homeschooling_6_biology_webinar" // Разделим строку по символу "_"
+                                    let parts = text.split('_'); // Если частей достаточно, чтобы выполнить задачу
+                                    if (parts.length > 2) { // Возьмем слово после второго подчеркивания и обернем его в <span>
+                                        parts[0] = ""
+                                        parts[1] = ""
+                                        parts[2] = `<span style="font-weight: bold; color: #00b8ff; text-transform: uppercase">${parts[2]}</span>`;
+                                        parts[3] = parts[3] == "webinar" ? "Вебинар" : parts[3] == "f2g" ? "F2G" : parts[3]
+                                    } // Соединим обратно части строки
+                                    let formattedText = parts.join(' ');
                                     gatheredInfoComplSrvs += `
-                                <tr>
-                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">
-                                <a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:#32b5f5; text-decoration: none;">${el.id}</a>
-                            </td>
-                                    <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.serviceTypeKey}</td>
-                                    <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${el.balance}</td>
-                                </tr>`;
+                                            <tr>
+                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">
+                                                    <a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:#32b5f5; text-decoration: none;">${el.id}</a>
+                                                </td>
+                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${formattedText}</td>
+                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;" data-id="${el.id}" class="complect-nextlesson"> - </td>
+                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c; cursor:pointer;" data-id="${el.id}" class="insert-complect-id">➡</td>
+                                            </tr>`;
                                 });
                                 gatheredInfoComplSrvs += '</table>';
-
                                 complectationServInfo.innerHTML += `<div style="background: #4a7d55; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; font-weight: 800; margin-bottom:5px;" title="${operatorNote}">${service.productKit.title} | ${service.stage == "regular_lessons" ? "Регулярные занятия" : service.stage == "lost" ? "Потерянная" : service.stage}</div>` + gatheredInfoComplSrvs;
                             }
 
+                        });
+                        document.querySelectorAll('.insert-complect-id').forEach(element => {
+                            element.addEventListener('click', function () {
+                                const id = this.getAttribute('data-id');
+                                if (id && document.getElementById('taskserviceid')) {
+                                    document.getElementById('taskserviceid').value = id.trim();
+                                }
+                            });
+                        });
+                        document.querySelectorAll('.complect-nextlesson').forEach(element => {
+                            let eduservise = element.getAttribute('data-id');
+                            const fetchURLComplectationsTT = `https://backend.skyeng.ru/api/students/education-services/${eduservise}/timetable/group/future-lessons/`;
+                            const requestOptionsComplectationsTT = {
+                                method: 'GET'
+                            };
+                            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLComplectationsTT, requestOptions: requestOptionsComplectationsTT }, function (response) { // получение информации по комплектациям
+                                let nextlessondate = '-';
+                                if (response.success) {
+                                    const chechkComplectationsTT = JSON.parse(response.fetchansver).data;
+                                    if (chechkComplectationsTT.length > 0 && chechkComplectationsTT[0].startedAt) {
+                                        nextlessondate = chechkComplectationsTT[0].startedAt;
+                                        nextlessondate = nextlessondate.replace('T', ' ').replace(/\+00:00$/, '');
+                                        let dateObj = new Date(nextlessondate);
+                                        dateObj.setHours(dateObj.getHours() + 3); // Добавляем 3 часа для MSK                        
+                                        nextlessondate = dateObj.toLocaleString('ru-RU', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                            year: 'numeric',
+                                            month: '2-digit',
+                                            day: '2-digit'
+                                        });
+                                    }
+                                } else {
+                                    alert('Не удалось выполнить запрос: ' + response.error);
+                                }
+
+                                // Получаем текущее время устройства и приводим его к +3 МСК
+                                let currentDateObj = new Date();
+                                currentDateObj.setMinutes(currentDateObj.getMinutes() + currentDateObj.getTimezoneOffset()); // Приводим к UTC
+                                currentDateObj.setHours(currentDateObj.getHours() + 3); // Приводим к +3 МСК
+
+                                // Форматируем текущее время для сравнения
+                                let currentTime = currentDateObj.toLocaleString('ru-RU', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit'
+                                });
+
+                                // Преобразуем строки дат для корректного сравнения
+                                let currentDateTime = new Date(currentDateObj).getTime();
+                                let nextLessonDateTime = new Date(nextlessondate.split('.').reverse().join('-')).getTime(); // Преобразуем дату для корректного формата
+
+                                // Проверяем, если текущее время в диапазоне от -10 минут до +50 минут относительно nextlessondate
+                                if (currentDateTime >= nextLessonDateTime - 10 * 60 * 1000 &&
+                                    currentDateTime <= nextLessonDateTime + 50 * 60 * 1000) {
+                                    element.style.background = 'red'; // Красим элемент в красный цвет
+                                }
+
+                                element.innerText = nextlessondate;
+                            });
                         });
 
                     } else {
