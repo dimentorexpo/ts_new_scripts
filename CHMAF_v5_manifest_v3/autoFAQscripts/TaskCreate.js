@@ -120,8 +120,6 @@ var usersrvparsed;
 function gettaskButButtonPress() { // функция открытия окна для работы с созданием задач на СРМ
 
     let conversid;
-
-    document.getElementById('useriddata').value = '';
     document.getElementById('serviceinf').innerHTML = '';
 
     if (document.getElementById('AF_Createtask').style.display == 'none') {
@@ -401,6 +399,9 @@ function gettaskButButtonPress() { // функция открытия окна �
             document.getElementById('AF_Createtask').style.display = 'none'
             taskBut.classList.remove('activeScriptBtn')
             document.getElementById('chathashlnk').value = '';
+            if (document.getElementById('AF_Service').style.display == 'none') {
+                document.getElementById('AF_Complectations').style.display ='none';
+            }
 
             fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
                 "headers": {
@@ -657,13 +658,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                     NoteNoticeClear();
                 }
 
-                document.getElementById('taskcomment').value = '';
-                document.getElementById('chathashlnk').value = '';
-                document.getElementById('taskserviceid').value = '';
-                document.getElementById('taskuserid').value = '';
-                document.getElementById('priority').children[0].selected = true
-                document.getElementById('customerservice').children[0].selected = true
-                document.getElementById('AF_Createtask').style.display = 'none'
+                document.getElementById('clearcreateform').click();
                 document.getElementById('taskBut').classList.remove('activeScriptBtn')
 
             } else alert("Задача не была создана, проверьте, пожалуйста, заполнение полей")
