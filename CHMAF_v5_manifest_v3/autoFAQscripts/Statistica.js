@@ -893,7 +893,7 @@ async function getopersSLA() {
 
         resetRateCounts()
         filteredarray.forEach(item => {
-            if (item.Rate !== null) {
+            if (item.Rate !== null && item.Channel != "Telegram techsup acquisition") {
                 rateCounts[item.Rate]++;
             }
         });
