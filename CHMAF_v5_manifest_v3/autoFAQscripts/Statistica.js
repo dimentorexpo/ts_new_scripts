@@ -179,7 +179,6 @@ async function getStats() { // функция получения статист�
     arrayvars.sort((a, b) => b.conversationClosed - a.conversationClosed);
     activeopersId = arrayvars.map(el => el.operatorId)
 
-
     var operatorId = []
     var operatorNames = []
     await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
@@ -675,8 +674,6 @@ async function getopersSLA() {
     let currentWidth = 0;
     let page;
     let maxpage = 0;
-    let operartcount;
-    let operafrtcount;
     let operclschatcount;
     let totalChatsClosed = [];
     let arrayafrtcount = [];
@@ -684,14 +681,11 @@ async function getopersSLA() {
     let arraycsatcount = [];
     let arraycsatsumma = [];
     let operatorOverdueChats = [];
-    let operatorOverdueARTChats = [];
-    let operatorOverdueAFRTChats = [];
     let csatcount;
     let csatsumma;
     let overduecount;
     let alloperCSATsumma = 0;
     let alloperCSATcount = 0;
-    let accumulator = 0;
     let massivchikUntarget = new Set(); // Массив уникальный для чатов АФРТ вне таргета
     let massivchikTarget = new Set(); // Массив уникальный для чатов АФРТ в таргете
     let massivchikQueue = new Set(); // Массив уникальный для чатов в очередях
@@ -734,8 +728,6 @@ async function getopersSLA() {
     if (activeopersId) {
         let step = 100 / activeopersId.length;
         for (let i = 0; i < activeopersId.length; i++) {
-            operartcount = 0;
-            operafrtcount = 0;
             operclschatcount = 0;
             csatcount = 0;
             csatsumma = 0;
