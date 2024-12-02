@@ -134,8 +134,10 @@ function clock_on_javascript_3() { //таймер отсчета до сраба
 function refreshTimerReminder() {
     if (localStorage.getItem('chronostamp') !== null && localStorage.getItem('chronostamp') > 0) {
         document.getElementById('reminderstatus').textContent = "🔔";
-        setchas.value = localStorage.getItem('setchas');
-        setminuta.value = localStorage.getItem('setminuta');
+        var setChas = localStorage.getItem('setchas');
+        var setMinuta = localStorage.getItem('setminuta');
+        setchas.value = (setChas === '0' || setChas === 0) ? '00' : setChas.toString().padStart(2, '0');
+        setminuta.value = (setMinuta === '0' || setMinuta === 0) ? '00' : setMinuta.toString().padStart(2, '0');
         var timearr = new Date();
         var chronostamp2 = (((localStorage.getItem('setchas') - timearr.getHours()) * 60 * 60) + ((localStorage.getItem('setminuta') - timearr.getMinutes()) * 60) + (0 - timearr.getSeconds())) * 1000;
         localStorage.setItem('chronostamp2', chronostamp2);
@@ -143,8 +145,10 @@ function refreshTimerReminder() {
             setRemindAf('chronostamp')
         }, localStorage.getItem('chronostamp2'));
         if (localStorage.getItem('chronostamp1') !== null && localStorage.getItem('chronostamp1') > 0) {
-            setchas1.value = localStorage.getItem('setchas1');
-            setminuta1.value = localStorage.getItem('setminuta1');
+            var setChas1 = localStorage.getItem('setchas1');
+            var setMinuta1 = localStorage.getItem('setminuta1');
+            setchas1.value = (setChas1 === '0' || setChas1 === 0) ? '00' : setChas1.toString().padStart(2, '0');
+            setminuta1.value = (setMinuta1 === '0' || setMinuta1 === 0) ? '00' : setMinuta1.toString().padStart(2, '0');
             var timearr1 = new Date();
             var chronostamp22 = (((localStorage.getItem('setchas1') - timearr1.getHours()) * 60 * 60) + ((localStorage.getItem('setminuta1') - timearr1.getMinutes()) * 60) + (0 - timearr1.getSeconds())) * 1000;
             localStorage.setItem('chronostamp22', chronostamp22);
@@ -154,8 +158,10 @@ function refreshTimerReminder() {
         }
     } else if (localStorage.getItem('chronostamp1') !== null && localStorage.getItem('chronostamp1') > 0) {
         document.getElementById('reminderstatus').textContent = "🔔";
-        setchas1.value = localStorage.getItem('setchas1');
-        setminuta1.value = localStorage.getItem('setminuta1');
+        var setChas1 = localStorage.getItem('setchas1');
+        var setMinuta1 = localStorage.getItem('setminuta1');
+        setchas1.value = (setChas1 === '0' || setChas1 === 0) ? '00' : setChas1.toString().padStart(2, '0');
+        setminuta1.value = (setMinuta1 === '0' || setMinuta1 === 0) ? '00' : setMinuta1.toString().padStart(2, '0');
         var timearr1 = new Date();
         var chronostamp22 = (((localStorage.getItem('setchas1') - timearr1.getHours()) * 60 * 60) + ((localStorage.getItem('setminuta1') - timearr1.getMinutes()) * 60) + (0 - timearr1.getSeconds())) * 1000;
         localStorage.setItem('chronostamp22', chronostamp22);
@@ -184,7 +190,7 @@ function setRemindAf(tsname) { //функция  при наступлении �
         credentials: "include"
     });
 
-    alert("Время ставить занят! :D");
+    showCustomAlert("Время ставить занят! :D");
     localStorage.removeItem(tsname);
 
     const reminderstatus = document.getElementById('reminderstatus');
@@ -233,7 +239,10 @@ document.getElementById('setreminder').onclick = function () {
 
     localStorage.setItem('chronostamp', chronostamp);
 
-    alert("Будильник установлен на " + setchas.value + ":" + cleanMinuta + ":" + "00");
+    var displayChas = cleanChas.padStart(2, '0');
+    var displayMinuta = cleanMinuta.padStart(2, '0');
+
+    showCustomAlert("Будильник установлен на " + displayChas + ":" + displayMinuta + ":00");
 
     abortTimeOut = setTimeout(function () {
         setRemindAf('chronostamp');
@@ -253,7 +262,10 @@ document.getElementById('setreminder1').onclick = function () {  // выстав
 
     localStorage.setItem('chronostamp1', chronostamp1);
 
-    alert("Будильник установлен на " + setchas1.value + ":" + setminuta1.value + ":" + "00");
+    var displayChas1 = cleanChas1.padStart(2, '0');
+    var displayMinuta1 = cleanMinuta1.padStart(2, '0');
+
+    showCustomAlert("Будильник установлен на " + displayChas1 + ":" + displayMinuta1 + ":00");
 
     abortTimeOut1 = setTimeout(function () {
         setRemindAf('chronostamp1')
@@ -277,7 +289,7 @@ function removeAlarm(clockElem, timeoutVar, chronostampKey, chronostamp2Key, cha
         document.getElementById(minutaKey).value = "";
         localStorage.removeItem(chasKey);
         localStorage.removeItem(minutaKey);
-        alert("Будильник удален");
+        showCustomAlert("Будильник удален");
         checkAlarmsStatus();
     }
 }

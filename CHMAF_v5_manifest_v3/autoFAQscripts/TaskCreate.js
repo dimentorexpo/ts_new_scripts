@@ -295,20 +295,20 @@ function gettaskButButtonPress() { // функция открытия окна �
                                 } else {
                                     alert('Не удалось выполнить запрос: ' + response.error);
                                 }
-                            
+
                                 // Получаем текущее время устройства и приводим его к +3 МСК
                                 let currentDateObj = new Date();
                                 currentDateObj.setMinutes(currentDateObj.getMinutes() + currentDateObj.getTimezoneOffset()); // Приводим к UTC
                                 currentDateObj.setHours(currentDateObj.getHours() + 3); // Приводим к +3 МСК
-                            
+
                                 let currentDateTime = currentDateObj.getTime(); // Текущее время в миллисекундах
-                            
+
                                 // Разделяем строку nextlessondate на дату и время
                                 let nextLessonDateParts = nextlessondate.split(' ');
                                 if (nextLessonDateParts.length === 2) {
                                     let dateParts = nextLessonDateParts[0].split('.'); // Разделяем дату на [дд, мм, гггг]
                                     let timeParts = nextLessonDateParts[1].split(':'); // Разделяем время на [чч, мм, сс]
-                            
+
                                     // Проверяем, что все части корректно распарсились
                                     if (dateParts.length === 3 && timeParts.length >= 2) {
                                         // Создаем объект Date из частей даты и времени
@@ -320,7 +320,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                                             parseInt(timeParts[1], 10),            // Минуты
                                             timeParts[2] ? parseInt(timeParts[2], 10) : 0 // Секунды (если есть)
                                         ).getTime();
-                            
+
                                         // Проверяем диапазон времени
                                         if (currentDateTime >= nextLessonDateTime - 10 * 60 * 1000 &&
                                             currentDateTime <= nextLessonDateTime + 50 * 60 * 1000) {
@@ -332,7 +332,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                                 } else {
                                     console.error("Ошибка: Некорректный формат nextlessondate");
                                 }
-                            
+
                                 element.innerText = nextlessondate;
                             });
                         });
@@ -400,7 +400,7 @@ function gettaskButButtonPress() { // функция открытия окна �
             taskBut.classList.remove('activeScriptBtn')
             document.getElementById('chathashlnk').value = '';
             if (document.getElementById('AF_Service').style.display == 'none') {
-                document.getElementById('AF_Complectations').style.display ='none';
+                document.getElementById('AF_Complectations').style.display = 'none';
             }
 
             fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
@@ -415,49 +415,54 @@ function gettaskButButtonPress() { // функция открытия окна �
             });
         }
 
-        function changeprioritycolor() {
-            if (document.getElementById('priority').children[1].selected == true)
-                document.getElementById('priority').style = "color:green;font-weight:600; width: 100%; height: 25px; text-align: center;"
-            else if (document.getElementById('priority').children[2].selected == true)
-                document.getElementById('priority').style = "color:orange;font-weight:600; width: 100%; height: 25px; text-align: center;"
-            else if (document.getElementById('priority').children[3].selected == true)
-                document.getElementById('priority').style = "color:red;font-weight:600;width: 100%;  height: 25px; text-align: center;"
-            else document.getElementById('priority').style = "color:#000;font-weight:400;width: 100%; height: 25px; text-align: center;"
+        function changePriorityColor() {
+            const priorityElement = document.getElementById('priority');
+            priorityElement.classList.remove('inputgreen', 'inputorange', 'inputred');
+            if (priorityElement.children[1].selected) {
+                priorityElement.classList.add('inputgreen');
+            } else if (priorityElement.children[2].selected) {
+                priorityElement.classList.add('inputorange');
+            } else if (priorityElement.children[3].selected) {
+                priorityElement.classList.add('inputred');
+            }
         }
 
-        document.getElementById('priority').onchange = changeprioritycolor;
+        document.getElementById('priority').onchange = changePriorityColor;
 
         document.getElementById('NoteNoticeText').onclick = NoteNoticeClear;
 
         document.getElementById('clearcreateform').onclick = function () {
-            document.getElementById('chathashlnk').style.background = '#cac1b1';
             document.getElementById('chathashlnk').value = '';
             document.getElementById('taskcomment').value = '';
-            document.getElementById('taskcomment').style.background = '';
             document.getElementById('taskserviceid').value = '';
-            document.getElementById('taskserviceid').style.background = '';
-            document.getElementById('taskserviceid').style = 'color:#000; font-weight:400;width:100%'
             document.getElementById('taskuserid').value = '';
-            document.getElementById('taskuserid').style.background = '';
-            document.getElementById('priority').children[0].selected = true
-            document.getElementById('priority').style = "color:#000;font-weight:400;width: 100%; height: 25px; text-align: center;"
-            document.getElementById('customerservice').children[0].selected = true
-            document.getElementById('customerservice').style.background = '';
             document.getElementById('useriddata').value = '';
+            document.getElementById('priority').children[0].selected = true;
+            document.getElementById('customerservice').children[0].selected = true;
             document.getElementById('openComplectationTaskCreate')?.remove();
-            document.getElementById('AF_Complectations').style.display ='none';
+            document.getElementById('AF_Complectations').style.display = 'none';
+            removeCoralBackground();
+            changePriorityColor();
             NoteNoticeClear();
+        };
+
+        function removeCoralBackground() {
+            const createTaskForm = document.getElementById('AF_Createtask');
+            if (createTaskForm) {
+                const inputsAndTextareas = createTaskForm.querySelectorAll('input, textarea, select');
+                inputsAndTextareas.forEach(element => {
+                    element.classList.remove('inputalertbackground');
+                });
+            }
         }
 
         document.getElementById('critteachertostudent').onclick = function () {
             document.getElementById('priority').children[3].selected = true;
-            document.getElementById('priority').style = "color:red;font-weight:600;width: 100%;  height: 25px; text-align: center;"
             document.getElementById('customerservice').children[1].selected = true;
-
+            changePriorityColor();
             NoteFlag = 1
             NoteText = 'Обратился П. Связаться с У.'
             NoteNoticeSet();
-
             document.getElementById('taskuserid').value = SearchinAFnewUI("nextClass-studentId")
             document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
             document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nПроверил связь с П, все ок, свяжитесь с У! КРИТ"
@@ -465,13 +470,11 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('critstudenttoteacher').onclick = function () {
             document.getElementById('priority').children[3].selected = true;
-            document.getElementById('priority').style = "color:red;font-weight:600;width: 100%;  height: 25px; text-align: center;"
             document.getElementById('customerservice').children[1].selected = true;
-
+            changePriorityColor();
             NoteFlag = 1
             NoteText = 'Обратился У. Связаться с П.'
             NoteNoticeSet();
-
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
             document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
             document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nПроверил связь с У, все ок, свяжитесь с П! КРИТ"
@@ -479,8 +482,8 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('critteacherno').onclick = function () {
             document.getElementById('priority').children[3].selected = true;
-            document.getElementById('priority').style = "color:red;font-weight:600;width: 100%;  height: 25px; text-align: center;"
             document.getElementById('customerservice').children[1].selected = true;
+            changePriorityColor();
             NoteFlag = 1
             NoteText = 'Крит Н.О. П'
             NoteNoticeSet();
@@ -491,8 +494,8 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('critstudentno').onclick = function () {
             document.getElementById('priority').children[3].selected = true;
-            document.getElementById('priority').style = "color:red;font-weight:600;width: 100%;  height: 25px; text-align: center;"
             document.getElementById('customerservice').children[1].selected = true;
+            changePriorityColor();
             NoteFlag = 1
             NoteText = 'Крит Н.О. У'
             NoteNoticeSet();
@@ -503,8 +506,8 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('highsecondline').onclick = function () {
             document.getElementById('priority').children[2].selected = true;
-            document.getElementById('priority').style = "color:orange;font-weight:600; width: 100%; height: 25px; text-align: center;"
             document.getElementById('customerservice').children[6].selected = true;
+            changePriorityColor();
             NoteNoticeClear()
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
             document.getElementById('taskserviceid').value = '';
@@ -513,8 +516,8 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('highteachertc').onclick = function () {
             document.getElementById('priority').children[2].selected = true;
-            document.getElementById('priority').style = "color:orange;font-weight:600; width: 100%; height: 25px; text-align: center;"
             document.getElementById('customerservice').children[2].selected = true;
+            changePriorityColor();
             NoteNoticeClear()
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
             document.getElementById('taskserviceid').value = '';
@@ -531,8 +534,8 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('lowkm').onclick = function () {
             document.getElementById('priority').children[1].selected = true;
-            document.getElementById('priority').style = "color:green;font-weight:600; width: 100%; height: 25px; text-align: center;"
             document.getElementById('customerservice').children[7].selected = true;
+            changePriorityColor();
             NoteNoticeClear()
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
             document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
@@ -540,14 +543,20 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('lowcontrol').onclick = function () {
             document.getElementById('priority').children[1].selected = true;
-            document.getElementById('priority').style = "color:green;font-weight:600; width: 100%; height: 25px; text-align: center;"
             document.getElementById('customerservice').children[8].selected = true;
+            changePriorityColor();
             NoteNoticeClear()
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
             document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nКонтроль"
         }
 
         document.getElementById('createtask').onclick = function () {
+            let chathashlnk = document.getElementById('chathashlnk');
+            let priority = document.getElementById('priority');
+            let customerservice = document.getElementById('customerservice');
+            let taskserviceid = document.getElementById('taskserviceid');
+            let taskuserid = document.getElementById('taskuserid');
+            let taskcomment = document.getElementById('taskcomment');
             let prioritystate;
             let csstate;
             let usluga;
@@ -555,76 +564,66 @@ function gettaskButButtonPress() { // функция открытия окна �
             let taskflagempty = 0;
             let idflagempty = 0;
 
-            if (document.getElementById('chathashlnk').value.length < 3) {
-                document.getElementById('chathashlnk').style.background = 'Coral';
+            if (chathashlnk.value.length < 3) {
+                chathashlnk.classList.add('inputalertbackground');
                 taskflagempty = 1;
-            } else { document.getElementById('chathashlnk').style.background = '#cac1b1'; }
+            } else { chathashlnk.classList.remove('inputalertbackground'); }
 
-            if (document.getElementById('priority').value != 'Приоритет') {
-                document.getElementById('priority').style.background = '';
-                for (let i = 0; i < document.getElementById('priority').children.length; i++) {
-                    if (document.getElementById('priority').children[i].selected == true)
-                        prioritystate = document.getElementById('priority').children[i].value
+            if (priority.value != 'Приоритет') {
+                priority.classList.remove('inputalertbackground');
+                for (let i = 0; i < priority.children.length; i++) {
+                    if (priority.children[i].selected == true)
+                        prioritystate = priority.children[i].value
                 }
             } else {
-                document.getElementById('priority').style.background = 'Coral';
+                priority.classList.add('inputalertbackground');
                 taskflagempty = 1;
             }
 
-            if (document.getElementById('customerservice').value != 'Отдел') {
-                document.getElementById('customerservice').style.background = '';
-                for (let i = 0; i < document.getElementById('customerservice').children.length; i++) {
-                    if (document.getElementById('customerservice').children[i].selected == true)
-                        csstate = document.getElementById('customerservice').children[i].value
+            if (customerservice.value === 'crisis_manager' && taskserviceid.value.length < 3) {
+                taskserviceid.classList.add('inputalertbackground');
+                taskflagempty = 1;
+            }
+            else if (customerservice.value === 'tech_support_outgoing_crm2' && priority.value === 'highest' && taskserviceid.value.length < 3) {
+                taskserviceid.classList.add('inputalertbackground');
+                taskflagempty = 1;
+            }
+            else {
+                taskserviceid.classList.remove('inputalertbackground');
+            }
+
+            if (customerservice.value != 'Отдел') {
+                customerservice.classList.remove('inputalertbackground');
+                for (let i = 0; i < customerservice.children.length; i++) {
+                    if (customerservice.children[i].selected == true)
+                        csstate = customerservice.children[i].value
                 }
             } else {
-                document.getElementById('customerservice').style.background = 'Coral';
+                customerservice.classList.add('inputalertbackground');
                 taskflagempty = 1;
             }
 
-            if (document.getElementById('taskserviceid').value.length < 3) {
-                if (document.getElementById('priority').value == 'highest') {
-                    document.getElementById('taskserviceid').style.background = 'Coral';
-                    taskflagempty = 1;
-                } else {
-                    document.getElementById('taskserviceid').style.background = '';
-                }
-            } else {
-                document.getElementById('taskserviceid').style.background = '';
-            }
-
-            if (document.getElementById('customerservice').value == 'crisis_manager') {
-                if (document.getElementById('taskserviceid').value.length < 3) {
-                    document.getElementById('taskserviceid').style.background = 'Coral';
-                    taskflagempty = 1;
-                } else {
-                    document.getElementById('taskserviceid').style.background = '';
-                }
-            } else {
-                document.getElementById('taskserviceid').style.background = '';
-            }
-
-            if (document.getElementById('taskuserid').value.length < 3) {
-                document.getElementById('taskuserid').style.background = 'Coral';
+            if (taskuserid.value.length < 3) {
+                taskuserid.classList.add('inputalertbackground');
                 taskflagempty = 1;
-            } else { document.getElementById('taskuserid').style.background = ''; }
+            } else { taskuserid.classList.remove('inputalertbackground'); }
 
-            if (document.getElementById('taskcomment').value.length < 3) {
-                document.getElementById('taskcomment').style.background = 'Coral';
+            if (taskcomment.value.length < 3) {
+                taskcomment.classList.add('inputalertbackground');
                 taskflagempty = 1;
-            } else { document.getElementById('taskcomment').style.background = ''; }
+            } else { taskcomment.classList.remove('inputalertbackground'); }
 
             if (taskflagempty == 0) {
-                if (document.getElementById('taskserviceid').value == '')
-                    usluga = document.getElementById('taskserviceid').value = null;
-                else usluga = document.getElementById('taskserviceid').value
+                if (taskserviceid.value == '')
+                    usluga = taskserviceid.value = null;
+                else usluga = taskserviceid.value
 
 
                 if (SearchinAFnewUI("userType")) {
                     idflagempty = 1;
                 }
 
-                conversid = document.getElementById('chathashlnk').value;
+                conversid = chathashlnk.value;
                 if (idflagempty == 1) {
                     fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
                         "headers": {
@@ -632,7 +631,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                             "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG"
                         },
 
-                        "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${document.getElementById('taskuserid').value.trim()}\"},{\"name\":\"comment\",\"isFile\":false,\"value\":\"${document.getElementById('taskcomment').value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
+                        "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${taskuserid.value.trim()}\"},{\"name\":\"comment\",\"isFile\":false,\"value\":\"${taskcomment.value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
 
 
                         "method": "POST",
@@ -645,7 +644,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                             "accept": "application/json, text/plain, */*",
                             "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG"
                         },
-                        "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${document.getElementById('taskuserid').value.trim()}\"},{\"name\":\"initiatorId\",\"isFile\":false,\"value\":${document.getElementById('taskuserid').value.trim()}}, {\"name\":\"comment\",\"isFile\":false,\"value\":\"${document.getElementById('taskcomment').value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
+                        "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${taskuserid.value.trim()}\"},{\"name\":\"initiatorId\",\"isFile\":false,\"value\":${taskuserid.value.trim()}}, {\"name\":\"comment\",\"isFile\":false,\"value\":\"${taskcomment.value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
 
                         "method": "POST",
                         "mode": "cors",
@@ -658,6 +657,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                     NoteNoticeClear();
                 }
 
+                document.getElementById('AF_Createtask').style.display = 'none'
                 document.getElementById('clearcreateform').click();
                 document.getElementById('taskBut').classList.remove('activeScriptBtn')
 

@@ -55,7 +55,7 @@ var win_smartroomform =  // описание элементов окна Мул�
 
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600;">Тема</div>
 								<select class="${exttheme}" id="cattwosmatrtoom" style="margin-left: 5px; padding-top: 5px; font-size: 16px; vertical-align: middle;">
-									<option style="background-color:DarkKhaki;" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
+									<option class="${selecttheme}" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
 									<option value="Домашние задания">-Домашние задания</option>
 									<option value="Интерфейс платформы">-Интерфейс платформы</option>
 									<option value="Функционал урока П">-Функционал урока П</option>
@@ -67,7 +67,7 @@ var win_smartroomform =  // описание элементов окна Мул�
 
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600;">Подтема</div>
 								<select class="${exttheme}" id="catthreesmatrtoom" style="margin-left: 5px; padding-top: 5px; font-size: 16px; vertical-align: middle;">
-									<option style="background-color:DarkKhaki;" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
+									<option class="${selecttheme}" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
 									<option value="Интерфейс раздела домашки">-Интерфейс раздела домашки</option>
 									<option value="Нет">-Нет</option>
 									<option value="Перемешаны слайды в уроке">-Перемешаны слайды в уроке</option>

@@ -1301,3 +1301,44 @@ let checkRespondToken = setInterval(async function () {
         }
     }
 }, 4000);
+
+function showCustomAlert(message) {
+    showNotification(message);
+    // Создаем элемент контейнера уведомления
+    const alertContainer = document.createElement('div');
+    alertContainer.classList.add('extwindows', 'alert-container');
+
+    // Добавляем текст уведомления
+    const alertMessage = document.createElement('span');
+    alertMessage.innerText = message;
+    alertMessage.classList.add('alert-message');
+    alertContainer.appendChild(alertMessage);
+
+    // Добавляем кнопку закрытия
+    const closeButton = document.createElement('button');
+    closeButton.innerText = 'OK';
+    closeButton.classList.add('mainButton');
+    closeButton.onclick = function () {
+        document.body.removeChild(alertContainer);
+    };
+    alertContainer.appendChild(closeButton);
+
+    // Добавляем уведомление на страницу
+    document.body.appendChild(alertContainer);
+}
+
+function showNotification(message) {
+    if (!("Notification" in window)) {
+        console.log("Этот браузер не поддерживает уведомления.");
+    } 
+    else if (Notification.permission === "granted") {
+        new Notification(message);
+    } 
+    else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(function (permission) {
+            if (permission === "granted") {
+                new Notification(message);
+            }
+        });
+    }
+}
