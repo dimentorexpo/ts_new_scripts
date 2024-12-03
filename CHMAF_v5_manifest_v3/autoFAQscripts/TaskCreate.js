@@ -87,7 +87,7 @@ var NoteText = ''; // какой текст отправим в заметку
 const wintCreateTask = createWindow('AF_Createtask', 'winTopTaskCreate', 'winLeftTaskCreate', win_taskform);
 
 document.getElementById('AF_Createtask').ondblclick = function (a) { // скрытие окна создания задачи в CRM2 по двойному клику
-    if (checkelementtype(a)) { document.getElementById('hideMeCreateForm').click(); }
+    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') { document.getElementById('hideMeCreateForm').click(); }
 }
 
 document.getElementById('taskserviceid').addEventListener('input', () => onlyNumber(document.getElementById('taskserviceid')));

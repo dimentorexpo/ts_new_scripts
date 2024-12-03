@@ -61,28 +61,21 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		background-color: darkred;
-		animation: blink 1s infinite;
+		background-color: #464451; 
+		animation: colorChange 3s ease-in-out infinite; 
 	}
-
-	.alert-message {
-		flex-grow: 1;
-		margin-right: 10px;
-		text-align: left;
-	}
-
-	@keyframes blink {
-
-		0%,
-		100% {
-			background-color: darkred;
+	
+	/* Анимация для плавного перехода между цветами */
+	@keyframes colorChange {
+		0%, 100% {
+			background-color: #464451; /* Начальный цвет */
 		}
-
 		50% {
-			background-color: black;
+			background-color: darkred; /* Цвет при мигании */
 		}
 	}
-
+	
+	
 	.wintInitializeChat {
 		min-height: 75px;
 		min-width: 200px;

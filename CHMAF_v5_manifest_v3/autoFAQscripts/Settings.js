@@ -42,6 +42,12 @@ async function init_settings() {
     // Для отображения быстрых тэгов
     setDefaultValue('showquicktags', 0);
 
+    // Для отключение скрытия окна по двойному клику
+    setDefaultValue('dblhidewindow', 0);
+
+    // Для отключения нотификация в браузер для будильника
+    setDefaultValue('brnotificatios', 0);
+
     var win_Settings =  // описание элементов окна ссылок
         `<span style="width: 500px">
         <span style="cursor: -webkit-grab;">
@@ -73,6 +79,9 @@ async function init_settings() {
                         <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hidelpmwindow">Скрыть окно с У П</label>
                         <label style="color:bisque; margin-left: 5px;" title="Добавить тэги в боковое меню"><input type="checkbox" id="showquicktags">Добавить тэги</label>
                         <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hideInnerTaskCreate">Скрыть окно АФ создании задачи</label>
+                        <br>
+                        <label style="color:bisque; margin-left: 5px;" title="Отключить зарытие окон при двойном нажатии на него. ПРИМЕНЯЕТСЯ ПОСЛЕ ОБНОВЛЕНИЯ СТРАНИЦЫ"><input type="checkbox" id="dblhidewindow">Не скрывать окно при doubleclick</label>
+                        <label style="color:bisque; margin-left: 5px;" title="Отключить Notifacations браузера при срабатывании будильника"><input type="checkbox" id="brnotificatios">Отключить Notification от будильника</label>
                         <br>
 						<label style="color:bisque"> Автостатус при авторизации в AF</label>
 						<select style="height:28px; width:140px; text-align:center" id="defaultStatusAfterLogin">
@@ -325,12 +334,12 @@ async function init_settings() {
     // Настройка темы интерфейса
     function setupThemeButton(buttonId, localStorageKey) {
         const button = document.getElementById(buttonId);
-    
+
         // Функция для обновления иконки кнопки
         const updateButtonIcon = (theme) => {
             button.innerHTML = theme === 'light' ? '☀' : '🌛';
         };
-    
+
         // Функция для смены классов элементов и обновления переменных
         const updateElementClasses = (newTheme) => {
             // Определяем новые классы в зависимости от темы
@@ -338,7 +347,7 @@ async function init_settings() {
             const newSelectClass = newTheme === 'dark' ? 'darkopts' : 'lightopts';
             selectedinpth = newTheme === 'dark' ? 'calendarmyinputsdark' : 'calendarmyinputslight';
             otherinpth = newTheme === 'dark' ? 'othercalendardark' : 'othercalendarlight';
-    
+
             // Меняем класс для элементов с классом exttheme
             const inputElements = document.querySelectorAll(`.${exttheme}`);
             inputElements.forEach(element => {
@@ -347,65 +356,65 @@ async function init_settings() {
                     element.classList.add(newClass);
                 }
             });
-    
+
             // Меняем класс для элементов с классом selecttheme
             const selectElements = document.querySelectorAll(`.${selecttheme}`);
             selectElements.forEach(element => {
                 element.classList.remove(selecttheme);
                 element.classList.add(newSelectClass);
             });
-    
+
             // Обновляем классы элементов с selectedinpth
             document.querySelectorAll('.calendarmyinputslight, .calendarmyinputsdark').forEach(element => {
                 element.classList.remove('calendarmyinputslight', 'calendarmyinputsdark');
                 element.classList.add(selectedinpth);
             });
-    
+
             // Обновляем классы элементов с otherinpth
             document.querySelectorAll('.othercalendarlight, .othercalendardark').forEach(element => {
                 element.classList.remove('othercalendarlight', 'othercalendardark');
                 element.classList.add(otherinpth);
             });
-    
+
             // Выполняем инверсию иконок календаря в зависимости от темы
             if (newTheme === 'dark') {
                 applyCalendarIconInversion();
             } else {
                 removeCalendarIconInversion();
             }
-    
+
             // Обновляем глобальные переменные текущей темы
             exttheme = newClass;
             selecttheme = newSelectClass;
         };
-    
+
         // Устанавливаем текущую тему из localStorage
         let currentTheme = localStorage.getItem(localStorageKey) || 'light';
         exttheme = currentTheme === 'dark' ? 'darkinputs' : 'lightinputs';
         selecttheme = currentTheme === 'dark' ? 'darkopts' : 'lightopts';
         selectedinpth = currentTheme === 'dark' ? 'calendarmyinputsdark' : 'calendarmyinputslight';
         otherinpth = currentTheme === 'dark' ? 'othercalendardark' : 'othercalendarlight';
-    
+
         // Изначально применяем инверсию или удаляем её в зависимости от текущей темы
         if (currentTheme === 'dark') {
             applyCalendarIconInversion();
         } else {
             removeCalendarIconInversion();
         }
-    
+
         updateButtonIcon(currentTheme);
-    
+
         // Обработчик клика для смены темы
         button.onclick = function () {
             currentTheme = localStorage.getItem(localStorageKey) || 'light';
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    
+
             localStorage.setItem(localStorageKey, newTheme);
             updateButtonIcon(newTheme);
             updateElementClasses(newTheme);
         };
-    }  
-    
+    }
+
     // Универсальная функция для настройки чекбоксов
     function setupCheckbox(checkboxId, localStorageKey, callback = () => { }) {
         const checkbox = document.getElementById(checkboxId);
@@ -456,6 +465,12 @@ async function init_settings() {
 
             // Настройка чекбокса для отображения/скрытия дополнительных тэгов
             setupCheckbox('showquicktags', 'showquicktags');
+
+            // Настройка чекбокса для отключение скрытия окна по двойному клику
+            setupCheckbox('dblhidewindow', 'dblhidewindow');
+
+            // Настройка чекбокса для отключения нотификация в браузер для будильника
+            setupCheckbox('brnotificatios', 'brnotificatios');
 
             // Настройка чекбокса для скрытия окна Л П МВУ
             setupCheckbox('hidelpmwindow', 'disablelpmwindow', (isChecked) => {

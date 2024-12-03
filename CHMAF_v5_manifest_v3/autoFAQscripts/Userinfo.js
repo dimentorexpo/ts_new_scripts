@@ -123,7 +123,7 @@ const idstudentField = document.getElementById('idstudent');
 const getidstudentbtn = document.getElementById('getidstudent');
 
 document.getElementById('servicehead').ondblclick = function (a) { // скрытие окна вензель user info по двойному клику
-    if (checkelementtype(a)) {
+    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') {
         document.getElementById('AF_Service').style.display = 'none';
         document.getElementById('butServ').classList.remove('activeScriptBtn');
     }

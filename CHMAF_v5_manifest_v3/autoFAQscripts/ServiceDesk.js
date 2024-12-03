@@ -600,7 +600,7 @@ function getservDskPress() { // функция открытия главного
 // tested
 
 document.getElementById('AF_ServDsk').ondblclick = function (a) { // скрытие окна ServiceDesk по двойному клику
-    if (checkelementtype(a)) { document.getElementById('hideMeSrvDsk').click(); }
+    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') { document.getElementById('hideMeSrvDsk').click(); }
 }
 
 document.getElementById('ServiceDeskinstr').onclick = function () {

@@ -190,7 +190,7 @@ function setRemindAf(tsname) { //функция  при наступлении �
         credentials: "include"
     });
 
-    showCustomAlert("Время ставить занят! :D");
+    showCustomAlert("Время ставить занят! :D", 1);
     localStorage.removeItem(tsname);
 
     const reminderstatus = document.getElementById('reminderstatus');

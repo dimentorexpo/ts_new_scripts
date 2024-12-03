@@ -266,12 +266,14 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
 }
 
 function hideWindowOnDoubleClick(id) { // Функция для скрытия окна по двойному клику
-    const windowElement = document.getElementById(id);
-    windowElement.ondblclick = function (a) {
-        if (checkelementtype(a)) {
-            setDisplayStyle(windowElement, 'none');
-        }
-    };
+    if (localStorage.getItem('dblhidewindow') == '0'){
+        const windowElement = document.getElementById(id);
+        windowElement.ondblclick = function (a) {
+            if (checkelementtype(a)) {
+                setDisplayStyle(windowElement, 'none');
+            }
+        };
+    }
 }
 
 function hideWindowOnClick(windowId, buttonId) { // Функция для скрытия окна по клику на кнопку
@@ -1306,8 +1308,11 @@ let checkRespondToken = setInterval(async function () {
     }
 }, 4000);
 
-function showCustomAlert(message) {
-    showNotification(message);
+function showCustomAlert(message, notif = 0) {
+    if (localStorage.getItem('brnotificatios') == '0' && notif == 1){
+        showNotification(message);
+    }
+    
     // Создаем элемент контейнера уведомления
     const alertContainer = document.createElement('div');
     alertContainer.classList.add('extwindows', 'alert-container');
