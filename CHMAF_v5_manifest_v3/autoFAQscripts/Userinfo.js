@@ -622,7 +622,7 @@ function getusernamecrm() {
                 TeachNabElement.style.display = "none";
                 personalTeacherPageElement.style.display = "none";
                 if (otvetUsrCrmName.data.avatarUrl) {
-                    avatarofuser = otvetUsrCrmName.data.avatarUrl.match(/(https:\/\/auth-avatars-skyeng.imgix.net.*?\d+.\S+).auto/)[1];
+                    avatarofuser = otvetUsrCrmName.data.avatarUrl.match(/https:\/\/cdn-auth-avatars\.skyeng\.ru\/\d+\/[a-f0-9-]+$/)[0];
                 }
 
             } else if (otvetUsrCrmName.data.type == "teacher") {
@@ -651,7 +651,7 @@ function getusernamecrm() {
                 TeachNabElement.style.display = "";
                 personalTeacherPageElement.style.display = "";
                 if (otvetUsrCrmName.data.avatarUrl) {
-                    avatarofuser = otvetUsrCrmName.data.avatarUrl.match(/(https:\/\/auth-avatars-skyeng.imgix.net.*?\d+.\S+).auto/)[1];
+                    avatarofuser = otvetUsrCrmName.data.avatarUrl.match(/https:\/\/cdn-auth-avatars\.skyeng\.ru\/\d+\/[a-f0-9-]+$/)[0];
                 }
 
                 document.getElementById('servicetable').innerHTML = ''
