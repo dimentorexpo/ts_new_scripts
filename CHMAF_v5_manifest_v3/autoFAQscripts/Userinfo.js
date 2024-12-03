@@ -42,7 +42,6 @@ var win_serviceinfo =  // описание элементов окна инфо�
 									<div style="text-align: center;" id="usrType">
 									</div>
 									 <div style="text-align: center;">
-										<span id="getshowcase" title="При клике на кнопку копирует в буфер шоукейс ученика" style="cursor:pointer;">ℹ</span>
 										<span id="usrAge"></span>
 										<span id="getloginer" title="При клике делает ссылку-логгинер и копирует в буфер обмена для авторизации" class="cursor-userinfobtns"> 🔑 </span>
                                         <span> Имя: </span>
@@ -1031,12 +1030,6 @@ async function getservices(stidNew) {
                 if (document.getElementById('getusrphone') != null) {
                     document.getElementById('getusrphone').onclick = function () {
                         copyToClipboard(document.getElementById('phoneunhidden').textContent);
-                    };
-                }
-
-                if (document.getElementById('getshowcase') != null) {
-                    document.getElementById('getshowcase').onclick = function () {
-                        copyToClipboard("https://profile.skyeng.ru/profile/" + stid + "/showcase");
                     };
                 }
 
