@@ -431,53 +431,6 @@
 		font-weight: 700;
 	}
 
-	#buttonOpenForm,
-	#butMarks,
-	#suggestform,
-	#butChatHistory,
-	#butLessonInfo,
-	#JiraOpenForm,
-	#smartroomform,
-	#butFrozeChat,
-	#buttonGetStat,
-	#servDsk,
-	#crmopersstatuses,
-	#radioPlayer,
-	#buttonGetQueue {
-		display: flex;
-		align-items: center;
-		cursor: pointer;
-		font-size: 14px;
-		min-width: 100px;
-		border-bottom: 1px solid black;
-		border-left: 1px solid black;
-		border-right: 1px solid black;
-		height: 36px;
-		padding-left: 5px;
-	}
-
-	#servDsk:hover,
-	#buttonOpenForm:hover,
-	#butMarks:hover,
-	#suggestform:hover,
-	#butChatHistory:hover,
-	#butLessonInfo:hover,
-	#JiraOpenForm:hover,
-	#smartroomform:hover,
-	#butFrozeChat:hover,
-	#buttonGetStat:hover,
-	#crmopersstatuses:hover,
-	#radioPlayer:hover,
-	#buttonGetQueue:hover {
-		background: DeepSkyBlue;
-		color: #ffffffe6;
-		font-weight: 600;
-		font-size: 16px;
-		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-		text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-		height: 45px;
-	}
-
 	.hyperlnk {
 		height: 0px;
 		opacity: 0;
@@ -797,26 +750,6 @@
 	.msgtype.notes {
 		border-left: 8px solid #b4b4b4;
 		transition: all 1s ease;
-	}
-
-	.rightPanelBtn {
-		width: 40px;
-		height: 40px;
-		margin-bottom: 4px;
-		font-size: 22px;
-		cursor: pointer;
-		border-radius: 50%;
-		opacity: 0.5;
-		transition: all 0.5s ease;
-	}
-
-	.rightPanelBtn:hover {
-		opacity: 1 !important;
-		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-		text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-		width: 45px !important;
-		height: 45px !important;
-		font-size: 23px !important;
 	}
 
 	.statMMactive {
@@ -1209,4 +1142,120 @@
 		100% {
 			transform: rotate(360deg);
 		}
+	}
+
+	.menubarstyle {
+		position: absolute;
+		right: 50px;
+		top: 50px;
+		min-height: 60px;
+		min-width: 165px;
+	}
+
+	.menubarstylelight {
+		color: black;
+		background: white;
+		border: 0px solid #000000;
+		box-shadow: -1px 4px 16px 7px rgba(34, 60, 80, 0.09);
+	}
+
+	.menubarstyledark {
+		color: bisque;
+		background: black;
+		border: 0px solid bisque;
+		box-shadow: -1px 4px 16px 7px rgba(218, 165, 32, 0.3);
+	}
+
+	.menubtnsstylelight {
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+		font-size: 14px;
+		min-width: 100px;
+		border-bottom: 1px solid black;
+		border-left: 1px solid black;
+		border-right: 1px solid black;
+		height: 36px;
+		padding-left: 5px;
+	}
+
+	.menubtnsstylelight:hover {
+		background: DeepSkyBlue;
+		color: #ffffffe6;
+		font-weight: 600;
+		font-size: 16px;
+		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+		text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+		height: 45px;
+	}
+
+	.menubtnsstyledark {
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+		font-size: 14px;
+		min-width: 100px;
+		border-bottom: 1px solid bisque;
+		border-left: 1px solid bisque;
+		border-right: 1px solid bisque;
+		color: bisque;
+		background: rgba(0, 0, 0, 0.9);
+		height: 36px;
+		padding-left: 5px;
+		transition: all 0.3s ease;
+	}
+	
+	.menubtnsstyledark:hover {
+		background: rgba(218, 165, 32, 0.8); /* GoldenRod с прозрачностью */
+		color: black;
+		font-weight: 600;
+		font-size: 16px;
+		box-shadow: 0px 3px 1px rgba(218, 165, 32, 0.6);
+		text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.6);
+		height: 45px;
+	}	
+
+	.rightPanelBtnlight {
+		width: 40px;
+		height: 40px;
+		margin-bottom: 4px;
+		font-size: 22px;
+		cursor: pointer;
+		border-radius: 50%;
+		opacity: 0.5;
+		transition: all 0.5s ease;
+	}
+
+	.rightPanelBtnlight:hover {
+		opacity: 1 !important;
+		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+		text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+		width: 45px !important;
+		height: 45px !important;
+		font-size: 23px !important;
+	}
+
+	.rightPanelBtndark {
+		width: 40px;
+		height: 40px;
+		margin-bottom: 4px;
+		font-size: 22px;
+		cursor: pointer;
+		border-radius: 50%;
+		opacity: 0.6;
+		background: rgba(0, 0, 0, 0.9);
+		color: bisque;
+		border: 2px solid bisque;
+		transition: all 0.5s ease;
+	}
+	
+	.rightPanelBtndark:hover {
+		opacity: 1 !important;
+		background: rgba(218, 165, 32, 0.8); /* GoldenRod */
+		color: black;
+		box-shadow: 0px 3px 1px rgba(218, 165, 32, 0.6);
+		text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.6);
+		width: 45px !important;
+		height: 45px !important;
+		font-size: 23px !important;
 	}

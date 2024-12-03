@@ -66,6 +66,9 @@ var exttheme = localStorage.getItem('extentiontheme') === 'dark' ? 'darkinputs' 
 var selectedinpth = exttheme === 'lightinputs' ? 'calendarmyinputslight' : 'calendarmyinputsdark';
 var otherinpth = exttheme === 'lightinputs' ? 'othercalendarlight' : 'othercalendardark';
 var selecttheme = exttheme === 'lightinputs' ? 'lightopts' : 'darkopts';
+var menutheme = exttheme === 'lightinputs' ? 'menubarstylelight' : 'menubarstyledark';
+var rightPanelBtn = exttheme === 'lightinputs' ? 'rightPanelBtnlight' : 'rightPanelBtndark';
+var menubtns = exttheme === 'lightinputs' ? 'menubtnsstylelight' : 'menubtnsstyledark';
 
 function checkcalendaricon() {
     if (exttheme === 'darkinputs') {
@@ -153,16 +156,16 @@ var win_AFhelper =  // описание элементов главного ок
 
 var win_mainmenu = // описание кнопок меню
     `<div>
-        <div id="servDsk" class="onlyfortp">🛠ServiceDesk</div>
-        <div id="JiraOpenForm" class="onlyfortp">🔎Jira Search</div>
-        <div id="crmopersstatuses" class="onlyfortp">🧮Статусы CRM2</div>
-        <div id="butMarks">🎭 Оценки</div>
-         <div id="smartroomform" class="onlyfortp">🦐Smartroom</div>
-        <div id="butLessonInfo">🎓 Lesson Info</div>
-		<div id="butFrozeChat">❄ Auto Respond</div>
-        <div id="radioPlayer">📻 Radio</div>
-        <div id="buttonGetStat">📊 Статистика</div>
-		<div id="buttonGetQueue">🚧 Очередь</div>
+        <div id="servDsk" class="onlyfortp ${menubtns}">🛠ServiceDesk</div>
+        <div id="JiraOpenForm" class="onlyfortp ${menubtns}">🔎Jira Search</div>
+        <div id="crmopersstatuses" class="onlyfortp ${menubtns}">🧮Статусы CRM2</div>
+        <div id="butMarks" class="${menubtns}">🎭 Оценки</div>
+        <div id="smartroomform" class="onlyfortp ${menubtns}">🦐Smartroom</div>
+        <div id="butLessonInfo" class="${menubtns}">🎓 Lesson Info</div>
+		<div id="butFrozeChat" class="${menubtns}">❄ Auto Respond</div>
+        <div id="radioPlayer" class="${menubtns}">📻 Radio</div>
+        <div id="buttonGetStat" class="${menubtns}">📊 Статистика</div>
+		<div id="buttonGetQueue" class="${menubtns}">🚧 Очередь</div>
     </div>`;
 
 flag = 0
@@ -401,14 +404,14 @@ function prepTp() { //функция подготовки расширения �
     openCalendar.innerHTML = '📅'
     openCalendar.id = 'datsyCalendar'
     openCalendar.title = 'Открывает календарь Datsy'
-    openCalendar.classList.add('onlyfortp', 'rightPanelBtn', 'mainButton')
+    openCalendar.classList.add('onlyfortp', rightPanelBtn , 'mainButton')
     document.getElementById('rightPanel').appendChild(openCalendar)
     document.getElementById('datsyCalendar').onclick = getdatsyCalendarButtonPress;
 
     let butServ = document.createElement('button')
     butServ.id = "butServ"
     butServ.innerHTML = "⚜"
-    butServ.classList.add('onlyfortp', 'rightPanelBtn', 'mainButton')
+    butServ.classList.add('onlyfortp', rightPanelBtn, 'mainButton')
     butServ.onclick = function () { //открывает вензель user info
         setDisplayStyle(document.getElementById('AF_Service'), document.getElementById('AF_Service').style.display === '' ? 'none' : '');
         if (document.getElementById('AF_Service').style.display == "")
@@ -423,14 +426,14 @@ function prepTp() { //функция подготовки расширения �
     openKnowledge.innerHTML = '💡'
     openKnowledge.id = 'knowledgeCenter'
     openKnowledge.title = 'Открывает базу знаний решений неполадок'
-    openKnowledge.classList.add('onlyfortp', 'rightPanelBtn', 'mainButton')
+    openKnowledge.classList.add('onlyfortp', rightPanelBtn, 'mainButton')
     document.getElementById('rightPanel').appendChild(openKnowledge)
     document.getElementById('knowledgeCenter').onclick = getknowledgeCenterButtonPress;
 
     let taskBut = document.createElement('button')
     taskBut.id = "taskBut"
     taskBut.innerHTML = "🛠"
-    taskBut.classList.add('onlyfortp', 'rightPanelBtn', 'mainButton')
+    taskBut.classList.add('onlyfortp', rightPanelBtn, 'mainButton')
     document.getElementById('rightPanel').appendChild(taskBut)
     document.getElementById('taskBut').onclick = gettaskButButtonPress;
 
@@ -691,7 +694,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     let ScriptBut = document.createElement('button');
     ScriptBut.id = 'scriptBut';
     ScriptBut.innerHTML = "🧩";
-    ScriptBut.classList.add('rightPanelBtn', 'mainButton')
+    ScriptBut.classList.add(rightPanelBtn, 'mainButton')
     ScriptBut.onclick = function () {
         if (document.getElementById('AF_helper').style.display != 'flex') {
             document.getElementById('AF_helper').style.display = 'flex'
@@ -708,7 +711,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     butThemes.id = "themes"
     butThemes.innerHTML = "📚"
     butThemes.title = "[Темы] - кнопка открывающая окно с темами и тегами"
-    butThemes.classList.add('rightPanelBtn', 'mainButton')
+    butThemes.classList.add(rightPanelBtn, 'mainButton')
     document.getElementById('rightPanel').appendChild(butThemes)
     document.getElementById('themes').onclick = getThemesButtonPress;
 
@@ -716,7 +719,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     MainMenuBtn.textContent = "👺"
     MainMenuBtn.id = 'MainMenuBtn'
     MainMenuBtn.title = '[Меню] - По клику открывает список инструментов необходимых для работы'
-    MainMenuBtn.classList.add('rightPanelBtn', 'mainButton')
+    MainMenuBtn.classList.add(rightPanelBtn, 'mainButton')
     MainMenuBtn.onclick = function () {
         if (document.getElementById('idmymenu').style.display == 'none') {
             document.getElementById('idmymenu').style.display = ''
@@ -729,8 +732,9 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     document.getElementById('rightPanel').appendChild(MainMenuBtn) // добавляем на панель кнопку Меню, которая содержит в себе при клики пункты подменю
 
     let menubar = document.createElement('div')
-    menubar.style = `background: white; position:absolute; right:50px; top: 50px; border: 0px solid #000000; display:none; min-height: 60px; min-width:165px; box-shadow: -1px 4px 16px 7px rgba(34, 60, 80, 0.09)`
-    menubar.id = 'idmymenu'
+    menubar.style = 'display:none;';
+    menubar.classList.add('menubarstyle', menutheme);
+    menubar.id = 'idmymenu';
     menubar.innerHTML = win_mainmenu;
     document.getElementById('rightPanel').appendChild(menubar)
     document.getElementById('servDsk').onclick = getservDskPress;
@@ -748,7 +752,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     openchhis.innerHTML = '☢'
     openchhis.id = 'opennewcat'
     openchhis.title = 'Открывает виджет просмотра истории чатов'
-    openchhis.classList.add('rightPanelBtn', 'mainButton')
+    openchhis.classList.add(rightPanelBtn, 'mainButton')
     document.getElementById('rightPanel').appendChild(openchhis) // добавляем на панель кнопку открытия формы просмотра истории чата
     document.getElementById('opennewcat').onclick = getopennewcatButtonPress;
 
@@ -809,7 +813,7 @@ maskBack.id = "maskBack"
 maskBack.innerHTML = "↩️"
 maskBack.title = "Вернуть скрытое окно"
 maskBack.style = 'display: none;'
-maskBack.classList.add('rightPanelBtn', 'mainButton')
+maskBack.classList.add(rightPanelBtn, 'mainButton')
 
 maskBack.onclick = function () { // функция кнопки вернуть
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
