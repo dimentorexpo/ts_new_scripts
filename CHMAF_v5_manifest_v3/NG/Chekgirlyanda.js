@@ -53,8 +53,6 @@ function checkloadsettings() {
     }
 }
 
-checkloadsettings();
-
 function checkAndSetGirlyanda() {
     if (localStorage.getItem('girlyanda') === null) {
         var modal = document.createElement('div');
@@ -110,6 +108,13 @@ function checkAndSetGirlyanda() {
         // Отображение модального окна
         document.body.appendChild(modal);
     }
+    checkloadsettings();
+}
+
+if (!localStorage.getItem('girlyanda')){
+    checkAndSetGirlyanda()
+} else {
+    checkloadsettings()
 }
 
 function handleGirlyandChange() {
