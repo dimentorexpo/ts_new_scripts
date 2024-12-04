@@ -58,6 +58,34 @@ var modulesarray = [];
 var chatsArray = [];
 var scriptAdr = localStorage.getItem('scriptAdr');
 
+// Словарь для перевода предметов и направлений
+const subjectTranslations = {
+    // homeschooling и lc_exam
+    "algebra": "Алгебра",
+    "basemath": "Математика",
+    "biology": "Биология",
+    "chemistry": "Химия",
+    "computer": "Информатика",
+    "english": "Английский",
+    "geography": "География",
+    "geometry": "Геометрия",
+    "history": "История",
+    "literature": "Литература",
+    "physics": "Физика",
+    "russian": "Русский язык",
+    "social": "Обществознание"
+};
+
+// Словарь для перевода форматов обучения
+const formatTranslations = {
+    "webinar": "ВЕБИНАР",
+    "f2g": "F2G",
+    "coach": "Практика с коучем",
+    "f2f": "F2F",
+    "life": "Разговорные Клубы",
+    "talks": "Talks"
+};
+
 localStorage.setItem('tpflag', localStorage.getItem('tpflag') || 'ТП');
 
 localStorage.setItem('extentiontheme', localStorage.getItem('extentiontheme') || 'light');
@@ -266,7 +294,7 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
 }
 
 function hideWindowOnDoubleClick(id) { // Функция для скрытия окна по двойному клику
-    if (localStorage.getItem('dblhidewindow') == '0'){
+    if (localStorage.getItem('dblhidewindow') == '0') {
         const windowElement = document.getElementById(id);
         windowElement.ondblclick = function (a) {
             if (checkelementtype(a)) {
@@ -406,7 +434,7 @@ function prepTp() { //функция подготовки расширения �
     openCalendar.innerHTML = '📅'
     openCalendar.id = 'datsyCalendar'
     openCalendar.title = 'Открывает календарь Datsy'
-    openCalendar.classList.add('onlyfortp', rightPanelBtn , 'mainButton')
+    openCalendar.classList.add('onlyfortp', rightPanelBtn, 'mainButton')
     document.getElementById('rightPanel').appendChild(openCalendar)
     document.getElementById('datsyCalendar').onclick = getdatsyCalendarButtonPress;
 
@@ -1309,10 +1337,10 @@ let checkRespondToken = setInterval(async function () {
 }, 4000);
 
 function showCustomAlert(message, notif = 0) {
-    if (localStorage.getItem('brnotificatios') == '0' && notif == 1){
+    if (localStorage.getItem('brnotificatios') == '0' && notif == 1) {
         showNotification(message);
     }
-    
+
     // Создаем элемент контейнера уведомления
     const alertContainer = document.createElement('div');
     alertContainer.classList.add('extwindows', 'alert-container');
@@ -1339,10 +1367,10 @@ function showCustomAlert(message, notif = 0) {
 function showNotification(message) {
     if (!("Notification" in window)) {
         console.log("Этот браузер не поддерживает уведомления.");
-    } 
+    }
     else if (Notification.permission === "granted") {
         new Notification(message);
-    } 
+    }
     else if (Notification.permission !== "denied") {
         Notification.requestPermission().then(function (permission) {
             if (permission === "granted") {
@@ -1350,4 +1378,47 @@ function showNotification(message) {
             }
         });
     }
+}
+
+// Функция для замены предмета
+function formatServiceType(serviceTypeKey) {
+    let parts = serviceTypeKey.split('_');
+    let subjectKey;
+    let lessontype = "group"; // По умолчанию тип "group"
+
+    // Определяем предмет для lc_exam
+    if (parts[0] === "lc" && parts[1] === "exam") {
+        subjectKey = parts[3]; // Предмет идет после "ege"
+    } 
+    // Для английских курсов (adult_courses)
+    else if (parts[0] === "english" && parts[1] === "adult" && parts[2] === "courses") {
+        subjectKey = "english"; // Предмет "english" для курсов
+        lessontype = "f2f"; // Тип "f2f" для adult courses
+    } 
+    // Стандартный случай
+    else {
+        subjectKey = parts[2];
+    }
+
+    // Определяем предмет и формат
+    let subject = subjectTranslations[subjectKey] || subjectKey;
+    let format = formatTranslations[parts[3]] || formatTranslations[parts[4]] || formatTranslations[parts[parts.length - 1]];
+
+    // Добавляем стиль только к формату, если он существует
+    if (format) {
+        format = `<span style="font-weight: bold; color: #00b8ff; text-transform: uppercase">${format}</span>`;
+    }
+    // Если Talks или РК не пишем предмет
+    if (parts.includes("life") || parts.includes("talks") || parts.includes("coach")) {
+        return {
+            formattedText: format ? `${format}`.trim() : "",
+            lessontype: lessontype
+        };
+    }
+
+    // Возвращаем объединенную строку: предмет + формат (если он есть), и тип занятия
+    return {
+        formattedText: format ? `${subject} ${format}`.trim() : subject,
+        lessontype: lessontype
+    };
 }

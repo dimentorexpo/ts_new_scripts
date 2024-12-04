@@ -236,22 +236,14 @@ function gettaskButButtonPress() { // функция открытия окна �
 
                                 const allEduServicesCompl = service.educationServices;
                                 allEduServicesCompl.forEach((el) => {
-                                    let text = el.serviceTypeKey; // "homeschooling_6_biology_webinar" // Разделим строку по символу "_"
-                                    let parts = text.split('_'); // Если частей достаточно, чтобы выполнить задачу
-                                    if (parts.length > 2) { // Возьмем слово после второго подчеркивания и обернем его в <span>
-                                        parts[0] = ""
-                                        parts[1] = ""
-                                        parts[2] = `<span style="font-weight: bold; color: #00b8ff; text-transform: uppercase">${parts[2]}</span>`;
-                                        parts[3] = parts[3] == "webinar" ? "Вебинар" : parts[3] == "f2g" ? "F2G" : parts[3]
-                                    } // Соединим обратно части строки
-                                    let formattedText = parts.join(' ');
+                                    let { formattedText, lessontype } = formatServiceType(el.serviceTypeKey); // Вызов функции для форматирования строки
                                     gatheredInfoComplSrvs += `
                                             <tr>
                                                 <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">
                                                     <a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:#32b5f5; text-decoration: none;">${el.id}</a>
                                                 </td>
                                                 <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${formattedText}</td>
-                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;" data-id="${el.id}" class="complect-nextlesson"> - </td>
+                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;" data-id="${el.id}" lessontype="${lessontype}" class="complect-nextlesson"> - </td>
                                                 <td style="border: 1px solid black; padding: 5px; background: #4f4c4c; cursor:pointer;" data-id="${el.id}" class="insert-complect-id">➡</td>
                                             </tr>`;
                                 });
@@ -269,8 +261,18 @@ function gettaskButButtonPress() { // функция открытия окна �
                             });
                         });
                         document.querySelectorAll('.complect-nextlesson').forEach(element => {
+                            let fetchURLComplectationsTT = "";
                             let eduservise = element.getAttribute('data-id');
-                            const fetchURLComplectationsTT = `https://backend.skyeng.ru/api/students/education-services/${eduservise}/timetable/group/future-lessons/`;
+                            let lessontype = element.getAttribute('lessontype');
+                            if (lessontype == 'f2f'){
+                                fetchURLComplectationsTT = `https://backend.skyeng.ru/api/students/education-services/${eduservise}/timetable/future-lessons/`;
+                            } else if (lessontype == 'group') {
+                                fetchURLComplectationsTT = `https://backend.skyeng.ru/api/students/education-services/${eduservise}/timetable/group/future-lessons/`;
+                            } else {
+                                console.log('не верный тип урока!')
+                                return;
+                            }
+                            
                             const requestOptionsComplectationsTT = {
                                 method: 'GET'
                             };
@@ -327,10 +329,10 @@ function gettaskButButtonPress() { // функция открытия окна �
                                             element.style.background = 'red'; // Красим элемент в красный цвет
                                         }
                                     } else {
-                                        console.error("Ошибка разбора даты/времени: некорректный формат nextlessondate");
+                                        console.log("Ошибка разбора даты/времени: некорректный формат nextlessondate");
                                     }
                                 } else {
-                                    console.error("Ошибка: Некорректный формат nextlessondate");
+                                    console.log("Ошибка: Некорректный формат nextlessondate");
                                 }
 
                                 element.innerText = nextlessondate;
