@@ -1252,3 +1252,21 @@
 		height: 45px !important;
 		font-size: 23px !important;
 	}
+	
+	.snowflake { /* стиль для снежинок */
+  position: absolute;
+  width: 5px; /* Увеличиваем размер снежинки */
+  height: 5px; /* Увеличиваем размер снежинки */
+  background: LightSkyBlue;
+  border-radius: 50%;
+  opacity: 0.8;
+  pointer-events: none;
+  animation: fall linear infinite;
+  z-index: 999999999;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh);
+  }
+}
