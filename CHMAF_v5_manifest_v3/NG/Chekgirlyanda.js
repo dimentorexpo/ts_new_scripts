@@ -1,3 +1,12 @@
+var slejeniezaelkoy; // Переменная для хранения экземпляра MutationObserver
+var slejeniezaelkoy; // Глобальная переменная для хранения экземпляра MutationObserver
+
+//Блок для снежинок
+const snowflakes = [];
+const maxSnowflakes = 100; // Максимальное количество снежинок
+let lastMouseMove = 0;
+let isSnowing = false; // Флаг для проверки, активен ли обработчик
+
 const checkgirlyanda = `
     <div>
         <label style="color:bisque; margin: 10px;">Создать новогоднее настроение ?</label>
@@ -140,8 +149,10 @@ function handleSnowChange() {
 
     if (!snowSelect.checked) {
         localStorage.setItem('snowcursor', '0');
+        stopSnowing();
     } else {
         localStorage.setItem('snowcursor', '1');
+        startSnowing();
     }
 }
 
@@ -157,157 +168,73 @@ function handleelkaChange() {
     }
 }
 
-if (localStorage.getItem('snowcursor') == '1') {
-    (function (k, c) {
-        function y() {
-            var b; if (r !== v || s !== w) for (v = r, w = s, b = 0; b < x; b++)if (!l[b]) { 
-                h[b].style.left = (e[b] = r) + "px"; 
-                h[b].style.top = (f[b] = s) + "px"; 
-                h[b].style.clip = "rect(2px, 5px, 5px, 2px)"; 
-                h[b].style.visibility = "visible"; 
-                l[b] = 110; 
-                break 
-            } 
-            for (b = 0; b < x; b++) {
-                if (l[b]) {
-                    var a = b;
+// Функция для запуска создания снежинок
+function startSnowing() {
+    if (!isSnowing) {
+      document.addEventListener('mousemove', mouseSnowing);
+      isSnowing = true;
+    }
+  }
+  
+  // Функция для остановки создания снежинок
+  function stopSnowing() {
+    if (isSnowing) {
+      document.removeEventListener('mousemove', mouseSnowing);
+      isSnowing = false;
+    }
+  }
 
-                    if (--l[a] === 25) {
-                        h[a].style.clip = "rect(1px, 5px, 3px, 2px)";
-                    }
+// Обработчик движения мыши
+function mouseSnowing(event) {
+    const now = performance.now();
+    if (now - lastMouseMove > 16) { // Ограничиваем до 60 FPS
+      requestAnimationFrame(() => createSnowflake(event));
+      lastMouseMove = now;
+    }
+  }
 
-                    if (l[a]) {
-                        f[a] += 1 + 3 * Math.random();
-                        if (f[a] > n - 40) {
-                            h[a].style.visibility = "hidden";
-                            l[a] = 0;
-                            continue;
-                        }
+function createSnowflake(event) {
+    if (snowflakes.length >= maxSnowflakes) {
+      const oldSnowflake = snowflakes.shift(); // Удаляем старую снежинку из массива
+      oldSnowflake.remove(); // Удаляем её из DOM
+    }
+  
+    const snowflake = document.createElement('div');
+    snowflake.classList.add('snowflake');
+  
+    // Устанавливаем случайный размер снежинки
+    const size = `${Math.random() * 4 + 1}px`; // Размер от 5px до 15px
+    snowflake.style.width = size;
+    snowflake.style.height = size;
+  
+    // Устанавливаем позицию снежинки в точке курсора
+    snowflake.style.left = `${event.clientX}px`;
+    snowflake.style.top = `${event.clientY}px`;
+  
+    // Случайная продолжительность падения снежинки
+    snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
+  
+    // Добавляем снежинку в тело документа
+    document.body.appendChild(snowflake);
+  
+    snowflakes.push(snowflake);
+  
+    // Удаляем снежинку из DOM после завершения анимации
+    setTimeout(() => {
+      snowflake.remove();
+      const index = snowflakes.indexOf(snowflake);
+      if (index > -1) {
+        snowflakes.splice(index, 1);
+      }
+    }, parseFloat(snowflake.style.animationDuration) * 1000);
+  }
 
-                        if (f[a] < n + g) {
-                            h[a].style.top = f[a] + "px";
-                            var horizontalMove = (a % 5 - 2) / 5;
-                            if (e[a] > r - 60) {
-                                horizontalMove = Math.min(horizontalMove, 0);
-                            }
-                            e[a] += horizontalMove;
-                            h[a].style.left = e[a] + "px";
-                        } else {
-                            h[a].style.visibility = "hidden";
-                            l[a] = 0;
-                        }
-                    } else {
-                        m[a] = 50;
-                        d[a].style.top = (p[a] = f[a]) + "px";
-                        d[a].style.left = (t[a] = e[a]) + "px";
-                        d[a].style.width = "2px";
-                        d[a].style.height = "2px";
-                        h[a].style.visibility = "hidden";
-                        d[a].style.visibility = "visible";
-                    }
-                }
-
-                if (m[b]) {
-                    var a = b;
-                    if (--m[a] === 25) {
-                        d[a].style.width = "1px";
-                        d[a].style.height = "1px";
-                    }
-
-                    if (m[a]) {
-                        p[a] += 1 + 3 * Math.random();
-                        if (p[a] < n + g) {
-                            d[a].style.top = p[a] + "px";
-                            t[a] += (a % 5 - 2) / 5;
-                            d[a].style.left = t[a] + "px";
-                        } else {
-                            d[a].style.visibility = "hidden";
-                            m[a] = 0;
-                        }
-                    } else {
-                        d[a].style.visibility = "hidden";
-                    }
-                }
-            } k.setTimeout(y, 50)
-        } 
-        function z() {
-            if (typeof window.innerWidth === 'number') {
-                n = window.innerHeight - 40; 
-                r = window.innerWidth - 50;  
-            } else if (document.documentElement && document.documentElement.clientWidth) {
-                n = document.documentElement.clientHeight - 40; 
-                r = document.documentElement.clientWidth - 50;  
-            } else if (document.body.clientWidth) {
-                n = document.body.clientHeight - 40; 
-                r = document.body.clientWidth - 50;  
-            }
-        } 
-        function u(b, a) { 
-            var d = c.createElement("div"); 
-            d.style.position = "absolute"; 
-            d.style.height = b + "px"; 
-            d.style.width = a + "px"; 
-            d.style.overflow = "hidden"; 
-            d.style.backgroundColor = A; 
-            d.style.zIndex = "2147483647"; 
-            return d 
-        } 
-        var A = "#00BFFF", x = 150, v = 600, w = 300, r = v, s = w, n = 600, q = 0, g = q, d = [], h = [], l = [], e = [], f = [], t = [], p = [], m = [], 
-
-        B = k.setInterval(function () {
-            if ("complete" === c.readyState) {
-                if (c.getElementById) {
-                    var b = 0, a, f, g, e; 
-                    e = c.createElement("div"); 
-                    c.body.appendChild(e);
-                    e.setAttribute("class", "snowcursor"); 
-                    e.style.position = "fixed";  // Фиксированная позиция
-                    e.style.pointerEvents = "none"; // Отключение взаимодействия
-                    e.style.top = 0; 
-                    e.style.left = 0; 
-                    e.style.width = "100vw"; 
-                    e.style.height = "100vh"; 
-                    for (b = 0; b < x; b++)
-                        a = u(3, 3), 
-                        a.style.visibility = "hidden", 
-                        e.appendChild(d[b] = a), 
-                        l[b] = 0, 
-                        m[b] = 0, 
-                        a = u(5, 5), 
-                        a.style.backgroundColor = "transparent", 
-                        a.style.visibility = "hidden", 
-                        f = u(1, 5), 
-                        g = u(5, 1), 
-                        a.appendChild(f), 
-                        a.appendChild(g), 
-                        f.style.top = "3px", 
-                        f.style.left = "0px", 
-                        g.style.top = "0px", 
-                        g.style.left = "3px", 
-                        e.appendChild(h[b] = a); 
-                    z(); y()
-                } 
-                k.clearInterval(B)
-            }
-        }, 100); 
-        c.onmousemove = function (b) {
-            "number" === typeof k.pageYOffset ? (g = k.pageYOffset, q = k.pageXOffset) : c.body.scrollTop || c.body.scrollLeft ?
-                (g = c.body.scrollTop, q = c.body.scrollLeft) : c.documentElement && (c.documentElement.scrollTop || c.documentElement.scrollLeft) ? (q = c.documentElement.scrollLeft, g = c.documentElement.scrollTop) : q = g = 0; 
-            s = "undefined" !== typeof b ? b.pageY : event.clientY; 
-            r = "undefined" !== typeof b ? b.pageX : event.clientX
-        }; 
-        k.onresize = z
-    })(window, document);
-}
+if (localStorage.getItem('snowcursor') == '1') {startSnowing()}
 
 
 if (localStorage.getItem('AF_elka') == '1') {
     elkaadd()
 }
-
-var slejeniezaelkoy; // Переменная для хранения экземпляра MutationObserver
-
-var slejeniezaelkoy; // Глобальная переменная для хранения экземпляра MutationObserver
 
 function elkaadd() {
     // Проверяем, существует ли элемент app-sider

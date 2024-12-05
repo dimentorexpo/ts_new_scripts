@@ -1391,7 +1391,7 @@ function formatServiceType(serviceTypeKey) {
         subjectKey = parts[3]; // Предмет идет после "ege"
     } 
     // Для английских курсов (adult_courses)
-    else if (parts[0] === "english" && parts[1] === "adult" && parts[2] === "courses") {
+    else if (parts[0] === "english" && parts[1] === "adult" && (parts[2] === "courses" || parts[2] === "minicourses")) {
         subjectKey = "english"; // Предмет "english" для курсов
         lessontype = "f2f"; // Тип "f2f" для adult courses
     } 
@@ -1421,44 +1421,4 @@ function formatServiceType(serviceTypeKey) {
         formattedText: format ? `${subject} ${format}`.trim() : subject,
         lessontype: lessontype
     };
-}
-
-//Блок для снежинок
-const snowflakes = [];
-const maxSnowflakes = 100; // Максимальное количество снежинок
-
-document.addEventListener('mousemove', createSnowflake);
-
-function createSnowflake(event) {
-  if (snowflakes.length >= maxSnowflakes) {
-    const oldSnowflake = snowflakes.shift(); // Удаляем старую снежинку из массива
-    oldSnowflake.remove(); // Удаляем ее из DOM
-  }
-  
-  const snowflake = document.createElement('div');
-  snowflake.classList.add('snowflake');
-  
-  // Устанавливаем случайный размер снежинки
-  const size = `${Math.random() * 10 + 5}px`; // Размер от 5px до 15px 
-  snowflake.style.width = size;
-  snowflake.style.height = size;
-  
-  // Устанавливаем позицию снежинки в точке курсора
-  snowflake.style.left = `${event.clientX}px`;
-  snowflake.style.top = `${event.clientY}px`;
-  snowflake.style.animationDuration = `${Math.random() * 5 + 5}s`; // случайная продолжительность анимации
-  
-  document.body.appendChild(snowflake);
-  
-  snowflakes.push(snowflake); // Добавляем новую снежинку в массив
-
-  // Удаляем снежинку из DOM после завершения анимации
-  setTimeout(() => {
-    snowflake.remove();
-    // Удаляем снежинку из массива
-    const index = snowflakes.indexOf(snowflake);
-    if (index > -1) {
-      snowflakes.splice(index, 1);
-    }
-  }, (parseFloat(snowflake.style.animationDuration) * 1000));
 }
