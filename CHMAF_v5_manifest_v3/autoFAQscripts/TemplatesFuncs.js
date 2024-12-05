@@ -1075,12 +1075,14 @@ function refreshTemplates() { // функция обновляет шаблон�
                 break
         }
     }
-    document.getElementById('0page').addEventListener('dblclick', function (event) {
-        if (checkelementtype(event)) {
-            const addTmp = document.getElementById('addTmp');
-            addTmp.style.display = addTmp.style.display === 'none' ? '' : 'none';
-        }
-    });
+    if (document.getElementById('addTmp').firstElementChild.childElementCount > 0){
+        document.getElementById('0page').addEventListener('dblclick', function (event) {
+            if (checkelementtype(event)) {
+                const addTmp = document.getElementById('addTmp');
+                addTmp.style.display = addTmp.style.display === 'none' ? '' : 'none';
+            }
+        });
+    }
 
     document.getElementById('0_page_button').click()
 }
