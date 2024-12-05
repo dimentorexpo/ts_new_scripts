@@ -71,6 +71,7 @@ const subjectTranslations = {
     "geometry": "Геометрия",
     "history": "История",
     "literature": "Литература",
+    "math": "Математика",
     "physics": "Физика",
     "russian": "Русский язык",
     "social": "Обществознание"

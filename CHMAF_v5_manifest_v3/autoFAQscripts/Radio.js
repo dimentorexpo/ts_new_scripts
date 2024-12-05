@@ -18,7 +18,7 @@ var win_Radio =  // описание элементов окна радио
                     <button class="mainButton" id="addAudio">➕</button>
                     <button class="mainButton" id="playAudio">▶</button>
                     <button class="mainButton" id="pauseAudio">⏸</button>
-                    <input id="changeRadioVolume" min="0" max="1" value="1.0" step="0.11" type="range">
+                    <input id="changeRadioVolume" min="0" max="1" value="1.0" step="0.025" type="range">
                     <button class="mainButton" id="muteAudio">🔇Mute</button>
                 </div>
                 <ol id="audioList" style="width:570px;"></ol>

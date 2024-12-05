@@ -1,12 +1,6 @@
 var slejeniezaelkoy; // Переменная для хранения экземпляра MutationObserver
 var slejeniezaelkoy; // Глобальная переменная для хранения экземпляра MutationObserver
 
-//Блок для снежинок
-const snowflakes = [];
-const maxSnowflakes = 100; // Максимальное количество снежинок
-let lastMouseMove = 0;
-let isSnowing = false; // Флаг для проверки, активен ли обработчик
-
 const checkgirlyanda = `
     <div>
         <label style="color:bisque; margin: 10px;">Создать новогоднее настроение ?</label>
@@ -168,73 +162,10 @@ function handleelkaChange() {
     }
 }
 
-// Функция для запуска создания снежинок
-function startSnowing() {
-    if (!isSnowing) {
-      document.addEventListener('mousemove', mouseSnowing);
-      isSnowing = true;
-    }
-  }
-  
-  // Функция для остановки создания снежинок
-  function stopSnowing() {
-    if (isSnowing) {
-      document.removeEventListener('mousemove', mouseSnowing);
-      isSnowing = false;
-    }
-  }
-
-// Обработчик движения мыши
-function mouseSnowing(event) {
-    const now = performance.now();
-    if (now - lastMouseMove > 16) { // Ограничиваем до 60 FPS
-      requestAnimationFrame(() => createSnowflake(event));
-      lastMouseMove = now;
-    }
-  }
-
-function createSnowflake(event) {
-    if (snowflakes.length >= maxSnowflakes) {
-      const oldSnowflake = snowflakes.shift(); // Удаляем старую снежинку из массива
-      oldSnowflake.remove(); // Удаляем её из DOM
-    }
-  
-    const snowflake = document.createElement('div');
-    snowflake.classList.add('snowflake');
-  
-    // Устанавливаем случайный размер снежинки
-    const size = `${Math.random() * 4 + 1}px`; // Размер от 5px до 15px
-    snowflake.style.width = size;
-    snowflake.style.height = size;
-  
-    // Устанавливаем позицию снежинки в точке курсора
-    snowflake.style.left = `${event.clientX}px`;
-    snowflake.style.top = `${event.clientY}px`;
-  
-    // Случайная продолжительность падения снежинки
-    snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
-  
-    // Добавляем снежинку в тело документа
-    document.body.appendChild(snowflake);
-  
-    snowflakes.push(snowflake);
-  
-    // Удаляем снежинку из DOM после завершения анимации
-    setTimeout(() => {
-      snowflake.remove();
-      const index = snowflakes.indexOf(snowflake);
-      if (index > -1) {
-        snowflakes.splice(index, 1);
-      }
-    }, parseFloat(snowflake.style.animationDuration) * 1000);
-  }
-
-if (localStorage.getItem('snowcursor') == '1') {startSnowing()}
 
 
-if (localStorage.getItem('AF_elka') == '1') {
-    elkaadd()
-}
+
+if (localStorage.getItem('AF_elka') == '1') {elkaadd()}
 
 function elkaadd() {
     // Проверяем, существует ли элемент app-sider
