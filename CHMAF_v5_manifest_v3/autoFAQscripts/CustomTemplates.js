@@ -31,17 +31,17 @@ const strokaCustTempl = document.getElementById('6str');
 function addNewString(index) {
     const checkboxValue = localStorage.getItem('checkbox_' + languageTmplt + index) === 'true';
     const tmpNameValue = localStorage.getItem('tmp_name_' + languageTmplt + index) || '';
-    const templateValue = localStorage.getItem('template_' + languageTmplt + index) || '';
+    const templateValue = localStorage.getItem('template_' + languageTmplt + index).replace(/\\n/g, '\n') || '';
 
     const CustomTemplatesLine = `
-        <div style="margin: 5px;" inp="cstmTmpInp${languageTmplt}${index}" tmp="template_${languageTmplt}${index}" index="${index}">
+       <div style="margin: 5px; border: 2px solid darkblue; display: flex; align-items: center;" inp="cstmTmpInp${languageTmplt}${index}" tmp="template_${languageTmplt}${index}" index="${index}">
             <input id="checkboxInp${languageTmplt}${index}" type="checkbox" style="margin-right: 5px;" ${checkboxValue ? 'checked' : ''}>
             <input id="tmpNameInp${languageTmplt}${index}" style="margin-right: 5px; width: 150px;" class="${exttheme}">
             <button id="sortUpBtn${index}" style="width: 20px;" class="mainButton">↑</button>
             <button id="sortDownBtn${index}" style="margin-right: 5px; width: 20px;" class="mainButton">↓</button>
             <button id="deleteBtn${index}" style="margin-right: 5px;" class="mainButton">delete</button>
             <button id="saveBtn${index}" style="margin-right: 5px;" class="mainButton">save</button>
-            <input id="cstmTmpInp${languageTmplt}${index}" style="margin-right: 5px; width: 500px;" class="${exttheme}">
+            <textarea id="cstmTmpInp${languageTmplt}${index}" style="margin-right: 5px; width: 500px; min-height: 28px;" class="${exttheme}"></textarea>
             <button id="sendBtn${index}" style="margin-right: 5px;" class="mainButton">send</button>
         </div>
     `;
@@ -71,12 +71,11 @@ function addNewString(index) {
     document.getElementById(`sendBtn${index}`).onclick = () => sendTemplate(index);
 }
 
-
 function saveTemplate(index) {
     const parent = document.querySelector(`[tmp="template_${languageTmplt}${index}"]`);
-    localStorage.setItem(parent.getAttribute('tmp'), parent.querySelector(`#cstmTmpInp${languageTmplt}${index}`).value);
+    const inputValue = parent.querySelector(`#cstmTmpInp${languageTmplt}${index}`).value.replace(/\n/g, '\\n');
+    localStorage.setItem(parent.getAttribute('tmp'), inputValue);
     localStorage.setItem('tmp_name_' + languageTmplt + index, parent.children[1].value);
-    refreshHotTmps();
 }
 
 function deleteTemplate(index) {
@@ -107,9 +106,11 @@ function sortTemplate(index, direction) {
 }
 
 function sendTemplate(index) {
-    document.getElementById('inp').value = localStorage.getItem('template_' + languageTmplt + index).split('\\n').join('\n');
+    const text = localStorage.getItem('template_' + languageTmplt + index).replace(/\\n/g, '\n');
+    document.getElementById('inp').value = text;
     document.getElementById('AF_CustomTemplates').style.display = 'none';
 }
+
 function reloadTemplates() {
     countOfTemplates = localStorage.getItem('cntTmplts' + languageTmplt);
     while (cstmTmp.firstChild) cstmTmp.firstChild.remove();
@@ -128,8 +129,8 @@ function refreshHotTmps() {
         strokaCustTempl.insertAdjacentHTML('beforeend', templateButtonHTML);
         const newButton = strokaCustTempl.lastChild;
         newButton.onclick = function () {
-            const text = localStorage.getItem(this.getAttribute('template')).split('\\n').join('\n');
-            sendAnswer(text);
+            const text = localStorage.getItem(this.getAttribute('template')).replace(/\\n/g, '\n');
+            document.getElementById('inp').value = text;
         };
     }
 }
@@ -145,13 +146,13 @@ document.getElementById('addTemplate').onclick = function () {
 
 document.getElementById('saveAllTemplates').onclick = function () {
     for (var i = 1; i <= countOfTemplates; i++) {
-        localStorage.setItem('template_' + languageTmplt + i, document.getElementById('cstmTmpInp' + languageTmplt + i).value);
+        const inputValue = document.getElementById('cstmTmpInp' + languageTmplt + i).value.replace(/\n/g, '\\n');
+        localStorage.setItem('template_' + languageTmplt + i, inputValue);
         localStorage.setItem('checkbox_' + languageTmplt + i, document.getElementById('cstmTmpInp' + languageTmplt + i).parentElement.children[0].checked);
         localStorage.setItem('tmp_name_' + languageTmplt + i, document.getElementById('cstmTmpInp' + languageTmplt + i).parentElement.children[1].value);
     }
     refreshHotTmps();
 };
-
 
 languageAFbtn.onclick = function () {
     if (this.innerHTML == "Русский") {
@@ -164,6 +165,16 @@ languageAFbtn.onclick = function () {
         document.getElementById('AF_helper').style.background = "#464451"
     }
     reloadTemplates();
+};
+
+document.getElementById('addtocusttmplt').onclick = function () {
+    const tmplttetx = document.getElementById('inp').value;
+    if (tmplttetx) {
+        document.getElementById('addTemplate').click();
+        const templateInput = document.getElementById(`cstmTmpInp${languageTmplt}${countOfTemplates}`);
+        templateInput.value = tmplttetx;
+        document.getElementById('AF_CustomTemplates').style.display = '';
+    }
 };
 
 reloadTemplates();
