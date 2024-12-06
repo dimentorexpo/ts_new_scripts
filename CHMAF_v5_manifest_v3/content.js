@@ -1439,6 +1439,7 @@ function formatServiceType(serviceTypeKey) {
     };
 }
 
+//блок с кнопкой открытия и отправки сообщения через Vimbot не заходя в CRM
 let lnkToOpenVimbotWindow = document.getElementById('openVimbotWindows')
 lnkToOpenVimbotWindow.addEventListener('click', function () {
     let lnkToVimbot = document.getElementById('AF_Vimbot')
@@ -1450,7 +1451,31 @@ lnkToOpenVimbotWindow.addEventListener('click', function () {
 
     let btnSendToUserMSG = document.getElementById('sendToVimbotFromCRM')
     btnSendToUserMSG.addEventListener('click', function () {
-        console.log("works")
+        let usrID = document.getElementById('uIdToVimbot').value.trim()
+        let textTosent = document.getElementById('textToVimbotSend').value
+        if (usrID.length > 3 && textTosent.length > 0) {
+            const fetchURL = `https://communications.skyeng.ru/gateway/widget/vimbot/send/from-bot`;
+            const requestOptions = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: `{\"chatType\":\"customer_support\",\"recipientId\":${usrID},\"text\":\"${textTosent}\",\"attachments\":[]}`,
+                credentials: "include"
+            };
+
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+                if (!response.success) {
+                    alert('Не удалось отправить сообщение: ' + response.error);
+                    return;
+                } else {
+                    createAndShowButton('✅Отправлено');
+                    document.getElementById('uIdToVimbot').value = ""
+                    document.getElementById('textToVimbotSend').value = ""
+                    console.log("Текст успешно отправлен!")
+                }
+            })
+        }
     })
 })
 
