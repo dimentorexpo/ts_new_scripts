@@ -740,13 +740,14 @@
 
 	.msgtype {
 		border-left: 8px solid #4ce479;
-		width: 80px;
+		width: 60px;
 		transition: all 1s ease;
 	}
 
 	.msgtype.notes {
 		border-left: 8px solid #b4b4b4;
 		transition: all 1s ease;
+		width: 70px;
 	}
 
 	.statMMactive {
