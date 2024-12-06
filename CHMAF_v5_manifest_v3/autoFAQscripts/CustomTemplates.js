@@ -34,7 +34,7 @@ function addNewString(index) {
     const templateValue = localStorage.getItem('template_' + languageTmplt + index).replace(/\\n/g, '\n') || '';
 
     const CustomTemplatesLine = `
-       <div style="margin: 5px; border: 2px solid darkblue; display: flex; align-items: center;" inp="cstmTmpInp${languageTmplt}${index}" tmp="template_${languageTmplt}${index}" index="${index}">
+       <div style="margin: 5px; border-bottom: 2px dashed #6565cf; display: flex; align-items: center;" inp="cstmTmpInp${languageTmplt}${index}" tmp="template_${languageTmplt}${index}" index="${index}">
             <input id="checkboxInp${languageTmplt}${index}" type="checkbox" style="margin-right: 5px;" ${checkboxValue ? 'checked' : ''}>
             <input id="tmpNameInp${languageTmplt}${index}" style="margin-right: 5px; width: 150px;" class="${exttheme}">
             <button id="sortUpBtn${index}" style="width: 20px;" class="mainButton">↑</button>

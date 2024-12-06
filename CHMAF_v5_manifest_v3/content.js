@@ -171,7 +171,7 @@ var win_AFhelper =  // описание элементов главного ок
 				<input id="bindlinktotext" class="${exttheme}" type="text" placeholder="Enter your link 🔗 here" style="margin-bottom:5px;width:270px;text-align:center;border-radius: 10px;" title="Вводите в это поле ссылку, после чего в общем поле выделяете слово или фразу и кнопкой Insert встраиваете ссылку в текст шаблона"></input>
 				<button class="mainButton" id="insertlinktotext" title="Добавляет ссылку из поля слева в выделеное слово или фразу в тексте шаблона">Insert ✅</button>
 			</div>
-            <button class="mainButton" title="Переключение для выбора отправить или доработать сообщение" id="msg1" style="width:80px;">Доработать</button>
+            <button class="mainButton" title="Переключение для выбора отправить или доработать сообщение" id="msg1" style="width:90px;">Доработать</button>
             <button class="mainButton msgtype" title="Переключает между отправкой текста в заметки или в чат пользователю" id="msg">Чат</button>
             <button class="mainButton" id="opandclsbarhyper" style="width:  30px; margin: 0; padding: 2px; text-align: center;" title="Открывает форму для прикрепления ссылки в текст">🔗</button>
             <button class="mainButton" title="Отправить текст от имени бота" id="sndbot" style="width: 30px;">🤖</button>
