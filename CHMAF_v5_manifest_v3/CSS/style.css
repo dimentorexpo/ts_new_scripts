@@ -61,21 +61,26 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		background-color: #464451; 
-		animation: colorChange 3s ease-in-out infinite; 
+		background-color: #464451;
+		animation: colorChange 3s ease-in-out infinite;
 	}
-	
+
 	/* Анимация для плавного перехода между цветами */
 	@keyframes colorChange {
-		0%, 100% {
-			background-color: #464451; /* Начальный цвет */
+
+		0%,
+		100% {
+			background-color: #464451;
+			/* Начальный цвет */
 		}
+
 		50% {
-			background-color: darkred; /* Цвет при мигании */
+			background-color: darkred;
+			/* Цвет при мигании */
 		}
 	}
-	
-	
+
+
 	.wintInitializeChat {
 		min-height: 75px;
 		min-width: 200px;
@@ -736,7 +741,6 @@
 	.msgtype {
 		border-left: 8px solid #4ce479;
 		width: 80px;
-		margin-left: 20px;
 		transition: all 1s ease;
 	}
 
@@ -1197,16 +1201,17 @@
 		padding-left: 5px;
 		transition: all 0.3s ease;
 	}
-	
+
 	.menubtnsstyledark:hover {
-		background: rgba(218, 165, 32, 0.8); /* GoldenRod с прозрачностью */
+		background: rgba(218, 165, 32, 0.8);
+		/* GoldenRod с прозрачностью */
 		color: black;
 		font-weight: 600;
 		font-size: 16px;
 		box-shadow: 0px 3px 1px rgba(218, 165, 32, 0.6);
 		text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.6);
 		height: 45px;
-	}	
+	}
 
 	.rightPanelBtnlight {
 		width: 40px;
@@ -1241,10 +1246,11 @@
 		border: 2px solid bisque;
 		transition: all 0.5s ease;
 	}
-	
+
 	.rightPanelBtndark:hover {
 		opacity: 1 !important;
-		background: rgba(218, 165, 32, 0.8); /* GoldenRod */
+		background: rgba(218, 165, 32, 0.8);
+		/* GoldenRod */
 		color: black;
 		box-shadow: 0px 3px 1px rgba(218, 165, 32, 0.6);
 		text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.6);
@@ -1252,21 +1258,24 @@
 		height: 45px !important;
 		font-size: 23px !important;
 	}
-	
-	.snowflake { /* стиль для снежинок */
-  position: absolute;
-  width: 5px; /* Увеличиваем размер снежинки */
-  height: 5px; /* Увеличиваем размер снежинки */
-  background: LightSkyBlue;
-  border-radius: 50%;
-  opacity: 0.8;
-  pointer-events: none;
-  animation: fall linear infinite;
-  z-index: 999999999;
-}
 
-@keyframes fall {
-  to {
-    transform: translateY(100vh);
-  }
-}
+	.snowflake {
+		/* стиль для снежинок */
+		position: absolute;
+		width: 5px;
+		/* Увеличиваем размер снежинки */
+		height: 5px;
+		/* Увеличиваем размер снежинки */
+		background: LightSkyBlue;
+		border-radius: 50%;
+		opacity: 0.8;
+		pointer-events: none;
+		animation: fall linear infinite;
+		z-index: 999999999;
+	}
+
+	@keyframes fall {
+		to {
+			transform: translateY(100vh);
+		}
+	}

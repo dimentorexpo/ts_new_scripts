@@ -171,11 +171,12 @@ var win_AFhelper =  // описание элементов главного ок
 				<input id="bindlinktotext" class="${exttheme}" type="text" placeholder="Enter your link 🔗 here" style="margin-bottom:5px;width:270px;text-align:center;border-radius: 10px;" title="Вводите в это поле ссылку, после чего в общем поле выделяете слово или фразу и кнопкой Insert встраиваете ссылку в текст шаблона"></input>
 				<button class="mainButton" id="insertlinktotext" title="Добавляет ссылку из поля слева в выделеное слово или фразу в тексте шаблона">Insert ✅</button>
 			</div>
-				<button class="mainButton" title="Переключение для выбора отправить или доработать сообщение" id="msg1" style="width:100px;">Доработать</button>
-				<button class="mainButton" id="opandclsbarhyper" style="width:  30px; margin: 0; padding: 2px; text-align: center;" title="Открывает форму для прикрепления ссылки в текст">🔗</button>
-                <button class="mainButton" title="Отправить текст от имени бота" id="sndbot" style="width: 30px; margin-left: 5px">🤖</button>
-				<button class="mainButton" title="Отправить текст" id="snd" style="width:50px; margin-left: 10px">send</button>
-				<button class="mainButton msgtype" title="Переключает между отправкой текста в заметки или в чат пользователю" id="msg">Чат</button>
+            <button class="mainButton" title="Переключение для выбора отправить или доработать сообщение" id="msg1" style="width:100px;">Доработать</button>
+            <button class="mainButton msgtype" title="Переключает между отправкой текста в заметки или в чат пользователю" id="msg">Чат</button>
+            <button class="mainButton" id="opandclsbarhyper" style="width:  30px; margin: 0; padding: 2px; text-align: center;" title="Открывает форму для прикрепления ссылки в текст">🔗</button>
+            <button class="mainButton" title="Отправить текст от имени бота" id="sndbot" style="width: 30px;">🤖</button>
+            <button class="mainButton" title="Отправить текст" id="snd" style="width:50px;">send</button>
+            <button class="mainButton" title="Отправить текст от имени пользователя" id="openVimbotWindows">▶️</button>
 			</div>
 		<div style="border: 2px double black; display: none; background-color: #464451; cursor: -webkit-grab;" id="addTmp">
 			<div style="margin: 5px; width: 350px">
@@ -197,6 +198,17 @@ var win_mainmenu = // описание кнопок меню
         <div id="buttonGetStat" class="${menubtns}">📊 Статистика</div>
 		<div id="buttonGetQueue" class="${menubtns}">🚧 Очередь</div>
     </div>`;
+
+var win_VimbotMenu = // описание кнопок меню
+    `<div style="height:200px; width:400px;">
+        <div>
+        <button class="mainButton buttonHide" id="hideVimbot" title="Скрывает расширение и др открытых окон" style="margin:5px;">hide</button>
+        </div>
+        <input class="${exttheme}" style="margin:5px;text-align:center;" placeholder='User ID'></input>
+        <button class="mainButton" id="sendToVimbotFromCRM">💬</button> <br>
+        <textarea class="${exttheme}" style="height:114px; width:97%; margin:5px" id="textToVimbotSend"></textarea>
+    </div>`;
+
 
 flag = 0
 str = localStorage.getItem('sound_str');
@@ -839,6 +851,7 @@ if (localStorage.getItem('scriptAdr') == null) {
 }
 
 const wintAF = createWindow('AF_helper', 'winTopAF', 'winLeftAF', win_AFhelper);
+const wintVimbot = createWindow('AF_Vimbot', 'winTopVimbot', 'winLeftVimbot', win_VimbotMenu);
 
 let maskBack = document.createElement('button') // кнопка вернуть
 maskBack.id = "maskBack"
@@ -1391,12 +1404,12 @@ function formatServiceType(serviceTypeKey) {
     // Определяем предмет для lc_exam
     if (parts[0] === "lc" && parts[1] === "exam") {
         subjectKey = parts[3]; // Предмет идет после "ege"
-    } 
+    }
     // Для английских курсов (adult_courses)
     else if (parts[0] === "english" && parts[1] === "adult" && (parts[2] === "courses" || parts[2] === "minicourses")) {
         subjectKey = "english"; // Предмет "english" для курсов
         lessontype = "f2f"; // Тип "f2f" для adult courses
-    } 
+    }
     // Стандартный случай
     else {
         subjectKey = parts[2];
@@ -1424,3 +1437,20 @@ function formatServiceType(serviceTypeKey) {
         lessontype: lessontype
     };
 }
+
+let lnkToOpenVimbotWindow = document.getElementById('openVimbotWindows')
+lnkToOpenVimbotWindow.addEventListener('click', function () {
+    let lnkToVimbot = document.getElementById('AF_Vimbot')
+    if (lnkToVimbot.style.display == 'none') {
+        lnkToVimbot.style.display = ''
+    } else {
+        lnkToVimbot.style.display = 'none'
+    }
+})
+
+let lnkToHideVimbot = document.getElementById('hideVimbot')
+lnkToHideVimbot.addEventListener('click', function () {
+    let lnkToVimbot = document.getElementById('AF_Vimbot')
+    lnkToVimbot.style.display = 'none'
+
+})
