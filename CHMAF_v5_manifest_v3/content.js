@@ -199,6 +199,17 @@ var win_mainmenu = // описание кнопок меню
 		<div id="buttonGetQueue" class="${menubtns}">🚧 Очередь</div>
     </div>`;
 
+var win_VimbotMenu = // описание кнопок меню
+    `<div style="height:200px; width:400px;">
+        <div>
+        <button class="mainButton buttonHide" id="hideVimbot" title="Скрывает расширение и др открытых окон" style="margin:5px;">hide</button>
+        </div>
+        <input class="${exttheme}" style="margin:5px;text-align:center;" placeholder='User ID'></input>
+        <button class="mainButton" id="sendToVimbotFromCRM">💬</button> <br>
+        <textarea class="${exttheme}" style="height:114px; width:97%; margin:5px" id="textToVimbotSend"></textarea>
+    </div>`;
+
+
 flag = 0
 str = localStorage.getItem('sound_str');
 if (str !== null && str !== "")
@@ -840,6 +851,7 @@ if (localStorage.getItem('scriptAdr') == null) {
 }
 
 const wintAF = createWindow('AF_helper', 'winTopAF', 'winLeftAF', win_AFhelper);
+const wintVimbot = createWindow('AF_Vimbot', 'winTopVimbot', 'winLeftVimbot', win_VimbotMenu);
 
 let maskBack = document.createElement('button') // кнопка вернуть
 maskBack.id = "maskBack"
@@ -1425,3 +1437,20 @@ function formatServiceType(serviceTypeKey) {
         lessontype: lessontype
     };
 }
+
+let lnkToOpenVimbotWindow = document.getElementById('openVimbotWindows')
+lnkToOpenVimbotWindow.addEventListener('click', function () {
+    let lnkToVimbot = document.getElementById('AF_Vimbot')
+    if (lnkToVimbot.style.display == 'none') {
+        lnkToVimbot.style.display = ''
+    } else {
+        lnkToVimbot.style.display = 'none'
+    }
+})
+
+let lnkToHideVimbot = document.getElementById('hideVimbot')
+lnkToHideVimbot.addEventListener('click', function () {
+    let lnkToVimbot = document.getElementById('AF_Vimbot')
+    lnkToVimbot.style.display = 'none'
+
+})
