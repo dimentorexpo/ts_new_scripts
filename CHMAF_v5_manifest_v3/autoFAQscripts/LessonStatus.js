@@ -1,3 +1,4 @@
+const clearlessoninfo = localStorage.getItem('clearlessoninfo');
 var win_LessonStatus =  // описание элементов окна статуса уроков
     `<div style="display: flex; width: 1060px;">
         <span style="width: 1060px">
@@ -21,12 +22,14 @@ var win_LessonStatus =  // описание элементов окна стат
 </div>`;
 
 const wintLessonStatus = createWindow('AF_LessonStatus', 'winTopLessonStatus', 'winLeftLessonStatus', win_LessonStatus);
-hideWindowOnDoubleClick('AF_LessonStatus');
+document.getElementById('AF_LessonStatus').ondblclick = function (a) { // скрытие окна создания
+    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') { document.getElementById('hideMeLessonStatus').click(); }
+}
 
 document.getElementById('hideMeLessonStatus').onclick = function () { // скрытие окна статус урока
     if (document.getElementById('AF_LessonStatus').style.display == '') {
         document.getElementById('AF_LessonStatus').style.display = 'none'
-        document.getElementById('statustable').innerText = "";
+        if (clearlessoninfo == '0') { document.getElementById('statustable').innerText = ""; }
     }
 }
 
@@ -63,12 +66,13 @@ document.getElementById('clearlessonstatus').onclick = function () { // очис
 };
 
 function getbutLessonInfoButtonPress() {
-    renewdate()
+    if (clearlessoninfo == '0' || clearlessoninfo == '1' && document.getElementById('statustable').innerText == "") { renewdate() };
 
     if (document.getElementById('AF_LessonStatus').style.display == '') {
         document.getElementById('AF_LessonStatus').style.display = 'none'
         document.getElementById('idmymenu').style.display = 'none'
         document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+        if (clearlessoninfo == '0') { document.getElementById('statustable').innerText = ""; }
     } else {
         document.getElementById('AF_LessonStatus').style.display = ''
         document.getElementById('idmymenu').style.display = 'none'

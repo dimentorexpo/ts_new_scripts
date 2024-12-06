@@ -1,10 +1,9 @@
-if (localStorage.getItem('cntTmplts') == null)
-    localStorage.setItem('cntTmplts', 0)
-if (localStorage.getItem('cntTmpltsen_') == null)
-    localStorage.setItem('cntTmpltsen_', 0)
+if (localStorage.getItem('cntTmplts') == null) { localStorage.setItem('cntTmplts', 0) }; // Проврека кол-ва рус шаблонов
+if (localStorage.getItem('cntTmpltsen_') == null) { localStorage.setItem('cntTmpltsen_', 0) }; // Проврека кол-ва англ шаблонов
 
-let languageAFbtn = document.getElementById('languageAF');
-let languageTmplt = languageAFbtn.innerHTML === "Русский" ? '' : 'en_';
+let languageAFbtn = document.getElementById('languageAF'); // Кнопка смены языка
+let languageTmplt = languageAFbtn.innerHTML === "Русский" ? '' : 'en_'; // язык кастомных шаблонов
+let countOfTemplates = ''; // переменная для счетчика кол-ва шаблонов.
 
 var win_CustomTemplates = `
     <div style="border: 2px double black; cursor: -webkit-grab; width: 500px; max-height: 80vh; overflow: hidden;" id="custom_templates_window">
@@ -18,13 +17,90 @@ var win_CustomTemplates = `
     </div>
 `;
 
-
 const winCustomTemplates = createWindow('AF_CustomTemplates', 'winTopCustomTemplates', 'winLeftCustomTemplates', win_CustomTemplates);
 hideWindowOnDoubleClick('AF_CustomTemplates');
 hideWindowOnClick('AF_CustomTemplates', 'hideCustomTemplates');
 
-let cstmTmp = document.getElementById('cstmTmplates');
+const cstmTmp = document.getElementById('cstmTmplates');
+const strokaCustTempl = document.getElementById('6str');
 
+function addNewString(index) {
+    var CustomTemplatesLine = `
+        <div style="margin: 5px;" inp="cstmTmpInp${languageTmplt}${index}" tmp="template_${languageTmplt}${index}" index="${index}">
+            <input type="checkbox" style="margin-right: 5px;" ${localStorage.getItem('checkbox_' + languageTmplt + index) === 'true' ? 'checked' : ''} onclick="localStorage.setItem('checkbox_${languageTmplt}${index}', this.checked)">
+            <input value="${localStorage.getItem('tmp_name_' + languageTmplt + index) || ''}" style="margin-right: 5px; width: 150px;" class="${exttheme}">
+            <button style="width: 20px;" class="mainButton" onclick="sortTemplate(${index}, -1)">↑</button>
+            <button style="margin-right: 5px; width: 20px;" class="mainButton" onclick="sortTemplate(${index}, 1)">↓</button>
+            <button style="margin-right: 5px;" class="mainButton" onclick="deleteTemplate(${index})">delete</button>
+            <button style="margin-right: 5px;" class="mainButton" onclick="saveTemplate(${index})">save</button>
+            <input id="cstmTmpInp${languageTmplt}${index}" value="${localStorage.getItem('template_' + languageTmplt + index) || ''}" style="margin-right: 5px; width: 500px;" class="${exttheme}">
+            <button style="margin-right: 5px;" class="mainButton" onclick="sendTemplate(${index})">send</button>
+        </div>
+    `;
+    cstmTmp.insertAdjacentHTML('beforeend', CustomTemplatesLine);
+};
+
+function saveTemplate(index) {
+    const parent = document.querySelector(`[tmp="template_${language}${index}"]`);
+    localStorage.setItem(parent.getAttribute('tmp'), parent.querySelector(`#cstmTmpInp${language}${index}`).value);
+    localStorage.setItem('tmp_name_' + language + index, parent.children[1].value);
+    refreshHotTmps();
+}
+
+function deleteTemplate(index) {
+    for (let i = index; i < countOfTemplates; i++) {
+        let nextIndex = i + 1;
+        localStorage.setItem('template_' + language + i, localStorage.getItem('template_' + language + nextIndex));
+        localStorage.setItem('checkbox_' + language + i, localStorage.getItem('checkbox_' + language + nextIndex));
+        localStorage.setItem('tmp_name_' + language + i, localStorage.getItem('tmp_name_' + language + nextIndex));
+    }
+    localStorage.removeItem('template_' + language + countOfTemplates);
+    localStorage.removeItem('checkbox_' + language + countOfTemplates);
+    localStorage.removeItem('tmp_name_' + language + countOfTemplates);
+    countOfTemplates--;
+    localStorage.setItem('cntTmplts' + language, countOfTemplates);
+    reloadTemplates();
+}
+
+function sortTemplate(index, direction) {
+    const swapIndex = index + direction;
+    if (swapIndex < 1 || swapIndex > countOfTemplates) return;
+    ['template_', 'checkbox_', 'tmp_name_'].forEach(prefix => {
+        const current = localStorage.getItem(prefix + language + index);
+        const swap = localStorage.getItem(prefix + language + swapIndex);
+        localStorage.setItem(prefix + language + index, swap);
+        localStorage.setItem(prefix + language + swapIndex, current);
+    });
+    reloadTemplates();
+}
+
+function sendTemplate(index) {
+    document.getElementById('inp').value = localStorage.getItem('template_' + language + index).split('\\n').join('\n');
+    document.querySelector(`[tmp="template_${language}${index}"]`).style.display = 'none';
+}
+function reloadTemplates() {
+    countOfTemplates = localStorage.getItem('cntTmplts' + languageTmplt);
+    while (cstmTmp.firstChild) cstmTmp.firstChild.remove();
+    for (let i = 1; i <= countOfTemplates; i++) addNewString(i);
+    refreshHotTmps();
+}
+
+function refreshHotTmps() {
+    while (strokaCustTempl.firstChild) strokaCustTempl.firstChild.remove();
+    countOfTemplates = localStorage.getItem('cntTmplts' + languageTmplt);
+    for (let i = 1; i <= countOfTemplates; i++) {
+        const isChecked = cstmTmp.children[i - 1]?.children[0]?.checked;
+        const tmpName = localStorage.getItem('tmp_name_' + languageTmplt + i);
+        if (!isChecked || !tmpName) continue;
+        const templateButtonHTML = `<button template="template_${languageTmplt}${i}" style="margin-right: 5px; margin-top: 5px;" class="mainButton">${tmpName}</button>`;
+        strokaCustTempl.insertAdjacentHTML('beforeend', templateButtonHTML);
+        const newButton = strokaCustTempl.lastChild;
+        newButton.onclick = function () {
+            const text = localStorage.getItem(this.getAttribute('template')).split('\\n').join('\n');
+            sendAnswer(text);
+        };
+    }
+}
 
 document.getElementById('addTemplate').onclick = function () {
     countOfTemplates++;
@@ -45,16 +121,17 @@ document.getElementById('saveAllTemplates').onclick = function () {
 };
 
 
-document.getElementById('languageAF').onclick = function () {
+languageAFbtn.onclick = function () {
     if (this.innerHTML == "Русский") {
         this.innerHTML = "Английский";
         languageTmplt = 'en_';
         document.getElementById('AF_helper').style.background = "#EBC7DF"
-        customTemplates('en_')
     } else {
         this.innerHTML = "Русский";
         languageTmplt = '';
         document.getElementById('AF_helper').style.background = "#464451"
-        customTemplates()
     }
-}
+    reloadTemplates();
+};
+
+reloadTemplates();

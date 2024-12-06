@@ -48,6 +48,9 @@ async function init_settings() {
     // Для отключения нотификация в браузер для будильника
     setDefaultValue('brnotificatios', 0);
 
+    // Для отключения очистки окна LessonInfo
+    setDefaultValue('clearlessoninfo', 0);
+
     var win_Settings =  // описание элементов окна ссылок
         `<span style="width: 500px">
         <span style="cursor: -webkit-grab;">
@@ -82,6 +85,8 @@ async function init_settings() {
                         <br>
                         <label style="color:bisque; margin-left: 5px;" title="Отключить зарытие окон при двойном нажатии на него. ПРИМЕНЯЕТСЯ ПОСЛЕ ОБНОВЛЕНИЯ СТРАНИЦЫ"><input type="checkbox" id="dblhidewindow">Не скрывать окно при doubleclick</label>
                         <label style="color:bisque; margin-left: 5px;" title="Отключить Notifacations браузера при срабатывании будильника"><input type="checkbox" id="brnotificatios">Отключить Notification от будильника</label>
+                        <br>
+                        <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="clearlessoninfo">Отключить очистку окна LessonInfo при скрытии окна</label>
                         <br>
 						<label style="color:bisque"> Автостатус при авторизации в AF</label>
 						<select style="height:28px; width:140px; text-align:center" id="defaultStatusAfterLogin">
@@ -471,6 +476,9 @@ async function init_settings() {
 
             // Настройка чекбокса для отключения нотификация в браузер для будильника
             setupCheckbox('brnotificatios', 'brnotificatios');
+
+            // Настройка чекбокса для отключения очистки окна LessonInfo
+            setupCheckbox('clearlessoninfo', 'clearlessoninfo');
 
             // Настройка чекбокса для скрытия окна Л П МВУ
             setupCheckbox('hidelpmwindow', 'disablelpmwindow', (isChecked) => {
