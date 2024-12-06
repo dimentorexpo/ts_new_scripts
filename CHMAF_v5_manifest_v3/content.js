@@ -150,6 +150,7 @@ var win_AFhelper =  // описание элементов главного ок
 			<span style="cursor: -webkit-grab;">
 				<div style="margin: 5px;" id="1str">
 					<button class="mainButton" id="languageAF" title="Переключает язык Русский/Английский" style="width:100px">Русский</button>
+                    <button id="testCustTMPL" class="mainButton" title="Открывает окно для добавления своих шаблонов либо информации в ячейки в этом поле">📒</button>
 					<button class="mainButton buttonHide" id="hideMenuMain" title="Скрывает расширение и др открытых окон" style="margin-left:18px;">hide</button>
 					<button class="mainButton" id="setting" title="Открывает настройки расширения и включения/отключения будильника" style="width:23px; float: right; margin-right: 5px">⚙</button>
 					<button class="mainButton" id="links" title="Открывает доп.меню со ссылками и функциями" style="width:16px; float: right; margin-right: 5px">L</button>
