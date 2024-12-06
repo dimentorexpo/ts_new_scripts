@@ -204,6 +204,7 @@ var win_VimbotMenu = // описание кнопок меню
     `<div style="height:200px; width:400px; cursor:grab">
         <div>
         <button class="mainButton buttonHide" id="hideVimbot" title="Скрывает расширение и др открытых окон" style="margin:5px;">hide</button>
+        <label class="${exttheme}" style="background: transparent;">Vimbot - отправка текста в Support Chat</label>
         </div>
         <input class="${exttheme}" id="uIdToVimbot" style="margin:5px;text-align:center; border-radius: 20px;" placeholder='User ID'></input>
         <button class="mainButton" id="sendToVimbotFromCRM">💬 Отправить</button> <br>
@@ -1475,7 +1476,7 @@ lnkToOpenVimbotWindow.addEventListener('click', function () {
                     console.log("Текст успешно отправлен!")
                 }
             })
-        }
+        } else alert("Проверьте ID пользователя или текст, чтобы он не был пустой")
     })
 })
 
@@ -1489,3 +1490,5 @@ lnkToHideVimbot.addEventListener('click', function () {
 uIdToVimbot.addEventListener('input', function () {
     onlyNumbers(this);
 });
+
+// конец блока отправки сообщения через Vimbot
