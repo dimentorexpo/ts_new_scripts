@@ -150,7 +150,6 @@ document.getElementById('openVimbotWindowsUserinfo').onclick = function () {
     }
 }
 
-
 document.getElementById('checkbalance').onclick = function () {
     window.open("https://billing-api.skyeng.ru/operations/user/" + idstudentField.value.trim() + "/info")
 }
