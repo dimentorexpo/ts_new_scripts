@@ -34,6 +34,7 @@ var win_serviceinfo =  // описание элементов окна инфо�
 							<button title="Открывает окно для просмотра когда и кто открывал/закрывал набор учеников для П" id="butTeacherNabor" class="mainButton" style="margin-left: 5px; display: none; width: 25.23px;"> 🚷</button>
 							<button title="Открывает меню для просмотра рассрочки" id="partialpaymentinfo" class="mainButton usinfoops">💸</button>
 							<button title="Открывает меню для просмотра статуса подписки" id="subscriptioninfo" class="mainButton usinfoops">💵</button>
+                            <button title="Отправить текст от имени пользователя через Vimbot" id="openVimbotWindowsUserinfo" class="mainButton usinfoops">▶️</button>
 						</div>
 					   </span>
                         <div style="width: 320px; color:bisque; text-align:center">
@@ -140,6 +141,15 @@ document.getElementById('dounhidemailandphone').onclick = function () {
     getunhidephone();
     checkemailandphoneidentity()
 }
+
+document.getElementById('openVimbotWindowsUserinfo').onclick = function () {
+    let getedid = document.getElementById('idstudent').value.trim();
+    if (getedid) {
+        document.getElementById('openVimbotWindows').click();
+        document.getElementById('uIdToVimbot').value = getedid;
+    }
+}
+
 
 document.getElementById('checkbalance').onclick = function () {
     window.open("https://billing-api.skyeng.ru/operations/user/" + idstudentField.value.trim() + "/info")

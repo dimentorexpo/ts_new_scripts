@@ -177,7 +177,7 @@ var win_AFhelper =  // описание элементов главного ок
             <button class="mainButton" title="Отправить текст от имени бота" id="sndbot" style="width: 30px;">🤖</button>
             <button class="mainButton" title="Отправить текст" id="snd" style="width:40px; background: ForestGreen;">Send</button>
             <button class="mainButton" title="Сохранить текст в личные шаблоны" id="addtocusttmplt" style="width: 30px;">⬆️</button>
-            <button class="mainButton" title="Отправить текст от имени пользователя" id="openVimbotWindows">▶️</button>
+            <button class="mainButton" title="Отправить текст от имени пользователя через Vimbot" id="openVimbotWindows">▶️</button>
 			</div>
 		<div style="border: 2px double black; display: none; background-color: #464451; cursor: -webkit-grab;" id="addTmp">
 			<div style="margin: 5px; width: 350px">
@@ -207,7 +207,8 @@ var win_VimbotMenu = // описание кнопок меню
         <label class="${exttheme}" style="background: transparent;">Vimbot - отправка текста в Support Chat</label>
         </div>
         <input class="${exttheme}" id="uIdToVimbot" style="margin:5px;text-align:center; border-radius: 20px;" placeholder='User ID'></input>
-        <button class="mainButton" id="sendToVimbotFromCRM">💬 Отправить</button> <br>
+        <button class="mainButton" id="sendToVimbotFromCRM">💬 Отправить</button>
+        <button class="mainButton" id="GetTexttmplt">⤵️</button> <br>
         <textarea class="${exttheme}" style="height:114px; width:97%; margin:5px" id="textToVimbotSend"></textarea>
     </div>`;
 
@@ -1449,6 +1450,15 @@ lnkToOpenVimbotWindow.addEventListener('click', function () {
     } else {
         lnkToVimbot.style.display = 'none'
     }
+
+    let btnGetTexttmplt = document.getElementById('GetTexttmplt');
+    btnGetTexttmplt.addEventListener('click', function () {
+        let tmpltText = document.getElementById('inp').value
+        if (tmpltText) {
+            document.getElementById('textToVimbotSend').value = tmpltText;
+            document.getElementById('inp').value = "";
+        }
+    });
 
     let btnSendToUserMSG = document.getElementById('sendToVimbotFromCRM')
     btnSendToUserMSG.addEventListener('click', function () {
