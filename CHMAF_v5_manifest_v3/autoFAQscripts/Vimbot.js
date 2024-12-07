@@ -1,5 +1,3 @@
-
-
 var win_VimbotMenu = // описание кнопок меню
     `<div style="height:200px; width:400px; cursor:grab">
         <div>
