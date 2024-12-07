@@ -142,14 +142,6 @@ document.getElementById('dounhidemailandphone').onclick = function () {
     checkemailandphoneidentity()
 }
 
-document.getElementById('openVimbotWindowsUserinfo').onclick = function () {
-    let getedid = document.getElementById('idstudent').value.trim();
-    if (getedid) {
-        document.getElementById('openVimbotWindows').click();
-        document.getElementById('uIdToVimbot').value = getedid;
-    }
-}
-
 document.getElementById('checkbalance').onclick = function () {
     window.open("https://billing-api.skyeng.ru/operations/user/" + idstudentField.value.trim() + "/info")
 }

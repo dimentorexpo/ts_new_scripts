@@ -15,14 +15,14 @@ hideWindowOnDoubleClick('AF_Vimbot');
 hideWindowOnClick('AF_Vimbot', 'hideVimbot');
 
 let uIdToVimbot = document.getElementById('uIdToVimbot')
-uIdToVimbot.addEventListener('input', function () { onlyNumbers(this);});
+uIdToVimbot.addEventListener('input', function () { onlyNumbers(this);} );
 
 let lnkToOpenVimbotWindow = document.getElementById('openVimbotWindows')
 lnkToOpenVimbotWindow.addEventListener('click', function () {
-    if (lnkToVimbot.style.display == 'none') {
-        lnkToVimbot.style.display = ''
+    if (wintVimbot.style.display == 'none') {
+        wintVimbot.style.display = ''
     } else {
-        lnkToVimbot.style.display = 'none'
+        wintVimbot.style.display = 'none'
     }
 
     let btnGetTexttmplt = document.getElementById('GetTexttmplt');
@@ -63,3 +63,11 @@ lnkToOpenVimbotWindow.addEventListener('click', function () {
         } else alert("Проверьте ID пользователя или текст, чтобы он не был пустой")
     })
 })
+
+document.getElementById('openVimbotWindowsUserinfo').onclick = function () {
+    let getedid = document.getElementById('idstudent').value.trim();
+    if (getedid) {
+        lnkToOpenVimbotWindow.click();
+        uIdToVimbot.value = getedid;
+    }
+}
