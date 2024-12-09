@@ -5,7 +5,7 @@ var win_taskform = //описание формы создания задач в 
                         <div style="margin: 5px; width: 410px;" id="create_form_header">
                             <button class="mainButton buttonHide" title="скрывает меню" id="hideMeCreateForm">hide</button>
                             <button class="mainButton smallbtn" title="По нажатию обновляет хеш чата в соответствующем поле, на случай, если при открытии формы вы открыли не тот чат, в котором обратился пользователь" id="refreshhashcreateform">♻</button>
-							<button class="mainButton smallbtn" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearcreateform"">🧹</button>
+							<button class="mainButton smallbtn" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearcreateform">🧹</button>
 							<span style="color:bisque">Статус урока: </span>
 							<span id="statusuroka"></span>
                         </div>

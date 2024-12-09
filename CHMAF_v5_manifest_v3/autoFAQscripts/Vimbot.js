@@ -2,6 +2,7 @@ var win_VimbotMenu = // описание кнопок меню
     `<div style="max-height:250px; width:400px; cursor:grab">
         <div>
         <button class="mainButton buttonHide" id="hideVimbot" title="Скрывает расширение и др открытых окон" style="margin:5px;">hide</button>
+        <button class="mainButton smallbtn" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearVimbotMenu">🧹</button>
         <label class="${exttheme}" style="background: transparent;">Vimbot - отправка текста в Support Chat</label>
         </div>
         <input class="${exttheme}" id="uIdToVimbot" style="margin:5px;text-align:center; border-radius: 20px;" placeholder='User ID'></input>
@@ -15,7 +16,14 @@ const wintVimbot = createWindow('AF_Vimbot', 'winTopVimbot', 'winLeftVimbot', wi
 hideWindowOnDoubleClick('AF_Vimbot');
 hideWindowOnClick('AF_Vimbot', 'hideVimbot');
 const chatTypeElement = document.getElementById("chattype");
-const uIdToVimbot = document.getElementById('uIdToVimbot')
+const uIdToVimbot = document.getElementById('uIdToVimbot');
+
+document.getElementById('clearVimbotMenu').addEventListener('click', function() {
+    uIdToVimbot.value = '';
+    document.getElementById('textToVimbotSend').value = '';
+    chatTypeElement.style.display = 'none';
+    chatTypeElement.innerText = '';
+});
 
 function VimhandleInput(event) {
     uIdToVimbot.value = '';
@@ -124,8 +132,7 @@ function checkchattype() {
                 }
             }
         });
-
-    } else alert("Проверьте ID пользователя, чтобы он не был пустой")
+    }
 }
 
 document.getElementById('openVimbotWindowsUserinfo').onclick = function () {
