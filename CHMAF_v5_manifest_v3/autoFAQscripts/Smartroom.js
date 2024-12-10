@@ -10,10 +10,8 @@ var win_smartroomform =  // описание элементов окна Мул�
                         </div>
 
                         <div style="margin: 5px; margin-top: 0px; width: 410px" id="smartroom_form_menu">
-
-							<label style="color:#c4ffd3; padding:5px; font-weight: 600;">Тип клиента</label>
-							<br>
-							<div style="margin-top:5px" id = "smartroomuser">
+							<div style="margin-top:5px; border-bottom: 2px dashed rgb(101, 101, 207);" id = "smartroomuser">
+                            	<label style="color:#c4ffd3; padding:5px; font-weight: 600;">Тип клиента</label> <br>
 								<input class = "smartroom-radio" type="radio" id="typestudadults" name="typetoform" value="Ученик Adults">
 								<label class = "smartroom-label" for="typestudadults">Ученик Adults</label>
 								<input class = "smartroom-radio" type="radio" id="typestudkids" name="typetoform" value="Ученик Kids">
@@ -24,9 +22,8 @@ var win_smartroomform =  // описание элементов окна Мул�
 							    <input class = "smartroom-radio" type="radio" id="typeteach" name="typetoform" value="Преподаватель">
 								<label class = "smartroom-label" for="typeteach">Преподаватель</label>
 							</div>
-                            <label style="color:#c4ffd3; padding:5px; font-weight: 600;">Формат обучения</label>
-							<br>
-							<div style="margin-top:5px; margin-bottom: 5px;" id = "smartroomformat">
+                            <div style="margin-top:5px; margin-bottom: 5px; border-bottom: 2px dashed rgb(101, 101, 207);" id = "smartroomformat">
+                                <label style="color:#c4ffd3; padding:5px; font-weight: 600;">Формат обучения</label> <br>
 								<input class = "smartroom-radio" type="radio" id="formatF2F" name="formattoform" value="F2F">
 								<label class = "smartroom-label" for="formatF2F">F2F</label>
 								<input class = "smartroom-radio" type="radio" id="formatF2G" name="formattoform" value="F2G">
@@ -36,15 +33,17 @@ var win_smartroomform =  // описание элементов окна Мул�
 							    <input class = "smartroom-radio" type="radio" id="formatPU" name="formattoform" value="ПУ">
 								<label class = "smartroom-label" for="formatPU">ПУ</label>
 							</div>
-							<input class="${exttheme}" id="clientid" placeholder="ID пользователя" autocomplete="off" type="text">
+							<input class="${exttheme}" id="clientid" placeholder="ID пользователя" autocomplete="off" type="text" style="width: calc(100% - 5px);">
 							<br>
-							<div style="margin-top:5px; color:#c4ffd3; padding:5px; font-weight: 600;" id = "smartroomquestion">С чем обратились?</div>
+							<div style="margin-top:5px; color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);" id = "smartroomquestion">
+                                <label style="color:#c4ffd3; padding:5px; font-weight: 600;">С чем обратились?</label> <br>
 								<input class = "smartroom-radio" type="radio" id="whatobratsugest" name="whatobratform" value="Пожелание по улучшению">
 								<label class = "smartroom-label" for="whatobratsugest">Пожелания</label>
 								<input class = "smartroom-radio" type="radio" id="whattonegative" name="whatobratform" value="Негатив по работе функционала платформы">
 								<label class = "smartroom-label" for="whattonegative">Негатив</label>
 							</div>
-							<div style="color:#c4ffd3; padding:5px; font-weight: 600;" id = "smartroomecosysrem">Экосистема</div>
+							<div style="color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);" id = "smartroomecosysrem">
+                                <label style="color:#c4ffd3; padding:5px; font-weight: 600;">Экосистема</label> <br>
                                 <input class = "smartroom-radio" type="radio" id="ecosystemplat" name="smartroomecos" value="Функционал платформы"> 
                                 <label class = "smartroom-label" for="ecosystemplat">Функционал платформы</label>
                                 <input class = "smartroom-radio" type="radio" id="ecosystemios" name="smartroomecos" value="Мобильное приложение IOS"> 
@@ -52,55 +51,55 @@ var win_smartroomform =  // описание элементов окна Мул�
                                 <input class = "smartroom-radio" type="radio" id="ecosystemandr" name="smartroomecos" value="Мобильное приложение Android"> 
                                 <label class = "smartroom-label" for="ecosystemandr">МП Android</label>
 							</div>
-
-							<div style="color:#c4ffd3; padding:5px; font-weight: 600;">Тема</div>
-								<select class="${exttheme}" id="cattwosmatrtoom" style="margin-left: 5px; padding-top: 5px; font-size: 16px; vertical-align: middle;">
-									<option class="${selecttheme}" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
-									<option value="Домашние задания">-Домашние задания</option>
-									<option value="Интерфейс платформы">-Интерфейс платформы</option>
-									<option value="Функционал урока П">-Функционал урока П</option>
-									<option value="Функционал урока У">-Функционал урока У</option>
-									<option value="Вернуть старую платформу">-Вернуть старую платформу</option>
-									<option value="Мобильное приложение Skyeng">-Мобильное приложение Skyeng</option>
-                                </select>
+							<div style="color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);">
+                                <label style="color:#c4ffd3; padding:5px; font-weight: 600;">Тема</label> <br>
+								<input type="text" id="cattwosmatrtoom" list="cattwosmatrtoom-options-list" placeholder="Выбрать тему" class="${exttheme} listinput" style="margin-left: 5px; width: calc(100% - 10px); padding-top: 5px; font-size: 16px; vertical-align: middle;">
+                                <datalist id="cattwosmatrtoom-options-list">
+									<option value="Домашние задания">
+									<option value="Интерфейс платформы">
+									<option value="Функционал урока П">
+									<option value="Функционал урока У">
+									<option value="Вернуть старую платформу">
+									<option value="Мобильное приложение Skyeng">
+                                </datalist>
 							</div>
 
-							<div style="color:#c4ffd3; padding:5px; font-weight: 600;">Подтема</div>
-								<select class="${exttheme}" id="catthreesmatrtoom" style="margin-left: 5px; padding-top: 5px; font-size: 16px; vertical-align: middle;">
-									<option class="${selecttheme}" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
-									<option value="Интерфейс раздела домашки">-Интерфейс раздела домашки</option>
-									<option value="Нет">-Нет</option>
-									<option value="Перемешаны слайды в уроке">-Перемешаны слайды в уроке</option>
-									<option value="План урока">-План урока</option>
-									<option value="План урока\\домашки">-План урока\домашки</option>
-									<option value="Вложения">-Вложения</option>
-									<option value="Домашка">-Домашка</option>
-									<option value="Информирование">-Информирование</option>
-									<option value="Навигация в домашке">-Навигация в домашке</option>
-									<option value="Не видно какие уроки уже пройдены У">-Не видно какие уроки уже пройдены У</option>
-									<option value="П не может изменить оценку">-П не может изменить оценку</option>
-									<option value="Предложения по улучшению">-Предложения по улучшению</option>
-									<option value="Сброс ответов">-Сброс ответов</option>
-									<option value="Вход в урок">-Вход в урок</option>
-									<option value="Заметки">-Заметки</option>
-									<option value="Масштабирование видео">-Масштабирование видео</option>
-									<option value="Не находит словарь">-Не находит словарь</option>
-									<option value="Нет отображения кол-ва символов">-Нет отображения кол-ва символов</option>
-									<option value="Нумерация степов в уроке">-Нумерация степов в уроке</option>
-									<option value="ОС">-ОС</option>
-									<option value="Плохой шрифт">-Плохой шрифт</option>
-									<option value="Словарь">-Словарь</option>
-									<option value="Урок">-Урок</option>
-									<option value="Ширина доски">-Ширина доски</option>
-									<option value="Баллы и картинки">-Баллы и картинки</option>
-									<option value="Нет прохождения тестов">-Нет прохождения тестов</option>
-									<option value="Повтор пройденного материала">-Повтор пройденного материала</option>
-									<option value="Связь У с П">-Связь У с П</option>
-									<option value="Звуки">-Звуки</option>
-									<option value="Перевод слов на стороне У">-Перевод слов на стороне У</option>
-
-                                </select>
-							</div>
+							<div style="color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);">
+                                <label style="color:#c4ffd3; padding:5px; font-weight: 600;">Подтема</label> <br>
+								<input type="text" id="catthreesmatrtoom" list="catthreesmatrtoom-options-list" placeholder="Выбрать подтему" class="${exttheme} listinput" style="margin-left: 5px; width: calc(100% - 10px); padding-top: 5px; font-size: 16px; vertical-align: middle;">
+                                <datalist id="catthreesmatrtoom-options-list">
+									<option value="Интерфейс раздела домашки">
+									<option value="Нет">
+									<option value="Перемешаны слайды в уроке">
+									<option value="План урока">
+									<option value="План урока\\домашки">
+									<option value="Вложения">
+									<option value="Домашка">
+									<option value="Информирование">
+									<option value="Навигация в домашке">
+									<option value="Не видно какие уроки уже пройдены У">
+									<option value="П не может изменить оценку">
+									<option value="Предложения по улучшению">
+									<option value="Сброс ответов">
+									<option value="Вход в урок">
+									<option value="Заметки">
+									<option value="Масштабирование видео">
+									<option value="Не находит словарь">
+									<option value="Нет отображения кол-ва символов">
+									<option value="Нумерация степов в уроке">
+									<option value="ОС">
+									<option value="Плохой шрифт">
+									<option value="Словарь">
+									<option value="Урок">
+									<option value="Ширина доски">
+									<option value="Баллы и картинки">
+									<option value="Нет прохождения тестов">
+									<option value="Повтор пройденного материала">
+									<option value="Связь У с П">
+									<option value="Звуки">
+									<option value="Перевод слов на стороне У">
+                                </datalist>
+                            </div>
 
 						<div>
 							<textarea class="${exttheme}" id="fullcomentsmartroom" placeholder="Полный комментарий предложения по улучшению" autocomplete="off" type="text" style="text-align: center; width: 405px; margin-top: 5px" data-gramm="false" wt-ignore-input="true"></textarea>
@@ -114,6 +113,13 @@ var win_smartroomform =  // описание элементов окна Мул�
 const wintSmartroom = createWindow('AF_Smartroomform', 'winTopSmartroom', 'winLeftSmartroom', win_smartroomform);
 hideWindowOnDoubleClick('AF_Smartroomform');
 
+document.getElementById('cattwosmatrtoom').addEventListener('drop', addValidationlist);
+document.getElementById('cattwosmatrtoom').addEventListener('paste', addValidationlist);
+document.getElementById('cattwosmatrtoom').addEventListener('input', addValidationlist);
+document.getElementById('catthreesmatrtoom').addEventListener('drop', addValidationlist);
+document.getElementById('catthreesmatrtoom').addEventListener('paste', addValidationlist);
+document.getElementById('catthreesmatrtoom').addEventListener('input', addValidationlist);
+
 function getsmartroomformButtonPress() {
     if (document.getElementById('AF_Smartroomform').style.display == '') {
         document.getElementById('AF_Smartroomform').style.display = 'none'
@@ -123,15 +129,6 @@ function getsmartroomformButtonPress() {
         document.getElementById('AF_Smartroomform').style.display = ''
         document.getElementById('idmymenu').style.display = 'none'
         document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-    }
-
-    function clearradio() { // функция очистки радиобатонов
-        let cheksradio = document.getElementsByClassName('smartroom-radio');
-        for (let j = 0; j < cheksradio.length; j++) {
-            cheksradio[j].checked = false
-        }
-        document.getElementById('cattwosmatrtoom').selectedIndex = 0;
-		document.getElementById('catthreesmatrtoom').selectedIndex = 0;
     }
 
     let useridis = SearchinAFnewUI('id');
@@ -165,53 +162,59 @@ function getsmartroomformButtonPress() {
         let flagemptysmart = 0;
 
         if (!document.getElementsByName('typetoform')[0].checked && !document.getElementsByName('typetoform')[1].checked && !document.getElementsByName('typetoform')[2].checked && !document.getElementsByName('typetoform')[3].checked) {
-            document.getElementById('smartroomuser').style.backgroundColor = 'Coral';
-            document.getElementById('smartroomuser').style.color = 'black';
+            document.getElementById('smartroomuser').classList.add('inputalertbackground');
             flagemptysmart = 1;
         } else {
-            document.getElementById('smartroomuser').style.backgroundColor = '';
-            document.getElementById('smartroomuser').style.color = '#c4ffd3';
+            document.getElementById('smartroomuser').classList.remove('inputalertbackground');
         }
         
         if (!document.getElementsByName('formattoform')[0].checked && !document.getElementsByName('formattoform')[1].checked && !document.getElementsByName('formattoform')[2].checked && !document.getElementsByName('formattoform')[3].checked) {
-            document.getElementById('smartroomformat').style.backgroundColor = 'Coral';
-            document.getElementById('smartroomformat').style.color = 'black';
+            document.getElementById('smartroomformat').classList.add('inputalertbackground');
             flagemptysmart = 1;
         } else {
-            document.getElementById('smartroomformat').style.backgroundColor = '';
-            document.getElementById('smartroomformat').style.color = '#c4ffd3';
+            document.getElementById('smartroomformat').classList.remove('inputalertbackground');
         }
 
         if (document.getElementById('clientid').value.length < 3) {
-            document.getElementById('clientid').style.backgroundColor = 'Coral';
+            document.getElementById('clientid').classList.add('inputalertbackground');
             flagemptysmart = 1;
         } else {
-            document.getElementById('clientid').style.backgroundColor = '';
+            document.getElementById('clientid').classList.remove('inputalertbackground');
         }
 
         if (!document.getElementsByName('whatobratform')[0].checked && !document.getElementsByName('whatobratform')[1].checked) {
-            document.getElementById('smartroomquestion').style.backgroundColor = 'Coral';
-            document.getElementById('smartroomquestion').style.color = 'black';
+            document.getElementById('smartroomquestion').classList.add('inputalertbackground');
             flagemptysmart = 1;
         } else {
-            document.getElementById('smartroomquestion').style.backgroundColor = '';
-            document.getElementById('smartroomquestion').style.color = '#c4ffd3';
+            document.getElementById('smartroomquestion').classList.remove('inputalertbackground');
         }
 
         if (!document.getElementsByName('smartroomecos')[0].checked && !document.getElementsByName('smartroomecos')[1].checked && !document.getElementsByName('smartroomecos')[2].checked) {
-            document.getElementById('smartroomecosysrem').style.backgroundColor = 'Coral';
-            document.getElementById('smartroomecosysrem').style.color = 'black';
+            document.getElementById('smartroomecosysrem').classList.add('inputalertbackground');
             flagemptysmart = 1;
         } else {
-            document.getElementById('smartroomecosysrem').style.backgroundColor = '';
-            document.getElementById('smartroomecosysrem').style.color = '#c4ffd3';
+            document.getElementById('smartroomecosysrem').classList.remove('inputalertbackground');
         }
 
         if (document.getElementById('fullcomentsmartroom').value.length < 3) {
-            document.getElementById('fullcomentsmartroom').style.backgroundColor = 'Coral';
+            document.getElementById('fullcomentsmartroom').classList.add('inputalertbackground');
             flagemptysmart = 1;
         } else {
-            document.getElementById('fullcomentsmartroom').style.backgroundColor = '';
+            document.getElementById('fullcomentsmartroom').classList.remove('inputalertbackground');
+        }
+
+        if (!document.getElementById('cattwosmatrtoom').hasAttribute('data-valid')) {
+            document.getElementById('cattwosmatrtoom').classList.add('inputalertbackground');
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('cattwosmatrtoom').classList.remove('inputalertbackground');
+        }
+
+        if (!document.getElementById('catthreesmatrtoom').hasAttribute('data-valid')) {
+            document.getElementById('catthreesmatrtoom').classList.add('inputalertbackground');
+            flagemptysmart = 1;
+        } else {
+            document.getElementById('catthreesmatrtoom').classList.remove('inputalertbackground');
         }
 
         if (flagemptysmart == 0) {
@@ -259,9 +262,7 @@ function getsmartroomformButtonPress() {
             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions}, function(response) {
                 if (response && response.success) {
                     document.getElementById('AF_Smartroomform').style.display = 'none';
-                    document.getElementById('clientid').value = '';
-                    document.getElementById('fullcomentsmartroom').value = '';
-                    clearradio();
+                    document.getElementById('clearsmartroomform').click();
                     sendComment('Отправка в документ "Пожелания Смартрум" прошла успешно');
                 } else {
                     // В случае ошибки
@@ -272,16 +273,38 @@ function getsmartroomformButtonPress() {
     }
 
     document.getElementById('clearsmartroomform').onclick = function () {
-        document.getElementById('clientid').value = ''
-        document.getElementById('fullcomentsmartroom').value = ''
-        document.getElementById('smartroomuser').style.background = '';
-        document.getElementById('clientid').style.background = '';
-        document.getElementById('smartroomquestion').style.background = '';
-        document.getElementById('fullcomentsmartroom').style.background = '';
-        document.getElementById('smartroomformat').style.background = '';
-        document.getElementById('smartroomecosysrem').style.background = '';
-        clearradio()
-    }
+        const elementsToClear = [
+            'clientid',
+            'fullcomentsmartroom',
+            'smartroomuser',
+            'smartroomquestion',
+            'smartroomformat',
+            'smartroomecosysrem',
+            'cattwosmatrtoom',
+            'catthreesmatrtoom'
+        ];
+    
+        // Очищаем значения и удаляем классы для указанных элементов
+        elementsToClear.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                    element.value = ''; // Очищаем значения
+                }
+                element.classList.remove('inputalertbackground'); // Удаляем класс
+                if (element.hasAttribute('data-valid')) {
+                    element.removeAttribute('data-valid'); // Удаляем атрибут data-valid
+                }
+            }
+        });
+    
+        // Функция очистки радиобатонов
+        const cheksradio = document.getElementsByClassName('smartroom-radio');
+        for (let j = 0; j < cheksradio.length; j++) {
+            cheksradio[j].checked = false; // Снимаем выбор с радиокнопок
+        }
+    };
+    
 
     document.getElementById('smartroomforminstr').onclick = function () {
         window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-smartroom%F0%9F%A6%90Smartroom')
@@ -289,9 +312,6 @@ function getsmartroomformButtonPress() {
 
     document.getElementById('hideMeSmartRoomForm').onclick = function () {
         document.getElementById('AF_Smartroomform').style.display = 'none'
-        document.getElementById('clientid').value = ''
-        document.getElementById('fullcomentsmartroom').value = ''
-        clearradio()
     }
 
     document.getElementById('refreshhashsmartform').onclick = function () {

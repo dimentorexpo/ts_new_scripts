@@ -1280,3 +1280,11 @@
 			transform: translateY(100vh);
 		}
 	}
+
+	.listinput[data-valid="true"] {
+		border-color: green;
+	}
+	
+	.listinput:not([data-valid]) {
+		border-color: red;
+	}

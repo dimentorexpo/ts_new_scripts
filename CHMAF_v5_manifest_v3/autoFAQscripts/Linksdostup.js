@@ -50,7 +50,7 @@ document.getElementById('GetWidgetLessonStatus').onclick = function () { // Гр
 }
 
 document.getElementById('kpiteachersdashboard').addEventListener('click', function () {
-    window.open("https://datalens.yandex.ru/lupggqkv0uewa-kpi-p-dlya-tp?tab=GrW&state=684e0be1371")    // копируем открываем дашборд КПИ тичерсов
+    window.open("https://datalens.yandex.ru/lupggqkv0uewa-kpi-p-dlya-tp?tab=GrW")    // копируем открываем дашборд КПИ тичерсов
 })
 
 document.getElementById('lkmpdashboard').addEventListener('click', function () {

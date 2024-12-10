@@ -1426,3 +1426,22 @@ function formatServiceType(serviceTypeKey) {
         lessontype: lessontype
     };
 }
+
+function addValidationlist(e) {
+    const inputElement = e.target; // Элемент, вызвавший событие
+    const listId = inputElement.getAttribute('list'); // Получаем id связанного datalist
+    const dataList = document.getElementById(listId); // Находим связанный datalist
+    
+    if (dataList) {
+        const options = Array.from(dataList.options).map(opt => opt.value); // Собираем значения из datalist
+        const value = inputElement.value; // Получаем текущее значение инпута
+        
+        if (options.includes(value)) { // Проверяем, есть ли значение в списке
+            inputElement.setCustomValidity(''); // Сбрасываем сообщение об ошибке
+            inputElement.setAttribute('data-valid', 'true'); // Устанавливаем атрибут валидности
+        } else {
+            inputElement.setCustomValidity('Пожалуйста, выберите одно из доступных значений.'); // Устанавливаем сообщение об ошибке
+            inputElement.removeAttribute('data-valid'); // Удаляем атрибут валидности
+        }
+    }
+}
