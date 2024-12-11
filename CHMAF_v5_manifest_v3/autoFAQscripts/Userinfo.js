@@ -42,11 +42,11 @@ var win_serviceinfo =  // описание элементов окна инфо�
                                 <div id="basicInfo" style="max-height:400px; overflow:auto; color:bisque; text-align:center">
 									<div style="text-align: center;" id="usrType">
 									</div>
-									 <div style="text-align: center;">
+									<div style="text-align: center;align-items: center;display: flex;flex-direction: row;flex-wrap: nowrap;justify-content: flex-end;/* align-content: stretch; */">
 										<span id="usrAge"></span>
 										<span id="getloginer" title="При клике делает ссылку-логгинер и копирует в буфер обмена для авторизации" class="cursor-userinfobtns"> 🔑 </span>
                                         <span> Имя: </span>
-										<span id="usrName"></span>
+										<span id="usrName" style="max-width: 160px;margin-right: 30px;"></span>
 									</div>
 									<div style="text-align: center;">
 										<span class="cursor-userinfobtns" title="При клике копирует в буфер обмена почту пользователя" id="getusremail">Email: </span>

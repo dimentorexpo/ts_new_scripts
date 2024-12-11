@@ -1284,7 +1284,23 @@
 	.listinput[data-valid="true"] {
 		border-color: green;
 	}
-	
+
 	.listinput:not([data-valid]) {
 		border-color: red;
+	}
+
+	@keyframes alertblink {
+		0% {
+			background-color: grey;
+		}
+		50% {
+			background-color: red;
+		}
+		100% {
+			background-color: grey;
+		}
+	}
+	
+	.allertcomment.blinking {
+		animation: alertblink 1s infinite;
 	}

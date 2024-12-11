@@ -33,7 +33,7 @@ var win_smartroomform =  // описание элементов окна Мул�
 							    <input class = "smartroom-radio" type="radio" id="formatPU" name="formattoform" value="ПУ">
 								<label class = "smartroom-label" for="formatPU">ПУ</label>
 							</div>
-							<input class="${exttheme}" id="clientid" placeholder="ID пользователя" autocomplete="off" type="text" style="width: calc(100% - 5px);">
+							<input class="${exttheme}" id="clientid" placeholder="ID пользователя" autocomplete="off" type="text" style="margin-left: 5px; width: calc(100% - 10px); padding-top: 5px; font-size: 16px; vertical-align: middle;">
 							<br>
 							<div style="margin-top:5px; color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);" id = "smartroomquestion">
                                 <label style="color:#c4ffd3; padding:5px; font-weight: 600;">С чем обратились?</label> <br>
@@ -52,7 +52,6 @@ var win_smartroomform =  // описание элементов окна Мул�
                                 <label class = "smartroom-label" for="ecosystemandr">МП Android</label>
 							</div>
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);">
-                                <label style="color:#c4ffd3; padding:5px; font-weight: 600;">Тема</label> <br>
 								<input type="text" id="cattwosmatrtoom" list="cattwosmatrtoom-options-list" placeholder="Выбрать тему" class="${exttheme} listinput" style="margin-left: 5px; width: calc(100% - 10px); padding-top: 5px; font-size: 16px; vertical-align: middle;">
                                 <datalist id="cattwosmatrtoom-options-list">
 									<option value="Домашние задания">
@@ -65,7 +64,6 @@ var win_smartroomform =  // описание элементов окна Мул�
 							</div>
 
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);">
-                                <label style="color:#c4ffd3; padding:5px; font-weight: 600;">Подтема</label> <br>
 								<input type="text" id="catthreesmatrtoom" list="catthreesmatrtoom-options-list" placeholder="Выбрать подтему" class="${exttheme} listinput" style="margin-left: 5px; width: calc(100% - 10px); padding-top: 5px; font-size: 16px; vertical-align: middle;">
                                 <datalist id="catthreesmatrtoom-options-list">
 									<option value="Интерфейс раздела домашки">
@@ -112,6 +110,7 @@ var win_smartroomform =  // описание элементов окна Мул�
 
 const wintSmartroom = createWindow('AF_Smartroomform', 'winTopSmartroom', 'winLeftSmartroom', win_smartroomform);
 hideWindowOnDoubleClick('AF_Smartroomform');
+hideWindowOnClick('AF_Smartroomform', 'hideMeSmartRoomForm');
 
 document.getElementById('cattwosmatrtoom').addEventListener('drop', addValidationlist);
 document.getElementById('cattwosmatrtoom').addEventListener('paste', addValidationlist);
@@ -308,10 +307,6 @@ function getsmartroomformButtonPress() {
 
     document.getElementById('smartroomforminstr').onclick = function () {
         window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-smartroom%F0%9F%A6%90Smartroom')
-    }
-
-    document.getElementById('hideMeSmartRoomForm').onclick = function () {
-        document.getElementById('AF_Smartroomform').style.display = 'none'
     }
 
     document.getElementById('refreshhashsmartform').onclick = function () {

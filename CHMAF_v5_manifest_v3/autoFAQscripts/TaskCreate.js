@@ -81,14 +81,36 @@ var win_taskform = //описание формы создания задач в 
 			</div>
 </div>`;
 
+var win_speccommwindow = 
+    `<div style="border: 2px double black; background-color: #464451; cursor: -webkit-grab; width: 350px;">
+        <div style="display: flex;">
+            <button title="Скрытие меню" id="hideMeSpecComm" class="mainButton buttonHide" style="margin: 5px; float: left;">hide</button>
+        </div>
+        <div style="display: flex;">
+            <p id="speccommtext" style="color: bisque; font-size: 16px; margin: 5px; max-height: 300px; overflow-y: auto; border: 1px solid #000; padding: 5px;"></p>
+        </div>    
+    </div>`;
+
+
 var NoteFlag = 0; // флаг отправлять заметку или нет
 var NoteText = ''; // какой текст отправим в заметку
 
 const wintCreateTask = createWindow('AF_Createtask', 'winTopTaskCreate', 'winLeftTaskCreate', win_taskform);
+const winSpecCommWindow = createWindow('AF_SpecCommWindow', 'winTopSpecCommWindow', 'winLeftSpecCommWindow', win_speccommwindow);
+
+document.getElementById('AF_SpecCommWindow').ondblclick = function (a) { 
+    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') { document.getElementById('hideMeSpecComm').click(); }
+}
 
 document.getElementById('AF_Createtask').ondblclick = function (a) { // скрытие окна создания задачи в CRM2 по двойному клику
     if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') { document.getElementById('hideMeCreateForm').click(); }
 }
+
+document.getElementById('hideMeSpecComm').onclick = function () {
+    document.getElementById('AF_SpecCommWindow').style.display = 'none';
+    document.getElementById('speccommtext').innerText = '';
+}
+
 
 document.getElementById('taskserviceid').addEventListener('input', () => onlyNumber(document.getElementById('taskserviceid')));
 document.getElementById('taskuserid').addEventListener('input', () => onlyNumber(document.getElementById('taskuserid')));
@@ -142,6 +164,7 @@ function gettaskButButtonPress() { // функция открытия окна �
         })
 
         document.getElementById('getuserservices').onclick = function () {
+            let speccommntarray = [];
             if (document.getElementById('serviceinf').innerHTML != '')
                 document.getElementById('serviceinf').innerHTML = '';
 
@@ -172,17 +195,36 @@ function gettaskButButtonPress() { // функция открытия окна �
                 } else {
                     const otvetEdServ = JSON.parse(response.fetchansver);
 
-                    for (let i = 0; i < otvetEdServ.data.length; +i++) {
+                    for (let i = 0; i < otvetEdServ.data.length; i++) {
                         for (let j = 0; j < srvcont.data.length; j++) {
                             if (srvcont.data[j].serviceTypeKey == otvetEdServ.data[i].serviceTypeKey) {
-                                otvetEdServ.data[i].serviceTypeKey = srvcont.data[j].shortTitle
+                                otvetEdServ.data[i].serviceTypeKey = srvcont.data[j].shortTitle;
                                 if (otvetEdServ.data[i].incorrectnessReason == null) {
+                                    let specommentElement = '<span name="specomment" title="Посмотреть Спец.комментарий">💭</span>';
+                                    let balance = otvetEdServ.data[i].balance != null ? otvetEdServ.data[i].balance : '0';
+                                    let studentInfo = otvetEdServ.data[i].student.general.id + ' ' +
+                                        (otvetEdServ.data[i].student.general.name || '') + ' ' +
+                                        (otvetEdServ.data[i].student.general.surname || '');
+                                    let teacherInfo = otvetEdServ.data[i].teacher != null ?
+                                        otvetEdServ.data[i].teacher.general.id + ' ' +
+                                        otvetEdServ.data[i].teacher.general.name + ' ' +
+                                        otvetEdServ.data[i].teacher.general.surname : '—';
+                                    let serviceIdInfo = '🆔 услуги: ' + otvetEdServ.data[i].id + ' — ' + otvetEdServ.data[i].serviceTypeKey +
+                                        '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>';
+
+                                    let generateBlock = (background, textColor, stageText, teacherInfoText) =>
+                                        `<div class="srvhhelpnomove" name="outservfield" title="${otvetEdServ.data[i].id}" style="background: ${background}; color:${textColor}; margin-left: 5px; border: 1px solid bisque;">` +
+                                        `<div style="text-align:center; background:grey;">${stageText} ${specommentElement} | 💰 Баланс: ${balance}</div>` +
+                                        `${serviceIdInfo}<br>` +
+                                        `👨‍🎓 Student: ${studentInfo}<br>` +
+                                        `👽 Teacher: ${teacherInfoText}<br></div>`;
+
                                     if (otvetEdServ.data[i].stage == 'regular_lessons') {
-                                        document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${otvetEdServ.data[i].id}" style="background: #2b602b; color:bisque;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Регулярные занятия |' + ' 💰 Баланс: ' + (otvetEdServ.data[i].balance != null ? otvetEdServ.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + otvetEdServ.data[i].id + ' — ' + otvetEdServ.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + otvetEdServ.data[i].student.general.id + ' ' + (otvetEdServ.data[i].student.general.name != null ? otvetEdServ.data[i].student.general.name : '') + ' ' + (otvetEdServ.data[i].student.general.surname != null ? otvetEdServ.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: ' + (otvetEdServ.data[i].teacher != null ? otvetEdServ.data[i].teacher.general.id + ' ' + otvetEdServ.data[i].teacher.general.name + ' ' + otvetEdServ.data[i].teacher.general.surname : ' —') + '<br>' + '</div>'
+                                        document.getElementById('serviceinf').innerHTML += generateBlock('#2b602b', 'bisque', 'Регулярные занятия', teacherInfo);
                                     } else if (otvetEdServ.data[i].stage == 'lost') {
-                                        document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${otvetEdServ.data[i].id}" style="background: #5a0f77; color:bisque;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Потерянная услуга |' + ' 💰 Баланс: ' + (otvetEdServ.data[i].balance != null ? otvetEdServ.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + otvetEdServ.data[i].id + ' — ' + otvetEdServ.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + otvetEdServ.data[i].student.general.id + ' ' + (otvetEdServ.data[i].student.general.name != null ? otvetEdServ.data[i].student.general.name : '') + ' ' + (otvetEdServ.data[i].student.general.surname != null ? otvetEdServ.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: —' + '</div>'
+                                        document.getElementById('serviceinf').innerHTML += generateBlock('#5a0f77', 'bisque', 'Потерянная услуга', '—');
                                     } else if (otvetEdServ.data[i].stage == "after_trial" || otvetEdServ.data[i].stage == "before_call") {
-                                        document.getElementById('serviceinf').innerHTML += `<div class="srvhhelpnomove" name="outservfield" title="${otvetEdServ.data[i].id}" style="background: #d59f34; color:#ffffff;  margin-left: 5px; border: 1px solid bisque;">` + '<div style="text-align:center; background:grey;">Этап ВУ |' + ' 💰 Баланс: ' + (otvetEdServ.data[i].balance != null ? otvetEdServ.data[i].balance : '0') + '</div>' + '🆔 услуги: ' + otvetEdServ.data[i].id + ' — ' + otvetEdServ.data[i].serviceTypeKey + '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>' + '<br>' + '👨‍🎓 Student: ' + otvetEdServ.data[i].student.general.id + ' ' + (otvetEdServ.data[i].student.general.name != null ? otvetEdServ.data[i].student.general.name : '') + ' ' + (otvetEdServ.data[i].student.general.surname != null ? otvetEdServ.data[i].student.general.surname : '') + '<br>' + '👽 Teacher: —' + '</div>'
+                                        document.getElementById('serviceinf').innerHTML += generateBlock('#d59f34', '#ffffff', 'Этап ВУ', '—');
                                     }
                                 }
                             }
@@ -194,8 +236,41 @@ function gettaskButButtonPress() { // функция открытия окна �
                             document.getElementById('taskserviceid').value = document.getElementsByName('outservfield')[z].title
                         }
                     }
-                }
 
+                    for (let z = 0; z < document.getElementsByName('specomment').length; z++) {
+                        let serviceid = document.getElementsByName('outservfield')[z].title;
+                        let specommentelem = document.getElementsByName('specomment')[z];
+                        const fetchURLspec = `https://backend.skyeng.ru/api/students/${idshka}/education-services/${serviceid}/general/`;
+                        const requestOptionsspec = {
+                            method: 'GET'
+                        };
+
+                        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLspec, requestOptions: requestOptionsspec }, function (response) {
+                            if (!response.success) {
+                                console.log('Не удалось выполнить запрос: ' + response.error);
+                                specommentelem.innerText = '❌';
+                                return;
+                            } else {
+                                const otvetspec = JSON.parse(response.fetchansver);
+                                if (!otvetspec.data.operatorNote) {
+                                    specommentelem.innerText = '❌';
+                                } else {
+                                    speccommntarray[z] = otvetspec.data.operatorNote;
+                                    if (speccommntarray[z].toLowerCase().includes("звон")) {
+                                        speccommntarray[z] = highlightSearchText(speccommntarray[z], "звон");
+                                        speccommntarray[z] = speccommntarray[z].replaceAll("\n", "<br>")
+                                        specommentelem.innerText = '⚠️';
+                                        specommentelem.classList.add('allertcomment', 'blinking');
+                                    }
+                                    specommentelem.addEventListener('click', function () {
+                                        document.getElementById('speccommtext').innerHTML = speccommntarray[z];
+                                        document.getElementById('AF_SpecCommWindow').style.display = '';
+                                    });
+                                }
+                            }
+                        })
+                    }
+                }
             })
 
             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLComplectations, requestOptions: requestOptionsComplectations }, function (response) { // получение информации по комплектациям
@@ -264,7 +339,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                             let fetchURLComplectationsTT = "";
                             let eduservise = element.getAttribute('data-id');
                             let lessontype = element.getAttribute('lessontype');
-                            if (lessontype == 'f2f'){
+                            if (lessontype == 'f2f') {
                                 fetchURLComplectationsTT = `https://backend.skyeng.ru/api/students/education-services/${eduservise}/timetable/future-lessons/`;
                             } else if (lessontype == 'group') {
                                 fetchURLComplectationsTT = `https://backend.skyeng.ru/api/students/education-services/${eduservise}/timetable/group/future-lessons/`;
@@ -272,7 +347,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                                 console.log('не верный тип урока!')
                                 return;
                             }
-                            
+
                             const requestOptionsComplectationsTT = {
                                 method: 'GET'
                             };
@@ -404,17 +479,21 @@ function gettaskButButtonPress() { // функция открытия окна �
             if (document.getElementById('AF_Service').style.display == 'none') {
                 document.getElementById('AF_Complectations').style.display = 'none';
             }
-
-            fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
-                "headers": {
-                    "accept": "application/json, text/plain, */*",
-                    "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr"
-                },
-                "body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
-                "method": "POST",
-                "mode": "cors",
-                "credentials": "include"
-            });
+            if (document.getElementById('AF_SpecCommWindow').style.display != 'none'){
+                document.getElementById('hideMeSpecComm').click();
+            }
+            if (activeConvId) {
+                fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
+                    "headers": {
+                        "accept": "application/json, text/plain, */*",
+                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr"
+                    },
+                    "body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
+                    "method": "POST",
+                    "mode": "cors",
+                    "credentials": "include"
+                });
+            }
         }
 
         function changePriorityColor() {

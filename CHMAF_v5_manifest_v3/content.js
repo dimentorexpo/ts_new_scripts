@@ -177,7 +177,7 @@ var win_AFhelper =  // описание элементов главного ок
             <button class="mainButton" title="Отправить текст от имени бота" id="sndbot" style="width: 30px;">🤖</button>
             <button class="mainButton" title="Отправить текст" id="snd" style="width:40px; background: ForestGreen;">Send</button>
             <button class="mainButton" title="Сохранить текст в личные шаблоны" id="addtocusttmplt" style="width: 30px;">⬆️</button>
-            <button class="mainButton" title="Отправить текст от имени пользователя через Vimbot" id="openVimbotWindows">▶️</button>
+            <button class="mainButton onlyfortp" title="Отправить текст от имени пользователя через Vimbot" id="openVimbotWindows">▶️</button>
 			</div>
 		<div style="border: 2px double black; display: none; background-color: #464451; cursor: -webkit-grab;" id="addTmp">
 			<div style="margin: 5px; width: 350px">
@@ -1444,4 +1444,10 @@ function addValidationlist(e) {
             inputElement.removeAttribute('data-valid'); // Удаляем атрибут валидности
         }
     }
+}
+
+function highlightSearchText(item, searchText) {
+    const replacePattern = new RegExp(searchText, 'i');
+    const replaceValue = `<span style="color:MediumSpringGreen; font-weight:700; text-shadow:1px 2px 5px rgb(0 0 0 / 55%);">${searchText.toUpperCase()}</span>`;
+    return replaceItem(item).replace(replacePattern, replaceValue);
 }

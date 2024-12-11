@@ -142,12 +142,6 @@ function isSearchTextMatched(item, searchText) {
     return processedItem && processedItem.toLowerCase().includes(searchText.toLowerCase());
 }
 
-function highlightSearchText(item, searchText) {
-    const replacePattern = new RegExp(searchText, 'i');
-    const replaceValue = `<span style="color:MediumSpringGreen; font-weight:700; text-shadow:1px 2px 5px rgb(0 0 0 / 55%);">${searchText.toUpperCase()}</span>`;
-    return replaceItem(item).replace(replacePattern, replaceValue);
-}
-
 function addPageSwitcher(spanCount) { // добавляем страницы для переключения
     if (spanCount <= 1) return;
 
