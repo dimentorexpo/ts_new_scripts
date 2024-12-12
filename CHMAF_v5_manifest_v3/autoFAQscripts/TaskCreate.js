@@ -176,7 +176,6 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('getuserservices').onclick = function () {
             let speccommntarray = [];
-            let speccommntcomplarray = [];
             let speccommntcompl = [];
             let speccommntcomplcount = '';
             if (document.getElementById('serviceinf').innerHTML != '')
