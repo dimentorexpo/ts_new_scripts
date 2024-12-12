@@ -213,8 +213,12 @@ document.getElementById('hideMeTT').onclick = function () { // скрытие о
 }
 
 document.getElementById('hideComplecations').onclick = function () { // скрытие окна предстоящих и прошедших занятиях
-    if (document.getElementById('AF_Complectations').style.display == '')
-        document.getElementById('AF_Complectations').style.display = 'none'
+    if (document.getElementById('AF_Complectations').style.display == '') {
+        document.getElementById('AF_Complectations').style.display = 'none';
+        if (document.getElementById('AF_SpecCommWindow').style.display == '') {
+            document.getElementById('hideMeSpecComm').click();
+        }
+    }        
 }
 
 let responseinfo;

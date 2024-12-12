@@ -111,6 +111,10 @@ document.getElementById('hideMeSpecComm').onclick = function () {
     document.getElementById('speccommtext').innerText = '';
 }
 
+function handleSpecCommentClick(text) {
+    document.getElementById('speccommtext').innerHTML = text;
+    document.getElementById('AF_SpecCommWindow').style.display = '';
+}
 
 document.getElementById('taskserviceid').addEventListener('input', () => onlyNumber(document.getElementById('taskserviceid')));
 document.getElementById('taskuserid').addEventListener('input', () => onlyNumber(document.getElementById('taskuserid')));
@@ -165,6 +169,9 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('getuserservices').onclick = function () {
             let speccommntarray = [];
+            let speccommntcomplarray = [];
+            let speccommntcompl = [];
+            let speccommntcomplcount = '';
             if (document.getElementById('serviceinf').innerHTML != '')
                 document.getElementById('serviceinf').innerHTML = '';
 
@@ -262,10 +269,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                                         specommentelem.innerText = '⚠️';
                                         specommentelem.classList.add('allertcomment', 'blinking');
                                     }
-                                    specommentelem.addEventListener('click', function () {
-                                        document.getElementById('speccommtext').innerHTML = speccommntarray[z];
-                                        document.getElementById('AF_SpecCommWindow').style.display = '';
-                                    });
+                                    specommentelem.addEventListener('click', function () { handleSpecCommentClick(speccommntarray[z]) });
                                 }
                             }
                         })
@@ -294,10 +298,16 @@ function gettaskButButtonPress() { // функция открытия окна �
                         });
 
                         chechkComplectations.data.forEach((service) => {
+                            if (!speccommntcomplcount) {
+                                speccommntcomplcount = 0;
+                            } else {
+                                speccommntcomplcount++;
+                            }
+                            let specommenttitleElementtitle = '<span name="specommenttitle" title="Посмотреть Спец.комментарий">💭</span>';
                             if (service.incorrectnessReason == null) {
                                 if (service.operatorNote) {
-                                    operatorNote = service.operatorNote.replace(/\/\//g, ' ').replace(/\//g, '&#47;');
-                                    console.log(operatorNote);
+                                    i = speccommntcomplcount;
+                                    speccommntcompl[i] = service.operatorNote;                                    
                                 }
 
                                 let gatheredInfoComplSrvs = '<table style="width: 98%; margin: 10px 0; border-collapse: collapse;">';
@@ -306,6 +316,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                                         <th style="border: 1px solid black; padding: 5px;">ID Услуги</th>
                                         <th style="border: 1px solid black; padding: 5px;">STK</th>
                                         <th style="border: 1px solid black; padding: 5px;">Урок</th>
+                                        <th style="border: 1px solid black; padding: 5px;">СК</th>
                                         <th style="border: 1px solid black; padding: 5px;"></th>
                                     </tr>`;
 
@@ -319,14 +330,15 @@ function gettaskButButtonPress() { // функция открытия окна �
                                                 </td>
                                                 <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${formattedText}</td>
                                                 <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;" data-id="${el.id}" lessontype="${lessontype}" class="complect-nextlesson"> - </td>
+                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;" data-id="${el.id}" name="specommentcompl" title="Посмотреть Спец.комментарий">💭</td>
                                                 <td style="border: 1px solid black; padding: 5px; background: #4f4c4c; cursor:pointer;" data-id="${el.id}" class="insert-complect-id">➡</td>
                                             </tr>`;
                                 });
                                 gatheredInfoComplSrvs += '</table>';
-                                complectationServInfo.innerHTML += `<div style="background: #4a7d55; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; font-weight: 800; margin-bottom:5px;" title="${operatorNote}">${service.productKit.title} | ${service.stage == "regular_lessons" ? "Регулярные занятия" : service.stage == "lost" ? "Потерянная" : service.stage}</div>` + gatheredInfoComplSrvs;
+                                complectationServInfo.innerHTML += `<div style="background: #4a7d55; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; font-weight: 800; margin-bottom:5px;">${service.productKit.title} | ${service.stage == "regular_lessons" ? "Регулярные занятия" : service.stage == "lost" ? "Потерянная" : service.stage} ${specommenttitleElementtitle}</div>` + gatheredInfoComplSrvs;
                             }
-
                         });
+
                         document.querySelectorAll('.insert-complect-id').forEach(element => {
                             element.addEventListener('click', function () {
                                 const id = this.getAttribute('data-id');
@@ -335,6 +347,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                                 }
                             });
                         });
+
                         document.querySelectorAll('.complect-nextlesson').forEach(element => {
                             let fetchURLComplectationsTT = "";
                             let eduservise = element.getAttribute('data-id');
@@ -413,6 +426,52 @@ function gettaskButButtonPress() { // функция открытия окна �
                                 element.innerText = nextlessondate;
                             });
                         });
+
+                        for (let z = 0; z < document.getElementsByName('specommenttitle').length; z++) {
+                            let SCElement = document.getElementsByName('specommenttitle')
+                            if (speccommntcompl[z]) {
+                               if (speccommntcompl[z].toLowerCase().includes("звон")) {
+                                    speccommntcompl[z] = highlightSearchText(speccommntcompl[z], "звон");
+                                    speccommntcompl[z] = speccommntcompl[z].eplace(/\/\//g, ' ').replace(/\//g, '&#47;');
+                                    SCElement[z].innerText = '⚠️';
+                                    SCElement[z].classList.add('allertcomment', 'blinking');
+                                }
+                                SCElement[z].addEventListener('click', function () { handleSpecCommentClick(speccommntcompl[z]) });                                    
+                            } else {
+                                SCElement[z].innerText = '❌';
+                            }
+                        }
+
+                        for (let z = 0; z < document.getElementsByName('specommentcompl').length; z++) {
+                            let specommentelem = document.getElementsByName('specommentcompl')[z];
+                            let serviceid = document.getElementsByName('specommentcompl')[z].getAttribute('data-id')
+                            const fetchURLspec = `https://backend.skyeng.ru/api/students/${idshka}/education-services/${serviceid}/general/`;
+                            const requestOptionsspec = {
+                                method: 'GET'
+                            };
+    
+                            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLspec, requestOptions: requestOptionsspec }, function (response) {
+                                if (!response.success) {
+                                    console.log('Не удалось выполнить запрос: ' + response.error);
+                                    specommentelem.innerText = '❌';
+                                    return;
+                                } else {
+                                    const otvetspec = JSON.parse(response.fetchansver);
+                                    if (!otvetspec.data.operatorNote) {
+                                        specommentelem.innerText = '❌';
+                                    } else {
+                                        speccommntarray[z] = otvetspec.data.operatorNote;
+                                        if (speccommntarray[z].toLowerCase().includes("звон")) {
+                                            speccommntarray[z] = highlightSearchText(speccommntarray[z], "звон");
+                                            speccommntarray[z] = speccommntarray[z].replaceAll("\n", "<br>")
+                                            specommentelem.innerText = '⚠️';
+                                            specommentelem.classList.add('allertcomment', 'blinking');
+                                        }
+                                        specommentelem.addEventListener('click', function () { handleSpecCommentClick(speccommntarray[z]) });
+                                    }
+                                }
+                            })
+                        }
 
                     } else {
                         linkToComplectationtable.innerHTML += '<div style="background: #4e7891; text-align:center; text-shadow: 1px 1px 2px black;">❌Нет комплектаций</div>';

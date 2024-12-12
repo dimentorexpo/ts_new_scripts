@@ -239,7 +239,7 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
     }
 
     windowElement.style = `top: ${storedTop}px; left: ${storedLeft}px; display: none;`;
-    if (id === 'AF_Timetable' || id === 'AF_Grabber' || id === 'AF_GrList' || id === 'AF_BankCheck') {
+    if (id === 'AF_Timetable' || id === 'AF_Grabber' || id === 'AF_GrList' || id === 'AF_BankCheck' || id === 'AF_SpecCommWindow') {
         windowElement.style.zIndex = '1100000'; // Установка z-index для специфических окон
     }
     windowElement.setAttribute('id', id);
