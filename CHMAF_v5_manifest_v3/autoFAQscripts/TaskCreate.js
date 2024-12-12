@@ -22,7 +22,7 @@ var win_taskform = //описание формы создания задач в 
                             <br>
                             <button class="mainButton" id="highsecondline" style="height:25px; width: 32%; margin-left:8px; margin-top:3px;">🗓 Календарь У/П</button>
                             <button class="mainButton" id="lowkm" style="height:25px; width: 31%;">😡 КМ</button>
-                            <button class="mainButton" id="lowcontrol" style="height:25px; width: 32%;">🛂 Контроль</button>
+                            <button class="mainButton" id="low2lvimbug" style="height:25px; width: 32%;">🐞2Л vim-bug</button>
                         </div>
 
                         <div style="margin: 5px; margin-top: 0px; width: 405px" id="create_form_menu">
@@ -119,6 +119,13 @@ function handleSpecCommentClick(text) {
 document.getElementById('taskserviceid').addEventListener('input', () => onlyNumber(document.getElementById('taskserviceid')));
 document.getElementById('taskuserid').addEventListener('input', () => onlyNumber(document.getElementById('taskuserid')));
 document.getElementById('useriddata').addEventListener('input', () => onlyNumber(document.getElementById('useriddata')));
+
+function replaceAllwrongsimbols(text) {
+    text = text.replace(/\n/g, '<br>')
+               .replace(/\/\//g, ' ')
+               .replace(/\//g, '&#47;');
+    return text;
+}
 
 function doHideForm(flag = localStorage.getItem('hideTaskWindow')) {
     if (location.href.indexOf('skyeng.autofaq.ai/tickets/assigned') !== -1) {
@@ -263,9 +270,9 @@ function gettaskButButtonPress() { // функция открытия окна �
                                     specommentelem.innerText = '❌';
                                 } else {
                                     speccommntarray[z] = otvetspec.data.operatorNote;
+                                    speccommntarray[z] = replaceAllwrongsimbols(speccommntarray[z]);
                                     if (speccommntarray[z].toLowerCase().includes("звон")) {
                                         speccommntarray[z] = highlightSearchText(speccommntarray[z], "звон");
-                                        speccommntarray[z] = speccommntarray[z].replaceAll("\n", "<br>")
                                         specommentelem.innerText = '⚠️';
                                         specommentelem.classList.add('allertcomment', 'blinking');
                                     }
@@ -307,7 +314,8 @@ function gettaskButButtonPress() { // функция открытия окна �
                             if (service.incorrectnessReason == null) {
                                 if (service.operatorNote) {
                                     i = speccommntcomplcount;
-                                    speccommntcompl[i] = service.operatorNote;                                    
+                                    speccommntcompl[i] = service.operatorNote;
+                                    speccommntcompl[i] = replaceAllwrongsimbols(speccommntcompl[i]);
                                 }
 
                                 let gatheredInfoComplSrvs = '<table style="width: 98%; margin: 10px 0; border-collapse: collapse;">';
@@ -432,7 +440,6 @@ function gettaskButButtonPress() { // функция открытия окна �
                             if (speccommntcompl[z]) {
                                if (speccommntcompl[z].toLowerCase().includes("звон")) {
                                     speccommntcompl[z] = highlightSearchText(speccommntcompl[z], "звон");
-                                    speccommntcompl[z] = speccommntcompl[z].eplace(/\/\//g, ' ').replace(/\//g, '&#47;');
                                     SCElement[z].innerText = '⚠️';
                                     SCElement[z].classList.add('allertcomment', 'blinking');
                                 }
@@ -461,9 +468,11 @@ function gettaskButButtonPress() { // функция открытия окна �
                                         specommentelem.innerText = '❌';
                                     } else {
                                         speccommntarray[z] = otvetspec.data.operatorNote;
+                                        console.log(speccommntarray[z])
+                                        speccommntarray[z] = replaceAllwrongsimbols(speccommntarray[z]);
                                         if (speccommntarray[z].toLowerCase().includes("звон")) {
                                             speccommntarray[z] = highlightSearchText(speccommntarray[z], "звон");
-                                            speccommntarray[z] = speccommntarray[z].replaceAll("\n", "<br>")
+                                            console.log(speccommntarray[z])
                                             specommentelem.innerText = '⚠️';
                                             specommentelem.classList.add('allertcomment', 'blinking');
                                         }
@@ -681,13 +690,13 @@ function gettaskButButtonPress() { // функция открытия окна �
             document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
         }
 
-        document.getElementById('lowcontrol').onclick = function () {
+        document.getElementById('low2lvimbug').onclick = function () {
             document.getElementById('priority').children[1].selected = true;
-            document.getElementById('customerservice').children[8].selected = true;
+            document.getElementById('customerservice').children[6].selected = true;
             changePriorityColor();
             NoteNoticeClear()
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
-            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nКонтроль"
+            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value = "Краткое описание:\nШаги воспроизведения:\nОП:\nФП: \nссылки на скриншоты: \nНужна ли ОС : "
         }
 
         document.getElementById('createtask').onclick = function () {
