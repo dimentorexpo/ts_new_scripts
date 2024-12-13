@@ -9,7 +9,7 @@ var win_VimbotMenu = // описание кнопок меню
         <button class="mainButton" id="sendToVimbotFromCRM">💬 Отправить</button>
         <button class="mainButton" id="GetTexttmplt">⤵️</button> 
         <p id="chattype" style="color:bisque; text-align:center; margin-bottom: auto; display: none"></p>
-        <textarea class="${exttheme}" style="height:114px; width:97%; margin:5px" id="textToVimbotSend"></textarea>
+        <textarea class="${exttheme}" style="height:114px; width:97%; margin:5px; max-height: 165px; min-height: 40px;" id="textToVimbotSend"></textarea>
     </div>`;
 
 const wintVimbot = createWindow('AF_Vimbot', 'winTopVimbot', 'winLeftVimbot', win_VimbotMenu);

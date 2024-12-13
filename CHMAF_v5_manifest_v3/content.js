@@ -166,7 +166,7 @@ var win_AFhelper =  // описание элементов главного ок
 			<div style="margin: 5px;" id="6str">
 			</div>
 			<div style="margin: 5px;" id="7str">
-				<textarea class="${exttheme}" style="width: 341px; height: 56px; border-radius: 10px;" id="inp"></textarea>
+				<textarea class="${exttheme}" style="width: 341px; border-radius: 10px; min-height: 100px; max-height: 350px; resize: vertical;" id="inp"></textarea>
 			<div id="hyperlnk" class="hyperlnk">
 				<input id="bindlinktotext" class="${exttheme}" type="text" placeholder="Enter your link 🔗 here" style="margin-bottom:5px;width:270px;text-align:center;border-radius: 10px;" title="Вводите в это поле ссылку, после чего в общем поле выделяете слово или фразу и кнопкой Insert встраиваете ссылку в текст шаблона"></input>
 				<button class="mainButton" id="insertlinktotext" title="Добавляет ссылку из поля слева в выделеное слово или фразу в тексте шаблона">Insert ✅</button>
