@@ -806,6 +806,9 @@ function gettaskButButtonPress() { // функция открытия окна �
                 }
 
                 document.getElementById('AF_Createtask').style.display = 'none'
+                if (document.getElementById('AF_SpecCommWindow').style.display != 'none'){
+                    document.getElementById('hideMeSpecComm').click();
+                }
                 document.getElementById('clearcreateform').click();
                 document.getElementById('taskBut').classList.remove('activeScriptBtn')
 
