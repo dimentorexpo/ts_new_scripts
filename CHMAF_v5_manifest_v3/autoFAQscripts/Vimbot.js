@@ -3,7 +3,7 @@ var win_VimbotMenu = // описание кнопок меню
         <div>
         <button class="mainButton buttonHide" id="hideVimbot" title="Скрывает расширение и др открытых окон" style="margin:5px;">hide</button>
         <button class="mainButton smallbtn" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearVimbotMenu">🧹</button>
-        <label class="${exttheme}" style="background: transparent;">Vimbot - отправка текста в Support Chat</label>
+        <label style="background: transparent; color:bisque;">Vimbot - отправка текста в Support Chat</label>
         </div>
         <input class="${exttheme}" id="uIdToVimbot" style="margin:5px;text-align:center; border-radius: 20px;" placeholder='User ID'></input>
         <button class="mainButton" id="sendToVimbotFromCRM">💬 Отправить</button>
