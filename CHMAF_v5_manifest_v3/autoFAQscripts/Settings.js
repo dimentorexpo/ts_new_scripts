@@ -51,6 +51,9 @@ async function init_settings() {
     // Для отключения очистки окна LessonInfo
     setDefaultValue('clearlessoninfo', 0);
 
+    // Для отключения инвертирования цвета системных значков
+    setDefaultValue('changesymtemicons', 0);
+
     var win_Settings =  // описание элементов окна ссылок
         `<span style="width: 500px">
         <span style="cursor: -webkit-grab;">
@@ -106,9 +109,10 @@ async function init_settings() {
                             <br>
                         </div>
                         
-                        <div style="float: left; margin-left: 20px;">
+                        <div style="float: left; margin-left: 20px; max-width: 200px;">
                             <label style="color:bisque;">Выбор темы расширения</label>
-                            <button class="mainButton" style="width:30px;" id="chagethemeextention" title="Переключение на светлую ☀ или темную 🌛 тему"></button>
+                            <button class="mainButton" style="width:30px;" id="chagethemeextention" title="Переключение на светлую ☀ или темную 🌛 тему. Требуется перезагрузка страницы"></button>
+                            <label style="color:bisque; margin-left: 5px;" title="Включите при использовании DarkReader или других способах сменить тему AF на темную" disabled><input type="checkbox" id="changesymtemicons">Отключить инвертирование системных значков</label>
                         </div>
                     </div>
 
@@ -479,6 +483,32 @@ async function init_settings() {
 
             // Настройка чекбокса для отключения очистки окна LessonInfo
             setupCheckbox('clearlessoninfo', 'clearlessoninfo');
+
+            // Настройка чекбокса для отключения инвертирования цвета системных значков
+            setupCheckbox('changesymtemicons', 'changesymtemicons', (value) => {
+                const button = document.getElementById('chagethemeextention');
+                const checkbox = document.getElementById('changesymtemicons');
+            
+                // Функция для обновления состояния атрибута disabled
+                const updateCheckboxState = () => {
+                    if (button.innerHTML === '☀') {
+                        checkbox.setAttribute('disabled', 'disabled');
+                    } else {
+                        checkbox.removeAttribute('disabled');
+                    }
+                };
+            
+                // Изначально обновляем состояние чекбокса
+                updateCheckboxState();
+            
+                // Перехватываем обновление темы
+                const originalButtonClickHandler = button.onclick;
+                button.onclick = function () {
+                    if (originalButtonClickHandler) originalButtonClickHandler();
+                    updateCheckboxState(); // Обновляем состояние чекбокса после клика на кнопку
+                    checkcalendaricon();
+                };
+            });
 
             // Настройка чекбокса для скрытия окна Л П МВУ
             setupCheckbox('hidelpmwindow', 'disablelpmwindow', (isChecked) => {

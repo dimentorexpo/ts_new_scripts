@@ -100,8 +100,11 @@ var rightPanelBtn = exttheme === 'lightinputs' ? 'rightPanelBtnlight' : 'rightPa
 var menubtns = exttheme === 'lightinputs' ? 'menubtnsstylelight' : 'menubtnsstyledark';
 
 function checkcalendaricon() {
-    if (exttheme === 'darkinputs') {
+    if (exttheme === 'darkinputs' && localStorage.getItem('changesymtemicons') == '0') {
         applyCalendarIconInversion();
+    }
+    else {
+        removeCalendarIconInversion()
     }
 }
 // Функция для добавления инвертирования значка календаря
