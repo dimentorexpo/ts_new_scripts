@@ -1,16 +1,16 @@
 var win_testrooms =  // описание элементов окна создания тестовых комнат
-    `<div style="display: flex; width: 260px;">
-      <span style="width: 260px">
+    `<div style="display: flex; width: 280px;">
+      <span style="width: 280px">
           <span style="cursor: -webkit-grab;">
-              <div style="width: 260px; margin: 5px;" id="testroomshead">
+            <div style="width: 280px; margin: 5px;" id="testroomshead">
                   <button title="скрывает меню" id="hideMetestrooms" class="mainButton buttonHide">hide</button>
                   <button class="mainButton" id="clrTestRooms" title="По нажатию очищает поля" style="width:24px;">🧹</button>
                   <button class="mainButton" id="aboutTestRooms" style="width:24px; float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
                   <button class="mainButton" id="confluenceTestRooms" title="Открывает раздел в Confluence по созданию тестовых комнат" style="width:24px; float: right; margin-right: 5px;">📋</button>
               </div>
 
-					    <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                <select class="${exttheme}" id="lessontypeselect" style="text-align: center; width: 240px; height: 26px; margin-left: 7px;">
+			<div style="width: 280px; margin:5px; display:flex; justify-content:left;">
+                <select class="${exttheme}" id="lessontypeselect" style="text-align: center; width: 260px; height: 26px; margin-left: 7px;">
                     <option disabled="" selected="" value="lessonnotselect" style="background-color: orange; color: white;">Выбери тип урока</option>
                     <option value="test">1 - 1</option>
                     <option value="test-parallel">Паралельный</option>
@@ -19,8 +19,8 @@ var win_testrooms =  // описание элементов окна созда�
                 </select>
               </div>
 
-					    <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                  <select class="${exttheme}" id="subjecttypeselect" style="text-align: center; width: 240px; height: 26px; margin-left: 7px;">
+				<div style="width: 280px; margin:5px; display:flex; justify-content:left;">
+                  <select class="${exttheme}" id="subjecttypeselect" style="text-align: center; width: 260px; height: 26px; margin-left: 7px;">
                       <option disabled="" selected="" value="subjnotselect" style="background-color: orange; color: white;">Выбери предмет</option>
                       <option value="api-english">Английский</option>
                       <option value="api-biology">Биология</option>
@@ -38,21 +38,19 @@ var win_testrooms =  // описание элементов окна созда�
                   </select>
               </div>
 
-              <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                  <input class="${exttheme}" id="teachforroom" placeholder="Введи ID П" title="Введи id П для кого создать тестовую комнату" autocomplete="off" type="text" style="text-align: center; width: 120px; margin-left: 5px;">
-                  <input class="${exttheme}" id="studforroom" placeholder="Введи ID У" title="Введи id У для кого создать тестовую комнату(Если У несколько, вводите через запятую)" autocomplete="off" type="text" style="text-align: center; width: 120px; margin-left: 5px;">
-    					</div>
+              <div style="width: 280px; margin:5px; display:flex; justify-content:left;">
+                  <input class="${exttheme}" id="teachforroom" placeholder="Введи ID П" title="Введи id П для кого создать тестовую комнату" autocomplete="off" type="text" style="text-align: center; width: 130px; margin-left: 5px;">
+                  <input class="${exttheme}" id="studforroom" placeholder="Введи ID У" title="Введи id У для кого создать тестовую комнату(Если У несколько, вводите через запятую)" autocomplete="off" type="text" style="text-align: center; width: 130px; margin-left: 5px;">
+    			</div>
 
-              <div style="width: 260px; margin:2px; display:flex; justify-content:left;">
+              <div style="width: 280px; margin:2px; display:flex; justify-content:left;">
                   <button id="insertteachid" title="Поставить id вашего тестового П" class="mainButton testroomsbtn" style="margin-left:5px;">Тест👽</button>
                   <button id="insertstudid" title="Поставить id вашего тестового У" class="mainButton testroomsbtn">Тест👨&zwj;🎓</button>
-                  <button id="userfromchatid" title="Подставить id пользователя из активного чата и подставить id вашего тестового У или П" class="mainButton testroomsbtn">ID из чата</button>
+                  <button id="userfromchatid" title="Подставить id пользователя из активного чата и подставить id вашего тестового У или П" class="mainButton testroomsbtn">Чат->ID</button>
+                  <button id="engfromchat" title="Подставить id пользователя из активного чата и подставить id вашего тестового У или П для начала урока по Англ 1 на 1" class="mainButton testroomsbtn">Eng->ID</button>
               </div>
-              <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
+              <div style="width: 280px; margin:5px; display:flex; justify-content:left;">
                   <button id="starttestroom" title="Тут и так понятно" class="mainButton testroomscreate">Создать тестовый урок</button>
-              </div>
-              <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-              <label id="testroomsmessage" style="color:bisque; width:250px; text-align: center; border: 1px solid #3e4f55; background: rgb(70, 68, 81); border-radius: 10px; font-size: 15px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);"></label>
               </div>
           </span>
       </span>
@@ -61,8 +59,6 @@ var win_testrooms =  // описание элементов окна созда�
 const winttestrooms = createWindow('AF_testrooms', 'winToptestrooms', 'winLefttestrooms', win_testrooms);
 hideWindowOnDoubleClick('AF_testrooms');
 hideWindowOnClick('AF_testrooms', 'hideMetestrooms');
-const messagefield = document.getElementById('testroomsmessage');
-messagefield.display = 'none';
 
 function getTestRoomsButtonPress() { //открывает окно создания тестовых комнат
     const AF_testrooms = document.getElementById('AF_testrooms');
@@ -75,7 +71,7 @@ function cleartestroomsfields() { // очистка полей окно созд
     document.getElementById('teachforroom').value = '';
     document.getElementById('studforroom').value = '';
     document.getElementById('subjecttypeselect').children[0].selected = true;
-    document.getElementById('lessontypeselect').children[0].selected = true
+    document.getElementById('lessontypeselect').children[0].selected = true;
 }
 
 function testteachertofield() { // подставить тестового П
@@ -83,7 +79,7 @@ function testteachertofield() { // подставить тестового П
         document.getElementById('teachforroom').value = localStorage.getItem('test_teach');
     } else {
         document.getElementById('teachforroom').placeholder = "Не указан ID П";
-        testroomsshowmessage('error', 'В настройках расширения не указан id тестового преподавателя')
+        createAndShowButton('В настройках расширения не указан id тестового преподавателя <br>' , 'error');
     }
 }
 
@@ -92,7 +88,7 @@ function teststudenttofield() { // подставить тестового У
         document.getElementById('studforroom').value = localStorage.getItem('test_stud');
     } else {
         document.getElementById('studforroom').placeholder = "Не указан ID У";
-        testroomsshowmessage('error', 'В настройках расширения не указан id тестового ученика')
+        createAndShowButton('В настройках расширения не указан id тестового ученика' , 'error');
     }
 }
 
@@ -106,27 +102,6 @@ function GenerateHash(length) { // генерируем случайный хэ�
         counter += 1;
     }
     return result;
-}
-
-function testroomsshowmessage(type, text) { // вывод уведомлений
-    if (type == 'error') {
-        messagefield.style.background = '#d5484f';
-    } else if (type == 'message') {
-        messagefield.style.background = '#46d17e';
-    } else {
-        console.log('Получен неизвестный тип сообщения');
-        messagefield.style.background = 'rgb(70, 68, 81)';
-    }
-
-    messagefield.innerText = text;
-    messagefield.display = '';
-    setTimeout(testroomshidemessage, 5000)
-}
-
-function testroomshidemessage() { //скрытие уведомлений
-    messagefield.display = 'none';
-    messagefield.innerText = '';
-    messagefield.style.background = 'rgb(70, 68, 81)';
 }
 
 function opentestroomsconf() { // Открывает раздел в Confluence по созданию тестовых комнат
@@ -171,11 +146,17 @@ document.getElementById('userfromchatid').addEventListener('click', function () 
             if (useridis)
                 insertionfield.value = useridis;
         } else {
-            testroomsshowmessage('error', 'Не удается определить тип пользователя, пожалуйста, внесите id вручную')
+            createAndShowButton('Не удается определить тип пользователя, пожалуйста, внесите id вручную' , 'error');
         }
     } else {
-        testroomsshowmessage('error', 'Нет выбранного чата')
+        createAndShowButton('Нет выбранного чата' , 'error');
     }
+})
+
+document.getElementById('engfromchat').addEventListener('click', function () { // добавить id пользователя из активного чата и добавить id тестовго У или П
+    document.getElementById('lessontypeselect').children[1].selected = true;
+    document.getElementById('subjecttypeselect').children[1].selected = true;
+    document.getElementById('userfromchatid').click();
 })
 
 document.getElementById('starttestroom').addEventListener('click', function () { // добавляем тестовую комнату
@@ -232,7 +213,7 @@ document.getElementById('starttestroom').addEventListener('click', function () {
                 alert('Не удалось создать комнату: ' + response.error);
                 return;
             } else {
-                testroomsshowmessage('message', 'Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
+                createAndShowButton('Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П' , 'message');
                 cleartestroomsfields()
                 setTimeout(() => {
                     document.getElementById('AF_testrooms').style.display = 'none'; 
@@ -240,6 +221,6 @@ document.getElementById('starttestroom').addEventListener('click', function () {
             }
         })
     } else {
-        testroomsshowmessage('error', massagetexttoshow);
+        createAndShowButton(massagetexttoshow , 'error');
     }
 })

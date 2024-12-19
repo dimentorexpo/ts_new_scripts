@@ -1264,10 +1264,11 @@ function toggleButtonState(buttonId, className) { // Функция для пе�
     button.classList.toggle(className);
 }
 
-function createAndShowButton(text) {
+function createAndShowButton(text , result = 'message') {
+    let type = result == 'message' ? 'sucsbtnok' : 'sucsbtnnotok';
     let btnSuccess = document.createElement("button");
     btnSuccess.id = "successButton";
-    btnSuccess.className = "sucsbtn";
+    btnSuccess.className = `sucsbtnAF ${type}`;
     btnSuccess.textContent = text;
 
     let countdownBar = document.createElement("div");
