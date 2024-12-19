@@ -170,17 +170,17 @@ document.getElementById('starttestroom').addEventListener('click', function () {
 
     if (document.getElementById('lessontypeselect').value == 'lessonnotselect') { // проверяем выбран ли тип урока
         flagemptyttfields = '1';
-        massagetexttoshow += 'Не выбран тип урока\n'
+        massagetexttoshow += 'Не выбран тип урока<br>'
     } else { lessontype = document.getElementById('lessontypeselect').value }
 
     if (document.getElementById('subjecttypeselect').value == 'subjnotselect') { // проверяем выбран ли предмет
         flagemptyttfields = '1';
-        massagetexttoshow += 'Не выбран предмет\n'
+        massagetexttoshow += 'Не выбран предмет<br>'
     } else { lessonsubjecttype = document.getElementById('subjecttypeselect').value }
 
     if (document.getElementById('teachforroom').value.length < 4) { // проверяем введен ли id П
         flagemptyttfields = '1';
-        massagetexttoshow += 'Не указан id преподавателя\n'
+        massagetexttoshow += 'Не указан id преподавателя<br>'
     } else {
         teacheridforroom = document.getElementById('teachforroom').value
             .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой
@@ -188,7 +188,7 @@ document.getElementById('starttestroom').addEventListener('click', function () {
 
     if (document.getElementById('studforroom').value.length < 4) { // проверяем введен ли id У
         flagemptyttfields = '1';
-        massagetexttoshow += 'Не указан id ученика\n'
+        massagetexttoshow += 'Не указан id ученика<br>'
     } else {
         studentidforroom = document.getElementById('studforroom').value
             .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой

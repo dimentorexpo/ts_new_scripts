@@ -147,7 +147,7 @@ function getbutFrozeChatButtonPress() {
             }
 
         } else {
-            alert('Не введен хеш чата!. Введите хеш и попробуйте еще раз.')
+            createAndShowButton('Не введен хеш чата!. Введите хеш и попробуйте еще раз' , 'error');
         }
 
     }

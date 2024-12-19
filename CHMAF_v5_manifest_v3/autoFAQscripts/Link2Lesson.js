@@ -38,16 +38,12 @@ var win_link2less =  // описание элементов окна созда�
                 <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
                     <button id="createlink2less" title="Тут и так понятно" class="mainButton testroomscreate">Скопровать ссылку на урок</button>
                 </div>
-                <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                <label id="link2lessmessage" style="color:bisque; width:250px; text-align: center; border: 1px solid #3e4f55; background: rgb(70, 68, 81); border-radius: 10px; font-size: 15px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);"></label>
-                </div>
+
             </span>
         </span>
     </div>`;
 
 const wintlink2less = createWindow('AF_link2less', 'winToplink2less', 'winLeftlink2less', win_link2less);
-const link2lessfield = document.getElementById('link2lessmessage');
-link2lessfield.display = 'none';
 const itisvebinar = document.getElementById('itisvebinar');
 const itishomework = document.getElementById('itishomework');
 
@@ -75,27 +71,6 @@ itishomework.onclick = function () {
         itisvebinar.checked = false;
 };
 
-function link2lessshowmessage(type, text) { // вывод уведомлений
-    if (type == 'error') {
-        link2lessfield.style.background = '#d5484f';
-    } else if (type == 'message') {
-        link2lessfield.style.background = '#46d17e';
-    } else {
-        console.log('Получен неизвестный тип сообщения');
-        link2lessfield.style.background = 'rgb(70, 68, 81)';
-    }
-
-    link2lessfield.innerText = text;
-    link2lessfield.display = '';
-    setTimeout(link2lesshidemessage, 5000)
-}
-
-function link2lesshidemessage() { //скрытие уведомлений
-    link2lessfield.display = 'none';
-    link2lessfield.innerText = '';
-    link2lessfield.style.background = 'rgb(70, 68, 81)';
-}
-
 function openlink2lesshelp() { // Открывает раздел в Confluence по созданию тестовых комнат
     window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-link2less%D0%9E%D0%BA%D0%BD%D0%BE%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D1%8F%D1%81%D1%81%D1%8B%D0%BB%D0%BA%D0%B8%D0%BD%D0%B0%D1%83%D1%80%D0%BE%D0%BA")
 }
@@ -122,12 +97,12 @@ document.getElementById('createlink2less').addEventListener('click', function ()
 
     if (document.getElementById('subjecttype2less').value == 'subjnotselect') { // проверяем выбран ли предмет
         flagemptyttfields = '1';
-        massagetexttoshow += 'Не выбран предмет\n'
+        massagetexttoshow += 'Не выбран предмет<br>'
     } else { lessonsubjecttype = document.getElementById('subjecttype2less').value }
 
     if (!/^[a-zA-Z]{12,}$/.test(document.getElementById('hashforroom').value.trim())) {
         flagemptyttfields = '1';
-        massagetexttoshow += 'Хэш комнаты должен состоять из не менее чем 12 латинских символов\n'
+        massagetexttoshow += 'Хэш комнаты должен состоять из не менее чем 12 латинских символов<br>'
     } else {
         hashforroomless = document.getElementById('hashforroom').value.trim();
     }
@@ -141,13 +116,13 @@ document.getElementById('createlink2less').addEventListener('click', function ()
         }
         link2lesson = `https://vimbox.skyeng.ru/kids/${lessonsubjecttype}/room/${hashforroomless}${otheroptions}`;
         copyToClipboard(link2lesson);
-        link2lessshowmessage('message', 'Ссылка скопирована в буфер обмена');
+        createAndShowButton('Ссылка скопирована в буфер обмена' , 'message');
         clearlink2lessfields()
         setTimeout(() => {
             document.getElementById('AF_link2less').style.display = 'none'; 
         }, 5000);
 
     } else {
-        link2lessshowmessage('error', massagetexttoshow);
+        createAndShowButton(massagetexttoshow , 'error');
     }
 })

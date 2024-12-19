@@ -1269,7 +1269,7 @@ function createAndShowButton(text , result = 'message') {
     let btnSuccess = document.createElement("button");
     btnSuccess.id = "successButton";
     btnSuccess.className = `sucsbtnAF ${type}`;
-    btnSuccess.textContent = text;
+    btnSuccess.innerHTML = text;
 
     let countdownBar = document.createElement("div");
     countdownBar.id = "countdownBar";

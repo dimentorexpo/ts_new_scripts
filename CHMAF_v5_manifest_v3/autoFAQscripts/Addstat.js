@@ -587,5 +587,5 @@ document.getElementById('changetheme').onclick = function () { //функция 
             "method": "POST",
             "credentials": "include"
         });
-    else alert("Введите хэш чата в длинное поле по центру");
+    else createAndShowButton('Введите хэш чата в длинное поле по центру' , 'error');
 }

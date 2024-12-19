@@ -33,11 +33,13 @@ function handleButtonClick(buttonId, storageKey) {
     getLoginLink(userId).then(() => {
         button.classList.remove('active'); // Убираем класс active
         button.classList.add('successbtn'); // Добавляем successbtn
+        createAndShowButton('💾 Ссылка-логинер cкопирована' , 'message');
         setTimeout(() => button.classList.remove('successbtn'), 1000);
     }).catch((error) => {
         console.log('Ошибка: ', error);
         button.classList.remove('active'); // Убираем класс active
         button.classList.add('errorbtn'); // Добавляем errorbtn
+        createAndShowButton('Не удалось получить сылку-логинер' , 'error');
         setTimeout(() => button.classList.remove('errorbtn'), 1000);
     });
 }
@@ -49,11 +51,11 @@ function handleContextMenu(event, storageKey, buttonId) {
     const button = document.getElementById(buttonId);
     if (userId) {
         copyToClipboard(userId);
-        createAndShowButton('💾 ID cкопировано');
+        createAndShowButton('💾 ID cкопировано' , 'message');
         button.classList.add('successbtn'); // Добавляем successbtn
         setTimeout(() => button.classList.remove('successbtn'), 1000);
     } else {
-        alert("Введите ID тестового ученика в настройках ⚙");
+        createAndShowButton('Введите ID тестового ученика в настройках ⚙' , 'error');
     }
 }
 
