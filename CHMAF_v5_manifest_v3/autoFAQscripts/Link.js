@@ -361,14 +361,14 @@ function addfunctionsonclick(section) {
             if (lnkToSIDForSync.length < 4) {
                 createAndShowButton('ID короткий, будет автоматически открыт ресурс, где сможете ввести корректный ID услуги для синхронизации' , 'error');
                 lnkToSync.innerHTML = "🚀";
-                window.open('https://learning.skyeng.ru/upsert-history');
+                setTimeout(function () { window.open('https://learning.skyeng.ru/upsert-history'); }, 2000);
                 return;
             }
 
             if (localStorage.getItem('token_global') == null) {
                 createAndShowButton('Токен не найден, будет открыт ресурс, где сможете ввести ID услуги для синхронизации' , 'error');
                 lnkToSync.innerHTML = "🚀";
-                window.open('https://learning.skyeng.ru/upsert-history');
+                setTimeout(function () { window.open('https://learning.skyeng.ru/upsert-history'); }, 2000);
                 return;
             }
 
