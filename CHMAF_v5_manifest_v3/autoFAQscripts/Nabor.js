@@ -49,8 +49,7 @@ function getNaborStatus() {
     usrHashArr = []
     usrHashTmp = ''
     let tIdValue = document.getElementById('tidNabor').value.trim()
-    if (tIdValue.length < 3) {
-        alert("Введите корректный ID П")
+    if (tIdValue.length < 3) { createAndShowButton('Введите корректный ID П' , 'error')
     } else {
 
         document.querySelector('#naborStatusTable').style.display = "";
@@ -169,8 +168,7 @@ getNabStatBtn.addEventListener('click', getNaborStatus)
 let oTrmBtn = document.getElementById('openTrmTeacher')
 oTrmBtn.addEventListener('click', function () {
     let tIdValue = document.getElementById('tidNabor').value.trim()
-    if (tIdValue.length < 3) {
-        alert("Введите корректный ID П в поле ниже")
+    if (tIdValue.length < 3) { createAndShowButton('Введите корректный ID П' , 'error')
     } else {
         window.open("https://trm.skyeng.ru/teacher/" + tIdValue)
     }

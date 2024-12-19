@@ -41,9 +41,8 @@ document.getElementById('grafanapoolCRM2').addEventListener('click', function ()
 })
 
 document.getElementById('GetWidgetLessonStatus').onclick = function () { // Графана лог виджета входа на урок
-    if (WidgetLessonStatus.value == "") {
-        alert('Введите id в поле')
-    } else {
+    if (WidgetLessonStatus.value == "")  createAndShowButton('Введите id в поле' , 'error')
+    else {
         window.open("https://grafana.skyeng.link/d/DZop3WKVz/nextlesson-analytics?orgId=1&var-UserId=" + WidgetLessonStatus.value + "&from=now-24h&to=now");
     };
     WidgetLessonStatus.value = "";

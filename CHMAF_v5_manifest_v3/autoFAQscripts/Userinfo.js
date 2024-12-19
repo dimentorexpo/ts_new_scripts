@@ -525,7 +525,7 @@ document.getElementById('getlessonfuture').onclick = function () { // показ
 
 
 
-    } else alert('Запрос не выполнен. Введите ID в поле!')
+    } else createAndShowButton('Запрос не выполнен. Введите ID в поле!' , 'error')
 }
 
 document.getElementById('changelocalelng').onclick = function () {

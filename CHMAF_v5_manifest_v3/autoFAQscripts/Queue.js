@@ -331,8 +331,7 @@ async function getAllChatsByStatus() {
             event.stopPropagation()
             if (allFlags[i].textContent == "❌") {
                 let getTextAreaValue = document.getElementById('inputTextForUser').value
-                if (getTextAreaValue == "") {
-                    alert('Введите текст сообщения для пользователя в поле ниже!')
+                if (getTextAreaValue == "") { createAndShowButton('Введите текст сообщения для пользователя в поле ниже!' , 'error')
                 } else {
                     fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
                         "headers": {
@@ -349,7 +348,7 @@ async function getAllChatsByStatus() {
                     allFlags[i].textContent = "✅"
                 }
             } else {
-                alert("Чат исходящий или первый ответ уже есть, сбивать таймер AFRT для этого чата нет необходимости!")
+                createAndShowButton('Чат исходящий или первый ответ уже есть, сбивать таймер AFRT для этого чата нет необходимости!' , 'error')
             }
         })
     }
@@ -373,8 +372,7 @@ async function writeThemAll() {
         for (let i = 0; i < allFlags.length; i++) {
             if (allFlags[i].textContent == "❌") {
                 let getTextAreaValue = document.getElementById('inputTextForUser').value
-                if (getTextAreaValue == "") {
-                    alert('Введите текст сообщения для пользователя в поле ниже!')
+                if (getTextAreaValue == "") { createAndShowButton('Введите текст сообщения для пользователя в поле ниже!' , 'error')
                 } else {
                     fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
                         "headers": {

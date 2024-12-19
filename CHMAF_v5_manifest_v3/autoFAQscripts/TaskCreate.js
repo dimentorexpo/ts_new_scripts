@@ -812,13 +812,13 @@ function gettaskButButtonPress() { // функция открытия окна �
                 document.getElementById('clearcreateform').click();
                 document.getElementById('taskBut').classList.remove('activeScriptBtn')
 
-            } else alert("Задача не была создана, проверьте, пожалуйста, заполнение полей")
+            } else createAndShowButton('Задача не была создана, проверьте, пожалуйста, заполнение полей' , 'error')
         }
 
         document.getElementById('taskcreate2linecrm').onclick = function () {
             if (document.getElementById('taskuserid').value != '') {
                 window.open("https://crm2.skyeng.ru/persons/" + document.getElementById('taskuserid').value + "/customer-support/manual")
-            } else alert("Введите ID пользователя в соответствующее поле и повторите попытку")
+            } else createAndShowButton('Введите ID пользователя в соответствующее поле и повторите попытку' , 'error')
         }
 
 

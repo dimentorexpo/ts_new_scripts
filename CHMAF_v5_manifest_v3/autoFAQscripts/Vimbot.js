@@ -92,7 +92,7 @@ lnkToOpenVimbotWindow.addEventListener('click', function () {
                     console.log("Текст успешно отправлен!")
                 }
             })
-        } else alert("Проверьте ID пользователя или текст, чтобы он не был пустой и был Support chat")
+        } else createAndShowButton('Проверьте ID пользователя или текст, чтобы он не был пустой и был Support chat' , 'error')
     })
 })
 

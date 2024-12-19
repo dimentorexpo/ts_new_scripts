@@ -294,11 +294,11 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
 
                     }
                 } else {
-                    alert("Уроков нет");
+                    createAndShowButton('Уроков нет' , 'error');
                 }
             }
         })
     } else {
-        alert("Введите ID учителя в поле");
+        createAndShowButton('Введите ID учителя в поле' , 'error');
     }
 }

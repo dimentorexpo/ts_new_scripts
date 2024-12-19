@@ -694,7 +694,7 @@ async function init_settings() {
                             for (let i = 0; i < Object.keys(jsonparsed).length; i++) {
                                 localStorage.setItem(Object.keys(jsonparsed)[i], Object.values(jsonparsed)[i])
                             }
-                            alert("Настройки расширения в localstorage загружены успешно!")
+                            createAndShowButton('Настройки расширения в localstorage загружены успешно!' , 'message')
                         }
 
                         reader.readAsText(file);
