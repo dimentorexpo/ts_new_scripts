@@ -3,7 +3,7 @@ var win_LessonStatus =  // описание элементов окна стат
     `<div style="display: flex; width: 1060px;">
         <span style="width: 1060px">
                 <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 1050px;" id="lessomstatdata">
+                        <div style="margin: 5px; width: 1050px;">
                                 <button class="mainButton buttonHide" id="hideMeLessonStatus">hide</button>
                                 <button class="mainButton smallbtn" id="clearlessonstatus">🧹</button>
                         </div>
@@ -47,7 +47,6 @@ function renewdate() { // функция обновления даты
     prevDate.setDate(prevDate.getDate() - 1);
     const prevYear = prevDate.getFullYear();
     const prevMonth = String(prevDate.getMonth() + 1).padStart(2, "0");
-    const prevDay = String(prevDate.getDate()).padStart(2, "0");
 
     // set date values in form inputs
     document.getElementById("dateFromLS").value = `${prevYear}-${prevMonth}-${curDay}`;
@@ -294,11 +293,11 @@ document.getElementById('startlookstatus').onclick = function () { //Функц�
 
                     }
                 } else {
-                    createAndShowButton('Уроков нет' , 'error');
+                    createAndShowButton('Уроков нет', 'error');
                 }
             }
         })
     } else {
-        createAndShowButton('Введите ID учителя в поле' , 'error');
+        createAndShowButton('Введите ID учителя в поле', 'error');
     }
 }
