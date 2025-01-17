@@ -276,7 +276,7 @@ function addfunctionsonclick(section) {
 
         document.getElementById('restartlesson').addEventListener('click', function () { // копируем ссылку в буфер для перезапуска урока
             copyToClipboard("setStatus('classwork')")
-            createAndShowButton('💾 Скопировано' , 'message');
+            createAndShowButton('💾 Скопировано', 'message');
         })
 
         document.getElementById('browserstack').addEventListener('click', function () { // открываем ссылку в новой вкладке на Browserstak
@@ -317,19 +317,19 @@ function addfunctionsonclick(section) {
 
         document.getElementById('benchmark').onclick = function () {                  //поиск по имени процессора на сайте cpubenchmark
             let lnkgr = 'https://www.cpubenchmark.net/cpu_lookup.php?cpu=';
-            if (cpuname.value == "") createAndShowButton('Введите CPU в поле' , 'error')
+            if (cpuname.value == "") createAndShowButton('Введите CPU в поле', 'error')
             else { window.open(lnkgr + cpuname.value) };
             cpuname.value = "";
         }
 
         document.getElementById('getschemes').onclick = function () { // переход на просмотра подключенных схем вознаграждения преподавателей
-            if (schemesteacher.value == "") createAndShowButton('Введите ID П в поле' , 'error')
+            if (schemesteacher.value == "") createAndShowButton('Введите ID П в поле', 'error')
             else { window.open('https://teacher-incentive.skyeng.ru/incentive/teacher/' + schemesteacher.value) };
             schemesteacher.value = "";
         }
 
         document.getElementById('getpushes').onclick = function () { // переход на просмотр статусов пушей ученику в МП
-            if (pushes.value == "") createAndShowButton('Введите ID У в поле' , 'error')
+            if (pushes.value == "") createAndShowButton('Введите ID У в поле', 'error')
             else {
                 window.open('https://push-notifications.skyeng.ru/cms/logs?page=1&paginateBy=100&id=&userId=' + pushes.value + '&status=&useCase=&notificationSource=&createdAtFrom=&createdAtTo=');
             };
@@ -338,7 +338,7 @@ function addfunctionsonclick(section) {
 
         document.getElementById('credits').onclick = function () {                  // проверка рассрочки у ученика она же поэтапная оплата (ПО)
             let useid;
-            if (creditstatus.value == "") createAndShowButton('Введите id  ученика в поле' , 'error')
+            if (creditstatus.value == "") createAndShowButton('Введите id  ученика в поле', 'error')
             else {
                 useid = creditstatus.value
             };
@@ -349,7 +349,7 @@ function addfunctionsonclick(section) {
 
         document.getElementById('gettrshinfo').onclick = function () {               // сохранение в буфере айди ученика для просмотра всего списка ДЗ по нему
             let trshootlnk = 'https://video-trouble-shooter.skyeng.ru/?hash=';
-            if (trshooterhash.value == "") createAndShowButton('Введите id  ученика в поле' , 'error')
+            if (trshooterhash.value == "") createAndShowButton('Введите id  ученика в поле', 'error')
             else { window.open(trshootlnk + trshooterhash.value); };
             trshooterhash.value = "";
         }
@@ -359,14 +359,14 @@ function addfunctionsonclick(section) {
             let lnkToSIDForSync = document.getElementById('sIdSynchronize').value.trim();
             lnkToSync.innerHTML = "⏳"
             if (lnkToSIDForSync.length < 4) {
-                createAndShowButton('ID короткий, будет автоматически открыт ресурс, где сможете ввести корректный ID услуги для синхронизации' , 'error');
+                createAndShowButton('ID короткий, будет автоматически открыт ресурс, где сможете ввести корректный ID услуги для синхронизации', 'error');
                 lnkToSync.innerHTML = "🚀";
                 setTimeout(function () { window.open('https://learning.skyeng.ru/upsert-history'); }, 2000);
                 return;
             }
 
             if (localStorage.getItem('token_global') == null) {
-                createAndShowButton('Токен не найден, будет открыт ресурс, где сможете ввести ID услуги для синхронизации' , 'error');
+                createAndShowButton('Токен не найден, будет открыт ресурс, где сможете ввести ID услуги для синхронизации', 'error');
                 lnkToSync.innerHTML = "🚀";
                 setTimeout(function () { window.open('https://learning.skyeng.ru/upsert-history'); }, 2000);
                 return;
@@ -388,37 +388,38 @@ function addfunctionsonclick(section) {
                     alert('Не удалось выполнить запрос: ' + response.error);
                     lnkToSync.innerHTML = "❌";
                 } else {
-                    createAndShowButton('Запрос на синхронизацию выполнен' , 'message');
+                    createAndShowButton('Запрос на синхронизацию выполнен', 'message');
+                    lnkToSync.innerHTML = "🚀";
                 }
             });
         });
 
         document.getElementById('getenablerAP').onclick = function () {               // сохранение в буфере ссылки для активации АП
             let enableAPlnk = 'https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=';
-            if (enablerAP.value == "") createAndShowButton('Введите id услуги в поле' , 'error')
+            if (enablerAP.value == "") createAndShowButton('Введите id услуги в поле', 'error')
             else {
                 copyToClipboard(enableAPlnk + enablerAP.value);
-                createAndShowButton('💾 Скопировано' , 'message');
+                createAndShowButton('💾 Скопировано', 'message');
             };
             enablerAP.value = "";
         }
 
         document.getElementById('getskipAP').onclick = function () {               // сохранение в буфере ссылки для активации АП
             let skipAPlnk = 'https://student.skyeng.ru/product-stage?stage=auto-schedule&educationServiceId=';
-            if (skipAP.value == "") createAndShowButton('Введите id услуги в поле' , 'error')
+            if (skipAP.value == "") createAndShowButton('Введите id услуги в поле', 'error')
             else {
                 copyToClipboard(skipAPlnk + skipAP.value);
-                createAndShowButton('💾 Скопировано' , 'message');
+                createAndShowButton('💾 Скопировано', 'message');
             };
             skipAP.value = "";
         }
 
         document.getElementById('doskiponboard').onclick = function () {               // сохранение в буфере ссылки для активации АП
             let skiponblnk = 'https://student.skyeng.ru/product-stage?stage=onboarding&educationServiceId=';
-            if (skiponboarding.value == "") createAndShowButton('Введите id услуги в поле' , 'error')
+            if (skiponboarding.value == "") createAndShowButton('Введите id услуги в поле', 'error')
             else {
                 copyToClipboard(skiponblnk + skiponboarding.value);
-                createAndShowButton('💾 Скопировано' , 'message');
+                createAndShowButton('💾 Скопировано', 'message');
             };
             skiponboarding.value = "";
         }
@@ -440,7 +441,7 @@ function addfunctionsonclick(section) {
 
         document.getElementById('gotolookip').onclick = function () { // проверка информации по айпишнику ученика/препода/ хостинга
             let iplink = 'https://check-host.net/ip-info?host=';
-            if (iplookup.value == "") createAndShowButton('Введите ip в поле' , 'error')
+            if (iplookup.value == "") createAndShowButton('Введите ip в поле', 'error')
             else {
                 window.open(iplink + iplookup.value);
             };
@@ -449,7 +450,7 @@ function addfunctionsonclick(section) {
 
         document.getElementById('getlgsinfo').onclick = function () { // открытие админки LGS по ID группы
             let lgslink = 'https://learning-groups-storage.skyeng.ru/group/';
-            if (lgssearch.value == "") createAndShowButton('Введите id группы в поле' , 'error')
+            if (lgssearch.value == "") createAndShowButton('Введите id группы в поле', 'error')
             else {
                 window.open(lgslink + lgssearch.value + '?cp=(section:participants)');
             };
@@ -457,7 +458,7 @@ function addfunctionsonclick(section) {
         }
 
         document.getElementById('cmsid').onclick = function () {// переход на степID в CMSке
-            if (cmsstepid.value == "") createAndShowButton('Введите STEPUUID в поле' , 'error')
+            if (cmsstepid.value == "") createAndShowButton('Введите STEPUUID в поле', 'error')
             else {
                 window.open('https://content.vimbox.skyeng.ru/cms/step-store/update/id/' + cmsstepid.value);
             };
