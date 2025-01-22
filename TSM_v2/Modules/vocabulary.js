@@ -22,6 +22,7 @@ var win_Vocabulary = `<div style="display: flex;">
 								<button id="findwords" class="commonbtn smallbtns">🔎</button>
 							</div>
 							<div class="vocabularremtools">
+								<button class="commonbtn" id="deleteallwords" title="Удаляет все выделенные слова">❌ Selected</button>
 								<button class="commonbtn" id="unlearnallwords" title="Сбрасывает прогресс выученных слов">⭕ Reset Learned</button>
 								<button class="commonbtn" id="delunlearnallwords" title="Удаляет все выученные слова">⛔ Learned</button>
 								<button class="commonbtn" id="learncheckedwords" title="Делает слово выученным">✅ Learn</button>
@@ -78,6 +79,7 @@ document.getElementById('VocabularyMenu').onclick = function () { // откры�
     document.getElementById('delunlearnallwords').onclick = deleteLearnedWords; // функция удаления всех выученных слов
     document.getElementById('learncheckedwords').onclick = learnSelectedWords; // функция изучения выбранного слова минуя тренировку
     document.getElementById('unlearnallwords').onclick = resetProgressForSelectedWords; // функция сброса выученного слова
+    document.getElementById('deleteallwords').onclick = deleteSelectedWords; // функция удаленя слов выбраных в списке если ничего не выбрано то всех!
 } // end of open vocabulary menu function
 
 async function firstgetvocabulary(idfield) {
@@ -232,6 +234,76 @@ async function resetProgressForSelectedWords() { // функция сброса 
                 }
             }
             alert("Прогресс выбранных слов был успешно сброшен! 🤠");
+            await getwordsets(userstud);
+            liveSearch(document.getElementById('searchwordinput').value);
+        }
+    }
+}
+
+async function deleteSelectedWords() { // функция удаленя слов выбраных в списке если ничего не выбрано то всех!
+    const checks = document.getElementsByName('checkfordel');
+    const idslov = document.getElementsByClassName('wminId');
+    const userstud = document.getElementById('iduserwords').value.trim();
+    let flagselected = [];
+    for (let i = 0; i < checks.length; i++) {
+        if (checks[i].checked == true)
+            flagselected.push(i)
+    }
+	
+	let progressBar = document.getElementById("progressBarDeleteWords");
+	let currentWidth = 100;
+	let step = globalWordsCounter > 0 ? 100 / globalWordsCounter : (() => { console.log('Division by zero'); return 0; })();
+
+    if (!flagselected.length) {
+        const confirmDeleteAll = confirm("Не был выбран ниодин пункт. Будут автоматически удалены все слова из словаря. Продолжить?");
+        if (confirmDeleteAll) {
+            alert("🚀Запрос в процессе выполнения. Пожалуйста, ожидайте завершения 😋");
+            for (let g = 0; g < idslov.length; g++) {
+                try {
+                    await fetch(`https://api-words.skyeng.ru/api/v2/words/${idslov[g].textContent}.json?studentId=${userstud}`, {
+                        headers: {
+                            "accept": "application/json, text/plain, */*",
+                            "authorization": `Bearer ${token.token_global}`,
+                        },
+                        method: "DELETE"
+                    });
+                } catch (err) {
+                    console.error("Error deleting word: ", err);
+                }
+                globalWordsCounter--;
+                //document.getElementById('progressBarDeleteWords').innerHTML = globalWordsCounter + ' (слов)'
+				
+				currentWidth -= step;
+				progressBar.style.width = Number(currentWidth.toFixed(1)) + "%";
+				progressBar.textContent = Number(currentWidth.toFixed(1)) + "%" + " (" + globalWordsCounter + " слов)";		
+            }
+            alert("Все слова были успешно удалены! 🤠");
+            await getwordsets(userstud);
+           // liveSearch(document.getElementById('searchwordinput').value);
+        }
+    } else {
+        const confirmDeleteSelected = confirm("Вы выбрали некоторые пункты для удаления слов. Продолжить?");
+        if (confirmDeleteSelected) {
+            alert("🚀Запрос в процессе выполнения. Пожалуйста, ожидайте завершения 😋");
+            for (let g = 0; g < flagselected.length; g++) {
+                try {
+                    await fetch(`https://api-words.skyeng.ru/api/v2/words/${idslov[flagselected[g]].textContent}.json?studentId=${userstud}`, {
+                        headers: {
+                            "accept": "application/json, text/plain, */*",
+                            "authorization": `Bearer ${token.token_global}`,
+                        },
+                        method: "DELETE"
+                    });
+                } catch (err) {
+                    console.error("Error deleting selected word: ", err);
+                }
+                globalWordsCounter--;
+                //document.getElementById('progressBarDeleteWords').innerHTML = globalWordsCounter + ' (слов)'
+				currentWidth -= step;
+				progressBar.style.width = Number(currentWidth.toFixed(1)) + "%";
+				progressBar.textContent = Number(currentWidth.toFixed(1)) + "%" + " (" + globalWordsCounter + " слов)";		
+            }
+            alert("Выбранные слова были успешно удалены! 🤠");
             await getwordsets(userstud);
             liveSearch(document.getElementById('searchwordinput').value);
         }
