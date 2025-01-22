@@ -44,11 +44,11 @@ var win_smartroomform =  // описание элементов окна Мул�
 							</div>
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);" id = "smartroomecosysrem">
                                 <label style="color:#c4ffd3; padding:5px; font-weight: 600;">Экосистема</label> <br>
-                                <input class = "smartroom-radio" type="radio" id="ecosystemplat" name="smartroomecos" value="Функционал платформы"> 
+                                <input class = "smartroom-radio" type="radio" id="ecosystemplat" name="smartroomecos" value="Функционал платформы">
                                 <label class = "smartroom-label" for="ecosystemplat">Функционал платформы</label>
-                                <input class = "smartroom-radio" type="radio" id="ecosystemios" name="smartroomecos" value="Мобильное приложение IOS"> 
+                                <input class = "smartroom-radio" type="radio" id="ecosystemios" name="smartroomecos" value="Мобильное приложение IOS">
                                 <label class = "smartroom-label" for="ecosystemios">МП IOS</label>
-                                <input class = "smartroom-radio" type="radio" id="ecosystemandr" name="smartroomecos" value="Мобильное приложение Android"> 
+                                <input class = "smartroom-radio" type="radio" id="ecosystemandr" name="smartroomecos" value="Мобильное приложение Android">
                                 <label class = "smartroom-label" for="ecosystemandr">МП Android</label>
 							</div>
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);">
@@ -166,7 +166,7 @@ function getsmartroomformButtonPress() {
         } else {
             document.getElementById('smartroomuser').classList.remove('inputalertbackground');
         }
-        
+
         if (!document.getElementsByName('formattoform')[0].checked && !document.getElementsByName('formattoform')[1].checked && !document.getElementsByName('formattoform')[2].checked && !document.getElementsByName('formattoform')[3].checked) {
             document.getElementById('smartroomformat').classList.add('inputalertbackground');
             flagemptysmart = 1;
@@ -232,15 +232,28 @@ function getsmartroomformButtonPress() {
                     checkecosystem = document.getElementsByName('smartroomecos')[i].value;
             }
 
-            for (let i = 0; i < document.getElementById('cattwosmatrtoom').length; i++) {
-                if (document.getElementById('cattwosmatrtoom')[i].selected == true)
-                    cat2selected = document.getElementById('cattwosmatrtoom')[i].value
+            const inputElement = document.getElementById('cattwosmatrtoom');
+            const dataListElement = document.getElementById('cattwosmatrtoom-options-list');
+            let cat2selected = null;
+
+            for (let i = 0; i < dataListElement.options.length; i++) {
+                if (dataListElement.options[i].value === inputElement.value) {
+                    cat2selected = dataListElement.options[i].value;
+                    break;
+                }
             }
 
-            for (let i = 0; i < document.getElementById('catthreesmatrtoom').length; i++) {
-                if (document.getElementById('catthreesmatrtoom')[i].selected == true)
-                    cat3selected = document.getElementById('catthreesmatrtoom')[i].value
+            const inputElementThree = document.getElementById('catthreesmatrtoom');
+            const dataListElementThree = document.getElementById('catthreesmatrtoom-options-list');
+            let cat3selected = null;
+
+            for (let i = 0; i < dataListElementThree.options.length; i++) {
+                if (dataListElementThree.options[i].value === inputElementThree.value) {
+                    cat3selected = dataListElementThree.options[i].value;
+                    break;
+                }
             }
+
 
             for (let i = 0; i < document.getElementsByName('whatobratform').length; i++) {
                 if (document.getElementsByName('whatobratform')[i].checked == true)
@@ -248,7 +261,7 @@ function getsmartroomformButtonPress() {
             }
 
             let body2 = 'entry.505070950=' + encodeURIComponent(document.getElementById('clientid').value) + '&entry.1879097323=' + encodeURIComponent(document.getElementById('fullcomentsmartroom').value) + '&entry.1625340245=' + encodeURIComponent(cat2selected) + '&entry.478427702=' + encodeURIComponent(cat3selected) + '&entry.466256037=' + encodeURIComponent(checkedclienttype) + '&entry.685236831=' + encodeURIComponent(checkeducformat) + '&entry.876256156=' + encodeURIComponent(checkedquestion) + '&entry.156405977=' + encodeURIComponent(checkecosystem)
-            
+
             const fetchURL = 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse';
             const requestOptions = {
                 method: 'POST',
@@ -258,7 +271,7 @@ function getsmartroomformButtonPress() {
                 body: body2,
             };
 
-            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions}, function(response) {
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
                 if (response && response.success) {
                     document.getElementById('AF_Smartroomform').style.display = 'none';
                     document.getElementById('clearsmartroomform').click();
@@ -282,7 +295,7 @@ function getsmartroomformButtonPress() {
             'cattwosmatrtoom',
             'catthreesmatrtoom'
         ];
-    
+
         // Очищаем значения и удаляем классы для указанных элементов
         elementsToClear.forEach(id => {
             const element = document.getElementById(id);
@@ -296,14 +309,14 @@ function getsmartroomformButtonPress() {
                 }
             }
         });
-    
+
         // Функция очистки радиобатонов
         const cheksradio = document.getElementsByClassName('smartroom-radio');
         for (let j = 0; j < cheksradio.length; j++) {
             cheksradio[j].checked = false; // Снимаем выбор с радиокнопок
         }
     };
-    
+
 
     document.getElementById('smartroomforminstr').onclick = function () {
         window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-smartroom%F0%9F%A6%90Smartroom')
