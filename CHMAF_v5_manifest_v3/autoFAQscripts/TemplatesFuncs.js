@@ -210,7 +210,7 @@ function startTimer() {
                     copyCrmFromName.onclick = function () {
                         const getidafuser = SearchinAFnewUI("id");
                         copyToClipboard("https://crm2.skyeng.ru/persons/" + getidafuser);
-                        createAndShowButton('💾 Cкопировано' , 'message');
+                        createAndShowButton('💾 Cкопировано', 'message');
                     }
                     let testchatbtn = iframeDoc.createElement('span')
                     testchatbtn.textContent = ' test';
@@ -1078,12 +1078,12 @@ function refreshTemplates() { // функция обновляет шаблон�
     const addTmp = document.getElementById('addTmp');
 
     if (addTmp.firstElementChild && addTmp.firstElementChild.childElementCount > 0) {
-      document.getElementById('0page').addEventListener('dblclick', function (event) {
-        if (checkelementtype(event)) {
-          // Переключаем видимость элемента addTmp
-          addTmp.style.display = addTmp.style.display === 'none' ? '' : 'none';
-        }
-      });
+        document.getElementById('0page').addEventListener('dblclick', function (event) {
+            if (checkelementtype(event)) {
+                // Переключаем видимость элемента addTmp
+                addTmp.style.display = addTmp.style.display === 'none' ? '' : 'none';
+            }
+        });
     }
 
     document.getElementById('0_page_button').click()
@@ -1499,63 +1499,80 @@ function startTimerForTimestamp(timestamp, chatHash) {
 }
 
 async function CountTechSupTimmer() {
-    if (opsection == "ТП ОС" || opsection == "ТП") {
-        // Предположим, что данные уже были получены и массив massivTimes заполнен
-        let massivTimes = []; // Этот массив должен быть обновлен данными из запросов к API
+    if (opsection !== "ТП ОС" && opsection !== "ТП") {
+        console.log("Для не ТП отдела эта функция не будет работать!");
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
+        return;
+    }
 
-        const now = new Date(); // Текущее время
-
+    try {
+        const now = new Date();
         // Вычисляем начало предыдущего дня в UTC (21:00 предыдущего дня)
         const prevDayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 21, 0, 0, 0));
-
         // Вычисляем конец текущего дня в UTC (20:59:59 текущего дня)
         const currentDayEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 20, 59, 59, 0));
 
         const prevDayTime = formatISOStringWithoutMillis(prevDayStart);
         const currentDayTime = formatISOStringWithoutMillis(currentDayEnd);
 
-        // ... код для получения данных и заполнения massivTimes ...
-        await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-            "headers": {
+        const response = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
+            method: "POST",
+            headers: {
                 "content-type": "application/json",
                 "sec-fetch-dest": "empty",
                 "sec-fetch-mode": "cors",
                 "sec-fetch-site": "same-origin"
             },
-            "referrer": "https://skyeng.autofaq.ai/logs",
-            "referrerPolicy": "strict-origin-when-cross-origin",
-            "body": `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${operatorId}"],\"tsFrom\":\"${prevDayTime}\",\"tsTo\":\"${currentDayTime}\",\"usedStatuses\":[\"AssignedToOperator\"],\"orderBy\":\"ts\",\"orderDirection\":\"Desc\",\"page\":1,\"limit\":100}`,
-            "method": "POST",
-            "mode": "cors",
-            "credentials": "include"
-        }).then(r => r.json()).then(r => testo = r)
+            body: JSON.stringify({
+                serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
+                mode: "Json",
+                participatingOperatorsIds: [operatorId],
+                tsFrom: prevDayTime,
+                tsTo: currentDayTime,
+                usedStatuses: ["AssignedToOperator"],
+                orderBy: "ts",
+                orderDirection: "Desc",
+                page: 1,
+                limit: 100
+            }),
+            mode: "cors",
+            credentials: "include"
+        });
 
-        let bArr = testo.items.map(el => el.conversationId)
+        if (!response.ok) throw new Error("Network response was not ok.");
 
-        for (let i = 0; i < bArr.length; i++) {
-            await fetch(`https://skyeng.autofaq.ai/api/conversations/${bArr[i]}`, {
-                "headers": {
+        const data = await response.json();
+        const conversationIds = data.items.map(el => el.conversationId);
+
+        const messagesPromises = conversationIds.map(async id => {
+            const convResponse = await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, {
+                method: "GET",
+                headers: {
                     "sec-fetch-dest": "empty",
                     "sec-fetch-mode": "cors",
                     "sec-fetch-site": "same-origin"
                 },
-                "referrerPolicy": "strict-origin-when-cross-origin",
-                "method": "GET",
-                "mode": "cors",
-                "credentials": "include"
-            }).then(r => r.json()).then(data => {
-                // Сначала фильтруем сообщения
-                let filteredMessages = data.messages.filter(el => el.eventTpe == "ChangeGroup" && (el.payload.prevGroup == "b6f7f34d-2f08-fc19-3661-29ac00842898" || el.payload.prevGroup == "7b443078-a05f-4c8f-827b-4db2bf7c5d01")); // ТП - c7bbb211-a217-4ed3-8112-98728dc382d8 ; КЦ - b6f7f34d-2f08-fc19-3661-29ac00842898 ; Прод - 7b443078-a05f-4c8f-827b-4db2bf7c5d01
-                filteredMessages.forEach(message => {
-                    massivTimes.push({
-                        TimeStamp: message.ts,
-                        ChatHash: message.conversationId
-                    });
-                });
-
-                //console.log(massivTimes)
+                mode: "cors",
+                credentials: "include"
             });
-        }
+
+            if (!convResponse.ok) throw new Error("Network response was not ok.");
+
+            return convResponse.json();
+        });
+
+        const conversations = await Promise.all(messagesPromises);
+        const massivTimes = conversations.flatMap(conv =>
+            conv.messages
+                .filter(el => el.eventTpe === "ChangeGroup" && (el.payload.prevGroup === "b6f7f34d-2f08-fc19-3661-29ac00842898" || el.payload.prevGroup === "7b443078-a05f-4c8f-827b-4db2bf7c5d01")) // ТП - c7bbb211-a217-4ed3-8112-98728dc382d8 ; КЦ - b6f7f34d-2f08-fc19-3661-29ac00842898 ; Прод - 7b443078-a05f-4c8f-827b-4db2bf7c5d01
+                .map(message => ({
+                    TimeStamp: message.ts,
+                    ChatHash: message.conversationId
+                }))
+        );
 
         const iframeDoc = document.querySelector('[class^="NEW_FRONTEND__frame"]').contentDocument || document.querySelector('[class^="NEW_FRONTEND__frame"]').contentWindow.document;
         const Convlist = iframeDoc.querySelectorAll('#__next [class^="DialogsCard_Card"]');
@@ -1567,12 +1584,8 @@ async function CountTechSupTimmer() {
                 startTimerForTimestamp(massivTime.TimeStamp, massivTime.ChatHash);
             }
         });
-    } else {
-        console.log("Для не ТП отдела эта функция не будет работать!")
-        if (updateInterval) {
-            clearInterval(updateInterval); // Останавливаем интервал обновления, если условие не выполняется
-            updateInterval = null; // Сбрасываем ссылку на интервал
-        }
+    } catch (error) {
+        console.error("Ошибка при выполнении запроса:", error);
     }
 }
 

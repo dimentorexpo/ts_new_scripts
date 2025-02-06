@@ -436,71 +436,88 @@ function timerHideButtons() {
     }
 }
 
-function prepTp() { //функция подготовки расширения ТП
-    let openCalendar = document.createElement('button')
-    openCalendar.innerHTML = '📅'
-    openCalendar.id = 'datsyCalendar'
-    openCalendar.title = 'Открывает календарь Datsy'
-    openCalendar.classList.add('onlyfortp', rightPanelBtn, 'mainButton')
-    document.getElementById('rightPanel').appendChild(openCalendar)
-    document.getElementById('datsyCalendar').onclick = getdatsyCalendarButtonPress;
+function prepTp() {
+    // Кэшируем часто используемые элементы
+    const rightPanel = document.getElementById('rightPanel');
+    const AF_Service = document.getElementById('AF_Service');
 
-    let butServ = document.createElement('button')
-    butServ.id = "butServ"
-    butServ.innerHTML = "⚜"
-    butServ.classList.add('onlyfortp', rightPanelBtn, 'mainButton')
-    butServ.onclick = function () { //открывает вензель user info
-        setDisplayStyle(document.getElementById('AF_Service'), document.getElementById('AF_Service').style.display === '' ? 'none' : '');
-        if (document.getElementById('AF_Service').style.display == "")
-            butServ.classList.add('activeScriptBtn')
-        else {
-            butServ.classList.remove('activeScriptBtn')
-        }
-    }
-    document.getElementById('rightPanel').appendChild(butServ)
+    // Фабрика для создания кнопок
+    const createButton = ({ id, innerHTML, title, classes, onClick }) => {
+        const button = document.createElement('button');
+        button.id = id;
+        button.innerHTML = innerHTML;
+        button.title = title || '';
+        button.className = ['onlyfortp', rightPanelBtn, 'mainButton'].concat(classes || []).join(' ');
+        button.onclick = onClick;
+        return button;
+    };
 
-    let openKnowledge = document.createElement('button')
-    openKnowledge.innerHTML = '💡'
-    openKnowledge.id = 'knowledgeCenter'
-    openKnowledge.title = 'Открывает базу знаний решений неполадок'
-    openKnowledge.classList.add('onlyfortp', rightPanelBtn, 'mainButton')
-    document.getElementById('rightPanel').appendChild(openKnowledge)
-    document.getElementById('knowledgeCenter').onclick = getknowledgeCenterButtonPress;
-
-    let taskBut = document.createElement('button')
-    taskBut.id = "taskBut"
-    taskBut.innerHTML = "🛠"
-    taskBut.classList.add('onlyfortp', rightPanelBtn, 'mainButton')
-    document.getElementById('rightPanel').appendChild(taskBut)
-    document.getElementById('taskBut').onclick = gettaskButButtonPress;
-
-    setTimeout(() => {
-        document.getElementById('rightPanel').appendChild(maskBack)
-    }, 5000);
-
-    flagLangBut = 1
-    setInterval(timerHideButtons, 500)
-
-    if (location.pathname.split('/')[1] == "logs" && document.getElementsByClassName('ant-empty-description').length > 0 && document.getElementsByClassName('ant-empty-description')[0].innerHTML == "Нет данных") { // Добавляет кнопку при просмотре логов, если они были не в отделе ТП закрыты, чтобы открыть в Chat History модуле
-        let parent = document.getElementsByClassName('ant-table-title')[0].children[0];
-        let btnOpenInChatHis = document.createElement('button')
-        btnOpenInChatHis.textContent = "☢️"
-        btnOpenInChatHis.classList.add('mainButton')
-        btnOpenInChatHis.style = "width:40px; height:30px; margin-left:5px; font-size:16px; cursor:pointer"
-
-        let child = parent.children[3]; // Получаем третьего ребенка
-        parent.insertBefore(btnOpenInChatHis, child); // Вставляем перед третьим ребенком
-
-        btnOpenInChatHis.addEventListener('click', function () {
-            if (document.getElementById('AF_ChatHis').style.display == 'none') {
-                document.getElementById('opennewcat').click();
-                document.getElementById('hashchathis').value = location.pathname.split('/')[2];
-                btn_search_history.click();
-            } else {
-                document.getElementById('hashchathis').value = location.pathname.split('/')[2];
-                btn_search_history.click();
+    // Создаем кнопки через фабрику
+    const buttons = [
+        createButton({
+            id: 'datsyCalendar',
+            innerHTML: '📅',
+            title: 'Открывает календарь Datsy',
+            onClick: getdatsyCalendarButtonPress
+        }),
+        createButton({
+            id: 'butServ',
+            innerHTML: '⚜',
+            onClick: function () {
+                const isVisible = AF_Service.style.display !== 'none';
+                AF_Service.style.display = isVisible ? 'none' : '';
+                this.classList.toggle('activeScriptBtn', !isVisible);
             }
+        }),
+        createButton({
+            id: 'knowledgeCenter',
+            innerHTML: '💡',
+            title: 'Открывает базу знаний решений неполадок',
+            onClick: getknowledgeCenterButtonPress
+        }),
+        createButton({
+            id: 'taskBut',
+            innerHTML: '🛠',
+            onClick: gettaskButButtonPress
         })
+    ];
+
+    // Добавляем все кнопки за один раз
+    rightPanel.append(...buttons);
+
+    // Отложенная инициализация
+    setTimeout(() => rightPanel.appendChild(maskBack), 5000);
+
+    // Таймеры
+    flagLangBut = 1;
+    setInterval(timerHideButtons, 500);
+
+    // Обработка страницы логов
+    if (location.pathname.split('/')[1] === "logs") {
+        const emptyElement = document.querySelector('.ant-empty-description');
+        if (emptyElement?.textContent === "Нет данных") {
+            const parent = document.querySelector('.ant-table-title > div');
+            if (!parent) return;
+
+            const btnOpenInChatHis = createButton({
+                innerHTML: '☢️',
+                onClick: () => {
+                    const chatHis = document.getElementById('AF_ChatHis');
+                    if (chatHis.style.display === 'none') {
+                        document.getElementById('opennewcat')?.click();
+                    }
+                    document.getElementById('hashchathis').value = location.pathname.split('/')[2];
+                    btn_search_history.click();
+                }
+            });
+
+            btnOpenInChatHis.style.cssText = 'width:30px; height:30px; margin-left:5px; font-size:16px; cursor:pointer';
+
+            // Безопасная вставка кнопки
+            if (parent.children.length >= 3) {
+                parent.insertBefore(btnOpenInChatHis, parent.children[3]);
+            }
+        }
     }
 }
 
@@ -624,51 +641,6 @@ function newTags(tagName) { //функция добавления несколь
                 "method": "POST",
                 "credentials": "include"
             });
-    }
-}
-
-function screenshots() {  //просмотр и трансформация скриншотов в активном чате
-    // Select the expert-chat-display-inner element
-    const expertChatDisplayInner = document.getElementsByClassName('expert-chat-display-inner')[0];
-
-    // If expert-chat-display-inner exists, use it to get the children elements
-    let children;
-    if (expertChatDisplayInner) {
-        children = expertChatDisplayInner.children;
-    }
-    // If expert-chat-display-inner does not exist, select the chat-messages element and use it to get the children elements
-    else {
-        const chatMessages = document.getElementsByClassName('chat-messages')[0];
-        if (!chatMessages) {
-            return;
-        }
-        children = chatMessages.children;
-    }
-
-    // Iterate over the children elements
-    for (let i = 0; i < children.length; i++) {
-        const child = children[i];
-        if (child.textContent.includes('vimbox-resource') || child.textContent.includes('math-prod') || child.textContent.includes('communications.skyeng.ru')) {
-            // Get all the links in the child element
-            const links = child.querySelectorAll('a');
-
-            // Iterate over the links
-            for (let j = 0; j < links.length; j++) {
-                const link = links[j];
-                if (!link.hasAttribute('data-lightbox')) {
-                    // Create the img and a elements
-                    const img = document.createElement('img');
-                    img.style.width = '100px';
-                    const alink = document.createElement('a');
-                    alink.setAttribute('data-lightbox', 'imgs');
-                    alink.append(img);
-                    img.src = link.href;
-                    img.alt = 'ПКМ-Сохранить ссылку как';
-                    alink.href = img.src;
-                    link.replaceWith(alink);
-                }
-            }
-        }
     }
 }
 
@@ -912,7 +884,6 @@ maskBackHide.onclick = function () { // функция кнопки скрыть
     }
 };
 
-setInterval(screenshots, 5000)
 setInterval(closeTerms, 500);
 
 if (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") {
@@ -1264,7 +1235,7 @@ function toggleButtonState(buttonId, className) { // Функция для пе�
     button.classList.toggle(className);
 }
 
-function createAndShowButton(text , result = 'message') {
+function createAndShowButton(text, result = 'message') {
     let type = result == 'message' ? 'sucsbtnok' : 'sucsbtnnotok';
     let btnSuccess = document.createElement("button");
     btnSuccess.id = "successButton";
@@ -1435,11 +1406,11 @@ function addValidationlist(e) {
     const inputElement = e.target; // Элемент, вызвавший событие
     const listId = inputElement.getAttribute('list'); // Получаем id связанного datalist
     const dataList = document.getElementById(listId); // Находим связанный datalist
-    
+
     if (dataList) {
         const options = Array.from(dataList.options).map(opt => opt.value); // Собираем значения из datalist
         const value = inputElement.value; // Получаем текущее значение инпута
-        
+
         if (options.includes(value)) { // Проверяем, есть ли значение в списке
             inputElement.setCustomValidity(''); // Сбрасываем сообщение об ошибке
             inputElement.setAttribute('data-valid', 'true'); // Устанавливаем атрибут валидности

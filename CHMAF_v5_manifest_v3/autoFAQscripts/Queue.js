@@ -1,4 +1,6 @@
 let dataChts;
+let timerCountdownToRefresh;
+let timerToRefreshInt;
 var win_Queue =  // описание элементов окна Чаты в очереди
     `<div style="display: flex; width: 600px;">
         <span style="width: 600px">
@@ -7,6 +9,8 @@ var win_Queue =  // описание элементов окна Чаты в о�
                                 <button class="mainButton buttonHide" id="hideMeQueue">hide</button>
 								<span style="color:orange; font-weight:800">Всего чатов:</span>
 								<span id="waitingCount" style="color:coral; font-weight:800"></span>
+                                <span style="color:#00e9a0; font-weight:800">Список обновится через:</span>
+                                <span id="timeRestartCount" style="color:coral; font-weight:800"></span>
                         </div>
 						<div>
 							<select class="${exttheme}" id="AFStatusType" style="margin-left:220px; margin-top:10px;">
@@ -43,6 +47,9 @@ document.getElementById('hideMeQueue').addEventListener('click', function () { /
         document.getElementById('cardInfoData').innerText = "";
         document.getElementById('carddigits').value = "";
     }
+    clearInterval(timerCountdownToRefresh)
+    clearInterval(timerToRefreshInt)
+    console.log("All intervals for Queue were removed successfully")
 })
 
 function getQueuePress() {
@@ -56,6 +63,19 @@ function getQueuePress() {
         document.getElementById('idmymenu').style.display = 'none'
         waitingCount.innerHTML = ""
         getAllChatsByStatus()
+        let timerOutput = document.getElementById('timeRestartCount');
+        let timerTime = 9;
+
+        // Обновляем таймер каждую секунду
+        timerCountdownToRefresh = setInterval(() => {
+            timerOutput.textContent = timerTime--;
+            if (timerTime === -1) timerTime = 9;
+        }, 1000);
+
+        // Выполняем проверку каждые 10 секунд
+        timerToRefreshInt = setInterval(() => {
+            getAllChatsByStatus();
+        }, 10000);
     }
 }
 
@@ -280,17 +300,12 @@ async function getAllChatsByStatus() {
             countryInfo.textContent = "➖"
         }
 
-        let writeToChat = document.createElement('button');
-        writeToChat.className = 'mainButton';
-        writeToChat.textContent = ' 📝';
-        writeToChat.title = "Написать в этот чат";
-        writeToChat.name = "allWriteToChatBtns"
 
         let getThisChat = document.createElement('button');
         getThisChat.className = 'mainButton';
         getThisChat.name = 'assignToMe';
         getThisChat.title = "Забрать этот чат";
-        getThisChat.textContent = '😵';
+        getThisChat.textContent = '🫳';
 
         // Добавление созданных элементов в queueItemDiv
         queueItemDiv.appendChild(timeSpan);
@@ -299,7 +314,6 @@ async function getAllChatsByStatus() {
         queueItemDiv.appendChild(timerSpan);
         queueItemDiv.appendChild(checkFirstAnswer);
         queueItemDiv.appendChild(countryInfo);
-        queueItemDiv.appendChild(writeToChat);
         queueItemDiv.appendChild(getThisChat);
 
         // Добавление queueItemDiv в bimba
@@ -324,35 +338,6 @@ async function getAllChatsByStatus() {
         });
     }
 
-    let allBtnsWriteToChat = document.getElementsByName('allWriteToChatBtns')
-    let allFlags = document.getElementsByName('flagOfFirstAnswer')
-    for (let i = 0; i < allBtnsWriteToChat.length; i++) {
-        allBtnsWriteToChat[i].addEventListener('click', function (event) {
-            event.stopPropagation()
-            if (allFlags[i].textContent == "❌") {
-                let getTextAreaValue = document.getElementById('inputTextForUser').value
-                if (getTextAreaValue == "") { createAndShowButton('Введите текст сообщения для пользователя в поле ниже!' , 'error')
-                } else {
-                    fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-                        "headers": {
-                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
-                            "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-origin"
-                        },
-                        "referrerPolicy": "strict-origin-when-cross-origin",
-                        "body": `------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"${dataChts[i].stats.conversationSessionId}\",\"conversationId\":\"${dataChts[i].conversationId}\",\"text\":\"${getTextAreaValue}\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n`,
-                        "method": "POST",
-                        "mode": "cors",
-                        "credentials": "include"
-                    });
-                    allFlags[i].textContent = "✅"
-                }
-            } else {
-                createAndShowButton('Чат исходящий или первый ответ уже есть, сбивать таймер AFRT для этого чата нет необходимости!' , 'error')
-            }
-        })
-    }
-
     let allAssignBtns = document.getElementsByName('assignToMe')
     for (let z = 0; z < allAssignBtns.length; z++) {
         allAssignBtns[z].addEventListener('click', function (event) {
@@ -372,7 +357,8 @@ async function writeThemAll() {
         for (let i = 0; i < allFlags.length; i++) {
             if (allFlags[i].textContent == "❌") {
                 let getTextAreaValue = document.getElementById('inputTextForUser').value
-                if (getTextAreaValue == "") { createAndShowButton('Введите текст сообщения для пользователя в поле ниже!' , 'error')
+                if (getTextAreaValue == "") {
+                    createAndShowButton('Введите текст сообщения для пользователя в поле ниже!', 'error')
                 } else {
                     fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
                         "headers": {
@@ -402,3 +388,4 @@ document.getElementById('checkQueue').addEventListener('click', getAllChatsBySta
 document.getElementById('getChatFromQueue').addEventListener('click', writeThemAll)
 
 getOptions.addEventListener('change', getAllChatsByStatus)
+
