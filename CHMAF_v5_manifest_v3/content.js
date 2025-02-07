@@ -644,6 +644,53 @@ function newTags(tagName) { //функция добавления несколь
     }
 }
 
+function screenshots() {  //просмотр и трансформация скриншотов в активном чате
+    if (opsection == "ТП") {
+        // Select the expert-chat-display-inner element
+        const expertChatDisplayInner = document.getElementsByClassName('expert-chat-display-inner')[0];
+
+        // If expert-chat-display-inner exists, use it to get the children elements
+        let children;
+        if (expertChatDisplayInner) {
+            children = expertChatDisplayInner.children;
+        }
+        // If expert-chat-display-inner does not exist, select the chat-messages element and use it to get the children elements
+        else {
+            const chatMessages = document.getElementsByClassName('chat-messages')[0];
+            if (!chatMessages) {
+                return;
+            }
+            children = chatMessages.children;
+        }
+
+        // Iterate over the children elements
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            if (child.textContent.includes('vimbox-resource') || child.textContent.includes('math-prod') || child.textContent.includes('communications.skyeng.ru')) {
+                // Get all the links in the child element
+                const links = child.querySelectorAll('a');
+
+                // Iterate over the links
+                for (let j = 0; j < links.length; j++) {
+                    const link = links[j];
+                    if (!link.hasAttribute('data-lightbox')) {
+                        // Create the img and a elements
+                        const img = document.createElement('img');
+                        img.style.width = '100px';
+                        const alink = document.createElement('a');
+                        alink.setAttribute('data-lightbox', 'imgs');
+                        alink.append(img);
+                        img.src = link.href;
+                        img.alt = 'ПКМ-Сохранить ссылку как';
+                        alink.href = img.src;
+                        link.replaceWith(alink);
+                    }
+                }
+            }
+        }
+    }
+}
+
 function replaceSelectedText(elem, str) { //функция замены выделенного текста, для формирования гиперссылки
     elem.focus();
 
@@ -884,6 +931,7 @@ maskBackHide.onclick = function () { // функция кнопки скрыть
     }
 };
 
+setInterval(screenshots, 5000)
 setInterval(closeTerms, 500);
 
 if (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") {

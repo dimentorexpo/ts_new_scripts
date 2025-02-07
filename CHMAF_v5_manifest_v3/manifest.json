@@ -66,13 +66,15 @@
 				"/autoFAQscripts/Queue.js",
 				"/autoFAQscripts/Nabor.js",
 				"/autoFAQscripts/Vimbot.js",
+				"/Lightbox/dist/js/lightbox.min.js",
 				"/NG/Chekgirlyanda.js",
 				"/NG/gerljanda1.js",
 				"/NG/gerljanda2.js",
 				"/NG/snow.js"
 			],
 			"css": [
-				"/CSS/style.css"
+				"/CSS/style.css",
+				"/Lightbox/dist/css/lightbox.min.css"
 			],
 			"matches": [
 				"*://skyeng.autofaq.ai/*"
