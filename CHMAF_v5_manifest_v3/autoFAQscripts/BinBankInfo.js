@@ -2,7 +2,7 @@ var win_BankInfo =  // описание элементов окна Списка
     `<div style="display: flex; width: 450px;">
         <span style="width: 450px">
                 <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 400;" id="grlistdata">
+                        <div style="margin: 5px; width: 400;">
                                 <button class="mainButton buttonHide" id="hideMeBinBank">hide</button>
                         </div>
 						<div>
@@ -58,7 +58,7 @@ document.getElementById('getBankInfoData').addEventListener('click', async funct
             .catch(err => console.log(err));
 
         document.getElementById('cardInfoData').innerHTML = 'Имя банка: ' + cardData.BIN.issuer.name + '<br>' + 'Схема карты: ' + cardData.BIN.scheme + '<br>' + 'Страна: ' + cardData.BIN.country.country + '<br>' + 'Тип карты: ' + cardData.BIN.type + '<br>' + 'Валюта: ' + cardData.BIN.currency
-    } else createAndShowButton('Вы не ввели 6 цифр в поле для ввода. Пожалуйста, введите и повторите попытку!' , 'error');
+    } else createAndShowButton('Вы не ввели 6 цифр в поле для ввода. Пожалуйста, введите и повторите попытку!', 'error');
 })
 
 document.getElementById('openSiteBin').addEventListener('click', function () {

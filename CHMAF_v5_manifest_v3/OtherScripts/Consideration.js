@@ -1,49 +1,66 @@
-var win_Infoconsid =  // описание элементов окна ссылок
-    `<div style="width: 800px; font-size: 0.8rem; margin: 5px; min-height: 140px; display: flex;">
-    <div style="width: 49%; float: left;">
-        <p><b>Если передаешь компенсацию урока из-за серверных</b></p>
-        <p style="color:red"><b> •Добавь ссылку на disaster или ссылку на трэд<br>
-        •Напиши дату и время урока<br>
-        •Укажи какой статус урока выставлен</b></p>
-        <p><b>Вся информация о компенсациях находится <a href="https://confluence.skyeng.tech/pages/viewpage.action?pageId=144871997" target="_blank" rel="noopener">тут</a></b></p> 
-        <p><b>Если у ученика нет честных оплат, нужно написать в канал 
-            <a href="https://mm-time.skyeng.tech/skyeng/channels/mrkt-bill-questions">~mrkt-bill-questions</a> с указанием секции бюджета 
-            <span style="color: red;">2381(только для ТП)</span>, <span style="color: red;">предварительно согласовав</span> начисление с руководителем или <span style="color: red;">тэгнув</span> его в трэде с запросом компенсации</b></p>
- 
-    </div>
-    <div style="width: 49%;float: right">
-        <p><b>Если делаешь запрос на компенсацию “повторное обращение по багу в мобильном приложении”</b></p> 
-        <p style="color:red"><b> Обязательно добавь ссылку на задачу в Jira </b></p>
-        
-    </div>
-</div>`;
+// Функция для создания окна с информацией о компенсациях
+function createInfoWindow() {
+    const infoContent = `
+        <div style="width: 800px; font-size: 0.8rem; margin: 5px; min-height: 140px; display: flex;">
+            <div style="width: 49%;">
+                <p><b>
+                    Компенсации делаются даже, если неполадки были со стороны ученика. Бонусными рублями можем компенсировать при некритичном баге, который не срывает урок и как минимум при третьем обращении по одному и тому же багу либо треду, где вопрос решается, но еще не решен и баг не заведен.
+                </b></p>
+                <p style="color:red">
+                    <b>• Добавь ссылку на баг или ссылку на тред, где передавалось обращение юзера, но еще не заведен баг.</b>
+                </p>
+                <p style="color:green">
+                    <b>
+                        • При компенсации по серверным неполадкам (массовым сбоям) или критическому багу, из-за которого урок не состоялся используй
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeNQHfwYwHYRSb1RoBhkTYz6NMeVzaubwFEMWGNJQcgo_319g/viewform" target="_blank" rel="noopener">форму</a>. Если У корп, в этом случае следует передавать на начислением бонусным уроком!
+                    </b>
+                </p>
+                <p><b>Вся информация о компенсациях находится <a href="https://confluence.skyeng.tech/pages/viewpage.action?pageId=144871997" target="_blank" rel="noopener">тут</a>.</b></p>
+                <p><b>Если у ученика нет честных оплат, то следует передавать через <a href="https://docs.google.com/forms/d/e/1FAIpQLSdXG9mi6xWtjdWos5-Cki47ZGpJdpATvdEXnNQMgcfQWg6QDA/viewform" target="_blank" rel="noopener">форму</a>.</b></p>
+            </div>
+        </div>
+    `;
 
-let flaginsert = 0;
-
-let wintInfoconsid = document.createElement('div'); // создание окна ссылок
-wintInfoconsid.style.display = 'none';
-wintInfoconsid.innerHTML = win_Infoconsid;
-
-function startchecking() {
-    if (document.URL == 'https://billing-marketing.skyeng.ru/accrual-operations/create') {
-        document.getElementById('selectedOperation').addEventListener("change", addinformationform)
-    }
+    const infoWindow = document.createElement('div');
+    infoWindow.style.display = 'none';
+    infoWindow.innerHTML = infoContent;
+    return infoWindow;
 }
 
-function addinformationform() {
-    let TPcomp = document.getElementsByClassName('card-header')
-    for (y = 0; y < TPcomp.length; y++) {
-        if (TPcomp[y].innerText == 'Компенсация за технические проблемы') {
-            if (flaginsert == 0) {
-                let formtoin = document.getElementsByClassName('card-body')[0]
-                formtoin.insertBefore(wintInfoconsid, formtoin.children[0])
-                flaginsert = 1
+// Функция для добавления информации о форме
+function addInformationForm() {
+    const operationSelect = document.getElementById('selectedOperation');
+    if (!operationSelect) return;
+
+    const infoWindow = createInfoWindow();
+    let isInserted = false;
+
+    operationSelect.addEventListener("change", () => {
+        const compensationHeader = Array.from(document.getElementsByClassName('card-header')).find(
+            header => header.innerText === 'Компенсация за технические проблемы'
+        );
+
+        if (compensationHeader) {
+            if (!isInserted) {
+                const cardBody = document.querySelector('.card-body');
+                if (cardBody) {
+                    cardBody.insertBefore(infoWindow, cardBody.firstChild);
+                    isInserted = true;
+                }
             }
-            wintInfoconsid.style.display = ''
+            infoWindow.style.display = '';
         } else {
-            wintInfoconsid.style.display = 'none'
+            infoWindow.style.display = 'none';
         }
+    });
+}
+
+// Проверяем URL страницы и запускаем функцию
+function startChecking() {
+    if (document.URL === 'https://billing-marketing.skyeng.ru/accrual-operations/create') {
+        addInformationForm();
     }
 }
 
-startchecking()
+// Запускаем проверку при загрузке скрипта
+startChecking();

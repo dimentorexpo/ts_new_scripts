@@ -2,7 +2,7 @@ var win_GrList =  // описание элементов окна Списка �
     `<div style="display: flex; width: 450px;">
         <span style="width: 450px">
                 <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 400;" id="grlistdata">
+                        <div style="margin: 5px; width: 400;">
                                 <button class="mainButton buttonHide" id="hideList">hide</button>
                         </div>
 						<div>

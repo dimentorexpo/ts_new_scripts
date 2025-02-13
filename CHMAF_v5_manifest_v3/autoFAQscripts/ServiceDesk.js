@@ -10,7 +10,6 @@ const Paragrafsstyles = "color: bisque; font-size: 18px; position: relative; wid
 
 const buttons = [ //array of buttonsnames
     '.edumodbtn',
-    '.bilqabtn',
     '.teacbtn',
     '.c1sbtn',
     '.schdbtn',
@@ -22,9 +21,7 @@ const buttons = [ //array of buttonsnames
     '.vimvidsbtn',
     '.studcabbtn',
     '.chatqabtn',
-    '.stcabmbsbtn',
     '.mobilebugsbtn',
-    '.academyselfstudybugsbtn',
     '.CommProblemsbtn'
 ];
 
@@ -33,7 +30,6 @@ const otherOptions = [ // array of buttons categories id's, важен поря�
     'crm2srvdskoptions',
     'authsrvdskoptions',
     'schedulesrvdskoptions',
-    'billingqasrvdskoptions',
     'c1srvdskoptions',
     'billingsrvdskoptions',
     'mrktbillrvdskoptions',
@@ -42,9 +38,7 @@ const otherOptions = [ // array of buttons categories id's, важен поря�
     'studcaboptions',
     'chatqaoptions',
     'edumodeloptions',
-    'studcabmobbugskoptions',
     'mobilebugsoptions',
-    'academyselfstudysoptions',
     'CommProblemsoptions'
 ];
 
@@ -69,7 +63,6 @@ var win_servicedesk = // описание элементов окна Service De
                     <button class="mainButton sdbtn" id="optionCRM2" value="26" >🧮CRM2</button>
                     <button class="mainButton sdbtn" id="optionAuth" value="20">🔐Auth</button>
                     <button class="mainButton sdbtn" id="optionSchedule" value="33">📆Schedul</button>
-                    <button class="mainButton sdbtn" id="optionBillingQA" value="22">💲Billing-QA</button>
                     <button class="mainButton sdbtn" id="optionOnboarding" value="23">♻Onboard</button>
                     <button class="mainButton sdbtn" id="optionBilling" value="21">💰Billing</button>
                     <button class="mainButton sdbtn" id="optionMrktbill" value="31">📈Mrkt-Bill</button>
@@ -78,9 +71,7 @@ var win_servicedesk = // описание элементов окна Service De
                     <button class="mainButton sdbtn" id="optionStudcab" value="34">👨‍🎓Erp</button>
                     <button class="mainButton sdbtn" id="optionChat" value="24">💬Chat</button>
                     <button class="mainButton sdbtn" id="optionEdModel" value="28">🎓LearnPers</button>
-                    <button class="mainButton sdbtn" id="optionStudcabmobbugs" value="35"> ErpMobBugs</button>
 					<button class="mainButton sdbtn" id="optionMobileAppbugs" value="136">📱Mob Bugs</button>
-                    <button class="mainButton sdbtn" id="optionAcademyselfstudybbugs" value="19">Academy-Self</button>
 					<button class="mainButton sdbtn" id="optionCommProblems" value="75">📧Comm</button>
                 </div>
 
