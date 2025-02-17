@@ -1,4 +1,4 @@
-var win_Stat =  // описание элементов окна Статистики 
+var win_Stat =  // описание элементов окна Статистики
     `<div style="display: flex; width: 550px;">
         <span style="width: 550px">
                 <span style="cursor: -webkit-grab;">
@@ -587,5 +587,5 @@ document.getElementById('changetheme').onclick = function () { //функция 
             "method": "POST",
             "credentials": "include"
         });
-    else createAndShowButton('Введите хэш чата в длинное поле по центру' , 'error');
+    else createAndShowButton('Введите хэш чата в длинное поле по центру', 'error');
 }
