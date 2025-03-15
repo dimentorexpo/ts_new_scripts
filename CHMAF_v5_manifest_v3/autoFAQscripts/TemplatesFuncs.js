@@ -61,6 +61,31 @@ function requestsRed(taketaskElement) {
     }
 }
 
+function newTags(tagName) { //функция добавления нескольких тегов в чат, которые тянутся из дока в комплекте так сказать
+    let chatId = getChatId();
+
+    if (chatId) {
+        if (tagName.split(',').length < 2)
+            fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
+                "headers": {
+                    "content-type": "application/json",
+                },
+                "body": "{\"conversationId\":\"" + chatId + "\",\"elements\":[{\"name\":\"tags\",\"value\":[\"" + tagName + "\"]}]}",
+                "method": "POST",
+                "credentials": "include"
+            });
+        else if (tagName.split(',').length == 2)
+            fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
+                "headers": {
+                    "content-type": "application/json",
+                },
+                "body": "{\"conversationId\":\"" + chatId + "\",\"elements\":[{\"name\":\"tags\",\"value\":[\"" + tagName.split(',')[0] + "\" ,\"" + tagName.split(',')[1] + "\"]}]}",
+                "method": "POST",
+                "credentials": "include"
+            });
+    }
+}
+
 function Lessonisnow(iframeDoc) { // добавляем красную надпись о том что сейчас идет урок
     const Convlist = iframeDoc.querySelectorAll('#__next [class^="DialogsCard_Card"]');
     let activeConvElem = null;
