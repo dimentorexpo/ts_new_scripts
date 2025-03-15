@@ -1619,6 +1619,18 @@ updateInterval = setInterval(CountTechSupTimmer, 30000);
 
 setInterval(startTimer, 500)
 
+// ловим вызов newTaggg из iframe
+window.addEventListener('callNewTaggg', (event) => {
+    const tagName = event.detail.tagName;
+    newTaggg(tagName);
+});
+
+// ловим вызов sendComent из iframe
+window.addEventListener('CallNewComment', (event) => {
+    const ComemntText = event.detail.comment;
+    sendComment(ComemntText);
+});
+
 
 
 

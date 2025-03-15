@@ -1019,7 +1019,7 @@ function convertToSeconds(TimeToClose, TimeToAnswer, i) { //функция ко�
     return totalSeconds;
 }
 
-function checkchats() {
+function checkchats() { //функция проверки  чатов и перекрашивает, если время осталось меньше двух минут,  или по другим критериям
     const allChats = getAllChatsList();
     if (allChats) {
         const timers = allChats.chatsTimerList;
@@ -1044,25 +1044,12 @@ function checkchats() {
     }
 }
 
-// ловим вызов newTaggg из iframe
-window.addEventListener('callNewTaggg', (event) => {
-    const tagName = event.detail.tagName;
-    newTaggg(tagName);
-});
-
-// ловим вызов sendComent из iframe
-window.addEventListener('CallNewComment', (event) => {
-    const ComemntText = event.detail.comment;
-    sendComment(ComemntText);
-});
-
-
 function toggleButtonState(buttonId, className) { // Функция для переключения состояния кнопки
     const button = document.getElementById(buttonId);
     button.classList.toggle(className);
 }
 
-function createAndShowButton(text, result = 'message') {
+function createAndShowButton(text, result = 'message') { //функция создания кнопки с текстовым с ообщением и прогресс баром до исчезновения
     let type = result == 'message' ? 'sucsbtnok' : 'sucsbtnnotok';
     let btnSuccess = document.createElement("button");
     btnSuccess.id = "successButton";
@@ -1142,7 +1129,23 @@ let checkRespondToken = setInterval(async function () {
     }
 }, 4000);
 
-function showCustomAlert(message, notif = 0) {
+function showNotification(message) { // функция отображения уведомления средствами самого браузера
+    if (!("Notification" in window)) {
+        console.log("Этот браузер не поддерживает уведомления.");
+    }
+    else if (Notification.permission === "granted") {
+        new Notification(message);
+    }
+    else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(function (permission) {
+            if (permission === "granted") {
+                new Notification(message);
+            }
+        });
+    }
+}
+
+function showCustomAlert(message, notif = 0) { //функция создания уведомления взамен алерта, который стопает выполнение скриптов, а тут продолжается.
     if (localStorage.getItem('brnotificatios') == '0' && notif == 1) {
         showNotification(message);
     }
@@ -1168,22 +1171,6 @@ function showCustomAlert(message, notif = 0) {
 
     // Добавляем уведомление на страницу
     document.body.appendChild(alertContainer);
-}
-
-function showNotification(message) {
-    if (!("Notification" in window)) {
-        console.log("Этот браузер не поддерживает уведомления.");
-    }
-    else if (Notification.permission === "granted") {
-        new Notification(message);
-    }
-    else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(function (permission) {
-            if (permission === "granted") {
-                new Notification(message);
-            }
-        });
-    }
 }
 
 // Функция для замены предмета
@@ -1227,25 +1214,6 @@ function formatServiceType(serviceTypeKey) {
         formattedText: format ? `${subject} ${format}`.trim() : subject,
         lessontype: lessontype
     };
-}
-
-function addValidationlist(e) {
-    const inputElement = e.target; // Элемент, вызвавший событие
-    const listId = inputElement.getAttribute('list'); // Получаем id связанного datalist
-    const dataList = document.getElementById(listId); // Находим связанный datalist
-
-    if (dataList) {
-        const options = Array.from(dataList.options).map(opt => opt.value); // Собираем значения из datalist
-        const value = inputElement.value; // Получаем текущее значение инпута
-
-        if (options.includes(value)) { // Проверяем, есть ли значение в списке
-            inputElement.setCustomValidity(''); // Сбрасываем сообщение об ошибке
-            inputElement.setAttribute('data-valid', 'true'); // Устанавливаем атрибут валидности
-        } else {
-            inputElement.setCustomValidity('Пожалуйста, выберите одно из доступных значений.'); // Устанавливаем сообщение об ошибке
-            inputElement.removeAttribute('data-valid'); // Удаляем атрибут валидности
-        }
-    }
 }
 
 function highlightSearchText(item, searchText) {
