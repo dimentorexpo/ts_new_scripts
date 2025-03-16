@@ -827,9 +827,27 @@ maskBackHide.onclick = function () { // функция кнопки скрыть
 setInterval(screenshots, 5000)
 setInterval(closeTerms, 500);
 
-if (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") {
-    setTimeout(move_again_AF, 3500) //вызов функции первичной загрузки страницы с фомированием меню и наполнением его
+// Проверяем текущий путь сразу при загрузке
+if (window.location.pathname !== "/login") {
+    setTimeout(move_again_AF, 1500);
+} else {
+    // Если изначально на /login, запускаем интервал для отслеживания перехода
+    let previousPath = window.location.pathname;
+
+    const checkURLChange = setInterval(() => {
+        const currentPath = window.location.pathname;
+
+        // Срабатываем при переходе с /login на любой другой путь
+        if (previousPath === "/login" && currentPath !== "/login") {
+            clearInterval(checkURLChange);
+            setTimeout(move_again_AF, 1500);
+        }
+
+        previousPath = currentPath;
+    }, 500);
 }
+
+
 
 function SearchinAFnewUI(whatsearch) { //функция поиска нового юзер интерфейса в AF
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
