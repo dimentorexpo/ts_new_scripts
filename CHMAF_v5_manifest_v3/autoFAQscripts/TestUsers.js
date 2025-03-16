@@ -33,13 +33,13 @@ function handleButtonClick(buttonId, storageKey) {
     getLoginLink(userId).then(() => {
         button.classList.remove('active'); // Убираем класс active
         button.classList.add('successbtn'); // Добавляем successbtn
-        createAndShowButton('💾 Ссылка-логинер cкопирована' , 'message');
+        createAndShowButton('💾 Ссылка-логинер cкопирована', 'message');
         setTimeout(() => button.classList.remove('successbtn'), 1000);
     }).catch((error) => {
         console.log('Ошибка: ', error);
         button.classList.remove('active'); // Убираем класс active
         button.classList.add('errorbtn'); // Добавляем errorbtn
-        createAndShowButton('Не удалось получить сылку-логинер' , 'error');
+        createAndShowButton('Не удалось получить сылку-логинер', 'error');
         setTimeout(() => button.classList.remove('errorbtn'), 1000);
     });
 }
@@ -51,11 +51,11 @@ function handleContextMenu(event, storageKey, buttonId) {
     const button = document.getElementById(buttonId);
     if (userId) {
         copyToClipboard(userId);
-        createAndShowButton('💾 ID cкопировано' , 'message');
+        createAndShowButton('💾 ID cкопировано', 'message');
         button.classList.add('successbtn'); // Добавляем successbtn
         setTimeout(() => button.classList.remove('successbtn'), 1000);
     } else {
-        createAndShowButton('Введите ID тестового ученика в настройках ⚙' , 'error');
+        createAndShowButton('Введите ID тестового ученика в настройках ⚙', 'error');
     }
 }
 
@@ -98,5 +98,25 @@ openUserInfoButton.onclick = () => {
 };
 
 // Установка стиля для TestUsersdiv
-const TestUsersdivstyle = (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") && localStorage.getItem('disablelpmwindow') !== '1' ? '' : 'none';
-setDisplayStyle(TestUsersdiv, TestUsersdivstyle);
+// Функция для обновления стиля
+function updateTestUsersDivStyle() {
+    const isHostCorrect = window.location.host === "skyeng.autofaq.ai";
+    const isNotLogin = window.location.pathname !== "/login";
+    const isAllowed = localStorage.getItem('disablelpmwindow') !== '1';
+
+    const shouldShow = isHostCorrect && isNotLogin && isAllowed;
+    setDisplayStyle(TestUsersdiv, shouldShow ? '' : 'none');
+}
+
+// Первоначальная проверка при загрузке
+updateTestUsersDivStyle();
+
+// Если начальная страница - /login, запускаем отслеживание
+if (window.location.pathname === "/login") {
+    const styleCheckInterval = setInterval(() => {
+        if (window.location.pathname !== "/login") {
+            updateTestUsersDivStyle();
+            clearInterval(styleCheckInterval);
+        }
+    }, 500);
+}
