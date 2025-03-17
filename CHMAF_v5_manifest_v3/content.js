@@ -621,6 +621,26 @@ function addOption(oListbox, text, value) {  //функция добавлени
     oListbox.appendChild(oOption);
 }
 
+function getText() { // функция обновления текста с шаблонов из документа
+    const app = scriptAdr;
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', app);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+                const r = JSON.parse(xhr.responseText);
+                const result = r["result"];
+                table = result;
+            } catch (e) {
+                console.log(e);
+            } finally {
+                refreshTemplates();
+            }
+        }
+    };
+    xhr.send();
+}
+
 async function move_again_AF() { //с АФ шняга там стили шмили скрипта отображение отправку сообщений
     getText();
     let whoAmISuccess = await whoAmI();

@@ -863,26 +863,6 @@ function servFromDoc(event) {
     }
 }
 
-function getText() { // функция обновления текста с шаблонов из документа
-    const app = scriptAdr;
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', app);
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            try {
-                const r = JSON.parse(xhr.responseText);
-                const result = r["result"];
-                table = result;
-            } catch (e) {
-                console.log(e);
-            } finally {
-                refreshTemplates();
-            }
-        }
-    };
-    xhr.send();
-}
-
 document.getElementById('getnewtmpldata').onclick = getText // по клику на кнопку сработает функция обновления шаблонов из документа
 
 async function getInfo(flag1 = 1) { //функция получения инфо о чате и сервис айди
