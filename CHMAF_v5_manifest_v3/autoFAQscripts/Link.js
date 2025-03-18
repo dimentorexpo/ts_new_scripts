@@ -34,6 +34,7 @@ var win_Links =  // описание элементов окна ссылок
 					<button class="mainButton" title="Открывает Help Centr для учеников" id="helpocentrstud" style="width:105px; margin-top: 3px">Help Center У</button>
 					<button class="mainButton" title="Открывает Help Centr для преподавателей" id="helpocentrteach" style="width:105px; margin-top: 3px">Help Center П</button>
 					<button class="mainButton" title="Открывает сайт для просмотра ошибок и логов в комнате" id="trshoothing" style="width:105px; margin-top: 3px">Troubleshooting</button>
+                    <button class="mainButton" title="Открывает сайт для просмотра ошибок и логов в комнате" id="Synchronizer" style="width:105px; margin-top: 3px">Синхрон ДЗ</button>
 				</div>
 				<div style="margin: 5px; width: 550px" id="links_box">
 					<input class="${exttheme}" id="cpuname" placeholder="CPU name" title="вводим название процессора, чтобы сразу перейти на сайт с проверкой рейтинга CPU" autocomplete="off" type="text" style="text-align: center; width: 103px; margin-top: 5px">
@@ -283,8 +284,12 @@ function addfunctionsonclick(section) {
             window.open("https://www.browserstack.com/users/sign_in")
         })
 
-        document.getElementById('trshoothing').addEventListener('click', function () { // открываем ссылку в новой вкладке на TRM 2.0
+        document.getElementById('trshoothing').addEventListener('click', function () { // открываем ссылку в новой вкладке на ТШ
             window.open("https://video-trouble-shooter.skyeng.ru/")
+        })
+
+        document.getElementById('Synchronizer').addEventListener('click', function () { // открываем ссылку для синхронизации уроков, дз
+            window.open("https://learning.skyeng.ru/upsert-history")
         })
 
         document.getElementById('testroom').addEventListener('click', function () { // открываем ссылку в админку тестовых комнат
