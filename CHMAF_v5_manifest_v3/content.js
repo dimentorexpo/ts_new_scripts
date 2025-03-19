@@ -28,14 +28,14 @@ let foundarr;
 let flagsearch;
 let operchatsdata;
 let isChatOnOperator = false;
-var audio // переменнай для проигрывания звука при поступлении нового чата
-var soundintervalset; //интервал между проигрыванием звука
+let audio // переменнай для проигрывания звука при поступлении нового чата
+let soundintervalset; //интервал между проигрыванием звука
 let flagusertype;
 let chatneraspcount; // переменная для получения колчества нераспределенных чатов в очереди
 let chattpquecount; // переменная для получения колчества нераспределенных чатов в очереди тематики ТП v1
 idk = 0
-var tmrs = []
-var timeStart = new Date()
+let tmrs = []
+let timeStart = new Date()
 let template_flag = 0
 let template_flag2 = 0
 let word_text = ""
@@ -45,16 +45,16 @@ let getidusrteachreq;
 let getidusrstud;
 let getidusrsteach;
 let getservidst;
-var templatesAF = [];
-var bool = 0;
-var table;
-var opsection = ''; // глобальная переменная отдела оператора
-var operatorId = ""; //глобальная переменная после получения ID operator , который использует расширение и авторизован в свой профиль
-var operatorsarray = []; //массив операторов , который потом пригодится для других функций
-var flagLangBut = 0;
-var modulesarray = [];
-var chatsArray = [];
-var scriptAdr = localStorage.getItem('scriptAdr');
+let templatesAF = [];
+let bool = 0;
+let table;
+let opsection = ''; // глобальная переменная отдела оператора
+let operatorId = ""; //глобальная переменная после получения ID operator , который использует расширение и авторизован в свой профиль
+let operatorsarray = []; //массив операторов , который потом пригодится для других функций
+let flagLangBut = 0;
+let modulesarray = [];
+let chatsArray = [];
+let scriptAdr = localStorage.getItem('scriptAdr');
 
 // Словарь для перевода предметов и направлений
 const subjectTranslations = {
@@ -89,13 +89,13 @@ localStorage.setItem('tpflag', localStorage.getItem('tpflag') || 'ТП');
 
 localStorage.setItem('extentiontheme', localStorage.getItem('extentiontheme') || 'light');
 
-var exttheme = localStorage.getItem('extentiontheme') === 'dark' ? 'darkinputs' : 'lightinputs';
-var selectedinpth = exttheme === 'lightinputs' ? 'calendarmyinputslight' : 'calendarmyinputsdark';
-var otherinpth = exttheme === 'lightinputs' ? 'othercalendarlight' : 'othercalendardark';
-var selecttheme = exttheme === 'lightinputs' ? 'lightopts' : 'darkopts';
-var menutheme = exttheme === 'lightinputs' ? 'menubarstylelight' : 'menubarstyledark';
-var rightPanelBtn = exttheme === 'lightinputs' ? 'rightPanelBtnlight' : 'rightPanelBtndark';
-var menubtns = exttheme === 'lightinputs' ? 'menubtnsstylelight' : 'menubtnsstyledark';
+let exttheme = localStorage.getItem('extentiontheme') === 'dark' ? 'darkinputs' : 'lightinputs';
+let selectedinpth = exttheme === 'lightinputs' ? 'calendarmyinputslight' : 'calendarmyinputsdark';
+let otherinpth = exttheme === 'lightinputs' ? 'othercalendarlight' : 'othercalendardark';
+let selecttheme = exttheme === 'lightinputs' ? 'lightopts' : 'darkopts';
+let menutheme = exttheme === 'lightinputs' ? 'menubarstylelight' : 'menubarstyledark';
+let rightPanelBtn = exttheme === 'lightinputs' ? 'rightPanelBtnlight' : 'rightPanelBtndark';
+let menubtns = exttheme === 'lightinputs' ? 'menubtnsstylelight' : 'menubtnsstyledark';
 
 function checkcalendaricon() { //функция проверки иконки календаря в зависимости от темы расширения
     if (exttheme === 'darkinputs' && localStorage.getItem('changesymtemicons') == '0') {
@@ -329,7 +329,7 @@ function onlyNumbersAndComma(object) { // функция для разрешен
     object.value = object.value.replace(/[^0-9,]/g, '');
 }
 
-function noDoubts(object) { // функция для разрешения ввода только английских и русских букв без запрещенных символов
+function noDoubts(object) { // функция для разрешения ввода только английских и русских букв без запрещенных символов, пока нигде не используеться
     object.value = object.value.replace(/["'\\]/gi, '');
 }
 
