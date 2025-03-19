@@ -97,7 +97,7 @@ var menutheme = exttheme === 'lightinputs' ? 'menubarstylelight' : 'menubarstyle
 var rightPanelBtn = exttheme === 'lightinputs' ? 'rightPanelBtnlight' : 'rightPanelBtndark';
 var menubtns = exttheme === 'lightinputs' ? 'menubtnsstylelight' : 'menubtnsstyledark';
 
-function checkcalendaricon() {
+function checkcalendaricon() { //функция проверки иконки календаря в зависимости от темы расширения
     if (exttheme === 'darkinputs' && localStorage.getItem('changesymtemicons') == '0') {
         applyCalendarIconInversion();
     }
