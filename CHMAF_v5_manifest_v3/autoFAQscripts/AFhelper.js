@@ -183,3 +183,5 @@ document.getElementById('hideMenuMain').onclick = function () { // кнопка 
     elements.forEach(e => { if (document.getElementById(e)) { setDisplayStyle(document.getElementById(e), 'none') } });
     document.getElementById('scriptBut').classList.remove('activeScriptBtn')
 }
+
+document.getElementById('getnewtmpldata').onclick = getText // по клику на кнопку сработает функция обновления шаблонов из документа

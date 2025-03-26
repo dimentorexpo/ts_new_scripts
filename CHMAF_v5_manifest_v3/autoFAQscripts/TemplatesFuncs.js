@@ -33,23 +33,6 @@ var win_UsersInfo = // описание окна тестовых пользов
     </span>
 `;
 
-
-function pageClick(event) { // обновлённый обработчик событий
-    const b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1];
-    const pageId = event.currentTarget.id;
-    const pageNum = pageId.split('_')[0];
-
-    for (let i = 0; i < b.childElementCount; i++) {
-        try {
-            b.children[1].children[i].style = 'background-color:#768d87; border-top:0px;';
-            document.getElementById(i + "page").style.display = 'none';
-        } catch (e) {
-
-        }
-    }
-    event.currentTarget.style = 'background-color: green; border-top:4px solid orange';
-    document.getElementById(pageNum + "page").style.display = '';
-}
 // Блок для работы с шаблонами из гугл таблиц
 
 function requestsRed(taketaskElement) {
@@ -862,8 +845,6 @@ function servFromDoc(event) {
         }
     }
 }
-
-document.getElementById('getnewtmpldata').onclick = getText // по клику на кнопку сработает функция обновления шаблонов из документа
 
 async function getInfo(flag1 = 1) { //функция получения инфо о чате и сервис айди
     let activeConvId = getChatId();

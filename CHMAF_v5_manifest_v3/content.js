@@ -621,210 +621,289 @@ function addOption(oListbox, text, value) {  //функция добавлени
     oListbox.appendChild(oOption);
 }
 
+function pageClick(event) { // обновлённый обработчик событий
+    const b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1];
+    const pageId = event.currentTarget.id;
+    const pageNum = pageId.split('_')[0];
+
+    for (let i = 0; i < b.childElementCount; i++) {
+        try {
+            b.children[1].children[i].style = 'background-color:#768d87; border-top:0px;';
+            document.getElementById(i + "page").style.display = 'none';
+        } catch (e) {
+
+        }
+    }
+    event.currentTarget.style = 'background-color: green; border-top:4px solid orange';
+    document.getElementById(pageNum + "page").style.display = '';
+}
+
+let bimba;
+function initializeMyLogic() {
+    const afHelper = document.getElementById('AF_helper');
+    if (!afHelper) {
+        console.error('AF_helper все еще не найден!');
+        // Возможно, здесь нужна дополнительная обработка ошибки
+        return;
+    }
+
+    console.log('AF_helper найден, инициализация логики content.js...');
+
+    if (afHelper && afHelper.childNodes[0] && afHelper.childNodes[0].childNodes[1]) {
+        bimba = afHelper.childNodes[0].childNodes[1].childNodes[1];
+        console.log(bimba)
+    } else {
+        console.error('Элемент AF_helper отсутствует или структура DOM отличается.');
+    }
+
+    // ---> Вставьте сюда ВЕСЬ ОСТАЛЬНОЙ КОД из content.js <---
+    // Например:
+    // let b;
+    // if (afHelper && afHelper.childNodes[0] && ...) {
+    //    b = ...
+    // } else { ... }
+    // ... и так далее ...
+}
+
+function waitForElement(selector, callback, timeout = 10000, interval = 100) {
+    const startTime = Date.now();
+    const intervalId = setInterval(() => {
+        const element = document.querySelector(selector);
+        if (element) {
+            console.log(`Элемент ${selector} найден.`);
+            clearInterval(intervalId);
+            callback();
+        } else if (Date.now() - startTime > timeout) {
+            clearInterval(intervalId);
+            console.error(`Элемент ${selector} не найден в течение ${timeout / 1000} секунд.`);
+            // Можно вызвать callback с ошибкой или сделать что-то еще
+        } else {
+            // console.log(`Ожидание ${selector}...`); // Раскомментируйте для отладки
+        }
+    }, interval);
+}
+
+// Запускаем ожидание AF_helper
+if (location.host == 'skyeng.autofaq.ai') {
+    waitForElement('#AF_helper', initializeMyLogic);
+}
+
+
+
 function refreshTemplates() { // функция обновляет шаблоны которые загружены были с гугл таблицы и сформированы их в table
-    setInterval(function () {
-        phone = SearchinAFnewUI("phone");
-        email = SearchinAFnewUI("email");
+    if (location.host == 'skyeng.autofaq.ai') {
+        setInterval(function () {
+            phone = SearchinAFnewUI("phone");
+            email = SearchinAFnewUI("email");
 
-        if (document.getElementById('phone_tr')) {
-            if (phone === "-" || phone === "") {
-                document.getElementById('phone_tr').placeholder = "Телефон";
-            } else {
-                document.getElementById('phone_tr').placeholder = phone;
+            if (document.getElementById('phone_tr')) {
+                if (phone === "-" || phone === "") {
+                    document.getElementById('phone_tr').placeholder = "Телефон";
+                } else {
+                    document.getElementById('phone_tr').placeholder = phone;
+                }
+            }
+
+            if (document.getElementById('email_tr')) {
+                if (email === "-" || email === "") {
+                    document.getElementById('email_tr').placeholder = "Почта";
+                } else {
+                    document.getElementById('email_tr').placeholder = email;
+                }
+            }
+        }, 1000);
+
+        templatesAF = []
+        let pagesElement = document.getElementById('pages');
+        while (pagesElement && pagesElement.children[0] !== undefined) {
+            pagesElement.children[0].remove();
+        }
+        for (let i = 0; document.getElementById(i + 'page') !== null; i++) {
+            document.getElementById(i + 'page').remove();
+        }
+        let addTmpElement = document.getElementById('addTmp');
+        if (addTmpElement && addTmpElement.children[0]) {
+            while (addTmpElement.children[0].children[0] !== undefined) {
+                addTmpElement.children[0].children[0].remove();
             }
         }
+        countOfStr = 0
+        countOfPages = 0
+        pageName = ""
+        addTmpFlag = 0
 
-        if (document.getElementById('email_tr')) {
-            if (email === "-" || email === "") {
-                document.getElementById('email_tr').placeholder = "Почта";
-            } else {
-                document.getElementById('email_tr').placeholder = email;
-            }
-        }
-    }, 1000);
+        // b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1]
+        for (i = 0; i < table.length; i++) {
+            c = table[i]
+            switch (c[0]) {
+                case '':
+                    addTmpFlag = 0
+                    countOfStr++
+                    var newStr = document.createElement('div')
+                    newStr.style.margin = "5px"
+                    newStr.id = countOfPages + "page_" + countOfStr + "str"
+                    bimba.lastElementChild.appendChild(newStr)
+                    break
 
-    templatesAF = []
-    while (document.getElementById('pages').children[0] != undefined)
-        document.getElementById('pages').children[0].remove()
-    for (i = 0; document.getElementById(i + 'page') != undefined; i++)
-        document.getElementById(i + 'page').remove()
-    while (document.getElementById('addTmp').children[0].children[0] != undefined)
-        document.getElementById('addTmp').children[0].children[0].remove()
-    countOfStr = 0
-    countOfPages = 0
-    pageName = ""
-    addTmpFlag = 0
-    b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1]
-    for (i = 0; i < table.length; i++) {
-        c = table[i]
-        switch (c[0]) {
-            case '':
-                addTmpFlag = 0
-                countOfStr++
-                var newStr = document.createElement('div')
-                newStr.style.margin = "5px"
-                newStr.id = countOfPages + "page_" + countOfStr + "str"
-                b.lastElementChild.appendChild(newStr)
-                break
+                case 'Additional templates':
+                    addTmpFlag = 1
+                    break
+                case 'Страница':
+                    var newPageBut = document.createElement('button');
+                    newPageBut.textContent = c[1];
+                    pageType = c[2];
+                    newPageBut.style.marginRight = '4px';
+                    newPageBut.classList.add('mainButton')
 
-            case 'Additional templates':
-                addTmpFlag = 1
-                break
-            case 'Страница':
-                var newPageBut = document.createElement('button');
-                newPageBut.textContent = c[1];
-                pageType = c[2];
-                newPageBut.style.marginRight = '4px';
-                newPageBut.classList.add('mainButton')
+                    // Используйте addEventListener для назначения обработчика события
+                    newPageBut.addEventListener('click', pageClick);
 
-                // Используйте addEventListener для назначения обработчика события
-                newPageBut.addEventListener('click', pageClick);
+                    newPageBut.id = countOfPages + '_page_button';
+                    bimba.childNodes[3].appendChild(newPageBut);
 
-                newPageBut.id = countOfPages + '_page_button';
-                b.childNodes[3].appendChild(newPageBut);
+                    var newPage = document.createElement('div');
+                    newPage.id = countOfPages + 'page';
+                    bimba.appendChild(newPage);
 
-                var newPage = document.createElement('div');
-                newPage.id = countOfPages + 'page';
-                b.appendChild(newPage);
+                    countOfPages++;
+                    countOfStr = 1;
 
-                countOfPages++;
-                countOfStr = 1;
+                    if (pageType == "Серверные") { // дорисоква инпута для ссылки на серверные
+                        var newDiv = document.createElement('div')
+                        newDiv.id = countOfPages + "page_" + countOfStr + "str"
+                        newDiv.style.margin = "5px"
 
-                if (pageType == "Серверные") { // дорисоква инпута для ссылки на серверные
-                    var newDiv = document.createElement('div')
-                    newDiv.id = countOfPages + "page_" + countOfStr + "str"
-                    newDiv.style.margin = "5px"
+                        var newInputAlink = document.createElement('input')
+                        newInputAlink.id = 'avariyalink'
+                        newInputAlink.placeholder = 'Ссылка на трэд или Jira северных'
+                        newInputAlink.autocomplete = 'off'
+                        newInputAlink.type = 'text'
+                        newInputAlink.classList.add(exttheme)
+                        newInputAlink.style = 'text-align: center; width: 300px; margin-left: 7px'
 
-                    var newInputAlink = document.createElement('input')
-                    newInputAlink.id = 'avariyalink'
-                    newInputAlink.placeholder = 'Ссылка на трэд или Jira северных'
-                    newInputAlink.autocomplete = 'off'
-                    newInputAlink.type = 'text'
-                    newInputAlink.classList.add(exttheme)
-                    newInputAlink.style = 'text-align: center; width: 300px; margin-left: 7px'
+                        newDiv.appendChild(newInputAlink)
 
-                    newDiv.appendChild(newInputAlink)
+                        var newbtnclrlink = document.createElement('button')
+                        newbtnclrlink.textContent = "🧹"
+                        newbtnclrlink.title = "Очищает поле задачи серверных"
+                        newbtnclrlink.classList.add('mainButton')
+                        newbtnclrlink.onclick = function () { document.getElementById('avariyalink').value = "" }
 
-                    var newbtnclrlink = document.createElement('button')
-                    newbtnclrlink.textContent = "🧹"
-                    newbtnclrlink.title = "Очищает поле задачи серверных"
-                    newbtnclrlink.classList.add('mainButton')
-                    newbtnclrlink.onclick = function () { document.getElementById('avariyalink').value = "" }
+                        newDiv.appendChild(newbtnclrlink)
 
-                    newDiv.appendChild(newbtnclrlink)
+                        var newSelectAThemes = document.createElement('select')
+                        newSelectAThemes.id = 'avariyatema'
+                        newSelectAThemes.classList.add(exttheme)
+                        newSelectAThemes.style = 'text-align: center; width: 300px; height: 26px; margin-left: 7px; margin-top: 5px'
+                        newSelectAThemes.type = 'text'
 
-                    var newSelectAThemes = document.createElement('select')
-                    newSelectAThemes.id = 'avariyatema'
-                    newSelectAThemes.classList.add(exttheme)
-                    newSelectAThemes.style = 'text-align: center; width: 300px; height: 26px; margin-left: 7px; margin-top: 5px'
-                    newSelectAThemes.type = 'text'
+                        var newthemeoption = document.createElement('option')
+                        newthemeoption.text = "Выбери тематику для серверных"
+                        newthemeoption.selected = true
+                        newthemeoption.disabled = true
+                        newthemeoption.value = "thenenotselect"
+                        newthemeoption.style = "background-color:orange; color:white;"
+                        newSelectAThemes.add(newthemeoption)
 
-                    var newthemeoption = document.createElement('option')
-                    newthemeoption.text = "Выбери тематику для серверных"
-                    newthemeoption.selected = true
-                    newthemeoption.disabled = true
-                    newthemeoption.value = "thenenotselect"
-                    newthemeoption.style = "background-color:orange; color:white;"
-                    newSelectAThemes.add(newthemeoption)
+                        ///
 
-                    ///
+                        async function getAvariaThemes() {
+                            let objSelAvariaThema = document.getElementById("avariyatema");
+                            let avariatemacontainer;
+                            let themesfromdoc;
+                            if (objSelAvariaThema && objSelAvariaThema.children.length == 1) {
+                                clearInterval(getTms)
+                                themesfromdoc = 'https://script.google.com/macros/s/AKfycbxNjuQ7EbZZkLEfC1_aSoK4ncsF0W0XSkjYttCj2nQ23BBzMEmDq-vqJL3MvwJk9Pnm_g/exec'
+                                await fetch(themesfromdoc).then(r => r.json()).then(r => avariatemadata = r)
+                                avariatemacontainer = avariatemadata.result;
 
-                    async function getAvariaThemes() {
-                        let objSelAvariaThema = document.getElementById("avariyatema");
-                        let avariatemacontainer;
-                        let themesfromdoc;
-                        if (objSelAvariaThema && objSelAvariaThema.children.length == 1) {
-                            clearInterval(getTms)
-                            themesfromdoc = 'https://script.google.com/macros/s/AKfycbxNjuQ7EbZZkLEfC1_aSoK4ncsF0W0XSkjYttCj2nQ23BBzMEmDq-vqJL3MvwJk9Pnm_g/exec'
-                            await fetch(themesfromdoc).then(r => r.json()).then(r => avariatemadata = r)
-                            avariatemacontainer = avariatemadata.result;
+                                for (let i = 0; i < avariatemacontainer.length; i++) {
+                                    addOption(objSelAvariaThema, `${avariatemacontainer[i][3]}`, `${avariatemacontainer[i][4]}`) // переиндексацию нужно будет сделать
+                                }
 
-                            for (let i = 0; i < avariatemacontainer.length; i++) {
-                                addOption(objSelAvariaThema, `${avariatemacontainer[i][3]}`, `${avariatemacontainer[i][4]}`) // переиндексацию нужно будет сделать
+                            } else {
+                                console.log('Test false')
                             }
-
-                        } else {
-                            console.log('Test false')
                         }
+
+                        let getTms = setInterval(getAvariaThemes, 4000)
+
+                        ///
+
+                        newDiv.appendChild(newSelectAThemes)
+
+                        var newbtnclrtheme = document.createElement('button')
+                        newbtnclrtheme.textContent = "🧹"
+                        newbtnclrtheme.title = "Очищает поле тематики серверных"
+                        newbtnclrtheme.classList.add('mainButton')
+                        newbtnclrtheme.onclick = function () { document.getElementById('avariyatema').children[0].selected = true }
+
+                        newDiv.appendChild(newbtnclrtheme)
+
+                        bimba.lastElementChild.appendChild(newDiv)
+                        countOfStr++
                     }
 
-                    let getTms = setInterval(getAvariaThemes, 4000)
+                    var newStr = document.createElement('div')
+                    newStr.style.margin = "5px"
+                    newStr.id = countOfPages + "page_" + countOfStr + "str"
+                    bimba.lastElementChild.appendChild(newStr)
+                    break
+                default:
+                    switch (pageType) {
+                        case 'Шаблоны':
+                            var newBut = document.createElement('button');
+                            newBut.textContent = c[0];
+                            newBut.style.marginRight = '4px';
+                            newBut.classList.add('mainButton')
 
-                    ///
+                            // Проверки для установки ID или изменения текста
+                            if (newBut.textContent == 'Урок NS') {
+                                newBut.id = "NS";
+                            }
+                            if (newBut.textContent == 'ус+брауз (У)')
+                                newBut.textContent = "ус+брауз"
+                            if (newBut.textContent == 'ус+брауз (П)')
+                                continue
+                            newBut.addEventListener('click', function (event) {
+                                buttonsFromDoc(event.target.textContent);
+                            });
 
-                    newDiv.appendChild(newSelectAThemes)
+                            if (addTmpFlag == 0) {
+                                bimba.lastElementChild.lastElementChild.appendChild(newBut);
+                            } else {
+                                newBut.style.marginTop = '4px';
+                                document.getElementById('addTmp').children[0].appendChild(newBut);
+                            }
+                            break;
+                        case 'Серверные': // обработка нажатия на кнопку на странице серверные
+                            var newBut = document.createElement('button')
+                            newBut.textContent = c[0]
+                            newBut.style.marginRight = '4px'
+                            newBut.classList.add('mainButton')
+                            newBut.addEventListener('click', servFromDoc);
+                            bimba.lastElementChild.lastElementChild.appendChild(newBut)
+                            break
 
-                    var newbtnclrtheme = document.createElement('button')
-                    newbtnclrtheme.textContent = "🧹"
-                    newbtnclrtheme.title = "Очищает поле тематики серверных"
-                    newbtnclrtheme.classList.add('mainButton')
-                    newbtnclrtheme.onclick = function () { document.getElementById('avariyatema').children[0].selected = true }
-
-                    newDiv.appendChild(newbtnclrtheme)
-
-                    b.lastElementChild.appendChild(newDiv)
-                    countOfStr++
-                }
-
-                var newStr = document.createElement('div')
-                newStr.style.margin = "5px"
-                newStr.id = countOfPages + "page_" + countOfStr + "str"
-                b.lastElementChild.appendChild(newStr)
-                break
-            default:
-                switch (pageType) {
-                    case 'Шаблоны':
-                        var newBut = document.createElement('button');
-                        newBut.textContent = c[0];
-                        newBut.style.marginRight = '4px';
-                        newBut.classList.add('mainButton')
-
-                        // Проверки для установки ID или изменения текста
-                        if (newBut.textContent == 'Урок NS') {
-                            newBut.id = "NS";
-                        }
-                        if (newBut.textContent == 'ус+брауз (У)')
-                            newBut.textContent = "ус+брауз"
-                        if (newBut.textContent == 'ус+брауз (П)')
-                            continue
-                        newBut.addEventListener('click', function (event) {
-                            buttonsFromDoc(event.target.textContent);
-                        });
-
-                        if (addTmpFlag == 0) {
-                            b.lastElementChild.lastElementChild.appendChild(newBut);
-                        } else {
-                            newBut.style.marginTop = '4px';
-                            document.getElementById('addTmp').children[0].appendChild(newBut);
-                        }
-                        break;
-                    case 'Серверные': // обработка нажатия на кнопку на странице серверные
-                        var newBut = document.createElement('button')
-                        newBut.textContent = c[0]
-                        newBut.style.marginRight = '4px'
-                        newBut.classList.add('mainButton')
-                        newBut.addEventListener('click', servFromDoc);
-                        b.lastElementChild.lastElementChild.appendChild(newBut)
-                        break
-
-                    default:
-                        break
-                }
-                break
-        }
-    }
-    const addTmp = document.getElementById('addTmp');
-
-    if (addTmp.firstElementChild && addTmp.firstElementChild.childElementCount > 0) {
-        document.getElementById('0page').addEventListener('dblclick', function (event) {
-            if (checkelementtype(event)) {
-                // Переключаем видимость элемента addTmp
-                addTmp.style.display = addTmp.style.display === 'none' ? '' : 'none';
+                        default:
+                            break
+                    }
+                    break
             }
-        });
-    }
+        }
+        const addTmp = document.getElementById('addTmp');
 
-    document.getElementById('0_page_button').click()
+        if (addTmp.firstElementChild && addTmp.firstElementChild.childElementCount > 0) {
+            document.getElementById('0page').addEventListener('dblclick', function (event) {
+                if (checkelementtype(event)) {
+                    // Переключаем видимость элемента addTmp
+                    addTmp.style.display = addTmp.style.display === 'none' ? '' : 'none';
+                }
+            });
+        }
+
+        document.getElementById('0_page_button').click()
+    }
 }
 
 function getText() { // функция обновления текста с шаблонов из документа
@@ -1460,7 +1539,7 @@ function formatServiceType(serviceTypeKey) {
     };
 }
 
-function highlightSearchText(item, searchText) {
+function highlightSearchText(item, searchText) { //Функция подсветки текста
     const replacePattern = new RegExp(searchText, 'i');
     const replaceValue = `<span style="color:MediumSpringGreen; font-weight:700; text-shadow:1px 2px 5px rgb(0 0 0 / 55%);">${searchText.toUpperCase()}</span>`;
     return replaceItem(item).replace(replacePattern, replaceValue);
