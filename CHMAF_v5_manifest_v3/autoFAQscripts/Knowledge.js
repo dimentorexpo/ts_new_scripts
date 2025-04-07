@@ -8,7 +8,9 @@ var win_Knowledge =  // описание элементов окна ссыло�
 			<span style="cursor: -webkit-grab;">
 				<div style="margin: 5px; width: 550;">
 					<button title="Скрытие меню" id="hideMeKnowledge" class="mainButton buttonHide">hide</button>
-					<button class="mainButton smallbtn" title="Индикатор загрузки базы знаний" id="IndicatorLoadData">⏳</button>
+					<span class="mainButton smallbtn" style = "padding:5px;" title="Индикатор загрузки базы знаний" id="IndicatorLoadData">
+						<span id="statInd" class="emoji">⏳</span>
+					</span>
 				</div>
 				<div style="margin: 5px; width: 550px;">
 					<input class="${exttheme}" placeholder="Слово для поиска" id="textToSearchSolution" style="border-radius: 20px; text-align: center; width: 300px; margin-left: 20%;"></input>
@@ -35,9 +37,12 @@ var win_Knowledge =  // описание элементов окна ссыло�
 const wintKnowledge = createWindow('AF_Knowledge', 'winTopKnwoledge', 'winLeftKnowledge', win_Knowledge);
 
 document.getElementById('IndicatorLoadData').onclick = async function () {
+	let linkToIndic = document.getElementById('IndicatorLoadData');
+	let statInd = document.getElementById('statInd');
 	document.getElementById('ProblemsName').innerHTML = ''
 	document.getElementById('ProblemsSolution').style.display = 'none'
-	document.getElementById('IndicatorLoadData').textContent = "⏳"
+	linkToIndic.classList.add('loadIndic')
+	statInd.textContent = "⏳"
 	document.getElementById('textToSearchSolution').value = ''
 	document.getElementById('ProblemsNameFromSearch').textContent = ''
 	document.getElementById('ProblemsSolution').style.display = 'none'
@@ -60,8 +65,11 @@ async function getKnowData() { // получаем из файла список 
 	knowData = 'https://script.google.com/macros/s/AKfycbySlhuMPHSKHiI6Rhoyg797id3lbPg_zdeG_iBoEvYxwqlxkD4QizWm8OJDEucma7tGyg/exec'
 	await fetch(knowData).then(r => r.json()).then(r => versionsdata = r)
 	if (versionsdata && versionsdata.result.length > 0) {
+		let linkToIndic = document.getElementById('IndicatorLoadData');
+		let statInd = document.getElementById('statInd');
 		knowDataContainer = versionsdata.result;
-		document.getElementById('IndicatorLoadData').textContent = "🟢"
+		statInd.textContent = "🟢"
+		linkToIndic.classList.remove('loadIndic')
 	}
 
 	// Наполняем первый dropdown
@@ -225,12 +233,20 @@ async function getKnowData() { // получаем из файла список 
 }
 
 function getknowledgeCenterButtonPress() {
+	let linkToIndic = document.getElementById('IndicatorLoadData');
+	let statInd = document.getElementById('statInd');
+
 	if (document.getElementById('AF_Knowledge').style.display == "none") {
 		document.getElementById('AF_Knowledge').style.display = ""
 		document.getElementById('knowledgeCenter').classList.add('activeScriptBtn');
-		document.getElementById('IndicatorLoadData').textContent = "⏳"
+		linkToIndic.classList.add('loadIndic')
+		statInd.textContent = "⏳"
 		getKnowData()
 	} else {
+		let linkToIndic = document.getElementById('IndicatorLoadData');
+		let statInd = document.getElementById('statInd');
+		statInd.textContent = "🟢"
+		linkToIndic.classList.remove('loadIndic')
 		document.getElementById('AF_Knowledge').style.display = "none"
 		document.getElementById('knowledgeCenter').classList.remove('activeScriptBtn');
 		document.getElementById('ProblemsName').innerHTML = ''

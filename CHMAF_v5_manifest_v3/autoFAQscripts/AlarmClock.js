@@ -57,8 +57,6 @@ function updateCurrentTime() {
 }
 
 function updateRemainingTime(displayId, alarmTime) {
-    const displayElement = document.getElementById(displayId);
-    if (!displayElement) return;
 
     if (alarmTime === null || isNaN(alarmTime)) {
         updateClockDisplay(displayId, "00 : 00 : 00");
@@ -179,6 +177,36 @@ function removeAlarm(displayId, timeoutVar, storageKey, hourId, minuteId) {
     updateRemainingTime(displayId, null); // Update display to 00:00:00
 }
 
+function restoreAlarmTimers() {
+    const alarmTime1 = parseInt(localStorage.getItem('chronostamp'));
+    const alarmTime2 = parseInt(localStorage.getItem('chronostamp1'));
+
+    if (alarmTime1 && !isNaN(alarmTime1)) {
+        const timeLeft = alarmTime1 - new Date().getTime();
+        if (timeLeft > 0) {
+            abortTimeOut = setTimeout(() => setRemindAf('chronostamp'), timeLeft);
+        } else {
+            // Если время будильника уже прошло, удаляем его из localStorage
+            localStorage.removeItem('chronostamp');
+            localStorage.removeItem('setchas');
+            localStorage.removeItem('setminuta');
+        }
+    }
+
+    if (alarmTime2 && !isNaN(alarmTime2)) {
+        const timeLeft = alarmTime2 - new Date().getTime();
+        if (timeLeft > 0) {
+            abortTimeOut1 = setTimeout(() => setRemindAf('chronostamp1'), timeLeft);
+        } else {
+            // Если время будильника уже прошло, удаляем его из localStorage
+            localStorage.removeItem('chronostamp1');
+            localStorage.removeItem('setchas1');
+            localStorage.removeItem('setminuta1');
+        }
+    }
+}
+
+
 function populateAlarmFields() {
     const setChas = document.getElementById('setchas');
     const setMinuta = document.getElementById('setminuta');
@@ -202,7 +230,10 @@ function populateAlarmFields() {
     }
 }
 
-window.addEventListener('load', populateAlarmFields);
+window.addEventListener('load', () => {
+    populateAlarmFields();
+    restoreAlarmTimers();
+});
 
 setInterval(updateCurrentTime, 1000);
 setInterval(() => updateRemainingTime('clock_remin', parseInt(localStorage.getItem('chronostamp'))), 1000);

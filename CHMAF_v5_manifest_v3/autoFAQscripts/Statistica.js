@@ -725,6 +725,8 @@ async function getopersSLA() {
     let operdata;
     filteredarray = [];
     arrayofSLA = [];
+    let arraysOfAnswAndQues = [];
+
     if (activeopersId) {
         let step = 100 / activeopersId.length;
         for (let i = 0; i < activeopersId.length; i++) {
@@ -759,6 +761,39 @@ async function getopersSLA() {
 
                     const response = await fetch("https://skyeng.autofaq.ai/api/conversations/" + operdata.items[j].conversationId);
                     const fres = await response.json();
+
+                    let conversationData = {
+                        ConversationId: fres.id,
+                        AnswersCounter: 0, // Инициализируем значением 0
+                        QuestionsCounter: 0, // Инициализируем для будущего наполнения
+                        operId: fres.operatorId
+                    };
+
+                    let frAnswers = fres.answers.length
+                    let frQuestions = fres.questions.length
+                    let answC = 0;
+                    let quesC = 0;
+                    if (frAnswers > 0) {
+                        for (let i = 0; i < frAnswers; i++) {
+                            if (fres.answers[i].isProcessed == undefined) {
+                                conversationData.AnswersCounter++;
+                                answC++;
+                            }
+                        }
+                    }
+                    if (frQuestions > 0) {
+                        for (let j = 0; j < frQuestions; j++) {
+                            if (fres.questions[j] != "Good" && fres.questions[frQuestions - 1] != "Could be better" && fres.questions[frQuestions - 1] != "So-so" && fres.questions[frQuestions - 1] != "Bad" && fres.questions[frQuestions - 1] != "Terrible") {
+                                conversationData.QuestionsCounter++
+                                quesC++
+                            }
+                        }
+                    } else conversationData.QuestionsCounter = 0
+                    console.log(fres.operatorId, "-", fres.id, "-", answC, "-", quesC)
+
+                    // console.log("Чат", conversationData)
+
+
 
                     //ЦИКЛ НАЧАЛО
                     if (fres.messages[fres.messages.length - 1].tpe == "Question") {

@@ -1132,6 +1132,11 @@
 		animation: spin 1s linear infinite;
 	}
 
+	.loadIndic .emoji {
+		display: inline-block;
+		animation: spin 1s linear infinite;
+	}
+
 	@keyframes spin {
 		0% {
 			transform: rotate(0deg);
@@ -1293,23 +1298,25 @@
 		0% {
 			background-color: grey;
 		}
+
 		50% {
 			background-color: red;
 		}
+
 		100% {
 			background-color: grey;
 		}
 	}
-	
+
 	.allertcomment.blinking {
 		animation: alertblink 1s infinite;
 	}
 
 	.sucsbtnAF {
-		z-index:999999;
+		z-index: 999999;
 		position: fixed;
 		bottom: 15px;
-		font-size:18px;
+		font-size: 18px;
 		left: 50%;
 		transform: translateX(-50%);
 		background-color: green;
@@ -1323,10 +1330,10 @@
 		text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
 	}
 
-	.sucsbtnok{
+	.sucsbtnok {
 		background-color: green;
 	}
 
-	.sucsbtnnotok{
+	.sucsbtnnotok {
 		background-color: darkred;
 	}
