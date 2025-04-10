@@ -167,7 +167,8 @@ function addJiraIssueOnClickEvent(barray, issueKeys) { // обработчик �
                         "content-type": "application/json",
                         "sec-fetch-dest": "empty",
                         "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin"
+                        "sec-fetch-site": "same-origin",
+                        "x-csrf-token": aftoken
                     },
                     "body": "{\"conversationId\":\"${b[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"https://jira.skyeng.link/browse/" + issueKeys[j] + "\"}]}",
                     "method": "POST",
@@ -508,7 +509,8 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                                 "content-type": "application/json",
                                 "sec-fetch-dest": "empty",
                                 "sec-fetch-mode": "cors",
-                                "sec-fetch-site": "same-origin"
+                                "sec-fetch-site": "same-origin",
+                                "x-csrf-token": aftoken
                             },
                             "body": `{\"conversationId\":\"${Chatid}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"https://jira.skyeng.link/browse/${favissues[j].match(/browse.(\S+)"/)[1]}\"}]}`,
                             "method": "POST",
@@ -652,7 +654,8 @@ function getJiraOpenFormPress() { // открывает поле для рабо
                                     "content-type": "application/json",
                                     "sec-fetch-dest": "empty",
                                     "sec-fetch-mode": "cors",
-                                    "sec-fetch-site": "same-origin"
+                                    "sec-fetch-site": "same-origin",
+                                    "x-csrf-token": aftoken
                                 },
                                 "body": "{\"conversationId\":\"${b[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"" + rezissuetable[0].items[0].url + "\"}]}",
                                 "method": "POST",

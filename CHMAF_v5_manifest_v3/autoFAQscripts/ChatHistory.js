@@ -331,7 +331,8 @@ async function findchatsoper() { // ищет активные чаты на вы
                         "content-type": "application/json",
                         "sec-fetch-dest": "empty",
                         "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin"
+                        "sec-fetch-site": "same-origin",
+                        "x-csrf-token": aftoken
                     },
                     "body": `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${objSel[i].value}\"],\"tsFrom\":\"${document.getElementById('dateFromChHis').value}T${difhrs}:${mins}:${secs}.000Z\",\"tsTo\":\"${document.getElementById('dateToChHis').value}T${hrs}:${mins}:${secs}.000Z\",\"usedStatuses\":[\"OnOperator\",\"AssignedToOperator\",\"Active\"],\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":1,\"limit\":10}`,
                     "method": "POST",
@@ -388,7 +389,15 @@ async function findchatsoper() { // ищет активные чаты на вы
                 for (let i = 0; i < document.getElementsByClassName('chatlist').length; i++) {
                     document.getElementsByClassName('chatlist')[i].title = operchatsdata.items[i].conversationId
                     document.getElementsByClassName('chatlist')[i].onclick = async () => {
-                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementsByClassName('chatlist')[i].title).then(r => r.json()).then(r => convdata = r)
+                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementsByClassName('chatlist')[i].title, {
+                            headers: {
+                                "x-csrf-token": aftoken, // Добавление токена
+                                "content-type": "application/json" // Рекомендуется указать тип контента
+                            }
+                        })
+                            .then(r => r.json())
+                            .then(r => convdata = r)
+                            .catch(error => console.error("Ошибка выполнения запроса:", error));
                         if (convdata.status != null && convdata.status == 'AssignedToOperator')
                             isChatOnOperator = true
                         else isChatOnOperator = false;
@@ -585,6 +594,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
         objSel[0].selected = true;
 
         let result = await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
+            headers: { "x-csrf-token": aftoken },
             "credentials": "include"
         }).then(r => r.json());
 
@@ -666,7 +676,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
             document.getElementById('chatuserhis').value = '';
 
             let response = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                "headers": { "content-type": "application/json", "sec-fetch-mode": "cors", "sec-fetch-site": "same-origin" },
+                "headers": { "content-type": "application/json", "sec-fetch-mode": "cors", "sec-fetch-site": "same-origin", "x-csrf-token": aftoken },
                 "body": JSON.stringify({
                     "serviceId": "361c681b-340a-4e47-9342-c7309e27e7b5",
                     "mode": "Json",
@@ -779,7 +789,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
     }
 
     async function updateChatInfo(chatId) {
-        const response = await fetch("https://skyeng.autofaq.ai/api/conversations/" + chatId);
+        const response = await fetch("https://skyeng.autofaq.ai/api/conversations/" + chatId, { headers: { "x-csrf-token": aftoken } });
         convdata = await response.json();
 
         isChatOnOperator = convdata.status != null && convdata.status == 'AssignedToOperator';
@@ -812,7 +822,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
 
             const assignChat = (assignToOperatorId) => {
                 fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-                    headers: { "content-type": "application/json" },
+                    headers: { "content-type": "application/json", "x-csrf-token": aftoken },
                     credentials: "include",
                     body: JSON.stringify({
                         command: "DO_ASSIGN_CONVERSATION",
@@ -836,6 +846,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
         if (polzid) {
             await fetch(`https://skyeng.autofaq.ai/api/conversation/start?channelId=eca64021-d5e9-4c25-b6e9-03c24s638d4d&userId=${polzid}&operatorId=${operatorId}&groupId=c7bbb211-a217-4ed3-8112-98728dc382d8`, {
                 headers: {
+                    "x-csrf-token": aftoken
                 },
                 referrer: "https://skyeng.autofaq.ai/tickets/assigned/",
                 referrerPolicy: "strict-origin-when-cross-origin",
@@ -890,7 +901,8 @@ function getopennewcatButtonPress() { // открывает меню для ра
                             "content-type": "application/json",
                             "sec-fetch-dest": "empty",
                             "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-origin"
+                            "sec-fetch-site": "same-origin",
+                            "x-csrf-token": aftoken
                         },
                         "body": `{\"command\":\"DO_ASSIGN_CONVERSATION\",\"conversationId\":\"${hashid}\",\"assignToOperatorId\":\"${arops.children[i].value}\"}`,
                         "method": "POST",
@@ -913,7 +925,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
                 let chathashfromdiv = document.getElementById('placechatid').innerText
                 let sesid;
 
-                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
+                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv, { headers: { "x-csrf-token": aftoken } })
                     .then(r => r.json()).then(r => rdata = r)
                 sesid = rdata.sessionId;
 
@@ -925,7 +937,8 @@ function getopennewcatButtonPress() { // открывает меню для ра
                         "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
                         "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
                         "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin"
+                        "sec-fetch-site": "same-origin",
+                        "x-csrf-token": aftoken
                     },
                     "body": "------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n",
                     "method": "POST",
@@ -935,12 +948,19 @@ function getopennewcatButtonPress() { // открывает меню для ра
 
                 document.getElementById('msgftochatornotes').value = ''
 
+
+
+
+
                 setTimeout(
                     async function () {
                         if (document.getElementById('placechatid').innerText != '') {
                             document.getElementById('infofield').innerHTML = '';
 
-                            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
+                            const response = await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText, {
+                                headers: { "x-csrf-token": aftoken }
+                            });
+                            const convdata = await response.json();
 
                             fillchatbox();
                             checkAndChangeStyle();
@@ -952,7 +972,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
                 let chathashfromdiv = document.getElementById('placechatid').innerText
                 let sesid;
 
-                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
+                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv, { headers: { "x-csrf-token": aftoken } })
                     .then(r => r.json()).then(r => rdata = r)
                 sesid = rdata.sessionId;
 
@@ -964,7 +984,8 @@ function getopennewcatButtonPress() { // открывает меню для ра
                         "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
                         "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryFeIiMdHaxAteNUHd",
                         "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin"
+                        "sec-fetch-site": "same-origin",
+                        "x-csrf-token": aftoken
                     },
                     "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
                     "method": "POST",
@@ -979,16 +1000,36 @@ function getopennewcatButtonPress() { // открывает меню для ра
                         if (document.getElementById('placechatid').innerText != '') {
                             document.getElementById('infofield').innerHTML = '';
 
-                            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
+                            try {
+                                // Выполняем fetch-запрос с корректной обработкой ответа
+                                const response = await fetch(
+                                    "https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText,
+                                    {
+                                        headers: { "x-csrf-token": aftoken }
+                                    }
+                                );
 
-                            if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                                isChatOnOperator = true
-                            else isChatOnOperator = false;
+                                // Проверяем, успешен ли ответ
+                                if (!response.ok) {
+                                    throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
+                                }
 
-                            fillchatbox();
-                            checkAndChangeStyle();
+                                // Парсим JSON-данные
+                                const convdata = await response.json();
+
+                                // Проверяем статус и устанавливаем isChatOnOperator
+                                isChatOnOperator = convdata.status === 'AssignedToOperator';
+
+                                // Вызываем функции обработки
+                                fillchatbox();
+                                checkAndChangeStyle();
+                            } catch (error) {
+                                console.error("Ошибка выполнения fetch-запроса:", error);
+                            }
                         }
-                    }, 1000);
+                    },
+                    1000
+                );
             }
         }
     }
@@ -1000,14 +1041,39 @@ function getopennewcatButtonPress() { // открывает меню для ра
         for (let i = 0; i < radiobtnsarray1.length; i++) {
             if (radiobtnsarray1[i].value == 'Notes' && radiobtnsarray1[i].checked == true) {
 
-                let chathashfromdiv = document.getElementById('placechatid').innerText
+
+                let chathashfromdiv = document.getElementById('placechatid').innerText;
                 let sesid;
 
-                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
-                    .then(r => r.json()).then(r => rdata = r)
-                sesid = rdata.sessionId;
+                try {
+                    // Выполняем запрос через fetch
+                    const response = await fetch(
+                        "https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv,
+                        {
+                            headers: { "x-csrf-token": aftoken } // Указываем заголовки
+                        }
+                    );
 
-                let notemsg = '<p>' + document.getElementById('msgftochatornotes1').value + '</p>';
+                    // Проверяем, успешен ли ответ
+                    if (!response.ok) {
+                        throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
+                    }
+
+                    // Парсим JSON-данные
+                    const rdata = await response.json();
+
+                    // Извлекаем sessionId
+                    sesid = rdata.sessionId;
+
+                    // Формируем сообщение
+                    let notemsg = '<p>' + document.getElementById('msgftochatornotes1').value + '</p>';
+
+                    // Дальнейшие действия (например, логирование или передача данных)
+                    console.log("Session ID:", sesid);
+                    console.log("Message:", notemsg);
+                } catch (error) {
+                    console.error("Ошибка выполнения запроса:", error);
+                }
 
                 fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
                     "headers": {
@@ -1015,7 +1081,8 @@ function getopennewcatButtonPress() { // открывает меню для ра
                         "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
                         "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
                         "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin"
+                        "sec-fetch-site": "same-origin",
+                        "x-csrf-token": aftoken
                     },
                     "body": "------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n",
                     "method": "POST",
@@ -1028,20 +1095,44 @@ function getopennewcatButtonPress() { // открывает меню для ра
                 setTimeout(
                     async function () {
                         if (document.getElementById('placechatid').innerText != '') {
+                            // Очищаем поле infofield
                             document.getElementById('infofield').innerHTML = '';
 
-                            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
-                            fillchatbox();
-                            checkAndChangeStyle();
+                            try {
+                                // Выполняем fetch-запрос
+                                const response = await fetch(
+                                    "https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText,
+                                    {
+                                        headers: { "x-csrf-token": aftoken } // Заголовки запроса
+                                    }
+                                );
+
+                                // Проверяем успешность ответа
+                                if (!response.ok) {
+                                    throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
+                                }
+
+                                // Парсим JSON-ответ
+                                const convdata = await response.json();
+
+                                // Вызываем функции обработки
+                                fillchatbox();
+                                checkAndChangeStyle();
+
+                            } catch (error) {
+                                console.error("Ошибка выполнения fetch-запроса:", error);
+                            }
                         }
-                    }, 1000);
+                    },
+                    1000
+                );
 
             } else if (radiobtnsarray1[i].value == 'Chat' && radiobtnsarray1[i].checked == true) {
 
                 let chathashfromdiv = document.getElementById('placechatid').innerText
                 let sesid;
 
-                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv)
+                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv, { headers: { "x-csrf-token": aftoken } })
                     .then(r => r.json()).then(r => rdata = r)
                 sesid = rdata.sessionId;
 
@@ -1053,7 +1144,8 @@ function getopennewcatButtonPress() { // открывает меню для ра
                         "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
                         "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryFeIiMdHaxAteNUHd",
                         "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin"
+                        "sec-fetch-site": "same-origin",
+                        "x-csrf-token": aftoken
                     },
                     "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
                     "method": "POST",
@@ -1066,18 +1158,38 @@ function getopennewcatButtonPress() { // открывает меню для ра
                 setTimeout(
                     async function () {
                         if (document.getElementById('placechatid').innerText != '') {
+                            // Очистка поля infofield
                             document.getElementById('infofield').innerHTML = '';
 
-                            await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText).then(r => r.json()).then(r => convdata = r)
+                            try {
+                                // Выполняем fetch-запрос с добавлением x-csrf-token в заголовки
+                                const response = await fetch(
+                                    "https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText,
+                                    {
+                                        headers: { "x-csrf-token": aftoken }
+                                    }
+                                );
 
-                            if (convdata.status != null && convdata.status == 'AssignedToOperator')
-                                isChatOnOperator = true
-                            else isChatOnOperator = false;
+                                // Проверяем успешность ответа
+                                const convdata = await response.json();
 
-                            fillchatbox();
-                            checkAndChangeStyle();
+                                // Логика обработки ответа
+                                if (convdata.status != null && convdata.status == 'AssignedToOperator') {
+                                    isChatOnOperator = true;
+                                } else {
+                                    isChatOnOperator = false;
+                                }
+
+                                // Дополнительная обработка
+                                fillchatbox();
+                                checkAndChangeStyle();
+                            } catch (error) {
+                                console.error("Ошибка выполнения fetch-запроса:", error);
+                            }
                         }
-                    }, 1000);
+                    },
+                    1000
+                );
             }
         }
     }

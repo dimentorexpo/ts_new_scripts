@@ -299,6 +299,7 @@ document.getElementById('multitag').onclick = function () { // откправк�
             fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
                 "headers": {
                     "content-type": "application/json",
+                    "x-csrf-token": aftoken
                 },
                 "body": "{\"conversationId\":\"" + chatId + "\",\"elements\":[{\"name\":\"tags\",\"value\":[" + tagsvaluesarr + "]}]}",
                 "method": "POST",
@@ -310,7 +311,7 @@ document.getElementById('multitag').onclick = function () { // откправк�
                     allcheckboxtags[i].checked = false;
                 }
             }
-        } else createAndShowButton('Не выбраны чекбоксы, выберите, пожалуйста, 1 или несколько и повторите попытку' , 'error')
+        } else createAndShowButton('Не выбраны чекбоксы, выберите, пожалуйста, 1 или несколько и повторите попытку', 'error')
     }
 }
 
@@ -326,6 +327,7 @@ document.getElementById('linktojirasend').onclick = function () { // добав�
         fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
             "headers": {
                 "content-type": "application/json",
+                "x-csrf-token": aftoken
             },
             "body": "{\"conversationId\":\"${splitter[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"" + getval + "\"}]}",
             "method": "POST",

@@ -126,6 +126,7 @@ async function fetchAllPages(url, initialBodyContent) {
         const response = await fetch(url, {
             headers: {
                 "content-type": "application/json",
+                "x-csrf-token": aftoken
             },
             referrer: "https://skyeng.autofaq.ai/logs",
             referrerPolicy: "strict-origin-when-cross-origin",
@@ -159,7 +160,7 @@ function takeOnMe(chatID) {
 
     const assignChat = (assignToOperatorId) => {
         fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-            headers: { "content-type": "application/json" },
+            headers: { "content-type": "application/json", "x-csrf-token": aftoken },
             credentials: "include",
             body: JSON.stringify({
                 command: "DO_ASSIGN_CONVERSATION",
@@ -232,96 +233,98 @@ async function getAllChatsByStatus() {
         limit: 100 // Можно убрать, так как он уже установлен в функции fetchAllPages
     };
 
-    await fetchAllPages("https://skyeng.autofaq.ai/api/conversations/history", initialBodyContent)
+    doOperationsWithHistory(initialBodyContent)
         .then(allData => {
             console.log(allData.length); // Выводит общее количество загруженных записей
             // Теперь можно обработать allData как угодно
             dataChts = allData
-            queueCnt.textContent = `${dataChts.length}`;
+            queueCnt.textContent = `${dataChts.total}`;
+
+            // Преобразование и отображение данных
+            dataChts.items.forEach((el, index) => {
+                let tsConverter = el.ts.replace(/\[GMT\]$/, '');
+                let dateToMSK = new Date(tsConverter);
+
+                // Создание элементов DOM для каждого элемента очереди
+                let queueItemDiv = document.createElement('div');
+                queueItemDiv.className = 'queue-item';
+                queueItemDiv.setAttribute('name', 'prosmChat')
+
+                let timeSpan = document.createElement('span');
+                timeSpan.style = 'color:#0be90b; font-weight:700; text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.55);';
+                timeSpan.textContent = dateToMSK.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                let usrName = document.createElement('span');
+                usrName.style.color = "bisque";
+                usrName.textContent = el.channelUser.fullName ? el.channelUser.fullName : "Noname"
+                // usrName.setAttribute('name', 'prosmChat')
+
+                let usrType = document.createElement('span')
+                if (el.channelUser.payload && el.channelUser.payload.userType) {
+                    if (el.channelUser.payload.userType == "teacher") {
+                        usrType.textContent = "👽"; // Эмодзи для преподавателя
+                    } else if (el.channelUser.payload.userType == "student" || el.channelUser.payload.userType == "parent") {
+                        usrType.textContent = "👨‍🎓"; // Эмодзи для студента или родителя
+                    } else {
+                        usrType.textContent = "❓"; // Эмодзи для неизвестного типа пользователя
+                    }
+                } else {
+                    usrType.textContent = "❓"; // Эмодзи для отсутствующего типа пользователя
+                }
+
+                let timerSpan = document.createElement('span');
+                timerSpan.id = 'timer-' + index;
+                timerSpan.className = 'timer';
+
+                let checkFirstAnswer = document.createElement('span');
+                checkFirstAnswer.setAttribute('name', 'flagOfFirstAnswer')
+                if (el.stats.participatingOperators.includes("autoFAQ")) {
+                    // Если autoFAQ есть в списке, устанавливаем соответствующий текст
+                    checkFirstAnswer.textContent = el.stats.firstOperatorAnswerTime ? "✅" : "❌";
+                } else if (el.stats.participatingOperators.length > 0) {
+                    // Если есть другие операторы, но нет autoFAQ
+                    checkFirstAnswer.textContent = "⤴️";
+                } else {
+                    // Если операторов нет вообще
+                    checkFirstAnswer.textContent = "🚫";
+                }
+
+                let countryInfo = document.createElement('span')
+                countryInfo.style = "color:bisque"
+                if (el.channelUser.payload && el.channelUser.payload.country) {
+                    countryInfo.textContent = el.channelUser.payload.country
+                } else {
+                    countryInfo.textContent = "➖"
+                }
+
+
+                let getThisChat = document.createElement('button');
+                getThisChat.className = 'mainButton';
+                getThisChat.name = 'assignToMe';
+                getThisChat.title = "Забрать этот чат";
+                getThisChat.textContent = '🫳';
+
+                // Добавление созданных элементов в queueItemDiv
+                queueItemDiv.appendChild(timeSpan);
+                queueItemDiv.appendChild(usrType);
+                queueItemDiv.appendChild(usrName);
+                queueItemDiv.appendChild(timerSpan);
+                queueItemDiv.appendChild(checkFirstAnswer);
+                queueItemDiv.appendChild(countryInfo);
+                queueItemDiv.appendChild(getThisChat);
+
+                // Добавление queueItemDiv в bimba
+                bimba.appendChild(queueItemDiv);
+
+                // Инициализация таймера
+                startTimerForDialog(tsConverter, timerSpan);
+            });
         })
         .catch(error => {
             console.log('Произошла ошибка при получении данных: ', error);
         });
 
-    // Преобразование и отображение данных
-    dataChts.forEach((el, index) => {
-        let tsConverter = el.ts.replace(/\[GMT\]$/, '');
-        let dateToMSK = new Date(tsConverter);
 
-        // Создание элементов DOM для каждого элемента очереди
-        let queueItemDiv = document.createElement('div');
-        queueItemDiv.className = 'queue-item';
-        queueItemDiv.setAttribute('name', 'prosmChat')
-
-        let timeSpan = document.createElement('span');
-        timeSpan.style = 'color:#0be90b; font-weight:700; text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.55);';
-        timeSpan.textContent = dateToMSK.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-        let usrName = document.createElement('span');
-        usrName.style.color = "bisque";
-        usrName.textContent = el.channelUser.fullName ? el.channelUser.fullName : "Noname"
-        // usrName.setAttribute('name', 'prosmChat')
-
-        let usrType = document.createElement('span')
-        if (el.channelUser.payload && el.channelUser.payload.userType) {
-            if (el.channelUser.payload.userType == "teacher") {
-                usrType.textContent = "👽"; // Эмодзи для преподавателя
-            } else if (el.channelUser.payload.userType == "student" || el.channelUser.payload.userType == "parent") {
-                usrType.textContent = "👨‍🎓"; // Эмодзи для студента или родителя
-            } else {
-                usrType.textContent = "❓"; // Эмодзи для неизвестного типа пользователя
-            }
-        } else {
-            usrType.textContent = "❓"; // Эмодзи для отсутствующего типа пользователя
-        }
-
-        let timerSpan = document.createElement('span');
-        timerSpan.id = 'timer-' + index;
-        timerSpan.className = 'timer';
-
-        let checkFirstAnswer = document.createElement('span');
-        checkFirstAnswer.setAttribute('name', 'flagOfFirstAnswer')
-        if (el.stats.participatingOperators.includes("autoFAQ")) {
-            // Если autoFAQ есть в списке, устанавливаем соответствующий текст
-            checkFirstAnswer.textContent = el.stats.firstOperatorAnswerTime ? "✅" : "❌";
-        } else if (el.stats.participatingOperators.length > 0) {
-            // Если есть другие операторы, но нет autoFAQ
-            checkFirstAnswer.textContent = "⤴️";
-        } else {
-            // Если операторов нет вообще
-            checkFirstAnswer.textContent = "🚫";
-        }
-
-        let countryInfo = document.createElement('span')
-        countryInfo.style = "color:bisque"
-        if (el.channelUser.payload && el.channelUser.payload.country) {
-            countryInfo.textContent = el.channelUser.payload.country
-        } else {
-            countryInfo.textContent = "➖"
-        }
-
-
-        let getThisChat = document.createElement('button');
-        getThisChat.className = 'mainButton';
-        getThisChat.name = 'assignToMe';
-        getThisChat.title = "Забрать этот чат";
-        getThisChat.textContent = '🫳';
-
-        // Добавление созданных элементов в queueItemDiv
-        queueItemDiv.appendChild(timeSpan);
-        queueItemDiv.appendChild(usrType);
-        queueItemDiv.appendChild(usrName);
-        queueItemDiv.appendChild(timerSpan);
-        queueItemDiv.appendChild(checkFirstAnswer);
-        queueItemDiv.appendChild(countryInfo);
-        queueItemDiv.appendChild(getThisChat);
-
-        // Добавление queueItemDiv в bimba
-        bimba.appendChild(queueItemDiv);
-
-        // Инициализация таймера
-        startTimerForDialog(tsConverter, timerSpan);
-    });
 
     // Обработка событий для кнопок
     let allConvs = document.getElementsByName('prosmChat');
@@ -364,7 +367,8 @@ async function writeThemAll() {
                         "headers": {
                             "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
                             "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-origin"
+                            "sec-fetch-site": "same-origin",
+                            "x-csrf-token": aftoken
                         },
                         "referrerPolicy": "strict-origin-when-cross-origin",
                         "body": `------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"${dataChts[i].stats.conversationSessionId}\",\"conversationId\":\"${dataChts[i].conversationId}\",\"text\":\"${getTextAreaValue}\",\"isComment\":false}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n`,

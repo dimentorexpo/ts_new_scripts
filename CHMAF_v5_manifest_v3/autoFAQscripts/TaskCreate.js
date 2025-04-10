@@ -81,14 +81,14 @@ var win_taskform = //описание формы создания задач в 
 			</div>
 </div>`;
 
-var win_speccommwindow = 
+var win_speccommwindow =
     `<div style="border: 2px double black; background-color: #464451; cursor: -webkit-grab; width: 350px;">
         <div style="display: flex;">
             <button title="Скрытие меню" id="hideMeSpecComm" class="mainButton buttonHide" style="margin: 5px; float: left;">hide</button>
         </div>
         <div style="display: flex;">
             <p id="speccommtext" style="color: bisque; font-size: 16px; margin: 5px; max-height: 300px; overflow-y: auto; border: 1px solid #000; padding: 5px;"></p>
-        </div>    
+        </div>
     </div>`;
 
 
@@ -98,7 +98,7 @@ var NoteText = ''; // какой текст отправим в заметку
 const wintCreateTask = createWindow('AF_Createtask', 'winTopTaskCreate', 'winLeftTaskCreate', win_taskform);
 const winSpecCommWindow = createWindow('AF_SpecCommWindow', 'winTopSpecCommWindow', 'winLeftSpecCommWindow', win_speccommwindow);
 
-document.getElementById('AF_SpecCommWindow').ondblclick = function (a) { 
+document.getElementById('AF_SpecCommWindow').ondblclick = function (a) {
     if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') { document.getElementById('hideMeSpecComm').click(); }
 }
 
@@ -122,8 +122,8 @@ document.getElementById('useriddata').addEventListener('input', () => onlyNumber
 
 function replaceAllwrongsimbols(text) {
     text = text.replace(/\n/g, '<br>')
-               .replace(/\/\//g, ' ')
-               .replace(/\//g, '&#47;');
+        .replace(/\/\//g, ' ')
+        .replace(/\//g, '&#47;');
     return text;
 }
 
@@ -437,12 +437,12 @@ function gettaskButButtonPress() { // функция открытия окна �
                         for (let z = 0; z < document.getElementsByName('specommenttitle').length; z++) {
                             let SCElement = document.getElementsByName('specommenttitle')
                             if (speccommntcompl[z]) {
-                               if (speccommntcompl[z].toLowerCase().includes("звон")) {
+                                if (speccommntcompl[z].toLowerCase().includes("звон")) {
                                     speccommntcompl[z] = highlightSearchText(speccommntcompl[z], "звон");
                                     SCElement[z].innerText = '⚠️';
                                     SCElement[z].classList.add('allertcomment', 'blinking');
                                 }
-                                SCElement[z].addEventListener('click', function () { handleSpecCommentClick(speccommntcompl[z]) });                                    
+                                SCElement[z].addEventListener('click', function () { handleSpecCommentClick(speccommntcompl[z]) });
                             } else {
                                 SCElement[z].innerText = '❌';
                             }
@@ -455,7 +455,7 @@ function gettaskButButtonPress() { // функция открытия окна �
                             const requestOptionsspec = {
                                 method: 'GET'
                             };
-    
+
                             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLspec, requestOptions: requestOptionsspec }, function (response) {
                                 if (!response.success) {
                                     console.log('Не удалось выполнить запрос: ' + response.error);
@@ -511,7 +511,8 @@ function gettaskButButtonPress() { // функция открытия окна �
             fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/click", {
                 "headers": {
                     "accept": "application/json, text/plain, */*",
-                    "content-type": "application/json"
+                    "content-type": "application/json",
+                    "x-csrf-token": aftoken
                 },
                 "body": `{\"buttonId\":\"b49609f3-9ff7-4ba5-a8a8-f2cef770bf19\",\"conversationId\":\"${activeConvId}\"}`,
                 "method": "POST",
@@ -546,14 +547,15 @@ function gettaskButButtonPress() { // функция открытия окна �
             if (document.getElementById('AF_Service').style.display == 'none') {
                 document.getElementById('AF_Complectations').style.display = 'none';
             }
-            if (document.getElementById('AF_SpecCommWindow').style.display != 'none'){
+            if (document.getElementById('AF_SpecCommWindow').style.display != 'none') {
                 document.getElementById('hideMeSpecComm').click();
             }
             if (activeConvId) {
                 fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
                     "headers": {
                         "accept": "application/json, text/plain, */*",
-                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr"
+                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr",
+                        "x-csrf-token": aftoken
                     },
                     "body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
                     "method": "POST",
@@ -776,7 +778,8 @@ function gettaskButButtonPress() { // функция открытия окна �
                     fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
                         "headers": {
                             "accept": "application/json, text/plain, */*",
-                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG"
+                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG",
+                            "x-csrf-token": aftoken
                         },
 
                         "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${taskuserid.value.trim()}\"},{\"name\":\"comment\",\"isFile\":false,\"value\":\"${taskcomment.value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
@@ -790,7 +793,8 @@ function gettaskButButtonPress() { // функция открытия окна �
                     fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
                         "headers": {
                             "accept": "application/json, text/plain, */*",
-                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG"
+                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG",
+                            "x-csrf-token": aftoken
                         },
                         "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${taskuserid.value.trim()}\"},{\"name\":\"initiatorId\",\"isFile\":false,\"value\":${taskuserid.value.trim()}}, {\"name\":\"comment\",\"isFile\":false,\"value\":\"${taskcomment.value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
 
@@ -806,19 +810,19 @@ function gettaskButButtonPress() { // функция открытия окна �
                 }
 
                 document.getElementById('AF_Createtask').style.display = 'none'
-                if (document.getElementById('AF_SpecCommWindow').style.display != 'none'){
+                if (document.getElementById('AF_SpecCommWindow').style.display != 'none') {
                     document.getElementById('hideMeSpecComm').click();
                 }
                 document.getElementById('clearcreateform').click();
                 document.getElementById('taskBut').classList.remove('activeScriptBtn')
 
-            } else createAndShowButton('Задача не была создана, проверьте, пожалуйста, заполнение полей' , 'error')
+            } else createAndShowButton('Задача не была создана, проверьте, пожалуйста, заполнение полей', 'error')
         }
 
         document.getElementById('taskcreate2linecrm').onclick = function () {
             if (document.getElementById('taskuserid').value != '') {
                 window.open("https://crm2.skyeng.ru/persons/" + document.getElementById('taskuserid').value + "/customer-support/manual")
-            } else createAndShowButton('Введите ID пользователя в соответствующее поле и повторите попытку' , 'error')
+            } else createAndShowButton('Введите ID пользователя в соответствующее поле и повторите попытку', 'error')
         }
 
 
@@ -829,7 +833,8 @@ function gettaskButButtonPress() { // функция открытия окна �
         fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
             "headers": {
                 "accept": "application/json, text/plain, */*",
-                "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr"
+                "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr",
+                "x-csrf-token": aftoken
             },
             "body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
             "method": "POST",

@@ -22,6 +22,7 @@ async function getStorageData(keys) {
     });
 }
 
+let aftoken = '';
 let pldata;
 let afopername; // переменная фамилии, имени оператора при переборе общего списка операторов
 let foundarr;
@@ -55,6 +56,31 @@ let flagLangBut = 0;
 let modulesarray = [];
 let chatsArray = [];
 let scriptAdr = localStorage.getItem('scriptAdr');
+
+async function whoAmI() {
+    const tokenis = document.cookie.match(/csrf_token=([^;]*)/)
+    if (tokenis && tokenis.length > 1) {
+        aftoken = tokenis[1];
+        // afopername = "Нагиев Эльдар";
+
+        const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+        if (iframe && iframe.contentDocument) {
+            let sectionKey = iframe.contentDocument.querySelector('span[id^="mantine-"][id$="-target"]');
+            if (sectionKey) {
+                let keys = sectionKey.textContent.split('-');
+                afopername = keys[1];
+                opsection = keys[0];
+                console.log("OPSECTION", opsection, "AFOPERNAME", afopername);
+                return true;
+            } else {
+                console.error("Элемент 'span[id^=\"mantine-\"][id$=\"-target\"]' не найден");
+            }
+        } else {
+            console.error("Iframe '[class^=\"NEW_FRONTEND\"]' не найден или contentDocument недоступен");
+        }
+        return false;
+    }
+}
 
 // Словарь для перевода предметов и направлений
 const subjectTranslations = {
@@ -277,20 +303,25 @@ function hideWindowOnClick(windowId, buttonId) { // Функция для скр
 }
 
 // Блок горячих клавиш
-const API_ENDPOINT = 'https://skyeng.autofaq.ai/api/reason8/operator/status';
-const fetchOptions = {
-    headers: {
-        'content-type': 'application/json',
-    },
-    referrer: 'https://skyeng.autofaq.ai/tickets/archive',
-    referrerPolicy: 'strict-origin-when-cross-origin',
-    body: '',
-    method: 'POST',
-    mode: 'cors',
-    credentials: 'include',
-};
 
-function changeStatus(status) { // функция изменения статуса оператора
+
+
+
+function changeStatus(status, token = aftoken) { // функция изменения статуса оператора
+    const API_ENDPOINT = 'https://skyeng.autofaq.ai/api/reason8/operator/status';
+    const fetchOptions = {
+        headers: {
+            'content-type': 'application/json',
+            'x-csrf-token': token
+        },
+        referrer: 'https://skyeng.autofaq.ai/tickets/archive',
+        referrerPolicy: 'strict-origin-when-cross-origin',
+        body: '',
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+    };
+    console.log(fetchOptions.headers['x-csrf-token']);
     fetchOptions.body = `{ "command": "DO_SET_OPERATOR_STATUS", "status": "${status}", "source": "Operator" }`;
     fetch(API_ENDPOINT, fetchOptions)
         .then((res) => {
@@ -299,20 +330,6 @@ function changeStatus(status) { // функция изменения стату�
         .catch((err) => {
             console.log(err);
         });
-}
-
-if (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") {
-    document.onkeydown = (event) => {
-        if (event.altKey && event.code === 'KeyO') { // горячие клавиши для смены статуса в Оффлайн
-            changeStatus('Offline');
-        } else if (event.altKey && event.code === 'KeyI') { // горячие клавиши для смены статуса в Занят
-            changeStatus('Busy');
-        } else if (event.altKey && event.code === 'KeyT') { // горячие клавиши тестового чата
-            const currentStatus = localStorage.getItem('trigertestchat');
-            const newStatus = currentStatus === '0' ? '1' : '0';
-            localStorage.setItem('trigertestchat', newStatus);
-        }
-    };
 }
 
 // Конец блока горячих клавиш
@@ -339,39 +356,6 @@ function getGblToken() { // получение токена глобал
             resolve(result.token_global);
         });
     });
-}
-
-async function whoAmI() {
-    const tokenis = document.cookie.match(/jwt=(.*)/);
-    if (tokenis && tokenis.length > 1) {
-        const token = tokenis[1];
-
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c => {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        operatorId = JSON.parse(jsonPayload).user.id;
-
-        const response = await fetch('https://skyeng.autofaq.ai/api/operators/statistic/currentState', {
-            credentials: 'include'
-        });
-        const data = await response.json();
-        operatorsarray = data.onOperator;
-
-        const operator = operatorsarray.find(s => s.operator !== null && operatorId && s.operator.id === operatorId);
-        if (operator) {
-            afopername = operator.operator.fullName;
-            opsection = operator.operator.fullName.split('-')[0];
-            return true;
-        }
-    }
-    console.log('JWT token not found or operator not found');
-    return false;
-
-    let test;
-    test = getGblToken()
-    console.log(test)
 }
 
 function timerHideButtons() {
@@ -540,6 +524,7 @@ async function sendComment(txt, activeConvId) { // Функция отправк
     fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
         "headers": {
             "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
+            "x-csrf-token": aftoken
         },
         "body": `------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name="payload"\r\n\r\n{\"sessionId\":\"${uid}\",\"conversationId\":\"${adr1}\",\"text\":\"${txt2}\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n`,
         "method": "POST",
@@ -559,6 +544,7 @@ function newTaggg(tagName) { //функция добавления тега в �
         fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
             "headers": {
                 "content-type": "application/json",
+                "x-csrf-token": aftoken
             },
             "body": "{\"conversationId\":\"" + chatId + "\",\"elements\":[{\"name\":\"tags\",\"value\":[\"" + tagName + "\"]}]}",
             "method": "POST",
@@ -687,8 +673,6 @@ function waitForElement(selector, callback, timeout = 10000, interval = 100) {
 if (location.host == 'skyeng.autofaq.ai') {
     waitForElement('#AF_helper', initializeMyLogic);
 }
-
-
 
 function refreshTemplates() { // функция обновляет шаблоны которые загружены были с гугл таблицы и сформированы их в table
     if (location.host == 'skyeng.autofaq.ai') {
@@ -929,12 +913,12 @@ function getText() { // функция обновления текста с ша
 async function move_again_AF() { //с АФ шняга там стили шмили скрипта отображение отправку сообщений
     getText();
     let whoAmISuccess = await whoAmI();
+    console.log(whoAmISuccess)
     while (!whoAmISuccess) {
         await new Promise(resolve => setTimeout(resolve, 1000)); // Ожидание секунду перед повторным вызовом
         whoAmISuccess = await whoAmI();
     }
     const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
-
     // Присваиваем данные константам
     const TS_addr = data.TS_addr;
     const KC_addr = data.KC_addr;
@@ -1054,6 +1038,104 @@ function closeTerms() { // функция автоподтверждения у�
         for (let i = 0; i < document.getElementsByClassName('terms-popup-accept-button').length; i++) {
             document.getElementsByClassName('terms-popup-accept-button')[i].click()
         }
+    }
+}
+
+async function doOperationsWithHistory(body = "") {  // общая функция для отправки запросов на историю запросов
+    const url = "https://skyeng.autofaq.ai/api/conversations/history";
+    const headers = {
+        "content-type": "application/json",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "x-csrf-token": aftoken // Убедитесь, что aftoken определён
+    };
+
+    try {
+        // Проверка тела запроса
+        if (typeof body !== "string" && typeof body !== "object") {
+            throw new Error("Аргумент body должен быть строкой или объектом.");
+        }
+        const requestBody = typeof body === "object" ? JSON.stringify(body) : body;
+
+        // Выполнение запроса
+        const response = await fetch(url, {
+            method: "POST",
+            headers: headers,
+            body: requestBody,
+            mode: "cors",
+            credentials: "include"
+        });
+
+        // Проверка успешности ответа
+        if (!response.ok) {
+            throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
+        }
+
+        // Обработка результата
+        const result = await response.json();
+        console.log("Response:", result?.status, result?.items?.length || 0);
+        return result;
+    } catch (error) {
+        console.error("Ошибка выполнения запроса:", error, "URL:", url, "Body:", body);
+        throw error; // Пробрасываем ошибку
+    }
+}
+
+async function doOperationsWithConversations(chathash) { // общая функция для получения информации по конкретному диалогу по его хешу
+    const url = "https://skyeng.autofaq.ai/api/conversations/" + chathash; // URL с аргументом adr
+    const headers = {
+        "content-type": "application/json",
+        "x-csrf-token": aftoken // Динамически подставляем токен
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: "GET", // Статичный метод GET
+            headers: headers,
+            credentials: "include", // Включение cookies
+            mode: "cors" // Режим CORS
+        });
+
+        if (!response.ok) {
+            throw new Error(`Ошибка сети: ${response.status}`);
+        }
+
+        const data = await response.json(); // Преобразуем ответ в JSON
+        return data; // Возвращаем данные
+    } catch (error) {
+        console.error("Ошибка выполнения запроса:", error);
+        throw error; // Пробрасываем ошибку для обработки
+    }
+}
+
+async function fetchStaticData() { // общая функция проверки статусов операторов
+    const url = "https://skyeng.autofaq.ai/api/operators/statistic/currentState"; // Статичный URL
+    const headers = {
+        "x-csrf-token": aftoken, // Статичный токен
+    };
+    const options = {
+        method: "GET", // Статичный метод
+        headers: headers,
+        credentials: "include", // Статичная настройка для включения cookies
+        mode: "cors", // Статичный режим
+    };
+
+    try {
+        const response = await fetch(url, options);
+
+        // Проверяем успешность ответа
+        if (!response.ok) {
+            throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
+        }
+
+        // Преобразуем ответ в JSON
+        const result = await response.json();
+        // console.log("Полученные данные:", result);
+        return result;
+    } catch (error) {
+        console.error("Ошибка выполнения запроса:", error);
+        throw error; // Пробрасываем ошибку для обработки
     }
 }
 
@@ -1543,4 +1625,19 @@ function highlightSearchText(item, searchText) { //Функция подсвет
     const replacePattern = new RegExp(searchText, 'i');
     const replaceValue = `<span style="color:MediumSpringGreen; font-weight:700; text-shadow:1px 2px 5px rgb(0 0 0 / 55%);">${searchText.toUpperCase()}</span>`;
     return replaceItem(item).replace(replacePattern, replaceValue);
+}
+
+
+if (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") {
+    document.onkeydown = (event) => {
+        if (event.altKey && event.code === 'KeyO') { // горячие клавиши для смены статуса в Оффлайн
+            changeStatus('Offline');
+        } else if (event.altKey && event.code === 'KeyI') { // горячие клавиши для смены статуса в Занят
+            changeStatus('Busy');
+        } else if (event.altKey && event.code === 'KeyT') { // горячие клавиши тестового чата
+            const currentStatus = localStorage.getItem('trigertestchat');
+            const newStatus = currentStatus === '0' ? '1' : '0';
+            localStorage.setItem('trigertestchat', newStatus);
+        }
+    };
 }

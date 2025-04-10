@@ -173,46 +173,61 @@ async function getStats() { // функция получения статист�
     const selectedEndDate = new Date(dateToStatInput.value);
     const rightDateToGrab = `${selectedEndDate.getFullYear()}-${padStart(selectedEndDate.getMonth() + 1, 2, '0')}-${padStart(selectedEndDate.getDate(), 2, '0')}T20:59:59.059z`;
 
-    const response = await fetch(`https://skyeng.autofaq.ai/api/reason8/reports/operatorActivityTable?dateFrom=${leftDateFromGrab}&dateTo=${rightDateToGrab}`);
+    const response = await fetch(`https://skyeng.autofaq.ai/api/reason8/reports/operatorActivityTable?dateFrom=${leftDateFromGrab}&dateTo=${rightDateToGrab}`, {
+        method: "GET", // Указываем метод запроса
+        headers: {
+            "x-csrf-token": aftoken // Добавляем заголовок с токеном
+        },
+        credentials: "include" // Включаем cookies для запроса
+    });
+
+    // Преобразуем ответ в JSON
     const data = await response.json();
-    const arrayvars = data.rows.filter(row => row.operator.indexOf(opSection) !== -1);
+
+    // Проверяем наличие свойства rows
+    if (!data.rows || !Array.isArray(data.rows)) {
+        throw new Error("Неверная структура ответа: 'rows' отсутствует или не является массивом.");
+    }
+
+    // Фильтруем данные
+    const arrayvars = data.rows.filter(row => row.operator && row.operator.indexOf(opSection) !== -1);
+
+    console.log("Результат фильтрации:", arrayvars);
+
     arrayvars.sort((a, b) => b.conversationClosed - a.conversationClosed);
     activeopersId = arrayvars.map(el => el.operatorId)
 
     var operatorId = []
     var operatorNames = []
-    await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
-        "credentials": "include"
-    }).then(result => b = result.json()).then(b => b.onOperator.forEach(k => {
-        if (k.operator != null)
-            // if (k.operator.kbs.indexOf(120181) != -1 && k.operator.fullName.split('-')[0] == opSection) {
-            if ((k.operator.kbs.indexOf(120181) != -1 || k.operator.kbs.indexOf(121381) != -1) && k.operator.fullName.split('-')[0] == opSection) {
-                operatorId.push(k.operator.id)
-                operatorNames.push(k.operator.fullName)
-            } else if (k.operator.fullName.split('-')[0] == opSection) {
-                operatorId.push(k.operator.id)
-                operatorNames.push(k.operator.fullName)
-            }
-    }))
+    fetchStaticData()
+        .then(result => {
+            // Предполагаем, что result уже является JSON-объектом
+            result.onOperator.forEach(k => {
+                if (k.operator != null) {
+                    if (
+                        (k.operator.kbs.indexOf(120181) != -1 || k.operator.kbs.indexOf(121381) != -1) &&
+                        k.operator.fullName.split('-')[0] == opSection
+                    ) {
+                        operatorId.push(k.operator.id);
+                        operatorNames.push(k.operator.fullName);
+                    } else if (k.operator.fullName.split('-')[0] == opSection) {
+                        operatorId.push(k.operator.id);
+                        operatorNames.push(k.operator.fullName);
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error("Ошибка при обработке данных:", error);
+        });
 
     // getyesterdayandtoday()
 
     var operatorChatCount = []
     for (var l = 0; l < operatorId.length; l++) {
-        await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-            "headers": {
-                "accept": "*/*",
-                "content-type": "application/json",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-origin"
-            },
-            "referrer": "https://skyeng.autofaq.ai/logs",
-            "referrerPolicy": "strict-origin-when-cross-origin",
-            "body": "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId[l] + "\"],\"tsFrom\":\"" + leftDateFromGrab + "\",\"tsTo\":\"" + rightDateToGrab + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":1,\"limit\":1}",
-            "method": "POST",
-            "mode": "cors",
-            "credentials": "include"
-        }).then(a => a.json()).then(b => operatorChatCount[l] = b.total)
+        let tBodyStatistica = "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId[l] + "\"],\"tsFrom\":\"" + leftDateFromGrab + "\",\"tsTo\":\"" + rightDateToGrab + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":1,\"limit\":1}"
+        doOperationsWithHistory(tBodyStatistica)
+            .then(a => a.json()).then(b => operatorChatCount[l] = b.total)
     }
 
     let tbody = document.createElement('tbody')
@@ -396,6 +411,7 @@ async function checkCSAT() { // функция проверки CSAT и чато
             await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
                 "headers": {
                     "content-type": "application/json",
+                    "x-csrf-token": aftoken
                 },
                 "body": "{\"serviceId\":\"" + servicetopic + "\",\"mode\":\"Json\",\"tsFrom\":\"" + leftDateFromGrab + "\",\"tsTo\":\"" + rightDateToGrab + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":" + page + ",\"limit\":100}",
                 "method": "POST",
@@ -403,8 +419,7 @@ async function checkCSAT() { // функция проверки CSAT и чато
             for (let i = 0; i < test.items.length; i++) {
                 let flagCsat = 0
                 let flagTopic = 0
-
-                await fetch('https://skyeng.autofaq.ai/api/conversations/' + test.items[i].conversationId)
+                doOperationsWithConversations(test.items[i].conversationId)
                     .then(r => r.json())
                     .then(r => {
                         if (r.operatorId == operatorId) {
@@ -608,9 +623,7 @@ async function checkload(department, flag) { // функция проверки 
     if (opsection == 'ТПPrem' || opsection == 'Prem')
         department = "Prem"
 
-    await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
-        "credentials": "include"
-    }).then(r => r.json()).then(result => {
+    fetchStaticData().then(r => r.json()).then(result => {
         setTimeout(function () {
             for (let i = 0; i < result.onOperator.length; i++) {
                 if (result.onOperator[i].operator != null && result.onOperator[i].operator.status != "Offline" && result.onOperator[i].operator.fullName.match(department)) {
@@ -737,152 +750,161 @@ async function getopersSLA() {
             page = 1;
 
             do {
-                await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                    headers: {
-                        "content-type": "application/json",
-                    },
-                    body: `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${activeopersId[i]}\"],\"tsFrom\":\"${leftDateFromGrab}\",\"tsTo\":\"${rightDateToGrab}\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":${page},\"limit\":100}`,
-                    method: "POST",
-                    mode: "cors",
-                    credentials: "include"
-                })
-                    .then((r) => r.json())
-                    .then((r) => (operdata = r));
+                const tBodyStatisticaOther = `{
+                    "serviceId": "361c681b-340a-4e47-9342-c7309e27e7b5",
+                    "mode": "Json",
+                    "participatingOperatorsIds": ["${activeopersId[i]}"],
+                    "tsFrom": "${leftDateFromGrab}",
+                    "tsTo": "${rightDateToGrab}",
+                    "orderBy": "ts",
+                    "orderDirection": "Asc",
+                    "page": ${page},
+                    "limit": 100
+                }`;
 
-                for (let j = 0; j < operdata.items.length; j++) {
-                    flagFoundQueue = 0;
-                    flagFoundOperGroup = 0;
-                    flagIsOnTPOper = 0;
-                    operFuckUpName = '';
-                    flagFoundOperAnswer = 0;
-                    indexOfChangeGroup = -1;
-                    indexOfFirstTimeInQueue = -1;
-                    differenceInSeconds = 0;
+                try {
+                    // Выполняем запрос для получения данных истории
+                    const response = await doOperationsWithHistory(tBodyStatisticaOther);
 
-                    const response = await fetch("https://skyeng.autofaq.ai/api/conversations/" + operdata.items[j].conversationId);
-                    const fres = await response.json();
-
-                    let conversationData = {
-                        ConversationId: fres.id,
-                        AnswersCounter: 0, // Инициализируем значением 0
-                        QuestionsCounter: 0, // Инициализируем для будущего наполнения
-                        operId: fres.operatorId
-                    };
-
-                    let frAnswers = fres.answers.length
-                    let frQuestions = fres.questions.length
-                    let answC = 0;
-                    let quesC = 0;
-                    if (frAnswers > 0) {
-                        for (let i = 0; i < frAnswers; i++) {
-                            if (fres.answers[i].isProcessed == undefined) {
-                                conversationData.AnswersCounter++;
-                                answC++;
-                            }
-                        }
+                    // Проверяем корректность ответа
+                    if (!response || !response.items || !Array.isArray(response.items)) {
+                        throw new Error("Invalid response structure: 'items' is undefined or not an array.");
                     }
-                    if (frQuestions > 0) {
-                        for (let j = 0; j < frQuestions; j++) {
-                            if (fres.questions[j] != "Good" && fres.questions[frQuestions - 1] != "Could be better" && fres.questions[frQuestions - 1] != "So-so" && fres.questions[frQuestions - 1] != "Bad" && fres.questions[frQuestions - 1] != "Terrible") {
-                                conversationData.QuestionsCounter++
-                                quesC++
+
+                    const operdata = response; // Ответ от doOperationsWithHistory
+
+                    for (let j = 0; j < operdata.items.length; j++) {
+                        flagFoundQueue = 0;
+                        flagFoundOperGroup = 0;
+                        flagIsOnTPOper = 0;
+                        operFuckUpName = '';
+                        flagFoundOperAnswer = 0;
+                        indexOfChangeGroup = -1;
+                        indexOfFirstTimeInQueue = -1;
+                        differenceInSeconds = 0;
+
+                        // Выполняем запрос для конкретного диалога
+                        const fres = await doOperationsWithConversations(operdata.items[j].conversationId);
+
+                        let conversationData = {
+                            ConversationId: fres.id,
+                            AnswersCounter: 0, // Инициализируем значением 0
+                            QuestionsCounter: 0, // Инициализируем для будущего наполнения
+                            operId: fres.operatorId
+                        };
+
+                        const frAnswers = fres.answers.length;
+                        const frQuestions = fres.questions.length;
+                        let answC = 0;
+                        let quesC = 0;
+
+                        if (frAnswers > 0) {
+                            for (let i = 0; i < frAnswers; i++) {
+                                if (fres.answers[i].isProcessed === undefined) {
+                                    conversationData.AnswersCounter++;
+                                    answC++;
+                                }
                             }
                         }
-                    } else conversationData.QuestionsCounter = 0
-                    console.log(fres.operatorId, "-", fres.id, "-", answC, "-", quesC)
-
-                    // console.log("Чат", conversationData)
-
-
-
-                    //ЦИКЛ НАЧАЛО
-                    if (fres.messages[fres.messages.length - 1].tpe == "Question") {
-                        let groupFoundIndex = -1; // Индекс сообщения с нужной группой
-                        let flagChatIsInQueue = -1; // Индекс сообщения с "Ищем для вас..."
-                        let firstMessageTime = fres.messages[fres.messages.length - 1].ts;
-
-                        // Сначала ищем сообщение с нужной группой
-                        for (let z = fres.messages.length - 1; z >= 0; z--) {
-                            const message = fres.messages[z];
-                            if (message.payload && message.payload.prevGroup === undefined && message.payload.group === "c7bbb211-a217-4ed3-8112-98728dc382d8") {
-                                groupFoundIndex = z;
-                                break; // Находим первое с конца сообщение с нужной группой и запоминаем его индекс
+                        if (frQuestions > 0) {
+                            for (let j = 0; j < frQuestions; j++) {
+                                if (!["Good", "Could be better", "So-so", "Bad", "Terrible"].includes(fres.questions[j])) {
+                                    conversationData.QuestionsCounter++;
+                                    quesC++;
+                                }
                             }
+                        } else {
+                            conversationData.QuestionsCounter = 0;
                         }
+                        console.log(fres.operatorId, "-", fres.id, "-", answC, "-", quesC);
 
-                        // Если сообщение с нужной группой найдено, ищем следующее по условию
-                        if (groupFoundIndex !== -1) {
-                            for (let b = groupFoundIndex; b >= 0; b--) {
-                                const message = fres.messages[b];
+                        // ЦИКЛ НАЧАЛО
+                        if (fres.messages[fres.messages.length - 1]?.tpe === "Question") {
+                            let groupFoundIndex = -1; // Индекс сообщения с нужной группой
+                            let flagChatIsInQueue = -1; // Индекс сообщения с "Ищем для вас..."
+                            const firstMessageTime = fres.messages[fres.messages.length - 1].ts;
 
-                                if (message.tpe && typeof message.txt === 'string' && message.txt.includes("специалисты заняты")) {
-                                    flagChatIsInQueue = b
-                                    if (flagChatIsInQueue !== -1) {
-                                        for (let v = flagChatIsInQueue; v >= 0; v--) {
-                                            const message = fres.messages[v];
-                                            if (message.tpe === "AnswerOperatorWithBot" || message.tpe === "AnswerOperator") {
-                                                let remember = message.ts;
-                                                let differInSecs = (new Date(remember) - new Date(firstMessageTime)) / 1000;
-                                                if (differInSecs > 60) {
-                                                    //console.log(fres.id, firstMessageTime, remember, differInSecs);
-                                                    massivchikQueue.add(fres.id)
-                                                    break; // Прерываем цикл после нахождения и выполнения условий
+                            // Сначала ищем сообщение с нужной группой
+                            for (let z = fres.messages.length - 1; z >= 0; z--) {
+                                const message = fres.messages[z];
+                                if (message.payload && !message.payload.prevGroup && message.payload.group === "c7bbb211-a217-4ed3-8112-98728dc382d8") {
+                                    groupFoundIndex = z;
+                                    break; // Находим первое с конца сообщение с нужной группой и запоминаем его индекс
+                                }
+                            }
+
+                            // Если сообщение с нужной группой найдено, ищем следующее по условию
+                            if (groupFoundIndex !== -1) {
+                                for (let b = groupFoundIndex; b >= 0; b--) {
+                                    const message = fres.messages[b];
+
+                                    if (message.tpe && typeof message.txt === 'string' && message.txt.includes("специалисты заняты")) {
+                                        flagChatIsInQueue = b;
+                                        if (flagChatIsInQueue !== -1) {
+                                            for (let v = flagChatIsInQueue; v >= 0; v--) {
+                                                const message = fres.messages[v];
+                                                if (["AnswerOperatorWithBot", "AnswerOperator"].includes(message.tpe)) {
+                                                    const remember = message.ts;
+                                                    const differInSecs = (new Date(remember) - new Date(firstMessageTime)) / 1000;
+                                                    if (differInSecs > 60) {
+                                                        massivchikQueue.add(fres.id);
+                                                        break; // Прерываем цикл после нахождения и выполнения условий
+                                                    }
                                                 }
-
                                             }
                                         }
                                     }
-                                }
 
-
-                                if (message.tpe === "AnswerOperatorWithBot" || message.tpe === "AnswerOperator") {
-                                    let remember = message.ts;
-                                    let differInSecs = (new Date(remember) - new Date(firstMessageTime)) / 1000;
-                                    if (differInSecs > 60) {
-                                        //console.log(fres.id, firstMessageTime, remember, differInSecs);
-                                        massivchikUntarget.add(fres.id)
-                                    } else {
-                                        massivchikTarget.add(fres.id)
+                                    if (["AnswerOperatorWithBot", "AnswerOperator"].includes(message.tpe)) {
+                                        const remember = message.ts;
+                                        const differInSecs = (new Date(remember) - new Date(firstMessageTime)) / 1000;
+                                        if (differInSecs > 60) {
+                                            massivchikUntarget.add(fres.id);
+                                        } else {
+                                            massivchikTarget.add(fres.id);
+                                        }
+                                        break; // Прерываем цикл после нахождения и выполнения условий
                                     }
-                                    break; // Прерываем цикл после нахождения и выполнения условий
                                 }
                             }
                         }
-                    }
 
-                    /// ЦИКЛ КОНЕЦ
-                    if (fres.operatorId == activeopersId[i]) {
-                        operclschatcount++;
-                        totalChatsClosed[i] = operclschatcount;
-                        filteredarray.push({
-                            ["id"]: "operator" + [i + 1],
-                            ["chatHashId"]: operdata.items[j].conversationId,
-                            ["Duration"]: operdata.items[j].stats.conversationDuration
-                                ? (operdata.items[j].stats.conversationDuration / 1000 / 60).toFixed(1)
-                                : "0.0",
-                            ["Rate"]: operdata.items[j].stats.rate.rate
-                                ? operdata.items[j].stats.rate.rate
-                                : null,
-                            ["Channel"]: operdata.items[j].channel.name
-                        });
+                        // ЦИКЛ КОНЕЦ
+                        if (fres.operatorId === activeopersId[i]) {
+                            operclschatcount++;
+                            totalChatsClosed[i] = operclschatcount;
+                            filteredarray.push({
+                                id: "operator" + [i + 1],
+                                chatHashId: operdata.items[j].conversationId,
+                                Duration: operdata.items[j].stats.conversationDuration
+                                    ? (operdata.items[j].stats.conversationDuration / 1000 / 60).toFixed(1)
+                                    : "0.0",
+                                Rate: operdata.items[j].stats.rate.rate
+                                    ? operdata.items[j].stats.rate.rate
+                                    : null,
+                                Channel: operdata.items[j].channel.name
+                            });
 
-                        if (operdata.items[j].stats.rate.rate && operdata.items[j].channel.name != "Telegram techsup acquisition") {
-                            csatcount++;
-                            csatsumma += operdata.items[j].stats.rate.rate
-                            arraycsatcount[i] = csatcount
-                            arraycsatsumma[i] = csatsumma
+                            if (operdata.items[j].stats.rate.rate && operdata.items[j].channel.name !== "Telegram techsup acquisition") {
+                                csatcount++;
+                                csatsumma += operdata.items[j].stats.rate.rate;
+                                arraycsatcount[i] = csatcount;
+                                arraycsatsumma[i] = csatsumma;
+                            }
+
+                            if (operdata.items[j].stats.conversationDuration && (operdata.items[j].stats.conversationDuration / 1000 / 60).toFixed(1) > 25) {
+                                overduecount++;
+                                operatorOverdueChats[i] = overduecount;
+                            }
                         }
-
-                        if (operdata.items[j].stats.conversationDuration && (operdata.items[j].stats.conversationDuration / 1000 / 60).toFixed(1) > 25) {
-                            overduecount++
-                            operatorOverdueChats[i] = overduecount
-                        }
-
                     }
+                    page++;
+                    maxpage = Math.ceil(operdata.total / 100);
+                } catch (error) {
+                    console.error("Ошибка выполнения запроса:", error);
+                    break; // Прерываем выполнение цикла в случае ошибки
                 }
-                page++;
-                maxpage = operdata.total / 100;
-            } while (page - 1 < maxpage);
+            } while (page <= maxpage); while (page - 1 < maxpage);
 
             uniqueIdsArrayUntarget = Array.from(massivchikUntarget);
             console.log("Массив нетаргета по АФРТ", uniqueIdsArrayUntarget);

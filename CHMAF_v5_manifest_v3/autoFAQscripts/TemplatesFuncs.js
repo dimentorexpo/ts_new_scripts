@@ -52,6 +52,7 @@ function newTags(tagName) { //функция добавления несколь
             fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
                 "headers": {
                     "content-type": "application/json",
+                    "x-csrf-token": aftoken
                 },
                 "body": "{\"conversationId\":\"" + chatId + "\",\"elements\":[{\"name\":\"tags\",\"value\":[\"" + tagName + "\"]}]}",
                 "method": "POST",
@@ -61,6 +62,7 @@ function newTags(tagName) { //функция добавления несколь
             fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
                 "headers": {
                     "content-type": "application/json",
+                    "x-csrf-token": aftoken
                 },
                 "body": "{\"conversationId\":\"" + chatId + "\",\"elements\":[{\"name\":\"tags\",\"value\":[\"" + tagName.split(',')[0] + "\" ,\"" + tagName.split(',')[1] + "\"]}]}",
                 "method": "POST",
@@ -830,6 +832,7 @@ function servFromDoc(event) {
         fetch("https://skyeng.autofaq.ai/api/conversation/" + document.URL.split('/')[5] + "/payload", { //записываем ссылку в поле "Ссылка на jira"
             "headers": {
                 "content-type": "application/json",
+                "x-csrf-token": aftoken
             },
             "body": "{\"conversationId\":\"${splitter[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"" + linktostatsend + "\"}]}",
             "method": "POST",
@@ -861,9 +864,13 @@ async function getInfo(flag1 = 1) { //функция получения инфо
     if (adr1 == undefined)
         adr1 = ""
     if (document.getElementById('msg1').innerHTML != "Доработать" || flag1 == 0) {
-        await fetch("https://skyeng.autofaq.ai/api/conversations/" + adr1)
+        doOperationsWithConversations(adr1)
             .then(response => response.json())
-            .then(result => { sessionId = result.sessionId; chatsArray.push(result); localStorage.setItem('serviceIdGlob', result.serviceId) });
+            .then(result => {
+                sessionId = result.sessionId;
+                chatsArray.push(result);
+                localStorage.setItem('serviceIdGlob', result.serviceId);
+            });
     }
     return [adr, adr1, sessionId]
 }
@@ -884,6 +891,7 @@ function newTag(valueId) {
         fetch(`https://skyeng.autofaq.ai/api/conversation/${chatId}/payload`, {
             headers: {
                 'content-type': 'application/json',
+                'x-csrf-token': aftoken
             },
             body: `{"conversationId":"${chatId}","elements":[{"name":"topicId","value":"${valueId}"}]}`,
             method: 'POST',
@@ -979,6 +987,7 @@ async function loadTemplates(template, word) { //загрузка шаблоно
         return await fetch("https://skyeng.autofaq.ai/api/reason8/autofaq/top/batch", {
             "headers": {
                 "content-type": "application/json",
+                "x-csrf-token": aftoken
             },
             "body": "{\"query\":\"" + word + "\",\"answersLimit\":10,\"autoFaqServiceIds\":[121286, 119638, 121385, 119843, 118980, 121692, 121386, 119636, 119649, 121381, 119841, 120181, 119646, 121384, 121387, 119844, 119025]}",
             "method": "POST",
@@ -1026,6 +1035,7 @@ async function loadTemplates(template, word) { //загрузка шаблоно
         return await fetch("https://skyeng.autofaq.ai/api/reason8/autofaq/top/batch", {
             "headers": {
                 "content-type": "application/json",
+                "x-csrf-token": aftoken
             },
             "body": "{\"query\":\"" + word + "\",\"answersLimit\":10,\"autoFaqServiceIds\":[121533, 121775, 121527, 121531, 121831]}",
             "method": "POST",
@@ -1081,6 +1091,7 @@ async function sendAnswerTemplate2(word, flag = 0) { //функция отпра
             a = await fetch("https://skyeng.autofaq.ai/api/reason8/autofaq/top/batch", {
                 "headers": {
                     "content-type": "application/json",
+                    "x-csrf-token": aftoken
                 },
                 "referrer": adr,
                 "referrerPolicy": "no-referrer-when-downgrade",
@@ -1121,7 +1132,8 @@ async function sendAnswerTemplate2(word, flag = 0) { //функция отпра
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundarymasjvc4O46a190zh",
                 "sec-fetch-dest": "empty",
                 "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-origin"
+                "sec-fetch-site": "same-origin",
+                "x-csrf-token": aftoken
             },
             "referrer": adr,
             "referrerPolicy": "no-referrer-when-downgrade",
@@ -1189,6 +1201,7 @@ async function sendAnswerTemplate(template, word, flag = 0, newText = "", flag2 
         fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
             headers: {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryZ3ivsA3aU80QEBST",
+                "x-csrf-token": aftoken
             },
             body: `------WebKitFormBoundaryZ3ivsA3aU80QEBST\r\nContent-Disposition: form-data; name="payload"\r\n\r\n{"sessionId":"${uid}","conversationId":"${adr1}","text":"${tmpText}","ext":null,"files":[],"suggestedAnswerDocId":${documentId},"autoFaqServiceId":${serviceId},"autoFaqSessionId":"${AFsessionId}","autoFaqQueryId":"${queryId}","autoFaqTitle":"${title}","autoFaqQuery":"${word}","autoFaqAccuracy":${accuracy}}\r\n------WebKitFormBoundaryZ3ivsA3aU80QEBST--\r\n`,
             method: "POST",
@@ -1215,6 +1228,7 @@ async function sendAnswer(txt, flag = 1) { //функция отправки о�
         fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
             "headers": {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryFeIiMdHaxAteNUHd",
+                "x-csrf-token": aftoken
             },
             "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + uid + "\",\"conversationId\":\"" + adr1 + "\",\"text\":\"" + txt3 + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
             "method": "POST",
@@ -1296,51 +1310,42 @@ async function CountTechSupTimmer() {
 
         const prevDayTime = formatISOStringWithoutMillis(prevDayStart);
         const currentDayTime = formatISOStringWithoutMillis(currentDayEnd);
-
-        const response = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-                "sec-fetch-dest": "empty",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-origin"
-            },
-            body: JSON.stringify({
-                serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
-                mode: "Json",
-                participatingOperatorsIds: [operatorId],
-                tsFrom: prevDayTime,
-                tsTo: currentDayTime,
-                usedStatuses: ["AssignedToOperator"],
-                orderBy: "ts",
-                orderDirection: "Desc",
-                page: 1,
-                limit: 100
-            }),
-            mode: "cors",
-            credentials: "include"
+        console.log("TEST", aftoken)
+        const tBodyHistoryTemplates = JSON.stringify({
+            serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
+            mode: "Json",
+            participatingOperatorsIds: [operatorId],
+            tsFrom: prevDayTime,
+            tsTo: currentDayTime,
+            usedStatuses: ["AssignedToOperator"],
+            orderBy: "ts",
+            orderDirection: "Desc",
+            page: 1,
+            limit: 100
         });
 
-        if (!response.ok) throw new Error("Network response was not ok.");
+        try {
+            // Использование функции doOperationsWithHistory
+            const data = await doOperationsWithHistory(tBodyHistoryTemplates);
 
-        const data = await response.json();
-        const conversationIds = data.items.map(el => el.conversationId);
+            // Проверяем, что запрос завершился успешно (если необходимо перенести проверку внутрь функции doOperationsWithHistory)
+            if (!data || !data.items) throw new Error("Invalid response structure");
+
+            // Преобразуем данные и обрабатываем conversationIds
+            const conversationIds = data.items.map(el => el.conversationId);
+
+            console.log("Conversation IDs:", conversationIds);
+        } catch (error) {
+            console.error("Ошибка выполнения запроса:", error);
+        }
 
         const messagesPromises = conversationIds.map(async id => {
-            const convResponse = await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, {
-                method: "GET",
-                headers: {
-                    "sec-fetch-dest": "empty",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-origin"
-                },
-                mode: "cors",
-                credentials: "include"
-            });
+            const convResponse = await doOperationsWithConversations(id); // Ожидаем выполнение промиса
 
-            if (!convResponse.ok) throw new Error("Network response was not ok.");
+            // Дополнительная обработка данных или проверка, если требуется
+            if (!convResponse || !convResponse.data) throw new Error("Invalid response data.");
 
-            return convResponse.json();
+            return convResponse; // Возвращаем уже обработанный результат
         });
 
         const conversations = await Promise.all(messagesPromises);

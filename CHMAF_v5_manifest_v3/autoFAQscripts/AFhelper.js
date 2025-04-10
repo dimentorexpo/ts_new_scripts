@@ -167,6 +167,7 @@ document.getElementById('sndbot').onclick = async function () { //отправи
         fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
             "headers": {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundarymasjvc4O46a190zh",
+                "x-csrf-token": aftoken
             },
             "body": "------WebKitFormBoundarymasjvc4O46a190zh\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + uid + "\",\"conversationId\":\"" + adr1 + "\",\"text\":\"" + txt3 + "\",\"suggestedAnswerDocId\":0}\r\n------WebKitFormBoundarymasjvc4O46a190zh--\r\n",
             "method": "POST",

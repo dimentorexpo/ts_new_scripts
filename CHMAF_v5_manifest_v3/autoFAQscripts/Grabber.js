@@ -270,7 +270,13 @@ document.getElementById('GatherStatByThemes').onclick = function () {
 }
 
 async function getlistofopers() {
-    await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState").then(r => r.json()).then(r => dataInfo = r)
+    await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
+        "method": "GET",
+        "headers": {
+            "x-csrf-token": aftoken
+        },
+        "credentials": "include"
+    }).then(r => r.json()).then(r => dataInfo = r)
 
     let tpopers = dataInfo.onOperator
         .map(el => el.groupId === "c7bbb211-a217-4ed3-8112-98728dc382d8" ? ({ id: el.operator.id, name: el.operator.fullName }) : el.groupId === "8266dbb1-db44-4910-8b5f-a140deeec5c0" ? ({ id: el.operator.id, name: el.operator.fullName }) : null)
@@ -1296,16 +1302,16 @@ function SaveСountryCSV(filename) {
 }
 
 function searchTeachersAndRates(main) {
-		if (main.channelUser && main.channelUser.payload && main.channelUser.payload.userType == "teacher" && (main.channelUser.payload.teacherSTKList?.includes('homeschooling') || main.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
-		
-		if (main.messages.length > 0) {
-			 for (let z = 0; z < main.messages.length; z++) {
-			 if (main.messages[z].txt && typeof main.messages[z].txt === 'string' && main.messages[z].tpe == "Rate") {
-				  console.log(main.id, main.channelUser.payload.id, main.messages[z].txt);
-			 }
-			 }
-		}
-	}
+    if (main.channelUser && main.channelUser.payload && main.channelUser.payload.userType == "teacher" && (main.channelUser.payload.teacherSTKList?.includes('homeschooling') || main.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
+
+        if (main.messages.length > 0) {
+            for (let z = 0; z < main.messages.length; z++) {
+                if (main.messages[z].txt && typeof main.messages[z].txt === 'string' && main.messages[z].tpe == "Rate") {
+                    console.log(main.id, main.channelUser.payload.id, main.messages[z].txt);
+                }
+            }
+        }
+    }
 }
 
 let chekopersarr = [];
@@ -1413,17 +1419,10 @@ document.getElementById('stargrab').onclick = async function () {
         tmponlyoperhashes = [];
         page = 1;
         do {
-            await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                headers: {
-                    "content-type": "application/json",
-                },
-                body: `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${chekopersarr[i]}\"],\"tsFrom\":\"${leftDateFromGrab}\",\"tsTo\":\"${rightDateToGrab}\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":${page},\"limit\":100}`,
-                method: "POST",
-                mode: "cors",
-                credentials: "include"
-            })
-                .then(r => r.json()).
-                then(r => opgrdata = r)
+            let tBodyGrabber = `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${chekopersarr[i]}\"],\"tsFrom\":\"${leftDateFromGrab}\",\"tsTo\":\"${rightDateToGrab}\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":${page},\"limit\":100}`
+            doOperationsWithHistory(tBodyGrabber)
+                .then(r => r.json())
+                .then(r => opgrdata = r)
 
             // newarray = [];
             // newarray = [...opgrdata.items].map(el => el.conversationId)
@@ -1431,23 +1430,23 @@ document.getElementById('stargrab').onclick = async function () {
             const items = opgrdata.items;
             for (let k = 0; k < items.length; k++) {
                 const el = items[k];
-				if (markscheklist[5].checked === false) { // Если "No marks" не выбрана
-					if (el.stats.rate.rate !== undefined && checkmarksarr.includes(el.stats.rate.rate)) {
-						const obj = {
-							ConvId: el.conversationId,
-							Rate: el.channel.name === "Telegram techsup acquisition" ? "-" : el.stats.rate.rate
-						};
-						chatswithmarksarray.push(obj);
-					}
-				} else { // Если выбрана "No marks"
-					if (el.stats.rate.rate === undefined || checkmarksarr.includes(el.stats.rate.rate)) {
-						const obj = {
-							ConvId: el.conversationId,
-							Rate: el.channel.name === "Telegram techsup acquisition" ? "-" : el.stats.rate.rate
-						};
-						chatswithmarksarray.push(obj);
-					}
-				}
+                if (markscheklist[5].checked === false) { // Если "No marks" не выбрана
+                    if (el.stats.rate.rate !== undefined && checkmarksarr.includes(el.stats.rate.rate)) {
+                        const obj = {
+                            ConvId: el.conversationId,
+                            Rate: el.channel.name === "Telegram techsup acquisition" ? "-" : el.stats.rate.rate
+                        };
+                        chatswithmarksarray.push(obj);
+                    }
+                } else { // Если выбрана "No marks"
+                    if (el.stats.rate.rate === undefined || checkmarksarr.includes(el.stats.rate.rate)) {
+                        const obj = {
+                            ConvId: el.conversationId,
+                            Rate: el.channel.name === "Telegram techsup acquisition" ? "-" : el.stats.rate.rate
+                        };
+                        chatswithmarksarray.push(obj);
+                    }
+                }
 
                 if (items[k].operatorId == chekopersarr[i]) {
                     tmponlyoperhashes.push({ HashId: el.conversationId, Duration: el.stats.conversationDuration })
@@ -1461,7 +1460,7 @@ document.getElementById('stargrab').onclick = async function () {
                 if (matchedItem) {
                     const csat = matchedItem.Rate;
                     if (chosentheme !== "parseallthemes" && chosentheme !== "parsenothemes") {
-                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + conversationId)
+                        doOperationsWithConversations(conversationId)
                             .then(r => r.json())
                             .then(r => {
                                 if (r.payload.topicId && r.payload.topicId.value === chosentheme && tmponlyoperhashes[j].Duration != undefined) {
@@ -1469,7 +1468,7 @@ document.getElementById('stargrab').onclick = async function () {
                                     //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                     //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
 
-									searchTeachersAndRates(main = r)
+                                    searchTeachersAndRates(main = r)
 
                                     payloadarray.push({
                                         ChatId: conversationId,
@@ -1487,7 +1486,7 @@ document.getElementById('stargrab').onclick = async function () {
 
                                     //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                     // (r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-									searchTeachersAndRates(main = r)
+                                    searchTeachersAndRates(main = r)
 
                                     payloadarray.push({
                                         ChatId: conversationId,
@@ -1502,7 +1501,7 @@ document.getElementById('stargrab').onclick = async function () {
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
                                 }
 
-                                //test поиск входа 
+                                //test поиск входа
                                 // if (r.messages.length > 0) {
                                 // for (let z = 0; z < r.messages.length; z++) {
                                 // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
@@ -1513,13 +1512,13 @@ document.getElementById('stargrab').onclick = async function () {
                                 // end test
                             });
                     } else if (chosentheme !== "parseallthemes" && chosentheme == "parsenothemes") {
-                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + conversationId)
+                        doOperationsWithConversations(conversationId)
                             .then(r => r.json())
                             .then(r => {
 
                                 //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                 //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-								searchTeachersAndRates(main = r)
+                                searchTeachersAndRates(main = r)
 
                                 operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
                                 if (r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration == undefined) {
@@ -1546,26 +1545,26 @@ document.getElementById('stargrab').onclick = async function () {
                                 }
 
                                 //test
-                                							
-								// if (r.messages.length > 0) {
-								  // for (let z = 0; z < r.messages.length; z++) {
-									// if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
-									  // console.log("Вход найден: ", conversationId);
-									// }
-								  // }
-								// }			
+
+                                // if (r.messages.length > 0) {
+                                // for (let z = 0; z < r.messages.length; z++) {
+                                // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
+                                // console.log("Вход найден: ", conversationId);
+                                // }
+                                // }
+                                // }
                                 // end test
                             });
 
 
                     } else {
-                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + conversationId)
+                        doOperationsWithConversations(conversationId)
                             .then(r => r.json())
                             .then(r => {
 
                                 //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
                                 //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-								searchTeachersAndRates(main = r)
+                                searchTeachersAndRates(main = r)
 
                                 if (r.payload && r.payload.tags) {
                                     operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })

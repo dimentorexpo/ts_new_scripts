@@ -72,7 +72,8 @@ function getbutFrozeChatButtonPress() {
                         "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
                         "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryFeIiMdHaxAteNUHd",
                         "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin"
+                        "sec-fetch-site": "same-origin",
+                        "x-csrf-token": aftoken
                     },
                     "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + session + "\",\"conversationId\":\"" + hashchat + "\",\"text\":\"" + notemsg + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
                     "method": "POST",
@@ -93,7 +94,7 @@ function getbutFrozeChatButtonPress() {
             }
 
             async function getsesid(arg) { // функция получения Idsession из хеша чата для отправки заметок или сообщений в чат пользователю
-                await fetch("https://skyeng.autofaq.ai/api/conversations/" + arg).then(r => r.json()).then(r => datachat = r)
+                doOperationsWithConversations(arg).then(r => r.json()).then(r => datachat = r)
                 return datachat.sessionId
             }
 
@@ -147,7 +148,7 @@ function getbutFrozeChatButtonPress() {
             }
 
         } else {
-            createAndShowButton('Не введен хеш чата!. Введите хеш и попробуйте еще раз' , 'error');
+            createAndShowButton('Не введен хеш чата!. Введите хеш и попробуйте еще раз', 'error');
         }
 
     }

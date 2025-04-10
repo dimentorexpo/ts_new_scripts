@@ -215,36 +215,27 @@ document.getElementById('getstatfromperiod').onclick = async function () { // Т
     let allchatcountclosed = document.getElementById('sumchatcountclosed')
     allchatcountclosed.textContent = "Загрузка"
     strnew.textContent = "Загрузка"
-    await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-        "headers": {
-            "content-type": "application/json",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin"
-        },
-        "referrer": "https://skyeng.autofaq.ai/logs",
-        "referrerPolicy": "strict-origin-when-cross-origin",
-        "body": "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId + "\"],\"tsFrom\":\"" + datefrom + "\",\"tsTo\":\"" + dateto + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":1,\"limit\":1}",
-        "method": "POST",
-        "mode": "cors",
-        "credentials": "include"
-    }).then(r => r.json()).then(data => sumchatcounttouched = data)
-    allchatcounttouched.innerText = "Количество пощупаных чатов: " + sumchatcounttouched.total;
 
+    const bodyHistoryTouched = "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId + "\"],\"tsFrom\":\"" + datefrom + "\",\"tsTo\":\"" + dateto + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":1,\"limit\":1}"
+    doOperationsWithHistory(bodyHistoryTouched)
+        .then(r => r.json()) // Преобразуем ответ в JSON
+        .then(data => {
+            sumchatcounttouched = data; // Сохраняем данные в переменной
+            allchatcounttouched.innerText = "Количество пощупанных чатов: " + sumchatcounttouched.total; // Используем данные
+        })
+        .catch(error => {
+            console.error("Ошибка выполнения запроса:", error); // Обрабатываем ошибки
+        });
 
-    await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-        "headers": {
-            "content-type": "application/json",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin"
-        },
-        "referrer": "https://skyeng.autofaq.ai/logs",
-        "referrerPolicy": "strict-origin-when-cross-origin",
-        "body": "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId + "\"],\"tsFrom\":\"" + datefrom + "\",\"tsTo\":\"" + dateto + "\",\"usedStatuses\":[\"ClosedByOperator\"],\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":1,\"limit\":1}",
-        "method": "POST",
-        "mode": "cors",
-        "credentials": "include"
-    }).then(r1 => r1.json()).then(data1 => sumchatcountclosed = data1)
-    allchatcountclosed.innerText = "Количество закрытых чатов: " + sumchatcountclosed.total;
+    const bodyHistoryClosed = "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId + "\"],\"tsFrom\":\"" + datefrom + "\",\"tsTo\":\"" + dateto + "\",\"usedStatuses\":[\"ClosedByOperator\"],\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":1,\"limit\":1}"
+    doOperationsWithHistory(bodyHistoryClosed).then(r => r.json()) // Преобразуем ответ в JSON
+        .then(data => {
+            sumchatcountclosed = data; // Сохраняем данные в переменной
+            allchatcountclosed.innerText = "Количество закрытых чатов: " + sumchatcountclosed.total; // Используем данные
+        })
+        .catch(error => {
+            console.error("Ошибка выполнения запроса:", error); // Обрабатываем ошибки
+        });
 
     // блок с расчетом КСАТ и чатов без тематики
     try {
@@ -257,6 +248,7 @@ document.getElementById('getstatfromperiod').onclick = async function () { // Т
             await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
                 "headers": {
                     "content-type": "application/json",
+                    "x-csrf-token": aftoken
                 },
                 "body": "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"tsFrom\":\"" + datefrom + "\",\"tsTo\":\"" + dateto + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":" + pagenew + ",\"limit\":100}",
                 "method": "POST",
@@ -264,7 +256,7 @@ document.getElementById('getstatfromperiod').onclick = async function () { // Т
             for (let i = 0; i < test.items.length; i++) {
                 let flagCsat = 0
                 let flagTopic = 0
-                await fetch('https://skyeng.autofaq.ai/api/conversations/' + test.items[i].conversationId)
+                doOperationsWithConversations(test.items[i].conversationId)
                     .then(r => r.json())
                     .then(r => {
                         if (r.operatorId == operatorId) {
@@ -321,6 +313,7 @@ document.getElementById('getlowcsat').onclick = async function () { // полу�
             await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
                 "headers": {
                     "content-type": "application/json",
+                    "x-csrf-token": aftoken
                 },
                 "body": "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"tsFrom\":\"" + datefrom1 + "\",\"tsTo\":\"" + dateto1 + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":" + pagenewlowcsat + ",\"limit\":100}",
                 "method": "POST",
@@ -328,7 +321,7 @@ document.getElementById('getlowcsat').onclick = async function () { // полу�
             for (let i = 0; i < test.items.length; i++) {
                 let flagCsat1 = 0
                 csatScoreNewLow = 0
-                await fetch('https://skyeng.autofaq.ai/api/conversations/' + test.items[i].conversationId)
+                doOperationsWithConversations(test.items[i].conversationId)
                     .then(r => r.json())
                     .then(r => {
                         if (r.operatorId == operatorId) {
@@ -411,16 +404,11 @@ document.getElementById('parsechat').onclick = async function () { //Функц�
         pagecmt = 1
         while (true) {
             test = ''
-            await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                "headers": {
-                    "content-type": "application/json",
-                },
-                "body": "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId + "\"],\"tsFrom\":\"" + datefrom2 + "\",\"tsTo\":\"" + dateto2 + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":" + pagecmt + ",\"limit\":100}",
-                "method": "POST",
-            }).then(r => r.json()).then(r => test = r)
+            const bodyToFunc = "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId + "\"],\"tsFrom\":\"" + datefrom2 + "\",\"tsTo\":\"" + dateto2 + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":" + pagecmt + ",\"limit\":100}"
+            doOperationsWithHistory(bodyToFunc).then(r => r.json()).then(r => test = r)
             for (let i = 0; i < test.items.length; i++) {
                 let flagComment = 0
-                await fetch('https://skyeng.autofaq.ai/api/conversations/' + test.items[i].conversationId)
+                doOperationsWithConversations(test.items[i].conversationId)
                     .then(response => response.json()).then(data => {
                         for (let j = 0; j < data.messages.length; j++) {
                             if (data.messages[j].tpe == "OperatorComment" && data.messages[j].txt == document.getElementById('commenttosearch').value)
@@ -494,17 +482,12 @@ document.getElementById('gofindit').onclick = async function () { //функци
         test = ''
         page = 1;
         while (true) {
-            await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                "headers": {
-                    "content-type": "application/json",
-                },
-                "body": "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId + "\"],\"tsFrom\":\"" + datefrom3 + "\",\"tsTo\":\"" + dateto3 + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":" + page + ",\"limit\":100}",
-                "method": "POST",
-            }).then(r => r.json()).then(r => test = r)
+            let bodyToFuncTry = '{"serviceId":"361c681b-340a-4e47-9342-c7309e27e7b5","mode":"Json","participatingOperatorsIds":["' + operatorId + '"],"tsFrom":"' + datefrom3 + '","tsTo":"' + dateto3 + '","orderBy":"ts","orderDirection":"Asc","page":' + page + ',"limit":100}'
+            doOperationsWithHistory(bodyToFuncTry).then(r => r.json()).then(r => test = r)
             sctc = test.total;
             for (let i = 0; i < test.items.length; i++) {
                 let flagComment = 0
-                await fetch('https://skyeng.autofaq.ai/api/conversations/' + test.items[i].conversationId)
+                doOperationsWithConversations(test.items[i].conversationId)
                     .then(response => response.json()).then(data => {
                         if (data.payload.topicId.value == curval) {
                             if (data.payload.tags.value.match(/\w+/) != null && data.payload.tags.value.match(/\w+/) != undefined && data.payload.tags.value.match(/\w+/)[0] == "request_forwarded_to_outgoing_tp_crm2")
@@ -582,6 +565,7 @@ document.getElementById('changetheme').onclick = function () { //функция 
         fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
             "headers": {
                 "content-type": "application/json",
+                "x-csrf-token": aftoken
             },
             "body": "{\"conversationId\":\"" + chatId + "\",\"elements\":[{\"name\":\"topicId\",\"value\":\"" + curval + "\"}]}",
             "method": "POST",

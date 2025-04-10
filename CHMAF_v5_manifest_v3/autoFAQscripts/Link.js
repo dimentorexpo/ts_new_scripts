@@ -472,7 +472,7 @@ function addfunctionsonclick(section) {
 
         document.getElementById('GrListData').onclick = getGrListDataButtonPress;
         document.getElementById('getStats').onclick = getStatsButtonPress;
-        document.getElementById('openGrabber').onclick = getopenGrabberButtonPress;
+        //document.getElementById('openGrabber').onclick = getopenGrabberButtonPress;
     }
 }
 

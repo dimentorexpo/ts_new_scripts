@@ -120,7 +120,7 @@ function refreshTimerReminder() {
 function setRemindAf(storageKey) {
     fetch("https://skyeng.autofaq.ai/api/reason8/operator/status", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", "x-csrf-token": aftoken },
         body: JSON.stringify({
             command: "DO_SET_OPERATOR_STATUS",
             status: "Busy",
