@@ -49,7 +49,8 @@ let getservidst;
 let templatesAF = [];
 let bool = 0;
 let table;
-let opsection = ''; // глобальная переменная отдела оператора
+let opsection = 'ТП'; // глобальная переменная отдела оператора
+let operatorFullTitle = ''; //глобальная переменная полного имени оператора
 let operatorId = ""; //глобальная переменная после получения ID operator , который использует расширение и авторизован в свой профиль
 let operatorsarray = []; //массив операторов , который потом пригодится для других функций
 let flagLangBut = 0;
@@ -67,20 +68,77 @@ async function whoAmI() {
         if (iframe && iframe.contentDocument) {
             let sectionKey = iframe.contentDocument.querySelector('span[id^="mantine-"][id$="-target"]');
             if (sectionKey) {
+                operatorFullTitle = sectionKey.textContent
                 let keys = sectionKey.textContent.split('-');
                 afopername = keys[1];
-                opsection = keys[0];
+                if (keys[0] != "ТП") {
+                    opsection = keys[0];
+                    console.log(opsection)
+                }
                 console.log("OPSECTION", opsection, "AFOPERNAME", afopername);
+                console.log(operatorFullTitle)
+                findOperator(operatorFullTitle);
                 return true;
             } else {
                 console.error("Элемент 'span[id^=\"mantine-\"][id$=\"-target\"]' не найден");
+                opsection = "ТП";
             }
         } else {
             console.error("Iframe '[class^=\"NEW_FRONTEND\"]' не найден или contentDocument недоступен");
+            let archiveInd;
+            if (location.pathname.includes('/archive')) {
+                archiveInd = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent.split('-')
+                operatorFullTitle = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent
+                opsection = archiveInd[0];
+                console.log(opsection)
+                console.log(operatorFullTitle)
+                findOperator(operatorFullTitle);
+            }
         }
+
+
+        async function findOperator(operatorFullTitle) {
+            try {
+                // Выполняем асинхронную функцию и получаем данные
+                const searchOperId = await fetchStaticData();
+
+                // Проверяем, существует ли массив onOperator
+                if (!Array.isArray(searchOperId.onOperator)) {
+                    throw new Error("onOperator не является массивом или отсутствует.");
+                }
+
+                // Используем find для поиска совпадения
+                const user = searchOperId.onOperator.find(user => user.operator?.fullName === operatorFullTitle);
+
+                // Проверяем, найден ли пользователь
+                if (user) {
+                    console.log("Найденный пользователь:", user);
+                    operatorId = user.operator?.id;
+                    console.log(operatorId)
+                    return user; // Возвращаем найденный объект
+                } else {
+                    console.log("Пользователь с именем", operatorFullTitle, "не найден.");
+                    return null; // Если не найдено, возвращаем null
+                }
+            } catch (error) {
+                console.error("Ошибка выполнения функции:", error);
+            }
+        }
+
+        // Пример использования
+
+
+
+        /*         let searchOperId = await fetchStaticData()
+
+                const user = searchOperId.onOperator.find(user => user.operator.fullName === operatorFullTitle);
+                console.log(user);
+                console.log(searchOperId) */
+
         return false;
     }
 }
+
 
 // Словарь для перевода предметов и направлений
 const subjectTranslations = {
@@ -1098,7 +1156,7 @@ async function doOperationsWithConversations(chathash) { // общая функ�
         });
 
         if (!response.ok) {
-            throw new Error(`Ошибка сети: ${response.status}`);
+            throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
         }
 
         const data = await response.json(); // Преобразуем ответ в JSON
