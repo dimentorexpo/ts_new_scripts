@@ -86,7 +86,7 @@ async function whoAmI() {
         } else {
             console.error("Iframe '[class^=\"NEW_FRONTEND\"]' не найден или contentDocument недоступен");
             let archiveInd;
-            if (location.pathname.includes('/archive')) {
+            if (location.pathname.includes('/archive') || location.pathname.includes('/logs')) {
                 archiveInd = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent.split('-')
                 operatorFullTitle = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent
                 opsection = archiveInd[0];
