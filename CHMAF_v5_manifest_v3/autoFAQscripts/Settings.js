@@ -1,8 +1,7 @@
 async function init_settings() {
-    const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
+    const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
 
     // Присваиваем данные константам
-    const TS_addr = data.TS_addr;
     const KC_addr = data.KC_addr;
     const TP_addr = data.TP_addr;
     const KC_addrRzrv = data.KC_addrRzrv;
@@ -33,7 +32,7 @@ async function init_settings() {
     // Для переключателя вкл/выкл звук
     setDefaultValue('audio', 1);
 
-    // Громкость звука 
+    // Громкость звука
     setDefaultValue('audiovol', 1);
 
     // Для скрытия окна создания задач
@@ -108,7 +107,7 @@ async function init_settings() {
                             <label style="color:bisque;"><input class="${exttheme}" type="color" id="responstimepicker">Цвет заливки неотвеченного чата</label>
                             <br>
                         </div>
-                        
+
                         <div style="float: left; margin-left: 20px; max-width: 200px;">
                             <label style="color:bisque;">Выбор темы расширения</label>
                             <button class="mainButton" style="width:30px;" id="chagethemeextention" title="Переключение на светлую ☀ или темную 🌛 тему. Требуется перезагрузка страницы"></button>
@@ -488,7 +487,7 @@ async function init_settings() {
             setupCheckbox('changesymtemicons', 'changesymtemicons', (value) => {
                 const button = document.getElementById('chagethemeextention');
                 const checkbox = document.getElementById('changesymtemicons');
-            
+
                 // Функция для обновления состояния атрибута disabled
                 const updateCheckboxState = () => {
                     if (button.innerHTML === '☀') {
@@ -497,10 +496,10 @@ async function init_settings() {
                         checkbox.removeAttribute('disabled');
                     }
                 };
-            
+
                 // Изначально обновляем состояние чекбокса
                 updateCheckboxState();
-            
+
                 // Перехватываем обновление темы
                 const originalButtonClickHandler = button.onclick;
                 button.onclick = function () {
@@ -694,7 +693,7 @@ async function init_settings() {
                             for (let i = 0; i < Object.keys(jsonparsed).length; i++) {
                                 localStorage.setItem(Object.keys(jsonparsed)[i], Object.values(jsonparsed)[i])
                             }
-                            createAndShowButton('Настройки расширения в localstorage загружены успешно!' , 'message')
+                            createAndShowButton('Настройки расширения в localstorage загружены успешно!', 'message')
                         }
 
                         reader.readAsText(file);

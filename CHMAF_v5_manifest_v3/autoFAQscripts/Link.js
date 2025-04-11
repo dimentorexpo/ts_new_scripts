@@ -114,10 +114,9 @@ async function getversionsapp() { // получаем из файла списо
 async function checkOpsectionIs() {
     let send_win_elements = '';
     let checksection = '';
-    const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
+    const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
 
     // Присваиваем данные константам
-    const TS_addr = data.TS_addr;
     const KC_addr = data.KC_addr;
     const TP_addr = data.TP_addr;
     const KC_addrRzrv = data.KC_addrRzrv;
@@ -472,7 +471,7 @@ function addfunctionsonclick(section) {
 
         document.getElementById('GrListData').onclick = getGrListDataButtonPress;
         document.getElementById('getStats').onclick = getStatsButtonPress;
-        //document.getElementById('openGrabber').onclick = getopenGrabberButtonPress;
+        document.getElementById('openGrabber').onclick = getopenGrabberButtonPress;
     }
 }
 

@@ -44,10 +44,9 @@ hideWindowOnDoubleClick('AF_Themes');
 async function startThemes() {
 
     // модуль проверки адреса загрузки тематик
-    const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv', 'TP_addrth', 'KC_addrth']); // Получаем данные из хранилища
+    const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv', 'TP_addrth', 'KC_addrth']); // Получаем данные из хранилища
 
     // Присваиваем данные константам
-    const TS_addr = data.TS_addr;
     const KC_addr = data.KC_addr;
     const TP_addr = data.TP_addr;
     const KC_addrRzrv = data.KC_addrRzrv;

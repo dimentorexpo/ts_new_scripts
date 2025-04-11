@@ -93,6 +93,8 @@ async function whoAmI() {
                 console.log(opsection)
                 console.log(operatorFullTitle)
                 findOperator(operatorFullTitle);
+            } else {
+                opsection = "ТП"
             }
         }
 
@@ -976,9 +978,8 @@ async function move_again_AF() { //с АФ шняга там стили шмил
         await new Promise(resolve => setTimeout(resolve, 1000)); // Ожидание секунду перед повторным вызовом
         whoAmISuccess = await whoAmI();
     }
-    const data = await getStorageData(['TS_addr', 'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
+    const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
     // Присваиваем данные константам
-    const TS_addr = data.TS_addr;
     const KC_addr = data.KC_addr;
     const TP_addr = data.TP_addr;
     const KC_addrRzrv = data.KC_addrRzrv;
@@ -1274,7 +1275,7 @@ setInterval(closeTerms, 500);
 
 // Проверяем текущий путь сразу при загрузке
 if (window.location.pathname !== "/login") {
-    setTimeout(move_again_AF, 1500);
+    setTimeout(move_again_AF, 3000);
 } else {
     // Если изначально на /login, запускаем интервал для отслеживания перехода
     let previousPath = window.location.pathname;
@@ -1285,11 +1286,11 @@ if (window.location.pathname !== "/login") {
         // Срабатываем при переходе с /login на любой другой путь
         if (previousPath === "/login" && currentPath !== "/login") {
             clearInterval(checkURLChange);
-            setTimeout(move_again_AF, 1500);
+            setTimeout(move_again_AF, 3000);
         }
 
         previousPath = currentPath;
-    }, 500);
+    }, 1000);
 }
 
 

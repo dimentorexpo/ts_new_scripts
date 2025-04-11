@@ -270,13 +270,7 @@ document.getElementById('GatherStatByThemes').onclick = function () {
 }
 
 async function getlistofopers() {
-    await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
-        "method": "GET",
-        "headers": {
-            "x-csrf-token": aftoken
-        },
-        "credentials": "include"
-    }).then(r => r.json()).then(r => dataInfo = r)
+    await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", { "headers": { "x-csrf-token": aftoken } }).then(r => r.json()).then(r => dataInfo = r)
 
     let tpopers = dataInfo.onOperator
         .map(el => el.groupId === "c7bbb211-a217-4ed3-8112-98728dc382d8" ? ({ id: el.operator.id, name: el.operator.fullName }) : el.groupId === "8266dbb1-db44-4910-8b5f-a140deeec5c0" ? ({ id: el.operator.id, name: el.operator.fullName }) : null)
@@ -1419,10 +1413,18 @@ document.getElementById('stargrab').onclick = async function () {
         tmponlyoperhashes = [];
         page = 1;
         do {
-            let tBodyGrabber = `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${chekopersarr[i]}\"],\"tsFrom\":\"${leftDateFromGrab}\",\"tsTo\":\"${rightDateToGrab}\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":${page},\"limit\":100}`
-            doOperationsWithHistory(tBodyGrabber)
-                .then(r => r.json())
-                .then(r => opgrdata = r)
+            await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
+                headers: {
+                    "content-type": "application/json",
+                    "x-csrf-token": aftoken
+                },
+                body: `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${chekopersarr[i]}\"],\"tsFrom\":\"${leftDateFromGrab}\",\"tsTo\":\"${rightDateToGrab}\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":${page},\"limit\":100}`,
+                method: "POST",
+                mode: "cors",
+                credentials: "include"
+            })
+                .then(r => r.json()).
+                then(r => opgrdata = r)
 
             // newarray = [];
             // newarray = [...opgrdata.items].map(el => el.conversationId)
@@ -1460,7 +1462,7 @@ document.getElementById('stargrab').onclick = async function () {
                 if (matchedItem) {
                     const csat = matchedItem.Rate;
                     if (chosentheme !== "parseallthemes" && chosentheme !== "parsenothemes") {
-                        doOperationsWithConversations(conversationId)
+                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + conversationId, { "headers": { "x-csrf-token": aftoken } })
                             .then(r => r.json())
                             .then(r => {
                                 if (r.payload.topicId && r.payload.topicId.value === chosentheme && tmponlyoperhashes[j].Duration != undefined) {
@@ -1512,7 +1514,7 @@ document.getElementById('stargrab').onclick = async function () {
                                 // end test
                             });
                     } else if (chosentheme !== "parseallthemes" && chosentheme == "parsenothemes") {
-                        doOperationsWithConversations(conversationId)
+                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + conversationId, { "headers": { "x-csrf-token": aftoken } })
                             .then(r => r.json())
                             .then(r => {
 
@@ -1558,7 +1560,7 @@ document.getElementById('stargrab').onclick = async function () {
 
 
                     } else {
-                        doOperationsWithConversations(conversationId)
+                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + conversationId, { "headers": { "x-csrf-token": aftoken } })
                             .then(r => r.json())
                             .then(r => {
 
