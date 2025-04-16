@@ -110,6 +110,8 @@ async function whoAmI() {
                 }
 
                 // Используем find для поиска совпадения
+                operatorsarray = searchOperId.onOperator
+                console.log(operatorsarray)
                 const user = searchOperId.onOperator.find(user => user.operator?.fullName === operatorFullTitle);
 
                 // Проверяем, найден ли пользователь

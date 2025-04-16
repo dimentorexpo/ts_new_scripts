@@ -117,8 +117,8 @@ async function init_settings() {
 
                 <div style="margin-top: 5px; width: 500px; clear: both;">
                     <span style="color:bisque;">Выберите отдел:</span>
-                    <button class="mainButton onlyfortp" id="set_TPrezerv" title="Нажмите если вы из ТП и в АФ не работает Базы Знаний" style="margin-top: 5px">ТП рез</button>
-                    <button class="mainButton onlyfortp" id="set_TP" title="Нажмите если вы из ТП" style="margin-top: 5px">ТП</button>
+                    <button class="mainButton" id="set_TPrezerv" title="Нажмите если вы из ТП и в АФ не работает Базы Знаний" style="margin-top: 5px">ТП рез</button>
+                    <button class="mainButton" id="set_TP" title="Нажмите если вы из ТП" style="margin-top: 5px">ТП</button>
                     <button class="mainButton" id="set_KC" title="Нажмите если вы из КЦ" style="margin-top: 5px">КЦ</button>
                     <button class="mainButton" id="set_KCrezerv" title="Нажмите если вы из КЦ и в АФ не работает Базы Знаний" style="margin-top: 5px">КЦ рез</button>
                     <br>
