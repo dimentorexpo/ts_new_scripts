@@ -71,7 +71,7 @@ async function whoAmI() {
                 operatorFullTitle = sectionKey.textContent
                 let keys = sectionKey.textContent.split('-');
                 afopername = keys[1];
-                if (keys[0] != "ТП") {
+                if (keys[0] != "ТП" || keys[0] != "ТП ОС") {
                     opsection = keys[0];
                     console.log(opsection)
                 }
@@ -111,7 +111,6 @@ async function whoAmI() {
 
                 // Используем find для поиска совпадения
                 operatorsarray = searchOperId.onOperator
-                console.log(operatorsarray)
                 const user = searchOperId.onOperator.find(user => user.operator?.fullName === operatorFullTitle);
 
                 // Проверяем, найден ли пользователь
@@ -1057,11 +1056,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     document.getElementById('rightPanel').appendChild(openchhis) // добавляем на панель кнопку открытия формы просмотра истории чата
     document.getElementById('opennewcat').onclick = getopennewcatButtonPress;
 
-    if ((scriptAdr == TP_addr || scriptAdr == TP_addrRzrv) && opsection != 'ТП' && opsection != 'ТП ОС') {
-        localStorage.setItem('scriptAdr', KC_addr)
-        localStorage.setItem('hideTaskWindow', '0')
-        location.reload()
-    } else if (scriptAdr != TP_addr && scriptAdr != TP_addrRzrv && localStorage.getItem('hideTaskWindow') == 1) {
+    if (scriptAdr != TP_addr && scriptAdr != TP_addrRzrv && localStorage.getItem('hideTaskWindow') == 1) {
         localStorage.setItem('hideTaskWindow', '0')
     }
 
