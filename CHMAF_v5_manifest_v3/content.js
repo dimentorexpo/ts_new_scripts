@@ -58,88 +58,91 @@ let modulesarray = [];
 let chatsArray = [];
 let scriptAdr = localStorage.getItem('scriptAdr');
 
+let countertest = 0;
+
+async function findOperator(operatorFullTitle) {
+    try {
+        // Выполняем асинхронную функцию и получаем данные
+        const searchOperId = await fetchStaticData();
+
+        // Проверяем, существует ли массив onOperator
+        if (!Array.isArray(searchOperId.onOperator)) {
+            throw new Error("onOperator не является массивом или отсутствует.");
+        }
+
+        // Используем find для поиска совпадения
+        operatorsarray = searchOperId.onOperator
+        const user = searchOperId.onOperator.find(user => user.operator?.fullName === operatorFullTitle);
+
+        // Проверяем, найден ли пользователь
+        if (user) {
+            console.log("Найденный пользователь:", user);
+            operatorId = user.operator?.id;
+            console.log(operatorId)
+            return user; // Возвращаем найденный объект
+        } else {
+            console.log("Пользователь с именем", operatorFullTitle, "не найден.");
+            return null; // Если не найдено, возвращаем null
+        }
+    } catch (error) {
+        console.error("Ошибка выполнения функции:", error);
+    }
+}
+
+let whoAmICompleted = false; // Маркер выполнения
+
 async function whoAmI() {
-    const tokenis = document.cookie.match(/csrf_token=([^;]*)/)
+    if (whoAmICompleted) {
+        return true; // Если уже успешно выполнялось, просто возвращаем true
+    }
+
+    countertest++;
+    console.log(countertest);
+
+    const tokenis = document.cookie.match(/csrf_token=([^;]*)/);
     if (tokenis && tokenis.length > 1) {
         aftoken = tokenis[1];
-        // afopername = "Нагиев Эльдар";
 
-        const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-        if (iframe && iframe.contentDocument) {
-            let sectionKey = iframe.contentDocument.querySelector('span[id^="mantine-"][id$="-target"]');
-            if (sectionKey) {
-                operatorFullTitle = sectionKey.textContent
-                let keys = sectionKey.textContent.split('-');
-                afopername = keys[1];
-                if (keys[0] != "ТП" || keys[0] != "ТП ОС") {
-                    opsection = keys[0];
-                    console.log(opsection)
-                }
-                console.log("OPSECTION", opsection, "AFOPERNAME", afopername);
-                console.log(operatorFullTitle)
-                findOperator(operatorFullTitle);
-                return true;
-            } else {
-                console.error("Элемент 'span[id^=\"mantine-\"][id$=\"-target\"]' не найден");
-                opsection = "ТП";
-            }
-        } else {
-            console.error("Iframe '[class^=\"NEW_FRONTEND\"]' не найден или contentDocument недоступен");
-            let archiveInd;
-            if (location.pathname.includes('/archive') || location.pathname.includes('/logs')) {
-                archiveInd = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent.split('-')
-                operatorFullTitle = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent
-                opsection = archiveInd[0];
-                console.log(opsection)
-                console.log(operatorFullTitle)
-                findOperator(operatorFullTitle);
-            } else {
-                opsection = "ТП"
-            }
-        }
+        let archiveInd;
+        if ((location.pathname.includes('/archive') || location.pathname.includes('/logs')) &&
+            document.getElementsByClassName('user_menu-dropdown-user_name').length > 0) {
 
+            archiveInd = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent.split('-');
+            operatorFullTitle = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent;
+            opsection = archiveInd[0];
+            console.log(opsection);
+            console.log(operatorFullTitle);
+            findOperator(operatorFullTitle);
+            whoAmICompleted = true; // Фиксируем успешное выполнение
+            return true;
+        } else if (!location.pathname.includes('/archive') && !location.pathname.includes('/logs')) {
+            const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+            if (iframe && iframe.contentDocument) {
+                let sectionKey = iframe.contentDocument.querySelector('span[id^="mantine-"][id$="-target"]');
+                if (sectionKey) {
+                    operatorFullTitle = sectionKey.textContent;
+                    let keys = sectionKey.textContent.split('-');
+                    afopername = keys[1];
+                    if (keys[0] !== "ТП" && keys[0] !== "ТП ОС") {
+                        opsection = keys[0];
+                        console.log(opsection);
+                    }
+                    console.log("OPSECTION", opsection, "AFOPERNAME", afopername);
+                    console.log(operatorFullTitle);
+                    findOperator(operatorFullTitle);
 
-        async function findOperator(operatorFullTitle) {
-            try {
-                // Выполняем асинхронную функцию и получаем данные
-                const searchOperId = await fetchStaticData();
-
-                // Проверяем, существует ли массив onOperator
-                if (!Array.isArray(searchOperId.onOperator)) {
-                    throw new Error("onOperator не является массивом или отсутствует.");
-                }
-
-                // Используем find для поиска совпадения
-                operatorsarray = searchOperId.onOperator
-                const user = searchOperId.onOperator.find(user => user.operator?.fullName === operatorFullTitle);
-
-                // Проверяем, найден ли пользователь
-                if (user) {
-                    console.log("Найденный пользователь:", user);
-                    operatorId = user.operator?.id;
-                    console.log(operatorId)
-                    return user; // Возвращаем найденный объект
+                    whoAmICompleted = true; // Фиксируем успешное выполнение
+                    return true;
                 } else {
-                    console.log("Пользователь с именем", operatorFullTitle, "не найден.");
-                    return null; // Если не найдено, возвращаем null
+                    console.error("Элемент 'span[id^=\"mantine-\"][id$=\"-target\"]' не найден");
                 }
-            } catch (error) {
-                console.error("Ошибка выполнения функции:", error);
+            } else {
+                console.error("Iframe '[class^=\"NEW_FRONTEND\"]' не найден или contentDocument недоступен");
             }
         }
-
-        // Пример использования
-
-
-
-        /*         let searchOperId = await fetchStaticData()
-
-                const user = searchOperId.onOperator.find(user => user.operator.fullName === operatorFullTitle);
-                console.log(user);
-                console.log(searchOperId) */
-
-        return false;
     }
+
+    return false;
 }
 
 
