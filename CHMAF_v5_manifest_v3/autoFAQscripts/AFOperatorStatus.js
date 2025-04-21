@@ -84,13 +84,18 @@ async function operstatusleftbar() { // функция замены Script Packa
                             chatneraspcountleft = result.unAssigned[j].count
                         }
                     }
-                } else if (flagtpkc == 'Teachers Care' && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/Teachers Care\D/)) {
+                } else if (flagtpkc == 'Teachers Care' && result.onOperator[i].operator && result.onOperator[i].operator.fullName.match(/Teachers Care\D/)) {
                     opstats.push(result.onOperator[i])
-                    for (let j = 0; result.unAssigned[j] != undefined; j++) {
-                        if (result.unAssigned[j].kb) {
-                            chatneraspcountleft = result.unAssigned[j].count
-                        }
-                    }
+
+                    chatneraspcountleft = result.unAssigned.reduce((sum, item) => sum + Number(item.count), 0);
+                    console.log("Общая сумма count:", chatneraspcountleft);
+
+                    /*                     for (const item of result.unAssigned) {
+                                            if (item.kb) {
+                                                console.log(item.kb, Number(item.count));
+                                                chatneraspcountleft += Number(item.count);
+                                            }
+                                        } */
                 } // end of if state small
             } else { // end of if state big
                 if ((flagtpkc == 'ТП' || flagtpkc == 'ТП ОС') && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/ТП\D/)) {
