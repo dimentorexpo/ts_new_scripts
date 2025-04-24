@@ -96,53 +96,55 @@ async function whoAmI() {
         return true; // Если уже успешно выполнялось, просто возвращаем true
     }
 
-    countertest++;
-    console.log(countertest);
+    if (location.host.includes('autofaq') == true) {
+        countertest++;
+        console.log(countertest);
 
-    const tokenis = document.cookie.match(/csrf_token=([^;]*)/);
-    if (tokenis && tokenis.length > 1) {
-        aftoken = tokenis[1];
+        const tokenis = document.cookie.match(/csrf_token=([^;]*)/);
+        if (tokenis && tokenis.length > 1) {
+            aftoken = tokenis[1];
 
-        let archiveInd;
-        if ((location.pathname.includes('/archive') || location.pathname.includes('/logs')) &&
-            document.getElementsByClassName('user_menu-dropdown-user_name').length > 0) {
+            let archiveInd;
+            if ((location.pathname.includes('/archive') || location.pathname.includes('/logs')) &&
+                document.getElementsByClassName('user_menu-dropdown-user_name').length > 0) {
 
-            archiveInd = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent.split('-');
-            operatorFullTitle = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent;
-            opsection = archiveInd[0];
-            console.log(opsection);
-            console.log(operatorFullTitle);
-            findOperator(operatorFullTitle);
-            whoAmICompleted = true; // Фиксируем успешное выполнение
-            return true;
-        } else if (!location.pathname.includes('/archive') && !location.pathname.includes('/logs')) {
-            const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-            if (iframe && iframe.contentDocument) {
-                let sectionKey = iframe.contentDocument.querySelector('span[id^="mantine-"][id$="-target"]');
-                if (sectionKey) {
-                    operatorFullTitle = sectionKey.textContent;
-                    let keys = sectionKey.textContent.split('-');
-                    afopername = keys[1];
-                    if (keys[0] !== "ТП" && keys[0] !== "ТП ОС") {
-                        opsection = keys[0];
-                        console.log(opsection);
+                archiveInd = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent.split('-');
+                operatorFullTitle = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent;
+                opsection = archiveInd[0];
+                console.log(opsection);
+                console.log(operatorFullTitle);
+                findOperator(operatorFullTitle);
+                whoAmICompleted = true; // Фиксируем успешное выполнение
+                return true;
+            } else if (!location.pathname.includes('/archive') && !location.pathname.includes('/logs')) {
+                const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+                if (iframe && iframe.contentDocument) {
+                    let sectionKey = iframe.contentDocument.querySelector('span[id^="mantine-"][id$="-target"]');
+                    if (sectionKey) {
+                        operatorFullTitle = sectionKey.textContent;
+                        let keys = sectionKey.textContent.split('-');
+                        afopername = keys[1];
+                        if (keys[0] !== "ТП" && keys[0] !== "ТП ОС") {
+                            opsection = keys[0];
+                            console.log(opsection);
+                        }
+                        console.log("OPSECTION", opsection, "AFOPERNAME", afopername);
+                        console.log(operatorFullTitle);
+                        findOperator(operatorFullTitle);
+
+                        whoAmICompleted = true; // Фиксируем успешное выполнение
+                        return true;
+                    } else {
+                        console.error("Элемент 'span[id^=\"mantine-\"][id$=\"-target\"]' не найден");
                     }
-                    console.log("OPSECTION", opsection, "AFOPERNAME", afopername);
-                    console.log(operatorFullTitle);
-                    findOperator(operatorFullTitle);
-
-                    whoAmICompleted = true; // Фиксируем успешное выполнение
-                    return true;
                 } else {
-                    console.error("Элемент 'span[id^=\"mantine-\"][id$=\"-target\"]' не найден");
+                    console.error("Iframe '[class^=\"NEW_FRONTEND\"]' не найден или contentDocument недоступен");
                 }
-            } else {
-                console.error("Iframe '[class^=\"NEW_FRONTEND\"]' не найден или contentDocument недоступен");
             }
         }
+        return false;
     }
 
-    return false;
 }
 
 
