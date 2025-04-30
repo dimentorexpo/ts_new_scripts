@@ -936,11 +936,11 @@ async function getservices(stidNew) {
                         chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
                             if (!response.success) {
                                 alert('Не удалось выполнить запрос: ' + response.error + 'Если запускали синхронизацию через расширение, то необходимо после закрытия окна повторно открыть в новой вкладке CRM на 5 секунд. После чего вернуться в окно AF иобновить страницу');
-                                allSyncEmojis[i].innerText = "❌";
+                                allSyncEmojis[i + 1].innerText = "❌";
                                 localStorage.removeItem('token_global')
                             } else {
-                                allSyncEmojis[i].innerText = "✅";
-                                setTimeout(function () { allSyncEmojis[i].innerText = "♻️"; }, 5000);
+                                allSyncEmojis[i + 1].innerText = "✅";
+                                setTimeout(function () { allSyncEmojis[i + 1].innerText = "♻️"; }, 5000);
                             }
                         });
                     }
