@@ -17,70 +17,87 @@ const wintAddChatMenu = createTSMWindow('AFMS_addChatMenu', 'winTopAddChatMenu',
 wintAddChatMenu.className = 'wintInitializeChat';
 
 async function OpenAddChatMenu() { // открывает меню для удаления и добавления чатов
-	if (wintAddChatMenu.style.display == 'none') {
-		wintAddChatMenu.style.display = ''
+    if (wintAddChatMenu.style.display == 'none') {
+        wintAddChatMenu.style.display = ''
 
-		document.getElementById('userid1').value = await getUserId();
-
-		document.getElementById('addChat').addEventListener('click', function () { //функция добавления чата
-
-			fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
-				"headers": {
-					"content-type": "application/json",
-					"sec-fetch-mode": "cors",
-					"sec-fetch-site": "same-site"
-				},
-				"referrer": "https://vimbox.skyeng.ru/",
-				"referrerPolicy": "strict-origin-when-cross-origin",
-				"body": `{\"userId1\":${document.getElementById('userid1').value},\"userId2\":${document.getElementById('userid2').value}}`,
-				"method": "POST",
-				"mode": "cors",
-				"credentials": "include"
-			});
-
-			console.log('%cChat was added successfully!', 'color:lightgreen; font-weight:700');
-			document.getElementById('outputstatus').innerText = "Чат добавлен"
-			document.getElementById('outputstatus').style.color = "#48e114"
-			document.getElementById('outputstatus').style.display = ""
-			setTimeout(() => {
-				document.getElementById('outputstatus').innerText = ""
-				document.getElementById('outputstatus').style.display = "none"
-			}, 3000)
-		})
-
-		document.getElementById('RemoveChat').addEventListener('click', function () { //функция удаления чата
+        document.getElementById('userid1').value = await getUserId();
+        const fetchURLToken = "https://communications.skyeng.ru/gateway/support/chat-management"
 
 
-			fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
-				"headers": {
-					"content-type": "application/json",
-					"sec-fetch-mode": "cors",
-					"sec-fetch-site": "same-site"
-				},
-				"referrer": "https://vimbox.skyeng.ru/",
-				"referrerPolicy": "strict-origin-when-cross-origin",
-				"body": `{\"userId1\":${document.getElementById('userid1').value},\"userId2\":${document.getElementById('userid2').value}}`,
-				"method": "DELETE",
-				"mode": "cors",
-				"credentials": "include"
-			});
+        document.getElementById('addChat').addEventListener('click', function () { //функция добавления чата
+            const requestOptionsToken = {
+                method: 'POST', // Исправляем метод обратно на POST
+                credentials: 'include',
+                headers: {
+                    "accept": "*/*",
+                    "accept-language": "ru,en;q=0.9,ru-RU;q=0.8",
+                    "content-type": "multipart/form-data; boundary=----WebKitFormBoundarywHqL89nNTDBBlpUo",
+                    "x-requested-with": "XMLHttpRequest"
+                },
+                body: `------WebKitFormBoundarywHqL89nNTDBBlpUo\r\nContent-Disposition: form-data; name=\"first_user_id\"\r\n\r\n${document.getElementById('userid1').value}\r\n------WebKitFormBoundarywHqL89nNTDBBlpUo\r\nContent-Disposition: form-data; name=\"second_user_id\"\r\n\r\n${document.getElementById('userid2').value}\r\n------WebKitFormBoundarywHqL89nNTDBBlpUo\r\nContent-Disposition: form-data; name=\"action\"\r\n\r\nadd\r\n------WebKitFormBoundarywHqL89nNTDBBlpUo--\r\n`,
+                referrer: "https://communications.skyeng.ru/gateway/support/chat-management",
+                referrerPolicy: "strict-origin-when-cross-origin",
+                mode: "cors"
+            };
 
-			console.log('%cChat was removed successfully!', 'color:orange; font-weight:700');
+            chrome.runtime.sendMessage({ action: 'getOvercomeCORS', fetchURL: fetchURLToken, requestOptions: requestOptionsToken }, function (responseToken) {
+                if (responseToken.success) {
+                    console.log('%cChat was added successfully!', 'color:lightgreen; font-weight:700');
+                    document.getElementById('outputstatus').innerText = "Чат добавлен"
+                    document.getElementById('outputstatus').style.color = "#48e114"
+                    document.getElementById('outputstatus').style.display = ""
+                    setTimeout(() => {
+                        document.getElementById('outputstatus').innerText = ""
+                        document.getElementById('outputstatus').style.display = "none"
+                    }, 3000)
+                } else {
+                    console.log('Ошибка при добавлении чата');
+                }
+            });
 
-			document.getElementById('outputstatus').innerText = "Чат удалён"
-			document.getElementById('outputstatus').style.color = "orange"
-			document.getElementById('outputstatus').style.display = ""
-			setTimeout(() => {
-				document.getElementById('outputstatus').innerText = ""
-				document.getElementById('outputstatus').style.color = "#48e114"
-				document.getElementById('outputstatus').style.display = "none"
-			}, 3000)
+        })
 
-		})
+        document.getElementById('RemoveChat').addEventListener('click', function () { //функция удаления чата
 
-		document.getElementById('hideMeAddChatMenu').onclick = function () { //функция скрытия меню чатов
-			wintAddChatMenu.style.display = 'none'
-		}
-	}
-	else wintAddChatMenu.style.display = 'none'
+            const requestOptionsToken = {
+                method: 'POST', // Исправляем метод обратно на POST
+                credentials: 'include',
+                headers: {
+                    "accept": "*/*",
+                    "accept-language": "ru,en;q=0.9,ru-RU;q=0.8",
+                    "content-type": "multipart/form-data; boundary=----WebKitFormBoundarywHqL89nNTDBBlpUo",
+                    "x-requested-with": "XMLHttpRequest"
+                },
+                body: `------WebKitFormBoundarywHqL89nNTDBBlpUo\r\nContent-Disposition: form-data; name=\"first_user_id\"\r\n\r\n${document.getElementById('userid1').value}\r\n------WebKitFormBoundarywHqL89nNTDBBlpUo\r\nContent-Disposition: form-data; name=\"second_user_id\"\r\n\r\n${document.getElementById('userid2').value}\r\n------WebKitFormBoundarywHqL89nNTDBBlpUo\r\nContent-Disposition: form-data; name=\"action\"\r\n\r\nremove\r\n------WebKitFormBoundarywHqL89nNTDBBlpUo--\r\n`,
+                referrer: "https://communications.skyeng.ru/gateway/support/chat-management",
+                referrerPolicy: "strict-origin-when-cross-origin",
+                mode: "cors"
+            };
+
+            chrome.runtime.sendMessage({ action: 'getOvercomeCORS', fetchURL: fetchURLToken, requestOptions: requestOptionsToken }, function (responseToken) {
+                if (responseToken.success) {
+                    console.log('%cChat was removed successfully!', 'color:orange; font-weight:700');
+
+                    document.getElementById('outputstatus').innerText = "Чат удалён"
+                    document.getElementById('outputstatus').style.color = "orange"
+                    document.getElementById('outputstatus').style.display = ""
+                    setTimeout(() => {
+                        document.getElementById('outputstatus').innerText = ""
+                        document.getElementById('outputstatus').style.color = "#48e114"
+                        document.getElementById('outputstatus').style.display = "none"
+                    }, 3000)
+                } else {
+                    console.log('Ошибка при удалении чата');
+                }
+            });
+
+
+
+        })
+
+        document.getElementById('hideMeAddChatMenu').onclick = function () { //функция скрытия меню чатов
+            wintAddChatMenu.style.display = 'none'
+        }
+    }
+    else wintAddChatMenu.style.display = 'none'
 }

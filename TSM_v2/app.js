@@ -433,6 +433,27 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             return true;
         }
     }
+	
+		if (request.action === 'getOvercomeCORS') {
+		const url = request.fetchURL;
+		const requestOptions = request.requestOptions;
+
+		(async () => {
+			try {
+				const response = await fetch(url, requestOptions);
+				if (!response.ok) {
+					throw new Error('Network response was not ok (проверь авторизацию в CRM, после чего повтори попытку): ' + response.status + " " + response.statusText);
+				}
+				const text = await response.text(); // Или response.json(), если ожидается JSON
+				sendResponse({ success: true, fetchansver: text });
+			} catch (error) {
+				sendResponse({ success: false, error: error.message });
+			}
+		})();
+
+		return true; // Возвращаем true для асинхронной отправки ответа
+	}
+	
 });
 
 async function getMMostOperId() {
