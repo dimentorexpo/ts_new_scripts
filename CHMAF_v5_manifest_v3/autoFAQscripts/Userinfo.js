@@ -629,6 +629,15 @@ function getusernamecrm() {
                     avatarofuser = otvetUsrCrmName.data.avatarUrl.match(/https:\/\/cdn-auth-avatars\.skyeng\.ru\/\d+\/[a-f0-9-]+$/)[0];
                 }
 
+                servlocalestatus = otvetUsrCrmName.data.serviceLocale || "⭕";
+
+                if (servlocalestatus === "ru") {
+                    changeLocaleLngElement.style.display = "none";
+                } else if (servlocalestatus !== "ru" || servlocalestatus === "⭕") {
+                    changeLocaleLngElement.style.display = "";
+                }
+                usrServLanguage.textContent = servlocalestatus;
+
             } else if (otvetUsrCrmName.data.type == "teacher") {
                 teachername = name;
 
@@ -661,25 +670,8 @@ function getusernamecrm() {
                 document.getElementById('servicetable').innerHTML = ''
             }
 
-            if (document.getElementById('getloginer') != null) {
-                document.getElementById('getloginer').onclick = async function () {
-                    const button = document.getElementById('getloginer');
-                    button.style = "background:orange; padding: 2px; border-radius:20%";
-
-                    try {
-                        await getLoginLink(idstudentField.value.trim());
-                        button.style = "background:green; padding: 2px; border-radius:20%";
-                    } catch (error) {
-                        console.log('Ошибка: ', error);
-                        button.style = "background:red; padding: 2px; border-radius:20%";
-                        alert('Не удалось получить логиннер: ' + error.message);
-                    } finally {
-                        setTimeout(() => {
-                            button.style.background = "none";
-                        }, 2000);
-                    }
-                };
-            }
+            countryofuser = otvetUsrCrmName.data.country || null;
+            usrCountry.textContent = countryofuser;
 
             if (document.getElementById('getusremail') != null) {
                 document.getElementById('getusremail').onclick = function () {
@@ -693,17 +685,9 @@ function getusernamecrm() {
                 };
             }
 
-            servlocalestatus = otvetUsrCrmName.data.serviceLocale || "⭕";
-            countryofuser = otvetUsrCrmName.data.country || null;
 
-            usrServLanguage.textContent = servlocalestatus;
-            usrCountry.textContent = countryofuser;
 
-            if (servlocalestatus === "ru") {
-                changeLocaleLngElement.style.display = "none";
-            } else if (servlocalestatus !== "ru" || servlocalestatus === "⭕") {
-                changeLocaleLngElement.style.display = "";
-            }
+
 
             const userAvatarElement = document.querySelector('#useravatar');
 
@@ -1029,25 +1013,7 @@ async function getservices(stidNew) {
                     };
                 }
 
-                if (document.getElementById('getloginer') != null) {
-                    document.getElementById('getloginer').onclick = async function () {
-                        const button = document.getElementById('getloginer');
-                        button.style = "background:orange; padding: 2px; border-radius:20%";
 
-                        try {
-                            await getLoginLink(idstudentField.value.trim());
-                            button.style = "background:green; padding: 2px; border-radius:20%";
-                        } catch (error) {
-                            console.log('Ошибка: ', error);
-                            button.style = "background:red; padding: 2px; border-radius:20%";
-                            alert('Не удалось получить логиннер: ' + error.message);
-                        } finally {
-                            setTimeout(() => {
-                                button.style.background = "none";
-                            }, 2000);
-                        }
-                    };
-                }
 
             } else {
                 document.getElementById('servicetable').innerHTML = '<div style="text-align:center; background:coral; font-weight:700;border: 1px solid black; color: floralwhite;">Услуг вообще нет!</div>'
@@ -1056,10 +1022,6 @@ async function getservices(stidNew) {
         }
     })
 }
-
-// async function getcomplect(stidNew) {
-
-//}
 
 function getuserinfo() {
     document.getElementById('servicetable').innerHTML = "Загрузка..."
@@ -1161,3 +1123,24 @@ document.getElementById('getpastandfuturelessons').onclick = function () { //о�
     getlessonfuture.click();
 }
 
+document.getElementById('getloginer').onclick = async function () {
+    let userIdForLogIn = document.getElementById('idstudent').value.trim();
+    console.log('Button logginer clicked')
+    const button = document.getElementById('getloginer');
+    button.style = "background:orange; padding: 2px; border-radius:20%";
+
+    try {
+        await getLoginLink(userIdForLogIn);
+        button.style = "background:green; padding: 2px; border-radius:20%";
+        createAndShowButton('💾 Ссылка-логинер cкопирована', 'message');
+    } catch (error) {
+        console.log('Ошибка: ', error);
+        button.style = "background:red; padding: 2px; border-radius:20%";
+        createAndShowButton('Ошибка при получении ссылки-логинера', 'message');
+        alert('Не удалось получить логиннер: ' + error.message);
+    } finally {
+        setTimeout(() => {
+            button.style.background = "none";
+        }, 2000);
+    }
+};
