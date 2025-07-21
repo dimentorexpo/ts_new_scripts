@@ -15,26 +15,32 @@ var win_Links =  // описание элементов окна ссылок
                     <button title="Открывает известные баги на платформе" id="confbugs" style="width: 50px; float: right; margin-right: 5px" class="mainButton uplinksbar">🐞</button>
 				</div>
 				<div style="margin: 5px; width: 550px;" id="links_but">
-					<button class="mainButton" title="Открывает Timetable" id="timetable" style="width:105px">TimeTable</button>
-					<button class="mainButton" title="Открывает админку Talks для поиска по ID П ID У, с которым идет урок" id="talksadm" style="width:105px">Talks</button>
-					<button class="mainButton" title="Открывает форму передачи запросов на компенсацию реальных уроков ученику по массовым неполадкам/багам, из-за которых У потерял занятие" id="compensNew" style="width:105px; margin-top: 3px">Компенс NEW</button>
-					<button class="mainButton" title="Открывает раздел для создания операции компенсации ученику" id="compens" style="width:105px">Компенсация</button>
-					<button class="mainButton" title="Открывает CMS хранилище материалов уроков" id="CMS" style="width:105px">CMS</button>
-					<button class="mainButton" title="Открывает админку пользователей" id="useradm" style="width:105px; margin-top: 3px">Админка</button>
-					<button class="mainButton" title="Открывает поиск платежа по данным карте, сумме, дате платежа" id="transactions" style="width:105px; margin-top: 3px">Поиск $</button>
-					<button class="mainButton" title="Открывает начислятор билинга для просмотра реального баланса у ученика и зависших уроков не на той STK" id="billingadm" style="width:105px">Начислятор</button>
-					<button class="mainButton" title="Открывает раздел с проверкой фичей(кругов), подключенных пользователю и добавление/удаление их" id="userfeatures" style="width:105px; margin-top: 3px">User Фичи</button>
-					<button class="mainButton" title="Открывает  CMS детских предметов" id="kidscms" style="width:105px; margin-top: 3px">Kids CMS</button>
-					<button class="mainButton" title="Открывает раздел в Confluence по созданию тестовых комнат" id="testroom" style="width:105px; margin-top: 3px">TestRooms</button>
-					<button class="mainButton" title="Открывает билинг для просмотра и редактирования подписок" id="subscribebilling" style="width:105px; margin-top: 3px">$Подписки</button>
-					<button class="mainButton" title="Открывает форму по аппеляциям аудита" id="apelation" style="width:105px; margin-top: 3px">Апелляции</button>
+					<button class="mainButton" title="Открывает Timetable" id="timetable" style="width:105px">📅TimeTable</button>
+					<button class="mainButton" title="Открывает админку Talks для поиска по ID П ID У, с которым идет урок" id="talksadm" style="width:105px">💋Talks</button>
+					<button class="mainButton" title="Открывает форму передачи запросов на компенсацию реальных уроков ученику по массовым неполадкам/багам, из-за которых У потерял занятие" id="compensNew" style="width:105px; margin-top: 3px">💸Реал_комп</button>
+					<button class="mainButton" title="Открывает форму передачи запросов на компенсацию бонусных уроков/рублей, если нет честных оплат" id="compensNotFairPayments" style="width:105px; margin-top: 3px">🚫честн оплат</button>
+					<button class="mainButton" title="Открывает раздел для создания операции компенсации ученику" id="compens" style="width:105px">💸Бонус_комп</button>
+					<button class="mainButton" title="Открывает CMS хранилище материалов уроков" id="CMS" style="width:105px">🌀CMS</button>
+					<button class="mainButton" title="Открывает админку пользователей" id="useradm" style="width:105px; margin-top: 3px">🛠️Админка</button>
+					<button class="mainButton" title="Открывает поиск платежа по данным карте, сумме, дате платежа" id="transactions" style="width:105px; margin-top: 3px">💰Поиск $</button>
+					<button class="mainButton" title="Открывает начислятор билинга для просмотра реального баланса у ученика и зависших уроков не на той STK" id="billingadm" style="width:105px">💸Начислятор</button>
+					<button class="mainButton" title="Открывает раздел с проверкой фичей(кругов), подключенных пользователю и добавление/удаление их" id="userfeatures" style="width:105px; margin-top: 3px">🏡User Фичи</button>
+					<button class="mainButton" title="Открывает  CMS детских предметов" id="kidscms" style="width:105px; margin-top: 3px">🌀Kids CMS</button>
+					<button class="mainButton" title="Открывает раздел в Confluence по созданию тестовых комнат" id="testroom" style="width:105px; margin-top: 3px">ℹ️TestRooms</button>
+					<button class="mainButton" title="Открывает билинг для просмотра и редактирования подписок" id="subscribebilling" style="width:105px; margin-top: 3px">💰$Подписки</button>
+					<button class="mainButton" title="Открывает форму по аппеляциям аудита" id="apelation" style="width:105px; margin-top: 3px">💫Апелляции</button>
 					<button class="mainButton" title="Открывает сайт BrowserStack" id="browserstack" style="width:105px; margin-top: 3px">BrowserStaсk</button>
-					<button class="mainButton" title="Открывает раздел для проверки сертификата" id="certificates" style="width:105px; margin-top: 3px">Сертификаты</button>
-					<button class="mainButton" title="Открывает раздел для проверки промокодов" id="promocodes" style="width:105px; margin-top: 3px">Промокоды</button>
-					<button class="mainButton" title="Открывает Help Centr для учеников" id="helpocentrstud" style="width:105px; margin-top: 3px">Help Center У</button>
-					<button class="mainButton" title="Открывает Help Centr для преподавателей" id="helpocentrteach" style="width:105px; margin-top: 3px">Help Center П</button>
-					<button class="mainButton" title="Открывает сайт для просмотра ошибок и логов в комнате" id="trshoothing" style="width:105px; margin-top: 3px">Troubleshooting</button>
-                    <button class="mainButton" title="Открывает сайт для просмотра ошибок и логов в комнате" id="Synchronizer" style="width:105px; margin-top: 3px">Синхрон ДЗ</button>
+					<button class="mainButton" title="Открывает раздел для проверки сертификата" id="certificates" style="width:105px; margin-top: 3px">📜Сертификат</button>
+					<button class="mainButton" title="Открывает раздел для проверки промокодов" id="promocodes" style="width:105px; margin-top: 3px">*️⃣Промокоды</button>
+					<button class="mainButton" title="Открывает Help Centr для учеников" id="helpocentrstud" style="width:105px; margin-top: 3px">📔Help БЗ У</button>
+					<button class="mainButton" title="Открывает Help Centr для преподавателей" id="helpocentrteach" style="width:105px; margin-top: 3px">📗Help БЗ П</button>
+					<button class="mainButton" title="Открывает сайт для просмотра ошибок и логов в комнате" id="trshoothing" style="width:105px; margin-top: 3px">🔨ТраблШут</button>
+                    <button class="mainButton" title="Открывает сайт для просмотра ошибок и логов в комнате" id="Synchronizer" style="width:105px; margin-top: 3px">♻️Синхрон ДЗ</button>
+                    <button class="mainButton" title="Открывает сайт для добавления/удаления чата между У и П" id="AddRemoveChat" style="width:105px; margin-top: 3px">➕/➖Чат</button>
+                    <button class="mainButton" title="проверить прайссет и все его цены (по количеству занятий в пакете, по рассрочкам как внутренним так и банковским). При этом считается корректным поведение, если для пакета без рассрочки одна цена, а на ВР (внутреннюю рассрочку) или БР (банковскую рассрочку) цена будет немного, но выше." id="CheckPrices" style="width:105px; margin-top: 3px">🤑Check  Price</button>
+
+
+
 				</div>
 				<div style="margin: 5px; width: 550px" id="links_box">
 					<input class="${exttheme}" id="cpuname" placeholder="CPU name" title="вводим название процессора, чтобы сразу перейти на сайт с проверкой рейтинга CPU" autocomplete="off" type="text" style="text-align: center; width: 103px; margin-top: 5px">
@@ -247,7 +253,11 @@ function addfunctionsonclick(section) {
         })
 
         document.getElementById('compensNew').addEventListener('click', function () { // открываем ссылку в новой вкладке для создания операции компенсации
-            window.open("https://docs.google.com/forms/d/e/1FAIpQLSeNQHfwYwHYRSb1RoBhkTYz6NMeVzaubwFEMWGNJQcgo_319g/viewform")
+            window.open("https://forms.yandex.ru/cloud/6876072dd0468842004d37f5/")
+        })
+
+        document.getElementById('compensNotFairPayments').addEventListener('click', function () { // открываем ссылку в новой вкладке для создания операции компенсации нет четсных оплаты
+            window.open("https://forms.yandex.ru/cloud/6876066349363940156734b8/?page=1")
         })
 
         document.getElementById('CompensRequests').addEventListener('click', function () { // открываем ссылку просмотра статусов компенсаций
@@ -318,6 +328,18 @@ function addfunctionsonclick(section) {
         document.getElementById('userfeatures').addEventListener('click', function () { // открываем ссылку в новой вкладке на проверку фичей пользователя
             window.open("https://vimbox.skyeng.ru/circles/editor")
         })
+
+        document.getElementById('AddRemoveChat').addEventListener('click', function () { // открываем ссылку в новой вкладке для добавления или удаления чата
+            window.open("https://communications.skyeng.ru/gateway/support/chat-management")
+        })
+
+        document.getElementById('CheckPrices').addEventListener('click', function () { // открываем ссылку в новой вкладке на проверку прайс сета
+            window.open("https://billing-marketing.skyeng.ru/priceSet/list")
+        })
+
+
+
+
 
         document.getElementById('benchmark').onclick = function () {                  //поиск по имени процессора на сайте cpubenchmark
             let lnkgr = 'https://www.cpubenchmark.net/cpu_lookup.php?cpu=';
