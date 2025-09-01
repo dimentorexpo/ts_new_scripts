@@ -1298,13 +1298,13 @@ function SaveСountryCSV(filename) {
 function searchTeachersAndRates(main) {
     if (main.channelUser && main.channelUser.payload && main.channelUser.payload.userType == "teacher" && (main.channelUser.payload.teacherSTKList?.includes('homeschooling') || main.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
 
-        if (main.messages.length > 0) {
-            for (let z = 0; z < main.messages.length; z++) {
-                if (main.messages[z].txt && typeof main.messages[z].txt === 'string' && main.messages[z].tpe == "Rate") {
-                    console.log(main.id, main.channelUser.payload.id, main.messages[z].txt);
-                }
-            }
-        }
+        // if (main.messages.length > 0) {
+        //     for (let z = 0; z < main.messages.length; z++) {
+        //         if (main.messages[z].txt && typeof main.messages[z].txt === 'string' && main.messages[z].tpe == "Rate") {
+        //             console.log(main.id, main.channelUser.payload.id, main.messages[z].txt);
+        //         }
+        //     }
+        // }
     }
 }
 
@@ -1315,7 +1315,7 @@ let payloadarray = [];
 let chatswithmarksarray = [];
 let checkmarksarr = [];
 let operstagsarray = [];
-//let keyMatch = "Техподдержка вход"
+let keyMatch = "Высокий"
 document.getElementById('stargrab').onclick = async function () {
 
 
@@ -1504,13 +1504,17 @@ document.getElementById('stargrab').onclick = async function () {
                                 }
 
                                 //test поиск входа
-                                // if (r.messages.length > 0) {
-                                // for (let z = 0; z < r.messages.length; z++) {
-                                // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
-                                // console.log("Вход найден: ", conversationId);
-                                // }
-                                // }
-                                // }
+                                if (r.messages.length > 0) {
+                                    for (let z = 0; z < r.messages.length; z++) {
+                                        // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
+                                        //     console.log("Высокий найден: ", conversationId);
+                                        // }
+
+                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("MAPP-442")) {
+                                            console.log("Баг найден, ссылка на чат: ", conversationId);
+                                        }
+                                    }
+                                }
                                 // end test
                             });
                     } else if (chosentheme !== "parseallthemes" && chosentheme == "parsenothemes") {
@@ -1547,14 +1551,17 @@ document.getElementById('stargrab').onclick = async function () {
                                 }
 
                                 //test
+                                if (r.messages.length > 0) {
+                                    for (let z = 0; z < r.messages.length; z++) {
+                                        // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
+                                        //     console.log("Высокий найден: ", conversationId);
+                                        // }
 
-                                // if (r.messages.length > 0) {
-                                // for (let z = 0; z < r.messages.length; z++) {
-                                // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
-                                // console.log("Вход найден: ", conversationId);
-                                // }
-                                // }
-                                // }
+                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("MAPP-442")) {
+                                            console.log("Баг найден, ссылка на чат: ", conversationId);
+                                        }
+                                    }
+                                }
                                 // end test
                             });
 
@@ -1573,7 +1580,6 @@ document.getElementById('stargrab').onclick = async function () {
                                 } else {
                                     operstagsarray.push({ ChatId: conversationId, Tags: '' })
                                 }
-
 
                                 if (r.payload && r.payload.topicId && r.payload.topicId.value != '' && tmponlyoperhashes[j].Duration != undefined) {
                                     payloadarray.push({
@@ -1622,13 +1628,17 @@ document.getElementById('stargrab').onclick = async function () {
                                 }
 
                                 //test
-                                // if (r.messages.length > 0) {
-                                // for (let z = 0; z < r.messages.length; z++) {
-                                // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
-                                // console.log("Вход найден: ", conversationId);
-                                // }
-                                // }
-                                // }
+                                if (r.messages.length > 0) {
+                                    for (let z = 0; z < r.messages.length; z++) {
+                                        // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
+                                        //     console.log("Высокий найден: ", conversationId);
+                                        // }
+
+                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("MAPP-442")) {
+                                            console.log("Баг найден, ссылка на чат: ", conversationId);
+                                        }
+                                    }
+                                }
                                 // end test
 
                             });

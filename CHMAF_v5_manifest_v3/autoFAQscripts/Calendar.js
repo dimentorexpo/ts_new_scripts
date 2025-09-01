@@ -7,7 +7,7 @@ var win_Calendar =  // описание формы чтобы не давала 
                                 <button class="mainButton buttonHide" title="Скрывает меню" id="hidecalendar">hide</button>
 								<button class="mainButton smallbtn" title="Очищает окно календаря" id="clearcalendar">🧹</button>
 								<button class="mainButton smallbtn" title="Обновляет информацию о слотах выбранной даты" id="refreshcalendar">♻</button>
-								<button class="mainButton smallbtn" title="Открывает сайт datsy.info" id="opendatsy">📅</button>
+								<button class="mainButton smallbtn" title="Открывает сайт datsy.ru" id="opendatsy">📅</button>
 								<label title="Включение и отключение автоматического обновления информации в слотах с интервалом 30 секунд" class="checkbox-refresh">
 									<input id="autorefreshswitcher" type="checkbox" checked="">
 										<span class="checkbox-refresh-switch"></span>
@@ -51,8 +51,8 @@ function compareTimes(time1, time2) { //функция сравнения вре
 }
 
 let parsedData;
-function checkAuth() { //функция проверки авторизации на datsy.info
-    const fetchURL = 'https://api.datsy.info/api/auth/check.php';
+function checkAuth() { //функция проверки авторизации на datsy.ru
+    const fetchURL = 'https://datsy.ru/api/auth/check.php';
     const requestOptions = {
         method: 'GET'
     };
@@ -65,8 +65,8 @@ function checkAuth() { //функция проверки авторизации 
             const otvetCheckAuth = JSON.parse(response.fetchansver);
 
             if (otvetCheckAuth['value-status'] == "Не авторизован") {
-                alert("Вы не авторизованы на datsy.info Проверьте, пожалуйста, авторизацию и повторите попытку после переоткрытия виджета в расширении или кнопкой обновить ♻, иначе слоты могут не добавляться!")
-                window.open("https://datsy.info/")
+                alert("Вы не авторизованы на datsy.ru Проверьте, пожалуйста, авторизацию и повторите попытку после переоткрытия виджета в расширении или кнопкой обновить ♻, иначе слоты могут не добавляться!")
+                window.open("https://datsy.ru/")
             } else {
                 console.log("Вы авторизованы, смело продолжайте работу с календарем")
                 getTimeSlots()
@@ -159,7 +159,7 @@ function getSlotData(name) {
                 const value = spisok[v].value;
                 const time = curSlotTime;
                 const date = curSlotDate;
-                const fetchURL = `https://api.datsy.info/api/slot-event/add.php`;
+                const fetchURL = `https://datsy.ru/api/slot-event/add.php`;
                 const requestOptions = {
                     method: "POST",
                     headers: {
@@ -180,7 +180,7 @@ function getSlotData(name) {
             } else if (spisok[v].title != '') { //функция модификации информации в слоте
                 const textval = spisok[v].value;
                 const value = spisok[v].title
-                const fetchURL = `https://api.datsy.info/api/slot-event/save.php`;
+                const fetchURL = `https://datsy.ru/api/slot-event/save.php`;
                 const requestOptions = {
                     method: "POST",
                     headers: {
@@ -207,12 +207,12 @@ function getSlotData(name) {
             if (spisok[f].title != '') {
                 let podtvudal = confirm("Вы действительно хотите удалить этот слот из календаря?")
                 if (podtvudal) {
-					let reasonDescription = encodeURIComponent(prompt("Слот будет удален, укажи причину удаления:"))
-						if (reasonDescription){
-							removeSlot(slotId = spisok[f].title, reasonDescription)
-							spisok[f].title = ''
-							spisok[f].value = ''
-						}
+                    let reasonDescription = encodeURIComponent(prompt("Слот будет удален, укажи причину удаления:"))
+                    if (reasonDescription) {
+                        removeSlot(slotId = spisok[f].title, reasonDescription)
+                        spisok[f].title = ''
+                        spisok[f].value = ''
+                    }
 
                 }
             }
@@ -221,7 +221,7 @@ function getSlotData(name) {
 }
 
 function removeSlot(slotId, reason) {
-    const fetchURL = `https://api.datsy.info/api/slot-event/delete.php`;
+    const fetchURL = `https://datsy.ru/api/slot-event/delete.php`;
     const requestOptions = {
         method: "POST",
         headers: {
@@ -263,7 +263,7 @@ function getTimeSlots() { //функция получения информаци
     let textvar = 0;
     let searchDate = document.getElementById('eventDate').value;
 
-    const fetchURL = `https://api.datsy.info/api/main-events/?date=${searchDate}`;
+    const fetchURL = `https://datsy.ru/api/main-events/?date=${searchDate}`;
     const requestOptions = {
         method: 'GET'
     };
@@ -469,10 +469,10 @@ function refreshActiveOperSlots() { // функция обновления ин�
                 if (allSlotsToDelete[j].title != '') {
                     let podtvudal = confirm("Вы действительно хотите удалить этот слот из календаря?")
                     if (podtvudal) {
-						let reasonDescription = encodeURIComponent(prompt("Слот будет удален, укажи причину удаления:"))
-						if (reasonDescription){
-							removeSlot(slotId = allSlotsToDelete[j].title, reasonDescription)
-						}
+                        let reasonDescription = encodeURIComponent(prompt("Слот будет удален, укажи причину удаления:"))
+                        if (reasonDescription) {
+                            removeSlot(slotId = allSlotsToDelete[j].title, reasonDescription)
+                        }
                     }
                 }
             }
@@ -548,7 +548,7 @@ document.getElementById('refreshcalendar').onclick = function () {
 }
 
 document.getElementById('opendatsy').onclick = function () {
-    window.open("https://datsy.info/")
+    window.open("https://datsy.ru/")
 }
 
 document.getElementById('showOperActiveSlots').onclick = function () {
