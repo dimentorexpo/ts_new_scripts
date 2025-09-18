@@ -796,15 +796,15 @@ async function buttonsFromDoc(butName) { // функция отправки ша
 
         if (languageAF == "Русский") {
             if (cyrillicPattern.test(tempname) && tempname != "Неизвестный" && tempname != '' && document.getElementById('msg1').innerHTML == "Доработать") {
-                txt = "Здравствуйте, " + tempname + "!" + '\r\n' + "Просматриваю информацию по вашему запросу. Вернусь с ответом или за уточнениями через несколько минут."
+                txt = "Здравствуйте, " + tempname + "!" + '\r\n' + "Работаю над вашим вопросом — скоро вернусь с результатом."
             } else {
-                txt = "Здравствуйте!" + '\r\n' + "Просматриваю информацию по вашему запросу. Вернусь с ответом или за уточнениями через несколько минут."
+                txt = "Здравствуйте!" + '\r\n' + "Работаю над вашим вопросом — скоро вернусь с результатом."
             }
         } else {
             if (!cyrillicPattern.test(tempname) && tempname != "Неизвестный" && tempname != '' && document.getElementById('msg1').innerHTML == "Доработать") {
-                txt = "Hello, " + tempname + "!" + '\r\n' + "I'm reviewing the information based on your request. I will return with an answer or for clarifications in a few minutes."
+                txt = "Hello, " + tempname + "!" + '\r\n' + "I'm working on your question - I'll be back with the results soon."
             } else {
-                txt = "Hello!" + '\r\n' + "I'm reviewing the information based on your request. I will return with an answer or for clarifications in a few minutes."
+                txt = "Hello!" + '\r\n' + "I'm working on your question - I'll be back with the results soon. "
             }
         }
         if (txt != '') {

@@ -1510,8 +1510,8 @@ document.getElementById('stargrab').onclick = async function () {
                                         //     console.log("Высокий найден: ", conversationId);
                                         // }
 
-                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("MAPP-442")) {
-                                            console.log("Баг найден, ссылка на чат: ", conversationId);
+                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("Высокий")) {
+                                            console.log("Высокий найден, ссылка на чат: ", conversationId, r.messages[z].txt);
                                         }
                                     }
                                 }
@@ -1557,8 +1557,8 @@ document.getElementById('stargrab').onclick = async function () {
                                         //     console.log("Высокий найден: ", conversationId);
                                         // }
 
-                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("MAPP-442")) {
-                                            console.log("Баг найден, ссылка на чат: ", conversationId);
+                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("Высокий")) {
+                                            console.log("Высокий найден, ссылка на чат: ", conversationId, r.messages[z].txt);
                                         }
                                     }
                                 }
@@ -1634,8 +1634,8 @@ document.getElementById('stargrab').onclick = async function () {
                                         //     console.log("Высокий найден: ", conversationId);
                                         // }
 
-                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("MAPP-442")) {
-                                            console.log("Баг найден, ссылка на чат: ", conversationId);
+                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("Высокий")) {
+                                            console.log("Высокий найден, ссылка на чат: ", conversationId, r.messages[z].txt);
                                         }
                                     }
                                 }
