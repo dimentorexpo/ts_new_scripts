@@ -38,6 +38,7 @@ var win_Links =  // описание элементов окна ссылок
                     <button class="mainButton" title="Открывает сайт для просмотра ошибок и логов в комнате" id="Synchronizer" style="width:105px; margin-top: 3px">♻️Синхрон ДЗ</button>
                     <button class="mainButton" title="Открывает сайт для добавления/удаления чата между У и П" id="AddRemoveChat" style="width:105px; margin-top: 3px">➕/➖Чат</button>
                     <button class="mainButton" title="проверить прайссет и все его цены (по количеству занятий в пакете, по рассрочкам как внутренним так и банковским). При этом считается корректным поведение, если для пакета без рассрочки одна цена, а на ВР (внутреннюю рассрочку) или БР (банковскую рассрочку) цена будет немного, но выше." id="CheckPrices" style="width:105px; margin-top: 3px">🤑Check  Price</button>
+                    <button class="mainButton" title="сервис для проверки соединения юзера с видеосерверами школы" id="CheckVidConnection" style="width:105px; margin-top: 3px">📹Videoserver</button>
 
 
 
@@ -336,6 +337,12 @@ function addfunctionsonclick(section) {
         document.getElementById('CheckPrices').addEventListener('click', function () { // открываем ссылку в новой вкладке на проверку прайс сета
             window.open("https://billing-marketing.skyeng.ru/priceSet/list")
         })
+
+        document.getElementById('CheckVidConnection').addEventListener('click', function () { // открываем ссылку в новой вкладке на проверку связи с видеосерверами
+            window.open("https://video-check.skyeng.ru/")
+        })
+
+
 
 
 

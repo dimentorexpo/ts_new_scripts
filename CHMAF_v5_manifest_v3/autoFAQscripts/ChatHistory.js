@@ -811,10 +811,10 @@ function getopennewcatButtonPress() { // открывает меню для ра
         let opsflag = getopsection();
         let opschat = document.getElementById('infofield').getAttribute('opsetction');
 
-        if (opschat !== opsflag) {
-            alert('Чат в другой группе, забрать чат нельзя');
-            return;
-        }
+        // if (opschat !== opsflag) {
+        //     alert('Чат в другой группе, забрать чат нельзя');
+        //     return;
+        // }
 
         if (confirm("Вы действительно желаете забрать чат?")) {
             let chat_id = document.getElementById('placechatid').innerText;

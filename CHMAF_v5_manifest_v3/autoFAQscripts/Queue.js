@@ -75,7 +75,7 @@ function getQueuePress() {
         // Выполняем проверку каждые 10 секунд
         timerToRefreshInt = setInterval(() => {
             getAllChatsByStatus();
-        }, 10000);
+        }, 10000000000);
     }
 }
 
@@ -201,11 +201,11 @@ async function getAllChatsByStatus() {
     let tsFrom, tsTo;
     if (mskTime.getUTCHours() < 21) {
         // Если в Москве еще не наступило 21:00 UTC, отсчитываем от вчерашнего дня
-        tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() - 1, 21, 0, 0, 0)).toISOString();
+        tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() - 2, 21, 0, 0, 0)).toISOString();
         tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 20, 59, 59, 59)).toISOString();
     } else {
         // Если в Москве уже прошло 21:00 UTC, отсчитываем от текущего дня
-        tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() - 1, 21, 0, 0, 0)).toISOString();
+        tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() - 2, 21, 0, 0, 0)).toISOString();
         tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 20, 59, 59, 59)).toISOString();
     }
 
