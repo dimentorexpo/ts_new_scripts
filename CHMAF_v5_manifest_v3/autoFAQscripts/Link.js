@@ -262,7 +262,7 @@ function addfunctionsonclick(section) {
         })
 
         document.getElementById('CompensRequests').addEventListener('click', function () { // открываем ссылку просмотра статусов компенсаций
-            window.open("https://docs.google.com/spreadsheets/u/1/d/1gfwEYsHlmOcb8uyfmutfmeARU_L1uKhfuI6__9fjIXk/edit?resourcekey#gid=1317742738")
+            window.open("https://wiki.yandex.ru/homepage/kompensacija-uroka-ucheniku-po-texnicheskim-nepola/")
         })
 
         document.getElementById('transactions').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Поиск транзакций
