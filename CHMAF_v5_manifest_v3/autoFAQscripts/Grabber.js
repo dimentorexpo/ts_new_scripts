@@ -1511,7 +1511,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         // }
 
                                         if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("Высокий")) {
-                                            console.log("Высокий найден, ссылка на чат: ", conversationId, r.messages[z].txt);
+                                            console.log(conversationId, '-', r.messages[z].txt);
                                         }
                                     }
                                 }
@@ -1558,7 +1558,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         // }
 
                                         if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("Высокий")) {
-                                            console.log("Высокий найден, ссылка на чат: ", conversationId, r.messages[z].txt);
+                                            console.log(conversationId, '-', r.messages[z].txt);
                                         }
                                     }
                                 }
@@ -1635,7 +1635,7 @@ document.getElementById('stargrab').onclick = async function () {
                                         // }
 
                                         if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("Высокий")) {
-                                            console.log("Высокий найден, ссылка на чат: ", conversationId, r.messages[z].txt);
+                                            console.log(conversationId, '-', r.messages[z].txt);
                                         }
                                     }
                                 }
