@@ -231,7 +231,7 @@ function startTimer() {
                     testchatbtn.onclick = function () {
                         sendComment('Тестовый чат');
                         setTimeout(() => { newTaggg('double') }, 500);
-                        setTimeout(() => { newTag('1710') }, 1000);
+                        setTimeout(() => { setTheme('1710') }, 1000);
                     }
 
                     if (usertypeis === "teacher") {
@@ -822,32 +822,58 @@ async function buttonsFromDoc(butName) { // функция отправки ша
     // start of counter of pressed key script то есть при нажатии на кнопку с шаблоном передает в гугл таблицу ин6формацию какая кнопка была нажата и там уже др скрипты считают сколько  раз и сортируют
 }
 
-function servFromDoc(event) {
-    let but = event.target.textContent;
-    let chatthemevalue
-    msgFromTable(but) // вызов функции отправки сообщения
-    if (document.getElementById('avariyalink').value !== null) { // проверка есть ли значение в поле ссылки
-        let linktostatsend = document.getElementById('avariyalink').value.trim()
-        sendComment(linktostatsend); // вызов функции отправки комента
-        fetch("https://skyeng.autofaq.ai/api/conversation/" + document.URL.split('/')[5] + "/payload", { //записываем ссылку в поле "Ссылка на jira"
-            "headers": {
-                "content-type": "application/json",
+async function addJiraURL(URLvalue) {
+    const hashRoom = document.URL.split('/')[5];
+
+    try {
+        const response = await fetch(`https://skyeng.autofaq.ai/api/conversation/${hashRoom}/payload`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
                 "x-csrf-token": aftoken
             },
-            "body": "{\"conversationId\":\"${splitter[5]}\",\"elements\":[{\"name\":\"taskUrl\",\"value\":\"" + linktostatsend + "\"}]}",
-            "method": "POST",
-            "mode": "cors",
-            "credentials": "include"
-        })
-    }
-    if (document.getElementById('avariyatema').children[0].selected == false) {
-        for (let i = 0; i < document.getElementById('avariyatema').children.length; i++) {
-            if (document.getElementById('avariyatema').children[i].selected == true)
-                chatthemevalue = encodeURIComponent(document.getElementById('avariyatema').children[i].value)
-            newTag(chatthemevalue)
+            body: JSON.stringify({
+                conversationId: hashRoom,
+                elements: [
+                    {
+                        name: "taskUrl",
+                        value: URLvalue
+                    }
+                ]
+            }),
+            credentials: "include"
+        });
+
+        if (!response.ok) {
+            console.error('Ошибка при отправке Jira URL:', response.statusText);
+        } else {
+            console.log('Jira URL успешно добавлен');
         }
+    } catch (error) {
+        console.error('Ошибка сети при отправке Jira URL:', error);
     }
 }
+
+async function servFromDoc(event) {
+    const buttonText = event.target.textContent;
+    msgFromTable(buttonText); // вызов функции отправки сообщения
+
+    const linkInput = document.getElementById('avariyalink');
+    if (linkInput && linkInput.value.trim() !== '') {
+        const linkToStatSend = linkInput.value.trim();
+        sendComment(linkToStatSend);
+        await addJiraURL(linkToStatSend);
+    }
+
+    const temaSelect = document.getElementById('avariyatema');
+    if (temaSelect && temaSelect.selectedIndex > 0) {
+        const selectedValue = temaSelect.value;
+        const encodedTheme = encodeURIComponent(selectedValue);
+        setTheme(encodedTheme);
+    }
+}
+
 
 async function getInfo(flag1 = 1) { //функция получения инфо о чате и сервис айди
     let activeConvId = getChatId();
@@ -865,26 +891,29 @@ async function getInfo(flag1 = 1) { //функция получения инфо
         adr1 = ""
     if (document.getElementById('msg1').innerHTML != "Доработать" || flag1 == 0) {
         doOperationsWithConversations(adr1)
-            .then(response => response.json())
             .then(result => {
                 sessionId = result.sessionId;
                 chatsArray.push(result);
                 localStorage.setItem('serviceIdGlob', result.serviceId);
+            })
+            .catch(error => {
+                console.error("Ошибка при получении данных:", error);
             });
     }
+
     return [adr, adr1, sessionId]
 }
 
 function tagToChat(btnName) { // функция отправляет тематику в чат, список тематик хранится в спец доке где шаблоны
     for (var l = 0; l < table.length; l++) {
         if (btnName == table[l][0]) {
-            newTag(table[l][1])
+            setTheme(table[l][1])
             return
         }
     }
 }
 
-function newTag(valueId) {
+function setTheme(valueId) {
     let chatId = getChatId();
 
     if (chatId) {
@@ -907,7 +936,7 @@ function msgFromTable(btnName) { //шаблоны, тематики. теги с
             if (table[l][8] == undefined || table[l][8] == null || table[l][8] == " " || table[l][8] == "") {
                 console.log("Не значения тематики")
             } else {
-                newTag(table[l][8])
+                setTheme(table[l][8])
             }
 
             setTimeout(() => {

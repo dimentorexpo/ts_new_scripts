@@ -204,7 +204,7 @@ function refreshThemesBtns() { // функция обновляет темати
                     newBut.style = btnthstyls
                     if (addFontFlag == 1) { newBut.style.fontSize = c[3] + 'px' } // если указан размер шрифта назначеем его
                     newBut.addEventListener('click', function (event) {
-                        newTag(event.target.value);
+                        setTheme(event.target.value);
                     });
                     areaThbtns.lastElementChild.lastElementChild.appendChild(newBut)
                 } else {
