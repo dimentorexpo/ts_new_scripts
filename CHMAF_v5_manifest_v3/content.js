@@ -680,13 +680,13 @@ function pageClick(event) { // обновлённый обработчик со�
 
     for (let i = 0; i < b.childElementCount; i++) {
         try {
-            b.children[1].children[i].style = 'background-color:#768d87; border-top:0px; padding:5px';
+            b.children[1].children[i].style = 'background-color:rgb(55 100 178); border-top:0px; padding:5px;border:1px solid black;';
             document.getElementById(i + "page").style.display = 'none';
         } catch (e) {
 
         }
     }
-    event.currentTarget.style = 'background-color: green; border-top:4px solid orange; padding:5px';
+    event.currentTarget.style = 'background-color: green; border-top:4px solid orange; padding:5px;';
     document.getElementById(pageNum + "page").style.display = '';
 }
 
