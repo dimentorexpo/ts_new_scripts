@@ -1,6 +1,6 @@
 var win_AFhelper =  // описание элементов главного окна
-    `<div style="width: 351px;">
-        <span style="width: 351px">
+    `<div style="width: 461px;">
+        <span>
 			<span style="cursor: -webkit-grab;">
 				<div style="margin: 5px;" id="1str">
 					<button class="mainButton" id="languageAF" title="Переключает язык Русский/Английский" style="width:100px">Русский</button>
@@ -11,16 +11,16 @@ var win_AFhelper =  // описание элементов главного ок
 					<button id="addsrc" class="mainButton onlyfortp" title="Открывает доп меню для работы с сервисами школы, требующими запрос на выдачу доступа" style="width:16px; float: right; margin-right: 5px">*</button>
 					<button class="mainButton" id="getnewtmpldata" title="Обновляет шаблоны из документа с шаблонами без необходимости обновлять страницу для актуализации" style="width:27px; float: right; margin-right: 5px">🔄</button>
 					<button class="mainButton" id="reminderstatus" title="Статус будильника 🔔 - вкл, 🔕 - выкл" style="width:25px; float: right; margin-right: 5px"></button>
-					<input id ="phone_tr" class="onlyfortp ${exttheme}" placeholder="Телефон" autocomplete="off" type="text" style = "text-align: center; width: 150px; margin-left: 15px; margin-top: 5px; border-radius: 10px;"></input>
-                    <input id ="email_tr" class="onlyfortp ${exttheme}" placeholder="Почта" autocomplete="off" type="text" style = "text-align: center; width: 150px; margin-left: 12px; margin-top: 5px; border-radius: 10px;"></input>
+					<input id ="phone_tr" class="onlyfortp ${exttheme}" placeholder="Телефон" autocomplete="off" type="text" style = "text-align: center; width: 200px; margin-left: 15px; margin-top: 5px; border-radius: 10px;"></input>
+                    <input id ="email_tr" class="onlyfortp ${exttheme}" placeholder="Почта" autocomplete="off" type="text" style = "text-align: center; width: 200px; margin-left: 12px; margin-top: 5px; border-radius: 10px;"></input>
 				</div>
-				<div style="margin-left: 5px; margin-right: 5px; margin-bottom:5px;" id="pages">
+				<div style="margin-left: 5px; margin-right: 5px; margin-bottom:5px; font-size: 17px;" id="pages">
 				</div>
 			</span>
 			<div style="margin: 5px;" id="6str">
 			</div>
 			<div style="margin: 5px;" id="7str">
-				<textarea class="${exttheme}" style="width: 341px; border-radius: 10px; min-height: 100px; max-height: 350px; resize: vertical;" id="inp"></textarea>
+				<textarea class="${exttheme}" style="width: 451px; border-radius: 10px; min-height: 100px; max-height: 350px; resize: vertical;" id="inp"></textarea>
 			<div id="hyperlnk" class="hyperlnk">
 				<input id="bindlinktotext" class="${exttheme}" type="text" placeholder="Enter your link 🔗 here" style="margin-bottom:5px;width:270px;text-align:center;border-radius: 10px;" title="Вводите в это поле ссылку, после чего в общем поле выделяете слово или фразу и кнопкой Insert встраиваете ссылку в текст шаблона"></input>
 				<button class="mainButton" id="insertlinktotext" title="Добавляет ссылку из поля слева в выделеное слово или фразу в тексте шаблона">Insert ✅</button>
@@ -30,8 +30,8 @@ var win_AFhelper =  // описание элементов главного ок
             <button class="mainButton" id="opandclsbarhyper" style="width:  30px; margin: 0; padding: 2px; text-align: center;" title="Открывает форму для прикрепления ссылки в текст">🔗</button>
             <button class="mainButton" title="Отправить текст от имени бота" id="sndbot" style="width: 30px;">🤖</button>
             <button class="mainButton" title="Отправить текст" id="snd" style="width:40px; background: ForestGreen;">Send</button>
-            <button class="mainButton" title="Сохранить текст в личные шаблоны" id="addtocusttmplt" style="width: 30px;">⬆️</button>
-            <button class="mainButton onlyfortp" title="Отправить текст от имени пользователя через Vimbot" id="openVimbotWindows">▶️</button>
+            <button class="mainButton" title="Сохранить текст в личные шаблоны" id="addtocusttmplt" style="min-width: 30px;">⬆️+Template</button>
+            <button class="mainButton onlyfortp" title="Отправить текст от имени пользователя через Vimbot" id="openVimbotWindows">▶️Vimbot</button>
 			</div>
 		<div style="border: 2px double black; display: none; background-color: #464451; cursor: -webkit-grab;" id="addTmp">
 			<div style="margin: 5px; width: 350px">

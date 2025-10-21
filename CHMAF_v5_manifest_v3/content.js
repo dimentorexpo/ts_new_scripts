@@ -680,13 +680,13 @@ function pageClick(event) { // обновлённый обработчик со�
 
     for (let i = 0; i < b.childElementCount; i++) {
         try {
-            b.children[1].children[i].style = 'background-color:#768d87; border-top:0px;';
+            b.children[1].children[i].style = 'background-color:#768d87; border-top:0px; padding:5px';
             document.getElementById(i + "page").style.display = 'none';
         } catch (e) {
 
         }
     }
-    event.currentTarget.style = 'background-color: green; border-top:4px solid orange';
+    event.currentTarget.style = 'background-color: green; border-top:4px solid orange; padding:5px';
     document.getElementById(pageNum + "page").style.display = '';
 }
 
@@ -707,14 +707,6 @@ function initializeMyLogic() {
     } else {
         console.error('Элемент AF_helper отсутствует или структура DOM отличается.');
     }
-
-    // ---> Вставьте сюда ВЕСЬ ОСТАЛЬНОЙ КОД из content.js <---
-    // Например:
-    // let b;
-    // if (afHelper && afHelper.childNodes[0] && ...) {
-    //    b = ...
-    // } else { ... }
-    // ... и так далее ...
 }
 
 function waitForElement(selector, callback, timeout = 10000, interval = 100) {
@@ -829,7 +821,7 @@ function refreshTemplates() { // функция обновляет шаблон�
                         newInputAlink.autocomplete = 'off'
                         newInputAlink.type = 'text'
                         newInputAlink.classList.add(exttheme)
-                        newInputAlink.style = 'text-align: center; width: 300px; margin-left: 7px'
+                        newInputAlink.style = 'text-align: center; width: 416px; margin-left: 7px'
 
                         newDiv.appendChild(newInputAlink)
 
@@ -844,7 +836,7 @@ function refreshTemplates() { // функция обновляет шаблон�
                         var newSelectAThemes = document.createElement('select')
                         newSelectAThemes.id = 'avariyatema'
                         newSelectAThemes.classList.add(exttheme)
-                        newSelectAThemes.style = 'text-align: center; width: 300px; height: 26px; margin-left: 7px; margin-top: 5px'
+                        newSelectAThemes.style = 'text-align: center; width: 416px; height: 26px; margin-left: 7px; margin-top: 5px'
                         newSelectAThemes.type = 'text'
 
                         var newthemeoption = document.createElement('option')
