@@ -67,10 +67,6 @@ document.getElementById('GetWidgetLessonStatus').onclick = function () { // Гр
     WidgetLessonStatus.value = "";
 }
 
-document.getElementById('kpiteachersdashboard').addEventListener('click', function () {
-    window.open("https://datalens.yandex.ru/lupggqkv0uewa-kpi-p-dlya-tp?tab=GrW")    // копируем открываем дашборд КПИ тичерсов
-})
-
 document.getElementById('lkmpdashboard').addEventListener('click', function () {
     window.open("https://datalens.yandex.cloud/b4ut2mi8b8z8y-deystvie-polzovateley-v-lk-mp")
 })
