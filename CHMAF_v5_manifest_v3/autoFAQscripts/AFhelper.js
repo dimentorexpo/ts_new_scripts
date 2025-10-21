@@ -39,22 +39,22 @@ var win_AFhelper =  // описание элементов главного ок
 		</div>
 	</span>
        <span style="
-            position: absolute;
-            top: -30px;
-            left: 0px;
-            width: 462px;
-            height: 30px;
-            background: repeating-linear-gradient(
-                45deg,
-                #000000 0px,
-                #000000 20px,
-                #FFD700 20px,
-                #FFD700 40px
-            );
-            border: 2px solid #333;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-            cursor: -webkit-grab;
+       position: absolute;
+       top: -30px;
+       left: -1px;
+       width: 464px;
+       height: 30px;
+       background: repeating-linear-gradient(
+           135deg,
+           #000000 0px,
+           #000000 20px,
+           #FFD700 20px,
+           #FFD700 40px
+       );
+       border: 2px solid #333;
+       border-radius: 4px;
+       box-shadow: 0 0 10px rgba(0,0,0,0.3);
+       cursor: -webkit-grab;
             "></span>
 </div>`;
 
