@@ -1481,7 +1481,6 @@ function convertToSeconds(TimeToClose, TimeToAnswer, i) { //функция ко�
             cardElements[i].style.background = localStorage.getItem('defaclschatcolor');
         }
     }
-
     return totalSeconds;
 }
 
@@ -1490,6 +1489,34 @@ function checkchats() { //функция проверки  чатов и пер�
     if (allChats) {
         const timers = allChats.chatsTimerList;
         const chats = allChats.chatsList;
+        /*         const getAllInformators = Array.from(allChats.chatsList).flatMap(chat => chat.querySelectorAll('div[class*="DialogsCard_PayloadStatus"]'));
+
+                for (let i = 0; i < getAllInformators.length; i++) {
+                    if (getAllInformators[i][0].childNodes[0].childNodes[0].getAttribute('d').split(' ')[0].slice(0, 2) == "M7") {
+                        getAllInformators[i][0].childNodes[0].style = "background-color: green;width: 40px;height: 40px;border-radius: 20px;"
+                    } else {
+                        getAllInformators[i][0].childNodes[0].style = "border: 5px dashed #ffffff;background-color: red;width: 40px;height: 40px;font-size: 40px;border-radius: 20px;"
+                    }
+                } */
+
+        const getAllInformators = Array.from(allChats.chatsList).flatMap(chat => chat.querySelectorAll('div[class*="DialogsCard_PayloadStatus"]'));
+
+        for (let i = 0; i < getAllInformators.length; i++) {
+            const svg = getAllInformators[i][0]?.childNodes?.[0];
+            const path = svg?.childNodes?.[0];
+
+            const d = path?.getAttribute?.('d');
+            const start = d?.split(' ')[0]?.slice(0, 2);
+
+            if (start === "M7") {
+                svg.style = "background-color: green;width: 30px;height: 30px;border-radius: 20px;";
+            } else if (start) {
+                svg.style = "border: 5px dashed #ffffff;background-color: red;width: 30px;height: 30px;font-size: 40px;border-radius: 20px;";
+            } else {
+                console.warn(`❗️Пустой или недоступный d у элемента #${i}`);
+            }
+        }
+
 
         // Set default background for all chats
         for (let j = 0; j < chats.length; j++) {
