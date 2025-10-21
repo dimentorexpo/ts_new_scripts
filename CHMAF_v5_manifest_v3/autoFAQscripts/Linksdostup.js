@@ -15,8 +15,7 @@ var win_linksd =  // описание элементов окна доступо
                             <button class="mainButton" title="Открывает Графану с просмотром действий с запросами на перенос урока, были ли они, если да то отклонены или приняты или еще активны" id="grafanazaprosperenos" style="width:130px">Запрос на перенос</button>
                             <button class="mainButton" title="Открывает Графану с просмотром действий по открытию или закрытию разовых или регулярных слотов у П" id="grafanopencloseslots" style="width:130px">Откр/закр слот</button>
                             <button class="mainButton" title="Открывает Графану с просмотром действий по просмотру блокировок у пользователя" id="grafanablocks" style="width:130px">Блокировки</button>
-							<p style="margin-left: 42%; margin-bottom: 0px; margin-top: 0px; color: #F6358A; font-size: 16px">Datalens Dashboard</p>
-							<button class="mainButton" title="Открывает Datalens для просмотра информации по KPI teachers" id="kpiteachersdashboard" style="width:48%">KPI Teachers</button>
+							<p style="margin-left: 32%; margin-bottom: 0px; margin-top: 0px; color: #F6358A; font-size: 16px">Datalens Dashboard</p>
                             <button class="mainButton" title="Открывает Datalens для просмотра информации по действия пользвоателя в ЛК/МП" id="lkmpdashboard" style="width:48%">Действия П/У ЛК/МП</button>
                         </div>
                 </span>
