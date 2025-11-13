@@ -130,6 +130,7 @@ function formatIssue(item, currentNumber, issueKey, searchText, currentpic, curr
         <a name="buglinks" href="https://jira.skyeng.link/browse/${issueKey}" target="_blank" style="margin-left:5px; color: #ffe4c4">${temporarka}</a>
         <span name="issueIds" style="display:none">${currentIds}</span>
         ${currentNumber ? `
+			<span class="addIssueToJiralnk" style="cursor: pointer; font-size: 16px;" title="Добавить задачу в Ссылка на Jira">💬</span>
             <span class="refreshissues" style="color:#ADFF2F; margin-left: 1px; cursor: pointer">&#69717;&#120783;</span>
             <span name="addtofavourites" style="margin-left: 4px; cursor:pointer;" title="Добавить задачу в Избранное">🤍</span>
         ` : ""}
@@ -183,58 +184,70 @@ function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputT
 }
 
 function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
-    for (let f = 0; f < refreshissuesarr.length; f++) {
-        refreshissuesarr[f].onclick = function () {
-            const fetchURL = `https://jira.skyeng.link/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueIds[f]}`;
-            const requestOptions = {
-                method: 'GET'
-            };
+	    refreshissuesarr.forEach((issueElement, index) => {
+        issueElement.addEventListener('click', function () {
+            const fetchURLtkn = `https://jira.skyeng.link/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueIds[index]}`;
+            const requestOptionsTkn = { method: 'GET', credentials: 'include', }
 
-            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (authresponse) {
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLtkn, requestOptions: requestOptionsTkn }, function (authresponse) {
                 if (authresponse.success) {
-                    const refiss = authresponse.fetchansver;
-                    if (refiss) {
-                        let count;
-                        let jira_token;
-                        let increasedcount;
+                    let responseAuth = authresponse.fetchansver;
+                    let jira_token = responseAuth.match(/"atl_token":"(.*lin)/)[1];
+                    let count = parseInt(responseAuth.match(/customfield_15410.*?value=.*?(\d+)/)[1]);
+                    let increasedcount = (count + 1).toString();
 
-                        jira_token = refiss.match(/"atl_token":"(.*lin)/)[1]
-                        count = refiss.match(/customfield_15410.*?value=.*?(\d+)/)[1];
-                        count = parseInt(count);
-                        increasedcount = count + 1;
-                        increasedcount = increasedcount.toString();
-                        console.log("count=" + count + " increasedcount " + increasedcount);
-
-                        const fetchURL2 = 'https://jira.skyeng.link/secure/AjaxIssueAction.jspa?decorator=none';
-                        const requestOptions2 = `{
-                            "headers": {
-                                "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                "sec-fetch-mode": "cors",
-                                "sec-fetch-site": "same-origin",
-                                "x-requested-with": "XMLHttpRequest",
-                                "x-sitemesh-off": "true"
-                                        },
-                            "body": "customfield_15410=${increasedcount}&issueId=${issueIds[f]}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410",
-                              "method": "POST",
-                              "mode": "cors",
-                              "credentials": "include"
-                                }`;
-
-                        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL2, requestOptions: requestOptions2 }, function (refissresponse) {
-                            if (refissresponse.success) {
-                                let newinfocount = document.querySelectorAll('.newcount');
-                                newinfocount[f].innerHTML = increasedcount;
-                                increasedcount = "";
-                            } else {
-                                alert('Не удалось добавить SupportTab: ' + refissresponse.error);
-                            }
-                        });
+                    const fetchURLIncreased = "https://jira.skyeng.link/secure/AjaxIssueAction.jspa?decorator=none";
+                    const requestOptionsIncreased = {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                        },
+                        body: `customfield_15410=${increasedcount}&issueId=${issueIds[index]}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410`,
+                        credentials: 'include',
                     }
+
+                    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLIncreased, requestOptions: requestOptionsIncreased }, function (responseIncrease) {
+                        if (responseIncrease.success) {
+                            let newinfocount = document.querySelectorAll('.newcount');
+                            newinfocount[index].innerHTML = increasedcount;
+                        } else {
+                            console.log('Ошибка при увеличении счетчика Support Tab:', responseIncrease.error);
+                        }
+                    });
                 } else {
-                    alert('Не удалось добавить SupportTab: ' + authresponse.error);
+                    console.log('Ошибка при получении токена и счетчика:', authresponse.error);
                 }
             });
-        }
+        });
+    });
+}
+
+function addJiraIssueOnClickEvent(barray, issueKeys) { // обработчик нажатия на задачу
+    for (let j = 0; j < barray.length; j++) {
+        barray[j].addEventListener('click', function () {
+                if (window.location.href.includes('crm2.skyeng.ru')) {
+					
+					// Находим label с нужным текстом
+					const label = Array.from(document.querySelectorAll('mat-label'))
+					  .find(el => el.textContent.trim() === 'Ссылка на Jira');
+
+					if (label) {
+					  // Ищем ближайший input в пределах общего контейнера
+					  const container = label.closest('mat-form-field');
+					  const input = container?.querySelector('input');
+
+					  if (input) {
+						input.value = "https://jira.skyeng.link/browse/" + issueKeys[j]
+						input.dispatchEvent(new Event('input', { bubbles: true }));
+						input.dispatchEvent(new Event('change', { bubbles: true }));
+					  } else {
+						console.warn('Input не найден рядом с label');
+					  }
+					} else {
+					  console.warn('Label "Ссылка на Jira" не найден');
+					}
+                }
+        })
     }
 }
 
@@ -278,6 +291,9 @@ function getJiraTask(requestOptions) { // поиск задач в jira
             addPageSwitcher(Math.floor(foundIssuesAmount / 50) + 1);
 
             document.getElementById('foundIssuesAmount').innerHTML = `Всего найдено задач: ${foundIssuesAmount}`;
+			
+			const barray = document.querySelectorAll('.addIssueToJiralnk');
+			 addJiraIssueOnClickEvent(barray, issueKeys);
 
             addFavouritesOnClickEvent(
                 document.getElementsByName('addtofavourites'),
