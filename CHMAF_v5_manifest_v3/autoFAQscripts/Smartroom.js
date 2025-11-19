@@ -37,10 +37,9 @@ var win_smartroomform =  // описание элементов окна Мул�
 							<br>
 							<div style="margin-top:5px; color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);" id = "smartroomquestion">
                                 <label style="color:#c4ffd3; padding:5px; font-weight: 600;">С чем обратились?</label> <br>
-								<input class = "smartroom-radio" type="radio" id="whatobratsugest" name="whatobratform" value="Пожелание по улучшению">
+								<input class = "smartroom-radio" type="radio" checked="true" id="whatobratsugest" name="whatobratform" value="Пожелание по улучшению">
 								<label class = "smartroom-label" for="whatobratsugest">Пожелания</label>
-								<input class = "smartroom-radio" type="radio" id="whattonegative" name="whatobratform" value="Негатив по работе функционала платформы">
-								<label class = "smartroom-label" for="whattonegative">Негатив</label>
+
 							</div>
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);" id = "smartroomecosysrem">
                                 <label style="color:#c4ffd3; padding:5px; font-weight: 600;">Экосистема</label> <br>
@@ -200,13 +199,6 @@ function getsmartroomformButtonPress() {
             document.getElementById('clientid').classList.remove('inputalertbackground');
         }
 
-        if (!document.getElementsByName('whatobratform')[0].checked && !document.getElementsByName('whatobratform')[1].checked) {
-            document.getElementById('smartroomquestion').classList.add('inputalertbackground');
-            flagemptysmart = 1;
-        } else {
-            document.getElementById('smartroomquestion').classList.remove('inputalertbackground');
-        }
-
         if (!document.getElementsByName('smartroomecos')[0].checked && !document.getElementsByName('smartroomecos')[1].checked && !document.getElementsByName('smartroomecos')[2].checked) {
             document.getElementById('smartroomecosysrem').classList.add('inputalertbackground');
             flagemptysmart = 1;
@@ -273,11 +265,7 @@ function getsmartroomformButtonPress() {
                 }
             }
 
-
-            for (let i = 0; i < document.getElementsByName('whatobratform').length; i++) {
-                if (document.getElementsByName('whatobratform')[i].checked == true)
-                    checkedquestion = document.getElementsByName('whatobratform')[i].value;
-            }
+            checkedquestion = document.getElementsByName('whatobratform')[0].value;
 
             let body2 = 'entry.505070950=' + encodeURIComponent(document.getElementById('clientid').value) + '&entry.1879097323=' + encodeURIComponent(document.getElementById('fullcomentsmartroom').value) + '&entry.1625340245=' + encodeURIComponent(cat2selected) + '&entry.478427702=' + encodeURIComponent(cat3selected) + '&entry.466256037=' + encodeURIComponent(checkedclienttype) + '&entry.685236831=' + encodeURIComponent(checkeducformat) + '&entry.876256156=' + encodeURIComponent(checkedquestion) + '&entry.156405977=' + encodeURIComponent(checkecosystem)
 
