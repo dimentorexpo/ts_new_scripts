@@ -1337,3 +1337,44 @@
 	.sucsbtnnotok {
 		background-color: darkred;
 	}
+
+	.link2less-window {
+		display: flex;
+		flex-direction: column;
+		width: 260px;
+	}
+
+	.link2less-head {
+		width: 260px;
+		margin: 5px;
+	}
+
+	.link2less-row {
+		width: 260px;
+		margin: 5px;
+		display: flex;
+		justify-content: flex-start;
+	}
+
+	#subjecttype2less {
+		text-align: center;
+		width: 240px;
+		height: 26px;
+		margin-left: 7px;
+	}
+
+	#hashforroom {
+		text-align: center;
+		width: 240px;
+		margin-left: 5px;
+	}
+
+	.checkboxes label {
+		color: bisque;
+		margin-left: 5px;
+	}
+
+	.option-warning {
+		background-color: orange;
+		color: white;
+	}

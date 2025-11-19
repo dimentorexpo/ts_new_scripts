@@ -1,47 +1,48 @@
-var win_link2less =  // описание элементов окна создания тестовых комнат
-    `<div style="display: flex; width: 260px;">
-        <span style="width: 260px">
-            <span style="cursor: -webkit-grab;">
-                <div style="width: 260px; margin: 5px;" id="link2lesshead">
-                    <button title="скрывает меню" id="hideMelink2less" class="mainButton buttonHide">hide</button>
-                    <button class="mainButton" id="clrlink2less" title="По нажатию очищает поля" style="width:24px;">🧹</button>
-                    <button class="mainButton" id="aboutlink2less" style="width:24px; float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
-                </div>
+var win_link2less = `
+<div class="link2less-window">
+    <div class="link2less-head" id="link2lesshead">
+        <button title="Скрывает меню" id="hideMelink2less" class="mainButton buttonHide">hide</button>
+        <button class="mainButton" id="clrlink2less" title="Очищает поля">🧹</button>
+        <button class="mainButton about-btn" id="aboutlink2less" title="Инструкция по этой форме">❓</button>
+    </div>
 
-				<div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                    <select class="${exttheme}" id="subjecttype2less" style="text-align: center; width: 240px; height: 26px; margin-left: 7px;">
-                        <option disabled="" selected="" value="subjnotselect" style="background-color: orange; color: white;">Выбери предмет</option>
-                        <option value="english">Английский</option>
-                        <option value="biology">Биология</option>
-                        <option value="geography">География</option>
-                        <option value="preschool">Дошкольная математика</option>
-                        <option value="history">История</option>
-                        <option value="computer-science">Компьютерные курсы</option>
-                        <option value="literature">Литература</option>
-                        <option value="math">Математика</option>
-                        <option value="social-science">Обществознание</option>
-                        <option value="russian">Русский язык</option>
-                        <option value="physics">Физика</option>
-                        <option value="chemistry">Химия</option>
-                        <option value="chess">Шахматы</option>
-                    </select>
-                </div>
+    <div class="link2less-row">
+        <select class="${exttheme}" id="subjecttype2less">
+            <option disabled selected value="subjnotselect" class="option-warning">Выбери предмет</option>
+            <option value="english">Английский</option>
+            <option value="biology">Биология</option>
+            <option value="geography">География</option>
+            <option value="preschool">Дошкольная математика</option>
+            <option value="history">История</option>
+            <option value="computer-science">Компьютерные курсы</option>
+            <option value="literature">Литература</option>
+            <option value="math">Математика</option>
+            <option value="social-science">Обществознание</option>
+            <option value="russian">Русский язык</option>
+            <option value="physics">Физика</option>
+            <option value="chemistry">Химия</option>
+            <option value="chess">Шахматы</option>
+        </select>
+    </div>
 
-                <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                    <input class="${exttheme}" id="hashforroom" placeholder="Введи хэш комнаты" title="Введи хэш комнаты на которую получить ссылку" autocomplete="off" type="text" style="text-align: center; width: 240px; margin-left: 5px;">
-    			</div>
+    <div class="link2less-row">
+        <input class="${exttheme}" id="hashforroom"
+               placeholder="Введи хэш комнаты"
+               title="Введи хэш комнаты, чтобы получить ссылку"
+               autocomplete="off" type="text">
+    </div>
 
-                <div style="width: 260px; margin:2px; display:flex; justify-content:left;">
-                    <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="itisvebinar">Ссылка на Вебинар</label>
-                    <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="itishomework">Ссылка на ДЗ</label>
-                </div>
-                <div style="width: 260px; margin:5px; display:flex; justify-content:left;">
-                    <button id="createlink2less" title="Тут и так понятно" class="mainButton testroomscreate">Скопровать ссылку на урок</button>
-                </div>
+    <div class="link2less-row checkboxes">
+        <label><input type="checkbox" id="itisvebinar"> Ссылка на Вебинар</label>
+        <label><input type="checkbox" id="itishomework"> Ссылка на ДЗ</label>
+    </div>
 
-            </span>
-        </span>
-    </div>`;
+    <div class="link2less-row">
+        <button id="createlink2less" title="Создать ссылку" class="mainButton testroomscreate">
+            Скопировать ссылку на урок
+        </button>
+    </div>
+</div>`;
 
 const wintlink2less = createWindow('AF_link2less', 'winToplink2less', 'winLeftlink2less', win_link2less);
 const itisvebinar = document.getElementById('itisvebinar');
@@ -116,13 +117,13 @@ document.getElementById('createlink2less').addEventListener('click', function ()
         }
         link2lesson = `https://vimbox.skyeng.ru/kids/${lessonsubjecttype}/room/${hashforroomless}${otheroptions}`;
         copyToClipboard(link2lesson);
-        createAndShowButton('Ссылка скопирована в буфер обмена' , 'message');
+        createAndShowButton('Ссылка скопирована в буфер обмена', 'message');
         clearlink2lessfields()
         setTimeout(() => {
-            document.getElementById('AF_link2less').style.display = 'none'; 
+            document.getElementById('AF_link2less').style.display = 'none';
         }, 5000);
 
     } else {
-        createAndShowButton(massagetexttoshow , 'error');
+        createAndShowButton(massagetexttoshow, 'error');
     }
 })
