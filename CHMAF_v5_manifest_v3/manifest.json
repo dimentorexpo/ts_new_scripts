@@ -105,6 +105,18 @@
 		},
 		{
 			"js": [
+				"/OtherScripts/CRMbtns.js"
+			],
+			"css": [
+				"/CSS/crmstyles.css"
+			],
+			"matches": [
+				"*://crm2.skyeng.ru/*"
+			],
+			"run_at": "document_end"
+		},
+		{
+			"js": [
 				"/OtherScripts/Multiclassroom.js"
 			],
 			"matches": [

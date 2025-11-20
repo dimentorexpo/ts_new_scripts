@@ -1,0 +1,14 @@
+.crm-task-btn {
+    border: 2px solid black;
+    font-size: 16px;
+    background-color: rgb(118, 141, 135);
+    padding: 1px;
+    border-radius: 20px;
+    cursor: pointer;
+    width: 26px;
+    height: 26px;
+}
+
+.crm-task-btn:hover {
+    background-color: #00aefa;
+}
