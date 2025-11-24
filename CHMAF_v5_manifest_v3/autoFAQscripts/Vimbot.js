@@ -76,7 +76,7 @@ document.getElementById('GetTexttmplt').addEventListener('click', function () {
 document.getElementById('sendToVimbotFromCRM').addEventListener('click', function () {
     const usrIDraw = uIdToVimbot.value.trim();
     const recipientId = Number(usrIDraw); // ключевая правка: число, не строка
-    const textTosent = document.getElementById('textToVimbotSend').value.replace(/\n/g, '\\n');
+    const textTosent = document.getElementById('textToVimbotSend').value
     const canWrite = chatTypeElement.textContent === "Support chat✅";
 
     if (!Number.isFinite(recipientId) || usrIDraw.length <= 3) {
