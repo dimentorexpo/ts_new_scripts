@@ -604,6 +604,9 @@ button.dobig:active {
     color: bisque;
     margin: 5px;
 }
+.itemexerciseskids:hover {
+	background: cornflowerblue;
+}
 
 .savelinktocms,
 .savelinktocmsttc {

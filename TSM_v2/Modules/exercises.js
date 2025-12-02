@@ -149,6 +149,44 @@ hideNullCardsCheckbox.addEventListener("change", function () {
     document.getElementById('getroomdatakids').click();
 });
 
+async function LoadStep(stepuuid) {
+  const response = await fetch("https://api-english.skyeng.ru/api/student-cabinet/v1/step-store/load-step", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({
+      stepUuid: stepuuid,
+      last: true,
+      language: "ru",
+      baseDomain: "skyeng.ru"
+    }),
+    credentials: "include"
+  });
+
+  const data = await response.json();
+  return data.id;
+}
+
+async function ResetStepProgress(userId, stepId, roomHash) {
+	fetch("https://api-english.skyeng.ru/api/v1/store-blocks/delete", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+  },
+  body: JSON.stringify({
+    userId: userId,
+    contentGroupId: stepId,
+    roomHash: roomHash
+  }),
+  credentials: "include"
+});
+console.log("DELETED SUCCESSFULLY")
+}
+
+
 function getkidsroominfo(data, subjecttype) {
     let temparr = [];
     let hwarr = [];
@@ -195,6 +233,8 @@ function getkidsroominfo(data, subjecttype) {
                 'data-subtype="' + subjecttype + '" ' +
                 'data-lessonid="' + data.lessonCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' +
                 'data-stepid="' + data.lessonCards[indexOfSlides].themes[i].cards[j].id + '"> 💾 </span>' +
+				'<span class="resetprogress" style="cursor:pointer" ' + 
+				'data-stepUUID="' + data.lessonCards[indexOfSlides].themes[i].cards[j].stepUuid + '"> 🔄️ </span>' +
                 '<span style="float:right; margin-right: 80px;">' + data.lessonCards[indexOfSlides].themes[i].cards[j].completeness + '</span>' +
                 '<span style="float:right; margin-right: 60px;">' + data.lessonCards[indexOfSlides].themes[i].cards[j].score + '</span>' +
                 '</div>';
@@ -255,6 +295,8 @@ function getkidsroominfo(data, subjecttype) {
                 'data-subtype="' + subjecttype + '" ' +
                 'data-lessonid="' + data.homeworkCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' +
                 'data-stepid="' + data.homeworkCards[indexOfSlides].themes[i].cards[j].id + '"> 💾 </span>' +
+				'<span class="resetprogress" style="cursor:pointer" ' + 
+				'data-stepUUID="' + data.homeworkCards[indexOfSlides].themes[i].cards[j].stepUuid + '"> 🔄️ </span>' +
                 '<span style="float:right; margin-right: 80px;">' + data.homeworkCards[indexOfSlides].themes[i].cards[j].completeness + '</span>' +
                 '<span style="float:right; margin-right: 60px;">' + data.homeworkCards[indexOfSlides].themes[i].cards[j].score + '</span>' +
                 '</div>';
@@ -307,6 +349,18 @@ function getkidsroominfo(data, subjecttype) {
             copyToClipboardTSM(link);
         }
     }
+	
+	let rstProgArray = document.getElementsByClassName('resetprogress') // блок сброса прогресса
+	for (let k=0; k< rstProgArray.length; k++) {
+		rstProgArray[k].onclick = async function(){
+			let roomhashtoinsert = location.pathname.split('/')[4].trim()
+			let stepuuid = this.getAttribute('data-stepUuid');
+			let studentID = document.getElementById('studid').textContent.split(" ")[1]
+			let getNumberToDelete = await LoadStep(stepuuid);
+			ResetStepProgress(studentID, getNumberToDelete, roomhashtoinsert)
+			console.log("clicked ", k+1, " element; hash - ", roomhashtoinsert, stepuuid, " step to delete: ", getNumberToDelete)
+		}
+	}
 
     if (data.participants[0].role == 'student') {
         document.getElementById('studname').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + data.participants[0].name
