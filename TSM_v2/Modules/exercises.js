@@ -166,25 +166,40 @@ async function LoadStep(stepuuid) {
   });
 
   const data = await response.json();
-  return data.id;
+  return String(data.id);
 }
 
-async function ResetStepProgress(userId, stepId, roomHash) {
-	fetch("https://api-english.skyeng.ru/api/v1/store-blocks/delete", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-  },
-  body: JSON.stringify({
-    userId: userId,
-    contentGroupId: stepId,
-    roomHash: roomHash
-  }),
-  credentials: "include"
-});
-console.log("DELETED SUCCESSFULLY")
+async function ResetStepProgress(apiName, userId, stepId, roomHash) {
+  try {
+    const response = await fetch(`https://api-${apiName}.skyeng.ru/api/v1/store-blocks/delete`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        userId: userId,
+        contentGroupId: stepId,
+        roomHash: roomHash
+      }),
+      credentials: "include"
+    });
+
+    if (!response.ok) {
+      // Сервер вернул ошибку (например, 400 или 500)
+      console.error("Ошибка удаления:", response.status, response.statusText);
+      return false;
+    }
+
+    const result = await response.json(); // если сервер возвращает JSON
+    console.log("Удаление прошло успешно:", result);
+    return true;
+  } catch (err) {
+    console.error("Сбой при запросе:", err);
+    return false;
+  }
 }
+
 
 
 function getkidsroominfo(data, subjecttype) {
@@ -235,6 +250,7 @@ function getkidsroominfo(data, subjecttype) {
                 'data-stepid="' + data.lessonCards[indexOfSlides].themes[i].cards[j].id + '"> 💾 </span>' +
 				'<span class="resetprogress" style="cursor:pointer" ' + 
 				'data-stepUUID="' + data.lessonCards[indexOfSlides].themes[i].cards[j].stepUuid + '"> 🔄️ </span>' +
+				'<span class="resetStatus"></span>'+
                 '<span style="float:right; margin-right: 80px;">' + data.lessonCards[indexOfSlides].themes[i].cards[j].completeness + '</span>' +
                 '<span style="float:right; margin-right: 60px;">' + data.lessonCards[indexOfSlides].themes[i].cards[j].score + '</span>' +
                 '</div>';
@@ -297,6 +313,7 @@ function getkidsroominfo(data, subjecttype) {
                 'data-stepid="' + data.homeworkCards[indexOfSlides].themes[i].cards[j].id + '"> 💾 </span>' +
 				'<span class="resetprogress" style="cursor:pointer" ' + 
 				'data-stepUUID="' + data.homeworkCards[indexOfSlides].themes[i].cards[j].stepUuid + '"> 🔄️ </span>' +
+				'<span class="resetStatus"></span>'+
                 '<span style="float:right; margin-right: 80px;">' + data.homeworkCards[indexOfSlides].themes[i].cards[j].completeness + '</span>' +
                 '<span style="float:right; margin-right: 60px;">' + data.homeworkCards[indexOfSlides].themes[i].cards[j].score + '</span>' +
                 '</div>';
@@ -351,14 +368,29 @@ function getkidsroominfo(data, subjecttype) {
     }
 	
 	let rstProgArray = document.getElementsByClassName('resetprogress') // блок сброса прогресса
+	let statusBtns = document.getElementsByClassName('resetStatus')
 	for (let k=0; k< rstProgArray.length; k++) {
 		rstProgArray[k].onclick = async function(){
+			let apiToDoName = location.pathname.split('/')[2].trim()
 			let roomhashtoinsert = location.pathname.split('/')[4].trim()
 			let stepuuid = this.getAttribute('data-stepUuid');
-			let studentID = document.getElementById('studid').textContent.split(" ")[1]
+			let studentID = Number(document.getElementById('studid').textContent.split(" ")[1])
 			let getNumberToDelete = await LoadStep(stepuuid);
-			ResetStepProgress(studentID, getNumberToDelete, roomhashtoinsert)
-			console.log("clicked ", k+1, " element; hash - ", roomhashtoinsert, stepuuid, " step to delete: ", getNumberToDelete)
+			
+			const success = await ResetStepProgress(apiToDoName, studentID, getNumberToDelete, roomhashtoinsert)
+				if (success) {
+				  statusBtns[k].style = "color: lawngreen;    font-weight: 600;" 
+				  statusBtns[k].textContent = "Успешно"
+				  setTimeout(function(){
+					  statusBtns[k].textContent = ""
+				  }, 4000)
+				} else {
+					statusBtns[k].style = "color: red;    font-weight: 600;" 
+				  statusBtns[k].textContent = "Ошибка"
+				  setTimeout(function(){
+					  statusBtns[k].textContent = ""
+				  }, 4000)
+				}
 		}
 	}
 
