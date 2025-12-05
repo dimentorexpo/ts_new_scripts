@@ -248,9 +248,6 @@ function getkidsroominfo(data, subjecttype) {
                 'data-subtype="' + subjecttype + '" ' +
                 'data-lessonid="' + data.lessonCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' +
                 'data-stepid="' + data.lessonCards[indexOfSlides].themes[i].cards[j].id + '"> 💾 </span>' +
-				'<span class="resetprogress" style="cursor:pointer" ' + 
-				'data-stepUUID="' + data.lessonCards[indexOfSlides].themes[i].cards[j].stepUuid + '"> 🔄️ </span>' +
-				'<span class="resetStatus"></span>'+
                 '<span style="float:right; margin-right: 80px;">' + data.lessonCards[indexOfSlides].themes[i].cards[j].completeness + '</span>' +
                 '<span style="float:right; margin-right: 60px;">' + data.lessonCards[indexOfSlides].themes[i].cards[j].score + '</span>' +
                 '</div>';
