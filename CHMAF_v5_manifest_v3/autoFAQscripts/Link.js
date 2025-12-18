@@ -11,13 +11,12 @@ var win_Links =  // описание элементов окна ссылок
 					<button title="Открывает Infra для запроса сброса пароля в Mattermost Teacher" id="resetMMPassword" class="mainButton uplinksbar">🔐</button>
 					<button title="Открывает менюшку для просмотра информации по BIN банка, чтобы узнать тип карты, страну происхождения, название банка" id="bankCheck" class="mainButton uplinksbar">💳</button>
 					<button title="Открывает просмотр список группы" id="GrListData" class="mainButton uplinksbar">👩‍👩‍👧‍👦</button>
-					<button title="Открывает документ просмотра статуса компенсаций реальных уроков" id="CompensRequests" class="mainButton uplinksbar">📖</button>
+                    <button title="Открывает документ, где собраны учетные записи к Minecraft Education" id="minecraftAccs" class="mainButton uplinksbar">⛏️</button>
                     <button title="Открывает известные баги на платформе" id="confbugs" style="width: 50px; float: right; margin-right: 5px" class="mainButton uplinksbar">🐞</button>
 				</div>
 				<div style="margin: 5px; width: 550px;" id="links_but">
 					<button class="mainButton" title="Открывает Timetable" id="timetable" style="width:105px">📅TimeTable</button>
 					<button class="mainButton" title="Открывает админку Talks для поиска по ID П ID У, с которым идет урок" id="talksadm" style="width:105px">💋Talks</button>
-					<button class="mainButton" title="Открывает форму передачи запросов на компенсацию реальных уроков ученику по массовым неполадкам/багам, из-за которых У потерял занятие" id="compensNew" style="width:105px; margin-top: 3px">💸Реал_комп</button>
 					<button class="mainButton" title="Открывает форму передачи запросов на компенсацию бонусных уроков/рублей, если нет честных оплат" id="compensNotFairPayments" style="width:105px; margin-top: 3px">🚫честн оплат</button>
 					<button class="mainButton" title="Открывает раздел для создания операции компенсации ученику" id="compens" style="width:105px">💸Бонус_комп</button>
 					<button class="mainButton" title="Открывает CMS хранилище материалов уроков" id="CMS" style="width:105px">🌀CMS</button>
@@ -253,16 +252,8 @@ function addfunctionsonclick(section) {
             window.open("https://id.skyeng.ru/admin/users")
         })
 
-        document.getElementById('compensNew').addEventListener('click', function () { // открываем ссылку в новой вкладке для создания операции компенсации
-            window.open("https://forms.yandex.ru/cloud/6876072dd0468842004d37f5/")
-        })
-
         document.getElementById('compensNotFairPayments').addEventListener('click', function () { // открываем ссылку в новой вкладке для создания операции компенсации нет четсных оплаты
             window.open("https://forms.yandex.ru/cloud/6876066349363940156734b8/?page=1")
-        })
-
-        document.getElementById('CompensRequests').addEventListener('click', function () { // открываем ссылку просмотра статусов компенсаций
-            window.open("https://wiki.yandex.ru/homepage/kompensacija-uroka-ucheniku-po-texnicheskim-nepola/")
         })
 
         document.getElementById('transactions').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Поиск транзакций
@@ -341,6 +332,14 @@ function addfunctionsonclick(section) {
         document.getElementById('CheckVidConnection').addEventListener('click', function () { // открываем ссылку в новой вкладке на проверку связи с видеосерверами
             window.open("https://video-check.skyeng.ru/")
         })
+
+        document.getElementById('minecraftAccs').addEventListener('click', function () { // открываем ссылку в новой вкладке на проверку связи с видеосерверами
+            window.open("https://disk.yandex.ru/edit/d/ARTwOEreBvxL1L4cDRCvEyPegnqahzm72s0qoIz-cKg6al9hdmhpLVFTZw")
+        })
+
+
+
+
 
 
 

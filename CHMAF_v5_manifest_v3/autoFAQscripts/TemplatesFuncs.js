@@ -14,22 +14,21 @@ const StylesElemValues = "cursor: pointer; width: 30px; height: 30px; font-size:
 var win_UsersInfo = // описание окна тестовых пользователей
     `<span style="display: block;">
         <span id="CurrUser" title="Открыть в CRM обратившегося пользователя" style="cursor:pointer;"></span>
-        <button class="mainButton" id="CurUsScriptPac" title="Открыть в Script Package обратившегося пользователя" style="${StylesElemValues}">ℹ️</button>
         <button class="mainButton" id="CurUsLoginer" title="Скопировать в буфер обмена ссылку логинер для обратившегося пользователя" style="${StylesElemValues}">🔑</button>
         <button class="mainButton" id="CurUstroublesh" title="Открыть в ТШ обратившегося пользователя" style="${StylesElemValues}">🕵️‍♀️</button>
         <button class="mainButton" id="CurUsChatHis" title="Открыть историю чатов обратившегося пользователя" style="${StylesElemValues}">☢</button>
         <button class="mainButton" id="CurUsChatHisWA" title="Открыть историю чатов WA обратившегося пользователя" style="${StylesElemValues}">
             <img src="chrome-extension://${editorExtensionId}/Images/WA.png" alt="WA" width="20" height="20" vertical-align="top"></button>
         <button class="mainButton" id="CurUsUserInf" title="Открыть в ⚜ обратившегося пользователя" style="${StylesElemValues}">⚜</button>
-        <button class="mainButton" id="CurUsMarks" title="Открыть историю оценок обратившегося пользователя" style="${StylesElemValues}">📊</button>
+        <button class="mainButton" id="CurUsAdminka" title="Открыть в админке обратившегося пользователя" style="${StylesElemValues}">✏️</button>
     </span>
     <span id="nextUsersp" style="display: none;">
         <span id="NextUser" title="Открыть в CRM У/П с кем следующий урок" style="cursor:pointer;"></span>
-        <button class="mainButton" id="NextUsScriptPac" title="Открыть в Script Package У/П с кем следующий урок" style="${StylesElemValues}">ℹ️</button>
         <button class="mainButton" id="NextUsLoginer" title="Скопировать в буфер обмена ссылку логинер для У/П с кем следующий урок" style="${StylesElemValues}">🔑</button>
         <button class="mainButton" id="NextUstroublesh" title="Открыть в ТШ У/П с кем следующий урок" style="${StylesElemValues}">🕵️‍♀️</button>
         <button class="mainButton" id="NextUsChatHis" title="Открыть историю чатов У/П с кем следующий урок" style="${StylesElemValues}">☢</button>
         <button class="mainButton" id="NextUsUserInf" title="Открыть в ⚜ У/П с кем следующий урок" style="${StylesElemValues}">⚜</button>
+        <button class="mainButton" id="NextUsAdminka" title="Открыть в админке обратившегося пользователя" style="${StylesElemValues}">✏️</button>
     </span>
 `;
 
@@ -318,33 +317,6 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
         }
     }
 
-    iframeDoc.getElementById('CurUsScriptPac').onclick = function () {
-        this.style.background = "lightgreen";
-        setTimeout(() => {
-            this.style.background = "";
-        }, 1000);
-        const idNode = SearchinAFnewUI("id");
-        if (idNode) {
-            const editorExtensionId = localStorage.getItem('ext_id');
-            chrome.runtime.sendMessage(
-                editorExtensionId,
-                {
-                    name: 'chm_message', question: 'send_event', messageValue: {
-                        message: 'open-user-info',
-                        userId: `${idNode}`,
-                    },
-                },
-                function (response) {
-                    if (chrome.runtime.lastError) {
-                        console.log('Ошибка при отправке сообщения:', chrome.runtime.lastError);
-                    } else {
-                        console.log('Ответ от бекграунд-скрипта:', response);
-                    }
-                }
-            );
-        }
-    }
-
     iframeDoc.getElementById('CurUsLoginer').onclick = async function () {
         const idNode = SearchinAFnewUI("id");
         if (idNode) {
@@ -379,6 +351,17 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
 
             window.open('https://video-trouble-shooter.skyeng.ru/?userId=' + idNode + '&from=' + curtime.getFullYear() + '-' + mesjac + '-'
                 + (denj - 1 == 0 ? denj : (denj - 1 < 10 ? "0" + (denj - 1) : denj)) + 'T00:00:00&to=' + curtime.getFullYear() + '-' + mesjac + '-' + denj + 'T23:59:00&order=desc')
+        }
+    }
+
+    iframeDoc.getElementById('CurUsAdminka').onclick = function () {
+        this.style.background = "lightgreen";
+        setTimeout(() => {
+            this.style.background = "";
+        }, 1000);
+        const idNode = SearchinAFnewUI("id");
+        if (idNode) {
+            window.open(`https://id.skyeng.ru/admin/users/${idNode}/update-contacts`)
         }
     }
 
@@ -431,18 +414,6 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
         }
     }
 
-    iframeDoc.getElementById('CurUsMarks').onclick = function () {
-        this.style.background = "lightgreen";
-        setTimeout(() => {
-            this.style.background = "";
-        }, 1000);
-        const idNode = SearchinAFnewUI("id");
-
-        if (idNode) {
-            marksstata(idNode);
-        }
-    }
-
     iframeDoc.getElementById('NextUser').onclick = function () {
         this.style.background = "lightgreen";
         setTimeout(() => {
@@ -453,28 +424,6 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
         const idNode = SearchinAFnewUI(requestargument);
         if (idNode) {
             window.open('https://crm2.skyeng.ru/persons/' + idNode)
-        }
-    }
-
-    iframeDoc.getElementById('NextUsScriptPac').onclick = function () {
-        this.style.background = "lightgreen";
-        setTimeout(() => {
-            this.style.background = "";
-        }, 1000);
-        let requestargument = findrequestargument(usertypeis);
-
-        const idNode = SearchinAFnewUI(requestargument);
-        if (idNode) {
-            const editorExtensionId = localStorage.getItem('ext_id');
-            chrome.runtime.sendMessage(
-                editorExtensionId,
-                {
-                    name: 'chm_message', question: 'send_event', messageValue: {
-                        message: 'open-user-info',
-                        userId: `${idNode}`,
-                    },
-                },
-            );
         }
     }
 
@@ -516,6 +465,35 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
 
             window.open('https://video-trouble-shooter.skyeng.ru/?userId=' + idNode + '&from=' + curtime.getFullYear() + '-' + mesjac + '-'
                 + (denj - 1 == 0 ? denj : (denj - 1 < 10 ? "0" + (denj - 1) : denj)) + 'T00:00:00&to=' + curtime.getFullYear() + '-' + mesjac + '-' + denj + 'T23:59:00&order=desc')
+        }
+
+    }
+
+    iframeDoc.getElementById('NextUsAdminka').onclick = function () {
+        this.style.background = "lightgreen";
+        setTimeout(() => {
+            this.style.background = "";
+        }, 1000);
+        let requestargument = findrequestargument(usertypeis);
+        const idNode = SearchinAFnewUI(requestargument);
+
+        if (idNode) {
+            let curtime = new Date();
+            let mesjac;
+            let denj;
+
+            if (curtime.getDate() < 10) {
+                denj = "0" + curtime.getDate();
+            } else {
+                denj = curtime.getDate();
+            }
+            if (curtime.getMonth() + 1 < 10) {
+                mesjac = "0" + (curtime.getMonth() + 1);
+            } else {
+                mesjac = curtime.getMonth() + 1;
+            }
+
+            window.open(`https://id.skyeng.ru/admin/users/${idNode}/update-contacts`)
         }
 
     }
