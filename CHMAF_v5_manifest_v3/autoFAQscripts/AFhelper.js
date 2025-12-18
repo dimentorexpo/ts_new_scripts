@@ -1,3 +1,4 @@
+const editorExtensionIdNew = localStorage.getItem('ext_id');
 var win_AFhelper =  // описание элементов главного окна
     `<div style="width: 461px;">
         <span>
@@ -13,6 +14,10 @@ var win_AFhelper =  // описание элементов главного ок
 					<button class="mainButton" id="reminderstatus" title="Статус будильника 🔔 - вкл, 🔕 - выкл" style="width:25px; float: right; margin-right: 5px"></button>
 					<input id ="phone_tr" class="onlyfortp ${exttheme}" placeholder="Телефон" autocomplete="off" type="text" style = "text-align: center; width: 200px; margin-left: 15px; margin-top: 5px; border-radius: 10px;"></input>
                     <input id ="email_tr" class="onlyfortp ${exttheme}" placeholder="Почта" autocomplete="off" type="text" style = "text-align: center; width: 200px; margin-left: 12px; margin-top: 5px; border-radius: 10px;"></input>
+                    <img src="chrome-extension://${editorExtensionIdNew}/Images/hat.png" id="hatSack" alt="Шляпа Деда Мороза" width="140" height="auto" style="position: absolute;    top: -104px; right: -60px;    z-index: 9999999;    user-select: none;    -webkit-user-drag: none;">
+                    <img src="chrome-extension://${editorExtensionIdNew}/Images/bag.png" id="giftSack" alt="Мешок с подарками" width="112" height="auto" style="position: absolute;    top: -98px; left: -72px;    z-index: 9999999;    user-select: none;    -webkit-user-drag: none;    transform: rotate(-30deg);">
+                    <img src="chrome-extension://${editorExtensionIdNew}/Images/2026.png" alt="2026" width="112" height="30" style="    position: absolute;    top: -29px;
+                    right: 178px;    z-index: 9999999;    user-select: none;    -webkit-user-drag: none;    background: darkred;    border: 1px solid black;">
 				</div>
 				<div style="margin-left: 5px; margin-right: 5px; margin-bottom:5px; font-size: 17px;" id="pages">
 				</div>

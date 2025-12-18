@@ -1378,3 +1378,34 @@
 		background-color: orange;
 		color: white;
 	}
+
+	@keyframes sackWiggle {
+		0% {
+			transform: rotate(-30deg);
+		}
+
+		25% {
+			transform: rotate(-32deg);
+		}
+
+		50% {
+			transform: rotate(-28deg);
+		}
+
+		75% {
+			transform: rotate(-32deg);
+		}
+
+		100% {
+			transform: rotate(-30deg);
+		}
+	}
+
+	#giftSack {
+		transition: transform 0.3s ease;
+		/* плавный возврат */
+	}
+
+	#giftSack:hover {
+		animation: sackWiggle 1.5s ease-in-out infinite;
+	}

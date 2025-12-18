@@ -12,6 +12,8 @@ const checkgirlyanda = `
         <br>
         <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="checksnow">Из курсора идет снег</label>
         <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="checkelka">Показывать Ёлку</label>
+        <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="checkhat">Показывать Шапку</label>
+        <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="checkbag">Показывать Мешок</label>
     </div>
 `;
 
@@ -51,6 +53,29 @@ function checkloadsettings() {
             }
             ElkaSelect.addEventListener('change', handleelkaChange);
         }
+        const savedValueHat = localStorage.getItem('AF_hat');
+        const HatSelect = document.getElementById('checkhat');
+        if (HatSelect) {
+            if (savedValueHat == 0) {
+                HatSelect.checked = false;
+            } else {
+                HatSelect.checked = true;
+            }
+            HatSelect.addEventListener('change', handlehathange);
+        }
+
+        const savedValueBag = localStorage.getItem('AF_bag');
+        const BagSelect = document.getElementById('checkbag');
+        if (BagSelect) {
+            if (savedValueHat == 0) {
+                BagSelect.checked = false;
+            } else {
+                BagSelect.checked = true;
+            }
+            BagSelect.addEventListener('change', handlebaghange);
+        }
+
+
     } else {
         setTimeout(checkloadsettings, 1000);
     }
@@ -87,6 +112,8 @@ function checkAndSetGirlyanda() {
             localStorage.setItem('snowcursor', '1');
             localStorage.setItem('girlyanda', '1');
             localStorage.setItem('AF_elka', '1');
+            localStorage.setItem('AF_hat', '1');
+            localStorage.setItem('AF_bag', '1');
             startgirlyand1();
             elkaadd()
             document.getElementById('NGgirlyand')[1].selected = true;
@@ -114,7 +141,7 @@ function checkAndSetGirlyanda() {
     checkloadsettings();
 }
 
-if (!localStorage.getItem('girlyanda')){
+if (!localStorage.getItem('girlyanda')) {
     checkAndSetGirlyanda()
 } else {
     checkloadsettings()
@@ -151,9 +178,9 @@ function handleSnowChange() {
 }
 
 function handleelkaChange() {
-    const snowSelect = document.getElementById('checkelka');
+    const elkaSelect = document.getElementById('checkelka');
 
-    if (!snowSelect.checked) {
+    if (!elkaSelect.checked) {
         localStorage.setItem('AF_elka', '0');
         elkaremove()
     } else {
@@ -162,10 +189,34 @@ function handleelkaChange() {
     }
 }
 
+function handlehathange() {
+    const hatSelect = document.getElementById('checkhat');
+
+    if (!hatSelect.checked) {
+        localStorage.setItem('AF_hat', '0');
+        document.getElementById('hatSack').style.display = 'none'
+    } else {
+        localStorage.setItem('AF_hat', '1');
+        document.getElementById('hatSack').style.display = ''
+    }
+}
+
+function handlebaghange() {
+    const hatSelect = document.getElementById('checkbag');
+
+    if (!hatSelect.checked) {
+        localStorage.setItem('AF_bag', '0');
+        document.getElementById('giftSack').style.display = 'none'
+    } else {
+        localStorage.setItem('AF_bag', '1');
+        document.getElementById('giftSack').style.display = ''
+    }
+}
 
 
 
-if (localStorage.getItem('AF_elka') == '1') {elkaadd()}
+
+if (localStorage.getItem('AF_elka') == '1') { elkaadd() }
 
 function elkaadd() {
     // Проверяем, существует ли элемент app-sider
@@ -174,7 +225,7 @@ function elkaadd() {
         addElka(appSider);
     } else {
         // Если элемента пока нет, создаем новый MutationObserver для отслеживания его появления
-        var observerForAppSider = new MutationObserver(function(mutations, observer) {
+        var observerForAppSider = new MutationObserver(function (mutations, observer) {
             appSider = document.getElementsByClassName('app-sider')[0];
             if (appSider) {
                 observer.disconnect(); // Отключаем наблюдение, когда нашли элемент
@@ -209,10 +260,10 @@ function addElka(appSider) {
     adjustImagePosition();
 
     // Создаем экземпляр MutationObserver для слежения за изменениями в app-sider
-    slejeniezaelkoy = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
+    slejeniezaelkoy = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
             if (mutation.attributeName === 'style') {
-                setTimeout(adjustImagePosition,500);
+                setTimeout(adjustImagePosition, 500);
             }
         });
     });

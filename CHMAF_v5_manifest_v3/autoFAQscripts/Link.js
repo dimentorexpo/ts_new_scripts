@@ -18,7 +18,7 @@ var win_Links =  // описание элементов окна ссылок
 					<button class="mainButton" title="Открывает Timetable" id="timetable" style="width:105px">📅TimeTable</button>
 					<button class="mainButton" title="Открывает админку Talks для поиска по ID П ID У, с которым идет урок" id="talksadm" style="width:105px">💋Talks</button>
 					<button class="mainButton" title="Открывает форму передачи запросов на компенсацию бонусных уроков/рублей, если нет честных оплат" id="compensNotFairPayments" style="width:105px; margin-top: 3px">🚫честн оплат</button>
-					<button class="mainButton" title="Открывает раздел для создания операции компенсации ученику" id="compens" style="width:105px">💸Бонус_комп</button>
+					<button class="mainButton" title="Открывает раздел для создания операции компенсации ученику" id="compens" style="width:105px">💸Компенсац</button>
 					<button class="mainButton" title="Открывает CMS хранилище материалов уроков" id="CMS" style="width:105px">🌀CMS</button>
 					<button class="mainButton" title="Открывает админку пользователей" id="useradm" style="width:105px; margin-top: 3px">🛠️Админка</button>
 					<button class="mainButton" title="Открывает поиск платежа по данным карте, сумме, дате платежа" id="transactions" style="width:105px; margin-top: 3px">💰Поиск $</button>
