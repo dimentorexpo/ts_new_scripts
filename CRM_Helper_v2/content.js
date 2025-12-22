@@ -311,10 +311,12 @@ function screenshotsCRM() { //просмотр и трансформация с�
 }
 let takeTaskBtn;
 function checkforsoundplay() {
-    takeTaskBtn = document.getElementsByClassName('mat-button-wrapper');
+    takeTaskBtn = document.getElementsByClassName('mdc-button');
     if (localStorage.getItem('audioCRM') == 1 && window.location.href.indexOf('https://crm2.skyeng.ru/customer-support/start') !== -1) {
         if (takeTaskBtn.length > 0) {
-            if (document.getElementsByClassName('mat-button-disabled').length == 0 && takeTaskBtn[13] && takeTaskBtn[13].innerText == 'Взять новую задачу') {
+			
+			const btn = Array.from(takeTaskBtn).find(b => b.innerText.trim() === 'Взять новую задачу');	
+            if (document.getElementsByClassName('mat-mdc-button-disabled').length == 0 && btn && !btn.classList.contains('mat-mdc-button-disabled')) {
                 if (localStorage.getItem('repeatsound') == 0) {
                     // soundintervalsetCRM = '';
                     if (!soundintervalsetCRM) {

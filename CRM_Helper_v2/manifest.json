@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CRMHelper",
-    "version": "2.0.11",
+    "version": "2.0.12",
     "description": "Твой мультитул в работе с обращениями",
     "background": {
         "service_worker": "bg.js"
