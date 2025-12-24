@@ -203,159 +203,127 @@ async function ResetStepProgress(apiName, userId, stepId, roomHash) {
 
 
 function getkidsroominfo(data, subjecttype) {
-    let temparr = [];
-    let hwarr = [];
-    let indexOfSlides = ''
+// ----------------------
+// Общие константы
+// ----------------------
+const nullCards = localStorage.getItem("Nullcards") === "1";
+const studentId = data.participants.find(p => p.role === "student")?.userId;
+const indexOfSlides = data.lessonCards.findIndex(c => c.userId === studentId);
 
-    let flagofuser = '';
+// ----------------------
+// Универсальные функции
+// ----------------------
 
-    for (let z = 0; z < data.participants.length; z++) {
-        if (data.participants[z].role == 'student')
-            flagofuser = data.participants[z].userId;
+// Нормализация карточки
+const normalizeCard = (card) => {
+    let completeness = card.completeness;
+    let score = card.score;
+
+    if (completeness === 100 && score == null) score = 100;
+    if (completeness == null) {
+        completeness = "——";
+        score = "—";
     }
 
-    for (let usId = 0; usId < data.lessonCards.length; usId++) {
-        if (flagofuser == data.lessonCards[usId].userId) {
-            indexOfSlides = usId
-        }
-    }
+    return { completeness, score };
+};
 
-    for (let i = 0; i < data.lessonCards[indexOfSlides].themes.length; i++) {
-        if (localStorage.getItem("Nullcards") == 1 && data.lessonCards[indexOfSlides].themes[i].cards.length > 0) {
-            temparr += '<div style="margin: 5px">' +
-                '<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого урока" ' +
-                'data-subtype="' + subjecttype + '" ' +
-                'data-lessonid="' + data.lessonCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' + '"> 💾 </span>' +
-                '<div class="roomtypekids" style="cursor:default;">' + data.lessonCards[indexOfSlides].themes[i].name + ' ' + '<br>' +
-                '</div></div>'
-        } else if (localStorage.getItem("Nullcards") == 0) {
-            temparr += '<div style="margin: 5px">' +
-                '<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого урока" ' +
-                'data-subtype="' + subjecttype + '" ' +
-                'data-lessonid="' + data.lessonCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' + '"> 💾 </span>' +
-                '<div class="roomtypekids" style="cursor:default;">' + data.lessonCards[indexOfSlides].themes[i].name + ' ' + '<br>' +
-                '</div></div>'
-        }
-        for (let j = 0; j < data.lessonCards[indexOfSlides].themes[i].cards.length; j++) {
-            (data.lessonCards[indexOfSlides].themes[i].cards[j].completeness == 100 && data.lessonCards[indexOfSlides].themes[i].cards[j].score == null) ? data.lessonCards[indexOfSlides].themes[i].cards[j].score = 100 : data.lessonCards[indexOfSlides].themes[i].cards[j].score;
-            if (data.lessonCards[indexOfSlides].themes[i].cards[j].completeness == null) {
-                data.lessonCards[indexOfSlides].themes[i].cards[j].completeness = '——'
-                data.lessonCards[indexOfSlides].themes[i].cards[j].score = '—'
-            }
-            temparr += '<div class="itemexerciseskids">' + [j + 1] + '.' +
-                data.lessonCards[indexOfSlides].themes[i].cards[j].name + ' ' +
-                '<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого слайда" ' +
-                'data-subtype="' + subjecttype + '" ' +
-                'data-lessonid="' + data.lessonCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' +
-                'data-stepid="' + data.lessonCards[indexOfSlides].themes[i].cards[j].id + '"> 💾 </span>' +
-                '<span style="float:right; margin-right: 80px;">' + data.lessonCards[indexOfSlides].themes[i].cards[j].completeness + '</span>' +
-                '<span style="float:right; margin-right: 60px;">' + data.lessonCards[indexOfSlides].themes[i].cards[j].score + '</span>' +
-                '</div>';
-        }
-    }
+// Заголовок темы
+const renderThemeHeader = (theme) => `
+    <div style="margin: 5px">
+        <span class="savelinktocms"
+            title="Копирует в буфер обмена ссылку на CMS для этого урока"
+            data-subtype="${subjecttype}"
+            data-lessonid="${theme.meta.contentLessonId}">
+            💾
+        </span>
+        <div class="roomtypekids" style="cursor:default;">
+            ${theme.name}<br>
+        </div>
+    </div>
+`;
 
-    document.getElementById('exercisebarskysmart').innerHTML += '<div class="roomtype">Lesson</div>' +
-        '<div class="boxwithslides" style="display:none">' +
-        '<div class="itemexerciseskids">' +
-        '<div style="text-align:center;">Информация по категории: Lesson</div>' +
-        'Количество завершенных карточек: ' + data.lessonCards[indexOfSlides].completedCardsCount + ' из ' + data.lessonCards[indexOfSlides].cardsCount +
-        '<br>Общий % завершения слайдов: ' + data.lessonCards[indexOfSlides].completeness + '%' +
-        '<br>Итоговый результат: ' + data.lessonCards[indexOfSlides].score + ' баллов из 100<br>' +
-        '<div class="headerexplain">' +
-        '<span style="margin-left: 60px;">Название слайда</span>' +
-        '<span style="margin-left: 155px;">Балл</span>' +
-        '<span style="margin-left: 70px;">%</span>' +
-        '<span style="margin-left: 50px;">Ссылка</span>' +
-        '</div>' +
-        '</div>' +
-        temparr +
-        '</div>';
+// Карточка
+const renderCard = (theme, card, index, isHomework = false) => {
+    const { completeness, score } = normalizeCard(card);
 
-const themes = data.homeworkCards[indexOfSlides].themes;
-const showNullCards = localStorage.getItem("Nullcards") === "1";
+    const emphasisIcons = {
+        writing: "✏",
+        pronunciation: "🎧",
+        speaking: "🎙"
+    };
 
-for (const theme of themes) {
+    const icon = isHomework ? (emphasisIcons[card.emphasis] || "") : "";
+    const cardName = card.name + icon;
 
-    // Блок темы (один раз, без дублирования)
-    if (showNullCards && theme.cards.length > 0 || !showNullCards) {
-        hwarr += `
-            <div style="margin: 5px">
-                <span class="savelinktocms"
-                    title="Копирует в буфер обмена ссылку на CMS для этого урока"
-                    data-subtype="${subjecttype}"
-                    data-lessonid="${theme.meta.contentLessonId}">
-                    💾
-                </span>
-                <div class="roomtypekids" style="cursor:default;">
-                    ${theme.name}<br>
-                </div>
-            </div>
-        `;
-    }
+    return `
+        <div class="itemexerciseskids">
+            ${index + 1}. ${cardName}
+            <span class="savelinktocms"
+                title="Копирует в буфер обмена ссылку на CMS для этого слайда"
+                data-subtype="${subjecttype}"
+                data-lessonid="${theme.meta.contentLessonId}"
+                data-stepid="${card.id}">
+                💾
+            </span>
 
-    // Карточки
-    theme.cards.forEach((card, index) => {
-
-        // Нормализация данных
-        let completeness = card.completeness;
-        let score = card.score;
-
-        if (completeness === 100 && score == null) score = 100;
-        if (completeness == null) {
-            completeness = "——";
-            score = "—";
-        }
-
-        // Эмодзи по типу
-        const emphasisIcons = {
-            writing: "✏",
-            pronunciation: "🎧",
-            speaking: "🎙"
-        };
-
-        const icon = emphasisIcons[card.emphasis] || "";
-        const cardName = card.name + icon;
-
-        // HTML карточки
-        hwarr += `
-            <div class="itemexerciseskids">
-                ${index + 1}. ${cardName}
-                <span class="savelinktocms"
-                    title="Копирует в буфер обмена ссылку на CMS для этого слайда"
-                    data-subtype="${subjecttype}"
-                    data-lessonid="${theme.meta.contentLessonId}"
-                    data-stepid="${card.id}">
-                    💾
-                </span>
+            ${isHomework ? `
                 <span class="resetprogress" style="cursor:pointer"
                     data-stepUUID="${card.stepUuid}">
                     🔄️
                 </span>
                 <span class="resetStatus"></span>
-                <span style="float:right; margin-right: 80px;">${completeness}</span>
-                <span style="float:right; margin-right: 60px;">${score}</span>
-            </div>
-        `;
+            ` : ""}
+
+            <span style="float:right; margin-right: 80px;">${completeness}</span>
+            <span style="float:right; margin-right: 60px;">${score}</span>
+        </div>
+    `;
+};
+
+// Универсальный рендер категории (Lesson / Homework)
+const renderCategory = (title, cardBlock, isHomework = false) => {
+    const themes = cardBlock[indexOfSlides].themes;
+
+    let html = "";
+
+    themes.forEach(theme => {
+        if (!nullCards || theme.cards.length > 0) {
+            html += renderThemeHeader(theme);
+        }
+
+        theme.cards.forEach((card, idx) => {
+            html += renderCard(theme, card, idx, isHomework);
+        });
     });
-}
 
+    return `
+        <div class="roomtype">${title}</div>
+        <div class="boxwithslides" style="display:none">
+            <div class="itemexerciseskids">
+                <div style="text-align:center;">Информация по категории: ${title}</div>
+                Количество завершенных карточек: ${cardBlock[indexOfSlides].completedCardsCount} из ${cardBlock[indexOfSlides].cardsCount}
+                <br>Общий % завершения слайдов: ${cardBlock[indexOfSlides].completeness}%
+                <br>Итоговый результат: ${cardBlock[indexOfSlides].score} баллов из 100<br>
+                <div class="headerexplain">
+                    <span style="margin-left: 60px;">Название слайда</span>
+                    <span style="margin-left: 140px;">Балл</span>
+                    <span style="margin-left: 60px;">%</span>
+                    <span style="margin-left: 50px;">Ссылка</span>
+                </div>
+            </div>
+            ${html}
+        </div>
+    `;
+};
 
-    document.getElementById('exercisebarskysmart').innerHTML += '<div class="roomtype">Homework</div>' +
-        '<div class="boxwithslides" style="display:none">' +
-        '<div class="itemexerciseskids">' +
-        '<div style="text-align:center;">Информация по категории: Homework</div>' +
-        'Количество завершенных карточек: ' + data.homeworkCards[indexOfSlides].completedCardsCount + ' из ' + data.homeworkCards[indexOfSlides].cardsCount +
-        '<br>Общий % завершения слайдов: ' + data.homeworkCards[indexOfSlides].completeness + '%' +
-        '<br>Итоговый результат: ' + data.homeworkCards[indexOfSlides].score + ' баллов из 100<br>' +
-        '<div class="headerexplain">' +
-        '<span style="margin-left: 60px;">Название слайда</span>' +
-        '<span style="margin-left: 140px;">Балл</span>' +
-        '<span style="margin-left: 60px;">%</span>' +
-        '<span style="margin-left: 50px;">Ссылка</span>' +
-        '</div>' +
-        '</div>' +
-        hwarr +
-        '</div>';
+// ----------------------
+// Финальный вывод
+// ----------------------
+document.getElementById("exercisebarskysmart").innerHTML +=
+    renderCategory("Lesson", data.lessonCards) +
+    renderCategory("Homework", data.homeworkCards, true);
+
 
     let subjbtnsarr = document.getElementsByClassName('roomtype')
     let slidesbar = document.getElementsByClassName('boxwithslides')
