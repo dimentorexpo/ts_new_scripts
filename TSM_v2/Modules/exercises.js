@@ -271,51 +271,74 @@ function getkidsroominfo(data, subjecttype) {
         temparr +
         '</div>';
 
-    for (let i = 0; i < data.homeworkCards[indexOfSlides].themes.length; i++) {
-        if (localStorage.getItem("Nullcards") == 1 && data.homeworkCards[indexOfSlides].themes[i].cards.length > 0) {
-            hwarr += '<div style="margin: 5px">' +
-                '<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого урока" ' +
-                'data-subtype="' + subjecttype + '" ' +
-                'data-lessonid="' + data.homeworkCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' + '"> 💾 </span>' +
-                '<div class="roomtypekids" style="cursor:default;">' + data.homeworkCards[indexOfSlides].themes[i].name + '<br>' +
-                '</div></div>'
-        } else if (localStorage.getItem("Nullcards") == 0) {
-            hwarr += '<div style="margin: 5px">' +
-                '<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого урока" ' +
-                'data-subtype="' + subjecttype + '" ' +
-                'data-lessonid="' + data.homeworkCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' + '"> 💾 </span>' +
-                '<div class="roomtypekids" style="cursor:default;">' + data.homeworkCards[indexOfSlides].themes[i].name + '<br>' +
-                '</div></div>'
-        }
-        for (let j = 0; j < data.homeworkCards[indexOfSlides].themes[i].cards.length; j++) {
-            (data.homeworkCards[indexOfSlides].themes[i].cards[j].completeness == 100 && data.homeworkCards[indexOfSlides].themes[i].cards[j].score == null) ? data.homeworkCards[indexOfSlides].themes[i].cards[j].score = 100 : data.homeworkCards[indexOfSlides].themes[i].cards[j].score;
-            if (data.homeworkCards[indexOfSlides].themes[i].cards[j].completeness == null) {
-                data.homeworkCards[indexOfSlides].themes[i].cards[j].completeness = '——'
-                data.homeworkCards[indexOfSlides].themes[i].cards[j].score = '—'
-            }
+const themes = data.homeworkCards[indexOfSlides].themes;
+const showNullCards = localStorage.getItem("Nullcards") === "1";
 
-            if (data.homeworkCards[indexOfSlides].themes[i].cards[j].emphasis == 'writing') {
-                data.homeworkCards[indexOfSlides].themes[i].cards[j].name = data.homeworkCards[indexOfSlides].themes[i].cards[j].name + '✏'
-            } else if (data.homeworkCards[indexOfSlides].themes[i].cards[j].emphasis == 'pronunciation') {
-                data.homeworkCards[indexOfSlides].themes[i].cards[j].name = data.homeworkCards[indexOfSlides].themes[i].cards[j].name + '🎧'
-            } else if (data.homeworkCards[indexOfSlides].themes[i].cards[j].emphasis == 'speaking') {
-                data.homeworkCards[indexOfSlides].themes[i].cards[j].name = data.homeworkCards[indexOfSlides].themes[i].cards[j].name + '🎙'
-            }
+for (const theme of themes) {
 
-            hwarr += '<div class="itemexerciseskids">' + [j + 1] + '.' +
-                data.homeworkCards[indexOfSlides].themes[i].cards[j].name + ' ' +
-                '<span class="savelinktocms" title="Копирует в буфер обмена ссылку на CMS для этого слайда" ' +
-                'data-subtype="' + subjecttype + '" ' +
-                'data-lessonid="' + data.homeworkCards[indexOfSlides].themes[i].meta.contentLessonId + '" ' +
-                'data-stepid="' + data.homeworkCards[indexOfSlides].themes[i].cards[j].id + '"> 💾 </span>' +
-				'<span class="resetprogress" style="cursor:pointer" ' + 
-				'data-stepUUID="' + data.homeworkCards[indexOfSlides].themes[i].cards[j].stepUuid + '"> 🔄️ </span>' +
-				'<span class="resetStatus"></span>'+
-                '<span style="float:right; margin-right: 80px;">' + data.homeworkCards[indexOfSlides].themes[i].cards[j].completeness + '</span>' +
-                '<span style="float:right; margin-right: 60px;">' + data.homeworkCards[indexOfSlides].themes[i].cards[j].score + '</span>' +
-                '</div>';
-        }
+    // Блок темы (один раз, без дублирования)
+    if (showNullCards && theme.cards.length > 0 || !showNullCards) {
+        hwarr += `
+            <div style="margin: 5px">
+                <span class="savelinktocms"
+                    title="Копирует в буфер обмена ссылку на CMS для этого урока"
+                    data-subtype="${subjecttype}"
+                    data-lessonid="${theme.meta.contentLessonId}">
+                    💾
+                </span>
+                <div class="roomtypekids" style="cursor:default;">
+                    ${theme.name}<br>
+                </div>
+            </div>
+        `;
     }
+
+    // Карточки
+    theme.cards.forEach((card, index) => {
+
+        // Нормализация данных
+        let completeness = card.completeness;
+        let score = card.score;
+
+        if (completeness === 100 && score == null) score = 100;
+        if (completeness == null) {
+            completeness = "——";
+            score = "—";
+        }
+
+        // Эмодзи по типу
+        const emphasisIcons = {
+            writing: "✏",
+            pronunciation: "🎧",
+            speaking: "🎙"
+        };
+
+        const icon = emphasisIcons[card.emphasis] || "";
+        const cardName = card.name + icon;
+
+        // HTML карточки
+        hwarr += `
+            <div class="itemexerciseskids">
+                ${index + 1}. ${cardName}
+                <span class="savelinktocms"
+                    title="Копирует в буфер обмена ссылку на CMS для этого слайда"
+                    data-subtype="${subjecttype}"
+                    data-lessonid="${theme.meta.contentLessonId}"
+                    data-stepid="${card.id}">
+                    💾
+                </span>
+                <span class="resetprogress" style="cursor:pointer"
+                    data-stepUUID="${card.stepUuid}">
+                    🔄️
+                </span>
+                <span class="resetStatus"></span>
+                <span style="float:right; margin-right: 80px;">${completeness}</span>
+                <span style="float:right; margin-right: 60px;">${score}</span>
+            </div>
+        `;
+    });
+}
+
 
     document.getElementById('exercisebarskysmart').innerHTML += '<div class="roomtype">Homework</div>' +
         '<div class="boxwithslides" style="display:none">' +
