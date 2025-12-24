@@ -710,3 +710,29 @@ button.dobig:active {
 .resetprogress:hover {
 	background:  #27B06C;
 }
+
+	.sucsbtnAF {
+		z-index: 999999;
+		position: fixed;
+		bottom: 15px;
+		font-size: 18px;
+		left: 50%;
+		transform: translateX(-50%);
+		background-color: green;
+		color: white;
+		padding: 10px 20px;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		display: none;
+		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+		text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+	}
+
+	.sucsbtnok {
+		background-color: green;
+	}
+
+	.sucsbtnnotok {
+		background-color: darkred;
+	}

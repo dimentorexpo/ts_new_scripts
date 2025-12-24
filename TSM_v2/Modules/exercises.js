@@ -398,8 +398,12 @@ document.getElementById("exercisebarskysmart").innerHTML +=
             } else {
                 link = `https://cms.skyeng.ru/${subtype}/cms/lesson/${lessonid}/cards/${stepid}/edit`;
             }
-
+			savelinkarr[z].textContent = "✅"
             copyToClipboardTSM(link);
+			createNotify('💾 Ссылка на слайд в CMS cкопирована в буфер обмена', 'message');
+					setTimeout(function(){
+					  savelinkarr[z].textContent = "💾"
+				  }, 4000)
         }
     }
 	

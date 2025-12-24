@@ -91,6 +91,27 @@ function getChatIdTSM() {
     return chatId;
 }
 
+function createNotify(text, result = 'message') { //функция создания кнопки с текстовым с ообщением и прогресс баром до исчезновения
+    let type = result == 'message' ? 'sucsbtnok' : 'sucsbtnnotok';
+    let btnSuccess = document.createElement("button");
+    btnSuccess.className = `sucsbtnAF ${type}`;
+    btnSuccess.innerHTML = text;
+
+    let countdownBar = document.createElement("div");
+    countdownBar.className = "countdown-bar";
+    btnSuccess.appendChild(countdownBar);
+
+    document.body.appendChild(btnSuccess);
+
+    // Установка display в block для отображения кнопки
+    btnSuccess.style.display = 'block';
+
+    // Добавляем логику для скрытия кнопки после некоторого времени, если это необходимо
+    setTimeout(() => {
+        btnSuccess.remove(); // или btnSuccess.style.display = 'none'; если вы хотите скрыть, а не удалять
+    }, 3500); // Время до скрытия/удаления кнопки в миллисекундах
+}
+
 const copyToClipboardBack = str => { // функция копирования в буфер обмена
     const el = document.createElement('textarea');
     el.value = str;
