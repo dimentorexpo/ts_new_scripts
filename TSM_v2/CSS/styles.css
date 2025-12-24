@@ -608,7 +608,6 @@ button.dobig:active {
 	background: cornflowerblue;
 }
 
-.savelinktocms,
 .savelinktocmsttc {
     cursor: pointer;
     font-size: 14px;
@@ -707,6 +706,7 @@ button.dobig:active {
 	border:1px solid black;
 }
 
+.savelinktocms:hover,
 .resetprogress:hover {
 	background:  #27B06C;
 }

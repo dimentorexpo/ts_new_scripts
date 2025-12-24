@@ -324,22 +324,9 @@ const renderCategory = (title, cardBlock, isHomework = false) => {
                     <td style="border: 1px solid black;">${cardName}</td>
                     <td style="width:80px; text-align:center; border: 1px solid black;">${score}</td>
                     <td style="width:80px; text-align:center; border: 1px solid black;">${completeness}</td>
-                    <td style="width:80px; text-align:center; border: 1px solid black; cursor:pointer">
-                        <span
-                            title="Копирует в буфер обмена ссылку на CMS для этого слайда"
-                            data-subtype="${subjecttype}"
-                            data-lessonid="${theme.meta.contentLessonId}"
-                            data-stepid="${card.id}">
-                            💾
-                        </span>
+                    <td class="savelinktocms" style="width:80px; text-align:center; border: 1px solid black; cursor:pointer" title="Копирует в буфер обмена ссылку на CMS для этого слайда" data-subtype="${subjecttype}" data-lessonid="${theme.meta.contentLessonId}" data-stepid="${card.id}"> 💾
 
-                        ${isHomework ? `
-                            <td class="resetprogress" style="cursor:pointer"
-                                data-stepUUID="${card.stepUuid}">
-                                🔄️
-                            </td>
-                            <span class="resetStatus"></span>
-                        ` : ""}
+						${isHomework ? ` <td class="resetprogress" style="cursor:pointer; border:1px solid black;" data-stepUUID="${card.stepUuid}"> 🔄️ </td> ` : ""}
                     </td>
                 </tr>
             `;
@@ -365,7 +352,7 @@ const renderCategory = (title, cardBlock, isHomework = false) => {
                         <th style="padding:6px; border: 1px solid black;">Балл</th>
                         <th style="padding:6px; border: 1px solid black;">%</</th>
                         <th style="padding:6px; border: 1px solid black;">Ссылка</th>
-						<th style="padding:6px; border: 1px solid black;">Сброс</th>
+						${isHomework ? ` <th style="padding:6px; border: 1px solid black;">Сброс</th> ` : ""}
                     </tr>
                 </thead>
                 <tbody>
@@ -428,16 +415,14 @@ document.getElementById("exercisebarskysmart").innerHTML +=
 			
 			const success = await ResetStepProgress(apiToDoName, studentID, getNumberToDelete, roomhashtoinsert)
 				if (success) {
-				  statusBtns[k].style = "color: lawngreen;    font-weight: 600;" 
-				  statusBtns[k].textContent = "Успешно"
+				  rstProgArray[k].textContent = "✅"
 				  setTimeout(function(){
-					  statusBtns[k].textContent = ""
+					  rstProgArray[k].textContent = "🔄️"
 				  }, 4000)
 				} else {
-					statusBtns[k].style = "color: red;    font-weight: 600;" 
-				  statusBtns[k].textContent = "Ошибка"
+				  rstProgArray[k].textContent = "❌"
 				  setTimeout(function(){
-					  statusBtns[k].textContent = ""
+					  rstProgArray[k].textContent = "🔄️"
 				  }, 4000)
 				}
 		}
