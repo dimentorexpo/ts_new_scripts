@@ -611,7 +611,6 @@ button.dobig:active {
 .savelinktocms,
 .savelinktocmsttc {
     cursor: pointer;
-    float: right;
     font-size: 14px;
     transition: all 0.5s ease;
 }
@@ -679,4 +678,35 @@ button.dobig:active {
 	to {
 		width: 0;
 	}
+}
+
+.theme-row {
+	color: #c2f4c0;
+    width: 550px;
+    margin: 5px;
+    border: 1px solid #516051;
+    text-align: center;
+    background: #ac7b30;
+    font-weight: 700;
+    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+    border-radius: 20px;
+    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
+    cursor: pointer;
+}
+
+.card-row {
+	color:bisque;
+}
+
+.card-row:hover {
+	background: cornflowerblue;
+}
+
+.resetprogress {
+	text-align:center;
+	border:1px solid black;
+}
+
+.resetprogress:hover {
+	background:  #27B06C;
 }

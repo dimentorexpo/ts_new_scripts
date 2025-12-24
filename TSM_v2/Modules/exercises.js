@@ -275,8 +275,8 @@ const renderCard = (theme, card, index, isHomework = false) => {
                 <span class="resetStatus"></span>
             ` : ""}
 
-            <span style="float:right; margin-right: 80px;">${completeness}</span>
-            <span style="float:right; margin-right: 60px;">${score}</span>
+            <span style="float:right; margin-right: 80px; border: 1px solid black;">${completeness}</span>
+            <span style="float:right; margin-right: 60px; border: 1px solid black;">${score}</span>
         </div>
     `;
 };
@@ -285,37 +285,98 @@ const renderCard = (theme, card, index, isHomework = false) => {
 const renderCategory = (title, cardBlock, isHomework = false) => {
     const themes = cardBlock[indexOfSlides].themes;
 
-    let html = "";
+    let rows = "";
 
     themes.forEach(theme => {
+        // Заголовок темы
         if (!nullCards || theme.cards.length > 0) {
-            html += renderThemeHeader(theme);
+            rows += `
+                <tr class="theme-row">
+                    <td colspan="6">
+                        <span class="savelinktocms"
+                            title="Копирует в буфер обмена ссылку на CMS для этого урока"
+                            data-subtype="${subjecttype}"
+                            data-lessonid="${theme.meta.contentLessonId}">
+                            💾
+                        </span>
+                        ${theme.name}
+                    </td>
+                </tr>
+            `;
         }
 
+        // Карточки темы
         theme.cards.forEach((card, idx) => {
-            html += renderCard(theme, card, idx, isHomework);
+            const { completeness, score } = normalizeCard(card);
+
+            const emphasisIcons = {
+                writing: "✏",
+                pronunciation: "🎧",
+                speaking: "🎙"
+            };
+
+            const icon = isHomework ? (emphasisIcons[card.emphasis] || "") : "";
+            const cardName = card.name + icon;
+
+            rows += `
+                <tr class="card-row">
+                    <td style="width:40px; border: 1px solid black;">${idx + 1}</td>
+                    <td style="border: 1px solid black;">${cardName}</td>
+                    <td style="width:80px; text-align:center; border: 1px solid black;">${score}</td>
+                    <td style="width:80px; text-align:center; border: 1px solid black;">${completeness}</td>
+                    <td style="width:80px; text-align:center; border: 1px solid black; cursor:pointer">
+                        <span
+                            title="Копирует в буфер обмена ссылку на CMS для этого слайда"
+                            data-subtype="${subjecttype}"
+                            data-lessonid="${theme.meta.contentLessonId}"
+                            data-stepid="${card.id}">
+                            💾
+                        </span>
+
+                        ${isHomework ? `
+                            <td class="resetprogress" style="cursor:pointer"
+                                data-stepUUID="${card.stepUuid}">
+                                🔄️
+                            </td>
+                            <span class="resetStatus"></span>
+                        ` : ""}
+                    </td>
+                </tr>
+            `;
         });
     });
 
     return `
         <div class="roomtype">${title}</div>
         <div class="boxwithslides" style="display:none">
+
             <div class="itemexerciseskids">
                 <div style="text-align:center;">Информация по категории: ${title}</div>
                 Количество завершенных карточек: ${cardBlock[indexOfSlides].completedCardsCount} из ${cardBlock[indexOfSlides].cardsCount}
                 <br>Общий % завершения слайдов: ${cardBlock[indexOfSlides].completeness}%
                 <br>Итоговый результат: ${cardBlock[indexOfSlides].score} баллов из 100<br>
-                <div class="headerexplain">
-                    <span style="margin-left: 60px;">Название слайда</span>
-                    <span style="margin-left: 140px;">Балл</span>
-                    <span style="margin-left: 60px;">%</span>
-                    <span style="margin-left: 50px;">Ссылка</span>
-                </div>
             </div>
-            ${html}
+
+            <table class="slides-table" style="width:100%; border-collapse:collapse; margin-top:10px;">
+                <thead>
+                    <tr class="headerexplain">
+                        <th style="padding:6px; border: 1px solid black;">#</th>
+                        <th style="padding:6px; border: 1px solid black;">Название слайда</th>
+                        <th style="padding:6px; border: 1px solid black;">Балл</th>
+                        <th style="padding:6px; border: 1px solid black;">%</</th>
+                        <th style="padding:6px; border: 1px solid black;">Ссылка</th>
+						<th style="padding:6px; border: 1px solid black;">Сброс</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+
         </div>
     `;
 };
+
 
 // ----------------------
 // Финальный вывод
