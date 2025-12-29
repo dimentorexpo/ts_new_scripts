@@ -53,6 +53,7 @@ button.dobig:active {
     background: rgb(70, 68, 81);
     color: white;
     font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
+	border-radius:20px;
 }
 
 .wintInitializeChat {
@@ -169,7 +170,7 @@ button.dobig:active {
 
 #hidemainmenu {
     cursor: pointer;
-    width: 110px;
+    width: 272px;
     background: #8bacb9d1;
     color: #8bacb9d1;
     font-size: 3px;
@@ -182,10 +183,11 @@ button.dobig:active {
 
 #hidemainmenu:hover {
     opacity: 1;
-    font-size: 11px;
+    font-size: 12px;
     background: #16fe55bf;
     color: rgb(69 57 192 / 80%);
     font-weight: 700;
+	border-radius:20px;
 }
 
 .rowadultdata {
@@ -736,3 +738,116 @@ button.dobig:active {
 	.sucsbtnnotok {
 		background-color: darkred;
 	}
+	
+/* Контейнер */
+.menu-ext {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 240px;
+  padding: 18px;
+
+  background: linear-gradient(135deg, rgba(20, 30, 50, 0.6), rgba(5, 10, 20, 0.9));
+  border-radius: 22px;
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 0 30px rgba(74,243,255,0.08),
+    inset 0 0 20px rgba(255, 255, 255, 0.02),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+}
+
+.menu-ext::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  background: radial-gradient(circle at top left, rgba(74,243,255,0.05), transparent 70%);
+  pointer-events: none;
+}
+
+/* Капсула */
+.menu-item {
+  width: 100%; /* 👈 растягиваем */
+  box-sizing: border-box; /* 👈 учитываем padding и border */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  margin-bottom: 2px;
+  border-radius: 999px;
+
+  background: linear-gradient(120deg, rgba(255,255,255,0.05), rgba(0,0,0,0.45));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  color:bisque;
+
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+/* Неоновая полоса слева */
+.menu-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 7px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #4af3ff, #1864ff);
+  opacity: 0;
+  transform: scaleY(0.6);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* Иконка */
+.icon {
+  font-size: 18px;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.25));
+}
+
+/* Текст */
+.text {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.95;
+}
+
+/* Hover */
+.menu-item:hover {
+  background: linear-gradient(120deg, rgba(74,243,255,0.15), rgba(0,0,0,0.65));
+  transform: translateX(4px);
+  border-color: rgba(74,243,255,0.6);
+  box-shadow:
+    0 0 18px rgba(74,243,255,0.25),
+    inset 0 0 12px rgba(74,243,255,0.15);
+}
+
+.menu-item:hover::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+/* Активный пункт */
+.menu-item.active {
+  background: linear-gradient(120deg, rgba(74,243,255,0.25), rgba(0,0,0,0.7));
+  border-color: rgba(74,243,255,0.6);
+  box-shadow:
+    0 0 22px rgba(74,243,255,0.35),
+    inset 0 0 14px rgba(74,243,255,0.25);
+}
+
+.menu-item.active::before {
+  opacity: 1;
+  transform: scaleY(1);
+}

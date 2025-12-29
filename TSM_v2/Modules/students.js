@@ -20,7 +20,6 @@ var win_studentsSkysmart = `<div style="display: flex;">
 
 					     <div style="margin: 5px;" id="studentsSkysmartHeader">
                             <button class="commonbtn hidebtns" title="скрывает меню" id="hidestudentsSkysmartMenu">hide</button>
-							<button class="commonbtn" id="addallchatsmulticlassrom" style="margin:5px" title="Добавляет чаты со всеми учениками из раздела Multiclassroom">➕💬</button>
 							<select id="listofsubjects">
 								<option value="all">Все</option>
 							</select>
@@ -48,7 +47,7 @@ document.getElementById('hidestudentsAdultstMenu').onclick = function () {
     wintStudAdults.style.display = 'none'
 }
 
-document.getElementById('lkpskysmart').onclick = async function () { //обработчик открытия окна для ЛКП - Skysmart
+document.getElementById('openstudentsmenu').onclick = async function () { //обработчик открытия окна для ЛКП - Skysmart
     if (wintStudSkysmart.style.display == 'none') {
         wintStudSkysmart.style.display = ''
         wintStudAdults.style.display = 'none'
@@ -221,7 +220,6 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
 									<div class="languageobsl">Яз.обслуж: ${serviceLocale}</div>
 									<div style="text-align:center;">
 										<span name="mvurkidseport" class="mvushka" title="По клику открывает отчет МВУ с новой ссылкой">📋</span>
-										<span name="delkidschat" class="deletechat" title="По клику удаляет чат с учеником">❌</span>
 										<span name="openkidsprofile" class="adultprofile" title="Открывает полный профиль ученика">🕵️‍♂️</span>
 										<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>
 									</div>
@@ -236,28 +234,6 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
             for (let j = 0; j < arrmvurepkid.length; j++) {
                 arrmvurepkid[j].onclick = function () {
                     window.open("https://overbooking.skyeng.ru/html/report?student_id=" + document.getElementsByClassName('idkidsstyle')[j].textContent.match(/\d+/)[0])
-                }
-            }
-
-            let deleteonechatkid = document.getElementsByName('delkidschat') // функция удаления чатов с учеником при работе с исходным списком после получения инфы об учениках
-            for (let l = 0; l < deleteonechatkid.length; l++) {
-                deleteonechatkid[l].onclick = function () {
-                    let answ = confirm("Вы действительно желаете удалить чат с учеником? " + document.getElementsByClassName('idkidsstyle')[l].textContent.match(/\d+/)[0]);
-                    if (answ) {
-                        fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
-                            "headers": {
-                                "content-type": "application/json",
-                                "sec-fetch-mode": "cors",
-                                "sec-fetch-site": "same-site"
-                            },
-                            "referrer": "https://new-teachers.skyeng.ru/",
-                            "referrerPolicy": "strict-origin-when-cross-origin",
-                            "body": `{\"userId1\": ${artId.user.id},\"userId2\":${document.getElementsByClassName('idkidsstyle')[l].textContent.match(/\d+/)[0]}}`,
-                            "method": "DELETE",
-                            "mode": "cors",
-                            "credentials": "include"
-                        });
-                    }
                 }
             }
 
@@ -280,11 +256,11 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
             for (let j = 0; j < Object.values(kidsdata)[item].length; j++) {
                 Object.values(kidsdata)[item][j].segmentBadge != null ? Object.values(kidsdata)[item][j].segmentBadge : '';
                 if (Object.values(kidsdata)[item][j].status == 'sleep') {
-                    arraytoshow += '<div class="kidsoutdata sleep">' + '<div class="studkidstname">' + '<span title="💤 - ученик уснул">💤</span>' + Object.values(kidsdata)[item][j].name + '</div>' + '<div class="idkidsstyle">' + '🆔: ' + Object.values(kidsdata)[item][j].id + '</div>' + (Object.values(kidsdata)[item][j].segmentBadge != null ? '<div class="badgename">' + Object.values(kidsdata)[item][j].segmentBadge + '</div>' : '') + '<div class="languageobsl">' + 'Яз.обслуж: ' + (Object.values(kidsdata)[item][j].serviceLocale != null ? Object.values(kidsdata)[item][j].serviceLocale : 'Пусто') + '</div>' + '<div style="text-align:center;">' + '<span name="mvurkidseport" class="mvushka" title="По клику открывает отчет МВУ с новой ссылкой">📋</span>' + ' ' + '<span name="delkidschat" class="deletechat" title="По клику удаляет чат с учеником">❌</span>' + ' ' + '<span name="openkidsprofile" class="adultprofile" title="Открывает полный профиль ученика">🕵️‍♂️</span>' + ' ' + '<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>' + '</div>' + '</div>';
+                    arraytoshow += '<div class="kidsoutdata sleep">' + '<div class="studkidstname">' + '<span title="💤 - ученик уснул">💤</span>' + Object.values(kidsdata)[item][j].name + '</div>' + '<div class="idkidsstyle">' + '🆔: ' + Object.values(kidsdata)[item][j].id + '</div>' + (Object.values(kidsdata)[item][j].segmentBadge != null ? '<div class="badgename">' + Object.values(kidsdata)[item][j].segmentBadge + '</div>' : '') + '<div class="languageobsl">' + 'Яз.обслуж: ' + (Object.values(kidsdata)[item][j].serviceLocale != null ? Object.values(kidsdata)[item][j].serviceLocale : 'Пусто') + '</div>' + '<div style="text-align:center;">' + '<span name="mvurkidseport" class="mvushka" title="По клику открывает отчет МВУ с новой ссылкой">📋</span>' + ' ' + '<span name="openkidsprofile" class="adultprofile" title="Открывает полный профиль ученика">🕵️‍♂️</span>' + ' ' + '<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>' + '</div>' + '</div>';
                 } else if (Object.values(kidsdata)[item][j].status == 'vacation') {
-                    arraytoshow += '<div class="kidsoutdata vacation">' + '<div class="studkidstname">' + '<span title="⛱ - ученик в отпуске">⛱</span>' + Object.values(kidsdata)[item][j].name + '</div>' + '<div class="idkidsstyle">' + '🆔: ' + Object.values(kidsdata)[item][j].id + '</div>' + (Object.values(kidsdata)[item][j].segmentBadge != null ? '<div class="badgename">' + Object.values(kidsdata)[item][j].segmentBadge + '</div>' : '') + '<div class="languageobsl">' + 'Яз.обслуж: ' + (Object.values(kidsdata)[item][j].serviceLocale != null ? Object.values(kidsdata)[item][j].serviceLocale : 'Пусто') + '</div>' + '<div style="text-align:center;">' + '<span name="mvurkidseport" class="mvushka" title="По клику открывает отчет МВУ с новой ссылкой">📋</span>' + ' ' + '<span name="delkidschat" class="deletechat" title="По клику удаляет чат с учеником">❌</span>' + ' ' + '<span name="openkidsprofile" class="adultprofile" title="Открывает полный профиль ученика">🕵️‍♂️</span>' + ' ' + '<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>' + '</div>' + '</div>';
+                    arraytoshow += '<div class="kidsoutdata vacation">' + '<div class="studkidstname">' + '<span title="⛱ - ученик в отпуске">⛱</span>' + Object.values(kidsdata)[item][j].name + '</div>' + '<div class="idkidsstyle">' + '🆔: ' + Object.values(kidsdata)[item][j].id + '</div>' + (Object.values(kidsdata)[item][j].segmentBadge != null ? '<div class="badgename">' + Object.values(kidsdata)[item][j].segmentBadge + '</div>' : '') + '<div class="languageobsl">' + 'Яз.обслуж: ' + (Object.values(kidsdata)[item][j].serviceLocale != null ? Object.values(kidsdata)[item][j].serviceLocale : 'Пусто') + '</div>' + '<div style="text-align:center;">' + '<span name="mvurkidseport" class="mvushka" title="По клику открывает отчет МВУ с новой ссылкой">📋</span>' + ' ' + '<span name="openkidsprofile" class="adultprofile" title="Открывает полный профиль ученика">🕵️‍♂️</span>' + ' ' + '<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>' + '</div>' + '</div>';
                 } else {
-                    arraytoshow += '<div class="kidsoutdata">' + '<div class="studkidstname">' + Object.values(kidsdata)[item][j].name + '</div>' + '<div class="idkidsstyle">' + '🆔: ' + Object.values(kidsdata)[item][j].id + '</div>' + (Object.values(kidsdata)[item][j].segmentBadge != null ? '<div class="badgename">' + Object.values(kidsdata)[item][j].segmentBadge + '</div>' : '') + '<div class="languageobsl">' + 'Яз.обслуж: ' + (Object.values(kidsdata)[item][j].serviceLocale != null ? Object.values(kidsdata)[item][j].serviceLocale : 'Пусто') + '</div>' + '<div style="text-align:center;">' + '<span name="mvurkidseport" class="mvushka" title="По клику открывает отчет МВУ с новой ссылкой">📋</span>' + ' ' + '<span name="delkidschat" class="deletechat" title="По клику удаляет чат с учеником">❌</span>' + ' ' + '<span name="openkidsprofile" class="adultprofile" title="Открывает полный профиль ученика">🕵️‍♂️</span>' + ' ' + '<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>' + '</div>' + '</div>';
+                    arraytoshow += '<div class="kidsoutdata">' + '<div class="studkidstname">' + Object.values(kidsdata)[item][j].name + '</div>' + '<div class="idkidsstyle">' + '🆔: ' + Object.values(kidsdata)[item][j].id + '</div>' + (Object.values(kidsdata)[item][j].segmentBadge != null ? '<div class="badgename">' + Object.values(kidsdata)[item][j].segmentBadge + '</div>' : '') + '<div class="languageobsl">' + 'Яз.обслуж: ' + (Object.values(kidsdata)[item][j].serviceLocale != null ? Object.values(kidsdata)[item][j].serviceLocale : 'Пусто') + '</div>' + '<div style="text-align:center;">' + '<span name="mvurkidseport" class="mvushka" title="По клику открывает отчет МВУ с новой ссылкой">📋</span>' + ' ' + '<span name="openkidsprofile" class="adultprofile" title="Открывает полный профиль ученика">🕵️‍♂️</span>' + ' ' + '<span name="openpaymentkidsshistory" class="paymenthistory" title="Открывает Историю оплат ученика">💰</span>' + '</div>' + '</div>';
                 }
             }
         }
@@ -425,28 +401,6 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
                 }
             }
 
-            let deleteonechatkid = document.getElementsByName('delkidschat') // функция удаления чатов с учеником при работе со списком фильтрации предметов
-            for (let l = 0; l < deleteonechatkid.length; l++) {
-                deleteonechatkid[l].onclick = function () {
-                    let answ = confirm("Вы действительно желаете удалить чат с учеником? " + document.getElementsByClassName('idkidsstyle')[l].textContent.match(/\d+/)[0]);
-                    if (answ) {
-                        fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
-                            "headers": {
-                                "content-type": "application/json",
-                                "sec-fetch-mode": "cors",
-                                "sec-fetch-site": "same-site"
-                            },
-                            "referrer": "https://new-teachers.skyeng.ru/",
-                            "referrerPolicy": "strict-origin-when-cross-origin",
-                            "body": `{\"userId1\": ${artId.user.id},\"userId2\":${document.getElementsByClassName('idkidsstyle')[l].textContent.match(/\d+/)[0]}}`,
-                            "method": "DELETE",
-                            "mode": "cors",
-                            "credentials": "include"
-                        });
-                    }
-                }
-            }
-
             let kidsprofile = document.getElementsByName('openkidsprofile') // функция открытия профиля ученика после фильтрации списка
             for (let l = 0; l < kidsprofile.length; l++) {
                 kidsprofile[l].onclick = function () {
@@ -482,28 +436,6 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
             }
         }
 
-        let deleteonechatkid = document.getElementsByName('delkidschat') // функция удаления чатов с учеником при работе с исходным списком после получения инфы об учениках
-        for (let l = 0; l < deleteonechatkid.length; l++) {
-            deleteonechatkid[l].onclick = function () {
-                let answ = confirm("Вы действительно желаете удалить чат с учеником? " + document.getElementsByClassName('idkidsstyle')[l].textContent.match(/\d+/)[0]);
-                if (answ) {
-                    fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
-                        "headers": {
-                            "content-type": "application/json",
-                            "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-site"
-                        },
-                        "referrer": "https://new-teachers.skyeng.ru/",
-                        "referrerPolicy": "strict-origin-when-cross-origin",
-                        "body": `{\"userId1\": ${artId.user.id},\"userId2\":${document.getElementsByClassName('idkidsstyle')[l].textContent.match(/\d+/)[0]}}`,
-                        "method": "DELETE",
-                        "mode": "cors",
-                        "credentials": "include"
-                    });
-                }
-            }
-        }
-
         let kidsprofile = document.getElementsByName('openkidsprofile') // функция открытия профиля ученика после получения исходного списка
         for (let l = 0; l < kidsprofile.length; l++) {
             kidsprofile[l].onclick = function () {
@@ -519,255 +451,6 @@ document.getElementById('lkpskysmart').onclick = async function () { //обра�
         }
 
         document.getElementById('listofsubjects').onchange = showselectedsubject;
-
-        document.getElementById('addallchatsmulticlassrom').onclick = function () { // функция добавляющая в один клик чаты со всеми не уснувшими учениками
-            let sidarr = [];
-
-            for (let i = 0; i < Object.keys(kidsdata).length; i++) {
-                let arrayofsubjects = Object.keys(kidsdata)[i]
-                switch (arrayofsubjects) {
-                    case 'math': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cМатематика', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками в разделе Математика - Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                    case 'russian': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cРусский язык', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками раздела Русский язык - Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                    case 'social-science': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cОбществознание', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками раздела Обществознание - Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                    case 'preschool': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cДошколка', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками раздела Дошкольная подготовка - Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                    case 'chess': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cШахматы', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками раздела Шахматы -  Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                    case 'computer-science': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cКомпьютерные курсы', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками раздела Компьютерные курсы - Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                    case 'chemistry': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cХимия', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками раздела Химия -  Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                    case 'physics': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cФизика', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками раздела Физика - Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                    case 'english': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cАнглийский язык', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками раздела Английский язык -  Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                    case 'history': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cИстория', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками раздела История -  Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                    case 'biology': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cБиология', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками раздела Биология - Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                    case 'geography': console.log(Object.values(kidsdata)[i])
-                        sidarr = [];
-                        console.log('%cГеография', 'color:lightgreen; font-weight:700')
-                        for (let j = 0; j < Object.values(kidsdata)[i].length; j++) {
-
-                            if (Object.values(kidsdata)[i][j].status != "sleep")
-                                sidarr += Object.values(kidsdata)[i][j].id + ","
-
-
-                            console.log(Object.values(kidsdata)[i][j].id + " Status: " + Object.values(kidsdata)[i][j].status)
-                        }
-
-                        if (typeof (sidarr) != 'object') {
-                            sidarr = sidarr.split(',');
-
-                            for (let j = 0; j < sidarr.length - 1; j++) {
-                                fetchaddchat(sidarr[j], artId.user.id, "POST")
-                            }
-                            alert("Чаты с учениками раздела География - Multi-classroom добавлены в количестве: " + (sidarr.length - 1))
-                        }
-                        break;
-                }
-            }
-        }
 
     } else {
         wintStudSkysmart.style.display = 'none'

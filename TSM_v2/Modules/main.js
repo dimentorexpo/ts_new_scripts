@@ -1,39 +1,64 @@
-var win_addMenu = `<div style="display: flex;">
-					<span style="cursor: -webkit-grab;">
-						<div>
-							<button class="commonbtn" style="min-width:125px" id="hidemainmenu">h i d e </button>
-						<div>
+var win_addMenu = `
+<div class="menu-container">
+    <span style="cursor: -webkit-grab;">
 
-						<div id="mainmenu" style="display:block">
-							<button id="openchataddmenu" style="margin: 5px 0px 0px 5px; height: 30px; min-width: 125px; padding-top:8px;" class="commonbtn dobig"><span style="font-size:18px;float:left; position:relative; top:-5px; left:0px;">💬</span> ChatMenu</button>
-							<br>
-							<button id="openlesinfomenu" style="margin: 5px 5px 0px 5px; height: 30px; min-width: 125px; padding-top:8px;" class="commonbtn dobig"><span style="font-size:18px;float:left; position:relative; top:-5px; left:0px;">ℹ</span> LessonInfo</button>
-							<br>
-							<button id="openstudentsmenu" style="margin: 5px 0px 0px 5px; height: 30px; min-width: 125px; padding-top:8px;" class="commonbtn dobig"><span style="font-size:18px;float:left; position:relative; top:-5px; left:0px;">👨‍🎓</span> Students</button>
-							<br>
-							<button id="openexercisesmenu" style="margin: 5px 0px 0px 5px; height: 30px; min-width: 125px; padding-top:8px;" class="commonbtn dobig"><span style="font-size:18px;float:left; position:relative; top:-5px; left:0px;">🎯</span> Exercises</button>
-							<br>
-							<button id="VocabularyMenu" title = "Открывает  меню для роаботы со словарем" style="margin: 5px 5px 5px 5px; height: 30px; min-width: 125px; padding-top:8px;" class="commonbtn dobig"><span style="font-size:18px;float:left; position:relative; top:-5px; left:0px;">📚</span> Vocabulary</button>
-						</div>
+        <div>
+            <button class="hide-btn" id="hidemainmenu">С к р ы т ь</button>
+        </div>
 
-						<div id="studentsmenu" style="display:none">
-							<button id="lkpskysmart" style="margin: 5px 0px 0px 5px; height: 30px; min-width: 125px; padding-top:8px;" class="commonbtn dobig"><span style="font-size:18px;float:left; position:relative; top:-5px; left:0px;">🎓</span> Smartroom</button>
-							<br>
-							<button id="backtomainfromstudmenu" style="margin: 5px 0px 5px 5px; height: 30px; min-width: 125px; padding-top:8px;" class="commonbtn dobig"><span style="font-size:18px;float:left; position:relative; top:-5px; left:0px;">🔙</span> Back</button>
-						</div>
+        <div id="mainmenu" class="menu-ext" style="display:block;">
+            <button id="openchataddmenu" class="menu-item">
+                <span class="icon">💬</span>
+                <span class="text">Меню чата</span>
+            </button>
 
-						<div id="exercisesmenu" style="display:none">
-							<button id="exercisekysmart" style="margin: 5px 0px 0px 5px; height: 30px; min-width: 125px; padding-top:8px;" class="commonbtn dobig"><span style="font-size:18px;float:left; position:relative; top:-5px; left:0px;">🎓</span> Smartroom</button>
-							<br>
-							<button id="exercisesttc" style="margin: 5px 5px 0px 5px; height: 30px; min-width: 125px; padding-top:8px;" class="commonbtn dobig"> <span style="font-size:18px;float:left; position:relative; top:-5px; left:0px;">👽</span> TTC</button>
-							<br>
-							<button id="exercisesComplect" style="margin: 5px 5px 0px 5px; height: 30px; min-width: 125px; padding-top:8px;" class="commonbtn dobig"> <span style="font-size:18px;float:left; position:relative; top:-5px; left:0px;">🛍</span> Комплектации</button>
-							<br>
-							<button id="backmainmenufromexercises" style="margin: 5px 0px 5px 5px; height: 30px; min-width: 125px; padding-top:8px;" class="commonbtn dobig"><span style="font-size:18px;float:left; position:relative; top:-5px; left:0px;">🔙</span> Back</button>
-						</div>
+            <button id="openlesinfomenu" class="menu-item">
+                <span class="icon">ℹ</span>
+                <span class="text">Инфо комнаты</span>
+            </button>
 
-					</span>
-				   </div>`;
+            <button id="openstudentsmenu" class="menu-item">
+                <span class="icon">👨‍🎓</span>
+                <span class="text">Ученики (в ЛКП)</span>
+            </button>
+
+            <button id="openexercisesmenu" class="menu-item">
+                <span class="icon">🎯</span>
+                <span class="text">Упражнения</span>
+            </button>
+
+            <button id="VocabularyMenu" class="menu-item" title="Открывает меню для работы со словарем">
+                <span class="icon">📚</span>
+                <span class="text">Словарь</span>
+            </button>
+        </div>
+
+        <div id="exercisesmenu" class="menu-ext" style="display:none;">
+            <button id="exercisekysmart" class="menu-item">
+                <span class="icon">🎓</span>
+                <span class="text">Smartroom</span>
+            </button>
+
+            <button id="exercisesttc" class="menu-item">
+                <span class="icon">👽</span>
+                <span class="text">TTC</span>
+            </button>
+
+            <button id="exercisesComplect" class="menu-item">
+                <span class="icon">🛍</span>
+                <span class="text">Комплектации</span>
+            </button>
+
+            <button id="backmainmenufromexercises" class="menu-item">
+                <span class="icon">🔙</span>
+                <span class="text">Back</span>
+            </button>
+        </div>
+
+    </span>
+</div>
+`;
+
 
 const wintAddMenu = createTSMWindow('AFMS_addMenu', 'winTopAddMenu', 'winLeftAddMenu', win_addMenu);
 wintAddMenu.className = 'wintInitialize';
@@ -80,16 +105,10 @@ document.onkeydown = function (event) {
 
 document.getElementById('openstudentsmenu').onclick = function () {
     document.getElementById('mainmenu').style.display = 'none'
-    document.getElementById('studentsmenu').style.display = ''
 }
 document.getElementById('openexercisesmenu').onclick = function () {
     document.getElementById('mainmenu').style.display = 'none'
     document.getElementById('exercisesmenu').style.display = ''
-}
-
-document.getElementById('backtomainfromstudmenu').onclick = function () {
-    document.getElementById('mainmenu').style.display = ''
-    document.getElementById('studentsmenu').style.display = 'none'
 }
 
 document.getElementById('backmainmenufromexercises').onclick = function () {
