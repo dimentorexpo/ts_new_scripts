@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "ChMAF",
-	"version": "5.0.73",
+	"version": "5.0.74",
 	"description": "Твой мультитул в работе с чатами",
 	"background": {
 		"service_worker": "bg.js"
@@ -81,18 +81,6 @@
 				"*://skyeng.autofaq.ai/*"
 			],
 			"run_at": "document_idle"
-		},
-		{
-			"js": [
-				"/OtherScripts/chats.js"
-			],
-			"css": [
-				"/CSS/style.css"
-			],
-			"matches": [
-				"*://student.skyeng.ru/*"
-			],
-			"run_at": "document_end"
 		},
 		{
 			"js": [

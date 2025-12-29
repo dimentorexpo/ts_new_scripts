@@ -492,13 +492,13 @@
 		transition: all 1s ease;
 	}
 
-	.radio {
+	.radio-ext {
 		width: 15px;
 		height: 15px;
 		transition: all 0.5s ease;
 	}
 
-	.radio:hover {
+	.radio-ext:hover {
 		transform: scale(1.5);
 		font-weight: 600;
 	}
@@ -1041,34 +1041,6 @@
 	#sidcode.errorbtn,
 	#tidcode.errorbtn {
 		background: rgb(201, 17, 17) !important;
-	}
-
-	#AF_chatbtnmenu {
-		background: none 0% 0% / auto repeat scroll padding-box border-box rgb(228, 251, 255);
-		box-sizing: border-box;
-		caret-color: rgb(0, 174, 250);
-		color: rgb(0, 174, 250);
-		cursor: pointer;
-		display: flex;
-		flex: 0 1 auto;
-		font-size: 16px;
-		font-weight: 400;
-		height: 40px;
-		line-height: 24px;
-		opacity: 1;
-		outline: rgb(0, 174, 250) none 0px;
-		padding: 8px;
-		pointer-events: auto;
-		position: relative;
-		text-align: center;
-		transition: background-color 0.5s ease 0s;
-		width: 60px;
-		margin-right: 10px;
-		border-radius: 20px;
-	}
-
-	#AF_chatbtnmenu:hover {
-		background: #00aefa;
 	}
 
 	.queue-item {
