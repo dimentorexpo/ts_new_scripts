@@ -900,7 +900,7 @@ button.dobig:active {
     margin: 15px 0;
 }
 
-.commonbtn {
+.commonbtn-vocab {
   padding: 8px 16px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.15);
@@ -911,7 +911,7 @@ button.dobig:active {
   transition: all 0.3s ease;
 }
 
-.commonbtn:hover {
+.commonbtn-vocab:hover {
   background: rgba(255, 255, 255, 0.25);
   transform: scale(1.03);
 }

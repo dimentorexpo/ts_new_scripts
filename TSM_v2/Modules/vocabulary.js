@@ -22,11 +22,11 @@ var win_Vocabulary = `<div style="display: flex;">
 								<button id="findwords" class="commonbtn smallbtns">🔎</button>
 							</div>
 							<div class="vocabularremtools">
-								<button class="commonbtn" id="deleteallwords" title="Удаляет все выделенные слова">❌ Selected</button>
-								<button class="commonbtn" id="unlearnallwords" title="Сбрасывает прогресс выученных слов">⭕ Reset Learned</button>
-								<button class="commonbtn" id="delunlearnallwords" title="Удаляет все выученные слова">⛔ Learned</button>
-								<button class="commonbtn" id="learncheckedwords" title="Делает слово выученным">✅ Learn</button>
-								<button class="commonbtn" id="selectallwords" title="Выделяет все слова">☑ Select All</button>
+								<button class="commonbtn-vocab" id="deleteallwords" title="Удаляет все выделенные слова">❌ Selected</button>
+								<button class="commonbtn-vocab" id="unlearnallwords" title="Сбрасывает прогресс выученных слов">⭕ Reset Learned</button>
+								<button class="commonbtn-vocab" id="delunlearnallwords" title="Удаляет все выученные слова">⛔ Learned</button>
+								<button class="commonbtn-vocab" id="learncheckedwords" title="Делает слово выученным">✅ Learn</button>
+								<button class="commonbtn-vocab" id="selectallwords" title="Выделяет все слова">☑ Select All</button>
 							</div>
                             <div class="vocabularremtools">
                                 <input id="searchwordinput" style="width: 470px; text-align: center; height: 30px; display: none; margin-top: 7px;" placeholder="Enter a word or part of it to search">
