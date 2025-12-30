@@ -170,7 +170,7 @@ button.dobig:active {
 
 #hidemainmenu {
     cursor: pointer;
-    width: 272px;
+    width: 234px;
     background: #8bacb9d1;
     color: #8bacb9d1;
     font-size: 3px;
@@ -730,6 +730,10 @@ button.dobig:active {
 		background-color: darkred;
 	}
 	
+.menu-container {
+	width: 240px;
+}
+	
 /* Контейнер */
 .menu-ext {
   display: flex;
@@ -746,6 +750,7 @@ button.dobig:active {
     inset 0 0 20px rgba(255, 255, 255, 0.02),
     0 0 0 1px rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius:20px;
 
 }
 
@@ -893,4 +898,20 @@ button.dobig:active {
     border: none;
     border-top: 1px solid rgba(255,255,255,0.1);
     margin: 15px 0;
+}
+
+.commonbtn {
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.commonbtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.03);
 }

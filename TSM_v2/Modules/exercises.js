@@ -318,8 +318,8 @@ function getkidsroominfo(data, subjecttype) {
                 const cardName = card.name + icon;
 
                 const completenessCell = completeness == 100
-                    ? `<td style="text-align:center; border: 1px solid black; background:green">${completeness}</td>`
-                    : `<td style="text-align:center; border: 1px solid black;">${completeness}</td>`;
+                    ? `<td style="text-align:center; border: 1px solid black; background: green">${completeness}</td>`
+                    : `<td style="text-align:center; border: 1px solid black; background: #bb6904">${completeness}</td>`;
 
 
                 rows += `
