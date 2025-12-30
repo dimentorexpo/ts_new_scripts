@@ -768,7 +768,7 @@ button.dobig:active {
 }
 
 /* Капсула */
-.menu-item {
+.menu-item-ext {
   width: 100%; /* 👈 растягиваем */
   box-sizing: border-box; /* 👈 учитываем padding и border */
   display: flex;
@@ -794,7 +794,7 @@ button.dobig:active {
 }
 
 /* Неоновая полоса слева */
-.menu-item::before {
+.menu-item-ext::before {
   content: "";
   position: absolute;
   left: 0;
@@ -824,7 +824,7 @@ button.dobig:active {
 }
 
 /* Hover */
-.menu-item:hover {
+.menu-item-ext:hover {
   background: linear-gradient(120deg, rgba(74,243,255,0.15), rgba(0,0,0,0.65));
   transform: translateX(4px);
   border-color: rgba(74,243,255,0.6);
@@ -833,13 +833,13 @@ button.dobig:active {
     inset 0 0 12px rgba(74,243,255,0.15);
 }
 
-.menu-item:hover::before {
+.menu-item-ext:hover::before {
   opacity: 1;
   transform: scaleY(1);
 }
 
 /* Активный пункт */
-.menu-item.active {
+.menu-item-ext.active {
   background: linear-gradient(120deg, rgba(74,243,255,0.25), rgba(0,0,0,0.7));
   border-color: rgba(74,243,255,0.6);
   box-shadow:
@@ -847,7 +847,7 @@ button.dobig:active {
     inset 0 0 14px rgba(74,243,255,0.25);
 }
 
-.menu-item.active::before {
+.menu-item-ext.active::before {
   opacity: 1;
   transform: scaleY(1);
 }
