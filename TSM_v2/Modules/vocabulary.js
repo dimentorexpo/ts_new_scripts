@@ -18,18 +18,42 @@ var win_Vocabulary = `<div style="display: flex;">
 
 						<div id="vocabularbar" class="vocabularbarcls">
 							<div id="searchtoolswords" style="margin: 5px; width:500px;">
-								<input id="iduserwords" style="width: 450px;text-align: center; height: 30px;" placeholder="Enter student ID to get vocabulary info">
+								<input id="iduserwords" style="width: 450px;text-align: center; height: 30px; border-radius:20px;" placeholder="Enter student ID to get vocabulary info">
 								<button id="findwords" class="commonbtn smallbtns">🔎</button>
 							</div>
 							<div class="vocabularremtools">
-								<button class="commonbtn-vocab" id="deleteallwords" title="Удаляет все выделенные слова">❌ Selected</button>
-								<button class="commonbtn-vocab" id="unlearnallwords" title="Сбрасывает прогресс выученных слов">⭕ Reset Learned</button>
-								<button class="commonbtn-vocab" id="delunlearnallwords" title="Удаляет все выученные слова">⛔ Learned</button>
-								<button class="commonbtn-vocab" id="learncheckedwords" title="Делает слово выученным">✅ Learn</button>
-								<button class="commonbtn-vocab" id="selectallwords" title="Выделяет все слова">☑ Select All</button>
+								<button class="vertical-btn-ext" id="deleteallwords" title="Удаляет все выделенные слова, если ничего не выделено удалит все">
+								  <div class="emoji">❌</div>
+								  <hr>
+								  <div class="label">Удалить</div>
+								</button>
+
+								<button class="vertical-btn-ext" id="unlearnallwords"  title="Сбрасывает прогресс выученных слов">
+								  <div class="emoji">⭕</div>
+								  <hr>
+								  <div class="label">Сброс прогресса</div>
+								</button>
+
+								<button class="vertical-btn-ext" id="delunlearnallwords" title="Удаляет все выученные слова">
+								  <div class="emoji">⛔</div>
+								  <hr>
+								  <div class="label">Удалить выученные</div>
+								</button>
+
+								<button class="vertical-btn-ext" id="learncheckedwords" title="Делает слово выученным">
+								  <div class="emoji">✅</div>
+								  <hr>
+								  <div class="label">Выучить</div>
+								</button>
+
+								<button class="vertical-btn-ext" id="selectallwords" title="Выделяет все слова">
+								  <div class="emoji">☑</div>
+								  <hr>
+								  <div class="label">Выбрать все</div>
+								</button>
 							</div>
                             <div class="vocabularremtools">
-                                <input id="searchwordinput" style="width: 470px; text-align: center; height: 30px; display: none; margin-top: 7px;" placeholder="Enter a word or part of it to search">
+                                <input id="searchwordinput" style="width: 470px; text-align: center; height: 30px; display: none; margin-top: 7px;" placeholder="Введите слово или его часть для живого поиска">
 							</div>
 						</div>
 

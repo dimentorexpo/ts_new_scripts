@@ -915,3 +915,43 @@ button.dobig:active {
   background: rgba(255, 255, 255, 0.25);
   transform: scale(1.03);
 }
+
+.vertical-btn-ext {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  width: 60px;
+  height: 70px;
+  padding: 8px;
+  margin: 5px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2c3e50, #4ca1af);
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.vertical-btn-ext:hover {
+  transform: scale(1.05);
+}
+
+.vertical-btn-ext .emoji {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.vertical-btn-ext hr {
+  width: 80%;
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.5);
+  margin: 4px 0;
+}
+
+.vertical-btn-ext .label {
+  text-align: center;
+  font-size: 13px;
+}
