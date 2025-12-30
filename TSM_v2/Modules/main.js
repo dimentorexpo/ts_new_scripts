@@ -8,50 +8,50 @@ var win_addMenu = `
 
         <div id="mainmenu" class="menu-ext" style="display:block;">
             <button id="openchataddmenu" class="menu-item-ext">
-                <span class="icon">💬</span>
-                <span class="text">Меню чата</span>
+                <span class="icon-ext">💬</span>
+                <span class="text-ext">Меню чата</span>
             </button>
 
             <button id="openlesinfomenu" class="menu-item-ext">
-                <span class="icon">ℹ</span>
-                <span class="text">Инфо комнаты</span>
+                <span class="icon-ext">ℹ</span>
+                <span class="text-ext">Инфо комнаты</span>
             </button>
 
             <button id="openstudentsmenu" class="menu-item-ext">
-                <span class="icon">👨‍🎓</span>
-                <span class="text">Ученики (в ЛКП)</span>
+                <span class="icon-ext">👨‍🎓</span>
+                <span class="text-ext">Ученики (в ЛКП)</span>
             </button>
 
             <button id="openexercisesmenu" class="menu-item-ext">
-                <span class="icon">🎯</span>
-                <span class="text">Упражнения</span>
+                <span class="icon-ext">🎯</span>
+                <span class="text-ext">Упражнения</span>
             </button>
 
             <button id="VocabularyMenu" class="menu-item-ext" title="Открывает меню для работы со словарем">
-                <span class="icon">📚</span>
-                <span class="text">Словарь</span>
+                <span class="icon-ext">📚</span>
+                <span class="text-ext">Словарь</span>
             </button>
         </div>
 
         <div id="exercisesmenu" class="menu-ext" style="display:none;">
             <button id="exercisekysmart" class="menu-item-ext">
-                <span class="icon">🎓</span>
-                <span class="text">Smartroom</span>
+                <span class="icon-ext">🎓</span>
+                <span class="text-ext">Smartroom</span>
             </button>
 
             <button id="exercisesttc" class="menu-item-ext">
-                <span class="icon">👽</span>
-                <span class="text">TTC</span>
+                <span class="icon-ext">👽</span>
+                <span class="text-ext">TTC</span>
             </button>
 
             <button id="exercisesComplect" class="menu-item-ext">
-                <span class="icon">🛍</span>
-                <span class="text">Комплектации</span>
+                <span class="icon-ext">🛍</span>
+                <span class="text-ext">Комплектации</span>
             </button>
 
             <button id="backmainmenufromexercises" class="menu-item-ext">
-                <span class="icon">🔙</span>
-                <span class="text">Back</span>
+                <span class="icon-ext">🔙</span>
+                <span class="text-ext">Back</span>
             </button>
         </div>
 

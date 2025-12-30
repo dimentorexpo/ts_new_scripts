@@ -335,16 +335,6 @@ button.dobig:active {
     ;
 }
 
-.deletechat {
-    cursor: pointer;
-    transition: all 0.7s ease;
-}
-
-.deletechat:hover {
-    font-size: 20px;
-    ;
-}
-
 .adultprofile {
     cursor: pointer;
     transition: all 0.7s ease;
@@ -579,7 +569,7 @@ button.dobig:active {
     cursor: pointer;
 }
 
-.roomtype:hover {
+.roomtype.collapsible:hover {
     background: #2eb05e;
 }
 
@@ -711,6 +701,7 @@ button.dobig:active {
 .savelinktocms:hover,
 .resetprogress:hover {
 	background:  #27B06C;
+	cursor:pointer;
 }
 
 	.sucsbtnAF {
@@ -800,13 +791,13 @@ button.dobig:active {
 }
 
 /* Иконка */
-.icon {
+.icon-ext {
   font-size: 18px;
   filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.25));
 }
 
 /* Текст */
-.text {
+.text-ext {
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.03em;
@@ -841,4 +832,64 @@ button.dobig:active {
 .menu-item-ext.active::before {
   opacity: 1;
   transform: scaleY(1);
+}
+
+.exercisetable {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 14px;
+    background: #4f4e5a;
+    color: #e0f0ff;
+}
+
+.exercisetable th, .exercisetable td {
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 10px;
+}
+
+.exercisetable th {
+    background: rgba(255,255,255,0.08);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.theme-title {
+    background: rgba(255,255,255,0.05);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.roomtype.collapsible {
+    cursor: pointer;
+    padding: 8px;
+    background: rgba(255,255,255,0.08);
+    margin-top: 10px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.category-info {
+    background: rgba(255,255,255,0.05);
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.userinfo-block {
+    background: rgba(255,255,255,0.05);
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    line-height: 1.5;
+    font-size: 15px;
+    color: #e0f0ff;
+}
+
+.userinfo-separator {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin: 15px 0;
 }
