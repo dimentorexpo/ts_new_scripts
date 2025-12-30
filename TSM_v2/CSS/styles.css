@@ -862,11 +862,12 @@ button.dobig:active {
 
 .roomtype.collapsible {
     cursor: pointer;
-    padding: 8px;
-    background: rgba(255,255,255,0.08);
+    padding: 6px;
+    background: darkcyan;
     margin-top: 10px;
     border-radius: 4px;
     font-weight: 600;
+	font-size:18px
 }
 
 .category-info {

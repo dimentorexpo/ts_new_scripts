@@ -16,8 +16,8 @@ var win_kidsExercises = `<div style="display: flex;">
 						</div>
 
 						<div style="margin: 5px; width:550px;">
-							<input id="roomhashhwkids" placeholder="homework link" style="width: 490px; margin-left: 15px; text-align: center; height: 30px;">
-							<button class="commonbtn smallbtns" id="getroomdatakids">🔎</button>
+							<input id="roomhashhwkids" placeholder="homework link" style="width: 490px; margin-left: 15px; text-align: center; height: 30px; border-radius:20px;">
+							<button class="commonbtn smallbtns" style="border-radius: 20px; width: 34px !important; height: 34px !important; vertical-align: middle;" id="getroomdatakids">🔎</button>
 						</div>
 
 						<div id="exercisebarskysmart" class="skysmartexcbar">
@@ -64,8 +64,8 @@ var win_complectationExercises = `<div style="display: flex;">
 						</div>
 
 						<div style="margin: 5px; width:550px;">
-							<input id="roomhashhwComplect" placeholder="Room link" style="width: 490px; margin-left: 15px; text-align: center; height: 30px;">
-							<button class="commonbtn smallbtns" id="getroomdataComplect">🔎</button>
+							<input id="roomhashhwComplect" placeholder="Room link" style="width: 490px; margin-left: 15px; text-align: center; height: 30px; border-radius:20px;">
+							<button class="commonbtn smallbtns" style="border-radius: 20px; width: 34px !important; height: 34px !important; vertical-align: middle;" id="getroomdataComplect">🔎</button>
 						</div>
 
 						<div id="exercisebarComplect" class="skysmartexcbar">
@@ -333,7 +333,7 @@ const renderCategory = (title, cardBlock, isHomework = false) => {
     });
 
     return `
-        <div class="roomtype">${title}</div>
+        <div class="roomtype collapsible">${title}</div>
         <div class="boxwithslides" style="display:none">
 
             <div class="itemexerciseskids">
@@ -368,8 +368,8 @@ const renderCategory = (title, cardBlock, isHomework = false) => {
 // Финальный вывод
 // ----------------------
 document.getElementById("exercisebarskysmart").innerHTML +=
-    renderCategory("Lesson", data.lessonCards) +
-    renderCategory("Homework", data.homeworkCards, true);
+    renderCategory("🎓План урока", data.lessonCards) +
+    renderCategory("💼План домашки", data.homeworkCards, true);
 
 
     let subjbtnsarr = document.getElementsByClassName('roomtype')
@@ -650,7 +650,7 @@ document.getElementById('getroomdataComplect').onclick = async function () {
     // LESSON
 const lessonInfo = buildCategoryInfoBlock(
     complectationsData.lessonCards[indexOfSlides],
-    "Lesson"
+    "План урока"
 );
 
 const lessonTable = buildCardsTable(
@@ -659,13 +659,13 @@ const lessonTable = buildCardsTable(
 );
 
 document.getElementById('exercisebarComplect').innerHTML +=
-    buildCollapsibleBlock("Lesson", lessonInfo, lessonTable);
+    buildCollapsibleBlock("🎓План урока", lessonInfo, lessonTable);
 
 
     // HOMEWORK
 const homeworkInfo = buildCategoryInfoBlock(
     complectationsData.homeworkCards[indexOfSlides],
-    "Homework"
+    "План домашки"
 );
 
 const homeworkTable = buildCardsTable(
@@ -674,24 +674,25 @@ const homeworkTable = buildCardsTable(
 );
 
 document.getElementById('exercisebarComplect').innerHTML +=
-    buildCollapsibleBlock("Homework", homeworkInfo, homeworkTable);
+    buildCollapsibleBlock("💼План домашки", homeworkInfo, homeworkTable);
 
 
     // DIAGNOSTIC (если есть)
-if (complectationsData.diagnosticsCards) {
-    const diagnosticInfo = buildCategoryInfoBlock(
-        complectationsData.diagnosticsCards[indexOfSlides],
-        "Diagnostic"
-    );
+const diagnosticBlock = complectationsData.diagnosticsCards?.[indexOfSlides];
 
-    const diagnosticTable = buildCardsTable(
-        complectationsData.diagnosticsCards[indexOfSlides].themes,
-        kidsselector
-    );
+const hasDiagnosticCards =
+    diagnosticBlock &&
+    Array.isArray(diagnosticBlock.themes) &&
+    diagnosticBlock.themes.some(theme => theme.cards.length > 0);
+
+if (hasDiagnosticCards) {
+    const diagnosticInfo = buildCategoryInfoBlock(diagnosticBlock, "Diagnostic");
+    const diagnosticTable = buildCardsTable(diagnosticBlock.themes, kidsselector);
 
     document.getElementById('exercisebarComplect').innerHTML +=
         buildCollapsibleBlock("Diagnostic", diagnosticInfo, diagnosticTable);
 }
+
 
 
     // Сворачивание
@@ -716,8 +717,13 @@ if (complectationsData.diagnosticsCards) {
             const link = stepid
                 ? `https://cms.skyeng.ru/${subtype}/cms/lesson/${lessonid}/cards/${stepid}/edit`
                 : `https://cms.skyeng.ru/${subtype}/cms/lesson/${lessonid}`;
-
+				
+			savelinkarr[z].textContent = "✅"
             copyToClipboardTSM(link);
+			createNotify('💾 Ссылка на слайд в CMS cкопирована в буфер обмена', 'message');
+					setTimeout(function(){
+					  savelinkarr[z].textContent = "💾"
+				  }, 4000)
         };
     }
 	
