@@ -747,7 +747,7 @@ button.dobig:active {
   width: 240px;
   padding: 18px;
 
-  background: linear-gradient(135deg, rgba(20, 30, 50, 0.6), rgba(5, 10, 20, 0.9));
+  background: dimgrey
   border-radius: 22px;
   backdrop-filter: blur(16px);
   box-shadow:
@@ -756,15 +756,6 @@ button.dobig:active {
     0 0 0 1px rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.05);
 
-}
-
-.menu-ext::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 22px;
-  background: radial-gradient(circle at top left, rgba(74,243,255,0.05), transparent 70%);
-  pointer-events: none;
 }
 
 /* Капсула */

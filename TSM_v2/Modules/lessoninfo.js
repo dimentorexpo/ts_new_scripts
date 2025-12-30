@@ -6,19 +6,15 @@ var win_getLessonInfo = `
                             <button class="commonbtn hidebtns" title="скрывает меню" id="hideMeLessonInfo">hide</button>
 							<button class="commonbtn smallbtns" id="RefreshInfo" title = "Обновляет информацию в полях, использовать при подключении к уроку! Если работаете на других страницах с формой есть кнопка Search позволяющая подтягивать актуальный статус" style="margin: 5px;">♻</button>
 							<button class="commonbtn smallbtns" id="ClearInfo" title = "Очищает информацию в полях">🧹</button>
-							<span id="platform" style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Platform: </span>
-							<span id="platformname" style="width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #627998f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 12px; cursor:text;"></span>
+							<span id="subjectname" style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Subject: </span>
+							<span id="subjectnamefield" style="width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #2569c3f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 11px; user-select:none;"></span>
+						
 							<span style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Создана: </span>
 							<span id="creationType" style="width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #627998f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 12px; cursor:text;" title="auto - автоматически в назначенное по расписанию время, manually - вручную"></span>
 							
 							<span id="roomfor" style="display: none; margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Room for Student ID: </span>
 							<span id="forstudentid" style="display:none; width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #627998f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 12px; cursor:pointer;" title="При клике копирует в буфер обмена айди ученика"></span>
                         </div>
-
-						<div style="margin-left: 5px; height: 25px;">
-							<span id="subjectname" style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Subject: </span>
-							<span id="subjectnamefield" style="width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #2569c3f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 11px; user-select:none;"></span>
-						</div>
 
 						<div style="margin: 5px; width: 490px; display:flex; flex-wrap: wrap; align-items:center;">
 							<span id="statusroomid" class = "lesson-field-name">Status:</span>
@@ -33,7 +29,7 @@ var win_getLessonInfo = `
 						</div>
 
 						<div>
-						<input id="hashfield" placeholder = "Enter full hash or  just 1 word roomhash for adults platform" title = "Example: https://vimbox.skyeng.ru/kids/russian/room/xinisoborada" style="width:480px; text-align:center; margin-left:6px;">
+						<input id="hashfield" placeholder = "Введите полный хеш комнаты" title = "Example: https://vimbox.skyeng.ru/kids/russian/room/xinisoborada" style="width:480px; text-align:center; margin-left:6px;">
 						</div>
 
 						<div style="display: flex; justify-content: center;">
@@ -113,24 +109,16 @@ function getPlatformType() {
 }
 
 function setPlatformUI(platformType) {
-    const platformNameElem = document.getElementById('platformname');
     const roomForElem = document.getElementById('roomfor');
     const forStudentIdElem = document.getElementById('forstudentid');
     const setStClassElem = document.getElementById('setstclass');
     const setStSuccElem = document.getElementById('setstsucc');
 
     if (platformType === 1) {
-        platformNameElem.textContent = "Skysmart";
         roomForElem.style.display = 'none';
         forStudentIdElem.style.display = 'none';
         setStClassElem.style.display = '';
         setStSuccElem.style.display = '';
-    } else if (platformType === 2) {
-        platformNameElem.textContent = "Adults";
-        roomForElem.style.display = '';
-        forStudentIdElem.style.display = '';
-        setStClassElem.style.display = 'none';
-        setStSuccElem.style.display = 'none';
     } else {
         resetPlatformUI();
     }
