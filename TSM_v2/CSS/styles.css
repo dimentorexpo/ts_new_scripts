@@ -170,7 +170,7 @@ button.dobig:active {
 
 #hidemainmenu {
     cursor: pointer;
-    width: 234px;
+    width: 268px;
     background: #8bacb9d1;
     color: #8bacb9d1;
     font-size: 3px;
@@ -731,7 +731,7 @@ button.dobig:active {
 	}
 	
 .menu-container {
-	width: 240px;
+	width: 272px;
 }
 	
 /* Контейнер */
