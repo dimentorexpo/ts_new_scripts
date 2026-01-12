@@ -1721,3 +1721,20 @@ if (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !==
         }
     };
 }
+
+// Интервальный скрипт удаления promo-image на Skyeng
+setInterval(() => {
+    // Проверяем, что мы на нужной странице
+    if (location.href.startsWith("https://student.skyeng.ru/home")) {
+
+        // Ищем элемент promo-image
+        const promo = document.querySelector(".tag.promo-image");
+
+        // Если найден — удаляем
+        if (promo) {
+            promo.remove();
+            // Можно добавить лог, если нужно
+            // console.log("promo-image удалён");
+        }
+    }
+}, 500)

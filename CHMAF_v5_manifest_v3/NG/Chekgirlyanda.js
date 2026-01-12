@@ -67,7 +67,7 @@ function checkloadsettings() {
         const savedValueBag = localStorage.getItem('AF_bag');
         const BagSelect = document.getElementById('checkbag');
         if (BagSelect) {
-            if (savedValueHat == 0) {
+            if (savedValueBag == 0) {
                 BagSelect.checked = false;
             } else {
                 BagSelect.checked = true;
@@ -80,6 +80,25 @@ function checkloadsettings() {
         setTimeout(checkloadsettings, 1000);
     }
 }
+
+// Проверка шапки
+if (localStorage.getItem('AF_hat') == '0') {
+    const hat = document.getElementById('hatSack');
+    if (hat) hat.style.display = 'none';
+} else {
+    const hat = document.getElementById('hatSack');
+    if (hat) hat.style.display = '';
+}
+
+// Проверка мешка
+if (localStorage.getItem('AF_bag') == '0') {
+    const bag = document.getElementById('giftSack');
+    if (bag) bag.style.display = 'none';
+} else {
+    const bag = document.getElementById('giftSack');
+    if (bag) bag.style.display = '';
+}
+
 
 function checkAndSetGirlyanda() {
     if (localStorage.getItem('girlyanda') === null) {
@@ -202,9 +221,9 @@ function handlehathange() {
 }
 
 function handlebaghange() {
-    const hatSelect = document.getElementById('checkbag');
+    const bagSelect = document.getElementById('checkbag');
 
-    if (!hatSelect.checked) {
+    if (!bagSelect.checked) {
         localStorage.setItem('AF_bag', '0');
         document.getElementById('giftSack').style.display = 'none'
     } else {
@@ -212,9 +231,6 @@ function handlebaghange() {
         document.getElementById('giftSack').style.display = ''
     }
 }
-
-
-
 
 if (localStorage.getItem('AF_elka') == '1') { elkaadd() }
 
