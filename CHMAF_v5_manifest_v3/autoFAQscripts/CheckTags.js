@@ -39,7 +39,24 @@ function waitForTargetBlock(iframeDocument) {
 
 // Проверяем содержимое блока каждые 500 мс
 
-if (opsection == "ТП") {
+function waitForOpSection() {
+    return new Promise(resolve => {
+        const check = setInterval(() => {
+            const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+            let sectionKey = iframe.contentDocument.querySelector('span[id^="mantine-"][id$="-target"]');
+            let operGroup = sectionKey.textContent.split('-')[0]
+            if (typeof operGroup !== "undefined" && operGroup === "ТП") {
+                clearInterval(check);
+                resolve(true);
+            }
+        }, 300);
+    });
+}
+
+(async function startWhenReady() {
+    await waitForOpSection(); // ← ждём пока opsection станет "ТП"
+    console.log("opsection = ТП, запускаю скрипт");
+
     setInterval(() => {
         try {
             (async function main() {
@@ -51,49 +68,42 @@ if (opsection == "ТП") {
                     `[data-conv-id="${location.pathname.split('/')[3]}"]`
                 );
 
-                // Ищем наш span
                 let existing = convElement.querySelector('[data-my-tag="no-tag"]');
 
                 if (text.includes("Пусто")) {
                     btn.disabled = true;
+
                     targetBlock.children[0].children[0].children[0].children[1].style =
                         "background:firebrick; font-weight:800; padding:5px; border: 2px solid black;";
 
-                    // если span нет — создаём
                     if (!existing) {
                         existing = document.createElement('span');
                         existing.setAttribute("data-my-tag", "no-tag");
                         convElement.append(existing);
                     }
 
-                    // обновляем текст и стиль
                     existing.textContent = "❌Нет тега🏷️";
-                    existing.style = "background:orange;text-align:center; border-radius: 20px; ; text-shadow: 1px 1px 2px rgba(0,0,0,0.4), -1px -1px 2px rgba(255,255,255,0.6);";
+                    existing.style =
+                        "background:orange;text-align:center; border-radius: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.4), -1px -1px 2px rgba(255,255,255,0.6);";
 
                 } else {
                     btn.disabled = false;
-                    targetBlock.children[0].children[0].children[0].children[1].style =
-                        "background:default;";
 
-                    // если span нет — создаём
                     if (!existing) {
                         existing = document.createElement('span');
                         existing.setAttribute("data-my-tag", "no-tag");
                         convElement.append(existing);
                     }
 
-                    // обновляем текст и стиль
                     existing.textContent = "☑️Есть тег🏷️";
-                    existing.style = "background:#0be40b;text-align:center; border-radius: 20px; ; text-shadow: 1px 1px 2px rgba(0,0,0,0.4), -1px -1px 2px rgba(255,255,255,0.6);";
+                    existing.style =
+                        "background:#0be40b;text-align:center; border-radius: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.4), -1px -1px 2px rgba(255,255,255,0.6);";
                 }
             })();
         } catch (e) {
             console.log("Ошибка при чтении блока:", e);
         }
     }, 3000);
-}
-
-
-
+})();
 
 
