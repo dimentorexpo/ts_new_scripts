@@ -42,16 +42,32 @@ function waitForTargetBlock(iframeDocument) {
 function waitForOpSection() {
     return new Promise(resolve => {
         const check = setInterval(() => {
+
             const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-            let sectionKey = iframe.contentDocument.querySelector('span[id^="mantine-"][id$="-target"]');
-            let operGroup = sectionKey.textContent.split('-')[0]
-            if (typeof operGroup !== "undefined" && operGroup === "ТП") {
+
+            // iframe ещё не появился
+            if (!iframe || !iframe.contentDocument) {
+                return; // просто ждём дальше
+            }
+
+            const sectionKey = iframe.contentDocument.querySelector('span[id^="mantine-"][id$="-target"]');
+
+            // элемент внутри iframe ещё не появился
+            if (!sectionKey) {
+                return;
+            }
+
+            const operGroup = sectionKey.textContent.split('-')[0];
+
+            if (operGroup === "ТП") {
                 clearInterval(check);
                 resolve(true);
             }
+
         }, 300);
     });
 }
+
 
 (async function startWhenReady() {
     await waitForOpSection(); // ← ждём пока opsection станет "ТП"

@@ -18,6 +18,10 @@ var win_Themes =  // описание элементов окна Тематик
                         </div>
 
 						<div>
+                            <input class="${exttheme}" id="search4Theme" placeholder="Поиск подтемы" title="Введите сюда слово или фразу для поиска по подтемам" style="margin-left: 20px; width: 78%; text-align: center; margin-bottom:18px;">
+                            <div id="foundSubthemes" style="margin-left:10px;display:flex; flex-wrap:wrap;">
+
+                            </div>
 							<input class="${exttheme}" id="linktojiracoment" placeholder="Ссылка на Jira" title="Введите сюда ссылку на Jira, чтобы по нажатию на ракету добавить ее и в заметки в чат и в поле АФ ссылка на Jira" style="margin-left: 20px; width: 78%; text-align: center; margin-bottom:5px;">
 							<button class="mainButton smallbtn" id="linktojirasend" title="Отправить введеную ссылку в комментарий чата и в поле Ссылка на Jira в АФ">🚀</button>
 						</div>
@@ -197,7 +201,8 @@ function refreshThemesBtns() { // функция обновляет темати
                 var newBut = document.createElement('button')
                 newBut.textContent = c[0]
                 newBut.value = c[1]
-                newBut.classList.add('mainButton')
+                newBut.classList.add('mainButton', 'searchSubthemes')
+                newBut.setAttribute('data-theme', countOfthPages - 1)
                 if (c[2] != '') { newBut.title = c[2] } // если есть title добавляем его
                 if (c[3] != '') { addFontFlag = 1 } else { addFontFlag = 0 } // проверяем указан ли размер шрифта
                 if (addTagFlag == 0) {
@@ -343,3 +348,59 @@ if (KCThemesFlag == 1) {
         needtohide[i].style.display = 'none'
     }
 }
+
+document.getElementById("search4Theme").addEventListener("input", function () {
+    const query = this.value.toLowerCase().trim();
+    const foundField = document.getElementById('foundSubthemes');
+
+    // Если строка поиска пустая — очищаем и выходим
+    if (query === "") {
+        foundField.innerHTML = "";
+        return;
+    }
+
+    // Очищаем поле перед новым поиском
+    foundField.innerHTML = "";
+
+    const buttons = [...document.querySelectorAll(".searchSubthemes")].filter(btn => btn.name !== "tagssbtn");
+
+    buttons.forEach(btn => {
+        const text = btn.textContent.toLowerCase();
+
+        if (text.includes(query)) {
+            const clone = btn.cloneNode(true);
+            let sectionId = clone.getAttribute('data-theme') + "_pageth_button"
+            let themeNames = document.getElementById(sectionId).innerText;
+            console.log(themeNames)
+            foundField.appendChild(clone);
+
+            let cik = document.createElement('span');
+            cik.textContent = themeNames
+            cik.title = themeNames
+
+            // стиль шапочки
+            cik.style.position = "absolute";
+            cik.style.top = "-18px"; // выше кнопки, не перекрывает
+            cik.style.left = "50%";
+            cik.style.transform = "translateX(-50%)";
+            cik.style.background = "#0077cc";
+            cik.style.color = "white";
+            cik.style.padding = "2px 6px";
+            cik.style.borderRadius = "6px";
+            cik.style.fontSize = "10px";
+            cik.style.whiteSpace = "nowrap";
+            cik.style.width = "162px";
+            cik.style.overflow = "hidden";
+            cik.style.textOverflow = "ellipsis";
+            cik.style.zIndex = "2"; // поверх текста кнопки
+
+            // важно: кнопка должна быть relative
+            clone.style.position = "relative";
+            clone.style.marginBottom = "20px";
+            clone.appendChild(cik);
+
+
+        }
+    });
+});
+
