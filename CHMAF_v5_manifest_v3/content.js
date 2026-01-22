@@ -274,6 +274,15 @@ function setDisplayStyle(element, value) { // функция изменения 
     element.style.display = value;
 }
 
+
+  /*
+     * Creates a new draggable window element and appends it to the body.
+     * @param {string} id - The ID for the new window element.
+     * @param {string} topKey - The localStorage key for storing the 'top' position.
+     * @param {string} leftKey - The localStorage key for storing the 'left' position.
+     * @param {string} content - The HTML content to be inserted into the window.
+     * @returns {HTMLElement} The created window element.
+  */
 function createWindow(id, topKey, leftKey, content) { // Функция для создания окна и настройки стилей
     const windowElement = document.createElement('div');
     document.body.append(windowElement);
