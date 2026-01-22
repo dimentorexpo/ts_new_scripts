@@ -5,13 +5,18 @@ var win_FrozeChat =  // описание формы чтобы не давала
                         <div style="margin: 5px; width: 395px;" id="froze_chat_header">
                                 <button class="mainButton buttonHide" title="скрывает меню" id="hidefrozechat">hide</button>
 								<button class="mainButton smallbtn" id="clearallchathash">🧹</button>
-								<button class="mainButton smallbtn" id="arinfo" style="float:right; margin-right: 5px;" title="При добавлении хеша чата и выборе времени, по умолчанию 6 минут, по истечению которого в этот чат автоматически будет отправлен ответ по умолчанию Извините, что заставляю вас ждать, но мне нужно еще несколько минут 🙏">❓</button>
+								<button class="mainButton smallbtn" id="arinfo" style="float:right; margin-right: 5px;" title="При добавлении хеша чата и выборе времени, по умолчанию 6 минут, по истечению которого в этот чат автоматически будет отправлен ответ по умолчанию Извините за ожидание! Мне нужно еще немного времени, но я уже почти готов с ответом. Спасибо за ваше понимание! 🙏😊">❓</button>
                         </div>
 						<div>
 							<input id="chatfrozehash" class="${exttheme}" placeholder="Введите хэш чата" title="Введите хеш чата, которые хотите, чтобы через время скрипт отправил ответ от вашего имени" autocomplete="off" type="text" style="text-align: center; width: 290px; margin-left:5px">
-							<input id="frozetimer" class="${exttheme}" value="6" style="width:38px;" oninput="maxLengthCheck(this)" type="number" maxlength="2" min="0" max="59">
-							<span style="color:bisque;">min</span>
-							<button class="mainButton smallbtn" id="freezechat" title="Задать таймер автоответа">❄</button>
+                            <textarea id="chatfrozemsg" class="${exttheme}" placeholder="Введите текст сообщения для юзера или оставьте пустым"
+                                title="Введите текст сообщения для юзера или оставьте пустым, но будет отправлено сообщение по умолчанию Извините за ожидание! Мне нужно еще немного времени, но я уже почти готов с ответом. Спасибо за ваше понимание! 🙏😊 "
+                                autocomplete="off"
+                                style="text-align: center; width: 290px; margin-left:5px"></textarea>
+							<input id="frozetimer" class="${exttheme}" value="6" style="position:absolute;     right: 62px;  top: 37px; width:38px;" type="number" min="0" max="59">
+							<span style="color:bisque;position: absolute;right: 34px; top: 42px;">min</span>
+							<button class="mainButton smallbtn" id="freezechat" title="Задать таймер автоответа" style="    position: absolute;    right: 28px;    top: 72px;
+                            width: 66px;    height: 38px;    font-size: 22px;    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;">❄</button>
 						</div>
 			    </span>
                         <div style="margin: 5px; width: 400px" id="chats_hash_box">
@@ -52,6 +57,11 @@ function getbutFrozeChatButtonPress() {
     document.getElementById('freezechat').onclick = async function () {
 
         if (document.getElementById('chatfrozehash').value != '') {
+            let getMsgFromTextArea = document.getElementById('chatfrozemsg').value
+            let getHashChatFromInpute = document.getElementById('chatfrozehash').value.trim()
+            let textToSend = '';
+            let hashToSend = '';
+            document.getElementById('chatfrozemsg').value = ''
             function secondsToms(d) {
                 d = Number(d);
                 var m = Math.floor(d % 3600 / 60);
@@ -63,7 +73,23 @@ function getbutFrozeChatButtonPress() {
             }
 
             function sndmsgaftertime(session, hashchat) { // функция отправки сообщения в чат по айди сессии и хешу , ее потом включить сейчас для теста использую заметки
-                let notemsg = '<p>Извините, что заставляю вас ждать, но мне нужно еще несколько минут 🙏</p>';
+                let notemsg = '<p>Извините за ожидание! Мне нужно еще немного времени, но я уже почти готов с ответом. Спасибо за ваше понимание! 🙏😊</p>';
+
+                if (getHashChatFromInpute.split('/')[4] == "assigned") {
+                    hashToSend = getHashChatFromInpute.split('/')[5]
+                } else if (getHashChatFromInpute.split('/')[3] == "logs") {
+                    hashToSend = getHashChatFromInpute.split('/')[4]
+                } else {
+                    hashToSend = getHashChatFromInpute
+                }
+
+                if (getMsgFromTextArea.length === 0) {
+                    textToSend = notemsg;
+                } else {
+                    textToSend = getMsgFromTextArea
+                }
+
+
 
                 fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
                     "headers": {
@@ -74,7 +100,7 @@ function getbutFrozeChatButtonPress() {
                         "sec-fetch-site": "same-origin",
                         "x-csrf-token": aftoken
                     },
-                    "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + session + "\",\"conversationId\":\"" + hashchat + "\",\"text\":\"" + notemsg + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
+                    "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + session + "\",\"conversationId\":\"" + hashToSend + "\",\"text\":\"" + textToSend + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
                     "method": "POST",
                     "mode": "cors",
                     "credentials": "include"
@@ -100,8 +126,8 @@ function getbutFrozeChatButtonPress() {
 
             if (document.getElementById('chatfrozehash').value.split('/').length == 1) {
                 chathasharr.push(document.getElementById('chatfrozehash').value.trim())
-            } else if (document.getElementById('chatfrozehash').value.split('/')[2] == "hdi.skyeng.ru") {
-                chathasharr.push(document.getElementById('chatfrozehash').value.split('/')[6])
+            } else if (document.getElementById('chatfrozehash').value.split('/')[3] == "logs") {
+                chathasharr.push(document.getElementById('chatfrozehash').value.split('/')[4])
             } else if (document.getElementById('chatfrozehash').value.split('/')[4] == "assigned") {
                 chathasharr.push(document.getElementById('chatfrozehash').value.split('/')[5])
             }

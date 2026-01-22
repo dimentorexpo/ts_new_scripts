@@ -1227,8 +1227,7 @@
 
 	.rightPanelBtndark:hover {
 		opacity: 1 !important;
-		background: rgba(218, 165, 32, 0.8);
-		/* GoldenRod */
+		background: #8916dc;
 		color: black;
 		box-shadow: 0px 3px 1px rgba(218, 165, 32, 0.6);
 		text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.6);
@@ -1380,4 +1379,8 @@
 
 	#giftSack:hover {
 		animation: sackWiggle 1.5s ease-in-out infinite;
+	}
+
+	button.mainButton.additionalUserMenuBtn:hover {
+		background: blueviolet;
 	}
