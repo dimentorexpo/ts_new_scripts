@@ -1,5 +1,5 @@
 var win_addMenu = `
-<div class="menu-container">
+<div class="menu-container-ext">
     <span style="cursor: -webkit-grab;">
 
         <div>
