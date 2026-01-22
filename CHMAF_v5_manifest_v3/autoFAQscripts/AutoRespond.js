@@ -27,7 +27,6 @@ hideWindowOnClick('AF_FrozeChat', 'hidefrozechat');
 function getbutFrozeChatButtonPress() {
     let uniqarr = []; //уникальный массив. чтобы не было задвоение одного и того же хеша
     let chathasharr = []; // исходный массив, куда  заносятя все хеши чатов
-    let sessid = []; //массив сессий для каждого хеша чата
     let flagtimer = []; // флаг для проверки есть ли на чате таймаут, который выполнит функцию по истечении времени
     let timeoutsarr = []; // массив таймаутов
     let infoarr = []; // массив выводимого в HTML хеша чата с кнопкой таймера обратного отсчета и отмены
