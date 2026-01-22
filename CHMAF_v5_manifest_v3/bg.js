@@ -17,12 +17,19 @@ chrome.runtime.onInstalled.addListener((details) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     (async () => {
         switch (request.action) {
-            case 'getFetchRequest':
+
+            case 'getFetchRequest': {
+                const url = request.fetchURL;
+                const requestOptions = request.requestOptions;
+
                 try {
-                    const response = await fetch(request.fetchURL, request.requestOptions);
+                    const response = await fetch(url, requestOptions);
 
                     if (!response.ok) {
-                        throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+                        throw new Error(
+                            `Network response was not ok (проверь авторизацию в CRM, после чего повтори попытку): ` +
+                            response.status + " " + response.statusText
+                        );
                     }
 
                     const text = await response.text();
@@ -31,6 +38,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     sendResponse({ success: false, error: error.message });
                 }
                 break;
+            }
+
+            case 'get-extension-id': {
+                const extensionId = chrome.runtime.id;
+                sendResponse(extensionId);
+                break;
+            }
 
             default:
                 sendResponse({ success: false, error: "Unknown action" });
@@ -40,3 +54,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     return true; // Keep the message channel open for async response
 });
+
