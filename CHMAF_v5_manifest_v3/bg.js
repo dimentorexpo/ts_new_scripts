@@ -13,45 +13,32 @@ chrome.runtime.onInstalled.addListener((details) => {
     }
 });
 
-// Block of requests
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    (async () => {
-        switch (request.action) {
+//Block of requests
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
-            case 'getFetchRequest': {
-                const url = request.fetchURL;
-                const requestOptions = request.requestOptions;
+    if (request.action === 'getFetchRequest') {
+        const url = request.fetchURL;
+        const requestOptions = request.requestOptions;
 
-                try {
-                    const response = await fetch(url, requestOptions);
-
-                    if (!response.ok) {
-                        throw new Error(
-                            `Network response was not ok (проверь авторизацию в CRM, после чего повтори попытку): ` +
-                            response.status + " " + response.statusText
-                        );
-                    }
-
-                    const text = await response.text();
-                    sendResponse({ success: true, fetchansver: text });
-                } catch (error) {
-                    sendResponse({ success: false, error: error.message });
+        (async () => {
+            try {
+                const response = await fetch(url, requestOptions);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok (проверь авторизацию в CRM, после чего повтори попытку): ' + response.status + " " + response.statusText);
                 }
-                break;
+                const text = await response.text(); // Или response.json(), если ожидается JSON
+                sendResponse({ success: true, fetchansver: text });
+            } catch (error) {
+                sendResponse({ success: false, error: error.message });
             }
+        })();
 
-            case 'get-extension-id': {
-                const extensionId = chrome.runtime.id;
-                sendResponse(extensionId);
-                break;
-            }
+        return true; // Возвращаем true для асинхронной отправки ответа
+    }
 
-            default:
-                sendResponse({ success: false, error: "Unknown action" });
-                break;
-        }
-    })();
+    const extensionId = chrome.runtime.id
+    if (request.question === "get-extension-id") {
+        sendResponse(extensionId)
+    }
 
-    return true; // Keep the message channel open for async response
 });
-

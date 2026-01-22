@@ -92,10 +92,11 @@ function getbutFrozeChatButtonPress() {
                 cancelflag = [];
             }
 
-            async function getsesid(arg) { // функция получения Idsession из хеша чата для отправки заметок или сообщений в чат пользователю
-                doOperationsWithConversations(arg).then(r => r.json()).then(r => datachat = r)
-                return datachat.sessionId
+            async function getsesid(arg) {
+                const datachat = await doOperationsWithConversations(arg);
+                return datachat.sessionId;
             }
+
 
             if (document.getElementById('chatfrozehash').value.split('/').length == 1) {
                 chathasharr.push(document.getElementById('chatfrozehash').value.trim())
