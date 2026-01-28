@@ -24,13 +24,13 @@ const PHONE_ELEMENT_ID = 'phoneunhidden';
 const EMAIL_ELEMENT_ID = 'mailunhidden';
 
 const LINK_CONFIG = {
-    checkbalance: {
+    checkBalance: {
         url: (userId) => `https://billing-api.skyeng.ru/operations/user/${userId}/info`
     },
     GotoCRM: {
         url: (userId) => `https://crm2.skyeng.ru/persons/${userId}`
     },
-    partialpaymentinfo: {
+    partialPaymentinfo: {
         url: (userId) => `https://billing-api.skyeng.ru/installments?ownerId=${userId}&state=&perPage=50&currentPage=1`
     },
     subscriptioninfo: {
@@ -121,11 +121,11 @@ var win_serviceinfo =  // описание элементов окна инфо�
 							<input class="${exttheme}" id="idstudent" placeholder="ID У/П" title="Введите ID ученика для получения информации по услугам" autocomplete="off" type="text" style="text-align: center; width: 100px; border-radius:20px;">
 							<button title="запускает поиск по услугам" id="getidstudent" class="mainButton usinfoops">🚀</button>
 							<button title="Открывает список со всеми задачами пользователя" id="crmactivetasks" class="mainButton usinfoops">📋</button>
-							<button class="mainButton" title="TRM 2.0 для информации по П" id="newtrm" style="margin-left: 5px; display: none; width: 25.23px;">🗿</button>
+							<button class="mainButton" title="TRM 2.0 для информации по П" id="newTrm" style="margin-left: 5px; display: none; width: 25.23px;">🗿</button>
 							<button class="mainButton" title="Личная страница П, как видят ученики" id="personalteacherpage" style="margin-left: 5px; display: none; width: 25.23px;">🎭</button>
-							<button title="Изменяет Язык обслуживания для профиля на Русский" id="changelocalelng" class="mainButton usinfoops">🌍</button>
-							<button title="Открывает начислятор для проверки реального баланса ученика" id="checkbalance" class="mainButton usinfoops">💰</button>
-							<button title="Просмотр прошедших и предстоящих уроков" id="getpastandfuturelessons" class="mainButton usinfoops">📆</button>
+							<button title="Изменяет Язык обслуживания для профиля на Русский" id="changeLocaleLng" class="mainButton usinfoops">🌍</button>
+							<button title="Открывает начислятор для проверки реального баланса ученика" id="checkBalance" class="mainButton usinfoops">💰</button>
+							<button title="Просмотр прошедших и предстоящих уроков" id="getPastAndFutureLessons" class="mainButton usinfoops">📆</button>
 							<button title="очищает все поля" id="clearservinfo" class="mainButton usinfoops">🧹</button>
 				       	</div>
 						<div style="width: 320px; margin:5px; display:flex; justify-content:left;" id="input_field2">
@@ -134,7 +134,7 @@ var win_serviceinfo =  // описание элементов окна инфо�
 							<button title="Открывает админку редактирования пользователя/просмотра ролей" id="editadmbtn" class="mainButton usinfoops">✏</button>
 							<button title="Открывает историю чатов" id="catchathistory" class="mainButton usinfoops">🗄</button>
 							<button title="Открывает окно для просмотра когда и кто открывал/закрывал набор учеников для П" id="butTeacherNabor" class="mainButton" style="margin-left: 5px; display: none; width: 25.23px;"> 🚷</button>
-							<button title="Открывает меню для просмотра рассрочки" id="partialpaymentinfo" class="mainButton usinfoops">💸</button>
+							<button title="Открывает меню для просмотра рассрочки" id="partialPaymentinfo" class="mainButton usinfoops">💸</button>
 							<button title="Открывает меню для просмотра статуса подписки" id="subscriptioninfo" class="mainButton usinfoops">💵</button>
                             <button title="Отправить текст от имени пользователя через Vimbot" id="openVimbotWindowsUserinfo" class="mainButton usinfoops">▶️</button>
 						</div>
@@ -560,7 +560,7 @@ async function _fetchAndDisplayPersonalData(pdType, targetElementId) { //Фун�
             targetElement.textContent = value;
         } else {
             console.warn(`Значение для '${pdType}' не найдено в ответе.`, data);
-            targetElement.textContent = 'Не удалось получить данные';
+            targetElement.textContent = 'Не заполнен';
         }
 
     } catch (error) {
@@ -865,7 +865,7 @@ async function fetchAndDisplayLessons(type) {
 document.getElementById('getlessonfuture')?.addEventListener('click', () => fetchAndDisplayLessons('future'));
 
 // Locale changer handler with optimized structure
-document.getElementById('changelocalelng').addEventListener('click', async () => {
+document.getElementById('changeLocaleLng').addEventListener('click', async () => {
     // Get user ID safely with optional chaining
     const userId = document.getElementById('idstudent')?.value.trim();
     if (!userId) {
@@ -892,7 +892,7 @@ document.getElementById('changelocalelng').addEventListener('click', async () =>
 
     try {
         // Show loading state
-        const button = document.getElementById('changelocalelng');
+        const button = document.getElementById('changeLocaleLng');
         button.disabled = true;
         button.innerHTML = '⏳';
 
@@ -923,7 +923,7 @@ document.getElementById('changelocalelng').addEventListener('click', async () =>
         console.error('Locale change error:', error);
 
         // Reset button state
-        const button = document.getElementById('changelocalelng');
+        const button = document.getElementById('changeLocaleLng');
         button.disabled = false;
         button.innerHTML = '🌍';
     }
@@ -952,148 +952,112 @@ let nameofuser, teachername, studentname, responsedata, utczone, localtime;
 let servlocalestatus, avatarofuser, countryofuser, ageofuser;
 
 function getusernamecrm() {
-    const sid = idstudentField.value.trim()
-    const changeLocaleLngElement = document.getElementById('changelocalelng');
-    const checkBalanceElement = document.getElementById('checkbalance');
-    const partialPaymentInfoElement = document.getElementById('partialpaymentinfo');
-    const subscriptioninfoElement = document.getElementById('subscriptioninfo');
-    const getPastAndFutureLessonsElement = document.getElementById('getpastandfuturelessons');
-    const newTrmElement = document.getElementById('newtrm');
-    const TeachNabElement = document.getElementById('butTeacherNabor')
-    const personalTeacherPageElement = document.getElementById('personalteacherpage');
+    const sid = idstudentField.value.trim();
     avatarofuser = '';
     flagusertype = '';
 
     const fetchURL = `https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`;
-    const requestOptions = {
-        method: 'GET'
-    };
 
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otvetUsrCrmName = JSON.parse(response.fetchansver);
-
-            let name = otvetUsrCrmName.data.name + (otvetUsrCrmName.data.surname ? ` ${otvetUsrCrmName.data.surname}` : '');
-            if (otvetUsrCrmName.data.type == "student") {
-                pochtaStatus.innerText = "hidden"
-                telefonStatus.innerText = "hidden"
-
-                nameofuser = name;
-                usrName.textContent = nameofuser;
-                flagusertype = 'student'
-                usrType.textContent = "Ученик";
-                usrType.style = "color:#38cf7a; font-weight:900; text-align:center;";
-                usrAge.style.display = "";
-
-                let elemsToUnHide = document.getElementsByName('studentosFields')
-                elemsToUnHide.forEach(function (item) {
-                    item.style.display = ""
-                })
-
-                pochtaIdentity.style.display = "";
-                telefonIdentity.style.display = "";
-                checkBalanceElement.style.display = "";
-                usrAge.style.display = "";
-                partialPaymentInfoElement.style.display = "";
-                subscriptioninfoElement.style.display = "";
-                getPastAndFutureLessonsElement.style.display = "";
-                newTrmElement.style.display = "none";
-                TeachNabElement.style.display = "none";
-                personalTeacherPageElement.style.display = "none";
-                if (otvetUsrCrmName.data.avatarUrl) {
-                    avatarofuser = otvetUsrCrmName.data.avatarUrl.match(/https:\/\/cdn-auth-avatars\.skyeng\.ru\/\d+\/[a-f0-9-]+$/)[0];
-                }
-
-                servlocalestatus = otvetUsrCrmName.data.serviceLocale || "⭕";
-
-                if (servlocalestatus === "ru") {
-                    changeLocaleLngElement.style.display = "none";
-                } else if (servlocalestatus !== "ru" || servlocalestatus === "⭕") {
-                    changeLocaleLngElement.style.display = "";
-                }
-                usrServLanguage.textContent = servlocalestatus;
-
-            } else if (otvetUsrCrmName.data.type == "teacher") {
-                teachername = name;
-
-                usrName.textContent = teachername;
-                flagusertype = 'teacher'
-                usrType.textContent = "Преподаватель";
-                usrType.style = "color:#00BFFF; font-weight:900; text-align:center;";
-                usrAge.style.display = "none";
-
-                let elemsToHide = document.getElementsByName('studentosFields')
-                elemsToHide.forEach(function (item) {
-                    item.style.display = "none"
-                })
-
-                pochtaIdentity.style.display = "none";
-                telefonIdentity.style.display = "none";
-                usrAge.style.display = "none";
-                changeLocaleLngElement.style.display = "none";
-                checkBalanceElement.style.display = "none";
-                partialPaymentInfoElement.style.display = "none";
-                subscriptioninfoElement.style.display = "none";
-                getPastAndFutureLessonsElement.style.display = "none";
-                newTrmElement.style.display = "";
-                TeachNabElement.style.display = "";
-                personalTeacherPageElement.style.display = "";
-                if (otvetUsrCrmName.data.avatarUrl) {
-                    avatarofuser = otvetUsrCrmName.data.avatarUrl.match(/https:\/\/cdn-auth-avatars\.skyeng\.ru\/\d+\/[a-f0-9-]+$/)[0];
-                }
-
-                document.getElementById('servicetable').innerHTML = ''
+    chrome.runtime.sendMessage(
+        { action: 'getFetchRequest', fetchURL, requestOptions: { method: 'GET' } },
+        function (response) {
+            if (!response.success) {
+                alert('Не удалось выполнить запрос: ' + response.error);
+                return;
             }
 
-            countryofuser = otvetUsrCrmName.data.country || null;
-            usrCountry.textContent = countryofuser;
+            const data = JSON.parse(response.fetchansver).data;
+            const fullName = data.name + (data.surname ? ` ${data.surname}` : '');
 
-            if (document.getElementById('getusremail') != null) {
-                document.getElementById('getusremail').onclick = function () {
-                    copyToClipboard(document.getElementById('mailunhidden').textContent);
-                };
+            // --- Общие элементы ---
+            const studentFields = document.getElementsByName('studentosFields');
+            const isStudent = data.type === "student";
+            const isTeacher = data.type === "teacher";
+
+            flagusertype = data.type;
+            usrName.textContent = fullName;
+            usrType.textContent = isStudent ? "Ученик" : "Преподаватель";
+            usrType.style = isStudent
+                ? "color:#38cf7a; font-weight:900; text-align:center;"
+                : "color:#00BFFF; font-weight:900; text-align:center;";
+
+            // --- Аватар ---
+            if (data.avatarUrl) {
+                const match = data.avatarUrl.match(/https:\/\/cdn-auth-avatars\.skyeng\.ru\/\d+\/[a-f0-9-]+$/);
+                avatarofuser = match ? match[0] : '';
+            }
+            useravatar.style.display = avatarofuser ? "" : "none";
+            if (avatarofuser) useravatar.src = avatarofuser;
+
+            // --- Страна ---
+            usrCountry.textContent = data.country || null;
+
+            // --- Переключение UI блоков ---
+            const show = el => el && (el.style.display = "");
+            const hide = el => el && (el.style.display = "none");
+
+            const uiMap = {
+                student: [
+                    pochtaStatus, telefonStatus, usrAge,
+                    pochtaIdentity, telefonIdentity,
+                    checkBalance, partialPaymentinfo,
+                    subscriptioninfo, getPastAndFutureLessons
+                ],
+                teacher: [
+                    newTrm, butTeacherNabor, personalteacherpage
+                ]
+            };
+
+            // Скрываем всё
+            [...uiMap.student, ...uiMap.teacher].forEach(hide);
+            studentFields.forEach(el => hide(el));
+
+            // Показываем нужное
+            if (isStudent) {
+                uiMap.student.forEach(show);
+                studentFields.forEach(show);
+            } else {
+                uiMap.teacher.forEach(show);
+                hide(usrAge);
+                document.getElementById('servicetable').innerHTML = '';
             }
 
-            if (document.getElementById('getusrphone') != null) {
-                document.getElementById('getusrphone').onclick = function () {
-                    copyToClipboard(document.getElementById('phoneunhidden').textContent);
-                };
-            }
+            // --- Язык сервиса ---
+            servlocalestatus = data.serviceLocale || "⭕";
+            usrServLanguage.textContent = servlocalestatus;
+            changeLocaleLng.style.display = servlocalestatus === "ru" ? "none" : "";
 
-            const userAvatarElement = document.querySelector('#useravatar');
+            // --- Копирование почты/телефона ---
+            const mailBtn = document.getElementById('getusremail');
+            const phoneBtn = document.getElementById('getusrphone');
+            if (mailBtn) mailBtn.onclick = () => copyToClipboard(mailunhidden.textContent);
+            if (phoneBtn) phoneBtn.onclick = () => copyToClipboard(phoneunhidden.textContent);
 
-            if (avatarofuser != null && avatarofuser != '') {
-                userAvatarElement.style.display = "";
-                userAvatarElement.src = avatarofuser;
-            }
+            // --- Время ---
+            const utc = data.utcOffset;
+            utcOffset.textContent = utc;
+            UTCtoMSK.textContent = utc - 3;
 
-            let utcZoneLnk = document.getElementById('utcOffset')
-            let MSKdifference = document.getElementById('UTCtoMSK')
-            let localMSKTime = document.getElementById('localTime')
-            let curdate = new Date();
-            utczone = otvetUsrCrmName.data.utcOffset;
-            utcZoneLnk.textContent = utczone
-            MSKdifference.textContent = (utczone - 3)
-            let curhours = (curdate.getUTCHours() + 3);
-            localtime = new Date(curdate.getTime() + utczone * 60 * 60 * 1000).toISOString().substr(11, 5);
-            localMSKTime.textContent = localtime
+            const now = new Date();
+            const local = new Date(now.getTime() + utc * 3600000)
+                .toISOString()
+                .substr(11, 5);
 
+            localTime.textContent = local;
 
-            let currentYear = curdate.getFullYear();
-            if (otvetUsrCrmName.data.birthday) {
-                let birthYear = parseInt(otvetUsrCrmName.data.birthday.split('-')[0]);
-                let age = currentYear - birthYear;
-                ageofuser = age < 18 ? "🔞" : (age >= 18 && age < 99 ? "🅰" : "❓");
+            // --- Возраст ---
+            if (data.birthday) {
+                const birthYear = Number(data.birthday.split('-')[0]);
+                const age = now.getFullYear() - birthYear;
+                ageofuser = age < 18 ? "🔞" : age < 99 ? "🅰" : "❓";
             } else {
                 ageofuser = "❓";
             }
             usrAge.textContent = ageofuser;
         }
-    })
+    );
 }
+
 
 let getcrmstatusinfo;
 let crmresponseinfo;
@@ -1451,7 +1415,7 @@ document.getElementById('crmactivetasks').onclick = function () { //открыв
     window.open("https://crm2.skyeng.ru/persons/" + idstudentField.value.trim() + "/customer-support/list")
 }
 
-document.getElementById('newtrm').onclick = function () { //открывает новый TRM 2.0 п
+document.getElementById('newTrm').onclick = function () { //открывает новый TRM 2.0 п
     window.open("https://trm.skyeng.ru/teacher/" + idstudentField.value.trim())
 }
 
@@ -1464,8 +1428,8 @@ document.getElementById('clearservinfo').onclick = function () { //очищае�
     document.getElementById('servicetable').innerHTML = "";
     document.getElementById('CrmStatus').style.display = "none";
     document.getElementById('getcurrentstatus').style.display = "none";
-    document.getElementById('changelocalelng').style.display = "";
-    document.getElementById('getpastandfuturelessons').style.display = "";
+    document.getElementById('changeLocaleLng').style.display = "";
+    document.getElementById('getPastAndFutureLessons').style.display = "";
     document.querySelector('#useravatar').src = "";
     document.querySelector('#useravatar').style.display = "none";
     document.getElementById('AF_Timetable').style.display = "none";
@@ -1490,7 +1454,7 @@ document.getElementById('useravatar').onmouseout = function () { // взаимо
     document.getElementById('useravatar').style.height = "60px";
 }
 
-document.getElementById('getpastandfuturelessons').onclick = function () { //открывает меню прошедших и предстоящих уроков
+document.getElementById('getPastAndFutureLessons').onclick = function () { //открывает меню прошедших и предстоящих уроков
     if (document.getElementById('AF_Timetable').style.display == '')
         document.getElementById('AF_Timetable').style.display = 'none'
     else
