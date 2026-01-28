@@ -275,14 +275,14 @@ function setDisplayStyle(element, value) { // функция изменения 
 }
 
 
-  /*
-     * Creates a new draggable window element and appends it to the body.
-     * @param {string} id - The ID for the new window element.
-     * @param {string} topKey - The localStorage key for storing the 'top' position.
-     * @param {string} leftKey - The localStorage key for storing the 'left' position.
-     * @param {string} content - The HTML content to be inserted into the window.
-     * @returns {HTMLElement} The created window element.
-  */
+/*
+   * Creates a new draggable window element and appends it to the body.
+   * @param {string} id - The ID for the new window element.
+   * @param {string} topKey - The localStorage key for storing the 'top' position.
+   * @param {string} leftKey - The localStorage key for storing the 'left' position.
+   * @param {string} content - The HTML content to be inserted into the window.
+   * @returns {HTMLElement} The created window element.
+*/
 function createWindow(id, topKey, leftKey, content) { // Функция для создания окна и настройки стилей
     const windowElement = document.createElement('div');
     document.body.append(windowElement);
@@ -1049,7 +1049,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     document.getElementById('butMarks').onclick = getbutMarksButtonPress;
     document.getElementById('smartroomform').onclick = getsmartroomformButtonPress;
     document.getElementById('butLessonInfo').onclick = getbutLessonInfoButtonPress;
-    document.getElementById('radioPlayer').onclick = getradioPlayerButtonPress;
+    document.getElementById('radioPlayer').onclick = toggleRadioWindow;
     document.getElementById('buttonGetStat').onclick = getbuttonGetStatButtonPress;
     document.getElementById('butFrozeChat').onclick = getbutFrozeChatButtonPress;
     document.getElementById('buttonGetQueue').onclick = getQueuePress;

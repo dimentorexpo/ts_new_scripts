@@ -802,11 +802,6 @@
 		overflow-y: auto;
 	}
 
-	#audioControls {
-		display: flex;
-		justify-content: space-evenly;
-	}
-
 	li.active {
 		background: #3cbb56;
 		border-radius: 10px;
@@ -831,11 +826,6 @@
 	#player {
 		width: 550px;
 		margin-left: 25px;
-	}
-
-	.deleteline:hover {
-		background: red !important;
-		font-weight: 700 !important;
 	}
 
 	#pauseAudio {
@@ -1383,4 +1373,116 @@
 
 	button.mainButton.additionalUserMenuBtn:hover {
 		background: blueviolet;
+	}
+
+	#AF_Radio {
+		position: absolute;
+		border: 1px solid #555;
+		background-color: #333;
+		color: #eee;
+		border-radius: 8px;
+		box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+		font-family: sans-serif;
+		user-select: none;
+		z-index: 999999999;
+		display: none;
+		/* Изначально скрыто */
+	}
+
+	#AF_Radio .window-header {
+		padding: 8px;
+		background-color: #444;
+		cursor: move;
+		border-top-left-radius: 8px;
+		border-top-right-radius: 8px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	#AF_Radio .window-header span {
+		cursor: -webkit-grab;
+		flex-grow: 1;
+		display: flex;
+		align-items: center;
+	}
+
+	#AF_Radio .mainplayer {
+		padding: 10px;
+	}
+
+	#audioControls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		align-items: center;
+		margin-bottom: 10px;
+	}
+
+	#audioControls input[type="text"] {
+		padding: 5px;
+		border: 1px solid #666;
+		background-color: #444;
+		color: #eee;
+		border-radius: 5px;
+	}
+
+	#audioList {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		max-height: 200px;
+		overflow-y: auto;
+		border: 1px solid #555;
+		border-radius: 5px;
+		width: 100%
+	}
+
+	#audioList li {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 8px 12px;
+		cursor: pointer;
+		border-bottom: 1px solid #444;
+		transition: background-color 0.2s;
+	}
+
+	#audioList li:last-child {
+		border-bottom: none;
+	}
+
+	#audioList li:hover {
+		background-color: #4a4a4a;
+	}
+
+	#audioList li.active {
+		background-color: #007bff;
+		color: white;
+	}
+
+	.deleteline {
+		background-color: #c82333;
+		border-color: #bd2130;
+		font-weight: 700 !important;
+		color: white;
+		padding: 2px 6px;
+		font-size: 0.8em;
+	}
+
+	.deleteline:hover {
+		background-color: #a01c29;
+	}
+
+	#changeRadioVolume {
+		width: 100px;
+	}
+
+	.header-btn {
+		background: none;
+		border: none;
+		color: bisque;
+		font-weight: bold;
+		cursor: pointer;
+		padding: 0 10px;
 	}

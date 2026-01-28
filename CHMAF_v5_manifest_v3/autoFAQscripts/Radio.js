@@ -1,160 +1,252 @@
-let audioListItems;
-var win_Radio =  // описание элементов окна радио
-    `<div style="display: flex; width: 625px;">
-    <span style="width: 625px">
-        <span style="cursor: -webkit-grab;">
-            <div style="margin: 5px; width: 625;" id="links_1str">
-                <button class="mainButton buttonHide" title="Скрытие меню" id="hideMeRadio">hide</button>
-                <button class="mainButton" class="rotateDisc" style="margin-left:30%">📀</button>
-                <span style="color:bisque">Play'O'Neer</span>
-                <button class="mainButton" class="rotateDisc">📀</button>
+// === НАЧАЛО ОПТИМИЗИРОВАННОГО И ИСПРАВЛЕННОГО КОДА ===
+
+// --- 1. КОНФИГУРАЦИЯ, СТИЛИ И HTML ---
+const win_Radio = `
+    <div id="AF_Radio_content" style="display: flex; width: 650px;">
+        <div style="width: 100%;">
+            <div class="window-header" id="links_1str">
+                <!-- Кнопка для открытия/переключения окна -->
+                <span style="flex-grow: 1; text-align: center;">
+                    <button class="mainButton buttonHide" title="Скрыть меню" id="hideMeRadio">hide</button>
+                    <button class="mainButton rotateDisc" style="margin-left:30%">📀</button>
+                    <span style="color:bisque; margin: 0 10px;">Play'O'Neer</span>
+                    <button class="mainButton rotateDisc" style="margin-right:40%">📀</button>
+                </span>
             </div>
             <div id="audioPlayer" class="mainplayer">
                 <div id="audioControls">
-                    <input class="${exttheme}" type="text" id="audioUrl" style="text-align: center; border-radius: 10px;"
-                        placeholder="Enter Radio URL">
-                    <input class="${exttheme}" type="text" id="audioName" style="text-align: center; border-radius: 10px; width:120px;"
-                        placeholder="Enter Radio name">
-                    <button class="mainButton" id="addAudio">➕</button>
-                    <button class="mainButton" id="playAudio">▶</button>
-                    <button class="mainButton" id="pauseAudio">⏸</button>
+                    <input class="${exttheme || ''}" type="text" id="audioUrl" placeholder="URL радио" style="flex-grow: 1;">
+                    <input class="${exttheme || ''}" type="text" id="audioName" placeholder="Название" style="width:120px;">
+                    <button class="mainButton" id="addAudio" title="Добавить">➕</button>
+                    <button class="mainButton" id="playAudio" title="Играть">▶</button>
+                    <button class="mainButton" id="pauseAudio" title="Пауза">⏸</button>
                     <input id="changeRadioVolume" min="0" max="1" value="1.0" step="0.025" type="range">
-                    <button class="mainButton" id="muteAudio">🔇Mute</button>
+                    <button class="mainButton" id="muteAudio" title="Выкл/Вкл звук">🔇</button>
                 </div>
-                <ol id="audioList" style="width:570px;"></ol>
-                <audio id="player"></audio>
+                <ol id="audioList"></ol>
+                <audio id="player" style="display:none;"></audio>
             </div>
-        </span>
-</span>
-</div>`;
+        </div>
+    </div>
+`;
 
+// --- 2. ИНИЦИАЛИЗАЦИЯ ОКНА И УПРАВЛЕНИЕ СОСТОЯНИЕМ ---
+
+// Создаем окно (предполагается, что эта функция у вас есть)
 const wintRadio = createWindow('AF_Radio', 'winTopRadio', 'winLeftRadio', win_Radio);
 hideWindowOnDoubleClick('AF_Radio');
-hideWindowOnClick('AF_Radio', 'hideMeRadio');
+// hideWindowOnClick('AF_Radio', 'hideMeRadio'); // Эта логика теперь внутри toggleRadioWindow
 
-let audioUrls = JSON.parse(localStorage.getItem("audioUrls")) || [];
-let audioNames = JSON.parse(localStorage.getItem("audioNames")) || [];
+const STORAGE_KEY = 'radioStations';
+const VOLUME_KEY = 'radioVolume';
 
-let audioPlayer = document.getElementById("audioPlayer");
-let audioUrl = document.getElementById("audioUrl");
-let audioName = document.getElementById("audioName");
-let addAudio = document.getElementById("addAudio");
-let playAudio = document.getElementById("playAudio");
-let pauseAudio = document.getElementById("pauseAudio");
-let audioList = document.getElementById("audioList");
-let player = document.getElementById("player");
-let volume = document.getElementById("volume");
+let stations = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+let currentStationUrl = null;
 
-if (localStorage.getItem("volume")) {
-    player.volume = localStorage.getItem("volume");
+// --- 3. КЭШИРОВАНИЕ DOM-ЭЛЕМЕНТОВ (ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННЫХ) ---
+// ЭТОТ БЛОК ДОЛЖЕН БЫТЬ ДО ФУНКЦИЙ, КОТОРЫЕ ИСПОЛЬЗУЮТ `dom`
+
+const dom = {
+    window: document.getElementById('AF_Radio'),
+    hideBtn: document.getElementById('hideMeRadio'),
+    audioUrlInput: document.getElementById('audioUrl'),
+    audioNameInput: document.getElementById('audioName'),
+    addBtn: document.getElementById('addAudio'),
+    playBtn: document.getElementById('playAudio'),
+    pauseBtn: document.getElementById('pauseAudio'),
+    muteBtn: document.getElementById('muteAudio'),
+    volumeSlider: document.getElementById('changeRadioVolume'),
+    audioList: document.getElementById('audioList'),
+    player: document.getElementById('player'),
+    // Ссылки на другие элементы интерфейса, которые нужно скрывать
+    idmymenu: document.getElementById('idmymenu'),
+    mainMenuBtn: document.getElementById('MainMenuBtn'),
+};
+
+// --- 4. ОСНОВНЫЕ ФУНКЦИИ (ОБЪЯВЛЯЮТСЯ ПОСЛЕ ИНИЦИАЛИЗАЦИИ `dom`) ---
+
+function saveStations() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stations));
 }
 
-function createAudioElement(url, name) {
-    let newAudio = document.createElement("li");
-    newAudio.style = "cursor:pointer";
-    newAudio.setAttribute("name", "radiolist")
-    newAudio.classList = 'radiolist'
-    let deleteBtn = document.createElement("button");
-    deleteBtn.innerHTML = "❌";
-    deleteBtn.style = "margin: 5px; width:30px; border: 1px solid darkslategrey; cursor:pointer; border-radius: 10px;";
-    deleteBtn.classList.add('deleteline', 'mainButton')
-    newAudio.appendChild(deleteBtn);
-    newAudio.appendChild(document.createTextNode(name));
-    newAudio.addEventListener("click", function () {
-        player.src = url;
-        player.play();
-    });
+function saveVolume(volume) {
+    localStorage.setItem(VOLUME_KEY, volume);
+}
 
-    deleteBtn.addEventListener("click", function () {
-        let question = confirm("Вы уверены, что хотите удалить эту позицию из списка?")
-        if (question) {
-            const index = audioUrls.indexOf(url);
-            audioUrls.splice(index, 1);
-            audioNames.splice(index, 1);
-            localStorage.setItem("audioUrls", JSON.stringify(audioUrls));
-            localStorage.setItem("audioNames", JSON.stringify(audioNames));
-            audioList.removeChild(newAudio);
+function renderStations() {
+    dom.audioList.innerHTML = '';
+    if (stations.length === 0) {
+        dom.audioList.innerHTML = '<li style="text-align:center; color:#888; padding: 10px;">Список пуст</li>';
+        return;
+    }
+    stations.forEach((station, index) => {
+        const li = document.createElement('li');
+        li.dataset.url = station.url;
+        li.dataset.index = index;
+        if (station.url === currentStationUrl) {
+            li.classList.add('active');
+        }
+        li.innerHTML = `
+            <span>${station.name || 'Без названия'}</span>
+            <button class="mainButton deleteline" data-action="delete" title="Удалить">❌</button>
+        `;
+        dom.audioList.appendChild(li);
+    });
+}
+
+function addStation() {
+    const url = dom.audioUrlInput.value.trim();
+    const name = dom.audioNameInput.value.trim() || `Радио ${stations.length + 1}`;
+    if (!url) {
+        alert('Пожалуйста, введите URL радиостанции.');
+        return;
+    }
+    try {
+        new URL(url);
+    } catch (_) {
+        alert('Пожалуйста, введите корректный URL.');
+        return;
+    }
+    stations.push({ url, name });
+    saveStations();
+    renderStations();
+    dom.audioUrlInput.value = '';
+    dom.audioNameInput.value = '';
+    dom.audioUrlInput.focus();
+}
+
+function deleteStation(index) {
+    if (confirm('Вы уверены, что хотите удалить эту станцию?')) {
+        const deletedStation = stations[index];
+        stations.splice(index, 1);
+        saveStations();
+        if (deletedStation.url === currentStationUrl) {
+            dom.player.pause();
+            dom.player.src = '';
+            currentStationUrl = null;
+        }
+        renderStations();
+    }
+}
+
+function playStation(url) {
+    if (dom.player.src === url && !dom.player.paused) {
+        return;
+    }
+    dom.player.src = url;
+    dom.player.play().catch(error => {
+        console.error("Ошибка воспроизведения:", error);
+        alert("Не удалось воспроизвести радио.");
+        currentStationUrl = null;
+        renderStations();
+    });
+    currentStationUrl = url;
+    renderStations();
+}
+
+function handleListClick(event) {
+    const target = event.target;
+    const li = target.closest('li[data-url]');
+    if (!li) return;
+    if (target.dataset.action === 'delete') {
+        const index = parseInt(li.dataset.index, 10);
+        deleteStation(index);
+        return;
+    }
+    const url = li.dataset.url;
+    playStation(url);
+}
+
+/**
+ * Ваша функция, адаптированная и улучшенная.
+ * Теперь она безопасно использует объект `dom`.
+ */
+function toggleRadioWindow() {
+    // Проверяем, существует ли окно, чтобы избежать ошибок
+    if (!dom.window) return;
+
+    const isHidden = dom.window.style.display === 'none';
+
+    // Переключаем видимость окна радио
+    dom.window.style.display = isHidden ? 'block' : 'none';
+
+    // Логика скрытия других элементов
+    if (dom.idmymenu) {
+        dom.idmymenu.style.display = 'none';
+    }
+    if (dom.mainMenuBtn) {
+        dom.mainMenuBtn.classList.remove('activeScriptBtn');
+    }
+}
+
+// --- 5. ИНИЦИАЛИЗАЦИЯ И НАЗНАЧЕНИЕ ОБРАБОТЧИКОВ (В САМОМ КОНЦЕ) ---
+
+// Загрузка громкости из localStorage
+const savedVolume = localStorage.getItem(VOLUME_KEY);
+if (savedVolume) {
+    dom.player.volume = parseFloat(savedVolume);
+    dom.volumeSlider.value = savedVolume;
+}
+
+// Начальная отрисовка списка
+renderStations();
+
+// Назначение обработчиков событий (теперь все функции и переменные готовы)
+if (dom.toggleBtn) {
+    dom.toggleBtn.addEventListener('click', toggleRadioWindow);
+}
+if (dom.hideBtn) {
+    dom.hideBtn.addEventListener('click', toggleRadioWindow);
+}
+
+if (dom.addBtn) dom.addBtn.addEventListener('click', addStation);
+if (dom.playBtn) dom.playBtn.addEventListener('click', () => {
+    if (currentStationUrl) {
+        dom.player.play();
+    } else if (stations.length > 0) {
+        playStation(stations[0].url);
+    }
+});
+if (dom.pauseBtn) dom.pauseBtn.addEventListener('click', () => dom.player.pause());
+if (dom.audioList) dom.audioList.addEventListener('click', handleListClick);
+
+if (dom.volumeSlider) {
+    dom.volumeSlider.addEventListener('input', (e) => {
+        const newVolume = e.target.value;
+        dom.player.volume = newVolume;
+        saveVolume(newVolume);
+    });
+}
+
+if (dom.muteBtn) {
+    dom.muteBtn.addEventListener('click', () => {
+        dom.player.muted = !dom.player.muted;
+        if (dom.player.muted) {
+            dom.muteBtn.innerHTML = '📢';
+            dom.muteBtn.title = 'Включить звук';
+        } else {
+            dom.muteBtn.innerHTML = '🔇';
+            dom.muteBtn.title = 'Выключить звук';
+            dom.player.volume = dom.volumeSlider.value;
+            saveVolume(dom.player.volume);
         }
     });
-    return newAudio;
 }
 
-function getradioPlayerButtonPress() {
-    if (document.getElementById('AF_Radio').style.display == 'none') {
-        document.getElementById('AF_Radio').style.display = ''
-        document.getElementById('idmymenu').style.display = 'none'
-        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-    } else {
-        document.getElementById('AF_Radio').style.display = 'none'
-        document.getElementById('idmymenu').style.display = 'none'
-        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-    }
+if (dom.player) {
+    dom.player.addEventListener('volumechange', () => {
+        if (!dom.player.muted) {
+            dom.volumeSlider.value = dom.player.volume;
+            saveVolume(dom.player.volume);
+        }
+    });
+
+    dom.player.addEventListener('error', (e) => {
+        console.error("Ошибка плеера:", e);
+        alert(`Ошибка загрузки радио: ${dom.player.src}`);
+        currentStationUrl = null;
+        renderStations();
+    });
 }
 
-addAudio.addEventListener("click", function () {
-    let url = audioUrl.value;
-    let name = audioName.value;
-    audioUrls.push(url);
-    audioNames.push(name);
-    localStorage.setItem("audioUrls", JSON.stringify(audioUrls));
-    localStorage.setItem("audioNames", JSON.stringify(audioNames));
-    audioList.appendChild(createAudioElement(url, name));
-    audioUrl.value = "";
-    audioName.value = "";
-    addClickListener();
-});
-
-if (audioUrls.length > 0) {
-    for (let i = 0; i < audioUrls.length; i++) {
-        audioList.appendChild(createAudioElement(audioUrls[i], audioNames[i]));
-        addClickListener();
-    }
-}
-
-playAudio.addEventListener("click", function () {
-    player.play();
-});
-
-pauseAudio.addEventListener("click", function () {
-    player.pause();
-});
-
-player.addEventListener("volumechange", function () {
-    localStorage.setItem("volume", player.volume);
-});
-
-function addClickListener() {
-    audioListItems = document.getElementsByName('radiolist');
-    for (let i = 0; i < audioListItems.length; i++) {
-        audioListItems[i].addEventListener('click', function () {
-            for (let j = 0; j < audioListItems.length; j++) {
-                audioListItems[j].classList.remove('active');
-            }
-            this.classList.toggle('active');
-        });
-    }
-}
-
-function muteorunmute() {
-    if (player.muted) {
-        player.muted = false;
-        muteAudio.innerHTML = "🔇Mute";
-        localStorage.setItem("volume", audioPlayer.volume);
-    } else {
-        player.muted = true;
-        muteAudio.innerHTML = "📢Unmute";
-    }
-}
-
-let volRange = document.getElementById('changeRadioVolume');
-volRange.value = localStorage.getItem('volume');
-
-
-volRange.onchange = function () {
-    if (localStorage.getItem('volume') != null) {
-        player.volume = this.value;
-        localStorage.setItem('volume', player.volume);
-    } else localStorage.setItem('volume', this.value);
-}
-
-document.getElementById('muteAudio').addEventListener('click', muteorunmute)
+// === КОНЕЦ ОПТИМИЗИРОВАННОГО И ИСПРАВЛЕННОГО КОДА ===
