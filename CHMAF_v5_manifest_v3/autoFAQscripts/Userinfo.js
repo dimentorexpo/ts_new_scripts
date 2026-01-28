@@ -1,9 +1,111 @@
+// --- КОНФИГУРАЦИЯ И КОНСТАНТЫ ---
+// Выносим "магические строки" в константы для легкого изменения и избежания опечаток.
+
 let usrServLanguage
 let usrAge
 let usrName
 let usrCountry
 let usrType
 let stid;
+let servicecontainer = null;
+
+const IDENTITY_EMAIL_DISABLED_ATTR = '"identityEmail" disabled data-value=""';
+const IDENTITY_PHONE_DISABLED_ATTR = '"identityPhone" disabled data-value=""';
+
+const STATUS_ICONS = {
+    VALID: '✅',
+    INVALID: '❌',
+    EMAIL: '📧',
+    PHONE: '☎️',
+};
+
+const API_BASE_URL = 'https://backend.skyeng.ru/api/persons';
+const PHONE_ELEMENT_ID = 'phoneunhidden';
+const EMAIL_ELEMENT_ID = 'mailunhidden';
+
+const LINK_CONFIG = {
+    checkbalance: {
+        url: (userId) => `https://billing-api.skyeng.ru/operations/user/${userId}/info`
+    },
+    GotoCRM: {
+        url: (userId) => `https://crm2.skyeng.ru/persons/${userId}`
+    },
+    partialpaymentinfo: {
+        url: (userId) => `https://billing-api.skyeng.ru/installments?ownerId=${userId}&state=&perPage=50&currentPage=1`
+    },
+    subscriptioninfo: {
+        // Обратите внимание: здесь тоже используется userId, а не value напрямую
+        url: (userId) => `https://billing-api.skyeng.ru/subscriptions/user/${userId}/info`
+    },
+    editadmbtn: {
+        url: (userId) => `https://id.skyeng.ru/admin/users/${userId}/update-contacts`
+    }
+};
+
+const PAST_LESSONS_CONFIG = {
+    // ID элементов
+    buttonId: 'getlessonpast',
+    outputElementId: 'timetabledata',
+    studentIdFieldId: 'idstudent', // Предполагаем, что это глобальная переменная или поле
+
+    // API и параметры
+    apiUrl: (userId) => `https://backend.skyeng.ru/api/students/${userId}/timetable/lessons-history/?page=0`,
+
+    // Словари для перевода статусов и типов уроков. Чисто и расширяемо.
+    STATUS_MAP: {
+        "missed_by_student": "Пропущен учеником",
+        "canceled_by_student": "Отменен учеником",
+        "success": "Прошел",
+        "moved_by_student": "Перенесен учеником",
+        "canceled_by_teacher": "Отменен учителем",
+        "student_refused_to_study": "Отказался от обучения",
+        "interrupted": "Прерван",
+        "did_not_get_through_student": "Не смогли связаться с У",
+        "canceled_not_marked": "Не отмечен учителем вовремя",
+    },
+    LESSON_TYPE_MAP: {
+        "regular": "Регулярный",
+        "single": "Одиночный",
+        "trial": "Пробный",
+    },
+    // Стили для разных статусов
+    STATUS_STYLES: {
+        "Прошел": { color: '#00FF7F', fontWeight: 'bold' },
+        "default": { color: 'coral', fontWeight: '700' },
+    }
+};
+
+const LESSONS_CONFIG = {
+    // ID элементов
+    buttonId: 'getlessonfuture', // Можно легко поменять на 'getlessonpast'
+    outputElementId: 'timetabledata',
+    studentIdFieldId: 'idstudent',
+
+    // API
+    apiUrls: {
+        future: (userId) => `https://backend.skyeng.ru/api/students/${userId}/timetable/future-lessons/`,
+        past: (userId) => `https://backend.skyeng.ru/api/students/${userId}/timetable/lessons-history/?page=0`,
+    },
+
+    // Словари для перевода
+    LESSON_TYPE_MAP: {
+        "regular": "Регулярный",
+        "single": "Одиночный",
+        "trial": "Пробный",
+    },
+
+    // Стили
+    STATUS_STYLES: {
+        "Прошел": { color: '#00FF7F', fontWeight: 'bold' },
+        "default": { color: 'coral', fontWeight: '700' },
+    },
+
+    // ВАЖНО: Зависимость servicecontainer должна быть передана явно, а не браться из глобальной области.
+    // Здесь мы предполагаем, что она будет передана или загружена.
+    // Для примера, оставим как есть, но с комментарием.
+    serviceContainer: window.servicecontainer || null, // Пытаемся взять из глобальной области
+};
+
 var win_serviceinfo =  // описание элементов окна информации об услугах и пользователе
     `<div style="display: flex; width: 320px;">
         <span style="width: 320px">
@@ -120,9 +222,6 @@ const wintServices = createWindow('AF_Service', 'winTopService', 'winLeftService
 const wintTimetable = createWindow('AF_Timetable', 'winTopTimetable', 'winLeftTimetable', win_Timetable);
 const wintComplectations = createWindow('AF_Complectations', 'winTopComplectations', 'winLeftComplectations', win_Complectations);
 
-const idstudentField = document.getElementById('idstudent');
-const getidstudentbtn = document.getElementById('getidstudent');
-
 document.getElementById('servicehead').ondblclick = function (a) { // скрытие окна вензель user info по двойному клику
     if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') {
         document.getElementById('AF_Service').style.display = 'none';
@@ -136,70 +235,188 @@ document.getElementById('hideMeservice').onclick = function () { // скрыти
     document.getElementById('butServ').classList.remove('activeScriptBtn')
 }
 
-document.getElementById('dounhidemailandphone').onclick = function () {
-    getunhideemail();
-    getunhidephone();
-    checkemailandphoneidentity()
+////////////////////////
+// Находим кнопку один раз, а не при каждом клике
+const unhideButton = document.getElementById('dounhidemailandphone');
+
+// Проверяем, что кнопка существует, чтобы избежать ошибок
+if (unhideButton) {
+    // Делаем обработчик асинхронным
+    unhideButton.onclick = async function () {
+        // --- Подготовка UI: блокируем кнопку и показываем состояние загрузки ---
+        this.disabled = true;
+        const originalText = this.textContent;
+        this.textContent = '⏳';
+
+        try {
+            // --- Параллельное выполнение независимых запросов ---
+            // Promise.all запускает оба запроса одновременно и ждет завершения обоих.
+            // Это быстрее, чем ждать их по очереди (await getUnhideEmail(); await getUnhidePhone();).
+            await Promise.all([
+                getUnhideEmail(),
+                getUnhidePhone()
+            ]);
+
+            // --- Последовательное выполнение зависимого запроса ---
+            // Этот запрос выполняется только после того, как email и телефон получены.
+            await checkEmailAndPhoneIdentity();
+
+            // Опционально: можно показать сообщение об успехе
+            // alert('Данные успешно обновлены!');
+
+        } catch (error) {
+            // --- Централизованная обработка ошибок ---
+            // Этот блок перехватит любую ошибку из любой из трех функций.
+            console.error('Произошла ошибка при обновлении данных:', error);
+            alert(`Не удалось обновить данные: ${error.message}`);
+            // Опционально: можно очистить поля в случае ошибки
+            document.getElementById('mailunhidden').textContent = '';
+            document.getElementById('phoneunhidden').textContent = '';
+            document.getElementById('pochtaStatus').textContent = '';
+            document.getElementById('telefonStatus').textContent = '';
+
+        } finally {
+            // --- Финальная очистка: выполняется всегда (и при успехе, и при ошибке) ---
+            // Возвращаем кнопку в исходное состояние.
+            this.disabled = false;
+            this.textContent = originalText;
+        }
+    };
+} else {
+    console.error("Кнопка с ID 'dounhidemailandphone' не найдена на странице.");
 }
 
-document.getElementById('checkbalance').onclick = function () {
-    window.open("https://billing-api.skyeng.ru/operations/user/" + idstudentField.value.trim() + "/info")
+/**
+ * Безопасно получает ID студента из поля ввода.
+ * @returns {string|null} - Очищенный ID или null, если он пустой.
+ */
+function getStudentId() { //Функция получения ID ученика
+    // Предполагаем, что idstudentField определена глобально или передана как аргумент
+    const idField = document.getElementById('idstudent');
+    if (!idField) {
+        console.error("Поле 'idstudent' не найдено!");
+        return null;
+    }
+
+    const userId = idField.value.trim();
+    if (!userId) {
+        alert('Пожалуйста, введите ID студента.');
+        return null;
+    }
+    return userId;
 }
 
-document.getElementById('GotoCRM').onclick = function () {
-    window.open("https://crm2.skyeng.ru/persons/" + idstudentField.value.trim()) 	// открываем ссылку в новой вкладке на  Пользовательская админка
+/**
+ * Универсальная функция для открытия ссылки.
+ * @param {string} userId - ID пользователя.
+ * @param {string} url - Полный URL для открытия.
+ */
+function openLinkInNewTab(userId, url) { // Функция открытия ссылки в новой вкладке
+    if (!userId) return; // Не открываем, если ID невалидный
+
+    console.log(`Открываем ссылку для пользователя ${userId}: ${url}`);
+    window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-document.getElementById('partialpaymentinfo').onclick = function () {
-    window.open(`https://billing-api.skyeng.ru/installments?ownerId=${idstudentField.value.trim()}&state=&perPage=50&currentPage=1`)
+// Находим поле ввода один раз
+const idstudentField = document.getElementById('idstudent');
+
+if (idstudentField) {
+    // Проходим по всем ключам в нашей конфигурации
+    for (const buttonId in LINK_CONFIG) {
+        const button = document.getElementById(buttonId);
+
+        if (button) {
+            // Используем современный addEventListener
+            button.addEventListener('click', () => {
+                // 1. Получаем и валидируем ID
+                const userId = getStudentId();
+
+                // 2. Если ID валидный, генерируем URL и открываем
+                if (userId) {
+                    const urlGenerator = LINK_CONFIG[buttonId].url;
+                    const url = urlGenerator(userId);
+                    openLinkInNewTab(userId, url);
+                }
+            });
+        } else {
+            console.warn(`Кнопка с ID '${buttonId}' не найдена на странице.`);
+        }
+    }
+    console.log("Обработчики для ссылок успешно установлены.");
+} else {
+    console.error("Критическая ошибка: поле 'idstudent' не найдено. Скрипт не может работать.");
 }
 
-document.getElementById('subscriptioninfo').onclick = function () {  // открываем ссылку в новой вкладке на просмотр Подписки
-    window.open(`https://billing-api.skyeng.ru/subscriptions/user/${idstudentField.value}/info`)
-}
+async function generateOneTimePassword() { // Функция генерации одноразового пароля для МП
+    // --- Конфигурация для этой конкретной функции ---
+    const CONFIG = {
+        buttonId: 'getonetimepass',
+        outputFieldId: 'onetimepassout',
+        apiUrl: 'https://id.skyeng.ru/admin/auth/one-time-password',
+        otpRegex: /Одноразовый пароль: (\d+)\./,
+        uiFeedbackDelay: 2000,
+        outputClearDelay: 15000,
+    };
 
-document.getElementById('editadmbtn').onclick = function () {
-    let stuid = idstudentField.value.trim();
-    window.open("https://id.skyeng.ru/admin/users/" + stuid + "/update-contacts")
-}
+    // --- Получаем элементы UI ---
+    const button = document.getElementById(CONFIG.buttonId);
+    const outputField = document.getElementById(CONFIG.outputFieldId);
+    if (!button || !outputField) {
+        console.error('Не найдены необходимые элементы UI (кнопка или поле вывода).');
+        return;
+    }
 
-document.getElementById('getonetimepass').onclick = function () { //функция генерации разового пароля для МП
-    let userId = idstudentField.value.trim();
-    if (userId == "")
-        console.log('Введите id в поле')
-    else {
-        document.getElementById('getonetimepass').innerHTML = "✅";
-        setTimeout(function () { document.getElementById('getonetimepass').innerHTML = "📱" }, 2000);
+    // --- ИСПОЛЬЗУЕМ УНИВЕРСАЛЬНУЮ ФУНКЦИЮ ---
+    // Вот ключевой момент: мы просто вызываем getStudentId()
+    const userId = getStudentId();
+    if (!userId) return; // Если ID невалидный, прерываем выполнение
 
-        const fetchURL = `https://id.skyeng.ru/admin/auth/one-time-password`;
+    // --- Дальнейшая логика специфична для этой функции ---
+    button.disabled = true;
+    button.innerHTML = '✅';
+
+    try {
         const requestOptions = {
-            "headers": {
-                "content-type": "application/x-www-form-urlencoded",
-            },
-            "body": `user_id_or_identity_for_one_time_password_form%5BuserIdOrIdentity%5D=${userId}&user_id_or_identity_for_one_time_password_form%5Bgenerate%5D=&user_id_or_identity_for_one_time_password_form%5B_token%5D=null`,
-            "method": "POST",
-            "mode": "cors",
-            "credentials": "include"
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            body: `user_id_or_identity_for_one_time_password_form%5BuserIdOrIdentity%5D=${userId}&user_id_or_identity_for_one_time_password_form%5Bgenerate%5D=&user_id_or_identity_for_one_time_password_form%5B_token%5D=null`,
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'include'
         };
 
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-            if (!response.success) {
-                alert('Не удалось выполнить запрос: ' + response.error);
-                return;
-            } else {
-                const otvetOTPMob = response.fetchansver;
-                const convertres11 = otvetOTPMob.match(/Одноразовый пароль: (\d+)\./);
-                const otp = convertres11 ? convertres11[1] : null;
-                onetimepassout.value = otp;
-            }
-        })
+        const response = await new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage(
+                { action: 'getFetchRequest', fetchURL: CONFIG.apiUrl, requestOptions },
+                (res) => (res.success ? resolve(res) : reject(new Error(res.error || 'Ошибка расширения')))
+            );
+        });
 
-    };
-    setTimeout(function () { document.getElementById('onetimepassout').value = "" }, 15000);
+        const otpMatch = response.fetchansver.match(CONFIG.otpRegex);
+        const otp = otpMatch ? otpMatch[1] : null;
+
+        if (otp) {
+            outputField.value = otp;
+        } else {
+            outputField.value = 'Не удалось извлечь пароль';
+            console.error('Не удалось найти пароль в ответе:', response.fetchansver);
+        }
+
+    } catch (error) {
+        console.error('Ошибка при генерации пароля:', error);
+        alert(`Произошла ошибка: ${error.message}`);
+        outputField.value = '';
+    } finally {
+        button.disabled = false;
+        button.innerHTML = '📱';
+        setTimeout(() => { outputField.value = ''; }, CONFIG.outputClearDelay);
+    }
 }
 
+document.getElementById('getonetimepass')?.addEventListener('click', generateOneTimePassword)
+
 document.getElementById('AF_Timetable').ondblclick = function (a) { // скрытие окна предстоящих и прошедших занятиях по двойному клику
-    if (checkelementtype(a)) {
+    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') {
         document.getElementById('AF_Timetable').style.display = 'none';
         document.getElementById('timetabledata').innerHTML = "";
     }
@@ -223,339 +440,500 @@ document.getElementById('hideComplecations').onclick = function () { // скры
 
 let responseinfo;
 
-function checkemailandphoneidentity() {
-    let idUser = idstudentField.value.trim()
-    pochtaStatus.textContent = ''
-    telefonStatus.textContent = ''
-
-    const fetchURL = `https://id.skyeng.ru/admin/users/${idUser}/update-contacts`;
-    const requestOptions = {
-        method: 'GET'
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const checkEmailAndIdty = response.fetchansver;
-
-            if (flagusertype === "teacher") {
-                console.log('It is a teacher!');
-            } else if (flagusertype === "student") {
-                if (checkEmailAndIdty.includes('"identityEmail" disabled data-value=""') && checkEmailAndIdty.includes('"identityPhone" disabled data-value=""')) {
-                    pochtaStatus.textContent = "📧❌";
-                    telefonStatus.textContent = "☎❌";
-                } else if (checkEmailAndIdty.includes('"identityEmail" disabled data-value=""') && !checkEmailAndIdty.includes('"identityPhone" disabled data-value=""')) {
-                    pochtaStatus.textContent = "📧❌";
-                    telefonStatus.textContent = "☎✅";
-                } else if (!checkEmailAndIdty.includes('"identityEmail" disabled data-value=""') && checkEmailAndIdty.includes('"identityPhone" disabled data-value=""')) {
-                    pochtaStatus.textContent = "📧✅";
-                    telefonStatus.textContent = "☎❌";
-                } else {
-                    pochtaStatus.textContent = "📧✅";
-                    telefonStatus.textContent = "☎✅";
-                }
-            }
-        }
-    })
-}
-
-function getunhidephone() { //открывает телефон пользователя
-    const polzID = idstudentField.value.trim();
-
-    const fetchURL = `https://backend.skyeng.ru/api/persons/${polzID}/personal-data/?pdType=phone&source=persons.profile`;
-    const requestOptions = {
-        method: 'GET'
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otvetPhone = JSON.parse(response.fetchansver);
-
-            if (otvetPhone && otvetPhone.data && 'value' in otvetPhone.data) {
-                document.getElementById('phoneunhidden').textContent = otvetPhone.data.value;
-            } else {
-                // Handle the case where responsePhone or responsePhone.data is undefined, or value is not present
-                console.log('Failed to get user phone', otvetPhone);
-            }
-
-        }
-    })
-
-}
-
-function getunhideemail() { //открывает почту пользователя
-    const polzIDNew = idstudentField.value.trim();
-
-    const fetchURL = `https://backend.skyeng.ru/api/persons/${polzIDNew}/personal-data/?pdType=email&source=persons.profile`;
-    const requestOptions = {
-        method: 'GET'
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otvetEmail = JSON.parse(response.fetchansver);
-            if (otvetEmail && otvetEmail.data && 'value' in otvetEmail.data) {
-                document.getElementById('mailunhidden').textContent = otvetEmail.data.value;
-            } else {
-                // Handle the case where responseEmail or responseEmail.data is undefined, or value is not present
-                console.log('Failed to get user email', otvetEmail);
-            }
-        }
-    })
-
-}
-
-let servicecontainer;
-const fetchURL = `https://backend.skyeng.ru/api/products/configurations/`;
-const requestOptions = {
-    method: 'GET'
-};
-
-chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-    if (!response.success) {
-        alert('Не удалось выполнить запрос: ' + response.error);
+async function checkEmailAndPhoneIdentity() { //Функция проверки привязки Email and Phone как Identity
+    // Получаем ID пользователя и очищаем его от лишних пробелов.
+    const userId = idstudentField.value.trim();
+    if (!userId) {
+        console.warn("ID пользователя не указан.");
+        // Можно добавить очистку статусов, если поле пустое
+        pochtaStatus.textContent = '';
+        telefonStatus.textContent = '';
         return;
-    } else {
-        const otvet = JSON.parse(response.fetchansver);
-        servicecontainer = otvet
     }
-})
+
+    const fetchURL = `https://id.skyeng.ru/admin/users/${userId}/update-contacts`;
+    const requestOptions = { method: 'GET' };
+
+    try {
+        // Используем await для ожидания ответа от расширения, что делает код линейным и понятным.
+        const response = await chrome.runtime.sendMessage({
+            action: 'getFetchRequest',
+            fetchURL: fetchURL,
+            requestOptions: requestOptions
+        });
+
+        if (!response.success) {
+            // Более информативное сообщение об ошибке.
+            throw new Error(`Ошибка при выполнении запроса: ${response.error}`);
+        }
+
+        const responseHTML = response.fetchansver;
+
+        // Проверяем, является ли пользователь студентом, так как логика применяется только к ним.
+        if (flagusertype !== "student") {
+            console.log(`Проверка пропущена: пользователь является '${flagusertype}', а не 'student'.`);
+            // Очищаем статусы для других типов пользователей.
+            pochtaStatus.textContent = '';
+            telefonStatus.textContent = '';
+            return;
+        }
+
+        // Вызываем вспомогательную функцию для определения статусов.
+        const identityStatus = getIdentityStatus(responseHTML);
+
+        // Обновляем UI на основе полученных статусов.
+        updateStatusUI(identityStatus);
+
+    } catch (error) {
+        // Централизованная обработка всех возможных ошибок (сетевые, ошибки в логике и т.д.).
+        console.error("Не удалось проверить статус identity:", error);
+        alert(`Произошла ошибка: ${error.message}`);
+        // Очищаем статусы в случае ошибки.
+        pochtaStatus.textContent = '';
+        telefonStatus.textContent = '';
+    }
+}
+
+/**
+ * Анализирует HTML-ответ и определяет статус email и телефона.
+ * @param {string} htmlString - HTML-строка, полученная с сервера.
+ * @returns {{hasEmail: boolean, hasPhone: boolean}} - Объект со статусами.
+ */
+function getIdentityStatus(htmlString) { // Функция получения статуса Identity
+    // Логика инвертирована: мы проверяем наличие атрибута 'disabled', что означает ОТСУТСТВИЕ identity.
+    const hasEmail = !htmlString.includes(IDENTITY_EMAIL_DISABLED_ATTR);
+    const hasPhone = !htmlString.includes(IDENTITY_PHONE_DISABLED_ATTR);
+
+    return { hasEmail, hasPhone };
+}
+
+/**
+ * Обновляет элементы интерфейса (pochtaStatus, telefonStatus) на основе статусов.
+ * @param {{hasEmail: boolean, hasPhone: boolean}} status - Объект со статусами.
+ */
+function updateStatusUI(status) { // Функция вывода статуса вида подключения телефона или почты как Identity
+    // Используем тернарные операторы для краткости и ясности.
+    pochtaStatus.textContent = `${STATUS_ICONS.EMAIL}${status.hasEmail ? STATUS_ICONS.VALID : STATUS_ICONS.INVALID}`;
+    telefonStatus.textContent = `${STATUS_ICONS.PHONE}${status.hasPhone ? STATUS_ICONS.VALID : STATUS_ICONS.INVALID}`;
+}
+
+/**
+ * Универсальная функция для получения и отображения персональных данных (email/phone).
+ * @param {string} pdType - Тип запрашиваемых данных ('email' или 'phone').
+ * @param {string} targetElementId - ID DOM-элемента для вывода результата.
+ * @private
+ */
+async function _fetchAndDisplayPersonalData(pdType, targetElementId) { //Функция проверки информации и отображению ее
+    const userId = idstudentField.value.trim();
+    const targetElement = document.getElementById(targetElementId);
+
+    // --- ПРЕДВАРИТЕЛЬНЫЕ ПРОВЕРКИ ---
+    if (!userId) {
+        console.warn("ID пользователя не указан.");
+        if (targetElement) targetElement.textContent = '';
+        return;
+    }
+
+    if (!targetElement) {
+        console.error(`Элемент с ID '${targetElementId}' не найден.`);
+        return;
+    }
+
+    const fetchURL = `${API_BASE_URL}/${userId}/personal-data/?pdType=${pdType}&source=persons.profile`;
+    const requestOptions = { method: 'GET' };
+
+    try {
+        // Оборачиваем chrome.runtime.sendMessage в Promise для использования await
+        const response = await new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage(
+                { action: 'getFetchRequest', fetchURL, requestOptions },
+                (res) => (res.success ? resolve(res) : reject(new Error(res.error || 'Ошибка расширения')))
+            );
+        });
+
+        const data = JSON.parse(response.fetchansver);
+
+        // Безопасное извлечение значения с помощью опциональной цепочки (?.)
+        const value = data?.data?.value;
+
+        if (value) {
+            targetElement.textContent = value;
+        } else {
+            console.warn(`Значение для '${pdType}' не найдено в ответе.`, data);
+            targetElement.textContent = 'Не удалось получить данные';
+        }
+
+    } catch (error) {
+        console.error(`Ошибка при получении ${pdType}:`, error);
+        alert(`Произошла ошибка: ${error.message}`);
+        targetElement.textContent = ''; // Очищаем при ошибке
+    }
+}
+
+function getUnhideEmail() { // Функция обертка выполняет основную функцию по расшифровке почты пользователя
+    // Просто вызываем универсальную функцию с нужными параметрами
+    _fetchAndDisplayPersonalData('email', EMAIL_ELEMENT_ID);
+}
+
+function getUnhidePhone() { // Функция обертка выполняет основную функцию по расшифровке телефона пользователя
+    _fetchAndDisplayPersonalData('phone', PHONE_ELEMENT_ID);
+}
+
+
+// Вспомогательная функция-обертка (можно вынести в отдельный utility-файл)
+function sendMessageAsync(message) {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(message, (response) => {
+            // Проверяем, что ответ от фонового скрипта пришел и не содержит ошибки chrome
+            if (chrome.runtime.lastError) {
+                return reject(new Error(chrome.runtime.lastError.message));
+            }
+            if (response && response.success) {
+                resolve(response);
+            } else {
+                // Ответ пришел, но содержит ошибку приложения
+                reject(new Error(response?.error || 'Unknown error from extension'));
+            }
+        });
+    });
+}
+
+// --- Основной код ---
+
+// Константы лучше вынести и назвать более осмысленно
+const CONFIG_API_URL = 'https://backend.skyeng.ru/api/products/configurations/';
+const GET_REQUEST_OPTIONS = { method: 'GET' };
+
+// Объявляем переменную в нужной области видимости, а не глобально
+async function fetchServiceConfiguration() {
+    try {
+        const message = {
+            action: 'getFetchRequest',
+            fetchURL: CONFIG_API_URL,
+            requestOptions: GET_REQUEST_OPTIONS
+        };
+
+        const response = await sendMessageAsync(message);
+
+        // Безопасный парсинг JSON
+        const configData = JSON.parse(response.fetchansver);
+
+        servicecontainer = configData;
+        console.log('Конфигурация успешно загружена:', servicecontainer);
+        return servicecontainer; // Возвращаем данные для дальнейшего использования
+
+    } catch (error) {
+        // Централизованная и более информативная обработка ошибок
+        console.error('Ошибка при получении конфигурации сервиса:', error.message);
+        // Вместо alert() можно показать уведомление в UI или записать в лог
+        // alert(`Ошибка: ${error.message}`); // Если очень нужно
+        return null; // Возвращаем null в случае ошибки
+    }
+}
+
+fetchServiceConfiguration()
 
 let pochtaStatus = document.getElementById('pochtaIdentity')
 let telefonStatus = document.getElementById('telefonIdentity')
 
-document.getElementById('getlessonpast').onclick = function () { // показывает прошедшие уроки
-    document.getElementById('timetabledata').innerHTML = "";
-    let stid = idstudentField.value.trim();
-    let pastlessondata = "";
+/**
+ * Форматирует дату в строку "ДД-ММ-ГГГГ ЧЧ:ММ" с учетом часового пояса.
+ * @param {string} dateString - Дата в формате ISO (например, "2023-10-27T10:00:00Z").
+ * @returns {string} - Отформатированная строка.
+ */
+function formatLessonDate(dateString) {
+    const date = new Date(dateString);
+    // Используем toLocaleString для простого получения компонентов с учетом локали
+    // и padStart для добавления ведущих нулей.
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    // ВАЖНО: Часовой пояс. В оригинале было getUTCHours() + 3.
+    // Это жестко заданный сдвиг. Лучше использовать toLocaleTimeString с опциями.
+    const hours = String(date.getHours()).padStart(2, '0'); // Используем локальное время браузера как пример
+    const minutes = String(date.getMinutes()).padStart(2, '0');
 
-    const fetchURL = `https://backend.skyeng.ru/api/students/${stid}/timetable/lessons-history/?page=0`;
-    const requestOptions = {
-        method: 'GET'
-    };
+    return `${day}-${month}-${year} ${hours}:${minutes}`;
+}
 
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
+/**
+ * Создает HTML-строку для одного урока.
+ * @param {object} lesson - Объект урока из API.
+ * @returns {string} - Готовый HTML-фрагмент.
+ */
+function createLessonHTML(lesson) {
+    const { startedAt, status, lessonType, educationService, teacher } = lesson;
+
+    // Используем словари для перевода, с запасным вариантом (original value)
+    const translatedStatus = PAST_LESSONS_CONFIG.STATUS_MAP[status] || status;
+    const translatedLessonType = PAST_LESSONS_CONFIG.LESSON_TYPE_MAP[lessonType] || lessonType;
+
+    // Определяем стиль для статуса
+    const statusStyle = PAST_LESSONS_CONFIG.STATUS_STYLES[translatedStatus] || PAST_LESSONS_CONFIG.STATUS_STYLES.default;
+    const statusColor = statusStyle.color;
+    const statusFontWeight = statusStyle.fontWeight || 'normal';
+
+    const formattedDate = formatLessonDate(startedAt);
+
+    // Шаблон для вывода информации об учителе
+    const teacherInfo = teacher
+        ? `<span style="color:#32CD32; font-weight:900;">Преподаватель: </span> ${teacher.general.id} ${teacher.general.name} ${teacher.general.surname}<br>`
+        : '';
+
+    // Используем шаблонные строки для чистого и читаемого HTML
+    return `
+        <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ff0000;">
+            <span style="color: #00FA9A">&#5129;</span>
+            <span style="color:#FF7F50; font-weight:900;">Дата: </span>${formattedDate}<br>
+            <span style="color:#c9dbd2; font-weight:900;">Статус: </span>
+            <span style="color:${statusColor}; font-weight:${statusFontWeight};">${translatedStatus}</span><br>
+            <span style="color:#c9dbd2; font-weight:900;">Урок: </span>${translatedLessonType}<br>
+            <span style="color:#00BFFF; font-weight:900;">Услуга: </span>${educationService.id} ${educationService.serviceTypeKey || 'N/A'}<br>
+            ${teacherInfo}
+        </div>
+    `;
+}
+
+
+// --- 3. ОСНОВНАЯ АСИНХРОННАЯ ФУНКЦИЯ ---
+
+/**
+ * Асинхронно запрашивает и отображает историю прошедших уроков.
+ */
+async function fetchAndDisplayPastLessons() {
+    const button = document.getElementById(PAST_LESSONS_CONFIG.buttonId);
+    const outputElement = document.getElementById(PAST_LESSONS_CONFIG.outputElementId);
+
+    if (!button || !outputElement) {
+        console.error("Кнопка или элемент вывода не найдены.");
+        return;
+    }
+
+    // Получаем ID студента, используя уже существующую утилиту
+    const userId = getStudentId(); // Предполагаем, что эта функция уже есть
+    if (!userId) return;
+
+    // Блокируем кнопку и показываем состояние загрузки
+    button.disabled = true;
+    button.innerHTML = 'Загрузка...';
+    outputElement.innerHTML = ''; // Очищаем предыдущие результаты
+
+    try {
+        const fetchURL = PAST_LESSONS_CONFIG.apiUrl(userId);
+        const requestOptions = { method: 'GET' };
+
+        // Оборачиваем chrome.runtime.sendMessage в Promise для использования await
+        const response = await new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage(
+                { action: 'getFetchRequest', fetchURL, requestOptions },
+                (res) => (res.success ? resolve(res) : reject(new Error(res.error || 'Ошибка расширения')))
+            );
+        });
+
+        const lessonsHistory = JSON.parse(response.fetchansver);
+
+        if (!lessonsHistory || !Array.isArray(lessonsHistory.data) || lessonsHistory.data.length === 0) {
+            outputElement.innerHTML = 'Еще не было уроков';
             return;
-        } else {
-            const otvetHistoryPast = JSON.parse(response.fetchansver);
-
-            if (otvetHistoryPast != null) {
-                if (otvetHistoryPast.data == "") {
-                    document.getElementById('timetabledata').innerHTML = "Еще не было уроков";
-                } else {
-                    for (let i = 0; i < otvetHistoryPast.data.length; i++) {
-                        let d = new Date(otvetHistoryPast.data[i].startedAt)
-                        let minutka;
-                        let denek;
-                        let mesacok;
-                        let chasok;
-                        if (d.getHours() < 10) {
-                            chasok = "0" + (d.getUTCHours() + 3);
-                        } else {
-                            chasok = (d.getUTCHours() + 3);
-                        }
-                        if (d.getMinutes() < 10) {
-                            minutka = "0" + d.getMinutes();
-                        } else {
-                            minutka = d.getMinutes();
-                        }
-                        if (d.getDate() < 10) {
-                            denek = "0" + d.getDate();
-                        } else {
-                            denek = d.getDate();
-                        }
-                        if (d.getMonth() + 1 < 10) {
-                            mesacok = "0" + (d.getMonth() + 1);
-                        } else {
-                            mesacok = d.getMonth() + 1;
-                        }
-                        if (otvetHistoryPast.data[i].status == "missed_by_student") {
-                            otvetHistoryPast.data[i].status = "Пропущен учеником";
-                        } else if (otvetHistoryPast.data[i].status == "canceled_by_student") {
-                            otvetHistoryPast.data[i].status = "Отменен учеником";
-                        } else if (otvetHistoryPast.data[i].status == "success") {
-                            otvetHistoryPast.data[i].status = "Прошел";
-                        } else if (otvetHistoryPast.data[i].status == "moved_by_student") {
-                            otvetHistoryPast.data[i].status = "Перенесен учеником";
-                        } else if (otvetHistoryPast.data[i].status == "canceled_by_teacher") {
-                            otvetHistoryPast.data[i].status = "Отменен учителем";
-                        } else if (otvetHistoryPast.data[i].status == "student_refused_to_study") {
-                            otvetHistoryPast.data[i].status = "Отказался от обучения"
-                        } else if (otvetHistoryPast.data[i].status == "interrupted") {
-                            otvetHistoryPast.data[i].status = "Прерван"
-                        } else if (otvetHistoryPast.data[i].status == "did_not_get_through_student") {
-                            otvetHistoryPast.data[i].status = "Не смогли связаться с У"
-                        } else if (otvetHistoryPast.data[i].status == "canceled_not_marked") {
-                            otvetHistoryPast.data[i].status = "Не отмечен учителем вовремя"
-                        }
-
-                        if (otvetHistoryPast.data[i].lessonType == "regular") {
-                            otvetHistoryPast.data[i].lessonType = "Регулярный";
-                        } else if (otvetHistoryPast.data[i].lessonType == "single") {
-                            otvetHistoryPast.data[i].lessonType = "Одиночный";
-                        } else if (otvetHistoryPast.data[i].lessonType == "trial") {
-                            otvetHistoryPast.data[i].lessonType = "Пробный";
-                        }
-
-                        for (let j = 0; j < servicecontainer.data.length; j++) {
-                            if (servicecontainer.data[j].serviceTypeKey == otvetHistoryPast.data[i].educationService.serviceTypeKey)
-                                otvetHistoryPast.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
-                        }
-
-                        if (otvetHistoryPast.data[i].educationService.serviceTypeKey == null) {
-                            otvetHistoryPast.data[i].educationService.serviceTypeKey = "Услуга была в CRM1, см позднее обозначение!"
-                        }
-
-                        if (otvetHistoryPast.data[i].teacher != null) {
-                            pastlessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka +
-                                '<span style="color:#c9dbd2; font-weight:900;"> Статус: </span>' + (otvetHistoryPast.data[i].status == "Прошел" ? ('<span style="color:#00FF7F;">' + otvetHistoryPast.data[i].status + '</span>') : ('<span style="color:coral; font-weight:700">' + otvetHistoryPast.data[i].status + '</span>')) + '<span style="color:#c9dbd2; font-weight:900;"> Урок: </span>' + otvetHistoryPast.data[i].lessonType + '<br>'
-                                + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryPast.data[i].educationService.id + " " + otvetHistoryPast.data[i].educationService.serviceTypeKey + '<br>'
-                                + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + otvetHistoryPast.data[i].teacher.general.id + " " + otvetHistoryPast.data[i].teacher.general.name + " " + otvetHistoryPast.data[i].teacher.general.surname + '<br>'
-                                + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
-                        } else {
-                            pastlessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka +
-                                '<span style="color:#c9dbd2; font-weight:900;"> Статус: </span>' + otvetHistoryPast.data[i].status + '<span style="color:#c9dbd2; font-weight:900;"> Урок: </span>' + otvetHistoryPast.data[i].lessonType + '<br>'
-                                + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryPast.data[i].educationService.id + " " + otvetHistoryPast.data[i].educationService.serviceTypeKey + '<br>'
-                                + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
-                        }
-                    }
-
-                    document.getElementById('timetabledata').innerHTML = pastlessondata;
-                    pastlessondata = ""
-                }
-            }
         }
-    })
 
+        // Обрабатываем каждый урок и создаем HTML-фрагменты
+        const lessonHTMLFragments = lessonsHistory.data.map(lesson => createLessonHTML(lesson));
+
+        // Объединяем все фрагменты в одну строку и вставляем в DOM
+        outputElement.innerHTML = lessonHTMLFragments.join('');
+
+    } catch (error) {
+        console.error('Ошибка при получении истории уроков:', error);
+        alert(`Произошла ошибка: ${error.message}`);
+        outputElement.innerHTML = 'Не удалось загрузить историю уроков.';
+    } finally {
+        // Всегда возвращаем кнопку в исходное состояние
+        button.disabled = false;
+        button.innerHTML = 'Показать прошедшие'; // Верните оригинальный текст/иконку
+    }
 }
 
-document.getElementById('getlessonfuture').onclick = function () { // показывает предстоящие уроки
-
-    document.getElementById('timetabledata').innerHTML = "";
-    let idShka = idstudentField.value.trim();
-    if (idShka.length > 0) {
-        let futurelessondata = "";
-
-        const fetchURL = `https://backend.skyeng.ru/api/students/${idShka}/timetable/future-lessons/`;
-        const requestOptions = {
-            method: 'GET'
-        };
-
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-            if (!response.success) {
-                alert('Не удалось выполнить запрос: ' + response.error);
-                return;
-            } else {
-                const otvetHistoryFuture = JSON.parse(response.fetchansver);
-
-                if (otvetHistoryFuture != null) {
-                    if (otvetHistoryFuture.data == "") {
-                        document.getElementById('timetabledata').innerHTML = "Уроки не запланированы";
-                    } else {
-                        for (let i = 0; i < otvetHistoryFuture.data.length; i++) {
-                            let d = new Date(otvetHistoryFuture.data[i].startedAt)
-                            let minutka;
-                            let denek;
-                            let mesacok;
-                            let chasok;
-                            if (d.getHours() < 10) {
-                                chasok = "0" + (d.getUTCHours() + 3);
-                            } else {
-                                chasok = (d.getUTCHours() + 3);
-                            }
-                            if (d.getMinutes() < 10) {
-                                minutka = "0" + d.getMinutes();
-                            } else {
-                                minutka = d.getMinutes();
-                            }
-                            if (d.getDate() < 10) {
-                                denek = "0" + d.getDate();
-                            } else {
-                                denek = d.getDate();
-                            }
-                            if (d.getMonth() + 1 < 10) {
-                                mesacok = "0" + (d.getMonth() + 1);
-                            } else {
-                                mesacok = d.getMonth() + 1;
-                            }
-
-                            if (otvetHistoryFuture.data[i].lessonType == "regular") {
-                                otvetHistoryFuture.data[i].lessonType = "Регулярный";
-                            } else if (otvetHistoryFuture.data[i].lessonType == "single") {
-                                otvetHistoryFuture.data[i].lessonType = "Одиночный";
-                            } else if (otvetHistoryFuture.data[i].lessonType == "trial") {
-                                otvetHistoryFuture.data[i].lessonType = "Пробный";
-                            }
-
-                            for (let j = 0; j < servicecontainer.data.length; j++) {
-                                if (servicecontainer.data[j].serviceTypeKey == otvetHistoryFuture.data[i].educationService.serviceTypeKey)
-                                    otvetHistoryFuture.data[i].educationService.serviceTypeKey = servicecontainer.data[j].title;
-                            }
-
-                            if (otvetHistoryFuture.data[i].teacher != null) {
-                                futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
-                                    + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + otvetHistoryFuture.data[i].lessonType + '<br>'
-                                    + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryFuture.data[i].educationService.id + " " + otvetHistoryFuture.data[i].educationService.serviceTypeKey + '<br>'
-                                    + '<span style="color:#32CD32; font-weight:900;">Преподаватель: </span>' + " " + otvetHistoryFuture.data[i].teacher.general.id + " " + otvetHistoryFuture.data[i].teacher.general.name + " " + otvetHistoryFuture.data[i].teacher.general.surname + '<br>'
-                                    + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
-                            } else {
-                                futurelessondata += '<span style="color: #00FA9A">&#5129;</span>' + '<span style="color:#FF7F50; font-weight:900;">Дата: </span>' + denek + "-" + mesacok + "-" + d.getFullYear() + " " + chasok + ":" + minutka
-                                    + '<span style="color:#FFD700; font-weight:900;"> Урок: </span>' + otvetHistoryFuture.data[i].lessonType + '<br>'
-                                    + '<span style="color:#00BFFF; font-weight:900;">Услуга: </span>' + otvetHistoryFuture.data[i].educationService.id + " " + otvetHistoryFuture.data[i].educationService.serviceTypeKey + '<br>'
-                                    + '<hr style="width:420px; border: 1px dotted #ff0000;  border-style: none none dotted; color: #fff; background-color: #fff;"></hr>';
-                            }
-
-                        }
-                        document.getElementById('timetabledata').innerHTML = futurelessondata;
-                        futurelessondata = "";
-                    }
-                }
-            }
-        })
-
-
-
-    } else createAndShowButton('Запрос не выполнен. Введите ID в поле!', 'error')
+const pastLessonsButton = document.getElementById(PAST_LESSONS_CONFIG.buttonId);
+if (pastLessonsButton) {
+    pastLessonsButton.addEventListener('click', fetchAndDisplayPastLessons);
+} else {
+    console.error(`Кнопка с ID '${PAST_LESSONS_CONFIG.buttonId}' не найдена.`);
 }
 
-document.getElementById('changelocalelng').onclick = function () {
-    let userOk = idstudentField.value;
 
-    const fetchURL = `https://backend.skyeng.ru/api/persons/general/${userOk}`;
+///////////////
+/**
+ * Находит название услуги по ключу в serviceContainer.
+ * @param {string} serviceKey - Ключ услуги.
+ * @returns {string} - Название услуги или исходный ключ.
+ */
+function getServiceTitle(serviceKey, stkInfo = servicecontainer) {
+    const service = stkInfo.data.find(item => item.serviceTypeKey === serviceKey);
+    return service ? service.shortTitle : serviceKey;
+}
+
+/**
+ * Создает HTML-строку для одного урока.
+ * @param {object} lesson - Объект урока.
+ * @param {string} type - Тип отображения ('future' или 'past').
+ * @returns {string} - Готовый HTML-фрагмент.
+ */
+function createFutureLessonHTML(lesson, type) {
+    const { startedAt, lessonType, educationService, teacher } = lesson;
+
+    const translatedLessonType = LESSONS_CONFIG.LESSON_TYPE_MAP[lessonType] || lessonType;
+    const serviceTitle = getServiceTitle(educationService.serviceTypeKey);
+    const formattedDate = formatLessonDate(startedAt);
+
+    const teacherInfo = teacher
+        ? `<span style="color:#32CD32; font-weight:900;">Преподаватель: </span> ${teacher.general.id} ${teacher.general.name} ${teacher.general.surname}<br>`
+        : '';
+
+    // Для будущих уроков статус не отображается, для прошедших - можно добавить
+    const statusHTML = type === 'past'
+        ? `<span style="color:#c9dbd2; font-weight:900;">Статус: </span><span style="color:green; font-weight:bold;">Прошел</span><br>` // Упрощенно
+        : '';
+
+    return `
+        <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dotted #ff0000;">
+            <span style="color: #00FA9A">&#5129;</span>
+            <span style="color:#FF7F50; font-weight:900;">Дата: </span>${formattedDate}<br>
+            <span style="color:#FFD700; font-weight:900;">Урок: </span>${translatedLessonType}<br>
+            <span style="color:#00BFFF; font-weight:900;">Услуга: </span>${educationService.id} ${serviceTitle}<br>
+            ${statusHTML}
+            ${teacherInfo}
+        </div>
+    `;
+}
+
+// --- 3. УНИВЕРСАЛЬНАЯ АСИНХРОННАЯ ФУНКЦИЯ ---
+
+/**
+ * Запрашивает и отображает уроки (прошедшие или будущие).
+ * @param {'future' | 'past'} type - Тип уроков для отображения.
+ */
+async function fetchAndDisplayLessons(type) {
+    const button = document.getElementById(LESSONS_CONFIG.buttonId);
+    const outputElement = document.getElementById(LESSONS_CONFIG.outputElementId);
+
+    if (!button || !outputElement) {
+        console.error("Кнопка или элемент вывода не найдены.");
+        return;
+    }
+
+    const userId = getStudentId(); // Используем универсальную функцию
+    if (!userId) return;
+
+    // Блокируем кнопку
+    button.disabled = true;
+    button.innerHTML = 'Загрузка...';
+    outputElement.innerHTML = '';
+
+    try {
+        const fetchURL = LESSONS_CONFIG.apiUrls[type](userId);
+        const requestOptions = { method: 'GET' };
+
+        const response = await new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage(
+                { action: 'getFetchRequest', fetchURL, requestOptions },
+                (res) => (res.success ? resolve(res) : reject(new Error(res.error || 'Ошибка расширения')))
+            );
+        });
+
+        const lessonsData = JSON.parse(response.fetchansver);
+
+        if (!lessonsData || !Array.isArray(lessonsData.data) || lessonsData.data.length === 0) {
+            outputElement.innerHTML = type === 'future' ? 'Уроки не запланированы' : 'Еще не было уроков';
+            return;
+        }
+
+        const lessonsHTMLFragments = lessonsData.data.map(lesson => createFutureLessonHTML(lesson, type));
+        outputElement.innerHTML = lessonsHTMLFragments.join('');
+
+    } catch (error) {
+        console.error(`Ошибка при получении ${type} уроков:`, error);
+        alert(`Произошла ошибка: ${error.message}`);
+        outputElement.innerHTML = `Не удалось загрузить ${type === 'future' ? 'будущие' : 'прошедшие'} уроки.`;
+    } finally {
+        button.disabled = false;
+        button.innerHTML = type === 'future' ? 'Показать предстоящие' : 'Показать прошедшие';
+    }
+}
+
+// Для кнопки "Показать предстоящие"
+document.getElementById('getlessonfuture')?.addEventListener('click', () => fetchAndDisplayLessons('future'));
+
+// Locale changer handler with optimized structure
+document.getElementById('changelocalelng').addEventListener('click', async () => {
+    // Get user ID safely with optional chaining
+    const userId = document.getElementById('idstudent')?.value.trim();
+    if (!userId) {
+        showNotification('User ID is required', 'error');
+        return;
+    }
+
+    // API configuration
+    const API_BASE = 'https://backend.skyeng.ru/api/persons/general';
+    const fetchURL = `${API_BASE}/${userId}`;
     const requestOptions = {
-        "headers": {
-            "content-type": "application/json",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-site"
+        headers: {
+            'Content-Type': 'application/json',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-site'
         },
-        "referrer": "https://crm2.skyeng.ru/",
-        "referrerPolicy": "strict-origin-when-cross-origin",
-        "body": "{\"serviceLocale\":\"ru\"}",
-        "method": "PUT",
-        "mode": "cors",
-        "credentials": "include"
+        referrer: 'https://crm2.skyeng.ru/',
+        referrerPolicy: 'strict-origin-when-cross-origin',
+        body: JSON.stringify({ serviceLocale: 'ru' }),
+        method: 'PUT',
+        mode: 'cors',
+        credentials: 'include'
     };
 
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            console.log('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            console.log("Язык обслуживания Successfully changed")
-            document.getElementById('changelocalelng').innerHTML = "✅";
-            setTimeout(function () { document.getElementById('changelocalelng').innerHTML = "🌍"; }, 2000);
-        }
-    })
+    try {
+        // Show loading state
+        const button = document.getElementById('changelocalelng');
+        button.disabled = true;
+        button.innerHTML = '⏳';
+
+        // Send request through Chrome runtime
+        const response = await new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage({
+                action: 'getFetchRequest',
+                fetchURL,
+                requestOptions
+            }, (response) => {
+                response.success ? resolve(response) : reject(new Error(response.error));
+            });
+        });
+
+        // Success handling
+        showNotification('Language successfully updated', 'success');
+        button.innerHTML = '✅';
+
+        // Reset button after delay
+        setTimeout(() => {
+            button.innerHTML = '🌍';
+            button.disabled = false;
+        }, 2000);
+
+    } catch (error) {
+        // Error handling
+        showNotification(`Failed to update language: ${error.message}`, 'error');
+        console.error('Locale change error:', error);
+
+        // Reset button state
+        const button = document.getElementById('changelocalelng');
+        button.disabled = false;
+        button.innerHTML = '🌍';
+    }
+});
+
+// Helper function for notifications
+function showNotification(message, type = 'info') {
+    // Implement your notification system here
+    console.log(`${type.toUpperCase()}: ${message}`);
+    // Example: alert(message); or custom UI notification
 }
 
 document.getElementById('catchathistory').onclick = function () { // открывает в вензеле историю чатов введеного айди пользователя
@@ -684,10 +1062,6 @@ function getusernamecrm() {
                     copyToClipboard(document.getElementById('phoneunhidden').textContent);
                 };
             }
-
-
-
-
 
             const userAvatarElement = document.querySelector('#useravatar');
 
@@ -1046,6 +1420,7 @@ function getuserinfo() {
     setTimeout(checkServiceAndUserInfo, 720)
 }
 
+const getidstudentbtn = document.getElementById('getidstudent');
 getidstudentbtn.onclick = function () { // нажатие на ракету
     getuserinfo()
     setTimeout(function () {
