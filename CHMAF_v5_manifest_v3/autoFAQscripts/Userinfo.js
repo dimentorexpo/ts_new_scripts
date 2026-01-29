@@ -151,11 +151,11 @@ var win_serviceinfo =  // описание элементов окна инфо�
 										<span id="usrName" style="max-width: 160px;margin-right: 30px;"></span>
 									</div>
 									<div style="text-align: center;">
-										<span class="cursor-userinfobtns" title="При клике копирует в буфер обмена почту пользователя" id="getusremail">Email: </span>
+										<span class="cursor-userinfobtns copyBtnUsrEmailInfo" title="При клике копирует в буфер обмена почту пользователя" id="getusremail"></span>
 										<span id="mailunhidden">hidden</span>
 									</div>
 									<div style="text-align: center;">
-										<span class="cursor-userinfobtns" title="При клике копирует в буфер обмена телефон пользователя" id="getusrphone">Phone: </span>
+										<span class="cursor-userinfobtns copyBtnUsrPhoneInfo" title="При клике копирует в буфер обмена телефон пользователя" id="getusrphone">Phone: </span>
 										<span id="phoneunhidden">hidden</span>
 										<span>• 🌍: </span>
 										<span id="usrCountry"></span>
@@ -635,6 +635,7 @@ fetchServiceConfiguration()
 
 let pochtaStatus = document.getElementById('pochtaIdentity')
 let telefonStatus = document.getElementById('telefonIdentity')
+let complectationsOutput = document.getElementById('complekttable')
 
 /**
  * Форматирует дату в строку "ДД-ММ-ГГГГ ЧЧ:ММ" с учетом часового пояса.
@@ -869,7 +870,7 @@ document.getElementById('changeLocaleLng').addEventListener('click', async () =>
     // Get user ID safely with optional chaining
     const userId = document.getElementById('idstudent')?.value.trim();
     if (!userId) {
-        showNotification('User ID is required', 'error');
+        createAndShowButton('User ID is required', 'error');
         return;
     }
 
@@ -908,7 +909,7 @@ document.getElementById('changeLocaleLng').addEventListener('click', async () =>
         });
 
         // Success handling
-        showNotification('Language successfully updated', 'success');
+        createAndShowButton('Language successfully updated', 'message');
         button.innerHTML = '✅';
 
         // Reset button after delay
@@ -919,7 +920,7 @@ document.getElementById('changeLocaleLng').addEventListener('click', async () =>
 
     } catch (error) {
         // Error handling
-        showNotification(`Failed to update language: ${error.message}`, 'error');
+        createAndShowButton(`Failed to update language: ${error.message}`, 'error');
         console.error('Locale change error:', error);
 
         // Reset button state
@@ -928,13 +929,6 @@ document.getElementById('changeLocaleLng').addEventListener('click', async () =>
         button.innerHTML = '🌍';
     }
 });
-
-// Helper function for notifications
-function showNotification(message, type = 'info') {
-    // Implement your notification system here
-    console.log(`${type.toUpperCase()}: ${message}`);
-    // Example: alert(message); or custom UI notification
-}
 
 document.getElementById('catchathistory').onclick = function () { // открывает в вензеле историю чатов введеного айди пользователя
 
@@ -1001,7 +995,8 @@ function getusernamecrm() {
                     pochtaStatus, telefonStatus, usrAge,
                     pochtaIdentity, telefonIdentity,
                     checkBalance, partialPaymentinfo,
-                    subscriptioninfo, getPastAndFutureLessons
+                    subscriptioninfo, getPastAndFutureLessons,
+                    complectationsOutput
                 ],
                 teacher: [
                     newTrm, butTeacherNabor, personalteacherpage
@@ -1030,8 +1025,22 @@ function getusernamecrm() {
             // --- Копирование почты/телефона ---
             const mailBtn = document.getElementById('getusremail');
             const phoneBtn = document.getElementById('getusrphone');
-            if (mailBtn) mailBtn.onclick = () => copyToClipboard(mailunhidden.textContent);
-            if (phoneBtn) phoneBtn.onclick = () => copyToClipboard(phoneunhidden.textContent);
+            if (mailBtn) {
+                mailBtn.onclick = () => {
+                    console.log('clicked usermail')
+                    const mail = document.getElementById('mailunhidden').textContent;
+                    copyToClipboard(mail);
+                    createAndShowButton(`Почта ${mail} скопирована в буфер обмена`, 'message');
+                };
+            }
+            if (phoneBtn) {
+                phoneBtn.onclick = () => {
+                    console.log('clicked phone')
+                    const phone = document.getElementById('phoneunhidden').textContent
+                    copyToClipboard(phone);
+                    createAndShowButton(`Телефон ${phone} скопирован в буфер обмена`, 'message');
+                }
+            }
 
             // --- Время ---
             const utc = data.utcOffset;
@@ -1063,88 +1072,98 @@ let getcrmstatusinfo;
 let crmresponseinfo;
 
 function crmstatus() {
-    const tempvarcrm = idstudentField.value.trim();
+    const userId = idstudentField.value.trim();
 
-    let flagtpout = false;
-    let flagtp = false;
-    let flagnottp = false;
-    let flagstatuswait = false;
-    let flagstatusprocessing = false;
-    let opername = '';
+    // UI reset
+    const statusEl = document.getElementById('getcurrentstatus');
+    const crmEl = document.getElementById('CrmStatus');
+    statusEl.style.display = 'none';
+    crmEl.style.display = 'none';
 
-    document.getElementById('getcurrentstatus').style.display = 'none';
-    document.getElementById('CrmStatus').style.display = 'none';
+    const fetchURL = `https://customer-support.skyeng.ru/task/user/${userId}`;
+    const requestOptions = { method: 'GET' };
 
-    const fetchURL = `https://customer-support.skyeng.ru/task/user/${tempvarcrm}`;
-    const requestOptions = {
-        method: 'GET'
-    };
+    chrome.runtime.sendMessage(
+        { action: 'getFetchRequest', fetchURL, requestOptions },
+        function (response) {
+            if (!response.success) {
+                alert('Не удалось выполнить запрос: ' + response.error);
+                return;
+            }
 
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        } else {
-            const otveUserTasks = JSON.parse(response.fetchansver);
+            const tasks = JSON.parse(response.fetchansver).data;
 
-            for (const data of otveUserTasks.data) {
-                switch (data.operatorGroup.name) {
-                    case 'technical_support_outgoing':
-                        flagtpout = true;
-                        if (data.status === 'waiting') flagstatuswait = true;
-                        if (data.status === 'processing') {
-                            flagstatusprocessing = true;
-                            opername = data.operator.name;
-                        }
-                        break;
-                    case 'technical_support_first_line':
-                        flagtp = true;
-                        break;
-                    default:
-                        flagnottp = true;
-                        break;
+            // --- Флаги состояния ---
+            const flags = {
+                tpOut: false,
+                tp: false,
+                notTp: false,
+                wait: false,
+                processing: false,
+                operator: ''
+            };
+
+            // --- Анализ задач ---
+            for (const task of tasks) {
+                const group = task.operatorGroup.name;
+
+                if (group === 'technical_support_outgoing') {
+                    flags.tpOut = true;
+                    if (task.status === 'waiting') flags.wait = true;
+                    if (task.status === 'processing') {
+                        flags.processing = true;
+                        flags.operator = task.operator.name;
+                    }
+                } else if (group === 'technical_support_first_line') {
+                    flags.tp = true;
+                } else {
+                    flags.notTp = true;
                 }
             }
 
-            // Оставшаяся часть вашей функции...
-            if (flagstatuswait) {
-                document.getElementById('getcurrentstatus').style.display = '';
-                document.getElementById('getcurrentstatus').innerText = 'В ожидании';
-                document.getElementById('getcurrentstatus').style.backgroundColor = '#1E90FF';
-            } else if (flagstatusprocessing) {
-                document.getElementById('getcurrentstatus').style.display = '';
-                document.getElementById('getcurrentstatus').innerText = 'Решается';
-                document.getElementById('getcurrentstatus').title = opername;
-                document.getElementById('getcurrentstatus').style.backgroundColor = '#DC143C';
+            // --- UI helpers ---
+            const showStatus = (text, color, title = '') => {
+                statusEl.style.display = '';
+                statusEl.innerText = text;
+                statusEl.style.backgroundColor = color;
+                if (title) statusEl.title = title;
+            };
+
+            const showCrm = (text, log) => {
+                crmEl.style.display = '';
+                crmEl.innerText = text;
+                console.log(log);
+            };
+
+            // --- Отображение статуса ожидания/решения ---
+            if (flags.wait) {
+                showStatus('В ожидании', '#1E90FF');
+            } else if (flags.processing) {
+                showStatus('Решается', '#DC143C', flags.operator);
             }
 
-            function updateCrmStatus(innerText, consoleText) {
-                document.getElementById('CrmStatus').style.display = '';
-                document.getElementById('CrmStatus').innerText = innerText;
-                console.log(consoleText);
-            }
+            // --- Таблица условий для CrmStatus ---
+            const conditions = [
+                { cond: flags.tpOut && !flags.tp && !flags.notTp, text: '💥', log: 'Есть активные задачи' },
+                { cond: !flags.tpOut && flags.tp && !flags.notTp, text: '🛠', log: 'Входящий звонок или с др отдела на ТП была создана задача' },
+                { cond: !flags.tpOut && !flags.tp && flags.notTp, text: '📵', log: 'Нет активных задач по ТП линии' },
+                { cond: flags.tpOut && flags.tp && !flags.notTp, text: '💥', log: 'Есть активные задачи на исход и на ТП 1 линии' },
+                { cond: flags.tpOut && flags.tp && flags.notTp, text: '💥', log: 'Есть активные задачи на исход, ТП 1 линии и др отделы' },
+                { cond: flags.tp && flags.notTp && !flags.tpOut, text: '🛠', log: 'Входящий звонок на ТП + задача на др отдел' },
+                { cond: !flags.tp && flags.notTp && flags.tpOut, text: '💥', log: 'Есть задача на ТП Исход + задача на др отдел' }
+            ];
 
-            if (flagtpout && !flagtp && !flagnottp) {
-                updateCrmStatus('💥', 'Есть активные задачи');
-            } else if (!flagtpout && flagtp && !flagnottp) {
-                updateCrmStatus('🛠', 'Входящий звонок или с др отдела на ТП была создана задача');
-            } else if (!flagtpout && !flagtp && flagnottp) {
-                updateCrmStatus('📵', 'Нет активных задач по ТП линии');
-            } else if (flagtpout && flagtp && !flagnottp) {
-                updateCrmStatus('💥', 'Есть активные задачи на исход и на ТП 1 линии');
-            } else if (flagtpout && flagtp && flagnottp) {
-                updateCrmStatus('💥', 'Есть активные задачи на исход и на ТП 1 линии и на др отделы');
-            } else if (flagtp == true && flagnottp == true && flagtpout == false) {
-                updateCrmStatus('🛠', 'Входящий звонок или с др отдела на ТП была создана задача. И есть задача на др отдел');
-            } else if (flagtp == false && flagnottp == true && flagtpout == true) {
-                updateCrmStatus('💥', 'Есть задача на ТП Исход. И есть задача на др отдел');
+            const match = conditions.find(c => c.cond);
+
+            if (match) {
+                showCrm(match.text, match.log);
             } else {
-                updateCrmStatus('📵', 'No DATA');
+                showCrm('📵', 'No DATA');
             }
         }
-    })
-
+    );
 }
+
 
 async function checkServiceAndUserInfo() {
     let stidNew = idstudentField.value.trim()
@@ -1342,12 +1361,14 @@ async function getservices(stidNew) {
                 if (document.getElementById('getusremail') != null) {
                     document.getElementById('getusremail').onclick = function () {
                         copyToClipboard(document.getElementById('mailunhidden').textContent);
+                        createAndShowButton(`Почта ${document.getElementById('mailunhidden').textContent} скопирована в буфер обмена `, 'message');
                     };
                 }
 
                 if (document.getElementById('getusrphone') != null) {
                     document.getElementById('getusrphone').onclick = function () {
                         copyToClipboard(document.getElementById('phoneunhidden').textContent);
+                        createAndShowButton(`Телефон ${document.getElementById('phoneunhidden').textContent} скопирован в буфер обмена `, 'message');
                     };
                 }
 
@@ -1362,6 +1383,8 @@ async function getservices(stidNew) {
 }
 
 function getuserinfo() {
+    document.getElementById('pochtaIdentity').textContent = 'hidden'
+    document.getElementById('telefonIdentity').textContent = 'hidden'
     document.getElementById('servicetable').innerHTML = "Загрузка..."
     usrServLanguage = document.getElementById('usrServLang');
     usrAge = document.getElementById('usrAge');
@@ -1475,7 +1498,7 @@ document.getElementById('getloginer').onclick = async function () {
     } catch (error) {
         console.log('Ошибка: ', error);
         button.style = "background:red; padding: 2px; border-radius:20%";
-        createAndShowButton('Ошибка при получении ссылки-логинера', 'message');
+        createAndShowButton('Ошибка при получении ссылки-логинера', 'error');
         alert('Не удалось получить логиннер: ' + error.message);
     } finally {
         setTimeout(() => {

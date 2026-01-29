@@ -1486,3 +1486,59 @@
 		cursor: pointer;
 		padding: 0 10px;
 	}
+
+	.copyBtnUsrEmailInfo {
+		display: inline-flex;
+		color: transparent;
+		background: darkslateblue;
+		position: relative;
+		width: 16%;
+		padding: 6px;
+	}
+
+	.copyBtnUsrEmailInfo::before {
+		content: "Email: ";
+		color: bisque;
+		border-radius: 10px;
+		border: 1px solid slategrey;
+	}
+
+	.copyBtnUsrEmailInfo:hover::before {
+		content: "💾";
+		border: 0px solid transparent;
+		background: cornflowerblue;
+		border-radius: 20px;
+		width: 25px;
+		height: 20px;
+	}
+
+	.copyBtnUsrPhoneInfo {
+		display: inline-flex;
+		color: transparent;
+		background: darkslateblue;
+		position: relative;
+		width: 16%;
+		padding: 4px;
+	}
+
+	.copyBtnUsrEmailInfo:hover,
+	.copyBtnUsrPhoneInfo:hover {
+		background: transparent;
+		padding-left: 30px;
+	}
+
+	.copyBtnUsrPhoneInfo::before {
+		content: "Phone: ";
+		color: bisque;
+		border-radius: 10px;
+		border: 1px solid slategrey;
+	}
+
+	.copyBtnUsrPhoneInfo:hover::before {
+		content: "💾";
+		border: 0px solid transparent;
+		background: cornflowerblue;
+		border-radius: 20px;
+		width: 25px;
+		height: 20px;
+	}
