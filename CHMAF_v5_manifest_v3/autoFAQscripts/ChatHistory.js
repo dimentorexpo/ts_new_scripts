@@ -781,69 +781,73 @@ function getopennewcatButtonPress() { // открывает меню для ра
         checkAndChangeStyle();
     }
 
-    document.getElementById('takechat').onclick = function () {
-        const openHistoryTime = document.getElementById('infofield').getAttribute('openhistorytime');
+    document.getElementById('takechat').onclick = async function () {
+        const infoField = document.getElementById('infofield');
+        const openHistoryTime = infoField.getAttribute('openhistorytime');
+
+        // Проверка корректности времени
+        if (!openHistoryTime) {
+            alert("Не удалось определить время открытия истории чата");
+            return;
+        }
+
         const openHistoryDate = new Date(openHistoryTime);
         const now = new Date();
+
+        if (isNaN(openHistoryDate.getTime())) {
+            alert("Некорректное время истории чата");
+            return;
+        }
 
         if ((now - openHistoryDate) / 1000 > 60) {
             alert("История чата открыта слишком долго. Пожалуйста, обновите чат.");
             return;
         }
 
-        let opsflag = getopsection();
-        let opschat = document.getElementById('infofield').getAttribute('opsetction');
+        const chatId = document.getElementById('placechatid').innerText.trim();
+        if (!chatId) {
+            alert("Чат не выбран");
+            return;
+        }
 
-        // if (opschat !== opsflag) {
-        //     alert('Чат в другой группе, забрать чат нельзя');
-        //     return;
-        // }
+        const operatorIdLocal = operatorId;
 
-        if (confirm("Вы действительно желаете забрать чат?")) {
-            let chat_id = document.getElementById('placechatid').innerText;
-            let operator_id = operatorId;
+        if (!operatorIdLocal) {
+            alert("Не удалось определить ID оператора");
+            return;
+        }
 
-            const assignChat = (assignToOperatorId) => {
-                fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-                    headers: { "content-type": "application/json", "x-csrf-token": aftoken },
+        if (!confirm("Вы действительно желаете забрать чат?")) {
+            return;
+        }
+
+        // Универсальная функция assign
+        const assignChat = async (assignToOperatorId) => {
+            try {
+                await fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+                    method: "POST",
                     credentials: "include",
+                    headers: {
+                        "content-type": "application/json",
+                        "x-csrf-token": aftoken
+                    },
                     body: JSON.stringify({
                         command: "DO_ASSIGN_CONVERSATION",
-                        conversationId: chat_id,
-                        assignToOperatorId: assignToOperatorId
-                    }),
-                    method: "POST"
+                        conversationId: chatId,
+                        assignToOperatorId: assignToOperatorId // null или оператор
+                    })
                 });
-            };
+            } catch (err) {
+                console.error("Ошибка assign:", err);
+            }
+        };
 
-            assignChat("null");
-            setTimeout(() => assignChat(operator_id), 2000);
-        }
-    };// конец обработчика нажатия кнопки "Забрать"
+        // Сначала снимаем assign
+        await assignChat('null');
 
-    async function startnewchatfast(polzid) { //открывает быстро чат с пользователем
-        if (operatorId == "") {
-            await whoAmI()
-        }
-
-        if (polzid) {
-            await fetch(`https://skyeng.autofaq.ai/api/conversation/start?channelId=eca64021-d5e9-4c25-b6e9-03c24s638d4d&userId=${polzid}&operatorId=${operatorId}&groupId=c7bbb211-a217-4ed3-8112-98728dc382d8`, {
-                headers: {
-                    "x-csrf-token": aftoken
-                },
-                referrer: "https://skyeng.autofaq.ai/tickets/assigned/",
-                referrerPolicy: "strict-origin-when-cross-origin",
-                body: null,
-                method: "POST",
-                mode: "cors",
-                credentials: "include"
-            })
-                .then(response => response.json())
-                .then(data => {
-                    chatId = data.conversationId
-                })
-        } else alert('Не введен id пользователя');
-    }
+        // Через 2 секунды назначаем на себя
+        setTimeout(() => assignChat(operatorIdLocal), 2000);
+    };
 
     document.getElementById('reassign').onclick = () => {
         const operators = document.getElementById('operatorstp');
