@@ -689,7 +689,6 @@ function getopennewcatButtonPress() { // открывает меню для ра
 
         if (userId && !chatHash) {
             flagsearch = 'searchbyuser';
-            document.getElementById('chatuserhis').value = '';
 
             let response = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
                 "headers": { "content-type": "application/json", "sec-fetch-mode": "cors", "sec-fetch-site": "same-origin", "x-csrf-token": aftoken },
@@ -769,29 +768,42 @@ function getopennewcatButtonPress() { // открывает меню для ра
 
         if (foundarr) {
             checkAndChangeStyle();
-            Array.from(document.getElementsByClassName('chatlist')).forEach((element, i) => {
-                let chatId = '';
-                if (flagsearch === 'searchbyuser' && data && data.items) {
-                    chatId = data.items[i].conversationId;
-                } else if (flagsearch === 'searchbyoperator' && operchatsdata && operchatsdata.items) {
-                    chatId = operchatsdata.items[i].conversationId;
-                } else if (flagsearch === 'searchbyhash') {
-                    chatId = (typeof operchatsdata !== 'undefined' && typeof data === 'undefined') ? operchatsdata.items[i].conversationId :
-                        (typeof data !== 'undefined' && typeof operchatsdata === 'undefined') ? data.items[i].conversationId :
-                            (typeof data !== 'undefined' && typeof operchatsdata !== 'undefined') ? data.items[i].conversationId : '';
+
+            const elements = Array.from(document.getElementsByClassName('chatlist'));
+
+            elements.forEach((element, i) => {
+                let chatId = null;
+
+                switch (flagsearch) {
+                    case 'searchbyuser':
+                        chatId = data?.items?.[i]?.conversationId;
+                        break;
+
+                    case 'searchbyoperator':
+                        chatId = operchatsdata?.items?.[i]?.conversationId;
+                        break;
+
+                    case 'searchbyhash':
+                        chatId =
+                            operchatsdata?.items?.[i]?.conversationId ??
+                            data?.items?.[i]?.conversationId ??
+                            null;
+                        break;
                 }
 
-                if (chatId) {
-                    element.title = chatId;
-                    element.onclick = () => updateChatInfo(chatId);
-                    // Добавляем обработчик для контекстного меню отдельно
-                    element.oncontextmenu = (event) => {
-                        event.preventDefault();
-                        copyToClipboard(chatId);
-                    };
-                }
+                if (!chatId) return;
+
+                element.title = chatId;
+
+                element.onclick = () => updateChatInfo(chatId);
+
+                element.oncontextmenu = (event) => { //при нажатии ПКМ на строке с чатом, будет скопирован в буфер обмена хеш этого чата
+                    event.preventDefault();
+                    copyToClipboard(chatId);
+                };
             });
         }
+
     };
 
     document.getElementById('chhisinstr').onclick = () => {
