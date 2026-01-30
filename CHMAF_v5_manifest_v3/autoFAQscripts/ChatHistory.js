@@ -364,44 +364,43 @@ async function findchatsoper() { // ищет активные чаты на вы
                 if (operchatsdata.total == 0)
                     alert(`У выбранного пользователя ${objSel[i].innerText} нет активных чатов`)
 
-                for (let i = 0; i < operchatsdata.items.length; i++) {
-                    let tmestmp = new Date((operchatsdata.items[i].ts.split('[GMT]'))[0])
-                    let tshrs;
-                    let tsmin
-                    let day;
-                    let month;
+                function formatDate(ts) {
+                    const d = new Date(ts.split('[GMT]')[0]);
+                    const pad = n => String(n).padStart(2, '0');
 
-                    if (tmestmp.getMonth() < 9)
-                        month = "0" + (tmestmp.getMonth() + 1)
-                    else
-                        month = (tmestmp.getMonth() + 1)
-                    if (tmestmp.getDate() < 10)
-                        day = "0" + tmestmp.getDate()
-                    else
-                        day = tmestmp.getDate()
-                    let year = tmestmp.getFullYear();
-                    if ((tmestmp.getUTCHours() + 3) < 10)
-                        tshrs = "0" + (tmestmp.getUTCHours() + 3);
-                    else if ((tmestmp.getUTCHours() + 3) >= 24)
-                        tshrs = '0' + ((tmestmp.getUTCHours() + 3 - 24))
-                    else tshrs = (tmestmp.getUTCHours() + 3);
+                    let hours = d.getUTCHours() + 3;
+                    if (hours >= 24) hours -= 24;
 
-                    if (tmestmp.getMinutes() < 10)
-                        tsmin = "0" + tmestmp.getMinutes();
-                    else tsmin = tmestmp.getMinutes();
+                    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(hours)}:${pad(d.getMinutes())}`;
+                }
 
-                    if (operchatsdata.items[i].channelUser.channelTpe != 'Telegram' && operchatsdata.items[i].channelUser.channelTpe != 'Widget' && operchatsdata.items[i].channelUser.channelTpe != 'WhatsApp' && operchatsdata.items[i].channelUser.payload.userFullName == undefined)
-                        foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700">' + operchatsdata.items[i].channelUser.payload.userType + '</span>' + ' ' + operchatsdata.items[i].channelUser.fullName + '</span>' + '<br>'
-                    else if (operchatsdata.items[i].channelUser.channelTpe != 'Telegram' && operchatsdata.items[i].channelUser.channelTpe != 'Widget' && operchatsdata.items[i].channelUser.channelTpe != 'WhatsApp' && operchatsdata.items[i].channelUser.payload.userFullName != undefined)
-                        foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700">' + operchatsdata.items[i].channelUser.payload.userType + '</span>' + ' ' + operchatsdata.items[i].channelUser.payload.userFullName + '</span>' + '<br>'
-                    else if (operchatsdata.items[i].channelUser.channelTpe == 'Telegram' && operchatsdata.items[i].channelUser.payload == undefined)
-                        foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700">' + operchatsdata.items[i].channelUser.channelTpe + '</span>' + ' ' + operchatsdata.items[i].channelUser.fullName + '</span>' + '<br>'
-                    else if (operchatsdata.items[i].channelUser.channelTpe == 'Widget' && operchatsdata.items[i].channelUser.payload == undefined)
-                        foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700">' + operchatsdata.items[i].channelUser.channelTpe + '</span>' + ' ' + operchatsdata.items[i].channelUser.fullName + '</span>' + '<br>'
-                    else if (operchatsdata.items[i].channelUser.channelTpe == 'WhatsApp' && operchatsdata.items[i].channelUser.payload == undefined)
-                        foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700">' + operchatsdata.items[i].channelUser.channelTpe + '</span>' + ' ' + operchatsdata.items[i].channelUser.fullName + '</span>' + '<br>'
-                    else if (operchatsdata.items[i].channelUser.channelTpe == 'WhatsApp' && operchatsdata.items[i].channelUser.payload != undefined) // проверить вывод чата с  WA при таких критериях!
-                        foundarr += '<span class="chatlist" style="cursor:pointer;">' + day + '.' + month + '.' + year + ' ' + tshrs + ':' + tsmin + ' ' + '<span style ="color:#00BFFF; font-weight:700">' + operchatsdata.items[i].channelUser.channelTpe + '</span>' + ' ' + operchatsdata.items[i].channelUser.fullName + '</span>' + '<br>'
+                function resolveUserName(user) {
+                    const { channelTpe, payload, fullName } = user;
+
+                    // Каналы без payload
+                    if (!payload) return `${channelTpe} ${fullName}`;
+
+                    // Каналы с payload.userFullName
+                    if (payload.userFullName) return `${payload.userType} ${payload.userFullName}`;
+
+                    // Каналы с payload.userType + fullName
+                    if (payload.userType) return `${payload.userType} ${fullName}`;
+
+                    return fullName;
+                }
+
+                let foundarr = "";
+
+                for (const item of operchatsdata.items) {
+                    const date = formatDate(item.ts);
+                    const user = item.channelUser;
+                    const name = resolveUserName(user);
+
+                    foundarr += `
+                        <span class="chatlist" style="cursor:pointer;">
+                            ${date} <span style="color:#00BFFF; font-weight:700">${name.split(' ')[0]}</span> ${name.split(' ').slice(1).join(' ')}
+                        </span><br>
+                    `;
                 }
 
                 document.getElementById('infofield').innerHTML = foundarr;
@@ -727,19 +726,24 @@ function getopennewcatButtonPress() { // открывает меню для ра
         data.items.forEach(item => {
             let timestamp = new Date(item.ts.split('[GMT]')[0]);
             let formattedDate = timestamp.toLocaleDateString('ru-RU');
-            let formattedTime = timestamp.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            let formattedTime = timestamp.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
             let rating = item.stats.rate?.rate || '⭕';
-            let statusIcon = item.stats.usedStatuses == "AssignedToOperator" ? "🛠" : '';
+            let deliveryBot = item.status == "ClosedByBot" ? "🤖" : ""
+            let statusIcon = item.stats.usedStatuses == "AssignedToOperator" ? "🛠" : "";
             let userName = item.channelUser.payload?.userFullName || item.channelUser.fullName;
             let userType = item.channelUser.payload?.userType || "";
 
+            // Если бот — показываем 🤖 вместо рейтинга
+            const ratingOrBot = deliveryBot || rating;
             foundarr += `
-                <span class="chatlist" style="cursor:pointer;" title="${item.conversationId}">
-                    ${formattedDate} ${formattedTime}
-                    <span style="color:#00BFFF; font-weight:700;">${userType}</span> ${userName}
-                    <span style="color: MediumSeaGreen; font-weight:700;"> Оценка: </span> ${rating} ${statusIcon}
-                </span><br>
-            `;
+            <span class="chatlist" style="cursor:pointer;" title="${item.conversationId}">
+            ${formattedDate} ${formattedTime}
+            <span style="color:#00BFFF; font-weight:700;">${userType}</span> ${userName}
+            <span style="color: MediumSeaGreen; font-weight:700;"> Оценка: </span> ${ratingOrBot} ${statusIcon} </span><br> `;
+
         });
 
         document.getElementById('infofield').innerHTML = foundarr;
