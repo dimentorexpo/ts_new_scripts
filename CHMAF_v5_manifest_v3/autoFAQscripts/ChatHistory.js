@@ -93,27 +93,44 @@ function fillchatbox() { //функция наполнения элемента,
 
     document.getElementById('infofield').innerHTML = '';
 
-    let timearr = [];
     let options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
-    let timearr2 = [];
     let options2 = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
-    let temppics = [];
-    let testarray = [];
-    let brarray = [];
-    let restul;
 
     // след 2 строки - скрипт заполняет значения уже при открытии самого чата по его хешу или при клике на чат из списка в истории
-    if (Object.entries(convdata.channelUser.payload) == '' && convdata.channelUser.channelTpe == 'Telegram')
-        document.getElementById('placeusid').innerText = "Telegram";
-    else if (Object.entries(convdata.channelUser.payload) != '' && convdata.channelUser.channelTpe != 'Telegram' && convdata.channelUser.channelTpe != 'Widget' && convdata.channelUser.channelTpe != 'WhatsApp')
-        document.getElementById('placeusid').innerText = convdata.channelUser.id;
-    else if (Object.entries(convdata.channelUser.payload) == '' && convdata.channelUser.channelTpe != 'Telegram' && convdata.channelUser.channelTpe != 'WhatsApp' && convdata.channelUser.channelTpe == 'Widget')
-        document.getElementById('placeusid').innerText = "Widget";
-    else if (Object.entries(convdata.channelUser.payload) == '' && convdata.channelUser.channelTpe != 'Telegram' && convdata.channelUser.channelTpe == 'WhatsApp')
-        document.getElementById('placeusid').innerText = "WhatsApp";
-    else if (Object.entries(convdata.channelUser.payload) != '' && convdata.channelUser.channelTpe != 'Telegram' && convdata.channelUser.channelTpe == 'Widget' && convdata.channelUser.payload.id != undefined)
-        document.getElementById('placeusid').innerText = convdata.channelUser.payload.id;
-    else document.getElementById('placeusid').innerText = "Widget";
+    const user = convdata.channelUser;
+    const payload = user.payload || {};
+    const isEmptyPayload = Object.keys(payload).length === 0;
+    const type = user.channelTpe;
+
+    let result;
+
+    // Telegram
+    if (type === 'Telegram') {
+        result = "Telegram";
+    }
+    // WhatsApp
+    else if (type === 'WhatsApp') {
+        result = "WhatsApp";
+    }
+    // Widget без payload
+    else if (type === 'Widget' && isEmptyPayload) {
+        result = "Widget";
+    }
+    // Widget с payload.id
+    else if (type === 'Widget' && payload.id) {
+        result = payload.id;
+    }
+    // Другие каналы с payload
+    else if (!isEmptyPayload) {
+        result = user.id;
+    }
+    // fallback
+    else {
+        result = "Widget";
+    }
+
+    document.getElementById('placeusid').innerText = result;
+
 
     document.getElementById('placechatid').innerText = convdata.id;
     document.getElementById('somechatinfo').style.display = '';
@@ -143,7 +160,6 @@ function fillchatbox() { //функция наполнения элемента,
     for (let i = convdata.messages.length - 1; i >= 0; i--) {
         const message = convdata.messages[i];
         const date = extractDate(message.ts);
-        const time = extractTime(message.ts);
 
         switch (message.tpe) {
             case "Question":
@@ -201,7 +217,6 @@ function fillchatbox() { //функция наполнения элемента,
                 break;
 
             case "Event":
-                let eventmsg;
                 function handleAssignToOperatorEvent(message) {
                     if (message.payload.status === 'OnOperator' && message.payload.oid) {
                         const operName = getOperatorNameById(message.payload.oid, "Оператор");
@@ -224,10 +239,12 @@ function fillchatbox() { //функция наполнения элемента,
                     'CloseConversation': (function () {
                         if (message.payload.status !== 'ClosedByBot' && message.payload.sender === 'userAnswerTimer') {
                             return 'Диалог автоматически закрыт по отсутствию активности пользователя';
-                        } else if (Object.values(message.payload) !== '' && message.payload.status !== 'ClosedByBot' && message.payload.sender !== 'userAnswerTimer') {
+                        } else if (Object.values(message.payload) !== '' && message.payload.status !== 'ClosedByBot' && message.payload.src !== 'delivery' && message.payload.sender !== 'userAnswerTimer') {
                             return `${getOperatorNameById(message.payload.sender, "Оператор")} закрыл чат!`;
                         } else if (Object.values(message.payload) === '') {
                             return message.eventTpe;
+                        } else if (Object.values(message.payload) !== '' && message.payload.src == 'delivery') {
+                            return 'Диалог был закрыт рассылкой'
                         }
                         return '';
                     })()
