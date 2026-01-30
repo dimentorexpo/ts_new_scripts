@@ -322,7 +322,7 @@ async function findchatsoper() { // ищет активные чаты на вы
                         "sec-fetch-site": "same-origin",
                         "x-csrf-token": aftoken
                     },
-                    "body": `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${objSel[i].value}\"],\"tsFrom\":\"${document.getElementById('dateFromChHis').value}T${difhrs}:${mins}:${secs}.000Z\",\"tsTo\":\"${document.getElementById('dateToChHis').value}T${hrs}:${mins}:${secs}.000Z\",\"usedStatuses\":[\"OnOperator\",\"AssignedToOperator\",\"Active\"],\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":1,\"limit\":10}`,
+                    "body": `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${objSel[i].value}\"],\"tsFrom\":\"${document.getElementById('dateFromChHis').value}T${difhrs}:${mins}:${secs}.000Z\",\"tsTo\":\"${document.getElementById('dateToChHis').value}T${hrs}:${mins}:${secs}.000Z\",\"usedStatuses\":[\"OnOperator\",\"AssignedToOperator\",\"Active\"],\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":1,\"limit\":20}`,
                     "method": "POST",
                     "mode": "cors",
                     "credentials": "include"
@@ -670,7 +670,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
                     "orderBy": "ts",
                     "orderDirection": "Desc",
                     "page": 1,
-                    "limit": 10
+                    "limit": 20
                 }),
                 "method": "POST",
                 "mode": "cors",
@@ -696,7 +696,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
             let formattedDate = timestamp.toLocaleDateString('ru-RU');
             let formattedTime = timestamp.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
             let rating = item.stats.rate?.rate || '⭕';
-            let statusIcon = item.stats.usedStatuses === "AssignedToOperator" ? "🛠" : '';
+            let statusIcon = item.stats.usedStatuses == "AssignedToOperator" ? "🛠" : '';
             let userName = item.channelUser.payload?.userFullName || item.channelUser.fullName;
             let userType = item.channelUser.payload?.userType || "";
 
@@ -772,14 +772,28 @@ function getopennewcatButtonPress() { // открывает меню для ра
     }
 
     async function updateChatInfo(chatId) {
-        const response = await fetch("https://skyeng.autofaq.ai/api/conversations/" + chatId, { headers: { "x-csrf-token": aftoken } });
-        convdata = await response.json();
+        try {
+            const response = await fetch(
+                `https://skyeng.autofaq.ai/api/conversations/${chatId}`,
+                { headers: { "x-csrf-token": aftoken } }
+            );
 
-        isChatOnOperator = convdata.status != null && convdata.status == 'AssignedToOperator';
+            if (!response.ok) {
+                throw new Error(`Ошибка сети: ${response.status} ${response.statusText}`);
+            }
 
-        fillchatbox();
-        checkAndChangeStyle();
+            convdata = await response.json();
+
+            isChatOnOperator = convdata.status === 'AssignedToOperator';
+
+            fillchatbox();
+            checkAndChangeStyle();
+
+        } catch (err) {
+            console.error("Ошибка обновления информации о чате:", err);
+        }
     }
+
 
     document.getElementById('takechat').onclick = async function () {
         const infoField = document.getElementById('infofield');
