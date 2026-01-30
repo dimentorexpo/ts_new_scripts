@@ -845,304 +845,136 @@ function getopennewcatButtonPress() { // открывает меню для ра
         } else alert('Не введен id пользователя');
     }
 
-    document.getElementById('reassign').onclick = () => { //кнопка перевода чата на выбранного из верхнего списка операторы на линии и открытом чате, который желаем переветси
+    document.getElementById('reassign').onclick = () => {
+        const operators = document.getElementById('operatorstp');
+        const chatId = document.getElementById('placechatid').innerText.trim();
 
-        let arops = document.getElementById('operatorstp')
-        let hashid = document.getElementById('placechatid').innerText;
-        if (arops.children[0].selected != true && hashid != '') {
-            for (let i = 1; i < arops.children.length; i++) {
-                if (arops.children[i].selected == true)
-                    fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-                        "headers": {
-                            "content-type": "application/json",
-                            "sec-fetch-dest": "empty",
-                            "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-origin",
-                            "x-csrf-token": aftoken
-                        },
-                        "body": `{\"command\":\"DO_ASSIGN_CONVERSATION\",\"conversationId\":\"${hashid}\",\"assignToOperatorId\":\"${arops.children[i].value}\"}`,
-                        "method": "POST",
-                        "mode": "cors",
-                        "credentials": "include"
-                    })
-            }
-        } else alert("Условия передачи чата не выполнены: не выбран оператор, не открыт чат, который требуется переводить")
-    }
-
-
-
-    document.getElementById('sendmsgtochatornotes').onclick = async () => { // обработчик кнопки Отправить в зависимости от радиокнопки в заметки или в чат
-
-        let radiobtnsarray = document.getElementsByName('chatornotes')
-
-        for (let i = 0; i < radiobtnsarray.length; i++) {
-            if (radiobtnsarray[i].value == 'Notes' && radiobtnsarray[i].checked == true) {
-
-                let chathashfromdiv = document.getElementById('placechatid').innerText
-                let sesid;
-
-                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv, { headers: { "x-csrf-token": aftoken } })
-                    .then(r => r.json()).then(r => rdata = r)
-                sesid = rdata.sessionId;
-
-                let notemsg = '<p>' + document.getElementById('msgftochatornotes').value + '</p>';
-
-                fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-                    "headers": {
-                        "accept": "*/*",
-                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
-                        "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin",
-                        "x-csrf-token": aftoken
-                    },
-                    "body": "------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n",
-                    "method": "POST",
-                    "mode": "cors",
-                    "credentials": "include"
-                });
-
-                document.getElementById('msgftochatornotes').value = ''
-
-                setTimeout(
-                    async function () {
-                        if (document.getElementById('placechatid').innerText != '') {
-                            document.getElementById('infofield').innerHTML = '';
-
-                            const response = await fetch("https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText, {
-                                headers: { "x-csrf-token": aftoken }
-                            });
-                            const convdata = await response.json();
-
-                            fillchatbox();
-                            checkAndChangeStyle();
-                        }
-                    }, 1000);
-
-            } else if (radiobtnsarray[i].value == 'Chat' && radiobtnsarray[i].checked == true) {
-
-                let chathashfromdiv = document.getElementById('placechatid').innerText
-                let sesid;
-
-                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv, { headers: { "x-csrf-token": aftoken } })
-                    .then(r => r.json()).then(r => rdata = r)
-                sesid = rdata.sessionId;
-
-                let notemsg = '<p>' + document.getElementById('msgftochatornotes').value + '</p>';
-
-                fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-                    "headers": {
-                        "accept": "*/*",
-                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryFeIiMdHaxAteNUHd",
-                        "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin",
-                        "x-csrf-token": aftoken
-                    },
-                    "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
-                    "method": "POST",
-                    "mode": "cors",
-                    "credentials": "include"
-                });
-
-                document.getElementById('msgftochatornotes').value = ''
-
-                setTimeout(
-                    async function () {
-                        if (document.getElementById('placechatid').innerText != '') {
-                            document.getElementById('infofield').innerHTML = '';
-
-                            try {
-                                // Выполняем fetch-запрос с корректной обработкой ответа
-                                const response = await fetch(
-                                    "https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText,
-                                    {
-                                        headers: { "x-csrf-token": aftoken }
-                                    }
-                                );
-
-                                // Проверяем, успешен ли ответ
-                                if (!response.ok) {
-                                    throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
-                                }
-
-                                // Парсим JSON-данные
-                                const convdata = await response.json();
-
-                                // Проверяем статус и устанавливаем isChatOnOperator
-                                isChatOnOperator = convdata.status === 'AssignedToOperator';
-
-                                // Вызываем функции обработки
-                                fillchatbox();
-                                checkAndChangeStyle();
-                            } catch (error) {
-                                console.error("Ошибка выполнения fetch-запроса:", error);
-                            }
-                        }
-                    },
-                    1000
-                );
-            }
+        // Проверки
+        if (!chatId) {
+            alert("Не открыт чат, который требуется переводить");
+            return;
         }
+
+        const selected = operators.querySelector('option:checked');
+
+        if (!selected || selected.value === "") {
+            alert("Не выбран оператор для передачи чата");
+            return;
+        }
+
+        // Формируем тело запроса
+        const body = JSON.stringify({
+            command: "DO_ASSIGN_CONVERSATION",
+            conversationId: chatId,
+            assignToOperatorId: selected.value
+        });
+
+        // Отправляем запрос
+        fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+                "x-csrf-token": aftoken
+            },
+            body,
+            credentials: "include",
+            mode: "cors"
+        })
+            .then(() => {
+                console.log(`Чат ${chatId} передан оператору ${selected.value}`);
+            })
+            .catch(err => {
+                console.error("Ошибка передачи чата:", err);
+                alert("Ошибка при передаче чата");
+            });
+    };
+
+    document.getElementById('sendmsgtochatornotes').onclick = async () => {
+        const mode = document.querySelector('input[name="chatornotes"]:checked')?.value;
+        const chatId = document.getElementById('placechatid').innerText.trim();
+        const msgField = document.getElementById('msgftochatornotes');
+
+        if (!mode || !chatId) {
+            alert("Не выбран режим или не открыт чат");
+            return;
+        }
+
+        // Получаем sessionId
+        const conv = await fetch(`https://skyeng.autofaq.ai/api/conversations/${chatId}`, {
+            headers: { "x-csrf-token": aftoken }
+        }).then(r => r.json());
+
+        const sessionId = conv.sessionId;
+        const text = `<p>${msgField.value}</p>`;
+        msgField.value = "";
+
+        // Формируем payload
+        const payload = {
+            sessionId,
+            conversationId: chatId,
+            text
+        };
+
+        if (mode === "Notes") {
+            payload.isComment = true;
+        }
+
+        // Отправляем сообщение
+        await sendMultipartJSON("https://skyeng.autofaq.ai/api/reason8/answers", payload);
+
+        // Обновляем чат
+        setTimeout(updateChatUI, 1000);
+    };
+
+
+    // Универсальная функция отправки multipart/form-data с JSON payload
+    async function sendMultipartJSON(url, json) {
+        const boundary = "----WebKitFormBoundary" + Math.random().toString(16).slice(2);
+
+        const body =
+            `--${boundary}\r\n` +
+            `Content-Disposition: form-data; name="payload"\r\n\r\n` +
+            `${JSON.stringify(json)}\r\n` +
+            `--${boundary}--\r\n`;
+
+        return fetch(url, {
+            method: "POST",
+            credentials: "include",
+            mode: "cors",
+            headers: {
+                "content-type": `multipart/form-data; boundary=${boundary}`,
+                "x-csrf-token": aftoken
+            },
+            body
+        });
     }
 
-    document.getElementById('sendmsgtochatornotes1').onclick = async () => { // обработчик кнопки Отправить в зависимости от радиокнопки в заметки или в чат
-
-        let radiobtnsarray1 = document.getElementsByName('chatornotes1')
-
-        for (let i = 0; i < radiobtnsarray1.length; i++) {
-            if (radiobtnsarray1[i].value == 'Notes' && radiobtnsarray1[i].checked == true) {
 
 
-                let chathashfromdiv = document.getElementById('placechatid').innerText;
-                let sesid;
+    // Обновление UI чата
+    async function updateChatUI() {
+        const chatId = document.getElementById('placechatid').innerText.trim();
+        if (!chatId) return;
 
-                try {
-                    // Выполняем запрос через fetch
-                    const response = await fetch(
-                        "https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv,
-                        {
-                            headers: { "x-csrf-token": aftoken } // Указываем заголовки
-                        }
-                    );
+        document.getElementById('infofield').innerHTML = "";
 
-                    // Проверяем, успешен ли ответ
-                    if (!response.ok) {
-                        throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
-                    }
+        try {
+            const response = await fetch(`https://skyeng.autofaq.ai/api/conversations/${chatId}`, {
+                headers: { "x-csrf-token": aftoken }
+            });
 
-                    // Парсим JSON-данные
-                    const rdata = await response.json();
-
-                    // Извлекаем sessionId
-                    sesid = rdata.sessionId;
-
-                    // Формируем сообщение
-                    let notemsg = '<p>' + document.getElementById('msgftochatornotes1').value + '</p>';
-
-                    // Дальнейшие действия (например, логирование или передача данных)
-                    console.log("Session ID:", sesid);
-                    console.log("Message:", notemsg);
-                } catch (error) {
-                    console.error("Ошибка выполнения запроса:", error);
-                }
-
-                fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-                    "headers": {
-                        "accept": "*/*",
-                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
-                        "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin",
-                        "x-csrf-token": aftoken
-                    },
-                    "body": "------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n",
-                    "method": "POST",
-                    "mode": "cors",
-                    "credentials": "include"
-                });
-
-                document.getElementById('msgftochatornotes1').value = ''
-
-                setTimeout(
-                    async function () {
-                        if (document.getElementById('placechatid').innerText != '') {
-                            // Очищаем поле infofield
-                            document.getElementById('infofield').innerHTML = '';
-
-                            try {
-                                // Выполняем fetch-запрос
-                                const response = await fetch(
-                                    "https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText,
-                                    {
-                                        headers: { "x-csrf-token": aftoken } // Заголовки запроса
-                                    }
-                                );
-
-                                // Проверяем успешность ответа
-                                if (!response.ok) {
-                                    throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
-                                }
-
-                                // Парсим JSON-ответ
-                                const convdata = await response.json();
-
-                                // Вызываем функции обработки
-                                fillchatbox();
-                                checkAndChangeStyle();
-
-                            } catch (error) {
-                                console.error("Ошибка выполнения fetch-запроса:", error);
-                            }
-                        }
-                    },
-                    1000
-                );
-
-            } else if (radiobtnsarray1[i].value == 'Chat' && radiobtnsarray1[i].checked == true) {
-
-                let chathashfromdiv = document.getElementById('placechatid').innerText
-                let sesid;
-
-                await fetch("https://skyeng.autofaq.ai/api/conversations/" + chathashfromdiv, { headers: { "x-csrf-token": aftoken } })
-                    .then(r => r.json()).then(r => rdata = r)
-                sesid = rdata.sessionId;
-
-                let notemsg = '<p>' + document.getElementById('msgftochatornotes1').value + '</p>';
-
-                fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-                    "headers": {
-                        "accept": "*/*",
-                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryFeIiMdHaxAteNUHd",
-                        "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin",
-                        "x-csrf-token": aftoken
-                    },
-                    "body": "------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"" + sesid + "\",\"conversationId\":\"" + chathashfromdiv + "\",\"text\":\"" + notemsg + "\"}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n",
-                    "method": "POST",
-                    "mode": "cors",
-                    "credentials": "include"
-                });
-
-                document.getElementById('msgftochatornotes1').value = ''
-
-                setTimeout(
-                    async function () {
-                        if (document.getElementById('placechatid').innerText != '') {
-                            // Очистка поля infofield
-                            document.getElementById('infofield').innerHTML = '';
-
-                            try {
-                                // Выполняем fetch-запрос с добавлением x-csrf-token в заголовки
-                                const response = await fetch(
-                                    "https://skyeng.autofaq.ai/api/conversations/" + document.getElementById('placechatid').innerText,
-                                    {
-                                        headers: { "x-csrf-token": aftoken }
-                                    }
-                                );
-
-                                // Проверяем успешность ответа
-                                const convdata = await response.json();
-
-                                // Логика обработки ответа
-                                if (convdata.status != null && convdata.status == 'AssignedToOperator') {
-                                    isChatOnOperator = true;
-                                } else {
-                                    isChatOnOperator = false;
-                                }
-
-                                // Дополнительная обработка
-                                fillchatbox();
-                                checkAndChangeStyle();
-                            } catch (error) {
-                                console.error("Ошибка выполнения fetch-запроса:", error);
-                            }
-                        }
-                    },
-                    1000
-                );
+            if (!response.ok) {
+                throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
             }
+
+            const convdata = await response.json();
+            isChatOnOperator = convdata.status === 'AssignedToOperator';
+
+            fillchatbox();
+            checkAndChangeStyle();
+
+        } catch (err) {
+            console.error("Ошибка обновления чата:", err);
         }
     }
 }
