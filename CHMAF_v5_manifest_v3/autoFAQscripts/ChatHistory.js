@@ -30,20 +30,11 @@ var win_Chathis =  // описание элементов окна Истори�
 
 				<div style="width: 410px;display:none" id="somechatinfo">
 					<span id="usidchat" style="color:bisque; margin-left:10px; margin-top:5px; user-select:none; cursor:pointer" title="При клике копирует сам айдишник">User ID: </span> <span id="placeusid" style="color:bisque; margin-left:5px; margin-top:5px;"></span>
-					<button class="mainButton" id="opencmtbar" style="margin-left:5px;" title="Открыть инструмент добавления комментария к чату (для тех у кого внизу в самом модуле не отображается это поле)">🚧</button>
 					<button class="mainButton" id="takechat" style="margin-left: 155px; margin-top:5px;" title="Забирает чат и назначает на вас,но некоторые чаты или у других коллег забраться не получится">Забрать</button>
 					<br>
 					<span id="chid" style="color:bisque; margin-left:10px; margin-top:5px; user-select:none; cursor:pointer" title="При клике копирует ссылку на лог чата">Chat ID: </span> <span id="placechatid" style="color:bisque; margin-left:5px; margin-top:5px;"></span>
 					<button class="mainButton" id="reassign" title="По нажатию на кнопку переведет чат на сотрудника. Порядок такой: выбираете из списка операторы на линии того, кому желаете перевести, после чего открываете чат по хешу в поле хеш чата вводите его и нажимаете найти, и затем уже после этого жмете на кнопку и скрипт отработает" style="width:45px; margin-left:5px; font-size:16px; margin-top:2px;user-select:none;">🔀</button>
 				</div>
-
-			<div id="comentsbar" style="width: 410px; height:55px; position:fixed; top:50vh; right:40vh; background: rgb(70, 68, 81); display:none">
-						<textarea id="msgftochatornotes1" style="margin-left: 10px; margin-top: 5px; width: 210px; height: 29px; background: lightgrey;position: absolute; bottom: 12px;"></textarea>
-						<button class="mainButton" id="sendmsgtochatornotes1" title="В зависимости от опции отправляет текст в чат или заметки" style="margin-left: 5px; margin-top:5px; position:absolute; top 10px; left:220px;">Send</button>
-						<input class="radio-ext"  type="radio" name="chatornotes1" style="float:right; margin-top:10px;margin-right:5px;" value="Notes" checked="" resolved=""><label style="color:bisque; font-size: 16px;float:right; margin-right:5px;margin-top:10px;">Заметки</label>
-						<input class="radio-ext"  type="radio" name="chatornotes1" style="float:right;margin-top:10px; margin-right:5px;" value="Chat" resolved=""><label style="color:bisque; font-size: 16px; float:right; margin-top:10px; margin-right:5px;">Чат</label>
-						<button class="mainButton" id="hidecmtfield" title="скрывает эту менюшку небольшую" style="position:fixed;right:40vh; top:53vh; height:24px; width:25px; padding:0;">&gt;</button>
-			</div>
 
 			<div id="infofield" style="color:bisque; margin-left:10px;margin-top:5px width:410px; height:75vh; overflow-x:hidden;">
 			</div>
@@ -318,9 +309,6 @@ async function findchatsoper() { // ищет активные чаты на вы
     if (document.getElementById('bottommenuchhis').style.display == '')
         document.getElementById('bottommenuchhis').style.display = 'none';
 
-    if (document.getElementById('comentsbar').style.display == '')
-        document.getElementById('comentsbar').style.display = 'none';
-
     document.getElementById('infofield').innerHTML = 'Загрузка'
 
     if (objSel.length > 1) {
@@ -419,7 +407,6 @@ function resetChatHistoryUI() {
     document.getElementById('placechatid').innerText = '';
     document.getElementById('somechatinfo').style.display = 'none';
     document.getElementById('bottommenuchhis').style.display = 'none';
-    document.getElementById('comentsbar').style.display = 'none';
     document.getElementById('chatuserhis').value = '';
     document.getElementById('hashchathis').value = '';
     document.getElementById('infofield').removeAttribute('opsetction');
@@ -666,9 +653,6 @@ function getopennewcatButtonPress() { // открывает меню для ра
         if (document.getElementById('bottommenuchhis').style.display == '')
             document.getElementById('bottommenuchhis').style.display = 'none';
 
-        if (document.getElementById('comentsbar').style.display == '')
-            document.getElementById('comentsbar').style.display = 'none';
-
         document.getElementById('infofield').innerHTML = 'Загрузка'
 
         if (userId && !chatHash) {
@@ -745,7 +729,6 @@ function getopennewcatButtonPress() { // открывает меню для ра
         document.getElementById('placechatid').innerText = '';
         document.getElementById('somechatinfo').style.display = 'none';
         document.getElementById('bottommenuchhis').style.display = 'none';
-        document.getElementById('comentsbar').style.display = 'none';
 
         if (foundarr) {
             checkAndChangeStyle();
@@ -862,33 +845,6 @@ function getopennewcatButtonPress() { // открывает меню для ра
         } else alert('Не введен id пользователя');
     }
 
-    document.getElementById('opencmtbar').onclick = function () { //обработчик функции начала чата с пользователем
-        if (document.getElementById('comentsbar').style.display == '')
-            document.getElementById('comentsbar').style.display = 'none';
-        else
-            document.getElementById('comentsbar').style.display = '';
-
-        for (let i = 0; i < radiobtnsarray1.length; i++) {
-            if (radiobtnsarray1[i].value == 'Notes' && radiobtnsarray1[i].checked == true) {
-                document.getElementById('msgftochatornotes1').style.background = 'LightGrey';
-            } else if (radiobtnsarray1[i].value == 'Chat' && radiobtnsarray1[i].checked == true) {
-                document.getElementById('msgftochatornotes1').style.background = 'white';
-            }
-
-            radiobtnsarray1[i].onclick = () => {
-                if (radiobtnsarray1[i].value == 'Notes' && radiobtnsarray1[i].checked == true) {
-                    document.getElementById('msgftochatornotes1').style.background = 'LightGrey';
-                } else if (radiobtnsarray1[i].value == 'Chat' && radiobtnsarray1[i].checked == true) {
-                    document.getElementById('msgftochatornotes1').style.background = 'white';
-                }
-            }
-        }
-
-        document.getElementById('hidecmtfield').onclick = function () {
-            document.getElementById('comentsbar').style.display = 'none';
-        }
-    } // конец обработчика нажатия кнопки Начать чат с пользователем
-
     document.getElementById('reassign').onclick = () => { //кнопка перевода чата на выбранного из верхнего списка операторы на линии и открытом чате, который желаем переветси
 
         let arops = document.getElementById('operatorstp')
@@ -947,10 +903,6 @@ function getopennewcatButtonPress() { // открывает меню для ра
                 });
 
                 document.getElementById('msgftochatornotes').value = ''
-
-
-
-
 
                 setTimeout(
                     async function () {
