@@ -228,27 +228,43 @@ function fillchatbox() { //функция наполнения элемента,
                     return '';
                 }
 
+                const msgpayload = message.payload || {};
+                const isEmptyPayload = Object.keys(msgpayload).length === 0;
+
                 const eventMapping = {
-                    'NewConversation': 'Начат новый диалог',
-                    'RunScenario': 'Сценарий запущен',
-                    'FirstTimeInQueue': 'Диалог отправлен в очередь',
-                    'RunIntegration': `Запущена интеграция ${message.payload.name}`,
-                    'FinishIntegration': 'Интеграция успешно отработала',
-                    'CreatedByOperator': `${getOperatorNameById(message.payload.oid, "Оператор")} открыл(а) новый диалог`,
-                    'AssignToOperator': handleAssignToOperatorEvent(message),
-                    'CloseConversation': (function () {
-                        if (message.payload.status !== 'ClosedByBot' && message.payload.sender === 'userAnswerTimer') {
+                    NewConversation: 'Начат новый диалог',
+                    RunScenario: 'Сценарий запущен',
+                    FirstTimeInQueue: 'Диалог отправлен в очередь',
+                    RunIntegration: `Запущена интеграция ${msgpayload.name}`,
+                    FinishIntegration: 'Интеграция успешно отработала',
+                    CreatedByOperator: `${getOperatorNameById(msgpayload.oid, "Оператор")} открыл(а) новый диалог`,
+                    AssignToOperator: handleAssignToOperatorEvent(message),
+
+                    CloseConversation: (() => {
+                        // 1. Автозакрытие по таймеру
+                        if (msgpayload.status !== 'ClosedByBot' && msgpayload.sender === 'userAnswerTimer') {
                             return 'Диалог автоматически закрыт по отсутствию активности пользователя';
-                        } else if (Object.values(message.payload) !== '' && message.payload.status !== 'ClosedByBot' && message.payload.src !== 'delivery' && message.payload.sender !== 'userAnswerTimer') {
-                            return `${getOperatorNameById(message.payload.sender, "Оператор")} закрыл чат!`;
-                        } else if (Object.values(message.payload) === '') {
-                            return message.eventTpe;
-                        } else if (Object.values(message.payload) !== '' && message.payload.src == 'delivery') {
-                            return 'Диалог был закрыт рассылкой'
                         }
+
+                        // 2. Закрыт оператором
+                        if (!isEmptyPayload && msgpayload.status !== 'ClosedByBot' && msgpayload.src !== 'delivery' && msgpayload.sender !== 'userAnswerTimer') {
+                            return `${getOperatorNameById(msgpayload.sender, "Оператор")} закрыл чат!`;
+                        }
+
+                        // 3. Закрыт рассылкой
+                        if (!isEmptyPayload && msgpayload.src === 'delivery') {
+                            return 'Диалог был закрыт рассылкой';
+                        }
+
+                        // 4. Пустой payload — возвращаем тип события
+                        if (isEmptyPayload) {
+                            return message.eventTpe;
+                        }
+
                         return '';
                     })()
                 };
+
 
                 const eventMsg = eventMapping[message.eventTpe] || '';
                 if (eventMsg) {
