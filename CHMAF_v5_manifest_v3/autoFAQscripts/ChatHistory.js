@@ -390,7 +390,7 @@ async function findchatsoper() { // ищет активные чаты на вы
                     return fullName;
                 }
 
-                let foundarr = "";
+                foundarr = "";
 
                 for (const item of operchatsdata.items) {
                     const date = formatDate(item.ts);
@@ -671,9 +671,6 @@ function getopennewcatButtonPress() { // открывает меню для ра
         let dateFrom = document.getElementById('dateFromChHis').value;
         let dateTo = document.getElementById('dateToChHis').value;
 
-        if (foundarr != '')
-            foundarr = ''
-
         if (document.getElementById('placeusid').innerText != '')
             document.getElementById('placeusid').innerText = ''
 
@@ -757,12 +754,12 @@ function getopennewcatButtonPress() { // открывает меню для ра
             let userType = item.channelUser.payload?.userType || "";
 
             // Если бот — показываем 🤖 вместо рейтинга
-            const ratingOrBot = deliveryBot || rating;
+            const ratingOrBot = deliveryBot || statusIcon || rating;
             foundarr += `
             <span class="chatlist" style="cursor:pointer;" title="${item.conversationId}">
             ${formattedDate} ${formattedTime}
             <span style="color:#00BFFF; font-weight:700;">${userType}</span> ${userName}
-            <span style="color: MediumSeaGreen; font-weight:700;"> Оценка: </span> ${ratingOrBot} ${statusIcon} </span><br> `;
+            <span style="color: MediumSeaGreen; font-weight:700;"> Оценка: </span> ${ratingOrBot} </span><br> `;
 
         });
 
