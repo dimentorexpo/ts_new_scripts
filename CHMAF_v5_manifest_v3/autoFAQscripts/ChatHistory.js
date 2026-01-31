@@ -1,3 +1,4 @@
+let data = null;
 var win_Chathis =  // описание элементов окна Истории чатов
     `<div style="display: flex; width: 410px;">
         <span style="width: 410px">
@@ -538,7 +539,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
         document.getElementById('rightPanel').style.right = "422px";
         document.getElementById('opennewcat').classList.add('activeScriptBtn');
     }
-    let data;
+
     changeviewtheme()
 
     flagsearch = ''
@@ -733,13 +734,14 @@ function getopennewcatButtonPress() { // открывает меню для ра
             updateChatInfo(chatHash);
 
         } else {
-
+            document.getElementById('infofield').innerHTML = "Уберите ID или хеш чата"
             alert("Введено и ID пользователя, и хеш чата, или оба поля пустые. Пожалуйста, выберите что-то одно.");
         }
 
     }
 
-    function processChatList(data) {
+    async function processChatList(responseData) {
+        data = responseData;
         foundarr = '';
         data.items.forEach(item => {
             let timestamp = new Date(item.ts.split('[GMT]')[0]);
