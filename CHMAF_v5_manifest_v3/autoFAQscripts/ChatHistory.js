@@ -685,39 +685,58 @@ function getopennewcatButtonPress() { // открывает меню для ра
         if (document.getElementById('bottommenuchhis').style.display == '')
             document.getElementById('bottommenuchhis').style.display = 'none';
 
-        document.getElementById('infofield').innerHTML = 'Загрузка'
+        document.getElementById('infofield').innerText = 'Загрузка'
 
         if (userId && !chatHash) {
             flagsearch = 'searchbyuser';
 
-            let response = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                "headers": { "content-type": "application/json", "sec-fetch-mode": "cors", "sec-fetch-site": "same-origin", "x-csrf-token": aftoken },
-                "body": JSON.stringify({
-                    "serviceId": "361c681b-340a-4e47-9342-c7309e27e7b5",
-                    "mode": "Json",
-                    "channelUserFullTextLike": userId,
-                    "tsFrom": `${dateFrom}T00:00:00.000Z`,
-                    "tsTo": `${dateTo}T23:59:59.059Z`,
-                    "orderBy": "ts",
-                    "orderDirection": "Desc",
-                    "page": 1,
-                    "limit": 20
-                }),
-                "method": "POST",
-                "mode": "cors",
-                "credentials": "include"
-            }).then(r => r.json()).then(r => data = r);
-            if (data.total == 0) {
-                alert("В выбранном диапазоне чатов от пользователя не найдено. Попробуйте, пожалуйста, выбрать другой, либо пользователь не обращался вовсе.")
-                return;
+            try {
+                const response = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
+                    method: "POST",
+                    credentials: "include",
+                    mode: "cors",
+                    headers: {
+                        "content-type": "application/json",
+                        "x-csrf-token": aftoken
+                    },
+                    body: JSON.stringify({
+                        serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
+                        mode: "Json",
+                        channelUserFullTextLike: userId,
+                        tsFrom: `${dateFrom}T00:00:00.000Z`,
+                        tsTo: `${dateTo}T23:59:59.059Z`,
+                        orderBy: "ts",
+                        orderDirection: "Desc",
+                        page: 1,
+                        limit: 20
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.total === 0) {
+                    alert("В выбранном диапазоне чатов от пользователя не найдено. Попробуйте другой диапазон или убедитесь, что пользователь обращался.");
+                    document.getElementById('infofield').innerHTML = "Не найдено  чатов от пользователя"
+                    return;
+                }
+
+                processChatList(data);
+
+            } catch (err) {
+                console.error("Ошибка загрузки истории чатов:", err);
+                alert("Произошла ошибка при загрузке истории чатов.");
             }
-            processChatList(response);
+
         } else if (!userId && chatHash) {
+
             flagsearch = 'searchbyhash';
             updateChatInfo(chatHash);
+
         } else {
-            alert("Введено и ID пользователя и хеш чата, или оба поля пустые. Пожалуйста, выберите что-то одно и повторите попытку.");
+
+            alert("Введено и ID пользователя, и хеш чата, или оба поля пустые. Пожалуйста, выберите что-то одно.");
         }
+
     }
 
     function processChatList(data) {
