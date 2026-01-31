@@ -650,27 +650,30 @@ function screenshots() {  //просмотр и трансформация ск�
         // Iterate over the children elements
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
-            if (child.textContent.includes('vimbox-resource') || child.textContent.includes('math-prod') || child.textContent.includes('communications.skyeng.ru')) {
-                // Get all the links in the child element
-                const links = child.querySelectorAll('a');
+            if (!child.textContent.includes('video') || !child.textContent.includes('audio')) {
+                if (child.textContent.includes('vimbox-resource') || child.textContent.includes('math-prod') || child.textContent.includes('communications.skyeng.ru')) {
+                    // Get all the links in the child element
+                    const links = child.querySelectorAll('a');
 
-                // Iterate over the links
-                for (let j = 0; j < links.length; j++) {
-                    const link = links[j];
-                    if (!link.hasAttribute('data-lightbox')) {
-                        // Create the img and a elements
-                        const img = document.createElement('img');
-                        img.style.width = '100px';
-                        const alink = document.createElement('a');
-                        alink.setAttribute('data-lightbox', 'imgs');
-                        alink.append(img);
-                        img.src = link.href;
-                        img.alt = 'ПКМ-Сохранить ссылку как';
-                        alink.href = img.src;
-                        link.replaceWith(alink);
+                    // Iterate over the links
+                    for (let j = 0; j < links.length; j++) {
+                        const link = links[j];
+                        if (!link.hasAttribute('data-lightbox')) {
+                            // Create the img and a elements
+                            const img = document.createElement('img');
+                            img.style.width = '100px';
+                            const alink = document.createElement('a');
+                            alink.setAttribute('data-lightbox', 'imgs');
+                            alink.append(img);
+                            img.src = link.href;
+                            img.alt = 'ПКМ-Сохранить ссылку как';
+                            alink.href = img.src;
+                            link.replaceWith(alink);
+                        }
                     }
                 }
             }
+
         }
     }
 }
