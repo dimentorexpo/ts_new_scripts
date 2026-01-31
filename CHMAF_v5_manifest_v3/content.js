@@ -628,52 +628,112 @@ function newTaggg(tagName) { //функция добавления тега в �
     }
 }
 
-// ===============================
-// 1. СТАРТ: ЖДЁМ ID ТЕКУЩЕГО ЧАТА
-// ===============================
-waitForChatIdBlock();
 
-function waitForChatIdBlock() {
-    const idBlock = document.querySelector('#rc-tabs-0-panel-chat > div > div > div:nth-child(1) > div');
-    if (!idBlock) {
-        setTimeout(waitForChatIdBlock, 300);
-        return;
-    }
-    initChatIdObserver(idBlock);
-    // первичная обработка для уже открытого чата
-    processResources();
+function waitForMessageContainer(callback) {
+    const tryFind = () => {
+        const container =
+            document.querySelector('.chat-messages') ||
+            document.querySelector('div[class*="ConversationScreen_MessagesWrapper"]');
+
+        if (container) {
+            callback(container);
+        } else {
+            setTimeout(tryFind, 100);
+        }
+    };
+
+    tryFind();
 }
 
-// ======================================
-// 2. OBSERVER: ОТСЛЕЖИВАЕМ СМЕНУ ID ЧАТА
-// ======================================
-function initChatIdObserver(idBlock) {
-    let lastIdText = (idBlock.innerText || '').trim();
 
+
+// ======================================================
+// 0. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+// ======================================================
+let lastUrl = location.href;
+let lastChatId = null;
+
+// ======================================================
+// 1. СТАРТ: ЖДЁМ ЛЮБОЙ ИЗ ТРЁХ ТРИГГЕРОВ
+// ======================================================
+initGlobalObserver();
+waitForMessageContainer(() => {
+    processResources();
+});
+// первичная обработка на случай, если чат уже открыт
+
+// ======================================================
+// 2. ГЛОБАЛЬНЫЙ OBSERVER (ЛОВИТ ВСЁ)
+// ======================================================
+function initGlobalObserver() {
     const observer = new MutationObserver(() => {
-        const currentText = (idBlock.innerText || '').trim();
-        if (!currentText.startsWith('ID:')) return;
-
-        if (currentText !== lastIdText) {
-            lastIdText = currentText;
-
-            // Чат реально сменился
-            cleanupPlayers();
-
-            // даём DOM дорисоваться
-            clearTimeout(window._mediaTimer);
-            window._mediaTimer = setTimeout(() => {
-                processResources();
-            }, 150);
-        }
+        detectUrlChange();
+        detectChatIdBlockChange();
+        detectMessagesWrapperChange();
     });
 
-    observer.observe(idBlock, { childList: true, subtree: true, characterData: true });
+    observer.observe(document.body, { childList: true, subtree: true });
 }
 
-// ===============================
-// 3. ОЧИСТКА НАШИХ ЭЛЕМЕНТОВ
-// ===============================
+// ======================================================
+// 3. ТРИГГЕР №1 — СМЕНА URL (рабочее пространство)
+// ======================================================
+function detectUrlChange() {
+    if (location.href !== lastUrl) {
+        lastUrl = location.href;
+
+        cleanupPlayers();
+
+        setTimeout(() => {
+            processResources();
+        }, 150);
+    }
+}
+
+// ======================================================
+// 4. ТРИГГЕР №2 — СМЕНА ID-БЛОКА (архив + лог)
+// ======================================================
+function detectChatIdBlockChange() {
+    const idBlock = document.querySelector('#rc-tabs-0-panel-chat > div > div > div:nth-child(1) > div');
+    if (!idBlock) return;
+
+    const text = (idBlock.innerText || '').trim();
+    if (!text.startsWith('ID:')) return;
+
+    if (text !== lastChatId) {
+        lastChatId = text;
+
+        cleanupPlayers();
+
+        setTimeout(() => {
+            processResources();
+        }, 150);
+    }
+}
+
+// ======================================================
+// 5. ТРИГГЕР №3 — СМЕНА КОНТЕЙНЕРА СООБЩЕНИЙ
+//    (универсальный для всех зон)
+// ======================================================
+function detectMessagesWrapperChange() {
+    const wrapper = document.querySelector('div[class*="ConversationScreen_MessagesWrapper"]');
+    if (!wrapper) return;
+
+    // если контейнер перерисовался — запускаем обработку
+    if (wrapper !== window._lastWrapper) {
+        window._lastWrapper = wrapper;
+
+        cleanupPlayers();
+
+        setTimeout(() => {
+            processResources();
+        }, 150);
+    }
+}
+
+// ======================================================
+// 6. ОЧИСТКА НАШИХ ЭЛЕМЕНТОВ
+// ======================================================
 function cleanupPlayers() {
     document
         .querySelectorAll('[data-type="video-player"], [data-type="video-label"], [data-type="audio-player"], [data-type="audio-label"], [data-type="img-viewer"]')
@@ -688,9 +748,9 @@ function cleanupPlayers() {
         .forEach(el => el.removeAttribute('data-processed'));
 }
 
-// =======================================
-// 4. ОБРАБОТКА РЕСУРСОВ ВНУТРИ .chat-messages
-// =======================================
+// ======================================================
+// 7. ОБРАБОТКА РЕСУРСОВ (ВИДЕО / АУДИО / КАРТИНКИ)
+// ======================================================
 function processResources() {
     const children = document.querySelectorAll('.chat-messages *');
     if (!children.length) return;
@@ -789,9 +849,9 @@ function processResources() {
     }
 }
 
-// ===============================
-// 5. ПРОСМОТРЩИК ИЗОБРАЖЕНИЙ
-// ===============================
+// ======================================================
+// 8. ПРОСМОТРЩИК ИЗОБРАЖЕНИЙ
+// ======================================================
 function openImageViewer(e) {
     const src = e.target.dataset.full;
     if (!src) return;
@@ -823,6 +883,7 @@ function openImageViewer(e) {
 
     overlay.addEventListener('click', () => overlay.remove());
 }
+
 
 
 
