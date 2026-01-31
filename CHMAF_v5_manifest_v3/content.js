@@ -628,55 +628,204 @@ function newTaggg(tagName) { //функция добавления тега в �
     }
 }
 
-function screenshots() {  //просмотр и трансформация скриншотов в активном чате
-    if (opsection == "ТП") {
-        // Select the expert-chat-display-inner element
-        const expertChatDisplayInner = document.getElementsByClassName('expert-chat-display-inner')[0];
+// ===============================
+// 1. СТАРТ: ЖДЁМ ID ТЕКУЩЕГО ЧАТА
+// ===============================
+waitForChatIdBlock();
 
-        // If expert-chat-display-inner exists, use it to get the children elements
-        let children;
-        if (expertChatDisplayInner) {
-            children = expertChatDisplayInner.children;
+function waitForChatIdBlock() {
+    const idBlock = document.querySelector('#rc-tabs-0-panel-chat > div > div > div:nth-child(1) > div');
+    if (!idBlock) {
+        setTimeout(waitForChatIdBlock, 300);
+        return;
+    }
+    initChatIdObserver(idBlock);
+    // первичная обработка для уже открытого чата
+    processResources();
+}
+
+// ======================================
+// 2. OBSERVER: ОТСЛЕЖИВАЕМ СМЕНУ ID ЧАТА
+// ======================================
+function initChatIdObserver(idBlock) {
+    let lastIdText = (idBlock.innerText || '').trim();
+
+    const observer = new MutationObserver(() => {
+        const currentText = (idBlock.innerText || '').trim();
+        if (!currentText.startsWith('ID:')) return;
+
+        if (currentText !== lastIdText) {
+            lastIdText = currentText;
+
+            // Чат реально сменился
+            cleanupPlayers();
+
+            // даём DOM дорисоваться
+            clearTimeout(window._mediaTimer);
+            window._mediaTimer = setTimeout(() => {
+                processResources();
+            }, 150);
         }
-        // If expert-chat-display-inner does not exist, select the chat-messages element and use it to get the children elements
-        else {
-            const chatMessages = document.getElementsByClassName('chat-messages')[0];
-            if (!chatMessages) {
-                return;
+    });
+
+    observer.observe(idBlock, { childList: true, subtree: true, characterData: true });
+}
+
+// ===============================
+// 3. ОЧИСТКА НАШИХ ЭЛЕМЕНТОВ
+// ===============================
+function cleanupPlayers() {
+    document
+        .querySelectorAll('[data-type="video-player"], [data-type="video-label"], [data-type="audio-player"], [data-type="audio-label"], [data-type="img-viewer"]')
+        .forEach(el => el.remove());
+
+    document
+        .querySelectorAll('.chat-messages a[data-processed]')
+        .forEach(a => a.removeAttribute('data-processed'));
+
+    document
+        .querySelectorAll('.chat-messages [data-processed="1"]')
+        .forEach(el => el.removeAttribute('data-processed'));
+}
+
+// =======================================
+// 4. ОБРАБОТКА РЕСУРСОВ ВНУТРИ .chat-messages
+// =======================================
+function processResources() {
+    const children = document.querySelectorAll('.chat-messages *');
+    if (!children.length) return;
+
+    for (let child of children) {
+        if (child.dataset.processed === '1') continue;
+
+        const links = child.querySelectorAll('a');
+        for (let link of links) {
+            const href = (link.href || '').toLowerCase();
+
+            // ---------- ВИДЕО ----------
+            if (href.match(/\.(mp4|mov|mkv|webm)$/)) {
+                if (link.dataset.processed === '1') continue;
+
+                child.insertAdjacentHTML(
+                    'afterend',
+                    `<div data-type="video-label" style="
+                        color: #d4092a;
+                        font-weight: 700;
+                        background: darkgrey;
+                        border-radius: 20px;
+                        text-align: center;
+                        font-size: 17px;
+                        text-shadow: 1px 2px 0 #0e0d0d4d;
+                        margin-top: 6px;
+                    ">Видео📺</div>`
+                );
+
+                const video = document.createElement('video');
+                video.src = href;
+                video.controls = true;
+                video.style.maxWidth = '300px';
+                video.style.display = 'block';
+                video.style.marginTop = '6px';
+                video.dataset.type = 'video-player';
+
+                child.nextElementSibling.insertAdjacentElement('afterend', video);
+
+                link.dataset.processed = '1';
+                continue;
             }
-            children = chatMessages.children;
-        }
 
-        // Iterate over the children elements
-        for (let i = 0; i < children.length; i++) {
-            const child = children[i];
-            if (!child.textContent.includes('video') || !child.textContent.includes('audio')) {
-                if (child.textContent.includes('vimbox-resource') || child.textContent.includes('math-prod') || child.textContent.includes('communications.skyeng.ru')) {
-                    // Get all the links in the child element
-                    const links = child.querySelectorAll('a');
+            // ---------- АУДИО ----------
+            if (href.match(/\.(mp3|wav|ogg|oga)$/)) {
+                if (link.dataset.processed === '1') continue;
 
-                    // Iterate over the links
-                    for (let j = 0; j < links.length; j++) {
-                        const link = links[j];
-                        if (!link.hasAttribute('data-lightbox')) {
-                            // Create the img and a elements
-                            const img = document.createElement('img');
-                            img.style.width = '100px';
-                            const alink = document.createElement('a');
-                            alink.setAttribute('data-lightbox', 'imgs');
-                            alink.append(img);
-                            img.src = link.href;
-                            img.alt = 'ПКМ-Сохранить ссылку как';
-                            alink.href = img.src;
-                            link.replaceWith(alink);
-                        }
-                    }
-                }
+                child.insertAdjacentHTML(
+                    'afterend',
+                    `<div data-type="audio-label" style="
+                        color: #d4092a;
+                        font-weight: 700;
+                        background: darkgrey;
+                        border-radius: 20px;
+                        text-align: center;
+                        font-size: 17px;
+                        text-shadow: 1px 2px 0 #0e0d0d4d;
+                        margin-top: 6px;
+                    ">🎧 Аудио</div>`
+                );
+
+                const audio = document.createElement('audio');
+                audio.src = href;
+                audio.controls = true;
+                audio.style.maxWidth = '300px';
+                audio.style.display = 'block';
+                audio.style.marginTop = '6px';
+                audio.dataset.type = 'audio-player';
+
+                child.nextElementSibling.insertAdjacentElement('afterend', audio);
+
+                link.dataset.processed = '1';
+                continue;
             }
 
+            // ---------- КАРТИНКИ ----------
+            if (href.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
+                if (link.dataset.processed === '1') continue;
+
+                const img = document.createElement('img');
+                img.src = href;
+                img.style.width = '120px';
+                img.style.cursor = 'zoom-in';
+                img.dataset.full = href;
+
+                img.addEventListener('click', openImageViewer);
+
+                link.replaceWith(img);
+
+                link.dataset.processed = '1';
+                continue;
+            }
         }
+
+        child.dataset.processed = '1';
     }
 }
+
+// ===============================
+// 5. ПРОСМОТРЩИК ИЗОБРАЖЕНИЙ
+// ===============================
+function openImageViewer(e) {
+    const src = e.target.dataset.full;
+    if (!src) return;
+
+    const overlay = document.createElement('div');
+    overlay.dataset.type = 'img-viewer';
+    overlay.style = `
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.85);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 999999;
+        cursor: zoom-out;
+    `;
+
+    const img = document.createElement('img');
+    img.src = src;
+    img.style = `
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 10px;
+        box-shadow: 0 0 25px rgba(0,0,0,0.6);
+    `;
+
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', () => overlay.remove());
+}
+
+
+
 
 function addOption(oListbox, text, value) {  //функция добавления опции в список
     var oOption = document.createElement("option");
@@ -1276,7 +1425,6 @@ maskBackHide.onclick = function () { // функция кнопки скрыть
     }
 };
 
-setInterval(screenshots, 5000)
 setInterval(closeTerms, 500);
 
 // Проверяем текущий путь сразу при загрузке
