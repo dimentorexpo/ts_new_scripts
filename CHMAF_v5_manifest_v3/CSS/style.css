@@ -1547,3 +1547,12 @@
 		color: transparent !important;
 		text-shadow: 0px 0px 0 #5f018b;
 	}
+
+	.problem-item {
+		background: lightsteelblue;
+		width: 96%;
+		border-radius: 10px;
+		text-align: center;
+		font-weight: 800;
+		border-bottom: 1px solid black;
+	}

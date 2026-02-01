@@ -1,6 +1,12 @@
-let knowDataContainer;
-let dropdown0;
-let dropdown1;
+// ===============================
+// Knowledge Center — Clean Rewrite
+// ===============================
+
+// Глобальные переменные
+let knowledgeIndex = new Map();
+let knowDataContainer = [];
+let dropdownLesson;
+let dropdownCategory;
 
 var win_Knowledge =  // описание элементов окна ссылок
 	`<div style="display: flex; width: 550px;">
@@ -36,227 +42,191 @@ var win_Knowledge =  // описание элементов окна ссыло�
 
 const wintKnowledge = createWindow('AF_Knowledge', 'winTopKnwoledge', 'winLeftKnowledge', win_Knowledge);
 
-document.getElementById('IndicatorLoadData').onclick = async function () {
-	let linkToIndic = document.getElementById('IndicatorLoadData');
-	let statInd = document.getElementById('statInd');
-	document.getElementById('ProblemsName').innerHTML = ''
-	document.getElementById('ProblemsSolution').style.display = 'none'
-	linkToIndic.classList.add('loadIndic')
-	statInd.textContent = "⏳"
-	document.getElementById('textToSearchSolution').value = ''
-	document.getElementById('ProblemsNameFromSearch').textContent = ''
-	document.getElementById('ProblemsSolution').style.display = 'none'
-	getKnowData()
+// Кэш DOM-элементов
+const el = {
+	win: document.getElementById('AF_Knowledge'),
+	indicator: document.getElementById('IndicatorLoadData'),
+	stat: document.getElementById('statInd'),
+	search: document.getElementById('textToSearchSolution'),
+	problems: document.getElementById('ProblemsName'),
+	solution: document.getElementById('ProblemsSolution'),
+	results: document.getElementById('ProblemsNameFromSearch'),
+	lessonType: document.getElementById('lessonTypeList'),
+	category: document.getElementById('CategoryNameList'),
+	toggleBtn: document.getElementById('knowledgeCenter'),
+	hideBtn: document.getElementById('hideMeKnowledge')
+};
+
+// ===============================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ===============================
+
+function resetUI() {
+	el.problems.innerHTML = '';
+	el.results.innerHTML = '';
+	el.solution.style.display = 'none';
+	el.search.value = '';
 }
 
-async function getKnowData() { // получаем из файла список версий моб. приложений
-	let knowData;
 
-	if (dropdown0) {
-		while (dropdown0.options.length > 1) {
-			dropdown0.remove(1);
-		}
-
-		while (dropdown1.options.length > 1) {
-			dropdown1.remove(1);
-		}
+function setLoadingState(isLoading) {
+	if (isLoading) {
+		el.indicator.classList.add('loadIndic');
+		el.stat.textContent = '⏳';
+	} else {
+		el.indicator.classList.remove('loadIndic');
+		el.stat.textContent = '🟢';
 	}
+}
 
-	knowData = 'https://script.google.com/macros/s/AKfycbySlhuMPHSKHiI6Rhoyg797id3lbPg_zdeG_iBoEvYxwqlxkD4QizWm8OJDEucma7tGyg/exec'
-	await fetch(knowData).then(r => r.json()).then(r => versionsdata = r)
-	if (versionsdata && versionsdata.result.length > 0) {
-		let linkToIndic = document.getElementById('IndicatorLoadData');
-		let statInd = document.getElementById('statInd');
-		knowDataContainer = versionsdata.result;
-		statInd.textContent = "🟢"
-		linkToIndic.classList.remove('loadIndic')
-	}
+function activate(elem, selector) {
+	document.querySelectorAll(selector).forEach(e => e.classList.remove('active'));
+	elem.classList.add('active');
+}
 
-	// Наполняем первый dropdown
-	const uniqueValues0 = [...new Set(knowDataContainer.map(item => item[0]))];
-	dropdown0 = document.getElementById("lessonTypeList");
-	uniqueValues0.forEach(value => {
-		const option = document.createElement("option");
-		option.value = value;
-		option.textContent = value;
-		dropdown0.appendChild(option);
-	});
-
-	dropdown1 = document.getElementById("CategoryNameList");
-
-	// Функция обновления второго dropdown на основе выбора в первом
-	dropdown0.addEventListener("change", function () {
-		const selectedValue = this.value;
-
-		document.getElementById('textToSearchSolution').value = ''
-		document.getElementById('ProblemsNameFromSearch').textContent = ''
-		document.getElementById('ProblemsSolution').style.display = 'none'
-
-		// Проверяем, существует ли опция "Категория"
-		let catOptionExists = false;
-		for (let i = 0; i < dropdown1.options.length; i++) {
-			if (dropdown1.options[i].value === "CatType") {
-				catOptionExists = true;
-				break;
-			}
-		}
-
-		// Если опции "Категория" нет, то добавляем её
-		if (!catOptionExists) {
-			const catOption = document.createElement("option");
-			catOption.style = "background-color:DeepSkyBlue; text-align: center; color: white; font-weight: 700;";
-			catOption.value = "CatType";
-			catOption.textContent = "Категория";
-			dropdown1.appendChild(catOption);
-		}
-
-		// Очищаем второй dropdown
-		while (dropdown1.options.length > 1) {
-			dropdown1.remove(1);
-		}
-
-		// Получаем значения для второго dropdown на основе выбранного значения в первом
-		const secondDropdownValues = [...new Set(knowDataContainer
-			.filter(item => item[0] === selectedValue)
-			.map(item => item[1]))];
-
-		// Наполняем второй dropdown
-		secondDropdownValues.forEach(value => {
-			const option = document.createElement("option");
-			option.value = value;
-			option.textContent = value;
-			dropdown1.appendChild(option);
-		});
-	});
-
-	const problemsDiv = document.getElementById("ProblemsName");
-
-	dropdown1.addEventListener("change", function () {
-		const selectedType = dropdown0.value;
-		const selectedCategory = this.value;
-
-		// Очистить div перед добавлением новых данных
-		problemsDiv.innerHTML = '';
-
-		// Найти соответствующие проблемы для выбранной категории
-		const problems = knowDataContainer
-			.filter(item => item[0] === selectedType && item[1] === selectedCategory)
-			.map(item => item[2]);
-
-		// Добавить каждую проблему в div
-
-		problems.forEach((problem, index) => {
-			const problemElem = document.createElement("div");
-			problemElem.style = "background: lightsteelblue;   width: 96%;    border-radius: 10px;    text-align: center;    font-weight: 800; border-bottom: 1px solid black;";
-			problemElem.setAttribute('name', 'exploreSolution');
-			problemElem.textContent = problem;
-
-			// Добавляем обработчик события клика
-			problemElem.addEventListener('click', function () {
-				// Получаем все элементы с именем exploreSolution
-				const allProblemElems = document.querySelectorAll('[name="exploreSolution"]');
-
-				// Удаляем класс active у всех элементов
-				allProblemElems.forEach(elem => {
-					elem.classList.remove("active");
-				});
-
-				// Добавляем класс active к текущему элементу
-				this.classList.add("active");
-
-				const solutionElem = document.getElementById("ProblemsSolution");
-				solutionElem.style.display = ""; // показываем элемент
-				// Ищем соответствующее решение
-				const matchedData = knowDataContainer.find(item => item[0] === selectedType && item[1] === selectedCategory && item[2] === problem);
-				if (matchedData) {
-					solutionElem.innerHTML = matchedData[3]; // устанавливаем текст решения
-				}
-			});
-			problemsDiv.appendChild(problemElem);
-		});
-	});
-
-	// Получаем элементы DOM
-	const searchInput = document.getElementById("textToSearchSolution");
-	const resultsDiv = document.getElementById("ProblemsNameFromSearch");
-
-	// Обработчик события input
-	searchInput.addEventListener('input', function () {
-
-		document.getElementById('ProblemsName').textContent = ''
-		document.getElementById('lessonTypeList').children[0].selected = true
-		document.getElementById('CategoryNameList').children[0].selected = true
-
-		// Получаем введенный текст
-		const query = this.value.toLowerCase();
-
-		// Очищаем результаты
-		resultsDiv.innerHTML = '';
-
-		// Если поле ввода пусто, просто завершаем выполнение функции
-		if (query.length === 0) return;
-
-		// Фильтруем массив
-		const filteredResults = knowDataContainer.filter(arrayItem => {
-			return arrayItem[2].toLowerCase().includes(query);
-		});
-
-		// Выводим результаты
-		for (let item of filteredResults) {
-			const index = knowDataContainer.indexOf(item); // получаем индекс элемента в массиве knowDataContainer
-			const div = document.createElement('div');
-			div.style = "background: lightsteelblue; width: 96%; border-radius: 10px; text-align: center; font-weight: 800; border-bottom: 1px solid black;"
-			div.setAttribute('name', 'foundToSolution');
-			div.setAttribute('data-index', index); // сохраняем индекс в атрибуте data-index
-			div.textContent = item[2];
-			resultsDiv.appendChild(div);
-
-			div.addEventListener('click', function () {
-				// Получаем все элементы с именем foundToSolution
-				const allFoundElems = document.querySelectorAll('[name="foundToSolution"]');
-
-				// Удаляем класс active у всех элементов
-				allFoundElems.forEach(elem => {
-					elem.classList.remove("active");
-				});
-
-				// Добавляем класс active к текущему элементу
-				this.classList.add("active");
-
-				const solutionElem = document.getElementById("ProblemsSolution");
-				solutionElem.style.display = ""; // показываем элемент
-				const clickedIndex = +this.getAttribute('data-index'); // извлекаем индекс из атрибута data-index
-				solutionElem.innerHTML = knowDataContainer[clickedIndex][3]; // устанавливаем текст решения
-			});
-		}
+function buildIndex() {
+	knowledgeIndex.clear();
+	knowDataContainer.forEach(item => {
+		const key = `${item[0]}::${item[1]}`;
+		if (!knowledgeIndex.has(key)) knowledgeIndex.set(key, []);
+		knowledgeIndex.get(key).push(item);
 	});
 }
+
+function fillDropdown(dropdown, values) {
+	dropdown.length = 1; // оставить только первую опцию
+	values.forEach(v => {
+		const opt = document.createElement('option');
+		opt.value = v;
+		opt.textContent = v;
+		dropdown.appendChild(opt);
+	});
+}
+
+// ===============================
+// ЗАГРУЗКА ДАННЫХ
+// ===============================
+
+async function getKnowData() {
+	setLoadingState(true);
+	resetUI();
+
+	const url = 'https://script.google.com/macros/s/AKfycbySlhuMPHSKHiI6Rhoyg797id3lbPg_zdeG_iBoEvYxwqlxkD4QizWm8OJDEucma7tGyg/exec';
+
+	const response = await fetch(url);
+	const json = await response.json();
+	knowDataContainer = json.result || [];
+
+	buildIndex();
+
+	// Заполняем первый dropdown
+	const lessonTypes = [...new Set(knowDataContainer.map(i => i[0]))];
+	fillDropdown(el.lessonType, lessonTypes);
+
+	setLoadingState(false);
+}
+
+// ===============================
+// ОБРАБОТЧИКИ DROPDOWN
+// ===============================
+
+el.lessonType.addEventListener('change', () => {
+	resetUI();
+
+	const selected = el.lessonType.value;
+	if (selected === 'lType') return;
+
+	const categories = [...new Set(
+		knowDataContainer.filter(i => i[0] === selected).map(i => i[1])
+	)];
+
+	fillDropdown(el.category, categories);
+});
+
+el.category.addEventListener('change', () => {
+	el.problems.innerHTML = '';
+	el.solution.style.display = 'none';
+
+	const type = el.lessonType.value;
+	const cat = el.category.value;
+	const key = `${type}::${cat}`;
+
+	const items = knowledgeIndex.get(key) || [];
+
+	items.forEach(item => {
+		const div = document.createElement('div');
+		div.className = 'problem-item';
+		div.textContent = item[2];
+		div.addEventListener('click', () => {
+			activate(div, '[name="exploreSolution"]');
+			el.solution.style.display = '';
+			el.solution.innerHTML = item[3];
+		});
+		div.setAttribute('name', 'exploreSolution');
+		el.problems.appendChild(div);
+	});
+});
+
+// ===============================
+// ПОИСК
+// ===============================
+
+el.search.addEventListener('input', () => {
+	const q = el.search.value.trim().toLowerCase();
+	el.results.innerHTML = '';
+	el.problems.innerHTML = '';
+	el.solution.style.display = 'none';
+	el.lessonType.selectedIndex = 0;
+	el.category.selectedIndex = 0;
+
+	if (!q) return;
+
+	const filtered = knowDataContainer.filter(i =>
+		i[2].toLowerCase().includes(q)
+	);
+
+	filtered.forEach((item, idx) => {
+		const div = document.createElement('div');
+		div.className = 'problem-item';
+		div.textContent = item[2];
+		div.setAttribute('name', 'foundToSolution');
+		div.addEventListener('click', () => {
+			activate(div, '[name="foundToSolution"]');
+			el.solution.style.display = '';
+			el.solution.innerHTML = item[3];
+		});
+		el.results.appendChild(div);
+	});
+});
+
+// ===============================
+// ОКНО
+// ===============================
 
 function getknowledgeCenterButtonPress() {
-	let linkToIndic = document.getElementById('IndicatorLoadData');
-	let statInd = document.getElementById('statInd');
+	if (el.win.style.display === 'none') {
+		el.win.style.display = '';
 
-	if (document.getElementById('AF_Knowledge').style.display == "none") {
-		document.getElementById('AF_Knowledge').style.display = ""
-		document.getElementById('knowledgeCenter').classList.add('activeScriptBtn');
-		linkToIndic.classList.add('loadIndic')
-		statInd.textContent = "⏳"
-		getKnowData()
+		if (el.toggleBtn) {
+			el.toggleBtn.classList.add('activeScriptBtn');
+		}
+
+		getKnowData();
 	} else {
-		let linkToIndic = document.getElementById('IndicatorLoadData');
-		let statInd = document.getElementById('statInd');
-		statInd.textContent = "🟢"
-		linkToIndic.classList.remove('loadIndic')
-		document.getElementById('AF_Knowledge').style.display = "none"
-		document.getElementById('knowledgeCenter').classList.remove('activeScriptBtn');
-		document.getElementById('ProblemsName').innerHTML = ''
-		document.getElementById('ProblemsSolution').style.display = 'none'
+		el.win.style.display = 'none';
+
+		if (el.toggleBtn) {
+			el.toggleBtn.classList.remove('activeScriptBtn');
+		}
+
+		resetUI();
+		setLoadingState(false);
 	}
 }
 
-document.getElementById('hideMeKnowledge').onclick = function () {
-	document.getElementById('AF_Knowledge').style.display = "none"
-	document.getElementById('knowledgeCenter').classList.remove('activeScriptBtn');
-	document.getElementById('ProblemsName').innerHTML = ''
-	document.getElementById('ProblemsSolution').style.display = 'none'
-}
+
+el.hideBtn.addEventListener('click', () => {
+	el.win.style.display = 'none';
+	el.toggleBtn.classList.remove('activeScriptBtn');
+	resetUI();
+});
