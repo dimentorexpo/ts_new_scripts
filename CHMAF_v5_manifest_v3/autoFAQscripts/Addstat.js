@@ -1,163 +1,220 @@
-var win_Stat =  // описание элементов окна Статистики
-    `<div style="display: flex; width: 550px;">
-        <span style="width: 550px">
-                <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 550;" id="statdata">
-                                <button class="mainButton buttonHide" id="hideMeStat">hide</button>
-                        </div>
-                        <div style="margin: 5px; width: 550px" id="statbox">
-								 <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">Начальная дата <input type="date" style="margin-left:20px;  width:125px;" name="StartData" id="dateFrom" class="${exttheme}"></span>
-								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input type="date" style="float:right; margin-left:20px; margin-right:10px; width:125px;" name="EndData" id="dateTo" class="${exttheme}"></span>
-                        </div>
-						<div>
-							<input id="commenttosearch" class="${exttheme}" placeholder="Слово или фраза для поиска среди закрытых чатов по заметкам" title="введите слово или фразу для поиска по заметкам в закрытом чате" autocomplete="off" type="text" style="text-align: center; width: 540px; margin-left:5px">
-								<select id="thematics" class="${exttheme}" style="margin-left:150px; margin-top:10px;">
-									<option class="${selecttheme}" value="skmob">Skyeng👨‍🎓Mob</option>
-									<option value="1804">-Авторизация</option>
-									<option value="1805">-Домашка</option>
-									<option value="1806">-Оплата</option>
-									<option value="1807">-Профиль</option>
-									<option value="1808">-Тренажер слов</option>
-									<option value="1809">-Уроки</option>
-									<option value="1810">-Чат</option>
-									<option class="${selecttheme}" value="tmob">Teachers👽Mob</option>
-                                    <option value="1833">-Авторизация</option>
-									<option value="1836">-Виджет расписания</option>
-									<option value="1839">-Чат</option>
-									<option value="1835">-Виджет финансов</option>
-									<option value="1838">-Профиль</option>
-									<option value="1840">-Сторис</option>
-									<option value="1837">-Стр расписания</option>
-									<option value="1834">-Стр финансов</option>
-									<option class="${selecttheme}" value="sksmpar">Skysmart👪родит</option>
-                                    <option value="1884">-Другое</option>
-									<option value="1883">-Материалы</option>
-									<option value="1880">-Предметы и баланс</option>
-									<option value="1881">-Профиль родителя</option>
-									<option value="1879">-Расписание</option>
-									<option value="1882">-Чат</option>
-									<option class="${selecttheme}" value="solanka">Different</option>
-                                    <option value="2034">-Прочее</option>
-									<option value="2030">-Slack-вход</option>
-									<option value="2020">-Логи ур У</option>
-									<option value="2019">-Логи ур П</option>
-									<option value="2018">-БД ур оператор</option>
-									<option value="2017">-БД ур система</option>
-									<option class="${selecttheme}" value="payf">Проблемы с оплатой</option>
-                                    <option value="1077">-Вина школы</option>
-									<option value="1658">-Консультация</option>
-									<option value="1661">-Карта У</option>
-									<option value="1662">-Сбой</option>
-									<option value="1660">-Подписки</option>
-									<option class="${selecttheme}" value="hwtr">Проблемы с ДЗ</option>
-                                    <option value="1744">-Контент</option>
-									<option value="1745">-Оценка</option>
-									<option value="1746">-Словарь</option>
-									<option value="1747">-Упражнение</option>
-									<option class="${selecttheme}" value="svyaz">Проблемы связь</option>
-                                    <option value="1581">-ОС/брауз ниж мин</option>
-									<option value="1589">-Конс раб св</option>
-									<option value="1582">-Корп с/ус</option>
-									<option value="1583">-ОС/браузер</option>
-                                    <option value="1586">-ПК</option>
-									<option value="1584">-Гарнитура</option>
-									<option value="1585">-Камера</option>
-									<option value="1580">-Блок ПО</option>
-									<option value="1594">-Не подерж брауз</option>
-									<option value="1595">-Не под кам гарн пк</option>
-                                    <option value="1593">-Сбой платф</option>
-									<option value="1592">-Сб задерж кам</option>
-									<option value="1587">-Инет ниж мин</option>
-									<option value="1590">-Сб плат блк прер</option>
-									<option value="1588">-Хар ниж мин</option>
-									<option value="1591">-Сб задерж зв</option>
-									<option class="${selecttheme}" value="lkp">Проблемы ЛКП</option>
-                                    <option value="1721">-Группа</option>
-									<option value="1714">-Чат</option>
-									<option value="1719">-Финансы</option>
-									<option value="1717">-Упражнения</option>
-                                    <option value="1712">-Карта роста</option>
-									<option value="1716">-Настройки</option>
-									<option value="1718">-Перерыв</option>
-									<option value="1715">-Профиль</option>
-									<option value="1720">-Раб на пров</option>
-									<option value="1713">-Расписание</option>
-									<option class="${selecttheme}" value="lku">Проблемы ЛКУ</option>
-                                    <option value="1708">-Чат</option>
-									<option value="1710">-Профиль</option>
-									<option value="1706">-Видж прогр</option>
-									<option value="1707">-Ис зан/портф</option>
-                                    <option value="1709">-Семья</option>
-									<option value="1711">-Настройки</option>
-									<option value="1705">-Навыки</option>
-									<option value="1704">-Грамматика</option>
-									<option class="${selecttheme}" value="problvh">Проблемы вход</option>
-                                    <option value="1632">-Не привяз почт/тел</option>
-									<option value="1635">-Данные</option>
-									<option value="1634">-Сброс пароля</option>
-									<option value="1631">-Консультация</option>
-                                    <option value="1633">-Сбой</option>
-									<option class="${selecttheme}" value="problpodk">Проблемы подкл</option>
-                                    <option value="1624">-Истек подпис</option>
-									<option value="1627">-Консультациия</option>
-									<option value="1629">-Нет кн входа</option>
-									<option value="1628">-У не в ГУ</option>
-                                    <option value="1625">-Ур в др вр</option>
-									<option value="1626">-У отпуск</option>
-                                    <option value="1630">-Неакт кн вх</option>
-									<option class="${selecttheme}" value="lesfunc">Функционал урок</option>
-                                    <option value="1772">-STT</option>
-									<option value="1773">-TTT</option>
-									<option value="1767">-Вложения</option>
-									<option value="1771">-Демонстрация экр</option>
-                                    <option value="1768">-Доска</option>
-									<option value="2037">-Заметки</option>
-                                    <option value="1775">-Отпр ДЗ на ур</option>
-                                    <option value="1770">-Перекл материалов</option>
-									<option value="1776">-Ауд/вид плеер</option>
-                                    <option value="1769">-Словарь на ур</option>
-                                    <option value="1774">-Упражн на ур</option>
-									<option class="${selecttheme}" value="feedbk">Отзывы и пожел</option>
-                                    <option value="1970">-Vim-контент</option>
-									<option value="1971">-Vim-оценка</option>
-									<option value="1972">-Vim-словарь</option>
-									<option value="1973">-Vim-упражнения</option>
-                                    <option value="1966">-ЛК-ОС род</option>
-									<option value="1965">-ЛК-пер,отм ур</option>
-                                    <option value="1967">-ЛК-профиль</option>
-                                    <option value="1968">-ЛК-семья</option>
-									<option value="1969">-ЛК чат</option>
-                                    <option value="1974">-App Skyeng</option>
-                                    <option value="1975">-App Teachers</option>
-                                    <option value="1979">-App Skypro</option>
-                                    <option value="1976">-App класс</option>
-									<option value="1977">-App решения</option>
-                                    <option value="1978">-App Skysmart род</option>
-                                    <option value="1980">-Прочее</option>
-                                    </select>
-                               <button class="mainButton" style=" title="ищет чаты по тематике" id="gofindit">Find</button>
-                               <button class="mainButton" style=" title="меняет тематику в хеше чата указанном выше в поле ввода и выбранной тематикой из выпадающего списка" id="changetheme">Change</button>
-						</div>
-						</span>
-						<div style="display:flex; justify-content:space-evenly; margin-top:5px;">
-							 <button class="mainButton" title="Получает статистику, считает среднюю оценку всех чатов за период, и отображает чаты без тематики" id="getstatfromperiod">Получить статистику</button>
-							 <button class="mainButton" title="Получает чаты с ксат <4 и выводит их в поле для просмотра и аппеляции" id="getlowcsat">Чаты с КСАТ<4</button>
-							 <button class="mainButton" title="Запускает поиск по комментарию в заметке, поиск точный и чувствительный к регистру и языку заметки" id="parsechat">Найти по комменту</button>
-							 <button class="mainButton" title="очищает значения поля" id="clearall">Очистить</button>
-							 <button class="mainButton" title="загружает полученные результаты как для Чаты с ксат <4 так и для чатов с комментариями в виде HTML файла" id="getfile">🔰</button>
-							 <br>
-					    </div>
-						<div id="chatcoutnsinfo">
-							 <span id="sumchatcounttouched" style="margin-left: 5px; color:bisque;"></span>
-							 <br>
-							 <span id="sumchatcountclosed" style="margin-left: 5px; color:bisque;"></span>
-							 <p id="chatsinfoout" style="width:550px; color:bisque; margin-left:5px"></p>
-							 <p id="lowCSATcount" style="width:550px; max-height:400px; color:bisque; margin-left:5px; overflow:auto"></p>
-							 <p id="themesdata" style="width:550px; max-height:400px; color:bisque; margin-left:5px; overflow:auto"></p>
-							 <p id="chatcommentsdata" style="width:550px;color:bisque; max-height:400px; margin-left:5px; overflow:auto"></p>
-						</div>
-        </span>
-</div>`;
+var win_Stat = `
+<div style="display: flex; width: 550px;">
+    <div style="width: 550px;">
+        <div style="cursor: grab;">
+
+            <!-- Верхняя панель -->
+            <div id="statdata" style="margin: 5px; width: 550px;">
+                <button class="mainButton buttonHide" id="hideMeStat">hide</button>
+            </div>
+
+            <!-- Даты -->
+            <div id="statbox" style="margin: 5px; width: 550px;">
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    color: bisque;
+                    margin: 5px 10px;
+                ">
+                    <span>
+                        Начальная дата
+                        <input type="date"
+                            id="dateFrom"
+                            name="StartData"
+                            class="${exttheme}"
+                            style="margin-left: 20px; width: 125px;">
+                    </span>
+
+                    <span>
+                        Конечная дата
+                        <input type="date"
+                            id="dateTo"
+                            name="EndData"
+                            class="${exttheme}"
+                            style="margin-left: 20px; width: 125px;">
+                    </span>
+                </div>
+            </div>
+
+
+            <!-- Поиск по заметкам -->
+            <div>
+                <input id="commenttosearch" class="${exttheme}" autocomplete="off"
+                       placeholder="Слово или фраза для поиска среди закрытых чатов по заметкам"
+                       title="Введите слово или фразу для поиска по заметкам в закрытом чате"
+                       type="text"
+                       style="text-align: center; width: 540px; margin-left: 5px;">
+
+                <!-- Тематики -->
+                <select id="thematics" class="${exttheme}" style="margin-left: 150px; margin-top: 10px;">
+                    <option class="${selecttheme}" value="skmob">Skyeng👨‍🎓Mob</option>
+                    <option value="1804">-Авторизация</option>
+                    <option value="1805">-Домашка</option>
+                    <option value="1806">-Оплата</option>
+                    <option value="1807">-Профиль</option>
+                    <option value="1808">-Тренажер слов</option>
+                    <option value="1809">-Уроки</option>
+                    <option value="1810">-Чат</option>
+
+                    <option class="${selecttheme}" value="tmob">Teachers👽Mob</option>
+                    <option value="1833">-Авторизация</option>
+                    <option value="1836">-Виджет расписания</option>
+                    <option value="1839">-Чат</option>
+                    <option value="1835">-Виджет финансов</option>
+                    <option value="1838">-Профиль</option>
+                    <option value="1840">-Сторис</option>
+                    <option value="1837">-Стр расписания</option>
+                    <option value="1834">-Стр финансов</option>
+
+                    <option class="${selecttheme}" value="sksmpar">Skysmart👪родит</option>
+                    <option value="1884">-Другое</option>
+                    <option value="1883">-Материалы</option>
+                    <option value="1880">-Предметы и баланс</option>
+                    <option value="1881">-Профиль родителя</option>
+                    <option value="1879">-Расписание</option>
+                    <option value="1882">-Чат</option>
+
+                    <option class="${selecttheme}" value="solanka">Different</option>
+                    <option value="2034">-Прочее</option>
+                    <option value="2030">-Slack-вход</option>
+                    <option value="2020">-Логи ур У</option>
+                    <option value="2019">-Логи ур П</option>
+                    <option value="2018">-БД ур оператор</option>
+                    <option value="2017">-БД ур система</option>
+
+                    <option class="${selecttheme}" value="payf">Проблемы с оплатой</option>
+                    <option value="1077">-Вина школы</option>
+                    <option value="1658">-Консультация</option>
+                    <option value="1661">-Карта У</option>
+                    <option value="1662">-Сбой</option>
+                    <option value="1660">-Подписки</option>
+
+                    <option class="${selecttheme}" value="hwtr">Проблемы с ДЗ</option>
+                    <option value="1744">-Контент</option>
+                    <option value="1745">-Оценка</option>
+                    <option value="1746">-Словарь</option>
+                    <option value="1747">-Упражнение</option>
+
+                    <option class="${selecttheme}" value="svyaz">Проблемы связь</option>
+                    <option value="1581">-ОС/брауз ниж мин</option>
+                    <option value="1589">-Конс раб св</option>
+                    <option value="1582">-Корп с/ус</option>
+                    <option value="1583">-ОС/браузер</option>
+                    <option value="1586">-ПК</option>
+                    <option value="1584">-Гарнитура</option>
+                    <option value="1585">-Камера</option>
+                    <option value="1580">-Блок ПО</option>
+                    <option value="1594">-Не подерж брауз</option>
+                    <option value="1595">-Не под кам гарн пк</option>
+                    <option value="1593">-Сбой платф</option>
+                    <option value="1592">-Сб задерж кам</option>
+                    <option value="1587">-Инет ниж мин</option>
+                    <option value="1590">-Сб плат блк прер</option>
+                    <option value="1588">-Хар ниж мин</option>
+                    <option value="1591">-Сб задерж зв</option>
+
+                    <option class="${selecttheme}" value="lkp">Проблемы ЛКП</option>
+                    <option value="1721">-Группа</option>
+                    <option value="1714">-Чат</option>
+                    <option value="1719">-Финансы</option>
+                    <option value="1717">-Упражнения</option>
+                    <option value="1712">-Карта роста</option>
+                    <option value="1716">-Настройки</option>
+                    <option value="1718">-Перерыв</option>
+                    <option value="1715">-Профиль</option>
+                    <option value="1720">-Раб на пров</option>
+                    <option value="1713">-Расписание</option>
+
+                    <option class="${selecttheme}" value="lku">Проблемы ЛКУ</option>
+                    <option value="1708">-Чат</option>
+                    <option value="1710">-Профиль</option>
+                    <option value="1706">-Видж прогр</option>
+                    <option value="1707">-Ис зан/портф</option>
+                    <option value="1709">-Семья</option>
+                    <option value="1711">-Настройки</option>
+                    <option value="1705">-Навыки</option>
+                    <option value="1704">-Грамматика</option>
+
+                    <option class="${selecttheme}" value="problvh">Проблемы вход</option>
+                    <option value="1632">-Не привяз почт/тел</option>
+                    <option value="1635">-Данные</option>
+                    <option value="1634">-Сброс пароля</option>
+                    <option value="1631">-Консультация</option>
+                    <option value="1633">-Сбой</option>
+
+                    <option class="${selecttheme}" value="problpodk">Проблемы подкл</option>
+                    <option value="1624">-Истек подпис</option>
+                    <option value="1627">-Консультациия</option>
+                    <option value="1629">-Нет кн входа</option>
+                    <option value="1628">-У не в ГУ</option>
+                    <option value="1625">-Ур в др вр</option>
+                    <option value="1626">-У отпуск</option>
+                    <option value="1630">-Неакт кн вх</option>
+
+                    <option class="${selecttheme}" value="lesfunc">Функционал урок</option>
+                    <option value="1772">-STT</option>
+                    <option value="1773">-TTT</option>
+                    <option value="1767">-Вложения</option>
+                    <option value="1771">-Демонстрация экр</option>
+                    <option value="1768">-Доска</option>
+                    <option value="2037">-Заметки</option>
+                    <option value="1775">-Отпр ДЗ на ур</option>
+                    <option value="1770">-Перекл материалов</option>
+                    <option value="1776">-Ауд/вид плеер</option>
+                    <option value="1769">-Словарь на ур</option>
+                    <option value="1774">-Упражн на ур</option>
+
+                    <option class="${selecttheme}" value="feedbk">Отзывы и пожел</option>
+                    <option value="1970">-Vim-контент</option>
+                    <option value="1971">-Vim-оценка</option>
+                    <option value="1972">-Vim-словарь</option>
+                    <option value="1973">-Vim-упражнения</option>
+
+                    <option class="${selecttheme}" value="1966">-ЛК-ОС род</option>
+                    <option value="1965">-ЛК-пер,отм ур</option>
+                    <option value="1967">-ЛК-профиль</option>
+                    <option value="1968">-ЛК-семья</option>
+                    <option value="1969">-ЛК чат</option>
+
+                    <option class="${selecttheme}" value="1974">-App Skyeng</option>
+                    <option value="1975">-App Teachers</option>
+                    <option value="1979">-App Skypro</option>
+                    <option value="1976">-App класс</option>
+                    <option value="1977">-App решения</option>
+                    <option value="1978">-App Skysmart род</option>
+                    <option value="1980">-Прочее</option>
+                </select>
+
+                <button class="mainButton" id="gofindit" title="Ищет чаты по тематике">Find</button>
+                <button class="mainButton" id="changetheme" title="Меняет тематику в хеше чата">Change</button>
+            </div>
+
+            <!-- Кнопки статистики -->
+            <div style="display:flex; justify-content:space-evenly; margin-top:5px;">
+                <button class="mainButton" id="getstatfromperiod" title="Получает статистику">Получить статистику</button>
+                <button class="mainButton" id="getlowcsat" title="Чаты с КСАТ < 4">Чаты с КСАТ < 4</button>
+                <button class="mainButton" id="parsechat" title="Поиск по комментарию">Найти по комменту</button>
+                <button class="mainButton" id="clearall" title="Очистить поля">Очистить</button>
+                <button class="mainButton" id="getfile" title="Скачать результаты">🔰</button>
+            </div>
+
+            <!-- Вывод данных -->
+            <div id="chatcoutnsinfo">
+                <span id="sumchatcounttouched" style="margin-left: 5px; color: bisque;"></span><br>
+                <span id="sumchatcountclosed" style="margin-left: 5px; color: bisque;"></span>
+
+                <p id="chatsinfoout" style="width:550px; color:bisque; margin-left:5px;"></p>
+                <p id="lowCSATcount" style="width:550px; max-height:400px; color:bisque; margin-left:5px; overflow:auto;"></p>
+                <p id="themesdata" style="width:550px; max-height:400px; color:bisque; margin-left:5px; overflow:auto;"></p>
+                <p id="chatcommentsdata" style="width:550px; max-height:400px; color:bisque; margin-left:5px; overflow:auto;"></p>
+            </div>
+
+        </div>
+    </div>
+</div>
+`;
+
 
 const wintStat = createWindow('AF_Stat', 'winTopStat', 'winLeftStat', win_Stat);
 hideWindowOnDoubleClick('AF_Stat');
@@ -205,94 +262,171 @@ function getStatsButtonPress() { // открытие Статистики
 
 // Тут будет функция запуска получения информации о статистики
 
-document.getElementById('getstatfromperiod').onclick = async function () { // Тут будет функция запуска получения информации о статистики
-    let datefrom = document.getElementById('dateFrom').value + "T21:00:00.000Z";
-    let dateto = document.getElementById('dateTo').value + "T20:59:59.059Z";
-    let strnew = document.getElementById('chatsinfoout');
-    let allchatcounttouched = document.getElementById('sumchatcounttouched')
-    document.getElementById('getstatfromperiod').textContent = "Загрузка"
-    allchatcounttouched.textContent = "Загрузка"
-    let allchatcountclosed = document.getElementById('sumchatcountclosed')
-    allchatcountclosed.textContent = "Загрузка"
-    strnew.textContent = "Загрузка"
+document.getElementById('getstatfromperiod').onclick = async function () {
 
-    const bodyHistoryTouched = "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId + "\"],\"tsFrom\":\"" + datefrom + "\",\"tsTo\":\"" + dateto + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":1,\"limit\":1}"
-    doOperationsWithHistory(bodyHistoryTouched)
-        .then(r => r.json()) // Преобразуем ответ в JSON
-        .then(data => {
-            sumchatcounttouched = data; // Сохраняем данные в переменной
-            allchatcounttouched.innerText = "Количество пощупанных чатов: " + sumchatcounttouched.total; // Используем данные
-        })
-        .catch(error => {
-            console.error("Ошибка выполнения запроса:", error); // Обрабатываем ошибки
-        });
+    const datefrom = document.getElementById('dateFrom').value + "T21:00:00.000Z";
+    const dateto = document.getElementById('dateTo').value + "T20:59:59.059Z";
 
-    const bodyHistoryClosed = "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId + "\"],\"tsFrom\":\"" + datefrom + "\",\"tsTo\":\"" + dateto + "\",\"usedStatuses\":[\"ClosedByOperator\"],\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":1,\"limit\":1}"
-    doOperationsWithHistory(bodyHistoryClosed).then(r => r.json()) // Преобразуем ответ в JSON
-        .then(data => {
-            sumchatcountclosed = data; // Сохраняем данные в переменной
-            allchatcountclosed.innerText = "Количество закрытых чатов: " + sumchatcountclosed.total; // Используем данные
-        })
-        .catch(error => {
-            console.error("Ошибка выполнения запроса:", error); // Обрабатываем ошибки
-        });
+    const strnew = document.getElementById('chatsinfoout');
+    const btn = document.getElementById('getstatfromperiod');
 
-    // блок с расчетом КСАТ и чатов без тематики
+    const touchedEl = document.getElementById('sumchatcounttouched');
+    const closedEl = document.getElementById('sumchatcountclosed');
+
+    // UI
+    btn.textContent = "Загрузка";
+    touchedEl.textContent = "Загрузка";
+    closedEl.textContent = "Загрузка";
+    strnew.textContent = "Загрузка";
+
+    // ============================
+    // 1. Получаем количество пощупанных чатов
+    // ============================
+
     try {
-        pagenew = 1
-        let stringChatsWithoutTopic2 = ""
-        csatScoreNew = 0
-        csatCountNew = 0
+        const bodyTouched = {
+            serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
+            mode: "Json",
+            participatingOperatorsIds: [operatorId],
+            tsFrom: datefrom,
+            tsTo: dateto,
+            orderBy: "ts",
+            orderDirection: "Asc",
+            page: 1,
+            limit: 1
+        };
+
+        const touched = await doOperationsWithHistory(JSON.stringify(bodyTouched));
+        touchedEl.textContent = "Количество пощупанных чатов: " + (touched?.total ?? 0);
+
+    } catch (e) {
+        touchedEl.textContent = "Ошибка загрузки";
+        console.error(e);
+    }
+
+    // ============================
+    // 2. Получаем количество закрытых чатов
+    // ============================
+
+    try {
+        const bodyClosed = {
+            serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
+            mode: "Json",
+            participatingOperatorsIds: [operatorId],
+            usedStatuses: ["ClosedByOperator"],
+            tsFrom: datefrom,
+            tsTo: dateto,
+            orderBy: "ts",
+            orderDirection: "Asc",
+            page: 1,
+            limit: 1
+        };
+
+        const closed = await doOperationsWithHistory(JSON.stringify(bodyClosed));
+        closedEl.textContent = "Количество закрытых чатов: " + (closed?.total ?? 0);
+
+    } catch (e) {
+        closedEl.textContent = "Ошибка загрузки";
+        console.error(e);
+    }
+
+    // ============================
+    // 3. Расчёт КСАТ и чатов без тематики
+    // ============================
+
+    try {
+        let page = 1;
+        let csatScore = 0;
+        let csatCount = 0;
+        let chatsWithoutTopic = "";
+
         while (true) {
-            test = ''
-            await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
-                "headers": {
+
+            const bodyArchive = {
+                serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
+                mode: "Json",
+                tsFrom: datefrom,
+                tsTo: dateto,
+                orderBy: "ts",
+                orderDirection: "Asc",
+                page: page,
+                limit: 100
+            };
+
+            const response = await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
+                method: "POST",
+                headers: {
                     "content-type": "application/json",
                     "x-csrf-token": aftoken
                 },
-                "body": "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"tsFrom\":\"" + datefrom + "\",\"tsTo\":\"" + dateto + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":" + pagenew + ",\"limit\":100}",
-                "method": "POST",
-            }).then(r => r.json()).then(r => test = r)
-            for (let i = 0; i < test.items.length; i++) {
-                let flagCsat = 0
-                let flagTopic = 0
-                doOperationsWithConversations(test.items[i].conversationId)
-                    .then(r => r.json())
-                    .then(r => {
-                        if (r.operatorId == operatorId) {
-                            flagCsat = 1
-                            if (r.payload != undefined)
-                                if (r.payload.topicId != undefined)
-                                    if (r.payload.topicId.value == "")
-                                        flagTopic = 1
+                body: JSON.stringify(bodyArchive)
+            });
+
+            const test = await response.json();
+
+            if (!test?.items?.length) break;
+
+            for (const item of test.items) {
+
+                let flagCsat = 0;
+                let flagTopic = 0;
+
+                const conv = await doOperationsWithConversations(item.conversationId);
+
+                // Проверяем оператора
+                if (conv.operatorId === operatorId) {
+                    flagCsat = 1;
+
+                    // Проверяем сообщения
+                    if (Array.isArray(conv.messages)) {
+                        for (const msg of conv.messages) {
+                            if (typeof msg.txt === "string" &&
+                                msg.txt.includes("Техподдержка 2-я линия")) {
+                                flagTopic = 1;
+                                break;
+                            }
                         }
-                    })
-                if (flagCsat == 1)
-                    if (test.items[i].stats.rate != undefined)
-                        if (test.items[i].stats.rate.rate != undefined) {
-                            csatScoreNew += test.items[i].stats.rate.rate
-                            csatCountNew++
-                        }
-                if (flagTopic == 1)
-                    stringChatsWithoutTopic2 += '<span style="color: #00FA9A">&#5129;</span>' + " " + '<a href="https://skyeng.autofaq.ai/logs/' + test.items[i].conversationId + '" onclick="" style="color:#1E90FF;">' + test.items[i].conversationId + '</a></br>'
+                    }
+                }
+
+                // Считаем КСАТ
+                if (flagCsat === 1) {
+                    const rate = item.stats?.rate?.rate;
+                    if (typeof rate === "number") {
+                        csatScore += rate;
+                        csatCount++;
+                    }
+                }
+
+                // Чаты без тематики
+                if (flagTopic === 1) {
+                    chatsWithoutTopic +=
+                        `<span style="color:#00FA9A">&#5129;</span> ` +
+                        `<a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" style="color:#1E90FF;">${item.conversationId}</a><br>`;
+                }
             }
 
-            if (stringChatsWithoutTopic2 == "")
-                stringChatsWithoutTopic2 = ' нет таких' + '<br>'
-
-            strnew.innerHTML = 'Оценка: ' + Math.round(csatScoreNew / csatCountNew * 100) / 100 + '<br>' + 'Чаты без тематики: <br>' + stringChatsWithoutTopic2
-
-            if ((test.total / 100) > pagenew) {
-                pagenew++;
-            } else {
-                document.getElementById('getstatfromperiod').textContent = "Получить статистику"
-                break
-            }
+            if (page < Math.ceil(test.total / 100)) {
+                page++;
+            } else break;
         }
-    } catch {
-        strnew.textContent = 'Что-то пошло не так. Сделайте скрин консоли и отправьте в канал chm-dev, пожалуйста'
+
+        if (!chatsWithoutTopic) chatsWithoutTopic = "нет таких<br>";
+
+        const avgCsat = csatCount ? (Math.round((csatScore / csatCount) * 100) / 100) : 0;
+
+        strnew.innerHTML =
+            `Оценка: ${avgCsat}<br>` +
+            `Чаты переданные на 2ЛТП:<br>${chatsWithoutTopic}`;
+
+    } catch (e) {
+        console.error(e);
+        strnew.textContent = "Что-то пошло не так. Сделайте скрин консоли и отправьте в канал chm-dev, пожалуйста";
     }
-}
+
+    btn.textContent = "Получить статистику";
+};
+
 
 //Функция получения чатов с низким КСАТ
 let stringChatsWithLowCsat;
