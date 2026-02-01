@@ -1556,3 +1556,25 @@
 		font-weight: 800;
 		border-bottom: 1px solid black;
 	}
+
+	.tr-window {
+		width: 280px;
+		padding: 5px;
+	}
+
+	.tr-header {
+		display: flex;
+		margin-bottom: 5px;
+	}
+
+	.tr-row {
+		display: flex;
+		margin: 5px 0;
+	}
+
+	.tr-row select,
+	.tr-row input {
+		flex: 1;
+		height: 26px;
+		text-align: center;
+	}
