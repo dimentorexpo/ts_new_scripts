@@ -1578,3 +1578,85 @@
 		height: 26px;
 		text-align: center;
 	}
+
+	/* Основной контейнер */
+	.nabor-window,
+	.maindivst {
+		display: flex;
+		width: 700px;
+	}
+
+	/* Внутренний span */
+	.nabor-window>span,
+	.maindivst>span {
+		width: 700px;
+	}
+
+	/* Перетаскиваемая область */
+	.nabor-grab {
+		cursor: -webkit-grab;
+	}
+
+	/* Верхняя панель */
+	.nabor-header {
+		margin: 5px;
+		width: 700px;
+	}
+
+	/* Блок с input */
+	.nabor-input-row {
+		margin: 5px;
+		width: 700px;
+	}
+
+	/* Поле ввода Teacher ID */
+	.nabor-input {
+		position: relative;
+		text-align: center;
+		width: 100px;
+		margin-left: 40%;
+		font-size: 14px;
+		min-height: 25px;
+	}
+
+	/* Таблица */
+	.nabor-table {
+		margin-top: 5px;
+		max-height: 400px;
+		overflow: auto;
+		display: none;
+		color: bisque;
+		text-align: center;
+	}
+
+	/* Внутренняя таблица */
+	.nabor-table-inner {
+		width: 99.4%;
+		color: bisque;
+		font-weight: 500;
+		background-color: #464451;
+		border-style: double;
+		font-size: 13px;
+	}
+
+	/* Заголовки таблицы */
+	.nabor-table-inner th {
+		text-align: center;
+		font-weight: 500;
+		background: dimgrey;
+		border: 1px solid black;
+		padding: 5px;
+		position: sticky;
+		top: 0;
+	}
+
+	/* Ячейки */
+	.nabor-table-inner td {
+		border: 1px solid black;
+		font-size: 12px;
+	}
+
+	/* Первая колонка (галочки) */
+	.nabor-table-inner td:first-child {
+		font-size: 16px;
+	}

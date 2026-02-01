@@ -1,176 +1,212 @@
-var win_NaborStatus =  // описание элементов окна статуса уроков
-    `<div class="maindivst" style="display: flex; width: 700px;">
-        <span style="width: 700px">
-                <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 700px;" id="naborData">
-                                <button class="mainButton buttonHide" id="hideNaborStatus">hide</button>
-                                <button class="mainButton" id="openTrmTeacher" title="Очищает поля с результатами и полем для ввода">🧑‍🏫 TRM</button>
-                        </div>
-                        <div style="margin: 5px; width: 700px" id="databoNabor">
-                            <input class="${exttheme}" id="tidNabor" placeholder="Teacher ID" title="Введите ID учителя, чтобы проверить информацию по статусу набора" autocomplete="off" type="text" style="position:relative; text-align:center; width:100px; margin-left:40%; font-size:14px; min-height:25px">
-                            <button class="mainButton" title="Запускает процесс поиска информации по статусам набора" id="getNaborInfo">🔍</button>
-						</div>
-				</span>
-						<div>
-							<p id="naborStatusTable" style="margin-top:5px; max-height:400px; overflow:auto; display:none; color:bisque; text-align:center"></p>
-						</div>
+// ---------------------------
+// HTML шаблон окна
+// ---------------------------
+const win_NaborStatus = `
+<div class="maindivst">
+    <span>
+        <span class="nabor-grab">
+            <div class="nabor-header" id="naborData">
+                <button class="mainButton buttonHide" id="hideNaborStatus">hide</button>
+                <button class="mainButton" id="openTrmTeacher" title="Открыть TRM учителя">🧑‍🏫 TRM</button>
+            </div>
+
+            <div class="nabor-input-row" id="databoNabor">
+                <input class="nabor-input ${exttheme}" id="tidNabor"
+                    placeholder="Teacher ID"
+                    title="Введите ID учителя, чтобы проверить информацию по статусу набора"
+                    autocomplete="off" type="text">
+
+                <button class="mainButton" id="getNaborInfo"
+                    title="Запускает процесс поиска информации по статусам набора">🔍</button>
+            </div>
         </span>
+
+        <div>
+            <p id="naborStatusTable" class="nabor-table"></p>
+        </div>
+    </span>
 </div>`;
 
-const wintNaborStatus = createWindow('AF_NaborStatus', 'winTopNaborStatus', 'winLeftNaborStatus', win_NaborStatus);
+// ---------------------------
+// Создание окна
+// ---------------------------
+createWindow('AF_NaborStatus', 'winTopNaborStatus', 'winLeftNaborStatus', win_NaborStatus);
 hideWindowOnDoubleClick('AF_NaborStatus');
 
-let btnTNabor = document.getElementById('butTeacherNabor');
-btnTNabor.addEventListener('click', function () {
+// ---------------------------
+// DOM ссылки
+// ---------------------------
+const NAB = {
+    win: document.getElementById('AF_NaborStatus'),
+    btnOpen: document.getElementById('butTeacherNabor'),
+    btnHide: document.getElementById('hideNaborStatus'),
+    btnGet: document.getElementById('getNaborInfo'),
+    btnTRM: document.getElementById('openTrmTeacher'),
+    input: document.getElementById('tidNabor'),
+    table: document.getElementById('naborStatusTable')
+};
 
-    if (document.getElementById('AF_NaborStatus').style.display == '') {
-        document.getElementById('AF_NaborStatus').style.display = 'none'
-    } else {
-        document.getElementById('AF_NaborStatus').style.display = ''
-        let valNabor = document.getElementById('tidNabor')
-        let useriddata = document.getElementById('idstudent').value.trim();
-        valNabor.value = useriddata
-        getNaborStatus()
+
+// ---------------------------
+// Утилиты
+// ---------------------------
+function formatDateToMSK(dateStr) {
+    const date = new Date(dateStr);
+    const msk = new Date(date.getTime() + 3 * 3600 * 1000);
+
+    const pad = n => n.toString().padStart(2, '0');
+
+    return `${pad(msk.getUTCDate())}.${pad(msk.getUTCMonth() + 1)}.${msk.getUTCFullYear()}, ${pad(msk.getUTCHours())}:${pad(msk.getUTCMinutes())}`;
+}
+
+function renderTable(rows) {
+    NAB.table.innerHTML = '';
+
+    const table = document.createElement('table');
+    table.className = 'nabor-table-inner';
+
+    const headers = ["Новое значение", "Событие", "Дата изменения", "Пользователь"];
+    const headerRow = document.createElement('tr');
+
+    headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        headerRow.appendChild(th);
+    });
+
+    table.appendChild(headerRow);
+
+    rows.forEach(row => table.appendChild(row));
+    NAB.table.appendChild(table);
+}
+
+function createRow(valueAfter, context, date, userName) {
+    const tr = document.createElement('tr');
+
+    const cells = [
+        valueAfter ? "✅" : "❌",
+        context,
+        formatDateToMSK(date),
+        userName
+    ];
+
+    cells.forEach(text => {
+        const td = document.createElement('td');
+        td.textContent = text;
+        tr.appendChild(td);
+    });
+
+    return tr;
+}
+
+
+// ---------------------------
+// Основная логика
+// ---------------------------
+async function getNaborStatus() {
+    const teacherId = NAB.input.value.trim();
+
+    if (teacherId.length < 3) {
+        createAndShowButton('Введите корректный ID П', 'error');
+        return;
     }
-})
 
-let hideStatBtn = document.getElementById('hideNaborStatus')
-hideStatBtn.addEventListener('click', function () {
-    document.getElementById('AF_NaborStatus').style.display = 'none'
-    btnTNabor.classList.remove('activeScriptBtn')
-    let btnLinkToStatusTable = document.getElementById('naborStatusTable')
-    btnLinkToStatusTable.innerHTML = ""
+    NAB.table.style.display = 'block';
+    NAB.table.textContent = "Загрузка… Если данных нет — нажмите ещё раз.";
 
-})
+    const fetchURL = 'https://trm-api.skyeng.ru/api/v1/actionLog/getTeacherChangelog';
+    const requestOptions = {
+        method: "POST",
+        headers: { "content-type": "application/json; charset=UTF-8" },
+        body: JSON.stringify({
+            teacherId: Number(teacherId),
+            property: "_common.isScheduleClosedByTeacher",
+            until: null,
+            lastPreviousRecordId: null
+        }),
+        credentials: "include"
+    };
 
-let usrHashArr = []
-let usrHashTmp;
-function getNaborStatus() {
-    usrHashArr = []
-    usrHashTmp = ''
-    let tIdValue = document.getElementById('tidNabor').value.trim()
-    if (tIdValue.length < 3) { createAndShowButton('Введите корректный ID П' , 'error')
-    } else {
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions }, async response => {
+        if (!response.success) {
+            createAndShowButton("Ошибка получения статусов: " + response.error, 'error');
+            return;
+        }
 
-        document.querySelector('#naborStatusTable').style.display = "";
-        document.querySelector('#naborStatusTable').innerText = "Загрузка. Если информация не появилась нажмите повторно на кнопку получить инфа";
+        const data = JSON.parse(response.fetchansver);
+
+        if (!data.data) {
+            createAndShowButton("Учитель не найден или указан ID ученика", 'error');
+            return;
+        }
+
+        const changelog = data.data.changelog;
+        const rows = [];
+
+        for (const item of changelog) {
+            const userName = await decodeUserHash(item.hash);
+            rows.push(createRow(item.valueAfter, item.context, item.createdAt, userName));
+        }
+
+        renderTable(rows);
+    });
+}
 
 
-        const fetchURL = 'https://trm-api.skyeng.ru/api/v1/actionLog/getTeacherChangelog';
+// ---------------------------
+// Декодирование hash → имя пользователя
+// ---------------------------
+function decodeUserHash(hash) {
+    return new Promise(resolve => {
+        const fetchURL = 'https://teachers-conductor.skyeng.ru/api/v1/getIdUsersData';
         const requestOptions = {
             method: "POST",
-            headers: {
-                "content-type": "application/json; charset=UTF-8"
-            },
-            body: `{\"teacherId\":${tIdValue},\"property\":\"_common.isScheduleClosedByTeacher\",\"until\":null,\"lastPreviousRecordId\":null}`,
+            headers: { "content-type": "application/json; charset=UTF-8" },
+            body: JSON.stringify({ hashes: [hash] }),
             credentials: "include"
         };
 
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions }, response => {
+            if (!response.success) return resolve("—");
 
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (NabStatusResponse) {
-            if (NabStatusResponse.success) {
-                const nabStatArr = JSON.parse(NabStatusResponse.fetchansver);
-                if (nabStatArr.data) {
-                    let formattedNabStatArr = nabStatArr.data.changelog;
-                    console.log(nabStatArr)
+            const data = JSON.parse(response.fetchansver);
+            const user = data.data?.[0]?.data;
 
-                    const table = document.createElement('table');
-                    table.style.width = '99.4%';
-                    table.style.color = 'bisque';
-                    table.style.fontWeight = '500';
-                    table.style.backgroundColor = '#464451';
-                    table.style.borderStyle = 'double';
-                    table.style.fontSize = '13px';
+            if (!user) return resolve("—");
 
-                    const headers = ["Новое значение", "Событие", "Дата изменения", "Пользователь"];
-                    let headerRow = document.createElement('tr');
-                    headers.forEach(header => {
-                        let th = document.createElement('th');
-                        th.textContent = header;
-                        th.style = 'text-align:center; font-weight:500; background:dimgrey; border:1px solid black; padding:5px; position: sticky; top: 0;'
-                        headerRow.appendChild(th);
-                    });
-                    table.appendChild(headerRow);
-
-                    for (let i = 0; i < formattedNabStatArr.length; i++) {
-                        let row = document.createElement('tr');
-                        let cell;
-
-                        cell = document.createElement('td');
-                        cell.textContent = formattedNabStatArr[i].valueAfter == true ? "✅" : "❌";
-                        cell.style = "border: 1px solid black; font-size:16px;"
-                        row.appendChild(cell);
-
-                        cell = document.createElement('td');
-                        cell.textContent = formattedNabStatArr[i].context
-                        cell.style = "border: 1px solid black; font-size:12px;"
-                        row.appendChild(cell);
-
-                        cell = document.createElement('td');
-                        let date = new Date(formattedNabStatArr[i].createdAt); // Создать объект Date из строки
-                        date = new Date(date.getTime() + 10800000); // Добавить разницу между UTC и МСК
-                        let day = date.getUTCDate().toString().padStart(2, '0'); // Получить день в UTC и преобразовать в строку с ведущим нулем
-                        let month = (date.getUTCMonth() + 1).toString().padStart(2, '0'); // Получить месяц в UTC, прибавить 1 и преобразовать в строку с ведущим нулем
-                        let year = date.getUTCFullYear().toString(); // Получить год в UTC и преобразовать в строку
-                        let hour = date.getUTCHours().toString().padStart(2, '0'); // Получить час в UTC и преобразовать в строку с ведущим нулем
-                        let minute = date.getUTCMinutes().toString().padStart(2, '0'); // Получить минуту в UTC и преобразовать в строку с ведущим нулем
-                        let formattedDate = `${day}.${month}.${year}, ${hour}:${minute}`; // Соединить строки с разделителями
-                        cell.textContent = formattedDate; // Присвоить значение ячейке
-                        cell.style = "border: 1px solid black; font-size:12px;"
-                        row.appendChild(cell);
-
-                        // Start
-                        const fetchURL = 'https://teachers-conductor.skyeng.ru/api/v1/getIdUsersData';
-                        const requestOptions = {
-                            method: "POST",
-                            headers: {
-                                "content-type": "application/json; charset=UTF-8"
-                            },
-                            body: `{\"hashes\":[\"${formattedNabStatArr[i].hash}"]}`,
-                            credentials: "include"
-                        };
-
-
-                        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (decodeHashResponse) {
-                            if (decodeHashResponse.success) {
-                                const decodedPerson = JSON.parse(decodeHashResponse.fetchansver);
-                                cell = document.createElement('td');
-                                cell.textContent = decodedPerson.data[0].data.firstName + " " + decodedPerson.data[0].data.lastName
-                                cell.style = "border: 1px solid black; font-size:12px;"
-                                row.appendChild(cell);
-                            } else {
-                                alert("Something went wrong")
-                            }
-                        })
-
-                        //End
-
-                        table.appendChild(row);
-                    }
-
-                    document.getElementById('naborStatusTable').innerHTML = '';
-                    document.getElementById('naborStatusTable').appendChild(table);
-                } else {
-                    alert("Teacher not found or used student ID")
-                }
-
-
-            } else {
-                alert("Не удалось получить статусы набора: " + NabStatusResponse.error)
-            }
-        })
-    }
+            resolve(`${user.firstName} ${user.lastName}`);
+        });
+    });
 }
 
-let getNabStatBtn = document.getElementById('getNaborInfo')
-getNabStatBtn.addEventListener('click', getNaborStatus)
 
-let oTrmBtn = document.getElementById('openTrmTeacher')
-oTrmBtn.addEventListener('click', function () {
-    let tIdValue = document.getElementById('tidNabor').value.trim()
-    if (tIdValue.length < 3) { createAndShowButton('Введите корректный ID П' , 'error')
+// ---------------------------
+// Обработчики
+// ---------------------------
+NAB.btnOpen.addEventListener('click', () => {
+    const win = NAB.win;
+
+    if (win.style.display === '') {
+        win.style.display = 'none';
     } else {
-        window.open("https://trm.skyeng.ru/teacher/" + tIdValue)
+        win.style.display = '';
+        NAB.input.value = document.getElementById('idstudent').value.trim();
+        getNaborStatus();
     }
+});
 
-})
+NAB.btnHide.addEventListener('click', () => {
+    NAB.win.style.display = 'none';
+    NAB.table.innerHTML = '';
+});
+
+NAB.btnGet.addEventListener('click', getNaborStatus);
+
+NAB.btnTRM.addEventListener('click', () => {
+    const id = NAB.input.value.trim();
+    if (id.length < 3) {
+        createAndShowButton('Введите корректный ID П', 'error');
+        return;
+    }
+    window.open(`https://trm.skyeng.ru/teacher/${id}`);
+});
