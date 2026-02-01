@@ -7,7 +7,7 @@ var win_Marks =  // описание элементов окна оценок о
                             <button class="mainButton smallbtn" id="marksinstr" style="float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
                     </div>
                     <div>
-                        <span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">От </span>
+                        <span style="color:bisque; margin-top:5px; margin-left:10px;">От </span>
                         <input class="${exttheme}" type="date" style="margin-left:5px;  width:115px; text-align:center;" name="StartDataMarks" id="dateFromMarks">
                         <span style="color:bisque; margin-top:5px; margin-left:10px; height:28px;">До </span>
                         <input class="${exttheme}" type="date" style="margin-left:5px; margin-right:10px; width:115px; text-align:center;" name="EndDataMarks" id="dateToMarks">

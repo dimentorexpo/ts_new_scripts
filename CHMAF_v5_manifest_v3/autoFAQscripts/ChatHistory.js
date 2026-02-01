@@ -21,7 +21,7 @@ var win_Chathis =  // описание элементов окна Истори�
 				<div style="margin-top: 5px; width: 410px;display:flex; justify-content:center;margin-bottom:5px;" id="databoxchathis">
 					<button class="mainButton" title="Инструкция по этой форме" id="chhisinstr" style="margin-right: 5px;">❓</button>
 					<button class="mainButton" id="refreshchat" style="width:30px; font-size:16px;" title="Обновляет содержимое окна с чатом, если он активный, чтобы увидеть новые записи">🔄</button>
-					<span style="color:bisque; float:center; margin-top:5px; margin-left:10px;">От </span>
+					<span style="color:bisque; margin-top:5px; margin-left:10px;">От </span>
 					<input class="${exttheme}" type="date" style="margin-left:5px;  width:115px; text-align:center; " name="StartDataChHis" id="dateFromChHis">
 					<span style="color:bisque; margin-top:5px; margin-left:10px; float:right; height:28px;">До </span>
 					<input class="${exttheme}" type="date" style="float:right; margin-left:5px; margin-right:10px; width:115px; text-align:center; " name="EndDataChHis" id="dateToChHis">
