@@ -1570,35 +1570,54 @@ function getActiveConvUserName() { //функция получение имен�
     }
 }
 
-function getLoginLink(userid) { // функция получения ссылки логинера
+function getLoginLink(userid) {
     return new Promise((resolve, reject) => {
+
+        if (!userid) {
+            return reject(new Error("Пустой userId"));
+        }
+
         const fetchURL = 'https://id.skyeng.ru/admin/auth/login-links';
+
+        const body =
+            `login_link_form%5Bid%5D=${encodeURIComponent(userid)}` +
+            `&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru` +
+            `&login_link_form%5Blifetime%5D=3600` +
+            `&login_link_form%5Bcreate%5D=`;
+
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${userid}&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=`,
-            mode: 'cors',
-            credentials: 'include',
+            body,
+            credentials: 'include'
         };
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions }, (response) => {
-            if (!response.success) {
-                console.log('Ошибка при получении логиннера: ', response.error);
-                return reject(new Error(response.error));
+
+        chrome.runtime.sendMessage(
+            { action: 'getFetchRequest', fetchURL, requestOptions },
+            (response) => {
+
+                if (!response || response.success !== true) {
+                    console.log('Ошибка при получении логиннера: ', response?.error);
+                    return reject(new Error(response?.error || "Неизвестная ошибка"));
+                }
+
+                const link = extractLoginLink(response.fetchAnswer || response.fetchansver);
+                if (!link) {
+                    console.log('Ссылка логинера не найдена');
+                    return reject(new Error('Ссылка логинера не найдена'));
+                }
+
+                navigator.clipboard.writeText(link)
+                    .then(() => resolve(true))
+                    .catch(err => {
+                        console.log('Не удалось скопировать текст: ', err);
+                        reject(err);
+                    });
             }
-            const link = extractLoginLink(response.fetchansver);
-            if (!link) {
-                console.log('Ссылка логинера не найдена');
-                return reject(new Error('Ссылка логинера не найдена'));
-            }
-            navigator.clipboard.writeText(link)
-                .then(() => resolve(true))
-                .catch((err) => {
-                    console.log('Не удалось скопировать текст: ', err);
-                    reject(err);
-                });
-        });
+        );
     });
 }
+
 
 function extractLoginLink(text) {
     // Используем глобальный поиск для нахождения всех URL
