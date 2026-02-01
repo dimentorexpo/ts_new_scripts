@@ -1,6 +1,7 @@
 let dataChts;
-let timerCountdownToRefresh;
-let timerToRefreshInt;
+let timerCountdownToRefresh = null;
+let timerToRefreshInt = null;
+
 var win_Queue =  // описание элементов окна Чаты в очереди
     `<div style="display: flex; width: 600px;">
         <span style="width: 600px">
@@ -13,20 +14,18 @@ var win_Queue =  // описание элементов окна Чаты в о�
                                 <span id="timeRestartCount" style="color:coral; font-weight:800"></span>
                         </div>
 						<div>
-							<select class="${exttheme}" id="AFStatusType" style="margin-left:220px; margin-top:10px;">
-								<option value="AssignedToOperator">В работе у оператора</option>
-								<option value="OnOperator">В очереди</option>
-								<option value="ClosedByOperator">Закрытые</option>
-								<option value="ClosedByOperatorWithBot">Закрытые с ботом</option>
+                            <input class="${exttheme}" id="SecondsToRefresh" style="margin-left: 27%; width: 60px; text-align:center;" inputmode="numeric"pattern="\d*" title="Введите значение в секундах через которое должен автоматически обновляться список" placeholder="10">
+							<select class="${exttheme}" id="AFStatusType" style="margin-top:10px; height: 27px; margin-bottom: 8px;">
+								<option value="AssignedToOperator">🛠️В работе у оператора</option>
+								<option value="OnOperator">⌛В очереди</option>
+								<option value="ClosedByOperator">✅Закрытые</option>
+								<option value="ClosedByOperatorWithBot">🤖Закрытые с ботом</option>
+                                <option value="ClosedTemporary">⏸️На паузе</option>
 							</select>
-						</div>
-						<div>
-							<textarea class="${exttheme}" id="inputTextForUser" style="margin-left: 16.5%;; width: 400px; height: 56px;" placeholder="Введите текст сообщения для пользователя"></textarea>
 						</div>
 
 						<div style="display:flex; justify-content:space-evenly; padding-bottom:5px">
 							<button class="mainButton" title="Найти чаты с очередью" id="checkQueue" style="position:relative;">🔎 Check Queue</button>
-							<button class="mainButton" title="взять чат с минимальным временем обращения, чтобы успеть ответить и выполнить AFRT" id="getChatFromQueue">📝 Write them ALL</button>
 						</div>
 				</span>
 						<div id="queueData" style="max-height: 600px; overflow-y: auto;">
@@ -36,6 +35,23 @@ var win_Queue =  // описание элементов окна Чаты в о�
 
 const wintQueue = createWindow('AF_Queue', 'winTopQueue', 'winLeftQueue', win_Queue);
 hideWindowOnDoubleClick('AF_Queue');
+
+// =========================
+//   Работа с localStorage
+// =========================
+
+function getRefreshSeconds() {
+    const saved = localStorage.getItem("RefreshTimerSeconds");
+    return saved ? Number(saved) : 10; // дефолт = 10 секунд
+}
+
+function setRefreshSeconds(sec) {
+    localStorage.setItem("RefreshTimerSeconds", String(sec));
+}
+
+// =========================
+//   UI элементы
+// =========================
 
 const UI = {
     get queue() { return document.getElementById('AF_Queue'); },
@@ -48,6 +64,9 @@ const UI = {
     get restartTimer() { return document.getElementById('timeRestartCount'); }
 };
 
+// =========================
+//   Закрытие окна
+// =========================
 
 document.addEventListener('click', (e) => {
     if (e.target.id !== 'hideMeQueue') return;
@@ -65,10 +84,44 @@ document.addEventListener('click', (e) => {
     console.log("All intervals for Queue were removed successfully");
 });
 
+// =========================
+//   Таймеры обновления
+// =========================
 
+function startQueueTimers() {
+    const refreshSeconds = getRefreshSeconds();
+    let timerTime = refreshSeconds;
+
+    clearInterval(timerCountdownToRefresh);
+    clearInterval(timerToRefreshInt);
+
+    // Показать сразу
+    UI.restartTimer.textContent = timerTime;
+
+    timerCountdownToRefresh = setInterval(() => {
+        timerTime--;
+
+        // Если дошли до 0 — сразу сбрасываем, НЕ показывая 0
+        if (timerTime <= 0) {
+            timerTime = refreshSeconds;
+        }
+
+        UI.restartTimer.textContent = timerTime;
+    }, 1000);
+
+    timerToRefreshInt = setInterval(() => {
+        getAllChatsByStatus();
+    }, refreshSeconds * 1000);
+}
+
+
+
+// =========================
+//   Открытие окна очереди
+// =========================
 
 function getQueuePress() {
-    if (!UI.queue) return; // защита
+    if (!UI.queue) return;
 
     const isVisible = UI.queue.style.display === '';
 
@@ -76,6 +129,9 @@ function getQueuePress() {
         UI.queue.style.display = 'none';
         if (UI.menu) UI.menu.style.display = 'none';
         if (UI.mainBtn) UI.mainBtn.classList.remove('activeScriptBtn');
+
+        clearInterval(timerCountdownToRefresh);
+        clearInterval(timerToRefreshInt);
         return;
     }
 
@@ -85,18 +141,12 @@ function getQueuePress() {
     UI.waiting.innerHTML = "";
 
     getAllChatsByStatus();
-
-    let timerTime = 9;
-
-    timerCountdownToRefresh = setInterval(() => {
-        UI.restartTimer.textContent = timerTime--;
-        if (timerTime < 0) timerTime = 9;
-    }, 1000);
-
-    timerToRefreshInt = setInterval(() => {
-        getAllChatsByStatus();
-    }, 10000);
+    startQueueTimers();
 }
+
+// =========================
+//   Таймеры диалога
+// =========================
 
 function updateTimer(startTime, element) {
     const diff = Date.now() - new Date(startTime).getTime();
@@ -107,7 +157,6 @@ function updateTimer(startTime, element) {
 
     element.textContent = `${hours}:${minutes}:${seconds}`;
 
-    // Подсветка, если прошло меньше минуты
     if (hours === "00" && minutes === "00" && Number(seconds) <= 60) {
         element.style.color = "#f9ff00";
         element.style.fontWeight = "700";
@@ -117,26 +166,24 @@ function updateTimer(startTime, element) {
     }
 }
 
-
-// Функция для инициализации таймера
 function startTimerForDialog(startTime, element) {
-    updateTimer(startTime, element); // Обновляем таймер сразу
-    setInterval(function () {
-        updateTimer(startTime, element); // Затем обновляем каждую секунду
-    }, 1000);
+    updateTimer(startTime, element);
+    setInterval(() => updateTimer(startTime, element), 1000);
 }
 
+// =========================
+//   Загрузка всех страниц
+// =========================
+
 async function fetchAllPages(url, initialBodyContent) {
-    let allData = []; // Массив для хранения всех данных
-    let page = 1; // Начинаем с первой страницы
-    let totalFetched = 0; // Количество загруженных записей
-    let totalAvailable; // Общее количество доступных записей
+    let allData = [];
+    let page = 1;
+    let totalFetched = 0;
+    let totalAvailable;
 
     do {
-        // Устанавливаем страницу в теле запроса
         const bodyContent = { ...initialBodyContent, page, limit: 100 };
 
-        // Отправляем запрос
         const response = await fetch(url, {
             headers: {
                 "content-type": "application/json",
@@ -150,114 +197,88 @@ async function fetchAllPages(url, initialBodyContent) {
             credentials: "include"
         });
 
-        // Получаем данные и добавляем их к общему массиву
         const data = await response.json();
         allData = allData.concat(data.items);
         totalFetched += data.items.length;
 
-        // После первого запроса узнаем общее количество доступных записей
-        if (page === 1) {
-            totalAvailable = data.total;
-        }
+        if (page === 1) totalAvailable = data.total;
 
-        // Увеличиваем номер страницы для следующего запроса
         page++;
-    } while (totalFetched < totalAvailable); // Повторяем, пока не получим все доступные данные
+    } while (totalFetched < totalAvailable);
 
-    return allData; // Возвращаем накопленные данные
+    return allData;
 }
 
+// =========================
+//   Забрать чат
+// =========================
+
 function takeOnMe(chatID) {
-
-    let chat_id = chatID;
-    let operator_id = operatorId;
-
     const assignChat = (assignToOperatorId) => {
         fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
             headers: { "content-type": "application/json", "x-csrf-token": aftoken },
             credentials: "include",
             body: JSON.stringify({
                 command: "DO_ASSIGN_CONVERSATION",
-                conversationId: chat_id,
-                assignToOperatorId: assignToOperatorId
+                conversationId: chatID,
+                assignToOperatorId
             }),
             method: "POST"
         });
     };
 
     assignChat("null");
-    setTimeout(() => assignChat(operator_id), 2000);
+    setTimeout(() => assignChat(operatorId), 2000);
+}
 
-};// конец обработчика нажатия кнопки "Забрать"
+// =========================
+//   Получение чатов
+// =========================
 
-let getOptions = document.getElementById('AFStatusType')
+let getOptions = document.getElementById('AFStatusType');
+
 async function getAllChatsByStatus() {
-    let bimba = document.getElementById('queueData');
-    let queueCnt = document.getElementById('waitingCount')
+    let bimba = UI.data;
+    let queueCnt = UI.waiting;
+
     bimba.innerHTML = "";
-    queueCnt.innerHTML = ""
-    let statusToFetch;
-    for (let i = 0; i < getOptions.children.length; i++) {
-        if (getOptions.children[i].selected == true) {
-            statusToFetch = getOptions.children[i].value
-        }
-    }
+    queueCnt.innerHTML = "";
 
-    // Текущее UTC-время
+    let statusToFetch = getOptions.value;
+
     const now = new Date();
-
-    // Смещение Москвы (UTC+3)
     const MSK_OFFSET = 3 * 60 * 60 * 1000;
-
-    // Текущее время по Москве
     const msk = new Date(now.getTime() + MSK_OFFSET);
 
-    // Дата по Москве (локальная)
     const y = msk.getUTCFullYear();
     const m = msk.getUTCMonth();
     const d = msk.getUTCDate();
 
-    // Диапазон: с 21:00 позавчера до 20:59:59.059 вчера (по UTC)
     const tsFrom = new Date(Date.UTC(y, m, d - 2, 21, 0, 0, 0)).toISOString();
     const tsTo = new Date(Date.UTC(y, m, d, 20, 59, 59, 59)).toISOString();
 
-    console.log(tsFrom);
-    console.log(tsTo);
+    let setgroupList = (opsection == "ТП" || opsection == "ТП ОС")
+        ? "c7bbb211-a217-4ed3-8112-98728dc382d8"
+        : "b6f7f34d-2f08-fc19-3661-29ac00842898";
 
-
-    let setgroupList = '';
-    if (opsection == "ТП" || opsection == "ТП ОС") {
-        setgroupList = "c7bbb211-a217-4ed3-8112-98728dc382d8"
-    } else {
-        setgroupList = "b6f7f34d-2f08-fc19-3661-29ac00842898"
-    }
-
-    // Пример использования функции
     const initialBodyContent = {
         serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
         mode: "Json",
-        groupList: [setgroupList], // ТП
-        // groupList: ["b6f7f34d-2f08-fc19-3661-29ac00842898"], // КЦ
-        tsFrom: tsFrom,
-        tsTo: tsTo,
+        groupList: [setgroupList],
+        tsFrom,
+        tsTo,
         usedStatuses: [statusToFetch],
         orderBy: "ts",
-        orderDirection: "Desc",
-        limit: 100 // Можно убрать, так как он уже установлен в функции fetchAllPages
+        orderDirection: "Desc"
     };
 
-    await fetchAllPages("https://skyeng.autofaq.ai/api/conversations/history", initialBodyContent, { headers: { "x-csrf-token": aftoken } })
+    await fetchAllPages("https://skyeng.autofaq.ai/api/conversations/history", initialBodyContent)
         .then(allData => {
-            console.log(allData.length); // Выводит общее количество загруженных записей
-            // Теперь можно обработать allData как угодно
-            dataChts = allData
+            dataChts = allData;
             queueCnt.textContent = `${dataChts.length}`;
         })
-        .catch(error => {
-            console.log('Произошла ошибка при получении данных: ', error);
-        });
+        .catch(error => console.log('Ошибка получения данных: ', error));
 
-    // Преобразование и отображение данных
     dataChts.forEach((el, index) => {
         const ts = new Date(el.ts.replace(/\[GMT\]$/, ''));
 
@@ -265,7 +286,6 @@ async function getAllChatsByStatus() {
         queueItemDiv.className = 'queue-item';
         queueItemDiv.setAttribute('name', 'prosmChat');
 
-        // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
         const span = (text, style = "", attrs = {}) => {
             const s = document.createElement('span');
             if (style) s.style = style;
@@ -277,8 +297,8 @@ async function getAllChatsByStatus() {
         const getUserTypeEmoji = (type) => {
             switch (type) {
                 case "teacher": return "👽";
-                case "student":
-                case "parent": return "👨‍🎓";
+                case "student": return "👨‍🎓";
+                case "parent": return "😵‍💫";
                 default: return "❓";
             }
         };
@@ -293,7 +313,6 @@ async function getAllChatsByStatus() {
             return "🚫";
         };
 
-        // --- СОЗДАНИЕ ЭЛЕМЕНТОВ ---
         const timeSpan = span(
             ts.toLocaleTimeString('ru-RU', {
                 timeZone: 'Europe/Moscow',
@@ -317,7 +336,6 @@ async function getAllChatsByStatus() {
         getThisChat.title = "Забрать этот чат";
         getThisChat.textContent = '🫳';
 
-        // --- СБОРКА ---
         queueItemDiv.append(
             timeSpan,
             usrType,
@@ -330,38 +348,45 @@ async function getAllChatsByStatus() {
 
         bimba.appendChild(queueItemDiv);
 
-        // --- ТАЙМЕР ---
         startTimerForDialog(el.ts.replace(/\[GMT\]$/, ''), timerSpan);
     });
 
-
-    // Обработка событий для кнопок
     let allConvs = document.getElementsByName('prosmChat');
     for (let i = 0; i < allConvs.length; i++) {
         allConvs[i].addEventListener('click', function () {
             if (document.getElementById('AF_ChatHis').style.display == 'none') {
                 document.getElementById('opennewcat').click();
-                document.getElementById('hashchathis').value = dataChts[i].conversationId;
-                btn_search_history.click();
-            } else {
-                document.getElementById('hashchathis').value = dataChts[i].conversationId;
-                btn_search_history.click();
             }
+            document.getElementById('hashchathis').value = dataChts[i].conversationId;
+            btn_search_history.click();
         });
     }
 
-    let allAssignBtns = document.getElementsByName('assignToMe')
+    let allAssignBtns = document.getElementsByName('assignToMe');
     for (let z = 0; z < allAssignBtns.length; z++) {
         allAssignBtns[z].addEventListener('click', function (event) {
             event.stopPropagation();
-            takeOnMe(dataChts[z].conversationId)
-            console.log(dataChts[z].conversationId)
-        })
+            takeOnMe(dataChts[z].conversationId);
+        });
     }
+}
 
-};
+// =========================
+//   Обработчики UI
+// =========================
 
-document.getElementById('checkQueue').addEventListener('click', getAllChatsByStatus)
+document.getElementById('checkQueue').addEventListener('click', getAllChatsByStatus);
 
-getOptions.addEventListener('change', getAllChatsByStatus)
+const secInput = document.getElementById('SecondsToRefresh');
+secInput.value = getRefreshSeconds();
 
+secInput.addEventListener('input', function () {
+    this.value = this.value.replace(/\D/g, '');
+    const val = Number(this.value);
+    if (!val || val < 1) return;
+
+    setRefreshSeconds(val);
+    startQueueTimers();
+});
+
+getOptions.addEventListener('change', getAllChatsByStatus);
