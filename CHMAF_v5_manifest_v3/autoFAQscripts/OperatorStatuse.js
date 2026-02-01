@@ -1,4 +1,3 @@
-
 var win_OperStatus =  // описание элементов окна статуса операторов, работающих в CRM2
     `<div style="display: flex; width: 400px;">
     <span style="width: 400px">
@@ -17,99 +16,147 @@ var win_OperStatus =  // описание элементов окна стату
 const wintOperStatus = createWindow('AF_OperStat', 'winTopOpStat', 'winLeftOpStat', win_OperStatus);
 hideWindowOnDoubleClick('AF_OperStat');
 
-document.getElementById('clearopersinfo').onclick = function () { // кнопка очистки поля
+document.getElementById('clearopersinfo').onclick = () => {
     document.getElementById('operstatustable').innerHTML = "";
+};
+
+// ====== Оптимизированная логика ======
+
+const STATUS_CONFIG = {
+    Ready: {
+        regex: /(:")(\D+)(",)(?="lastStatus":"Ready")/gm,
+        icon: '🟢 ',
+        label: 'Ready'
+    },
+    InServiceOut: {
+        regex: /(:")(\D+)(",)(?="lastStatus":"InServiceOut")/gm,
+        icon: '🟡 📞',
+        label: 'InService'
+    },
+    AfterServiceOut: {
+        regex: /(:")(\D+)(",)(?="lastStatus":"AfterServiceOut")/gm,
+        icon: '🟠 📵',
+        label: 'Afterservice'
+    },
+    Timeout: {
+        regex: /(:")(\D+)(",)(?="lastStatus":"Timeout")/gm,
+        icon: '⭕ ⏳',
+        label: 'Timeout'
+    },
+    DND: {
+        regex: /(:")(\D+)(",)(?="lastStatus":"DND")/gm,
+        icon: '🔴 🍔',
+        label: 'DND'
+    }
+};
+
+function extractNames(message, regex) {
+    const matches = message.match(regex);
+    if (!matches) return [];
+    return matches.map(m =>
+        m.replaceAll(':', '').replace(",", '').replaceAll('"', '')
+    );
+}
+
+function buildStatusBlock(label, count, items, icon) {
+    const header = `
+        <div style="
+            background:#768d87;
+            width:96%;
+            padding:0.3% 0 2px;
+            color:#37ff85;
+            font-weight:700;
+            box-shadow:0px 3px 1px rgb(0 0 0 / 35%);
+            text-shadow:1px 2px 5px rgb(0 0 0 / 55%);
+            border:1px solid black;
+            padding-left:5px;
+            border-radius:10px;
+            text-align:center;">
+            ${label}
+            <span style="
+                background:orange;
+                color:#00365d;
+                padding:0 20px;
+                float:right;
+                height:26px;
+                border-radius:10px;">
+                ${count}
+            </span>
+        </div>
+    `;
+    const list = items.map(name => `${icon}${name}<br>`).join('');
+    return header + list;
+}
+
+function renderOperatorStatuses(message) {
+    const container = document.getElementById('operstatustable');
+    container.innerHTML = '';
+
+    let total = 0;
+    let html = '';
+
+    for (const cfg of Object.values(STATUS_CONFIG)) {
+        const names = extractNames(message, cfg.regex);
+        total += names.length;
+        html += buildStatusBlock(cfg.label, names.length, names, cfg.icon);
+    }
+
+    html += `
+        <div style="
+            background:#0e9196;
+            width:96%;
+            padding:0.3% 0 2px;
+            color:#dcdcdc;
+            font-weight:700;
+            box-shadow:0px 3px 1px rgb(0 0 0 / 35%);
+            text-shadow:1px 2px 5px rgb(0 0 0 / 55%);
+            border:1px solid black;
+            padding-left:5px;
+            border-radius:10px;
+            text-align:center;">
+            Всего операторов в системе:
+            <span style="
+                background:#00b5ff;
+                color:#00365d;
+                padding:0 20px;
+                float:right;
+                height:26px;
+                border-radius:10px;">
+                ${total}
+            </span>
+        </div>
+    `;
+
+    container.innerHTML = html;
 }
 
 function getcrmopersstatusesButtonPress() {
 
-    let readyarr = [];
-    let rcnt = 0;
-    let dndarr = [];
-    let dndcnt = 0;
-    let inservicearr = [];
-    let inservvcnt = 0;
-    let afterservicearr = []
-    let aftscnt = 0;
-    let timeoutarr = []
-    let timeoutcnt = 0;
+    const win = document.getElementById('AF_OperStat');
+    const menu = document.getElementById('idmymenu');
+    const btn = document.getElementById('MainMenuBtn');
 
-    if (document.getElementById('AF_OperStat').style.display == 'none') {
-        document.getElementById('AF_OperStat').style.display = ''
-        document.getElementById('idmymenu').style.display = 'none'
-        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-    } else {
-        document.getElementById('AF_OperStat').style.display = 'none'
-        document.getElementById('idmymenu').style.display = 'none'
-        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-    }
+    win.style.display = win.style.display === 'none' ? '' : 'none';
+    menu.style.display = 'none';
+    btn.classList.remove('activeScriptBtn');
 
-    var socket = new WebSocket("wss://telephony.skyeng.ru/phone-stats/?EIO=4&transport=websocket");
-    var checksocket = setInterval(function () {
-        if (socket.readyState == 1) {
-            clearInterval(checksocket)
-            socket.send('40/group-413,')
-            socket.onmessage = function (event) {
-                readyarr = [];
-                dndarr = [];
-                inservicearr = [];
-                afterservicearr = []
-                timeoutarr = []
-                document.getElementById('operstatustable').innerHTML = ''
-                var message = event.data;
-                socket.send('3')
+    const socket = new WebSocket("wss://telephony.skyeng.ru/phone-stats/?EIO=4&transport=websocket");
 
-                if (message.match(/(:")(\D+)(",)(?="lastStatus":"Ready")/gm) != null) {
-                    rcnt = message.match(/(:")(\D+)(",)(?="lastStatus":"Ready")/gm).length;
-                    for (let i = 0; i < message.match(/(:")(\D+)(",)(?="lastStatus":"Ready")/gm).length; i++) {
-                        readyarr += '🟢 ' + message.match(/(:")(\D+)(",)(?="lastStatus":"Ready")/gm)[i].replaceAll(":", '').replace(",", '').replaceAll('"', '') + '<br>'
-                    }
-                } else rcnt = 0
+    const check = setInterval(() => {
+        if (socket.readyState === 1) {
+            clearInterval(check);
+            socket.send('40/group-413,');
 
-                if (message.match(/(:")(\D+)(",)(?="lastStatus":"DND")/gm) != null) {
-                    dndcnt = message.match(/(:")(\D+)(",)(?="lastStatus":"DND")/gm).length;
-                    for (let i = 0; i < message.match(/(:")(\D+)(",)(?="lastStatus":"DND")/gm).length; i++) {
-                        dndarr += '🔴 🍔' + message.match(/(:")(\D+)(",)(?="lastStatus":"DND")/gm)[i].replaceAll(":", '').replace(",", '').replaceAll('"', '') + '<br>'
-                    }
-                } else dndcnt = 0
-
-                if (message.match(/(:")(\D+)(",)(?="lastStatus":"InServiceOut")/gm) != null) {
-                    inservvcnt = message.match(/(:")(\D+)(",)(?="lastStatus":"InServiceOut")/gm).length;
-                    for (let i = 0; i < message.match(/(:")(\D+)(",)(?="lastStatus":"InServiceOut")/gm).length; i++) {
-                        inservicearr += '🟡 📞' + message.match(/(:")(\D+)(",)(?="lastStatus":"InServiceOut")/gm)[i].replaceAll(":", '').replace(",", '').replaceAll('"', '') + '<br>'
-                    }
-                } else inservvcnt = 0
-
-                if (message.match(/(:")(\D+)(",)(?="lastStatus":"AfterServiceOut")/gm) != null) {
-                    aftscnt = message.match(/(:")(\D+)(",)(?="lastStatus":"AfterServiceOut")/gm).length;
-                    for (let i = 0; i < message.match(/(:")(\D+)(",)(?="lastStatus":"AfterServiceOut")/gm).length; i++) {
-                        afterservicearr += '🟠 📵' + message.match(/(:")(\D+)(",)(?="lastStatus":"AfterServiceOut")/gm)[i].replaceAll(":", '').replace(",", '').replaceAll('"', '') + '<br>'
-                    }
-                } else aftscnt = 0
-
-                if (message.match(/(:")(\D+)(",)(?="lastStatus":"Timeout")/gm) != null) {
-                    timeoutcnt = message.match(/(:")(\D+)(",)(?="lastStatus":"Timeout")/gm).length;
-                    for (let i = 0; i < message.match(/(:")(\D+)(",)(?="lastStatus":"Timeout")/gm).length; i++) {
-                        timeoutarr += '⭕ ⏳' + message.match(/(:")(\D+)(",)(?="lastStatus":"Timeout")/gm)[i].replaceAll(":", '').replace(",", '').replaceAll('"', '') + '<br>'
-                    }
-                } else timeoutcnt = 0
-
-                document.getElementById('operstatustable').innerHTML = '<div style="background:#768d87; width:96%; padding: 0.3%; padding-bottom: 2px; color:#37ff85; font-weight: 700; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border:1px solid black; padding-left:5px; border-radius:10px; text-align:center;">' + 'Ready' + '<span style="background: orange; color: #00365d; padding-left: 20px; padding-right: 20px; border: 1px solid transparent; float:right; height: 26px; border-radius: 10px;">' + rcnt + '</span>' + '</div>' + readyarr +
-                    '<div style="background:#768d87; width:96%; padding: 0.3%; padding-bottom: 2px; color:#37ff85; font-weight: 700; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border:1px solid black; padding-left:5px; border-top:0px; border-radius:10px;  text-align:center;">' + 'InService' + '<span style="background: orange; color: #00365d; padding-left: 20px; padding-right: 20px; border: 1px solid transparent; float:right; height: 26px; border-radius: 10px;">' + inservvcnt + '</span>' + '</div>' + inservicearr +
-                    '<div style="background:#768d87; width:96%; padding: 0.3%; padding-bottom: 2px; color:#37ff85; font-weight: 700; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border:1px solid black; padding-left:5px; border-top:0px; border-radius:10px; text-align:center;">' + 'Afterservice' + '<span style="background: orange; color: #00365d; padding-left: 20px; padding-right: 20px; border: 1px solid transparent; float:right; height: 26px; border-radius: 10px;">' + aftscnt + '</span>' + '</div>' + afterservicearr +
-                    '<div style="background:#768d87; width:96%; padding: 0.3%; padding-bottom: 2px; color:#37ff85; font-weight: 700; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border:1px solid black; padding-left:5px; border-top:0px; border-radius:10px; text-align:center;">' + 'Timeout' + '<span style="background: orange; color: #00365d; padding-left: 20px; padding-right: 20px; border: 1px solid transparent; float:right; height: 26px; border-radius: 10px;">' + timeoutcnt + '</span>' + '</div>' + timeoutarr +
-                    '<div style="background:#768d87; width:96%; padding: 0.3%; padding-bottom: 2px; color:#37ff85; font-weight: 700; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border:1px solid black; padding-left:5px; border-top:0px; border-radius:10px; text-align:center;">' + 'DND' + '<span style="background: orange; color: #00365d; padding-left: 20px; padding-right: 20px; border: 1px solid transparent; float:right; height: 26px; border-radius: 10px;">' + dndcnt + '</span>' + '</div>' + dndarr + '<div style="background:#0e9196; width:96%; padding: 0.3%; padding-bottom: 2px; color:#dcdcdc; font-weight: 700; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: rgb(0 0 0) 1px 0px 1px, rgb(0 0 0) 0px 1px 1px, rgb(0 0 0) -1px 0px 1px, rgb(0 0 0) 0px -1px 1px; border:1px solid black; padding-left:5px; border-top:0px; border-radius:10px; text-align:center;">' + 'Всего операторов в системе:' + '<span style="background: #00b5ff; color: #00365d; padding-left: 20px; padding-right: 20px; border: 1px solid transparent; float:right; height: 26px; border-radius: 10px; text-shadow:rgb(0 0 0) 1px 0px 1px;">' + (+rcnt + inservvcnt + aftscnt + timeoutcnt + dndcnt) + '</span>' + '</div>'
-
-            }
+            socket.onmessage = (event) => {
+                socket.send('3');
+                renderOperatorStatuses(event.data);
+            };
         }
-    }, 1000)
+    }, 500);
 
-    document.getElementById('hideMeOpSt').onclick = function () { // скрытие окна поиска оценок от пользователя
-        if (document.getElementById('AF_OperStat').style.display == '')
-            document.getElementById('AF_OperStat').style.display = 'none'
-        socket.send('2')
-        document.getElementById('operstatustable').innerHTML = ''
-    }
-
-
+    document.getElementById('hideMeOpSt').onclick = () => {
+        win.style.display = 'none';
+        socket.send('2');
+        document.getElementById('operstatustable').innerHTML = '';
+    };
 }
