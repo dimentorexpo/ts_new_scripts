@@ -37,72 +37,86 @@ var win_Queue =  // описание элементов окна Чаты в о�
 const wintQueue = createWindow('AF_Queue', 'winTopQueue', 'winLeftQueue', win_Queue);
 hideWindowOnDoubleClick('AF_Queue');
 
-document.getElementById('hideMeQueue').addEventListener('click', function () { // скрытие окна Список группы
-    let bimba = document.getElementById('queueData');
-    let queueCnt = document.getElementById('waitingCount')
-    bimba.innerHTML = "";
-    queueCnt.innerHTML = ""
-    if (document.getElementById('AF_Queue').style.display == '') {
-        document.getElementById('AF_Queue').style.display = 'none';
-        document.getElementById('cardInfoData').innerText = "";
-        document.getElementById('carddigits').value = "";
-    }
-    clearInterval(timerCountdownToRefresh)
-    clearInterval(timerToRefreshInt)
-    console.log("All intervals for Queue were removed successfully")
-})
+const UI = {
+    get queue() { return document.getElementById('AF_Queue'); },
+    get data() { return document.getElementById('queueData'); },
+    get waiting() { return document.getElementById('waitingCount'); },
+    get cardInfo() { return document.getElementById('cardInfoData'); },
+    get cardDigits() { return document.getElementById('carddigits'); },
+    get menu() { return document.getElementById('idmymenu'); },
+    get mainBtn() { return document.getElementById('MainMenuBtn'); },
+    get restartTimer() { return document.getElementById('timeRestartCount'); }
+};
+
+
+document.addEventListener('click', (e) => {
+    if (e.target.id !== 'hideMeQueue') return;
+
+    UI.data.innerHTML = "";
+    UI.waiting.innerHTML = "";
+    if (UI.cardInfo) UI.cardInfo.innerText = "";
+    if (UI.cardDigits) UI.cardDigits.value = "";
+
+    if (UI.queue) UI.queue.style.display = 'none';
+
+    clearInterval(timerCountdownToRefresh);
+    clearInterval(timerToRefreshInt);
+
+    console.log("All intervals for Queue were removed successfully");
+});
+
+
 
 function getQueuePress() {
-    if (document.getElementById('AF_Queue').style.display == '') {
-        document.getElementById('AF_Queue').style.display = 'none'
-        document.getElementById('idmymenu').style.display = 'none'
-        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-    } else {
-        document.getElementById('AF_Queue').style.display = ''
-        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-        document.getElementById('idmymenu').style.display = 'none'
-        waitingCount.innerHTML = ""
-        getAllChatsByStatus()
-        let timerOutput = document.getElementById('timeRestartCount');
-        let timerTime = 9;
+    if (!UI.queue) return; // защита
 
-        // Обновляем таймер каждую секунду
-        timerCountdownToRefresh = setInterval(() => {
-            timerOutput.textContent = timerTime--;
-            if (timerTime === -1) timerTime = 9;
-        }, 1000);
+    const isVisible = UI.queue.style.display === '';
 
-        // Выполняем проверку каждые 10 секунд
-        timerToRefreshInt = setInterval(() => {
-            getAllChatsByStatus();
-        }, 10000000000);
+    if (isVisible) {
+        UI.queue.style.display = 'none';
+        if (UI.menu) UI.menu.style.display = 'none';
+        if (UI.mainBtn) UI.mainBtn.classList.remove('activeScriptBtn');
+        return;
     }
+
+    UI.queue.style.display = '';
+    if (UI.menu) UI.menu.style.display = 'none';
+    if (UI.mainBtn) UI.mainBtn.classList.remove('activeScriptBtn');
+    UI.waiting.innerHTML = "";
+
+    getAllChatsByStatus();
+
+    let timerTime = 9;
+
+    timerCountdownToRefresh = setInterval(() => {
+        UI.restartTimer.textContent = timerTime--;
+        if (timerTime < 0) timerTime = 9;
+    }, 1000);
+
+    timerToRefreshInt = setInterval(() => {
+        getAllChatsByStatus();
+    }, 10000);
 }
 
 function updateTimer(startTime, element) {
-    let start = new Date(startTime);
-    let now = new Date();
-    let diff = now - start;
+    const diff = Date.now() - new Date(startTime).getTime();
 
-    let hours = Math.floor(diff / (1000 * 60 * 60));
-    diff -= hours * (1000 * 60 * 60);
-    let minutes = Math.floor(diff / (1000 * 60));
-    diff -= minutes * (1000 * 60);
-    let seconds = Math.floor(diff / (1000));
-
-    // Добавляем ведущие нули
-    hours = (hours < 10) ? '0' + hours : hours;
-    minutes = (minutes < 10) ? '0' + minutes : minutes;
-    seconds = (seconds < 10) ? '0' + seconds : seconds;
+    const hours = String(Math.floor(diff / 3600000)).padStart(2, '0');
+    const minutes = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+    const seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
 
     element.textContent = `${hours}:${minutes}:${seconds}`;
 
-    if (hours == "00" && minutes == "00" && seconds <= 60) {
-        element.style = "color:#f9ff00; font-weight:700"
+    // Подсветка, если прошло меньше минуты
+    if (hours === "00" && minutes === "00" && Number(seconds) <= 60) {
+        element.style.color = "#f9ff00";
+        element.style.fontWeight = "700";
     } else {
-        element.style.color = ""
+        element.style.color = "";
+        element.style.fontWeight = "";
     }
 }
+
 
 // Функция для инициализации таймера
 function startTimerForDialog(startTime, element) {
@@ -189,28 +203,27 @@ async function getAllChatsByStatus() {
         }
     }
 
-    // Получаем текущую дату и время в UTC
-    // Текущая дата в UTC
-    const now = new Date(); // Текущее время в UTC
-    const mskOffset = 3 * 60 * 60 * 1000; // Смещение Москвы в миллисекундах (UTC+3)
+    // Текущее UTC-время
+    const now = new Date();
+
+    // Смещение Москвы (UTC+3)
+    const MSK_OFFSET = 3 * 60 * 60 * 1000;
 
     // Текущее время по Москве
-    const mskTime = new Date(now.getTime() + mskOffset);
+    const msk = new Date(now.getTime() + MSK_OFFSET);
 
-    // Установка tsFrom и tsTo с учетом времени в Москве
-    let tsFrom, tsTo;
-    if (mskTime.getUTCHours() < 21) {
-        // Если в Москве еще не наступило 21:00 UTC, отсчитываем от вчерашнего дня
-        tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() - 2, 21, 0, 0, 0)).toISOString();
-        tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 20, 59, 59, 59)).toISOString();
-    } else {
-        // Если в Москве уже прошло 21:00 UTC, отсчитываем от текущего дня
-        tsFrom = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate() - 2, 21, 0, 0, 0)).toISOString();
-        tsTo = new Date(Date.UTC(mskTime.getUTCFullYear(), mskTime.getUTCMonth(), mskTime.getUTCDate(), 20, 59, 59, 59)).toISOString();
-    }
+    // Дата по Москве (локальная)
+    const y = msk.getUTCFullYear();
+    const m = msk.getUTCMonth();
+    const d = msk.getUTCDate();
+
+    // Диапазон: с 21:00 позавчера до 20:59:59.059 вчера (по UTC)
+    const tsFrom = new Date(Date.UTC(y, m, d - 2, 21, 0, 0, 0)).toISOString();
+    const tsTo = new Date(Date.UTC(y, m, d, 20, 59, 59, 59)).toISOString();
 
     console.log(tsFrom);
     console.log(tsTo);
+
 
     let setgroupList = '';
     if (opsection == "ТП" || opsection == "ТП ОС") {
@@ -246,83 +259,81 @@ async function getAllChatsByStatus() {
 
     // Преобразование и отображение данных
     dataChts.forEach((el, index) => {
-        let tsConverter = el.ts.replace(/\[GMT\]$/, '');
-        let dateToMSK = new Date(tsConverter);
+        const ts = new Date(el.ts.replace(/\[GMT\]$/, ''));
 
-        // Создание элементов DOM для каждого элемента очереди
-        let queueItemDiv = document.createElement('div');
+        const queueItemDiv = document.createElement('div');
         queueItemDiv.className = 'queue-item';
-        queueItemDiv.setAttribute('name', 'prosmChat')
+        queueItemDiv.setAttribute('name', 'prosmChat');
 
-        let timeSpan = document.createElement('span');
-        timeSpan.style = 'color:#0be90b; font-weight:700; text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.55);';
-        timeSpan.textContent = dateToMSK.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+        const span = (text, style = "", attrs = {}) => {
+            const s = document.createElement('span');
+            if (style) s.style = style;
+            s.textContent = text;
+            Object.entries(attrs).forEach(([k, v]) => s.setAttribute(k, v));
+            return s;
+        };
 
-        let usrName = document.createElement('span');
-        usrName.style.color = "bisque";
-        usrName.textContent = el.channelUser.fullName ? el.channelUser.fullName : "Noname"
-        // usrName.setAttribute('name', 'prosmChat')
-
-        let usrType = document.createElement('span')
-        if (el.channelUser.payload && el.channelUser.payload.userType) {
-            if (el.channelUser.payload.userType == "teacher") {
-                usrType.textContent = "👽"; // Эмодзи для преподавателя
-            } else if (el.channelUser.payload.userType == "student" || el.channelUser.payload.userType == "parent") {
-                usrType.textContent = "👨‍🎓"; // Эмодзи для студента или родителя
-            } else {
-                usrType.textContent = "❓"; // Эмодзи для неизвестного типа пользователя
+        const getUserTypeEmoji = (type) => {
+            switch (type) {
+                case "teacher": return "👽";
+                case "student":
+                case "parent": return "👨‍🎓";
+                default: return "❓";
             }
-        } else {
-            usrType.textContent = "❓"; // Эмодзи для отсутствующего типа пользователя
-        }
+        };
 
-        let timerSpan = document.createElement('span');
-        timerSpan.id = 'timer-' + index;
-        timerSpan.className = 'timer';
+        const getFirstAnswerFlag = (stats) => {
+            if (stats.participatingOperators.includes("autoFAQ"))
+                return stats.firstOperatorAnswerTime ? "✅" : "❌";
 
-        let checkFirstAnswer = document.createElement('span');
-        checkFirstAnswer.setAttribute('name', 'flagOfFirstAnswer')
-        if (el.stats.participatingOperators.includes("autoFAQ")) {
-            // Если autoFAQ есть в списке, устанавливаем соответствующий текст
-            checkFirstAnswer.textContent = el.stats.firstOperatorAnswerTime ? "✅" : "❌";
-        } else if (el.stats.participatingOperators.length > 0) {
-            // Если есть другие операторы, но нет autoFAQ
-            checkFirstAnswer.textContent = "⤴️";
-        } else {
-            // Если операторов нет вообще
-            checkFirstAnswer.textContent = "🚫";
-        }
+            if (stats.participatingOperators.length > 0)
+                return "⤴️";
 
-        let countryInfo = document.createElement('span')
-        countryInfo.style = "color:bisque"
-        if (el.channelUser.payload && el.channelUser.payload.country) {
-            countryInfo.textContent = el.channelUser.payload.country
-        } else {
-            countryInfo.textContent = "➖"
-        }
+            return "🚫";
+        };
 
+        // --- СОЗДАНИЕ ЭЛЕМЕНТОВ ---
+        const timeSpan = span(
+            ts.toLocaleTimeString('ru-RU', {
+                timeZone: 'Europe/Moscow',
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }),
+            'color:#0be90b; font-weight:700; text-shadow:1px 2px 5px rgba(0,0,0,0.55);'
+        );
 
-        let getThisChat = document.createElement('button');
+        const usrType = span(getUserTypeEmoji(el.channelUser.payload?.userType));
+        const usrName = span(el.channelUser.fullName || "Noname", "color:bisque");
+        const timerSpan = span("", "", { id: `timer-${index}`, class: "timer" });
+        const firstAnswer = span(getFirstAnswerFlag(el.stats), "", { name: "flagOfFirstAnswer" });
+        const country = span(el.channelUser.payload?.country || "➖", "color:bisque");
+
+        const getThisChat = document.createElement('button');
         getThisChat.className = 'mainButton';
         getThisChat.name = 'assignToMe';
         getThisChat.title = "Забрать этот чат";
         getThisChat.textContent = '🫳';
 
-        // Добавление созданных элементов в queueItemDiv
-        queueItemDiv.appendChild(timeSpan);
-        queueItemDiv.appendChild(usrType);
-        queueItemDiv.appendChild(usrName);
-        queueItemDiv.appendChild(timerSpan);
-        queueItemDiv.appendChild(checkFirstAnswer);
-        queueItemDiv.appendChild(countryInfo);
-        queueItemDiv.appendChild(getThisChat);
+        // --- СБОРКА ---
+        queueItemDiv.append(
+            timeSpan,
+            usrType,
+            usrName,
+            timerSpan,
+            firstAnswer,
+            country,
+            getThisChat
+        );
 
-        // Добавление queueItemDiv в bimba
         bimba.appendChild(queueItemDiv);
 
-        // Инициализация таймера
-        startTimerForDialog(tsConverter, timerSpan);
+        // --- ТАЙМЕР ---
+        startTimerForDialog(el.ts.replace(/\[GMT\]$/, ''), timerSpan);
     });
+
 
     // Обработка событий для кнопок
     let allConvs = document.getElementsByName('prosmChat');
@@ -350,44 +361,7 @@ async function getAllChatsByStatus() {
 
 };
 
-async function writeThemAll() {
-    if (dataChts.length > 0) {
-        console.log(dataChts)
-        let allFlags = document.getElementsByName('flagOfFirstAnswer')
-
-        for (let i = 0; i < allFlags.length; i++) {
-            if (allFlags[i].textContent == "❌") {
-                let getTextAreaValue = document.getElementById('inputTextForUser').value
-                if (getTextAreaValue == "") {
-                    createAndShowButton('Введите текст сообщения для пользователя в поле ниже!', 'error')
-                } else {
-                    fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-                        "headers": {
-                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
-                            "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-origin",
-                            "x-csrf-token": aftoken
-                        },
-                        "referrerPolicy": "strict-origin-when-cross-origin",
-                        "body": `------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"sessionId\":\"${dataChts[i].stats.conversationSessionId}\",\"conversationId\":\"${dataChts[i].conversationId}\",\"text\":\"${getTextAreaValue}\",\"isComment\":false}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n`,
-                        "method": "POST",
-                        "mode": "cors",
-                        "credentials": "include"
-                    });
-                    allFlags[i].textContent = "✅"
-                }
-            } else {
-                console.log(dataChts[i].conversationId, "Чат исходящий или первый ответ уже есть, сбивать таймер AFRT для этого чата нет необходимости!")
-            }
-        }
-
-    } else {
-        console.log("No parsed data please parse chats first")
-    }
-}
-
 document.getElementById('checkQueue').addEventListener('click', getAllChatsByStatus)
-document.getElementById('getChatFromQueue').addEventListener('click', writeThemAll)
 
 getOptions.addEventListener('change', getAllChatsByStatus)
 
