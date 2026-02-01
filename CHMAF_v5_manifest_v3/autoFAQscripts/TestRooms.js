@@ -35,6 +35,16 @@ var win_testrooms =  // описание элементов окна созда�
                       <option value="api-physics">Физика</option>
                       <option value="api-chemistry">Химия</option>
                       <option value="api-chess">Шахматы</option>
+                      <option value="api-turkish">Турецкий</option>
+                      <option value="api-spanish">Испанский</option>
+                      <option value="api-portuguese">Португальский</option>
+                      <option value="api-korean">Корейский</option>
+                      <option value="api-japanese">Японский</option>
+                      <option value="api-italian">Итальянский</option>
+                      <option value="api-greek">Греческий</option>
+                      <option value="api-german">Немецкий</option>
+                      <option value="api-french">Французский</option>
+                      <option value="api-chinese">Китайский</option>
                   </select>
               </div>
 
@@ -79,7 +89,7 @@ function testteachertofield() { // подставить тестового П
         document.getElementById('teachforroom').value = localStorage.getItem('test_teach');
     } else {
         document.getElementById('teachforroom').placeholder = "Не указан ID П";
-        createAndShowButton('В настройках расширения не указан id тестового преподавателя <br>' , 'error');
+        createAndShowButton('В настройках расширения не указан id тестового преподавателя <br>', 'error');
     }
 }
 
@@ -88,7 +98,7 @@ function teststudenttofield() { // подставить тестового У
         document.getElementById('studforroom').value = localStorage.getItem('test_stud');
     } else {
         document.getElementById('studforroom').placeholder = "Не указан ID У";
-        createAndShowButton('В настройках расширения не указан id тестового ученика' , 'error');
+        createAndShowButton('В настройках расширения не указан id тестового ученика', 'error');
     }
 }
 
@@ -146,10 +156,10 @@ document.getElementById('userfromchatid').addEventListener('click', function () 
             if (useridis)
                 insertionfield.value = useridis;
         } else {
-            createAndShowButton('Не удается определить тип пользователя, пожалуйста, внесите id вручную' , 'error');
+            createAndShowButton('Не удается определить тип пользователя, пожалуйста, внесите id вручную', 'error');
         }
     } else {
-        createAndShowButton('Нет выбранного чата' , 'error');
+        createAndShowButton('Нет выбранного чата', 'error');
     }
 })
 
@@ -213,14 +223,14 @@ document.getElementById('starttestroom').addEventListener('click', function () {
                 alert('Не удалось создать комнату: ' + response.error);
                 return;
             } else {
-                createAndShowButton('Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П' , 'message');
+                createAndShowButton('Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П', 'message');
                 cleartestroomsfields()
                 setTimeout(() => {
-                    document.getElementById('AF_testrooms').style.display = 'none'; 
+                    document.getElementById('AF_testrooms').style.display = 'none';
                 }, 5000);
             }
         })
     } else {
-        createAndShowButton(massagetexttoshow , 'error');
+        createAndShowButton(massagetexttoshow, 'error');
     }
 })
