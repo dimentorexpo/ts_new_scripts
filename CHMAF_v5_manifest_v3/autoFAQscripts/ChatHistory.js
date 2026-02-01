@@ -157,6 +157,79 @@ function fillchatbox() { //функция наполнения элемента,
         const operator = operatorsarray.find(op => op.operator && op.operator.id === operatorId);
         return (operator && operator.operator.fullName) || defaultName;
     }
+    ///////////////////////////
+
+    function cleanHtmlAroundUrls(text) {
+        return text
+            .replace(/&lt;\/?p&gt;/g, '')   // убираем &lt;p&gt; и &lt;/p&gt;
+            .replace(/<\/?p>/g, '');       // убираем <p> и </p>
+    }
+
+    function openImageViewerChatHistory(src) {
+        const overlay = document.createElement('div');
+        overlay.style = `
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            cursor: zoom-out;
+        `;
+        const img = document.createElement('img');
+        img.src = src;
+        img.style = `
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            box-shadow: 0 0 25px rgba(0,0,0,0.6);
+        `;
+        overlay.appendChild(img);
+        document.body.appendChild(overlay);
+        overlay.onclick = () => overlay.remove();
+    }
+
+
+    function renderMedia(url) {
+        const lower = url.toLowerCase();
+
+        if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
+            return `
+                <img src="${url}"
+                     class="img-chat-history chat-history-image"
+                     data-full="${url}"
+                     style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">
+            `;
+        }
+
+        if (lower.match(/\.(mp4|mov|mkv|webm)$/)) {
+            return `
+                <video src="${url}"
+                       controls
+                       style="max-width:300px;margin:6px 0;border-radius:6px;">
+                </video>
+            `;
+        }
+
+        if (lower.match(/\.(mp3|wav|ogg|oga)$/)) {
+            return `
+                <audio src="${url}"
+                       controls
+                       style="width:300px;margin:6px 0;">
+                </audio>
+            `;
+        }
+
+        return `<a href="${url}" target="_blank">${url}</a>`;
+    }
+
+
+    function renderMessageText(text) {
+        if (!text) return '';
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return text.replace(urlRegex, url => renderMedia(url));
+    }
 
     for (let i = convdata.messages.length - 1; i >= 0; i--) {
         const message = convdata.messages[i];
@@ -166,37 +239,24 @@ function fillchatbox() { //функция наполнения элемента,
             case "Question":
                 if (message.click === undefined) {
                     const testarray = message.txt.match(/<p>(.*?)<\/p>/gm);
-                    let images = getImagesFromText(message.txt);
+                    const images = getImagesFromText(message.txt);
                     const name = convdata.channelUser.fullName || "Widget";
 
+                    let content = "";
+
                     if (testarray) {
-                        const temppics = testarray.flatMap(text => getImagesFromText(text));
-
-                        let content = '';
-                        if (temppics.length > 0) {
-                            let result = message.txt;
-                            temppics.forEach((pic, idx) => {
-                                result = result.replace(testarray[idx], `<a href="${pic}" data-lightbox="pictures"><img src="${pic}" class="img-chat-history" alt="Изображение"></img></a>`);
-                            });
-                            content = result;
-                        } else {
-                            content = message.txt;
-                        }
-
-                        appendToInfoField(`
-                        <br>
-                        <div class="question-event">
-                            <span class="question-event-name">${name}</span>
-                            <span class="question-event-date">${date}</span>
-                            <div class="question-event-text"><br>${content}</div>
-                        </div>
-                    `);
+                        const cleaned = cleanHtmlAroundUrls(message.txt);
+                        content = renderMessageText(cleaned);
                     } else {
-                        const content = images.length === 1
-                            ? message.txt.replace(message.txt, `<img src="${images[0]}" class="img-chat-history"></img>`)
-                            : message.txt;
+                        if (images.length === 1) {
+                            content = renderMedia(images[0]);
+                        } else {
+                            const cleaned = cleanHtmlAroundUrls(message.txt);
+                            content = renderMessageText(cleaned);
+                        }
+                    }
 
-                        appendToInfoField(`
+                    appendToInfoField(`
                         <br>
                         <div class="question-event">
                             <span class="question-event-name">${name}</span>
@@ -204,18 +264,41 @@ function fillchatbox() { //функция наполнения элемента,
                             <div class="question-event-text"><br>${content}</div>
                         </div>
                     `);
-                    }
+                    setTimeout(() => {
+                        document.querySelectorAll('.chat-history-image').forEach(img => {
+                            if (!img.dataset.bound) {
+                                img.dataset.bound = "1";
+                                img.addEventListener('click', () => {
+                                    openImageViewerChatHistory(img.dataset.full);
+                                });
+                            }
+                        });
+                    }, 50);
+
+
                 } else {
                     appendToInfoField(`
-                    <br>
-                    <div class="question-event">
-                        <span class="question-event-name">${convdata.channelUser.fullName}</span>
-                        <span class="question-event-date">${date}</span>
-                        <div class="question-event-text"><br>${message.click.clickLabel}</div>
-                    </div>
-                `);
+                        <br>
+                        <div class="question-event">
+                            <span class="question-event-name">${convdata.channelUser.fullName}</span>
+                            <span class="question-event-date">${date}</span>
+                            <div class="question-event-text"><br>${message.click.clickLabel}</div>
+                        </div>
+                    `);
+                    setTimeout(() => {
+                        document.querySelectorAll('.chat-history-image').forEach(img => {
+                            if (!img.dataset.bound) {
+                                img.dataset.bound = "1";
+                                img.addEventListener('click', () => {
+                                    openImageViewerChatHistory(img.dataset.full);
+                                });
+                            }
+                        });
+                    }, 50);
+
                 }
                 break;
+
 
             case "Event":
                 function handleAssignToOperatorEvent(message) {
@@ -378,24 +461,37 @@ async function findchatsoper() { // ищет активные чаты на вы
                 function resolveUserName(user) {
                     const { channelTpe, payload, fullName } = user;
 
-                    // Каналы без payload
-                    if (!payload) return `${channelTpe} ${fullName}`;
+                    // Нет payload → используем канал + имя
+                    if (!payload) {
+                        return `${channelTpe} ${fullName}`;
+                    }
 
-                    // Каналы с payload.userFullName
-                    if (payload.userFullName) return `${payload.userType} ${payload.userFullName}`;
+                    const uType = payload.userType || '';
+                    const uFull = payload.userFullName || '';
 
-                    // Каналы с payload.userType + fullName
-                    if (payload.userType) return `${payload.userType} ${fullName}`;
+                    // Есть userFullName → это приоритет
+                    if (uFull) {
+                        return uType ? `${uType} ${uFull}` : uFull;
+                    }
 
-                    return fullName;
+                    // Есть userType, но нет userFullName → используем fullName
+                    if (uType) {
+                        return `${uType} ${fullName}`;
+                    }
+
+                    // payload есть, но ничего полезного в нём нет → fallback
+                    return `${channelTpe} ${fullName}`;
                 }
+
 
                 foundarr = "";
 
                 for (const item of operchatsdata.items) {
                     const date = formatDate(item.ts);
+                    const channel = item.channel.name
                     const user = item.channelUser;
                     const name = resolveUserName(user);
+                    console.log(channel)
 
                     foundarr += `
                         <span class="chatlist" style="cursor:pointer;">
