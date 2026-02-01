@@ -720,7 +720,7 @@ function handleRootDocument(root, isOldUi) {
     links.forEach(link => {
         if (link.dataset.processed === '1') return;
 
-        const href = (link.href || '').toLowerCase();
+        const href = (link.href || '')
         if (!href) return;
 
         const parent = link.closest('div, p, span') || link.parentElement;
@@ -1545,7 +1545,6 @@ function getActiveConvUserName() { //функция получение имен�
     if (iframe) {
         const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
         const Usernamefield = iframeDocument.querySelectorAll('[class^="User_Preview"]')[0];
-        let ConvUsername = null;
 
         // массив для исключения
         const predefinedNames = ["тьютор", "тютор", "тутор", "бадди", "tutor", "buddy"];
