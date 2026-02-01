@@ -22,6 +22,16 @@ var win_link2less = `
             <option value="physics">Физика</option>
             <option value="chemistry">Химия</option>
             <option value="chess">Шахматы</option>
+            <option value="turkish">Турецкий</option>
+            <option value="spanish">Испанский</option>
+            <option value="portuguese">Португальский</option>
+            <option value="korean">Корейский</option>
+            <option value="japanese">Японский</option>
+            <option value="italian">Итальянский</option>
+            <option value="greek">Греческий</option>
+            <option value="german">Немецкий</option>
+            <option value="french">Французский</option>
+            <option value="chinese">Китайский</option>
         </select>
     </div>
 
@@ -62,10 +72,9 @@ function clearlink2lessfields() { // очистка полей окно созд
     document.getElementById('subjecttype2less').children[0].selected = true;
 }
 
-itisvebinar.onclick = function () {
-    if (itisvebinar.checked && itishomework.checked)
-        itishomework.checked = false;
-};
+itisvebinar.addEventListener('change', () => {
+    if (itisvebinar.checked) itishomework.checked = false;
+});
 
 itishomework.onclick = function () {
     if (itishomework.checked && itisvebinar.checked)
@@ -87,43 +96,50 @@ document.getElementById('link2lesshead').addEventListener('dblclick', function (
     document.getElementById('AF_link2less').style.display = 'none';
 })
 
-document.getElementById('createlink2less').addEventListener('click', function () { // добавляем тестовую комнату
-    let flagemptyttfields = '0';
-    let hashforroomless = '';
-    let lessonsubjecttype = '';
-    let massagetexttoshow = '';
-    let otheroptions = '';
-    let link2lesson = '';
+document.getElementById('createlink2less').addEventListener('click', function () {
+    const subjectSelect = document.getElementById('subjecttype2less');
+    const hashInput = document.getElementById('hashforroom');
+    const subject = subjectSelect.value;
+    const hash = hashInput.value.trim();
 
+    const errors = [];
 
-    if (document.getElementById('subjecttype2less').value == 'subjnotselect') { // проверяем выбран ли предмет
-        flagemptyttfields = '1';
-        massagetexttoshow += 'Не выбран предмет<br>'
-    } else { lessonsubjecttype = document.getElementById('subjecttype2less').value }
-
-    if (!/^[a-zA-Z]{12,}$/.test(document.getElementById('hashforroom').value.trim())) {
-        flagemptyttfields = '1';
-        massagetexttoshow += 'Хэш комнаты должен состоять из не менее чем 12 латинских символов<br>'
-    } else {
-        hashforroomless = document.getElementById('hashforroom').value.trim();
+    // Проверка предмета
+    if (subject === 'subjnotselect') {
+        errors.push('Не выбран предмет');
     }
 
-
-    if (flagemptyttfields === '0') {
-        if (itisvebinar.checked) {
-            otheroptions = '?player=true';
-        } else if (itishomework.checked) {
-            otheroptions = '?homework=true'
-        }
-        link2lesson = `https://vimbox.skyeng.ru/kids/${lessonsubjecttype}/room/${hashforroomless}${otheroptions}`;
-        copyToClipboard(link2lesson);
-        createAndShowButton('Ссылка скопирована в буфер обмена', 'message');
-        clearlink2lessfields()
-        setTimeout(() => {
-            document.getElementById('AF_link2less').style.display = 'none';
-        }, 5000);
-
-    } else {
-        createAndShowButton(massagetexttoshow, 'error');
+    // Проверка хэша (оставил как ты просил)
+    if (!/^[a-zA-Z0-9]{12,}$/.test(hash)) {
+        errors.push('Хэш комнаты должен состоять из не менее чем 12 латинских символов или цифр');
     }
-})
+
+    // Если есть ошибки — показываем и выходим
+    if (errors.length > 0) {
+        createAndShowButton(errors.join('<br>'), 'error');
+        return;
+    }
+
+    // Опции ссылки
+    let otherOptions = '';
+    if (itisvebinar.checked) {
+        otherOptions = '?player=true';
+    } else if (itishomework.checked) {
+        otherOptions = '?homework=true';
+    }
+
+    // Формируем ссылку
+    const link = `https://vimbox.skyeng.ru/kids/${subject}/room/${hash}${otherOptions}`;
+
+    // Копируем
+    copyToClipboard(link);
+    createAndShowButton('Ссылка скопирована в буфер обмена', 'message');
+
+    // Очищаем поля
+    clearlink2lessfields();
+
+    // Закрываем окно через 5 сек
+    setTimeout(() => {
+        document.getElementById('AF_link2less').style.display = 'none';
+    }, 5000);
+});
