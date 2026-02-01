@@ -1,3 +1,5 @@
+// ---------- Разметка окна статистики ----------
+
 var win_Stat = `
 <div style="display: flex; width: 550px;">
     <div style="width: 550px;">
@@ -36,7 +38,6 @@ var win_Stat = `
                     </span>
                 </div>
             </div>
-
 
             <!-- Поиск по заметкам -->
             <div>
@@ -215,57 +216,70 @@ var win_Stat = `
 </div>
 `;
 
+// ---------- Создание окна и базовые хендлеры ----------
 
 const wintStat = createWindow('AF_Stat', 'winTopStat', 'winLeftStat', win_Stat);
 hideWindowOnDoubleClick('AF_Stat');
 hideWindowOnClick('AF_Stat', 'hideMeStat');
 
-//Функция очищения выведенной информации после поиска
+// ---------- Хелперы ----------
+
+function fmtDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// MSK → UTC (Москва = UTC+3)
+function toUTC(dateStr, h, m, s, ms) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setHours(h - 3, m, s, ms);
+    return d.toISOString();
+}
+
+// ---------- Очистка ----------
+
 document.getElementById('clearall').onclick = function () {
-    document.querySelector('#sumchatcounttouched').innerText = ""
-    document.querySelector('#sumchatcountclosed').innerText = ""
-    document.querySelector('#chatsinfoout').innerText = ""
-    document.querySelector('#lowCSATcount').innerText = ""
-    document.querySelector('#lowCSATcount').style.display = "none"
-    document.querySelector('#chatcommentsdata').innerText = ""
-    document.querySelector('#chatcommentsdata').style.display = "none"
-    document.querySelector('#commenttosearch').value = ""
-    document.querySelector('#themesdata').innerText = ""
+    document.querySelector('#sumchatcounttouched').innerText = "";
+    document.querySelector('#sumchatcountclosed').innerText = "";
+    document.querySelector('#chatsinfoout').innerText = "";
+    document.querySelector('#lowCSATcount').innerText = "";
+    document.querySelector('#lowCSATcount').style.display = "none";
+    document.querySelector('#chatcommentsdata').innerText = "";
+    document.querySelector('#chatcommentsdata').style.display = "none";
+    document.querySelector('#commenttosearch').value = "";
+    document.querySelector('#themesdata').innerText = "";
+};
+
+// ---------- Открытие окна статистики и установка дат ----------
+
+function getStatsButtonPress() {
+    const now = new Date();
+
+    const toDate = new Date(now);          // конечная дата
+    const fromDate = new Date(now);        // начальная дата
+
+    document.getElementById("dateFrom").value = fmtDate(fromDate);
+    document.getElementById("dateTo").value = fmtDate(toDate);
+
+    document.querySelector('#chatcommentsdata').style.display = "none";
+    document.querySelector('#lowCSATcount').style.display = "none";
+
+    const stat = document.getElementById('AF_Stat');
+    stat.style.display = stat.style.display === '' ? 'none' : '';
 }
 
-function getStatsButtonPress() { // открытие Статистики
-    let getcurdate = new Date();
-    let year = getcurdate.getFullYear();
-    let month = String(getcurdate.getMonth() + 1).padStart(2, "0");
-    let day = String(getcurdate.getDate()).padStart(2, "0");
-
-    let lastDayOfPrevMonth = new Date(year, getcurdate.getMonth(), 0).getDate();
-    let fromDate = new Date(year, getcurdate.getMonth(), day - 1);
-    let toDate = new Date(year, getcurdate.getMonth(), day);
-
-    if (day === "01") {
-        // set date range to previous month
-        fromDate = new Date(year, getcurdate.getMonth() - 1, lastDayOfPrevMonth);
-        toDate = new Date(year, getcurdate.getMonth(), 1);
-    }
-
-    document.getElementById("dateFrom").value = `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, "0")}-${String(fromDate.getDate()).padStart(2, "0")}`;
-    document.getElementById("dateTo").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
-
-    document.querySelector('#chatcommentsdata').style.display = "none"
-    document.querySelector('#lowCSATcount').style.display = "none"
-    if (document.getElementById('AF_Stat').style.display == '')
-        document.getElementById('AF_Stat').style.display = 'none'
-    else
-        document.getElementById('AF_Stat').style.display = ''
-}
-
-// Тут будет функция запуска получения информации о статистики
+// ---------- Получение статистики за период ----------
 
 document.getElementById('getstatfromperiod').onclick = async function () {
 
-    const datefrom = document.getElementById('dateFrom').value + "T21:00:00.000Z";
-    const dateto = document.getElementById('dateTo').value + "T20:59:59.059Z";
+    const datefrom = toUTC(
+        document.getElementById('dateFrom').value,
+        0, 0, 0, 0
+    );
+
+    const dateto = toUTC(
+        document.getElementById('dateTo').value,
+        23, 59, 59, 59
+    );
 
     const strnew = document.getElementById('chatsinfoout');
     const btn = document.getElementById('getstatfromperiod');
@@ -273,16 +287,12 @@ document.getElementById('getstatfromperiod').onclick = async function () {
     const touchedEl = document.getElementById('sumchatcounttouched');
     const closedEl = document.getElementById('sumchatcountclosed');
 
-    // UI
     btn.textContent = "Загрузка";
     touchedEl.textContent = "Загрузка";
     closedEl.textContent = "Загрузка";
     strnew.textContent = "Загрузка";
 
-    // ============================
-    // 1. Получаем количество пощупанных чатов
-    // ============================
-
+    // 1. Пощупанные чаты
     try {
         const bodyTouched = {
             serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
@@ -304,10 +314,7 @@ document.getElementById('getstatfromperiod').onclick = async function () {
         console.error(e);
     }
 
-    // ============================
-    // 2. Получаем количество закрытых чатов
-    // ============================
-
+    // 2. Закрытые чаты
     try {
         const bodyClosed = {
             serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
@@ -330,15 +337,19 @@ document.getElementById('getstatfromperiod').onclick = async function () {
         console.error(e);
     }
 
-    // ============================
-    // 3. Расчёт КСАТ и чатов без тематики
-    // ============================
-
+    // 3. КСАТ и чаты, переданные на 2ЛТП
     try {
         let page = 1;
         let csatScore = 0;
         let csatCount = 0;
-        let chatsWithoutTopic = "";
+        const rateStats = {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0
+        };
+        let chatsWith2line = "";
 
         while (true) {
 
@@ -369,40 +380,40 @@ document.getElementById('getstatfromperiod').onclick = async function () {
             for (const item of test.items) {
 
                 let flagCsat = 0;
-                let flagTopic = 0;
+                let flag2LTP = 0;
 
                 const conv = await doOperationsWithConversations(item.conversationId);
 
-                // Проверяем оператора
                 if (conv.operatorId === operatorId) {
                     flagCsat = 1;
 
-                    // Проверяем сообщения
                     if (Array.isArray(conv.messages)) {
                         for (const msg of conv.messages) {
                             if (typeof msg.txt === "string" &&
                                 msg.txt.includes("Техподдержка 2-я линия")) {
-                                flagTopic = 1;
+                                flag2LTP = 1;
                                 break;
                             }
                         }
                     }
                 }
 
-                // Считаем КСАТ
                 if (flagCsat === 1) {
                     const rate = item.stats?.rate?.rate;
                     if (typeof rate === "number") {
                         csatScore += rate;
                         csatCount++;
+                        if (rateStats.hasOwnProperty(rate)) {
+                            rateStats[rate]++; // ← вот это и есть подсчёт по каждой оценке
+                        }
                     }
                 }
 
-                // Чаты без тематики
-                if (flagTopic === 1) {
-                    chatsWithoutTopic +=
+                if (flag2LTP === 1) {
+                    chatsWith2line +=
                         `<span style="color:#00FA9A">&#5129;</span> ` +
-                        `<a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" style="color:#1E90FF;">${item.conversationId}</a><br>`;
+                        `<a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" style="color:#1E90FF;" name="itemsChatsId">${item.conversationId}</a>` +
+                        `<span name="CheckThroughChatHistory" style="margin-left:10px; cursor:pointer">👁️</span>` + `<br>`;
                 }
             }
 
@@ -411,13 +422,44 @@ document.getElementById('getstatfromperiod').onclick = async function () {
             } else break;
         }
 
-        if (!chatsWithoutTopic) chatsWithoutTopic = "нет таких<br>";
+        if (!chatsWith2line) chatsWith2line = "нет таких<br>";
 
         const avgCsat = csatCount ? (Math.round((csatScore / csatCount) * 100) / 100) : 0;
 
         strnew.innerHTML =
-            `Оценка: ${avgCsat}<br>` +
-            `Чаты переданные на 2ЛТП:<br>${chatsWithoutTopic}`;
+            `<div style="margin-bottom:10px;">
+            <b>Средняя оценка:</b> ${avgCsat}
+        </div>
+
+        <div style="margin-bottom:10px;">
+            <b>Распределение оценок:</b><br>
+            1 ⭐ — ${rateStats[1]}<br>
+            2 ⭐ — ${rateStats[2]}<br>
+            3 ⭐ — ${rateStats[3]}<br>
+            4 ⭐ — ${rateStats[4]}<br>
+            5 ⭐ — ${rateStats[5]}
+        </div>
+
+        <div>
+            <b>Чаты переданные на 2ЛТП:</b><br>
+            ${chatsWith2line}
+        </div>`;
+
+        const chatscontainer = document.querySelectorAll('span[name="CheckThroughChatHistory"]');
+        const chatids = document.querySelectorAll('a[name="itemsChatsId"]');
+
+        chatscontainer.forEach((el, idx) => {
+            el.onclick = function () {
+                const id = chatids[idx].innerText;
+
+                if (document.getElementById('AF_ChatHis').style.display == 'none') {
+                    document.getElementById('opennewcat').click();
+                }
+                document.getElementById('hashchathis').value = id;
+                btn_search_history.click();
+            };
+        });
+
 
     } catch (e) {
         console.error(e);
@@ -427,283 +469,228 @@ document.getElementById('getstatfromperiod').onclick = async function () {
     btn.textContent = "Получить статистику";
 };
 
+// ---------- Низкий КСАТ ----------
 
-//Функция получения чатов с низким КСАТ
-let stringChatsWithLowCsat;
+let stringChatsWithLowCsat = "";
 
-document.getElementById('getlowcsat').onclick = async function () { // получить хеши чатов с оценками ниже 4
-    let datefrom1 = document.getElementById('dateFrom').value + "T21:00:00.000Z";
-    let dateto1 = document.getElementById('dateTo').value + "T20:59:59.059Z";
-    let strcsatnew = document.getElementById('lowCSATcount');
-    strcsatnew.textContent = "Загрузка"
-    document.getElementById('getlowcsat').textContent = "Загрузка";
+document.getElementById('getlowcsat').onclick = async function () {
 
-    // блок с расчетом КСАТ и чатов без тематики
+    const datefrom = toUTC(
+        document.getElementById('dateFrom').value,
+        0, 0, 0, 0
+    );
+
+    const dateto = toUTC(
+        document.getElementById('dateTo').value,
+        23, 59, 59, 59
+    );
+
+    const strcsatnew = document.getElementById('lowCSATcount');
+    const btn = document.getElementById('getlowcsat');
+
+    strcsatnew.textContent = "Загрузка";
+    btn.textContent = "Загрузка";
+
     try {
-        pagenewlowcsat = 1
+        let page = 1;
         stringChatsWithLowCsat = "";
+
         while (true) {
-            test = ''
-            await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
-                "headers": {
+            const bodyArchive = {
+                serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
+                mode: "Json",
+                tsFrom: datefrom,
+                tsTo: dateto,
+                orderBy: "ts",
+                orderDirection: "Asc",
+                page: page,
+                limit: 100
+            };
+
+            const response = await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
+                method: "POST",
+                headers: {
                     "content-type": "application/json",
                     "x-csrf-token": aftoken
                 },
-                "body": "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"tsFrom\":\"" + datefrom1 + "\",\"tsTo\":\"" + dateto1 + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":" + pagenewlowcsat + ",\"limit\":100}",
-                "method": "POST",
-            }).then(r => r.json()).then(r => test = r)
-            for (let i = 0; i < test.items.length; i++) {
-                let flagCsat1 = 0
-                csatScoreNewLow = 0
-                doOperationsWithConversations(test.items[i].conversationId)
-                    .then(r => r.json())
-                    .then(r => {
-                        if (r.operatorId == operatorId) {
-                            flagCsat1 = 1
-                        }
-                    })
-                if (flagCsat1 == 1)
-                    if (test.items[i].stats.rate != undefined)
-                        if (test.items[i].stats.rate.rate != undefined && test.items[i].stats.rate.rate < 4) {
-                            csatScoreNewLow = 1;
-                        }
+                body: JSON.stringify(bodyArchive)
+            });
 
-                if (csatScoreNewLow == 1)
-                    stringChatsWithLowCsat += '<span style="color: #00FA9A">&#5129;</span>' + " " + '<a href="https://skyeng.autofaq.ai/logs/' + test.items[i].conversationId + '" onclick="" style="color:#1E90FF;" class = "csatchatids">' + test.items[i].conversationId + '</a>' + '<span class = "lowcsatschats" style="margin-left: 10px; cursor: pointer">👁‍🗨</span>' + '</br>'
+            const test = await response.json();
 
-            }
+            if (!test?.items?.length) break;
 
-            if (stringChatsWithLowCsat == "")
-                stringChatsWithLowCsat = ' нет таких' + '<br>'
+            for (const item of test.items) {
+                const conv = await doOperationsWithConversations(item.conversationId);
 
-            document.querySelector('#lowCSATcount').style.display = ""
-            strcsatnew.innerHTML = 'Чаты с плохими оценками: (открывать в режиме инкогнито!) ' + '<br>' + stringChatsWithLowCsat
+                if (conv.operatorId !== operatorId) continue;
 
-            let csatcontainer = document.querySelectorAll('.lowcsatschats');
-            let csatchattids = document.querySelectorAll('.csatchatids');
-            for (let j = 0; j < csatcontainer.length; j++) {
-                csatcontainer[j].onclick = function () {
-
-                    if (document.querySelector('#hide_or_display').textContent != "свернуть") {
-                        hide_or_display.click()
-                        document.getElementById('chat_id').value = csatchattids[j].innerText;
-                        search.click()
-                    } else if (document.querySelector('#hide_or_display').textContent == "свернуть") {
-                        document.getElementById('chat_id').value = csatchattids[j].innerText;
-                        search.click()
-                    }
+                const rate = item.stats?.rate?.rate;
+                if (typeof rate === "number" && rate < 4) {
+                    stringChatsWithLowCsat +=
+                        `<span style="color:#00FA9A">&#5129;</span> ` +
+                        `<a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" style="color:#1E90FF;" class="csatchatids">${item.conversationId}</a>` +
+                        `<span class="lowcsatschats" style="margin-left:10px; cursor:pointer">👁‍🗨</span><br>`;
                 }
             }
 
-
-
-            if ((test.total / 100) > pagenewlowcsat) {
-                pagenewlowcsat++;
-            } else {
-                document.getElementById('getlowcsat').textContent = "Чаты с КСАТ<4"
-                break
-            }
-        }
-    } finally {
-        document.getElementById('getlowcsat').textContent = "Чаты с КСАТ<4"
-        console.log('Что-то пошло не так.')
-    }
-}
-
-document.getElementById('getfile').onclick = function () { // функция загрузки файла в виде HTML  lowcsat или всех чатов по комменту
-    if (stringChatsWithComment != null || stringChatsWithComment != undefined) {
-        var blob = new Blob([stringChatsWithComment], { type: "text/plain" });
-        var link = document.createElement("a");
-        link.setAttribute("href", URL.createObjectURL(blob));
-        link.setAttribute("download", "FoundComments.html");
-        link.click();
-    } else if (stringChatsWithLowCsat != null || stringChatsWithLowCsat != undefined) {
-        var blob = new Blob([stringChatsWithLowCsat], { type: "text/plain" });
-        var link = document.createElement("a");
-        link.setAttribute("href", URL.createObjectURL(blob));
-        link.setAttribute("download", "LowCSAT.html");
-        link.click();
-    }
-}
-
-//Функция парсинга чатов по заданному коменту
-let stringChatsWithComment;
-
-document.getElementById('parsechat').onclick = async function () { //Функция парсинга чатов по заданному коменту
-    stringChatsWithComment = "";
-    let datefrom2 = document.getElementById('dateFrom').value + "T21:00:00.000Z";
-    let dateto2 = document.getElementById('dateTo').value + "T20:59:59.059Z";
-    document.getElementById('parsechat').textContent = "Идёт поиск"
-    try {
-        pagecmt = 1
-        while (true) {
-            test = ''
-            const bodyToFunc = "{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"" + operatorId + "\"],\"tsFrom\":\"" + datefrom2 + "\",\"tsTo\":\"" + dateto2 + "\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":" + pagecmt + ",\"limit\":100}"
-            doOperationsWithHistory(bodyToFunc).then(r => r.json()).then(r => test = r)
-            for (let i = 0; i < test.items.length; i++) {
-                let flagComment = 0
-                doOperationsWithConversations(test.items[i].conversationId)
-                    .then(response => response.json()).then(data => {
-                        for (let j = 0; j < data.messages.length; j++) {
-                            if (data.messages[j].tpe == "OperatorComment" && data.messages[j].txt == document.getElementById('commenttosearch').value)
-                                flagComment = 1
-                        }
-                        if (flagComment == 1)
-                            stringChatsWithComment += '<span style="color: #00FA9A">&#5129;</span>' + " " + '<a href="https://skyeng.autofaq.ai/logs/' + data.id + '" onclick="" style="color:#1E90FF;" class="chatids">' + data.id + '</a>' + '<span class = "chatswithcomments" style="margin-left: 10px; cursor: pointer">👁‍🗨</span>' + '</br>'
-
-                    })
-            }
-            if (stringChatsWithComment == "")
-                stringChatsWithComment = ' нет таких' + '<br>'
-
-            document.querySelector('#chatcommentsdata').style.display = ""
-            document.getElementById('chatcommentsdata').innerHTML = 'Чаты с найденными комментариями' + '<br>' + stringChatsWithComment;
-
-            let chatscontainer = document.querySelectorAll('.chatswithcomments');
-            let chatids = document.querySelectorAll('.chatids');
-            for (let j = 0; j < chatscontainer.length; j++) {
-                chatscontainer[j].onclick = function () {
-
-                    if (document.getElementById('AF_ChatHis').style.display == 'none') {
-                        document.getElementById('opennewcat').click();
-
-                        document.getElementById('hashchathis').value = chatids[j].innerText;
-                        btn_search_history.click()
-
-                    } else {
-                        document.getElementById('hashchathis').value = chatids[j].innerText;
-                        btn_search_history.click()
-                    }
-                }
-            }
-
-            if ((test.total / 100) > pagecmt) {
-                pagecmt++;
-            } else {
-                document.getElementById('parsechat').textContent = "Найти по комменту"
-                break
-            }
-
-        }
-    } catch {
-        console.log('Что-то пошло не так.')
-    }
-}
-
-let searchCommentsByEnter = document.querySelector('#commenttosearch'); //по Enter запускает поиск по комментариям
-searchCommentsByEnter.addEventListener('keydown', event => {
-    if (event.key === "Enter") {
-        document.querySelector('#parsechat').click()
-    }
-})
-
-document.getElementById('gofindit').onclick = async function () { //функция поиска чатов по выставленной тематике с отображениеи и тегов
-    let curval = document.getElementById('thematics').value;
-    let strcsatnew = document.getElementById('themesdata');
-    strcsatnew.textContent = "Загрузка"
-    document.getElementById('gofindit').textContent = "Загрузка";
-    let datefrom3 = document.getElementById('dateFrom').value + "T21:00:00.000Z";
-    let dateto3 = document.getElementById('dateTo').value + "T20:59:59.059Z";
-    let count = 0;
-    let stringChatsWithComment = ""
-    let sctc = 0;
-    let page;
-    let tagflag;
-    let timestmp;
-    let tsh;
-    let tsm;
-    try {
-        test = ''
-        page = 1;
-        while (true) {
-            let bodyToFuncTry = '{"serviceId":"361c681b-340a-4e47-9342-c7309e27e7b5","mode":"Json","participatingOperatorsIds":["' + operatorId + '"],"tsFrom":"' + datefrom3 + '","tsTo":"' + dateto3 + '","orderBy":"ts","orderDirection":"Asc","page":' + page + ',"limit":100}'
-            doOperationsWithHistory(bodyToFuncTry).then(r => r.json()).then(r => test = r)
-            sctc = test.total;
-            for (let i = 0; i < test.items.length; i++) {
-                let flagComment = 0
-                doOperationsWithConversations(test.items[i].conversationId)
-                    .then(response => response.json()).then(data => {
-                        if (data.payload.topicId.value == curval) {
-                            if (data.payload.tags.value.match(/\w+/) != null && data.payload.tags.value.match(/\w+/) != undefined && data.payload.tags.value.match(/\w+/)[0] == "request_forwarded_to_outgoing_tp_crm2")
-                                tagflag = "Исход ТП1Л CRM2"
-                            else if (data.payload.tags.value.match(/\w+/) != null && data.payload.tags.value.match(/\w+/) != undefined && data.payload.tags.value.match(/\w+/)[0] == "recommendations_given ")
-                                tagflag = "Рекомендации даны"
-                            else if (data.payload.tags.value.match(/\w+/) != null && data.payload.tags.value.match(/\w+/) != undefined && data.payload.tags.value.match(/\w+/)[0] == "refusal_of_help")
-                                tagflag = "Отказ от помощи"
-                            else if (data.payload.tags.value.match(/\w+/) != null && data.payload.tags.value.match(/\w+/) != undefined && data.payload.tags.value.match(/\w+/)[0] == "request_solved")
-                                tagflag = "Задача решена"
-                            else if (data.payload.tags.value.match(/\w+/) != null && data.payload.tags.value.match(/\w+/) != undefined && data.payload.tags.value.match(/\w+/)[0] == "request_solved")
-                                tagflag = "Задача решена"
-                            else if (data.payload.tags.value.match(/\w+/) != null && data.payload.tags.value.match(/\w+/) != undefined && data.payload.tags.value.match(/\w+/)[0] == "request_forwarded_to_2l_tp")
-                                tagflag = "->ТП2Л"
-                            else if (data.payload.tags.value.match(/\w+/) != null && data.payload.tags.value.match(/\w+/) != undefined && data.payload.tags.value.match(/\w+/)[0] == "request_forwarded_to_channel_qa")
-                                tagflag = "Передача в QA"
-                            else if (data.payload.tags.value.match(/\w+/) != null && data.payload.tags.value.match(/\w+/) != undefined && data.payload.tags.value.match(/\w+/)[0] == "request_forwarded_to_development")
-                                tagflag = "Задача в разработку"
-                            else if (data.payload.tags.value.match(/\w+/) != null && data.payload.tags.value.match(/\w+/) != undefined && data.payload.tags.value.match(/\w+/)[0] == "request_forwarded_to_sc")
-                                tagflag = "Задача передана в SC"
-                            else if (data.payload.tags.value.match(/\w+/) != null && data.payload.tags.value.match(/\w+/) != undefined && data.payload.tags.value.match(/\w+/)[0] == "request_forwarded_to_tc")
-                                tagflag = "Задача передана в TC"
-                            else tagflag = "Нет темы/ др тема/2+"
-
-                            timestmp = new Date(data.messages[0].ts);
-                            if ((timestmp.getUTCHours() + 3) < 10)
-                                tsh = "0" + (timestmp.getUTCHours() + 3);
-                            else tsh = (timestmp.getUTCHours() + 3);
-
-                            if (timestmp.getMinutes() < 10)
-                                tsm = "0" + timestmp.getMinutes();
-                            else tsm = timestmp.getMinutes();
-
-                            stringChatsWithComment += '<span style="color: #00FA9A">&#5129;</span>' + " " + '<a href="https://skyeng.autofaq.ai/logs/' + data.id + '" onclick="" style="color:#FFA07A;" class = "csatchatids">' + data.id + '</a>' + " " + tagflag + '<span class = "seechat" style="margin-left: 10px; cursor: pointer">👁‍🗨</span>' + " " + tsh + ":" + tsm + '</br>';
-                            count++;
-                        }
-                    })
-            }
-
-
-            if ((test.total / 100) > page) {
+            if (page < Math.ceil(test.total / 100)) {
                 page++;
             } else break;
         }
 
-    } catch (e) {
-        console.log('Ошибка ' + e.name + ":" + e.message + "\n" + e.stack);
-    }
+        if (!stringChatsWithLowCsat) stringChatsWithLowCsat = " нет таких<br>";
 
-    document.querySelector('#themesdata').style.display = ""
-    strcsatnew.innerHTML = 'Чаты с тематикой: ' + '<br>' + stringChatsWithComment + '<br>' + 'Количество обращений по этой теме: ' + count;
-    document.getElementById('gofindit').textContent = "Find";
+        document.querySelector('#lowCSATcount').style.display = "";
+        strcsatnew.innerHTML =
+            'Чаты с плохими оценками: (открывать в режиме инкогнито!)<br>' +
+            stringChatsWithLowCsat;
 
-    let csatcontainer = document.querySelectorAll('.seechat');
-    let csatchattids = document.querySelectorAll('.csatchatids');
-    for (let j = 0; j < csatcontainer.length; j++) {
-        csatcontainer[j].onclick = function () {
+        const csatcontainer = document.querySelectorAll('.lowcsatschats');
+        const csatchattids = document.querySelectorAll('.csatchatids');
 
-            if (document.getElementById('AF_ChatHis').style.display == 'none') {
-                document.getElementById('opennewcat').click();
-                document.getElementById('hashchathis').value = csatchattids[j].innerText;
-                btn_search_history.click()
-            } else {
-                document.getElementById('hashchathis').value = csatchattids[j].innerText;
-                btn_search_history.click()
-            }
-        }
-    }
-}
+        csatcontainer.forEach((el, idx) => {
+            el.onclick = function () {
+                const id = csatchattids[idx].innerText;
 
-document.getElementById('changetheme').onclick = function () { //функция изменения тематики чата
-    let curval = document.getElementById('thematics').value;
-    let chatId = document.getElementById('commenttosearch').value;
-    if (chatId != "" && chatId != null && chatId != undefined)
-        fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
-            "headers": {
-                "content-type": "application/json",
-                "x-csrf-token": aftoken
-            },
-            "body": "{\"conversationId\":\"" + chatId + "\",\"elements\":[{\"name\":\"topicId\",\"value\":\"" + curval + "\"}]}",
-            "method": "POST",
-            "credentials": "include"
+                if (document.querySelector('#hide_or_display').textContent != "свернуть") {
+                    hide_or_display.click();
+                }
+                document.getElementById('chat_id').value = id;
+                search.click();
+            };
         });
-    else createAndShowButton('Введите хэш чата в длинное поле по центру', 'error');
+
+    } catch (e) {
+        console.error(e);
+    } finally {
+        btn.textContent = "Чаты с КСАТ<4";
+    }
+};
+
+// ---------- Выгрузка файла ----------
+
+document.getElementById('getfile').onclick = function () {
+    if (stringChatsWithComment) {
+        const blob = new Blob([stringChatsWithComment], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "FoundComments.html";
+        link.click();
+    } else if (stringChatsWithLowCsat) {
+        const blob = new Blob([stringChatsWithLowCsat], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "LowCSAT.html";
+        link.click();
+    }
+};
+
+// ---------- Поиск по комментарию ----------
+
+let stringChatsWithComment = "";
+
+document.getElementById('parsechat').onclick = async function () {
+
+    stringChatsWithComment = "";
+
+    const datefrom = toUTC(
+        document.getElementById('dateFrom').value,
+        0, 0, 0, 0
+    );
+
+    const dateto = toUTC(
+        document.getElementById('dateTo').value,
+        23, 59, 59, 59
+    );
+
+    const btn = document.getElementById('parsechat');
+    const out = document.getElementById('chatcommentsdata');
+    const searchText = document.getElementById('commenttosearch').value;
+
+    btn.textContent = "Идёт поиск";
+
+    try {
+        let page = 1;
+
+        while (true) {
+            const bodyToFunc = {
+                serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
+                mode: "Json",
+                participatingOperatorsIds: [operatorId],
+                tsFrom: datefrom,
+                tsTo: dateto,
+                orderBy: "ts",
+                orderDirection: "Asc",
+                page: page,
+                limit: 100
+            };
+
+            const test = await doOperationsWithHistory(JSON.stringify(bodyToFunc));
+
+            if (!test?.items?.length) break;
+
+            for (const item of test.items) {
+                const conv = await doOperationsWithConversations(item.conversationId);
+
+                let flagComment = 0;
+
+                if (Array.isArray(conv.messages)) {
+                    for (const msg of conv.messages) {
+                        if (msg.tpe === "OperatorComment" &&
+                            msg.txt === searchText) {
+                            flagComment = 1;
+                            break;
+                        }
+                    }
+                }
+
+                if (flagComment === 1) {
+                    stringChatsWithComment +=
+                        `<span style="color:#00FA9A">&#5129;</span> ` +
+                        `<a href="https://skyeng.autofaq.ai/logs/${conv.id}" style="color:#1E90FF;" class="chatids">${conv.id}</a>` +
+                        `<span class="chatswithcomments" style="margin-left:10px; cursor:pointer">👁️</span><br>`;
+                }
+            }
+
+            if (page < Math.ceil(test.total / 100)) {
+                page++;
+            } else break;
+        }
+
+        if (!stringChatsWithComment) stringChatsWithComment = " нет таких<br>";
+
+        document.querySelector('#chatcommentsdata').style.display = "";
+        out.innerHTML = 'Чаты с найденными комментариями<br>' + stringChatsWithComment;
+
+        const chatscontainer = document.querySelectorAll('.chatswithcomments');
+        const chatids = document.querySelectorAll('.chatids');
+
+        chatscontainer.forEach((el, idx) => {
+            el.onclick = function () {
+                const id = chatids[idx].innerText;
+
+                if (document.getElementById('AF_ChatHis').style.display == 'none') {
+                    document.getElementById('opennewcat').click();
+                }
+                document.getElementById('hashchathis').value = id;
+                btn_search_history.click();
+            };
+        });
+
+    } catch (e) {
+        console.error(e);
+    } finally {
+        btn.textContent = "Найти по комменту";
+    }
+};
+
+// Если нужно — по Enter запускать поиск по комменту
+let searchCommentsByEnter = document.querySelector('#commenttosearch');
+if (searchCommentsByEnter) {
+    searchCommentsByEnter.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            document.getElementById('parsechat').click();
+        }
+    });
 }
