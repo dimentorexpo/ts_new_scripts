@@ -628,230 +628,184 @@ function newTaggg(tagName) { //функция добавления тега в �
     }
 }
 
+// ===============================
+// 0. ДЕБОУНС ДЛЯ ОБРАБОТКИ
+// ===============================
+let processTimer = null;
 
-function waitForMessageContainer(callback) {
-    const tryFind = () => {
-        const container =
-            document.querySelector('.chat-messages') ||
-            document.querySelector('div[class*="ConversationScreen_MessagesWrapper"]');
+function scheduleProcessAll() {
+    clearTimeout(processTimer);
+    processTimer = setTimeout(processAll, 150);
+}
 
-        if (container) {
-            callback(container);
+// ===============================
+// 1. СТАРТ: OBSERVER + ПЕРВИЧНЫЙ ЗАПУСК
+// ===============================
+initObservers();
+scheduleProcessAll();
+
+function initObservers() {
+    // наблюдаем за основным документом
+    const mainObserver = new MutationObserver(scheduleProcessAll);
+    mainObserver.observe(document.body, { childList: true, subtree: true });
+
+    // пробуем повеситься на iframe, когда он появится
+    waitForIframeDoc(doc => {
+        const iframeObserver = new MutationObserver(scheduleProcessAll);
+        iframeObserver.observe(doc.body, { childList: true, subtree: true });
+        scheduleProcessAll();
+    });
+}
+
+// ===============================
+// 2. ПОИСК iframe НОВОГО ФРОНТА
+// ===============================
+function getIframeDoc() {
+    let iframe =
+        document.querySelector('iframe.NEW_FRONTEND__frame') ||
+        document.querySelector('iframe[class^="NEW_FRONTEND"]') ||
+        document.querySelector('[class^="NEW_FRONTEND"] iframe');
+
+    if (!iframe) return null;
+
+    try {
+        return iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document) || null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function waitForIframeDoc(callback) {
+    const tryGet = () => {
+        const doc = getIframeDoc();
+        if (doc && doc.body) {
+            callback(doc);
         } else {
-            setTimeout(tryFind, 100);
+            setTimeout(tryGet, 200);
         }
     };
-
-    tryFind();
+    tryGet();
 }
 
+// ===============================
+// 3. ГЛАВНАЯ ФУНКЦИЯ: ОБРАБОТАТЬ ВСЁ
+// ===============================
+function processAll() {
+    // 1) лог + архив (старый UI)
+    handleRootDocument(document, true);
 
-
-// ======================================================
-// 0. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-// ======================================================
-let lastUrl = location.href;
-let lastChatId = null;
-
-// ======================================================
-// 1. СТАРТ: ЖДЁМ ЛЮБОЙ ИЗ ТРЁХ ТРИГГЕРОВ
-// ======================================================
-initGlobalObserver();
-waitForMessageContainer(() => {
-    processResources();
-});
-// первичная обработка на случай, если чат уже открыт
-
-// ======================================================
-// 2. ГЛОБАЛЬНЫЙ OBSERVER (ЛОВИТ ВСЁ)
-// ======================================================
-function initGlobalObserver() {
-    const observer = new MutationObserver(() => {
-        detectUrlChange();
-        detectChatIdBlockChange();
-        detectMessagesWrapperChange();
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-}
-
-// ======================================================
-// 3. ТРИГГЕР №1 — СМЕНА URL (рабочее пространство)
-// ======================================================
-function detectUrlChange() {
-    if (location.href !== lastUrl) {
-        lastUrl = location.href;
-
-        cleanupPlayers();
-
-        setTimeout(() => {
-            processResources();
-        }, 150);
+    // 2) живое окно (новый UI в iframe)
+    const iframeDoc = getIframeDoc();
+    if (iframeDoc) {
+        handleRootDocument(iframeDoc, false);
     }
 }
 
-// ======================================================
-// 4. ТРИГГЕР №2 — СМЕНА ID-БЛОКА (архив + лог)
-// ======================================================
-function detectChatIdBlockChange() {
-    const idBlock = document.querySelector('#rc-tabs-0-panel-chat > div > div > div:nth-child(1) > div');
-    if (!idBlock) return;
+// ===============================
+// 4. ОБРАБОТКА ОДНОГО КОНТЕКСТА (document или iframeDoc)
+// ===============================
+function handleRootDocument(root, isOldUi) {
+    let links = [];
 
-    const text = (idBlock.innerText || '').trim();
-    if (!text.startsWith('ID:')) return;
-
-    if (text !== lastChatId) {
-        lastChatId = text;
-
-        cleanupPlayers();
-
-        setTimeout(() => {
-            processResources();
-        }, 150);
+    if (isOldUi) {
+        // лог + архив
+        links = root.querySelectorAll('.chat-messages a[href]');
+    } else {
+        // живое окно: точный контейнер сообщения
+        links = root.querySelectorAll('div[class*="ChatMessages_RegularMessageContent"] a[href]');
     }
-}
 
-// ======================================================
-// 5. ТРИГГЕР №3 — СМЕНА КОНТЕЙНЕРА СООБЩЕНИЙ
-//    (универсальный для всех зон)
-// ======================================================
-function detectMessagesWrapperChange() {
-    const wrapper = document.querySelector('div[class*="ConversationScreen_MessagesWrapper"]');
-    if (!wrapper) return;
+    if (!links.length) return;
 
-    // если контейнер перерисовался — запускаем обработку
-    if (wrapper !== window._lastWrapper) {
-        window._lastWrapper = wrapper;
+    links.forEach(link => {
+        if (link.dataset.processed === '1') return;
 
-        cleanupPlayers();
+        const href = (link.href || '').toLowerCase();
+        if (!href) return;
 
-        setTimeout(() => {
-            processResources();
-        }, 150);
-    }
-}
+        const parent = link.closest('div, p, span') || link.parentElement;
 
-// ======================================================
-// 6. ОЧИСТКА НАШИХ ЭЛЕМЕНТОВ
-// ======================================================
-function cleanupPlayers() {
-    document
-        .querySelectorAll('[data-type="video-player"], [data-type="video-label"], [data-type="audio-player"], [data-type="audio-label"], [data-type="img-viewer"]')
-        .forEach(el => el.remove());
+        // ---------- ВИДЕО ----------
+        if (href.match(/\.(mp4|mov|mkv|webm)$/)) {
+            parent.insertAdjacentHTML(
+                'afterend',
+                `<div data-type="video-label" style="
+                    color: #d4092a;
+                    font-weight: 700;
+                    background: darkgrey;
+                    border-radius: 20px;
+                    text-align: center;
+                    font-size: 17px;
+                    text-shadow: 1px 2px 0 #0e0d0d4d;
+                    margin-top: 6px;
+                ">Видео📺</div>`
+            );
 
-    document
-        .querySelectorAll('.chat-messages a[data-processed]')
-        .forEach(a => a.removeAttribute('data-processed'));
+            const video = root.createElement('video');
+            video.src = href;
+            video.controls = true;
+            video.style.maxWidth = '300px';
+            video.style.display = 'block';
+            video.style.marginTop = '6px';
+            video.dataset.type = 'video-player';
 
-    document
-        .querySelectorAll('.chat-messages [data-processed="1"]')
-        .forEach(el => el.removeAttribute('data-processed'));
-}
+            parent.nextElementSibling.insertAdjacentElement('afterend', video);
 
-// ======================================================
-// 7. ОБРАБОТКА РЕСУРСОВ (ВИДЕО / АУДИО / КАРТИНКИ)
-// ======================================================
-function processResources() {
-    const children = document.querySelectorAll('.chat-messages *');
-    if (!children.length) return;
-
-    for (let child of children) {
-        if (child.dataset.processed === '1') continue;
-
-        const links = child.querySelectorAll('a');
-        for (let link of links) {
-            const href = (link.href || '').toLowerCase();
-
-            // ---------- ВИДЕО ----------
-            if (href.match(/\.(mp4|mov|mkv|webm)$/)) {
-                if (link.dataset.processed === '1') continue;
-
-                child.insertAdjacentHTML(
-                    'afterend',
-                    `<div data-type="video-label" style="
-                        color: #d4092a;
-                        font-weight: 700;
-                        background: darkgrey;
-                        border-radius: 20px;
-                        text-align: center;
-                        font-size: 17px;
-                        text-shadow: 1px 2px 0 #0e0d0d4d;
-                        margin-top: 6px;
-                    ">Видео📺</div>`
-                );
-
-                const video = document.createElement('video');
-                video.src = href;
-                video.controls = true;
-                video.style.maxWidth = '300px';
-                video.style.display = 'block';
-                video.style.marginTop = '6px';
-                video.dataset.type = 'video-player';
-
-                child.nextElementSibling.insertAdjacentElement('afterend', video);
-
-                link.dataset.processed = '1';
-                continue;
-            }
-
-            // ---------- АУДИО ----------
-            if (href.match(/\.(mp3|wav|ogg|oga)$/)) {
-                if (link.dataset.processed === '1') continue;
-
-                child.insertAdjacentHTML(
-                    'afterend',
-                    `<div data-type="audio-label" style="
-                        color: #d4092a;
-                        font-weight: 700;
-                        background: darkgrey;
-                        border-radius: 20px;
-                        text-align: center;
-                        font-size: 17px;
-                        text-shadow: 1px 2px 0 #0e0d0d4d;
-                        margin-top: 6px;
-                    ">🎧 Аудио</div>`
-                );
-
-                const audio = document.createElement('audio');
-                audio.src = href;
-                audio.controls = true;
-                audio.style.maxWidth = '300px';
-                audio.style.display = 'block';
-                audio.style.marginTop = '6px';
-                audio.dataset.type = 'audio-player';
-
-                child.nextElementSibling.insertAdjacentElement('afterend', audio);
-
-                link.dataset.processed = '1';
-                continue;
-            }
-
-            // ---------- КАРТИНКИ ----------
-            if (href.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
-                if (link.dataset.processed === '1') continue;
-
-                const img = document.createElement('img');
-                img.src = href;
-                img.style.width = '120px';
-                img.style.cursor = 'zoom-in';
-                img.dataset.full = href;
-
-                img.addEventListener('click', openImageViewer);
-
-                link.replaceWith(img);
-
-                link.dataset.processed = '1';
-                continue;
-            }
+            link.dataset.processed = '1';
+            return;
         }
 
-        child.dataset.processed = '1';
-    }
+        // ---------- АУДИО ----------
+        if (href.match(/\.(mp3|wav|ogg|oga)$/)) {
+            parent.insertAdjacentHTML(
+                'afterend',
+                `<div data-type="audio-label" style="
+                    color: #d4092a;
+                    font-weight: 700;
+                    background: darkgrey;
+                    border-radius: 20px;
+                    text-align: center;
+                    font-size: 17px;
+                    text-shadow: 1px 2px 0 #0e0d0d4d;
+                    margin-top: 6px;
+                ">🎧 Аудио</div>`
+            );
+
+            const audio = root.createElement('audio');
+            audio.src = href;
+            audio.controls = true;
+            audio.style.maxWidth = '300px';
+            audio.style.display = 'block';
+            audio.style.marginTop = '6px';
+            audio.dataset.type = 'audio-player';
+
+            parent.nextElementSibling.insertAdjacentElement('afterend', audio);
+
+            link.dataset.processed = '1';
+            return;
+        }
+
+        // ---------- КАРТИНКИ ----------
+        if (href.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
+            const img = root.createElement('img');
+            img.src = href;
+            img.style.width = '120px';
+            img.style.cursor = 'zoom-in';
+            img.dataset.full = href;
+
+            img.addEventListener('click', openImageViewer);
+
+            link.replaceWith(img);
+
+            link.dataset.processed = '1';
+            return;
+        }
+    });
 }
 
-// ======================================================
-// 8. ПРОСМОТРЩИК ИЗОБРАЖЕНИЙ
-// ======================================================
+// ===============================
+// 5. ПРОСМОТРЩИК ИЗОБРАЖЕНИЙ
+// ===============================
 function openImageViewer(e) {
     const src = e.target.dataset.full;
     if (!src) return;
@@ -883,6 +837,8 @@ function openImageViewer(e) {
 
     overlay.addEventListener('click', () => overlay.remove());
 }
+
+
 
 
 
