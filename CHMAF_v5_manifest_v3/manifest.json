@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "ChMAF",
-	"version": "5.0.79",
+	"version": "5.0.80",
 	"description": "Твой мультитул в работе с чатами",
 	"background": {
 		"service_worker": "bg.js"
@@ -48,6 +48,7 @@
 				"/autoFAQscripts/Knowledge.js",
 				"/autoFAQscripts/LessonStatus.js",
 				"/autoFAQscripts/Link.js",
+				"/autoFAQscripts/IPchecker.js",
 				"/autoFAQscripts/Link2Lesson.js",
 				"/autoFAQscripts/Linksdostup.js",
 				"/autoFAQscripts/Marks.js",
@@ -149,6 +150,7 @@
 		"https://jira.skyeng.link/*",
 		"https://mm-time.skyeng.tech/*",
 		"https://*.datsy.ru/*",
-		"https://docs.google.com/forms/*"
+		"https://docs.google.com/forms/*",
+		"https://ipwho.is/*"
 	]
 }

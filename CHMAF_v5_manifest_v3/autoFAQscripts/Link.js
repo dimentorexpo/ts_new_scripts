@@ -11,6 +11,7 @@ var win_Links =  // описание элементов окна ссылок
 					<button title="Открывает Infra для запроса сброса пароля в Mattermost Teacher" id="resetMMPassword" class="mainButton uplinksbar">🔐</button>
 					<button title="Открывает просмотр список группы" id="GrListData" class="mainButton uplinksbar">👩‍👩‍👧‍👦</button>
                     <button title="Открывает документ, где собраны учетные записи к Minecraft Education" id="minecraftAccs" class="mainButton uplinksbar">⛏️</button>
+                    <button title="Открывает менюшку для просмотра информации по IP пользователя" id="openIPCheck" class="mainButton uplinksbar">🌐</button>
                     <button title="Открывает известные баги на платформе" id="confbugs" style="width: 50px; float: right; margin-right: 5px" class="mainButton uplinksbar">🐞</button>
 				</div>
 				<div style="margin: 5px; width: 550px;" id="links_but">
@@ -63,10 +64,10 @@ var win_Links =  // описание элементов окна ссылок
 					<button class="mainButton" id="doSynchrozine" style="width: 25.23px;">🚀</button>
 					<input class="${exttheme}" id="enablerAP" placeholder="ID услуги(АП)" title="копируем услуги, где нужно активировать АП и сохраняем в буфер, в ЛКУ переходим по ссылке для активации" autocomplete="off" type="text" style="text-align: center; width: 103px; margin-top: 5px">
 					<button class="mainButton" id="getenablerAP" style="width: 25.23px;">💾</button>
-					<input class="${exttheme}" id="skipAP" placeholder="ID ус(skipАП)" title="копируем услуги, где нужно пропустить АП и сохраняем в буфер, в ЛКУ переходим по ссылке для деактивации" autocomplete="off" type="text" style="text-align: center; width: 103px; margin-top: 5px">
-					<button class="mainButton" id="getskipAP" style="width: 25.23px;">💾</button>
-					<input class="${exttheme}" id="skiponboarding" placeholder="ID ус(skip Onbo)" title="копируем услуги, где нужно отключить онбоардинг в ЛКУ" autocomplete="off" type="text" style="text-align: center; width: 103px; margin-top: 5px">
-					<button class="mainButton" id="doskiponboard" style="width: 25.23px;">💾</button>
+					<input class="${exttheme}" id="skipAP" disabled="true" placeholder="ID ус(skipАП)" title="копируем услуги, где нужно пропустить АП и сохраняем в буфер, в ЛКУ переходим по ссылке для деактивации" autocomplete="off" type="text" style="text-align: center; width: 103px; margin-top: 5px">
+					<button class="mainButton" id="getskipAP" disabled="true" style="width: 25.23px;">💾</button>
+					<input class="${exttheme}" id="skiponboarding" disabled="true" placeholder="ID ус(skip Onbo)" title="копируем услуги, где нужно отключить онбоардинг в ЛКУ" autocomplete="off" type="text" style="text-align: center; width: 103px; margin-top: 5px">
+					<button class="mainButton" id="doskiponboard" disabled="true" style="width: 25.23px;">💾</button>
 				</div>
 				<div style="margin: 5px; width: 550px" id="links_butd">
 					<button class="mainButton" title="копирует в буфер обмена команду setstatus('classwork') для перезапуска уроков" id="restartlesson" style="width:100px">Redo MAT💾</button>
@@ -483,6 +484,13 @@ function addfunctionsonclick(section) {
             };
             cmsstepid.value = "";
         }
+
+        document.getElementById('openIPCheck').addEventListener('click', function () { // открывает окно просмотра информации о групповых уроков
+            if (document.getElementById('AF_IpCheck').style.display == '')
+                document.getElementById('AF_IpCheck').style.display = 'none'
+            else
+                document.getElementById('AF_IpCheck').style.display = ''
+        })
 
         document.getElementById('GrListData').onclick = getGrListDataButtonPress;
         document.getElementById('getStats').onclick = getStatsButtonPress;

@@ -1661,23 +1661,25 @@
 		font-size: 16px;
 	}
 
-	.bankinfo-window {
+	.ipchecker-window {
 		width: 450px;
 		padding: 10px;
+		cursor: grab;
+		z-index: 9999999;
 	}
 
-	.bankinfo-header {
+	.ipchecker-header {
 		margin-bottom: 10px;
 	}
 
-	.bankinfo-controls {
+	.ipchecker-controls {
 		display: flex;
 		gap: 10px;
 		margin-bottom: 15px;
 		justify-content: center;
 	}
 
-	.bankinfo-result {
+	.ipchecker-result {
 		color: bisque;
 		min-height: 40px;
 	}
