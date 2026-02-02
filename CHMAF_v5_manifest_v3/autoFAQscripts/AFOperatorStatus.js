@@ -4,278 +4,285 @@ let peoplestatus = document.createElement('div');
 peoplestatus.id = 'idforpeopstatus';
 peoplestatus.style = 'width: 200px; color: bisque;';
 
+const GROUP_CONFIG = {
+    'ТП': {
+        operatorMatch: /ТП\D/,
+        queueBy: 'groupId',
+        queueIds: ['c7bbb211-a217-4ed3-8112-98728dc382d8']
+    },
+    'ТП ОС': {
+        operatorMatch: /ТП-ОС\D/,
+        queueBy: 'groupId',
+        queueIds: ['8266dbb1-db44-4910-8b5f-a140deeec5c0']
+    },
+    'КЦ': {
+        operatorMatch: /КЦ\D/,
+        queueBy: 'groupId',
+        queueIds: ['b6f7f34d-2f08-fc19-3661-29ac00842898']
+    },
+    'Prem': {
+        operatorMatch: /Prem\D/,
+        queueBy: 'kb',
+        queueIds: ['121527'],
+        groupIdFilter: '68932fae-b9f9-6b37-2a52-911b2b6b4f6d'
+    },
+    'Teachers Care': {
+        operatorMatch: /Teachers Care\D/,
+        sumAllUnassigned: true
+    }
+};
+
 function initializeStartOperStatus() {
     const siderElements = document.getElementsByClassName('ant-layout-sider-children');
     if (siderElements.length > 0) {
         StartOperStatus();
-    } else {
-        // Если элемент не найден, начинаем наблюдение
-        const observer = new MutationObserver((mutations) => {
-            const siderElements = document.getElementsByClassName('ant-layout-sider-children');
-            if (siderElements.length > 0) {
-                StartOperStatus();
-                observer.disconnect(); // Прекращаем наблюдение, так как элемент найден
-            }
-        });
-
-        observer.observe(document.documentElement, {
-            childList: true,
-            subtree: true
-        });
+        return;
     }
+
+    const observer = new MutationObserver(() => {
+        const siderElements = document.getElementsByClassName('ant-layout-sider-children');
+        if (siderElements.length > 0) {
+            StartOperStatus();
+            observer.disconnect();
+        }
+    });
+
+    observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+    });
 }
 
 function StartOperStatus() {
     if (localStorage.getItem('hidesummaryflag') == null) {
-        localStorage.setItem('hidesummaryflag', '1') // 1 список скрыт , 0 список открыт
+        localStorage.setItem('hidesummaryflag', '1'); // 1 список скрыт , 0 список открыт
     }
 
-    document.getElementsByClassName('ant-layout-sider-children')[0].append(peoplestatus)
+    document.getElementsByClassName('ant-layout-sider-children')[0].append(peoplestatus);
     chatneraspcountleft = 0;
-    testint = setInterval(operstatusleftbar, 6000)
+    testint = setInterval(operstatusleftbar, 6000);
 }
 
-async function operstatusleftbar() { // функция замены Script Package вывода списка операторов
-    let opstats = []
+function getUnassignedCount(result, cfg) {
+    if (!result.unAssigned || !result.unAssigned.length) return 0;
+
+    if (cfg.sumAllUnassigned) {
+        return result.unAssigned.reduce((sum, item) => sum + Number(item.count || 0), 0);
+    }
+
+    if (cfg.queueBy === 'groupId') {
+        return result.unAssigned
+            .filter(item => cfg.queueIds.includes(item.groupId))
+            .reduce((sum, item) => sum + Number(item.count || 0), 0);
+    }
+
+    if (cfg.queueBy === 'kb') {
+        return result.unAssigned
+            .filter(item => cfg.queueIds.includes(item.kb))
+            .reduce((sum, item) => sum + Number(item.count || 0), 0);
+    }
+
+    return 0;
+}
+
+function filterOperators(result, cfg, flagtpkc) {
+    const opstats = [];
+    let chattpquecountleft = 0;
+    let chatneraspcount = 0;
+
+    const isTPGroup = (flagtpkc === 'ТП' || flagtpkc === 'ТП ОС');
+
+    for (const item of result.onOperator || []) {
+        const operator = item.operator;
+        if (!operator) continue;
+
+        const isOffline = item.status === 'Offline';
+        const matchName = cfg.operatorMatch.test(operator.fullName || '');
+
+        if (!matchName) continue;
+
+        if (cfg.groupIdFilter && item.groupId !== cfg.groupIdFilter) continue;
+
+        if (!isOffline) {
+            opstats.push(item);
+        }
+
+        const unassignedCount = getUnassignedCount(result, cfg);
+
+        if (isTPGroup) {
+            chattpquecountleft = unassignedCount;
+        } else {
+            chatneraspcount = unassignedCount;
+        }
+    }
+
+    return { opstats, chattpquecountleft, chatneraspcount };
+}
+
+function buildOperatorList(opstats) {
     let moderresult = '';
-    let flagtpkc;
     let operonlinecnt = 0;
     let busycnt = 0;
     let pausecnt = 0;
+    const addedFullNames = new Set();
+
+    if (!opstats.length) {
+        return { moderresult: '', operonlinecnt, busycnt, pausecnt };
+    }
+
+    opstats.sort((a, b) => {
+        if (a.operator.status < b.operator.status) return -1;
+        if (a.operator.status > b.operator.status) return 1;
+        return 0;
+    });
+
+    for (const item of opstats) {
+        item.aCnt = item.aCnt || 0;
+        const operator = item.operator;
+        const status = operator.status;
+
+        let divStyle = "";
+        let spanBackground = "";
+        let spanText = "";
+
+        switch (status) {
+            case "Online":
+                operonlinecnt++;
+                spanBackground = "green";
+                spanText = "white";
+                break;
+            case "Busy":
+                busycnt++;
+                divStyle = "opacity:0.8; color:Gold";
+                spanBackground = "gold";
+                spanText = "black";
+                break;
+            case "Pause":
+                pausecnt++;
+                divStyle = "opacity:0.8; color:Salmon";
+                spanBackground = "FireBrick";
+                spanText = "white";
+                break;
+            default:
+                continue;
+        }
+
+        if (!addedFullNames.has(operator.fullName)) {
+            moderresult +=
+                `<div class="leftbaropers" style="${divStyle}" name="operrow" value="${operator.id}">` +
+                `<span style="color: ${spanText}; font-size: 13px; background: ${spanBackground}; width: 25px; height: 25px; padding-top:2px; text-align: center; border-radius: 50%; border: 1px solid black;">` +
+                `${item.aCnt}` +
+                `</span>` +
+                `${operator.fullName}` +
+                `</div>`;
+            addedFullNames.add(operator.fullName);
+        }
+    }
+
+    return { moderresult, operonlinecnt, busycnt, pausecnt };
+}
+
+function buildSummaryHTML({ isTPGroup, hidesummary, chattpquecountleft, chatneraspcountleft, moderresult, operonlinecnt, busycnt, pausecnt }) {
+    const nerasp = isTPGroup ? chattpquecountleft : chatneraspcountleft;
+    const toggleText = hidesummary === '1' ? '🔽 Открыть' : '🔼 Скрыть';
+    const statsDisplay = hidesummary === '1' ? 'none' : '';
+
+    return (
+        `<div style="background:#792525; font-weight: 700; text-align: center; letter-spacing: .2rem; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border: 1px solid #464343; margin-bottom: 5px;">` +
+        `🚧 Нераспред: ${nerasp}</div>` +
+        moderresult + '<br>' +
+        `<div id="clicktounhidestatuses" title="По клику откроет общую информацию о том, сколько всего операторов и их количество в разных статусах" style="color:bisque; opacity:0.8; cursor:pointer; text-align:center;">${toggleText}</div>` +
+        `<div id="opersstats" style="display:${statsDisplay};">` +
+        `<div style="background:#257947; font-weight: 700; text-align: center; border: 1px solid black;">🛠 Онлайн: ${operonlinecnt}</div>` +
+        `<div style="background: #a3bb1d; color: black; font-weight: 700; text-align: center; border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">⏳ Занят: ${busycnt}</div>` +
+        `<div style="background:#cf4615; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">🍔 Перерыв: ${pausecnt}</div>` +
+        `<div style="background:#492579; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">⚡ Всего: ${operonlinecnt + busycnt + pausecnt}</div>` +
+        `</div>`
+    );
+}
+
+async function operstatusleftbar() {
+    const flagtpkc = opsection;
+    const cfg = GROUP_CONFIG[flagtpkc];
+    if (!cfg) {
+        peoplestatus.innerHTML = '';
+        return;
+    }
+
+    let opstats = [];
     let chattpquecountleft = 0;
+    chatneraspcountleft = 0;
 
-    flagtpkc = opsection
+    const response = await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
+        headers: { "x-csrf-token": aftoken },
+        credentials: "include"
+    });
 
-    await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
-        headers: {
-            "x-csrf-token": aftoken
-        },
-        "credentials": "include"
-    }).then(r => r.json()).then(result => {
+    const result = await response.json();
 
-        for (let i = 0; i < result.onOperator.length; i++) {
-            if (result.onOperator[i].status != "Offline") {
-                if ((flagtpkc == 'ТП' || flagtpkc == 'ТП ОС') && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/ТП\D/)) {
-                    opstats.push(result.onOperator[i])
-                    for (let j = 0; result.unAssigned[j] != undefined; j++) {
-                        if (result.unAssigned[j].groupId == 'c7bbb211-a217-4ed3-8112-98728dc382d8') {
-                            chattpquecountleft = result.unAssigned[j].count
-                        }
-                    }
-                } else if (flagtpkc == 'КЦ' && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/КЦ\D/)) {
-                    opstats.push(result.onOperator[i])
-                    chatneraspcountleft = 0;
-                    for (let j = 0; j < result.unAssigned.length; j++) {
-                        if (result.unAssigned[j].groupId == 'b6f7f34d-2f08-fc19-3661-29ac00842898') {
-                            chatneraspcountleft += Number(result.unAssigned[j].count)
-                        }
-                    }
-                } else if (flagtpkc == 'КМ' && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/КМ\D/)) {
-                    opstats.push(result.onOperator[i])
-                    for (let j = 0; result.unAssigned[j] != undefined; j++) {
-                        if (result.unAssigned[j].kb == '121300') {
-                            chatneraspcountleft = result.unAssigned[j].count
-                        }
-                    }
-                } else if (flagtpkc == 'Prem' && result.onOperator[i].operator != null && result.onOperator[i].groupId == '68932fae-b9f9-6b37-2a52-911b2b6b4f6d' && result.onOperator[i].operator.fullName.match(/Prem\D/)) {
-                    opstats.push(result.onOperator[i])
-                    for (let j = 0; result.unAssigned[j] != undefined; j++) {
-                        if (result.unAssigned[j].kb == '121527') {
-                            chatneraspcountleft = result.unAssigned[j].count
-                        }
-                    }
-                } else if (flagtpkc == 'Teachers Care' && result.onOperator[i].operator && result.onOperator[i].operator.fullName.match(/Teachers Care\D/)) {
-                    opstats.push(result.onOperator[i])
+    const { opstats: ops, chattpquecountleft: tpq, chatneraspcount } = filterOperators(result, cfg, flagtpkc);
+    opstats = ops;
+    chattpquecountleft = tpq;
+    chatneraspcountleft = chatneraspcount;
 
-                    chatneraspcountleft = result.unAssigned.reduce((sum, item) => sum + Number(item.count), 0);
-                    console.log("Общая сумма count:", chatneraspcountleft);
+    peoplestatus.innerHTML = '';
 
-                    /*                     for (const item of result.unAssigned) {
-                                            if (item.kb) {
-                                                console.log(item.kb, Number(item.count));
-                                                chatneraspcountleft += Number(item.count);
-                                            }
-                                        } */
-                } // end of if state small
-            } else { // end of if state big
-                if ((flagtpkc == 'ТП' || flagtpkc == 'ТП ОС') && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/ТП\D/)) {
-                    for (let j = 0; result.unAssigned[j] != undefined; j++) {
-                        if (result.unAssigned[j].groupId == 'c7bbb211-a217-4ed3-8112-98728dc382d8') {
-                            chattpquecountleft = result.unAssigned[j].count
-                        }
-                    }
-                } else if (flagtpkc == 'КЦ' && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/КЦ\D/)) {
-                    chatneraspcountleft = 0;
-                    for (let j = 0; j < result.unAssigned.length; j++) {
-                        if (result.unAssigned[j].groupId == 'b6f7f34d-2f08-fc19-3661-29ac00842898') {
-                            chatneraspcountleft += Number(result.unAssigned[j].count)
-                        }
-                    }
-                } else if (flagtpkc == 'КМ' && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/КМ\D/)) {
-                    for (let j = 0; result.unAssigned[j] != undefined; j++) {
-                        if (result.unAssigned[j].kb == '121300') {
-                            chatneraspcountleft = result.unAssigned[j].count
-                        }
-                    }
-                } else if (flagtpkc == 'Prem' && result.onOperator[i].groupId == '68932fae-b9f9-6b37-2a52-911b2b6b4f6d' && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/Prem\D/)) {
-                    for (let j = 0; result.unAssigned[j] != undefined; j++) {
-                        if (result.unAssigned[j].kb == '121527') {
-                            chatneraspcountleft = result.unAssigned[j].count
-                        }
-                    }
-                } else if (flagtpkc == 'Teachers Care' && result.onOperator[i].operator != null && result.onOperator[i].operator.fullName.match(/Teachers Care\D/)) {
-                    for (let j = 0; result.unAssigned[j] != undefined; j++) {
-                        if (result.unAssigned[j].kb) {
-                            chatneraspcountleft = result.unAssigned[j].count
-                        }
-                    }
-                } // end of if state small
-            }
+    const { moderresult, operonlinecnt, busycnt, pausecnt } = buildOperatorList(opstats);
 
+    const isTPGroup = (flagtpkc === 'ТП' || flagtpkc === 'ТП ОС');
+    const hidesummary = localStorage.getItem('hidesummaryflag') || '1';
 
-        } // end of for
-    })
+    peoplestatus.innerHTML = buildSummaryHTML({
+        isTPGroup,
+        hidesummary,
+        chattpquecountleft,
+        chatneraspcountleft,
+        moderresult,
+        operonlinecnt,
+        busycnt,
+        pausecnt
+    });
 
-    peoplestatus.innerHTML = ''
+    const toggle = document.getElementById('clicktounhidestatuses');
+    const statsBlock = document.getElementById('opersstats');
 
-    if (opstats.length != 0) {
-        opstats.sort((prev, next) => {
-            if (prev.operator.status < next.operator.status) return -1;
-            if (prev.operator.status < next.operator.status) return 1;
-        });
+    if (toggle && statsBlock) {
+        toggle.onclick = () => {
+            const isHidden = statsBlock.style.display === 'none';
+            statsBlock.style.display = isHidden ? '' : 'none';
+            toggle.textContent = isHidden ? '🔼 Скрыть' : '🔽 Открыть';
+            localStorage.setItem('hidesummaryflag', isHidden ? '0' : '1');
+        };
     }
 
-    let addedFullNames = new Set();
-    if (opstats.length) {
-        for (let i = 0; i < opstats.length; i++) {
-            opstats[i].aCnt = opstats[i].aCnt || 0;
-
-            const operator = opstats[i].operator;
-            const divClass = "leftbaropers";
-            let divStyle = "";
-            let spanBackground = "";
-            let spanText = "";
-
-            switch (operator.status) {
-                case "Online":
-                    operonlinecnt += 1;
-                    spanBackground = "green";
-                    spanText = "white";
-                    break;
-                case "Busy":
-                    busycnt += 1;
-                    divStyle = "opacity:0.8; color:Gold";
-                    spanBackground = "gold";
-                    spanText = "black";
-                    break;
-                case "Pause":
-                    pausecnt += 1;
-                    divStyle = "opacity:0.8; color:Salmon";
-                    spanBackground = "FireBrick";
-                    spanText = "white";
-                    break;
-                default:
-                    continue;
-            }
-            if (!addedFullNames.has(operator.fullName)) {
-                moderresult += `<div class="${divClass}" style="${divStyle}" name="operrow" value="${operator.id}">` +
-                    `<span style="color: ${spanText}; font-size: 13px; background: ${spanBackground}; width: 25px; height: 25px; padding-top:2px; text-align: center; border-radius: 50%; border: 1px solid black;">` +
-                    `${opstats[i].aCnt}` +
-                    `</span>` +
-                    `${operator.fullName}` +
-                    '</div>';
-                addedFullNames.add(operator.fullName);
-            }
-
-        }
-    } else {
-        moderresult = '';
-    }
-
-
-
-    if ((flagtpkc == 'ТП' || flagtpkc == 'ТП ОС') && localStorage.getItem('hidesummaryflag') == '1') {
-
-        peoplestatus.innerHTML =
-            '<div style="background:#792525; font-weight: 700; text-align: center; letter-spacing: .2rem; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border: 1px solid #464343; margin-bottom: 5px;">' + '🚧 Нераспред: ' + chattpquecountleft + '</div>' +
-            moderresult + '<br>' +
-            '<div id="clicktounhidestatuses" title="По клику откроет общую информацию о том, сколько всего операторов и их количество в разных статусах" style="color:bisque; opacity:0.8; cursor:pointer; text-align:center;">🔽 Открыть</div>' +
-            '<div id="opersstats" style="display:none;">' +
-            '<div  style="background:#257947; font-weight: 700; text-align: center; border: 1px solid black;">' + '🛠 Онлайн: ' + operonlinecnt + '</div>' +
-            '<div style="background: #a3bb1d; color: black; font-weight: 700; text-align: center; border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '⏳ Занят: ' + busycnt + '</div>' +
-            '<div style="background:#cf4615; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '🍔 Перерыв: ' + pausecnt + '</div>' +
-            '<div  style="background:#492579; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '⚡ Всего: ' + (+pausecnt + busycnt + operonlinecnt) + '</div>' +
-            '</div>'
-
-    } else if ((flagtpkc == 'ТП' || flagtpkc == 'ТП ОС') && localStorage.getItem('hidesummaryflag') == '0') {
-        peoplestatus.innerHTML =
-            '<div style="background:#792525; font-weight: 700; text-align: center; letter-spacing: .2rem; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border: 1px solid #464343; margin-bottom: 5px;">' + '🚧 Нераспред: ' + chattpquecountleft + '</div>' +
-            moderresult + '<br>' +
-            '<div id="clicktounhidestatuses" title="По клику откроет общую информацию о том, сколько всего операторов и их количество в разных статусах"  style="color:bisque; opacity:0.8; cursor:pointer; text-align:center;">🔼 Скрыть</div>' +
-            '<div id="opersstats">' +
-            '<div style="background:#257947; font-weight: 700; text-align: center; border: 1px solid black;">' + '🛠 Онлайн: ' + operonlinecnt + '</div>' +
-            '<div style="background: #a3bb1d; color: black; font-weight: 700; text-align: center; border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '⏳ Занят: ' + busycnt + '</div>' +
-            '<div style="background:#cf4615; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '🍔 Перерыв: ' + pausecnt + '</div>' +
-            '<div style="background:#492579; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '⚡ Всего: ' + (+pausecnt + busycnt + operonlinecnt) + '</div>' +
-            '</div>'
-    } else if (flagtpkc != 'ТП' && flagtpkc != 'ТП ОС' && localStorage.getItem('hidesummaryflag') == '1') {
-        peoplestatus.innerHTML =
-            '<div style="background:#792525; font-weight: 700; text-align: center; letter-spacing: .2rem; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border: 1px solid #464343; margin-bottom: 5px;">' + '🚧 Нераспред: ' + chatneraspcountleft + '</div>' +
-            moderresult + '<br>' +
-            '<div id="clicktounhidestatuses" title="По клику откроет общую информацию о том, сколько всего операторов и их количество в разных статусах"  style="color:bisque; opacity:0.8; cursor:pointer; text-align:center;">🔽 Открыть</div>' +
-            '<div id="opersstats" style="display:none">' + '<div  style="background:#257947; font-weight: 700; text-align: center; border: 1px solid black;">' + '🛠 Онлайн: ' + operonlinecnt + '</div>' +
-            '<div style="background: #a3bb1d; color: black; font-weight: 700; text-align: center; border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '⏳ Занят: ' + busycnt + '</div>' +
-            '<div style="background:#cf4615; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '🍔 Перерыв: ' + pausecnt + '</div>' +
-            '<div  style="background:#492579; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '⚡ Всего: ' + (+pausecnt + busycnt + operonlinecnt) + '</div>' +
-            '</div>'
-    } else if (flagtpkc != 'ТП' && flagtpkc != 'ТП ОС' && localStorage.getItem('hidesummaryflag') == '0') {
-        peoplestatus.innerHTML =
-            '<div style="background:#792525; font-weight: 700; text-align: center; letter-spacing: .2rem; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border: 1px solid #464343; margin-bottom: 5px;">' + '🚧 Нераспред: ' + chatneraspcountleft + '</div>' +
-            moderresult + '<br>' +
-            '<div id="clicktounhidestatuses" title="По клику откроет общую информацию о том, сколько всего операторов и их количество в разных статусах"  style="color:bisque; opacity:0.8; cursor:pointer; text-align:center;">🔼 Скрыть</div>' +
-            '<div id="opersstats">' + '<div  style="background:#257947; font-weight: 700; text-align: center; border: 1px solid black;">' + '🛠 Онлайн: ' + operonlinecnt + '</div>' +
-            '<div style="background: #a3bb1d; color: black; font-weight: 700; text-align: center; border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '⏳ Занят: ' + busycnt + '</div>' +
-            '<div style="background:#cf4615; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '🍔 Перерыв: ' + pausecnt + '</div>' +
-            '<div  style="background:#492579; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">' + '⚡ Всего: ' + (+pausecnt + busycnt + operonlinecnt) + '</div>' +
-            '</div>'
-    }
-
-    document.getElementById('clicktounhidestatuses').onclick = function () {
-        if (document.getElementById('clicktounhidestatuses').textContent == '🔽 Открыть') {
-            document.getElementById('opersstats').style.display = '';
-            document.getElementById('clicktounhidestatuses').textContent = '🔼 Скрыть'
-            localStorage.setItem('hidesummaryflag', '0')
-        } else if (document.getElementById('clicktounhidestatuses').textContent == '🔼 Скрыть') {
-            document.getElementById('opersstats').style.display = 'none';
-            document.getElementById('clicktounhidestatuses').textContent = '🔽 Открыть'
-            localStorage.setItem('hidesummaryflag', '1')
-        }
-    }
-
-
-    let arofpers = document.getElementsByName('operrow')
+    const arofpers = document.getElementsByName('operrow');
     for (let i = 0; i < arofpers.length; i++) {
         arofpers[i].onclick = function () {
             if (document.getElementById('AF_ChatHis').style.display == 'none')
-                document.getElementById('opennewcat').click()
+                document.getElementById('opennewcat').click();
 
             setTimeout(function () {
-                let massivvidapspiskaoperatorov = document.getElementById('operatorstp')
+                let massivvidapspiskaoperatorov = document.getElementById('operatorstp');
                 for (let k = 1; k < massivvidapspiskaoperatorov.length; k++) {
                     if (arofpers[i].getAttribute('value') == massivvidapspiskaoperatorov.children[k].value) {
-                        massivvidapspiskaoperatorov.children[k].selected = true
-                        findchatsoper()
+                        massivvidapspiskaoperatorov.children[k].selected = true;
+                        findchatsoper();
                     }
                 }
-            }, 1000)
+            }, 1000);
+        };
+    }
+
+    // чистим people_head
+    const appContent = document.getElementsByClassName('app-content')[1];
+    if (appContent) {
+        const children = Array.from(appContent.children);
+        for (const child of children) {
+            if (child.id === 'people_head') {
+                child.remove();
+            }
         }
     }
-
-    for (let i = 0; document.getElementsByClassName('app-content')[1].children[i] != undefined; i++) {
-        if (document.getElementsByClassName('app-content')[1].children[i].id == 'people_head')
-            document.getElementsByClassName('app-content')[1].children[i].remove()
-    }
-
 }
 
 initializeStartOperStatus();
