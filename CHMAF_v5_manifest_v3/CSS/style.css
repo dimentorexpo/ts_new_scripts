@@ -1660,3 +1660,24 @@
 	.nabor-table-inner td:first-child {
 		font-size: 16px;
 	}
+
+	.bankinfo-window {
+		width: 450px;
+		padding: 10px;
+	}
+
+	.bankinfo-header {
+		margin-bottom: 10px;
+	}
+
+	.bankinfo-controls {
+		display: flex;
+		gap: 10px;
+		margin-bottom: 15px;
+		justify-content: center;
+	}
+
+	.bankinfo-result {
+		color: bisque;
+		min-height: 40px;
+	}

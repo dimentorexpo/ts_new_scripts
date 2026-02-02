@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "ChMAF",
-	"version": "5.0.81",
+	"version": "5.0.79",
 	"description": "Твой мультитул в работе с чатами",
 	"background": {
 		"service_worker": "bg.js"
@@ -39,7 +39,6 @@
 				"/autoFAQscripts/AFOperatorStatus.js",
 				"/autoFAQscripts/Addstat.js",
 				"/autoFAQscripts/AlarmClock.js",
-				"/autoFAQscripts/BinBankInfo.js",
 				"/autoFAQscripts/Calendar.js",
 				"/autoFAQscripts/CustomTemplates.js",
 				"/autoFAQscripts/ChatHistory.js",

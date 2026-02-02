@@ -9,7 +9,6 @@ var win_Links =  // описание элементов окна ссылок
 					<button title="Открывает админку с эссе для перезакрепления за П" id="essayadmin" class="mainButton uplinksbar">📝</button>
 					<button title="Открывает меню для работы со статистикой, поиска чатов без тематики, с низкими оценками, по комментарию" id="getStats" class="mainButton uplinksbar">📋</button>
 					<button title="Открывает Infra для запроса сброса пароля в Mattermost Teacher" id="resetMMPassword" class="mainButton uplinksbar">🔐</button>
-					<button title="Открывает менюшку для просмотра информации по BIN банка, чтобы узнать тип карты, страну происхождения, название банка" id="bankCheck" class="mainButton uplinksbar">💳</button>
 					<button title="Открывает просмотр список группы" id="GrListData" class="mainButton uplinksbar">👩‍👩‍👧‍👦</button>
                     <button title="Открывает документ, где собраны учетные записи к Minecraft Education" id="minecraftAccs" class="mainButton uplinksbar">⛏️</button>
                     <button title="Открывает известные баги на платформе" id="confbugs" style="width: 50px; float: right; margin-right: 5px" class="mainButton uplinksbar">🐞</button>
@@ -38,6 +37,7 @@ var win_Links =  // описание элементов окна ссылок
                     <button class="mainButton" title="Открывает сайт для добавления/удаления чата между У и П" id="AddRemoveChat" style="width:105px; margin-top: 3px">➕/➖Чат</button>
                     <button class="mainButton" title="проверить прайссет и все его цены (по количеству занятий в пакете, по рассрочкам как внутренним так и банковским). При этом считается корректным поведение, если для пакета без рассрочки одна цена, а на ВР (внутреннюю рассрочку) или БР (банковскую рассрочку) цена будет немного, но выше." id="CheckPrices" style="width:105px; margin-top: 3px">🤑Check  Price</button>
                     <button class="mainButton" title="сервис для проверки соединения юзера с видеосерверами школы" id="CheckVidConnection" style="width:105px; margin-top: 3px">📹Videoserver</button>
+                    <button class="mainButton" title="открывает сайт для проверки по первым 6 цифрам карты банк, страну-эмитент, платежную систему" id="openFinansoBin" style="width:105px; margin-top: 3px">💳Check BIN</button>"
 
 
 
@@ -333,19 +333,13 @@ function addfunctionsonclick(section) {
             window.open("https://video-check.skyeng.ru/")
         })
 
-        document.getElementById('minecraftAccs').addEventListener('click', function () { // открываем ссылку в новой вкладке на проверку связи с видеосерверами
-            window.open("https://disk.yandex.ru/edit/d/ARTwOEreBvxL1L4cDRCvEyPegnqahzm72s0qoIz-cKg6al9hdmhpLVFTZw")
+        document.getElementById('openFinansoBin').addEventListener('click', function () { // открываем ссылку в новой вкладке на проверку карты, с которой оплачивают
+            window.open('https://finanso.ru/bin-search/')
         })
 
-
-
-
-
-
-
-
-
-
+        document.getElementById('minecraftAccs').addEventListener('click', function () { // открываем ссылку в новой вкладке корп яндекс диск
+            window.open("https://disk.yandex.ru/edit/d/ARTwOEreBvxL1L4cDRCvEyPegnqahzm72s0qoIz-cKg6al9hdmhpLVFTZw")
+        })
 
         document.getElementById('benchmark').onclick = function () {                  //поиск по имени процессора на сайте cpubenchmark
             let lnkgr = 'https://www.cpubenchmark.net/cpu_lookup.php?cpu=';
@@ -462,13 +456,6 @@ function addfunctionsonclick(section) {
 
         document.getElementById('resetMMPassword').addEventListener('click', function () { //
             window.open("https://infra.skyeng.ru/request/create/233")
-        })
-
-        document.getElementById('bankCheck').addEventListener('click', function () { // открывает окно просмотра информации о групповых уроков
-            if (document.getElementById('AF_BankCheck').style.display == '')
-                document.getElementById('AF_BankCheck').style.display = 'none'
-            else
-                document.getElementById('AF_BankCheck').style.display = ''
         })
 
         document.getElementById('gotolookip').onclick = function () { // проверка информации по айпишнику ученика/препода/ хостинга
