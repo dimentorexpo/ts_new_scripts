@@ -1683,3 +1683,13 @@
 		color: bisque;
 		min-height: 40px;
 	}
+
+	.user-orange {
+		color: #3b82f6;
+		font-weight: bold;
+	}
+
+	.user-msg {
+		color: #ff8c09;
+		font-weight: bold;
+	}

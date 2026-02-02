@@ -157,6 +157,18 @@ function fillchatbox() { //функция наполнения элемента,
         const operator = operatorsarray.find(op => op.operator && op.operator.id === operatorId);
         return (operator && operator.operator.fullName) || defaultName;
     }
+
+    function highlightUserFull(html) {
+        return html.replace(
+            /<strong>User:\s*([^<]*)<\/strong>/g,
+            (match, text) => {
+                return `<strong><span class="user-orange">User:</span> <span class="user-msg">${text}</span></strong>`;
+            }
+        );
+    }
+
+
+
     ///////////////////////////
 
     function cleanHtmlAroundUrls(text) {
@@ -261,7 +273,7 @@ function fillchatbox() { //функция наполнения элемента,
                         <div class="question-event">
                             <span class="question-event-name">${name}</span>
                             <span class="question-event-date">${date}</span>
-                            <div class="question-event-text"><br>${content}</div>
+                            <div class="question-event-text"><br>${highlightUserFull(content)}</div>
                         </div>
                     `);
                     setTimeout(() => {
