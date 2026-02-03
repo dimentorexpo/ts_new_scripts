@@ -1694,34 +1694,6 @@
 		font-weight: bold;
 	}
 
-	@keyframes countPulseUp {
-		0% {
-			transform: scale(1);
-		}
-
-		50% {
-			transform: scale(1.35);
-		}
-
-		100% {
-			transform: scale(1);
-		}
-	}
-
-	@keyframes countPulseDown {
-		0% {
-			transform: scale(1);
-		}
-
-		50% {
-			transform: scale(0.75);
-		}
-
-		100% {
-			transform: scale(1);
-		}
-	}
-
 	.count-anim-up {
 		animation: countPulseUp 2s ease-out;
 	}
@@ -1730,34 +1702,36 @@
 		animation: countPulseDown 2s ease-out;
 	}
 
-	@keyframes statusFlash {
-		0% {
-			box-shadow: 0 0 0px rgba(255, 255, 255, 0);
-		}
-
-		50% {
-			box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
-		}
-
-		100% {
-			box-shadow: 0 0 0px rgba(255, 255, 255, 0);
-		}
-	}
-
 	.status-change {
-		animation: statusFlash 0.5s ease-out;
+		animation: statusFlash 1s ease-out;
 	}
 
 	@keyframes statusFlash {
 		0% {
-			box-shadow: 0 0 0px rgba(255, 255, 255, 0);
+			transform: scale(1);
 		}
 
-		50% {
-			box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+		20% {
+			transform: scale(1.05);
+		}
+
+		40% {
+			transform: scale(1.1);
+		}
+
+		40% {
+			transform: scale(1.2);
+		}
+
+		60% {
+			transform: scale(1.1);
+		}
+
+		80% {
+			transform: scale(1.05);
 		}
 
 		100% {
-			box-shadow: 0 0 0px rgba(255, 255, 255, 0);
+			transform: scale(1);
 		}
 	}
