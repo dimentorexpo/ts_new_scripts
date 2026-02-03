@@ -119,6 +119,59 @@ function filterOperators(result, cfg, flagtpkc) {
     return { opstats, chattpquecountleft, chatneraspcount };
 }
 
+function attachSummaryHandlers() {
+    const toggle = document.getElementById('clicktounhidestatuses');
+    const statsBlock = document.getElementById('opersstats');
+    const refreshBtn = document.getElementById('manualRefreshBtn');
+
+    if (toggle && statsBlock) {
+        toggle.onclick = () => {
+            const isHidden = statsBlock.style.display === 'none';
+            statsBlock.style.display = isHidden ? '' : 'none';
+            toggle.textContent = isHidden ? '🔼 Скрыть' : '🔽 Открыть';
+            localStorage.setItem('hidesummaryflag', isHidden ? '0' : '1');
+        };
+    }
+
+    if (refreshBtn) {
+        refreshBtn.onclick = forceReinitializeStatus;
+    }
+}
+
+function attachOperatorClickHandlers() {
+    const arofpers = document.getElementsByName('operrow');
+
+    for (let i = 0; i < arofpers.length; i++) {
+        arofpers[i].onclick = function () {
+            if (document.getElementById('AF_ChatHis').style.display == 'none')
+                document.getElementById('opennewcat').click();
+
+            setTimeout(function () {
+                let massiv = document.getElementById('operatorstp');
+                for (let k = 1; k < massiv.length; k++) {
+                    if (arofpers[i].getAttribute('value') == massiv.children[k].value) {
+                        massiv.children[k].selected = true;
+                        findchatsoper();
+                    }
+                }
+            }, 1000);
+        };
+    }
+}
+
+function cleanupPeopleHead() {
+    const appContent = document.getElementsByClassName('app-content')[1];
+    if (!appContent) return;
+
+    const children = Array.from(appContent.children);
+    for (const child of children) {
+        if (child.id === 'people_head') {
+            child.remove();
+        }
+    }
+}
+
+
 function buildOperatorList(opstats) {
     let moderresult = '';
     let operonlinecnt = 0;
@@ -182,107 +235,145 @@ function buildOperatorList(opstats) {
     return { moderresult, operonlinecnt, busycnt, pausecnt };
 }
 
-function buildSummaryHTML({ isTPGroup, hidesummary, chattpquecountleft, chatneraspcountleft, moderresult, operonlinecnt, busycnt, pausecnt }) {
+function buildSummaryHTML({
+    isTPGroup,
+    hidesummary,
+    chattpquecountleft,
+    chatneraspcountleft,
+    moderresult,
+    operonlinecnt,
+    busycnt,
+    pausecnt
+}) {
     const nerasp = isTPGroup ? chattpquecountleft : chatneraspcountleft;
     const toggleText = hidesummary === '1' ? '🔽 Открыть' : '🔼 Скрыть';
     const statsDisplay = hidesummary === '1' ? 'none' : '';
 
     return (
-        `<div style="background:#792525; font-weight: 700; text-align: center; letter-spacing: .2rem; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border: 1px solid #464343; margin-bottom: 5px;">` +
-        `🚧 Нераспред: ${nerasp}</div>` +
+        `<div style="background:#792525; font-weight:700; text-align:center; letter-spacing:.2rem; text-shadow:1px 2px 5px rgb(0 0 0 / 55%); border:1px solid #464343; margin-bottom:5px;">` +
+        `<span id="manualRefreshBtn" style="cursor:pointer;" title="Принудительно обновить статусы операторов">🚧</span> Нераспред: ${nerasp}</div>` +
         moderresult + '<br>' +
-        `<div id="clicktounhidestatuses" title="По клику откроет общую информацию о том, сколько всего операторов и их количество в разных статусах" style="color:bisque; opacity:0.8; cursor:pointer; text-align:center;">${toggleText}</div>` +
+        `<div id="clicktounhidestatuses" style="color:bisque; opacity:0.8; cursor:pointer; text-align:center;">${toggleText}</div>` +
         `<div id="opersstats" style="display:${statsDisplay};">` +
-        `<div style="background:#257947; font-weight: 700; text-align: center; border: 1px solid black;">🛠 Онлайн: ${operonlinecnt}</div>` +
-        `<div style="background: #a3bb1d; color: black; font-weight: 700; text-align: center; border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">⏳ Занят: ${busycnt}</div>` +
-        `<div style="background:#cf4615; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">🍔 Перерыв: ${pausecnt}</div>` +
-        `<div style="background:#492579; font-weight: 700; text-align: center;border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black;">⚡ Всего: ${operonlinecnt + busycnt + pausecnt}</div>` +
+        `<div style="background:#257947; font-weight:700; text-align:center; border:1px solid black;">🛠 Онлайн: ${operonlinecnt}</div>` +
+        `<div style="background:#a3bb1d; color:black; font-weight:700; text-align:center; border:1px solid black;">⏳ Занят: ${busycnt}</div>` +
+        `<div style="background:#cf4615; font-weight:700; text-align:center; border:1px solid black;">🍔 Перерыв: ${pausecnt}</div>` +
+        `<div style="background:#492579; font-weight:700; text-align:center; border:1px solid black;">⚡ Всего: ${operonlinecnt + busycnt + pausecnt}</div>` +
         `</div>`
     );
 }
 
-async function operstatusleftbar() {
-    const flagtpkc = opsection;
-    const cfg = GROUP_CONFIG[flagtpkc];
-    if (!cfg) {
-        peoplestatus.innerHTML = '';
-        return;
+
+function forceReinitializeStatus() {
+    console.log('[OperStatus] Ручной рефреш запущен');
+
+    // если интервал умер или задвоился — чистим и создаём заново
+    if (testint) {
+        clearInterval(testint);
     }
 
-    let opstats = [];
-    let chattpquecountleft = 0;
-    chatneraspcountleft = 0;
+    // мгновенное обновление
+    operstatusleftbar(true);
 
-    const response = await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
-        headers: { "x-csrf-token": aftoken },
-        credentials: "include"
-    });
+    // заново запускаем автообновление
+    testint = setInterval(() => operstatusleftbar(false), 6000);
+}
 
-    const result = await response.json();
+function waitForOpSectionNew(timeout = 5000) {
+    return new Promise((resolve, reject) => {
+        const start = Date.now();
 
-    const { opstats: ops, chattpquecountleft: tpq, chatneraspcount } = filterOperators(result, cfg, flagtpkc);
-    opstats = ops;
-    chattpquecountleft = tpq;
-    chatneraspcountleft = chatneraspcount;
+        const check = () => {
+            const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
 
-    peoplestatus.innerHTML = '';
+            if (iframe && iframe.contentDocument) {
+                const sectionKey = iframe.contentDocument.querySelector(
+                    'span[id^="mantine-"][id$="-target"]'
+                );
 
-    const { moderresult, operonlinecnt, busycnt, pausecnt } = buildOperatorList(opstats);
-
-    const isTPGroup = (flagtpkc === 'ТП' || flagtpkc === 'ТП ОС');
-    const hidesummary = localStorage.getItem('hidesummaryflag') || '1';
-
-    peoplestatus.innerHTML = buildSummaryHTML({
-        isTPGroup,
-        hidesummary,
-        chattpquecountleft,
-        chatneraspcountleft,
-        moderresult,
-        operonlinecnt,
-        busycnt,
-        pausecnt
-    });
-
-    const toggle = document.getElementById('clicktounhidestatuses');
-    const statsBlock = document.getElementById('opersstats');
-
-    if (toggle && statsBlock) {
-        toggle.onclick = () => {
-            const isHidden = statsBlock.style.display === 'none';
-            statsBlock.style.display = isHidden ? '' : 'none';
-            toggle.textContent = isHidden ? '🔼 Скрыть' : '🔽 Открыть';
-            localStorage.setItem('hidesummaryflag', isHidden ? '0' : '1');
-        };
-    }
-
-    const arofpers = document.getElementsByName('operrow');
-    for (let i = 0; i < arofpers.length; i++) {
-        arofpers[i].onclick = function () {
-            if (document.getElementById('AF_ChatHis').style.display == 'none')
-                document.getElementById('opennewcat').click();
-
-            setTimeout(function () {
-                let massivvidapspiskaoperatorov = document.getElementById('operatorstp');
-                for (let k = 1; k < massivvidapspiskaoperatorov.length; k++) {
-                    if (arofpers[i].getAttribute('value') == massivvidapspiskaoperatorov.children[k].value) {
-                        massivvidapspiskaoperatorov.children[k].selected = true;
-                        findchatsoper();
-                    }
+                if (sectionKey) {
+                    const key = sectionKey.textContent.split('-')[0];
+                    resolve(key);
+                    return;
                 }
-            }, 1000);
-        };
-    }
-
-    // чистим people_head
-    const appContent = document.getElementsByClassName('app-content')[1];
-    if (appContent) {
-        const children = Array.from(appContent.children);
-        for (const child of children) {
-            if (child.id === 'people_head') {
-                child.remove();
             }
+
+            if (Date.now() - start >= timeout) {
+                reject(new Error("Не удалось получить ключ секции"));
+                return;
+            }
+
+            requestAnimationFrame(check);
+        };
+
+        check();
+    });
+}
+
+
+
+async function operstatusleftbar(isManual = false) {
+    try {
+        const key = await waitForOpSectionNew();
+        flagtpkc = key;
+        console.log("OPSECTION:", key);
+        // const flagtpkc = opsection;
+        const cfg = GROUP_CONFIG[flagtpkc];
+
+        if (!cfg) {
+            peoplestatus.innerHTML = '';
+            return;
         }
+
+        if (isManual) {
+            console.log('[OperStatus] Ручное обновление для группы:', flagtpkc);
+        }
+
+        let opstats = [];
+        let chattpquecountleft = 0;
+        chatneraspcountleft = 0;
+
+        const response = await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
+            headers: { "x-csrf-token": aftoken },
+            credentials: "include"
+        });
+
+        const result = await response.json();
+
+        const { opstats: ops, chattpquecountleft: tpq, chatneraspcount } =
+            filterOperators(result, cfg, flagtpkc);
+
+        opstats = ops;
+        chattpquecountleft = tpq;
+        chatneraspcountleft = chatneraspcount;
+
+        peoplestatus.innerHTML = '';
+
+        const { moderresult, operonlinecnt, busycnt, pausecnt } = buildOperatorList(opstats);
+
+        const isTPGroup = (flagtpkc === 'ТП' || flagtpkc === 'ТП ОС');
+        const hidesummary = localStorage.getItem('hidesummaryflag') || '1';
+
+        peoplestatus.innerHTML = buildSummaryHTML({
+            isTPGroup,
+            hidesummary,
+            chattpquecountleft,
+            chatneraspcountleft,
+            moderresult,
+            operonlinecnt,
+            busycnt,
+            pausecnt
+        });
+
+        attachSummaryHandlers(); // 👈 новая функция навешивания событий
+        attachOperatorClickHandlers();
+
+        cleanupPeopleHead();
+
+    } catch (e) {
+        console.error('[OperStatus] Ошибка при обновлении:', e);
     }
 }
+
 
 initializeStartOperStatus();
