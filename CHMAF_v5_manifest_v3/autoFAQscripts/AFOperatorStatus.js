@@ -256,16 +256,26 @@ function buildOperatorList(opstats) {
                 continue;
         }
 
-        if (!addedFullNames.has(operator.fullName)) {
-            moderresult +=
-                `<div class="leftbaropers" style="${divStyle}" name="operrow" value="${operator.id}" data-id="${operator.id}" data-status="${status}" data-count="${item.aCnt}">` +
-                `<span style="color: ${spanText}; font-size: 13px; background: ${spanBackground}; width: 25px; height: 25px; padding-top:2px; text-align: center; border-radius: 50%; border: 1px solid black;">` +
-                `${item.aCnt}` +
-                `</span>` +
-                `${operator.fullName}` +
-                `</div>`;
-            addedFullNames.add(operator.fullName);
-        }
+        moderresult += `
+        <div class="leftbaropers"
+             name="operrow"
+             data-id="${operator.id}"
+             data-status="${status}"
+             data-count="${item.aCnt}"
+             style="${divStyle}"
+             value="${operator.id}">
+
+            <span class="oper-count"
+                  data-count="${item.aCnt}"
+                  style="color:${spanText}; font-size:13px; background:${spanBackground};
+                         width:25px; height:25px; padding-top:2px; text-align:center;
+                         border-radius:50%; border:1px solid black;">
+                ${item.aCnt}
+            </span>
+
+            ${operator.fullName}
+        </div>`;
+
     }
 
     return { moderresult, operonlinecnt, busycnt, pausecnt };
