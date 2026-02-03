@@ -1693,3 +1693,62 @@
 		color: #ff8c09;
 		font-weight: bold;
 	}
+
+	.status-change {
+		animation: statusFlash 0.5s ease-out;
+	}
+
+
+	.count-anim-up {
+		animation: countPulseUp 0.35s ease-out;
+	}
+
+	.count-anim-down {
+		animation: countPulseDown 0.35s ease-out;
+	}
+
+	@keyframes countPulseUp {
+		0% {
+			transform: scale(1);
+		}
+
+		50% {
+			transform: scale(1.35);
+		}
+
+		100% {
+			transform: scale(1);
+		}
+	}
+
+	@keyframes countPulseDown {
+		0% {
+			transform: scale(1);
+		}
+
+		50% {
+			transform: scale(0.75);
+		}
+
+		100% {
+			transform: scale(1);
+		}
+	}
+
+	.status-change {
+		animation: statusFlash 0.5s ease-out;
+	}
+
+	@keyframes statusFlash {
+		0% {
+			box-shadow: 0 0 0px rgba(255, 255, 255, 0);
+		}
+
+		50% {
+			box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+		}
+
+		100% {
+			box-shadow: 0 0 0px rgba(255, 255, 255, 0);
+		}
+	}

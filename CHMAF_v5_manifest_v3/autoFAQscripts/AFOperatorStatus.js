@@ -1,5 +1,6 @@
 let testint;
 let chatneraspcountleft;
+let prevOperatorState = new Map();
 let peoplestatus = document.createElement('div');
 peoplestatus.id = 'idforpeopstatus';
 peoplestatus.style = 'width: 200px; color: bisque;';
@@ -31,6 +32,41 @@ const GROUP_CONFIG = {
         sumAllUnassigned: true
     }
 };
+
+function animateOperatorChanges() {
+    const rows = document.querySelectorAll('.leftbaropers');
+
+    rows.forEach(row => {
+        const id = row.dataset.id;
+        const currentCount = Number(row.dataset.count);
+        const currentStatus = row.dataset.status;
+        const countSpan = row.querySelector('span');
+
+        const prev = prevOperatorState.get(id);
+
+        if (prev) {
+            // Анимация изменения количества
+            if (prev.count !== currentCount) {
+                const cls = currentCount > prev.count ? 'count-anim-up' : 'count-anim-down';
+                countSpan.classList.add(cls);
+                setTimeout(() => countSpan.classList.remove(cls), 400);
+            }
+
+            // Анимация смены статуса
+            if (prev.status !== currentStatus) {
+                row.classList.add('status-change');
+                setTimeout(() => row.classList.remove('status-change'), 500);
+            }
+        }
+
+        // обновляем состояние
+        prevOperatorState.set(id, {
+            count: currentCount,
+            status: currentStatus
+        });
+    });
+}
+
 
 function initializeStartOperStatus() {
     const siderElements = document.getElementsByClassName('ant-layout-sider-children');
@@ -222,7 +258,7 @@ function buildOperatorList(opstats) {
 
         if (!addedFullNames.has(operator.fullName)) {
             moderresult +=
-                `<div class="leftbaropers" style="${divStyle}" name="operrow" value="${operator.id}">` +
+                `<div class="leftbaropers" style="${divStyle}" name="operrow" value="${operator.id}" data-id="${operator.id}" data-status="${status}" data-count="${item.aCnt}">` +
                 `<span style="color: ${spanText}; font-size: 13px; background: ${spanBackground}; width: 25px; height: 25px; padding-top:2px; text-align: center; border-radius: 50%; border: 1px solid black;">` +
                 `${item.aCnt}` +
                 `</span>` +
@@ -312,6 +348,7 @@ function waitForOpSectionNew(timeout = 5000) {
 
 
 
+
 async function operstatusleftbar(isManual = false) {
     try {
         const key = await waitForOpSectionNew();
@@ -367,6 +404,7 @@ async function operstatusleftbar(isManual = false) {
             busycnt,
             pausecnt
         });
+        animateOperatorChanges();
 
         attachSummaryHandlers(); // 👈 новая функция навешивания событий
         attachOperatorClickHandlers();
@@ -377,6 +415,48 @@ async function operstatusleftbar(isManual = false) {
         console.error('[OperStatus] Ошибка при обновлении:', e);
     }
 }
+
+function animateOperatorChanges() {
+    const rows = document.querySelectorAll('.leftbaropers');
+
+    rows.forEach(row => {
+        const id = row.getAttribute('value');
+        const countSpan = row.querySelector('span');
+        const name = row.textContent.trim();
+        const currentCount = Number(countSpan.textContent);
+        const currentStatus = row.style.color || "";
+
+        const prev = prevOperatorState.get(id);
+
+        if (prev) {
+            // Анимация изменения количества
+            if (prev.count !== currentCount) {
+                if (currentCount > prev.count) {
+                    countSpan.classList.add('count-anim-up');
+                } else {
+                    countSpan.classList.add('count-anim-down');
+                }
+
+                setTimeout(() => {
+                    countSpan.classList.remove('count-anim-up', 'count-anim-down');
+                }, 400);
+            }
+
+            // Анимация смены статуса
+            if (prev.status !== currentStatus) {
+                row.classList.add('status-change');
+                setTimeout(() => row.classList.remove('status-change'), 500);
+            }
+        }
+
+        // обновляем состояние
+        prevOperatorState.set(id, {
+            count: currentCount,
+            status: currentStatus
+        });
+    });
+}
+
 
 
 initializeStartOperStatus();
