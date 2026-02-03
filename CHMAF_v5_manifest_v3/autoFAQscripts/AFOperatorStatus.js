@@ -316,7 +316,10 @@ async function operstatusleftbar(isManual = false) {
     try {
         const key = await waitForOpSectionNew();
         flagtpkc = key;
-        console.log("OPSECTION:", key);
+        if (flagtpkc == "ТП ОС") {
+            flagtpkc = "ТП"
+        }
+        console.log("OPSECTION:", flagtpkc);
         // const flagtpkc = opsection;
         const cfg = GROUP_CONFIG[flagtpkc];
 
