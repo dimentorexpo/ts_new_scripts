@@ -263,7 +263,23 @@ async function operstatusleftbar(isManual = false) {
         }
 
         // 🔹 Операторы
-        const opstats = filterOperators(result, cfg);
+        let opstats = [];
+        // ⚠️ ВАЖНО:
+        // ТП и ТП ОС отображаются вместе в списке операторов
+        // различие только в очередях и summary-блоке
+        if (key === 'ТП ОС') {
+            // Берём операторов обеих групп
+            const tpOps = filterOperators(result, GROUP_CONFIG['ТП']);
+            const tpOsOps = filterOperators(result, GROUP_CONFIG['ТП ОС']);
+
+            // Объединяем без дублей по id
+            const map = new Map();
+            [...tpOps, ...tpOsOps].forEach(op => map.set(op.operator.id, op));
+            opstats = Array.from(map.values());
+
+        } else {
+            opstats = filterOperators(result, cfg);
+        }
         const { html, online, busy, pause } = buildOperatorList(opstats);
 
         // 🔹 Рендер
@@ -279,10 +295,32 @@ async function operstatusleftbar(isManual = false) {
         );
 
         animateOperatorChanges();
+        attachOperatorClickHandlers();
         attachHandlers();
 
     } catch (e) {
         console.error('OperStatus error', e);
+    }
+}
+
+function attachOperatorClickHandlers() {
+    const arofpers = document.getElementsByName('operrow');
+
+    for (let i = 0; i < arofpers.length; i++) {
+        arofpers[i].onclick = function () {
+            if (document.getElementById('AF_ChatHis').style.display == 'none')
+                document.getElementById('opennewcat').click();
+
+            setTimeout(function () {
+                let massiv = document.getElementById('operatorstp');
+                for (let k = 1; k < massiv.length; k++) {
+                    if (arofpers[i].getAttribute('value') == massiv.children[k].value) {
+                        massiv.children[k].selected = true;
+                        findchatsoper();
+                    }
+                }
+            }, 1000);
+        };
     }
 }
 
