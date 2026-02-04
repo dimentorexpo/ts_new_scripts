@@ -158,14 +158,32 @@ function fillchatbox() { //функция наполнения элемента,
         return (operator && operator.operator.fullName) || defaultName;
     }
 
-    function highlightUserFull(html) {
-        return html.replace(
-            /<strong>User:\s*([^<]*)<\/strong>/g,
-            (match, text) => {
-                return `<strong><span class="user-orange">User:</span> <span class="user-msg">${text}</span></strong>`;
+    function highlightUserFullSafe(htmlString) {
+        // Создаем временный контейнер
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlString;
+
+        // Рекурсивно ищем текстовые узлы и заменяем в них "User:"
+        function replaceInNode(node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                // Заменяем только если это начало строки или после пробела, чтобы не сломать URL
+                node.textContent = node.textContent.replace(/User:\s*/g, 'User: ');
+                // Примечание: Если нужно добавить класс, это сложнее,
+                // но для простой замены текста этого достаточно.
+                // Если нужно именно <strong>, то лучше использовать DOMParser, но это рискованно для вставки.
+                // Пока оставим простую замену текста, чтобы не ломать верстку.
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                // Не трогаем теги img, video, audio
+                if (node.tagName !== 'IMG' && node.tagName !== 'VIDEO' && node.tagName !== 'AUDIO') {
+                    Array.from(node.childNodes).forEach(replaceInNode);
+                }
             }
-        );
+        }
+
+        replaceInNode(tempDiv);
+        return tempDiv.innerHTML;
     }
+
 
 
 
@@ -251,12 +269,25 @@ function fillchatbox() { //функция наполнения элемента,
 
         // Обрабатываем картинки
         doc.querySelectorAll('img').forEach(img => {
-            img.classList.add('img-chat-history');
+            // Если у картинки нет класса, добавляем его
+            if (!img.classList.contains('img-chat-history')) {
+                img.classList.add('img-chat-history');
+            }
             img.style.maxWidth = '200px';
             img.style.borderRadius = '6px';
             img.style.cursor = 'zoom-in';
             img.style.margin = '6px 0';
-            img.dataset.full = img.src;
+            // Сохраняем полный URL в data-атрибут, если его нет
+            if (!img.dataset.full && img.src) {
+                img.dataset.full = img.src;
+            }
+        });
+
+        // Обрабатываем видео и аудио, если они есть (на случай если пришли как есть)
+        doc.querySelectorAll('video, audio').forEach(media => {
+            media.style.maxWidth = '300px';
+            media.style.margin = '6px 0';
+            media.style.borderRadius = '6px';
         });
 
         // Превращаем текстовые узлы с Assistant/User в div.msg
@@ -270,19 +301,28 @@ function fillchatbox() { //функция наполнения элемента,
             line = line.trim();
             if (!line) return;
 
+            // Если строка уже содержит HTML теги (например <video> или <img>), просто вставляем как есть
+            if (line.startsWith('<') && line.includes('>')) {
+                const div = document.createElement('div');
+                div.innerHTML = line; // Вставляем как есть
+                container.appendChild(div);
+                return;
+            }
+
+            // Иначе обрабатываем как обычный текст
             const div = document.createElement('div');
             div.classList.add('msg');
 
             if (line.startsWith('Assistant:')) {
                 div.classList.add('assistant');
-                div.textContent = line.replace('Assistant: ', "🤖: ")
+                div.textContent = line.replace('Assistant: ', "🤖: ");
             }
             else if (line.startsWith('User:')) {
                 div.classList.add('user');
-                div.textContent = "User: "
+                div.textContent = "User: "; // Или просто line, если нужно
             }
             else {
-                div.innerHTML = line; // тут остаются картинки
+                div.innerHTML = line;
             }
 
             container.appendChild(div);
@@ -290,6 +330,7 @@ function fillchatbox() { //функция наполнения элемента,
 
         return container.innerHTML;
     }
+
 
 
 
@@ -303,38 +344,40 @@ function fillchatbox() { //функция наполнения элемента,
             case "Question":
                 if (message.click === undefined) {
                     const testarray = message.txt.match(/<p>(.*?)<\/p>/gm);
+                    const name = convdata.channelUser.fullName || "Widget";
 
-                    // --- НАЧАЛО ИСПРАВЛЕНИЯ ---
-
-                    // 1. Сначала пробуем найти медиа-ссылки прямо в сыром тексте или внутри <p>
+                    // 1. Сначала проверяем, не является ли сообщение просто ссылкой на медиа (даже если она в <p>)
+                    // Ищем ссылки vimbox-resource внутри всего текста сообщения
                     const mediaMatch = message.txt.match(/(https:\/\/vimbox-resource[^\s<>"']+\.(mp4|mov|mkv|webm|mp3|wav|ogg|oga|png|jpg|jpeg|gif|webp))/gi);
 
                     let content = "";
-                    let isMediaOnly = false;
+                    let isPureMedia = false;
 
+                    // Если нашли ровно одну ссылку и это медиа-файл
                     if (mediaMatch && mediaMatch.length === 1) {
-                        // Если в сообщении только одна ссылка и это медиа
                         const url = mediaMatch[0];
                         const lower = url.toLowerCase();
 
                         if (lower.match(/\.(mp4|mov|mkv|webm)$/)) {
                             content = `<video src="${url}" controls style="max-width:300px;margin:6px 0;border-radius:6px;"></video>`;
-                            isMediaOnly = true;
+                            isPureMedia = true;
                         } else if (lower.match(/\.(mp3|wav|ogg|oga)$/)) {
                             content = `<audio src="${url}" controls style="width:300px;margin:6px 0;"></audio>`;
-                            isMediaOnly = true;
+                            isPureMedia = true;
                         } else if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
                             content = `<img src="${url}" class="img-chat-history chat-history-image" data-full="${url}" style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">`;
-                            isMediaOnly = true;
+                            isPureMedia = true;
                         }
                     }
 
-                    // 2. Если это не просто медиа-файл, используем старую логику
-                    if (!isMediaOnly) {
+                    // 2. Если это не чистое медиа, обрабатываем как текст/HTML
+                    if (!isPureMedia) {
                         if (testarray) {
+                            // Если есть <p>, чистим их и парсим как HTML
                             const cleaned = cleanHtmlAroundUrls(message.txt);
                             content = renderMessageText(cleaned);
                         } else {
+                            // Если нет <p>, ищем картинки отдельно
                             const images = getImagesFromText(message.txt);
                             if (images.length === 1) {
                                 content = renderMedia(images[0]);
@@ -345,33 +388,42 @@ function fillchatbox() { //функция наполнения элемента,
                         }
                     }
 
-                    // --- КОНЕЦ ИСПРАВЛЕНИЯ ---
+                    // 3. Дополнительная обработка ссылок внутри текста (на случай если renderMessageText пропустил)
+                    // Но делаем это аккуратно, чтобы не сломать уже вставленные видео/аудио
+                    content = content.replace(/(https:\/\/vimbox-resource[^\s<>"']+\.(png|jpg|jpeg|gif|webp))/gi, (url) => {
+                        // Не заменяем, если это уже внутри тега img или video/audio
+                        if (content.includes(`src="${url}"`) || content.includes(`src='${url}'`)) return url;
 
-                    content = autoRenderMediaLinks(content); // На случай если в тексте есть доп ссылки
+                        return `<img src="${url}" class="img-chat-history chat-history-image" data-full="${url}" style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">`;
+                    });
 
-
+                    // 4. Хайлайт имени пользователя (безопасная замена)
+                    // Используем функцию, которая не ломает HTML структуру
+                    content = highlightUserFullSafe(content);
 
                     appendToInfoField(`
                         <br>
                         <div class="question-event">
                             <span class="question-event-name">${name}</span>
                             <span class="question-event-date">${date}</span>
-                            <div class="question-event-text"><br>${highlightUserFull(content)}</div>
+                            <div class="question-event-text"><br>${content}</div>
                         </div>
                     `);
+
+                    // 5. Вешаем обработчики клика (только на картинки)
                     setTimeout(() => {
                         document.querySelectorAll('.chat-history-image').forEach(img => {
                             if (!img.dataset.bound) {
                                 img.dataset.bound = "1";
                                 img.addEventListener('click', () => {
-                                    openImageViewerChatHistory(img.dataset.full);
+                                    openImageViewerChatHistory(img.dataset.full || img.src);
                                 });
                             }
                         });
                     }, 50);
 
-
                 } else {
+                    // Обработка click-сообщений (кнопки)
                     appendToInfoField(`
                         <br>
                         <div class="question-event">
@@ -390,7 +442,6 @@ function fillchatbox() { //функция наполнения элемента,
                             }
                         });
                     }, 50);
-
                 }
                 break;
 
