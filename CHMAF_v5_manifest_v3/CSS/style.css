@@ -1735,3 +1735,7 @@
 			transform: scale(1);
 		}
 	}
+
+	.tp-os-row {
+		color: violet
+	}

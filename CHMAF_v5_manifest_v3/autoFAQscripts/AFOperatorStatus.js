@@ -115,6 +115,8 @@ function buildOperatorList(opstats) {
         const op = item.operator;
         const status = op.status;
         const count = item.aCnt || 0;
+        const fullName = (op.fullName || '').toUpperCase();
+        const isTpOs = fullName.includes('ТП ОС'); // тестим
 
         let color = '', bg = '', text = '';
 
@@ -124,7 +126,7 @@ function buildOperatorList(opstats) {
         else continue;
 
         html += `
-        <div class="leftbaropers"
+        <div class="leftbaropers ${isTpOs ? 'tp-os-row' : ''}"
              name="operrow"
              data-id="${op.id}"
              data-status="${status}"
@@ -323,6 +325,5 @@ function attachOperatorClickHandlers() {
         };
     }
 }
-
 
 initializeStartOperStatus();
