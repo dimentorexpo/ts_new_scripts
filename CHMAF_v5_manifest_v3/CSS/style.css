@@ -1739,3 +1739,39 @@
 	.tp-os-row {
 		color: violet
 	}
+
+	.msg {
+		margin: 4px 0;
+		line-height: 1.4;
+	}
+
+	/* Текст пользователя */
+	.msg.user {
+		font-weight: 700;
+		color: orange;
+	}
+
+	/* Если нужно слово "User:" отдельно — можно псевдоэлементом */
+	.msg.user::before {
+		content: "User: ";
+		color: black;
+		font-weight: 900;
+	}
+
+	/* Сообщения ассистента */
+	.msg.assistant {
+		color: #a8a6a2;
+	}
+
+	.img-chat-history {
+		max-width: 200px;
+		border-radius: 6px;
+		margin: 6px 0;
+		cursor: zoom-in;
+		display: block;
+	}
+
+	.msg img {
+		max-width: 200px;
+		height: auto;
+	}

@@ -237,11 +237,63 @@ function fillchatbox() { //функция наполнения элемента,
     }
 
 
-    function renderMessageText(text) {
-        if (!text) return '';
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        return text.replace(urlRegex, url => renderMedia(url));
+    function decodeHtmlEntities(str) {
+        const txt = document.createElement("textarea");
+        txt.innerHTML = str;
+        return txt.value;
     }
+
+    function renderMessageText(rawHtml) {
+        if (!rawHtml) return '';
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(rawHtml, 'text/html');
+
+        // Обрабатываем картинки
+        doc.querySelectorAll('img').forEach(img => {
+            img.classList.add('img-chat-history');
+            img.style.maxWidth = '200px';
+            img.style.borderRadius = '6px';
+            img.style.cursor = 'zoom-in';
+            img.style.margin = '6px 0';
+            img.dataset.full = img.src;
+        });
+
+        // Превращаем текстовые узлы с Assistant/User в div.msg
+        const lines = doc.body.innerHTML
+            .replace(/<br\s*\/?>/gi, '\n')
+            .split('\n');
+
+        const container = document.createElement('div');
+
+        lines.forEach(line => {
+            line = line.trim();
+            if (!line) return;
+
+            const div = document.createElement('div');
+            div.classList.add('msg');
+
+            if (line.startsWith('Assistant:')) {
+                div.classList.add('assistant');
+                div.textContent = line.replace('Assistant: ', "🤖: ")
+            }
+            else if (line.startsWith('User:')) {
+                div.classList.add('user');
+                div.textContent = "User: "
+            }
+            else {
+                div.innerHTML = line; // тут остаются картинки
+            }
+
+            container.appendChild(div);
+        });
+
+        return container.innerHTML;
+    }
+
+
+
+
 
     for (let i = convdata.messages.length - 1; i >= 0; i--) {
         const message = convdata.messages[i];
@@ -251,22 +303,53 @@ function fillchatbox() { //функция наполнения элемента,
             case "Question":
                 if (message.click === undefined) {
                     const testarray = message.txt.match(/<p>(.*?)<\/p>/gm);
-                    const images = getImagesFromText(message.txt);
-                    const name = convdata.channelUser.fullName || "Widget";
+
+                    // --- НАЧАЛО ИСПРАВЛЕНИЯ ---
+
+                    // 1. Сначала пробуем найти медиа-ссылки прямо в сыром тексте или внутри <p>
+                    const mediaMatch = message.txt.match(/(https:\/\/vimbox-resource[^\s<>"']+\.(mp4|mov|mkv|webm|mp3|wav|ogg|oga|png|jpg|jpeg|gif|webp))/gi);
 
                     let content = "";
+                    let isMediaOnly = false;
 
-                    if (testarray) {
-                        const cleaned = cleanHtmlAroundUrls(message.txt);
-                        content = renderMessageText(cleaned);
-                    } else {
-                        if (images.length === 1) {
-                            content = renderMedia(images[0]);
-                        } else {
-                            const cleaned = cleanHtmlAroundUrls(message.txt);
-                            content = renderMessageText(cleaned);
+                    if (mediaMatch && mediaMatch.length === 1) {
+                        // Если в сообщении только одна ссылка и это медиа
+                        const url = mediaMatch[0];
+                        const lower = url.toLowerCase();
+
+                        if (lower.match(/\.(mp4|mov|mkv|webm)$/)) {
+                            content = `<video src="${url}" controls style="max-width:300px;margin:6px 0;border-radius:6px;"></video>`;
+                            isMediaOnly = true;
+                        } else if (lower.match(/\.(mp3|wav|ogg|oga)$/)) {
+                            content = `<audio src="${url}" controls style="width:300px;margin:6px 0;"></audio>`;
+                            isMediaOnly = true;
+                        } else if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
+                            content = `<img src="${url}" class="img-chat-history chat-history-image" data-full="${url}" style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">`;
+                            isMediaOnly = true;
                         }
                     }
+
+                    // 2. Если это не просто медиа-файл, используем старую логику
+                    if (!isMediaOnly) {
+                        if (testarray) {
+                            const cleaned = cleanHtmlAroundUrls(message.txt);
+                            content = renderMessageText(cleaned);
+                        } else {
+                            const images = getImagesFromText(message.txt);
+                            if (images.length === 1) {
+                                content = renderMedia(images[0]);
+                            } else {
+                                const cleaned = cleanHtmlAroundUrls(message.txt);
+                                content = renderMessageText(cleaned);
+                            }
+                        }
+                    }
+
+                    // --- КОНЕЦ ИСПРАВЛЕНИЯ ---
+
+                    content = autoRenderMediaLinks(content); // На случай если в тексте есть доп ссылки
+
+
 
                     appendToInfoField(`
                         <br>
@@ -409,6 +492,20 @@ function fillchatbox() { //функция наполнения элемента,
         }
     }
 }
+
+function autoRenderMediaLinks(html) {
+    const urlRegex = /(https:\/\/vimbox-resource[^\s<>"']+\.(png|jpg|jpeg|gif|webp))/gi;
+
+    return html.replace(urlRegex, (url) => {
+        return `
+            <img src="${url}"
+                 class="img-chat-history chat-history-image"
+                 data-full="${url}"
+                 style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">
+        `;
+    });
+}
+
 
 function getFormattedDateComponent(dateComponent) { // функция добавляет 0 к месяцу, дню, минуте, часу если значение меньше 10 иначе просто размещает значение
     return dateComponent < 10 ? '0' + dateComponent : dateComponent;
@@ -1171,3 +1268,4 @@ function getopennewcatButtonPress() { // открывает меню для ра
         }
     }
 }
+
