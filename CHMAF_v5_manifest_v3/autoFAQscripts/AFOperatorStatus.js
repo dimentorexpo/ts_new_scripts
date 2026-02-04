@@ -159,7 +159,7 @@ function buildSummaryHTML(key, currentQueue, tpQueue, tpOsQueue, html, online, b
         const tpOsWarn = tpOsQueue > 10 ? ' ⚠️' : '';
 
         queueBlock = `
-        <div style="background:#792525;font-weight:700;text-align:center;border:1px solid #464343;border-radius:6px;">
+        <div style="background:#792525;font-weight:700;text-align:center;border:1px solid #464343;border-radius:6px; font-size:16px">
             🚧 Очередь ТП: ${tpQueue}${tpWarn}
             <br>
             🚧 Очередь ТП ОС: ${tpOsQueue}${tpOsWarn}
@@ -169,7 +169,7 @@ function buildSummaryHTML(key, currentQueue, tpQueue, tpOsQueue, html, online, b
     // 📦 Все остальные группы
     else {
         queueBlock = `
-        <div style="background:#792525;font-weight:700;text-align:center;border:1px solid #464343; border-radius: 6px; text-align: center;">
+        <div style="background:#792525;font-weight:700;text-align:center;border:1px solid #464343; border-radius: 6px; font-size:16px">
             🚧Очередь: ${currentQueue}
         </div>`;
     }
