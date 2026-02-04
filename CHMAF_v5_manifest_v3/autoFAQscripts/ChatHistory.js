@@ -78,7 +78,7 @@ wintChatHis.style.display = 'none';
 wintChatHis.setAttribute('id', 'AF_ChatHis');
 wintChatHis.innerHTML = win_Chathis;
 
-function fillchatbox() { //функция наполнения элемента, где выводится история чатов
+function fillchatbox() {
     const groupIdToSection = {
         'c7bbb211-a217-4ed3-8112-98728dc382d8': 'ТП',
         '8266dbb1-db44-4910-8b5f-a140deeec5c0': 'ТП ОС',
@@ -91,251 +91,94 @@ function fillchatbox() { //функция наполнения элемента,
 
     const now = new Date();
     document.getElementById('infofield').setAttribute('openhistorytime', now.toISOString());
-
     document.getElementById('infofield').innerHTML = '';
 
     let options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
     let options2 = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
 
-    // след 2 строки - скрипт заполняет значения уже при открытии самого чата по его хешу или при клике на чат из списка в истории
     const user = convdata.channelUser;
     const payload = user.payload || {};
     const isEmptyPayload = Object.keys(payload).length === 0;
     const type = user.channelTpe;
 
     let result;
-
-    // Telegram
-    if (type === 'Telegram') {
-        result = "Telegram";
-    }
-    // WhatsApp
-    else if (type === 'WhatsApp') {
-        result = "WhatsApp";
-    }
-    // Widget без payload
-    else if (type === 'Widget' && isEmptyPayload) {
-        result = "Widget";
-    }
-    // Widget с payload.id
-    else if (type === 'Widget' && payload.id) {
-        result = payload.id;
-    }
-    // Другие каналы с payload
-    else if (!isEmptyPayload) {
-        result = user.id;
-    }
-    // fallback
-    else {
-        result = "Widget";
-    }
+    if (type === 'Telegram') result = "Telegram";
+    else if (type === 'WhatsApp') result = "WhatsApp";
+    else if (type === 'Widget' && isEmptyPayload) result = "Widget";
+    else if (type === 'Widget' && payload.id) result = payload.id;
+    else if (!isEmptyPayload) result = user.id;
+    else result = "Widget";
 
     document.getElementById('placeusid').innerText = result;
-
-
     document.getElementById('placechatid').innerText = convdata.id;
     document.getElementById('somechatinfo').style.display = '';
     document.getElementById('bottommenuchhis').style.display = '';
-    function extractDate(ts) {
-        return new Date(ts).toLocaleDateString('ru-RU', options);
-    }
 
-    function extractTime(ts) {
-        return new Date(ts).toLocaleTimeString('ru-RU', options2);
-    }
+    // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+
+    function extractDate(ts) { return new Date(ts).toLocaleDateString('ru-RU', options); }
+    function extractTime(ts) { return new Date(ts).toLocaleTimeString('ru-RU', options2); }
 
     function getImagesFromText(txt) {
         const patterns = [/https:\/\/vimbox-resource.*jpg/gm, /https:\/\/vimbox-resource.*jpeg/gm, /https:\/\/vimbox-resource.*png/gm];
         return patterns.flatMap(pattern => txt.match(pattern) || []);
     }
 
-    function appendToInfoField(html) {
-        document.getElementById('infofield').innerHTML += html;
-    }
-
-    function getOperatorNameById(operatorId, defaultName) {
-        const operator = operatorsarray.find(op => op.operator && op.operator.id === operatorId);
-        return (operator && operator.operator.fullName) || defaultName;
-    }
-
-    function highlightUserFullSafe(htmlString) {
-        // Создаем временный контейнер
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlString;
-
-        // Рекурсивно ищем текстовые узлы и заменяем в них "User:"
-        function replaceInNode(node) {
-            if (node.nodeType === Node.TEXT_NODE) {
-                // Заменяем только если это начало строки или после пробела, чтобы не сломать URL
-                node.textContent = node.textContent.replace(/User:\s*/g, 'User: ');
-                // Примечание: Если нужно добавить класс, это сложнее,
-                // но для простой замены текста этого достаточно.
-                // Если нужно именно <strong>, то лучше использовать DOMParser, но это рискованно для вставки.
-                // Пока оставим простую замену текста, чтобы не ломать верстку.
-            } else if (node.nodeType === Node.ELEMENT_NODE) {
-                // Не трогаем теги img, video, audio
-                if (node.tagName !== 'IMG' && node.tagName !== 'VIDEO' && node.tagName !== 'AUDIO') {
-                    Array.from(node.childNodes).forEach(replaceInNode);
-                }
-            }
-        }
-
-        replaceInNode(tempDiv);
-        return tempDiv.innerHTML;
-    }
-
-
-
-
-    ///////////////////////////
-
-    function cleanHtmlAroundUrls(text) {
-        return text
-            .replace(/&lt;\/?p&gt;/g, '')   // убираем &lt;p&gt; и &lt;/p&gt;
-            .replace(/<\/?p>/g, '');       // убираем <p> и </p>
+    // Функция для извлечения URL из <a href="...">
+    function extractUrlFromHtml(htmlString) {
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlString, 'text/html');
+            const link = doc.querySelector('a');
+            if (link && link.href) return link.href;
+        } catch (e) { }
+        const match = htmlString.match(/href="([^"]+)"/);
+        if (match) return match[1];
+        return null;
     }
 
     function openImageViewerChatHistory(src) {
         const overlay = document.createElement('div');
-        overlay.style = `
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 999999;
-            cursor: zoom-out;
-        `;
+        overlay.style = `position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 999999; cursor: zoom-out;`;
         const img = document.createElement('img');
         img.src = src;
-        img.style = `
-            max-width: 90%;
-            max-height: 90%;
-            border-radius: 10px;
-            box-shadow: 0 0 25px rgba(0,0,0,0.6);
-        `;
+        img.style = `max-width: 90%; max-height: 90%; border-radius: 10px; box-shadow: 0 0 25px rgba(0,0,0,0.6);`;
         overlay.appendChild(img);
         document.body.appendChild(overlay);
         overlay.onclick = () => overlay.remove();
     }
 
-
     function renderMedia(url) {
         const lower = url.toLowerCase();
-
         if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
-            return `
-                <img src="${url}"
-                     class="img-chat-history chat-history-image"
-                     data-full="${url}"
-                     style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">
-            `;
+            return `<img src="${url}" class="img-chat-history chat-history-image" data-full="${url}" style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">`;
         }
-
         if (lower.match(/\.(mp4|mov|mkv|webm)$/)) {
-            return `
-                <video src="${url}"
-                       controls
-                       style="max-width:300px;margin:6px 0;border-radius:6px;">
-                </video>
-            `;
+            return `<video src="${url}" controls style="max-width:300px;margin:6px 0;border-radius:6px;"></video>`;
         }
-
         if (lower.match(/\.(mp3|wav|ogg|oga)$/)) {
-            return `
-                <audio src="${url}"
-                       controls
-                       style="width:300px;margin:6px 0;">
-                </audio>
-            `;
+            return `<audio src="${url}" controls style="width:300px;margin:6px 0;"></audio>`;
         }
-
         return `<a href="${url}" target="_blank">${url}</a>`;
     }
 
-
-    function decodeHtmlEntities(str) {
-        const txt = document.createElement("textarea");
-        txt.innerHTML = str;
-        return txt.value;
-    }
-
-    function renderMessageText(rawHtml) {
-        if (!rawHtml) return '';
-
+    // Функция для безопасной вставки HTML (убирает экранирование)
+    function insertHtmlSafely(htmlString) {
         const parser = new DOMParser();
-        const doc = parser.parseFromString(rawHtml, 'text/html');
-
-        // Обрабатываем картинки
-        doc.querySelectorAll('img').forEach(img => {
-            // Если у картинки нет класса, добавляем его
-            if (!img.classList.contains('img-chat-history')) {
-                img.classList.add('img-chat-history');
-            }
-            img.style.maxWidth = '200px';
-            img.style.borderRadius = '6px';
-            img.style.cursor = 'zoom-in';
-            img.style.margin = '6px 0';
-            // Сохраняем полный URL в data-атрибут, если его нет
-            if (!img.dataset.full && img.src) {
-                img.dataset.full = img.src;
-            }
-        });
-
-        // Обрабатываем видео и аудио, если они есть (на случай если пришли как есть)
-        doc.querySelectorAll('video, audio').forEach(media => {
-            media.style.maxWidth = '300px';
-            media.style.margin = '6px 0';
-            media.style.borderRadius = '6px';
-        });
-
-        // Превращаем текстовые узлы с Assistant/User в div.msg
-        const lines = doc.body.innerHTML
-            .replace(/<br\s*\/?>/gi, '\n')
-            .split('\n');
-
-        const container = document.createElement('div');
-
-        lines.forEach(line => {
-            line = line.trim();
-            if (!line) return;
-
-            // Если строка уже содержит HTML теги (например <video> или <img>), просто вставляем как есть
-            if (line.startsWith('<') && line.includes('>')) {
-                const div = document.createElement('div');
-                div.innerHTML = line; // Вставляем как есть
-                container.appendChild(div);
-                return;
-            }
-
-            // Иначе обрабатываем как обычный текст
-            const div = document.createElement('div');
-            div.classList.add('msg');
-
-            if (line.startsWith('Assistant:')) {
-                div.classList.add('assistant');
-                div.textContent = line.replace('Assistant: ', "🤖: ");
-            }
-            else if (line.startsWith('User:')) {
-                div.classList.add('user');
-                div.textContent = "User: "; // Или просто line, если нужно
-            }
-            else {
-                div.innerHTML = line;
-            }
-
-            container.appendChild(div);
-        });
-
-        return container.innerHTML;
+        const doc = parser.parseFromString(htmlString, 'text/html');
+        // Берем body и вставляем его содержимое
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = doc.body.innerHTML;
+        return tempDiv;
     }
 
+    // ФУНКЦИЯ ДЛЯ ПОИСКА ОПЕРАТОРА (ПЕРЕМЕЩЕНА ВВЕРХ)
+    function getOperatorNameById(operatorId, defaultName) {
+        const operator = operatorsarray.find(op => op.operator && op.operator.id === operatorId);
+        return (operator && operator.operator.fullName) || defaultName;
+    }
 
-
-
-
-
+    // --- ОСНОВНОЙ ЦИКЛ ---
     for (let i = convdata.messages.length - 1; i >= 0; i--) {
         const message = convdata.messages[i];
         const date = extractDate(message.ts);
@@ -343,108 +186,105 @@ function fillchatbox() { //функция наполнения элемента,
         switch (message.tpe) {
             case "Question":
                 if (message.click === undefined) {
-                    const testarray = message.txt.match(/<p>(.*?)<\/p>/gm);
                     const name = convdata.channelUser.fullName || "Widget";
 
-                    // 1. Сначала проверяем, не является ли сообщение просто ссылкой на медиа (даже если она в <p>)
-                    // Ищем ссылки vimbox-resource внутри всего текста сообщения
-                    const mediaMatch = message.txt.match(/(https:\/\/vimbox-resource[^\s<>"']+\.(mp4|mov|mkv|webm|mp3|wav|ogg|oga|png|jpg|jpeg|gif|webp))/gi);
+                    // 1. Проверяем, не является ли сообщение ссылкой в теге <a>
+                    let extractedUrl = null;
+                    let isHtmlLink = false;
 
-                    let content = "";
-                    let isPureMedia = false;
-
-                    // Если нашли ровно одну ссылку и это медиа-файл
-                    if (mediaMatch && mediaMatch.length === 1) {
-                        const url = mediaMatch[0];
-                        const lower = url.toLowerCase();
-
-                        if (lower.match(/\.(mp4|mov|mkv|webm)$/)) {
-                            content = `<video src="${url}" controls style="max-width:300px;margin:6px 0;border-radius:6px;"></video>`;
-                            isPureMedia = true;
-                        } else if (lower.match(/\.(mp3|wav|ogg|oga)$/)) {
-                            content = `<audio src="${url}" controls style="width:300px;margin:6px 0;"></audio>`;
-                            isPureMedia = true;
-                        } else if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
-                            content = `<img src="${url}" class="img-chat-history chat-history-image" data-full="${url}" style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">`;
-                            isPureMedia = true;
+                    if (message.txt.includes('<a ') && message.txt.includes('href=')) {
+                        extractedUrl = extractUrlFromHtml(message.txt);
+                        if (extractedUrl) {
+                            const lowerUrl = extractedUrl.toLowerCase();
+                            if (lowerUrl.match(/\.(mp4|mov|mkv|webm|mp3|wav|ogg|oga|png|jpg|jpeg|gif|webp)$/)) {
+                                isHtmlLink = true;
+                            }
                         }
                     }
 
-                    // 2. Если это не чистое медиа, обрабатываем как текст/HTML
-                    if (!isPureMedia) {
-                        if (testarray) {
-                            // Если есть <p>, чистим их и парсим как HTML
-                            const cleaned = cleanHtmlAroundUrls(message.txt);
-                            content = renderMessageText(cleaned);
-                        } else {
-                            // Если нет <p>, ищем картинки отдельно
+                    // 2. Если это HTML-ссылка на медиа, рендерим сразу
+                    if (isHtmlLink) {
+                        const lower = extractedUrl.toLowerCase();
+                        let content = "";
+                        if (lower.match(/\.(mp4|mov|mkv|webm)$/)) content = `<video src="${extractedUrl}" controls style="max-width:300px;margin:6px 0;border-radius:6px;"></video>`;
+                        else if (lower.match(/\.(mp3|wav|ogg|oga)$/)) content = `<audio src="${extractedUrl}" controls style="width:300px;margin:6px 0;"></audio>`;
+                        else if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) content = `<img src="${extractedUrl}" class="img-chat-history chat-history-image" data-full="${extractedUrl}" style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">`;
+                        else content = `<a href="${extractedUrl}" target="_blank">${extractedUrl}</a>`;
+
+                        // Используем insertAdjacentHTML с "очищенным" контентом
+                        // Мы оборачиваем content в div, чтобы parser отработал корректно
+                        const wrapper = document.createElement('div');
+                        wrapper.innerHTML = `<br><div class="question-event"><span class="question-event-name">${name}</span><span class="question-event-date">${date}</span><div class="question-event-text"><br>${content}</div></div>`;
+
+                        // Вставляем через insertAdjacentHTML, но предварительно "очищаем" от лишнего экранирования
+                        // В данном случае content уже чистый, так как мы его только что создали строкой
+                        document.getElementById('infofield').insertAdjacentHTML('beforeend', wrapper.innerHTML);
+
+                        setTimeout(() => {
+                            const mediaEl = document.querySelector('.question-event-text video, .question-event-text img');
+                            if (mediaEl && !mediaEl.dataset.bound) {
+                                mediaEl.dataset.bound = "1";
+                                mediaEl.addEventListener('click', () => openImageViewerChatHistory(mediaEl.dataset.full || mediaEl.src));
+                            }
+                        }, 50);
+
+                    } else {
+                        // --- СТАРАЯ ЛОГИКА (Исправленная) ---
+                        let content = "";
+                        const testarray = message.txt.match(/<p>(.*?)<\/p>/gm);
+                        const mediaMatch = message.txt.match(/(https:\/\/vimbox-resource[^\s<>"']+\.(mp4|mov|mkv|webm|mp3|wav|ogg|oga|png|jpg|jpeg|gif|webp))/gi);
+
+                        if (mediaMatch && mediaMatch.length === 1) {
+                            const url = mediaMatch[0];
+                            const lower = url.toLowerCase();
+                            if (lower.match(/\.(mp4|mov|mkv|webm)$/)) content = renderMedia(url);
+                            else if (lower.match(/\.(mp3|wav|ogg|oga)$/)) content = renderMedia(url);
+                            else if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) content = renderMedia(url);
+                        }
+
+                        if (!content && testarray) {
+                            // Очищаем HTML от <p> тегов, но оставляем содержимое
+                            const cleaned = message.txt.replace(/<p>/g, '').replace(/<\/p>/g, '');
+                            // Тут нужна функция renderMessageText, но давайте упростим для надежности
+                            // Просто вставим как текст, если нет медиа
+                            content = cleaned;
+                        } else if (!content) {
                             const images = getImagesFromText(message.txt);
-                            if (images.length === 1) {
-                                content = renderMedia(images[0]);
-                            } else {
-                                const cleaned = cleanHtmlAroundUrls(message.txt);
-                                content = renderMessageText(cleaned);
+                            if (images.length === 1) content = renderMedia(images[0]);
+                            else {
+                                const cleaned = message.txt.replace(/<p>/g, '').replace(/<\/p>/g, '');
+                                content = cleaned;
                             }
                         }
+
+                        // ВАЖНО: Если content содержит HTML теги (например <b>), они должны рендериться.
+                        // Если content - это просто текст, он тоже вставится.
+                        const htmlBlock = `<br><div class="question-event"><span class="question-event-name">${name}</span><span class="question-event-date">${date}</span><div class="question-event-text"><br>${content}</div></div>`;
+
+                        // Используем insertAdjacentHTML
+                        document.getElementById('infofield').insertAdjacentHTML('beforeend', htmlBlock);
+
+                        setTimeout(() => {
+                            document.querySelectorAll('.chat-history-image').forEach(img => {
+                                if (!img.dataset.bound) {
+                                    img.dataset.bound = "1";
+                                    img.addEventListener('click', () => openImageViewerChatHistory(img.dataset.full));
+                                }
+                            });
+                        }, 50);
                     }
-
-                    // 3. Дополнительная обработка ссылок внутри текста (на случай если renderMessageText пропустил)
-                    // Но делаем это аккуратно, чтобы не сломать уже вставленные видео/аудио
-                    content = content.replace(/(https:\/\/vimbox-resource[^\s<>"']+\.(png|jpg|jpeg|gif|webp))/gi, (url) => {
-                        // Не заменяем, если это уже внутри тега img или video/audio
-                        if (content.includes(`src="${url}"`) || content.includes(`src='${url}'`)) return url;
-
-                        return `<img src="${url}" class="img-chat-history chat-history-image" data-full="${url}" style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">`;
-                    });
-
-                    // 4. Хайлайт имени пользователя (безопасная замена)
-                    // Используем функцию, которая не ломает HTML структуру
-                    content = highlightUserFullSafe(content);
-
-                    appendToInfoField(`
-                        <br>
-                        <div class="question-event">
-                            <span class="question-event-name">${name}</span>
-                            <span class="question-event-date">${date}</span>
-                            <div class="question-event-text"><br>${content}</div>
-                        </div>
-                    `);
-
-                    // 5. Вешаем обработчики клика (только на картинки)
-                    setTimeout(() => {
-                        document.querySelectorAll('.chat-history-image').forEach(img => {
-                            if (!img.dataset.bound) {
-                                img.dataset.bound = "1";
-                                img.addEventListener('click', () => {
-                                    openImageViewerChatHistory(img.dataset.full || img.src);
-                                });
-                            }
-                        });
-                    }, 50);
-
                 } else {
-                    // Обработка click-сообщений (кнопки)
-                    appendToInfoField(`
-                        <br>
-                        <div class="question-event">
-                            <span class="question-event-name">${convdata.channelUser.fullName}</span>
-                            <span class="question-event-date">${date}</span>
-                            <div class="question-event-text"><br>${message.click.clickLabel}</div>
-                        </div>
-                    `);
+                    appendToInfoField(`<br><div class="question-event"><span class="question-event-name">${convdata.channelUser.fullName}</span><span class="question-event-date">${date}</span><div class="question-event-text"><br>${message.click.clickLabel}</div></div>`);
                     setTimeout(() => {
                         document.querySelectorAll('.chat-history-image').forEach(img => {
                             if (!img.dataset.bound) {
                                 img.dataset.bound = "1";
-                                img.addEventListener('click', () => {
-                                    openImageViewerChatHistory(img.dataset.full);
-                                });
+                                img.addEventListener('click', () => openImageViewerChatHistory(img.dataset.full));
                             }
                         });
                     }, 50);
                 }
                 break;
-
 
             case "Event":
                 function handleAssignToOperatorEvent(message) {
@@ -460,7 +300,6 @@ function fillchatbox() { //функция наполнения элемента,
 
                 const msgpayload = message.payload || {};
                 const isEmptyPayload = Object.keys(msgpayload).length === 0;
-
                 const eventMapping = {
                     NewConversation: 'Начат новый диалог',
                     RunScenario: 'Сценарий запущен',
@@ -469,80 +308,44 @@ function fillchatbox() { //функция наполнения элемента,
                     FinishIntegration: 'Интеграция успешно отработала',
                     CreatedByOperator: `${getOperatorNameById(msgpayload.oid, "Оператор")} открыл(а) новый диалог`,
                     AssignToOperator: handleAssignToOperatorEvent(message),
-
                     CloseConversation: (() => {
-                        // 1. Автозакрытие по таймеру
-                        if (msgpayload.status !== 'ClosedByBot' && msgpayload.sender === 'userAnswerTimer') {
-                            return 'Диалог автоматически закрыт по отсутствию активности пользователя';
-                        }
-
-                        // 2. Закрыт оператором
-                        if (!isEmptyPayload && msgpayload.status !== 'ClosedByBot' && msgpayload.src !== 'delivery' && msgpayload.sender !== 'userAnswerTimer') {
-                            return `${getOperatorNameById(msgpayload.sender, "Оператор")} закрыл чат!`;
-                        }
-
-                        // 3. Закрыт рассылкой
-                        if (!isEmptyPayload && msgpayload.src === 'delivery') {
-                            return 'Диалог был закрыт рассылкой';
-                        }
-
-                        // 4. Пустой payload — возвращаем тип события
-                        if (isEmptyPayload) {
-                            return message.eventTpe;
-                        }
-
+                        if (msgpayload.status !== 'ClosedByBot' && msgpayload.sender === 'userAnswerTimer') return 'Диалог автоматически закрыт по отсутствию активности';
+                        if (!isEmptyPayload && msgpayload.status !== 'ClosedByBot' && msgpayload.src !== 'delivery' && msgpayload.sender !== 'userAnswerTimer') return `${getOperatorNameById(msgpayload.sender, "Оператор")} закрыл чат!`;
+                        if (!isEmptyPayload && msgpayload.src === 'delivery') return 'Диалог был закрыт рассылкой';
+                        if (isEmptyPayload) return message.eventTpe;
                         return '';
                     })()
                 };
-
-
                 const eventMsg = eventMapping[message.eventTpe] || '';
-                if (eventMsg) {
-                    appendToInfoField(`<div class="event-name">${eventMsg}<span class="event-other-date">${extractTime(message.ts)}</span></div>`);
-                }
-
+                if (eventMsg) appendToInfoField(`<div class="event-name">${eventMsg}<span class="event-other-date">${extractTime(message.ts)}</span></div>`);
                 break;
 
             case "AnswerOperatorWithBot":
             case "AnswerSystem":
             case "AnswerBot":
             case "AnswerChatterbox":
-                appendToInfoField(`
-                <br>
-                <div class="answer-bot-container">
-                    <span class="answer-bot-name">AutoFAQ bot</span>
-                    <span class="answer-bot-date">${date}</span>
-                    <div class="question-event-text"><br>${message.txt}</div>
-                </div>
-            `);
+                appendToInfoField(`<br><div class="answer-bot-container"><span class="answer-bot-name">AutoFAQ bot</span><span class="answer-bot-date">${date}</span><div class="question-event-text"><br>${message.txt}</div></div>`);
                 break;
 
             case "AnswerOperator":
                 const operatorName = getOperatorNameById(message.operatorId, "Оператор");
-                appendToInfoField(`
-                <br>
-                <div class="answer-oper-container">
-                    <span class="answer-oper-name">${operatorName}</span>
-                    <span class="question-event-date">${date}</span>
-                    <div class="question-event-text"><br>${message.txt}</div>
-                </div>
-            `);
+                appendToInfoField(`<br><div class="answer-oper-container"><span class="answer-oper-name">${operatorName}</span><span class="question-event-date">${date}</span><div class="question-event-text"><br>${message.txt}</div></div>`);
                 break;
 
             case "OperatorComment":
                 const commentName = message.operatorId !== 'autoFAQ' ? getOperatorNameById(message.operatorId, "Оператор") : message.operatorId;
-                appendToInfoField(`
-                <br>
-                <div class="oper-comment-container">
-                    <span class="oper-comment-name">${commentName}</span>
-                    <span class="question-event-date">${date}</span>
-                    <div class="question-event-text"><br>${message.txt}</div>
-                </div>
-            `);
+                appendToInfoField(`<br><div class="oper-comment-container"><span class="oper-comment-name">${commentName}</span><span class="question-event-date">${date}</span><div class="question-event-text"><br>${message.txt}</div></div>`);
                 break;
         }
     }
 }
+
+// Вспомогательная функция для вставки (чтобы не дублировать код)
+function appendToInfoField(html) {
+    document.getElementById('infofield').insertAdjacentHTML('beforeend', html);
+}
+
+
 
 function autoRenderMediaLinks(html) {
     const urlRegex = /(https:\/\/vimbox-resource[^\s<>"']+\.(png|jpg|jpeg|gif|webp))/gi;
