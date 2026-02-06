@@ -1775,3 +1775,11 @@
 		max-width: 200px;
 		height: auto;
 	}
+
+	.chat-history-image.zoom-in {
+		cursor: zoom-in;
+	}
+
+	.image-overlay {
+		cursor: zoom-out;
+	}

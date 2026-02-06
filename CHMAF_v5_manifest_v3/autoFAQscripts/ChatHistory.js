@@ -1,4 +1,20 @@
 let data = null;
+const DATE_OPTIONS = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric'
+};
+
+const TIME_OPTIONS = {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+};
+
+
 var win_Chathis =  // описание элементов окна Истории чатов
     `<div style="display: flex; width: 410px;">
         <span style="width: 410px">
@@ -78,6 +94,124 @@ wintChatHis.style.display = 'none';
 wintChatHis.setAttribute('id', 'AF_ChatHis');
 wintChatHis.innerHTML = win_Chathis;
 
+function normalizeChatImages(container) {
+    container.querySelectorAll('img').forEach(img => {
+        if (img.dataset.bound) return;
+
+        img.classList.add('chat-history-image', 'zoom-in');
+        img.style.cursor = 'zoom-in';
+
+        img.dataset.full = img.dataset.full || img.src;
+        img.dataset.bound = '1';
+
+        img.addEventListener('click', () => {
+            openImageViewerChatHistory(img.dataset.full);
+        });
+    });
+}
+
+function getImagesFromText(txt) {
+    const patterns = [/https:\/\/vimbox-resource.*jpg/gm, /https:\/\/vimbox-resource.*jpeg/gm, /https:\/\/vimbox-resource.*png/gm];
+    return patterns.flatMap(pattern => txt.match(pattern) || []);
+}
+
+// Функция для извлечения URL из <a href="...">
+function extractUrlFromHtml(htmlString) {
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlString, 'text/html');
+        const link = doc.querySelector('a');
+        if (link && link.href) return link.href;
+    } catch (e) { }
+    const match = htmlString.match(/href="([^"]+)"/);
+    if (match) return match[1];
+    return null;
+}
+
+function openImageViewerChatHistory(src) {
+    const overlay = document.createElement('div');
+    overlay.style = `position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 999999; cursor: zoom-out;`;
+    const img = document.createElement('img');
+    img.src = src;
+    img.style = `max-width: 90%; max-height: 90%; border-radius: 10px; box-shadow: 0 0 25px rgba(0,0,0,0.6);`;
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+    overlay.onclick = () => overlay.remove();
+}
+
+function renderMedia(url) {
+    const lower = url.toLowerCase();
+    if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
+        return `<img src="${url}" class="img-chat-history chat-history-image" data-full="${url}" style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">`;
+    }
+    if (lower.match(/\.(mp4|mov|mkv|webm)$/)) {
+        return `<video src="${url}" controls style="max-width:300px;margin:6px 0;border-radius:6px;"></video>`;
+    }
+    if (lower.match(/\.(mp3|wav|ogg|oga)$/)) {
+        return `<audio src="${url}" controls style="width:300px;margin:6px 0;"></audio>`;
+    }
+    return `<a href="${url}" target="_blank">${url}</a>`;
+}
+
+// Функция для безопасной вставки HTML (убирает экранирование)
+function insertHtmlSafely(htmlString) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    // Берем body и вставляем его содержимое
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = doc.body.innerHTML;
+    return tempDiv;
+}
+
+// ФУНКЦИЯ ДЛЯ ПОИСКА ОПЕРАТОРА (ПЕРЕМЕЩЕНА ВВЕРХ)
+function getOperatorNameById(operatorId, defaultName) {
+    const operator = operatorsarray.find(op => op.operator && op.operator.id === operatorId);
+    return (operator && operator.operator.fullName) || defaultName;
+}
+
+function extractDate(ts) {
+    return new Date(ts).toLocaleDateString('ru-RU', DATE_OPTIONS);
+}
+
+function extractTime(ts) {
+    return new Date(ts).toLocaleTimeString('ru-RU', TIME_OPTIONS);
+}
+
+function renderMessageHtmlWithMedia(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const fragment = document.createDocumentFragment();
+
+    doc.body.childNodes.forEach(node => {
+        // <p>https://....png</p>
+        if (
+            node.nodeType === 1 &&
+            node.tagName === 'P'
+        ) {
+            const text = node.textContent.trim();
+            if (text.match(/\.(png|jpg|jpeg|gif|webp)$/i)) {
+                const img = document.createElement('img');
+                img.src = text;
+                img.className = 'chat-history-image zoom-in';
+                img.style = 'max-width:200px;border-radius:6px;margin:6px 0;cursor:zoom-in';
+                img.dataset.full = text;
+                fragment.appendChild(img);
+                return;
+            }
+        }
+
+        // всё остальное — как есть
+        fragment.appendChild(node.cloneNode(true));
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(fragment);
+    return wrapper.innerHTML;
+}
+
+
+
+
 function fillchatbox() {
     const groupIdToSection = {
         'c7bbb211-a217-4ed3-8112-98728dc382d8': 'ТП',
@@ -89,12 +223,10 @@ function fillchatbox() {
         document.getElementById('infofield').setAttribute('opsetction', groupIdToSection[convdata.groupId]);
     }
 
+
     const now = new Date();
     document.getElementById('infofield').setAttribute('openhistorytime', now.toISOString());
     document.getElementById('infofield').innerHTML = '';
-
-    let options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
-    let options2 = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
 
     const user = convdata.channelUser;
     const payload = user.payload || {};
@@ -116,67 +248,7 @@ function fillchatbox() {
 
     // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
-    function extractDate(ts) { return new Date(ts).toLocaleDateString('ru-RU', options); }
-    function extractTime(ts) { return new Date(ts).toLocaleTimeString('ru-RU', options2); }
 
-    function getImagesFromText(txt) {
-        const patterns = [/https:\/\/vimbox-resource.*jpg/gm, /https:\/\/vimbox-resource.*jpeg/gm, /https:\/\/vimbox-resource.*png/gm];
-        return patterns.flatMap(pattern => txt.match(pattern) || []);
-    }
-
-    // Функция для извлечения URL из <a href="...">
-    function extractUrlFromHtml(htmlString) {
-        try {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlString, 'text/html');
-            const link = doc.querySelector('a');
-            if (link && link.href) return link.href;
-        } catch (e) { }
-        const match = htmlString.match(/href="([^"]+)"/);
-        if (match) return match[1];
-        return null;
-    }
-
-    function openImageViewerChatHistory(src) {
-        const overlay = document.createElement('div');
-        overlay.style = `position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 999999; cursor: zoom-out;`;
-        const img = document.createElement('img');
-        img.src = src;
-        img.style = `max-width: 90%; max-height: 90%; border-radius: 10px; box-shadow: 0 0 25px rgba(0,0,0,0.6);`;
-        overlay.appendChild(img);
-        document.body.appendChild(overlay);
-        overlay.onclick = () => overlay.remove();
-    }
-
-    function renderMedia(url) {
-        const lower = url.toLowerCase();
-        if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
-            return `<img src="${url}" class="img-chat-history chat-history-image" data-full="${url}" style="max-width:200px;cursor:zoom-in;border-radius:6px;margin:6px 0;">`;
-        }
-        if (lower.match(/\.(mp4|mov|mkv|webm)$/)) {
-            return `<video src="${url}" controls style="max-width:300px;margin:6px 0;border-radius:6px;"></video>`;
-        }
-        if (lower.match(/\.(mp3|wav|ogg|oga)$/)) {
-            return `<audio src="${url}" controls style="width:300px;margin:6px 0;"></audio>`;
-        }
-        return `<a href="${url}" target="_blank">${url}</a>`;
-    }
-
-    // Функция для безопасной вставки HTML (убирает экранирование)
-    function insertHtmlSafely(htmlString) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlString, 'text/html');
-        // Берем body и вставляем его содержимое
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = doc.body.innerHTML;
-        return tempDiv;
-    }
-
-    // ФУНКЦИЯ ДЛЯ ПОИСКА ОПЕРАТОРА (ПЕРЕМЕЩЕНА ВВЕРХ)
-    function getOperatorNameById(operatorId, defaultName) {
-        const operator = operatorsarray.find(op => op.operator && op.operator.id === operatorId);
-        return (operator && operator.operator.fullName) || defaultName;
-    }
 
     // --- ОСНОВНОЙ ЦИКЛ ---
     for (let i = convdata.messages.length - 1; i >= 0; i--) {
@@ -242,12 +314,8 @@ function fillchatbox() {
                             else if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) content = renderMedia(url);
                         }
 
-                        if (!content && testarray) {
-                            // Очищаем HTML от <p> тегов, но оставляем содержимое
-                            const cleaned = message.txt.replace(/<p>/g, '').replace(/<\/p>/g, '');
-                            // Тут нужна функция renderMessageText, но давайте упростим для надежности
-                            // Просто вставим как текст, если нет медиа
-                            content = cleaned;
+                        if (!content && message.txt.includes('<p>')) {
+                            content = renderMessageHtmlWithMedia(message.txt);
                         } else if (!content) {
                             const images = getImagesFromText(message.txt);
                             if (images.length === 1) content = renderMedia(images[0]);
@@ -263,6 +331,8 @@ function fillchatbox() {
 
                         // Используем insertAdjacentHTML
                         document.getElementById('infofield').insertAdjacentHTML('beforeend', htmlBlock);
+                        normalizeChatImages(document.getElementById('infofield'));
+
 
                         setTimeout(() => {
                             document.querySelectorAll('.chat-history-image').forEach(img => {
