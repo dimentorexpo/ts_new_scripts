@@ -27,6 +27,14 @@ const timeOptions = {
     // second: 'numeric'
 };
 
+const categoryMap = [
+    { key: "Категория: Техподдержка 2-я линия crm2", label: "2ЛТП" },
+    { key: "Категория: Техподдержка исход crm2", label: "ТП исход" },
+    { key: "Категория: Teachers Care crm2", label: "Teachers Care" },
+    { key: "Категория: Исходящие звонки (crm2)", label: "Исходящие звонки (crm2)" }
+];
+
+
 const themes = [
     // --- SYSTEM ---
     { value: "parseallthemes", label: "ALL", style: "background-color:#69b930; color:white; font-weight:700; text-align:center" },
@@ -1419,6 +1427,8 @@ document.getElementById('stargrab').onclick = async function () {
         document.getElementById('CSATFilterField').style.display = "none"
     }
 
+    const criticalChats = new Map();   // хранит только уникальные r.id
+
     document.getElementById('GatherStatByThemes').setAttribute('disabled', '')
 
     document.getElementById('foundcount').innerHTML = ''
@@ -1523,7 +1533,6 @@ document.getElementById('stargrab').onclick = async function () {
 
             if (!opgrdata || !opgrdata.items) break;
 
-
             for (const el of opgrdata.items) {
 
                 // CSAT фильтр
@@ -1571,9 +1580,25 @@ document.getElementById('stargrab').onclick = async function () {
 
                 // тест поиска
                 for (const msg of r.messages) {
-                    if (msg.tpe === "OperatorComment" && msg.txt.includes("Высокий")) {
-                        console.log(r.id, '-', msg.txt);
-                    }
+                    if (msg.tpe !== "OperatorComment") continue;
+                    if (!msg.txt.includes("Критичность: Высокий")) continue;
+
+                    // ищем категорию
+                    const found = categoryMap.find(c => msg.txt.includes(c.key));
+                    const label = found ? found.label : "Кризис менеджмент";
+
+                    // формируем объект
+                    const entry = {
+                        id: r.id,
+                        label,
+                        text: label === "ТП исход" ? msg.txt : ""   // текст только для ТП исход
+                    };
+
+                    // записываем в Map (перезапись не страшна — данные одинаковые)
+                    criticalChats.set(r.id, entry);
+
+                    // вывод в консоль по ходу
+                    //console.log(r.id, "-", label, entry.text ? ("- " + entry.text) : "");
                 }
             }
 
@@ -1584,6 +1609,9 @@ document.getElementById('stargrab').onclick = async function () {
         progressBar.style.width = currentWidth.toFixed(1) + "%";
         progressBar.textContent = currentWidth.toFixed(1) + "%";
     }
+
+    console.log("=== Итоговый список чатов с высоким приоритетом ===");
+    console.table([...criticalChats.values()]);
 
 
     // const cleanedarray = operstagsarray.map(element => element.trim().slice(2, -2).trim().replace(/"/g, '').replace(/\n /,''));
