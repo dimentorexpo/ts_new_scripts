@@ -9,6 +9,183 @@ let countsCountryArray = [];
 let countsArrayInterval = [];
 let isDescending;
 let testarray = [];
+const timeOptions = {
+    timeZone: 'Europe/Moscow',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric'
+    // second: 'numeric'
+};
+
+const themes = [
+    // --- SYSTEM ---
+    { value: "parseallthemes", label: "ALL", style: "background-color:#69b930; color:white; font-weight:700; text-align:center" },
+    { value: "parsenothemes", label: "Without themes", style: "background-color:coral; color:white; font-weight:700; text-align:center" },
+
+    // --- Skyeng Mob ---
+    { group: "skmob", label: "Skyeng👨‍🎓Mob" },
+    { value: "1804", label: "📱‍👨‍🎓Авторизация" },
+    { value: "1805", label: "📱‍👨‍🎓Домашка" },
+    { value: "1806", label: "📱‍👨‍🎓Оплата" },
+    { value: "1807", label: "📱‍👨‍🎓Профиль" },
+    { value: "1808", label: "📱‍👨‍🎓Тренажер слов" },
+    { value: "1809", label: "📱‍👨‍🎓Уроки" },
+    { value: "1810", label: "📱‍👨‍🎓Чат" },
+
+    // --- Teachers Mob ---
+    { group: "tmob", label: "Teachers👽Mob" },
+    { value: "1833", label: "📱👽Авторизация" },
+    { value: "1836", label: "📱👽Виджет расписания" },
+    { value: "1839", label: "📱👽Чат" },
+    { value: "1835", label: "📱👽Виджет финансов" },
+    { value: "1838", label: "📱👽Профиль" },
+    { value: "1840", label: "📱👽3Сторис" },
+    { value: "1837", label: "📱👽Страница расписания" },
+    { value: "1834", label: "📱👽Страница финансов" },
+
+    // --- Skysmart Parents App ---
+    { group: "sksmpartapp", label: "Skysmart👪родит" },
+    { value: "1884", label: "📱👪Другое" },
+    { value: "1883", label: "📱👪Материалы" },
+    { value: "1880", label: "📱👪Предметы и баланс" },
+    { value: "1881", label: "📱👪Профиль родителя" },
+    { value: "1879", label: "📱👪Расписание" },
+    { value: "1882", label: "📱👪Чат" },
+
+    // --- Skypro App ---
+    { group: "skyproapp", label: "Приложение Skypro" },
+    { value: "1904", label: "Skypro App - Виджет входа на урок" },
+
+    // --- Different ---
+    { group: "solanka", label: "Different" },
+    { value: "2034", label: "🚫Прочее" },
+    { value: "2030", label: "ⓂSlack-проблемы со входом" },
+    { value: "69", label: "☎Проблемы с телефонией" },
+
+    // --- Payment ---
+    { group: "payf", label: "Проблемы с оплатой" },
+    { value: "1077", label: "💳Вина школы" },
+    { value: "1658", label: "💳Консультация" },
+    { value: "1661", label: "💳Карта У" },
+    { value: "1662", label: "💳Сбой оплаты" },
+    { value: "1660", label: "💳Подписки" },
+
+    // --- Homework ---
+    { group: "hwtr", label: "Проблемы с ДЗ" },
+    { value: "1744", label: "💼Контент" },
+    { value: "1745", label: "💼Оценка" },
+    { value: "1746", label: "💼Словарь" },
+    { value: "1747", label: "💼Упражнение" },
+
+    // --- Connection ---
+    { group: "svyaz", label: "Проблемы связь" },
+    { value: "1581", label: "💻ОС/брауз ниж мин" },
+    { value: "1589", label: "💻Консультация работы связи" },
+    { value: "1582", label: "💻Корп сеть/ус-во" },
+    { value: "1583", label: "💻ОС/браузер" },
+    { value: "1586", label: "💻ПК" },
+    { value: "1584", label: "💻Гарнитура" },
+    { value: "1585", label: "💻Камера" },
+    { value: "1580", label: "💻Блокировалось ПО" },
+    { value: "1594", label: "💻Не подерж браузер" },
+    { value: "1595", label: "💻Не подерж камера гарнитура пк" },
+    { value: "1593", label: "💻Сбой платф" },
+    { value: "1592", label: "💻Сб задерж кам" },
+    { value: "1587", label: "💻Инет ниж мин" },
+    { value: "1590", label: "💻Сб плат блок прерыв связь" },
+    { value: "1588", label: "💻Хар ниж мин" },
+    { value: "1591", label: "💻Сб задерж звука" },
+
+    // --- LKP ---
+    { group: "lkp", label: "Проблемы ЛКП" },
+    { value: "1721", label: "👽ЛКП - Группа" },
+    { value: "1714", label: "👽ЛКП - Чат" },
+    { value: "1719", label: "👽ЛКП - Финансы" },
+    { value: "1717", label: "👽ЛКП - Упражнения" },
+    { value: "1712", label: "👽ЛКП - Карта роста" },
+    { value: "1716", label: "👽ЛКП - Настройки" },
+    { value: "1718", label: "👽ЛКП - Перерыв" },
+    { value: "1715", label: "👽ЛКП - Профиль" },
+    { value: "1720", label: "👽ЛКП - Работы на проверку" },
+    { value: "1713", label: "👽ЛКП - Расписание" },
+
+    // --- LKU ---
+    { group: "lku", label: "Проблемы ЛКУ" },
+    { value: "1708", label: "👨‍🎓ЛКУ - Чат" },
+    { value: "1710", label: "👨‍🎓ЛКУ - Профиль" },
+    { value: "1706", label: "👨‍🎓ЛКУ - Виджет прогресса" },
+    { value: "1707", label: "👨‍🎓ЛКУ - История занятий/портфолио" },
+    { value: "1709", label: "👨‍🎓ЛКУ - Семья" },
+    { value: "1711", label: "👨‍🎓ЛКУ - Настройки" },
+    { value: "1705", label: "👨‍🎓ЛКУ - Навыки" },
+    { value: "1704", label: "👨‍🎓ЛКУ - Грамматика" },
+
+    // --- Login Problems ---
+    { group: "problvh", label: "Проблемы вход" },
+    { value: "1632", label: "🔐Не привяз почт/тел" },
+    { value: "1635", label: "🔐Данные для входа" },
+    { value: "1634", label: "🔐Сброс пароля" },
+    { value: "1631", label: "🔐Консультация авторизации" },
+    { value: "1633", label: "🔐Сбой авторизации" },
+
+    // --- Subscription / Access ---
+    { group: "problpodk", label: "Проблемы подкл" },
+    { value: "1624", label: "🔌Истекла подписка" },
+    { value: "1627", label: "🔌Консультациия" },
+    { value: "1629", label: "🔌Нет кнопки входа" },
+    { value: "1628", label: "🔌У не в ГУ" },
+    { value: "1625", label: "🔌Ур в др вр" },
+    { value: "1626", label: "🔌У отпуск" },
+    { value: "1630", label: "🔌Неактивна кнопка входа" },
+
+    // --- Lesson Functionality ---
+    { group: "lesfunc", label: "Функционал урок" },
+    { value: "1772", label: "👨‍🎓STT" },
+    { value: "1773", label: "👽TTT" },
+    { value: "1767", label: "📎Вложения" },
+    { value: "1771", label: "🖥Демонстрация экр" },
+    { value: "1768", label: "⌨Доска" },
+    { value: "2037", label: "📝Заметки" },
+    { value: "1775", label: "💨Отправка ДЗ на уроке" },
+    { value: "1770", label: "🔀Перекл материалов" },
+    { value: "1776", label: "🎵/📽Ауд/вид плеер" },
+    { value: "1769", label: "📙Словарь на уроке" },
+    { value: "1774", label: "🎯Упражнения на уроке" },
+
+    // --- Feedback ---
+    { group: "feedbk", label: "Отзывы и пожел" },
+    { value: "1970", label: "💭Vim-контент" },
+    { value: "1971", label: "💭Vim-оценка" },
+    { value: "1972", label: "💭Vim-словарь" },
+    { value: "1973", label: "💭Vim-упражнения" },
+    { value: "1966", label: "💭ЛК-ОС род" },
+    { value: "1965", label: "💭ЛК-перенос отмена ур" },
+    { value: "1967", label: "💭ЛК-профиль" },
+    { value: "1968", label: "💭ЛК-семья" },
+    { value: "1969", label: "💭ЛК чат" },
+    { value: "1974", label: "💭App Skyeng" },
+    { value: "1975", label: "💭App Teachers" },
+    { value: "1979", label: "💭App Skypro" },
+    { value: "1976", label: "💭App класс" },
+    { value: "1977", label: "💭App решения" },
+    { value: "1978", label: "💭App Skysmart род" },
+    { value: "1980", label: "💭Прочее" },
+
+    // --- CC Themes ---
+    { group: "difCCthemes", label: "Разные тематики с КЦ" },
+    { value: "479", label: "💰КЦ-Проблемы с оплатой" },
+    { value: "63", label: "💻КЦ-Нет видео или звука" },
+    { value: "68", label: "📍КЦ-Другие тех проблемы" },
+    { value: "66", label: "💼КЦ-ДЗ и вирт класс" },
+    { value: "109", label: "💼КЦ-Сброс" },
+    { value: "73", label: "🏝КЦ-Отпуск У" },
+    { value: "107", label: "📱КЦ-Проч обр по Skyeng App" },
+    { value: "1249", label: "💋КЦ-Talks" },
+    { value: "2426", label: "Запланирована связь с пользователем" }
+];
+
 // let convDurationArr=[];
 var win_Grabber =  // описание элементов окна Grabber
     `<div style="display: flex; width: 960px;">
@@ -94,140 +271,8 @@ var win_Grabber =  // описание элементов окна Grabber
 							</div>
 
 						<div style="padding-bottom: 5px;">
-								<select id="ThemesToSearch" class="${exttheme}" style="margin-left:150px; margin-top:10px;">
-									<option style="background-color:#69b930; text-align: center;  color: white; font-weight: 700;" value="parseallthemes">ALL</option>
-									<option style="background-color:coral; text-align: center;  color: white; font-weight: 700;" value="parsenothemes">Without themes</option>
-									<option class="${selecttheme}" value="skmob">Skyeng👨‍🎓Mob</option>
-									<option value="1804">📱‍👨‍🎓Авторизация</option>
-									<option value="1805">📱‍👨‍🎓Домашка</option>
-									<option value="1806">📱‍👨‍🎓Оплата</option>
-									<option value="1807">📱‍👨‍🎓Профиль</option>
-									<option value="1808">📱‍👨‍🎓Тренажер слов</option>
-									<option value="1809">📱‍👨‍🎓Уроки</option>
-									<option value="1810">📱‍👨‍🎓Чат</option>
-									<option class="${selecttheme}" value="tmob">Teachers👽Mob</option>
-                                    <option value="1833">📱👽Авторизация</option>
-									<option value="1836">📱👽Виджет расписания</option>
-									<option value="1839">📱👽Чат</option>
-									<option value="1835">📱👽Виджет финансов</option>
-									<option value="1838">📱👽Профиль</option>
-									<option value="1840">📱👽3Сторис</option>
-									<option value="1837">📱👽Страница расписания</option>
-									<option value="1834">📱👽Страница финансов</option>
-									<option class="${selecttheme}" value="sksmpartapp">Skysmart👪родит</option>
-                                    <option value="1884">📱👪Другое</option>
-									<option value="1883">📱👪Материалы</option>
-									<option value="1880">📱👪Предметы и баланс</option>
-									<option value="1881">📱👪Профиль родителя</option>
-									<option value="1879">📱👪Расписание</option>
-									<option value="1882">📱👪Чат</option>
-									<option class="${selecttheme}" value="skyproapp">Приложение Skypro</option>
-                                    <option value="1904">Skypro App - Виджет входа на урок</option>
-									<option class="${selecttheme}" value="solanka">Different</option>
-                                    <option value="2034">🚫Прочее</option>
-									<option value="2030">ⓂSlack-проблемы со входом</option>
-									<option value="69">☎Проблемы с телефонией</option>
-									<option class="${selecttheme}" value="payf">Проблемы с оплатой</option>
-                                    <option value="1077">💳Вина школы</option>
-									<option value="1658">💳Консультация</option>
-									<option value="1661">💳Карта У</option>
-									<option value="1662">💳Сбой оплаты</option>
-									<option value="1660">💳Подписки</option>
-									<option class="${selecttheme}" value="hwtr">Проблемы с ДЗ</option>
-                                    <option value="1744">💼Контент</option>
-									<option value="1745">💼Оценка</option>
-									<option value="1746">💼Словарь</option>
-									<option value="1747">💼Упражнение</option>
-									<option class="${selecttheme}" value="svyaz">Проблемы связь</option>
-                                    <option value="1581">💻ОС/брауз ниж мин</option>
-									<option value="1589">💻Консультация работы связи</option>
-									<option value="1582">💻Корп сеть/ус-во</option>
-									<option value="1583">💻ОС/браузер</option>
-                                    <option value="1586">💻ПК</option>
-									<option value="1584">💻Гарнитура</option>
-									<option value="1585">💻Камера</option>
-									<option value="1580">💻Блокировалось ПО</option>
-									<option value="1594">💻Не подерж браузер</option>
-									<option value="1595">💻Не подерж камера гарнитура пк</option>
-                                    <option value="1593">💻Сбой платф</option>
-									<option value="1592">💻Сб задерж кам</option>
-									<option value="1587">💻Инет ниж мин</option>
-									<option value="1590">💻Сб плат блок прерыв связь</option>
-									<option value="1588">💻Хар ниж мин</option>
-									<option value="1591">💻Сб задерж звука</option>
-									<option class="${selecttheme}" value="lkp">Проблемы ЛКП</option>
-                                    <option value="1721">👽ЛКП - Группа</option>
-									<option value="1714">👽ЛКП - Чат</option>
-									<option value="1719">👽ЛКП - Финансы</option>
-									<option value="1717">👽ЛКП - Упражнения</option>
-                                    <option value="1712">👽ЛКП - Карта роста</option>
-									<option value="1716">👽ЛКП - Настройки</option>
-									<option value="1718">👽ЛКП - Перерыв</option>
-									<option value="1715">👽ЛКП - Профиль</option>
-									<option value="1720">👽ЛКП - Работы на проверку</option>
-									<option value="1713">👽ЛКП - Расписание</option>
-									<option class="${selecttheme}" value="lku">Проблемы ЛКУ</option>
-                                    <option value="1708">👨‍🎓ЛКУ - Чат</option>
-									<option value="1710">👨‍🎓ЛКУ - Профиль</option>
-									<option value="1706">👨‍🎓ЛКУ - Виджет прогресса</option>
-									<option value="1707">👨‍🎓ЛКУ - История занятий/портфолио</option>
-                                    <option value="1709">👨‍🎓ЛКУ - Семья</option>
-									<option value="1711">👨‍🎓ЛКУ - Настройки</option>
-									<option value="1705">👨‍🎓ЛКУ - Навыки</option>
-									<option value="1704">👨‍🎓ЛКУ - Грамматика</option>
-									<option class="${selecttheme}" value="problvh">Проблемы вход</option>
-                                    <option value="1632">🔐Не привяз почт/тел</option>
-									<option value="1635">🔐Данные для входа</option>
-									<option value="1634">🔐Сброс пароля</option>
-									<option value="1631">🔐Консультация авторизации</option>
-                                    <option value="1633">🔐Сбой авторизации</option>
-									<option class="${selecttheme}" value="problpodk">Проблемы подкл</option>
-                                    <option value="1624">🔌Истекла подписка</option>
-									<option value="1627">🔌Консультациия</option>
-									<option value="1629">🔌Нет кнопки входа</option>
-									<option value="1628">🔌У не в ГУ</option>
-                                    <option value="1625">🔌Ур в др вр</option>
-									<option value="1626">🔌У отпуск</option>
-                                    <option value="1630">🔌Неактивна кнопка входа</option>
-									<option class="${selecttheme}" value="lesfunc">Функционал урок</option>
-                                    <option value="1772">👨‍🎓STT</option>
-									<option value="1773">👽TTT</option>
-									<option value="1767">📎Вложения</option>
-									<option value="1771">🖥Демонстрация экр</option>
-                                    <option value="1768">⌨Доска</option>
-									<option value="2037">📝Заметки</option>
-                                    <option value="1775">💨Отправка ДЗ на уроке</option>
-                                    <option value="1770">🔀Перекл материалов</option>
-									<option value="1776">🎵/📽Ауд/вид плеер</option>
-                                    <option value="1769">📙Словарь на уроке</option>
-                                    <option value="1774">🎯Упражнения на уроке</option>
-									<option class="${selecttheme}" value="feedbk">Отзывы и пожел</option>
-                                    <option value="1970">💭Vim-контент</option>
-									<option value="1971">💭Vim-оценка</option>
-									<option value="1972">💭Vim-словарь</option>
-									<option value="1973">💭Vim-упражнения</option>
-                                    <option value="1966">💭ЛК-ОС род</option>
-									<option value="1965">💭ЛК-перенос отмена ур</option>
-                                    <option value="1967">💭ЛК-профиль</option>
-                                    <option value="1968">💭ЛК-семья</option>
-									<option value="1969">💭ЛК чат</option>
-                                    <option value="1974">💭App Skyeng</option>
-                                    <option value="1975">💭App Teachers</option>
-                                    <option value="1979">💭App Skypro</option>
-                                    <option value="1976">💭App класс</option>
-									<option value="1977">💭App решения</option>
-                                    <option value="1978">💭App Skysmart род</option>
-                                    <option value="1980">💭Прочее</option>
-									<option class="${selecttheme}" value="difCCthemes">Разные тематики с КЦ</option>
-									<option value="479">💰КЦ-Проблемы с оплатой</option>
-									<option value="63">💻КЦ-Нет видео или звука</option>
-									<option value="68">📍КЦ-Другие тех проблемы</option>
-									<option value="66">💼КЦ-ДЗ и вирт класс</option>
-									<option value="109">💼КЦ-Сброс</option>
-									<option value="73">🏝КЦ-Отпуск У</option>
-									<option value="107">📱КЦ-Проч обр по Skyeng App</option>
-									<option value="1249">💋КЦ-Talks</option>
-                                    </select>
+                        <select id="ThemesToSearch" class="${exttheme}" style="margin-left:150px; margin-top:10px;"></select>
+
                                <button class="mainButton" style=" title="ищет чаты по тематике" id="stargrab">Find</button>
 							   	<button class="mainButton" id="webtoCSV">💾 Download CSV</button>
 						</div>
@@ -379,6 +424,20 @@ function saveFilteredTableCSV() {
 }
 
 function getopenGrabberButtonPress() {
+    const select = document.getElementById("ThemesToSearch");
+    select.innerHTML = "";
+
+    themes.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t.value || t.group;
+        opt.textContent = t.label;
+
+        if (t.style) opt.style = t.style;
+        if (t.group) opt.className = selecttheme;
+
+        select.appendChild(opt);
+    });
+
     let parseThemesAndVals = document.getElementById('ThemesToSearch')
     for (let i = 0; i < parseThemesAndVals.length; i++) {
         themesarray.push({ value: parseThemesAndVals[i].value, ThemeName: parseThemesAndVals[i].textContent });
@@ -1316,8 +1375,46 @@ let chatswithmarksarray = [];
 let checkmarksarr = [];
 let operstagsarray = [];
 let keyMatch = "Высокий"
-document.getElementById('stargrab').onclick = async function () {
 
+async function getChat(id) {
+    const r = await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, {
+        headers: { "x-csrf-token": aftoken }
+    });
+    return r.json();
+}
+
+
+function pushPayload({ r, duration, operatorName, csat, themeName }) {
+    const isActive = duration === undefined;
+
+    payloadarray.push({
+        ChatId: r.id,
+        OperatorName: operatorName,
+        timeStamp: isActive
+            ? "Active chat, ⏳"
+            : new Date(+r.tsCreate + duration).toLocaleString('ru-RU', timeOptions),
+        CSAT: csat,
+        ThemeValue: themeName || (r.payload.topicId?.value ? '' : '⁉No theme'),
+        SLACompleted: isActive ? "undefined" : ((duration / 1000 / 60) > 25 ? "0" : "1"),
+        Country: r.channelUser?.payload?.country || "-"
+    });
+}
+
+function pushTags(r) {
+    operstagsarray.push({
+        ChatId: r.id,
+        Tags: r.payload?.tags?.value || ''
+    });
+}
+
+function themeMatches(r, chosen) {
+    if (chosen === "parseallthemes") return true;
+    if (chosen === "parsenothemes") return r.payload.topicId?.value === '';
+    return r.payload.topicId?.value === chosen;
+}
+
+
+document.getElementById('stargrab').onclick = async function () {
 
     if (document.getElementById('CSATFilterField').style.display == "") {
         document.getElementById('CSATFilterField').style.display = "none"
@@ -1330,15 +1427,7 @@ document.getElementById('stargrab').onclick = async function () {
     document.getElementById('avgSLAClosedData').innerHTML = ''
     operstagsarray = [];
     arrofthemes = [];
-    const timeOptions = {
-        timeZone: 'Europe/Moscow',
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric'
-        // second: 'numeric'
-    };
+
 
     // document.getElementById('themesgrabbeddata').innerHTML = '';
     document.getElementById('themesgrabbeddata').innerHTML = '⏳ Загрузка...'
@@ -1412,250 +1501,91 @@ document.getElementById('stargrab').onclick = async function () {
     for (let i = 0; i < chekopersarr.length; i++) {
         tmponlyoperhashes = [];
         page = 1;
+
         do {
-            await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                headers: {
-                    "content-type": "application/json",
-                    "x-csrf-token": aftoken
-                },
-                body: `{\"serviceId\":\"361c681b-340a-4e47-9342-c7309e27e7b5\",\"mode\":\"Json\",\"participatingOperatorsIds\":[\"${chekopersarr[i]}\"],\"tsFrom\":\"${leftDateFromGrab}\",\"tsTo\":\"${rightDateToGrab}\",\"orderBy\":\"ts\",\"orderDirection\":\"Asc\",\"page\":${page},\"limit\":100}`,
+            const body = {
+                serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
+                mode: "Json",
+                participatingOperatorsIds: [chekopersarr[i]],
+                tsFrom: leftDateFromGrab,
+                tsTo: rightDateToGrab,
+                orderBy: "ts",
+                orderDirection: "Asc",
+                page,
+                limit: 100
+            };
+
+            opgrdata = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
                 method: "POST",
-                mode: "cors",
+                headers: { "content-type": "application/json", "x-csrf-token": aftoken },
+                body: JSON.stringify(body),
                 credentials: "include"
-            })
-                .then(r => r.json()).
-                then(r => opgrdata = r)
+            }).then(r => r.json());
 
-            // newarray = [];
-            // newarray = [...opgrdata.items].map(el => el.conversationId)
+            if (!opgrdata || !opgrdata.items) break;
 
-            const items = opgrdata.items;
-            for (let k = 0; k < items.length; k++) {
-                const el = items[k];
-                if (markscheklist[5].checked === false) { // Если "No marks" не выбрана
-                    if (el.stats.rate.rate !== undefined && checkmarksarr.includes(el.stats.rate.rate)) {
-                        const obj = {
-                            ConvId: el.conversationId,
-                            Rate: el.channel.name === "Telegram techsup acquisition" ? "-" : el.stats.rate.rate
-                        };
-                        chatswithmarksarray.push(obj);
-                    }
-                } else { // Если выбрана "No marks"
-                    if (el.stats.rate.rate === undefined || checkmarksarr.includes(el.stats.rate.rate)) {
-                        const obj = {
-                            ConvId: el.conversationId,
-                            Rate: el.channel.name === "Telegram techsup acquisition" ? "-" : el.stats.rate.rate
-                        };
-                        chatswithmarksarray.push(obj);
-                    }
+
+            for (const el of opgrdata.items) {
+
+                // CSAT фильтр
+                const rate = el.stats.rate.rate;
+                const csatAllowed = markscheklist[5].checked
+                    ? (rate === undefined || checkmarksarr.includes(rate))
+                    : (rate !== undefined && checkmarksarr.includes(rate));
+
+                if (csatAllowed) {
+                    chatswithmarksarray.push({
+                        ConvId: el.conversationId,
+                        Rate: rate
+                    });
                 }
 
-                if (items[k].operatorId == chekopersarr[i]) {
-                    tmponlyoperhashes.push({ HashId: el.conversationId, Duration: el.stats.conversationDuration })
+                // Хэши оператора
+                if (el.operatorId === chekopersarr[i]) {
+                    tmponlyoperhashes.push({
+                        HashId: el.conversationId,
+                        Duration: el.stats.conversationDuration
+                    });
                 }
             }
 
-            for (let j = 0; j < tmponlyoperhashes.length; j++) {
-                const conversationId = tmponlyoperhashes[j].HashId;
-                const matchedItem = chatswithmarksarray.find(item => item.ConvId === conversationId);
+            // Обработка каждого чата
+            for (const chat of tmponlyoperhashes) {
+                const matched = chatswithmarksarray.find(x => x.ConvId === chat.HashId);
+                if (!matched) continue;
 
-                if (matchedItem) {
-                    const csat = matchedItem.Rate;
-                    if (chosentheme !== "parseallthemes" && chosentheme !== "parsenothemes") {
-                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + conversationId, { "headers": { "x-csrf-token": aftoken } })
-                            .then(r => r.json())
-                            .then(r => {
-                                if (r.payload.topicId && r.payload.topicId.value === chosentheme && tmponlyoperhashes[j].Duration != undefined) {
+                const r = await getChat(chat.HashId);
+                searchTeachersAndRates(main = r);
 
-                                    //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
-                                    //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
+                if (!themeMatches(r, chosentheme)) continue;
 
-                                    searchTeachersAndRates(main = r)
+                pushTags(r);
 
-                                    payloadarray.push({
-                                        ChatId: conversationId,
-                                        OperatorName: namespisochek[i],
-                                        timeStamp: new Date(+r.tsCreate + tmponlyoperhashes[j].Duration).toLocaleString('ru-RU', timeOptions),
-                                        CSAT: csat,
-                                        ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
-                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
-                                        Country: r.channelUser.payload.country ? r.channelUser.payload.country : "-"
-                                    });
+                const themeName = themesarray.find(t => t.value === r.payload.topicId?.value)?.ThemeName;
+                pushPayload({
+                    r,
+                    duration: chat.Duration,
+                    operatorName: namespisochek[i],
+                    csat: matched.Rate,
+                    themeName
+                });
 
-                                    operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
-
-                                } else if (r.payload.topicId && r.payload.topicId.value === chosentheme && tmponlyoperhashes[j].Duration == undefined) {
-
-                                    //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
-                                    // (r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                    searchTeachersAndRates(main = r)
-
-                                    payloadarray.push({
-                                        ChatId: conversationId,
-                                        OperatorName: namespisochek[i],
-                                        timeStamp: "Active chat, ⏳",
-                                        CSAT: csat,
-                                        ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
-                                        SLACompleted: "undefined",
-                                        Country: r.channelUser.payload.country ? r.channelUser.payload.country : "-"
-                                    });
-
-                                    operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
-                                }
-
-                                //test поиск входа
-                                if (r.messages.length > 0) {
-                                    for (let z = 0; z < r.messages.length; z++) {
-                                        // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
-                                        //     console.log("Высокий найден: ", conversationId);
-                                        // }
-
-                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("Высокий")) {
-                                            console.log(conversationId, '-', r.messages[z].txt);
-                                        }
-                                    }
-                                }
-                                // end test
-                            });
-                    } else if (chosentheme !== "parseallthemes" && chosentheme == "parsenothemes") {
-                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + conversationId, { "headers": { "x-csrf-token": aftoken } })
-                            .then(r => r.json())
-                            .then(r => {
-
-                                //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
-                                //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                searchTeachersAndRates(main = r)
-
-                                operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
-                                if (r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration == undefined) {
-                                    payloadarray.push({
-                                        ChatId: conversationId,
-                                        OperatorName: namespisochek[i],
-                                        timeStamp: "Active chat, ⏳",
-                                        CSAT: csat,
-                                        ThemeValue: '⁉No theme',
-                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
-                                        Country: r.channelUser.payload.country ? r.channelUser.payload.country : "-"
-                                    });
-                                } else if (r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration != undefined) {
-                                    payloadarray.push({
-                                        ChatId: conversationId,
-                                        OperatorName: namespisochek[i],
-                                        timeStamp: new Date(+r.tsCreate + tmponlyoperhashes[j].Duration).toLocaleString('ru-RU', timeOptions),
-                                        CSAT: csat,
-                                        ThemeValue: '⁉No theme',
-                                        SLACompleted: "undefined",
-                                        Country: r.channelUser.payload.country ? r.channelUser.payload.country : "-"
-                                    });
-
-                                }
-
-                                //test
-                                if (r.messages.length > 0) {
-                                    for (let z = 0; z < r.messages.length; z++) {
-                                        // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
-                                        //     console.log("Высокий найден: ", conversationId);
-                                        // }
-
-                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("Высокий")) {
-                                            console.log(conversationId, '-', r.messages[z].txt);
-                                        }
-                                    }
-                                }
-                                // end test
-                            });
-
-
-                    } else {
-                        await fetch("https://skyeng.autofaq.ai/api/conversations/" + conversationId, { "headers": { "x-csrf-token": aftoken } })
-                            .then(r => r.json())
-                            .then(r => {
-
-                                //(r.channelUser.payload["nextClass-status"] && r.channelUser.payload["nextClass-status"] =="идёт урок") ? console.log(r.id, r.channelUser.payload["nextClass-status"]) : ""
-                                //(r.payload && r.payload.taskUrl && r.payload.taskUrl.value == "https://jira.skyeng.tech/browse/VIM-22298") ? console.log(r.id,r.payload.taskUrl.value) : ""
-                                searchTeachersAndRates(main = r)
-
-                                if (r.payload && r.payload.tags) {
-                                    operstagsarray.push({ ChatId: conversationId, Tags: r.payload.tags.value })
-                                } else {
-                                    operstagsarray.push({ ChatId: conversationId, Tags: '' })
-                                }
-
-                                if (r.payload && r.payload.topicId && r.payload.topicId.value != '' && tmponlyoperhashes[j].Duration != undefined) {
-                                    payloadarray.push({
-                                        ChatId: conversationId,
-                                        OperatorName: namespisochek[i],
-                                        timeStamp: new Date(+r.tsCreate + tmponlyoperhashes[j].Duration).toLocaleString('ru-RU', timeOptions),
-                                        CSAT: csat,
-                                        ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
-                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
-                                        Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ? r.channelUser.payload.country : "-"
-                                    });
-
-                                } else if (r.payload && r.payload.topicId && r.payload.topicId.value != '' && tmponlyoperhashes[j].Duration == undefined) {
-                                    payloadarray.push({
-                                        ChatId: conversationId,
-                                        OperatorName: namespisochek[i],
-                                        timeStamp: "Active chat, ⏳",
-                                        CSAT: csat,
-                                        ThemeValue: themesarray.find(theme => theme.value === r.payload.topicId.value)?.ThemeName || '',
-                                        SLACompleted: "undefined",
-                                        Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ? r.channelUser.payload.country : "-"
-                                    });
-
-                                } else if (r.payload && r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration == undefined) {
-                                    payloadarray.push({
-                                        ChatId: conversationId,
-                                        OperatorName: namespisochek[i],
-                                        timeStamp: "Active chat, ⏳",
-                                        CSAT: csat,
-                                        ThemeValue: '⁉No theme',
-                                        SLACompleted: "undefined",
-                                        Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ? r.channelUser.payload.country : "-"
-                                    });
-                                } else if (r.payload && r.payload.topicId && r.payload.topicId.value == '' && tmponlyoperhashes[j].Duration != undefined) {
-
-                                    payloadarray.push({
-                                        ChatId: conversationId,
-                                        OperatorName: namespisochek[i],
-                                        timeStamp: new Date(+r.tsCreate + tmponlyoperhashes[j].Duration).toLocaleString('ru-RU', timeOptions),
-                                        CSAT: csat,
-                                        ThemeValue: '⁉No theme',
-                                        SLACompleted: (tmponlyoperhashes[j].Duration / 1000 / 60) > 25 ? "0" : "1",
-                                        Country: (r.channelUser && r.channelUser.payload && r.channelUser.payload.country) ? r.channelUser.payload.country : "-"
-                                    });
-
-                                }
-
-                                //test
-                                if (r.messages.length > 0) {
-                                    for (let z = 0; z < r.messages.length; z++) {
-                                        // if (r.messages[z].txt && typeof r.messages[z].txt === 'string' && r.messages[z].txt.includes(keyMatch)) {
-                                        //     console.log("Высокий найден: ", conversationId);
-                                        // }
-
-                                        if (r.messages[z].tpe && r.messages[z].tpe == "OperatorComment" && r.messages[z].txt.includes("Высокий")) {
-                                            console.log(conversationId, '-', r.messages[z].txt);
-                                        }
-                                    }
-                                }
-                                // end test
-
-                            });
+                // тест поиска
+                for (const msg of r.messages) {
+                    if (msg.tpe === "OperatorComment" && msg.txt.includes("Высокий")) {
+                        console.log(r.id, '-', msg.txt);
                     }
                 }
             }
-
 
             page++;
-            maxpage = opgrdata.total / 100;
-        } while (page - 1 < maxpage);
+        } while ((page - 1) < (opgrdata.total / 100));
 
         currentWidth += step;
-        progressBar.style.width = Number(currentWidth.toFixed(1)) + "%";
-        progressBar.textContent = Number(currentWidth.toFixed(1)) + "%";
-
+        progressBar.style.width = currentWidth.toFixed(1) + "%";
+        progressBar.textContent = currentWidth.toFixed(1) + "%";
     }
+
 
     // const cleanedarray = operstagsarray.map(element => element.trim().slice(2, -2).trim().replace(/"/g, '').replace(/\n /,''));
 
