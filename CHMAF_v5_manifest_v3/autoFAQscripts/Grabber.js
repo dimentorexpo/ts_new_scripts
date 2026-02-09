@@ -9,6 +9,14 @@ let countsCountryArray = [];
 let countsArrayInterval = [];
 let isDescending;
 let testarray = [];
+let chekopersarr = [];
+let newarray = [];
+let arrofthemes = [];
+let payloadarray = [];
+let chatswithmarksarray = [];
+let checkmarksarr = [];
+let operstagsarray = [];
+let keyMatch = "Высокий"
 const timeOptions = {
     timeZone: 'Europe/Moscow',
     year: 'numeric',
@@ -449,11 +457,9 @@ function getopenGrabberButtonPress() {
 
     let getcurdate = new Date();
     let year = getcurdate.getFullYear();
-    let month = String(getcurdate.getMonth() + 1).padStart(2, "0");
     let day = String(getcurdate.getDate()).padStart(2, "0");
 
     let lastDayOfPrevMonth = new Date(year, getcurdate.getMonth(), 0).getDate();
-    let fromDate = new Date(year, getcurdate.getMonth(), day - 1);
     let toDate = new Date(year, getcurdate.getMonth(), day);
 
     if (day === "01") {
@@ -1367,14 +1373,7 @@ function searchTeachersAndRates(main) {
     }
 }
 
-let chekopersarr = [];
-let newarray = [];
-let arrofthemes = [];
-let payloadarray = [];
-let chatswithmarksarray = [];
-let checkmarksarr = [];
-let operstagsarray = [];
-let keyMatch = "Высокий"
+
 
 async function getChat(id) {
     const r = await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, {
