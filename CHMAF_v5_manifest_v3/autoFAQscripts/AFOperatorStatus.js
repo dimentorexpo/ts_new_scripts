@@ -162,9 +162,8 @@ function buildSummaryHTML(key, currentQueue, tpQueue, tpOsQueue, html, online, b
 
         queueBlock = `
         <div style="background:#792525;font-weight:700;text-align:center;border:1px solid #464343;border-radius:6px; font-size:16px">
-            🚧 Очередь ТП: ${tpQueue}${tpWarn}
-            <br>
-            🚧 Очередь ТП ОС: ${tpOsQueue}${tpOsWarn}
+            🚧 Очередь <br>
+            ТП: ${tpQueue}${tpWarn} | ТП ОС: ${tpOsQueue}${tpOsWarn}
         </div>`;
     }
 
