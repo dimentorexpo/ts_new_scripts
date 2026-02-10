@@ -459,7 +459,7 @@ async function getlistofopers() {
 
     activeoperatorsgroup.innerHTML = ''
     for (let i = 0; i < tpopers.length; i++) {
-        if (tpopers[i].name != 'ТП/ОКК-Березкин Александр' && tpopers[i].name != 'ТП-Борисов Евгений(СRM2)' && tpopers[i].name != 'ТП-Стажер обучения' && tpopers[i].name != 'ТП-Пащенко Андрей') {
+        if (tpopers[i].name != 'ТП/ОКК-Березкин Александр' && tpopers[i].name != 'ТП-Борисов Евгений(СRM2)') {
             activeoperatorsgroup.innerHTML += `<span><label><input type="checkbox" name="chekforsearch"><span style="color:bisque;"  name="listofops" value='${tpopers[i].id}'>${tpopers[i].name}</span></label></span>`
         }
     }
@@ -538,25 +538,33 @@ function saveFilteredTableCSV() {
     let csvData = [];
 
     for (let i = 0; i < nwtable.rows.length; i++) {
-        if (nwtable.rows[i].style.display !== 'none') {
-            let rowData = [];
-            for (let j = 0; j < nwtable.rows[i].cells.length; j++) {
-                // Преобразование текстового содержимого ячейки в строку CSV
-                rowData.push('"' + nwtable.rows[i].cells[j].textContent.replace(/"/g, '""') + '"');
-            }
-            csvData.push(rowData.join(","));
+
+        // Надёжная проверка видимости
+        const isVisible = window.getComputedStyle(nwtable.rows[i]).display !== "none";
+        if (!isVisible) continue;
+
+        let rowData = [];
+
+        for (let j = 0; j < nwtable.rows[i].cells.length; j++) {
+            let cellText = nwtable.rows[i].cells[j].textContent
+                .trim()
+                .replace(/"/g, '""'); // экранирование кавычек
+
+            rowData.push(`"${cellText}"`);
         }
+
+        csvData.push(rowData.join(","));
     }
 
     let csvString = csvData.join("\n");
-    let csvContent = "\uFEFF" + csvString; // Добавление BOM для поддержки кириллицы
+    let csvContent = "\uFEFF" + csvString; // BOM для кириллицы
 
     let downloadLink = document.createElement("a");
     downloadLink.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
     downloadLink.download = "filtered_table.csv";
-
     downloadLink.click();
 }
+
 
 function getopenGrabberButtonPress() {
     const select = document.getElementById("ThemesToSearch");
