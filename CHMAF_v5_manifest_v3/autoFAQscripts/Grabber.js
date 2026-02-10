@@ -32,7 +32,8 @@ const categoryMap = [
     { key: "Категория: Техподдержка 2-я линия crm2", label: "2ЛТП" },
     { key: "Категория: Техподдержка исход crm2", label: "ТП исход" },
     { key: "Категория: Teachers Care crm2", label: "Teachers Care" },
-    { key: "Категория: Исходящие звонки (crm2)", label: "Исходящие звонки (crm2)" }
+    { key: "Категория: Исходящие звонки (crm2)", label: "Исходящие звонки (crm2)" },
+    { key: "Категория: Кризис менеджеры", label: "Кризис менеджеры" }
 ];
 
 
@@ -304,19 +305,19 @@ var win_Grabber =  // описание элементов окна Grabber
                                             <input type="checkbox" checked name="deptfilter" value="Any"> Any
                                         </label>
                                         <label style="display:block; margin-left:10px;">
-                                            <input title="Техподдержка 1Л CRM (исход)"  type="checkbox" name="deptfilter" value="Техподдержка Исход"> ТП Исход
+                                            <input title="Техподдержка 1Л CRM (исход)"  type="checkbox" name="deptfilter" value="Техподдержка исход crm2"> ТП Исход
                                         </label>
                                         <label style="display:block; margin-left:10px;">
-                                            <input title="Техподдержка 2Л CRM"  type="checkbox" name="deptfilter" value="Техподдержка 2 линия"> ТП2Л
+                                            <input title="Техподдержка 2Л CRM"  type="checkbox" name="deptfilter" value="Техподдержка 2-я линия crm2"> ТП2Л
                                         </label>
                                         <label style="display:block; margin-left:10px;">
-                                            <input title="Teachers Care" type="checkbox" name="deptfilter" value="Teachers Care"> TC
+                                            <input title="Teachers Care" type="checkbox" name="deptfilter" value="Teachers Care crm2""> TC
                                         </label>
                                         <label style="display:block; margin-left:10px;">
-                                            <input title="Кризис менеджмент" type="checkbox" name="deptfilter" value="Кризис менеджмент"> КМ
+                                            <input title="Кризис менеджмент" type="checkbox" name="deptfilter" value="Кризис менеджеры"> КМ
                                         </label>
                                         <label style="display:block; margin-left:10px;">
-                                            <input title="Исходящие звонки crm2" type="checkbox" name="deptfilter" value="Исходящие звонки crm2"> КЦ Исход
+                                            <input title="Исходящие звонки crm2" type="checkbox" name="deptfilter" value="Исходящие звонки (crm2)"> КЦ Исход
                                         </label>
                                     </div>
 
@@ -407,6 +408,33 @@ var win_Grabber =  // описание элементов окна Grabber
 const wintGrabber = createWindow('AF_Grabber', 'winTopGrabber', 'winLeftGrabber', win_Grabber);
 hideWindowOnDoubleClick('AF_Grabber');
 hideWindowOnClick('AF_Grabber', 'hideMeGrabber');
+
+function setupAnyLogic(groupName) {
+    const checkboxes = document.querySelectorAll(`input[name="${groupName}"]`);
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            if (cb.value === "Any" && cb.checked) {
+                // Если выбрали Any → снимаем остальные
+                checkboxes.forEach(other => {
+                    if (other.value !== "Any") other.checked = false;
+                });
+            } else if (cb.value !== "Any" && cb.checked) {
+                // Если выбрали любой другой → снимаем Any
+                checkboxes.forEach(other => {
+                    if (other.value === "Any") other.checked = false;
+                });
+            }
+        });
+    });
+}
+
+setupAnyLogic("priorityfilter");
+setupAnyLogic("deptfilter");
+setupAnyLogic("usrtypefilter");
+
+
+
 
 document.getElementById('HideToolsPanel').onclick = function () {
     if (document.getElementById('AgregatedDataThemes').style.display == '') {
@@ -1532,28 +1560,26 @@ document.getElementById('stargrab').onclick = async function () {
     // document.getElementById('themesgrabbeddata').innerHTML = '';
     document.getElementById('themesgrabbeddata').innerHTML = '⏳ Загрузка...'
 
-    //time and date block
-    const padStart = (string, targetLength, padString) => {
-        return String(string).padStart(targetLength, padString);
-    }
+    // time and date block
+    const padStart = (string, targetLength, padString) =>
+        String(string).padStart(targetLength, padString);
 
-    const getFormattedDate = (date) => {
-        date.setDate(date.getDate() - 1); // Уменьшаем день на один
-        const year = date.getFullYear();
-        const month = padStart(date.getMonth() + 1, 2, '0');
-        const day = padStart(date.getDate(), 2, '0');
-        return `${year}-${month}-${day}T21:00:00.000z`;
-    }
+    const formatDate = (date, time) => {
+        const y = date.getFullYear();
+        const m = padStart(date.getMonth() + 1, 2, '0');
+        const d = padStart(date.getDate(), 2, '0');
+        return `${y}-${m}-${d}T${time}`;
+    };
 
-    const dateFromGrabInput = document.getElementById("dateFromGrab");
-    const selectedDate = new Date(dateFromGrabInput.value);
-    const leftDateFromGrab = getFormattedDate(selectedDate);
+    // dateFromGrab → минус 1 день
+    const selectedDate = new Date(document.getElementById("dateFromGrab").value);
+    selectedDate.setDate(selectedDate.getDate() - 1);
+    const leftDateFromGrab = formatDate(selectedDate, "21:00:00.000z");
 
-    const dateToGrabInput = document.getElementById("dateToGrab");
-    const selectedEndDate = new Date(dateToGrabInput.value);
-    const rightDateToGrab = `${selectedEndDate.getFullYear()}-${padStart(selectedEndDate.getMonth() + 1, 2, '0')}-${padStart(selectedEndDate.getDate(), 2, '0')}T20:59:59.059z`;
+    // dateToGrab → без смещения
+    const selectedEndDate = new Date(document.getElementById("dateToGrab").value);
+    const rightDateToGrab = formatDate(selectedEndDate, "20:59:59.059z");
 
-    const now = new Date();
 
     // end of time and date
 
@@ -2091,7 +2117,8 @@ function toggleBlock({ containerId, blockId, extraId }) {
     const extra = extraId ? document.getElementById(extraId) : null;
     const container = document.getElementById(containerId);
 
-    const isHidden = block.style.display === "none" || block.style.display === "";
+    const isHidden = window.getComputedStyle(block).display === "none";
+
 
     if (isHidden) {
         block.style.display = blockId === "activeoperatorsgroup" ? "grid" : "";
