@@ -248,12 +248,12 @@ var win_Grabber =  // описание элементов окна Grabber
 							<div id="opscontainer" class="filtersList" style="color: bisque; background: #ff7f507d; font-size: 16px; padding: 5px; width: 33%; border-radius: 20px; text-align: center; cursor: pointer; border: 1px solid black;">🔱Фильтр по операторам🦸‍♂️</div>
 							<div id="markscontainer" class="filtersList"  style="color: bisque; background: #ff7f507d; font-size: 16px; padding: 5px; width: 33%; border-radius: 20px; text-align: center; cursor: pointer; border: 1px solid black;">🔱Фильтр по оценкам🔢</div>
 							<div id="tagscontainer" class="filtersList"  style="color: bisque; background: #ff7f507d; font-size: 16px; padding: 5px; width: 33%; border-radius: 20px; text-align: center; cursor: pointer; border: 1px solid black;">🔱Фильтр по тегам🏷</div>
+                            <div id="othercontainer" class="filtersList"  style="color: bisque; background: #ff7f507d; font-size: 16px; padding: 5px; width: 33%; border-radius: 20px; text-align: center; cursor: pointer; border: 1px solid black;">🔱Другие фильтры</div>
 						</div>
 
 							<div id="activeoperatorsgroup" style="max-height:200px; overflow-y:auto; display: none; grid-template-columns: repeat(3, 1fr); margin-left:5px; border:1px solid lightslategrey;">
 							</div>
 								<label id="hideselecall" style="display: none; color:#93f5a6; margin-left:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); font-weight: 700;"><input type="checkbox" id="checkthemall"> Select All</label>
-
 
 							<div id="listofthemarks" style="display: none; color:bisque; border:1px solid lightslategrey; margin-left:5px;">
 							  <label><input type="checkbox" name="marks" value="5"> 5</label>
@@ -264,6 +264,95 @@ var win_Grabber =  // описание элементов окна Grabber
 							  <label><input type="checkbox" name="marks" value="undefined"> No marks</label>
 							  <label id="hideselecallmarks" style="display: none; color:#93f5a6; margin-left:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); font-weight: 700;"><input type="checkbox" id="checkthemallmarks"> Select All</label>
 							</div>
+
+
+                            <div id="listofotheroptions"
+                                style="display:none; color:bisque; margin:0 auto; padding:15px;
+                                        background:#3f3d47; border:1px solid #6a6a6a; border-radius:12px;
+                                        width:500px;">
+
+                                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px;">
+
+                                    <!-- Левая колонка — Приоритет -->
+                                    <div>
+                                        <div style="font-weight:700; margin-bottom:5px; color:#93f5a6; text-align:center;">
+                                            Приоритет
+                                        </div>
+
+                                        <label style="display:block; margin-left:10px;">
+                                            <input type="checkbox" checked name="priorityfilter" value="Any"> Any
+                                        </label>
+                                        <label style="display:block; margin-left:10px;">
+                                            <input type="checkbox" name="priorityfilter" value="Низкий"> Низкий
+                                        </label>
+                                        <label style="display:block; margin-left:10px;">
+                                            <input type="checkbox" name="priorityfilter" value="Высокий"> Высокий
+                                        </label>
+                                        <label style="display:block; margin-left:10px;">
+                                            <input type="checkbox" name="priorityfilter" value="Критический"> Критический
+                                        </label>
+                                    </div>
+
+                                    <!-- Центральная колонка — Отдел -->
+                                    <div>
+                                        <div style="font-weight:700; margin-bottom:5px; color:#93f5a6; text-align:center;">
+                                            Отдел
+                                        </div>
+
+                                        <label style="display:block; margin-left:10px;">
+                                            <input type="checkbox" checked name="deptfilter" value="Any"> Any
+                                        </label>
+                                        <label style="display:block; margin-left:10px;">
+                                            <input title="Техподдержка 1Л CRM (исход)"  type="checkbox" name="deptfilter" value="Техподдержка Исход"> ТП Исход
+                                        </label>
+                                        <label style="display:block; margin-left:10px;">
+                                            <input title="Техподдержка 2Л CRM"  type="checkbox" name="deptfilter" value="Техподдержка 2 линия"> ТП2Л
+                                        </label>
+                                        <label style="display:block; margin-left:10px;">
+                                            <input title="Teachers Care" type="checkbox" name="deptfilter" value="Teachers Care"> TC
+                                        </label>
+                                        <label style="display:block; margin-left:10px;">
+                                            <input title="Кризис менеджмент" type="checkbox" name="deptfilter" value="Кризис менеджмент"> КМ
+                                        </label>
+                                        <label style="display:block; margin-left:10px;">
+                                            <input title="Исходящие звонки crm2" type="checkbox" name="deptfilter" value="Исходящие звонки crm2"> КЦ Исход
+                                        </label>
+                                    </div>
+
+                                    <!-- Правая колонка — Отдел -->
+                                    <div>
+                                        <div style="font-weight:700; margin-bottom:5px; color:#93f5a6; text-align:center;">
+                                            Тип пользователя
+                                        </div>
+
+                                        <label style="display:block; margin-left:10px;">
+                                            <input type="checkbox" checked name="usrtypefilter" value="Any"> Any
+                                        </label>
+                                        <label style="display:block; margin-left:10px;">
+                                            <input type="checkbox" name="usrtypefilter" value="student"> Ученик
+                                        </label>
+                                        <label style="display:block; margin-left:10px;">
+                                            <input type="checkbox" name="usrtypefilter" value="teacher"> Преподаватель
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+                                <hr style="border-color:#6a6a6a; margin:15px 0;">
+
+                                <!-- Поля ввода -->
+                                <div style="display:flex; flex-direction:column; gap:10px;">
+                                    <input placeholder="Поиск по комментарию"
+                                        style="padding:6px; border-radius:6px; border:1px solid #6a6a6a;
+                                                background:#2f2d35; color:bisque;">
+                                    <input placeholder="Поиск по сообщению"
+                                        style="padding:6px; border-radius:6px; border:1px solid #6a6a6a;
+                                                background:#2f2d35; color:bisque;">
+                                </div>
+                            </div>
+
+
 
 
 							<div id="listofthetags" style="display: none; color:bisque; margin-left:5px;">
@@ -280,6 +369,7 @@ var win_Grabber =  // описание элементов окна Grabber
 								  <label><input type="checkbox" name="tagsforfilter" value="#configuration"> Комплектации</label>
 								  <label><input type="checkbox" name="tagsforfilter" value="#transfer"> Смена корп почты П</label>
 							  </div>
+
 							  <div style="display: flex;">
 								  <button class="mainButton" id="hideselecalltags" style="flex-grow:1">🚀Apply</button>
 								  <button class="mainButton" id="SaveToCSVFilteredByTags" style="flex-grow:1">💾CSV</button>
@@ -2026,6 +2116,18 @@ document.getElementById('tagscontainer').onclick = function () {
         this.classList.add('glowing-border-animation')
     } else {
         document.getElementById('listofthetags').style.display = "none"
+        document.getElementById('hideselecalltags').style.display = "none"
+        this.classList.remove('glowing-border-animation')
+    }
+}
+
+document.getElementById('othercontainer').onclick = function () {
+    if (document.getElementById('listofotheroptions').style.display == "none") {
+        document.getElementById('listofotheroptions').style.display = ""
+        document.getElementById('hideselecalltags').style.display = ""
+        this.classList.add('glowing-border-animation')
+    } else {
+        document.getElementById('listofotheroptions').style.display = "none"
         document.getElementById('hideselecalltags').style.display = "none"
         this.classList.remove('glowing-border-animation')
     }
