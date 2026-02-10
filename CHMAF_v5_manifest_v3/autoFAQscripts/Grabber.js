@@ -16,6 +16,7 @@ let payloadarray = [];
 let chatswithmarksarray = [];
 let checkmarksarr = [];
 let operstagsarray = [];
+let otherfilters = "off"
 let keyMatch = "Высокий"
 const timeOptions = {
     timeZone: 'Europe/Moscow',
@@ -2085,53 +2086,64 @@ document.getElementById('stargrab').onclick = async function () {
     document.getElementById('GatherStatByThemes').removeAttribute('disabled')
 }
 
-document.getElementById('opscontainer').onclick = function () {
-    if (document.getElementById('activeoperatorsgroup').style.display == "none") {
-        document.getElementById('activeoperatorsgroup').style.display = "grid"
-        document.getElementById('hideselecall').style.display = ""
-        this.classList.add('glowing-border-animation')
+function toggleBlock({ containerId, blockId, extraId }) {
+    const block = document.getElementById(blockId);
+    const extra = extraId ? document.getElementById(extraId) : null;
+    const container = document.getElementById(containerId);
+
+    const isHidden = block.style.display === "none" || block.style.display === "";
+
+    if (isHidden) {
+        block.style.display = blockId === "activeoperatorsgroup" ? "grid" : "";
+        if (extra) extra.style.display = "";
+        container.classList.add("glowing-border-animation");
+
+        // --- Специальная логика для othercontainer ---
+        if (containerId === "othercontainer") {
+            otherfilters = "on";
+            console.log("otherfilters:", otherfilters);
+        }
+
     } else {
-        document.getElementById('activeoperatorsgroup').style.display = "none"
-        document.getElementById('hideselecall').style.display = "none"
-        this.classList.remove('glowing-border-animation')
+        block.style.display = "none";
+        if (extra) extra.style.display = "none";
+        container.classList.remove("glowing-border-animation");
+
+        // --- Специальная логика для othercontainer ---
+        if (containerId === "othercontainer") {
+            otherfilters = "off";
+            console.log("otherfilters:", otherfilters);
+        }
     }
 }
 
-document.getElementById('markscontainer').onclick = function () {
-    if (document.getElementById('listofthemarks').style.display == "none") {
-        document.getElementById('listofthemarks').style.display = ""
-        document.getElementById('hideselecallmarks').style.display = ""
-        this.classList.add('glowing-border-animation')
-    } else {
-        document.getElementById('listofthemarks').style.display = "none"
-        document.getElementById('hideselecallmarks').style.display = "none"
-        this.classList.remove('glowing-border-animation')
-    }
-}
+document.getElementById('opscontainer').onclick = () =>
+    toggleBlock({
+        containerId: 'opscontainer',
+        blockId: 'activeoperatorsgroup',
+        extraId: 'hideselecall'
+    });
 
-document.getElementById('tagscontainer').onclick = function () {
-    if (document.getElementById('listofthetags').style.display == "none") {
-        document.getElementById('listofthetags').style.display = ""
-        document.getElementById('hideselecalltags').style.display = ""
-        this.classList.add('glowing-border-animation')
-    } else {
-        document.getElementById('listofthetags').style.display = "none"
-        document.getElementById('hideselecalltags').style.display = "none"
-        this.classList.remove('glowing-border-animation')
-    }
-}
+document.getElementById('markscontainer').onclick = () =>
+    toggleBlock({
+        containerId: 'markscontainer',
+        blockId: 'listofthemarks',
+        extraId: 'hideselecallmarks'
+    });
 
-document.getElementById('othercontainer').onclick = function () {
-    if (document.getElementById('listofotheroptions').style.display == "none") {
-        document.getElementById('listofotheroptions').style.display = ""
-        document.getElementById('hideselecalltags').style.display = ""
-        this.classList.add('glowing-border-animation')
-    } else {
-        document.getElementById('listofotheroptions').style.display = "none"
-        document.getElementById('hideselecalltags').style.display = "none"
-        this.classList.remove('glowing-border-animation')
-    }
-}
+document.getElementById('tagscontainer').onclick = () =>
+    toggleBlock({
+        containerId: 'tagscontainer',
+        blockId: 'listofthetags',
+        extraId: 'hideselecalltags'
+    });
+
+document.getElementById('othercontainer').onclick = () =>
+    toggleBlock({
+        containerId: 'othercontainer',
+        blockId: 'listofotheroptions',
+        extraId: null
+    });
 
 function downloadCSV(data, filename) {
     const csvContent = "\uFEFF" + convertArrayToCSV(data);
