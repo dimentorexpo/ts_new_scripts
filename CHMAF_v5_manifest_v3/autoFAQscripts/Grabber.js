@@ -7,7 +7,6 @@ let avgCsatCountVar;
 let countsArray = [];
 let countsCountryArray = [];
 let countsArrayInterval = [];
-let isDescending;
 let testarray = [];
 let chekopersarr = [];
 let newarray = [];
@@ -18,6 +17,10 @@ let checkmarksarr = [];
 let operstagsarray = [];
 let otherfilters = "off"
 let keyMatch = "Высокий"
+let currentTableData = [];
+let isDescending = false;
+let lastTableParams = null;
+
 const timeOptions = {
     timeZone: 'Europe/Moscow',
     year: 'numeric',
@@ -35,7 +38,6 @@ const categoryMap = [
     { key: "Категория: Исходящие звонки (crm2)", label: "Исходящие звонки (crm2)" },
     { key: "Категория: Кризис менеджеры", label: "Кризис менеджеры" }
 ];
-
 
 const themes = [
     // --- SYSTEM ---
@@ -565,7 +567,6 @@ function saveFilteredTableCSV() {
     downloadLink.click();
 }
 
-
 function getopenGrabberButtonPress() {
     const select = document.getElementById("ThemesToSearch");
     select.innerHTML = "";
@@ -659,114 +660,190 @@ function getSelectedCheckboxTagsValues() {
 
     return selectedValues;
 }
+///////////// Вспомогательные функции для работы с агрегированными таблицами и позже в планах сюда графики добавить
+function buildUniversalTable({
+    mode,          // "simple" или "interval"
+    groupField,    // "ThemeValue" или "Country"
+    columnTitle,   // "Тематика" или "Страна"
+    saveButtonId,   // id кнопки CSV или null
+    useExistingData = false   // <--- добавлено
+}) {
+    document.getElementById('AgregatedDataThemes').style.width = "400px";
+    document.getElementById('themesgrabbeddata').style.display = '';
 
-function buildTable() {
-    document.getElementById('AgregatedDataThemes').style.width = "400px"
-    document.getElementById('themesgrabbeddata').style.display = ''
     const tableContainer = document.getElementById('AgregatedDataOut');
-    tableContainer.innerHTML = ''; // Очищаем содержимое контейнера перед построением таблицы
+    tableContainer.innerHTML = '';
 
-    // Создаем таблицу
+    let data;
+
+    if (useExistingData) {
+        data = currentTableData; // <--- используем отсортированные данные
+    } else {
+        if (mode === "interval") {
+            data = buildIntervalData(groupField);
+        } else {
+            data = buildSimpleData(groupField);
+        }
+        currentTableData = data; // сохраняем
+    }
+
+    const table = buildHTMLTable(data, columnTitle, mode);
+    tableContainer.appendChild(table);
+
+    if (saveButtonId) {
+        document.getElementById(saveButtonId).removeAttribute('disabled');
+    }
+
+    lastTableParams = { mode, groupField, columnTitle, saveButtonId };
+
+}
+
+
+function buildIntervalData(groupField) {
+
+    const intervals = [
+        '07:00 - 07:30', '07:30 - 08:00', '08:00 - 08:30', '08:30 - 09:00',
+        '09:00 - 09:30', '09:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00',
+        '11:00 - 11:30', '11:30 - 12:00', '12:00 - 12:30', '12:30 - 13:00',
+        '13:00 - 13:30', '13:30 - 14:00', '14:00 - 14:30', '14:30 - 15:00',
+        '15:00 - 15:30', '15:30 - 16:00', '16:00 - 16:30', '16:30 - 17:00',
+        '17:00 - 17:30', '17:30 - 18:00', '18:00 - 18:30', '18:30 - 19:00',
+        '19:00 - 19:30', '19:30 - 20:00', '20:00 - 20:30', '20:30 - 21:00',
+        '21:00 - 21:30', '21:30 - 22:00', '22:00 - 22:30', '22:30 - 23:00',
+        '23:00 - 23:30', '23:30 - 00:00'
+    ];
+
+    const result = payloadarray.reduce((acc, obj) => {
+        const value = obj[groupField];
+        const timeStamp = obj.timeStamp;
+        const timeKey = moment(timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
+
+        const interval = intervals.find(interval => {
+            const [start, end] = interval.split(' - ');
+            return moment(timeKey, 'HH:mm')
+                .isBetween(moment(start, 'HH:mm'), moment(end, 'HH:mm'), null, '[]');
+        });
+
+        if (interval) {
+            acc.counts[interval] = acc.counts[interval] || {};
+            acc.counts[interval][value] = (acc.counts[interval][value] || 0) + 1;
+        }
+
+        return acc;
+    }, { counts: {} });
+
+    const data = Object.entries(result.counts).flatMap(([interval, counts]) =>
+        Object.entries(counts).map(([value, count]) => ({
+            Value: value,
+            TimeStamp: interval,
+            Count: count
+        }))
+    );
+
+    data.sort((a, b) => {
+        const tA = a.TimeStamp.split(" - ")[0];
+        const tB = b.TimeStamp.split(" - ")[0];
+        return moment(tA, "HH:mm").diff(moment(tB, "HH:mm"));
+    });
+
+    return data;
+}
+
+function buildSimpleData(groupField) {
+
+    const counts = payloadarray.reduce((acc, obj) => {
+        const value = obj[groupField];
+        acc[value] = (acc[value] || 0) + 1;
+        return acc;
+    }, {});
+
+    return Object.entries(counts).map(([value, count]) => ({
+        Value: value,
+        Count: count
+    }));
+}
+
+function buildHTMLTable(data, columnTitle, mode) {
+
     const table = document.createElement('table');
 
-    // Создаем заголовок таблицы
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
-    const headers = ['№п.п', 'Тематика', 'Количество'];
 
-    headers.forEach((headerText, index) => {
+    const headers = mode === "interval"
+        ? ['№п.п', columnTitle, 'Интервал', 'Количество']
+        : ['№п.п', columnTitle, 'Количество'];
+
+    headers.forEach((text, index) => {
         const th = document.createElement('th');
-        th.textContent = headerText;
-        th.style = "text-align: center; font-weight: 700; background: dimgrey; border: 1px solid black; padding: 5px; position: sticky; top: 0px;"
-        if (index === 2) {
-            th.style = "text-align: center; font-weight: 700; background: dimgrey; border: 1px solid black; padding: 5px; position: sticky; top: 0px; cursor:pointer"
-            th.title = "При клике сортирует список либо по возрастанию либо по убыванию, повторый клик также изменяет направление сортировки!"
-            th.addEventListener('click', sortTableByCount);
+        th.textContent = text;
+        th.style = "text-align:center;font-weight:700;background:dimgrey;border:1px solid black;padding:5px;position:sticky;top:0;";
+
+        // Если это колонка "Количество" — вешаем сортировку
+        if (text === "Количество") {
+            th.style.cursor = "pointer";
+            th.title = "Клик — сортировка по возрастанию/убыванию";
+            th.addEventListener('click', sortUniversalTableByCount);
         }
+
         headerRow.appendChild(th);
     });
+
 
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
-    // Создаем тело таблицы
     const tbody = document.createElement('tbody');
 
-    countsArray.forEach((item, index) => {
+    data.forEach((item, index) => {
         const row = document.createElement('tr');
-        const numberCell = document.createElement('td');
-        const themeCell = document.createElement('td');
-        const countCell = document.createElement('td');
 
-        numberCell.textContent = (index + 1).toString();
-        themeCell.textContent = item.ThemeValue;
-        countCell.textContent = item.Count.toString();
-
-        row.appendChild(numberCell);
-        row.appendChild(themeCell);
-        row.appendChild(countCell);
-        tbody.appendChild(row);
-    });
-
-    table.appendChild(tbody);
-
-    // Добавляем таблицу в контейнер
-    tableContainer.appendChild(table);
-}
-
-function buildTableCountry() {
-    document.getElementById('AgregatedDataThemes').style.width = "400px"
-    document.getElementById('themesgrabbeddata').style.display = ''
-    const tableContainer = document.getElementById('AgregatedDataOut');
-    tableContainer.innerHTML = ''; // Очищаем содержимое контейнера перед построением таблицы
-
-    // Создаем таблицу
-    const table = document.createElement('table');
-
-    // Создаем заголовок таблицы
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    const headers = ['№п.п', 'Страна', 'Количество'];
-
-    headers.forEach((headerText, index) => {
-        const th = document.createElement('th');
-        th.textContent = headerText;
-        th.style = "text-align: center; font-weight: 700; background: dimgrey; border: 1px solid black; padding: 5px; position: sticky; top: 0px;"
-        if (index === 2) {
-            th.style = "text-align: center; font-weight: 700; background: dimgrey; border: 1px solid black; padding: 5px; position: sticky; top: 0px; cursor:pointer"
-            th.title = "При клике сортирует список либо по возрастанию либо по убыванию, повторый клик также изменяет направление сортировки!"
-            th.addEventListener('click', sortTableCountryByCount);
+        if (mode === "interval") {
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${item.Value}</td>
+                <td>${item.TimeStamp}</td>
+                <td>${item.Count}</td>
+            `;
+        } else {
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${item.Value}</td>
+                <td>${item.Count}</td>
+            `;
         }
-        headerRow.appendChild(th);
-    });
 
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    // Создаем тело таблицы
-    const tbody = document.createElement('tbody');
-
-    countsCountryArray.forEach((item, index) => {
-        const row = document.createElement('tr');
-        const numberCell = document.createElement('td');
-        const countryCell = document.createElement('td');
-        const countCell = document.createElement('td');
-
-        numberCell.textContent = (index + 1).toString();
-        countryCell.textContent = item.Country;
-        countCell.textContent = item.Count.toString();
-
-        row.appendChild(numberCell);
-        row.appendChild(countryCell);
-        row.appendChild(countCell);
         tbody.appendChild(row);
     });
 
     table.appendChild(tbody);
-
-    // Добавляем таблицу в контейнер
-    tableContainer.appendChild(table);
+    return table;
 }
+
+function rebuildLastTable() {
+    if (!lastTableParams) return;
+
+    buildUniversalTable({
+        ...lastTableParams,
+        useExistingData: true   // <--- ключевой момент
+    });
+}
+
+
+function sortUniversalTableByCount() {
+    currentTableData.sort((a, b) => {
+        return isDescending
+            ? b.Count - a.Count
+            : a.Count - b.Count;
+    });
+
+    isDescending = !isDescending;
+
+    rebuildLastTable();
+}
+
+/////////////
+
 function drawGraph() {
     document.getElementById('AgregatedDataThemes').style.width = "1200px"
     document.getElementById('themesgrabbeddata').style.display = 'none'
@@ -857,284 +934,6 @@ function drawGraphCountry() {
             }
         }
     });
-}
-
-function buildIntervalTable() {
-
-    const intervals = [
-        '07:00 - 07:30',
-        '07:30 - 08:00',
-        '08:00 - 08:30',
-        '08:30 - 09:00',
-        '09:00 - 09:30',
-        '09:30 - 10:00',
-        '10:00 - 10:30',
-        '10:30 - 11:00',
-        '11:00 - 11:30',
-        '11:30 - 12:00',
-        '12:00 - 12:30',
-        '12:30 - 13:00',
-        '13:00 - 13:30',
-        '13:30 - 14:00',
-        '14:00 - 14:30',
-        '14:30 - 15:00',
-        '15:00 - 15:30',
-        '15:30 - 16:00',
-        '16:00 - 16:30',
-        '16:30 - 17:00',
-        '17:00 - 17:30',
-        '17:30 - 18:00',
-        '18:00 - 18:30',
-        '18:30 - 19:00',
-        '19:00 - 19:30',
-        '19:30 - 20:00',
-        '20:00 - 20:30',
-        '20:30 - 21:00',
-        '21:00 - 21:30',
-        '21:30 - 22:00',
-        '22:00 - 22:30',
-        '22:30 - 23:00',
-        '23:00 - 23:30',
-        '23:30 - 00:00'
-    ];
-
-    const result = payloadarray.reduce((acc, obj) => {
-        const themeValue = obj.ThemeValue;
-        const timeStamp = obj.timeStamp;
-        const timeKey = moment(timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
-        const interval = intervals.find((interval) => {
-            const [start, end] = interval.split(' - ');
-            return moment(timeKey, 'HH:mm').isBetween(moment(start, 'HH:mm'), moment(end, 'HH:mm'), null, '[]');
-        });
-
-        if (interval) {
-            acc.counts[interval] = acc.counts[interval] || {};
-            acc.counts[interval][themeValue] = (acc.counts[interval][themeValue] || 0) + 1;
-        }
-
-        acc.uniqueValues.add(themeValue);
-        return acc;
-    }, { uniqueValues: new Set(), counts: {} });
-
-    const uniqueValuesArray = Array.from(result.uniqueValues);
-    countsArrayInterval = Object.entries(result.counts).flatMap(([interval, counts]) => {
-        return Object.entries(counts).map(([themeValue, count]) => ({
-            TimeStamp: interval,
-            ThemeValue: themeValue,
-            Count: count,
-        }));
-    });
-
-    countsArrayInterval.sort((a, b) => {
-        const timeA = a.TimeStamp.split(" - ")[0];
-        const timeB = b.TimeStamp.split(" - ")[0];
-        return moment(timeA, "HH:mm").diff(moment(timeB, "HH:mm"));
-    });
-
-    document.getElementById('AgregatedDataThemes').style.width = "400px"
-    document.getElementById('themesgrabbeddata').style.display = ''
-    const tableContainer = document.getElementById('AgregatedDataOut');
-    tableContainer.innerHTML = ''; // Очищаем содержимое контейнера перед построением таблицы
-
-    // Создаем таблицу
-    const table = document.createElement('table');
-
-    // Создаем заголовок таблицы
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    const headers = ['№п.п', 'Тематика', 'Интервал', 'Количество'];
-
-    headers.forEach((headerText, index) => {
-        const th = document.createElement('th');
-        th.textContent = headerText;
-        th.style = "text-align: center; font-weight: 700; background: dimgrey; border: 1px solid black; padding: 5px; position: sticky; top: 0px;"
-        headerRow.appendChild(th);
-    });
-
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    // Создаем тело таблицы
-    const tbody = document.createElement('tbody');
-
-    countsArrayInterval.forEach((item, index) => {
-        const row = document.createElement('tr');
-        const numberCell = document.createElement('td');
-        const themeCell = document.createElement('td');
-        const intervalCell = document.createElement('td');
-        const countCell = document.createElement('td');
-
-        numberCell.textContent = (index + 1).toString();
-        themeCell.textContent = item.ThemeValue;
-        intervalCell.textContent = item.TimeStamp;
-        countCell.textContent = item.Count.toString();
-
-        row.appendChild(numberCell);
-        row.appendChild(themeCell);
-        row.appendChild(intervalCell);
-        row.appendChild(countCell);
-        tbody.appendChild(row);
-    });
-
-    table.appendChild(tbody);
-
-    // Добавляем таблицу в контейнер
-    tableContainer.appendChild(table);
-    document.getElementById('SaveIntervalCSV').removeAttribute('disabled')
-
-}
-
-function buildIntervalTableCountry() {
-
-    const intervals = [
-        '07:00 - 07:30',
-        '07:30 - 08:00',
-        '08:00 - 08:30',
-        '08:30 - 09:00',
-        '09:00 - 09:30',
-        '09:30 - 10:00',
-        '10:00 - 10:30',
-        '10:30 - 11:00',
-        '11:00 - 11:30',
-        '11:30 - 12:00',
-        '12:00 - 12:30',
-        '12:30 - 13:00',
-        '13:00 - 13:30',
-        '13:30 - 14:00',
-        '14:00 - 14:30',
-        '14:30 - 15:00',
-        '15:00 - 15:30',
-        '15:30 - 16:00',
-        '16:00 - 16:30',
-        '16:30 - 17:00',
-        '17:00 - 17:30',
-        '17:30 - 18:00',
-        '18:00 - 18:30',
-        '18:30 - 19:00',
-        '19:00 - 19:30',
-        '19:30 - 20:00',
-        '20:00 - 20:30',
-        '20:30 - 21:00',
-        '21:00 - 21:30',
-        '21:30 - 22:00',
-        '22:00 - 22:30',
-        '22:30 - 23:00',
-        '23:00 - 23:30',
-        '23:30 - 00:00'
-    ];
-
-    const result = payloadarray.reduce((acc, obj) => {
-        const Country = obj.Country;
-        const timeStamp = obj.timeStamp;
-        const timeKey = moment(timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
-        const interval = intervals.find((interval) => {
-            const [start, end] = interval.split(' - ');
-            return moment(timeKey, 'HH:mm').isBetween(moment(start, 'HH:mm'), moment(end, 'HH:mm'), null, '[]');
-        });
-
-        if (interval) {
-            acc.counts[interval] = acc.counts[interval] || {};
-            acc.counts[interval][Country] = (acc.counts[interval][Country] || 0) + 1;
-        }
-
-        acc.uniqueValues.add(Country);
-        return acc;
-    }, { uniqueValues: new Set(), counts: {} });
-
-    const uniqueValuesArray = Array.from(result.uniqueValues);
-    countsArrayInterval = Object.entries(result.counts).flatMap(([interval, counts]) => {
-        return Object.entries(counts).map(([Country, count]) => ({
-            TimeStamp: interval,
-            Country: Country,
-            Count: count,
-        }));
-    });
-
-    countsArrayInterval.sort((a, b) => {
-        const timeA = a.TimeStamp.split(" - ")[0];
-        const timeB = b.TimeStamp.split(" - ")[0];
-        return moment(timeA, "HH:mm").diff(moment(timeB, "HH:mm"));
-    });
-
-    document.getElementById('AgregatedDataThemes').style.width = "400px"
-    document.getElementById('themesgrabbeddata').style.display = ''
-    const tableContainer = document.getElementById('AgregatedDataOut');
-    tableContainer.innerHTML = ''; // Очищаем содержимое контейнера перед построением таблицы
-
-    // Создаем таблицу
-    const table = document.createElement('table');
-
-    // Создаем заголовок таблицы
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    const headers = ['№п.п', 'Страна', 'Интервал', 'Количество'];
-
-    headers.forEach((headerText, index) => {
-        const th = document.createElement('th');
-        th.textContent = headerText;
-        th.style = "text-align: center; font-weight: 700; background: dimgrey; border: 1px solid black; padding: 5px; position: sticky; top: 0px;"
-        headerRow.appendChild(th);
-    });
-
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    // Создаем тело таблицы
-    const tbody = document.createElement('tbody');
-
-    countsArrayInterval.forEach((item, index) => {
-        const row = document.createElement('tr');
-        const numberCell = document.createElement('td');
-        const themeCell = document.createElement('td');
-        const intervalCell = document.createElement('td');
-        const countCell = document.createElement('td');
-
-        numberCell.textContent = (index + 1).toString();
-        themeCell.textContent = item.Country;
-        intervalCell.textContent = item.TimeStamp;
-        countCell.textContent = item.Count.toString();
-
-        row.appendChild(numberCell);
-        row.appendChild(themeCell);
-        row.appendChild(intervalCell);
-        row.appendChild(countCell);
-        tbody.appendChild(row);
-    });
-
-    table.appendChild(tbody);
-
-    // Добавляем таблицу в контейнер
-    tableContainer.appendChild(table);
-    document.getElementById('SaveIntervalСountryCSV').removeAttribute('disabled')
-
-}
-
-function sortTableByCount() {
-    countsArray.sort((a, b) => {
-        if (isDescending) {
-            return b.Count - a.Count;
-        } else {
-            return a.Count - b.Count;
-        }
-    });
-
-    isDescending = !isDescending; // Инвертируем флаг сортировки
-
-    buildTable(); // Перестраиваем таблицу с новым порядком
-}
-
-function sortTableCountryByCount() {
-    countsCountryArray.sort((a, b) => {
-        if (isDescending) {
-            return b.Count - a.Count;
-        } else {
-            return a.Count - b.Count;
-        }
-    });
-
-    isDescending = !isDescending; // Инвертируем флаг сортировки
-
-    buildTableCountry(); // Перестраиваем таблицу с новым порядком
 }
 
 function drawIntervalGraph() {
@@ -1465,6 +1264,7 @@ function SaveIntervalСountryCSV() {
     // Удаление ссылки из DOM
     document.body.removeChild(downloadLink);
 }
+
 function SaveСountryCSV(filename) {
     const csvRows = [];
     // Получаем заголовки таблицы
@@ -1508,15 +1308,12 @@ function searchTeachersAndRates(main) {
     }
 }
 
-
-
 async function getChat(id) {
     const r = await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, {
         headers: { "x-csrf-token": aftoken }
     });
     return r.json();
 }
-
 
 function pushPayload({ r, duration, operatorName, csat, themeName }) {
     const isActive = duration === undefined;
@@ -1546,7 +1343,6 @@ function themeMatches(r, chosen) {
     if (chosen === "parsenothemes") return r.payload.topicId?.value === '';
     return r.payload.topicId?.value === chosen;
 }
-
 
 document.getElementById('stargrab').onclick = async function () {
 
@@ -1897,19 +1693,42 @@ document.getElementById('stargrab').onclick = async function () {
     isDescending = true; // Флаг для определения порядка сортировки
 
     const switchToTableButton = document.getElementById('SwitchToTable');
-    switchToTableButton.addEventListener('click', buildTable);
+    switchToTableButton.addEventListener('click', () =>
+        buildUniversalTable({
+            mode: "simple",
+            groupField: "ThemeValue",
+            columnTitle: "Тематика",
+            saveButtonId: null
+        })
+    );
 
     const switchToGraphButton = document.getElementById('SwitchToGraph');
     switchToGraphButton.addEventListener('click', drawGraph);
 
     const switchToTableCountryButton = document.getElementById('SwitchToTableCountry');
-    switchToTableCountryButton.addEventListener('click', buildTableCountry);
+    switchToTableCountryButton.addEventListener('click', () =>
+        buildUniversalTable({
+            mode: "simple",
+            groupField: "Country",
+            columnTitle: "Страна",
+            saveButtonId: null
+        })
+    );
+
 
     const switchToGraphCountryButton = document.getElementById('SwitchToGraphCountry');
     switchToGraphCountryButton.addEventListener('click', drawGraphCountry);
 
     const switchToIntervalTableButton = document.getElementById('SwitchToIntervalTable');
-    switchToIntervalTableButton.addEventListener('click', buildIntervalTable);
+    switchToIntervalTableButton.addEventListener('click', () =>
+        buildUniversalTable({
+            mode: "interval",
+            groupField: "ThemeValue",
+            columnTitle: "Тематика",
+            saveButtonId: "SaveIntervalCSV"
+        })
+    );
+
 
     const switchToIntervalGraphButton = document.getElementById('SwitchToIntervalGraph');
     switchToIntervalGraphButton.addEventListener('click', drawIntervalGraph);
@@ -1918,7 +1737,15 @@ document.getElementById('stargrab').onclick = async function () {
     SaveIntervalCSVButton.addEventListener('click', saveToCSVInterval);
 
     const switchToIntervalTableCountryButton = document.getElementById('SwitchToIntervalTableCountry');
-    switchToIntervalTableCountryButton.addEventListener('click', buildIntervalTableCountry);
+    switchToIntervalTableCountryButton.addEventListener('click', () =>
+        buildUniversalTable({
+            mode: "interval",
+            groupField: "Country",
+            columnTitle: "Страна",
+            saveButtonId: "SaveIntervalCountryCSV"
+        })
+    );
+
 
     const switchToIntervalGraphCountryButton = document.getElementById('SwitchToIntervalGraphCountry');
     switchToIntervalGraphCountryButton.addEventListener('click', drawIntervalCountryGraph);
