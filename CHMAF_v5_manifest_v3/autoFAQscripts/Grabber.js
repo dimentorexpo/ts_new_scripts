@@ -338,9 +338,7 @@ var win_Grabber =  // описание элементов окна Grabber
                                         <label style="display:block; margin-left:10px;">
                                             <input type="checkbox" name="usrtypefilter" value="teacher"> Преподаватель
                                         </label>
-
                                     </div>
-
                                 </div>
 
                                 <hr style="border-color:#6a6a6a; margin:15px 0;">
@@ -356,9 +354,6 @@ var win_Grabber =  // описание элементов окна Grabber
                                 </div>
                             </div>
 
-
-
-
 							<div id="listofthetags" style="display: none; color:bisque; margin-left:5px;">
 								<div style="display: grid; grid-template-columns: repeat(3, 1fr); border:1px solid lightslategrey;">
 								  <label><input type="checkbox" name="tagsforfilter" value="server_issues"> Серверные</label>
@@ -370,8 +365,6 @@ var win_Grabber =  // описание элементов окна Grabber
 								  <label><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_outgoing_tp_crm2"> Передача на ТП Исход</label>
 								  <label><input type="checkbox" name="tagsforfilter" value="queue"> Очередь</label>
 								  <label><input type="checkbox" name="tagsforfilter" value="oo"> Ошибка КЦ</label>
-								  <label><input type="checkbox" name="tagsforfilter" value="#configuration"> Комплектации</label>
-								  <label><input type="checkbox" name="tagsforfilter" value="#transfer"> Смена корп почты П</label>
 							  </div>
 
 							  <div style="display: flex;">
@@ -434,6 +427,54 @@ function setupAnyLogic(groupName) {
 setupAnyLogic("priorityfilter");
 setupAnyLogic("deptfilter");
 setupAnyLogic("usrtypefilter");
+
+//Блок функций для "другие фильтры"
+function getCheckedValues(groupName) {
+    return Array.from(document.querySelectorAll(`input[name="${groupName}"]:checked`))
+        .map(cb => cb.value);
+}
+
+function getOtherFiltersInputs() {
+    const commentInput = document.querySelector('#listofotheroptions input[placeholder="Поиск по комментарию"]').value.trim();
+    const messageInput = document.querySelector('#listofotheroptions input[placeholder="Поиск по сообщению"]').value.trim();
+
+    return { commentInput, messageInput };
+}
+
+function validateTextInputs(commentInput, messageInput) {
+    if (commentInput && messageInput) {
+        alert("Выберите только одно поле для поиска: либо по комментарию, либо по сообщению. Второе поле должно быть пустым.");
+        return false;
+    }
+    return true;
+}
+
+function collectOtherFilters() {
+
+    // 1. Чекбоксы
+    const priority = getCheckedValues("priorityfilter");
+    const dept = getCheckedValues("deptfilter");
+    const usertype = getCheckedValues("usrtypefilter");
+
+    // 2. Поля ввода
+    const { commentInput, messageInput } = getOtherFiltersInputs();
+
+    // 3. Проверка конфликта
+    if (!validateTextInputs(commentInput, messageInput)) {
+        return null; // прекращаем выполнение
+    }
+
+    // 4. Возвращаем всё в удобной структуре
+    return {
+        priority,
+        dept,
+        usertype,
+        commentInput,
+        messageInput
+    };
+}
+
+///Конец блока функций
 
 
 
@@ -1345,6 +1386,10 @@ function themeMatches(r, chosen) {
 }
 
 document.getElementById('stargrab').onclick = async function () {
+
+    const filters = collectOtherFilters();
+    if (!filters) return; // конфликт — прекращаем
+    console.log(filters);
 
     if (document.getElementById('CSATFilterField').style.display == "") {
         document.getElementById('CSATFilterField').style.display = "none"
