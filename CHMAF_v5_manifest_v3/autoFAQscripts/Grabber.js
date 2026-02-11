@@ -468,13 +468,7 @@ function collectOtherFilters() {
         messageInput
     };
 }
-
-
-
 ///Конец блока функций
-
-
-
 
 document.getElementById('HideToolsPanel').onclick = function () {
     if (document.getElementById('AgregatedDataThemes').style.display == '') {
@@ -725,7 +719,7 @@ function buildUniversalTable({
         currentTableData = data; // сохраняем
     }
 
-    const table = buildHTMLTable(data, columnTitle, mode);
+    const table = buildHTMLTable(data, columnTitle, mode, groupField);
     tableContainer.appendChild(table);
 
     if (saveButtonId) {
@@ -735,7 +729,6 @@ function buildUniversalTable({
     lastTableParams = { mode, groupField, columnTitle, saveButtonId };
 
 }
-
 
 function buildIntervalData(groupField) {
 
@@ -753,8 +746,7 @@ function buildIntervalData(groupField) {
 
     const result = payloadarray.reduce((acc, obj) => {
         const value = obj[groupField];
-        const timeStamp = obj.timeStamp;
-        const timeKey = moment(timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
+        const timeKey = moment(obj.timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
 
         const interval = intervals.find(interval => {
             const [start, end] = interval.split(' - ');
@@ -772,7 +764,7 @@ function buildIntervalData(groupField) {
 
     const data = Object.entries(result.counts).flatMap(([interval, counts]) =>
         Object.entries(counts).map(([value, count]) => ({
-            Value: value,
+            [groupField]: value,   // <-- ключ теперь правильный
             TimeStamp: interval,
             Count: count
         }))
@@ -787,6 +779,7 @@ function buildIntervalData(groupField) {
     return data;
 }
 
+
 function buildSimpleData(groupField) {
 
     const counts = payloadarray.reduce((acc, obj) => {
@@ -796,15 +789,15 @@ function buildSimpleData(groupField) {
     }, {});
 
     return Object.entries(counts).map(([value, count]) => ({
-        Value: value,
+        [groupField]: value,   // <-- ключ теперь правильный
         Count: count
     }));
 }
 
-function buildHTMLTable(data, columnTitle, mode) {
+
+function buildHTMLTable(data, columnTitle, mode, groupField) {
 
     const table = document.createElement('table');
-
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
 
@@ -839,14 +832,14 @@ function buildHTMLTable(data, columnTitle, mode) {
         if (mode === "interval") {
             row.innerHTML = `
                 <td>${index + 1}</td>
-                <td>${item.Value}</td>
+                <td>${item[groupField]}</td>
                 <td>${item.TimeStamp}</td>
                 <td>${item.Count}</td>
             `;
         } else {
             row.innerHTML = `
                 <td>${index + 1}</td>
-                <td>${item.Value}</td>
+                <td>${item[groupField]}</td>
                 <td>${item.Count}</td>
             `;
         }
@@ -867,7 +860,6 @@ function rebuildLastTable() {
     });
 }
 
-
 function sortUniversalTableByCount() {
     currentTableData.sort((a, b) => {
         return isDescending
@@ -880,381 +872,137 @@ function sortUniversalTableByCount() {
     rebuildLastTable();
 }
 
+//new Graph функция
+function drawUniversalGraph({
+    mode,          // "simple" или "interval"
+    groupField,    // ThemeValue или Country
+    chartType,     // bar или line
+    title          // Тематика или Страна
+}) {
+    document.getElementById('AgregatedDataThemes').style.width = "1200px";
+    document.getElementById('themesgrabbeddata').style.display = 'none';
+
+    const graphContainer = document.getElementById('AgregatedDataOut');
+    graphContainer.innerHTML = '';
+
+    const canvas = document.createElement('canvas');
+    graphContainer.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+
+    let labels = [];
+    let datasets = [];
+
+    if (mode === "simple") {
+
+        let source;
+
+        // Если таблица была построена — используем её данные
+        if (currentTableData.length > 0) {
+            source = currentTableData;
+        } else {
+            // Если таблицы не было — используем оригинальные массивы
+            source = groupField === "ThemeValue" ? countsArray : countsCountryArray;
+        }
+
+
+        labels = source.map(item => item[groupField]);
+        const counts = source.map(item => item.Count);
+
+        datasets = [{
+            label: "Количество",
+            data: counts,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }];
+    }
+
+
+    if (mode === "interval") {
+        // INTERVAL MODE (line chart)
+        const intervals = [
+            '07:00 - 07:30', '07:30 - 08:00', '08:00 - 08:30', '08:30 - 09:00',
+            '09:00 - 09:30', '09:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00',
+            '11:00 - 11:30', '11:30 - 12:00', '12:00 - 12:30', '12:30 - 13:00',
+            '13:00 - 13:30', '13:30 - 14:00', '14:00 - 14:30', '14:30 - 15:00',
+            '15:00 - 15:30', '15:30 - 16:00', '16:00 - 16:30', '16:30 - 17:00',
+            '17:00 - 17:30', '17:30 - 18:00', '18:00 - 18:30', '18:30 - 19:00',
+            '19:00 - 19:30', '19:30 - 20:00', '20:00 - 20:30', '20:30 - 21:00',
+            '21:00 - 21:30', '21:30 - 22:00', '22:00 - 22:30', '22:30 - 23:00',
+            '23:00 - 23:30', '23:30 - 00:00'
+        ];
+
+        labels = intervals;
+
+        // Группировка
+        const result = payloadarray.reduce((acc, obj) => {
+            const value = obj[groupField];
+            const timeKey = moment(obj.timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
+
+            const interval = intervals.find(interval => {
+                const [start, end] = interval.split(' - ');
+                return moment(timeKey, 'HH:mm')
+                    .isBetween(moment(start, 'HH:mm'), moment(end, 'HH:mm'), null, '[]');
+            });
+
+            if (interval) {
+                acc.counts[interval] = acc.counts[interval] || {};
+                acc.counts[interval][value] = (acc.counts[interval][value] || 0) + 1;
+            }
+
+            acc.unique.add(value);
+            return acc;
+        }, { counts: {}, unique: new Set() });
+
+        const uniqueValues = Array.from(result.unique);
+
+        datasets = uniqueValues.map(value => {
+            const data = intervals.map(interval => {
+                const obj = result.counts[interval];
+                return obj && obj[value] ? obj[value] : 0;
+            });
+
+            const color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;
+
+            return {
+                label: value,
+                data,
+                backgroundColor: color,
+                borderColor: color,
+                borderWidth: 2,
+                pointRadius: 3
+            };
+        });
+    }
+
+    // Рисуем график
+    new Chart(ctx, {
+        type: chartType,
+        data: { labels, datasets },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: 'bisque' }
+                },
+                x: {
+                    ticks: { color: 'bisque' }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'LightSalmon',
+                        font: { weight: 'bold' }
+                    }
+                }
+            }
+        }
+    });
+}
+
+
 /////////////
-
-function drawGraph() {
-    document.getElementById('AgregatedDataThemes').style.width = "1200px"
-    document.getElementById('themesgrabbeddata').style.display = 'none'
-    const themeValues = countsArray.map(item => item.ThemeValue);
-    const counts = countsArray.map(item => item.Count);
-
-    // Создаем контейнер для графика
-    const graphContainer = document.getElementById('AgregatedDataOut');
-    graphContainer.innerHTML = ''; // Очищаем содержимое контейнера перед отрисовкой графика
-    const canvas = document.createElement('canvas');
-    graphContainer.appendChild(canvas);
-
-    // Отрисовываем график
-    const ctx = canvas.getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: themeValues,
-            datasets: [
-                {
-                    label: 'Количество',
-                    data: counts,
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: 'bisque' // Цвет текста по оси Y
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: 'bisque' // Цвет текста по оси X
-                    }
-                }
-            }
-        }
-    });
-}
-
-function drawGraphCountry() {
-    document.getElementById('AgregatedDataThemes').style.width = "1200px"
-    document.getElementById('themesgrabbeddata').style.display = 'none'
-    const countryValues = countsCountryArray.map(item => item.Country);
-    const countryCounts = countsCountryArray.map(item => item.Count);
-
-    // Создаем контейнер для графика
-    const graphContainer = document.getElementById('AgregatedDataOut');
-    graphContainer.innerHTML = ''; // Очищаем содержимое контейнера перед отрисовкой графика
-    const canvas = document.createElement('canvas');
-    graphContainer.appendChild(canvas);
-
-    // Отрисовываем график
-    const ctx = canvas.getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: countryValues,
-            datasets: [
-                {
-                    label: 'Количество',
-                    data: countryCounts,
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: 'bisque' // Цвет текста по оси Y
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: 'bisque' // Цвет текста по оси X
-                    }
-                }
-            }
-        }
-    });
-}
-
-function drawIntervalGraph() {
-    const intervals = [
-        '07:00 - 07:30',
-        '07:30 - 08:00',
-        '08:00 - 08:30',
-        '08:30 - 09:00',
-        '09:00 - 09:30',
-        '09:30 - 10:00',
-        '10:00 - 10:30',
-        '10:30 - 11:00',
-        '11:00 - 11:30',
-        '11:30 - 12:00',
-        '12:00 - 12:30',
-        '12:30 - 13:00',
-        '13:00 - 13:30',
-        '13:30 - 14:00',
-        '14:00 - 14:30',
-        '14:30 - 15:00',
-        '15:00 - 15:30',
-        '15:30 - 16:00',
-        '16:00 - 16:30',
-        '16:30 - 17:00',
-        '17:00 - 17:30',
-        '17:30 - 18:00',
-        '18:00 - 18:30',
-        '18:30 - 19:00',
-        '19:00 - 19:30',
-        '19:30 - 20:00',
-        '20:00 - 20:30',
-        '20:30 - 21:00',
-        '21:00 - 21:30',
-        '21:30 - 22:00',
-        '22:00 - 22:30',
-        '22:30 - 23:00',
-        '23:00 - 23:30',
-        '23:30 - 00:00'
-    ];
-
-    const result = payloadarray.reduce((acc, obj) => {
-        const themeValue = obj.ThemeValue;
-        const timeStamp = obj.timeStamp;
-        const timeKey = moment(timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
-        const interval = intervals.find((interval) => {
-            const [start, end] = interval.split(' - ');
-            return moment(timeKey, 'HH:mm').isBetween(moment(start, 'HH:mm'), moment(end, 'HH:mm'), null, '[]');
-        });
-
-        if (interval) {
-            acc.counts[interval] = acc.counts[interval] || {};
-            acc.counts[interval][themeValue] = (acc.counts[interval][themeValue] || 0) + 1;
-        }
-
-        acc.uniqueValues.add(themeValue);
-        return acc;
-    }, { uniqueValues: new Set(), counts: {} });
-
-    const uniqueValuesArray = Array.from(result.uniqueValues);
-    countsArrayInterval = Object.entries(result.counts).flatMap(([interval, counts]) => {
-        return Object.entries(counts).map(([themeValue, count]) => ({
-            TimeStamp: interval,
-            ThemeValue: themeValue,
-            Count: count,
-        }));
-    });
-
-    countsArrayInterval.sort((a, b) => {
-        const timeA = a.TimeStamp.split(" - ")[0];
-        const timeB = b.TimeStamp.split(" - ")[0];
-        return moment(timeA, "HH:mm").diff(moment(timeB, "HH:mm"));
-    });
-
-    document.getElementById('AgregatedDataThemes').style.width = "1200px";
-    document.getElementById('themesgrabbeddata').style.display = 'none';
-
-    const themeValues = uniqueValuesArray;
-    const datasets = themeValues.map((theme, index) => {
-        const counts = intervals.map(interval => {
-            const countObj = countsArrayInterval.find(item => item.TimeStamp.startsWith(interval) && item.ThemeValue === theme);
-            return countObj ? countObj.Count : 0;
-        });
-
-        const color = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
-
-        return {
-            label: theme,
-            data: counts,
-            backgroundColor: color,
-            borderColor: color,
-            borderWidth: 1,
-            pointRadius: 4, // Hide data points for a smooth line
-        };
-    });
-
-    const graphContainer = document.getElementById('AgregatedDataOut');
-    graphContainer.innerHTML = '';
-    const canvas = document.createElement('canvas');
-    graphContainer.appendChild(canvas);
-
-    const ctx = canvas.getContext('2d');
-    new Chart(ctx, {
-        type: 'line', // Set the chart type to 'line'
-        data: {
-            labels: intervals,
-            datasets: datasets
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: 'bisque',
-                        font: {
-                            weight: 'bold'
-                        }
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: 'bisque',
-                        font: {
-                            weight: 'bold'
-                        }
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: 'LightSalmon',
-                        font: {
-                            weight: 'bold'
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    document.getElementById('SaveIntervalCSV').removeAttribute('disabled')
-}
-
-function drawIntervalCountryGraph() {
-    const intervals = [
-        '07:00 - 07:30',
-        '07:30 - 08:00',
-        '08:00 - 08:30',
-        '08:30 - 09:00',
-        '09:00 - 09:30',
-        '09:30 - 10:00',
-        '10:00 - 10:30',
-        '10:30 - 11:00',
-        '11:00 - 11:30',
-        '11:30 - 12:00',
-        '12:00 - 12:30',
-        '12:30 - 13:00',
-        '13:00 - 13:30',
-        '13:30 - 14:00',
-        '14:00 - 14:30',
-        '14:30 - 15:00',
-        '15:00 - 15:30',
-        '15:30 - 16:00',
-        '16:00 - 16:30',
-        '16:30 - 17:00',
-        '17:00 - 17:30',
-        '17:30 - 18:00',
-        '18:00 - 18:30',
-        '18:30 - 19:00',
-        '19:00 - 19:30',
-        '19:30 - 20:00',
-        '20:00 - 20:30',
-        '20:30 - 21:00',
-        '21:00 - 21:30',
-        '21:30 - 22:00',
-        '22:00 - 22:30',
-        '22:30 - 23:00',
-        '23:00 - 23:30',
-        '23:30 - 00:00'
-    ];
-
-    const result = payloadarray.reduce((acc, obj) => {
-        const countryValue = obj.Country;
-        const timeStamp = obj.timeStamp;
-        const timeKey = moment(timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
-        const interval = intervals.find((interval) => {
-            const [start, end] = interval.split(' - ');
-            return moment(timeKey, 'HH:mm').isBetween(moment(start, 'HH:mm'), moment(end, 'HH:mm'), null, '[]');
-        });
-
-        if (interval) {
-            acc.counts[interval] = acc.counts[interval] || {};
-            acc.counts[interval][countryValue] = (acc.counts[interval][countryValue] || 0) + 1;
-        }
-
-        acc.uniqueValues.add(countryValue);
-        return acc;
-    }, { uniqueValues: new Set(), counts: {} });
-
-    const uniqueValuesArray = Array.from(result.uniqueValues);
-    countsArrayInterval = Object.entries(result.counts).flatMap(([interval, counts]) => {
-        return Object.entries(counts).map(([countryValue, count]) => ({
-            TimeStamp: interval,
-            Country: countryValue,
-            Count: count,
-        }));
-    });
-
-    countsArrayInterval.sort((a, b) => {
-        const timeA = a.TimeStamp.split(" - ")[0];
-        const timeB = b.TimeStamp.split(" - ")[0];
-        return moment(timeA, "HH:mm").diff(moment(timeB, "HH:mm"));
-    });
-
-    document.getElementById('AgregatedDataThemes').style.width = "1200px";
-    document.getElementById('themesgrabbeddata').style.display = 'none';
-
-    const countryValues = uniqueValuesArray;
-    const datasets = countryValues.map((country, index) => {
-        const counts = intervals.map(interval => {
-            const countObj = countsArrayInterval.find(item => item.TimeStamp.startsWith(interval) && item.Country === country);
-            return countObj ? countObj.Count : 0;
-        });
-
-        const color = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
-
-        return {
-            label: country,
-            data: counts,
-            backgroundColor: color,
-            borderColor: color,
-            borderWidth: 1,
-            pointRadius: 4, // Hide data points for a smooth line
-        };
-    });
-
-    const graphContainer = document.getElementById('AgregatedDataOut');
-    graphContainer.innerHTML = '';
-    const canvas = document.createElement('canvas');
-    graphContainer.appendChild(canvas);
-
-    const ctx = canvas.getContext('2d');
-    new Chart(ctx, {
-        type: 'line', // Set the chart type to 'line'
-        data: {
-            labels: intervals,
-            datasets: datasets
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: 'bisque',
-                        font: {
-                            weight: 'bold'
-                        }
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: 'bisque',
-                        font: {
-                            weight: 'bold'
-                        }
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: 'LightSalmon',
-                        font: {
-                            weight: 'bold'
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    document.getElementById('SaveIntervalСountryCSV').removeAttribute('disabled')
-}
 
 function saveToCSVInterval() {
     let csvContent = "\uFEFF"; // Добавление BOM символа для корректной кодировки UTF-8
@@ -1745,7 +1493,14 @@ document.getElementById('stargrab').onclick = async function () {
     );
 
     const switchToGraphButton = document.getElementById('SwitchToGraph');
-    switchToGraphButton.addEventListener('click', drawGraph);
+    switchToGraphButton.addEventListener('click', () => {
+        drawUniversalGraph({
+            mode: "simple",
+            groupField: "ThemeValue",
+            chartType: "bar",
+            title: "Тематика"
+        });
+    });
 
     const switchToTableCountryButton = document.getElementById('SwitchToTableCountry');
     switchToTableCountryButton.addEventListener('click', () =>
@@ -1757,9 +1512,15 @@ document.getElementById('stargrab').onclick = async function () {
         })
     );
 
-
     const switchToGraphCountryButton = document.getElementById('SwitchToGraphCountry');
-    switchToGraphCountryButton.addEventListener('click', drawGraphCountry);
+    switchToGraphCountryButton.addEventListener('click', () => {
+        drawUniversalGraph({
+            mode: "simple",
+            groupField: "Country",
+            chartType: "bar",
+            title: "Страна"
+        });
+    });
 
     const switchToIntervalTableButton = document.getElementById('SwitchToIntervalTable');
     switchToIntervalTableButton.addEventListener('click', () =>
@@ -1771,9 +1532,15 @@ document.getElementById('stargrab').onclick = async function () {
         })
     );
 
-
     const switchToIntervalGraphButton = document.getElementById('SwitchToIntervalGraph');
-    switchToIntervalGraphButton.addEventListener('click', drawIntervalGraph);
+    switchToIntervalGraphButton.addEventListener('click', () => {
+        drawUniversalGraph({
+            mode: "interval",
+            groupField: "ThemeValue",
+            chartType: "line",
+            title: "Тематика"
+        });
+    });
 
     const SaveIntervalCSVButton = document.getElementById('SaveIntervalCSV');
     SaveIntervalCSVButton.addEventListener('click', saveToCSVInterval);
@@ -1788,9 +1555,15 @@ document.getElementById('stargrab').onclick = async function () {
         })
     );
 
-
     const switchToIntervalGraphCountryButton = document.getElementById('SwitchToIntervalGraphCountry');
-    switchToIntervalGraphCountryButton.addEventListener('click', drawIntervalCountryGraph);
+    switchToIntervalGraphCountryButton.addEventListener('click', () => {
+        drawUniversalGraph({
+            mode: "interval",
+            groupField: "Country",
+            chartType: "line",
+            title: "Страна"
+        });
+    });
 
     const SaveIntervalСountryCSVButton = document.getElementById('SaveIntervalСountryCSV');
     SaveIntervalСountryCSVButton.addEventListener('click', SaveIntervalСountryCSV);
