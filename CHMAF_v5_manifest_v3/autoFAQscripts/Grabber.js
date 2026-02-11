@@ -1288,6 +1288,60 @@ function toggleBlock({ containerId, blockId, extraId }) {
     }
 }
 
+function aggregateCounts(array, field) {
+    return array.reduce((acc, obj) => {
+        const value = obj[field];
+        acc[value] = (acc[value] || 0) + 1;
+        return acc;
+    }, {});
+}
+
+function addCell(row, value, extraStyles = "", attrs = {}) {
+    const cell = document.createElement('td');
+    cell.textContent = value;
+    cell.style.border = "1px solid black";
+    cell.style.fontSize = "12px";
+
+    if (extraStyles) cell.style.cssText += extraStyles;
+
+    for (const [key, val] of Object.entries(attrs)) {
+        cell.setAttribute(key, val);
+    }
+
+    row.appendChild(cell);
+}
+
+function initRowClickHandlers() {
+    document.querySelectorAll('.rowOfChatGrabbed').forEach(row => {
+        row.onclick = () => {
+            const chatId = row.children[3].textContent;
+            document.getElementById('hashchathis').value = chatId;
+
+            if (document.getElementById('AF_ChatHis').style.display === 'none') {
+                document.getElementById('opennewcat').click();
+            }
+
+            btn_search_history.click();
+        };
+    });
+}
+
+function initCSATFilterButtonHandlers() {
+    const btnFilters = document.getElementsByName('btnNameFilter');
+
+    btnFilters.forEach(btn => {
+        if (btn.textContent === '🏁 CSAT') {
+            btn.onclick = () => {
+                toggleCSATBlock();
+                initCSATCheckboxHandlers();
+                document.getElementById('hidefilter').onclick = toggleCSATBlock;
+                document.getElementById('downloadfilteredtocsv').onclick = saveFilteredTableCSV;
+            };
+        }
+    });
+}
+
+
 //
 
 document.getElementById('stargrab').onclick = async function () {
@@ -1563,34 +1617,19 @@ document.getElementById('stargrab').onclick = async function () {
         row.className = "rowOfChatGrabbed";
         row.style.border = "1px solid black";
 
-        function addCell(value, extraStyles = "", attrs = {}) {
-            const cell = document.createElement('td');
-            cell.textContent = value;
-            cell.style.border = "1px solid black";
-            cell.style.fontSize = "12px";
-
-            if (extraStyles) cell.style.cssText += extraStyles;
-
-            for (const [key, val] of Object.entries(attrs)) {
-                cell.setAttribute(key, val);
-            }
-
-            row.appendChild(cell);
-        }
-
-        addCell(index + 1);
-        addCell(element.timeStamp);
-        addCell(element.OperatorName, "text-align:center;");
-        addCell(element.ChatId, "font-size:11px;");
+        addCell(row, index + 1);
+        addCell(row, element.timeStamp);
+        addCell(row, element.OperatorName, "text-align:center;");
+        addCell(row, element.ChatId, "font-size:11px;");
 
         const matchedItem = chatswithmarksarray.find(item => item.ConvId === element.ChatId);
         const csatValue = matchedItem ? (matchedItem.Rate ?? '-') : '-';
 
-        addCell(csatValue, "text-align:center;", { name: "CSATvalue" });
+        addCell(row, csatValue, "text-align:center;", { name: "CSATvalue" });
 
-        addCell(element.ThemeValue, "text-align:center;");
-        addCell(element.SLACompleted, "text-align:center;", { name: "SLACompletedValue" });
-        addCell(element.Country, "text-align:center;");
+        addCell(row, element.ThemeValue, "text-align:center;");
+        addCell(row, element.SLACompleted, "text-align:center;", { name: "SLACompletedValue" });
+        addCell(row, element.Country, "text-align:center;");
 
         table.appendChild(row);
     });
@@ -1598,152 +1637,15 @@ document.getElementById('stargrab').onclick = async function () {
 
     // Append the table to the themesgrabbeddata element
     themesgrabbeddata.appendChild(table);
+    initCSATFilterButtonHandlers();
+
 
     //
 
-    const result = payloadarray.reduce((acc, obj) => {
-        const themeValue = obj.ThemeValue;
-        acc.uniqueValues.add(themeValue);
-        acc.counts[themeValue] = (acc.counts[themeValue] || 0) + 1;
-        return acc;
-    }, { uniqueValues: new Set(), counts: {} });
-
-    const resultCountry = pureArray.reduce((acc, obj) => {
-        const countryValue = obj.Country;
-        acc.uniqueValues.add(countryValue);
-        acc.countryCounts[countryValue] = (acc.countryCounts[countryValue] || 0) + 1;
-        return acc;
-    }, { uniqueValues: new Set(), countryCounts: {} });
-
-    countsArray = Object.entries(result.counts).map(([themeValue, count]) => ({ ThemeValue: themeValue, Count: count }));
-    countsCountryArray = Object.entries(resultCountry.countryCounts).map(([countryValue, count]) => ({ Country: countryValue, Count: count }));
+    countsArray = Object.entries(aggregateCounts(payloadarray, "ThemeValue")).map(([ThemeValue, Count]) => ({ ThemeValue, Count }));
+    countsCountryArray = Object.entries(aggregateCounts(pureArray, "Country")).map(([Country, Count]) => ({ Country, Count }));
 
     isDescending = true; // Флаг для определения порядка сортировки
-
-    const switchToTableButton = document.getElementById('SwitchToTable');
-    switchToTableButton.addEventListener('click', () =>
-        buildUniversalTable({
-            mode: "simple",
-            groupField: "ThemeValue",
-            columnTitle: "Тематика",
-            saveButtonId: null
-        })
-    );
-
-    const switchToGraphButton = document.getElementById('SwitchToGraph');
-    switchToGraphButton.addEventListener('click', () => {
-        drawUniversalGraph({
-            mode: "simple",
-            groupField: "ThemeValue",
-            chartType: "bar",
-            title: "Тематика"
-        });
-    });
-
-    const switchToTableCountryButton = document.getElementById('SwitchToTableCountry');
-    switchToTableCountryButton.addEventListener('click', () =>
-        buildUniversalTable({
-            mode: "simple",
-            groupField: "Country",
-            columnTitle: "Страна",
-            saveButtonId: null
-        })
-    );
-
-    const switchToGraphCountryButton = document.getElementById('SwitchToGraphCountry');
-    switchToGraphCountryButton.addEventListener('click', () => {
-        drawUniversalGraph({
-            mode: "simple",
-            groupField: "Country",
-            chartType: "bar",
-            title: "Страна"
-        });
-    });
-
-    const switchToIntervalTableButton = document.getElementById('SwitchToIntervalTable');
-    switchToIntervalTableButton.addEventListener('click', () =>
-        buildUniversalTable({
-            mode: "interval",
-            groupField: "ThemeValue",
-            columnTitle: "Тематика",
-            saveButtonId: "SaveIntervalCSV"
-        })
-    );
-
-    const switchToIntervalGraphButton = document.getElementById('SwitchToIntervalGraph');
-    switchToIntervalGraphButton.addEventListener('click', () => {
-        drawUniversalGraph({
-            mode: "interval",
-            groupField: "ThemeValue",
-            chartType: "line",
-            title: "Тематика"
-        });
-    });
-
-    const SaveIntervalCSVButton = document.getElementById('SaveIntervalCSV');
-    SaveIntervalCSVButton.addEventListener('click', saveToCSVInterval);
-
-    const switchToIntervalTableCountryButton = document.getElementById('SwitchToIntervalTableCountry');
-    switchToIntervalTableCountryButton.addEventListener('click', () =>
-        buildUniversalTable({
-            mode: "interval",
-            groupField: "Country",
-            columnTitle: "Страна",
-            saveButtonId: "SaveIntervalCountryCSV"
-        })
-    );
-
-    const switchToIntervalGraphCountryButton = document.getElementById('SwitchToIntervalGraphCountry');
-    switchToIntervalGraphCountryButton.addEventListener('click', () => {
-        drawUniversalGraph({
-            mode: "interval",
-            groupField: "Country",
-            chartType: "line",
-            title: "Страна"
-        });
-    });
-
-    const SaveIntervalСountryCSVButton = document.getElementById('SaveIntervalСountryCSV');
-    SaveIntervalСountryCSVButton.addEventListener('click', SaveIntervalСountryCSV);
-
-    ///
-
-
-
-    document.getElementById('hideselecalltags').onclick = filterTableRowsByTags
-
-    document.getElementById('SaveToCSVFilteredByTags').onclick = function () {
-        let checkboxes = document.querySelectorAll('input[type="checkbox"][name="tagsforfilter"]');
-        let allUnchecked = Array.from(checkboxes).every(checkbox => !checkbox.checked);
-
-        if (allUnchecked) {
-            downloadCSV(operstagsarray);
-        } else {
-            saveFilteredTableCSV()
-        }
-    }
-
-    document.getElementById('SaveСountryTableCSV').onclick = function () {
-        SaveСountryCSV('Country_Aggregated.csv');
-    }
-
-    ///
-
-    let btnFilters = document.getElementsByName('btnNameFilter');
-
-    for (let i = 0; i < btnFilters.length; i++) {
-        btnFilters[i].onclick = function () {
-
-            if (btnFilters[i].textContent === '🏁 CSAT') {
-
-                toggleCSATBlock();
-                initCSATCheckboxHandlers();
-
-                document.getElementById('hidefilter').onclick = toggleCSATBlock;
-                document.getElementById('downloadfilteredtocsv').onclick = saveFilteredTableCSV;
-            }
-        };
-    }
 
 
     //
@@ -1753,25 +1655,90 @@ document.getElementById('stargrab').onclick = async function () {
     calcAvgCsat()
     calcAvgSLACompleted()
 
-    let hashes = document.querySelectorAll('.rowOfChatGrabbed');
-    for (let j = 0; j < hashes.length; j++) {
-        hashes[j].onclick = function () {
-
-            if (document.getElementById('AF_ChatHis').style.display == 'none') {
-                document.getElementById('opennewcat').click();
-                document.getElementById('hashchathis').value = hashes[j].children[3].textContent
-                    ;
-                btn_search_history.click()
-            } else {
-                document.getElementById('hashchathis').value = hashes[j].children[3].textContent
-                btn_search_history.click()
-            }
-        }
-    }
+    initRowClickHandlers()
     document.getElementById('GatherStatByThemes').removeAttribute('disabled')
 }
 
+//
 
+document.getElementById('SwitchToTable').onclick = () =>
+    buildUniversalTable({
+        mode: "simple",
+        groupField: "ThemeValue",
+        columnTitle: "Тематика"
+    });
+
+document.getElementById('SwitchToGraph').onclick = () =>
+    drawUniversalGraph({
+        mode: "simple",
+        groupField: "ThemeValue",
+        chartType: "bar",
+        title: "Тематика"
+    });
+
+document.getElementById('SwitchToTableCountry').onclick = () =>
+    buildUniversalTable({
+        mode: "simple",
+        groupField: "Country",
+        columnTitle: "Страна",
+        saveButtonId: null
+    });
+
+document.getElementById('SwitchToGraphCountry').onclick = () =>
+    drawUniversalGraph({
+        mode: "simple",
+        groupField: "Country",
+        chartType: "bar",
+        title: "Страна"
+    });
+
+document.getElementById('SwitchToIntervalTable').onclick = () =>
+    buildUniversalTable({
+        mode: "interval",
+        groupField: "ThemeValue",
+        columnTitle: "Тематика",
+        saveButtonId: "SaveIntervalCSV"
+    });
+
+document.getElementById('SwitchToIntervalGraph').onclick = () =>
+    drawUniversalGraph({
+        mode: "interval",
+        groupField: "ThemeValue",
+        chartType: "line",
+        title: "Тематика"
+    });
+
+document.getElementById('SaveIntervalCSV').onclick = saveToCSVInterval;
+
+document.getElementById('SwitchToIntervalTableCountry').onclick = () =>
+    buildUniversalTable({
+        mode: "interval",
+        groupField: "Country",
+        columnTitle: "Страна",
+        saveButtonId: "SaveIntervalCountryCSV"
+    })
+
+document.getElementById('SwitchToIntervalGraphCountry').onclick = () =>
+    drawUniversalGraph({
+        mode: "interval",
+        groupField: "Country",
+        chartType: "line",
+        title: "Страна"
+    });
+
+document.getElementById('SaveIntervalСountryCSV').onclick = SaveIntervalСountryCSV;
+
+document.getElementById('SaveToCSVFilteredByTags').onclick = () => {
+    const checkboxes = document.querySelectorAll('input[name="tagsforfilter"]');
+    const allUnchecked = [...checkboxes].every(cb => !cb.checked);
+    allUnchecked ? downloadCSV(operstagsarray) : saveFilteredTableCSV();
+};
+
+document.getElementById('SaveСountryTableCSV').onclick = () => SaveСountryCSV('Country_Aggregated.csv');
+document.getElementById('hideselecalltags').onclick = filterTableRowsByTags
+
+
+///
 
 document.getElementById('opscontainer').onclick = () =>
     toggleBlock({
