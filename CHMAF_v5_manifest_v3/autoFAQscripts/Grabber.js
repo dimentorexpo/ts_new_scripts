@@ -429,42 +429,37 @@ setupAnyLogic("deptfilter");
 setupAnyLogic("usrtypefilter");
 
 //Блок функций для "другие фильтры"
+
+const commentInputEl = document.querySelector('#listofotheroptions input[placeholder="Поиск по комментарию"]');
+const messageInputEl = document.querySelector('#listofotheroptions input[placeholder="Поиск по сообщению"]');
+
+commentInputEl.addEventListener("input", () => {
+    if (commentInputEl.value.trim() !== "") {
+        messageInputEl.value = "";
+    }
+});
+
+messageInputEl.addEventListener("input", () => {
+    if (messageInputEl.value.trim() !== "") {
+        commentInputEl.value = "";
+    }
+});
+
+
 function getCheckedValues(groupName) {
     return Array.from(document.querySelectorAll(`input[name="${groupName}"]:checked`))
         .map(cb => cb.value);
 }
 
-function getOtherFiltersInputs() {
-    const commentInput = document.querySelector('#listofotheroptions input[placeholder="Поиск по комментарию"]').value.trim();
-    const messageInput = document.querySelector('#listofotheroptions input[placeholder="Поиск по сообщению"]').value.trim();
-
-    return { commentInput, messageInput };
-}
-
-function validateTextInputs(commentInput, messageInput) {
-    if (commentInput && messageInput) {
-        alert("Выберите только одно поле для поиска: либо по комментарию, либо по сообщению. Второе поле должно быть пустым.");
-        return false;
-    }
-    return true;
-}
-
 function collectOtherFilters() {
 
-    // 1. Чекбоксы
     const priority = getCheckedValues("priorityfilter");
     const dept = getCheckedValues("deptfilter");
     const usertype = getCheckedValues("usrtypefilter");
 
-    // 2. Поля ввода
-    const { commentInput, messageInput } = getOtherFiltersInputs();
+    const commentInput = commentInputEl.value.trim();
+    const messageInput = messageInputEl.value.trim();
 
-    // 3. Проверка конфликта
-    if (!validateTextInputs(commentInput, messageInput)) {
-        return null; // прекращаем выполнение
-    }
-
-    // 4. Возвращаем всё в удобной структуре
     return {
         priority,
         dept,
@@ -473,6 +468,8 @@ function collectOtherFilters() {
         messageInput
     };
 }
+
+
 
 ///Конец блока функций
 
