@@ -1130,6 +1130,40 @@ function themeMatches(r, chosen) {
     return r.payload.topicId?.value === chosen;
 }
 
+//функции для фильтрации КСАТ
+
+function toggleCSATBlock() {
+    const block = document.getElementById('CSATFilterField');
+    block.style.display = block.style.display === 'none' ? '' : 'none';
+}
+
+function filterCSATRows() {
+    const rows = document.querySelectorAll('.rowOfChatGrabbed');
+    const selectedValues = getSelectedCheckboxValues();
+
+    rows.forEach(row => {
+        const cellValue = row.querySelector('[name="CSATvalue"]').textContent;
+
+        const match =
+            selectedValues.length === 0 ||
+            selectedValues.includes(cellValue);
+
+        row.style.display = match ? '' : 'none';
+    });
+
+    calcAvgCsat();
+    calcAvgSLACompleted();
+}
+
+function initCSATCheckboxHandlers() {
+    const checkboxes = document.querySelectorAll('input[name="marksFilter"]');
+    checkboxes.forEach(cb => cb.addEventListener('change', filterCSATRows));
+}
+
+
+
+//
+
 document.getElementById('stargrab').onclick = async function () {
 
     const filters = collectOtherFilters();
@@ -1685,57 +1719,22 @@ document.getElementById('stargrab').onclick = async function () {
 
     ///
 
-    let btnFilters = document.getElementsByName('btnNameFilter')
+    let btnFilters = document.getElementsByName('btnNameFilter');
+
     for (let i = 0; i < btnFilters.length; i++) {
         btnFilters[i].onclick = function () {
-            if (btnFilters[i].textContent == '🏁 CSAT' && document.getElementById('CSATFilterField').style.display == 'none') {
-                document.getElementById('CSATFilterField').style.display = ''
 
-                // Получаем все строки таблицы с атрибутом name="rowOfChatGrabbed"
-                const rows = document.querySelectorAll('.rowOfChatGrabbed');
+            if (btnFilters[i].textContent === '🏁 CSAT') {
 
-                function filterTableRows() {
-                    const selectedValues = getSelectedCheckboxValues();
+                toggleCSATBlock();
+                initCSATCheckboxHandlers();
 
-                    // Перебираем все строки таблицы
-                    rows.forEach(function (row) {
-                        const cellValue = row.querySelector('[name="CSATvalue"]').textContent;
-
-                        // Если ни один чекбокс не выбран, отображаем все строки
-                        if (selectedValues.length === 0) {
-                            row.style.display = '';
-                        }
-                        // Если значение ячейки соответствует выбранным чекбоксам - отображаем строку
-                        else if (selectedValues.includes(cellValue)) {
-                            row.style.display = '';
-                        }
-                        // Иначе скрываем строку
-                        else {
-                            row.style.display = 'none';
-                        }
-                    });
-                    calcAvgCsat()
-                    calcAvgSLACompleted()
-                }
-
-                // Обрабатываем событие изменения для каждого чекбокса
-                const checkboxes = document.querySelectorAll('input[name="marksFilter"]');
-                checkboxes.forEach(function (checkbox) {
-                    checkbox.addEventListener('change', filterTableRows);
-                });
-
-                document.getElementById('hidefilter').onclick = function () {
-                    document.getElementById('CSATFilterField').style.display = 'none'
-                }
-
-                document.getElementById('downloadfilteredtocsv').onclick = saveFilteredTableCSV
-
-
-            } else if (btnFilters[i].textContent == '🏁 CSAT' && document.getElementById('CSATFilterField').style.display == '') {
-                document.getElementById('CSATFilterField').style.display = 'none'
+                document.getElementById('hidefilter').onclick = toggleCSATBlock;
+                document.getElementById('downloadfilteredtocsv').onclick = saveFilteredTableCSV;
             }
-        }
+        };
     }
+
 
     //
 
