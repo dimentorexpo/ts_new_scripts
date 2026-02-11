@@ -1160,6 +1160,134 @@ function initCSATCheckboxHandlers() {
     checkboxes.forEach(cb => cb.addEventListener('change', filterCSATRows));
 }
 
+function filterTableRowsByTags() {
+    // Получаем выбранные чекбоксы
+    const selectedValues = getSelectedCheckboxTagsValues();
+
+    if (selectedValues.length > 0) {
+        const rows = document.querySelectorAll('.rowOfChatGrabbed');
+        rows.forEach(function (row) {
+            const cellValue = row.children[3].textContent;
+            let isMatched = false; // Флаг для отслеживания совпадения
+
+            selectedValues.forEach(function (selectedValue) {
+                const filteredArray = cleanedarray.filter(item => {
+                    const tags = item.Tags.split(',').map(tag => tag.trim());
+                    return tags.includes(selectedValue);
+                });
+
+                filteredArray.forEach(function (item) {
+                    if (item.ChatId === cellValue) {
+                        isMatched = true;
+                        return; // Прерываем цикл, если найдено совпадение
+                    }
+                });
+            });
+
+            if (isMatched) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        calcAvgCsat();
+        calcAvgSLACompleted()
+    } else {
+        const rows = document.querySelectorAll('.rowOfChatGrabbed');
+        rows.forEach(function (row) {
+            row.style.display = '';
+        });
+        calcAvgCsat();
+        calcAvgSLACompleted()
+    }
+}
+
+function isJsonString(str) {
+    try {
+        if (typeof str !== 'string') throw new Error('Not a string');
+        let parsed = JSON.parse(str);
+
+        // Не допускаем другие типы кроме массивов
+        if (!Array.isArray(parsed)) throw new Error('Not an array');
+    } catch (e) {
+        console.log('Invalid JSON for:', str, 'Error:', e.message);
+        return false;
+    }
+    return true;
+}
+
+function isValidItem(item) {
+    return item.hasOwnProperty('ChatId') && item.hasOwnProperty('Tags');
+}
+
+function downloadCSV(array) {
+    let csvContent = ''; // Убрали начальную строку
+    let header = "ChatId,Tag1,Tag2,Tag3,Tag4,Tag5,Tag6";
+    csvContent += header + "\r\n";
+
+    array.forEach((item, index) => {
+        if (!isValidItem(item)) {
+            console.warn(`Element at index ${index} is invalid. Skipping...`, item);
+            return;
+        }
+
+        let tags = [];
+        if (item.Tags === "") {
+            tags = [];
+        } else if (isJsonString(item.Tags)) {
+            tags = JSON.parse(item.Tags);
+        } else {
+            console.warn(`Element at index ${index} has invalid Tags. Using empty array.`, item);
+        }
+
+        let row = [item.ChatId, ...tags];
+        csvContent += row.join(",") + "\r\n";
+        console.log(`Processed element at index ${index}:`, row.join(","));
+    });
+
+    // Создание Blob из строки CSV и загрузка файла
+    let blob = new Blob([csvContent], { type: 'text/csv' });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "export.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function toggleBlock({ containerId, blockId, extraId }) {
+    const block = document.getElementById(blockId);
+    const extra = extraId ? document.getElementById(extraId) : null;
+    const container = document.getElementById(containerId);
+
+    const isHidden = window.getComputedStyle(block).display === "none";
+
+
+    if (isHidden) {
+        block.style.display = blockId === "activeoperatorsgroup" ? "grid" : "";
+        if (extra) extra.style.display = "";
+        container.classList.add("glowing-border-animation");
+
+        // --- Специальная логика для othercontainer ---
+        if (containerId === "othercontainer") {
+            otherfilters = "on";
+            console.log("otherfilters:", otherfilters);
+        }
+
+    } else {
+        block.style.display = "none";
+        if (extra) extra.style.display = "none";
+        container.classList.remove("glowing-border-animation");
+
+        // --- Специальная логика для othercontainer ---
+        if (containerId === "othercontainer") {
+            otherfilters = "off";
+            console.log("otherfilters:", otherfilters);
+        }
+    }
+}
+
 
 
 //
@@ -1251,7 +1379,9 @@ document.getElementById('stargrab').onclick = async function () {
     let progressBar = document.getElementById("progressBarGrabber");
     let currentWidth = 0;
     let step = 100 / chekopersarr.length;
+    if (otherfilters == "off") {
 
+    }
     for (let i = 0; i < chekopersarr.length; i++) {
         tmponlyoperhashes = [];
         page = 1;
@@ -1510,7 +1640,6 @@ document.getElementById('stargrab').onclick = async function () {
         return acc;
     }, { uniqueValues: new Set(), countryCounts: {} });
 
-    const uniqueValuesArray = Array.from(result.uniqueValues);
     countsArray = Object.entries(result.counts).map(([themeValue, count]) => ({ ThemeValue: themeValue, Count: count }));
     countsCountryArray = Object.entries(resultCountry.countryCounts).map(([countryValue, count]) => ({ Country: countryValue, Count: count }));
 
@@ -1603,48 +1732,7 @@ document.getElementById('stargrab').onclick = async function () {
     SaveIntervalСountryCSVButton.addEventListener('click', SaveIntervalСountryCSV);
 
     ///
-    function filterTableRowsByTags() {
-        // Получаем выбранные чекбоксы
-        const selectedValues = getSelectedCheckboxTagsValues();
 
-        if (selectedValues.length > 0) {
-            const rows = document.querySelectorAll('.rowOfChatGrabbed');
-            rows.forEach(function (row) {
-                const cellValue = row.children[3].textContent;
-                let isMatched = false; // Флаг для отслеживания совпадения
-
-                selectedValues.forEach(function (selectedValue) {
-                    const filteredArray = cleanedarray.filter(item => {
-                        const tags = item.Tags.split(',').map(tag => tag.trim());
-                        return tags.includes(selectedValue);
-                    });
-
-                    filteredArray.forEach(function (item) {
-                        if (item.ChatId === cellValue) {
-                            isMatched = true;
-                            return; // Прерываем цикл, если найдено совпадение
-                        }
-                    });
-                });
-
-                if (isMatched) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            calcAvgCsat();
-            calcAvgSLACompleted()
-        } else {
-            const rows = document.querySelectorAll('.rowOfChatGrabbed');
-            rows.forEach(function (row) {
-                row.style.display = '';
-            });
-            calcAvgCsat();
-            calcAvgSLACompleted()
-        }
-    }
 
 
     document.getElementById('hideselecalltags').onclick = filterTableRowsByTags
@@ -1654,59 +1742,6 @@ document.getElementById('stargrab').onclick = async function () {
         let allUnchecked = Array.from(checkboxes).every(checkbox => !checkbox.checked);
 
         if (allUnchecked) {
-            function isJsonString(str) {
-                try {
-                    if (typeof str !== 'string') throw new Error('Not a string');
-                    let parsed = JSON.parse(str);
-
-                    // Не допускаем другие типы кроме массивов
-                    if (!Array.isArray(parsed)) throw new Error('Not an array');
-                } catch (e) {
-                    console.log('Invalid JSON for:', str, 'Error:', e.message);
-                    return false;
-                }
-                return true;
-            }
-
-            function isValidItem(item) {
-                return item.hasOwnProperty('ChatId') && item.hasOwnProperty('Tags');
-            }
-
-            function downloadCSV(array) {
-                let csvContent = ''; // Убрали начальную строку
-                let header = "ChatId,Tag1,Tag2,Tag3,Tag4,Tag5,Tag6";
-                csvContent += header + "\r\n";
-
-                array.forEach((item, index) => {
-                    if (!isValidItem(item)) {
-                        console.warn(`Element at index ${index} is invalid. Skipping...`, item);
-                        return;
-                    }
-
-                    let tags = [];
-                    if (item.Tags === "") {
-                        tags = [];
-                    } else if (isJsonString(item.Tags)) {
-                        tags = JSON.parse(item.Tags);
-                    } else {
-                        console.warn(`Element at index ${index} has invalid Tags. Using empty array.`, item);
-                    }
-
-                    let row = [item.ChatId, ...tags];
-                    csvContent += row.join(",") + "\r\n";
-                    console.log(`Processed element at index ${index}:`, row.join(","));
-                });
-
-                // Создание Blob из строки CSV и загрузка файла
-                let blob = new Blob([csvContent], { type: 'text/csv' });
-                let link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = "export.csv";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-
             downloadCSV(operstagsarray);
         } else {
             saveFilteredTableCSV()
@@ -1761,37 +1796,7 @@ document.getElementById('stargrab').onclick = async function () {
     document.getElementById('GatherStatByThemes').removeAttribute('disabled')
 }
 
-function toggleBlock({ containerId, blockId, extraId }) {
-    const block = document.getElementById(blockId);
-    const extra = extraId ? document.getElementById(extraId) : null;
-    const container = document.getElementById(containerId);
 
-    const isHidden = window.getComputedStyle(block).display === "none";
-
-
-    if (isHidden) {
-        block.style.display = blockId === "activeoperatorsgroup" ? "grid" : "";
-        if (extra) extra.style.display = "";
-        container.classList.add("glowing-border-animation");
-
-        // --- Специальная логика для othercontainer ---
-        if (containerId === "othercontainer") {
-            otherfilters = "on";
-            console.log("otherfilters:", otherfilters);
-        }
-
-    } else {
-        block.style.display = "none";
-        if (extra) extra.style.display = "none";
-        container.classList.remove("glowing-border-animation");
-
-        // --- Специальная логика для othercontainer ---
-        if (containerId === "othercontainer") {
-            otherfilters = "off";
-            console.log("otherfilters:", otherfilters);
-        }
-    }
-}
 
 document.getElementById('opscontainer').onclick = () =>
     toggleBlock({
