@@ -386,14 +386,14 @@ var win_Grabber =  // описание элементов окна Grabber
 							 <p id="foundcount"></p>
 							 <p id="avgCsatCount"></p>
 							 <p id="avgSLAClosedData"></p>
-							 <div id="CSATFilterField" style="display:none; position: absolute; top: 300px; left: 820px; background: #464451; color:bisque; width: 95px;">
+							 <div id="CSATFilterField" style="display:none; position: absolute; top: 300px; left: 820px; background: #464451; color:bisque;">
 							 <span id="hidefilter" style="cursor:pointer; border: 1px solid; padding: 2px; color:black; font-weight:700; background: tan;">🌀CSAT filter</span> <br>
-							  <label><input type="checkbox" name="marksFilter" value="5"> 5</label> <br>
-							  <label><input type="checkbox" name="marksFilter" value="4"> 4</label> <br>
-							  <label><input type="checkbox" name="marksFilter" value="3"> 3</label> <br>
-							  <label><input type="checkbox" name="marksFilter" value="2"> 2</label> <br>
-							  <label><input type="checkbox" name="marksFilter" value="1"> 1</label> <br>
-							  <label><input type="checkbox" name="marksFilter" value="-"> No marks</label> <br>
+							  <label><input type="checkbox" name="marksFilter" value="5" style="width:15px; height:15px"> 🤩5</label> <br>
+							  <label><input type="checkbox" name="marksFilter" value="4" style="width:15px; height:15px"> 🙂4</label> <br>
+							  <label><input type="checkbox" name="marksFilter" value="3" style="width:15px; height:15px"> 😑3</label> <br>
+							  <label><input type="checkbox" name="marksFilter" value="2" style="width:15px; height:15px"> 😠2</label> <br>
+							  <label><input type="checkbox" name="marksFilter" value="1" style="width:15px; height:15px"> 🤬1</label> <br>
+							  <label><input type="checkbox" name="marksFilter" value="-" style="width:15px; height:15px"> ⭕No marks</label> <br>
 							  <button class="mainButton" id="downloadfilteredtocsv" style="margin-left: 25%; margin-bottom: 10px;">💾CSV</button>
 							 </div>
 						</div>
@@ -460,14 +460,37 @@ function collectOtherFilters() {
     const commentInput = commentInputEl.value.trim();
     const messageInput = messageInputEl.value.trim();
 
+    // === CSAT ===
+    const markscheklist = document.getElementsByName('marks');
+
+    const csatValues = [];
+    for (let i = 0; i < markscheklist.length - 1; i++) {
+        if (markscheklist[i].checked) {
+            csatValues.push(Number(markscheklist[i].value));
+        }
+    }
+
+    const csatIncludeUndefined = markscheklist[5]?.checked === true;
+
+    // === Тематика ===
+    let theme = '';
+    const selTheme = document.getElementById('ThemesToSearch').options;
+    for (let i = 0; i < selTheme.length; i++) {
+        if (selTheme[i].selected) theme = selTheme[i].value;
+    }
+
     return {
         priority,
         dept,
         usertype,
         commentInput,
-        messageInput
+        messageInput,
+        csatValues,
+        csatIncludeUndefined,
+        theme
     };
 }
+
 ///Конец блока функций
 
 document.getElementById('HideToolsPanel').onclick = function () {
@@ -518,54 +541,71 @@ async function getlistofopers() {
 }
 
 function calcAvgCsat() {
-    let csatvalcontainer = document.getElementsByName('CSATvalue');
-    let arrayoffoundmarks = [];
+    const csatCells = document.getElementsByName('CSATvalue');
+    const selectedValues = getSelectedCheckboxValues();
 
-    for (let i = 0; i < csatvalcontainer.length; i++) {
-        const cellValue = csatvalcontainer[i].textContent;
-        const selectedValues = getSelectedCheckboxValues();
+    const marks = [];
 
+    for (let i = 0; i < csatCells.length; i++) {
+        const cellValue = csatCells[i].textContent;
+
+        // пропускаем пустые и "-"
+        if (cellValue === '-' || cellValue.trim() === '') continue;
+
+        const numeric = Number(cellValue);
+        if (isNaN(numeric)) continue;
+
+        // если фильтр пуст — берём все
         if (selectedValues.length === 0) {
-            // Если ни один чекбокс не выбран, добавляем все значения в массив
-            if (cellValue !== '-') {
-                arrayoffoundmarks.push(Number(cellValue));
-            }
-        } else {
-            // Если выбраны чекбоксы, проверяем значения ячейки на соответствие выбранным значениям
-            if (selectedValues.includes(cellValue) && cellValue !== '-') {
-                arrayoffoundmarks.push(Number(cellValue));
-            }
+            marks.push(numeric);
+        }
+        // если фильтр есть — берём только совпадающие
+        else if (selectedValues.includes(cellValue)) {
+            marks.push(numeric);
         }
     }
 
-    let sumcsat = 0;
-    let countcsat = 0;
+    // считаем сумму и количество
+    let sum = 0;
+    for (const m of marks) sum += m;
 
-    arrayoffoundmarks.forEach((element) => {
-        if (typeof element === "number") {
-            sumcsat += element;
-            countcsat++;
-        }
-    });
+    const count = marks.length;
 
-    avgCsatCountVar = sumcsat / countcsat;
+    // защита от деления на 0
+    const avg = count > 0 ? (sum / count) : 0;
 
-    document.getElementById('avgCsatCount').innerHTML = '<span style="background: #2960ae; padding: 5px; color: floralwhite; font-weight: 700; border-radius: 10px;">' + "Средний CSAT по выгрузке: " + avgCsatCountVar.toFixed(2) + '</span>'
+    // защита от NaN и Infinity
+    const safeAvg = Number.isFinite(avg) ? avg : 0;
+
+    document.getElementById('avgCsatCount').innerHTML =
+        `<span style="background:#2960ae;padding:5px;color:floralwhite;font-weight:700;border-radius:10px;">
+            Средний CSAT по выгрузке: ${safeAvg.toFixed(2)}
+        </span>`;
 }
 
 function calcAvgSLACompleted() {
-    let SLACompContainer = document.getElementsByName('SLACompletedValue')
-    let arrayOfOuttimedSLA = [];
+    const SLACompContainer = document.getElementsByName('SLACompletedValue');
+    let outtimedCount = 0;
 
     for (let i = 0; i < SLACompContainer.length; i++) {
-        const cellValue = SLACompContainer[i].textContent;
-
-        if (SLACompContainer[i].textContent == "0") {
-            arrayOfOuttimedSLA++
+        if (SLACompContainer[i].textContent === "0") {
+            outtimedCount++;
         }
     }
-    document.getElementById('avgSLAClosedData').innerHTML = '<span style="background: #bb680f; padding: 5px; color: floralwhite; font-weight: 700; border-radius: 10px;">' + "SLA закрытия: " + (((pureArray.length - arrayOfOuttimedSLA) / pureArray.length) * 100).toFixed(1) + '%' + '</span>'
+
+    const total = SLACompContainer.length;
+
+    // защита от деления на 0
+    const percent = total > 0
+        ? ((total - outtimedCount) / total) * 100
+        : 0;
+
+    document.getElementById('avgSLAClosedData').innerHTML =
+        `<span style="background:#bb680f;padding:5px;color:floralwhite;font-weight:700;border-radius:10px;">
+            SLA закрытия: ${percent.toFixed(1)}%
+        </span>`;
 }
+
 
 function saveFilteredTableCSV() {
     let nwtable = document.getElementById("TableGrabbed");
@@ -1341,34 +1381,7 @@ function initCSATFilterButtonHandlers() {
     });
 }
 
-
-//
-
-document.getElementById('stargrab').onclick = async function () {
-
-    const filters = collectOtherFilters();
-    if (!filters) return; // конфликт — прекращаем
-    console.log(filters);
-
-    if (document.getElementById('CSATFilterField').style.display == "") {
-        document.getElementById('CSATFilterField').style.display = "none"
-    }
-
-    const criticalChats = new Map();   // хранит только уникальные r.id
-
-    document.getElementById('GatherStatByThemes').setAttribute('disabled', '')
-
-    document.getElementById('foundcount').innerHTML = ''
-    document.getElementById('avgCsatCount').innerHTML = ''
-    document.getElementById('avgSLAClosedData').innerHTML = ''
-    operstagsarray = [];
-    arrofthemes = [];
-
-
-    // document.getElementById('themesgrabbeddata').innerHTML = '';
-    document.getElementById('themesgrabbeddata').innerHTML = '⏳ Загрузка...'
-
-    // time and date block
+function getDateRange() {
     const padStart = (string, targetLength, padString) =>
         String(string).padStart(targetLength, padString);
 
@@ -1379,287 +1392,248 @@ document.getElementById('stargrab').onclick = async function () {
         return `${y}-${m}-${d}T${time}`;
     };
 
-    // dateFromGrab → минус 1 день
     const selectedDate = new Date(document.getElementById("dateFromGrab").value);
     selectedDate.setDate(selectedDate.getDate() - 1);
-    const leftDateFromGrab = formatDate(selectedDate, "21:00:00.000z");
 
-    // dateToGrab → без смещения
     const selectedEndDate = new Date(document.getElementById("dateToGrab").value);
-    const rightDateToGrab = formatDate(selectedEndDate, "20:59:59.059z");
 
+    return {
+        leftDateFromGrab: formatDate(selectedDate, "21:00:00.000z"),
+        rightDateToGrab: formatDate(selectedEndDate, "20:59:59.059z")
+    };
+}
 
-    // end of time and date
+function getSelectedOperators() {
+    const ops = document.getElementsByName('listofops');
+    const checks = document.getElementsByName('chekforsearch');
 
+    const ids = [];
+    const names = [];
 
-    chosentheme = '';
-    let selTheme = document.getElementById('ThemesToSearch').options
-    for (let i = 0; i < selTheme.length; i++) {
-        if (selTheme[i].selected == true) {
-            chosentheme = selTheme[i].value
+    for (let i = 0; i < checks.length; i++) {
+        if (checks[i].checked) {
+            ids.push(ops[i].getAttribute('value'));
+            names.push(ops[i].textContent);
         }
     }
 
-    let spisochek = document.getElementsByName('listofops')
-    let namespisochek = [];
-    let cheklist = document.getElementsByName('chekforsearch')
-    let markscheklist = document.getElementsByName('marks')
+    return { ids, names };
+}
+
+async function loadChatsForOperator(operatorId, operatorName, leftDate, rightDate, filters) {
+    let page = 1;
     let opgrdata;
-    let tmponlyoperhashes = [];
+    const tmponlyoperhashes = [];
 
-    checkmarksarr = [];
-    for (let i = 0; i < markscheklist.length - 1; i++) {
-        if (markscheklist[i].checked == true) {
-            checkmarksarr.push(Number(markscheklist[i].getAttribute('value')))
-        }
-    }
+    do {
+        const body = {
+            serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
+            mode: "Json",
+            participatingOperatorsIds: [operatorId],
+            tsFrom: leftDate,
+            tsTo: rightDate,
+            orderBy: "ts",
+            orderDirection: "Asc",
+            page,
+            limit: 100
+        };
 
-    chekopersarr = [];
-    for (let i = 0; i < cheklist.length; i++) {
-        if (cheklist[i].checked == true) {
-            chekopersarr.push(spisochek[i].getAttribute('value'))
-            namespisochek.push(spisochek[i].textContent)
-        }
-    }
+        opgrdata = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
+            method: "POST",
+            headers: { "content-type": "application/json", "x-csrf-token": aftoken },
+            body: JSON.stringify(body),
+            credentials: "include"
+        }).then(r => r.json());
 
-    payloadarray = [];
-    chatswithmarksarray = [];
+        if (!opgrdata?.items) break;
 
-    document.getElementById('progressBarGrabber').innerHTML = ''
-    document.getElementById('progressBarGrabber').style.width = '0'
+        for (const el of opgrdata.items) {
+            const rate = el.stats.rate.rate;
 
-    let progressBar = document.getElementById("progressBarGrabber");
-    let currentWidth = 0;
-    let step = 100 / chekopersarr.length;
-    if (otherfilters == "off") {
+            const allowedValues = filters.csatValues;
+            const includeUndefined = filters.csatIncludeUndefined;
 
-    }
+            const csatAllowed = includeUndefined
+                ? (rate === undefined || allowedValues.includes(rate))
+                : (rate !== undefined && allowedValues.includes(rate));
 
-    for (let i = 0; i < chekopersarr.length; i++) {
-        tmponlyoperhashes = [];
-        page = 1;
 
-        do {
-            const body = {
-                serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
-                mode: "Json",
-                participatingOperatorsIds: [chekopersarr[i]],
-                tsFrom: leftDateFromGrab,
-                tsTo: rightDateToGrab,
-                orderBy: "ts",
-                orderDirection: "Asc",
-                page,
-                limit: 100
-            };
-
-            opgrdata = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                method: "POST",
-                headers: { "content-type": "application/json", "x-csrf-token": aftoken },
-                body: JSON.stringify(body),
-                credentials: "include"
-            }).then(r => r.json());
-
-            if (!opgrdata || !opgrdata.items) break;
-
-            for (const el of opgrdata.items) {
-
-                // CSAT фильтр
-                const rate = el.stats.rate.rate;
-                const csatAllowed = markscheklist[5].checked
-                    ? (rate === undefined || checkmarksarr.includes(rate))
-                    : (rate !== undefined && checkmarksarr.includes(rate));
-
-                if (csatAllowed) {
-                    chatswithmarksarray.push({
-                        ConvId: el.conversationId,
-                        Rate: rate
-                    });
-                }
-
-                // Хэши оператора
-                if (el.operatorId === chekopersarr[i]) {
-                    tmponlyoperhashes.push({
-                        HashId: el.conversationId,
-                        Duration: el.stats.conversationDuration
-                    });
-                }
+            if (csatAllowed) {
+                chatswithmarksarray.push({ ConvId: el.conversationId, Rate: rate });
             }
 
-            // Обработка каждого чата
-            for (const chat of tmponlyoperhashes) {
-                const matched = chatswithmarksarray.find(x => x.ConvId === chat.HashId);
-                if (!matched) continue;
-
-                const r = await getChat(chat.HashId);
-                searchTeachersAndRates(main = r);
-
-                if (!themeMatches(r, chosentheme)) continue;
-
-                pushTags(r);
-
-                const themeName = themesarray.find(t => t.value === r.payload.topicId?.value)?.ThemeName;
-                pushPayload({
-                    r,
-                    duration: chat.Duration,
-                    operatorName: namespisochek[i],
-                    csat: matched.Rate,
-                    themeName
+            if (el.operatorId === operatorId) {
+                tmponlyoperhashes.push({
+                    HashId: el.conversationId,
+                    Duration: el.stats.conversationDuration,
+                    operatorName
                 });
-
-                // тест поиска
-                for (const msg of r.messages) {
-                    if (msg.tpe !== "OperatorComment") continue;
-                    if (!msg.txt.includes("Критичность: Высокий")) continue;
-
-                    // ищем категорию
-                    const found = categoryMap.find(c => msg.txt.includes(c.key));
-                    const label = found ? found.label : "Кризис менеджмент";
-
-                    // формируем объект
-                    const entry = {
-                        id: r.id,
-                        label,
-                        text: label === "ТП исход" ? msg.txt : ""   // текст только для ТП исход
-                    };
-
-                    // записываем в Map (перезапись не страшна — данные одинаковые)
-                    criticalChats.set(r.id, entry);
-
-                    // вывод в консоль по ходу
-                    //console.log(r.id, "-", label, entry.text ? ("- " + entry.text) : "");
-                }
             }
-
-            page++;
-        } while ((page - 1) < (opgrdata.total / 100));
-
-        currentWidth += step;
-        progressBar.style.width = currentWidth.toFixed(1) + "%";
-        progressBar.textContent = currentWidth.toFixed(1) + "%";
-    }
-
-    console.log("=== Итоговый список чатов с высоким приоритетом ===");
-    console.table([...criticalChats.values()]);
-
-
-    // const cleanedarray = operstagsarray.map(element => element.trim().slice(2, -2).trim().replace(/"/g, '').replace(/\n /,''));
-
-    cleanedarray = operstagsarray.map(element => {
-        if (typeof element.Tags === 'string') {
-            return {
-                ChatId: element.ChatId,
-                Tags: element.Tags.trim().slice(2, -2).trim().replace(/"/g, '').replace(/\n /, '')
-            };
         }
-        return element;
-    });
-    const themesgrabbeddata = document.getElementById('themesgrabbeddata');
-    themesgrabbeddata.innerHTML = '';
 
-    // Create the table element
+        page++;
+    } while ((page - 1) < (opgrdata.total / 100));
+
+    return tmponlyoperhashes;
+}
+
+async function processChat(chat, filters, criticalChats) {
+    const matched = chatswithmarksarray.find(x => x.ConvId === chat.HashId);
+    if (!matched) return;
+
+    const r = await getChat(chat.HashId);
+    searchTeachersAndRates(main = r);
+
+    if (!themeMatches(r, filters.theme)) return;
+
+    pushTags(r);
+
+    const themeName = themesarray.find(t => t.value === r.payload.topicId?.value)?.ThemeName;
+
+    // твой старый способ формирования payloadarray
+    pushPayload({
+        r,
+        duration: chat.Duration,
+        operatorName: chat.operatorName,
+        csat: matched.Rate,
+        themeName
+    });
+
+    // критичность — оставляем
+    for (const msg of r.messages) {
+        if (msg.tpe !== "OperatorComment") continue;
+        if (!msg.txt.includes("Критичность: Высокий")) continue;
+
+        const found = categoryMap.find(c => msg.txt.includes(c.key));
+        const label = found ? found.label : "Кризис менеджмент";
+
+        criticalChats.set(r.id, {
+            id: r.id,
+            label,
+            text: label === "ТП исход" ? msg.txt : ""
+        });
+    }
+}
+
+
+function renderMainTable(pureArray, chatswithmarksarray) {
     const table = document.createElement('table');
     table.className = 'srvhhelpnomove';
-    table.id = "TableGrabbed"
+    table.id = "TableGrabbed";
 
-    // Create the table header row
     const headerRow = document.createElement('tr');
     const columnNames = ['№', 'Date', 'Operator', 'ChatId', '🏁 CSAT', 'Тема', 'SLACompl', 'Country'];
 
-    // Add column names to the header row
-    columnNames.forEach(columnName => {
+    columnNames.forEach(name => {
         const th = document.createElement('th');
-        th.textContent = columnName;
-        th.setAttribute('name', 'btnNameFilter')
-        if (columnName == "🏁 CSAT") {
-            th.style = 'text-align:center; font-weight:700; background:dimgrey; border:1px solid black; padding:5px; position: sticky; top: 0; cursor:pointer;'
-        } else {
-            th.style = 'text-align:center; font-weight:700; background:dimgrey; border:1px solid black; padding:5px; position: sticky; top: 0;'
-        }
-
+        th.textContent = name;
+        th.setAttribute('name', 'btnNameFilter');
+        th.style = 'text-align:center; font-weight:700; background:dimgrey; border:1px solid black; padding:5px; position: sticky; top: 0;';
+        if (name === '🏁 CSAT') th.style.cursor = 'pointer';
         headerRow.appendChild(th);
     });
 
-    // Append the header row to the table
     table.appendChild(headerRow);
 
-    // Assuming payloadarray is an array of objects with a property called ChatId
-
-    // Get unique elements based on ChatId
-    const uniqueArray = payloadarray.reduce((unique, item) => {
-        // Check if the ChatId already exists in the unique array
-        const existingItem = unique.find((element) => element.ChatId === item.ChatId);
-
-        // If ChatId does not exist, add the item to the unique array
-        if (!existingItem) {
-            unique.push(item);
-        }
-
-        return unique;
-    }, []);
-
-    // Assign the unique array to pureArray
-    pureArray = uniqueArray;
-
-    filteredArrayTags = cleanedarray.reduce((unique, item) => {
-        const existingItem = unique.find((element) => element.ChatId === item.ChatId);
-
-        // If ChatId does not exist, add the item to the unique array
-        if (!existingItem) {
-            unique.push(item);
-        }
-
-        return unique;
-    }, [])
-
-    // Iterate through the data array and create table rows
-    pureArray.forEach((element, index) => {
+    pureArray.forEach((el, index) => {
         const row = document.createElement('tr');
         row.className = "rowOfChatGrabbed";
         row.style.border = "1px solid black";
 
         addCell(row, index + 1);
-        addCell(row, element.timeStamp);
-        addCell(row, element.OperatorName, "text-align:center;");
-        addCell(row, element.ChatId, "font-size:11px;");
+        addCell(row, el.timeStamp);
+        addCell(row, el.OperatorName, "text-align:center;");
+        addCell(row, el.ChatId, "font-size:11px;");
 
-        const matchedItem = chatswithmarksarray.find(item => item.ConvId === element.ChatId);
-        const csatValue = matchedItem ? (matchedItem.Rate ?? '-') : '-';
+        const matched = chatswithmarksarray.find(x => x.ConvId === el.ChatId);
+        addCell(row, matched ? (matched.Rate ?? '-') : '-', "text-align:center;", { name: "CSATvalue" });
 
-        addCell(row, csatValue, "text-align:center;", { name: "CSATvalue" });
-
-        addCell(row, element.ThemeValue, "text-align:center;");
-        addCell(row, element.SLACompleted, "text-align:center;", { name: "SLACompletedValue" });
-        addCell(row, element.Country, "text-align:center;");
+        addCell(row, el.ThemeValue, "text-align:center;");
+        addCell(row, el.SLACompleted, "text-align:center;", { name: "SLACompletedValue" });
+        addCell(row, el.Country, "text-align:center;");
 
         table.appendChild(row);
     });
 
+    return table;
+}
 
-    // Append the table to the themesgrabbeddata element
-    themesgrabbeddata.appendChild(table);
+
+
+
+//
+
+document.getElementById('stargrab').onclick = async function () {
+
+    const filters = collectOtherFilters();
+    if (!filters) return;
+
+    document.getElementById('CSATFilterField').style.display = "none";
+    document.getElementById('GatherStatByThemes').setAttribute('disabled', '');
+    document.getElementById('themesgrabbeddata').innerHTML = '⏳ Загрузка...';
+
+    payloadarray = [];
+    chatswithmarksarray = [];
+    operstagsarray = [];
+    arrofthemes = [];
+
+    const { leftDateFromGrab, rightDateToGrab } = getDateRange();
+    const { ids: operatorIds, names: operatorNames } = getSelectedOperators();
+
+    const criticalChats = new Map();
+
+    let progress = 0;
+    const step = 100 / operatorIds.length;
+    const progressBar = document.getElementById("progressBarGrabber");
+
+    for (let i = 0; i < operatorIds.length; i++) {
+
+        const chats = await loadChatsForOperator(
+            operatorIds[i],
+            operatorNames[i],
+            leftDateFromGrab,
+            rightDateToGrab,
+            filters
+        );
+
+        for (const chat of chats) {
+            await processChat(chat, filters, criticalChats);
+        }
+
+
+        progress += step;
+        progressBar.style.width = progress.toFixed(1) + "%";
+        progressBar.textContent = progress.toFixed(1) + "%";
+    }
+
+    // Уникальные чаты
+    const pureArray = [...new Map(payloadarray.map(x => [x.ChatId, x])).values()];
+
+    // Рендер таблицы
+    const table = renderMainTable(pureArray, chatswithmarksarray);
+    const container = document.getElementById('themesgrabbeddata');
+    container.innerHTML = '';
+    container.appendChild(table);
+
     initCSATFilterButtonHandlers();
-
-
-    //
+    initRowClickHandlers();
 
     countsArray = Object.entries(aggregateCounts(payloadarray, "ThemeValue")).map(([ThemeValue, Count]) => ({ ThemeValue, Count }));
     countsCountryArray = Object.entries(aggregateCounts(pureArray, "Country")).map(([Country, Count]) => ({ Country, Count }));
 
-    isDescending = true; // Флаг для определения порядка сортировки
+    document.getElementById('foundcount').innerHTML =
+        `<span style="background:#166945;padding:5px;color:floralwhite;font-weight:700;border-radius:10px;">
+            Всего найдено: ${pureArray.length} обращений
+        </span>`;
+
+    calcAvgCsat();
+    calcAvgSLACompleted();
+
+    document.getElementById('GatherStatByThemes').removeAttribute('disabled');
+};
 
 
-    //
-
-    document.getElementById('foundcount').innerHTML = '<span style="background: #166945; padding: 5px; color: floralwhite; font-weight: 700; border-radius: 10px;">' + "Всего найдено: " + pureArray.length + " обращений" + '</span>'
-
-    calcAvgCsat()
-    calcAvgSLACompleted()
-
-    initRowClickHandlers()
-    document.getElementById('GatherStatByThemes').removeAttribute('disabled')
-}
-
-//
+// End of stargrab
 
 document.getElementById('SwitchToTable').onclick = () =>
     buildUniversalTable({
