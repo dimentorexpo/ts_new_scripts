@@ -347,10 +347,10 @@ var win_Grabber =  // описание элементов окна Grabber
                                 <div style="display:flex; flex-direction:column; gap:10px;">
                                     <input placeholder="Поиск по комментарию"
                                         style="padding:6px; border-radius:6px; border:1px solid #6a6a6a;
-                                                background:#2f2d35; color:bisque;">
+                                                background:#2f2d35; color:bisque; text-align:center;">
                                     <input placeholder="Поиск по сообщению"
                                         style="padding:6px; border-radius:6px; border:1px solid #6a6a6a;
-                                                background:#2f2d35; color:bisque;">
+                                                background:#2f2d35; color:bisque;  text-align:center;">
                                 </div>
                             </div>
 
