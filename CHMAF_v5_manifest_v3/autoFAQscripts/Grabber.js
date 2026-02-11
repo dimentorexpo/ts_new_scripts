@@ -1288,8 +1288,6 @@ function toggleBlock({ containerId, blockId, extraId }) {
     }
 }
 
-
-
 //
 
 document.getElementById('stargrab').onclick = async function () {
@@ -1382,6 +1380,7 @@ document.getElementById('stargrab').onclick = async function () {
     if (otherfilters == "off") {
 
     }
+
     for (let i = 0; i < chekopersarr.length; i++) {
         tmponlyoperhashes = [];
         page = 1;
@@ -1561,65 +1560,41 @@ document.getElementById('stargrab').onclick = async function () {
     // Iterate through the data array and create table rows
     pureArray.forEach((element, index) => {
         const row = document.createElement('tr');
-        row.classList = "rowOfChatGrabbed"
-        row.style = "border: 1px solid black;"
+        row.className = "rowOfChatGrabbed";
+        row.style.border = "1px solid black";
 
-        // Add the index column
-        const indexCell = document.createElement('td');
-        indexCell.textContent = index + 1;
-        indexCell.style = "border: 1px solid black; font-size: 12px;"
-        row.appendChild(indexCell);
+        function addCell(value, extraStyles = "", attrs = {}) {
+            const cell = document.createElement('td');
+            cell.textContent = value;
+            cell.style.border = "1px solid black";
+            cell.style.fontSize = "12px";
 
-        // Add the date column
-        const dateCell = document.createElement('td');
-        dateCell.textContent = element.timeStamp;
-        dateCell.style = "border: 1px solid black; font-size: 12px;"
-        row.appendChild(dateCell);
+            if (extraStyles) cell.style.cssText += extraStyles;
 
-        // Add the operator column
-        const operatorCell = document.createElement('td');
-        operatorCell.textContent = element.OperatorName;
-        operatorCell.style = 'text-align:center; border: 1px solid black; font-size: 12px;'
-        row.appendChild(operatorCell);
+            for (const [key, val] of Object.entries(attrs)) {
+                cell.setAttribute(key, val);
+            }
 
-        // Add the chatId column
-        const chatIdCell = document.createElement('td');
-        chatIdCell.textContent = element.ChatId;
-        chatIdCell.style = "border: 1px solid black; font-size: 11px;"
-        row.appendChild(chatIdCell);
+            row.appendChild(cell);
+        }
 
-        // Find the matched item in chatswithmarksarray
+        addCell(index + 1);
+        addCell(element.timeStamp);
+        addCell(element.OperatorName, "text-align:center;");
+        addCell(element.ChatId, "font-size:11px;");
+
         const matchedItem = chatswithmarksarray.find(item => item.ConvId === element.ChatId);
+        const csatValue = matchedItem ? (matchedItem.Rate ?? '-') : '-';
 
-        // Add the CSAT column
-        const csatCell = document.createElement('td');
-        csatCell.textContent = matchedItem ? (matchedItem.Rate !== undefined ? matchedItem.Rate : '-') : '-';
-        csatCell.style = 'text-align:center;'
-        csatCell.setAttribute('name', 'CSATvalue')
-        row.appendChild(csatCell);
+        addCell(csatValue, "text-align:center;", { name: "CSATvalue" });
 
-        // Add the Theme column
-        const themeCell = document.createElement('td');
-        themeCell.textContent = element.ThemeValue
-        themeCell.style = 'text-align:center; border: 1px solid black; font-size: 12px;'
-        row.appendChild(themeCell);
+        addCell(element.ThemeValue, "text-align:center;");
+        addCell(element.SLACompleted, "text-align:center;", { name: "SLACompletedValue" });
+        addCell(element.Country, "text-align:center;");
 
-        // Add SLA Completed column
-        const SLAcompl = document.createElement('td');
-        SLAcompl.textContent = element.SLACompleted
-        SLAcompl.style = 'text-align:center; border: 1px solid black; font-size: 12px;'
-        SLAcompl.setAttribute('name', 'SLACompletedValue')
-        row.appendChild(SLAcompl);
-
-        //Add Country column
-        const CountryCol = document.createElement('td');
-        CountryCol.textContent = element.Country;
-        CountryCol.style = 'text-align:center; border: 1px solid black; font-size: 12px;'
-        row.appendChild(CountryCol);
-
-        // Append the row to the table
         table.appendChild(row);
     });
+
 
     // Append the table to the themesgrabbeddata element
     themesgrabbeddata.appendChild(table);
