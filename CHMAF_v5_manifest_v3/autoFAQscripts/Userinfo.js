@@ -140,7 +140,7 @@ var win_serviceinfo =  // описание элементов окна инфо�
 						</div>
 					   </span>
                         <div style="width: 320px; color:bisque; text-align:center">
-						<img id="useravatar" style="position: absolute; left: 1px; top: 120px; width: 55px; height: 60px; border-radius: 30px; border: 3px solid seagreen; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); display:none;">
+						<img id="useravatar" style="position: absolute; left: 1px; top: 120px; width: 55px; height: 60px; border-radius: 30px; border: 3px solid seagreen; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); display:none; z-index:99999999">
                                 <div id="basicInfo" style="max-height:400px; overflow:auto; color:bisque; text-align:center">
 									<div style="text-align: center;" id="usrType">
 									</div>
