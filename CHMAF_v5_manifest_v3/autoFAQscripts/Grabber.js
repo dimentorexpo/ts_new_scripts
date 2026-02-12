@@ -335,10 +335,17 @@ var win_Grabber =  // описание элементов окна Grabber
                                         <label style="display:block; margin-left:10px;">
                                             <input type="checkbox" name="usrtypefilter" value="student"> Ученик
                                         </label>
+                                         <label style="display:block; margin-left:10px;">
+                                            <input type="checkbox" name="usrtypefilter" value="parent"> Родитель У
+                                        </label>
                                         <label style="display:block; margin-left:10px;">
                                             <input type="checkbox" name="usrtypefilter" value="teacher"> Преподаватель
                                         </label>
+                                         <label style="display:block; margin-left:10px;">
+                                            <input type="checkbox" name="usrtypefilter" value="null"> Неизвестно
+                                        </label>
                                     </div>
+
                                 </div>
 
                                 <hr style="border-color:#6a6a6a; margin:15px 0;">
@@ -446,10 +453,13 @@ messageInputEl.addEventListener("input", () => {
 });
 
 
-function getCheckedValues(groupName) {
-    return Array.from(document.querySelectorAll(`input[name="${groupName}"]:checked`))
+function getCheckedValues(name) {
+    const arr = [...document.querySelectorAll(`input[name="${name}"]:checked`)]
         .map(cb => cb.value);
+
+    return arr.length ? arr : ["Any"];
 }
+
 
 function collectOtherFilters() {
 
@@ -1121,19 +1131,6 @@ function SaveСountryCSV(filename) {
     }, 0);
 }
 
-function searchTeachersAndRates(main) {
-    if (main.channelUser && main.channelUser.payload && main.channelUser.payload.userType == "teacher" && (main.channelUser.payload.teacherSTKList?.includes('homeschooling') || main.channelUser.payload.teacherSTKList?.includes('large_classes'))) {
-
-        // if (main.messages.length > 0) {
-        //     for (let z = 0; z < main.messages.length; z++) {
-        //         if (main.messages[z].txt && typeof main.messages[z].txt === 'string' && main.messages[z].tpe == "Rate") {
-        //             console.log(main.id, main.channelUser.payload.id, main.messages[z].txt);
-        //         }
-        //     }
-        // }
-    }
-}
-
 async function getChat(id) {
     const r = await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, {
         headers: { "x-csrf-token": aftoken }
@@ -1424,7 +1421,6 @@ async function loadChatsForOperator(operatorId, operatorName, leftDate, rightDat
     let page = 1;
     let opgrdata;
     const tmponlyoperhashes = [];
-
     do {
         const body = {
             serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
@@ -1482,15 +1478,12 @@ async function processChat(chat, filters, criticalChats) {
     if (!matched) return;
 
     const r = await getChat(chat.HashId);
-    searchTeachersAndRates(main = r);
-
     if (!themeMatches(r, filters.theme)) return;
 
     pushTags(r);
 
     const themeName = themesarray.find(t => t.value === r.payload.topicId?.value)?.ThemeName;
 
-    // твой старый способ формирования payloadarray
     pushPayload({
         r,
         duration: chat.Duration,
@@ -1499,21 +1492,83 @@ async function processChat(chat, filters, criticalChats) {
         themeName
     });
 
-    // критичность — оставляем
+    const priorityFilters = filters.priority ?? ["Any"];
+    const deptFilters = filters.dept ?? ["Any"];
+    const userTypeFilters = filters.usertype ?? ["Any"];
+
+    const commentSearch = (filters.commentInput ?? "").toLowerCase();
+    const messageSearch = (filters.messageInput ?? "").toLowerCase();
+
+    const actualUserType = r.channelUser.payload?.userType ?? null;
+    const messageTypes = ["Question", "AnswerOperator", "AnswerOperatorWithBot"];
+
+    // Собираем ВСЕ OperatorComment в один текст
+    const allComments = r.messages
+        .filter(m => m.tpe === "OperatorComment")
+        .map(m => (m.txt ?? "").toLowerCase())
+        .join("\n");
+
+    // --- PRIORITY (по всему чату) ---
+    if (!priorityFilters.includes("Any")) {
+        const priorityMatch = priorityFilters.some(p =>
+            allComments.includes(`критичность: ${p.toLowerCase()}`)
+        );
+        if (!priorityMatch) return; // весь чат не подходит
+    }
+
+    // --- DEPARTMENT (по всему чату) ---
+    if (!deptFilters.includes("Any")) {
+        const deptMatch = deptFilters.some(d =>
+            allComments.includes(`категория: ${d.toLowerCase()}`)
+        );
+        if (!deptMatch) return; // весь чат не подходит
+    }
+
+    // --- USER TYPE (по чату) ---
+    if (!userTypeFilters.includes("Any")) {
+        if (userTypeFilters.includes("null")) {
+            if (actualUserType !== null) return;
+        } else {
+            if (!userTypeFilters.includes(actualUserType)) return;
+        }
+    }
+
+    // Теперь ищем конкретные сообщения
     for (const msg of r.messages) {
-        if (msg.tpe !== "OperatorComment") continue;
-        if (!msg.txt.includes("Критичность: Высокий")) continue;
+        const text = (msg.txt ?? "").toLowerCase();
 
-        const found = categoryMap.find(c => msg.txt.includes(c.key));
-        const label = found ? found.label : "Кризис менеджмент";
+        // --- COMMENT SEARCH ---
+        if (commentSearch !== "") {
+            if (msg.tpe !== "OperatorComment") continue;
+            if (!text.includes(commentSearch)) continue;
+        }
 
-        criticalChats.set(r.id, {
+        // --- MESSAGE SEARCH ---
+        if (messageSearch !== "") {
+            if (!messageTypes.includes(msg.tpe)) continue;
+            if (!text.includes(messageSearch)) continue;
+        }
+
+        // --- CATEGORY (по всему чату) ---
+        const found = categoryMap.find(c =>
+            allComments.includes(c.key.toLowerCase())
+        );
+        const label = found ? found.label : "";
+
+        const entry = {
             id: r.id,
             label,
             text: label === "ТП исход" ? msg.txt : ""
-        });
+        };
+
+        criticalChats.set(r.id, entry);
+        break; // чат уже подходит, дальше не нужно
     }
+
+    console.table([...criticalChats.values()]);
 }
+
+
 
 
 function renderMainTable(pureArray, chatswithmarksarray) {
@@ -1558,9 +1613,6 @@ function renderMainTable(pureArray, chatswithmarksarray) {
     return table;
 }
 
-
-
-
 //
 
 document.getElementById('stargrab').onclick = async function () {
@@ -1599,7 +1651,6 @@ document.getElementById('stargrab').onclick = async function () {
         for (const chat of chats) {
             await processChat(chat, filters, criticalChats);
         }
-
 
         progress += step;
         progressBar.style.width = progress.toFixed(1) + "%";

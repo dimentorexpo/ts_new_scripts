@@ -546,13 +546,16 @@ function findrequestargument(usertypeis) {
 
 function ConvAudio(triger) {
     if (!soundintervalset && triger === 'on') {
-        audio.play();
-        soundintervalset = setInterval(() => { audio.play() }, localStorage.getItem('splinter') * 1000);
+        audio.play().catch(() => { }); // ← глушим ошибку
+        soundintervalset = setInterval(() => {
+            audio.play().catch(() => { }); // ← и тут тоже
+        }, localStorage.getItem('splinter') * 1000);
     } else if (soundintervalset && triger === 'off') {
         clearInterval(soundintervalset);
         soundintervalset = null;
     }
 }
+
 
 function showTaggs(iframeDoc) {
     const FieldtoTags = iframeDoc.querySelectorAll('[class^="Form_ConversationPayloadForm"]')[0]
