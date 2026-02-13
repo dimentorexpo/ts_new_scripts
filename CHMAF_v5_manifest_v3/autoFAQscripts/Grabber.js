@@ -1571,7 +1571,7 @@ async function processChat(chat, filters, criticalChats) {
         break; // чат уже подходит, дальше не нужно
     }
 
-    console.table([...criticalChats.values()]);
+    //console.table([...criticalChats.values()]);
 }
 
 function renderMainTable(pureArray, chatswithmarksarray) {
@@ -1605,7 +1605,6 @@ function renderMainTable(pureArray, chatswithmarksarray) {
 
         const matched = chatswithmarksarray.find(x => x.ConvId === el.ChatId);
         addCell(row, matched ? (matched.Rate ?? '-') : '-', "text-align:center;", { name: "CSATvalue" });
-
         addCell(row, el.ThemeValue, "text-align:center;");
         addCell(row, el.SLACompleted, "text-align:center;", { name: "SLACompletedValue" });
         addCell(row, el.Country, "text-align:center;");
@@ -1663,7 +1662,7 @@ document.getElementById('stargrab').onclick = async function () {
     // Уникальные чаты
     let dataToRender;
 
-    if (criticalChats.size > 0) {
+    if (otherfilters == "on") {
         dataToRender = [...criticalChats.values()];
     } else {
         dataToRender = [...new Map(payloadarray.map(x => [x.ChatId, x])).values()];
