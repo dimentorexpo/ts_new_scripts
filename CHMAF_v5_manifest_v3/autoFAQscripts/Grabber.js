@@ -20,6 +20,7 @@ let keyMatch = "Высокий"
 let currentTableData = [];
 let isDescending = false;
 let lastTableParams = null;
+let criticalChats = new Map();
 
 const timeOptions = {
     timeZone: 'Europe/Moscow',
@@ -1566,8 +1567,6 @@ async function processChat(chat, filters, criticalChats) {
         OperatorName: chat.operatorName,
         CSAT: matched.Rate,
         Department: label,
-        SLACompleted: r.payload?.slaCompleted ?? "-",
-        Country: r.payload?.country ?? "-",
         text: finalText.trim()
     };
 
@@ -1673,8 +1672,6 @@ document.getElementById('stargrab').onclick = async function () {
 
     const { leftDateFromGrab, rightDateToGrab } = getDateRange();
     const { ids: operatorIds, names: operatorNames } = getSelectedOperators();
-
-    const criticalChats = new Map();
 
     let progress = 0;
     const step = 100 / operatorIds.length;
@@ -1869,10 +1866,58 @@ function convertArrayToCSV(data) {
     return csvRows.join("\n");
 }
 
+function downloadCriticalCSV(array) {
+    // Заголовки CSV
+    const header = [
+        "ChatId",
+        "Department",
+        "timeStamp",
+        "OperatorName",
+        "CSAT",
+        "text"
+    ];
+
+    let csvContent = "\uFEFF" + header.join(",") + "\r\n";
+
+
+    array.forEach((item) => {
+        if (!item) return;
+
+        // Экранируем кавычки и переносы строк
+        const safe = str =>
+            `"${String(str ?? "").replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
+
+        const row = [
+            safe(item.ChatId),
+            safe(item.Department),
+            safe(item.timeStamp),
+            safe(item.OperatorName),
+            safe(item.CSAT),
+            safe(item.text) // ← твой комментарий
+        ];
+
+        csvContent += row.join(",") + "\r\n";
+    });
+
+    // Создаём Blob и скачиваем
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "critical_chats.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 document.getElementById('webtoCSV').onclick = function () {
     const filename = "data.csv";
+    if (otherfilters == "off") {
+        downloadCSV(pureArray, filename);
+    } else {
+        console.log("criticalChats size =", criticalChats.size);
+        downloadCriticalCSV([...criticalChats.values()]);
+    }
 
-    downloadCSV(pureArray, filename);
 }
 
 document.getElementById('dayplus').onclick = function () {
