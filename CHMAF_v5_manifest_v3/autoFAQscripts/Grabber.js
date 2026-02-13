@@ -1473,6 +1473,12 @@ async function loadChatsForOperator(operatorId, operatorName, leftDate, rightDat
     return tmponlyoperhashes;
 }
 
+function extractComment(fullText) {
+    const idx = fullText.toLowerCase().indexOf("комментарий:");
+    if (idx === -1) return fullText; // если вдруг нет слова — возвращаем всё
+    return fullText.substring(idx).trim();
+}
+
 async function processChat(chat, filters, criticalChats) {
     const matched = chatswithmarksarray.find(x => x.ConvId === chat.HashId);
     if (!matched) return;
@@ -1481,16 +1487,6 @@ async function processChat(chat, filters, criticalChats) {
     if (!themeMatches(r, filters.theme)) return;
 
     pushTags(r);
-
-    const themeName = themesarray.find(t => t.value === r.payload.topicId?.value)?.ThemeName;
-
-    pushPayload({
-        r,
-        duration: chat.Duration,
-        operatorName: chat.operatorName,
-        csat: matched.Rate,
-        themeName
-    });
 
     const priorityFilters = filters.priority ?? ["Any"];
     const deptFilters = filters.dept ?? ["Any"];
@@ -1502,29 +1498,33 @@ async function processChat(chat, filters, criticalChats) {
     const actualUserType = r.channelUser.payload?.userType ?? null;
     const messageTypes = ["Question", "AnswerOperator", "AnswerOperatorWithBot"];
 
-    // Собираем ВСЕ OperatorComment в один текст
-    const allComments = r.messages
-        .filter(m => m.tpe === "OperatorComment")
-        .map(m => (m.txt ?? "").toLowerCase())
-        .join("\n");
+    // --- PRIORITY & DEPARTMENT & CATEGORY проверяем по OperatorComment ---
+    const operatorComments = r.messages.filter(m => m.tpe === "OperatorComment");
+    const allOpText = operatorComments.map(m => m.txt.toLowerCase()).join("\n");
 
-    // --- PRIORITY (по всему чату) ---
+    // PRIORITY
     if (!priorityFilters.includes("Any")) {
-        const priorityMatch = priorityFilters.some(p =>
-            allComments.includes(`критичность: ${p.toLowerCase()}`)
+        const ok = priorityFilters.some(p =>
+            allOpText.includes(`критичность: ${p.toLowerCase()}`)
         );
-        if (!priorityMatch) return; // весь чат не подходит
+        if (!ok) return;
     }
 
-    // --- DEPARTMENT (по всему чату) ---
+    // DEPARTMENT
     if (!deptFilters.includes("Any")) {
-        const deptMatch = deptFilters.some(d =>
-            allComments.includes(`категория: ${d.toLowerCase()}`)
+        const ok = deptFilters.some(d =>
+            allOpText.includes(`категория: ${d.toLowerCase()}`)
         );
-        if (!deptMatch) return; // весь чат не подходит
+        if (!ok) return;
     }
 
-    // --- USER TYPE (по чату) ---
+    // CATEGORY
+    const found = categoryMap.find(c =>
+        allOpText.includes(c.key.toLowerCase())
+    );
+    const label = found ? found.label : "";
+
+    // USER TYPE
     if (!userTypeFilters.includes("Any")) {
         if (userTypeFilters.includes("null")) {
             if (actualUserType !== null) return;
@@ -1533,45 +1533,45 @@ async function processChat(chat, filters, criticalChats) {
         }
     }
 
-    // Теперь ищем конкретные сообщения
-    for (const msg of r.messages) {
-        const text = (msg.txt ?? "").toLowerCase();
-
-        // --- COMMENT SEARCH ---
-        if (commentSearch !== "") {
-            if (msg.tpe !== "OperatorComment") continue;
-            if (!text.includes(commentSearch)) continue;
-        }
-
-        // --- MESSAGE SEARCH ---
-        if (messageSearch !== "") {
-            if (!messageTypes.includes(msg.tpe)) continue;
-            if (!text.includes(messageSearch)) continue;
-        }
-
-        // --- CATEGORY (по всему чату) ---
-        const found = categoryMap.find(c =>
-            allComments.includes(c.key.toLowerCase())
+    // --- COMMENT SEARCH (OperatorComment) ---
+    let matchedCommentMsg = null;
+    if (commentSearch !== "") {
+        matchedCommentMsg = operatorComments.find(m =>
+            m.txt.toLowerCase().includes(commentSearch)
         );
-        const label = found ? found.label : "";
-
-        const entry = {
-            id: r.id,
-            ChatId: r.id,
-            timeStamp: r.timeStamp,
-            OperatorName: chat.operatorName,
-            CSAT: matched.Rate,
-            ThemeValue: label,
-            SLACompleted: r.payload?.slaCompleted ?? "-",
-            Country: r.payload?.country ?? "-",
-            text: label === "ТП исход" ? msg.txt : ""
-        };
-
-        criticalChats.set(r.id, entry);
-        break; // чат уже подходит, дальше не нужно
+        if (!matchedCommentMsg) return;
     }
 
-    //console.table([...criticalChats.values()]);
+    // --- MESSAGE SEARCH (Question/AnswerOperator/AnswerOperatorWithBot) ---
+    let matchedUserMsg = null;
+    if (messageSearch !== "") {
+        matchedUserMsg = r.messages.find(m =>
+            messageTypes.includes(m.tpe) &&
+            (m.txt ?? "").toLowerCase().includes(messageSearch)
+        );
+        if (!matchedUserMsg) return;
+    }
+
+    // --- Что выводить в text? ---
+    // 1) Если искали комментарий → выводим комментарий
+    // 2) Если искали сообщение → выводим сообщение
+    // 3) Если оба → выводим оба (или только комментарий — как хочешь)
+    let finalText = "";
+    if (matchedCommentMsg) finalText += extractComment(matchedCommentMsg.txt);
+    if (matchedUserMsg) finalText += "\n\n" + matchedUserMsg.txt;
+
+    const entry = {
+        ChatId: r.id,
+        timeStamp: new Date(r.tsCreate).toLocaleString('ru-RU', timeOptions),
+        OperatorName: chat.operatorName,
+        CSAT: matched.Rate,
+        Department: label,
+        SLACompleted: r.payload?.slaCompleted ?? "-",
+        Country: r.payload?.country ?? "-",
+        text: finalText.trim()
+    };
+
+    criticalChats.set(r.id, entry);
 }
 
 function renderMainTable(pureArray, chatswithmarksarray) {
@@ -1614,6 +1614,46 @@ function renderMainTable(pureArray, chatswithmarksarray) {
 
     return table;
 }
+
+function renderCriticalTable(pureArray) {
+    const table = document.createElement('table');
+    table.className = 'srvhhelpnomove';
+    table.id = "TableGrabbed";
+
+    const headerRow = document.createElement('tr');
+    const columnNames = ['№', 'Date', 'Operator', 'ChatId', '🏁 CSAT', 'Отдел', "Text"];// тут любые твои
+
+    columnNames.forEach(name => {
+        const th = document.createElement('th');
+        th.textContent = name;
+        th.setAttribute('name', 'btnNameFilter');
+        th.style = 'text-align:center; font-weight:700; background:dimgrey; border:1px solid black; padding:5px; position: sticky; top: 0;';
+        headerRow.appendChild(th);
+    });
+
+    table.appendChild(headerRow);
+
+    pureArray.forEach((el, index) => {
+        const row = document.createElement('tr');
+        row.className = "rowOfChatGrabbed";
+        row.style.border = "1px solid black";
+
+        addCell(row, index + 1);
+        addCell(row, el.timeStamp);
+        addCell(row, el.OperatorName, "text-align:center;");
+        addCell(row, el.ChatId, "font-size:11px;");
+
+        const matched = chatswithmarksarray.find(x => x.ConvId === el.ChatId);
+        addCell(row, matched ? (matched.Rate ?? '-') : '-', "text-align:center;", { name: "CSATvalue" });
+        addCell(row, el.Department, "text-align:center;");
+        addCell(row, el.text, "text-align:center;");
+
+        table.appendChild(row);
+    });
+
+    return table;
+}
+
 
 //
 
@@ -1661,15 +1701,18 @@ document.getElementById('stargrab').onclick = async function () {
 
     // Уникальные чаты
     let dataToRender;
+    let table;
 
     if (otherfilters == "on") {
         dataToRender = [...criticalChats.values()];
+        table = renderCriticalTable(dataToRender);
     } else {
         dataToRender = [...new Map(payloadarray.map(x => [x.ChatId, x])).values()];
+        table = renderMainTable(dataToRender, chatswithmarksarray);
     }
 
+
     // Рендер таблицы
-    const table = renderMainTable(dataToRender, chatswithmarksarray);
     const container = document.getElementById('themesgrabbeddata');
     container.innerHTML = '';
     container.appendChild(table);
