@@ -1557,7 +1557,13 @@ async function processChat(chat, filters, criticalChats) {
 
         const entry = {
             id: r.id,
-            label,
+            ChatId: r.id,
+            timeStamp: r.timeStamp,
+            OperatorName: chat.operatorName,
+            CSAT: matched.Rate,
+            ThemeValue: label,
+            SLACompleted: r.payload?.slaCompleted ?? "-",
+            Country: r.payload?.country ?? "-",
             text: label === "ТП исход" ? msg.txt : ""
         };
 
@@ -1567,9 +1573,6 @@ async function processChat(chat, filters, criticalChats) {
 
     console.table([...criticalChats.values()]);
 }
-
-
-
 
 function renderMainTable(pureArray, chatswithmarksarray) {
     const table = document.createElement('table');
@@ -1658,10 +1661,16 @@ document.getElementById('stargrab').onclick = async function () {
     }
 
     // Уникальные чаты
-    const pureArray = [...new Map(payloadarray.map(x => [x.ChatId, x])).values()];
+    let dataToRender;
+
+    if (criticalChats.size > 0) {
+        dataToRender = [...criticalChats.values()];
+    } else {
+        dataToRender = [...new Map(payloadarray.map(x => [x.ChatId, x])).values()];
+    }
 
     // Рендер таблицы
-    const table = renderMainTable(pureArray, chatswithmarksarray);
+    const table = renderMainTable(dataToRender, chatswithmarksarray);
     const container = document.getElementById('themesgrabbeddata');
     container.innerHTML = '';
     container.appendChild(table);
