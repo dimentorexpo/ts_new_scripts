@@ -247,7 +247,20 @@ function fillchatbox() {
     document.getElementById('bottommenuchhis').style.display = '';
 
     // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+    function convertToMSK(dateString) {
+        // Создаем объект Date из строки
+        const dateObj = new Date(dateString);
 
+        // Формируем строку нужного формата
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // месяцы начинаются с нуля!
+        const year = String(dateObj.getFullYear()).slice(-2); // берем последние две цифры года
+        const hours = String(dateObj.getHours()).padStart(2, '0');
+        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+
+        // Возвращаем готовую строку
+        return `${day}.${month}.${year} в ${hours}:${minutes}`;
+    }
 
 
     // --- ОСНОВНОЙ ЦИКЛ ---
@@ -379,12 +392,58 @@ function fillchatbox() {
                     CreatedByOperator: `${getOperatorNameById(msgpayload.oid, "Оператор")} открыл(а) новый диалог`,
                     AssignToOperator: handleAssignToOperatorEvent(message),
                     CloseConversation: (() => {
-                        if (msgpayload.status !== 'ClosedByBot' && msgpayload.sender === 'userAnswerTimer') return 'Диалог автоматически закрыт по отсутствию активности';
-                        if (!isEmptyPayload && msgpayload.status !== 'ClosedByBot' && msgpayload.src !== 'delivery' && msgpayload.sender !== 'userAnswerTimer') return `${getOperatorNameById(msgpayload.sender, "Оператор")} закрыл чат!`;
-                        if (!isEmptyPayload && msgpayload.src === 'delivery') return 'Диалог был закрыт рассылкой';
-                        if (isEmptyPayload) return message.eventTpe;
+                        const { status, sender, src, closeOnAwake, awakeDt } = msgpayload;
+
+                        // 1. Автозакрытие по таймеру пользователя
+                        if (status !== 'ClosedByBot' && sender === 'userAnswerTimer') {
+                            return 'Диалог автоматически закрыт по отсутствию активности';
+                        }
+
+                        // 2. Оператор закрыл чат
+                        if (!isEmptyPayload &&
+                            status !== 'ClosedTemporary' &&
+                            src !== 'delivery' &&
+                            src !== 'pause' &&
+                            sender &&
+                            sender !== 'userAnswerTimer') {
+                            return `${getOperatorNameById(sender, "Оператор")} закрыл чат!`;
+                        }
+
+                        // 3. Автозакрытие после паузы
+                        if (!isEmptyPayload &&
+                            status !== 'ClosedByBot' &&
+                            src === 'pause' &&
+                            sender !== 'userAnswerTimer') {
+                            return 'Запущено автозакрытие чата после паузы!';
+                        }
+
+                        // 4. Пауза от оператора с автозакрытием
+                        if (!isEmptyPayload &&
+                            status === 'ClosedTemporary' &&
+                            closeOnAwake === 'true') {
+                            return `${getOperatorNameById(sender, "Оператор")} поставил чат на паузу c автозакрытием ${convertToMSK(awakeDt)}!`;
+                        }
+
+                        // 5. Пауза от оператора без автозакрытия
+                        if (!isEmptyPayload &&
+                            status === 'ClosedTemporary' &&
+                            closeOnAwake === 'false') {
+                            return `${getOperatorNameById(sender, "Оператор")} поставил чат на паузу до ${convertToMSK(awakeDt)}!`;
+                        }
+
+                        // 6. Закрытие рассылкой
+                        if (!isEmptyPayload && src === 'delivery') {
+                            return 'Диалог был закрыт рассылкой';
+                        }
+
+                        // 7. Пустой payload
+                        if (isEmptyPayload) {
+                            return message?.eventTpe ?? '';
+                        }
+
                         return '';
                     })()
+
                 };
                 const eventMsg = eventMapping[message.eventTpe] || '';
                 if (eventMsg) appendToInfoField(`<div class="event-name">${eventMsg}<span class="event-other-date">${extractTime(message.ts)}</span></div>`);
