@@ -541,8 +541,16 @@ async function findchatsoper() { // ищет активные чаты на вы
                     alert(`У выбранного пользователя ${objSel[i].innerText} нет активных чатов`)
 
                 function formatDate(ts) {
-                    const d = new Date(ts.split('[GMT]')[0]);
+                    // Удаляем всё в квадратных скобках
+                    ts = ts.replace(/ \[.*?\] /g, '').trim();
+
+                    const d = new Date(ts);
                     const pad = n => String(n).padStart(2, '0');
+
+                    if (isNaN(d.getTime())) {
+                        console.warn("Invalid TS:", ts);
+                        return "Invalid Date";
+                    }
 
                     let hours = d.getUTCHours() + 3;
                     if (hours >= 24) hours -= 24;
@@ -779,8 +787,6 @@ function getopennewcatButtonPress() { // открывает меню для ра
     document.getElementById('dateFromChHis').value = getyearFromLS + "-" + getFormattedDateComponent(fromMonthLS) + "-" + todayLSFrom;
     document.getElementById('dateToChHis').value = getyearLS + "-" + getFormattedDateComponent(toMonthLS) + "-" + todayLSTo;
 
-    let radiobtnsarray = document.getElementsByName('chatornotes')
-    let radiobtnsarray1 = document.getElementsByName('chatornotes1')
     let activetechopers = [];
     document.getElementById('RefrehOperators').onclick = currstate;
     let objSel = document.getElementById("operatorstp");
@@ -929,7 +935,7 @@ function getopennewcatButtonPress() { // открывает меню для ра
         data = responseData;
         foundarr = '';
         data.items.forEach(item => {
-            let timestamp = new Date(item.ts.split('[GMT]')[0]);
+            let timestamp = new Date(item.ts.replace(/\[.*?\]/g, '').trim());
             let formattedDate = timestamp.toLocaleDateString('ru-RU');
             let formattedTime = timestamp.toLocaleTimeString('ru-RU', {
                 hour: '2-digit',
