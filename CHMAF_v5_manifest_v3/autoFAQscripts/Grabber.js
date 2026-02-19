@@ -1132,6 +1132,13 @@ function SaveСountryCSV(filename) {
     }, 0);
 }
 
+function resolveThemeLabel(topicValue) {
+    if (!topicValue) return '⁉No theme';
+    const theme = themes.find(t => t.value === String(topicValue));
+    return theme ? theme.label : '⁉Unknown theme';
+}
+
+
 async function getChat(id) {
     const r = await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, {
         headers: { "x-csrf-token": aftoken }
@@ -1139,21 +1146,34 @@ async function getChat(id) {
     return r.json();
 }
 
-function pushPayload({ r, duration, operatorName, csat, themeName }) {
-    const isActive = duration === undefined;
+function pushPayload({ r, duration, operatorName, csat }) {
+
+    const topicValue = r.payload?.topicId?.value;
+    const themeLabel = resolveThemeLabel(topicValue);
+
+    const isActive = duration == null;
 
     payloadarray.push({
         ChatId: r.id,
         OperatorName: operatorName,
+
         timeStamp: isActive
             ? "Active chat, ⏳"
-            : new Date(+r.tsCreate + duration).toLocaleString('ru-RU', timeOptions),
+            : new Date(r.tsCreate + duration)
+                .toLocaleString('ru-RU', timeOptions),
+
         CSAT: csat,
-        ThemeValue: themeName || (r.payload.topicId?.value ? '' : '⁉No theme'),
-        SLACompleted: isActive ? "undefined" : ((duration / 1000 / 60) > 25 ? "0" : "1"),
-        Country: r.channelUser?.payload?.country || "-"
+
+        ThemeValue: themeLabel,
+
+        SLACompleted: isActive
+            ? null
+            : ((duration / 1000 / 60) > 25 ? 0 : 1),
+
+        Country: r.channelUser?.payload?.country ?? "-"
     });
 }
+
 
 function pushTags(r) {
     operstagsarray.push({
@@ -1571,6 +1591,14 @@ async function processChat(chat, filters, criticalChats) {
     };
 
     criticalChats.set(r.id, entry);
+
+    pushPayload({
+        r,
+        duration: r.tsMod ? r.tsMod - r.tsCreate : undefined,
+        operatorName: chat.operatorName,
+        csat: matched.Rate
+    });
+
 }
 
 function renderMainTable(pureArray, chatswithmarksarray) {
@@ -1699,6 +1727,8 @@ document.getElementById('stargrab').onclick = async function () {
     // Уникальные чаты
     let dataToRender;
     let table;
+
+    console.log("otherfilters is", otherfilters)
 
     if (otherfilters == "on") {
         dataToRender = [...criticalChats.values()];
