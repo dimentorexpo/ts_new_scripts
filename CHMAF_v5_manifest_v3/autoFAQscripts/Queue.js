@@ -280,7 +280,7 @@ async function getAllChatsByStatus() {
         .catch(error => console.log('Ошибка получения данных: ', error));
 
     dataChts.forEach((el, index) => {
-        const ts = new Date(el.ts.replace(/\[GMT\]$/, ''));
+        const ts = new Date(el.ts.replace(/\[.*?\]/g, '').trim());
 
         const queueItemDiv = document.createElement('div');
         queueItemDiv.className = 'queue-item';
@@ -348,7 +348,7 @@ async function getAllChatsByStatus() {
 
         bimba.appendChild(queueItemDiv);
 
-        startTimerForDialog(el.ts.replace(/\[GMT\]$/, ''), timerSpan);
+        startTimerForDialog(el.ts.replace(/\[.*?\]/g, '').trim(), timerSpan);
     });
 
     let allConvs = document.getElementsByName('prosmChat');
