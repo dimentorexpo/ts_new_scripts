@@ -1500,6 +1500,13 @@ function extractComment(fullText) {
     return fullText.substring(idx).trim();
 }
 
+function extractCommentLine(txt) {
+    const lines = txt.split(/<br\s*\/?>/i); // разбиваем по <br />
+    const line = lines.find(l => l.toLowerCase().includes("комментарий:"));
+    return line ? line.trim() : "";
+}
+
+
 async function processChat(chat, filters, criticalChats) {
     const matched = chatswithmarksarray.find(x => x.ConvId === chat.HashId);
     if (!matched) return;
@@ -1577,9 +1584,19 @@ async function processChat(chat, filters, criticalChats) {
     // 1) Если искали комментарий → выводим комментарий
     // 2) Если искали сообщение → выводим сообщение
     // 3) Если оба → выводим оба (или только комментарий — как хочешь)
-    let finalText = "";
-    if (matchedCommentMsg) finalText += extractComment(matchedCommentMsg.txt);
-    if (matchedUserMsg) finalText += "\n\n" + matchedUserMsg.txt;
+    //3. Формируем finalText
+    const blockComment = operatorComments.find(m => {
+        const t = m.txt.toLowerCase();
+        return t.includes("критичность:") || t.includes("категория:");
+    });
+
+    let finalText = ""; if (blockComment) {
+        finalText = extractCommentLine(blockComment.txt);
+    }
+    if (matchedUserMsg) {
+        finalText += "\n\n" + matchedUserMsg.txt;
+    }
+    finalText = finalText.trim();
 
     const entry = {
         ChatId: r.id,
