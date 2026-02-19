@@ -1519,7 +1519,7 @@ async function processChat(chat, filters, criticalChats) {
     const priorityFilters = filters.priority ?? ["Any"];
     const deptFilters = filters.dept ?? ["Any"];
     const userTypeFilters = filters.usertype ?? ["Any"];
-
+    //const isCommentFilterActive = commentSearch !== "";
     const commentSearch = (filters.commentInput ?? "").toLowerCase();
     const messageSearch = (filters.messageInput ?? "").toLowerCase();
 
@@ -1562,6 +1562,7 @@ async function processChat(chat, filters, criticalChats) {
     }
 
     // --- COMMENT SEARCH (OperatorComment) ---
+
     let matchedCommentMsg = null;
     if (commentSearch !== "") {
         matchedCommentMsg = operatorComments.find(m =>
@@ -1714,6 +1715,7 @@ document.getElementById('stargrab').onclick = async function () {
     chatswithmarksarray = [];
     operstagsarray = [];
     arrofthemes = [];
+    criticalChats = new Map();
 
     const { leftDateFromGrab, rightDateToGrab } = getDateRange();
     const { ids: operatorIds, names: operatorNames } = getSelectedOperators();
@@ -1746,6 +1748,12 @@ document.getElementById('stargrab').onclick = async function () {
     let table;
 
     console.log("otherfilters is", otherfilters)
+
+    console.log("commentInput =", filters.commentInput);
+    console.log("otherfilters =", otherfilters);
+    console.log("criticalChats size =", criticalChats.size);
+    console.log("payloadarray size =", payloadarray.length);
+
 
     if (otherfilters == "on") {
         dataToRender = [...criticalChats.values()];
