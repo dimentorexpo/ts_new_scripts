@@ -542,7 +542,7 @@ async function findchatsoper() { // ищет активные чаты на вы
 
                 function formatDate(ts) {
                     // Удаляем всё в квадратных скобках
-                    ts = ts.replace(/ \[.*?\] /g, '').trim();
+                    ts = ts.replace(/\[.*?\]/g, '').trim();
 
                     const d = new Date(ts);
                     const pad = n => String(n).padStart(2, '0');
@@ -935,6 +935,10 @@ function getopennewcatButtonPress() { // открывает меню для ра
         data = responseData;
         foundarr = '';
         data.items.forEach(item => {
+
+            console.log(JSON.stringify(item.ts));
+            console.log(JSON.stringify(item.ts.replace(/\[.*?\]/g, '').trim()));
+
             let timestamp = new Date(item.ts.replace(/\[.*?\]/g, '').trim());
             let formattedDate = timestamp.toLocaleDateString('ru-RU');
             let formattedTime = timestamp.toLocaleTimeString('ru-RU', {
