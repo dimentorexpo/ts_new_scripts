@@ -21,6 +21,7 @@ let currentTableData = [];
 let isDescending = false;
 let lastTableParams = null;
 let criticalChats = new Map();
+let dataToRender;
 
 const timeOptions = {
     timeZone: 'Europe/Moscow',
@@ -1715,6 +1716,7 @@ document.getElementById('stargrab').onclick = async function () {
     chatswithmarksarray = [];
     operstagsarray = [];
     arrofthemes = [];
+    dataToRender = []
     criticalChats = new Map();
 
     const { leftDateFromGrab, rightDateToGrab } = getDateRange();
@@ -1744,7 +1746,7 @@ document.getElementById('stargrab').onclick = async function () {
     }
 
     // Уникальные чаты
-    let dataToRender;
+
     let table;
 
     console.log("otherfilters is", otherfilters)
@@ -1967,7 +1969,7 @@ function downloadCriticalCSV(array) {
 document.getElementById('webtoCSV').onclick = function () {
     const filename = "data.csv";
     if (otherfilters == "off") {
-        downloadCSV(pureArray, filename);
+        downloadCSV(dataToRender, filename);
     } else {
         console.log("criticalChats size =", criticalChats.size);
         downloadCriticalCSV([...criticalChats.values()]);
