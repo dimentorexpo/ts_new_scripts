@@ -89,7 +89,7 @@ var win_getLessonInfo = `
     <table id="participantsOutput" class="participants-table">
         <thead>
             <tr>
-                <th>Тип пользователя</th>
+                <th>Тип</th>
                 <th>ID</th>
                 <th>Имя</th>
                 <th>Время входа, МСК</th>
@@ -220,16 +220,27 @@ function filterParticipants(query) {
     const tbody = DOM.allParticipants().querySelector("tbody");
     const rows = tbody.querySelectorAll("tr");
 
-    rows.forEach(row => {
-        const userId = row.children[1].textContent; // вторая колонка — ID
+    const isNumeric = /^\d+$/.test(query); // только цифры?
 
-        if (userId.includes(query)) {
-            row.style.display = "";
+    rows.forEach(row => {
+        const userId = row.children[1].textContent.toLowerCase();
+        const name = row.children[2].textContent.toLowerCase();
+        const q = query.toLowerCase();
+
+        let match = false;
+
+        if (isNumeric) {
+            // поиск по ID
+            match = userId.includes(q);
         } else {
-            row.style.display = "none";
+            // поиск по имени
+            match = name.includes(q);
         }
+
+        row.style.display = match ? "" : "none";
     });
 }
+
 
 
 /*************************
