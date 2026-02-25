@@ -1,45 +1,116 @@
+/*************************
+ * CONSTANTS & CONFIG
+ *************************/
+const PLATFORM = {
+    VIMBOX: 1
+};
+
+const ORIGIN_VIMBOX = 'https://vimbox.skyeng.ru';
+
+const SUBJECTS = {
+    english: 'english',
+    math: 'math',
+    'computer-science': 'computer-science',
+    geography: 'geography',
+    chess: 'chess',
+    'social-science': 'social-science',
+    history: 'history',
+    biology: 'biology',
+    physics: 'physics',
+    literature: 'literature',
+    chemistry: 'chemistry',
+    russian: 'russian',
+    preschool: 'preschool'
+};
+
 var win_getLessonInfo = `
-				<div style="display: flex;">
-					<span style="cursor: -webkit-grab;">
+    <div class="lesson-actions">
+        <button id="hideMeLessonInfo" class="commonbtn">Hide</button>
+        <button id="RefreshInfo" class="commonbtn">♻</button>
+        <button id="ClearInfo" class="commonbtn">🧹</button>
+    </div>
 
-						<div style="margin: 5px; width: 490px;" id="LessonInfoHeader">
-                            <button class="commonbtn hidebtns" title="скрывает меню" id="hideMeLessonInfo">hide</button>
-							<button class="commonbtn smallbtns" id="RefreshInfo" title = "Обновляет информацию в полях, использовать при подключении к уроку! Если работаете на других страницах с формой есть кнопка Search позволяющая подтягивать актуальный статус" style="margin: 5px;">♻</button>
-							<button class="commonbtn smallbtns" id="ClearInfo" title = "Очищает информацию в полях">🧹</button>
-							<span id="subjectname" style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Subject: </span>
-							<span id="subjectnamefield" style="width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #2569c3f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 11px; user-select:none;"></span>
-						
-							<span style="margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Создана: </span>
-							<span id="creationType" style="width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #627998f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 12px; cursor:text;" title="auto - автоматически в назначенное по расписанию время, manually - вручную"></span>
-							
-							<span id="roomfor" style="display: none; margin-left: 5px; width:50px; height:25px; text-align:center; color:bisque; margin:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); user-select:none;">Room for Student ID: </span>
-							<span id="forstudentid" style="display:none; width: 110px; height:30px;text-align: center;color: #fff; border-radius:5px;background: #627998f0; padding:5px; margin:5px; border:1px solid white; font-weight:500; box-shadow: 0px 5px 5px rgb(0 0 0 / 55%); font-size: 12px; cursor:pointer;" title="При клике копирует в буфер обмена айди ученика"></span>
-                        </div>
+<div class="lesson-card">
+    <div class="lesson-title">Информация о занятии</div>
 
-						<div style="margin: 5px; width: 490px; display:flex; flex-wrap: wrap; align-items:center;">
-							<span id="statusroomid" class = "lesson-field-name">Status:</span>
-							<span id="statusroom" class = "lesson-field-value"></span>
-							<span id="hashroomid" class = "lesson-field-name">Hash:</span>
-							<span id="hashroom" class = "lesson-field-value" style="cursor:pointer;" title = "При клике копирует в буфер обмена ссылку на комнату!"></span>
-						<br>
-							<span id="participantteacher" class = "lesson-field-name">Teacher:</span>
-							<span id="partteachid" class = "lesson-field-value"></span>
-							<span id="participantstudent" class = "lesson-field-name">Student:</span>
-							<span id="partstudid" class = "lesson-field-value"></span>
-						</div>
+    <div class="lesson-field">
+        <span class="lesson-field-name">Предмет:</span>
+        <span id="subjectnamefield" class="lesson-field-value"></span>
+    </div>
 
-						<div>
-						<input id="hashfield" placeholder = "Введите полный хеш комнаты" title = "Example: https://vimbox.skyeng.ru/kids/russian/room/xinisoborada" style="width:480px; text-align:center; margin-left:6px;">
-						</div>
+    <div class="lesson-field">
+        <span class="lesson-field-name">Создана:</span>
+        <span id="creationType" class="lesson-field-value"></span>
+    </div>
 
-						<div style="display: flex; justify-content: center;">
-							<button class="commonbtn" id="setstclass" style="margin: 5px; width: 70px; height: 30px;">Classwork</button>
-                            <button class="commonbtn" id="setstsucc" style="margin: 5px; width: 70px; height: 30px;">Success</button>
-							<button class="commonbtn" id="searchHash" style="margin: 5px; width: 70px; height: 30px;">Search</button>
-						</div>
+    <div class="lesson-field" id="roomfor-block" style="display:none;">
+        <span class="lesson-field-name">Room for:</span>
+        <span id="forstudentid" class="lesson-field-value"></span>
+    </div>
+</div>
 
-					</span>
-				  </div>`;
+<div class="lesson-card">
+    <div class="lesson-title">Комната</div>
+
+    <div class="lesson-field">
+        <span class="lesson-field-name">Статус:</span>
+        <span id="statusroom" class="lesson-field-value"></span>
+    </div>
+
+    <div class="lesson-field">
+        <span class="lesson-field-name">Хеш комнаты:</span>
+        <span id="hashroom" class="lesson-field-value"></span>
+    </div>
+
+    <div class="lesson-field">
+        <span class="lesson-field-name">Тип:</span>
+        <span id="lessonType" class="lesson-field-value"></span>
+    </div>
+</div>
+
+<div class="lesson-card">
+    <div class="lesson-title">Участники</div>
+    <div style="color:bisque">Количество участников комнаты: <span id="participantCounter" style="cursor:pointer; background: chocolate; border-radius: 20px; padding: 5px;
+    border: 2px solid yellowgreen;"></span></div>
+
+    <div class="lesson-field">
+        <span class="lesson-field-name">Teacher:</span>
+        <span id="partteachid" class="lesson-field-value"></span>
+    </div>
+
+    <div class="lesson-field">
+        <span class="lesson-field-name">Student:</span>
+        <span id="partstudid" class="lesson-field-value"></span>
+    </div>
+</div>
+
+<div id="allParticipants" style="display:none; position:absolute; color:bisque; top:0; right:-592px; background:#464451; max-height:300px; overflow:auto;">
+    <input id="searchForParticipant" style="margin-left: 30%;    text-align: center;" placeholder="ID для поиска">
+    <table id="participantsOutput" class="participants-table">
+        <thead>
+            <tr>
+                <th>Тип пользователя</th>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Время входа</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div class="lesson-card">
+    <input id="hashfield" class="hash-input" placeholder="Введите полный хеш комнаты">
+</div>
+
+<div class="lesson-card">
+    <div class="lesson-actions">
+        <button id="setstclass" class="commonbtn">▶️Classwork</button>
+        <button id="setstsucc" class="commonbtn">✅Success</button>
+        <button id="searchHash" class="commonbtn">🔍Search</button>
+    </div>
+</div>
+`;
 
 const wintLessonInfo = createTSMWindow('AFMS_LessonInfo', 'winTopLessonInfo', 'winLeftLessonInfo', win_getLessonInfo);
 wintLessonInfo.className = 'wintInitializeLessonInfo';
@@ -49,266 +120,253 @@ async function OpenLessonmInfoMenu() {
     wintLessonInfo.style.display = menuVisible ? 'none' : '';
 
     if (!menuVisible) {
-        handleRoomInfo('join');
+        openMenu();
         setupEventHandlers();
     }
 }
 
-function setupEventHandlers() {
-    document.getElementById('setstclass').addEventListener('click', () => changeRoomStatus('classwork'));
-    document.getElementById('setstsucc').addEventListener('click', () => changeRoomStatus('success'));
-    document.getElementById('hashroom').addEventListener('click', copyRoomLink);
-    document.getElementById('searchHash').addEventListener('click', () => handleRoomInfo('search'));
-    document.getElementById('RefreshInfo').addEventListener('click', () => handleRoomInfo('join'));
-    document.getElementById('ClearInfo').addEventListener('click', clearInfoFields);
-    document.getElementById('hideMeLessonInfo').addEventListener('click', () => wintLessonInfo.style.display = 'none');
-}
+/*************************
+ * DOM CACHE
+ *************************/
+const DOM = {
+    platform: () => document.getElementById('platformname'),
+    roomFor: () => document.getElementById('roomfor'),
+    studentId: () => document.getElementById('forstudentid'),
+    subject: () => document.getElementById('subjectnamefield'),
+    status: () => document.getElementById('statusroom'),
+    hash: () => document.getElementById('hashroom'),
+    lesType: () => document.getElementById('lessonType'),
+    particCounter: () => document.getElementById('participantCounter'),
+    allParticipants: () => document.getElementById('participantsOutput'),
+    teacher: () => document.getElementById('partteachid'),
+    student: () => document.getElementById('partstudid'),
+    creationType: () => document.getElementById('creationType'),
+    hashInput: () => document.getElementById('hashfield'),
+    btnClass: () => document.getElementById('setstclass'),
+    btnSuccess: () => document.getElementById('setstsucc')
+};
 
-function handleRoomInfo(action) {
-    let platformType, subject, hash;
-    if (action === 'search') {
-        const hashval = document.getElementById('hashfield').value.split('/');
-        platformType = determinePlatformType(hashval);
-        subject = hashval[4] + '/' + hashval[5];
-        hash = hashval[4];
-    } else {
-        platformType = getPlatformType();
-        subject = document.URL.split('/')[4] + "/" + document.URL.split('/')[5];
-        hash = document.URL.split('/')[4];
+/*************************
+ * URL HELPERS
+ *************************/
+function parseRoomURL(rawUrl = location.href) {
+    if (!rawUrl) {
+        throw new Error('URL пустой');
     }
 
-    setPlatformUI(platformType);
-    const api = findapi(subject, 1);
+    // если передали относительный URL — добавляем origin
+    const url = rawUrl.startsWith('http')
+        ? new URL(rawUrl)
+        : new URL(rawUrl, location.origin);
 
-    if (document.location.origin === 'https://vimbox.skyeng.ru') {
-        switch (platformType) {
-            case 1:
-                loadinfo(api);
-                break;
-            case 2:
-                document.getElementById('hashroom').textContent = hash;
-                document.getElementById('statusroom').textContent = "No status";
-                document.getElementById('subjectnamefield').textContent = "ENGLISH";
-                getusersadults(hash);
-                getjoinadultsinfo(hash);
-                break;
-            default:
-                resetPlatformUI();
-                break;
+    const pathParts = url.pathname.split('/').filter(Boolean);
+
+    if (pathParts.length < 4) {
+        throw new Error('Некорректный URL комнаты');
+    }
+
+    const subjectName = pathParts[1];
+    const roomHash = pathParts[3];
+
+    return {
+        subject: `${subjectName}/room`,
+        subjectName,
+        roomHash
+    };
+}
+
+/*************************
+ * API
+ *************************/
+function getApiEndpoint(subject, version = 2) {
+    const name = subject.split('/')[0];
+    if (!SUBJECTS[name]) {
+        console.error(`Предмет ${name} не поддерживается`);
+        return null;
+    }
+    return `https://api-${SUBJECTS[name]}.skyeng.ru/api/v${version}/rooms/`;
+}
+
+async function apiRequest(url, options = {}) {
+    const response = await fetch(url, {
+        credentials: 'include',
+        ...options
+    });
+
+    if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+    }
+
+    return response.json();
+}
+
+/*************************
+ * UI HELPERS
+ *************************/
+
+function clearUI() {
+    Object.values(DOM).forEach(fn => {
+        const el = fn();
+        if (!el) return;
+        if ('value' in el) el.value = '';
+        else el.textContent = '';
+    });
+
+    DOM.btnClass().style.display = 'none';
+    DOM.btnSuccess().style.display = 'none';
+}
+
+function filterParticipants(query) {
+    const tbody = DOM.allParticipants().querySelector("tbody");
+    const rows = tbody.querySelectorAll("tr");
+
+    rows.forEach(row => {
+        const userId = row.children[1].textContent; // вторая колонка — ID
+
+        if (userId.includes(query)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
         }
-    }
-}
-
-function determinePlatformType(hashval) {
-    return hashval[3] === 'kids' ? 1 : hashval[3] === 'lesson' ? 2 : 0;
-}
-
-function getPlatformType() {
-    const path = location.pathname.split('/');
-    return path[1] === 'kids' ? 1 : path[1] === 'lesson' ? 2 : 0;
-}
-
-function setPlatformUI(platformType) {
-    const roomForElem = document.getElementById('roomfor');
-    const forStudentIdElem = document.getElementById('forstudentid');
-    const setStClassElem = document.getElementById('setstclass');
-    const setStSuccElem = document.getElementById('setstsucc');
-
-    if (platformType === 1) {
-        roomForElem.style.display = 'none';
-        forStudentIdElem.style.display = 'none';
-        setStClassElem.style.display = '';
-        setStSuccElem.style.display = '';
-    } else {
-        resetPlatformUI();
-    }
-}
-
-function resetPlatformUI() {
-    document.getElementById('platformname').textContent = "";
-    document.getElementById('roomfor').style.display = 'none';
-    document.getElementById('forstudentid').style.display = 'none';
-    document.getElementById('setstclass').style.display = 'none';
-    document.getElementById('setstsucc').style.display = 'none';
-}
-
-function changeRoomStatus(status) {
-    let subject, api;
-    const hashFieldVal = document.getElementById('hashfield').value.split('/');
-
-    if (!hashFieldVal[0]) {
-        subject = document.URL.split('/')[4] + "/" + document.URL.split('/')[5];
-    } else {
-        subject = hashFieldVal[4] + '/' + hashFieldVal[5];
-        alert('Комната была перезапущена. Можете нажать на кнопку Search и увидеть актуальный статус комнаты');
-    }
-
-    api = findapi(subject, 1);
-    setstclasswork(api, status);
-}
-
-function copyRoomLink() {
-    const subjectNameField = document.getElementById('subjectnamefield').textContent;
-    const platformName = document.getElementById('platformname').textContent;
-    const hashRoom = document.getElementById('hashroom').textContent;
-    let link;
-
-    if (subjectNameField && platformName === 'Skysmart') {
-        link = `https://vimbox.skyeng.ru/kids/${subjectNameField.toLowerCase()}/room/${hashRoom}`;
-    } else if (subjectNameField && platformName === 'Adults') {
-        link = `https://vimbox.skyeng.ru/lesson/${hashRoom}`;
-    }
-
-    if (link) {
-        copyToClipboardTSM(link);
-        alert('Ссылка на комнату скопирована в буфер обмена!');
-    }
-}
-
-function clearInfoFields() {
-    document.getElementById('platformname').textContent = "";
-    document.getElementById('roomfor').style.display = 'none';
-    document.getElementById('forstudentid').style.display = 'none';
-    document.getElementById('subjectnamefield').textContent = "";
-    document.getElementById('statusroom').textContent = "";
-    document.getElementById('hashroom').textContent = "";
-    document.getElementById('partteachid').textContent = "";
-    document.getElementById('partstudid').textContent = "";
-    document.getElementById('hashfield').value = "";
-    document.getElementById('setstclass').style.display = 'none';
-    document.getElementById('setstsucc').style.display = 'none';
-}
-
-async function getusersadults(hash) {
-    try {
-        const response = await fetch("https://rooms.vimbox.skyeng.ru/rooms/api/v1/workbooks/last?roomHash=" + hash, {
-            method: "GET",
-            credentials: "include"
-        });
-        const usersadults = await response.json();
-        console.log(usersadults);
-        document.getElementById('forstudentid').textContent = usersadults.studentId;
-
-        document.getElementById('forstudentid').onclick = () => {
-            copyToClipboardTSM(usersadults.studentId);
-        };
-    } catch (error) {
-        console.error('Ошибка при получении информации о пользователе:', error);
-    }
-}
-
-async function getjoinadultsinfo(hash) {
-    try {
-        const joinresult = await joinroom(hash);
-        document.getElementById('partteachid').textContent = joinresult.teacher.id;
-        document.getElementById('partteachid').title = joinresult.teacher.name + " " + joinresult.teacher.surname;
-		document.getElementById('creationType').textContent = joinresult.meta.creationType
-
-        const studentInfo = joinresult.students.length > 0 ? joinresult.students[0] : { id: "New Student", name: "No name", surname: "Student didn't join the room" };
-        document.getElementById('partstudid').textContent = studentInfo.id;
-        document.getElementById('partstudid').title = studentInfo.name + " " + studentInfo.surname;
-    } catch (error) {
-        console.error('Ошибка при получении информации о комнате:', error);
-    }
-}
-
-async function loadinfo(api) {
-    const hashroom = document.getElementById('hashfield').value.split('/')[6] || document.URL.split('/')[6];
-    const subjname = document.getElementById('hashfield').value.split('/')[4] || document.URL.split('/')[4];
-
-    try {
-        const response = await fetch(api + hashroom, {
-            method: "GET",
-            credentials: "include"
-        });
-        const joinresult = await response.json();
-        document.getElementById('statusroom').textContent = joinresult.status;
-        document.getElementById('hashroom').textContent = joinresult.hash;
-        // Обновление информации об участниках
-        updateParticipantsInfo(joinresult.participants);
-        document.getElementById('subjectnamefield').textContent = subjname.toUpperCase();
-		document.getElementById('creationType').textContent = joinresult.meta.creationType
-        console.log('Информация об уроке получена:', joinresult);
-    } catch (error) {
-        console.error('Ошибка при загрузке информации о комнате:', error);
-    }
-}
-
-function updateParticipantsInfo(participants) {
-    participants.forEach(participant => {
-        const idField = participant.role === 'teacher' ? 'partteachid' : 'partstudid';
-        document.getElementById(idField).textContent = participant.userId;
-        document.getElementById(idField).title = `Имя ${participant.name}, Время создания комнаты: ${participant.startAt}, Время подключения: ${participant.joinedAt}`;
     });
 }
 
-function findapi(subject, vapi) {
-    const baseURL = "https://api-";
-    const subjects = {
-        "english": "english",
-        "math": "math",
-        "computer-science": "computer-science",
-        "geography": "geography",
-        "chess": "chess",
-        "social-science": "social-science",
-        "history": "history",
-        "biology": "biology",
-        "physics": "physics",
-        "literature": "literature",
-        "chemistry": "chemistry",
-        "russian": "russian",
-        "preschool": "preschool"
-    };
 
-    let subjectName = subject.split("/")[0];
-    if (!subjects[subjectName]) {
-        console.error(`Ошибка: предмет ${subjectName} не найден.`);
-        return null;
-    }
-
-    return `${baseURL}${subjects[subjectName]}.skyeng.ru/api/v${vapi}/rooms/`;
-}
-
-async function setstclasswork(api, status) {
-    const hashval = document.getElementById('hashfield').value.split('/');
-    const roomId = hashval[6] || document.URL.split('/')[6];
-
-    if (location.origin === 'https://vimbox.skyeng.ru' && location.pathname.split('/')[3] !== 'teacher') {
-        try {
-            const response = await fetch(api + roomId, {
-                headers: {
-                    accept: "application/json",
-                    "content-type": "application/json"
-                },
-                body: JSON.stringify({ status, name: "" }),
-                method: "PATCH",
-                mode: "cors",
-                credentials: "include"
+/*************************
+ * CORE LOGIC
+ *************************/
+async function loadRoomInfo(api, roomHash, subjectName) {
+    try {
+        const data = await apiRequest(api + roomHash);
+        console.log(data)
+        DOM.status().textContent = data.status;
+        DOM.hash().textContent = data.hash;
+        DOM.lesType().textContent = data.type
+        DOM.subject().textContent = subjectName.toUpperCase();
+        DOM.creationType().textContent = data.meta.creationType == "auto" ? "Автоматически" : data.meta.creationType == "manually" ? "Вручную" : "Через админку";
+        DOM.particCounter().textContent = data.allParticipantsCount
+        if (data.participants.length == 2) {
+            updateParticipants(data.participants);
+        } else {
+            updateParticipantsWebinar(data.participants);
+            document.getElementById('searchForParticipant').addEventListener('input', function () {
+                filterParticipants(this.value.trim());
             });
 
-            if (response.ok) {
-                alert('Статус комнаты изменён на ' + status + '!');
-                location.reload();
-            } else {
-                alert('Ошибка при изменении статуса.');
-            }
-        } catch (error) {
-            console.error('Ошибка при изменении статуса комнаты:', error);
         }
-    } else {
-        console.error('Невозможно изменить статус комнаты: неверный путь или домен.');
+
+
+        DOM.particCounter().onclick = function () {
+            const el = document.getElementById('allParticipants');
+            el.style.display = el.style.display === "none" ? "" : "none";
+        };
+
+
+
+    } catch (e) {
+        console.error('Ошибка загрузки комнаты:', e);
     }
 }
 
-async function joinroom(item) {
+function updateParticipants(participants) {
+    participants.forEach(p => {
+        const target = p.role === 'teacher' ? DOM.teacher() : DOM.student();
+        target.textContent = p.userId;
+        target.title = `Имя: ${p.name}\nСоздание: ${p.startAt}\nПодключение: ${p.joinedAt}`;
+    });
+}
+
+function updateParticipantsWebinar(participants) {
+    const tbody = DOM.allParticipants().querySelector("tbody");
+    tbody.innerHTML = ""; // очищаем перед заполнением
+
+    participants.forEach(p => {
+        const row = `
+            <tr>
+                <td>${p.role}</td>
+                <td>${p.userId}</td>
+                <td>${p.name}</td>
+                <td>${p.joinedAt}</td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+
+/*************************
+ * STATUS UPDATE
+ *************************/
+async function changeRoomStatus(status) {
     try {
-        const response = await fetch(`https://rooms-vimbox.skyeng.ru/rooms/api/v1/rooms/${item}/join`, {
-            method: "PATCH",
-            credentials: "include"
+        const { subject, roomHash } = DOM.hashInput().value
+            ? parseRoomURL(DOM.hashInput().value)
+            : parseRoomURL();
+
+        const api = getApiEndpoint(subject);
+        await apiRequest(api + roomHash, {
+            method: 'PATCH',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ status, name: '' })
         });
-        return await response.json();
-    } catch (error) {
-        console.error('Ошибка при подключении к комнате:', error);
-        return null;
+
+        alert(`Статус изменён на ${status}`);
+        location.reload();
+    } catch (e) {
+        console.error('Ошибка изменения статуса:', e);
     }
 }
+
+/*************************
+ * EVENTS
+ *************************/
+function setupEventHandlers() {
+    DOM.btnClass().onclick = () => changeRoomStatus('classwork');
+    DOM.btnSuccess().onclick = () => changeRoomStatus('success');
+
+    DOM.hash().onclick = () => {
+        const link = `https://vimbox.skyeng.ru/kids/${DOM.subject().textContent.toLowerCase()}/room/${DOM.hash().textContent}`;
+        copyToClipboardTSM(link);
+        alert('Ссылка скопирована');
+    };
+
+    document.getElementById('ClearInfo').onclick = clearUI;
+    document.getElementById('RefreshInfo').onclick = openMenu;
+    document.getElementById('searchHash').onclick = () => openMenu(true);
+}
+
+/*************************
+ * ENTRY
+ *************************/
+function openMenu(isSearch = false) {
+    if (location.origin !== ORIGIN_VIMBOX) return;
+
+    try {
+        const { subject, subjectName, roomHash } = isSearch
+            ? parseRoomURL(DOM.hashInput().value)
+            : parseRoomURL();
+
+        const api = getApiEndpoint(subject);
+
+        if (!api) {
+            console.error('API endpoint не определён');
+            return;
+        }
+        loadRoomInfo(api, roomHash, subjectName);
+
+    } catch (e) {
+        console.error('Ошибка при открытии меню:', e);
+    }
+}
+
+//setupEventHandlers();
+
+DOM.allParticipants().addEventListener('mousedown', e => {
+    e.stopPropagation();
+});
+
+
+
+
