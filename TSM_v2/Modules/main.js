@@ -64,7 +64,7 @@ const wintAddMenu = createTSMWindow('AFMS_addMenu', 'winTopAddMenu', 'winLeftAdd
 wintAddMenu.className = 'wintInitialize';
 
 document.querySelector('body').addEventListener('dblclick', (event) => {
-    let tags = ["INPUT", "TEXTAREA", "BUTTON", "H1", "H2", "H3", "UL", "LI", "VIM-WORD", "P", "SPAN"];
+    let tags = ["INPUT", "TEXTAREA", "BUTTON", "H1", "H2", "H3", "UL", "LI", "VIM-WORD", "P", "SPAN", "TD", "TR", "TBODY", "THEAD"];
     if (!tags.includes(event.target.tagName)) {
         wintAddMenu.style.display = "block";
         wintAddMenu.style.left = (event.clientX - 120) + "px";

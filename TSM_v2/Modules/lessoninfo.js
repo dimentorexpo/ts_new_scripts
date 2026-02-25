@@ -84,7 +84,7 @@ var win_getLessonInfo = `
     </div>
 </div>
 
-<div id="allParticipants" style="display:none; position:absolute; color:bisque; top:0; right:-592px; background:#464451; max-height:300px; overflow:auto;">
+<div id="allParticipants" style="display:none; position:absolute; color:bisque; top:0; right:-548px; width:548px; background:#464451; max-height:300px; overflow:auto;">
     <input id="searchForParticipant" style="margin-left: 30%;    text-align: center;" placeholder="ID для поиска">
     <table id="participantsOutput" class="participants-table">
         <thead>
@@ -92,7 +92,7 @@ var win_getLessonInfo = `
                 <th>Тип пользователя</th>
                 <th>ID</th>
                 <th>Имя</th>
-                <th>Время входа</th>
+                <th>Время входа, МСК</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -235,6 +235,43 @@ function filterParticipants(query) {
 /*************************
  * CORE LOGIC
  *************************/
+
+function toMoscowTime(isoString) {
+    if (!isoString) return "Не входил";
+
+    const date = new Date(isoString);
+
+    return date.toLocaleString("ru-RU", {
+        timeZone: "Europe/Moscow",
+        hour12: false,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    });
+}
+
+function sortParticipants(participants) {
+    return participants.sort((a, b) => {
+        // 1. teacher всегда выше student
+        if (a.role === "teacher" && b.role !== "teacher") return -1;
+        if (b.role === "teacher" && a.role !== "teacher") return 1;
+
+        // 2. null (не подключался) — в самый низ
+        if (!a.joinedAt && b.joinedAt) return 1;
+        if (!b.joinedAt && a.joinedAt) return -1;
+        if (!a.joinedAt && !b.joinedAt) return 0;
+
+        // 3. сортировка по дате (по возрастанию)
+        return new Date(a.joinedAt) - new Date(b.joinedAt);
+    });
+}
+
+
+
+
 async function loadRoomInfo(api, roomHash, subjectName) {
     try {
         const data = await apiRequest(api + roomHash);
@@ -278,20 +315,23 @@ function updateParticipants(participants) {
 
 function updateParticipantsWebinar(participants) {
     const tbody = DOM.allParticipants().querySelector("tbody");
-    tbody.innerHTML = ""; // очищаем перед заполнением
+    tbody.innerHTML = "";
 
-    participants.forEach(p => {
+    const sorted = sortParticipants(participants);
+
+    sorted.forEach(p => {
         const row = `
             <tr>
                 <td>${p.role}</td>
                 <td>${p.userId}</td>
                 <td>${p.name}</td>
-                <td>${p.joinedAt}</td>
+                <td>${toMoscowTime(p.joinedAt)}</td>
             </tr>
         `;
         tbody.innerHTML += row;
     });
 }
+
 
 
 /*************************
