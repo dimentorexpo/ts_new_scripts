@@ -289,7 +289,7 @@ function getkidsroominfo(data, subjecttype) {
             if (!nullCards || theme.cards.length > 0) {
                 rows += `
                 <tr class="theme-row">
-                    <td colspan="6">
+                    <td colspan="8">
                         <span class="savelinktocms"
                             title="Копирует в буфер обмена ссылку на CMS для этого урока"
                             data-subtype="${subjecttype}"
@@ -331,6 +331,8 @@ function getkidsroominfo(data, subjecttype) {
         data-subtype="${subjecttype}"
         data-lessonid="${theme.meta.contentLessonId}"
         data-stepid="${card.id}"> 💾 </td>
+        <td style="border: 1px solid black; font-size: 12px; text-align:center;">${toMoscowTime(card.sentAt)}</td>
+        <td style="border: 1px solid black; font-size: 12px; text-align:center;">${toMoscowTime(card.scoreUpdatedAt)}</td>
     ${isHomework ? `<td class="resetprogress" style="cursor:pointer; border:1px solid black;" data-stepUUID="${card.stepUuid}"> 🔄️ </td>` : ""}
   </tr>
 `;
@@ -357,7 +359,10 @@ function getkidsroominfo(data, subjecttype) {
                         <th style="padding:6px; border: 1px solid black;">Балл</th>
                         <th style="padding:6px; border: 1px solid black;">%</</th>
                         <th style="padding:6px; border: 1px solid black;">Ссылка</th>
-						${isHomework ? ` <th style="padding:6px; border: 1px solid black;">Сброс</th> ` : ""}
+                        <th style="padding:6px; border: 1px solid black;">Задано</th>
+                        <th style="padding:6px; border: 1px solid black;">Обновлен скор</th>
+						${isHomework ? ` <th style="padding:6px; border: 1px solid black;">Сброс</th> ` : ""
+            }
                     </tr>
                 </thead>
                 <tbody>
@@ -413,7 +418,6 @@ function getkidsroominfo(data, subjecttype) {
     }
 
     let rstProgArray = document.getElementsByClassName('resetprogress') // блок сброса прогресса
-    let statusBtns = document.getElementsByClassName('resetStatus')
     for (let k = 0; k < rstProgArray.length; k++) {
         rstProgArray[k].onclick = async function () {
             let apiToDoName = location.pathname.split('/')[2].trim()
@@ -634,7 +638,6 @@ async function OpenExercisesComplect() {
         document.getElementById('exercisebarComplect').innerHTML = '';
         const rhash = document.getElementById('roomhashhwComplect').value;
         const urlComponents = rhash.split('/');
-        const nullCardsValue = localStorage.getItem("Nullcards");
 
         const isTest = urlComponents[6].split('?')[0] === 'test';
         const kidsselector = urlComponents[4];

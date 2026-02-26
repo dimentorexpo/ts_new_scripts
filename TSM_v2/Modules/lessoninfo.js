@@ -59,7 +59,7 @@ var win_getLessonInfo = `
 
     <div class="lesson-field">
         <span class="lesson-field-name">Хеш комнаты:</span>
-        <span id="hashroom" class="lesson-field-value"></span>
+        <span id="hashroom" class="lesson-field-value" style="cursor:pointer"></span>
     </div>
 
     <div class="lesson-field">
@@ -246,24 +246,6 @@ function filterParticipants(query) {
 /*************************
  * CORE LOGIC
  *************************/
-
-function toMoscowTime(isoString) {
-    if (!isoString) return "Не входил";
-
-    const date = new Date(isoString);
-
-    return date.toLocaleString("ru-RU", {
-        timeZone: "Europe/Moscow",
-        hour12: false,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-    });
-}
-
 function sortParticipants(participants) {
     return participants.sort((a, b) => {
         // 1. teacher всегда выше student
@@ -320,7 +302,7 @@ function updateParticipants(participants) {
     participants.forEach(p => {
         const target = p.role === 'teacher' ? DOM.teacher() : DOM.student();
         target.textContent = p.userId;
-        target.title = `Имя: ${p.name}\nСоздание: ${p.startAt}\nПодключение: ${p.joinedAt}`;
+        target.title = `Имя: ${p.name}\nСоздание: ${toMoscowTime(p.startAt)}\nПодключение: ${toMoscowTime(p.joinedAt)}`;
     });
 }
 
