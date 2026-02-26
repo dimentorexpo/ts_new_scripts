@@ -15,8 +15,8 @@ var win_kidsExercises = `<div style="display: flex;">
 							<span id="teachdid" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
 						</div>
 
-						<div style="margin: 5px; width:550px;">
-							<input id="roomhashhwkids" placeholder="homework link" style="width: 490px; margin-left: 15px; text-align: center; height: 30px; border-radius:20px;">
+						<div style="margin: 5px; width:551px;">
+							<input id="roomhashhwkids" placeholder="homework link" style="width: 490px; margin-left: 10px; text-align: center; height: 30px; border-radius:20px;">
 							<button class="commonbtn smallbtns" style="border-radius: 20px; width: 34px !important; height: 34px !important; vertical-align: middle;" id="getroomdatakids">🔎</button>
 						</div>
 
@@ -96,8 +96,6 @@ async function OpenExercisesSmartroom() { // открывает менюшку �
         document.getElementById('hideExercisesSkysmartMenu').onclick = function () { // функция скрывает меню
             wintExercSkysmart.style.display = 'none'
         }
-
-        //document.getElementById('exercisebarskysmart').innerText = "В РАЗРАБОТКЕ"
 
         document.getElementById('roomhashhwkids').value = document.URL
         setTimeout(function () {
