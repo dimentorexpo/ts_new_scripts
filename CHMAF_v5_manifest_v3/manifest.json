@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "ChMAF",
-	"version": "5.0.89",
+	"version": "5.0.90",
 	"description": "Твой мультитул в работе с чатами",
 	"background": {
 		"service_worker": "bg.js"
@@ -151,6 +151,6 @@
 		"https://mm-time.skyeng.tech/*",
 		"https://*.datsy.ru/*",
 		"https://docs.google.com/forms/*",
-		"https://ipwho.is/*"
+		"https://*.ipgeolocation.io/*"
 	]
 }

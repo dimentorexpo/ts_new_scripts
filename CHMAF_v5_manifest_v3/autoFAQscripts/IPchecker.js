@@ -3,6 +3,7 @@
 // =====================
 
 const $ = (sel) => document.querySelector(sel);
+const megashit = "4045fcee63d54caab2e216a75c3b7aa5"
 
 // =====================
 // СОЗДАНИЕ ОКНА
@@ -27,6 +28,13 @@ function createIPCheckerWindow() {
 
             <div class="ipchecker-result">
                 <p id="ipOutputData"></p>
+            </div>
+
+            <div>
+            <label style="color:bisque">Альтернативные источники проверки</label> <br>
+            <button class="mainButton" id="goCheckHost">Check-host</button>
+            <button class="mainButton" id="goIpApi">IPapi</button>
+            <button class="mainButton" id="goAnotherIpApi">IP-api</button>
             </div>
         </div>
     `;
@@ -63,7 +71,7 @@ function openBinCheckWebsite() {
     const bin = $('#ipdigits')?.value.trim();
     if (!bin) return;
 
-    const url = `https://ipwho.is/${bin}`;
+    const url = `https://api.ipgeolocation.io/v3/ipgeo?apiKey=${megashit}&ip=${bin}`;
 
     chrome.runtime.sendMessage({
         action: "getFetchRequest",
@@ -79,27 +87,26 @@ function openBinCheckWebsite() {
 
         try {
             const data = JSON.parse(response.fetchansver);
+            console.log(data)
 
-            if (!data.success) {
+            if (data.message) {
                 $('#ipOutputData').innerHTML = `<span style="color:red">IP не найден или неверный формат</span>`;
                 return;
             }
 
             const output = [
                 `• <strong>IP</strong>: ${data.ip}`,
-                `• <strong>Континент</strong>: ${data.continent}`,
-                `• <strong>Код континента</strong>: ${data.continent_code}`,
-                `• <strong>Страна</strong>: ${data.country} <img src="${data.flag?.img}" width="20" height="14" style="vertical-align:middle;">`,
-                `• <strong>Код страны</strong>: ${data.country_code}`,
-                `• <strong>Регион</strong>: ${data.region}`,
-                `• <strong>Город</strong>: ${data.city}`,
-                `• <strong>Столица</strong>: ${data.capital}`,
-                `• <strong>ASN</strong>: ${data.connection?.asn}`,
-                `• <strong>Организация</strong>: ${data.connection?.org}`,
-                `• <strong>Провайдер</strong>: ${data.connection?.isp}`,
-                `• <strong>Timezone</strong>: ${data.timezone?.id}`,
-                `• <strong>UTC</strong>: ${data.timezone?.utc}`,
-                `• <strong>Текущее время</strong>: ${data.timezone?.current_time}`
+                `• <strong>Код континента</strong>: ${data.location.continent_code}`,
+                `• <strong>Континент</strong>: ${data.location.continent_name}`,
+                `• <strong>Страна</strong>: ${data.location.country_name} <img src="${data.location.country_flag}" width="20" height="14" style="vertical-align:middle;">`,
+                `• <strong>Код страны</strong>: ${data.location.country_code2}`,
+                `• <strong>Регион</strong>: ${data.location.state_prov}`,
+                `• <strong>Город</strong>: ${data.location.city}`,
+                `• <strong>ASN</strong>: ${data.asn.as_number}`,
+                `• <strong>Организация</strong>: ${data.asn.organization}`,
+                `• <strong>Timezone</strong>: ${data.time_zone.name
+                }`,
+                `• <strong>UTC offset</strong>: ${data.time_zone.offset}`
             ].join('<br>');
 
             $('#ipOutputData').innerHTML = output;
@@ -131,3 +138,18 @@ function initIPCheckerInterface() {
 }
 
 initIPCheckerInterface();
+
+document.getElementById('goCheckHost').addEventListener('click', function () { //
+    const ipDigits = document.getElementById('ipdigits').value
+    window.open(`https://check-host.net/ip-info?host=${ipDigits}`)
+})
+
+document.getElementById('goIpApi').addEventListener('click', function () { //
+    const ipDigits = document.getElementById('ipdigits').value
+    window.open(`https://ipapi.co/?q=${ipDigits}`)
+})
+
+document.getElementById('goAnotherIpApi').addEventListener('click', function () { //
+    const ipDigits = document.getElementById('ipdigits').value
+    window.open(`https://ip-api.com/#${ipDigits}`)
+})
