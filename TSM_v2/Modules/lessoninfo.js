@@ -178,7 +178,7 @@ function parseRoomURL(rawUrl = location.href) {
 /*************************
  * API
  *************************/
-function getApiEndpoint(subject, version = 2) {
+function getApiEndpoint(subject, version) {
     const name = subject.split('/')[0];
     if (!SUBJECTS[name]) {
         console.error(`Предмет ${name} не поддерживается`);
@@ -197,8 +197,24 @@ async function apiRequest(url, options = {}) {
         throw new Error(`API error: ${response.status}`);
     }
 
-    return response.json();
+    // читаем как текст, чтобы не упасть на пустом ответе
+    const text = await response.text();
+
+    // если тело пустое — просто возвращаем успех
+    if (!text) {
+        return { ok: true };
+    }
+
+    // если тело есть — пытаемся распарсить JSON
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        console.warn("Ответ не JSON:", text);
+        return { ok: true, raw: text };
+    }
 }
+
+
 
 /*************************
  * UI HELPERS
@@ -336,7 +352,7 @@ async function changeRoomStatus(status) {
             ? parseRoomURL(DOM.hashInput().value)
             : parseRoomURL();
 
-        const api = getApiEndpoint(subject);
+        const api = getApiEndpoint(subject, 1);
         await apiRequest(api + roomHash, {
             method: 'PATCH',
             headers: {
@@ -381,7 +397,7 @@ function openMenu(isSearch = false) {
             ? parseRoomURL(DOM.hashInput().value)
             : parseRoomURL();
 
-        const api = getApiEndpoint(subject);
+        const api = getApiEndpoint(subject, 2);
 
         if (!api) {
             console.error('API endpoint не определён');
