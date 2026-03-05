@@ -120,7 +120,7 @@ async function OpenLessonmInfoMenu() {
     wintLessonInfo.style.display = menuVisible ? 'none' : '';
 
     if (!menuVisible) {
-        openMenu();
+        openMenu(false);
         setupEventHandlers();
     }
 }
@@ -382,20 +382,23 @@ function setupEventHandlers() {
     };
 
     document.getElementById('ClearInfo').onclick = clearUI;
-    document.getElementById('RefreshInfo').onclick = openMenu;
+    document.getElementById('RefreshInfo').onclick = () => openMenu(false);
     document.getElementById('searchHash').onclick = () => openMenu(true);
+    document.getElementById('hideMeLessonInfo').onclick = () => wintLessonInfo.style.display = 'none';
 }
 
 /*************************
  * ENTRY
  *************************/
-function openMenu(isSearch = false) {
-    if (location.origin !== ORIGIN_VIMBOX) return;
+function openMenu(isSearch) {
+    console.log("isSearch is ", isSearch)
+    if (isSearch == false && location.origin !== ORIGIN_VIMBOX) return;
 
     try {
         const { subject, subjectName, roomHash } = isSearch
             ? parseRoomURL(DOM.hashInput().value)
             : parseRoomURL();
+        console.log(roomHash)
 
         const api = getApiEndpoint(subject, 2);
 
