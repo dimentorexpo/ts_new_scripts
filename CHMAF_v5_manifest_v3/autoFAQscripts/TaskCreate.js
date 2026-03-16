@@ -21,8 +21,9 @@ var win_taskform = //описание формы создания задач в 
 							<button class="mainButton" id="highteachertc" style="height:25px; width: 48%;">👽 Teachers Care</button>
                             <br>
                             <button class="mainButton" id="highsecondline" style="height:25px; width: 32%; margin-left:8px; margin-top:3px;">🗓 Календарь У/П</button>
-                            <button class="mainButton" id="lowkm" style="height:25px; width: 31%;">😡 КМ</button>
-                            <button class="mainButton" id="low2lvimbug" style="height:25px; width: 32%;">🐞2Л vim-bug</button>
+                            <button class="mainButton" id="lowkm" style="height:25px; width: 18%;">😡 КМ</button>
+                            <button class="mainButton" id="highprem" style="height:25px; width: 18%;">🅿️ Prem</button>
+                            <button class="mainButton" id="low2lvimbug" style="height:25px; width: 26%;">🐞2Л vim-bug</button>
                         </div>
 
                         <div style="margin: 5px; margin-top: 0px; width: 405px" id="create_form_menu">
@@ -37,14 +38,13 @@ var win_taskform = //описание формы создания задач в 
 
 							<select class="${exttheme}" required id="customerservice" style="width: 100%; text-align: center; height: 28px;">
 								<option disabled="" selected="">Отдел</option>
-								<option value="tech_support_outgoing_crm2" style="color:red;">Техподдержка 1Л CRM (исход)</option>
-								<option value="teachers_care_crm">Teachers Care</option>
-								<option value="content_management_dictionary">Словарь</option>
-								<option value="content_management">Контент</option>
-								<option value="outgoing_calls_crm2">Исходящие звонки</option>
-								<option value="tech_support_second_line_crm2" style="color:green;">Техподдержка 2Л CRM</option>
-                                <option value="crisis_manager">Кризис менеджеры</option>
-                                <option value="tech_support_incoming_crm2">Техподдержка 1Л CRM (вход)</option>
+								<option value="tech_support_outgoing_crm2" style="color:red;">🛠️Техподдержка 1Л CRM (исход)</option>
+								<option value="teachers_care_crm">👽Teachers Care</option>
+								<option value="content_management">📄Контент</option>
+								<option value="outgoing_calls_crm2">📞Исходящие звонки (КЦ исход)</option>
+								<option value="tech_support_second_line_crm2" style="color:green;">🥈Техподдержка 2Л CRM</option>
+                                <option value="crisis_manager">😡Кризис менеджеры</option>
+                                <option value="personal_support">🅿️Персональное сопровождение(Premium)</option>
 							</select>
 
 							<input class="${exttheme}" id="taskserviceid" placeholder="🆔 ID услуги" style="width: 100%; height: 28px;">
@@ -676,7 +676,7 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('highteachersc').onclick = function () {
             document.getElementById('priority').children[2].selected = true;
-            document.getElementById('customerservice').children[5].selected = true;
+            document.getElementById('customerservice').children[4].selected = true;
             NoteNoticeClear()
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
             document.getElementById('taskserviceid').value = '';
@@ -684,6 +684,15 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('lowkm').onclick = function () {
             document.getElementById('priority').children[1].selected = true;
+            document.getElementById('customerservice').children[6].selected = true;
+            changePriorityColor();
+            NoteNoticeClear()
+            document.getElementById('taskuserid').value = SearchinAFnewUI("id")
+            document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
+        }
+
+        document.getElementById('highprem').onclick = function () {
+            document.getElementById('priority').children[2].selected = true;
             document.getElementById('customerservice').children[7].selected = true;
             changePriorityColor();
             NoteNoticeClear()
@@ -693,7 +702,7 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('low2lvimbug').onclick = function () {
             document.getElementById('priority').children[1].selected = true;
-            document.getElementById('customerservice').children[6].selected = true;
+            document.getElementById('customerservice').children[5].selected = true;
             changePriorityColor();
             NoteNoticeClear()
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
