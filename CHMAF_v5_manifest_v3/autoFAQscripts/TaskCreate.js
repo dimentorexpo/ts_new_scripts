@@ -656,7 +656,7 @@ function gettaskButButtonPress() { // функция открытия окна �
 
         document.getElementById('highsecondline').onclick = function () {
             document.getElementById('priority').children[2].selected = true;
-            document.getElementById('customerservice').children[6].selected = true;
+            document.getElementById('customerservice').children[5].selected = true;
             changePriorityColor();
             NoteNoticeClear()
             document.getElementById('taskuserid').value = SearchinAFnewUI("id")
