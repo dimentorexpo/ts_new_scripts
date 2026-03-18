@@ -450,6 +450,7 @@ function fillchatbox() {
                 break;
 
             case "AnswerOperatorWithBot":
+            case "AnswerOperatorQuickReply":
             case "AnswerSystem":
             case "AnswerBot":
             case "AnswerChatterbox":
