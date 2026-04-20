@@ -558,7 +558,7 @@ function ConvAudio(triger) {
 
 
 function showTaggs(iframeDoc) {
-    const FieldtoTags = iframeDoc.querySelectorAll('[class^="Form_ConversationPayloadForm"]')[0]
+    const FieldtoTags = iframeDoc.querySelectorAll('[class^="conversation-payload-form"]')[0]
 
     if (!iframeDoc.getElementById('quickTagsdiv')) {
         let quickTagsdiv = iframeDoc.createElement('div');
