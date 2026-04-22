@@ -350,7 +350,7 @@ if (idstudentField) {
 
 async function generateOneTimePassword() { // Функция генерации одноразового пароля для МП
     // --- Конфигурация для этой конкретной функции ---
-    const CONFIG = {
+    const CONFIGUSER = {
         buttonId: 'getonetimepass',
         outputFieldId: 'onetimepassout',
         apiUrl: 'https://id.skyeng.ru/admin/auth/one-time-password',
@@ -360,8 +360,8 @@ async function generateOneTimePassword() { // Функция генерации 
     };
 
     // --- Получаем элементы UI ---
-    const button = document.getElementById(CONFIG.buttonId);
-    const outputField = document.getElementById(CONFIG.outputFieldId);
+    const button = document.getElementById(CONFIGUSER.buttonId);
+    const outputField = document.getElementById(CONFIGUSER.outputFieldId);
     if (!button || !outputField) {
         console.error('Не найдены необходимые элементы UI (кнопка или поле вывода).');
         return;
@@ -387,12 +387,12 @@ async function generateOneTimePassword() { // Функция генерации 
 
         const response = await new Promise((resolve, reject) => {
             chrome.runtime.sendMessage(
-                { action: 'getFetchRequest', fetchURL: CONFIG.apiUrl, requestOptions },
+                { action: 'getFetchRequest', fetchURL: CONFIGUSER.apiUrl, requestOptions },
                 (res) => (res.success ? resolve(res) : reject(new Error(res.error || 'Ошибка расширения')))
             );
         });
 
-        const otpMatch = response.fetchansver.match(CONFIG.otpRegex);
+        const otpMatch = response.fetchansver.match(CONFIGUSER.otpRegex);
         const otp = otpMatch ? otpMatch[1] : null;
 
         if (otp) {
@@ -409,7 +409,7 @@ async function generateOneTimePassword() { // Функция генерации 
     } finally {
         button.disabled = false;
         button.innerHTML = '📱';
-        setTimeout(() => { outputField.value = ''; }, CONFIG.outputClearDelay);
+        setTimeout(() => { outputField.value = ''; }, CONFIGUSER.outputClearDelay);
     }
 }
 

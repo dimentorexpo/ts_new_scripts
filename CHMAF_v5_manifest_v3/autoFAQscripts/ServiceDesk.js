@@ -544,7 +544,7 @@ function getservDskPress() { // функция открытия главного
         }
     }
 
-    const config = {
+    const configSD = {
         academyselfstudysoptions: {
             show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
             hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
@@ -577,7 +577,7 @@ function getservDskPress() { // функция открытия главного
     };
 
     function updateDisplay(elementId) {
-        const conf = config[elementId] || config.default;
+        const conf = configSD[elementId] || configSD.default;
 
         setDisplayStyleSD(conf.show, '');
         setDisplayStyleSD(conf.hide, 'none');

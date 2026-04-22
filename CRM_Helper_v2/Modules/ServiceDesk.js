@@ -93,51 +93,51 @@ var win_servicedesk = // описание элементов окна Service De
 				<div id="teacherssrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#tp-qa-support; канал по вопросам Teacher & Corp пользователей</p>
 				</div>
-				
+
 				<div id="crm2srvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#crm2-support</p>
 				</div>
-				
+
 				<div id="authsrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#auth; Обсуждение общих вопросов по проектам Auth/ID (авторизация, роли и доступы, данные пользователей и т. д.)</p>
 				</div>
-				
+
 				<div id="schedulesrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#study-coordinations-qa-support Канал по вопросам расписания ученика, ТТ, TRM, автоподбора и ручного подбора</p>
 				</div>
-				
+
 				<div id="billingqasrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#billing-qa-support; Канал для рассмотрения причины расхождений баланса учеников</p>
 				</div>
-				
+
 				<div id="c1srvdskoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#c1-support; Поддержка витрины оплаты (Не виджет оплаты в pcs), Onboarding (Kids&Adult), Scoring, AutoIntroLesson (АвтоВУ)</p>
 				</div>
-				
+
 				<div id="billingsrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:180px; width:90%;">#billing</p>
 				</div>
-				
+
                 <div id="mrktbillrvdskoptions" style="display: none; margin-left:20px;">
                     <p style="${Paragrafsstyles}">#mrkt-bill-questions; Канал для вопросов по промокодам, сертификатам, реферальной программе</p>
                 </div>
-				
+
 				<div id="vimbugsoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#vim-bugs; Проблемы с Vimbox/Smartroom</p>
 				</div>
-				
+
 				<div id="edumodeloptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#learning-personalization-qa-support: Канал для обращений по функционалу learning personalization</p>
 				</div>
-				
+
 				<div id="vimvidoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#vim-video-call; Разработка модуля видеосвязи</p>
 				</div>
-				
+
                 <div id="chatqaoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles} top:7px;">#chat-qa-support; Решают проблемы с чатами в ЛКП и ЛКУ</p>
                 </div>
-				
+
 				 <div id="CommProblemsoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#communication-problems  - вопросы по коммуниациям</p>
 				</div>
@@ -148,12 +148,12 @@ var win_servicedesk = // описание элементов окна Service De
 
 				<div id="academyselfstudysoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#academic-selfstudy-bugs; Канал обработки обращений по ВЕБ тренажерам, расширениями Subtly и Vimbox Переводчик</p>
-				</div>	
+				</div>
 
 				<div id="mobilebugsoptions" style="display: none; margin-left:20px;">
 					<p style="${Paragrafsstyles}">#mobile-app-bugs; Канал обработки обращений по МП Skyeng связанных с обучением.</p>
 				</div>
-								
+
 				<div id="buttonsfromtest" style="margin-left: 2%; margin-bottom: 5px; max-height: 200px; overflow-x: hidden; overflow-y: auto;">
 				</div>
 
@@ -364,7 +364,7 @@ function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, ap
     formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
     formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
     formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
-    
+
     let bodyrequst = formData.toString();
     MakeFetch(bodyrequst);
 }
@@ -537,66 +537,66 @@ document.getElementById('SrvDskCRMbtn').onclick = function () { // функци�
         });
     });
 
-        // Определение функций setDisplayStyleSD и updateDisplay на уровне всей функции getservDskPress
-        function setDisplayStyleSD(elementIds, style) {
-            elementIds.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.style.display = style;
-                }
-            });
-        }
-    
-        function setDefaultOptions() {
-            const categoryElement = document.getElementById('categoryCommproblems');
-            if (categoryElement && categoryElement.children[0]) {
-                categoryElement.children[0].selected = true;
+    // Определение функций setDisplayStyleSD и updateDisplay на уровне всей функции getservDskPress
+    function setDisplayStyleSD(elementIds, style) {
+        elementIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = style;
             }
+        });
+    }
+
+    function setDefaultOptions() {
+        const categoryElement = document.getElementById('categoryCommproblems');
+        if (categoryElement && categoryElement.children[0]) {
+            categoryElement.children[0].selected = true;
         }
-    
-        const config = {
-            academyselfstudysoptions: {
-                show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
-                hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
-            },
-            mobilebugsoptions: {
-                show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
-                hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
-            },
-            studcabmobbugskoptions: {
-                show: ['custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
-                hide: ['prioritymbugs', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh', 'custom_service']
-            },
-            CommProblemsoptions: {
-                show: ['categoryCommproblems', 'custom_email'],
-                hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'custom_str', 'custom_er', 'custom_ar', 'custom_CMS', 'custom_hesh', 'custom_service'],
-                callback: getcommproboptions
-            },
-            vimvidoptions: {
-                show: ['custom_id', 'custom_hesh', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
-                hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_service']
-            },
-            mrktbillrvdskoptions: {
-                show: ['custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar', 'custom_service'],
-                hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh']
-            },
-            default: {
-                show: ['custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
-                hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh', 'custom_service']
-            }
-        };
-    
-        function updateDisplay(elementId) {
-            const conf = config[elementId] || config.default;
-    
-            setDisplayStyleSD(conf.show, '');
-            setDisplayStyleSD(conf.hide, 'none');
-            setDefaultOptions();
-    
-            if (conf.callback) {
-                conf.callback();
-            }
+    }
+
+    const configSD = {
+        academyselfstudysoptions: {
+            show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
+        },
+        mobilebugsoptions: {
+            show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
+        },
+        studcabmobbugskoptions: {
+            show: ['custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['prioritymbugs', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh', 'custom_service']
+        },
+        CommProblemsoptions: {
+            show: ['categoryCommproblems', 'custom_email'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'custom_str', 'custom_er', 'custom_ar', 'custom_CMS', 'custom_hesh', 'custom_service'],
+            callback: getcommproboptions
+        },
+        vimvidoptions: {
+            show: ['custom_id', 'custom_hesh', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_service']
+        },
+        mrktbillrvdskoptions: {
+            show: ['custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar', 'custom_service'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh']
+        },
+        default: {
+            show: ['custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh', 'custom_service']
         }
+    };
+
+    function updateDisplay(elementId) {
+        const conf = configSD[elementId] || configSD.default;
+
+        setDisplayStyleSD(conf.show, '');
+        setDisplayStyleSD(conf.hide, 'none');
+        setDefaultOptions();
+
+        if (conf.callback) {
+            conf.callback();
+        }
+    }
 } // tested
 
 document.getElementById('CRMServDsk').ondblclick = function (a) { // скрытие окна ServiceDesk по двойному клику
