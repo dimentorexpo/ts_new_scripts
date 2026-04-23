@@ -329,12 +329,13 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
                         // 🔹 Autoclosed Chats
                         const autoClosedMsg = messages?.find(msg =>
                             msg.eventTpe === 'CloseConversation' &&
-                            msg.payload?.src === "inactivity_timer"
+                            (msg.payload?.src === "inactivity_timer" || msg.payload?.src === "pause")
                         );
 
                         if (autoClosedMsg) {
                             aclschtscount++;
                             arrayaclosedchatscount[i] = aclschtscount;
+                            console.log(fres.id)
                         }
 
                         // 📊 Сбор статистики (только если оператор совпадает)
