@@ -164,6 +164,7 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
 
     operators.forEach((op) => {
         const tr = Object.assign(document.createElement('tr'), { style: 'borderBottom:1px solid #eee' });
+        tr.style.border = '1px solid bisque';
 
         const isCurrent = op.operator === currentOperator;
         const nameStyle = `text-align:left;padding:4px 8px${isCurrent ? ';color:#53db4b;font-weight:700;text-shadow:1px 2px 5px rgba(0,0,0,0.55)' : ''}`;
@@ -172,6 +173,7 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
         tr.appendChild(tdName);['chtclosed', 'chtcnt', 'sladata', 'csatdata', 'aclosedchatsdata'].forEach((attr, i) => {
             const td = document.createElement('td');
             td.style.padding = '4px 8px'; // Компактный padding
+            td.style.border = '1px solid bisque';
             if (attr === 'chtcnt') {
                 td.textContent = chatCountMap.get(op.operator) ?? 0;
                 td.className = 'chtcnt';
@@ -410,12 +412,31 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
     const setHTML = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
 
     set('avgCsatonGroup', alloperCSATcount > 0 ? (alloperCSATsumma / alloperCSATcount).toFixed(2) : 'N/A');
-    setHTML('CSATDetails', `<br>
-        Оценка 5 😊: ${rateCounts['5'] || 0} (${(rateCounts['5'] || 0) * 5})<br>
-        Оценка 4 🥴: ${rateCounts['4'] || 0} (${(rateCounts['4'] || 0) * 4})<br>
-        Оценка 3 😐: ${rateCounts['3'] || 0} (${(rateCounts['3'] || 0) * 3})<br>
-        Оценка 2 🤢: ${rateCounts['2'] || 0} (${(rateCounts['2'] || 0) * 2})<br>
-        Оценка 1 🤬: ${rateCounts['1'] || 0} (${(rateCounts['1'] || 0) * 1})
+    const c5 = rateCounts['5'] || 0;
+    const c4 = rateCounts['4'] || 0;
+    const c3 = rateCounts['3'] || 0;
+    const c2 = rateCounts['2'] || 0;
+    const c1 = rateCounts['1'] || 0;
+
+    setHTML('CSATDetails', `
+        <div style="margin-top: 8px; margin-bottom: 12px; border-radius: 6px; overflow: hidden; display: block; width: max-content; border: 1px solid #5f7875; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+            <table style="text-align: center; border-collapse: collapse; background: rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; margin: 0; white-space: nowrap;">
+                <tr style="background: rgba(0,0,0,0.4); font-size: 13px; color: bisque;">
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">5 😊</td>
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">4 🥴</td>
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">3 😐</td>
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">2 🤢</td>
+                    <td style="padding: 6px 14px;">1 🤬</td>
+                </tr>
+                <tr style="font-size: 15px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #53db4b; font-weight: bold;">${c5} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c5 * 5})</span></td>
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #b8db4b; font-weight: bold;">${c4} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c4 * 4})</span></td>
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #dbd24b; font-weight: bold;">${c3} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c3 * 3})</span></td>
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #db8c4b; font-weight: bold;">${c2} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c2 * 2})</span></td>
+                    <td style="padding: 6px 14px; color: #ff6b6b; font-weight: bold;">${c1} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c1 * 1})</span></td>
+                </tr>
+            </table>
+        </div>
     `);
 
     set('allChatsClsd', alloperChatsclsed);
