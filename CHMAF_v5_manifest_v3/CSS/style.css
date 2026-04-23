@@ -1783,3 +1783,318 @@
 	.image-overlay {
 		cursor: zoom-out;
 	}
+
+	/* Главный контейнер дашборда */
+	#af-dashboard-wrapper {
+		width: 760px;
+		background: #1a1a21;
+		color: #d1d5db;
+		font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+		border-radius: 12px;
+		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		animation: af-fade-in 0.3s ease;
+	}
+
+	@keyframes af-fade-in {
+		from {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* 🚀 Шапка окна */
+	#stataaf_header {
+		background: linear-gradient(180deg, #2a2a35 0%, #22222b 100%);
+		padding: 12px 20px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid #32323f;
+		cursor: grab;
+	}
+
+	#stataaf_header:active {
+		cursor: grabbing;
+	}
+
+	.af-title {
+		font-size: 16px;
+		font-weight: 600;
+		color: #fff;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+	}
+
+	.af-window-controls {
+		display: flex;
+		gap: 10px;
+	}
+
+	.af-win-btn {
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		color: #9ca3af;
+		border-radius: 6px;
+		width: 30px;
+		height: 30px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.2s;
+		font-size: 14px;
+	}
+
+	.af-win-btn:hover {
+		background: rgba(255, 255, 255, 0.15);
+		color: #fff;
+		transform: translateY(-1px);
+	}
+
+	/* 📅 Панель календарей */
+	.af-dates-panel {
+		background: #1a1a21;
+		padding: 16px 20px;
+		border-bottom: 1px solid #2a2a35;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.af-date-group {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-size: 13px;
+		font-weight: 500;
+		color: #9ca3af;
+	}
+
+	.af-date-input {
+		background: #23232d;
+		color: #fff;
+		border: 1px solid #3a3a48;
+		padding: 8px 12px;
+		border-radius: 8px;
+		font-family: inherit;
+		font-size: 13px;
+		outline: none;
+		transition: border-color 0.2s, box-shadow 0.2s;
+		color-scheme: dark;
+		cursor: pointer;
+	}
+
+	.af-date-input:focus {
+		border-color: #53db4b;
+		box-shadow: 0 0 0 3px rgba(83, 219, 75, 0.15);
+	}
+
+	.af-nav-btns {
+		display: flex;
+		gap: 6px;
+		background: #23232d;
+		padding: 4px;
+		border-radius: 8px;
+		border: 1px solid #3a3a48;
+	}
+
+	.af-nav-btn {
+		background: transparent;
+		border: none;
+		color: #d1d5db;
+		padding: 6px 12px;
+		border-radius: 6px;
+		cursor: pointer;
+		font-size: 12px;
+		font-weight: 600;
+		transition: 0.2s;
+	}
+
+	.af-nav-btn:hover {
+		background: #32323f;
+		color: #fff;
+	}
+
+	/* 🗂 Вкладки меню */
+	.af-tabs {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 8px;
+		padding: 16px 20px 0;
+		background: #1a1a21;
+	}
+
+	.af-tab {
+		background: #23232d;
+		border: 1px solid #32323f;
+		border-bottom: none;
+		color: #9ca3af;
+		padding: 12px;
+		border-radius: 10px 10px 0 0;
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+		position: relative;
+	}
+
+	.af-tab:hover {
+		background: #2a2a35;
+		color: #fff;
+	}
+
+	.af-tab.active-stat-tab {
+		background: #2a2a35;
+		color: #53db4b;
+		border-top: 2px solid #53db4b;
+		border-left: 1px solid #32323f;
+		border-right: 1px solid #32323f;
+		z-index: 2;
+		padding-bottom: 14px;
+		margin-bottom: -2px;
+		box-shadow: 0 -4px 12px rgba(83, 219, 75, 0.05);
+	}
+
+	.af-tab-icon {
+		font-size: 20px;
+		filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+	}
+
+	/* 📈 Прогресс-бар и часы */
+	.af-status-bar {
+		background: #2a2a35;
+		border-top: 1px solid #32323f;
+		border-bottom: 1px solid #32323f;
+		padding: 12px 20px;
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		position: relative;
+		z-index: 1;
+	}
+
+	.af-clock {
+		background: #15151a;
+		border: 1px solid #32323f;
+		color: #53db4b;
+		padding: 6px 12px;
+		border-radius: 6px;
+		font-family: monospace;
+		font-size: 14px;
+		font-weight: bold;
+		width: 80px;
+		text-align: center;
+		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+	}
+
+	.af-progress-bg {
+		flex: 1;
+		height: 18px;
+		background: #15151a;
+		border-radius: 9px;
+		border: 1px solid #32323f;
+		overflow: hidden;
+		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+	}
+
+	#progress-bar {
+		height: 100%;
+		background: linear-gradient(90deg, #e38118, #f5a623);
+		width: 0%;
+		transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 11px;
+		font-weight: bold;
+		color: #fff;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+		white-space: nowrap;
+	}
+
+	/* 📋 Контентная зона и Кастомный скроллбар */
+	.af-content-area {
+		background: #1a1a21;
+		max-height: 480px;
+		overflow-y: auto;
+		padding: 20px;
+		position: relative;
+	}
+
+	.af-content-area::-webkit-scrollbar {
+		width: 8px;
+	}
+
+	.af-content-area::-webkit-scrollbar-track {
+		background: #1a1a21;
+	}
+
+	.af-content-area::-webkit-scrollbar-thumb {
+		background: #32323f;
+		border-radius: 4px;
+	}
+
+	.af-content-area::-webkit-scrollbar-thumb:hover {
+		background: #4b4b5e;
+	}
+
+	/* 🎨 АВТО-УЛУЧШЕНИЕ ТАБЛИЦЫ (JS генерирует её, CSS делает красивой) */
+	#tableStats {
+		width: 100% !important;
+		border-collapse: separate !important;
+		border-spacing: 0 !important;
+		border-radius: 8px;
+		overflow: hidden;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+		border: 1px solid #32323f !important;
+		margin-bottom: 10px;
+	}
+
+	#tableStats thead tr {
+		background: #23232d !important;
+	}
+
+	#tableStats th {
+		color: #9ca3af !important;
+		font-size: 12px !important;
+		font-weight: 600 !important;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		border: none !important;
+		border-bottom: 1px solid #32323f !important;
+		padding: 12px 10px !important;
+	}
+
+	#tableStats td {
+		border: none !important;
+		border-bottom: 1px solid #2a2a35 !important;
+		color: #d1d5db !important;
+		padding: 10px !important;
+	}
+
+	#tableStats tbody tr {
+		background: #1a1a21 !important;
+		transition: background 0.2s;
+	}
+
+	#tableStats tbody tr:hover {
+		background: #2a2a35 !important;
+	}
+
+	#tableStats tbody tr:last-child td {
+		border-bottom: none !important;
+	}

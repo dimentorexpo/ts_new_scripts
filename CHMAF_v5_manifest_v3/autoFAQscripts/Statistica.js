@@ -612,42 +612,82 @@ function renderAclsModal(idx, opName) {
 // 🪟 win_StatisticaAF
 // ============================================================================
 
-var win_StatisticaAF = `<div style="display: flex; width: 750px;">
-    <span style="width: 750px; min-height: 70px; max-height:700px; overflow-y:auto; overflow-x:hidden;">
-        <span style="cursor: -webkit-grab;">
-            <div style="margin: 5px; width: 750px; display:flex; justify-content:space-evenly;" id="stataaf_header">
-                <button class="mainButton buttonHide" title="скрывает меню" id="hidestatisticaaf">hide</button>
-                <button class="mainButton smallbtn" id="clearstatawindow">🧹</button>
-                <input type="text" id="timeoutput" style="width:100px; text-align:center; font-weight: 700; background:rgba(0,0,0,0.2); color:bisque; border:1px solid #5f7875;" disabled></input>
-                <div style="width:450px;background: #5f7875;height: 21px; border-radius:20px; overflow:hidden;">
-                    <div id="progress-bar" style="width: 0%; height: 100%; background-color: #e38118; text-align:center; font-weight:700; color:white; transition: width 0.3s ease;"></div>
-                </div>
-            </div>
-            <div style="margin: 5px; width: 750px" id="periodOfStata">
-                <span style="color:bisque; margin-top:5px; margin-left:10px;">Начальная дата <input type="date" style="margin-left:20px; width:125px; background:rgba(0,0,0,0.2); color:bisque; border:1px solid #5f7875;" id="dateFromStat"></span>
-                <button class="mainButton" style="margin-left:15%" id="dayminusminus">◀</button>
-                <button class="mainButton" id="dayplusplus">▶</button>
-                <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input type="date" style="float:right; margin-left:20px; margin-right:10px; width:125px; background:rgba(0,0,0,0.2); color:bisque; border:1px solid #5f7875;" id="dateToStat"></span>
-            </div>
-            <div style="width: 750px; display:flex; justify-content: space-evenly; margin-bottom:5px;">
-                <button class="mainButton" id="retreivestata">Получить статистику</button>
-                <button class="mainButton" id="buttonCheckStats">Проверить CSAT + тематики</button>
-                <button class="mainButton" id="buttonKCpower">Нагрузка КЦ</button>
-                <button class="mainButton" id="buttonTPpower">Нагрузка ТП</button>
-            </div>
-            <div id="outputstatafield" style="color:bisque;"></div>
+// ============================================================================
+// 🪟 win_StatisticaAF (СУПЕР-ДИЗАЙН ДАШБОРДА)
+// ============================================================================
 
-            <div id="msgloader" style="display:none; padding: 20px; width: 100%; box-sizing: border-box; text-align: center;">
-                <div style="color:bisque; margin-bottom: 8px; font-weight: 600;" id="loader-text">⏳ Загрузка...</div>
-                <div style="width:80%; margin: 0 auto; background: #5f7875; height: 10px; border-radius:10px; overflow:hidden;">
-                    <div id="loader-progress" style="width: 0%; height: 100%; background-color: #53db4b; transition: width 0.2s ease;"></div>
-                </div>
-            </div>
+var win_StatisticaAF = `
+<div id="af-dashboard-wrapper">
+    <!-- Шапка -->
+    <div id="stataaf_header">
+        <div class="af-title">🚀 AutoFAQ Dashboard</div>
+        <div class="af-window-controls">
+            <button class="af-win-btn" id="clearstatawindow" title="Очистить данные">🧹</button>
+            <button class="af-win-btn buttonHide" id="hidestatisticaaf" title="Скрыть окно">✖</button>
+        </div>
+    </div>
 
-            <div id="csatandthemes" style="width:750px; color:bisque; display:none"></div>
-            <div id="loadkctp" style="width:750px; color:bisque; display:none"></div>
-        </span>
-</div>`;
+    <!-- Фильтры дат -->
+    <div class="af-dates-panel" id="periodOfStata">
+        <div class="af-date-group">
+            <span>От:</span>
+            <input type="date" class="af-date-input" id="dateFromStat">
+        </div>
+        <div class="af-nav-btns">
+            <button class="af-nav-btn" id="dayminusminus">◀ -1 День</button>
+            <button class="af-nav-btn" id="dayplusplus">+1 День ▶</button>
+        </div>
+        <div class="af-date-group">
+            <span>До:</span>
+            <input type="date" class="af-date-input" id="dateToStat">
+        </div>
+    </div>
+
+    <!-- Вкладки-кнопки -->
+    <div class="af-tabs">
+        <button class="af-tab" id="retreivestata">
+            <span class="af-tab-icon">📊</span>
+            Статистика SLA
+        </button>
+        <button class="af-tab" id="buttonCheckStats">
+            <span class="af-tab-icon">⭐</span>
+            CSAT + Тематики
+        </button>
+        <button class="af-tab" id="buttonKCpower">
+            <span class="af-tab-icon">🎧</span>
+            Нагрузка КЦ
+        </button>
+        <button class="af-tab" id="buttonTPpower">
+            <span class="af-tab-icon">🛠</span>
+            Нагрузка ТП
+        </button>
+    </div>
+
+    <!-- Инфо-панель (Часы и Прогресс) -->
+    <div class="af-status-bar">
+        <input type="text" id="timeoutput" class="af-clock" disabled placeholder="--:--:--">
+        <div class="af-progress-bg">
+            <div id="progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- Рабочая область -->
+    <div class="af-content-area">
+        <!-- Анимация загрузки -->
+        <div id="msgloader" style="display:none; padding: 40px 20px; text-align: center;">
+            <div style="color:#53db4b; margin-bottom: 12px; font-weight: 600; font-size: 16px; letter-spacing: 0.5px;" id="loader-text">⏳ Анализ данных...</div>
+            <div style="width: 50%; margin: 0 auto; background: #15151a; height: 6px; border-radius: 3px; overflow: hidden; border: 1px solid #32323f; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);">
+                <div id="loader-progress" style="width: 0%; height: 100%; background: linear-gradient(90deg, #53db4b, #28a745); transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+            </div>
+        </div>
+
+        <!-- Контейнеры для вывода JS -->
+        <div id="outputstatafield"></div>
+        <div id="csatandthemes" style="display:none; line-height: 1.6;"></div>
+        <div id="loadkctp" style="display:none; line-height: 1.6;"></div>
+    </div>
+</div>
+`;
 
 if (typeof createWindow === 'function') {
     createWindow('AF_StataAF', 'winTopStataAF', 'winLeftStataAF', win_StatisticaAF);
