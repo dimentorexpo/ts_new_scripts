@@ -483,9 +483,12 @@ function renderAclsModal(idx, opName) {
     const createListHtml = (list) => {
         if (!list.length) return '<div style="color:gray; font-size:12px; text-align:center; padding-top:10px;">Нет чатов</div>';
         return list.map(hash => `
-            <div style="margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:4px;">
-                <span style="color:#dfd1f5; font-family:monospace; font-size:13px; user-select:all;">${hash}</span>
-                <span class="modal-lookchat" data-hash="${hash}" style="cursor:pointer; font-size:16px; margin-left:10px;" title="Смотреть чат в истории">👁‍🗨</span>
+            <div class="modal-lookchat" data-hash="${hash}" title="Нажмите, чтобы открыть чат в истории"
+                 style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:4px; cursor:pointer; color:#dfd1f5; font-family:monospace; font-size:13px; text-align:center; border: 1px solid transparent; transition: all 0.2s;"
+                 onmouseover="this.style.background='rgba(83,219,75,0.1)'; this.style.borderColor='#53db4b'; this.style.color='#fff'"
+                 onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#dfd1f5'">
+                <!-- pointer-events: none гарантирует, что клик попадёт именно по родительскому DIV -->
+                <span style="pointer-events: none;">${hash}</span>
             </div>
         `).join('');
     };
@@ -502,7 +505,6 @@ function renderAclsModal(idx, opName) {
     let startTop = Math.max(0, (window.innerHeight - 500) / 2);
 
     if (window.lastModalPos) {
-        // Защита, чтобы окно не "уехало" за край, если размер браузера изменился
         startLeft = Math.min(window.lastModalPos.left, window.innerWidth - 650);
         startLeft = Math.max(0, startLeft);
         startTop = Math.min(window.lastModalPos.top, window.innerHeight - 200);
@@ -556,7 +558,7 @@ function renderAclsModal(idx, opName) {
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    // 🎯 ЛОГИКА DRAG & DROP С СОХРАНЕНИЕМ ПОЗИЦИИ
+    // 🎯 ЛОГИКА DRAG & DROP
     const header = modal.querySelector('.acls-modal-header');
     let isDragging = false;
     let startX, startY;
@@ -588,7 +590,6 @@ function renderAclsModal(idx, opName) {
             isDragging = false;
             header.style.cursor = 'grab';
 
-            // 🎯 Запоминаем позицию для следующего раза
             window.lastModalPos = {
                 left: parseInt(modal.style.left, 10),
                 top: parseInt(modal.style.top, 10)
@@ -600,17 +601,13 @@ function renderAclsModal(idx, opName) {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
 
-    // Очистка событий при закрытии
+    // Очистка событий
     window._aclsModalCleanup = () => {
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
         overlay.remove();
     };
 }
-
-// ============================================================================
-// 🪟 win_StatisticaAF
-// ============================================================================
 
 // ============================================================================
 // 🪟 win_StatisticaAF (СУПЕР-ДИЗАЙН ДАШБОРДА)
