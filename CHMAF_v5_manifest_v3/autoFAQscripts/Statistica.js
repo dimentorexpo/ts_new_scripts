@@ -210,6 +210,7 @@ function renderSummaryStats(operators, chatCountMap) {
     const stats = [
         { label: '📦 Закрыто чатов:', value: '<span id="allChatsClsd">⏳</span>' },
         { label: '✋ Пощупано чатов:', value: totalTouched },
+        { label: '🤖 Средний %АЗ:', value: '<span id="avgAutoClosedGroup">⏳</span>' },
         { label: '🌟 Средний CSAT:', value: '<span id="avgCsatonGroup">⏳</span>' },
         { label: '📋 Разбивка по оценкам:', value: '<span id="CSATDetails">⏳</span>' },
         { label: '🕒 SLA закрытия:', value: '<span id="SLAonGroup">⏳</span>' },
@@ -238,6 +239,9 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
     let totalChatsClosed = [], arraycsatcount = [], arraycsatsumma = [], arrayaclosedchatscount = [], operatorOverdueChats = [];
     let alloperSLAclsed = 0, alloperChatsclsed = 0, alloperaboveAFRT = 0;
     let alloperCSATsumma = 0, alloperCSATcount = 0;
+
+    // Переменная для подсчета общего количества всех автозакрытий по отделу
+    let totalGroupAutoClosed = 0;
 
     let massivchikUntarget = new Set(), massivchikTarget = new Set(), massivchikQueue = new Set();
 
@@ -389,8 +393,13 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
         }
 
         if (arraycsatcount[i] && arraycsatsumma[i]) { alloperCSATsumma += arraycsatsumma[i]; alloperCSATcount += arraycsatcount[i]; }
-        if (operatorOverdueChats[i]) { alloperSLAclsed += operatorOverdueChats[i]; alloperChatsclsed += totalChatsClosed[i]; }
+        if (operatorOverdueChats[i]) { alloperSLAclsed += operatorOverdueChats[i]; }
+        // Фикс логики, чтобы правильно считались все закрытые чаты для отдела (а не только тех, у кого были просрочки)
+        if (totalChatsClosed[i]) { alloperChatsclsed += totalChatsClosed[i]; }
         if (localAFRTUntarget || localAFRTTarget) alloperaboveAFRT += (localAFRTUntarget + localAFRTTarget);
+
+        // Считаем общее кол-во АЗ по всем операторам
+        totalGroupAutoClosed += aclschtscount;
 
         currentWidth += step;
         if (progressBar) {
@@ -441,6 +450,10 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
 
     set('allChatsClsd', alloperChatsclsed);
 
+    // Добавляем вычисление Среднего %АЗ по всему отделу
+    const avgAclsPct = alloperChatsclsed > 0 ? ((totalGroupAutoClosed / alloperChatsclsed) * 100).toFixed(1) + '%' : '0.0%';
+    setHTML('avgAutoClosedGroup', `<span style="color:#53db4b; font-weight:bold;">${avgAclsPct}</span> <span style="font-size:12px;color:#aaa;">(АЗ: ${totalGroupAutoClosed} / Закрыто: ${alloperChatsclsed})</span>`);
+
     const slaPercent = alloperChatsclsed > 0 ? ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' : '100%';
     const slaCalcColor = Number(calcChatsClsContainer) < 0 ? 'coral' : 'rgb(83, 219, 75)';
     setHTML('SLAonGroup', `
@@ -485,8 +498,8 @@ function renderAclsModal(idx, opName) {
         return list.map(hash => `
             <div class="modal-lookchat" data-hash="${hash}" title="Нажмите, чтобы открыть чат в истории"
                  style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:4px; cursor:pointer; color:#dfd1f5; font-family:monospace; font-size:13px; text-align:center; border: 1px solid transparent; transition: all 0.2s;"
-                 onmouseover="this.style.background='rgba(83,219,75,0.1)'; this.style.borderColor='#53db4b'; this.style.color='#fff'"
-                 onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#dfd1f5'">
+                 onmouseover="if(!this.classList.contains('active-chat')){this.style.background='rgba(83,219,75,0.1)'; this.style.borderColor='#53db4b'; this.style.color='#fff'}"
+                 onmouseout="if(!this.classList.contains('active-chat')){this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#dfd1f5'}">
                 <!-- pointer-events: none гарантирует, что клик попадёт именно по родительскому DIV -->
                 <span style="pointer-events: none;">${hash}</span>
             </div>
@@ -531,7 +544,7 @@ function renderAclsModal(idx, opName) {
                     Чатов отложек с АЗ: <b style="color:#53db4b">${data.pause.length}</b>
                 </div>
             </div>
-            <button id="close-acls-modal" style="background:none; border:none; color:bisque; cursor:pointer; font-size:26px; line-height:1; transition:color 0.2s; padding:0; margin:-5px 0 0 0;">&times;</button>
+            <button id="close-acls-modal" class="af-win-btn buttonHide">✖</button>
         </div>
         <div style="display:flex; flex:1; overflow:hidden; padding:15px; gap:15px; background:#464451">
             <!-- Колонка 1: inactivity_timer -->
@@ -644,11 +657,11 @@ var win_StatisticaAF = `
     <div class="af-tabs">
         <button class="af-tab" id="retreivestata">
             <span class="af-tab-icon">📊</span>
-            Статистика SLA
+            Статистика
         </button>
         <button class="af-tab" id="buttonCheckStats">
             <span class="af-tab-icon">⭐</span>
-            CSAT + Тематики
+            CSAT + АЗ чаты
         </button>
         <button class="af-tab" id="buttonKCpower">
             <span class="af-tab-icon">🎧</span>
@@ -713,7 +726,11 @@ function getbuttonGetStatButtonPress() {
         win.style.display = 'none';
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    // Исправлено: получаем текущую дату с учетом локального часового пояса
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    const today = now.toISOString().split('T')[0];
+
     const f = document.getElementById("dateFromStat"), t = document.getElementById("dateToStat");
     if (f && !f.value) f.value = today; if (t && !t.value) t.value = today;
 }
@@ -726,7 +743,7 @@ async function checkCSAT() {
     const timeOut = document.getElementById("timeoutput");
     if (timeOut) timeOut.value = new Date().toLocaleTimeString('ru-RU');['retreivestata', 'buttonCheckStats', 'buttonKCpower', 'buttonTPpower'].forEach(id => document.getElementById(id)?.classList.remove('active-stat-tab'));
     const checkBtn = document.getElementById('buttonCheckStats');
-    if (checkBtn) { checkBtn.classList.add('active-stat-tab'); checkBtn.textContent = 'Загрузка...'; }
+    if (checkBtn) { checkBtn.classList.add('active-stat-tab'); checkBtn.innerHTML = '<span class="af-tab-icon">⏳</span> Загрузка...'; }
 
     document.getElementById('outputstatafield').style.display = 'none';
     document.getElementById('loadkctp').style.display = 'none';
@@ -837,12 +854,31 @@ async function checkCSAT() {
                     Чаты без тематики: <br>${stringChatsWithoutTopic || '✅ нет чатов без тематики'}<br>
                     Количество оценок: ${csatCount}<br>`;
 
+                const c5 = count[5] || 0, c4 = count[4] || 0, c3 = count[3] || 0, c2 = count[2] || 0, c1 = count[1] || 0;
                 const ratesBreakdown = `
-                    Оценка 1 🤬: ${count[1]} <br> ${flagvbad}
-                    Оценка 2 🤢: ${count[2]} <br> ${flagbad}
-                    Оценка 3 😐: ${count[3]} <br> ${flagmid}
-                    Оценка 4 🥴: ${count[4]} <br>
-                    Оценка 5 😊: ${count[5]} <br>`;
+                    <div style="margin-top: 15px; margin-bottom: 15px; border-radius: 6px; overflow: hidden; display: inline-block; border: 1px solid #5f7875; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                        <table style="text-align: center; border-collapse: collapse; background: rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; margin: 0; white-space: nowrap;">
+                            <tr style="background: rgba(0,0,0,0.4); font-size: 13px; color: bisque;">
+                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">5 😊</td>
+                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">4 🥴</td>
+                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">3 😐</td>
+                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">2 🤢</td>
+                                <td style="padding: 6px 14px;">1 🤬</td>
+                            </tr>
+                            <tr style="font-size: 15px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #53db4b; font-weight: bold;">${c5}</td>
+                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #b8db4b; font-weight: bold;">${c4}</td>
+                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #dbd24b; font-weight: bold;">${c3}</td>
+                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #db8c4b; font-weight: bold;">${c2}</td>
+                                <td style="padding: 6px 14px; color: #ff6b6b; font-weight: bold;">${c1}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div style="line-height: 1.4;">
+                        ${flagmid ? `<div style="color:#dbd24b; font-size: 13px; margin-bottom: 8px;"><strong>Оценки 3:</strong><br>${flagmid}</div>` : ''}
+                        ${flagbad ? `<div style="color:#db8c4b; font-size: 13px; margin-bottom: 8px;"><strong>Оценки 2:</strong><br>${flagbad}</div>` : ''}
+                        ${flagvbad ? `<div style="color:#ff6b6b; font-size: 13px; margin-bottom: 8px;"><strong>Оценки 1:</strong><br>${flagvbad}</div>` : ''}
+                    </div>`;
 
                 const slaStats = `Чаты СЛА закрытия > 25m: <br>${abovecloseslaarr}<br>
                     Просроченных: ${slacount} (SLA Закрытия: ${slaPct}%)<br>
@@ -857,7 +893,7 @@ async function checkCSAT() {
         str.innerHTML = `<span style="color:red">Ошибка: ${e.message}</span>`;
         if (loader) loader.style.display = 'none';
     } finally {
-        if (checkBtn) checkBtn.textContent = 'Проверить CSAT + тематики';
+        if (checkBtn) checkBtn.innerHTML = '<span class="af-tab-icon">⭐</span> CSAT + АЗ чаты';
         if (csatDiv) csatDiv.appendChild(str);
     }
 }
@@ -893,10 +929,46 @@ async function checkload(department, flag) {
         const onLine = ops.filter(o => o.status === '🟢').length, busy = ops.filter(o => o.status === '🟡').length, pause = ops.filter(o => o.status === '🔴').length;
         const totalChats = ops.reduce((s, o) => s + o.chats, 0), ratio = onLine ? totalChats / onLine : 0;
         const loadTxt = ratio <= 2.2 ? 'Низкая 🟢' : ratio <= 3.2 ? 'Средняя 🟡' : ratio <= 4.4 ? 'Высокая 🟠' : 'Критическая 🔴';
+        const loadColor = ratio <= 2.2 ? '#53db4b' : ratio <= 3.2 ? '#dbd24b' : ratio <= 4.4 ? '#db8c4b' : '#ff6b6b';
 
-        if (load) load.innerHTML = `<p style="padding-left:50px">${ops.map(o => `${o.status} ${o.name} | Чатов: ${o.chats}`).join('<br>')}<br><br>
-            <strong>На линии:</strong> ${ops.length} (🟢${onLine} 🟡${busy} 🔴${pause})<br>
-            <strong>Чатов:</strong> ${totalChats} | <strong>Нагрузка:</strong> ${loadTxt} (${ratio.toFixed(1)} чат/оп)</p>`;
+        if (load) {
+            load.innerHTML = `
+            <div style="padding: 15px 50px;">
+                <div style="display:flex; gap:15px; margin-bottom: 25px;">
+                    <div style="flex:1; background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; border:1px solid #5f7875; text-align:center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        <div style="color:#aaa; font-size:13px; margin-bottom:5px;">👨‍💻 Операторов на линии</div>
+                        <div style="font-size:26px; font-weight:bold; color:bisque; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${ops.length}</div>
+                        <div style="font-size:12px; margin-top:5px; color:#ddd;">🟢 ${onLine} &nbsp;|&nbsp; 🟡 ${busy} &nbsp;|&nbsp; 🔴 ${pause}</div>
+                    </div>
+                    <div style="flex:1; background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; border:1px solid #5f7875; text-align:center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        <div style="color:#aaa; font-size:13px; margin-bottom:5px;">💬 Всего чатов в работе</div>
+                        <div style="font-size:26px; font-weight:bold; color:#53db4b; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${totalChats}</div>
+                        <div style="font-size:12px; margin-top:5px; color:#aaa;">Распределено по операторам</div>
+                    </div>
+                    <div style="flex:1; background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; border:1px solid #5f7875; text-align:center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        <div style="color:#aaa; font-size:13px; margin-bottom:5px;">⚖️ Уровень нагрузки</div>
+                        <div style="font-size:20px; font-weight:bold; margin-top:4px; color:${loadColor}; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${loadTxt}</div>
+                        <div style="font-size:12px; margin-top:5px; color:#ddd;">~ ${ratio.toFixed(1)} чат. / оп.</div>
+                    </div>
+                </div>
+
+                <div style="background:rgba(0,0,0,0.15); border-radius:8px; border:1px solid rgba(255,255,255,0.05); padding:15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
+                    <div style="margin-bottom: 15px; font-weight: bold; color: bisque; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">📋 Детализация по операторам:</div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;">
+                        ${ops.map(o => `
+                            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+                                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 10px;" title="${o.name}">
+                                    ${o.status} <span style="color:#dfd1f5; font-size:13px; margin-left: 5px;">${o.name}</span>
+                                </div>
+                                <div style="background:rgba(83,219,75,0.15); color:#53db4b; padding:2px 8px; border-radius:12px; font-size:12px; font-weight:bold; border:1px solid rgba(83,219,75,0.3); min-width: 40px; text-align: center;">
+                                    ${o.chats} 💬
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>`;
+        }
     } catch (e) {
         if (load) load.innerHTML = `<span style="color:red; padding-left:50px">Ошибка: ${e.message}</span>`;
     } finally {
@@ -919,6 +991,21 @@ document.addEventListener('click', (e) => {
 
     // 2. Обработчик клика по иконке 👁‍🗨 (открывает панель истории чата)
     if (e.target.classList.contains('modal-lookchat')) {
+
+        // Логика эксклюзивной подсветки кликнутого чата внутри модального окна (%АЗ)
+        if (e.target.closest('#acls-modal-container')) {
+            document.querySelectorAll('#acls-modal-container .modal-lookchat').forEach(el => {
+                el.classList.remove('active-chat');
+                el.style.background = 'rgba(255,255,255,0.05)';
+                el.style.borderColor = 'transparent';
+                el.style.color = '#dfd1f5';
+            });
+            e.target.classList.add('active-chat');
+            e.target.style.background = 'rgba(83,219,75,0.3)';
+            e.target.style.borderColor = '#53db4b';
+            e.target.style.color = '#fff';
+        }
+
         const val = e.target.getAttribute('data-hash');
 
         const chatHistoryElement = document.getElementById('AF_ChatHis');
@@ -964,8 +1051,7 @@ document.addEventListener('click', (e) => {
             if (bar) { bar.style.width = '0%'; bar.textContent = ''; }
             break;
 
-        case 'retreivestata':
-            ['csatandthemes', 'loadkctp'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
+        case 'retreivestata': ['csatandthemes', 'loadkctp'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
             const out = document.getElementById('outputstatafield'); if (out) out.style.display = "";['retreivestata', 'buttonCheckStats', 'buttonKCpower', 'buttonTPpower'].forEach(id => document.getElementById(id)?.classList.remove('active-stat-tab'));
             document.getElementById('retreivestata')?.classList.add('active-stat-tab');
 
