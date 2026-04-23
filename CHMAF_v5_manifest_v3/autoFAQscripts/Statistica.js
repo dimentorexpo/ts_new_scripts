@@ -123,10 +123,17 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
         const tr = Object.assign(document.createElement('tr'), { style: 'borderBottom:1px solid #eee' });
         const tdName = Object.assign(document.createElement('td'), { textContent: op.operator, style: `text-align:left;padding:8px 12px${op.operator === currentOperator ? ';color:#53db4b;font-weight:700;text-shadow:1px 2px 5px rgba(0,0,0,0.55)' : ''}` });
         tr.appendChild(tdName);
-        const tdClosed = Object.assign(document.createElement('td'), { textContent: op.conversationClosed ?? 0, className: 'chtclosed', style: 'padding:8px' }); tr.appendChild(tdClosed);
+
+        const tdClosed = document.createElement('td');
+        tdClosed.textContent = '⏳';
+        tdClosed.setAttribute('name', 'chtclosed'); // ✅ Правильно!
+        tdClosed.style.padding = '8px';
+        tr.appendChild(tdClosed);
+
         const tdTouched = Object.assign(document.createElement('td'), { textContent: chatCountMap.get(op.operator) ?? 0, className: 'chtcnt', style: 'padding:8px' }); tr.appendChild(tdTouched);
 
         // ✅ ИСПРАВЛЕНИЕ: используем setAttribute вместо name:
+
         const tdSLA = document.createElement('td');
         tdSLA.textContent = '⏳';
         tdSLA.setAttribute('name', 'sladata'); // ✅ Правильно!
@@ -197,10 +204,10 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
     const AFRT_TARGET_PERCENT = 86;
 
     // Переменные для сбора статистики
-    let page, maxpage = 0, operclschatcount;
+    let page, maxpage = 0;
     let totalChatsClosed = [], arraycsatcount = [], arraycsatsumma = [], arrayaclosedchatscount = [];
     let operatorOverdueChats = [];
-    let csatcount, csatsumma, overduecount;
+    let csatcount, csatsumma, overduecount, operclschatcount;
 
     // Глобальные агрегаторы (инициализируем явно)
     let alloperSLAclsed = 0, alloperChatsclsed = 0, alloperaboveAFRT = 0;
@@ -214,6 +221,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     // ✅ Получаем элементы ДО цикла
+    const closedchatsDataCells = document.getElementsByName('chtclosed');
     const slaDataCells = document.getElementsByName('sladata');
     const csatDataCells = document.getElementsByName('csatdata');
     const aclosedchatsDataCells = document.getElementsByName('aclosedchatsdata');
@@ -335,7 +343,8 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
                         if (autoClosedMsg) {
                             aclschtscount++;
                             arrayaclosedchatscount[i] = aclschtscount;
-                            console.log(fres.id)
+                            const reason = autoClosedMsg.payload?.src;
+                            console.log(fres.id, reason);
                         }
 
                         // 📊 Сбор статистики (только если оператор совпадает)
@@ -389,6 +398,12 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
                     ? (100 - ((operatorOverdueChats[i] || 0) / operclschatcount * 100)).toFixed(1) + '%'
                     : '100%';
                 slaDataCells[i].textContent = slaPercent;
+            }
+
+            if (closedchatsDataCells[i]) {
+                const clsdChatsCount = operclschatcount > 0
+                    ? operclschatcount : '0'
+                closedchatsDataCells[i].textContent = clsdChatsCount
             }
 
             if (csatDataCells[i]) {
