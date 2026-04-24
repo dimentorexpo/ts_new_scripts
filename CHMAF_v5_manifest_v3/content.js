@@ -838,12 +838,6 @@ function openImageViewer(e) {
     overlay.addEventListener('click', () => overlay.remove());
 }
 
-
-
-
-
-
-
 function addOption(oListbox, text, value) {  //функция добавления опции в список
     var oOption = document.createElement("option");
     oOption.appendChild(document.createTextNode(text));
