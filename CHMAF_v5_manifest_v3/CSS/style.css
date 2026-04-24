@@ -1898,6 +1898,46 @@
 		display: flex;
 	}
 
+	/* Красивый ползунок масштаба в стиле Glassmorphism */
+	.glass-slider {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 75px;
+		height: 6px;
+		background: rgba(255, 255, 255, 0.15);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 4px;
+		outline: none;
+		margin-right: 8px;
+		box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+		cursor: pointer;
+		transition: background 0.3s;
+	}
+
+	.glass-slider:hover {
+		background: rgba(255, 255, 255, 0.25);
+	}
+
+	/* Ползунок (сам кружок) */
+	.glass-slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: #fff;
+		box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+		cursor: pointer;
+		transition: transform 0.15s ease, background 0.2s ease;
+	}
+
+	.glass-slider::-webkit-slider-thumb:hover {
+		transform: scale(1.3);
+		/* Плавное увеличение кружочка */
+		background: #FFD700;
+		/* Желтый цвет в стиль рамки */
+	}
+
 	/* Новые стили Links */
 	/* Добавь это в head или инжекти через JS */
 	/* ==========================================

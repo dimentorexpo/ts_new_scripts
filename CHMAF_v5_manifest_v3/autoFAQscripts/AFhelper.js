@@ -4,11 +4,9 @@ var win_AFhelper = `
 <div class="glass-panel" id="addTmpWrapper">
     <div class="glass-warning-bar"></div>
 
-    <!-- Декоративные картинки -->
     <img src="chrome-extension://${editorExtensionIdNew}/Images/hat.png" id="hatSack" alt="Шляпа" width="140" style="position: absolute; top: -104px; right: -60px; z-index: 9999999; user-select: none; pointer-events: none;">
     <img src="chrome-extension://${editorExtensionIdNew}/Images/bag.png" id="giftSack" alt="Мешок" width="112" style="position: absolute; top: -98px; left: -72px; z-index: 9999999; user-select: none; pointer-events: none; transform: rotate(-30deg);">
 
-    <!-- Первая строка (Меню, настройки, языки) -->
     <div class="flex-row" id="1str" style="cursor: -webkit-grab; padding-top: 5px;">
         <button class="glass-btn mainButton" id="languageAF" title="Переключает язык Русский/Английский" style="width: 94px;">Русский</button>
         <button class="glass-btn mainButton" id="testCustTMPL" title="Открывает окно для добавления своих шаблонов">📒</button>
@@ -23,7 +21,6 @@ var win_AFhelper = `
         </div>
     </div>
 
-    <!-- Вторая строка (Инпуты) -->
     <div class="flex-row" style="justify-content: center;">
         <input id="phone_tr" class="glass-input onlyfortp ${exttheme}" placeholder="Телефон" autocomplete="off" type="text" style="width: 180px; text-align: center;">
         <input id="email_tr" class="glass-input onlyfortp ${exttheme}" placeholder="Почта" autocomplete="off" type="text" style="width: 180px; text-align: center;">
@@ -33,16 +30,13 @@ var win_AFhelper = `
     <div id="7str"></div>
     <div id="6str"></div>
 
-    <!-- Основное поле ввода -->
     <textarea id="inp" class="glass-textarea ${exttheme}" style="width: 100%; min-height: 100px; max-height: 350px; resize: vertical; margin-bottom: 8px; box-sizing: border-box;"></textarea>
 
-    <!-- Блок добавления ссылок -->
     <div id="hyperlnk" class="flex-row hyper-bar">
         <input id="bindlinktotext" class="glass-input ${exttheme}" type="text" placeholder="Enter your link 🔗 here" title="Ссылка для встраивания" style="flex-grow: 1; text-align: center;">
         <button class="glass-btn mainButton" id="insertlinktotext">Insert ✅</button>
     </div>
 
-    <!-- Нижняя панель действий -->
     <div class="flex-row">
         <button class="glass-btn mainButton" id="msg1" title="Отправить или доработать" style="width: 90px;">Доработать</button>
         <button class="glass-btn mainButton msgtype" id="msg" title="Отправить в заметки или в чат">Чат</button>
@@ -88,6 +82,7 @@ const msg1Btn = document.getElementById('msg1');
 
 if (localStorage.getItem('msg')) {
     msgBtn.textContent = localStorage.getItem('msg');
+    // Заменен класс notes на notes
     msgBtn.classList.toggle('notes', msgBtn.textContent === 'Заметки');
 }
 
@@ -97,11 +92,16 @@ if (localStorage.getItem('msg1')) {
 
 // --- Обработчики событий ---
 
+// Обработчик ползунка масштаба (Используем zoom для корректных границ)
+// Обработчик ползунка масштаба с плавным переходом
+
+
+
 // Переключатель: Чат / Заметки
 msgBtn.addEventListener('click', function () {
     const isChat = this.textContent === "Чат";
     this.textContent = isChat ? "Заметки" : "Чат";
-    this.classList.toggle('notes');
+    this.classList.toggle('notes'); // Заменен класс
     localStorage.setItem('msg', this.textContent);
 });
 
@@ -147,7 +147,7 @@ document.getElementById('snd').addEventListener('click', function () {
 // Открытие/закрытие панели ссылок
 const hyperLnkPanel = document.getElementById('hyperlnk');
 document.getElementById('opandclsbarhyper').addEventListener('click', function () {
-    hyperLnkPanel.classList.toggle('active');
+    hyperLnkPanel.classList.toggle('active'); // Заменен класс
 });
 
 // Вставка гиперссылки
@@ -159,7 +159,7 @@ document.getElementById('insertlinktotext').addEventListener('click', function (
 
     if (replaceSelectedText(textArea, formatLink)) {
         linkInput.value = ''; // Очищаем поле ссылки только при успешной вставке
-        hyperLnkPanel.classList.remove('active');
+        hyperLnkPanel.classList.remove('active'); // Заменен класс
     }
 });
 
@@ -172,17 +172,11 @@ document.getElementById('sndbot').addEventListener('click', async function () {
 
     const [adr, adr1, uid] = await getInfo(flag);
 
-    // 1. Превращаем переносы строк в HTML параграфы
-    // Если текст уже содержит HTML (как ваш пример),
-    // возможно, стоит добавить проверку, нужно ли его оборачивать.
     let formattedText = textVal.split('\n')
         .map(line => line.trim() ? `<p>${line}</p>` : '<p><br></p>')
-        .join(''); // Соединяем БЕЗ переносов \n, так как <p> сам делает перенос
-
-    // 2. НЕ НУЖНО делать replaceAll('"', '\\"') и join('\\n')!
+        .join('');
 
     if (msgBtn.textContent === "Чат") {
-        // JSON.stringify САМ корректно заэкранирует кавычки и внутренние переносы
         const payloadJson = JSON.stringify({
             sessionId: uid,
             conversationId: adr1,
@@ -200,7 +194,7 @@ document.getElementById('sndbot').addEventListener('click', async function () {
                 body: formData,
                 credentials: "include"
             });
-            inp.value = ''; // Очищаем только при успехе (опционально)
+            inp.value = '';
         } catch (err) {
             console.error("Ошибка отправки ботом:", err);
         }
@@ -221,7 +215,7 @@ document.getElementById('hideMenuMain').addEventListener('click', function () {
     });
 
     const scriptBut = document.getElementById('scriptBut');
-    if (scriptBut) scriptBut.classList.remove('activeScriptBtn');
+    if (scriptBut) scriptBut.classList.remove('activeScriptBtn'); // Заменен класс
 });
 
 // Обновление данных шаблона

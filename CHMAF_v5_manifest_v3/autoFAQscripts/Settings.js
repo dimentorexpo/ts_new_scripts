@@ -71,6 +71,9 @@ async function init_settings() {
                         <input id="audioswitcher" type="checkbox" checked="">
                         <span class="checkbox-audio-switch"></span>
                     </label>
+                    <br>
+                    <span style="color:bisque">Масштаб окна</span>
+                    <input type="range" id="scaleSliderAF" class="glass-slider" min="50" max="100" value="100" step="1" title="Масштаб окна">
                     <span style="color:bisque">Громкость</span>
                     <input id="range" min="0" max="1" value="1.0" step="0.025" type="range">
                     <input class="${exttheme}" id="sound_adr" placeholder="Введи адрес звука" autocomplete="off" type="text" style="display: none; text-align: center; width: 210px;">
@@ -714,6 +717,42 @@ async function init_settings() {
     document.getElementById('set_TP').addEventListener('click', WeAreTheChempions)
     document.getElementById('set_TPrezerv').addEventListener('click', AFthePieceofShit)
 
+
+    // --- Масштаб окна (Плавный, без скачков, с сохранением) ---
+    const scaleSlider = document.getElementById('scaleSliderAF');
+    const mainWindow = document.getElementById('AF_helper') || document.getElementById('addTmpWrapper');
+
+    if (scaleSlider) { // Проверка, что элемент найден
+        // 1. Получаем сохраненное значение или ставим 100 по умолчанию
+        const savedScale = localStorage.getItem('AF_windowScale') || 100;
+        scaleSlider.value = savedScale;
+
+        // 2. Функция применения масштаба
+        const applyScale = (value, isInit = false) => {
+            if (!mainWindow) return;
+            const scaleValue = value / 100;
+            if (isInit) {
+                mainWindow.style.transition = 'none';
+            } else {
+                mainWindow.style.transition = 'transform 0.15s ease-out';
+            }
+            mainWindow.style.transformOrigin = 'top left';
+            mainWindow.style.transform = `scale(${scaleValue})`;
+        };
+
+        // 3. Применяем масштаб сразу
+        applyScale(savedScale, true);
+
+        // 4. Обработчик ползунка
+        scaleSlider.addEventListener('input', function () {
+            applyScale(this.value);
+        });
+
+        // 5. Обработчик сохранения
+        scaleSlider.addEventListener('change', function () {
+            localStorage.setItem('AF_windowScale', this.value);
+        });
+    }
 }
 
 init_settings()
