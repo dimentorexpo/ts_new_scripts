@@ -166,25 +166,23 @@ document.getElementById('insertlinktotext').addEventListener('click', function (
 // Отправка от лица бота (API)
 document.getElementById('sndbot').addEventListener('click', async function () {
     const inp = document.getElementById('inp');
-    const phoneTr = document.getElementById('phone_tr');
-    const emailTr = document.getElementById('email_tr');
     const textVal = inp.value;
 
-    if (!textVal.trim()) return; // Защита от пустой отправки
+    if (!textVal.trim()) return;
 
     const [adr, adr1, uid] = await getInfo(flag);
 
-    // Форматирование текста (современный подход)
+    // 1. Превращаем переносы строк в HTML параграфы
+    // Если текст уже содержит HTML (как ваш пример),
+    // возможно, стоит добавить проверку, нужно ли его оборачивать.
     let formattedText = textVal.split('\n')
-        .map(line => `<p>${line}</p>`)
-        .join('\\n'); // Экранированный перенос для JSON
+        .map(line => line.trim() ? `<p>${line}</p>` : '<p><br></p>')
+        .join(''); // Соединяем БЕЗ переносов \n, так как <p> сам делает перенос
 
-    formattedText = formattedText
-        .replaceAll('"', '\\"') // Экранирование кавычек
-        .replaceAll('<p></p>', '<p><br></p>');
+    // 2. НЕ НУЖНО делать replaceAll('"', '\\"') и join('\\n')!
 
     if (msgBtn.textContent === "Чат") {
-        // Создаем JSON payload
+        // JSON.stringify САМ корректно заэкранирует кавычки и внутренние переносы
         const payloadJson = JSON.stringify({
             sessionId: uid,
             conversationId: adr1,
@@ -192,28 +190,21 @@ document.getElementById('sndbot').addEventListener('click', async function () {
             suggestedAnswerDocId: 0
         });
 
-        // Используем встроенный FormData вместо ручного написания Boundaries
         const formData = new FormData();
         formData.append("payload", payloadJson);
 
         try {
             await fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
                 method: "POST",
-                headers: {
-                    "x-csrf-token": aftoken
-                    // ВАЖНО: Content-Type не задаем, браузер сам пропишет boundary при отправке FormData
-                },
+                headers: { "x-csrf-token": aftoken },
                 body: formData,
                 credentials: "include"
             });
+            inp.value = ''; // Очищаем только при успехе (опционально)
         } catch (err) {
             console.error("Ошибка отправки ботом:", err);
         }
     }
-
-    inp.value = '';
-    if (phoneTr) phoneTr.value = '';
-    if (emailTr) emailTr.value = '';
 });
 
 // Скрытие окон
