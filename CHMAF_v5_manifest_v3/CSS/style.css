@@ -2529,3 +2529,186 @@
 		grid-template-columns: 1fr 1fr;
 		gap: 6px;
 	}
+
+	/*Стили для Vimbot */
+
+	.vimbot-glass {
+		width: 420px;
+		/* Увеличена непрозрачность с 0.7 до 0.92 */
+		background: rgba(30, 32, 40, 0.92);
+		backdrop-filter: blur(16px);
+		-webkit-backdrop-filter: blur(16px);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 12px;
+		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+		padding: 18px 14px 14px 14px;
+		color: #fff;
+		position: relative;
+		box-sizing: border-box;
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	}
+
+	.vimbot-warning-bar {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 8px;
+		background: repeating-linear-gradient(135deg, #000 0px, #000 15px, #FFD700 15px, #FFD700 30px);
+		border-top-left-radius: 12px;
+		border-top-right-radius: 12px;
+		cursor: grab;
+	}
+
+	.vimbot-btn {
+		background: rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		color: #eee;
+		border-radius: 8px;
+		padding: 7px 12px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		font-size: 13px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+	}
+
+	.vimbot-btn:hover {
+		background: rgba(255, 255, 255, 0.15);
+		border-color: rgba(255, 255, 255, 0.3);
+		color: #fff;
+	}
+
+	.vimbot-btn.primary {
+		background: rgba(46, 125, 50, 0.8);
+		/* Более плотный зеленый */
+		border-color: rgba(76, 175, 80, 0.5);
+		font-weight: 600;
+	}
+
+	.vimbot-btn.primary:hover {
+		background: rgba(56, 142, 60, 1);
+	}
+
+	.vimbot-input {
+		/* Инпуты стали темнее для лучшего контраста */
+		background: rgba(0, 0, 0, 0.4);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		color: #fff;
+		border-radius: 8px;
+		padding: 10px 12px;
+		outline: none;
+		width: 100%;
+		box-sizing: border-box;
+		transition: all 0.2s;
+		font-size: 14px;
+	}
+
+	.vimbot-input:focus {
+		border-color: rgba(255, 255, 255, 0.3);
+		background: rgba(0, 0, 0, 0.5);
+	}
+
+	.vimbot-input::placeholder {
+		color: rgba(255, 255, 255, 0.4);
+	}
+
+	.vimbot-status {
+		font-size: 12px;
+		text-align: center;
+		margin: 10px 0;
+		padding: 6px;
+		border-radius: 8px;
+		display: none;
+		background: rgba(0, 0, 0, 0.3);
+		font-weight: 500;
+	}
+
+	/* Стили для TestUsers */
+
+	.glass-panel-testuser {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 12px;
+		background: rgba(25, 25, 25, 0.7) !important;
+		/* Более насыщенный фон для читаемости */
+		backdrop-filter: blur(12px) saturate(150%);
+		-webkit-backdrop-filter: blur(12px) saturate(150%);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 16px;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+		width: fit-content;
+		z-index: 9999;
+	}
+
+	.glass-row-testuser {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	/* Стили инпута */
+	.glass-input-testuser {
+		background: rgba(255, 255, 255, 0.05) !important;
+		border: 1px solid rgba(255, 255, 255, 0.2) !important;
+		border-radius: 8px !important;
+		color: #fff !important;
+		padding: 6px 10px !important;
+		height: 32px !important;
+		width: 110px !important;
+		outline: none !important;
+		font-size: 13px !important;
+	}
+
+	.glass-input-testuser:focus {
+		border-color: #3498db !important;
+		background: rgba(255, 255, 255, 0.1) !important;
+	}
+
+	/* Стили кнопок (убираем белые квадраты) */
+	.glass-btn-testuser {
+		background: rgba(255, 255, 255, 0.1) !important;
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		border-radius: 8px !important;
+		color: white !important;
+		width: 34px !important;
+		height: 34px !important;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		cursor: pointer !important;
+		transition: all 0.2s ease !important;
+		font-size: 16px !important;
+		padding: 0 !important;
+	}
+
+	.glass-btn-testuser:hover {
+		background: rgba(255, 255, 255, 0.2) !important;
+		transform: translateY(-2px);
+	}
+
+	/* Разделитель */
+	.glass-divider-horizontal-testuser {
+		height: 1px;
+		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+		margin: 2px 0;
+	}
+
+	/* Состояния */
+	.glass-btn-testuser.successbtn {
+		background: rgba(46, 204, 113, 0.5) !important;
+		border-color: #2ecc71 !important;
+	}
+
+	.glass-btn-testuser.errorbtn {
+		background: rgba(231, 76, 60, 0.5) !important;
+		border-color: #e74c3c !important;
+	}
+
+	.glass-btn-testuser.active {
+		opacity: 0.5;
+		scale: 0.95;
+	}

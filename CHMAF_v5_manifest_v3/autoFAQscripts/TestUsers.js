@@ -1,122 +1,118 @@
-var win_TestUsers = // описание окна тестовых пользователей
-    `<div style="display: flex;">
-        <span style="cursor: -webkit-grab; margin:7px;">
-            <input id="iduserinfo" placeholder="ID У/П" title="Введите ID У/П для получения информации" class="teststudteachinp darkinputs" autocomplete="off" type="text">
-            <button id="openuserinfo" title="Открыть User Info указанного id" class="mainButton teststudteach">🔍</button>
-            <br>
-            <button id="sidcode" title="При клике ЛКМ генерирует ссылку логинер для входа в учетку с заранее сохраненным ID тестового ученика в настройках и копирует ее в буфер обмена. При клике ПКМ копирует в буфер обмена ID ученика, может пригодиться в админке создания тестовых уроков." class="mainButton teststudteach" style="margin-left:2px">👨‍🎓</button>
-            <button id="tidcode" title="При клике ЛКМ генерирует ссылку логинер для входа в учетку с заранее сохраненным ID тестового преподавателя в настройках и копирует ее в буфер обмена. При клике ПКМ копирует в буфер обмена ID преподавателя, может пригодиться в админке создания тестовых уроков." class="mainButton teststudteach">👽</button>
-            <button id="TestRooms" class="mainButton teststudteach" title="Открыть окно создания тестовых уроков">🎲</button>
-            <button id="link2lessbtn" class="mainButton teststudteach" title="Открыть окно получения ссылки на урок">📟</button>
-            <div id="addInfoUser" style="color: white; text-align: center; cursor: -webkit-grab;"></div>
-        </span>
+// --- 1. ЧИСТЫЙ HTML ---
+const win_TestUsers = `
+<div class="glass-panel-testuser">
+    <div class="glass-row-testuser">
+        <input id="iduserinfo" placeholder="ID У/П" title="Введите ID У/П" class="glass-input-testuser" autocomplete="off" type="text">
+        <button id="openuserinfo" title="Поиск" class="glass-btn-testuser">🔍</button>
     </div>
-    `;
 
+    <div class="glass-divider-horizontal-testuser"></div>
+
+    <div class="glass-row-testuser">
+        <button id="sidcode" title="Ученик (ЛКМ: логин, ПКМ: ID)" class="glass-btn-testuser">👨‍🎓</button>
+        <button id="tidcode" title="Преподаватель (ЛКМ: логин, ПКМ: ID)" class="glass-btn-testuser">👽</button>
+        <button id="TestRooms" title="Тестовые комнаты" class="glass-btn-testuser">🎲</button>
+        <button id="link2lessbtn" title="Ссылка на урок" class="glass-btn-testuser">📟</button>
+    </div>
+    <div id="addInfoUser" style="display: none;"></div>
+</div>
+`;
+
+// Инициализация окна (используем твою функцию createWindow)
 const TestUsersdiv = createWindow('TestUsers', 'winTopTestUsers', 'winLeftTestUsers', win_TestUsers);
-const addInfoUser = document.getElementById('addInfoUser');
+
+// --- 3. СКРИПТОВАЯ ЛОГИКА ---
+
 const btnsid = document.getElementById('sidcode');
 const btntid = document.getElementById('tidcode');
 const idUserInfoInput = document.getElementById('iduserinfo');
 const openUserInfoButton = document.getElementById('openuserinfo');
 
+// Кнопки открытия окон
 document.getElementById('TestRooms').onclick = getTestRoomsButtonPress;
 document.getElementById('link2lessbtn').onclick = getlink2lessButtonPress;
 
-// Универсальная функция обработки действий кнопок
-function handleButtonClick(buttonId, storageKey) {
+// Универсальный обработчик логинеров
+async function handleButtonClick(buttonId, storageKey) {
     const userId = localStorage.getItem(storageKey);
-    if (!userId) return;
-    const button = document.getElementById(buttonId);
-    button.classList.add('active');
-
-    getLoginLink(userId).then(() => {
-        button.classList.remove('active'); // Убираем класс active
-        button.classList.add('successbtn'); // Добавляем successbtn
-        createAndShowButton('💾 Ссылка-логинер cкопирована', 'message');
-        setTimeout(() => button.classList.remove('successbtn'), 1000);
-    }).catch((error) => {
-        console.log('Ошибка: ', error);
-        button.classList.remove('active'); // Убираем класс active
-        button.classList.add('errorbtn'); // Добавляем errorbtn
-        createAndShowButton('Не удалось получить сылку-логинер', 'error');
-        setTimeout(() => button.classList.remove('errorbtn'), 1000);
-    });
-}
-
-// Копирование ID в буфер обмена с отображением уведомления
-function handleContextMenu(event, storageKey, buttonId) {
-    event.preventDefault();
-    const userId = localStorage.getItem(storageKey);
-    const button = document.getElementById(buttonId);
-    if (userId) {
-        copyToClipboard(userId);
-        createAndShowButton('💾 ID cкопировано', 'message');
-        button.classList.add('successbtn'); // Добавляем successbtn
-        setTimeout(() => button.classList.remove('successbtn'), 1000);
-    } else {
-        createAndShowButton('Введите ID тестового ученика в настройках ⚙', 'error');
+    if (!userId) {
+        createAndShowButton('ID не найден в настройках', 'error');
+        return;
+    }
+    const btn = document.getElementById(buttonId);
+    btn.classList.add('active');
+    try {
+        await getLoginLink(userId);
+        btn.classList.add('successbtn');
+        createAndShowButton('💾 Ссылка скопирована', 'message');
+    } catch (e) {
+        btn.classList.add('errorbtn');
+        createAndShowButton('Ошибка получения ссылки', 'error');
+    } finally {
+        btn.classList.remove('active');
+        setTimeout(() => btn.classList.remove('successbtn', 'errorbtn'), 1000);
     }
 }
 
-// Привязка событий к кнопкам
-btnsid.addEventListener("click", () => handleButtonClick('sidcode', 'test_stud'));
-btnsid.addEventListener("contextmenu", (event) => handleContextMenu(event, 'test_stud', 'sidcode'));
-
-btntid.addEventListener("click", () => handleButtonClick('tidcode', 'test_teach'));
-btntid.addEventListener("contextmenu", (event) => handleContextMenu(event, 'test_teach', 'tidcode'));
-
-// Обработка вставки, перетаскивания и фильтрации чисел в поле ввода
-function handleInput(event) {
-    idUserInfoInput.value = '';
-    const pastedValue = (event.clipboardData || event.dataTransfer).getData('text').trim();
-    setTimeout(() => {
-        if (/^\d+$/.test(pastedValue)) {
-            idUserInfoInput.value = pastedValue;
-            openUserInfoButton.click();
-        }
-    }, 0);
+// ПКМ - Копирование ID
+function handleContextMenu(e, storageKey, buttonId) {
+    e.preventDefault();
+    const userId = localStorage.getItem(storageKey);
+    if (userId) {
+        copyToClipboard(userId);
+        createAndShowButton('ID скопирован: ' + userId, 'message');
+        const btn = document.getElementById(buttonId);
+        btn.classList.add('successbtn');
+        setTimeout(() => btn.classList.remove('successbtn'), 1000);
+    }
 }
 
-idUserInfoInput.addEventListener('paste', handleInput);
-idUserInfoInput.addEventListener('drop', handleInput);
-idUserInfoInput.addEventListener('input', () => onlyNumber(idUserInfoInput));
+// Слушатели событий
+btnsid.onclick = () => handleButtonClick('sidcode', 'test_stud');
+btnsid.oncontextmenu = (e) => handleContextMenu(e, 'test_stud', 'sidcode');
+btntid.onclick = () => handleButtonClick('tidcode', 'test_teach');
+btntid.oncontextmenu = (e) => handleContextMenu(e, 'test_teach', 'tidcode');
 
-// Открытие окна User Info
+// Идеальная обработка вставки
+function handlePaste(e) {
+    let data = (e.clipboardData || window.clipboardData).getData('text').trim();
+    if (/^\d+$/.test(data)) {
+        e.preventDefault();
+        idUserInfoInput.value = data;
+        openUserInfoButton.click();
+    }
+}
+idUserInfoInput.addEventListener('paste', handlePaste);
+idUserInfoInput.addEventListener('input', () => { if (window.onlyNumber) onlyNumber(idUserInfoInput); });
+
+// Кнопка поиска
 openUserInfoButton.onclick = () => {
-    const idforinfo = idUserInfoInput.value.trim();
-    if (idforinfo) {
-        const serviceElement = document.getElementById('AF_Service');
-        if (serviceElement.style.display === 'none') {
-            serviceElement.style.display = '';
-            document.getElementById('butServ').classList.add('activeScriptBtn');
-        }
-        document.getElementById('idstudent').value = idforinfo;
-        document.getElementById('getidstudent').click();
+    const val = idUserInfoInput.value.trim();
+    if (!val) return;
+
+    // Эмуляция работы со скрытыми элементами сервиса
+    const svc = document.getElementById('AF_Service');
+    if (svc && svc.style.display === 'none') {
+        svc.style.display = '';
+        const b = document.getElementById('butServ');
+        if (b) b.classList.add('activeScriptBtn');
+    }
+
+    const inp = document.getElementById('idstudent');
+    const btn = document.getElementById('getidstudent');
+    if (inp && btn) {
+        inp.value = val;
+        btn.click();
         idUserInfoInput.value = '';
     }
 };
 
-// Установка стиля для TestUsersdiv
-// Функция для обновления стиля
-function updateTestUsersDivStyle() {
-    const isHostCorrect = window.location.host === "skyeng.autofaq.ai";
-    const isNotLogin = window.location.pathname !== "/login";
-    const isAllowed = localStorage.getItem('disablelpmwindow') !== '1';
-
-    const shouldShow = isHostCorrect && isNotLogin && isAllowed;
-    setDisplayStyle(TestUsersdiv, shouldShow ? '' : 'none');
+// Функция скрытия/показа
+function updateVisibility() {
+    const show = window.location.host === "skyeng.autofaq.ai" &&
+        window.location.pathname !== "/login" &&
+        localStorage.getItem('disablelpmwindow') !== '1';
+    TestUsersdiv.style.display = show ? 'block' : 'none';
 }
-
-// Первоначальная проверка при загрузке
-updateTestUsersDivStyle();
-
-// Если начальная страница - /login, запускаем отслеживание
-if (window.location.pathname === "/login") {
-    const styleCheckInterval = setInterval(() => {
-        if (window.location.pathname !== "/login") {
-            updateTestUsersDivStyle();
-            clearInterval(styleCheckInterval);
-        }
-    }, 500);
-}
+setInterval(updateVisibility, 1000); // Простая проверка раз в секунду
+updateVisibility();
