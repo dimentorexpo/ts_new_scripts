@@ -851,40 +851,51 @@ function addOption(oListbox, text, value) {  //функция добавлени
     oListbox.appendChild(oOption);
 }
 
-function pageClick(event) { // обновлённый обработчик событий
-    const b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1];
-    const pageId = event.currentTarget.id;
+function pageClick(event) {
+    // Получаем ID нажатой кнопки (например, "0_page_button") и вытаскиваем номер ("0")
+    const clickedBtn = event.currentTarget;
+    const pageId = clickedBtn.id;
     const pageNum = pageId.split('_')[0];
 
-    for (let i = 0; i < b.childElementCount; i++) {
-        try {
-            b.children[1].children[i].style = 'background-color:rgb(55 100 178); border-top:0px; padding:5px;border:1px solid black;';
-            document.getElementById(i + "page").style.display = 'none';
-        } catch (e) {
-
-        }
+    // 1. Сбрасываем стили у всех кнопок вкладок (в блоке pages)
+    const pagesContainer = document.getElementById('pages');
+    if (pagesContainer) {
+        const buttons = pagesContainer.querySelectorAll('button');
+        buttons.forEach(btn => {
+            // Возвращаем стандартный "стеклянный" стиль
+            btn.style.backgroundColor = 'rgba(36, 62, 229, 0.5)';
+            btn.style.borderTop = '1px solid rgba(255, 255, 255, 0.2)';
+        });
     }
-    event.currentTarget.style = 'background-color: green; border-top:4px solid orange; padding:5px;';
-    document.getElementById(pageNum + "page").style.display = '';
+
+    // 2. Скрываем все страницы с шаблонами
+    let i = 0;
+    while (document.getElementById(i + "page")) {
+        document.getElementById(i + "page").style.display = 'none';
+        i++;
+    }
+
+    // 3. Выделяем активную (нажатую) кнопку
+    // Делаем ей зеленоватый фон и оранжевую полоску сверху, как было в старом дизайне, но с прозрачностью
+    clickedBtn.style.backgroundColor = 'rgba(34, 139, 34, 0.5)';
+    clickedBtn.style.borderTop = '3px solid orange';
+
+    // 4. Показываем нужную страницу
+    const targetPage = document.getElementById(pageNum + "page");
+    if (targetPage) {
+        targetPage.style.display = 'block';
+    }
 }
 
-let bimba;
+
 function initializeMyLogic() {
     const afHelper = document.getElementById('AF_helper');
     if (!afHelper) {
         console.error('AF_helper все еще не найден!');
-        // Возможно, здесь нужна дополнительная обработка ошибки
         return;
     }
-
-    console.log('AF_helper найден, инициализация логики content.js...');
-
-    if (afHelper && afHelper.childNodes[0] && afHelper.childNodes[0].childNodes[1]) {
-        bimba = afHelper.childNodes[0].childNodes[1].childNodes[1];
-        console.log(bimba)
-    } else {
-        console.error('Элемент AF_helper отсутствует или структура DOM отличается.');
-    }
+    console.log('AF_helper успешно найден, визуальная часть загружена.');
+    // Мы удалили жесткий поиск через childNodes, так как теперь обращаемся к элементам напрямую по их ID
 }
 
 function waitForElement(selector, callback, timeout = 10000, interval = 100) {
@@ -898,9 +909,6 @@ function waitForElement(selector, callback, timeout = 10000, interval = 100) {
         } else if (Date.now() - startTime > timeout) {
             clearInterval(intervalId);
             console.error(`Элемент ${selector} не найден в течение ${timeout / 1000} секунд.`);
-            // Можно вызвать callback с ошибкой или сделать что-то еще
-        } else {
-            // console.log(`Ожидание ${selector}...`); // Раскомментируйте для отладки
         }
     }, interval);
 }
@@ -910,240 +918,237 @@ if (location.host == 'skyeng.autofaq.ai') {
     waitForElement('#AF_helper', initializeMyLogic);
 }
 
-function refreshTemplates() { // функция обновляет шаблоны которые загружены были с гугл таблицы и сформированы их в table
-    if (location.host == 'skyeng.autofaq.ai') {
+// Полностью убираем переменную bimba и функцию инициализации с жесткими индексами.
+// Если логики там больше не было, initializeMyLogic можно оставить пустой или удалить,
+// так как мы привязываемся по ID напрямую.
+
+// Флаг для контроля дублирования интервала
+let isAfIntervalRunning = false;
+
+function refreshTemplates() {
+    if (location.host !== 'skyeng.autofaq.ai') return;
+
+    // ДОБАВЛЕНА ЗАЩИТА: Если таблица еще не загрузилась или пуста, не пытаемся её рендерить
+    if (typeof table === 'undefined' || !table || !table.length) {
+        console.warn('Ожидание загрузки данных шаблонов...');
+        return;
+    }
+
+    if (!isAfIntervalRunning) {
         setInterval(function () {
-            phone = SearchinAFnewUI("phone");
-            email = SearchinAFnewUI("email");
+            const phone = SearchinAFnewUI("phone");
+            const email = SearchinAFnewUI("email");
 
-            if (document.getElementById('phone_tr')) {
-                if (phone === "-" || phone === "") {
-                    document.getElementById('phone_tr').placeholder = "Телефон";
-                } else {
-                    document.getElementById('phone_tr').placeholder = phone;
-                }
+            const phoneInput = document.getElementById('phone_tr');
+            const emailInput = document.getElementById('email_tr');
+
+            if (phoneInput) {
+                phoneInput.placeholder = (phone === "-" || phone === "") ? "Телефон" : phone;
             }
-
-            if (document.getElementById('email_tr')) {
-                if (email === "-" || email === "") {
-                    document.getElementById('email_tr').placeholder = "Почта";
-                } else {
-                    document.getElementById('email_tr').placeholder = email;
-                }
+            if (emailInput) {
+                emailInput.placeholder = (email === "-" || email === "") ? "Почта" : email;
             }
         }, 1000);
+        isAfIntervalRunning = true;
+    }
 
-        templatesAF = []
-        let pagesElement = document.getElementById('pages');
-        while (pagesElement && pagesElement.children[0] !== undefined) {
-            pagesElement.children[0].remove();
-        }
-        for (let i = 0; document.getElementById(i + 'page') !== null; i++) {
-            document.getElementById(i + 'page').remove();
-        }
-        let addTmpElement = document.getElementById('addTmp');
-        if (addTmpElement && addTmpElement.children[0]) {
-            while (addTmpElement.children[0].children[0] !== undefined) {
-                addTmpElement.children[0].children[0].remove();
-            }
-        }
-        countOfStr = 0
-        countOfPages = 0
-        pageName = ""
-        addTmpFlag = 0
+    // 1. Очистка старых данных перед рендером новых
+    const pagesContainer = document.getElementById('pages');
+    if (pagesContainer) pagesContainer.innerHTML = '';
 
-        // b = document.getElementById('AF_helper').childNodes[0].childNodes[1].childNodes[1]
-        for (i = 0; i < table.length; i++) {
-            c = table[i]
-            switch (c[0]) {
-                case '':
-                    addTmpFlag = 0
-                    countOfStr++
-                    var newStr = document.createElement('div')
-                    newStr.style.margin = "5px"
-                    newStr.id = countOfPages + "page_" + countOfStr + "str"
-                    bimba.lastElementChild.appendChild(newStr)
-                    break
+    document.querySelectorAll('[id$="page"]').forEach(el => el.remove());
 
-                case 'Additional templates':
-                    addTmpFlag = 1
-                    break
-                case 'Страница':
-                    var newPageBut = document.createElement('button');
-                    newPageBut.textContent = c[1];
-                    pageType = c[2];
-                    newPageBut.style.marginRight = '4px';
-                    newPageBut.classList.add('mainButton')
+    const addTmpElement = document.getElementById('addTmp');
+    if (addTmpElement) addTmpElement.innerHTML = '';
 
-                    // Используйте addEventListener для назначения обработчика события
-                    newPageBut.addEventListener('click', pageClick);
+    let countOfStr = 0;
+    let countOfPages = 0;
+    let pageType = "";
+    let addTmpFlag = 0;
 
-                    newPageBut.id = countOfPages + '_page_button';
-                    bimba.childNodes[3].appendChild(newPageBut);
+    let currentPage = null;
+    let currentRow = null;
+    const contentArea = document.getElementById('7str');
 
-                    var newPage = document.createElement('div');
-                    newPage.id = countOfPages + 'page';
-                    bimba.appendChild(newPage);
+    // 3. Парсинг таблицы (теперь table гарантированно существует благодаря защите сверху)
+    for (let i = 0; i < table.length; i++) {
+        // ... (весь остальной код внутри for остается таким же, каким был в предыдущем ответе)
+        const c = table[i];
 
-                    countOfPages++;
-                    countOfStr = 1;
+        switch (c[0]) {
+            case '':
+                addTmpFlag = 0;
+                countOfStr++;
 
-                    if (pageType == "Серверные") { // дорисоква инпута для ссылки на серверные
-                        var newDiv = document.createElement('div')
-                        newDiv.id = countOfPages + "page_" + countOfStr + "str"
-                        newDiv.style.margin = "5px"
+                currentRow = document.createElement('div');
+                currentRow.className = 'flex-row'; // Применяем Flexbox из Glassmorphism
+                currentRow.id = `${countOfPages}page_${countOfStr}str`;
+                if (currentPage) currentPage.appendChild(currentRow);
+                break;
 
-                        var newInputAlink = document.createElement('input')
-                        newInputAlink.id = 'avariyalink'
-                        newInputAlink.placeholder = 'Ссылка на трэд или Jira северных'
-                        newInputAlink.autocomplete = 'off'
-                        newInputAlink.type = 'text'
-                        newInputAlink.classList.add(exttheme)
-                        newInputAlink.style = 'text-align: center; width: 416px; margin-left: 7px'
+            case 'Additional templates':
+                addTmpFlag = 1;
+                // Добавляем класс, чтобы доп. шаблоны тоже красиво выстраивались
+                if (addTmpElement) addTmpElement.className = 'flex-row glass-panel';
+                break;
 
-                        newDiv.appendChild(newInputAlink)
+            case 'Страница':
+                // Кнопка переключения страницы
+                const newPageBut = document.createElement('button');
+                newPageBut.textContent = c[1];
+                newPageBut.className = 'glass-btn mainButton'; // Стиль Glassmorphism
+                newPageBut.id = `${countOfPages}_page_button`;
+                newPageBut.background = ""
+                newPageBut.addEventListener('click', pageClick);
+                pagesContainer.appendChild(newPageBut);
 
-                        var newbtnclrlink = document.createElement('button')
-                        newbtnclrlink.textContent = "🧹"
-                        newbtnclrlink.title = "Очищает поле задачи серверных"
-                        newbtnclrlink.classList.add('mainButton')
-                        newbtnclrlink.onclick = function () { document.getElementById('avariyalink').value = "" }
+                pageType = c[2];
 
-                        newDiv.appendChild(newbtnclrlink)
+                // Контейнер самой страницы
+                currentPage = document.createElement('div');
+                currentPage.id = `${countOfPages}page`;
+                contentArea.appendChild(currentPage);
 
-                        var newSelectAThemes = document.createElement('select')
-                        newSelectAThemes.id = 'avariyatema'
-                        newSelectAThemes.classList.add(exttheme)
-                        newSelectAThemes.style = 'text-align: center; width: 416px; height: 26px; margin-left: 7px; margin-top: 5px'
-                        newSelectAThemes.type = 'text'
+                countOfPages++;
+                countOfStr = 1;
 
-                        var newthemeoption = document.createElement('option')
-                        newthemeoption.text = "Выбери тематику для серверных"
-                        newthemeoption.selected = true
-                        newthemeoption.disabled = true
-                        newthemeoption.value = "thenenotselect"
-                        newthemeoption.style = "background-color:orange; color:white;"
-                        newSelectAThemes.add(newthemeoption)
+                // Если это серверные — рисуем инпуты
+                if (pageType === "Серверные") {
+                    // -- Блок ссылки --
+                    currentRow = document.createElement('div');
+                    currentRow.className = 'flex-row';
+                    currentRow.id = `${countOfPages}page_${countOfStr}str`;
 
-                        ///
+                    const newInputAlink = document.createElement('input');
+                    newInputAlink.id = 'avariyalink';
+                    newInputAlink.placeholder = 'Ссылка на трэд или Jira северных';
+                    newInputAlink.autocomplete = 'off';
+                    newInputAlink.className = `glass-input ${exttheme}`;
+                    newInputAlink.style.flexGrow = '1'; // Тянется на всю ширину
 
-                        async function getAvariaThemes() {
-                            let objSelAvariaThema = document.getElementById("avariyatema");
-                            let avariatemacontainer;
-                            let themesfromdoc;
-                            if (objSelAvariaThema && objSelAvariaThema.children.length == 1) {
-                                clearInterval(getTms)
-                                themesfromdoc = 'https://script.google.com/macros/s/AKfycbxNjuQ7EbZZkLEfC1_aSoK4ncsF0W0XSkjYttCj2nQ23BBzMEmDq-vqJL3MvwJk9Pnm_g/exec'
-                                await fetch(themesfromdoc).then(r => r.json()).then(r => avariatemadata = r)
-                                avariatemacontainer = avariatemadata.result;
+                    const newbtnclrlink = document.createElement('button');
+                    newbtnclrlink.textContent = "🧹";
+                    newbtnclrlink.title = "Очистить";
+                    newbtnclrlink.className = 'glass-btn mainButton';
+                    newbtnclrlink.onclick = () => document.getElementById('avariyalink').value = "";
 
-                                for (let i = 0; i < avariatemacontainer.length; i++) {
-                                    addOption(objSelAvariaThema, `${avariatemacontainer[i][3]}`, `${avariatemacontainer[i][4]}`) // переиндексацию нужно будет сделать
-                                }
+                    currentRow.appendChild(newInputAlink);
+                    currentRow.appendChild(newbtnclrlink);
+                    currentPage.appendChild(currentRow);
 
-                            } else {
-                                console.log('Test false')
+                    // -- Блок выбора темы --
+                    const themeRow = document.createElement('div');
+                    themeRow.className = 'flex-row';
+
+                    const newSelectAThemes = document.createElement('select');
+                    newSelectAThemes.id = 'avariyatema';
+                    newSelectAThemes.className = `glass-input ${exttheme}`;
+                    newSelectAThemes.style.flexGrow = '1';
+
+                    const newthemeoption = document.createElement('option');
+                    newthemeoption.text = "Выбери тематику для серверных";
+                    newthemeoption.selected = true;
+                    newthemeoption.disabled = true;
+                    newthemeoption.value = "thenenotselect";
+                    newthemeoption.style = "background-color:orange; color:white;";
+                    newSelectAThemes.add(newthemeoption);
+
+                    const newbtnclrtheme = document.createElement('button');
+                    newbtnclrtheme.textContent = "🧹";
+                    newbtnclrtheme.title = "Сбросить тему";
+                    newbtnclrtheme.className = 'glass-btn mainButton';
+                    newbtnclrtheme.onclick = () => newSelectAThemes.selectedIndex = 0;
+
+                    themeRow.appendChild(newSelectAThemes);
+                    themeRow.appendChild(newbtnclrtheme);
+                    currentPage.appendChild(themeRow);
+
+                    // Логика подтягивания тем (Async/Await вместо старых цепочек)
+                    let avThemeInterval = setInterval(async () => {
+                        if (newSelectAThemes && newSelectAThemes.children.length === 1) {
+                            try {
+                                const response = await fetch('https://script.google.com/macros/s/AKfycbxNjuQ7EbZZkLEfC1_aSoK4ncsF0W0XSkjYttCj2nQ23BBzMEmDq-vqJL3MvwJk9Pnm_g/exec');
+                                const data = await response.json();
+                                data.result.forEach(item => {
+                                    addOption(newSelectAThemes, item[3], item[4]);
+                                });
+                                clearInterval(avThemeInterval); // Отключаем интервал после успеха
+                            } catch (e) {
+                                console.error('Ошибка загрузки серверных тем:', e);
                             }
                         }
+                    }, 4000);
 
-                        let getTms = setInterval(getAvariaThemes, 4000)
+                    countOfStr++;
+                }
 
-                        ///
+                // Добавляем обычную строку под кнопки
+                currentRow = document.createElement('div');
+                currentRow.className = 'flex-row';
+                currentRow.id = `${countOfPages}page_${countOfStr}str`;
+                currentPage.appendChild(currentRow);
+                break;
 
-                        newDiv.appendChild(newSelectAThemes)
+            default:
+                // Добавление самих кнопок с шаблонами
+                const newBut = document.createElement('button');
+                newBut.textContent = c[0];
+                newBut.className = 'glass-btn mainButton';
 
-                        var newbtnclrtheme = document.createElement('button')
-                        newbtnclrtheme.textContent = "🧹"
-                        newbtnclrtheme.title = "Очищает поле тематики серверных"
-                        newbtnclrtheme.classList.add('mainButton')
-                        newbtnclrtheme.onclick = function () { document.getElementById('avariyatema').children[0].selected = true }
+                if (pageType === 'Шаблоны') {
+                    if (newBut.textContent === 'Урок NS') newBut.id = "NS";
+                    if (newBut.textContent === 'ус+брауз (У)') newBut.textContent = "ус+брауз";
+                    if (newBut.textContent === 'ус+брауз (П)') continue; // Пропускаем эту кнопку
 
-                        newDiv.appendChild(newbtnclrtheme)
+                    newBut.addEventListener('click', (event) => buttonsFromDoc(event.target.textContent));
 
-                        bimba.lastElementChild.appendChild(newDiv)
-                        countOfStr++
+                    if (addTmpFlag === 0) {
+                        if (currentRow) currentRow.appendChild(newBut);
+                    } else {
+                        if (addTmpElement) addTmpElement.appendChild(newBut);
                     }
-
-                    var newStr = document.createElement('div')
-                    newStr.style.margin = "5px"
-                    newStr.id = countOfPages + "page_" + countOfStr + "str"
-                    bimba.lastElementChild.appendChild(newStr)
-                    break
-                default:
-                    switch (pageType) {
-                        case 'Шаблоны':
-                            var newBut = document.createElement('button');
-                            newBut.textContent = c[0];
-                            newBut.style.marginRight = '4px';
-                            newBut.classList.add('mainButton')
-
-                            // Проверки для установки ID или изменения текста
-                            if (newBut.textContent == 'Урок NS') {
-                                newBut.id = "NS";
-                            }
-                            if (newBut.textContent == 'ус+брауз (У)')
-                                newBut.textContent = "ус+брауз"
-                            if (newBut.textContent == 'ус+брауз (П)')
-                                continue
-                            newBut.addEventListener('click', function (event) {
-                                buttonsFromDoc(event.target.textContent);
-                            });
-
-                            if (addTmpFlag == 0) {
-                                bimba.lastElementChild.lastElementChild.appendChild(newBut);
-                            } else {
-                                newBut.style.marginTop = '4px';
-                                document.getElementById('addTmp').children[0].appendChild(newBut);
-                            }
-                            break;
-                        case 'Серверные': // обработка нажатия на кнопку на странице серверные
-                            var newBut = document.createElement('button')
-                            newBut.textContent = c[0]
-                            newBut.style.marginRight = '4px'
-                            newBut.classList.add('mainButton')
-                            newBut.addEventListener('click', servFromDoc);
-                            bimba.lastElementChild.lastElementChild.appendChild(newBut)
-                            break
-
-                        default:
-                            break
-                    }
-                    break
-            }
+                } else if (pageType === 'Серверные') {
+                    newBut.addEventListener('click', servFromDoc);
+                    if (currentRow) currentRow.appendChild(newBut);
+                }
+                break;
         }
-        const addTmp = document.getElementById('addTmp');
+    }
 
-        if (addTmp.firstElementChild && addTmp.firstElementChild.childElementCount > 0) {
-            document.getElementById('0page').addEventListener('dblclick', function (event) {
+    // Обработка двойного клика для отображения скрытого блока "addTmp"
+    if (addTmpElement && addTmpElement.childElementCount > 0) {
+        const pageZero = document.getElementById('0page');
+        if (pageZero) {
+            pageZero.addEventListener('dblclick', function (event) {
                 if (checkelementtype(event)) {
-                    // Переключаем видимость элемента addTmp
-                    addTmp.style.display = addTmp.style.display === 'none' ? '' : 'none';
+                    addTmpElement.style.display = (addTmpElement.style.display === 'none') ? 'flex' : 'none';
                 }
             });
         }
-
-        document.getElementById('0_page_button').click()
     }
+
+    // Имитация клика по первой вкладке, чтобы открыть её по умолчанию
+    const firstPageBtn = document.getElementById('0_page_button');
+    if (firstPageBtn) firstPageBtn.click();
 }
 
-function getText() { // функция обновления текста с шаблонов из документа
-    const app = scriptAdr;
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', app);
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            try {
-                const r = JSON.parse(xhr.responseText);
-                const result = r["result"];
-                table = result;
-            } catch (e) {
-                console.log(e);
-            } finally {
-                refreshTemplates();
-            }
+// Переписал на современный Fetch (намного стабильнее и чище, чем XMLHttpRequest)
+async function getText() {
+    try {
+        const response = await fetch(scriptAdr);
+        if (response.ok) {
+            const data = await response.json();
+
+            // ВАЖНО: Убрали window.table. Оставляем просто присваивание к вашей переменной table
+            table = data.result;
+
+            refreshTemplates();
+        } else {
+            console.error('Ошибка при загрузке шаблонов:', response.status);
         }
-    };
-    xhr.send();
+    } catch (e) {
+        console.error('Сетевая ошибка getText:', e);
+    }
 }
 
 async function move_again_AF() { //с АФ шняга там стили шмили скрипта отображение отправку сообщений

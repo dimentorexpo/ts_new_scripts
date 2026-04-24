@@ -1784,6 +1784,120 @@
 		cursor: zoom-out;
 	}
 
+	/* Основа Glassmorphism AF_Helper*/
+	.glass-panel {
+		width: 570px;
+		background: rgba(40, 42, 54, 0.6);
+		/* Темный полупрозрачный фон */
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		border-radius: 12px;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+		padding: 10px;
+		color: #fff;
+		position: relative;
+		box-sizing: border-box;
+		font-family: sans-serif;
+	}
+
+	/* Верхняя полосатая рамка */
+	.glass-warning-bar {
+		position: absolute;
+		top: -10px;
+		left: 0;
+		width: 100%;
+		height: 10px;
+		background: repeating-linear-gradient(135deg, #000 0px, #000 15px, #FFD700 15px, #FFD700 30px);
+		border-top-left-radius: 12px;
+		border-top-right-radius: 12px;
+		cursor: -webkit-grab;
+	}
+
+	/* Кнопки в стиле Glass */
+	.glass-btn {
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: #fff;
+		border-radius: 8px;
+		padding: 5px 10px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+	}
+
+	.glass-btn:hover {
+		background: rgba(255, 255, 255, 0.2);
+		box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+		transform: translateY(-1px);
+	}
+
+	.glass-btn:active {
+		transform: translateY(1px);
+	}
+
+	.glass-btn.primary {
+		background: rgba(34, 139, 34, 0.6);
+		border-color: rgba(34, 139, 34, 0.8);
+	}
+
+	.glass-btn.primary:hover {
+		background: rgba(34, 139, 34, 0.8);
+	}
+
+	.glass-btn.mainButton.buttonHide {
+		width: 188px;
+	}
+
+	/* Инпуты и Текстареа */
+	.glass-input,
+	.glass-textarea {
+		background: rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: #fff;
+		border-radius: 8px;
+		padding: 8px;
+		outline: none;
+		transition: border 0.2s;
+	}
+
+	.glass-input::placeholder,
+	.glass-textarea::placeholder {
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	.glass-input:focus,
+	.glass-textarea:focus {
+		border-color: rgba(255, 255, 255, 0.5);
+		background: rgba(0, 0, 0, 0.3);
+	}
+
+	/* Флекс-контейнеры для ровного расположения */
+	.flex-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		align-items: center;
+		margin-bottom: 8px;
+	}
+
+	.flex-right {
+		margin-left: auto;
+		display: flex;
+		gap: 6px;
+	}
+
+	/* Гиперссылка */
+	.hyper-bar {
+		display: none;
+		margin-bottom: 8px;
+		flex-wrap: nowrap;
+	}
+
+	.hyper-bar.active {
+		display: flex;
+	}
+
 	/* Новые стили Links */
 	/* Добавь это в head или инжекти через JS */
 	/* ==========================================
