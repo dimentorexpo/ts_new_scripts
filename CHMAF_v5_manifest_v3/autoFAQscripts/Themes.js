@@ -59,7 +59,9 @@ async function startThemes() {
     }
 
     localStorage.setItem('scriptAdrTH', scriptAdrTH);
-    getTextThemes(scriptAdrTH);
+
+    // Возвращаем результат выполнения загрузки текста
+    return await getTextThemes(scriptAdrTH);
 }
 
 startThemes();
@@ -124,13 +126,20 @@ document.getElementById('backtomenu').addEventListener('click', e => {
 async function getTextThemes(appThemes) {
     try {
         const response = await fetch(appThemes);
-        if (!response.ok) throw new Error('Network response was not ok');
+        if (!response.ok) throw new Error('Ошибка сети');
         const rth = await response.json();
-        tableth = rth.result;
-        console.log('Updated themes successfully');
-        refreshThemesBtns();
+
+        if (rth && rth.result) {
+            tableth = rth.result;
+            console.log('Updated themes successfully');
+            refreshThemesBtns();
+            return true; // Возвращаем успех
+        } else {
+            throw new Error('Некорректный формат данных');
+        }
     } catch (e) {
         console.error('Failed to fetch themes:', e);
+        return false; // Возвращаем ошибку
     }
 }
 
@@ -347,29 +356,39 @@ document.getElementById("search4Theme").addEventListener("input", function () {
 const refreshBtn = document.getElementById('getnewthdata');
 
 if (refreshBtn) {
-    refreshBtn.onclick = function () {
-        console.log('Запуск обновления тематик...');
+    refreshBtn.onclick = async function () {
+        const btn = this;
+        const originalHTML = btn.innerHTML; // Сохраняем "🔄 Обновить"
 
-        // 1. Скрываем кнопку "Назад"
+        // 1. Состояние "Загрузка"
+        btn.disabled = true; // Отключаем кнопку, чтобы не кликали дважды
+        btn.innerHTML = "⌛ Загрузка...";
+        btn.style.opacity = "0.7";
+
+        // Сброс интерфейса
         const backBtn = document.getElementById('backtomenu');
         if (backBtn) backBtn.style.display = 'none';
-
-        // 2. Очищаем поле поиска и результаты поиска
-        const searchInput = document.getElementById('search4Theme');
-        const foundField = document.getElementById('foundSubthemes');
-        if (searchInput) searchInput.value = "";
-        if (foundField) foundField.innerHTML = "";
-
-        // 3. Возвращаем темы в начальное состояние (показываем главные кнопки, скрываем страницы подтем)
         document.querySelectorAll('.theme-page').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.theme-main-btn').forEach(el => el.style.display = '');
 
-        // 4. Вызываем основную функцию загрузки данных
-        // Мы используем startThemes(), так как она заново проверяет адреса и дергает getTextThemes
-        startThemes();
+        // 2. Ждем выполнения загрузки
+        const isSuccess = await startThemes();
 
-        // Визуальный фидбек (опционально)
-        this.style.transform = 'rotate(360deg)';
-        setTimeout(() => this.style.transform = 'rotate(0deg)', 500);
+        // 3. Выводим результат
+        if (isSuccess) {
+            btn.innerHTML = "✅ Успешно";
+            btn.style.color = "#a6e3a1"; // Зеленый цвет
+        } else {
+            btn.innerHTML = "❌ Ошибка";
+            btn.style.color = "#f38ba8"; // Красный цвет
+        }
+
+        // 4. Через 3 секунды возвращаем всё как было
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.color = ""; // Сброс цвета к стандартному из CSS
+        }, 3000);
     };
 }
