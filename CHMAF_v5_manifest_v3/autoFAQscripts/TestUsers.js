@@ -21,7 +21,7 @@ const win_TestUsers = `
 // Инициализация окна (используем твою функцию createWindow)
 const TestUsersdiv = createWindow('TestUsers', 'winTopTestUsers', 'winLeftTestUsers', win_TestUsers);
 
-// --- 3. СКРИПТОВАЯ ЛОГИКА ---
+// --- 2. СКРИПТОВАЯ ЛОГИКА ---
 
 const btnsid = document.getElementById('sidcode');
 const btntid = document.getElementById('tidcode');
