@@ -2345,3 +2345,187 @@
 	#tableStats tbody tr:last-child td {
 		border-bottom: none !important;
 	}
+
+	/* Стили для блока Themes */
+	.af-theme-widget {
+		font-family: 'Inter', sans-serif;
+		background: #1e1e2e;
+		color: #cdd6f4;
+		width: 720px;
+		/* Увеличили ширину для двух колонок */
+		border-radius: 12px;
+		padding: 20px;
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+		border: 1px solid #313244;
+		box-sizing: border-box;
+	}
+
+	.af-main-layout {
+		display: flex;
+		gap: 15px;
+		margin-top: 15px;
+	}
+
+	.af-column {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		max-height: 65vh;
+		overflow-y: auto;
+		padding-right: 5px;
+	}
+
+	/* Стилизация скроллбара */
+	.af-column::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.af-column::-webkit-scrollbar-thumb {
+		background: #45475a;
+		border-radius: 10px;
+	}
+
+	.af-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 16px;
+	}
+
+	.af-header-btns {
+		display: flex;
+		gap: 8px;
+	}
+
+	.af-btn {
+		background: #313244;
+		color: #cdd6f4;
+		border: 1px solid #45475a;
+		border-radius: 6px;
+		padding: 6px 12px;
+		cursor: pointer;
+		transition: 0.2s;
+		font-size: 14px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.af-btn.primary {
+		background: #89b4fa;
+		color: #11111b;
+		border: none;
+		font-weight: 600;
+	}
+
+	.af-btn.primary:hover {
+		background: #b4befe;
+	}
+
+	.af-input {
+		width: 100%;
+		box-sizing: border-box;
+		background: #181825;
+		border: 1px solid #313244;
+		color: #cdd6f4;
+		padding: 10px;
+		border-radius: 8px;
+		margin-bottom: 10px;
+		outline: none;
+		font-size: 13px;
+	}
+
+	.af-section-title {
+		position: sticky;
+		top: 0;
+		z-index: 10;
+		text-align: center;
+		font-weight: 700;
+		padding: 8px;
+		border-radius: 8px;
+		margin-bottom: 12px;
+		text-transform: uppercase;
+		font-size: 12px;
+		letter-spacing: 1.5px;
+	}
+
+	.af-title-themes {
+		background: #f38ba8;
+		color: #11111b;
+	}
+
+	.af-title-tags {
+		background: #a6e3a1;
+		color: #11111b;
+	}
+
+	.af-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 8px;
+		width: 100%;
+	}
+
+	.af-item-btn {
+		background: #313244;
+		border: 1px solid #45475a;
+		color: #cdd6f4;
+		border-radius: 6px;
+		padding: 6px 4px;
+		cursor: pointer;
+		font-size: 13px;
+		/* Чуть уменьшили шрифт */
+		text-align: center;
+		transition: 0.2s;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.af-item-btn:hover {
+		background: #45475a;
+	}
+
+	.af-tag-row {
+		display: flex;
+		align-items: center;
+		background: #313244;
+		border: 1px solid #45475a;
+		border-radius: 6px;
+		padding: 2px;
+		/* Компактный отступ */
+	}
+
+	.af-tag-row .af-item-btn {
+		border: none;
+		background: transparent;
+		text-align: left;
+		padding: 4px;
+		font-size: 13px;
+		/* Еще компактнее для тегов */
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.af-checkbox {
+		margin: 0 4px;
+		cursor: pointer;
+		width: 14px;
+		height: 14px;
+		accent-color: #a6e3a1;
+		flex-shrink: 0;
+		/* Чтобы чекбокс не сжимался */
+	}
+
+	/* Сетка для ТЕМ */
+	.af-grid-themes {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 6px;
+	}
+
+	/* Сетка для ТЕГОВ — 2 колонки */
+	.af-grid-tags {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 6px;
+	}
