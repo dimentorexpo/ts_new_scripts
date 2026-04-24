@@ -55,6 +55,16 @@ var win_AFhelper = `
 
 const wintAF = createWindow('AF_helper', 'winTopAF', 'winLeftAF', win_AFhelper);
 
+// --- Применение масштаба при загрузке ---
+(function applyInitialScale() {
+    const savedScale = localStorage.getItem('AF_windowScale') || 100;
+    const target = document.getElementById('AF_helper') || document.getElementById('addTmpWrapper');
+    if (target) {
+        target.style.transformOrigin = 'top left';
+        target.style.transform = `scale(${savedScale / 100})`;
+    }
+})();
+
 // --- Вспомогательные функции ---
 
 // Современная функция замены текста с коллбеком форматирования

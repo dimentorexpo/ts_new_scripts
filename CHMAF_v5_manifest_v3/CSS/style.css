@@ -2681,7 +2681,8 @@
 		border-radius: 16px;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 		width: fit-content;
-		z-index: 9999;
+		z-index: 9999999;
+		cursor: grab;
 	}
 
 	.glass-row-testuser {

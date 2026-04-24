@@ -1,758 +1,540 @@
+/**
+ * Refactored Settings for ChMAF Extension
+ * Visual Style: Glassmorphism (Scoped)
+ */
+
 async function init_settings() {
-    const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
+    // --- Constants & Configuration ---
+    const DEFAULTS = {
+        extentiontheme: 'light',
+        defaclschatcolor: '#FF47CA',
+        answchatcolor: '#A0522D',
+        responschatcolor: '#DDA0DD',
+        splinter: 3,
+        audio: 1,
+        audiovol: 1,
+        hideTaskWindow: 1,
+        showquicktags: 0,
+        dblhidewindow: 0,
+        brnotificatios: 0,
+        clearlessoninfo: 0,
+        disablelpmwindow: 0,
+        AF_windowScale: 100,
+        afterLoginFunction: 'Online',
+        sound_str: 'https://grumstv.github.io/Sounds/msg.mp3'
+    };
 
-    // Присваиваем данные константам
-    const KC_addr = data.KC_addr;
-    const TP_addr = data.TP_addr;
-    const KC_addrRzrv = data.KC_addrRzrv;
-    const TP_addrRzrv = data.TP_addrRzrv;
+    const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']);
+    const ADDR = {
+        KC: data.KC_addr,
+        TP: data.TP_addr,
+        KC_Rzrv: data.KC_addrRzrv,
+        TP_Rzrv: data.TP_addrRzrv
+    };
 
-    // Универсальная функция для проверки и установки значений по умолчанию
-    function setDefaultValue(key, defaultValue) {
-        if (localStorage.getItem(key) == null) {
-            localStorage.setItem(key, defaultValue);
-        }
-    }
+    // --- Core Logic & State Management ---
+    const Settings = {
+        get: (key) => localStorage.getItem(key) ?? DEFAULTS[key],
+        set: (key, val) => localStorage.setItem(key, val),
 
-    // Светлая/темная тема
-    setDefaultValue('extentiontheme', 'light');
+        initDefaults() {
+            Object.entries(DEFAULTS).forEach(([key, val]) => {
+                if (localStorage.getItem(key) === null) this.set(key, val);
+            });
+            // Initialize global audio if not present
+            const savedVol = parseFloat(this.get('audiovol'));
+            if (typeof audio === 'undefined' || audio === null) {
+                audio = new Audio(this.get('sound_str'));
+            }
+            audio.volume = savedVol;
+        },
 
-    // Цвет заливки чата перед автозакрытием
-    setDefaultValue('defaclschatcolor', '#FF47CA');
 
-    // Цвет заливки чата только взятого в работу
-    setDefaultValue('answchatcolor', '#A0522D');
+    };
 
-    // Цвет заливки чата ожидающего ответа
-    setDefaultValue('responschatcolor', '#DDA0DD');
+    Settings.initDefaults();
 
-    // Для интервала воспроизведения звука
-    setDefaultValue('splinter', 3);
+    // --- UI Component (Scoped Glassmorphism Styles) ---
+    const injectStyles = () => {
+        if (document.getElementById('chmaf-settings-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'chmaf-settings-styles';
+        style.innerHTML = `
+            .set-glass-panel {
+                background: rgba(30, 32, 45, 0.8) !important;
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 20px;
+                color: #e0e0e0;
+                font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+                padding: 0 !important;
+                overflow: hidden;
+                z-index: 1000001;
+            }
+            .set-glass-header {
+                background: rgba(255, 255, 255, 0.07);
+                padding: 12px 18px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                cursor: grab;
+            }
+            .set-glass-content {
+                padding: 20px;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            .set-glass-content::-webkit-scrollbar { width: 6px; }
+            .set-glass-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
-    // Для переключателя вкл/выкл звук
-    setDefaultValue('audio', 1);
+            .set-group {
+                background: rgba(255, 255, 255, 0.04);
+                border-radius: 14px;
+                padding: 16px;
+                margin-bottom: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+            }
+            .set-row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 14px;
+                flex-wrap: nowrap;
+            }
+            .set-label {
+                color: #bbb;
+                font-size: 0.9em;
+                min-width: 140px;
+                flex-shrink: 0;
+            }
+            .set-btn {
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                color: #fff;
+                padding: 6px 14px;
+                border-radius: 10px;
+                cursor: pointer;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                font-size: 13px;
+                white-space: nowrap;
+            }
+            .set-btn:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-1.5px); border-color: rgba(255,255,255,0.2); }
+            .set-btn:active { transform: translateY(0.5px); }
+            .set-btn.active { background: #388e3c; border-color: #4caf50; }
 
-    // Громкость звука
-    setDefaultValue('audiovol', 1);
+            .set-input {
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 8px;
+                color: #fff;
+                padding: 6px 12px;
+                outline: none;
+                font-size: 13px;
+                transition: all 0.2s;
+            }
+            .set-input:focus { border-color: #7c4dff; background: rgba(0,0,0,0.5); }
 
-    // Для скрытия окна создания задач
-    setDefaultValue('hideTaskWindow', 1);
+            .set-select {
+                background: #1e202d;
+                color: #fff;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 8px;
+                padding: 6px;
+                font-size: 13px;
+                outline: none;
+            }
+            .set-slider {
+                flex-grow: 1;
+                accent-color: #7c4dff;
+                height: 4px;
+                cursor: pointer;
+            }
+            .set-dept-badge {
+                flex: 1;
+                font-size: 12px;
+                font-weight: 600;
+                text-align: center;
+                padding: 8px 4px;
+            }
+            .set-grid-colors {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+                width: 100%;
+            }
+            .set-color-wrap {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+                font-size: 11px;
+                color: #999;
+            }
+        `;
+        document.head.appendChild(style);
+    };
 
-    // Для отображения быстрых тэгов
-    setDefaultValue('showquicktags', 0);
-
-    // Для отключение скрытия окна по двойному клику
-    setDefaultValue('dblhidewindow', 0);
-
-    // Для отключения нотификация в браузер для будильника
-    setDefaultValue('brnotificatios', 0);
-
-    // Для отключения очистки окна LessonInfo
-    setDefaultValue('clearlessoninfo', 0);
-
-    // Для отключения инвертирования цвета системных значков
-    setDefaultValue('changesymtemicons', 0);
-
-    var win_Settings =  // описание элементов окна ссылок
-        `<span style="width: 500px">
-        <span style="cursor: -webkit-grab;">
-            <div style="margin: 5px; width: 500px;" id="settings_head">
-                <button title="Скрытие меню" id="hideMeSettings" class="mainButton buttonHide">hide</button>
+    const win_Settings = `
+        <div class="set-glass-panel" style="width: 540px" id="settings_container">
+            <div class="set-glass-header" id="settings_head">
+                <span style="font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 18px;">⚙</span> Настройки ChMAF
+                </span>
+                <button id="hideMeSettings" class="set-btn" style="padding: 4px 10px; font-size: 11px; opacity: 0.8;">hide</button>
             </div>
 
-            <div style="border: 2px double black; background-color: #464451" id="set_bar">
-                <div style="margin: 5px; width: 500px">
-                    <select class="${exttheme}" style="height:28px; width:140px; text-align:center" id="soundlistaddr">
-                        <option selected="" disabled="">Звук нового сообщения</option>
-                        <option value="othersound">Выбрать свой звук</option>
-                     </select>
-                    <button class="mainButton" title="Проверка звука при добавленной ссылке" id="sound_test">▶</button>
-                    <label title="Включение и отключение звука в АФ входящих запросов" class="checkbox-audio">
-                        <input id="audioswitcher" type="checkbox" checked="">
-                        <span class="checkbox-audio-switch"></span>
-                    </label>
-                    <br>
-                    <span style="color:bisque">Масштаб окна</span>
-                    <input type="range" id="scaleSliderAF" class="glass-slider" min="50" max="100" value="100" step="1" title="Масштаб окна">
-                    <span style="color:bisque">Громкость</span>
-                    <input id="range" min="0" max="1" value="1.0" step="0.025" type="range">
-                    <input class="${exttheme}" id="sound_adr" placeholder="Введи адрес звука" autocomplete="off" type="text" style="display: none; text-align: center; width: 210px;">
-                    <button class="mainButton" title="Сохраняет ссылки на новый источник звука для входящего запроса в АФ" id="sound_save" style="display: none">💾</button>
-                    <br>
-                    <span style="color:bisque">Интервал воспроизведения звука:</span>
-                    <input class="${exttheme}" title="Ввод интервала в секундах между повторами звука нового чата" id="soundplayinterval" placeholder="N" autocomplete="off" oninput="maxLengthCheck(this)" type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px; width: 50px;">
-                    <button class="mainButton" title="Внести изменения в интервал между повторами звука нового чата" id="setsoundplayinterval" style="margin-top: 5px">SET⌚</button>
-                    <br>
-                    <div class="onlyfortp">
-                        <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hidelpmwindow">Скрыть окно с У П</label>
-                        <label style="color:bisque; margin-left: 5px;" title="Добавить тэги в боковое меню"><input type="checkbox" id="showquicktags">Добавить тэги</label>
-                        <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="hideInnerTaskCreate">Скрыть окно АФ создании задачи</label>
-                        <br>
-                        <label style="color:bisque; margin-left: 5px;" title="Отключить зарытие окон при двойном нажатии на него. ПРИМЕНЯЕТСЯ ПОСЛЕ ОБНОВЛЕНИЯ СТРАНИЦЫ"><input type="checkbox" id="dblhidewindow">Не скрывать окно при doubleclick</label>
-                        <label style="color:bisque; margin-left: 5px;" title="Отключить Notifacations браузера при срабатывании будильника"><input type="checkbox" id="brnotificatios">Отключить Notification от будильника</label>
-                        <br>
-                        <label style="color:bisque; margin-left: 5px;"><input type="checkbox" id="clearlessoninfo">Отключить очистку окна LessonInfo при скрытии окна</label>
-                        <br>
-						<label style="color:bisque"> Автостатус при авторизации в AF</label>
-						<select style="height:28px; width:140px; text-align:center" id="defaultStatusAfterLogin">
-							<option value="Online" style="background: green;">Онлайн</option>
-							<option value="Busy" style="background: yellow;">Занят</option>
-							<option value="Offline" style="background: red;">Офлайн</option>
-						</select>
-						 <br>
-                    </div>
-                    <div>
-                        <div style="float: left;">
-                            <label style="color:bisque;"><input class="${exttheme}" type="color" id="aclstimepicker">Цвет заливки закрытия чата</label>
-                            <br>
-                            <label style="color:bisque;"><input class="${exttheme}" type="color" id="answtimepicker">Цвет заливки нового чата</label>
-                            <br>
-                            <label style="color:bisque;"><input class="${exttheme}" type="color" id="responstimepicker">Цвет заливки неотвеченного чата</label>
-                            <br>
-                        </div>
-
-                        <div style="float: left; margin-left: 20px; max-width: 200px;">
-                            <label style="color:bisque;">Выбор темы расширения</label>
-                            <button class="mainButton" style="width:30px;" id="chagethemeextention" title="Переключение на светлую ☀ или темную 🌛 тему. Требуется перезагрузка страницы"></button>
-                            <label style="color:bisque; margin-left: 5px;" title="Включите при использовании DarkReader или других способах сменить тему AF на темную" disabled><input type="checkbox" id="changesymtemicons">Отключить инвертирование системных значков</label>
-                        </div>
+            <div class="set-glass-content">
+                <!-- Аудио и Масштаб -->
+                <div class="set-group">
+                    <div class="set-row">
+                        <select id="soundlistaddr" class="set-select" style="width: 190px; text-align:center;">
+                            <option selected disabled>Звук уведомления</option>
+                            <option value="othersound">Свой звук...</option>
+                        </select>
+                        <button class="set-btn" id="sound_test" title="Проверить">▶</button>
+                        <label class="checkbox-audio" style="margin-left: auto;">
+                            <input id="audioswitcher" type="checkbox">
+                            <span class="checkbox-audio-switch"></span>
+                        </label>
                     </div>
 
-                <div style="margin-top: 5px; width: 500px; clear: both;">
-                    <span style="color:bisque;">Выберите отдел:</span>
-                    <button class="mainButton" id="set_TPrezerv" title="Нажмите если вы из ТП и в АФ не работает Базы Знаний" style="margin-top: 5px">ТП рез</button>
-                    <button class="mainButton" id="set_TP" title="Нажмите если вы из ТП" style="margin-top: 5px">ТП</button>
-                    <button class="mainButton" id="set_KC" title="Нажмите если вы из КЦ" style="margin-top: 5px">КЦ</button>
-                    <button class="mainButton" id="set_KCrezerv" title="Нажмите если вы из КЦ и в АФ не работает Базы Знаний" style="margin-top: 5px">КЦ рез</button>
-                    <br>
+                    <div class="set-row" id="custom_sound_row" style="display: none;">
+                        <input class="set-input" id="sound_adr" placeholder="URL звука" style="width: 100%;">
+                        <button class="set-btn" id="sound_save">💾</button>
+                    </div>
+
+                    <div class="set-row">
+                        <span class="set-label">Громкость</span>
+                        <input id="range" type="range" class="set-slider" min="0" max="1" step="0.05">
+                    </div>
+
+                    <div class="set-row">
+                        <span class="set-label">Масштаб окна</span>
+                        <input id="scaleSliderAF" type="range" class="set-slider" min="50" max="100" step="1">
+                        <span id="scale_val" style="min-width: 40px; text-align: right; font-size: 12px; font-family: monospace;">100%</span>
+                    </div>
+
+                    <div class="set-row">
+                        <span class="set-label">Интервал звука (сек)</span>
+                        <input class="set-input" id="soundplayinterval" type="number" style="width: 65px; text-align: center;">
+                        <button class="set-btn" id="setsoundplayinterval">SET⌚</button>
+                    </div>
                 </div>
-                <div class="onlyfortp">
-                    <input class="${exttheme}" id="test_std" placeholder="ID тест У" autocomplete="off" title = "ID личного тестового ученика" type="text" style="text-align: center; width: 100px;">
-                    <button class="mainButton" id="setteststd" title="Добавить в localstorage ID тестового У" style="margin-top: 5px">💾</button>
-                    <input class="${exttheme}" id="test_teach" placeholder="ID тест П" autocomplete="off" title = "ID личного тестового преподавателя" type="text" style="text-align: center; width: 100px;">
-                    <button class="mainButton" id="settestteach" title="Добавить в localstorage ID тестового П" style="margin-top: 5px">💾</button>
+
+                <!-- Темы и Цвета -->
+                <div class="set-group">
+
+                    <div class="set-row" style="margin-top: 10px;">
+                        <div class="set-grid-colors">
+                            <div class="set-color-wrap">
+                                <input type="color" id="aclstimepicker" class="set-input" style="padding:0; width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,0.1); cursor:pointer;">
+                                <span>Закрытие</span>
+                            </div>
+                            <div class="set-color-wrap">
+                                <input type="color" id="answtimepicker" class="set-input" style="padding:0; width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,0.1); cursor:pointer;">
+                                <span>Новый</span>
+                            </div>
+                            <div class="set-color-wrap">
+                                <input type="color" id="responstimepicker" class="set-input" style="padding:0; width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,0.1); cursor:pointer;">
+                                <span>Ожидание</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="set-row" style="margin-top: 5px;">
+                         <span class="set-label">Статус при входе</span>
+                         <select id="defaultStatusAfterLogin" class="set-select" style="flex: 1; text-align:center;">
+                            <option value="Online">🟢 Онлайн</option>
+                            <option value="Busy">🟡 Занят</option>
+                            <option value="Offline">🔴 Офлайн</option>
+                        </select>
+                    </div>
                 </div>
-                    <button class="mainButton" id="savesettingstofile" title="Сохраняет все настройки из localstorage в отдельный .json файл" style="color: #e5ece6; margin-top: 5px">💾 Сохранить настройки</button>
-                    <input type="file" id="fileinput" title="Загружает все настройки в localstorage из ранее сохраненного файла настроек в формте .json" style="display:none;">
-                    <label style="color: #e5ece6; background: #768d87; padding: 5px; border-radius: 5px; border: 1px solid #566963;" for="fileinput">⤵ Загрузить настройки</label>
+
+                <!-- Функционал (Checkbox list) -->
+                <div class="set-group onlyfortp">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85em; color: #ccc;">
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="hidelpmwindow"> Скрыть окно Л П МВУ</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="showquicktags"> Быстрые тэги в меню</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="hideInnerTaskCreate"> Скрыть окно задач</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="dblhidewindow"> Отключить dblclick hide</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="brnotificatios"> Отключить Notifications</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="clearlessoninfo"> Не очищать LessonInfo</label>
+                    </div>
+                </div>
+
+                <!-- Отделы и Тестовые ID -->
+                <div class="set-group">
+                    <div class="set-row">
+                        <button class="set-btn set-dept-badge" id="set_TP">ТП</button>
+                        <button class="set-btn set-dept-badge" id="set_TPrezerv">ТП рез</button>
+                        <button class="set-btn set-dept-badge" id="set_KC">КЦ</button>
+                        <button class="set-btn set-dept-badge" id="set_KCrezerv">КЦ рез</button>
+                    </div>
+                    <div class="set-row onlyfortp" style="margin-top: 10px;">
+                        <div style="display: grid; grid-template-columns: 1fr 40px 1fr 40px; gap: 8px; width: 100%; align-items: center;">
+                            <input class="set-input" id="test_std" placeholder="ID Ученика" style="width: 100%; box-sizing: border-box; text-align:center;">
+                            <button class="set-btn" id="setteststd" style="padding: 6px 0; width: 100%;">💾</button>
+                            <input class="set-input" id="test_teach" placeholder="ID Препода" style="width: 100%; box-sizing: border-box; text-align:center;">
+                            <button class="set-btn" id="settestteach" style="padding: 6px 0; width: 100%;">💾</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup -->
+                <div class="set-row" style="justify-content: center; gap: 20px; margin-top: 10px; margin-bottom: 0;">
+                    <button class="set-btn" id="savesettingstofile" style="background: rgba(124, 77, 255, 0.15); border-color: rgba(124, 77, 255, 0.3);">💾 Экспорт</button>
+                    <label class="set-btn" for="fileinput" style="background: rgba(255, 255, 255, 0.05);">⤵ Импорт</label>
+                    <input type="file" id="fileinput" style="display:none;">
                 </div>
             </div>
-        </span>
-</span>`;
+        </div>
+    `;
 
-    const wintStataAF = createWindow('AF_Settings', 'winTopSettings', 'winLeftSettings', win_Settings);
+    injectStyles();
+    createWindow('AF_Settings', 'winTopSettings', 'winLeftSettings', win_Settings);
     hideWindowOnDoubleClick('AF_Settings');
     hideWindowOnClick('AF_Settings', 'hideMeSettings');
 
-    function ShowMustGoOn() { //функция вносит в локалсторедж адрес скрипта с гугл таблиц шаблонов для КЦ
-        localStorage.setItem('scriptAdr', KC_addr)
-        location.reload()
-    }
-
-    function AFthePieceofShitKC() { //функция вносит в локалсторедж адрес скрипта с гугл таблиц шаблонов для КЦ
-        localStorage.setItem('scriptAdr', KC_addrRzrv)
-        location.reload()
-    }
-
-    function WeAreTheChempions() { //функция вносит в локалсторедж адрес скрипта с гугл таблиц шаблонов для ТП
-        localStorage.setItem('scriptAdr', TP_addr)
-        localStorage.setItem('tpflag', 'ТП')
-        location.reload()
-    }
-
-    function AFthePieceofShit() { //функция вносит в локалсторедж адрес скрипта с гугл таблиц шаблонов для ТП резервных тестовых
-        localStorage.setItem('scriptAdr', TP_addrRzrv)
-        localStorage.setItem('tpflag', 'ТП')
-        location.reload()
-    }
-
-    function getLocalstorageToFile(fileName) { //функция сохранения содержимого localstorage в файл на компьютере
-
-        /* dump local storage to string */
-
-        var a = {};
-        for (var i = 0; i < localStorage.length; i++) {
-            var k = localStorage.key(i);
-            var v = localStorage.getItem(k);
-            a[k] = v;
-        }
-
-        /* save as blob */
-
-        var textToSave = JSON.stringify(a)
-        var textToSaveAsBlob = new Blob([textToSave], {
-            type: "application/json"
-        });
-        var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
-
-        /* download without button hack */
-
-        var downloadLink = document.createElement("a");
-        downloadLink.download = fileName;
-        downloadLink.innerHTML = "Download File";
-        downloadLink.href = textToSaveAsURL;
-        downloadLink.onclick = function () {
-            document.body.removeChild(event.target);
+    // --- Helpers ---
+    const bindToggle = (id, key, cb) => {
+        const el = document.getElementById(id);
+        el.checked = Settings.get(key) == 1;
+        el.onclick = () => {
+            const val = el.checked ? 1 : 0;
+            Settings.set(key, val);
+            cb?.(val);
         };
-        downloadLink.style.display = "none";
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-    }
+        cb?.(el.checked ? 1 : 0);
+    };
 
-    function changesoundaddr() { //функция изменения адреса звука
-        let objSoundList = document.getElementById('soundlistaddr');
+    const bindInput = (id, key) => {
+        const el = document.getElementById(id);
+        el.value = Settings.get(key);
+        el.onchange = () => Settings.set(key, el.value);
+    };
 
-        if (objSoundList.length > 1) {
-            for (let i = 1; i < objSoundList.length; i++) {
-                if (objSoundList[i].selected == true) {
-                    if (objSoundList[i].value == "othersound") {
-                        document.getElementById('sound_adr').style.display = '';
-                        document.getElementById('sound_save').style.display = '';
-                    } else {
-                        document.getElementById('sound_adr').style.display = 'none';
-                        document.getElementById('sound_save').style.display = 'none';
-                        document.getElementById('sound_adr').value = "";
-                        localStorage.setItem('sound_str', objSoundList[i].value);
-                        audio = new Audio(localStorage.getItem('sound_str'));
-                    }
-                }
-            }
+    // --- Initialization & Event Listeners ---
+    const ui = {
+        btnSetting: document.getElementById('setting'),
+        win: document.getElementById('AF_Settings'),
+        soundList: document.getElementById('soundlistaddr'),
+        statusList: document.getElementById('defaultStatusAfterLogin'),
+        scaleSlider: document.getElementById('scaleSliderAF'),
+        scaleVal: document.getElementById('scale_val'),
+
+    };
+
+    // --- Scale Logic (Global for init) ---
+    const applyScale = (val, isInit = false) => {
+        const target = document.getElementById('AF_helper') || document.getElementById('addTmpWrapper');
+        if (target) {
+            target.style.transformOrigin = 'top left';
+            target.style.transform = `scale(${val / 100})`;
+            if (!isInit) target.style.transition = 'transform 0.15s ease-out';
         }
-    }
+        const scaleValEl = document.getElementById('scale_val');
+        if (scaleValEl) scaleValEl.innerText = `${val}%`;
+    };
 
-    function changeAutoStatus() { //функция изменения статуса в АФ по умолчанию
-        let objStatusList = document.getElementById('defaultStatusAfterLogin');
+    // Apply scale immediately on load
+    setTimeout(() => applyScale(Settings.get('AF_windowScale'), true), 100);
 
-        if (objStatusList.length > 1) {
-            for (let i = 0; i < objStatusList.length; i++) {
-                if (objStatusList[i].selected == true) {
-                    localStorage.setItem('afterLoginFunction', objStatusList[i].value)
-                    console.log(localStorage.getItem('afterLoginFunction'))
-                    switch (objStatusList[i].value) {
-                        case "Offline":
-                            objStatusList.style = "background:red; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-                            break;
-                        case "Busy":
-                            objStatusList.style = "background:yellow; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-                            break;
-                        default:
-                            objStatusList.style = "background:green; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-                            break;
-                    }
+    ui.btnSetting.onclick = () => {
+        ui.win.style.display = ui.win.style.display === 'none' ? '' : 'none';
+        if (ui.win.style.display === 'none') return;
 
-                }
+        // Sync UI
+        bindInput('aclstimepicker', 'defaclschatcolor');
+        bindInput('answtimepicker', 'answchatcolor');
+        bindInput('responstimepicker', 'responschatcolor');
+        bindInput('test_std', 'test_stud');
+        bindInput('test_teach', 'test_teach');
+        bindInput('soundplayinterval', 'splinter');
+
+        bindToggle('hideInnerTaskCreate', 'hideTaskWindow');
+        bindToggle('showquicktags', 'showquicktags');
+        bindToggle('dblhidewindow', 'dblhidewindow');
+        bindToggle('brnotificatios', 'brnotificatios');
+        bindToggle('clearlessoninfo', 'clearlessoninfo');
+
+        bindToggle('hidelpmwindow', 'disablelpmwindow', (v) => {
+            const lpm = document.getElementById('TestUsers');
+            if (lpm) lpm.style.display = v == 1 ? 'none' : '';
+        });
+
+        bindToggle('audioswitcher', 'audio', (v) => {
+            if (v == 0 && typeof soundintervalset !== 'undefined') {
+                clearInterval(soundintervalset);
+                soundintervalset = null;
             }
-        }
+        });
 
-    }
+        // Volume
+        const range = document.getElementById('range');
+        range.value = Settings.get('audiovol');
+        range.oninput = () => {
+            Settings.set('audiovol', range.value);
+            if (typeof audio !== 'undefined' && audio) audio.volume = range.value;
+        };
 
-    document.getElementById('soundlistaddr').addEventListener('change', changesoundaddr); // функция запоминания выбранного нового звука
-    document.getElementById('defaultStatusAfterLogin').addEventListener('change', changeAutoStatus); // функция запоминания дефолтного статуса при его смене
+        // Scale Sync
+        const scaleVal = Settings.get('AF_windowScale');
+        ui.scaleSlider.value = scaleVal;
+        ui.scaleVal.innerText = `${scaleVal}%`;
 
-    function paintstatus() { //функция перекрашивания статуса оператора онлайн зеленый, занят желтый, офлайн и перерыв красные
-        const statusElem = document.querySelectorAll('.user_menu-status-name')[1];
-        const buttonElems = document.querySelectorAll('.ant-btn');
-        if (!statusElem) {
-            return;
-        }
+        ui.scaleSlider.oninput = () => applyScale(ui.scaleSlider.value);
+        ui.scaleSlider.onchange = () => Settings.set('AF_windowScale', ui.scaleSlider.value);
 
-        let color;
-        let text;
-        switch (statusElem.textContent) {
-            case "Офлайн":
-                color = "red";
-                text = "Офлайн";
-                break;
-            case "Перерыв":
-                color = "red";
-                text = "Перерыв";
-                break;
-            case "Онлайн":
-                color = "green";
-                text = "Онлайн";
-                break;
-            case "Занят":
-                color = "yellow";
-                text = "Занят";
-                break;
-        }
+        // Status
+        ui.statusList.value = Settings.get('afterLoginFunction');
+        ui.statusList.onchange = () => {
+            Settings.set('afterLoginFunction', ui.statusList.value);
+            const colors = { Online: '#388e3c', Busy: '#fbc02d', Offline: '#d32f2f' };
+            ui.statusList.style.background = colors[ui.statusList.value];
+        };
+        ui.statusList.dispatchEvent(new Event('change'));
 
-        if (color) {
-            let style = `background: ${color}; color: white; font-weight: 700`;
-            if (color === "yellow") {
-                style += "; color: black";
-            }
-            statusElem.style = style;
+        // TP/KC visibility
+        const isTP = (opsection === 'ТП' || opsection === 'ТП ОС');
+        document.querySelectorAll('.onlyfortp').forEach(el => el.style.display = isTP ? '' : 'none');
 
-            let buttonElem;
-            if (document.URL === "https://skyeng.autofaq.ai/tickets/archive") {
-                buttonElem = buttonElems[5];
-            } else {
-                buttonElem = buttonElems[4];
-            }
+        // Active department highlight
+        const activeAddr = localStorage.getItem('scriptAdr');
+        const deptMap = { [ADDR.TP]: 'set_TP', [ADDR.TP_Rzrv]: 'set_TPrezerv', [ADDR.KC]: 'set_KC', [ADDR.KC_Rzrv]: 'set_KCrezerv' };
+        if (deptMap[activeAddr]) document.getElementById(deptMap[activeAddr]).classList.add('active');
+    };
 
-            if (buttonElem && buttonElem.textContent === text) {
-                buttonElem.style.background = color;
-            }
-        }
-    }
-
-    // Блок настроек и взаимодействия с ними
-
-    const soundTestBtn = document.getElementById('sound_test');
-
-    soundTestBtn.onclick = function () { // кнопка тест звука
-        const isPlaying = soundTestBtn.innerHTML == '▶';
-        soundTestBtn.innerHTML = isPlaying ? '⏹' : '▶';
-        soundTestBtn.title = isPlaying ? 'Остановить воспроизведение' : 'Проверка звука при добавленной ссылке';
-        if (isPlaying) {
-            audio.play();
-            setTimeout(() => {
-                soundTestBtn.innerHTML = '▶';
-                soundTestBtn.title = 'Проверка звука при добавленной ссылке';
-            }, Number(audio.duration * 1000 + 1).toFixed(0));
+    // --- Audio Logic ---
+    ui.soundList.onchange = () => {
+        const val = ui.soundList.value;
+        const row = document.getElementById('custom_sound_row');
+        if (val === 'othersound') {
+            row.style.display = 'flex';
         } else {
+            row.style.display = 'none';
+            Settings.set('sound_str', val);
+            audio = new Audio(val);
+            audio.volume = parseFloat(Settings.get('audiovol'));
+        }
+    };
+
+    document.getElementById('sound_test').onclick = function () {
+        const isPlay = this.innerText === '▶';
+        this.innerText = isPlay ? '⏹' : '▶';
+        if (isPlay && typeof audio !== 'undefined' && audio) {
+            audio.play().catch(e => console.error('Audio play error:', e));
+            setTimeout(() => { if (this.innerText === '⏹') this.innerText = '▶'; }, (audio.duration || 2) * 1000);
+        } else if (typeof audio !== 'undefined' && audio) {
             audio.pause();
             audio.currentTime = 0;
         }
-    }
+    };
 
-    // Универсальная функция для установки и отображения цвета
-    function setupColorPicker(elementId, localStorageKey, defaultColor) {
-        const element = document.getElementById(elementId);
-        const savedColor = localStorage.getItem(localStorageKey) || defaultColor;
+    document.getElementById('sound_save').onclick = () => {
+        const url = document.getElementById('sound_adr').value;
+        if (!url) return;
+        Settings.set('sound_str', url);
+        audio = new Audio(url);
+        audio.volume = parseFloat(Settings.get('audiovol'));
+        document.getElementById('sound_save').innerText = '✅';
+        setTimeout(() => document.getElementById('sound_save').innerText = '💾', 2000);
+    };
 
-        localStorage.setItem(localStorageKey, savedColor);
-        element.value = savedColor;
-
-        element.onchange = function () {
-            localStorage.setItem(localStorageKey, this.value);
-        };
-
-        element.ondblclick = function () {
-            localStorage.setItem(localStorageKey, defaultColor);
-            element.value = defaultColor;
-        };
-    }
-
-    // Универсальная функция для установки значений input
-    function setupInputValue(elementId, localStorageKey, defaultValue = '') {
-        const element = document.getElementById(elementId);
-        const savedValue = localStorage.getItem(localStorageKey) || defaultValue;
-        element.value = savedValue;
-    }
-
-    // Настройка темы интерфейса
-    function setupThemeButton(buttonId, localStorageKey) {
-        const button = document.getElementById(buttonId);
-
-        // Функция для обновления иконки кнопки
-        const updateButtonIcon = (theme) => {
-            button.innerHTML = theme === 'light' ? '☀' : '🌛';
-        };
-
-        // Функция для смены классов элементов и обновления переменных
-        const updateElementClasses = (newTheme) => {
-            // Определяем новые классы в зависимости от темы
-            const newClass = newTheme === 'dark' ? 'darkinputs' : 'lightinputs';
-            const newSelectClass = newTheme === 'dark' ? 'darkopts' : 'lightopts';
-            selectedinpth = newTheme === 'dark' ? 'calendarmyinputsdark' : 'calendarmyinputslight';
-            otherinpth = newTheme === 'dark' ? 'othercalendardark' : 'othercalendarlight';
-
-            // Меняем класс для элементов с классом exttheme
-            const inputElements = document.querySelectorAll(`.${exttheme}`);
-            inputElements.forEach(element => {
-                if (element.id !== 'iduserinfo') {
-                    element.classList.remove(exttheme);
-                    element.classList.add(newClass);
+    // Load Sounds
+    if (ui.soundList.length < 3) {
+        try {
+            const resp = await fetch('https://script.google.com/macros/s/AKfycbyD1l-oLcE-BBmyN1QmcHKoi0rwVfCwWjE6cfTqw6Y9QQGAju-9inKbwSOfHCI6qBEjtg/exec');
+            const data = await resp.json();
+            data.result.forEach(s => {
+                if (s[0]) {
+                    const opt = new Option(s[0], s[1]);
+                    ui.soundList.add(opt);
+                    if (s[1] === Settings.get('sound_str')) opt.selected = true;
                 }
             });
+        } catch (e) { console.error('Failed to load sounds', e); }
+    }
 
-            // Меняем класс для элементов с классом selecttheme
-            const selectElements = document.querySelectorAll(`.${selecttheme}`);
-            selectElements.forEach(element => {
-                element.classList.remove(selecttheme);
-                element.classList.add(newSelectClass);
-            });
+    // --- Save IDs ---
+    document.getElementById('setteststd').onclick = () => {
+        Settings.set('test_stud', document.getElementById('test_std').value);
+        document.getElementById('setteststd').innerText = '✅';
+        setTimeout(() => document.getElementById('setteststd').innerText = '💾', 2000);
+    };
+    document.getElementById('settestteach').onclick = () => {
+        Settings.set('test_teach', document.getElementById('test_teach').value);
+        document.getElementById('settestteach').innerText = '✅';
+        setTimeout(() => document.getElementById('settestteach').innerText = '💾', 2000);
+    };
 
-            // Обновляем классы элементов с selectedinpth
-            document.querySelectorAll('.calendarmyinputslight, .calendarmyinputsdark').forEach(element => {
-                element.classList.remove('calendarmyinputslight', 'calendarmyinputsdark');
-                element.classList.add(selectedinpth);
-            });
+    // --- Department Switchers ---
+    const setDept = (addr, isTP) => {
+        localStorage.setItem('scriptAdr', addr);
+        if (isTP) localStorage.setItem('tpflag', 'ТП');
+        else localStorage.removeItem('tpflag');
+        location.reload();
+    };
 
-            // Обновляем классы элементов с otherinpth
-            document.querySelectorAll('.othercalendarlight, .othercalendardark').forEach(element => {
-                element.classList.remove('othercalendarlight', 'othercalendardark');
-                element.classList.add(otherinpth);
-            });
+    document.getElementById('set_KC').onclick = () => setDept(ADDR.KC, false);
+    document.getElementById('set_KCrezerv').onclick = () => setDept(ADDR.KC_Rzrv, false);
+    document.getElementById('set_TP').onclick = () => setDept(ADDR.TP, true);
+    document.getElementById('set_TPrezerv').onclick = () => setDept(ADDR.TP_Rzrv, true);
 
-            // Выполняем инверсию иконок календаря в зависимости от темы
-            if (newTheme === 'dark') {
-                applyCalendarIconInversion();
-            } else {
-                removeCalendarIconInversion();
-            }
-
-            // Обновляем глобальные переменные текущей темы
-            exttheme = newClass;
-            selecttheme = newSelectClass;
-        };
-
-        // Устанавливаем текущую тему из localStorage
-        let currentTheme = localStorage.getItem(localStorageKey) || 'light';
-        exttheme = currentTheme === 'dark' ? 'darkinputs' : 'lightinputs';
-        selecttheme = currentTheme === 'dark' ? 'darkopts' : 'lightopts';
-        selectedinpth = currentTheme === 'dark' ? 'calendarmyinputsdark' : 'calendarmyinputslight';
-        otherinpth = currentTheme === 'dark' ? 'othercalendardark' : 'othercalendarlight';
-
-        // Изначально применяем инверсию или удаляем её в зависимости от текущей темы
-        if (currentTheme === 'dark') {
-            applyCalendarIconInversion();
-        } else {
-            removeCalendarIconInversion();
+    // --- Backup Logic ---
+    document.getElementById('savesettingstofile').onclick = () => {
+        const data = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            data[k] = localStorage.getItem(k);
         }
+        const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `chmaf_settings_${new Date().toISOString().slice(0, 10)}.json`;
+        link.click();
+    };
 
-        updateButtonIcon(currentTheme);
-
-        // Обработчик клика для смены темы
-        button.onclick = function () {
-            currentTheme = localStorage.getItem(localStorageKey) || 'light';
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
-            localStorage.setItem(localStorageKey, newTheme);
-            updateButtonIcon(newTheme);
-            updateElementClasses(newTheme);
+    document.getElementById('fileinput').onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const json = JSON.parse(ev.target.result);
+                Object.entries(json).forEach(([k, v]) => localStorage.setItem(k, v));
+                createAndShowButton?.('Настройки загружены! Перезагрузка...', 'message');
+                setTimeout(() => location.reload(), 1500);
+            } catch (err) { alert('Ошибка формата файла'); }
         };
-    }
+        reader.readAsText(file);
+    };
 
-    // Универсальная функция для настройки чекбоксов
-    function setupCheckbox(checkboxId, localStorageKey, callback = () => { }) {
-        const checkbox = document.getElementById(checkboxId);
-        const savedValue = localStorage.getItem(localStorageKey) || '0';
+    // --- Status Painting ---
+    const paintStatus = () => {
+        const statusElem = document.querySelectorAll('.user_menu-status-name')[1];
+        if (!statusElem) return;
 
-        checkbox.checked = savedValue === '1';
-
-        checkbox.onclick = function () {
-            const isChecked = checkbox.checked ? '1' : '0';
-            localStorage.setItem(localStorageKey, isChecked);
-            callback(isChecked);
-        };
-        callback(savedValue);
-    }
-
-    // Настройка громкости
-    function setupRange(rangeId, localStorageKey, defaultValue = 1, callback = () => { }) {
-        const range = document.getElementById(rangeId);
-        const savedValue = localStorage.getItem(localStorageKey) || defaultValue;
-
-        range.value = savedValue;
-        callback(savedValue);
-
-        range.onchange = function () {
-            const newValue = this.value;
-            localStorage.setItem(localStorageKey, newValue);
-            callback(newValue);
-        };
-    }
-
-    document.getElementById('setting').onclick = function () { // открывает параметры
-        if (document.getElementById('AF_Settings').style.display == '')
-            document.getElementById('AF_Settings').style.display = 'none'
-        else {
-            document.getElementById('AF_Settings').style.display = ''
-
-            setupColorPicker('aclstimepicker', 'defaclschatcolor', '#FF47CA');
-            setupColorPicker('answtimepicker', 'answchatcolor', '#A0522D');
-            setupColorPicker('responstimepicker', 'responschatcolor', '#DDA0DD');
-
-            setupInputValue('test_std', 'test_stud');
-            setupInputValue('test_teach', 'test_teach');
-            setupInputValue('soundplayinterval', 'splinter', 3);
-            setupThemeButton('chagethemeextention', 'extentiontheme');
-
-            // Настройка чекбокса для скрытия окна задач
-            setupCheckbox('hideInnerTaskCreate', 'hideTaskWindow');
-
-            // Настройка чекбокса для отображения/скрытия дополнительных тэгов
-            setupCheckbox('showquicktags', 'showquicktags');
-
-            // Настройка чекбокса для отключение скрытия окна по двойному клику
-            setupCheckbox('dblhidewindow', 'dblhidewindow');
-
-            // Настройка чекбокса для отключения нотификация в браузер для будильника
-            setupCheckbox('brnotificatios', 'brnotificatios');
-
-            // Настройка чекбокса для отключения очистки окна LessonInfo
-            setupCheckbox('clearlessoninfo', 'clearlessoninfo');
-
-            // Настройка чекбокса для отключения инвертирования цвета системных значков
-            setupCheckbox('changesymtemicons', 'changesymtemicons', (value) => {
-                const button = document.getElementById('chagethemeextention');
-                const checkbox = document.getElementById('changesymtemicons');
-
-                // Функция для обновления состояния атрибута disabled
-                const updateCheckboxState = () => {
-                    if (button.innerHTML === '☀') {
-                        checkbox.setAttribute('disabled', 'disabled');
-                    } else {
-                        checkbox.removeAttribute('disabled');
-                    }
-                };
-
-                // Изначально обновляем состояние чекбокса
-                updateCheckboxState();
-
-                // Перехватываем обновление темы
-                const originalButtonClickHandler = button.onclick;
-                button.onclick = function () {
-                    if (originalButtonClickHandler) originalButtonClickHandler();
-                    updateCheckboxState(); // Обновляем состояние чекбокса после клика на кнопку
-                    checkcalendaricon();
-                };
-            });
-
-            // Настройка чекбокса для скрытия окна Л П МВУ
-            setupCheckbox('hidelpmwindow', 'disablelpmwindow', (isChecked) => {
-                document.getElementById('TestUsers').style.display = isChecked === '1' ? 'none' : '';
-            });
-
-            // Настройка громкости звука
-            setupRange('range', 'audiovol', 1, (volume) => {
-                audio.volume = volume;
-            });
-
-            // Настройка переключателя звука
-            setupCheckbox('audioswitcher', 'audio', (isChecked) => {
-                if (isChecked === '1') {
-                    // Логика для включенного звука
-                    console.log("Звук включен");
-                } else {
-                    // Логика для выключенного звука
-                    if (typeof soundintervalset !== 'undefined' && soundintervalset !== null) {
-                        clearInterval(soundintervalset);
-                        soundintervalset = null;
-                    }
-                    console.log("Звук выключен");
-                }
-            });
-
-            // Сохранение ID тестового ученика
-            document.getElementById('setteststd').onclick = function () {
-                const value = document.getElementById('test_std').value;
-                if (value) {
-                    localStorage.setItem('test_stud', value);
-                } else {
-                    console.log("Введите ID тестового ученика");
-                }
-            };
-
-            // Сохранение ID тестового преподавателя
-            document.getElementById('settestteach').onclick = function () {
-                const value = document.getElementById('test_teach').value;
-                if (value) {
-                    localStorage.setItem('test_teach', value);
-                } else {
-                    console.log("Введите ID тестового преподавателя");
-                }
-            };
-
-            // скрываем от других отделов возможность включать расширение с ТП  плююшками и шаблонами
-
-            let needtohide = document.getElementsByClassName('onlyfortp');
-
-            if (opsection !== 'ТП' && opsection !== 'ТП ОС') {
-                for (i = 0; i < needtohide.length; i++) {
-                    needtohide[i].style.display = 'none'
-                }
-            } else {
-                for (i = 0; i < needtohide.length; i++) {
-                    needtohide[i].style.display = ''
-                }
-            }
-
-            switch (localStorage.getItem('scriptAdr')) {
-                case TP_addr:
-                    document.getElementById('set_TP').style.background = 'green';
-                    break;
-                case TP_addrRzrv:
-                    document.getElementById('set_TPrezerv').style.background = 'green';
-                    break;
-                case KC_addr:
-                    document.getElementById('set_KC').style.background = 'green';
-                    break;
-                case KC_addrRzrv:
-                    document.getElementById('set_KCrezerv').style.background = 'green';
-                    break;
-                default:
-                    break;
-            }
-            //
-
-            let objSoundList = document.getElementById('soundlistaddr')
-            let soundsfromdoc;
-            let soundsconteiner;
-
-            async function getsoundsfromdoc() { // загрузка списка звуков из файла
-                const soundsfromdoc = 'https://script.google.com/macros/s/AKfycbyD1l-oLcE-BBmyN1QmcHKoi0rwVfCwWjE6cfTqw6Y9QQGAju-9inKbwSOfHCI6qBEjtg/exec';
-                const response = await fetch(soundsfromdoc);
-                const soundsdata = await response.json();
-                const soundsconteiner = soundsdata.result;
-                soundsconteiner.forEach((sound) => {
-                    if (sound[0] !== '') {
-                        addOption(objSoundList, `${sound[0]}`, `${sound[1]}`)
-                    }
-                });
-                Array.prototype.forEach.call(objSoundList.children, (option) => { // проверяем какой звук выбран
-                    if (option.value === localStorage.getItem('sound_str')) {
-                        option.selected = true;
-                    }
-                });
-                if (objSoundList.children[0].selected) {
-                    objSoundList.children[1].selected = true;
-                    document.getElementById('sound_adr').style.display = '';
-                    document.getElementById('sound_save').style.display = '';
-                    document.getElementById('sound_adr').value = localStorage.getItem('sound_str');
-                }
-            }
-
-            if (objSoundList.length < 3) {
-                getsoundsfromdoc()
-            }
-
-            //Для автостатуса меняем настройку сверяя с сохраненной в localstorage
-            let objStatusListMain = document.getElementById('defaultStatusAfterLogin');
-
-            Array.prototype.forEach.call(objStatusListMain.children, (option) => { // проверяем какой статус выбран
-                if (option.value === localStorage.getItem('afterLoginFunction')) {
-                    option.selected = true;
-
-                    switch (option.value) {
-                        case "Offline":
-                            objStatusListMain.style = "background:red; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-                            break;
-                        case "Busy":
-                            objStatusListMain.style = "background:yellow; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-                            break;
-                        default:
-                            objStatusListMain.style = "background:green; height: 28px; width: 140px; text-align: center; border-radius:20px;";
-                            break;
-                    }
-
-
-                }
-            }
-            );
-
-            //Для интервала между воспроизведением звука
-            document.getElementById('setsoundplayinterval').onclick = function () {
-                if (document.getElementById('soundplayinterval').value != '') {
-                    localStorage.setItem('splinter', document.getElementById('soundplayinterval').value);
-                } else console.log("Базовое значение равно 3 секунды")
-            }
-
-            document.getElementById('sound_save').onclick = function () { //функция сохранения адреса звукового уведомления о входящем чате в АФ
-                localStorage.setItem('sound_str', document.getElementById('sound_adr').value);
-                if (document.getElementById('sound_adr').value == "")
-                    audio = new Audio("https://grumstv.github.io/Sounds/msg.mp3");
-                else {
-                    audio = new Audio(document.getElementById('sound_adr').value);
-                    document.getElementById('sound_save').textContent = "✅";
-                    setTimeout(function () {
-                        document.getElementById('sound_save').textContent = "💾";
-                    }, 3000);
-                }
-            }
-
-            if (flagLangBut == 0) {
-                document.getElementById('languageAF').onclick = function () {
-                    if (this.innerHTML == "Русский") {
-                        this.innerHTML = "Английский";
-                        document.getElementById('AF_helper').style.background = "#EBC7DF";
-                    } else {
-                        this.innerHTML = "Русский";
-                        document.getElementById('AF_helper').style.background = "#464451";
-                    }
-                }
-            }
-
-            document.getElementById('savesettingstofile').onclick = function () {  // по клику на кнопку Сохранить настройки сохраянется на жесткомм диске файл с содержимым localstorage
-                getLocalstorageToFile('settings-af')
-            }
-
-            document.getElementById('fileinput').onclick = function () { // по клику на кнопку Загрузить настройки предлагает выбрать файл настроек, добавлять при этом ранее сохраненный в формате .json
-                let fileInput = document.getElementById('fileinput');
-                let jsonparsed;
-
-                fileInput.addEventListener('change', function (e) {
-                    let file = fileInput.files[0];
-                    let textType = /.json/;
-
-                    if (file.type.match(textType)) {
-                        let reader = new FileReader();
-
-                        reader.onload = function (e) {
-                            jsonparsed = JSON.parse(reader.result)
-                            for (let i = 0; i < Object.keys(jsonparsed).length; i++) {
-                                localStorage.setItem(Object.keys(jsonparsed)[i], Object.values(jsonparsed)[i])
-                            }
-                            createAndShowButton('Настройки расширения в localstorage загружены успешно!', 'message')
-                        }
-
-                        reader.readAsText(file);
-                    } else {
-                        console.log("File not supported!")
-                    }
-                });
-            }
+        const map = { "Офлайн": "red", "Перерыв": "red", "Онлайн": "green", "Занят": "yellow" };
+        const color = map[statusElem.textContent];
+        if (color) {
+            statusElem.style.background = color;
+            statusElem.style.color = color === 'yellow' ? 'black' : 'white';
+            statusElem.style.fontWeight = '700';
+            statusElem.style.padding = '2px 8px';
+            statusElem.style.borderRadius = '10px';
         }
-    }
-
-    // конец блока настроек
-
-    setInterval(paintstatus, 5000); //  вызов функции перекрашивания статуса в котором оператор находится
-
-    document.getElementById('set_KC').addEventListener('click', ShowMustGoOn)
-    document.getElementById('set_KCrezerv').addEventListener('click', AFthePieceofShitKC)
-    document.getElementById('set_TP').addEventListener('click', WeAreTheChempions)
-    document.getElementById('set_TPrezerv').addEventListener('click', AFthePieceofShit)
-
-
-    // --- Масштаб окна (Плавный, без скачков, с сохранением) ---
-    const scaleSlider = document.getElementById('scaleSliderAF');
-    const mainWindow = document.getElementById('AF_helper') || document.getElementById('addTmpWrapper');
-
-    if (scaleSlider) { // Проверка, что элемент найден
-        // 1. Получаем сохраненное значение или ставим 100 по умолчанию
-        const savedScale = localStorage.getItem('AF_windowScale') || 100;
-        scaleSlider.value = savedScale;
-
-        // 2. Функция применения масштаба
-        const applyScale = (value, isInit = false) => {
-            if (!mainWindow) return;
-            const scaleValue = value / 100;
-            if (isInit) {
-                mainWindow.style.transition = 'none';
-            } else {
-                mainWindow.style.transition = 'transform 0.15s ease-out';
-            }
-            mainWindow.style.transformOrigin = 'top left';
-            mainWindow.style.transform = `scale(${scaleValue})`;
-        };
-
-        // 3. Применяем масштаб сразу
-        applyScale(savedScale, true);
-
-        // 4. Обработчик ползунка
-        scaleSlider.addEventListener('input', function () {
-            applyScale(this.value);
-        });
-
-        // 5. Обработчик сохранения
-        scaleSlider.addEventListener('change', function () {
-            localStorage.setItem('AF_windowScale', this.value);
-        });
-    }
+    };
+    setInterval(paintStatus, 5000);
+    paintStatus();
 }
 
-init_settings()
+// Global initialization
+init_settings();
