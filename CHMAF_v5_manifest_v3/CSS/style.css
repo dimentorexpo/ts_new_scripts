@@ -1784,6 +1784,139 @@
 		cursor: zoom-out;
 	}
 
+	/* Новые стили Links */
+	/* Добавь это в head или инжекти через JS */
+	/* ==========================================
+       НОВЫЕ СТИЛИ (Спокойный Glassmorphism)
+       ========================================== */
+
+	.sky-panel {
+		/* Чуть более глубокий и спокойный темный цвет */
+		background: rgba(20, 25, 35, 0.85);
+		backdrop-filter: blur(16px);
+		-webkit-backdrop-filter: blur(16px);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 16px;
+		padding: 16px;
+		width: 650px;
+		cursor: grab;
+		/* Мягкая, рассеянная тень для объема */
+		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+		color: #e2e8f0;
+		/* Слегка приглушенный белый, чтобы не резал глаза */
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	}
+
+	/* Сетка для кнопок (без изменений) */
+	.sky-grid {
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		gap: 8px;
+		margin-bottom: 12px;
+	}
+
+	/* Сетка для инпутов (без изменений) */
+	/* Группировка инпутов — убираем лишние зазоры */
+	.sky-input-group {
+		display: flex;
+		gap: 4px;
+		/* Сузили щель между инпутом и кнопкой поиска */
+		margin-bottom: 6px;
+		/* Уменьшили отступ между рядами инпутов */
+	}
+
+	/* Основные кнопки — теперь нейтральные и не кричащие */
+	.sky-btn {
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		border-radius: 8px;
+		color: #f8fafc;
+		font-size: 13px;
+		/* Было 12px — текст стал заметнее */
+		font-weight: 600;
+		/* Сделали чуть жирнее для четкости */
+		cursor: pointer;
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		padding: 4px 6px;
+		/* Минимальный паддинг */
+		height: 32px;
+		/* Фиксированная высота для стройности рядов */
+	}
+
+	/* Приятный эффект при наведении */
+	.sky-btn:hover {
+		background: rgba(255, 255, 255, 0.12);
+		border-color: rgba(255, 255, 255, 0.15);
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	}
+
+	/* Имитация реального нажатия */
+	.sky-btn:active {
+		transform: translateY(1px);
+		background: rgba(255, 255, 255, 0.08);
+		box-shadow: none;
+	}
+
+	/* Красная кнопка закрытия (переопределяем для нее стиль) */
+	#hideMe {
+		background: rgba(239, 68, 68, 0.15) !important;
+		color: #fca5a5 !important;
+		border: 1px solid rgba(239, 68, 68, 0.3) !important;
+	}
+
+	#hideMe:hover {
+		background: rgba(239, 68, 68, 0.8) !important;
+		color: white !important;
+	}
+
+	/* Зеленая кнопка (Redo MAT) */
+	#restartlesson {
+		background: rgba(16, 185, 129, 0.15) !important;
+		color: #6ee7b7 !important;
+		border: 1px solid rgba(16, 185, 129, 0.3) !important;
+	}
+
+	#restartlesson:hover {
+		background: rgba(16, 185, 129, 0.8) !important;
+		color: white !important;
+	}
+
+	/* Инпуты — эффект вдавленности */
+	.sky-input {
+		background: rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 8px;
+		color: #fff;
+		flex-grow: 1;
+		transition: all 0.2s ease;
+		padding: 0 8px;
+		/* Убрали вертикальный паддинг совсем */
+		font-size: 13px;
+		/* Увеличили с 11px до 13px */
+		height: 32px;
+		/* Совпадает с высотой кнопки — идеальная линия */
+		text-align: center;
+	}
+
+	/* Красивый мягкий фокус на инпутах (спокойный сине-фиолетовый) */
+	.sky-input:focus {
+		outline: none;
+		border-color: #6366f1;
+		/* Цвет Indigo */
+		background: rgba(0, 0, 0, 0.3);
+		box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+		/* Приятное свечение */
+	}
+
+	.sky-input::placeholder {
+		color: rgba(255, 255, 255, 0.4);
+	}
+
 	/* Главный контейнер дашборда */
 	#af-dashboard-wrapper {
 		width: 760px;

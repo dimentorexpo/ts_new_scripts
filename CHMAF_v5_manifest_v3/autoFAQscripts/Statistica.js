@@ -485,22 +485,31 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
 // ============================================================================
 
 function renderAclsModal(idx, opName) {
-    const data = window.operatorAutoClosedDetails[idx];
-    if (!data) return;
+    // 1. Проверяем, есть ли данные
+    const data = window.operatorAutoClosedDetails ? window.operatorAutoClosedDetails[idx] : null;
+    if (!data) {
+        alert(`⚠️ Данные для оператора ${opName} не найдены. Попробуйте нажать кнопку "Статистика" еще раз.`);
+        console.error("❌ Нет данных %A3 по индексу:", idx, window.operatorAutoClosedDetails);
+        return;
+    }
 
-    // Удаляем старое окно, если оно зависло
-    if (document.getElementById('acls-modal-container')) {
-        document.getElementById('acls-modal-container').remove();
+    // 2. Жестко удаляем старое окно и очищаем события, если они зависли
+    const oldContainer = document.getElementById('acls-modal-container');
+    if (oldContainer) oldContainer.remove();
+
+    if (window._aclsModalCleanup) {
+        document.removeEventListener('mousemove', window._aclsMouseMove);
+        document.removeEventListener('mouseup', window._aclsMouseUp);
+        window._aclsModalCleanup = null;
     }
 
     const createListHtml = (list) => {
-        if (!list.length) return '<div style="color:gray; font-size:12px; text-align:center; padding-top:10px;">Нет чатов</div>';
+        if (!list || list.length === 0) return '<div style="color:gray; font-size:12px; text-align:center; padding-top:10px;">Нет чатов</div>';
         return list.map(hash => `
             <div class="modal-lookchat" data-hash="${hash}" title="Нажмите, чтобы открыть чат в истории"
                  style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:4px; cursor:pointer; color:#dfd1f5; font-family:monospace; font-size:13px; text-align:center; border: 1px solid transparent; transition: all 0.2s;"
                  onmouseover="if(!this.classList.contains('active-chat')){this.style.background='rgba(83,219,75,0.1)'; this.style.borderColor='#53db4b'; this.style.color='#fff'}"
                  onmouseout="if(!this.classList.contains('active-chat')){this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#dfd1f5'}">
-                <!-- pointer-events: none гарантирует, что клик попадёт именно по родительскому DIV -->
                 <span style="pointer-events: none;">${hash}</span>
             </div>
         `).join('');
@@ -510,18 +519,16 @@ function renderAclsModal(idx, opName) {
     overlay.id = 'acls-modal-container';
     Object.assign(overlay.style, {
         position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
-        zIndex: '9999', pointerEvents: 'none'
+        zIndex: '9999999', pointerEvents: 'none' // zIndex повышен
     });
 
-    // 🎯 Восстанавливаем позицию или ставим по центру
+    // 3. Высчитываем стартовые позиции с защитой от улетания за экран
     let startLeft = Math.max(0, (window.innerWidth - 650) / 2);
     let startTop = Math.max(0, (window.innerHeight - 500) / 2);
 
-    if (window.lastModalPos) {
-        startLeft = Math.min(window.lastModalPos.left, window.innerWidth - 650);
-        startLeft = Math.max(0, startLeft);
-        startTop = Math.min(window.lastModalPos.top, window.innerHeight - 200);
-        startTop = Math.max(0, startTop);
+    if (window.lastModalPos && typeof window.lastModalPos.left === 'number' && typeof window.lastModalPos.top === 'number' && !isNaN(window.lastModalPos.left)) {
+        startLeft = Math.max(0, Math.min(window.lastModalPos.left, window.innerWidth - 650));
+        startTop = Math.max(0, Math.min(window.lastModalPos.top, window.innerHeight - 200));
     }
 
     const modal = document.createElement('div');
@@ -539,18 +546,18 @@ function renderAclsModal(idx, opName) {
             <div>
                 <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">Детали %A3: <span style="color:#53db4b">${opName}</span></h3>
                 <div style="font-size:13px; color:#aaa; margin-top:6px;">
-                    Всего закрыто: <b style="color:bisque">${data.totalClosed}</b> |
-                    Чатов АЗ: <b style="color:#e38118">${data.inactivity.length}</b> |
-                    Чатов отложек с АЗ: <b style="color:#53db4b">${data.pause.length}</b>
+                    Всего закрыто: <b style="color:bisque">${data.totalClosed || 0}</b> |
+                    Чатов АЗ: <b style="color:#e38118">${data.inactivity ? data.inactivity.length : 0}</b> |
+                    Чатов отложек с АЗ: <b style="color:#53db4b">${data.pause ? data.pause.length : 0}</b>
                 </div>
             </div>
-            <button id="close-acls-modal" class="af-win-btn buttonHide">✖</button>
+            <button id="close-acls-modal" class="af-win-btn buttonHide" style="cursor:pointer; background:transparent; border:none; color:bisque; font-size:16px;">✖</button>
         </div>
-        <div style="display:flex; flex:1; overflow:hidden; padding:15px; gap:15px; background:#464451">
+        <div style="display:flex; flex:1; overflow:hidden; padding:15px; gap:15px; background:#464451; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
             <!-- Колонка 1: inactivity_timer -->
             <div style="flex:1; display:flex; flex-direction:column; background:rgba(0,0,0,0.2); border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
                 <div style="text-align:center; font-weight:bold; margin-bottom:10px; border-bottom:1px solid #5f7875; padding:10px; background:rgba(0,0,0,0.3);">
-                    ⏳ Обычные АЗ: <span style="color:#53db4b">${data.inactivity.length}</span>
+                    ⏳ Обычные АЗ: <span style="color:#53db4b">${data.inactivity ? data.inactivity.length : 0}</span>
                 </div>
                 <div style="overflow-y:auto; flex:1; padding:10px;">
                     ${createListHtml(data.inactivity)}
@@ -559,7 +566,7 @@ function renderAclsModal(idx, opName) {
             <!-- Колонка 2: pause -->
             <div style="flex:1; display:flex; flex-direction:column; background:rgba(0,0,0,0.2); border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
                 <div style="text-align:center; font-weight:bold; margin-bottom:10px; border-bottom:1px solid #5f7875; padding:10px; background:rgba(0,0,0,0.3);">
-                    ⏸️ Отложки с АЗ: <span style="color:#53db4b">${data.pause.length}</span>
+                    ⏸️ Отложки с АЗ: <span style="color:#53db4b">${data.pause ? data.pause.length : 0}</span>
                 </div>
                 <div style="overflow-y:auto; flex:1; padding:10px;">
                     ${createListHtml(data.pause)}
@@ -571,54 +578,50 @@ function renderAclsModal(idx, opName) {
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    // 🎯 ЛОГИКА DRAG & DROP
+    // 4. Глобальные обработчики Drag & Drop
     const header = modal.querySelector('.acls-modal-header');
     let isDragging = false;
     let startX, startY;
 
-    const onMouseDown = (e) => {
-        if (e.target.id === 'close-acls-modal') return;
-        isDragging = true;
-        header.style.cursor = 'grabbing';
-
-        startX = e.clientX - modal.offsetLeft;
-        startY = e.clientY - modal.offsetTop;
-    };
-
-    const onMouseMove = (e) => {
+    window._aclsMouseMove = (e) => {
         if (!isDragging) return;
-
         let newX = e.clientX - startX;
         let newY = e.clientY - startY;
-
         const maxX = window.innerWidth - modal.offsetWidth;
         const maxY = window.innerHeight - modal.offsetHeight;
-
         modal.style.left = Math.max(0, Math.min(newX, maxX)) + 'px';
         modal.style.top = Math.max(0, Math.min(newY, maxY)) + 'px';
     };
 
-    const onMouseUp = () => {
+    window._aclsMouseUp = () => {
         if (isDragging) {
             isDragging = false;
             header.style.cursor = 'grab';
-
-            window.lastModalPos = {
-                left: parseInt(modal.style.left, 10),
-                top: parseInt(modal.style.top, 10)
-            };
+            const leftPos = parseInt(modal.style.left, 10);
+            const topPos = parseInt(modal.style.top, 10);
+            if (!isNaN(leftPos) && !isNaN(topPos)) {
+                window.lastModalPos = { left: leftPos, top: topPos };
+            }
         }
     };
 
-    header.addEventListener('mousedown', onMouseDown);
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.id === 'close-acls-modal') return;
+        isDragging = true;
+        header.style.cursor = 'grabbing';
+        startX = e.clientX - modal.offsetLeft;
+        startY = e.clientY - modal.offsetTop;
+    });
 
-    // Очистка событий
+    document.addEventListener('mousemove', window._aclsMouseMove);
+    document.addEventListener('mouseup', window._aclsMouseUp);
+
+    // 5. Правильная функция очистки
     window._aclsModalCleanup = () => {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-        overlay.remove();
+        document.removeEventListener('mousemove', window._aclsMouseMove);
+        document.removeEventListener('mouseup', window._aclsMouseUp);
+        if (overlay.parentNode) overlay.remove();
+        window._aclsModalCleanup = null;
     };
 }
 
@@ -982,31 +985,34 @@ async function checkload(department, flag) {
 document.addEventListener('click', (e) => {
 
     // 1. Открытие модалки по автозакрытым чатам (%A3)
-    if (e.target.classList.contains('acls-popup-btn')) {
-        const idx = e.target.getAttribute('data-opidx');
-        const opName = e.target.getAttribute('data-opname');
+    const popupBtn = e.target.closest('.acls-popup-btn');
+    if (popupBtn) {
+        const idx = popupBtn.getAttribute('data-opidx');
+        const opName = popupBtn.getAttribute('data-opname');
         renderAclsModal(idx, opName);
         return;
     }
 
     // 2. Обработчик клика по иконке 👁‍🗨 (открывает панель истории чата)
-    if (e.target.classList.contains('modal-lookchat')) {
+    const lookChatBtn = e.target.closest('.modal-lookchat');
+    if (lookChatBtn) {
 
-        // Логика эксклюзивной подсветки кликнутого чата внутри модального окна (%АЗ)
-        if (e.target.closest('#acls-modal-container')) {
+        // Логика эксклюзивной подсветки внутри модалки (%АЗ)
+        if (lookChatBtn.closest('#acls-modal-container')) {
             document.querySelectorAll('#acls-modal-container .modal-lookchat').forEach(el => {
                 el.classList.remove('active-chat');
                 el.style.background = 'rgba(255,255,255,0.05)';
                 el.style.borderColor = 'transparent';
                 el.style.color = '#dfd1f5';
             });
-            e.target.classList.add('active-chat');
-            e.target.style.background = 'rgba(83,219,75,0.3)';
-            e.target.style.borderColor = '#53db4b';
-            e.target.style.color = '#fff';
+
+            lookChatBtn.classList.add('active-chat');
+            lookChatBtn.style.background = 'rgba(83,219,75,0.3)';
+            lookChatBtn.style.borderColor = '#53db4b';
+            lookChatBtn.style.color = '#fff';
         }
 
-        const val = e.target.getAttribute('data-hash');
+        const val = lookChatBtn.getAttribute('data-hash');
 
         const chatHistoryElement = document.getElementById('AF_ChatHis');
         const chatHistoryButton = document.getElementById('opennewcat');
@@ -1023,16 +1029,19 @@ document.addEventListener('click', (e) => {
     }
 
     // 3. Закрытие модалки по кнопке крестика
-    if (e.target.id === 'close-acls-modal') {
+    if (e.target.closest('#close-acls-modal')) {
         if (window._aclsModalCleanup) window._aclsModalCleanup();
         return;
     }
 
     // --- Обработка стандартных кнопок меню ---
-    const targetId = e.target.id || e.target.closest('[id]')?.id;
-    if (!targetId) return;
+    const btn = e.target.closest('[id]');
+    if (!btn) return;
+
+    const targetId = btn.id;
 
     switch (targetId) {
+
         case 'dayplusplus':
             adjustDate('dateFromStat', 1);
             adjustDate('dateToStat', 1);
@@ -1043,21 +1052,39 @@ document.addEventListener('click', (e) => {
             adjustDate('dateToStat', -1);
             break;
 
-        case 'clearstatawindow': ['csatandthemes', 'outputstatafield', 'loadkctp'].forEach(id => {
-            const el = document.getElementById(id); if (el) el.innerHTML = '';
-        });
-            const time = document.getElementById('timeoutput'), bar = document.getElementById('progress-bar');
+        case 'clearstatawindow':
+            ['csatandthemes', 'outputstatafield', 'loadkctp'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '';
+            });
+            const time = document.getElementById('timeoutput');
+            const bar = document.getElementById('progress-bar');
             if (time) time.value = '';
             if (bar) { bar.style.width = '0%'; bar.textContent = ''; }
             break;
 
-        case 'retreivestata': ['csatandthemes', 'loadkctp'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
-            const out = document.getElementById('outputstatafield'); if (out) out.style.display = "";['retreivestata', 'buttonCheckStats', 'buttonKCpower', 'buttonTPpower'].forEach(id => document.getElementById(id)?.classList.remove('active-stat-tab'));
+        case 'retreivestata':
+            ['csatandthemes', 'loadkctp'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = "none";
+            });
+
+            const out = document.getElementById('outputstatafield');
+            if (out) out.style.display = "";
+
+            ['retreivestata', 'buttonCheckStats', 'buttonKCpower', 'buttonTPpower']
+                .forEach(id => document.getElementById(id)?.classList.remove('active-stat-tab'));
+
             document.getElementById('retreivestata')?.classList.add('active-stat-tab');
 
             showLoader();
-            const progBar = document.getElementById('progress-bar'); if (progBar) { progBar.style.width = '0%'; progBar.textContent = ''; }
-            const tOut = document.getElementById("timeoutput"); if (tOut) tOut.value = new Date().toLocaleTimeString('ru-RU');
+
+            const progBar = document.getElementById('progress-bar');
+            if (progBar) { progBar.style.width = '0%'; progBar.textContent = ''; }
+
+            const tOut = document.getElementById("timeoutput");
+            if (tOut) tOut.value = new Date().toLocaleTimeString('ru-RU');
+
             getStats();
             break;
 
@@ -1074,6 +1101,7 @@ document.addEventListener('click', (e) => {
             break;
     }
 });
+
 
 // Экспорт
 window.getStats = getStats; window.checkCSAT = checkCSAT; window.checkload = checkload; window.resetRateCounts = resetRateCounts; window.getDateRangeStata = getDateRangeStata; window.getbuttonGetStatButtonPress = getbuttonGetStatButtonPress;
