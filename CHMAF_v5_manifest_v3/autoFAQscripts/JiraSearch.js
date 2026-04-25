@@ -326,12 +326,17 @@ const glassStylesJiraS = `
 const win_Jira = `
 ${glassStylesJiraS}
 <div class="jiras-glass-wrapper">
-    <div class="jiras-glass-header" id="jira_1str">
+<div class="jiras-glass-header" id="jira_1str">
         <button class="mainButton jiras-glass-btn buttonHide" title="Скрывает меню" id="hideMej">hide</button>
-        <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="RefreshJiraStatus" title="Обновляет статус Токена Jira, чтобы проверить авторизованы вы или нет">🔄</button>
-        <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="ClearJiraData" title="Очищает поля с результатами и полем для ввода">🧹</button>
-        <span style="flex-grow: 1;">Token Status: <span id="searchjiratknstatus"></span></span>
-        <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="jirainstr" title="Инструкция по этой форме">❓</button>
+
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255, 228, 196, 0.6);">
+            <span>Token Status:</span>
+            <span id="searchjiratknstatus" style="color: #00FA9A;">—</span>
+        </div>
+
+        <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="RefreshJiraStatus" title="Обновить статус">🔄</button>
+        <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="ClearJiraData" title="Очистить всё">🧹</button>
+        <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="jirainstr" title="Инструкция">❓</button>
     </div>
 
 <div class="jiras-glass-toolbar" id="control_jira_search">
