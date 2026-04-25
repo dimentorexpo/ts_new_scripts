@@ -1205,22 +1205,57 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     }
     document.getElementById('rightPanel').appendChild(MainMenuBtn) // добавляем на панель кнопку Меню, которая содержит в себе при клики пункты подменю
 
-    let menubar = document.createElement('div')
-    menubar.style = 'display:none;';
-    menubar.classList.add('menubarstyle', menutheme);
-    menubar.id = 'idmymenu';
-    menubar.innerHTML = win_mainmenu;
-    document.getElementById('rightPanel').appendChild(menubar)
-    document.getElementById('servDsk').onclick = getservDskPress;
-    document.getElementById('JiraOpenForm').onclick = getJiraOpenFormPress;
-    document.getElementById('crmopersstatuses').onclick = getcrmopersstatusesButtonPress;
-    document.getElementById('butMarks').onclick = getbutMarksButtonPress;
-    document.getElementById('smartroomform').onclick = getsmartroomformButtonPress;
-    document.getElementById('butLessonInfo').onclick = getbutLessonInfoButtonPress;
-    document.getElementById('radioPlayer').onclick = toggleRadioWindow;
-    document.getElementById('buttonGetStat').onclick = getbuttonGetStatButtonPress;
-    document.getElementById('butFrozeChat').onclick = getbutFrozeChatButtonPress;
-    document.getElementById('buttonGetQueue').onclick = getQueuePress;
+
+    const isDark = localStorage.getItem('extentiontheme') === 'dark';
+
+    // 1. Конфигурация кнопок: ID, Текст, Функция, Только для ТП?
+    const menuConfig = [
+        { id: "servDsk", text: "🛠 ServiceDesk", fn: window.getservDskPress, tp: true },
+        { id: "JiraOpenForm", text: "🔎 Jira Search", fn: window.getJiraOpenFormPress, tp: true },
+        { id: "crmopersstatuses", text: "🧮 Статусы CRM2", fn: window.getcrmopersstatusesButtonPress, tp: true },
+        { id: "butMarks", text: "🎭 Оценки", fn: window.getbutMarksButtonPress, tp: false },
+        { id: "smartroomform", text: "🦐 Smartroom", fn: window.getsmartroomformButtonPress, tp: true },
+        { id: "butLessonInfo", text: "🎓 Lesson Info", fn: window.getbutLessonInfoButtonPress, tp: false },
+        { id: "butFrozeChat", text: "❄ Auto Respond", fn: window.getbutFrozeChatButtonPress, tp: false },
+        { id: "radioPlayer", text: "📻 Radio", fn: window.toggleRadioWindow, tp: false },
+        { id: "buttonGetStat", text: "📊 Статистика", fn: window.getbuttonGetStatButtonPress, tp: false },
+        { id: "buttonGetQueue", text: "🚧 Очередь", fn: window.getQueuePress, tp: false }
+    ];
+
+    // 2. Создание контейнера
+    let menubar = document.getElementById('idmymenu');
+    if (!menubar) {
+        menubar = document.createElement('div');
+        menubar.id = 'idmymenu';
+        document.getElementById('rightPanel').appendChild(menubar);
+    }
+
+    // Применяем классы
+    menubar.className = `m-menu-panel menubarstyle ${!isDark ? 'light' : ''}`;
+    menubar.style.display = 'none';
+
+    // 3. Генерация кнопок
+    const currentSection = (typeof opsection !== 'undefined' ? opsection : "").toString().trim();
+    const isTP = currentSection === "ТП" || currentSection === "ТП ОС" || currentSection.startsWith("ТП");
+
+    menubar.innerHTML = menuConfig
+        .filter(item => !item.tp || (item.tp && isTP)) // Фильтруем кнопки для ТП
+        .map(item => `<div id="${item.id}" class="m-menu-btn">${item.text}</div>`)
+        .join('');
+
+    // 4. Навешивание событий (через делегирование для экономии памяти)
+    menubar.onclick = (e) => {
+        const btn = e.target.closest('.m-menu-btn');
+        if (!btn) return;
+
+        const config = menuConfig.find(c => c.id === btn.id);
+        if (config && typeof config.fn === 'function') {
+            config.fn();
+            // По желанию: скрывать меню после клика
+            // menubar.style.display = 'none';
+        }
+    };
+
 
     let openchhis = document.createElement('button')
     openchhis.innerHTML = '☢'

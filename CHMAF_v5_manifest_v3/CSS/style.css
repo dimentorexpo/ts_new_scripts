@@ -1122,55 +1122,84 @@
 		box-shadow: -1px 4px 16px 7px rgba(218, 165, 32, 0.3);
 	}
 
-	.menubtnsstylelight {
-		display: flex;
-		align-items: center;
-		cursor: pointer;
-		font-size: 14px;
-		min-width: 100px;
-		border-bottom: 1px solid black;
-		border-left: 1px solid black;
-		border-right: 1px solid black;
-		height: 36px;
-		padding-left: 5px;
-	}
-
-	.menubtnsstylelight:hover {
-		background: DeepSkyBlue;
-		color: #ffffffe6;
-		font-weight: 600;
-		font-size: 16px;
-		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-		text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-		height: 45px;
-	}
-
-	.menubtnsstyledark {
-		display: flex;
-		align-items: center;
-		cursor: pointer;
-		font-size: 14px;
-		min-width: 100px;
-		border-bottom: 1px solid bisque;
-		border-left: 1px solid bisque;
-		border-right: 1px solid bisque;
-		color: bisque;
-		background: rgba(0, 0, 0, 0.9);
-		height: 36px;
-		padding-left: 5px;
+	/* Основной контейнер меню где Сервис Деск, Джира серч и тп */
+	.m-menu-panel {
+		background: rgba(25, 27, 35, 0.75) !important;
+		backdrop-filter: blur(16px) saturate(150%);
+		-webkit-backdrop-filter: blur(16px);
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		border-radius: 16px;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+		padding: 8px;
+		width: 180px;
+		z-index: 1000000;
 		transition: all 0.3s ease;
 	}
 
-	.menubtnsstyledark:hover {
-		background: rgba(218, 165, 32, 0.8);
-		/* GoldenRod с прозрачностью */
-		color: black;
-		font-weight: 600;
-		font-size: 16px;
-		box-shadow: 0px 3px 1px rgba(218, 165, 32, 0.6);
-		text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.6);
-		height: 45px;
+	/* Светлая тема (если exttheme == 'lightinputs') */
+	.m-menu-panel.light {
+		background: rgba(255, 255, 255, 0.6) !important;
+		border-color: rgba(0, 0, 0, 0.05) !important;
+		box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
 	}
+
+	/* Общие стили кнопок */
+	.m-menu-btn {
+		display: flex;
+		align-items: center;
+		padding: 10px 14px;
+		margin: 4px 0;
+		cursor: pointer;
+		font-size: 13px;
+		font-weight: 500;
+		color: #e2e8f0;
+		border-radius: 10px;
+		transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+		border: 1px solid transparent;
+		user-select: none;
+	}
+
+	.m-menu-btn:hover {
+		background: rgba(255, 255, 255, 0.08);
+		border-color: rgba(255, 255, 255, 0.15);
+		color: #fff;
+		transform: translateX(5px);
+	}
+
+	/* Акценты для светлой темы */
+	.light .m-menu-btn {
+		color: #2d3748;
+	}
+
+	.light .m-menu-btn:hover {
+		background: rgba(0, 191, 255, 0.15);
+		color: #008ecc;
+		border-color: rgba(0, 191, 255, 0.2);
+	}
+
+	/* Специфические цвета для иконок/текста при наведении */
+	.m-menu-btn:active {
+		transform: scale(0.96) translateX(5px);
+	}
+
+	/* Анимация появления */
+	@keyframes menuFadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.m-menu-panel {
+		animation: menuFadeIn 0.3s ease-out;
+	}
+
+	/* Конец*/
 
 	.rightPanelBtnlight {
 		width: 40px;

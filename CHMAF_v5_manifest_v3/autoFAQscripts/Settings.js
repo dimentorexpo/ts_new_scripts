@@ -187,7 +187,7 @@ async function init_settings() {
                 <span style="font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 18px;">⚙</span> Настройки ChMAF
                 </span>
-                <button id="hideMeSettings" class="set-btn" style="padding: 4px 10px; font-size: 11px; opacity: 0.8;">hide</button>
+                <button id="hideMeSettings" class="buttonHide" style="padding: 4px 10px; font-size: 11px; opacity: 0.8;">hide</button>
             </div>
 
             <div class="set-glass-content">
