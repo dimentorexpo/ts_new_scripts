@@ -66,6 +66,14 @@ const glassStyles = `
     .af-glass-input:focus { border-color: rgba(255, 255, 255, 0.5); }
     .af-glass-input:disabled { background: transparent; border: none; }
 
+    /* === СТИЛЬ ДЛЯ ИНПУТОВ ОПЕРАТОРА (Зеленый Glass) === */
+    .af-glass-input-my {
+        background: rgba(62, 158, 83, 0.3) !important;
+        border: 1px solid rgba(62, 158, 83, 0.7) !important;
+        box-shadow: 0 0 10px rgba(62, 158, 83, 0.2) !important;
+        color: #fff !important;
+    }
+
     /* Слоты (плитки времени) */
     .af-glass-slot {
         width: 31%;
@@ -84,7 +92,13 @@ const glassStyles = `
         transition: all 0.2s ease;
     }
     .af-glass-slot:hover { transform: scale(1.03); filter: brightness(1.2); }
-    .af-glass-slot-time { border-radius: 8px; padding: 2px 6px; margin-right: 6px; }
+    .af-glass-slot-time { background: rgba(32, 88, 203, 0.8); border-radius: 8px; padding: 2px 6px; margin-right: 6px; }
+
+    /* === СТИЛЬ ДЛЯ ПЛИТКИ ВРЕМЕНИ ОПЕРАТОРА === */
+    .af-glass-slot-my {
+        border: 1px solid rgba(62, 158, 83, 0.9) !important;
+        box-shadow: inset 0 0 12px rgba(62, 158, 83, 0.4);
+    }
 
     /* Статусы слотов */
     .af-slot-full { background: rgba(171, 65, 62, 0.7); } /* Красный */
@@ -234,7 +248,6 @@ function getSlotData(index) {
     slotDataUI.innerHTML = '';
     const slotsCount = parseInt(allRows[index].getAttribute('data-length'), 10);
 
-    // Создаем элементы через fragment для оптимизации
     const fragment = document.createDocumentFragment();
     for (let j = 0; j < slotsCount; j++) {
         const div = document.createElement('div');
@@ -259,9 +272,12 @@ function getSlotData(index) {
                 inputs[n].title = match.eventId;
                 inputs[n].setAttribute('data-operator', match.createdBy);
 
+                // === ВОТ ЗДЕСЬ ПРИМЕНЯЕМ ЗЕЛЕНЫЙ ЦВЕТ ===
                 if (operNamesAF.includes(match.createdBy)) {
                     inputs[n].classList.remove(exttheme);
-                    inputs[n].classList.add(selectedinpth);
+                    if (typeof selectedinpth !== 'undefined') inputs[n].classList.add(selectedinpth);
+                    // Добавляем поверх наш стеклянный зелёный стиль
+                    inputs[n].classList.add('af-glass-input-my');
                 }
             }
         });
@@ -352,6 +368,8 @@ function getTimeSlots() {
         Object.entries(data.DataTimeSlot).forEach(([time, slotData]) => {
             if (unwantedTimes.has(time)) return;
 
+            let hasMyEvent = false; // Флаг для подсветки внешней плитки слота
+
             if (slotData.EventList && slotData.EventList.length !== 0) {
                 Object.values(slotData.EventList).forEach(event => {
                     if (!uniqueEvents.has(event.id)) {
@@ -367,6 +385,7 @@ function getTimeSlots() {
 
                         if (operNamesAF.includes(event.created_by_name)) {
                             arrayOfMyEvents.push(eventObj);
+                            hasMyEvent = true;
                         }
                     }
                 });
@@ -399,6 +418,12 @@ function getTimeSlots() {
 
             const slotEl = document.createElement('div');
             slotEl.className = `af-glass-slot ${slotClass}`;
+
+            // Если в слоте есть событие оператора, добавляем зеленую обводку плитки
+            if (hasMyEvent) {
+                slotEl.classList.add('af-glass-slot-my');
+            }
+
             slotEl.setAttribute('name', 'slotRow');
             slotEl.setAttribute('data-length', slotData.CountSlot);
             slotEl.setAttribute('data-rawtext', `${time} ${eventDateInput}`);
