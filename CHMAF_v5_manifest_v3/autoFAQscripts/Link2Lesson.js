@@ -1,145 +1,198 @@
-var win_link2less = `
-<div class="link2less-window">
-    <div class="link2less-head" id="link2lesshead">
-        <button title="Скрывает меню" id="hideMelink2less" class="mainButton buttonHide">hide</button>
-        <button class="mainButton" id="clrlink2less" title="Очищает поля">🧹</button>
-        <button class="mainButton about-btn" id="aboutlink2less" title="Инструкция по этой форме">❓</button>
-    </div>
+/**
+ * Refactored Link2Lesson Module
+ * Style: Dark Glassmorphism
+ * Unique Prefix: l2l-
+ */
 
-    <div class="link2less-row">
-        <select class="${exttheme}" id="subjecttype2less">
-            <option disabled selected value="subjnotselect" class="option-warning">Выбери предмет</option>
-            <option value="english">Английский</option>
-            <option value="biology">Биология</option>
-            <option value="geography">География</option>
-            <option value="preschool">Дошкольная математика</option>
-            <option value="history">История</option>
-            <option value="computer-science">Компьютерные курсы</option>
-            <option value="literature">Литература</option>
-            <option value="math">Математика</option>
-            <option value="social-science">Обществознание</option>
-            <option value="russian">Русский язык</option>
-            <option value="physics">Физика</option>
-            <option value="chemistry">Химия</option>
-            <option value="chess">Шахматы</option>
-            <option value="turkish">Турецкий</option>
-            <option value="spanish">Испанский</option>
-            <option value="portuguese">Португальский</option>
-            <option value="korean">Корейский</option>
-            <option value="japanese">Японский</option>
-            <option value="italian">Итальянский</option>
-            <option value="greek">Греческий</option>
-            <option value="german">Немецкий</option>
-            <option value="french">Французский</option>
-            <option value="chinese">Китайский</option>
-        </select>
-    </div>
+(function () {
+    const state = {
+        subjects: [
+            { v: "english", t: "Английский" }, { v: "math", t: "Математика" },
+            { v: "russian", t: "Русский язык" }, { v: "physics", t: "Физика" },
+            { v: "chemistry", t: "Химия" }, { v: "biology", t: "Биология" },
+            { v: "history", t: "История" }, { v: "computer-science", t: "Информатика" },
+            { v: "literature", t: "Литература" }, { v: "social-science", t: "Обществознание" },
+            { v: "geography", t: "География" }, { v: "chess", t: "Шахматы" },
+            { v: "spanish", t: "Испанский" }, { v: "french", t: "Французский" },
+            { v: "german", t: "Немецкий" }, { v: "italian", t: "Итальянский" },
+            { v: "chinese", t: "Китайский" }, { v: "japanese", t: "Японский" },
+            { v: "turkish", t: "Турецкий" }, { v: "portuguese", t: "Португальский" },
+            { v: "korean", t: "Корейский" }, { v: "greek", t: "Греческий" },
+            { v: "preschool", t: "Дошкольник" }
+        ]
+    };
 
-    <div class="link2less-row">
-        <input class="${exttheme}" id="hashforroom"
-               placeholder="Введи хэш комнаты"
-               title="Введи хэш комнаты, чтобы получить ссылку"
-               autocomplete="off" type="text">
-    </div>
+    const injectStyles = () => {
+        if (document.getElementById('l2l-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'l2l-styles';
+        style.innerHTML = `
+            .l2l-panel {
+                background: rgba(20, 23, 33, 0.85) !important;
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 20px;
+                color: #e2e8f0;
+                font-family: system-ui, -apple-system, sans-serif;
+                box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6);
+                padding: 18px !important;
+                width: 320px;
+                z-index: 1000007;
+            }
+            .l2l-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+                cursor: grab;
+            }
+            .l2l-row { margin-bottom: 12px; width: 100%; }
+            .l2l-input, .l2l-select {
+                background: rgba(0, 0, 0, 0.3) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 10px !important;
+                color: #fff !important;
+                padding: 7px 12px !important;
+                outline: none !important;
+                font-size: 13px !important;
+                width: 100%;
+                box-sizing: border-box;
+                transition: border-color 0.2s;
+            }
+            .l2l-input:focus, .l2l-select:focus { border-color: #4facfe !important; }
+            .l2l-btn {
+                background: rgba(255, 255, 255, 0.08) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 10px !important;
+                color: #fff !important;
+                padding: 6px 12px !important;
+                cursor: pointer;
+                transition: all 0.2s;
+                font-size: 12px;
+            }
+            .l2l-btn:hover { background: rgba(255, 255, 255, 0.18) !important; transform: translateY(-1px); }
+            .l2l-btn-primary {
+                background: linear-gradient(135deg, rgba(79, 172, 254, 0.4), rgba(0, 242, 254, 0.4)) !important;
+                border-color: rgba(79, 172, 254, 0.5) !important;
+                font-weight: 700 !important;
+                padding: 12px !important;
+                width: 100% !important;
+                font-size: 13px !important;
+            }
+            .l2l-btn-primary:hover { background: linear-gradient(135deg, rgba(79, 172, 254, 0.6), rgba(0, 242, 254, 0.6)) !important; }
+            .l2l-checkbox-group {
+                display: flex;
+                gap: 15px;
+                justify-content: center;
+                font-size: 12px;
+                color: #ccc;
+                margin: 10px 0;
+            }
+            .l2l-checkbox-group label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        `;
+        document.head.appendChild(style);
+    };
 
-    <div class="link2less-row checkboxes">
-        <label><input type="checkbox" id="itisvebinar"> Ссылка на Вебинар</label>
-        <label><input type="checkbox" id="itishomework"> Ссылка на ДЗ</label>
-    </div>
+    const win_Template = `
+        <div class="l2l-panel" id="l2l-container">
+            <div class="l2l-header" id="l2l-drag">
+                <button id="l2l-hide" class="buttonHide" style="background: rgba(56, 142, 60, 0.3);">hide</button>
+                <div style="display:flex; gap:5px;">
+                    <button id="l2l-clear" class="l2l-btn" title="Очистить">🧹</button>
+                    <button id="l2l-help" class="l2l-btn" title="Инструкция">❓</button>
+                </div>
+            </div>
 
-    <div class="link2less-row">
-        <button id="createlink2less" title="Создать ссылку" class="mainButton testroomscreate">
-            Скопировать ссылку на урок
-        </button>
-    </div>
-</div>`;
+            <div class="l2l-row">
+                <select id="l2l-subject" class="l2l-select">
+                    <option disabled selected value="none">--- Выбери предмет ---</option>
+                    ${state.subjects.map(s => `<option value="${s.v}">${s.t}</option>`).join('')}
+                </select>
+            </div>
 
-const wintlink2less = createWindow('AF_link2less', 'winToplink2less', 'winLeftlink2less', win_link2less);
-const itisvebinar = document.getElementById('itisvebinar');
-const itishomework = document.getElementById('itishomework');
+            <div class="l2l-row">
+                <input id="l2l-hash" class="l2l-input" placeholder="Введи хэш комнаты..." autocomplete="off">
+            </div>
 
-function getlink2lessButtonPress() { //открывает окно создания тестовых комнат
-    const AF_link2less = document.getElementById('AF_link2less');
-    setDisplayStyle(AF_link2less, AF_link2less.style.display === '' ? 'none' : '');
-    toggleButtonState('link2lessbtn', 'active');
-    setTimeout(() => toggleButtonState('link2lessbtn', 'active'), 500);
-}
+            <div class="l2l-checkbox-group">
+                <label><input type="checkbox" id="l2l-is-webinar"> Вебинар</label>
+                <label><input type="checkbox" id="l2l-is-hw"> ДЗ</label>
+            </div>
 
-function clearlink2lessfields() { // очистка полей окно создания тестовых комнат
-    document.getElementById('hashforroom').value = '';
-    itisvebinar.checked = false
-    itishomework.checked = false
-    document.getElementById('subjecttype2less').children[0].selected = true;
-}
+            <button id="l2l-create" class="l2l-btn l2l-btn-primary">Скопировать ссылку</button>
+        </div>
+    `;
 
-itisvebinar.addEventListener('change', () => {
-    if (itisvebinar.checked) itishomework.checked = false;
-});
+    window.Link2LessonModule = {
+        init: function () {
+            if (document.getElementById('AF_link2less')) return;
+            injectStyles();
+            createWindow('AF_link2less', 'winToplink2less', 'winLeftlink2less', win_Template);
+            hideWindowOnDoubleClick('AF_link2less');
+            this.attachHandlers();
+        },
 
-itishomework.onclick = function () {
-    if (itishomework.checked && itisvebinar.checked)
-        itisvebinar.checked = false;
-};
+        attachHandlers: function () {
+            const self = this;
+            const ui = {
+                win: document.getElementById('AF_link2less'),
+                hash: document.getElementById('l2l-hash'),
+                subj: document.getElementById('l2l-subject'),
+                web: document.getElementById('l2l-is-webinar'),
+                hw: document.getElementById('l2l-is-hw')
+            };
 
-function openlink2lesshelp() { // Открывает раздел в Confluence по созданию тестовых комнат
-    window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-link2less%D0%9E%D0%BA%D0%BD%D0%BE%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D0%B5%D0%BD%D0%B8%D1%8F%D1%81%D1%81%D1%8B%D0%BB%D0%BA%D0%B8%D0%BD%D0%B0%D1%83%D1%80%D0%BE%D0%BA")
-}
+            document.getElementById('l2l-hide').onclick = () => ui.win.style.display = 'none';
 
+            document.getElementById('l2l-clear').onclick = () => {
+                ui.hash.value = ''; ui.subj.selectedIndex = 0;
+                ui.web.checked = false; ui.hw.checked = false;
+            };
 
-document.getElementById("clrlink2less").addEventListener("click", clearlink2lessfields);
-document.getElementById("aboutlink2less").addEventListener("click", openlink2lesshelp);
-document.getElementById("hideMelink2less").addEventListener("click", function () {
-    if (document.getElementById('AF_link2less').style.display == '')
-        document.getElementById('AF_link2less').style.display = 'none'
-});
-document.getElementById('link2lesshead').addEventListener('dblclick', function () {
-    document.getElementById('AF_link2less').style.display = 'none';
-})
+            document.getElementById('l2l-help').onclick = () =>
+                window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971");
 
-document.getElementById('createlink2less').addEventListener('click', function () {
-    const subjectSelect = document.getElementById('subjecttype2less');
-    const hashInput = document.getElementById('hashforroom');
-    const subject = subjectSelect.value;
-    const hash = hashInput.value.trim();
+            // Исключающие чекбоксы
+            ui.web.onchange = () => { if (ui.web.checked) ui.hw.checked = false; };
+            ui.hw.onchange = () => { if (ui.hw.checked) ui.web.checked = false; };
 
-    const errors = [];
+            // Основная кнопка
+            document.getElementById('l2l-create').onclick = function () {
+                const subject = ui.subj.value;
+                const hash = ui.hash.value.trim();
+                const errors = [];
 
-    // Проверка предмета
-    if (subject === 'subjnotselect') {
-        errors.push('Не выбран предмет');
-    }
+                if (subject === 'none') errors.push('Не выбран предмет');
+                if (!/^[a-zA-Z0-9]{12,}$/.test(hash)) errors.push('Некорректный хэш (мин. 12 символов)');
 
-    // Проверка хэша (оставил как ты просил)
-    if (!/^[a-zA-Z0-9]{12,}$/.test(hash)) {
-        errors.push('Хэш комнаты должен состоять из не менее чем 12 латинских символов или цифр');
-    }
+                if (errors.length) {
+                    if (typeof createAndShowButton === 'function') createAndShowButton(errors.join('<br>'), 'error');
+                    else alert(errors.join('\n'));
+                    return;
+                }
 
-    // Если есть ошибки — показываем и выходим
-    if (errors.length > 0) {
-        createAndShowButton(errors.join('<br>'), 'error');
-        return;
-    }
+                let param = ui.web.checked ? '?player=true' : (ui.hw.checked ? '?homework=true' : '');
+                const finalLink = `https://vimbox.skyeng.ru/kids/${subject}/room/${hash}${param}`;
 
-    // Опции ссылки
-    let otherOptions = '';
-    if (itisvebinar.checked) {
-        otherOptions = '?player=true';
-    } else if (itishomework.checked) {
-        otherOptions = '?homework=true';
-    }
+                if (typeof copyToClipboard === 'function') {
+                    copyToClipboard(finalLink);
+                    createAndShowButton('Ссылка скопирована! 💾', 'message');
+                } else {
+                    console.log(finalLink);
+                }
 
-    // Формируем ссылку
-    const link = `https://vimbox.skyeng.ru/kids/${subject}/room/${hash}${otherOptions}`;
+                // Авто-очистка и скрытие
+                setTimeout(() => { ui.win.style.display = 'none'; }, 3000);
+            };
+        }
+    };
 
-    // Копируем
-    copyToClipboard(link);
-    createAndShowButton('Ссылка скопирована в буфер обмена', 'message');
+    // Глобальный вызов для TestUsers.js
+    window.getlink2lessButtonPress = function () {
+        window.Link2LessonModule.init();
+        const win = document.getElementById('AF_link2less');
+        win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'block' : 'none';
+    };
 
-    // Очищаем поля
-    clearlink2lessfields();
-
-    // Закрываем окно через 5 сек
-    setTimeout(() => {
-        document.getElementById('AF_link2less').style.display = 'none';
-    }, 5000);
-});
+})();
