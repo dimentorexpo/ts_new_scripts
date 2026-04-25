@@ -23,12 +23,22 @@ const glassStylesJiraS = `
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    .jiras-glass-header {
+.jiras-glass-header {
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 15px;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
+
+    /* Статус токена - сделаем его более заметным */
+    #searchjiratknstatus {
+        font-weight: bold;
+        text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    }
+
+
 
 .jiras-glass-btn {
         display: flex;
@@ -74,6 +84,39 @@ const glassStylesJiraS = `
         .jiras-glass-btn.glass-tool-line {
             padding:18px;
         }
+
+        /* Кнопки-иконки (🔄, 🧹, ❓) */
+    .jiras-glass-btn-icon {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px !important;
+        border-radius: 8px !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        aspect-ratio: 1 / 1 !important;
+        transition: all 0.2s ease;
+    }
+
+    /* Специфические цвета при наведении для каждой кнопки */
+    #RefreshJiraStatus:hover {
+        border-color: #00FA9A !important;
+        box-shadow: 0 0 10px rgba(0, 250, 154, 0.2);
+    }
+
+    #ClearJiraData:hover {
+        border-color: #FFD700 !important;
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    }
+
+    #jirainstr:hover {
+        border-color: #87CEEB !important;
+        box-shadow: 0 0 10px rgba(135, 206, 235, 0.2);
+    }
+
+
            /* Стили для иконок внутри плиток */
 .jiras-glass-btn-icon-large {
         font-size: 16px;

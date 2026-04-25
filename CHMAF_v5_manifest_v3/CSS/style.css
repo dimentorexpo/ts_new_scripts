@@ -711,17 +711,22 @@
 		background: coral;
 	}
 
+	/* Кнопка "Hide" - сделаем её в виде аккуратной пилюли */
 	.buttonHide {
-		background: #228B22 !important;
-		border-radius: 5px;
-		border: 1px solid #566963;
-		padding: 2px 2px;
-		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-		width: 50px;
+		padding: 5px 15px !important;
+		border-radius: 20px !important;
+		font-size: 12px !important;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		background: rgba(255, 99, 71, 0.15) !important;
+		/* Красноватый оттенок */
+		border-color: rgba(255, 99, 71, 0.3) !important;
+		aspect-ratio: auto !important;
+		height: 32px !important;
 	}
 
 	.buttonHide:hover {
-		background: #0d3f0d !important;
+		background: rgba(255, 99, 71, 0.3) !important;
 	}
 
 	.msgtype {
