@@ -170,7 +170,7 @@ const glassStylesJiraS = `
     .jiras-glass-issue-row a {
         font-weight: 500;
         letter-spacing: 0.3px;
-        color: #ffe4c4;
+        color: #ffd0c4;
         text-decoration: none;
         font-size: 13px;
         word-break: break-word;
@@ -356,7 +356,7 @@ function formatIssue(item, currentNumber, issueKey, searchText, currentpic, curr
 
     // Сверяем ID строки с массивом избранного (приводим к строке для надежности)
     const isAlreadyFav = favissues.some(fav => String(fav.id) === String(currentIds));
-    const heartIcon = isAlreadyFav ? "❤" : "🤍";
+    const heartIcon = isAlreadyFav ? "❤️" : "🤍";
     const heartTitle = isAlreadyFav ? "Удалить из избранного" : "В избранное";
 
     return `
@@ -531,7 +531,7 @@ function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids) {
                     num: btn.closest('.jiras-glass-issue-row').querySelector('.newcount').innerText
                 };
                 favissues.push(issueData);
-                btn.innerText = "❤";
+                btn.innerText = "❤️";
                 btn.title = "Удалить из избранного";
             } else {
                 // Удаляем из избранного (если нажали на красное сердечко в поиске)
