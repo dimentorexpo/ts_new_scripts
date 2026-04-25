@@ -170,6 +170,7 @@ const glassStylesJiraS = `
         line-height: 1.4;
         position: relative;
         overflow: hidden;
+        align-items:anchor-center;
     }
 
     /* Hover эффекты (сохранены и улучшены) */
@@ -244,9 +245,9 @@ const glassStylesJiraS = `
         background: linear-gradient(135deg, rgba(60,179,113,0.8), rgba(46,139,87,0.8));
         box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.2);
         text-shadow: 0 1px 1px rgba(0,0,0,0.5);
-        min-width: 20px;
+        min-width: 26px;
         width: fit-content;
-        height: 18px;
+        height: 26px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -412,7 +413,7 @@ function formatIssue(item, currentNumber, issueKey, searchText, currentpic, curr
         <div class="jiras-glass-issue-row" data-id="${currentIds}">
             <span style="color: #00FA9A; font-size: 10px; margin-top: 4px;">&#5129;</span>
             <span class="newcount">${currentNumber || 0}</span>
-            <img src="${currentpic}" style="width:16px; height:20px; flex-shrink:0; margin-top: 2px;" title="Приоритеты">
+            <img src="${currentpic}" style="width:20px; height:20px; flex-shrink:0; margin-top: 2px;" title="Приоритеты">
             <span class="jiraissues jiras-glass-icon-btn" title="Отправить в чат">💬</span>
             <span class="refreshissues jiras-glass-icon-btn" style="color:#ADFF2F;" title="Увеличить Support Tab">+1</span>
             <span name="addtofavourites" class="jiras-glass-icon-btn" title="${heartTitle}">${heartIcon}</span>
