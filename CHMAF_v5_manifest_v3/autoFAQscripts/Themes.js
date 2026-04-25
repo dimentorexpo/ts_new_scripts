@@ -4,7 +4,7 @@ let KCThemesFlag = 0;
 const win_Themes = `
 <div class="af-theme-widget" id="themes_widget_container">
     <div class="af-header">
-        <button class="af-btn" id="hideMeThemes">Hide</button>
+        <button class="buttonHide" id="hideMeThemes">Hide</button>
         <div class="af-header-btns">
             <button class="af-btn" id="ClearSmartroomData" title="Очистить теги">🧹</button>
             <button class="af-btn" id="backtomenu" style="display:none">🔙 Назад</button>
