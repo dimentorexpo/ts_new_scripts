@@ -30,36 +30,69 @@ const glassStylesJiraS = `
         margin-bottom: 15px;
     }
 
-    .jiras-glass-btn {
+.jiras-glass-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        color: #fff;
-        padding: 6px 12px;
+        border-radius: 10px;
+        color: rgba(255, 228, 196, 0.8);
+        padding: 8px 4px;
         cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 13px;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        transition: all 0.2s ease-in-out;
+        aspect-ratio: 1.5 / 1; /* Делает кнопки одинаковыми прямоугольниками */
+        font-size: 11px;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+        .jiras-glass-btn::after {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 50%;
+        background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
+        pointer-events: none;
     }
 
-    .jiras-glass-btn:hover {
-        background: rgba(255, 255, 255, 0.15);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    /* Эффект при наведении */
+.jiras-glass-btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.25);
+        transform: scale(1.02);
+        color: #fff;
     }
 
-    .jiras-glass-btn.active-query {
-        background: rgba(60, 179, 113, 0.3);
-        border-color: rgba(60, 179, 113, 0.6);
-        box-shadow: 0 0 10px rgba(60, 179, 113, 0.3);
+    /* Активная плитка (выбранный фильтр) */
+.jiras-glass-btn.active-query {
+        background: rgba(60, 179, 113, 0.2);
+        border-color: rgba(60, 179, 113, 0.5);
+        color: #00FA9A;
+        box-shadow: inset 0 0 10px rgba(60, 179, 113, 0.1);
+    }
+        .jiras-glass-btn.glass-tool-line {
+            padding:18px;
+        }
+           /* Стили для иконок внутри плиток */
+.jiras-glass-btn-icon-large {
+        font-size: 16px;
+        margin-bottom: 4px;
+    }
+            /* Адаптивность для маленьких экранов (если нужно) */
+    @media (max-width: 500px) {
+        .jiras-glass-toolbar {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
-    .jiras-glass-toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+.jiras-glass-toolbar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
         margin-bottom: 15px;
-        justify-content: center;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .jiras-glass-input-container {
@@ -257,21 +290,37 @@ ${glassStylesJiraS}
         <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="jirainstr" title="Инструкция по этой форме">❓</button>
     </div>
 
-    <div class="jiras-glass-toolbar" id="control_jira_search">
-        <button class="mainButton jiras-glass-btn active-query" id="defaultQuery" title="Страница поиска по умолчанию">📇Default</button>
-        <button class="mainButton jiras-glass-btn" id="ZBPQuery" title="Страница для поиска Zero Bug Policy">🙅‍♂️ZeroBug</button>
-        <button class="mainButton jiras-glass-btn" id="freshQuery" title="Выводит свежесозданные баги в порядке убывания">🍀Fresh</button>
-        <button class="mainButton jiras-glass-btn" id="customQuery" title="Ручное составление JQL запроса">📝Custom</button>
-        <button class="mainButton jiras-glass-btn" id="PSquery" title="Поиск по ID или тексту в Project Support">😵PS</button>
-        <button class="mainButton jiras-glass-btn" id="getiosbugs" title="Ищет баги по iOS">🍏iOS</button>
-        <button class="mainButton jiras-glass-btn" id="getandroidbugs" title="Ищет баги по Android">🤖Android</button>
-        <button class="mainButton jiras-glass-btn" id="favouriteBugs" title="Сохраненные баги">❤</button>
+<div class="jiras-glass-toolbar" id="control_jira_search">
+        <button class="mainButton jiras-glass-btn active-query glass-tool-line" id="defaultQuery" title="Дефолтный поиск">
+            <span class="jiras-glass-btn-icon-large">📇</span>Default
+        </button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="ZBPQuery" title="Zero Bug Policy">
+            <span class="jiras-glass-btn-icon-large">🙅‍♂️</span>ZeroBug
+        </button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="freshQuery" title="Свежие баги">
+            <span class="jiras-glass-btn-icon-large">🍀</span>Fresh
+        </button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="customQuery" title="Ваш JQL запрос">
+            <span class="jiras-glass-btn-icon-large">📝</span>Custom
+        </button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="PSquery" title="Project Support">
+            <span class="jiras-glass-btn-icon-large">😵</span>Support
+        </button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="getiosbugs" title="iOS задачи">
+            <span class="jiras-glass-btn-icon-large">🍏</span>iOS
+        </button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="getandroidbugs" title="Android задачи">
+            <span class="jiras-glass-btn-icon-large">🤖</span>Android
+        </button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="favouriteBugs" title="Избранное">
+            <span class="jiras-glass-btn-icon-large">❤</span>Saved
+        </button>
     </div>
 
     <div class="jiras-glass-input-container" id="fields_jira_search">
-        <textarea id="JQLquery" class="\${exttheme} jiras-glass-input jiras-glass-textarea" placeholder="JQL запрос" title="Введите сюда JQL запрос" autocomplete="off"></textarea>
+        <textarea id="JQLquery" class="jiras-glass-input jiras-glass-textarea" placeholder="JQL запрос" title="Введите сюда JQL запрос" autocomplete="off"></textarea>
         <div style="display: flex; width: 96%; gap: 8px;">
-            <input id="testJira" class="\${exttheme} jiras-glass-input" placeholder="Введите слово/фразу" autocomplete="off" style="border-radius: 20px; flex-grow: 1;">
+            <input id="testJira" class="jiras-glass-input" placeholder="Введите слово/фразу" autocomplete="off" style="border-radius: 20px; flex-grow: 1; height:30px;">
             <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="getJiraTasks">🚀</button>
         </div>
     </div>
