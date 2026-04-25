@@ -1,131 +1,243 @@
-var win_taskform = //описание формы создания задач в СРМ2
-    `<div style="display: flex; width: 414px;">
-        <span style="width: 414px">
-                <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 410px;" id="create_form_header">
-                            <button class="mainButton buttonHide" title="скрывает меню" id="hideMeCreateForm">hide</button>
-                            <button class="mainButton smallbtn" title="По нажатию обновляет хеш чата в соответствующем поле, на случай, если при открытии формы вы открыли не тот чат, в котором обратился пользователь" id="refreshhashcreateform">♻</button>
-							<button class="mainButton smallbtn" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearcreateform">🧹</button>
-							<span style="color:bisque">Статус урока: </span>
-							<span id="statusuroka"></span>
-                        </div>
+// --- CSS СТИЛИ ДЛЯ GLASSMORPHISM ---
+const glassStylesTask = `
+<style>
+    .glass-panel-task {
+        background: rgba(45, 47, 56, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+        color: bisque;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    .glass-btn-task {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: #fff;
+        padding: 6px 12px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        outline: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .glass-btn-task:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: translateY(-2px);
+    }
+    .glass-btn-task:active {
+        transform: translateY(1px);
+    }
+    .glass-input-task,
+    .glass-select-task,
+    .glass-textarea-task {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        color: #fff;
+        padding: 8px;
+        outline: none;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .glass-input-task::placeholder,
+    .glass-textarea-task::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    .glass-input-task:focus,
+    .glass-select-task:focus,
+    .glass-textarea-task:focus {
+        background: rgba(0, 0, 0, 0.3);
+        border-color: rgba(105, 164, 199, 0.8);
+        box-shadow: 0 0 10px rgba(105, 164, 199, 0.3);
+    }
+    .glass-textarea-task {
+        resize: vertical;
+        min-height: 80px;
+    }
+    .err-shake-task {
+        animation: shake 0.4s;
+        border-color: #ff4d4d !important;
+        background: rgba(255, 77, 77, 0.15) !important;
+    }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+    }
+    /* Кастомный красивый скроллбар */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
 
-                        <div id="addcreateformbtns">
-                            <button class="mainButton" id="critteachertostudent" style="height:25px; width: 48%; margin-left:8px;">🔴 👽П -&gt; У👨‍🎓</button>
-                            <button class="mainButton" id="critstudenttoteacher" style="height:25px; width: 48%;">🔴 👨‍🎓У -&gt; П👽</button>
-                            <br>
-                            <button class="mainButton" id="critteacherno" style="height:25px; width: 48%; margin-left:8px; margin-top:3px;">🔴 👽П н.о.</button>
-                            <button class="mainButton" id="critstudentno" style="height:25px; width: 48%;">🔴 👨‍🎓У н.о.</button>
-                            <br>
-                            <button class="mainButton" id="highteachersc" style="height:25px; width: 48%; margin-left:8px; margin-top:3px;">👽 Исх. звонки (SC)</button>
-							<button class="mainButton" id="highteachertc" style="height:25px; width: 48%;">👽 Teachers Care</button>
-                            <br>
-                            <button class="mainButton" id="highsecondline" style="height:25px; width: 32%; margin-left:8px; margin-top:3px;">🗓 Календарь У/П</button>
-                            <button class="mainButton" id="lowkm" style="height:25px; width: 18%;">😡 КМ</button>
-                            <button class="mainButton" id="highprem" style="height:25px; width: 18%;">🅿️ Prem</button>
-                            <button class="mainButton" id="low2lvimbug" style="height:25px; width: 26%;">🐞2Л vim-bug</button>
-                        </div>
+    .status-badge-task {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 12px;
+        display: inline-block;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .btn-row-task {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+        gap: 6px;
+    }
+    .btn-row-task .glass-btn-task {
+        flex: 1;
+        font-size: 13px;
+        padding: 6px;
+    }
+</style>
+`;
 
-                        <div style="margin: 5px; margin-top: 0px; width: 405px" id="create_form_menu">
-                            <input class="${exttheme}" disabled="" required id="chathashlnk" placeholder="Хэш чата" title="Хеш чата, из которого будет создано обращение в СРМ" autocomplete="off" type="text" style="text-align: center; width: 410px; margin-top: 5px; text-align:center; width:100%">
-							<br>
-							<select class="${exttheme}" required id="priority" style="width: 100%; text-align: center; height: 28px;">
-								<option disabled="" selected="">Приоритет</option>
-								<option value="low" style="color:green; font-weight:600">🟢 Низкий</option>
-								<option value="high" style="color:orange; font-weight:600">🟡 Высокий</option>
-								<option value="highest" style="color:red; font-weight:600">🔴 Критический</option>
-							</select>
+var win_taskform = `
+    ${glassStylesTask}
+    <div style="display: flex; width: 420px; position: relative;">
+        <div class="glass-panel-task" style="width: 100%; position: relative; z-index: 2;">
+            <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px;" id="create_form_header">
+                <button class="glass-btn-task" title="Скрыть меню" id="hideMeCreateForm">👁️ Hide</button>
+                <button class="glass-btn-task" title="Обновить хеш чата" id="refreshhashcreateform">♻</button>
+                <button class="glass-btn-task" title="Очистить форму" id="clearcreateform">🧹</button>
+                <span style="font-size: 13px; margin-left: auto;">Статус: <span id="statusuroka" class="status-badge-task" style="background: #69a4c7;">Загрузка...</span></span>
+            </div>
 
-							<select class="${exttheme}" required id="customerservice" style="width: 100%; text-align: center; height: 28px;">
-								<option disabled="" selected="">Отдел</option>
-								<option value="tech_support_outgoing_crm2" style="color:red;">🛠️Техподдержка 1Л CRM (исход)</option>
-								<option value="teachers_care_crm">👽Teachers Care</option>
-								<option value="content_management">📄Контент</option>
-								<option value="outgoing_calls_crm2">📞Исходящие звонки (КЦ исход)</option>
-								<option value="tech_support_second_line_crm2" style="color:green;">🥈Техподдержка 2Л CRM</option>
-                                <option value="crisis_manager">😡Кризис менеджеры</option>
-                                <option value="personal_support">🅿️Персональное сопровождение(Premium)</option>
-							</select>
+            <div id="addcreateformbtns" style="margin-bottom: 15px;">
+                <div class="btn-row-task">
+                    <button class="glass-btn-task" id="critteachertostudent">🔴 👽П -&gt; У👨‍🎓</button>
+                    <button class="glass-btn-task" id="critstudenttoteacher">🔴 👨‍🎓У -&gt; П👽</button>
+                </div>
+                <div class="btn-row-task">
+                    <button class="glass-btn-task" id="critteacherno">🔴 👽П н.о.</button>
+                    <button class="glass-btn-task" id="critstudentno">🔴 👨‍🎓У н.о.</button>
+                </div>
+                <div class="btn-row-task">
+                    <button class="glass-btn-task" id="highteachersc">👽 Исх. (SC)</button>
+                    <button class="glass-btn-task" id="highteachertc">👽 Teachers Care</button>
+                </div>
+                <div class="btn-row-task">
+                    <button class="glass-btn-task" id="highsecondline" style="flex: 1.5;">🗓 Календарь У/П</button>
+                    <button class="glass-btn-task" id="lowkm">😡 КМ</button>
+                    <button class="glass-btn-task" id="highprem">🅿️ Prem</button>
+                    <button class="glass-btn-task" id="low2lvimbug">🐞2Л vim</button>
+                </div>
+            </div>
 
-							<input class="${exttheme}" id="taskserviceid" placeholder="🆔 ID услуги" style="width: 100%; height: 28px;">
-							<br>
-							<input class="${exttheme}" required id="taskuserid" placeholder="🆔 ID пользователя" style="width: 92%; height: 28px;">
-                            <button class="mainButton smallbtn" id="searchuserservices">⬅️</button>
-							<br>
-                            <span id="NoteNotice" style="color:bisque; display:none;">Будет добавлена заметка: </span>
-                            <span id="NoteNoticeText" title="Нажми для отмены отправки заметки" style="background:#69a4c7; color:#fff;  font-weight:300; border:1px solid black; display:none;"></span>
-							<label style="color:bisque; display:none;">Используйте кнопку ниже для открытия создания задачи в СРМ на техподдержку 2 линии с обязательным выбором Темы обращения "Запланированная связь с пользователем" и время открытия задачи, которое забронировали на datsy.ru . Другие задачи на 2ЛТП передаем в прежнем режиме через это окно.</label>
-							<br>
-							<button class="mainButton" style="margin-left: 70px; display:none;" id="taskcreate2linecrm">Создать задачу на 2ЛТП по календарю</button>
+            <div id="create_form_menu" style="display: flex; flex-direction: column; gap: 8px;">
+                <input class="glass-input-task ${exttheme}" disabled id="chathashlnk" placeholder="Хэш чата" autocomplete="off" style="text-align: center;">
 
-							<textarea class="${exttheme}" required id="taskcomment" placeholder="Комментарий" title="Укажите комментарий к задаче, что было сделано, что требуется сделать" autocomplete="off" type="text" style="text-align: center; width: 100%; height:100px; margin-top: 5px"></textarea>
+                <select class="glass-select-task ${exttheme}" id="priority" style="text-align: center;">
+                    <option disabled selected value="">Укажите Приоритет</option>
+                    <option value="low" style="color: #4CAF50; font-weight:600">🟢 Низкий</option>
+                    <option value="high" style="color: #FFC107; font-weight:600">🟡 Высокий</option>
+                    <option value="highest" style="color: #F44336; font-weight:600">🔴 Критический</option>
+                </select>
 
-							<br>
-							<button class="mainButton" id="studcontact" style="width: 115px;position: relative;left: 14%;margin-top: 5px;transform: translate(-50%, 0);">Обр П, связь с У</button>
-							<button class="mainButton" id="teachcontact" style="width: 115px;position: relative;left: 14%;margin-top: 5px;transform: translate(-50%, 0);">Обр У, связь с П</button>
-							<button class="mainButton" id="nrteacher" style="width: 80px;position: relative;left: 11%;margin-top: 5px;transform: translate(-50%, 0);">Крит П Н.О</button>
-							<button class="mainButton" id="nrstudent" style="width: 80px;position: relative;left: 11%;margin-top: 5px;transform: translate(-50%, 0);">Крит У Н.О</button>
+                <select class="glass-select-task ${exttheme}" id="customerservice" style="text-align: center;">
+                    <option disabled selected value="">Укажите Отдел</option>
+                    <option value="tech_support_outgoing_crm2" style="color: #F44336;">🛠️ Техподдержка 1Л CRM (исход)</option>
+                    <option value="teachers_care_crm">👽 Teachers Care</option>
+                    <option value="content_management">📄 Контент</option>
+                    <option value="outgoing_calls_crm2">📞 Исходящие звонки (КЦ исход)</option>
+                    <option value="tech_support_second_line_crm2" style="color: #4CAF50;">🥈 Техподдержка 2Л CRM</option>
+                    <option value="crisis_manager">😡 Кризис менеджеры</option>
+                    <option value="personal_support">🅿️ Персональное сопровождение (Premium)</option>
+                </select>
 
-							<div>
-								<button class="mainButton" title="Создает задачу на СРМ2 на выранный отдел и приоритет" id="createtask" style="width: 80px;position: relative;left: 50%;margin-top: 5px;transform: translate(-50%, 0); background: chocolate;">Отправить</button>
-							</div>
+                <input class="glass-input-task ${exttheme}" id="taskserviceid" placeholder="🆔 ID услуги">
 
-						</div>
-		</span>
-        </span>
-			<div id="servicehelper" class="srvhhelpnomove" style="position: absolute; top: -1px; left: -311px; width: 310px; max-height: 400px; overflow: auto; background: #464451; cursor:default;">
-				<input class="${exttheme}" id="useriddata" placeholder="ID У для получения списка услуг" style="width:240px; margin:10px; text-align:center;">
-				<button class="mainButton smallbtn" id="getuserservices">🔎</button>
-				<p id="serviceinf"></p>
-                <p id="serviceComplinf"></p>
-			</div>
-</div>`;
+                <div style="display: flex; gap: 8px;">
+                    <input class="glass-input-task ${exttheme}" id="taskuserid" placeholder="🆔 ID пользователя">
+                    <button class="glass-btn-task" id="searchuserservices" title="Найти услуги">🔎</button>
+                </div>
 
-var win_speccommwindow =
-    `<div style="border: 2px double black; background-color: #464451; cursor: -webkit-grab; width: 350px;">
-        <div style="display: flex;">
-            <button title="Скрытие меню" id="hideMeSpecComm" class="mainButton buttonHide" style="margin: 5px; float: left;">hide</button>
+                <div id="NoteNoticeWrap" style="font-size: 13px; display: none; background: rgba(105, 164, 199, 0.3); padding: 6px; border-radius: 6px;">
+                    <span style="color: bisque;">Будет добавлена заметка: </span>
+                    <span id="NoteNoticeText" title="Нажми для отмены" style="color: #fff; cursor: pointer; text-decoration: underline;"></span>
+                </div>
+
+                <button class="glass-btn-task" style="display:none; background: rgba(76, 175, 80, 0.4);" id="taskcreate2linecrm">Создать задачу на 2ЛТП по календарю</button>
+
+                <textarea class="glass-textarea-task ${exttheme}" id="taskcomment" placeholder="Комментарий к задаче" autocomplete="off"></textarea>
+
+                <div class="btn-row-task" style="margin-top: 5px;">
+                    <button class="glass-btn-task" id="studcontact">Обр П ➔ У</button>
+                    <button class="glass-btn-task" id="teachcontact">Обр У ➔ П</button>
+                    <button class="glass-btn-task" id="nrteacher">Крит П Н.О</button>
+                    <button class="glass-btn-task" id="nrstudent">Крит У Н.О</button>
+                </div>
+
+                <button class="glass-btn-task" id="createtask" style="background: rgba(210, 105, 30, 0.8); font-weight: bold; font-size: 15px; padding: 10px; margin-top: 5px;">🚀 Отправить задачу</button>
+            </div>
         </div>
-        <div style="display: flex;">
-            <p id="speccommtext" style="color: bisque; font-size: 16px; margin: 5px; max-height: 300px; overflow-y: auto; border: 1px solid #000; padding: 5px;"></p>
+
+        <div id="servicehelper" class="glass-panel-task srvhhelpnomove" style="position: absolute; top: 0; left: -320px; width: 310px; max-height: 500px; overflow-y: auto; z-index: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                <input class="glass-input-task ${exttheme}" id="useriddata" placeholder="ID студента (услуги)">
+                <button class="glass-btn-task" id="getuserservices">🔎</button>
+            </div>
+            <div id="serviceinf" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            <div id="serviceComplinf" style="margin-top: 10px;"></div>
         </div>
     </div>`;
 
+var win_speccommwindow = `
+    ${glassStylesTask}
+    <div class="glass-panel-task" style="width: 350px; cursor: -webkit-grab;">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;">
+            <button title="Скрыть меню" id="hideMeSpecComm" class="glass-btn-task" style="padding: 2px 8px; font-size: 12px;">✖ Close</button>
+        </div>
+        <div id="speccommtext" style="font-size: 14px; max-height: 300px; overflow-y: auto; padding: 5px; word-wrap: break-word;"></div>
+    </div>`;
 
-var NoteFlag = 0; // флаг отправлять заметку или нет
-var NoteText = ''; // какой текст отправим в заметку
+// Глобальные переменные
+var NoteFlag = 0;
+var NoteText = '';
+var srvcont = null;
 
+// Инициализация окон (твоя внешняя функция createWindow)
 const wintCreateTask = createWindow('AF_Createtask', 'winTopTaskCreate', 'winLeftTaskCreate', win_taskform);
 const winSpecCommWindow = createWindow('AF_SpecCommWindow', 'winTopSpecCommWindow', 'winLeftSpecCommWindow', win_speccommwindow);
 
-document.getElementById('AF_SpecCommWindow').ondblclick = function (a) {
-    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') { document.getElementById('hideMeSpecComm').click(); }
-}
+// Обработчики двойного клика для скрытия
+document.getElementById('AF_SpecCommWindow').ondblclick = (a) => {
+    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') document.getElementById('hideMeSpecComm').click();
+};
+document.getElementById('AF_Createtask').ondblclick = (a) => {
+    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') document.getElementById('hideMeCreateForm').click();
+};
 
-document.getElementById('AF_Createtask').ondblclick = function (a) { // скрытие окна создания задачи в CRM2 по двойному клику
-    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') { document.getElementById('hideMeCreateForm').click(); }
-}
-
-document.getElementById('hideMeSpecComm').onclick = function () {
+document.getElementById('hideMeSpecComm').onclick = () => {
     document.getElementById('AF_SpecCommWindow').style.display = 'none';
-    document.getElementById('speccommtext').innerText = '';
-}
+    document.getElementById('speccommtext').innerHTML = '';
+};
 
 function handleSpecCommentClick(text) {
     document.getElementById('speccommtext').innerHTML = text;
     document.getElementById('AF_SpecCommWindow').style.display = '';
 }
 
-document.getElementById('taskserviceid').addEventListener('input', () => onlyNumber(document.getElementById('taskserviceid')));
-document.getElementById('taskuserid').addEventListener('input', () => onlyNumber(document.getElementById('taskuserid')));
-document.getElementById('useriddata').addEventListener('input', () => onlyNumber(document.getElementById('useriddata')));
-
-function replaceAllwrongsimbols(text) {
-    text = text.replace(/\n/g, '<br>')
-        .replace(/\/\//g, ' ')
-        .replace(/\//g, '&#47;');
-    return text;
-}
+// Защита от ввода не-цифр (твоя функция onlyNumber)
+['taskserviceid', 'taskuserid', 'useriddata'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', (e) => onlyNumber(e.target));
+});
+// Утилита для выполнения API запросов с Promise (избавляет от вложенностей)
+const sendBgRequest = (url, options = { method: 'GET' }) => {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url, requestOptions: options }, (response) => {
+            if (!response || !response.success) reject(new Error(response?.error || 'Unknown error'));
+            else resolve(JSON.parse(response.fetchansver));
+        });
+    });
+};
 
 function doHideForm(flag = localStorage.getItem('hideTaskWindow')) {
     if (location.href.indexOf('skyeng.autofaq.ai/tickets/assigned') !== -1) {
@@ -144,751 +256,431 @@ function doHideForm(flag = localStorage.getItem('hideTaskWindow')) {
     }
 }
 
-var srvarray;
-var srvcont;
-
-var usersrv;
-var usersrvparsed;
-
-function gettaskButButtonPress() { // функция открытия окна для работы с созданием задач на СРМ
-
+// ГЛАВНАЯ ФУНКЦИЯ
+async function gettaskButButtonPress() {
     let conversid;
     document.getElementById('serviceinf').innerHTML = '';
 
-    if (document.getElementById('AF_Createtask').style.display == 'none') {
-        document.getElementById('AF_Createtask').style.display = ''
-        taskBut.classList.add('activeScriptBtn')
+    if (document.getElementById('AF_Createtask').style.display === 'none') {
+        document.getElementById('AF_Createtask').style.display = '';
+        if (typeof taskBut !== 'undefined') taskBut.classList.add('activeScriptBtn');
 
-        const fetchURL = `https://backend.skyeng.ru/api/products/configurations/`;
-        const requestOptions = {
-            method: 'GET'
+        // Запрашиваем конфигурацию (Один раз при открытии)
+        if (!srvcont) {
+            try {
+                srvcont = await sendBgRequest(`https://backend.skyeng.ru/api/products/configurations/`);
+            } catch (e) {
+                console.error("Ошибка загрузки конфигураций:", e);
+            }
+        }
+
+        // Кнопка поиска услуг (Лупа)
+        document.getElementById('getuserservices').onclick = async () => {
+            const idshka = document.getElementById('useriddata').value.trim();
+            if (!idshka) return;
+
+            document.getElementById('serviceinf').innerHTML = '<div style="text-align:center;">⏳ Загрузка...</div>';
+            document.getElementById('serviceComplinf').innerHTML = "";
+            const complectationServInfo = document.getElementById('cmplData');
+            if (complectationServInfo) complectationServInfo.innerHTML = "";
+
+            try {
+                const [otvetEdServ, chechkComplectations] = await Promise.all([
+                    sendBgRequest(`https://backend.skyeng.ru/api/persons/${idshka}/education-services/`),
+                    sendBgRequest(`https://backend.skyeng.ru/api/v1/students/${idshka}/education-service-kits/`)
+                ]);
+
+                document.getElementById('serviceinf').innerHTML = ''; // Очистка после загрузки
+
+                // Рендер регулярных услуг
+                if (otvetEdServ?.data && srvcont?.data) {
+                    otvetEdServ.data.forEach(srv => {
+                        const config = srvcont.data.find(c => c.serviceTypeKey === srv.serviceTypeKey);
+                        if (config) srv.serviceTypeKey = config.shortTitle;
+
+                        if (srv.incorrectnessReason == null) {
+                            let balance = srv.balance ?? '0';
+                            let studentInfo = `${srv.student.general.id} ${srv.student.general.name || ''} ${srv.student.general.surname || ''}`;
+                            let teacherInfo = srv.teacher ? `${srv.teacher.general.id} ${srv.teacher.general.name} ${srv.teacher.general.surname}` : '—';
+
+                            let stageObj = { bg: '#2b602b', text: 'bisque', title: 'Регулярные занятия' }; // regular_lessons
+                            if (srv.stage === 'lost') stageObj = { bg: '#5a0f77', text: 'bisque', title: 'Потерянная услуга' };
+                            else if (["after_trial", "before_call"].includes(srv.stage)) stageObj = { bg: '#d59f34', text: '#fff', title: 'Этап ВУ' };
+
+                            let html = `
+                                <div class="glass-panel-task srvhhelpnomove outservfield-item" data-id="${srv.id}" style="background: ${stageObj.bg}; color: ${stageObj.text}; font-size: 13px; border-color: rgba(255,255,255,0.2);">
+                                    <div style="text-align:center; background: rgba(0,0,0,0.4); padding: 4px; border-radius: 4px; margin-bottom: 4px;">
+                                        ${stageObj.title} <span class="specomment-btn" data-id="${srv.id}" style="cursor:pointer;" title="Спец. комментарий">💭</span> | 💰 Баланс: ${balance}
+                                    </div>
+                                    🆔 <span style="font-weight: bold;">${srv.id}</span> — ${srv.serviceTypeKey}
+                                    <span class="movetoservid-btn" title="Перенести ID" style="cursor:pointer; float:right; font-size: 16px;">➡️</span><br>
+                                    👨‍🎓 Студент: ${studentInfo}<br>
+                                    👽 Препод: ${teacherInfo}
+                                </div>`;
+                            document.getElementById('serviceinf').insertAdjacentHTML('beforeend', html);
+                        }
+                    });
+                }
+
+                // Рендер комплектаций
+                if (chechkComplectations?.data?.length > 0) {
+                    let lnkTaskCrCompl = document.getElementById('serviceComplinf');
+                    lnkTaskCrCompl.innerHTML = '<div id="openComplectationTaskCreate" class="glass-btn" style="background: rgba(78, 120, 145, 0.8); text-align:center;">✅ Открыть комплектации ➔</div>';
+
+                    document.getElementById('openComplectationTaskCreate').addEventListener('click', () => {
+                        let getComplWindow = document.getElementById('AF_Complectations');
+                        if (getComplWindow) getComplWindow.style.display = getComplWindow.style.display === "none" ? "" : "none";
+                    });
+
+                    chechkComplectations.data.forEach(service => {
+                        if (service.incorrectnessReason == null && complectationServInfo) {
+                            let tableHTML = `<table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 5px;">`;
+                            tableHTML += `<tr style="background: rgba(0,0,0,0.5); border-bottom: 1px solid #555;">
+                                <th>ID</th><th>STK</th><th>Урок</th><th>СК</th><th></th></tr>`;
+
+                            service.educationServices.forEach(el => {
+                                let { formattedText, lessontype } = formatServiceType(el.serviceTypeKey);
+                                tableHTML += `
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <td style="padding: 4px;"><a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:#69a4c7;">${el.id}</a></td>
+                                    <td>${formattedText}</td>
+                                    <td data-id="${el.id}" lessontype="${lessontype}" class="complect-nextlesson">⏳</td>
+                                    <td class="specomment-compl" data-id="${el.id}" style="cursor:pointer;">💭</td>
+                                    <td class="insert-complect-id" data-id="${el.id}" style="cursor:pointer;">➡️</td>
+                                </tr>`;
+                            });
+                            tableHTML += '</table>';
+                            complectationServInfo.insertAdjacentHTML('beforeend',
+                                `<div class="glass-panel-task" style="margin-bottom: 8px; background: rgba(74, 125, 85, 0.6); padding: 5px;">
+                                    <div style="text-align: center; font-weight: bold;">${service.productKit.title} | ${service.stage}</div>
+                                    ${tableHTML}
+                                </div>`);
+                        }
+                    });
+                }
+
+                // Перенос ID в инпут
+                document.querySelectorAll('.movetoservid-btn, .insert-complect-id').forEach(btn => {
+                    btn.onclick = (e) => {
+                        const targetId = e.target.closest('[data-id]').getAttribute('data-id');
+                        if (document.getElementById('taskserviceid')) document.getElementById('taskserviceid').value = targetId;
+                        validateField(document.getElementById('taskserviceid'), true); // Снимаем подсветку ошибки
+                    };
+                });
+
+                // Загрузка Спец. комментариев
+                document.querySelectorAll('.specomment-btn, .specomment-compl').forEach(btn => {
+                    btn.onclick = async (e) => {
+                        const servId = e.target.getAttribute('data-id');
+                        try {
+                            const specData = await sendBgRequest(`https://backend.skyeng.ru/api/students/${idshka}/education-services/${servId}/general/`);
+                            let note = specData?.data?.operatorNote;
+                            if (!note) {
+                                e.target.innerText = '❌';
+                                return;
+                            }
+                            note = note.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>');
+                            if (note.toLowerCase().includes("звон")) {
+                                note = highlightSearchText(note, "звон");
+                                e.target.innerText = '⚠️';
+                            }
+                            handleSpecCommentClick(note);
+                        } catch (err) {
+                            e.target.innerText = '❌';
+                        }
+                    };
+                });
+
+                // Подгрузка будущих уроков
+                document.querySelectorAll('.complect-nextlesson').forEach(async el => {
+                    let eduservise = el.getAttribute('data-id');
+                    let lessontype = el.getAttribute('lessontype');
+                    let url = lessontype === 'f2f'
+                        ? `https://backend.skyeng.ru/api/students/education-services/${eduservise}/timetable/future-lessons/`
+                        : `https://backend.skyeng.ru/api/students/education-services/${eduservise}/timetable/group/future-lessons/`;
+
+                    try {
+                        const ttData = await sendBgRequest(url);
+                        if (ttData?.data?.length > 0 && ttData.data[0].startedAt) {
+                            const lessonDateObj = new Date(ttData.data[0].startedAt);
+                            const formatter = new Intl.DateTimeFormat('ru-RU', {
+                                timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit',
+                                hour: '2-digit', minute: '2-digit'
+                            });
+                            el.innerText = formatter.format(lessonDateObj);
+
+                            const now = new Date();
+                            const diffMinutes = (now - lessonDateObj) / (1000 * 60);
+                            if (diffMinutes >= -50 && diffMinutes <= 10) {
+                                el.style.color = '#ff4d4d';
+                                el.style.fontWeight = 'bold';
+                            }
+                        } else {
+                            el.innerText = '—';
+                        }
+                    } catch { el.innerText = '—'; }
+                });
+
+            } catch (e) {
+                document.getElementById('serviceinf').innerHTML = `<div style="color:red; text-align:center;">Ошибка: ${e.message}</div>`;
+            }
         };
 
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-            if (!response.success) {
-                alert('Не удалось выполнить запрос: ' + response.error);
-                return;
-            } else {
-                const otvet = JSON.parse(response.fetchansver);
-                srvcont = otvet
+        // Связка поля пользователя с поисковиком
+        document.getElementById('searchuserservices').onclick = () => {
+            let val = document.getElementById('taskuserid').value.replace(/\D/g, '');
+            if (val.length > 4) {
+                document.getElementById('useriddata').value = val;
+                document.getElementById('getuserservices').click();
             }
-        })
+        };
 
-        document.getElementById('getuserservices').onclick = function () {
-            let speccommntarray = [];
-            let speccommntcompl = [];
-            let speccommntcomplcount = '';
-            if (document.getElementById('serviceinf').innerHTML != '')
-                document.getElementById('serviceinf').innerHTML = '';
-
-            if (document.getElementById('serviceComplinf').innerHTML != '')
-                document.getElementById('serviceComplinf').innerHTML = ""
-
-            let complectationServInfo = document.getElementById('cmplData');
-            complectationServInfo.innerHTML = ""
-
-
-            let idshka = document.getElementById('useriddata').value.trim();
-            let lnkTaskCrCompl = document.getElementById('serviceComplinf')
-
-            const fetchURL = `https://backend.skyeng.ru/api/persons/${idshka}/education-services/`;
-            const requestOptions = {
-                method: 'GET'
-            };
-
-            const fetchURLComplectations = `https://backend.skyeng.ru/api/v1/students/${idshka}/education-service-kits/`;
-            const requestOptionsComplectations = {
-                method: 'GET'
-            };
-
-            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
-                if (!response.success) {
-                    alert('Не удалось выполнить запрос: ' + response.error);
-                    return;
-                } else {
-                    const otvetEdServ = JSON.parse(response.fetchansver);
-
-                    for (let i = 0; i < otvetEdServ.data.length; i++) {
-                        for (let j = 0; j < srvcont.data.length; j++) {
-                            if (srvcont.data[j].serviceTypeKey == otvetEdServ.data[i].serviceTypeKey) {
-                                otvetEdServ.data[i].serviceTypeKey = srvcont.data[j].shortTitle;
-                                if (otvetEdServ.data[i].incorrectnessReason == null) {
-                                    let specommentElement = '<span name="specomment" title="Посмотреть Спец.комментарий">💭</span>';
-                                    let balance = otvetEdServ.data[i].balance != null ? otvetEdServ.data[i].balance : '0';
-                                    let studentInfo = otvetEdServ.data[i].student.general.id + ' ' +
-                                        (otvetEdServ.data[i].student.general.name || '') + ' ' +
-                                        (otvetEdServ.data[i].student.general.surname || '');
-                                    let teacherInfo = otvetEdServ.data[i].teacher != null ?
-                                        otvetEdServ.data[i].teacher.general.id + ' ' +
-                                        otvetEdServ.data[i].teacher.general.name + ' ' +
-                                        otvetEdServ.data[i].teacher.general.surname : '—';
-                                    let serviceIdInfo = '🆔 услуги: ' + otvetEdServ.data[i].id + ' — ' + otvetEdServ.data[i].serviceTypeKey +
-                                        '<span class="srvhhelpnomove" name="movetoservid" title="По клику перенесет ID услуги в поле создания задачи" style="cursor:pointer; font-size:16px;"> ➡</span>';
-
-                                    let generateBlock = (background, textColor, stageText, teacherInfoText) =>
-                                        `<div class="srvhhelpnomove" name="outservfield" title="${otvetEdServ.data[i].id}" style="background: ${background}; color:${textColor}; margin-left: 5px; border: 1px solid bisque;">` +
-                                        `<div style="text-align:center; background:grey;">${stageText} ${specommentElement} | 💰 Баланс: ${balance}</div>` +
-                                        `${serviceIdInfo}<br>` +
-                                        `👨‍🎓 Student: ${studentInfo}<br>` +
-                                        `👽 Teacher: ${teacherInfoText}<br></div>`;
-
-                                    if (otvetEdServ.data[i].stage == 'regular_lessons') {
-                                        document.getElementById('serviceinf').innerHTML += generateBlock('#2b602b', 'bisque', 'Регулярные занятия', teacherInfo);
-                                    } else if (otvetEdServ.data[i].stage == 'lost') {
-                                        document.getElementById('serviceinf').innerHTML += generateBlock('#5a0f77', 'bisque', 'Потерянная услуга', '—');
-                                    } else if (otvetEdServ.data[i].stage == "after_trial" || otvetEdServ.data[i].stage == "before_call") {
-                                        document.getElementById('serviceinf').innerHTML += generateBlock('#d59f34', '#ffffff', 'Этап ВУ', '—');
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    for (let z = 0; z < document.getElementsByName('movetoservid').length; z++) {
-                        document.getElementsByName('movetoservid')[z].onclick = function () {
-                            document.getElementById('taskserviceid').value = document.getElementsByName('outservfield')[z].title
-                        }
-                    }
-
-                    for (let z = 0; z < document.getElementsByName('specomment').length; z++) {
-                        let serviceid = document.getElementsByName('outservfield')[z].title;
-                        let specommentelem = document.getElementsByName('specomment')[z];
-                        const fetchURLspec = `https://backend.skyeng.ru/api/students/${idshka}/education-services/${serviceid}/general/`;
-                        const requestOptionsspec = {
-                            method: 'GET'
-                        };
-
-                        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLspec, requestOptions: requestOptionsspec }, function (response) {
-                            if (!response.success) {
-                                console.log('Не удалось выполнить запрос: ' + response.error);
-                                specommentelem.innerText = '❌';
-                                return;
-                            } else {
-                                const otvetspec = JSON.parse(response.fetchansver);
-                                if (!otvetspec.data.operatorNote) {
-                                    specommentelem.innerText = '❌';
-                                } else {
-                                    speccommntarray[z] = otvetspec.data.operatorNote;
-                                    speccommntarray[z] = replaceAllwrongsimbols(speccommntarray[z]);
-                                    if (speccommntarray[z].toLowerCase().includes("звон")) {
-                                        speccommntarray[z] = highlightSearchText(speccommntarray[z], "звон");
-                                        specommentelem.innerText = '⚠️';
-                                        specommentelem.classList.add('allertcomment', 'blinking');
-                                    }
-                                    specommentelem.addEventListener('click', function () { handleSpecCommentClick(speccommntarray[z]) });
-                                }
-                            }
-                        })
-                    }
-                }
-            })
-
-            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLComplectations, requestOptions: requestOptionsComplectations }, function (response) { // получение информации по комплектациям
-                if (!response.success) {
-                    alert('Не удалось выполнить запрос: ' + response.error);
-                    return;
-                } else {
-                    const chechkComplectations = JSON.parse(response.fetchansver);
-
-                    if (chechkComplectations.data.length > 0) {
-                        lnkTaskCrCompl.innerHTML += '<div id="openComplectationTaskCreate" style="background: #4e7891; text-align:center; cursor:pointer; text-shadow: 1px 1px 2px black; color:bisque;">✅Есть комплектации >>></div>'
-
-                        const openOneCompl = document.getElementById('openComplectationTaskCreate');
-                        openOneCompl.addEventListener('click', function () {
-                            let getComplWindow = document.getElementById('AF_Complectations');
-                            if (getComplWindow.style.display == "none") {
-                                getComplWindow.style.display = "";
-                            } else {
-                                getComplWindow.style.display = "none";
-                            }
-                        });
-
-                        chechkComplectations.data.forEach((service) => {
-                            if (!speccommntcomplcount) {
-                                speccommntcomplcount = 0;
-                            } else {
-                                speccommntcomplcount++;
-                            }
-                            let specommenttitleElementtitle = '<span name="specommenttitle" title="Посмотреть Спец.комментарий">💭</span>';
-                            if (service.incorrectnessReason == null) {
-                                if (service.operatorNote) {
-                                    i = speccommntcomplcount;
-                                    speccommntcompl[i] = service.operatorNote;
-                                    speccommntcompl[i] = replaceAllwrongsimbols(speccommntcompl[i]);
-                                }
-
-                                let gatheredInfoComplSrvs = '<table style="width: 98%; margin: 10px 0; border-collapse: collapse;">';
-                                gatheredInfoComplSrvs += `
-                                    <tr style="background: #776d69; color: white; position: sticky; top: 0;">
-                                        <th style="border: 1px solid black; padding: 5px;">ID Услуги</th>
-                                        <th style="border: 1px solid black; padding: 5px;">STK</th>
-                                        <th style="border: 1px solid black; padding: 5px;">Урок</th>
-                                        <th style="border: 1px solid black; padding: 5px;">СК</th>
-                                        <th style="border: 1px solid black; padding: 5px;"></th>
-                                    </tr>`;
-
-                                const allEduServicesCompl = service.educationServices;
-                                allEduServicesCompl.forEach((el) => {
-                                    let { formattedText, lessontype } = formatServiceType(el.serviceTypeKey); // Вызов функции для форматирования строки
-                                    gatheredInfoComplSrvs += `
-                                            <tr>
-                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">
-                                                    <a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:#32b5f5; text-decoration: none;">${el.id}</a>
-                                                </td>
-                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;">${formattedText}</td>
-                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;" data-id="${el.id}" lessontype="${lessontype}" class="complect-nextlesson"> - </td>
-                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c;" data-id="${el.id}" name="specommentcompl" title="Посмотреть Спец.комментарий">💭</td>
-                                                <td style="border: 1px solid black; padding: 5px; background: #4f4c4c; cursor:pointer;" data-id="${el.id}" class="insert-complect-id">➡</td>
-                                            </tr>`;
-                                });
-                                gatheredInfoComplSrvs += '</table>';
-                                complectationServInfo.innerHTML += `<div style="background: #4a7d55; text-align: center; border-radius: 20px; width: 97%; text-shadow: 1px 1px 2px black; font-weight: 800; margin-bottom:5px;">${service.productKit.title} | ${service.stage == "regular_lessons" ? "Регулярные занятия" : service.stage == "lost" ? "Потерянная" : service.stage} ${specommenttitleElementtitle}</div>` + gatheredInfoComplSrvs;
-                            }
-                        });
-
-                        document.querySelectorAll('.insert-complect-id').forEach(element => {
-                            element.addEventListener('click', function () {
-                                const id = this.getAttribute('data-id');
-                                if (id && document.getElementById('taskserviceid')) {
-                                    document.getElementById('taskserviceid').value = id.trim();
-                                }
-                            });
-                        });
-
-                        document.querySelectorAll('.complect-nextlesson').forEach(element => {
-                            let fetchURLComplectationsTT = "";
-                            let eduservise = element.getAttribute('data-id');
-                            let lessontype = element.getAttribute('lessontype');
-                            if (lessontype == 'f2f') {
-                                fetchURLComplectationsTT = `https://backend.skyeng.ru/api/students/education-services/${eduservise}/timetable/future-lessons/`;
-                            } else if (lessontype == 'group') {
-                                fetchURLComplectationsTT = `https://backend.skyeng.ru/api/students/education-services/${eduservise}/timetable/group/future-lessons/`;
-                            } else {
-                                console.log('не верный тип урока!')
-                                return;
-                            }
-
-                            const requestOptionsComplectationsTT = {
-                                method: 'GET'
-                            };
-                            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLComplectationsTT, requestOptions: requestOptionsComplectationsTT }, function (response) { // получение информации по комплектациям
-                                let nextlessondate = '-';
-                                if (response.success) {
-                                    const chechkComplectationsTT = JSON.parse(response.fetchansver).data;
-                                    if (chechkComplectationsTT.length > 0 && chechkComplectationsTT[0].startedAt) {
-                                        nextlessondate = chechkComplectationsTT[0].startedAt;
-                                        nextlessondate = nextlessondate.replace('T', ' ').replace(/\+00:00$/, '');
-                                        let dateObj = new Date(nextlessondate);
-                                        dateObj.setHours(dateObj.getHours() + 3); // Приводим время к MSK
-                                        nextlessondate = dateObj.toLocaleString('ru-RU', {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                            second: '2-digit',
-                                            year: 'numeric',
-                                            month: '2-digit',
-                                            day: '2-digit'
-                                        });
-                                    }
-                                } else {
-                                    alert('Не удалось выполнить запрос: ' + response.error);
-                                }
-
-                                // Получаем текущее время устройства и приводим его к +3 МСК
-                                let currentDateObj = new Date();
-                                currentDateObj.setMinutes(currentDateObj.getMinutes() + currentDateObj.getTimezoneOffset()); // Приводим к UTC
-                                currentDateObj.setHours(currentDateObj.getHours() + 3); // Приводим к +3 МСК
-
-                                let currentDateTime = currentDateObj.getTime(); // Текущее время в миллисекундах
-
-                                // Разделяем строку nextlessondate на дату и время
-                                let nextLessonDateParts = nextlessondate.split(' ');
-                                if (nextLessonDateParts.length === 2) {
-                                    let dateParts = nextLessonDateParts[0].split('.'); // Разделяем дату на [дд, мм, гггг]
-                                    let timeParts = nextLessonDateParts[1].split(':'); // Разделяем время на [чч, мм, сс]
-
-                                    // Проверяем, что все части корректно распарсились
-                                    if (dateParts.length === 3 && timeParts.length >= 2) {
-                                        // Создаем объект Date из частей даты и времени
-                                        let nextLessonDateTime = new Date(
-                                            parseInt(dateParts[2], 10),            // Год
-                                            parseInt(dateParts[1], 10) - 1,        // Месяц (0-based)
-                                            parseInt(dateParts[0], 10),            // День
-                                            parseInt(timeParts[0], 10),            // Часы
-                                            parseInt(timeParts[1], 10),            // Минуты
-                                            timeParts[2] ? parseInt(timeParts[2], 10) : 0 // Секунды (если есть)
-                                        ).getTime();
-
-                                        // Проверяем диапазон времени
-                                        if (currentDateTime >= nextLessonDateTime - 10 * 60 * 1000 &&
-                                            currentDateTime <= nextLessonDateTime + 50 * 60 * 1000) {
-                                            element.style.background = 'red'; // Красим элемент в красный цвет
-                                        }
-                                    } else {
-                                        console.log("Ошибка разбора даты/времени: некорректный формат nextlessondate");
-                                    }
-                                } else {
-                                    console.log("Ошибка: Некорректный формат nextlessondate");
-                                }
-
-                                element.innerText = nextlessondate;
-                            });
-                        });
-
-                        for (let z = 0; z < document.getElementsByName('specommenttitle').length; z++) {
-                            let SCElement = document.getElementsByName('specommenttitle')
-                            if (speccommntcompl[z]) {
-                                if (speccommntcompl[z].toLowerCase().includes("звон")) {
-                                    speccommntcompl[z] = highlightSearchText(speccommntcompl[z], "звон");
-                                    SCElement[z].innerText = '⚠️';
-                                    SCElement[z].classList.add('allertcomment', 'blinking');
-                                }
-                                SCElement[z].addEventListener('click', function () { handleSpecCommentClick(speccommntcompl[z]) });
-                            } else {
-                                SCElement[z].innerText = '❌';
-                            }
-                        }
-
-                        for (let z = 0; z < document.getElementsByName('specommentcompl').length; z++) {
-                            let specommentelem = document.getElementsByName('specommentcompl')[z];
-                            let serviceid = document.getElementsByName('specommentcompl')[z].getAttribute('data-id')
-                            const fetchURLspec = `https://backend.skyeng.ru/api/students/${idshka}/education-services/${serviceid}/general/`;
-                            const requestOptionsspec = {
-                                method: 'GET'
-                            };
-
-                            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLspec, requestOptions: requestOptionsspec }, function (response) {
-                                if (!response.success) {
-                                    console.log('Не удалось выполнить запрос: ' + response.error);
-                                    specommentelem.innerText = '❌';
-                                    return;
-                                } else {
-                                    const otvetspec = JSON.parse(response.fetchansver);
-                                    if (!otvetspec.data.operatorNote) {
-                                        specommentelem.innerText = '❌';
-                                    } else {
-                                        speccommntarray[z] = otvetspec.data.operatorNote;
-                                        console.log(speccommntarray[z])
-                                        speccommntarray[z] = replaceAllwrongsimbols(speccommntarray[z]);
-                                        if (speccommntarray[z].toLowerCase().includes("звон")) {
-                                            speccommntarray[z] = highlightSearchText(speccommntarray[z], "звон");
-                                            console.log(speccommntarray[z])
-                                            specommentelem.innerText = '⚠️';
-                                            specommentelem.classList.add('allertcomment', 'blinking');
-                                        }
-                                        specommentelem.addEventListener('click', function () { handleSpecCommentClick(speccommntarray[z]) });
-                                    }
-                                }
-                            })
-                        }
-
-                    } else {
-                        linkToComplectationtable.innerHTML += '<div style="background: #4e7891; text-align:center; text-shadow: 1px 1px 2px black;">❌Нет комплектаций</div>';
-                        console.log("Нет услуг комплектаций Домашний Лицей, Large Classes Exams и других");
-                    }
-                }
-            });
+        // Заполнение текущего чата
+        let activeConvId = getChatId();
+        if (activeConvId) {
+            document.getElementById('chathashlnk').value = activeConvId;
+            sendAutofaqAction(activeConvId, [{ name: "buttonId", isFile: false, value: "b49609f3-9ff7-4ba5-a8a8-f2cef770bf19" }], true);
         }
 
+        document.getElementById('refreshhashcreateform').onclick = () => {
+            let id = getChatId();
+            document.getElementById('chathashlnk').value = id || '';
+            const lessonStatus = SearchinAFnewUI("nextClass-statusHTML") || "";
+            const statusEl = document.getElementById('statusuroka');
+            if (lessonStatus.includes("идет") || lessonStatus.includes("идёт")) {
+                statusEl.innerHTML = "Урок идет 🔴";
+                statusEl.style.background = "#d32f2f";
+            } else {
+                statusEl.innerHTML = "Урок не идет 🔵";
+                statusEl.style.background = "#69a4c7";
+            }
+        };
         document.getElementById('refreshhashcreateform').click();
 
-        document.getElementById('searchuserservices').onclick = function () {
-            let inputValue = document.getElementById('taskuserid').value;
-            let idfieldvalue = inputValue.replace(/\D/g, ''); // Оставляем только цифры, удаляем все остальное
-            if (idfieldvalue.length > 4) {
-                document.getElementById('useriddata').value = idfieldvalue;
-                document.getElementById('getuserservices').click();
+        document.getElementById('hideMeCreateForm').onclick = () => {
+            document.getElementById('AF_Createtask').style.display = 'none';
+            if (typeof taskBut !== 'undefined') taskBut.classList.remove('activeScriptBtn');
+            if (document.getElementById('AF_Complectations')) document.getElementById('AF_Complectations').style.display = 'none';
+            document.getElementById('hideMeSpecComm').click();
+
+            if (activeConvId) sendAutofaqAction(activeConvId);
+        };
+
+        document.getElementById('priority').onchange = (e) => {
+            const el = e.target;
+            el.style.color = el.options[el.selectedIndex].style.color || '#fff';
+            el.classList.remove('err-shake');
+        };
+
+        // Универсальная функция применения пресетов
+        const applyPreset = (prioVal, deptVal, noteText, commentPrefix, assignUsluga = true, useNextClassId = false) => {
+            document.getElementById('priority').value = prioVal;
+            document.getElementById('priority').dispatchEvent(new Event('change'));
+            document.getElementById('customerservice').value = deptVal;
+
+            if (noteText) { NoteFlag = 1; NoteText = noteText; NoteNoticeSet(); }
+            else NoteNoticeClear();
+
+            document.getElementById('taskuserid').value = SearchinAFnewUI(useNextClassId ? "nextClass-studentId" : "id") || "";
+            if (assignUsluga) {
+                document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId") || "";
             } else {
-                console.log('Введен не верный id');
+                document.getElementById('taskserviceid').value = "";
             }
-        }
 
-
-        let activeConvId = getChatId();
-
-        if (activeConvId) {
-            document.getElementById('chathashlnk').value = activeConvId
-
-            fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/click", {
-                "headers": {
-                    "accept": "application/json, text/plain, */*",
-                    "content-type": "application/json",
-                    "x-csrf-token": aftoken
-                },
-                "body": `{\"buttonId\":\"b49609f3-9ff7-4ba5-a8a8-f2cef770bf19\",\"conversationId\":\"${activeConvId}\"}`,
-                "method": "POST",
-                "mode": "cors",
-                "credentials": "include"
-            });
-
-        }
-
-        document.getElementById('refreshhashcreateform').onclick = function () {
-            document.getElementById('chathashlnk').value = '';
-            let activeConvId = getChatId();
-
-            if (activeConvId) {
-                document.getElementById('chathashlnk').value = activeConvId
+            let comEl = document.getElementById('taskcomment');
+            if (commentPrefix) {
+                comEl.value = comEl.value ? comEl.value + "\n" + commentPrefix : commentPrefix;
             }
-            const lessonStatus = SearchinAFnewUI("nextClass-statusHTML");
-            if (lessonStatus.includes("идет") || lessonStatus.includes("идёт")) {
-                document.getElementById('statusuroka').innerHTML = lessonStatus
-                document.getElementById('statusuroka').style = "background:rgb(187 5 5); padding:5px; color:#fff;  font-weight:600; border:1px solid black;"
+        };
+
+        // ИСПРАВЛЕНИЕ: Кнопки пресетов теперь направляют в Техподдержку 1Л Исход.
+        document.getElementById('critteachertostudent').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', 'Обратился П. Связаться с У.', 'Проверил связь с П, все ок, свяжитесь с У! КРИТ', true, true);
+        document.getElementById('critstudenttoteacher').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', 'Обратился У. Связаться с П.', 'Проверил связь с У, все ок, свяжитесь с П! КРИТ', true, false);
+        document.getElementById('critteacherno').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', 'Крит Н.О. П', 'Неполадка со стороны П. в чате н.о. Пожалуйста, свяжитесь с П КРИТ', true, true);
+        document.getElementById('critstudentno').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', 'Крит Н.О. У', 'Неполадка со стороны У. в чате н.о. Пожалуйста, свяжитесь с У КРИТ', true, false);
+
+        document.getElementById('highsecondline').onclick = () => applyPreset('high', 'tech_support_second_line_crm2', null, 'Дата и время календаря:\nПриоритетный способ связи:\nОписание неполадки:\nЧто было сделано:', false, false);
+        document.getElementById('highteachertc').onclick = () => applyPreset('high', 'teachers_care_crm', null, null, false, false);
+        document.getElementById('highteachersc').onclick = () => applyPreset('high', 'outgoing_calls_crm2', null, null, false, false);
+        document.getElementById('lowkm').onclick = () => applyPreset('low', 'crisis_manager', null, null, true, false);
+        document.getElementById('highprem').onclick = () => applyPreset('high', 'personal_support', null, null, true, false);
+        document.getElementById('low2lvimbug').onclick = () => applyPreset('low', 'tech_support_second_line_crm2', null, 'Краткое описание:\nШаги воспроизведения:\nОП:\nФП:\nСсылки на скриншоты:\nНужна ли ОС:', false, false);
+
+        const validateField = (el, condition) => {
+            if (!condition) {
+                el.classList.add('err-shake-task');
+                // Убираем класс через 450мс, чтобы можно было вызвать анимацию повторно
+                setTimeout(() => el.classList.remove('err-shake-task'), 450);
+                return false;
+            }
+            el.classList.remove('err-shake-task'); // Если поле валидно, убираем подсветку
+            return true;
+        };
+
+        // Отправка формы Autofaq
+        document.getElementById('createtask').onclick = async function () {
+            let chathash = document.getElementById('chathashlnk');
+            let priority = document.getElementById('priority');
+            let cs = document.getElementById('customerservice');
+            let tservid = document.getElementById('taskserviceid');
+            let tuserid = document.getElementById('taskuserid');
+            let comment = document.getElementById('taskcomment');
+
+            // Сбрасываем старые ошибки перед новой проверкой
+            [chathash, priority, cs, tservid, tuserid, comment].forEach(el => el.classList.remove('err-shake-task'));
+
+            let isValid = true;
+
+            // Базовые проверки
+            isValid &= validateField(chathash, chathash.value.length >= 3);
+            isValid &= validateField(priority, priority.value !== "" && priority.value !== null);
+            isValid &= validateField(cs, cs.value !== "" && cs.value !== null);
+            isValid &= validateField(tuserid, tuserid.value.trim().length >= 3);
+            isValid &= validateField(comment, comment.value.trim().length >= 3);
+
+            // ЛОГИКА ПРОВЕРКИ ID УСЛУГИ (как в старом коде):
+            // ID услуги обязателен ТОЛЬКО если:
+            // 1. Отдел = Кризис менеджеры (любой приоритет)
+            // 2. Отдел = Техподдержка 1Л CRM Исход И приоритет = КРИТИЧЕСКИЙ
+            const isServiceIdRequired = (cs.value === 'crisis_manager') ||
+                (cs.value === 'tech_support_outgoing_crm2' && priority.value === 'highest');
+
+            if (isServiceIdRequired) {
+                isValid &= validateField(tservid, tservid.value.trim().length >= 3);
+            }
+
+            if (!isValid) {
+                createAndShowButton('Проверьте правильность заполнения выделенных полей', 'error');
+                return;
+            }
+
+            // Если всё ок — отправляем
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Отправка...';
+
+            let usluga = tservid.value.trim() === "" ? "null" : tservid.value.trim(); // Если пусто, отправляем пустую строку
+            let conversid = chathash.value;
+
+            let elementsObj = [
+                { name: "priority", isFile: false, value: priority.value },
+                { name: "category", isFile: false, value: cs.value },
+                { name: "educationServiceIdInput", isFile: false, value: usluga },
+                { name: "userId", isFile: false, value: tuserid.value.trim() },
+                { name: "comment", isFile: false, value: comment.value }
+            ];
+
+            if (!SearchinAFnewUI("userType")) {
+                let initId = tuserid.value.trim();
+                elementsObj.push({ name: "initiatorId", isFile: false, value: initId ? parseInt(initId) : 0 });
+            }
+
+            const success = await sendAutofaqAction(conversid, elementsObj);
+
+            if (success) {
+                if (NoteFlag === 1) { sendComment(NoteText); NoteNoticeClear(); }
+
+                // Просто скрываем форму напрямую, не вызывая событие клика по кнопке "Hide"
+                document.getElementById('AF_Createtask').style.display = 'none';
+                if (typeof taskBut !== 'undefined') taskBut.classList.remove('activeScriptBtn');
+
+                document.getElementById('clearcreateform').click();
             } else {
-                document.getElementById('statusuroka').innerHTML = "Урок не идет"
-                document.getElementById('statusuroka').style = "background:#69a4c7; padding:5px; color:#fff;  font-weight:600; border:1px solid black;"
+                createAndShowButton('Ошибка сети при отправке задачи', 'error');
             }
 
-        }
+            btn.disabled = false;
+            btn.innerHTML = '🚀 Отправить задачу';
+        };
 
-        document.getElementById('hideMeCreateForm').onclick = function () {
-            document.getElementById('AF_Createtask').style.display = 'none'
-            taskBut.classList.remove('activeScriptBtn')
-            document.getElementById('chathashlnk').value = '';
-            if (document.getElementById('AF_Service').style.display == 'none') {
-                document.getElementById('AF_Complectations').style.display = 'none';
-            }
-            if (document.getElementById('AF_SpecCommWindow').style.display != 'none') {
-                document.getElementById('hideMeSpecComm').click();
-            }
-            if (activeConvId) {
-                fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
-                    "headers": {
-                        "accept": "application/json, text/plain, */*",
-                        "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr",
-                        "x-csrf-token": aftoken
-                    },
-                    "body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
-                    "method": "POST",
-                    "mode": "cors",
-                    "credentials": "include"
-                });
-            }
-        }
+        const setupFastNote = (id, text) => {
+            document.getElementById(id).onclick = () => { copyToClipboard(text); sendComment(text); };
+        };
+        setupFastNote('studcontact', 'Обратился П. Связаться с У');
+        setupFastNote('teachcontact', 'Обратился У. Связаться с П');
+        setupFastNote('nrstudent', 'Крит Н.О. У');
+        setupFastNote('nrteacher', 'Крит Н.О. П');
 
-        function changePriorityColor() {
-            const priorityElement = document.getElementById('priority');
-            priorityElement.classList.remove('inputgreen', 'inputorange', 'inputred');
-            if (priorityElement.children[1].selected) {
-                priorityElement.classList.add('inputgreen');
-            } else if (priorityElement.children[2].selected) {
-                priorityElement.classList.add('inputorange');
-            } else if (priorityElement.children[3].selected) {
-                priorityElement.classList.add('inputred');
-            }
-        }
-
-        document.getElementById('priority').onchange = changePriorityColor;
-
-        document.getElementById('NoteNoticeText').onclick = NoteNoticeClear;
-
-        document.getElementById('clearcreateform').onclick = function () {
+        document.getElementById('clearcreateform').onclick = () => {
             document.getElementById('chathashlnk').value = '';
             document.getElementById('taskcomment').value = '';
             document.getElementById('taskserviceid').value = '';
             document.getElementById('taskuserid').value = '';
             document.getElementById('useriddata').value = '';
-            document.getElementById('priority').children[0].selected = true;
-            document.getElementById('customerservice').children[0].selected = true;
-            document.getElementById('openComplectationTaskCreate')?.remove();
-            document.getElementById('AF_Complectations').style.display = 'none';
-            removeCoralBackground();
-            changePriorityColor();
+            document.getElementById('priority').value = '';
+            document.getElementById('customerservice').value = '';
+            document.getElementById('priority').style.color = '#fff';
             NoteNoticeClear();
         };
 
-        function removeCoralBackground() {
-            const createTaskForm = document.getElementById('AF_Createtask');
-            if (createTaskForm) {
-                const inputsAndTextareas = createTaskForm.querySelectorAll('input, textarea, select');
-                inputsAndTextareas.forEach(element => {
-                    element.classList.remove('inputalertbackground');
-                });
-            }
-        }
-
-        document.getElementById('critteachertostudent').onclick = function () {
-            document.getElementById('priority').children[3].selected = true;
-            document.getElementById('customerservice').children[1].selected = true;
-            changePriorityColor();
-            NoteFlag = 1
-            NoteText = 'Обратился П. Связаться с У.'
-            NoteNoticeSet();
-            document.getElementById('taskuserid').value = SearchinAFnewUI("nextClass-studentId")
-            document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
-            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nПроверил связь с П, все ок, свяжитесь с У! КРИТ"
-        }
-
-        document.getElementById('critstudenttoteacher').onclick = function () {
-            document.getElementById('priority').children[3].selected = true;
-            document.getElementById('customerservice').children[1].selected = true;
-            changePriorityColor();
-            NoteFlag = 1
-            NoteText = 'Обратился У. Связаться с П.'
-            NoteNoticeSet();
-            document.getElementById('taskuserid').value = SearchinAFnewUI("id")
-            document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
-            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nПроверил связь с У, все ок, свяжитесь с П! КРИТ"
-        }
-
-        document.getElementById('critteacherno').onclick = function () {
-            document.getElementById('priority').children[3].selected = true;
-            document.getElementById('customerservice').children[1].selected = true;
-            changePriorityColor();
-            NoteFlag = 1
-            NoteText = 'Крит Н.О. П'
-            NoteNoticeSet();
-            document.getElementById('taskuserid').value = SearchinAFnewUI("nextClass-studentId")
-            document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
-            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nНеполадка со стороны П. в чате н.о. Пожалуйста, свяжитесь с П КРИТ"
-        }
-
-        document.getElementById('critstudentno').onclick = function () {
-            document.getElementById('priority').children[3].selected = true;
-            document.getElementById('customerservice').children[1].selected = true;
-            changePriorityColor();
-            NoteFlag = 1
-            NoteText = 'Крит Н.О. У'
-            NoteNoticeSet();
-            document.getElementById('taskuserid').value = SearchinAFnewUI("id")
-            document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
-            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value + "\nНеполадка со стороны У. в чате н.о. Пожалуйста, свяжитесь с У КРИТ"
-        }
-
-        document.getElementById('highsecondline').onclick = function () {
-            document.getElementById('priority').children[2].selected = true;
-            document.getElementById('customerservice').children[5].selected = true;
-            changePriorityColor();
-            NoteNoticeClear()
-            document.getElementById('taskuserid').value = SearchinAFnewUI("id")
-            document.getElementById('taskserviceid').value = '';
-            document.querySelector('#taskcomment').value = "Дата и время календаря:\nПриоритетный способ связи:\nОписание неполадки:\nЧто было сделано:"
-        }
-
-        document.getElementById('highteachertc').onclick = function () {
-            document.getElementById('priority').children[2].selected = true;
-            document.getElementById('customerservice').children[2].selected = true;
-            changePriorityColor();
-            NoteNoticeClear()
-            document.getElementById('taskuserid').value = SearchinAFnewUI("id")
-            document.getElementById('taskserviceid').value = '';
-        }
-
-
-        document.getElementById('highteachersc').onclick = function () {
-            document.getElementById('priority').children[2].selected = true;
-            document.getElementById('customerservice').children[4].selected = true;
-            NoteNoticeClear()
-            document.getElementById('taskuserid').value = SearchinAFnewUI("id")
-            document.getElementById('taskserviceid').value = '';
-        }
-
-        document.getElementById('lowkm').onclick = function () {
-            document.getElementById('priority').children[1].selected = true;
-            document.getElementById('customerservice').children[6].selected = true;
-            changePriorityColor();
-            NoteNoticeClear()
-            document.getElementById('taskuserid').value = SearchinAFnewUI("id")
-            document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
-        }
-
-        document.getElementById('highprem').onclick = function () {
-            document.getElementById('priority').children[2].selected = true;
-            document.getElementById('customerservice').children[7].selected = true;
-            changePriorityColor();
-            NoteNoticeClear()
-            document.getElementById('taskuserid').value = SearchinAFnewUI("id")
-            document.getElementById('taskserviceid').value = SearchinAFnewUI("nextClass-educationServiceId")
-        }
-
-        document.getElementById('low2lvimbug').onclick = function () {
-            document.getElementById('priority').children[1].selected = true;
-            document.getElementById('customerservice').children[5].selected = true;
-            changePriorityColor();
-            NoteNoticeClear()
-            document.getElementById('taskuserid').value = SearchinAFnewUI("id")
-            document.getElementById('taskcomment').value = document.getElementById('taskcomment').value = "Краткое описание:\nШаги воспроизведения:\nОП:\nФП: \nссылки на скриншоты: \nНужна ли ОС : "
-        }
-
-        document.getElementById('createtask').onclick = function () {
-            let chathashlnk = document.getElementById('chathashlnk');
-            let priority = document.getElementById('priority');
-            let customerservice = document.getElementById('customerservice');
-            let taskserviceid = document.getElementById('taskserviceid');
-            let taskuserid = document.getElementById('taskuserid');
-            let taskcomment = document.getElementById('taskcomment');
-            let prioritystate;
-            let csstate;
-            let usluga;
-
-            let taskflagempty = 0;
-            let idflagempty = 0;
-
-            if (chathashlnk.value.length < 3) {
-                chathashlnk.classList.add('inputalertbackground');
-                taskflagempty = 1;
-            } else { chathashlnk.classList.remove('inputalertbackground'); }
-
-            if (priority.value != 'Приоритет') {
-                priority.classList.remove('inputalertbackground');
-                for (let i = 0; i < priority.children.length; i++) {
-                    if (priority.children[i].selected == true)
-                        prioritystate = priority.children[i].value
-                }
-            } else {
-                priority.classList.add('inputalertbackground');
-                taskflagempty = 1;
-            }
-
-            if (customerservice.value === 'crisis_manager' && taskserviceid.value.length < 3) {
-                taskserviceid.classList.add('inputalertbackground');
-                taskflagempty = 1;
-            }
-            else if (customerservice.value === 'tech_support_outgoing_crm2' && priority.value === 'highest' && taskserviceid.value.length < 3) {
-                taskserviceid.classList.add('inputalertbackground');
-                taskflagempty = 1;
-            }
-            else {
-                taskserviceid.classList.remove('inputalertbackground');
-            }
-
-            if (customerservice.value != 'Отдел') {
-                customerservice.classList.remove('inputalertbackground');
-                for (let i = 0; i < customerservice.children.length; i++) {
-                    if (customerservice.children[i].selected == true)
-                        csstate = customerservice.children[i].value
-                }
-            } else {
-                customerservice.classList.add('inputalertbackground');
-                taskflagempty = 1;
-            }
-
-            if (taskuserid.value.length < 3) {
-                taskuserid.classList.add('inputalertbackground');
-                taskflagempty = 1;
-            } else { taskuserid.classList.remove('inputalertbackground'); }
-
-            if (taskcomment.value.length < 3) {
-                taskcomment.classList.add('inputalertbackground');
-                taskflagempty = 1;
-            } else { taskcomment.classList.remove('inputalertbackground'); }
-
-            if (taskflagempty == 0) {
-                if (taskserviceid.value == '')
-                    usluga = taskserviceid.value = null;
-                else usluga = taskserviceid.value
-
-
-                if (SearchinAFnewUI("userType")) {
-                    idflagempty = 1;
-                }
-
-                conversid = chathashlnk.value;
-                if (idflagempty == 1) {
-                    fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
-                        "headers": {
-                            "accept": "application/json, text/plain, */*",
-                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG",
-                            "x-csrf-token": aftoken
-                        },
-
-                        "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${taskuserid.value.trim()}\"},{\"name\":\"comment\",\"isFile\":false,\"value\":\"${taskcomment.value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
-
-
-                        "method": "POST",
-                        "mode": "cors",
-                        "credentials": "include"
-                    });
-                } else {
-                    fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
-                        "headers": {
-                            "accept": "application/json, text/plain, */*",
-                            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryTGBaRD5lMEUpA8IG",
-                            "x-csrf-token": aftoken
-                        },
-                        "body": `------WebKitFormBoundaryTGBaRD5lMEUpA8IG\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${conversid}\",\"elements\":[{\"name\":\"priority\",\"isFile\":false,\"value\":\"${prioritystate}"},{\"name\":\"category\",\"isFile\":false,\"value\":\"${csstate}\"},{\"name\":\"educationServiceIdInput\",\"isFile\":false,\"value\":\"${usluga}\"},{\"name\":\"userId\",\"isFile\":false,\"value\":\"${taskuserid.value.trim()}\"},{\"name\":\"initiatorId\",\"isFile\":false,\"value\":${taskuserid.value.trim()}}, {\"name\":\"comment\",\"isFile\":false,\"value\":\"${taskcomment.value.replaceAll("\n", "\\n").replaceAll(/"/g, "``")}\"}]}\r\n------WebKitFormBoundaryTGBaRD5lMEUpA8IG--\r\n`,
-
-                        "method": "POST",
-                        "mode": "cors",
-                        "credentials": "include"
-                    });
-                }
-
-                if (NoteFlag == 1) {
-                    sendComment(NoteText);
-                    NoteNoticeClear();
-                }
-
-                document.getElementById('AF_Createtask').style.display = 'none'
-                if (document.getElementById('AF_SpecCommWindow').style.display != 'none') {
-                    document.getElementById('hideMeSpecComm').click();
-                }
-                document.getElementById('clearcreateform').click();
-                document.getElementById('taskBut').classList.remove('activeScriptBtn')
-
-            } else createAndShowButton('Задача не была создана, проверьте, пожалуйста, заполнение полей', 'error')
-        }
-
-        document.getElementById('taskcreate2linecrm').onclick = function () {
-            if (document.getElementById('taskuserid').value != '') {
-                window.open("https://crm2.skyeng.ru/persons/" + document.getElementById('taskuserid').value + "/customer-support/manual")
-            } else createAndShowButton('Введите ID пользователя в соответствующее поле и повторите попытку', 'error')
-        }
-
-
     } else {
-        document.getElementById('AF_Createtask').style.display = 'none'
-        taskBut.classList.remove('activeScriptBtn')
-        conversid = document.getElementById('chathashlnk').value;
-        fetch("https://skyeng.autofaq.ai/api/reason8/operator/customButtons/form", {
-            "headers": {
-                "accept": "application/json, text/plain, */*",
-                "content-type": "multipart/form-data; boundary=----WebKitFormBoundarysuN73wIfkSXb2Lvr",
-                "x-csrf-token": aftoken
-            },
-            "body": `------WebKitFormBoundarysuN73wIfkSXb2Lvr\r\nContent-Disposition: form-data; name=\"payload\"\r\n\r\n{\"conversationId\":\"${activeConvId}\"}\r\n------WebKitFormBoundarysuN73wIfkSXb2Lvr--\r\n`,
-            "method": "POST",
-            "mode": "cors",
-            "credentials": "include"
-        });
-    }
-
-    studcontact.onclick = function () {
-        copyToClipboard('Обратился П. Связаться с У');
-        sendComment('Обратился П. Связаться с У')
-    }
-
-    teachcontact.onclick = function () {
-        copyToClipboard('Обратился У. Связаться с П');
-        sendComment('Обратился У. Связаться с П')
-    }
-
-    nrstudent.onclick = function () {
-        copyToClipboard('Крит Н.О. У');
-        sendComment('Крит Н.О. У')
-    }
-
-    nrteacher.onclick = function () {
-        copyToClipboard('Крит Н.О. П');
-        sendComment('Крит Н.О. П')
+        document.getElementById('AF_Createtask').style.display = 'none';
+        if (typeof taskBut !== 'undefined') taskBut.classList.remove('activeScriptBtn');
+        let conversid = document.getElementById('chathashlnk').value;
+        sendAutofaqAction(conversid);
     }
 
     function NoteNoticeSet() {
         document.getElementById('NoteNoticeText').innerText = NoteText;
-        document.getElementById('NoteNotice').style.display = '';
-        document.getElementById('NoteNoticeText').style.display = '';
+        document.getElementById('NoteNoticeWrap').style.display = 'block';
     }
-
     function NoteNoticeClear() {
-        document.getElementById('NoteNotice').style.display = 'none';
-        document.getElementById('NoteNoticeText').style.display = 'none';
+        document.getElementById('NoteNoticeWrap').style.display = 'none';
         document.getElementById('NoteNoticeText').innerText = '';
         NoteText = '';
         NoteFlag = 0;
     }
+    document.getElementById('NoteNoticeText').onclick = NoteNoticeClear;
 }
 
-//start test
-setInterval(function () {
-    doHideForm()
-}, 100)
-//end test
+// ИСПРАВЛЕНИЕ: Формируем правильный application/json запрос для сервера Autofaq.
+// Нативный JSON.stringify() сам идеально экранирует любые переносы строк и кавычки.
+// Финальная и самая надежная версия функции отправки!
+async function sendAutofaqAction(conversationId, elements = null, isClickMode = false) {
+    if (!conversationId) return false;
+    try {
+        let endpoint = isClickMode ? "click" : "form";
+        // Базовые заголовки. ВАЖНО: Мы НЕ прописываем здесь content-type!
+        let headers = {
+            "accept": "application/json, text/plain, */*",
+            "x-csrf-token": aftoken
+        };
+
+        let config = {
+            method: "POST",
+            credentials: "include",
+            mode: "cors"
+        };
+
+        if (isClickMode) {
+            // Если это просто клик (смена статуса чата и тд), отправляем как JSON
+            headers["content-type"] = "application/json";
+            config.body = JSON.stringify({ buttonId: elements[0].value, conversationId: conversationId });
+        } else {
+            // Если это отправка формы (создание задачи) - используем FormData.
+            // Браузер САМ поставит заголовок "multipart/form-data" и сгенерирует правильный boundary!
+            const fd = new FormData();
+            let payload = { conversationId: conversationId };
+            if (elements) payload.elements = elements;
+
+            // JSON.stringify безопасно упакует все кавычки и переносы строк внутри комментария
+            fd.append("payload", JSON.stringify(payload));
+            config.body = fd;
+        }
+
+        config.headers = headers;
+
+        const response = await fetch(`https://skyeng.autofaq.ai/api/reason8/operator/customButtons/${endpoint}`, config);
+
+        // Возвращаем успешность запроса (true если статус 200-299)
+        return response.ok;
+    } catch (err) {
+        console.error("Autofaq submit error:", err);
+        return false;
+    }
+}
+
+// start test
+setInterval(doHideForm, 500);
+// end test
