@@ -19,7 +19,7 @@ var win_CustomTemplates = `
         <div class="flex-row" style="justify-content: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
             <button id="addTemplate" title="Добавить новый шаблон" class="glass-btn mainButton">➕ Добавить</button>
             <button id="saveAllTemplates" title="Сохранить все шаблоны" class="glass-btn mainButton">💾 Сохранить всё</button>
-            <button title="Скрытие меню" id="hideCustomTemplates" class="glass-btn mainButton buttonHide" style="margin-left: auto;">Скрыть</button>
+            <button title="Скрытие меню" id="hideCustomTemplates" class="glass-btn buttonHide" style="margin-left: auto;">❌</button>
         </div>
     </div>
 `;

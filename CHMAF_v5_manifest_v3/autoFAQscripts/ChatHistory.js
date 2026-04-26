@@ -204,7 +204,7 @@ const win_Chathis = `
 
     <div id="userchatdata" class="afg-modal">
         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <button class="afg-btn" id="hideuserdatainfo" style="background: rgba(255, 0, 0, 0.2);">Скрыть</button>
+            <button class="afg-btn" id="hideuserdatainfo" style="background: rgba(255, 0, 0, 0.2);">❌</button>
             <button class="afg-btn" id="gotocrmhis" style="background: rgba(0, 191, 255, 0.2);">CRM</button>
         </div>
         <div id="datafield" style="line-height: 1.5; font-size: 14px; word-break: break-all;"></div>

@@ -245,7 +245,7 @@ async function operstatusleftbar() {
             </div>
             <div class="op-st-list">${renderOperatorRows(opstats)}</div>
             <div class="op-st-toggle" id="op-st-toggle-btn">
-                ${hidesummary ? '🔽 Показать статистику' : '🔼 Скрыть статистику'}
+                ${hidesummary ? '🔽 Показать сводку' : '🔼 Скрыть сводку'}
             </div>
             <div id="op-st-stats-panel" class="op-st-stats-grid" style="display: ${hidesummary ? 'none' : 'grid'}">
                 <div class="op-st-stat-item" style="background: rgba(56, 142, 60, 0.25)"><span>Онлайн</span> <b>${stats.online}</b></div>

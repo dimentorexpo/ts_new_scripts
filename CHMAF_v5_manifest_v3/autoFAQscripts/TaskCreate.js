@@ -104,7 +104,7 @@ var win_taskform = `
     <div style="display: flex; width: 420px; position: relative;">
         <div class="glass-panel-task" style="width: 100%; position: relative; z-index: 2;">
             <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px;" id="create_form_header">
-                <button class="glass-btn-task" title="Скрыть меню" id="hideMeCreateForm">👁️ Hide</button>
+                <button class="glass-btn-task" title="Скрыть меню" id="hideMeCreateForm">❌</button>
                 <button class="glass-btn-task" title="Обновить хеш чата" id="refreshhashcreateform">♻</button>
                 <button class="glass-btn-task" title="Очистить форму" id="clearcreateform">🧹</button>
                 <span style="font-size: 13px; margin-left: auto;">Статус: <span id="statusuroka" class="status-badge-task" style="background: #69a4c7;">Загрузка...</span></span>
@@ -193,7 +193,7 @@ var win_speccommwindow = `
     ${glassStylesTask}
     <div class="glass-panel-task" style="width: 350px; cursor: -webkit-grab;">
         <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;">
-            <button title="Скрыть меню" id="hideMeSpecComm" class="glass-btn-task" style="padding: 2px 8px; font-size: 12px;">✖ Close</button>
+            <button title="Скрыть меню" id="hideMeSpecComm" class="glass-btn-task" style="padding: 2px 8px; font-size: 12px;">❌</button>
         </div>
         <div id="speccommtext" style="font-size: 14px; max-height: 300px; overflow-y: auto; padding: 5px; word-wrap: break-word;"></div>
     </div>`;

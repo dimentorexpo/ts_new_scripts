@@ -142,7 +142,7 @@ ${glassStyles}
     <div class="af-glass-scroll-area">
         <div style="cursor: default;">
             <div style="margin: 10px; display: flex; align-items: center; gap: 8px;" id="stataaf_header">
-                <button class="${otherinpth} af-glass-btn" title="Скрывает меню" id="hidecalendar">Скрыть</button>
+                <button class="${otherinpth} af-glass-btn" title="Скрывает меню" id="hidecalendar">❌</button>
                 <button class="${otherinpth} af-glass-btn" title="Очистить окно" id="clearcalendar">🧹</button>
                 <button class="${otherinpth} af-glass-btn" title="Обновить информацию" id="refreshcalendar">♻</button>
                 <button class="${otherinpth} af-glass-btn" title="Открыть datsy.ru" id="opendatsy">📅</button>

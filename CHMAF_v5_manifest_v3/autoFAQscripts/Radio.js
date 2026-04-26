@@ -7,7 +7,7 @@ const win_Radio = `
             <div class="window-header" id="links_1str">
                 <!-- Кнопка для открытия/переключения окна -->
                 <span style="flex-grow: 1; text-align: center;">
-                    <button class="mainButton buttonHide" title="Скрыть меню" id="hideMeRadio">hide</button>
+                    <button class="mainButton buttonHide" title="Скрыть меню" id="hideMeRadio">❌</button>
                     <button class="mainButton rotateDisc" style="margin-left:30%">📀</button>
                     <span style="color:bisque; margin: 0 10px;">Play'O'Neer</span>
                     <button class="mainButton rotateDisc" style="margin-right:40%">📀</button>

@@ -636,7 +636,7 @@ var win_StatisticaAF = `
         <div class="af-title">🚀 AutoFAQ Dashboard</div>
         <div class="af-window-controls">
             <button class="af-win-btn" id="clearstatawindow" title="Очистить данные">🧹</button>
-            <button class="af-win-btn buttonHide" id="hidestatisticaaf" title="Скрыть окно">✖</button>
+            <button class="af-win-btn buttonHide" id="hidestatisticaaf" title="Скрыть окно">❌</button>
         </div>
     </div>
 

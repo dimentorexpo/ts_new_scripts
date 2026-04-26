@@ -4,19 +4,19 @@
  */
 
 (function () {
-	// Состояние модуля
-	const state = {
-		data: [],
-		index: new Map(),
-		currentSection: null
-	};
+    // Состояние модуля
+    const state = {
+        data: [],
+        index: new Map(),
+        currentSection: null
+    };
 
-	// Стили
-	const injectStyles = () => {
-		if (document.getElementById('knw-styles')) return;
-		const style = document.createElement('style');
-		style.id = 'knw-styles';
-		style.innerHTML = `
+    // Стили
+    const injectStyles = () => {
+        if (document.getElementById('knw-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'knw-styles';
+        style.innerHTML = `
             .knw-panel {
                 background: rgba(25, 27, 38, 0.7) !important;
                 backdrop-filter: blur(15px) saturate(150%);
@@ -122,17 +122,17 @@
 
             @keyframes knw-fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         `;
-		document.head.appendChild(style);
-	};
+        document.head.appendChild(style);
+    };
 
-	const win_Knowledge = `
+    const win_Knowledge = `
         <div class="knw-panel" style="width: 550px;">
             <div class="knw-header" id="knw_drag_handle">
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <span style="font-weight: 600; color: #fff;">📚 База Знаний</span>
                     <div id="knw-loader" class="knw-loader">🟢</div>
                 </div>
-                <button id="hideMeKnowledge" class="knw-btn">Скрыть</button>
+                <button id="hideMeKnowledge" class="knw-btn">❌</button>
             </div>
 
             <div class="knw-body">
@@ -156,125 +156,125 @@
         </div>
     `;
 
-	// Инициализация окна
-	createWindow('AF_Knowledge', 'winTopKnwoledge', 'winLeftKnwoledge', win_Knowledge);
-	injectStyles();
+    // Инициализация окна
+    createWindow('AF_Knowledge', 'winTopKnwoledge', 'winLeftKnwoledge', win_Knowledge);
+    injectStyles();
 
-	// DOM Кэш
-	const dom = {
-		win: document.getElementById('AF_Knowledge'),
-		search: document.getElementById('knw-search'),
-		type: document.getElementById('knw-type'),
-		cat: document.getElementById('knw-cat'),
-		list: document.getElementById('knw-list'),
-		solution: document.getElementById('knw-solution'),
-		loader: document.getElementById('knw-loader'),
-		toggleBtn: null
-	};
+    // DOM Кэш
+    const dom = {
+        win: document.getElementById('AF_Knowledge'),
+        search: document.getElementById('knw-search'),
+        type: document.getElementById('knw-type'),
+        cat: document.getElementById('knw-cat'),
+        list: document.getElementById('knw-list'),
+        solution: document.getElementById('knw-solution'),
+        loader: document.getElementById('knw-loader'),
+        toggleBtn: null
+    };
 
-	const setLoader = (isLoading) => {
-		dom.loader.innerHTML = isLoading ? '⏳' : '🟢';
-		dom.loader.classList.toggle('loading', isLoading);
-	};
+    const setLoader = (isLoading) => {
+        dom.loader.innerHTML = isLoading ? '⏳' : '🟢';
+        dom.loader.classList.toggle('loading', isLoading);
+    };
 
-	const renderItems = (items) => {
-		dom.list.innerHTML = '';
-		dom.solution.style.display = 'none';
+    const renderItems = (items) => {
+        dom.list.innerHTML = '';
+        dom.solution.style.display = 'none';
 
-		if (items.length === 0) {
-			dom.list.innerHTML = '<div style="text-align:center; padding: 20px; opacity: 0.5;">Ничего не найдено</div>';
-			return;
-		}
+        if (items.length === 0) {
+            dom.list.innerHTML = '<div style="text-align:center; padding: 20px; opacity: 0.5;">Ничего не найдено</div>';
+            return;
+        }
 
-		items.forEach(item => {
-			const el = document.createElement('div');
-			el.className = 'knw-item';
-			el.textContent = item[2];
-			el.onclick = () => {
-				document.querySelectorAll('.knw-item').forEach(i => i.classList.remove('active'));
-				el.classList.add('active');
-				dom.solution.innerHTML = `<h3 style="margin-top:0; color:#4facfe;">${item[2]}</h3><hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">${item[3]}`;
-				dom.solution.style.display = 'block';
-			};
-			dom.list.appendChild(el);
-		});
-	};
+        items.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'knw-item';
+            el.textContent = item[2];
+            el.onclick = () => {
+                document.querySelectorAll('.knw-item').forEach(i => i.classList.remove('active'));
+                el.classList.add('active');
+                dom.solution.innerHTML = `<h3 style="margin-top:0; color:#4facfe;">${item[2]}</h3><hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">${item[3]}`;
+                dom.solution.style.display = 'block';
+            };
+            dom.list.appendChild(el);
+        });
+    };
 
-	const loadData = async () => {
-		setLoader(true);
-		try {
-			const url = 'https://script.google.com/macros/s/AKfycbySlhuMPHSKHiI6Rhoyg797id3lbPg_zdeG_iBoEvYxwqlxkD4QizWm8OJDEucma7tGyg/exec';
-			const resp = await fetch(url);
-			const json = await resp.json();
-			state.data = json.result || [];
+    const loadData = async () => {
+        setLoader(true);
+        try {
+            const url = 'https://script.google.com/macros/s/AKfycbySlhuMPHSKHiI6Rhoyg797id3lbPg_zdeG_iBoEvYxwqlxkD4QizWm8OJDEucma7tGyg/exec';
+            const resp = await fetch(url);
+            const json = await resp.json();
+            state.data = json.result || [];
 
-			// Строим индекс
-			state.index.clear();
-			state.data.forEach(item => {
-				const key = `${item[0]}::${item[1]}`;
-				if (!state.index.has(key)) state.index.set(key, []);
-				state.index.get(key).push(item);
-			});
+            // Строим индекс
+            state.index.clear();
+            state.data.forEach(item => {
+                const key = `${item[0]}::${item[1]}`;
+                if (!state.index.has(key)) state.index.set(key, []);
+                state.index.get(key).push(item);
+            });
 
-			// Заполняем типы
-			const types = [...new Set(state.data.map(i => i[0]))];
-			dom.type.innerHTML = '<option value="default">--- Тип урока ---</option>';
-			types.forEach(t => dom.type.add(new Option(t, t)));
+            // Заполняем типы
+            const types = [...new Set(state.data.map(i => i[0]))];
+            dom.type.innerHTML = '<option value="default">--- Тип урока ---</option>';
+            types.forEach(t => dom.type.add(new Option(t, t)));
 
-			dom.list.innerHTML = '<div style="text-align:center; padding: 20px; opacity: 0.5;">Выберите категорию или используйте поиск</div>';
-		} catch (e) {
-			dom.list.innerHTML = '<div style="color:#ff4f4f; text-align:center;">Ошибка загрузки данных</div>';
-		}
-		setLoader(false);
-	};
+            dom.list.innerHTML = '<div style="text-align:center; padding: 20px; opacity: 0.5;">Выберите категорию или используйте поиск</div>';
+        } catch (e) {
+            dom.list.innerHTML = '<div style="color:#ff4f4f; text-align:center;">Ошибка загрузки данных</div>';
+        }
+        setLoader(false);
+    };
 
-	// Event Listeners
-	dom.type.onchange = () => {
-		const val = dom.type.value;
-		dom.cat.innerHTML = '<option value="default">--- Категория ---</option>';
-		dom.search.value = '';
-		if (val === 'default') return;
+    // Event Listeners
+    dom.type.onchange = () => {
+        const val = dom.type.value;
+        dom.cat.innerHTML = '<option value="default">--- Категория ---</option>';
+        dom.search.value = '';
+        if (val === 'default') return;
 
-		const cats = [...new Set(state.data.filter(i => i[0] === val).map(i => i[1]))];
-		cats.forEach(c => dom.cat.add(new Option(c, c)));
-	};
+        const cats = [...new Set(state.data.filter(i => i[0] === val).map(i => i[1]))];
+        cats.forEach(c => dom.cat.add(new Option(c, c)));
+    };
 
-	dom.cat.onchange = () => {
-		const key = `${dom.type.value}::${dom.cat.value}`;
-		renderItems(state.index.get(key) || []);
-	};
+    dom.cat.onchange = () => {
+        const key = `${dom.type.value}::${dom.cat.value}`;
+        renderItems(state.index.get(key) || []);
+    };
 
-	dom.search.oninput = () => {
-		const q = dom.search.value.toLowerCase().trim();
-		dom.type.selectedIndex = 0;
-		dom.cat.innerHTML = '<option value="default">--- Категория ---</option>';
+    dom.search.oninput = () => {
+        const q = dom.search.value.toLowerCase().trim();
+        dom.type.selectedIndex = 0;
+        dom.cat.innerHTML = '<option value="default">--- Категория ---</option>';
 
-		if (q.length < 2) {
-			dom.list.innerHTML = '';
-			return;
-		}
+        if (q.length < 2) {
+            dom.list.innerHTML = '';
+            return;
+        }
 
-		const filtered = state.data.filter(i => i[2].toLowerCase().includes(q));
-		renderItems(filtered);
-	};
+        const filtered = state.data.filter(i => i[2].toLowerCase().includes(q));
+        renderItems(filtered);
+    };
 
-	// Глобальная функция для кнопки открытия (совместимость с основным кодом)
-	window.getknowledgeCenterButtonPress = () => {
-		if (!dom.toggleBtn) dom.toggleBtn = document.getElementById('knowledgeCenter');
+    // Глобальная функция для кнопки открытия (совместимость с основным кодом)
+    window.getknowledgeCenterButtonPress = () => {
+        if (!dom.toggleBtn) dom.toggleBtn = document.getElementById('knowledgeCenter');
 
-		if (dom.win.style.display === 'none') {
-			dom.win.style.display = '';
-			dom.toggleBtn?.classList.add('activeScriptBtn');
-			if (state.data.length === 0) loadData();
-		} else {
-			dom.win.style.display = 'none';
-			dom.toggleBtn?.classList.remove('activeScriptBtn');
-		}
-	};
+        if (dom.win.style.display === 'none') {
+            dom.win.style.display = '';
+            dom.toggleBtn?.classList.add('activeScriptBtn');
+            if (state.data.length === 0) loadData();
+        } else {
+            dom.win.style.display = 'none';
+            dom.toggleBtn?.classList.remove('activeScriptBtn');
+        }
+    };
 
-	document.getElementById('hideMeKnowledge').onclick = () => {
-		dom.win.style.display = 'none';
-		document.getElementById('knowledgeCenter')?.classList.remove('activeScriptBtn');
-	};
+    document.getElementById('hideMeKnowledge').onclick = () => {
+        dom.win.style.display = 'none';
+        document.getElementById('knowledgeCenter')?.classList.remove('activeScriptBtn');
+    };
 
 })();

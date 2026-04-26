@@ -1228,7 +1228,7 @@ maskBack.onclick = function () { // функция кнопки вернуть
 
 let maskBackHide = document.createElement('span') // кнопка скрыть
 maskBackHide.id = "maskBackHide"
-maskBackHide.innerHTML = "Скрыть"
+maskBackHide.innerHTML = "❌Скрыть"
 maskBackHide.style = 'margin-left: auto;margin-right: 10px;'
 maskBackHide.style.display = "";
 
