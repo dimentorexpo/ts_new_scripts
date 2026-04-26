@@ -476,7 +476,7 @@ function fillchatbox() {
                 const opName = message.operatorId !== 'autoFAQ' ? getOperatorNameById(message.operatorId, "Оператор") : message.operatorId;
                 htmlBuilder += `
                     <div class="afg-msg afg-msg-comment">
-                        <div class="afg-msg-header"><span>${opName} (Заметка)</span><span class="afg-msg-date">${date}</span></div>
+                        <div class="afg-msg-header"><span>(Заметка)</span><span class="afg-msg-date">${date}</span></div>
                         <div>${message.txt}</div>
                     </div>`;
                 break;
@@ -694,9 +694,20 @@ document.getElementById('btn_search_history').onclick = async () => {
     let userId = document.getElementById('chatuserhis').value.trim();
     let chatHash = document.getElementById('hashchathis').value.trim();
 
-    // Получаем текущую дату в формате YYYY-MM-DD для запроса
+    // Получаем даты из инпутов интерфейса
+    let dFrom = document.getElementById('dateFromChHis').value;
+    let dTo = document.getElementById('dateToChHis').value;
+
+    // Генерируем текущую дату для подстраховки (за текущие сутки)
     const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const pad = n => String(n).padStart(2, '0');
+    const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+
+    // ЛОГИКА СЦЕНАРИЕВ:
+    // 1. Если введен ID пользователя и даты есть в полях -> берем их.
+    // 2. Если ID пустой (или если кто-то стер дату в полях) -> жестко берем текущие сутки (сегодня).
+    const dFromStr = (userId && dFrom) ? dFrom : todayStr;
+    const dToStr = (userId && dTo) ? dTo : todayStr;
 
     document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 20px;">Загрузка...</div>';
     resetChatInfo();
@@ -710,15 +721,16 @@ document.getElementById('btn_search_history').onclick = async () => {
                 body: JSON.stringify({
                     serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json",
                     channelUserFullTextLike: userId,
-                    tsFrom: `${todayStr}T00:00:00.000Z`, // Подставляем сегодняшний день
-                    tsTo: `${todayStr}T23:59:59.000Z`,   // Подставляем сегодняшний день
+                    // Используем выбранные даты или сегодняшние сутки
+                    tsFrom: `${dFromStr}T00:00:00.000Z`,
+                    tsTo: `${dToStr}T23:59:59.000Z`,
                     orderBy: "ts", orderDirection: "Desc", page: 1, limit: 20
                 })
             });
             data = await res.json();
 
             if (data.total === 0) {
-                document.getElementById('infofield').innerHTML = '<div style="text-align:center;">Чат не найден</div>';
+                document.getElementById('infofield').innerHTML = '<div style="text-align:center;">Чат не найден в выбранном диапазоне дат</div>';
                 return;
             }
 
