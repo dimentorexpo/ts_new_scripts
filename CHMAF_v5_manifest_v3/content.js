@@ -186,7 +186,6 @@ let rightPanelBtn = 'rightPanelBtndark';
 
 var win_mainmenu = // описание кнопок меню
     `<div>
-        <div id="servDsk" class="onlyfortp">🛠ServiceDesk</div>
         <div id="JiraOpenForm" class="onlyfortp">🔎Jira Search</div>
         <div id="crmopersstatuses" class="onlyfortp ">🧮Статусы CRM2</div>
         <div id="butMarks">🎭 Оценки</div>
@@ -990,7 +989,6 @@ async function move_again_AF() { //с АФ шняга там стили шмил
 
     // 1. Конфигурация кнопок: ID, Текст, Функция, Только для ТП?
     const menuConfig = [
-        { id: "servDsk", text: "🛠 ServiceDesk", fn: window.getservDskPress, tp: true },
         { id: "JiraOpenForm", text: "🔎 Jira Search", fn: window.getJiraOpenFormPress, tp: true },
         { id: "crmopersstatuses", text: "🧮 Статусы CRM2", fn: window.getcrmopersstatusesButtonPress, tp: true },
         { id: "butMarks", text: "🎭 Оценки", fn: window.getbutMarksButtonPress, tp: false },

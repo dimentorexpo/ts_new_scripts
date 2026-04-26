@@ -1,23 +1,15 @@
 //Global variables
-let jiratoken;
-let jiratokennew;
 let responsejira;
 let psarr = [];
-let firstEl;
-let mmlink;
 const messanger_name = "TiMe";
 const messanger_URL = "https://mm-time.skyeng.tech";
 const messregexPattern = new RegExp(`">(${messanger_URL}.*?)<\/a>`);
-// let infoarr;
-let lasttsk;
-let prevtsk;
-let flagpsis = 0;
-let msgissnd = 0;
 let varinfraOID; //переменная для хранения значения ID оператора в Infra
+
+const Paragrafsstyles = "color: bisque; font-size: 18px; position: relative; width: 95%; margin-top: 5px; margin-bottom: 5px;";
 
 const buttons = [ //array of buttonsnames
     '.edumodbtn',
-    '.bilqabtn',
     '.teacbtn',
     '.c1sbtn',
     '.schdbtn',
@@ -29,20 +21,15 @@ const buttons = [ //array of buttonsnames
     '.vimvidsbtn',
     '.studcabbtn',
     '.chatqabtn',
-    '.tripwbtn',
-    '.mobbugsbtn',
-    '.academymobbugsbtn',
-    '.stcabmbsbtn',
-    '.CommProblemsbtn',
-    '.analystbtn'
+    '.mobilebugsbtn',
+    '.CommProblemsbtn'
 ];
 
-const otherOptions = [ // array of buttons categories id's
+const otherOptions = [ // array of buttons categories id's, важен порядок размещения, так как иначе может открываться описание не для того канала!
     'teacherssrvdskoptions',
     'crm2srvdskoptions',
     'authsrvdskoptions',
     'schedulesrvdskoptions',
-    'billingqasrvdskoptions',
     'c1srvdskoptions',
     'billingsrvdskoptions',
     'mrktbillrvdskoptions',
@@ -50,138 +37,117 @@ const otherOptions = [ // array of buttons categories id's
     'vimvidoptions',
     'studcaboptions',
     'chatqaoptions',
-    'tripwireoptions',
     'edumodeloptions',
-    'studcabmobbugskoptions',
-    'mobbugsoptions',
-    'academymobbugsoptions',
-    'CommProblemsoptions',
-    'analystoptions'
+    'mobilebugsoptions',
+    'CommProblemsoptions'
 ];
 
 var win_servicedesk = // описание элементов окна Service Desk
-    `<div style="display: flex; width: 480px;">
-		<span style="width: 480px">
+    `<div style="display: flex; width: 520px;">
+		<span style="width: 520px">
         <span style="cursor: -webkit-grab;">
-                <div style="margin: 5px; width: 480px;" id="SrvDskSummary">
+                <div style="margin: 5px; width: 510px;" id="SrvDskSummary">
                         <button id="hideMeSrvDsk" class="mainButton buttonHide">hide</button>
-						<button class="mainButton" id="refreshjiraauth" title="Перепроверить авторизацию в Jira">🔄</button>
-                        <button class="mainButton" id="infratasklist" title="Открыть список своих задач в Infra">📑</button>
-						<button class="mainButton" id="ServiceDeskinstr" title="Инструкция по этой форме">❓</button>
+						<button class="mainButton smallbtn" id="refreshjiraauth" title="Перепроверить авторизацию в Jira">🔄</button>
+                        <button class="mainButton smallbtn" id="infratasklist" title="Открыть список своих задач в Infra">📑</button>
+						<button class="mainButton smallbtn" id="ServiceDeskinstr" title="Инструкция по этой форме">❓</button>
 						<span style="color:bisque">Infra Id:</span>
 						<span id="jiratknstatus">🟢</span>
 						<span style="color:yellow">Prev.tsk</span>
-						<button class="mainButton" id="prevtask" style="width: 78px" title="Предыдущая задача"></button>
+						<button class="mainButton" id="prevtask" style="width: 85px" title="Предыдущая задача"></button>
 						<span style="color:cyan">Last tsk</span>
-						<button class="mainButton" id="newtask" style="width: 78px" title="Последняя задача"></button>
+						<button class="mainButton" id="newtask" style="width: 85px" title="Последняя задача"></button>
                 </div>
-                <div id="servicedeskinfo" style="margin-left:20px;">
-                    <button class="mainButton sdbtn" id="optionTeacher" value="36" style="margin-left:2px; width:80px;">👺Corp</button>
-                    <button class="mainButton sdbtn" id="optionCRM2" value="26" style="margin-left:2px; width:80px;">🧮CRM2</button>
-                    <button class="mainButton sdbtn" id="optionAuth" value="20" style="margin-left:2px; width:80px;">🔐Auth</button>
-                    <button class="mainButton sdbtn" id="optionSchedule" value="33" style="margin-left:2px; width:80px;">📆Schedul</button>
-                    <button class="mainButton sdbtn" id="optionBillingQA" value="22" style="margin-left:2px; width:80px;">💲Billing-QA</button>
-                    <button class="mainButton sdbtn" id="optionOnboarding" value="23" style="margin-left:2px; margin-top:2px; width:80px;">♻Onboard</button>
-                    <button class="mainButton sdbtn" id="optionBilling"  value="21" style="margin-left:2px; margin-top:2px; width:80px;">💰Billing</button>
-                    <button class="mainButton sdbtn" id="optionMrktbill"  value="31" style="margin-left:2px; margin-top:2px; width:80px;">📈Mrkt-Bill</button>
-                    <button class="mainButton sdbtn" id="optionVimbugs" value="38" style="margin-left:2px; margin-top:2px; width:80px;">🐞Vim-bug</button>
-                    <button class="mainButton sdbtn" id="optionVimvideocall" value="39" style="margin-left:2px; margin-top:2px; width:80px;">📸Vid-call</button>
-                    <button class="mainButton sdbtn" id="optionStudcab" value="34" style="margin-left:2px; margin-top:2px; width:80px;">👨‍🎓Studcab</button>
-                    <button class="mainButton sdbtn" id="optionChat" value="24" style="margin-left:2px; margin-top:2px; width:80px;">💬Chat</button>
-                    <button class="mainButton sdbtn" id="optionTripwire" value="27" style="margin-left:2px; margin-top:2px; width:80px;">🗣Tripwire</button>
-                    <button class="mainButton sdbtn" id="optionEdModel" value="28" style="margin-left:2px; margin-top:2px; width:80px;">🎓SmartL</button>
-                    <button class="mainButton sdbtn" id="optionStudcabmobbugs" value="35" style="margin-left:2px; margin-top:2px; width:80px;">👨‍🎓📱Bugs</button>
-					<button class="mainButton sdbtn" id="optionMobbugs" value="30" style="margin-left:2px; margin-top:2px; width:80px;">📱Mobil bug</button>
-                    <button class="mainButton sdbtn" id="optionAcademymobbugs" value="19" style="margin-left:2px; margin-top:2px; width:80px;">🅰📱🐞</button>
-                    <button class="mainButton sdbtn" id="optionCommProblems" value="75" style="margin-left:2px; margin-top:2px; width:80px;">📧Comm</button>
-                    <button class="mainButton sdbtn" id="optionAnalyst" value="18" style="margin-left:2px; margin-top:2px; width:80px; display: none;">TEST</button>
+                <div id="servicedeskinfo" style="margin-left:10px;">
+                    <button class="mainButton sdbtn" id="optionTeacher" value="36">👽Teacher&C</button>
+                    <button class="mainButton sdbtn" id="optionCRM2" value="26" >🧮CRM2</button>
+                    <button class="mainButton sdbtn" id="optionAuth" value="20">🔐Auth</button>
+                    <button class="mainButton sdbtn" id="optionSchedule" value="33">📆Schedul</button>
+                    <button class="mainButton sdbtn" id="optionOnboarding" value="23">♻Onboard</button>
+                    <button class="mainButton sdbtn" id="optionBilling" value="21">💰Billing</button>
+                    <button class="mainButton sdbtn" id="optionMrktbill" value="31">📈Mrkt-Bill</button>
+                    <button class="mainButton sdbtn" id="optionVimbugs" value="38">🐞Vim-bug</button>
+                    <button class="mainButton sdbtn" id="optionVimvideocall" value="39">📸Vid-call</button>
+                    <button class="mainButton sdbtn" id="optionStudcab" value="34">👨‍🎓Erp</button>
+                    <button class="mainButton sdbtn" id="optionChat" value="24">💬Chat</button>
+                    <button class="mainButton sdbtn" id="optionEdModel" value="28">🎓LearnPers</button>
+					<button class="mainButton sdbtn" id="optionMobileAppbugs" value="136">📱Mob Bugs</button>
+					<button class="mainButton sdbtn" id="optionCommProblems" value="75">📧Comm</button>
                 </div>
-				<div id="studcabmobbugskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#student-cabinet-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
 
+				<div id="studcabmobbugskoptions" style="display: none; margin-left:20px;">
+					<p style="${Paragrafsstyles}">#erp-mobile-bugs; Cообщаем о проблемах в МП Skysmart Parents и в МП Skyeng главные страницы продуктов</p>
 				</div>
 
 				<div id="teacherssrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#promise-keepers-qa-support; канал по вопросам corp учеников</p>
-
+					<p style="${Paragrafsstyles}">#tp-qa-support; канал по вопросам Teacher & Corp пользователей</p>
 				</div>
+
 				<div id="crm2srvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:160px; width:90%;">#crm2-support</p>
-
+					<p style="${Paragrafsstyles}">#crm2-support</p>
 				</div>
+
 				<div id="authsrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#auth; Обсуждение общих вопросов по проектам Auth/ID (авторизация, роли и доступы, данные пользователей и т. д.)</p>
-
+					<p style="${Paragrafsstyles}">#auth; Обсуждение общих вопросов по проектам Auth/ID (авторизация, роли и доступы, данные пользователей и т. д.)</p>
 				</div>
+
 				<div id="schedulesrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#study-coordinations-qa-support Канал по вопросам расписания ученика, ТТ, TRM, автоподбора и ручного подбора</p>
-
+					<p style="${Paragrafsstyles}">#study-coordinations-qa-support Канал по вопросам расписания ученика, ТТ, TRM, автоподбора и ручного подбора</p>
 				</div>
+
 				<div id="billingqasrvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#billing-qa-support; Канал для рассмотрения причины расхождений баланса учеников</p>
-
+					<p style="${Paragrafsstyles}">#billing-qa-support; Канал для рассмотрения причины расхождений баланса учеников</p>
 				</div>
+
 				<div id="c1srvdskoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#c1-support; Поддержка витрины оплаты (Не виджет оплаты в pcs), Onboarding (Kids&Adult), Scoring, AutoIntroLesson (АвтоВУ)</p>
-
+					<p style="${Paragrafsstyles}">#c1-support; Поддержка витрины оплаты (Не виджет оплаты в pcs), Onboarding (Kids&Adult), Scoring, AutoIntroLesson (АвтоВУ)</p>
 				</div>
+
 				<div id="billingsrvdskoptions" style="display: none; margin-left:20px;">
 					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:180px; width:90%;">#billing</p>
-
 				</div>
+
                 <div id="mrktbillrvdskoptions" style="display: none; margin-left:20px;">
-                    <p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#mrkt-bill-questions; Канал для вопросов по промокодам, сертификатам, реферальной программе</p>
-
+                    <p style="${Paragrafsstyles}">#mrkt-bill-questions; Канал для вопросов по промокодам, сертификатам, реферальной программе</p>
                 </div>
+
 				<div id="vimbugsoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#vim-bugs; Проблемы с Vimbox/Smartroom</p>
+					<p style="${Paragrafsstyles}">#vim-bugs; Проблемы с Vimbox/Smartroom</p>
+				</div>
 
-				</div>				
 				<div id="edumodeloptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#smart-learning-qa-support: Канал для обращений по функционалу Educational Model</p>
-
+					<p style="${Paragrafsstyles}">#learning-personalization-qa-support: Канал для обращений по функционалу learning personalization</p>
 				</div>
+
 				<div id="vimvidoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#vim-video-call; Разработка модуля видеосвязи</p>
-
+					<p style="${Paragrafsstyles}">#vim-video-call; Разработка модуля видеосвязи</p>
 				</div>
+
                 <div id="chatqaoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque; font-size:18px; position:relative; top:7px; left:10px; width:90%;">#chat-qa-support; Решают проблемы с чатами в ЛКП и ЛКУ</p>
-
+					<p style="${Paragrafsstyles} top:7px;">#chat-qa-support; Решают проблемы с чатами в ЛКП и ЛКУ</p>
                 </div>
-				<div id="tripwireoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#eco-tripwire-bugs; Life, Talks, РК adults, расширение переводчик для браузера</p>
 
-				</div>
-				<div id="analystoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#analysts-gm-tl; канал МЕРТВЫЙ НЕ ИСПОЛЬЗУЕМ В РАБОТЕ, ЭТО НЕ ШУТКА!, ТОЛЬКО ДЛЯ ТЕСТИРОВАНИЯ!</p>
-
-				</div>
-				<div id="mobbugsoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#mobile-bugs; Канал обработки обращений по мобильному приложению Skyeng и Teachers.</p>
-
-				</div>
-
-				<div id="academymobbugsoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#academic-mobile-bugs; Канал обработки обращений по МП Skyeng связанных с обучением.</p>
-
-				</div>
-
-                <div id="CommProblemsoptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#communication-problems</p>
-
+				 <div id="CommProblemsoptions" style="display: none; margin-left:20px;">
+					<p style="${Paragrafsstyles}">#communication-problems  - вопросы по коммуниациям</p>
 				</div>
 
                 <div id="studcaboptions" style="display: none; margin-left:20px;">
-					<p style="color:bisque;font-size:18px;position:relative; top:7px; left:10px; width:90%;">#student-cabinet-bugs; Сообщаем о проблемах во взрослом и детском ЛКУ (страницы на домене student.skyeng.ru), в ЛККК и в ЛКП</p>
-
+					<p style="${Paragrafsstyles}">#erp-bugs; Сообщаем о проблемах во взрослом и детском ЛКУ (страницы на домене student.skyeng.ru), в ЛККК и в ЛКП</p>
                 </div>
-				
-				<div id="buttonsfromtest" style="margin-left: 4%; margin-bottom: 5px; max-height: 200px; overflow-x: hidden; overflow-y: auto;">
+
+				<div id="academyselfstudysoptions" style="display: none; margin-left:20px;">
+					<p style="${Paragrafsstyles}">#academic-selfstudy-bugs; Канал обработки обращений по ВЕБ тренажерам, расширениями Subtly и Vimbox Переводчик</p>
+				</div>
+
+				<div id="mobilebugsoptions" style="display: none; margin-left:20px;">
+					<p style="${Paragrafsstyles}">#mobile-app-bugs; Канал обработки обращений по МП Skyeng связанных с обучением.</p>
+				</div>
+
+				<div id="buttonsfromtest" style="margin-left: 2%; margin-bottom: 5px; max-height: 200px; overflow-x: hidden; overflow-y: auto;">
 				</div>
 
 				<div id="inputfieldsdiv" style="display: none;">
-					<select style="height:28px; margin-left: 21px; margin-top: 5px; display: none;" id="prioritymbugs">
+					<select class="" style="height:28px; margin-left: 21px; margin-top: 5px; font-size: 14px; display: none;" id="prioritymbugs">
 							<option selected disabled="">Приоритет</option>
 							<option value="Blocker">Blocker</option>
 							<option value="Critical">Critical</option>
@@ -190,48 +156,65 @@ var win_servicedesk = // описание элементов окна Service De
 							<option value="Minor">Minor</option>
 							<option value="Trivial">Trivial</option>
 					    </select>
-                    <select style="height:28px; width: 420px; margin-left: 21px; margin-top: 5px; display: none;" id="categoryCommproblems">
+                    <select class="" style="height:28px; width: 90%; font-size: 14px; margin-left: 21px; margin-top: 5px; display: none;" id="categoryCommproblems">
                             <option selected disabled="">Категория проблемы</option>
                         </select>
-                    <input id="custom_CMS" placeholder="Ссылка на CMS" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
-					<input id="custom_id" placeholder="ID Пользователей (Id П, Id У)"  class="sdcustfieldformlines removefield" style="margin-left: 21px;">
-                    <input id="custom_service" placeholder="ID Услуги" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
-                    <input id="custom_hesh" placeholder="Хэш урока" class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
-                    <input id="custom_email" placeholder="Почта пользователей"  class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;">
-                    <input id="custom_appinfo" placeholder="Приложение / Версия / Платформа"  class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;"></input>
-                    <input id="custom_deviceinfo" placeholder="Девайс / ОС"  class="sdcustfieldformlines removefield" style="margin-left: 21px; display: none;"></input>
-					<textarea id="custom_descr" placeholder="Описание проблемы"  class="sdcustfieldformlines removefield" style="margin-left: 21px;"></textarea>
-					<textarea id="custom_str" placeholder="Как воспроизвести ошибку?"  class="sdcustfieldformlines removefield" style="margin-left: 21px;"></textarea>
-					<textarea id="custom_er" placeholder="Ожидаемое поведение"  class="sdexpecactual removefield" style="margin-left: 21px;"></textarea>
-					<textarea id="custom_ar" placeholder="Фактическое поведение"  class="sdexpecactual removefield" style="margin-left: 21px;"></textarea>
-					<button class="mainButton" id="createsd" style="width: 150px; position:relative; left:30%; margin-bottom:5px;">Создать</button>
+                    <input id="custom_CMS" placeholder="Ссылка на CMS" class="sdcustfieldformlines removefield " style="margin-left: 21px; display: none;">
+					<input id="custom_id" placeholder="ID Пользователей (Id П, Id У)" class="sdcustfieldformlines removefield " style="margin-left: 21px;">
+                    <input id="custom_service" placeholder="ID Услуги" class="sdcustfieldformlines removefield " style="margin-left: 21px; display: none;">
+                    <input id="custom_hesh" placeholder="Хэш урока" class="sdcustfieldformlines removefield " style="margin-left: 21px; display: none;">
+                    <input id="custom_email" placeholder="Почта пользователей" class="sdcustfieldformlines removefield " style="margin-left: 21px; display: none;">
+                    <input id="custom_appinfo" placeholder="Приложение / Версия / Платформа" class="sdcustfieldformlines removefield " style="margin-left: 21px; display: none;"></input>
+                    <input id="custom_deviceinfo" placeholder="Девайс / ОС" class="sdcustfieldformlines removefield " style="margin-left: 21px; display: none;"></input>
+					<textarea id="custom_descr" placeholder="Описание проблемы" class="sdcustfieldformlines removefield " style="margin-left: 21px;"></textarea>
+					<textarea id="custom_str" placeholder="Как воспроизвести ошибку?" class="sdcustfieldformlines removefield " style="margin-left: 21px;"></textarea>
+					<textarea id="custom_er" placeholder="Ожидаемое поведение" class="sdexpecactual removefield " style="margin-left: 21px;"></textarea>
+					<textarea id="custom_ar" placeholder="Фактическое поведение" class="sdexpecactual removefield " style="margin-left: 21px;"></textarea>
+					<button class="mainButton" id="createsd" style="width: 150px; position:relative; left:35%; margin-bottom:5px;">Создать</button>
 				</div>
 	        </span>
 		</span>
 </div>`;
 
+const wintServDsk = createWindow('AF_ServDsk', 'winTopServDsk', 'winLeftServDsk', win_servicedesk);
+const inputsFieldsSD = document.getElementById('inputfieldsdiv');
 
-//func getOperInfraId
 function getInfraOId() {
-	
-	chrome.runtime.sendMessage({action:"checkInfraAuth"}, function(response){
-		console.log(response)
-		    if (response) {
-			localStorage.setItem('infraOID',response.id);
-			document.getElementById('jiratknstatus').innerText = "🟢"
+
+    const fetchURL = 'https://api-infra.skyeng.ru/api/v1/session';
+    const requestOptions = {
+        method: 'GET'
+    };
+
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        } else {
+            const otvetCheckAuthJira = JSON.parse(response.fetchansver);
+            localStorage.setItem('infraOID', otvetCheckAuthJira.id);
+            document.getElementById('jiratknstatus').innerText = "🟢"
         }
-	})
+    })
 }
 
 function getprsuplasttask() { //функция для получения ссылки на последний созданный после отправки в канал тикет в джира +
 
     const prevtask = document.getElementById('prevtask');
-	
-	chrome.runtime.sendMessage({action:"checkInfraHistory", infraOID: varinfraOID}, function(response){
-        if (response) {
-            prevtsk = response.items[0].jiraIssueKey;
-            prevtask.innerText = prevtsk;
 
+    const fetchURL = `https://api-infra.skyeng.ru/api/v1/rs/requests?reporterId=${varinfraOID}&approverId=${varinfraOID}&maxResults=40&page=1`;
+    const requestOptions = {
+        method: 'GET'
+    };
+
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        } else {
+            const otvetInfraHis = JSON.parse(response.fetchansver);
+            const prevtsk = otvetInfraHis.items[0].jiraIssueKey;
+            prevtask.innerText = prevtsk;
             prevtask.onclick = function () {
                 if (prevtask.innerText === "") {
                     console.log('Задача не найдена');
@@ -240,404 +223,278 @@ function getprsuplasttask() { //функция для получения ссы�
                 }
             }
         }
-	})
+    })
 }
 
-function getmmlink() {
-	        if (newtask.innerText != '') {
-				chrome.runtime.sendMessage({action: "checkTimeLinkInTask" , taskId: newtask.innerText},function(response){
-					if (response) {
-						mmlink = response.match(messregexPattern)[1];
-						console.log(`${messanger_name} link ${mmlink}`);
-						sendComment(`${messanger_name} link: ${mmlink}`);
-					} else console.log("Задача не была создана, поэтому в заметки нечего размещать")
-				})
-			}
-}
+function getmmlink(lasttsk, activeConvId) {
+    if (lasttsk) {
+        const fetchURL = `https://jira.skyeng.tech/browse/${lasttsk}`;
+        const requestOptions = { method: 'GET' };
 
-function sendRequest(idstdserv, dscr, str, erx, ary, code) {
-  let formData = new URLSearchParams();
-  formData.append('requestTypeId', code);
-  formData.append('reporterId', varinfraOID);
-  formData.append('initiatorId', varinfraOID);
-  formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-  formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-  formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-  formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-  formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-
-  let requestOptions = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formData.toString(),
-    mode: 'cors',
-    credentials: 'include',
-  };
-  
-  chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
-        if (response) {
-            lasttsk = response.jiraIssueKey;
-            newtask.innerText = lasttsk;
-			sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-			
-			const removefields = document.getElementsByClassName('removefield');
-            for (let i = 0; i < removefields.length; i++) {
-                removefields[i].value = '';
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+            if (!response.success) {
+                alert('Не удалось выполнить запрос: ' + response.error);
+                return;
+            } else {
+                const otvetTimeLink = response.fetchansver;
+                const matchResult = otvetTimeLink.match(messregexPattern);
+                if (matchResult === null) {
+                    setTimeout(function () { getmmlink(lasttsk, activeConvId); }, 2000);
+                    return;
+                } else {
+                    const mmlink = matchResult[1];
+                    sendComment(`${messanger_name} link: ${mmlink}`, activeConvId);
+                }
             }
-        }
-		setTimeout(getmmlink, 8000);
-  })
-}
-
-function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code) {
-    let formData = new URLSearchParams();
-    formData.append('requestTypeId', code);
-    formData.append('reporterId', varinfraOID);
-    formData.append('initiatorId', varinfraOID);
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-    formData.append('data[serviceId]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-  
-    let requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-      mode: 'cors',
-      credentials: 'include',
-    };
-	
-	
-	  chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){  
-          if (response) {
-              lasttsk = response.jiraIssueKey;
-              newtask.innerText = lasttsk;
-              sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-              
-              const removefields = document.getElementsByClassName('removefield');
-              for (let i = 0; i < removefields.length; i++) {
-                  removefields[i].value = '';
-              }
-          }
-		setTimeout(getmmlink, 8000);
-	  })
-}
-
-function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code) {
-    let formData = new URLSearchParams();
-    formData.append('requestTypeId', code);
-    formData.append('reporterId', varinfraOID);
-    formData.append('initiatorId', varinfraOID);
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-    formData.append('data[hashLesson]', hesh)
-  
-    let requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-      mode: 'cors',
-      credentials: 'include',
-    };
-  
-  	  chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
-		      if (response) {
-				lasttsk = response.jiraIssueKey;
-				newtask.innerText = lasttsk;
-				sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-              
-				const removefields = document.getElementsByClassName('removefield');
-				for (let i = 0; i < removefields.length; i++) {
-                  removefields[i].value = '';
-              }
-          }
-       setTimeout(getmmlink, 8000);
-	  })
- }
-
-function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code) {
-    let formData = new URLSearchParams();
-    formData.append('requestTypeId', code);
-    formData.append('reporterId', varinfraOID);
-    formData.append('initiatorId', varinfraOID);
-    formData.append('data[category]', decodeURIComponent(categoryvalue).replaceAll('<br>','\n'))
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-    formData.append('data[user_id]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-    formData.append('data[user_email]', decodeURIComponent(usermail).replaceAll('<br>','\n'))    
-  
-    let requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-      mode: 'cors',
-      credentials: 'include',
-    };
-	
-	chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
-		  if (response) {
-              lasttsk = response.jiraIssueKey;
-              newtask.innerText = lasttsk;
-              sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-              
-              const removefields = document.getElementsByClassName('removefield');
-              for (let i = 0; i < removefields.length; i++) {
-                  removefields[i].value = '';
-              }
-              document.getElementById('categoryCommproblems').children[0].selected = true;
-          }
-     setTimeout(getmmlink, 8000);
-	})  
-}
-
-let checkingId = [];
-function getthemesfrominfra(categoryId,index) {
-  chrome.runtime.sendMessage({action:"getListOfTypes", category:categoryId},function(response){
-    if (response) {
-      checkingId = [];
-      for (let i = 0; i < response.length; i++) {
-        checkingId.push({ id: response[i].id, summary: response[i].summary });
-      }
-	  buttonsfromtest.innerHTML = ''
-	  for (let j=0; j<checkingId.length; j++) {
-			buttonsfromtest.innerHTML += `<button class="${buttons[index].replace('.','')} widthofsd mainButton" value=${checkingId[j].id}>${checkingId[j].summary}</button>`
-		}
-	      buttons.forEach(button => {
-        $(button).click(function () {
-            remres(this);
         });
-    });
-    }
-  })
-}
-
-function getcommproboptions(){
-    const commprobselect = document.getElementById('categoryCommproblems');
-    let addoptflag = 0;
-    if (commprobselect.length < 2){
-    
-    let infraOID = localStorage.getItem('infraOID')
-	
-	chrome.runtime.sendMessage({action:"getOptionsCommunication", ioperId: infraOID},function(response){
-		console.log(response)
-		            if (response !== '') {
-                response.forEach((item) => {
-                    if (item.label == "Категория проблемы") {
-                      const commprobarropt = item.attributes.options;
-                      if (addoptflag < commprobarropt.length) {
-                        addoptflag = commprobarropt.length;
-                        commprobarropt.forEach((option) => {
-                          if (option !== '') {
-                            let opt = JSON.stringify(option);
-                            const [value, text] = opt.split(":").map(item => item.replace(/["{\\}]/g, '').trim());
-                            addOption(commprobselect, text, value);
-                          }
-                        });
-                      }
-                    }
-                }); 
-            }
-		})
     }
 }
 
-function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo , appinfo, code) {
-		
-  let formData = new URLSearchParams();
-  formData.append('requestTypeId', code);
-  formData.append('reporterId', varinfraOID);
-  formData.append('initiatorId', varinfraOID);
-  formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>','\n'))
-  formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>','\n'))
-  formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-  formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-  formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-  formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-  formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
+function MakeFetch(bodyrequst, activeConvId) {
+    const fetchURL = 'https://api-infra.skyeng.ru/api/v1/rs/request';
+    const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', },
+        body: bodyrequst,
+        mode: 'cors',
+        credentials: 'include',
+    };
 
-  let requestOptions = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formData.toString(),
-    mode: 'cors',
-    credentials: 'include',
-  };
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        } else {
+            const otvetCreateIssue = JSON.parse(response.fetchansver);
 
-	chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
-        if (response) {
-            lasttsk = response.jiraIssueKey;
+            const lasttsk = otvetCreateIssue.jiraIssueKey;
             newtask.innerText = lasttsk;
-			sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-			
-			const removefields = document.getElementsByClassName('removefield');
+            if (activeConvId) {
+                sendComment(`Jira PS link: https://jira.skyeng.tech/browse/${lasttsk}`, activeConvId);
+                getmmlink(lasttsk, activeConvId);
+            }
+            const removefields = document.getElementsByClassName('removefield');
             for (let i = 0; i < removefields.length; i++) {
                 removefields[i].value = '';
             }
         }
-    setTimeout(getmmlink, 8000);
-	})
+    })
 }
 
-function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code) {
-	
-  let formData = new URLSearchParams();
-  formData.append('requestTypeId', code);
-  formData.append('reporterId', varinfraOID);
-  formData.append('initiatorId', varinfraOID);
-  formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>','\n'))
-  formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>','\n'))
-  formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-  formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-  formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-  formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-  formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-  formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>','\n'))
+function sendRequest(idstdserv, dscr, str, erx, ary, code, activeConvId) {
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
 
-  let requestOptions = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formData.toString(),
-    mode: 'cors',
-    credentials: 'include',
-  };
-  
-  chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
-        if (response) {
-            lasttsk = response.jiraIssueKey;
-            newtask.innerText = lasttsk;
-			sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-			
-			const removefields = document.getElementsByClassName('removefield');
-            for (let i = 0; i < removefields.length; i++) {
-                removefields[i].value = '';
-            }
-        }
-    setTimeout(getmmlink, 8000);
-  })
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst, activeConvId);
 }
 
-function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code) {
-	
+function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code, activeConvId) {
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+    formData.append('data[serviceId]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst, activeConvId);
+}
+
+function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code, activeConvId) {
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+    formData.append('data[hashLesson]', hesh)
+
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst, activeConvId);
+}
+
+function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code, activeConvId) {
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[category]', decodeURIComponent(categoryvalue).replaceAll('<br>', '\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[user_id]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+    formData.append('data[user_email]', decodeURIComponent(usermail).replaceAll('<br>', '\n'))
+
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst, activeConvId);
+}
+
+function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, appinfo, code, activeConvId) {
+
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
+    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst, activeConvId);
+}
+
+function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code, activeConvId) {
+
+    let formData = new URLSearchParams();
+    formData.append('requestTypeId', code);
+    formData.append('reporterId', varinfraOID);
+    formData.append('initiatorId', varinfraOID);
+    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
+    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
+    formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>', '\n'))
+
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst, activeConvId);
+}
+
+function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code, activeConvId) {
+
     let formData = new URLSearchParams();
     formData.append('requestTypeId', code);
     formData.append('reporterId', varinfraOID);
     formData.append('initiatorId', varinfraOID);
     formData.append('data[cms_link]', CMSvalue);
-	formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>','\n'))
-    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>','\n'))
-    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>','\n'))
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>','\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>','\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>','\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>','\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>','\n'))
-  
-    let requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-      mode: 'cors',
-      credentials: 'include',
-    };
-	
-	chrome.runtime.sendMessage({action:"sendRequestToCreate", requestOptions: requestOptions},function(response){
-          if (response) {
-              lasttsk = response.jiraIssueKey;
-              newtask.innerText = lasttsk;
-              sendComment("Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk);
-              
-              const removefields = document.getElementsByClassName('removefield');
-              for (let i = 0; i < removefields.length; i++) {
-                  removefields[i].value = '';
-              }
-          }
-      setTimeout(getmmlink, 8000);
-	})	 
-  }
+    formData.append('data[priority]', decodeURIComponent(priorvalue).replaceAll('<br>', '\n'))
+    formData.append('data[appInfo]', decodeURIComponent(appinfo).replaceAll('<br>', '\n'))
+    formData.append('data[userDeviceInfo]', decodeURIComponent(deviceinfo).replaceAll('<br>', '\n'))
+    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
+    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
+    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
+    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
+    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
 
-//main
-
-if (localStorage.getItem('winTopServDsk') == null) { // начальное положение окна Service Desk
-    localStorage.setItem('winTopServDsk', '120');
-    localStorage.setItem('winLeftServDsk', '295');
+    let bodyrequst = formData.toString();
+    MakeFetch(bodyrequst, activeConvId);
 }
 
-let wintServDsk = document.createElement('div'); // создание окна ServiceDesk
-document.body.append(wintServDsk);
-wintServDsk.style = 'min-height: 165px; min-width: 65px; background: #464451; top: ' + localStorage.getItem('winTopServDsk') + 'px; left: ' + localStorage.getItem('winLeftServDsk') + 'px; font-size: 14px; z-index: 10000; position: fixed; border: 1px solid rgb(56, 56, 56); color: black;';
-wintServDsk.style.display = 'none';
-wintServDsk.setAttribute('id', 'AF_ServDsk');
-wintServDsk.innerHTML = win_servicedesk;
+let checkingId = [];
+function getthemesfrominfra(categoryId, index) {
 
-const inputsFieldsSD = document.getElementById('inputfieldsdiv');
-wintServDsk.onmousedown = function(event) {
-  if (checkelementtype(event)) {
-    let startX = event.clientX;
-    let startY = event.clientY;
-    let elemLeft = wintServDsk.offsetLeft;
-    let elemTop = wintServDsk.offsetTop;
+    const fetchURL = `https://api-infra.skyeng.ru/api/v1/rs/categories/${categoryId}/request-types`;
+    const requestOptions = {
+        method: 'GET'
+    };
 
-    function onMouseMove(event) {
-      let deltaX = event.clientX - startX;
-      let deltaY = event.clientY - startY;
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        } else {
+            const otvetListOfTypes = JSON.parse(response.fetchansver);
 
-      wintServDsk.style.left = (elemLeft + deltaX) + "px";
-      wintServDsk.style.top = (elemTop + deltaY) + "px";
+            checkingId = [];
+            for (let i = 0; i < otvetListOfTypes.length; i++) {
+                checkingId.push({ id: otvetListOfTypes[i].id, summary: otvetListOfTypes[i].summary });
+            }
+            buttonsfromtest.innerHTML = ''
+            for (let j = 0; j < checkingId.length; j++) {
+                buttonsfromtest.innerHTML += `<button class="${buttons[index].replace('.', '')} widthofsd mainButton" value=${checkingId[j].id}>${checkingId[j].summary}</button>`
+            }
+            buttons.forEach(button => {
+                $(button).click(function () {
+                    remres(this);
+                });
+            });
+        }
+    })
+}
 
-      localStorage.setItem('winTopServDsk', String(elemTop + deltaY));
-      localStorage.setItem('winLeftServDsk', String(elemLeft + deltaX));
+function getcommproboptions() {
+    const commprobselect = document.getElementById('categoryCommproblems');
+    let addoptflag = 0;
+    if (commprobselect.length < 2) {
+
+        let infraOID = localStorage.getItem('infraOID')
+
+        const fetchURL = `https://api-infra.skyeng.ru/api/v1/rs/request-types/541/form`;
+        const requestOptions = {
+            headers: {
+                'accept': 'application/json',
+                'content-type': 'application/json'
+            },
+            referrer: 'https://infra.skyeng.ru/',
+            body: `{\"reporterId\":${infraOID},\"data\":{}}`,
+            method: 'PATCH',
+            credentials: 'include'
+        };
+
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+            if (!response.success) {
+                alert('Не удалось выполнить запрос: ' + response.error);
+                return;
+            } else {
+                const otvetCategoriesCommunic = JSON.parse(response.fetchansver);
+
+                otvetCategoriesCommunic.forEach((item) => {
+                    if (item.label == "Категория проблемы") {
+                        const commprobarropt = item.attributes.options;
+                        if (addoptflag < commprobarropt.length) {
+                            addoptflag = commprobarropt.length;
+                            commprobarropt.forEach((option) => {
+                                if (option !== '') {
+                                    let opt = JSON.stringify(option);
+                                    const [value, text] = opt.split(":").map(item => item.replace(/["{\\}]/g, '').trim());
+                                    addOption(commprobselect, text, value);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        })
+
     }
+}
 
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    document.addEventListener('mouseup', onMouseUp);
-  }
-};
- // прекращение изменения позиции окна ServiceDesk
-
- function getservDskPress() { // функция открытия главного окна SD +
+function getservDskPress() { // функция открытия главного окна SD +
     if (document.getElementById('AF_ServDsk').style.display == '') {
         document.getElementById('AF_ServDsk').style.display = 'none'
         document.getElementById('newtask').textContent = ''
-        lasttsk = '';
-		document.getElementById('idmymenu').style.display = 'none'
-		document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+        document.getElementById('idmymenu').style.display = 'none'
+        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
     } else {
         document.getElementById('AF_ServDsk').style.display = ''
-		document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
-		document.getElementById('idmymenu').style.display = 'none'
-	}
+        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+        document.getElementById('idmymenu').style.display = 'none'
+    }
 
+    if (localStorage.getItem('infraOID') == null) {
+        document.getElementById('jiratknstatus').innerText = "🔴"
+        getInfraOId()
+    } else varinfraOID = localStorage.getItem('infraOID');
 
-
-	if (localStorage.getItem('infraOID') == null) {
-		document.getElementById('jiratknstatus').innerText = "🔴"
-		getInfraOId()
-	} else varinfraOID = localStorage.getItem('infraOID');
-	
     setTimeout(getprsuplasttask, 2000)
 
     const sdbtn = document.getElementsByClassName('sdbtn');
@@ -645,7 +502,7 @@ wintServDsk.onmousedown = function(event) {
         sdbtn[i].onclick = function () {
             let index = i;
             inputsFieldsSD.style.display = 'none';
-			getthemesfrominfra(this.value,index)
+            getthemesfrominfra(this.value, index)
             let activeBtnsd = document.getElementsByClassName('activebtnsd');
             for (let j = 0; j < activeBtnsd.length; j++) {
                 activeBtnsd[j].classList.remove('activebtnsd');
@@ -659,110 +516,7 @@ wintServDsk.onmousedown = function(event) {
                 otherElements[k].style.display = 'none';
             }
 
-            if (elementId === "academymobbugsoptions") {
-                document.getElementById('prioritymbugs').style.display = '';
-                document.getElementById('custom_CMS').style.display = '';
-                document.getElementById('custom_appinfo').style.display = '';
-                document.getElementById('custom_deviceinfo').style.display = '';
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            }else if (elementId === "mobbugsoptions") {
-                document.getElementById('prioritymbugs').style.display = '';
-                document.getElementById('custom_appinfo').style.display = '';
-                document.getElementById('custom_deviceinfo').style.display = '';
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            } else if (elementId === 'studcabmobbugskoptions') {
-                document.getElementById('custom_appinfo').style.display = '';
-                document.getElementById('custom_deviceinfo').style.display = '';
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('prioritymbugs').style.display = 'none';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            } else if(elementId === 'CommProblemsoptions') {
-                getcommproboptions();
-                document.getElementById('categoryCommproblems').style.display = '';
-                document.getElementById('custom_email').style.display = '';
-                document.getElementById('prioritymbugs').style.display = 'none';
-                document.getElementById('custom_appinfo').style.display = 'none';
-                document.getElementById('custom_deviceinfo').style.display = 'none';
-                document.getElementById('custom_str').style.display = 'none';
-                document.getElementById('custom_er').style.display = 'none';
-                document.getElementById('custom_ar').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            } else if (elementId === 'vimvidoptions') {
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_hesh').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('prioritymbugs').style.display = 'none';
-                document.getElementById('custom_appinfo').style.display = 'none';
-                document.getElementById('custom_deviceinfo').style.display = 'none';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            } else if (elementId === 'mrktbillrvdskoptions') {
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('custom_service').style.display = '';
-                document.getElementById('prioritymbugs').style.display = 'none';
-                document.getElementById('custom_appinfo').style.display = 'none';
-                document.getElementById('custom_deviceinfo').style.display = 'none';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-            } else {
-                document.getElementById('custom_id').style.display = '';
-                document.getElementById('custom_descr').style.display = '';
-                document.getElementById('custom_str').style.display = '';
-                document.getElementById('custom_er').style.display = '';
-                document.getElementById('custom_ar').style.display = '';
-                document.getElementById('prioritymbugs').style.display = 'none';
-                document.getElementById('custom_appinfo').style.display = 'none';
-                document.getElementById('custom_deviceinfo').style.display = 'none';
-                document.getElementById('categoryCommproblems').style.display = 'none';
-                document.getElementById('categoryCommproblems').children[0].selected = true
-                document.getElementById('custom_email').style.display = 'none';
-                document.getElementById('custom_CMS').style.display = 'none';
-                document.getElementById('custom_hesh').style.display = 'none';
-                document.getElementById('custom_service').style.display = 'none';
-            }
+            updateDisplay(elementId); // Вызов функции обновления отображения здесь
         }
     }
 
@@ -773,10 +527,71 @@ wintServDsk.onmousedown = function(event) {
         });
     });
 
-} // tested
+    // Определение функций setDisplayStyleSD и updateDisplay на уровне всей функции getservDskPress
+    function setDisplayStyleSD(elementIds, style) {
+        elementIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = style;
+            }
+        });
+    }
+
+    function setDefaultOptions() {
+        const categoryElement = document.getElementById('categoryCommproblems');
+        if (categoryElement && categoryElement.children[0]) {
+            categoryElement.children[0].selected = true;
+        }
+    }
+
+    const configSD = {
+        academyselfstudysoptions: {
+            show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
+        },
+        mobilebugsoptions: {
+            show: ['prioritymbugs', 'custom_CMS', 'custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['categoryCommproblems', 'custom_email', 'custom_hesh', 'custom_service']
+        },
+        studcabmobbugskoptions: {
+            show: ['custom_appinfo', 'custom_deviceinfo', 'custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['prioritymbugs', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh', 'custom_service']
+        },
+        CommProblemsoptions: {
+            show: ['categoryCommproblems', 'custom_email'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'custom_str', 'custom_er', 'custom_ar', 'custom_CMS', 'custom_hesh', 'custom_service'],
+            callback: getcommproboptions
+        },
+        vimvidoptions: {
+            show: ['custom_id', 'custom_hesh', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_service']
+        },
+        mrktbillrvdskoptions: {
+            show: ['custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar', 'custom_service'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh']
+        },
+        default: {
+            show: ['custom_id', 'custom_descr', 'custom_str', 'custom_er', 'custom_ar'],
+            hide: ['prioritymbugs', 'custom_appinfo', 'custom_deviceinfo', 'categoryCommproblems', 'custom_email', 'custom_CMS', 'custom_hesh', 'custom_service']
+        }
+    };
+
+    function updateDisplay(elementId) {
+        const conf = configSD[elementId] || configSD.default;
+
+        setDisplayStyleSD(conf.show, '');
+        setDisplayStyleSD(conf.hide, 'none');
+        setDefaultOptions();
+
+        if (conf.callback) {
+            conf.callback();
+        }
+    }
+}
+// tested
 
 document.getElementById('AF_ServDsk').ondblclick = function (a) { // скрытие окна ServiceDesk по двойному клику
-    if (checkelementtype(a)) { document.getElementById('hideMeSrvDsk').click(); }
+    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') { document.getElementById('hideMeSrvDsk').click(); }
 }
 
 document.getElementById('ServiceDeskinstr').onclick = function () {
@@ -805,26 +620,27 @@ document.getElementById('hideMeSrvDsk').onclick = function () { //форма hid
 document.getElementById('refreshjiraauth').onclick = getInfraOId; //функция обновления статуса авторизации
 
 function remres(a) { // функция переключения класса по нажатию на кнопку
-  let isActive = $(a).hasClass('activebtn');
+    let isActive = $(a).hasClass('activebtn');
     let isThemeBtn = $(a).hasClass('sdbtn');
-  
+
     if (isActive || isThemeBtn) {
-    buttons.forEach(button => {
-      $(button).show().removeClass('activebtn');
-    });
-      inputsFieldsSD.style.display = 'none';
-  } else {
-    buttons.forEach(button => {
-      if (button !== a) {
-        $(button).hide().removeClass('activebtn');
-      }
-    });
-    $(a).addClass('activebtn').show();
-      inputsFieldsSD.style.display = 'block';
-  }
+        buttons.forEach(button => {
+            $(button).show().removeClass('activebtn');
+        });
+        inputsFieldsSD.style.display = 'none';
+    } else {
+        buttons.forEach(button => {
+            if (button !== a) {
+                $(button).hide().removeClass('activebtn');
+            }
+        });
+        $(a).addClass('activebtn').show();
+        inputsFieldsSD.style.display = 'block';
+    }
 }
 
 document.getElementById('createsd').addEventListener('click', function () { //функция создания задачи на сервис деск
+    let activeConvId = getChatId();
 
     let priorityMobile = document.getElementById('prioritymbugs')
     let catcommprob = document.getElementById('categoryCommproblems')
@@ -857,48 +673,41 @@ document.getElementById('createsd').addEventListener('click', function () { //ф
     }))
     let activeButtons = document.querySelectorAll('.activebtn');
 
-    if (catcommprob.style.display == ''){
+    if (catcommprob.style.display == '') {
         for (const button of activeButtons) {
-            sendRequestCommprob(catcommprob.value, usermail.value, idUser.value, descriptionField, button.value);
+            sendRequestCommprob(catcommprob.value, usermail.value, idUser.value, descriptionField, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     } else if (userservice.style.display == '') {
         for (const button of activeButtons) {
-            sendRequestmrktbill(idUser.value, userservice.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value);
+            sendRequestmrktbill(idUser.value, userservice.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
-    }else if (lessonHesh.style.display == '') {
+    } else if (lessonHesh.style.display == '') {
         for (const button of activeButtons) {
-            sendRequestVimVid(idUser.value, lessonHesh.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value);
+            sendRequestVimVid(idUser.value, lessonHesh.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
-    }else if (priorityMobile.style.display == 'none' && appInfo.style.display == 'none' && deviceInfo.style.display == 'none') {
+    } else if (priorityMobile.style.display == 'none' && appInfo.style.display == 'none' && deviceInfo.style.display == 'none') {
         for (const button of activeButtons) {
-            sendRequest(idUser.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value);
+            sendRequest(idUser.value, descriptionField, stepsToReproduce, expectedResult, actualResult, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     } else if (priorityMobile.style.display == '' && appInfo.style.display == '' && deviceInfo.style.display == '' && CMSlink.style.display == '') {
         for (const button of activeButtons) {
-            sendRequestAcademMob(CMSlink.value, priorityMobile.value, appInfo.value, deviceInfo.value, descriptionField, stepsToReproduce, expectedResult, actualResult, idUser.value, button.value);
+            sendRequestAcademMob(CMSlink.value, priorityMobile.value, appInfo.value, deviceInfo.value, descriptionField, stepsToReproduce, expectedResult, actualResult, idUser.value, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     } else if (priorityMobile.style.display == '' && appInfo.style.display == '' && deviceInfo.style.display == '' && CMSlink.style.display == 'none') {
         for (const button of activeButtons) {
-            sendRequestMobWithPriority(priorityMobile.value, appInfo.value, deviceInfo.value, descriptionField, stepsToReproduce, expectedResult, actualResult, idUser.value, button.value);
+            sendRequestMobWithPriority(priorityMobile.value, appInfo.value, deviceInfo.value, descriptionField, stepsToReproduce, expectedResult, actualResult, idUser.value, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     } else if (priorityMobile.style.display == 'none' && appInfo.style.display == '' && deviceInfo.style.display == '') {
         for (const button of activeButtons) {
-            sendRequestMobNoPriority(idUser.value, actualResult, expectedResult, stepsToReproduce, descriptionField, deviceInfo.value, appInfo.value, button.value);
+            sendRequestMobNoPriority(idUser.value, actualResult, expectedResult, stepsToReproduce, descriptionField, deviceInfo.value, appInfo.value, button.value, activeConvId);
             console.log(`Selected topic: ${button.innerText}`);
         }
     }
 });
-
-function SDtestbtn() {
-    if (document.getElementById('optionAnalyst').style.display == 'none'){
-        document.getElementById('optionAnalyst').style.display = ''
-    } else {document.getElementById('optionAnalyst').style.display = 'none'}
-}
-	//End of script
-// }
+//End of script

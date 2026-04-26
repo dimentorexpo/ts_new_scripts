@@ -327,7 +327,7 @@ const win_Jira = `
 ${glassStylesJiraS}
 <div class="jiras-glass-wrapper">
 <div class="jiras-glass-header" id="jira_1str">
-        <button class="mainButton jiras-glass-btn buttonHide" title="Скрывает меню" id="hideMej">hide</button>
+        <button class="mainButton jiras-glass-btn buttonHide" title="Скрывает меню" id="hideMej">❌</button>
 
         <div style="flex-grow: 1; display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255, 228, 196, 0.6);">
             <span>Token Status:</span>

@@ -115,7 +115,7 @@
             createWindow('AF_Queue', 'winTopQueue', 'winLeftQueue', `
                 <div class="qg5-panel" id="qg5-container">
                     <div class="qg5-header" id="qg5-drag-handle">
-                        <button class="qg5-btn" id="qg5-hide">hide</button>
+                        <button class="qg5-btn buttonHide" id="qg5-hide">❌</button>
                         <div class="qg5-stats">
                             <span>Всего чатов: <b id="qg5-count" style="color:coral;">0</b></span>
                             <span style="opacity: 0.3;">|</span>
