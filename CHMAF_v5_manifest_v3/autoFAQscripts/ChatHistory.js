@@ -407,13 +407,25 @@ function fillchatbox() {
                 const name = user.fullName || "Widget";
                 let content = message.txt; // Сначала берем весь текст
 
-                // 1. Сначала обрабатываем ссылки в тегах <p>, если они есть
+                // 1. НОВОЕ: Ищем теги <a>, у которых href ведет на медиафайл (как в вашем примере с Telegram)
+                content = content.replace(/<a\s+(?:[^>]*?\s+)?href="([^"]+)"[^>]*>.*?<\/a>/gi, (match, url) => {
+                    // Проверяем, есть ли в ссылке расширение медиафайла
+                    if (url.match(/\.(png|jpg|jpeg|gif|webp|mp4|mov|mkv|webm|mp3|wav|ogg|oga)(?:[?#]|$)/i)) {
+                        return `<div>${renderMedia(url)}</div>`; // Отдаем ссылку в ваш плеер
+                    }
+                    return match; // Если это обычная ссылка на сайт, не трогаем её
+                });
+
+                // 2. НОВОЕ: Удаляем технический тег <p> со ссылкой на /attachment,
+                // который часто прилетает вместе с медиафайлами, чтобы не засорять окно чата
+                content = content.replace(/<p>https?:\/\/[^<]+\/attachment<\/p>/gi, '');
+
+                // 3. Старая логика: обрабатываем прямые ссылки в тегах <p>, если они остались
                 content = content.replace(/<p>(https?:\/\/[^<]+\.(png|jpg|jpeg|gif|webp|mp4|mov|mkv|webm|mp3|wav|ogg|oga))<\/p>/gi, (match, url) => {
                     return `<div>${renderMedia(url)}</div>`;
                 });
 
-                // 2. Если ссылки присланы просто текстом (без <p>), ищем их через regex
-                // Но делаем это только если они еще не превратились в медиа выше
+                // 4. Старая логика: Если ссылки присланы просто текстом
                 if (!content.includes('<video') && !content.includes('<img')) {
                     const mediaRegex = /(https:\/\/vimbox-resource[^\s<>"']+\.(mp4|mov|mkv|webm|mp3|wav|ogg|oga|png|jpg|jpeg|gif|webp))/gi;
                     content = content.replace(mediaRegex, (url) => {
