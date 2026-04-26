@@ -40,18 +40,58 @@ var win_Stat = `
     .adds-content-area::-webkit-scrollbar { width: 6px; }
     .adds-content-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
     .stat-label-group { margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+
+    /* === STAT CARDS (Пощупано / Закрыто) === */
+    .stat-cards-row { display: flex; gap: 10px; margin-bottom: 14px; }
+    .stat-card { flex: 1; background: rgba(255,255,255,0.04); border-radius: 12px; padding: 14px 10px; text-align: center; border: 1px solid rgba(255,255,255,0.06); transition: all 0.25s ease; position: relative; overflow: hidden; }
+    .stat-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.08); }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 12px 12px 0 0; }
+    .stat-card-touched::before { background: linear-gradient(90deg, #42a5f5, #64b5f6); box-shadow: 0 2px 10px rgba(66,165,245,0.35); }
+    .stat-card-closed::before { background: linear-gradient(90deg, #66bb6a, #81c784); box-shadow: 0 2px 10px rgba(102,187,106,0.35); }
+    .stat-card-icon { font-size: 22px; margin-bottom: 6px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
+    .stat-card-value { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+    .stat-card-touched .stat-card-value { color: #90caf9; }
+    .stat-card-closed .stat-card-value { color: #a5d6a7; }
+
+    /* === PREMIUM CSAT === */
+    .csat-premium-container { background: rgba(20,25,35,0.6); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(-8px);} to { opacity:1; transform: translateY(0);} }
+    .csat-premium-header { text-align: center; margin-bottom: 14px; }
+    .csat-premium-score { font-size: 36px; font-weight: 800; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+    .csat-premium-total { color: #8899aa; font-size: 12px; margin-top: 4px; }
+    .csat-premium-bars { display: flex; flex-direction: column; gap: 10px; }
+    .csat-premium-row { display: flex; align-items: center; gap: 10px; }
+    .csat-premium-label { width: 32px; text-align: center; font-weight: 800; font-size: 15px; }
+    .csat-premium-bar-wrap { flex: 1; height: 24px; background: rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; position: relative; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
+    .csat-premium-bar-fill { height: 100%; border-radius: 12px; transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; box-sizing: border-box; min-width: 28px; position: relative; }
+    .csat-premium-count { font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); z-index: 2; }
+    .csat-premium-percent { width: 42px; text-align: right; font-size: 12px; color: #aab; font-weight: 700; }
+    .csat-premium-emoji { text-align: center; font-size: 20px; margin-top: 8px; opacity: 0.8; }
+
+    /* === 2ЛТП LIST === */
+    .line2-section-title { color: #64b5f6; font-weight: 700; font-size: 13px; margin: 14px 0 8px; display: flex; align-items: center; gap: 6px; }
+    .line2-list { display: flex; flex-direction: column; gap: 6px; }
+    .line2-item { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 8px 12px; border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s ease; }
+    .line2-item:hover { background: rgba(255,255,255,0.07); border-color: rgba(100,181,246,0.25); transform: translateX(2px); }
+    .line2-left { display: flex; align-items: center; gap: 8px; }
+    .line2-arrow { color: #00e676; font-size: 12px; }
+    .line2-actions { display: flex; gap: 8px; align-items: center; }
+    .line2-actions .adds-action-icon { margin-left: 0; font-size: 15px; }
+    .line2-empty { color: #78909c; font-style: italic; font-size: 13px; padding: 6px 4px; }
 </style>
 
 <div class="adds-glass-container">
     <div class="adds-glass-panel">
         <div class="adds-glass-header">
             <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-                <button class="adds-glass-btn" id="hideMeStat" style="padding: 4px 10px;">Скрыть</button>
+                <button class="adds-glass-btn buttonHide" id="hideMeStat" style="padding: 4px 10px;">❌</button>
             </div>
 
-            <div class="adds-flex-row">
+            <div class="adds-flex-row" style="justify-content: center; gap: 8px; flex-wrap: wrap;">
+                <button class="adds-glass-btn" id="prevDayStata" title="Сдвинуть на 1 день назад" style="padding: 6px 10px; font-size: 13px;">◀ -1д</button>
                 <span>Начальная <input type="date" id="dateFrom" class="adds-glass-input" style="width: 120px;"></span>
                 <span>Конечная <input type="date" id="dateTo" class="adds-glass-input" style="width: 120px;"></span>
+                <button class="adds-glass-btn" id="nextDayStata" title="Сдвинуть на 1 день вперёд" style="padding: 6px 10px; font-size: 13px;">+1д ▶</button>
             </div>
 
             <div style="text-align: center; margin-bottom: 15px;">
@@ -124,8 +164,21 @@ var win_Stat = `
 
             <div id="chatcoutnsinfo" class="adds-content-area">
                 <div id="mainStatsLabels" class="stat-label-group">
-                    <span id="sumchatcounttouched"></span><br>
-                    <span id="sumchatcountclosed"></span>
+                    <div class="stat-cards-row">
+                        <div class="stat-card stat-card-touched">
+                            <div class="stat-card-icon">👆Пощупано
+                                                            <span class="stat-card-value" id="sumchatcounttouched">—</span>
+                            </div>
+
+                        </div>
+                        <div class="stat-card stat-card-closed">
+                            <div class="stat-card-icon">✅Закрыто
+                               <span class="stat-card-value" id="sumchatcountclosed">—</span>
+                            </div>
+
+
+                        </div>
+                    </div>
                 </div>
                 <div id="chatsinfoout"></div>
                 <div id="lowCSATcount" style="display:none;"></div>
@@ -162,7 +215,7 @@ var win_Fav = `
     <div class="fav-glass-panel">
         <div class="fav-header">
             <span class="fav-title">⭐ Избранные задачи</span>
-            <button class="fav-btn" id="hideMeFav">Скрыть</button>
+            <button class="fav-btn buttonHide" id="hideMeFav">❌</button>
         </div>
         <div id="favContent" class="fav-content">
             <div class="fav-empty">Загрузка...</div>
@@ -178,23 +231,60 @@ function initWindows() {
         hideWindowOnDoubleClick('AF_Stat');
         hideWindowOnClick('AF_Stat', 'hideMeStat');
     }
-    // Создаём отдельное окно избранного, если его ещё нет
     if (!document.getElementById('AF_Fav') && typeof createWindow === 'function') {
         createWindow('AF_Fav', 'winTopFav', 'winLeftFav', win_Fav);
         hideWindowOnDoubleClick('AF_Fav');
         hideWindowOnClick('AF_Fav', 'hideMeFav');
-        // По умолчанию скрыто
         const favWin = document.getElementById('AF_Fav');
         if (favWin) favWin.style.display = 'none';
     }
 }
 
 // ---------- 4. Вспомогательные функции ----------
-function fmtDate(d) { return d.toISOString().split('T')[0]; }
+function fmtDate(d) {
+    if (!(d instanceof Date) || isNaN(d.getTime())) return '';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 function toUTC(dateStr, h, m, s, ms) {
     const d = new Date(dateStr + "T00:00:00");
     d.setHours(h - 3, m, s, ms);
     return d.toISOString();
+}
+
+function shiftDates(days) {
+    const dateFromEl = document.getElementById('dateFrom');
+    const dateToEl = document.getElementById('dateTo');
+    if (!dateFromEl || !dateToEl) return;
+
+    const valFrom = dateFromEl.value;
+    const valTo = dateToEl.value;
+    if (!valFrom || !valTo) return;
+
+    // Парсим YYYY-MM-DD вручную (без new Date(string), чтобы не было Invalid Date)
+    const parseLocal = (str) => {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, m - 1, d); // месяцы 0-11
+    };
+
+    const fmtLocal = (d) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
+
+    const from = parseLocal(valFrom);
+    const to = parseLocal(valTo);
+
+    from.setDate(from.getDate() + days);
+    to.setDate(to.getDate() + days);
+
+    dateFromEl.value = fmtLocal(from);
+    dateToEl.value = fmtLocal(to);
 }
 
 function switchView(activeId) {
@@ -212,11 +302,9 @@ function switchView(activeId) {
 // ---------- 5. Логика Избранного (ОТДЕЛЬНОЕ ОКНО) ----------
 function renderFavoritesWindow() {
     const container = document.getElementById('favContent');
-    const favWin = document.getElementById('AF_Fav');
     if (!container) return;
 
     const favKeys = Object.keys(favoritesChats);
-
     if (favKeys.length === 0) {
         container.innerHTML = `<div class="fav-empty"><b>Избранных чатов пока нет.</b><br><small>Добавляйте их через ❤️ в статистике</small></div>`;
         return;
@@ -227,7 +315,7 @@ function renderFavoritesWindow() {
         const favData = favoritesChats[chatId];
         html += `<div class="fav-item">
             <span style="color:#00FA9A">&#5129;</span>
-            <a href="https://skyeng.autofaq.ai/logs/${chatId}" target="_blank" class="fav-link">${chatId}</a>
+            <a href="https://skyeng.autofaq.ai/logs/ ${chatId}" target="_blank" class="fav-link">${chatId}</a>
             <div class="fav-actions">
                 <span class="fav-icon open-history-btn" data-id="${chatId}" title="История">👁️</span>
                 <span class="fav-icon toggle-fav-btn" data-id="${chatId}" title="Удалить из избранного">❤️</span>
@@ -254,20 +342,25 @@ function toggleFavoritesWindow() {
 
 // ---------- 6. Безопасная инициализация обработчиков ----------
 function attachEventHandlers() {
-    // Кнопка "Избранное" в основном окне — открывает ОТДЕЛЬНОЕ окно
+    // Кнопки сдвига дат
+    const prevDayStataBtn = document.getElementById('prevDayStata');
+    const nextDayStataBtn = document.getElementById('nextDayStata');
+    if (prevDayStataBtn) prevDayStataBtn.onclick = () => shiftDates(-1);
+    if (nextDayStataBtn) nextDayStataBtn.onclick = () => shiftDates(1);
+
+    // Кнопка "Избранное"
     const showFavBtn = document.getElementById('showFavoritesBtn');
-    if (showFavBtn) {
-        showFavBtn.onclick = toggleFavoritesWindow;
-    }
+    if (showFavBtn) showFavBtn.onclick = toggleFavoritesWindow;
 
     // Кнопка "Очистить"
     const clearBtn = document.getElementById('clearall');
     if (clearBtn) {
         clearBtn.onclick = function () {
-            ['sumchatcounttouched', 'sumchatcountclosed'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.innerText = "";
-            });
+            const touchedEl = document.getElementById('sumchatcounttouched');
+            const closedEl = document.getElementById('sumchatcountclosed');
+            if (touchedEl) touchedEl.textContent = '—';
+            if (closedEl) closedEl.textContent = '—';
+
             ['chatsinfoout', 'lowCSATcount', 'chatcommentsdata', 'favoritesSection'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = "";
@@ -285,7 +378,10 @@ function attachEventHandlers() {
             switchView('chatsinfoout');
             const dateFromEl = document.getElementById('dateFrom');
             const dateToEl = document.getElementById('dateTo');
-            if (!dateFromEl || !dateToEl) return;
+            if (!dateFromEl || !dateToEl || !dateFromEl.value || !dateToEl.value) {
+                alert('Укажите даты');
+                return;
+            }
 
             const datefrom = toUTC(dateFromEl.value, 0, 0, 0, 0);
             const dateto = toUTC(dateToEl.value, 23, 59, 59, 59);
@@ -304,11 +400,11 @@ function attachEventHandlers() {
                 const bodyTouched = { serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json", participatingOperatorsIds: [typeof operatorId !== 'undefined' ? operatorId : ''], tsFrom: datefrom, tsTo: dateto, page: 1, limit: 1 };
                 const touchedData = await doOperationsWithHistory(JSON.stringify(bodyTouched));
                 const touchedEl = document.getElementById('sumchatcounttouched');
-                if (touchedEl) touchedEl.textContent = "Количество пощупанных чатов: " + (touchedData?.total || 0);
+                if (touchedEl) touchedEl.textContent = (touchedData?.total || 0);
 
                 while (true) {
                     const bodyArchive = { serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json", tsFrom: datefrom, tsTo: dateto, orderBy: "ts", orderDirection: "Asc", page: page, limit: 100 };
-                    const resp = await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
+                    const resp = await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive ", {
                         method: "POST",
                         headers: { "content-type": "application/json", "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
                         body: JSON.stringify(bodyArchive)
@@ -334,36 +430,74 @@ function attachEventHandlers() {
 
                         if (conv.messages?.some(m => m.txt?.includes("Техподдержка 2-я линия"))) {
                             const isFav = !!favoritesChats[item.conversationId];
-                            line2Html += `<div style="margin-bottom: 5px;"><span style="color:#00FA9A">&#5129;</span> <a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" target="_blank" class="adds-chat-link">${item.conversationId}</a> <span class="adds-action-icon open-history-btn" data-id="${item.conversationId}">👁️</span> <span class="adds-action-icon toggle-fav-btn" data-id="${item.conversationId}">${isFav ? '❤️' : '🤍'}</span></div>`;
+                            line2Html += `<div class="line2-item">
+                                <div class="line2-left">
+                                    <span class="line2-arrow">▶</span>
+                                    <a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" target="_blank" class="adds-chat-link">${item.conversationId}</a>
+                                </div>
+                                <div class="line2-actions">
+                                    <span class="adds-action-icon open-history-btn" data-id="${item.conversationId}" title="История">👁️</span>
+                                    <span class="adds-action-icon toggle-fav-btn" data-id="${item.conversationId}" title="${isFav ? 'Удалить из избранного' : 'Добавить в избранное'}">${isFav ? '❤️' : '🤍'}</span>
+                                </div>
+                            </div>`;
                         }
                     }
                     if (page * 100 < data.total) page++; else break;
                 }
 
                 const closedEl = document.getElementById('sumchatcountclosed');
-                if (closedEl) closedEl.textContent = "Количество закрытых чатов: " + manualClosed;
+                if (closedEl) closedEl.textContent = manualClosed;
+
+                // ===== PREMIUM CSAT RENDER =====
+                const csatAvg = csatCount ? (csatScore / csatCount).toFixed(2) : "0.00";
+                const maxRate = Math.max(...Object.values(rates), 1);
+                const rateColors = { 1: '#ef5350', 2: '#ff7043', 3: '#ffca28', 4: '#66bb6a', 5: '#26a69a' };
+                const rateGlow = { 1: 'rgba(239,83,80,0.35)', 2: 'rgba(255,112,67,0.35)', 3: 'rgba(255,202,40,0.35)', 4: 'rgba(102,187,106,0.35)', 5: 'rgba(38,166,154,0.35)' };
+
+                let barsHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    const count = rates[i];
+                    const percent = csatCount ? ((count / csatCount) * 100).toFixed(1) : '0.0';
+                    const width = maxRate ? ((count / maxRate) * 100) : 0;
+                    barsHtml += `
+                        <div class="csat-premium-row">
+                            <div class="csat-premium-label" style="color:${rateColors[i]}">${i}★</div>
+                            <div class="csat-premium-bar-wrap">
+                                <div class="csat-premium-bar-fill" style="width:${width}%; background: linear-gradient(90deg, ${rateColors[i]}66, ${rateColors[i]}); box-shadow: 0 0 14px ${rateGlow[i]};">
+                                    <span class="csat-premium-count">${count}</span>
+                                </div>
+                            </div>
+                            <div class="csat-premium-percent">${percent}%</div>
+                        </div>`;
+                }
+
+                const scoreColor = csatAvg >= 4.5 ? '#26a69a' : csatAvg >= 4 ? '#66bb6a' : csatAvg >= 3 ? '#ffca28' : '#ef5350';
+                const emoji = csatAvg >= 4.5 ? '🤩' : csatAvg >= 4 ? '😊' : csatAvg >= 3 ? '😐' : '😤';
 
                 if (out) {
                     out.innerHTML = `
-                        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align:center;">
-                            <b>Средняя оценка КСАТ:</b> <span style="color:#4db6ac; font-size:18px;">${csatCount ? (csatScore / csatCount).toFixed(2) : "0.00"}</span><br>
-                            <small>Всего оценок: ${csatCount}</small>
+                        <div class="csat-premium-container">
+                            <div class="csat-premium-header">
+                                <div class="csat-premium-score" style="color:${scoreColor};">${csatAvg}</div>
+                                <div class="csat-premium-total">Средняя оценка КСАТ • Всего оценок: ${csatCount}</div>
+                                <div class="csat-premium-emoji">${emoji}</div>
+                            </div>
+                            <div class="csat-premium-bars">${barsHtml}</div>
                         </div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-size:12px; color:#aaa;">
-                            <span>1⭐:${rates[1]}</span><span>2⭐:${rates[2]}</span><span>3⭐:${rates[3]}</span><span>4⭐:${rates[4]}</span><span>5⭐:${rates[5]}</span>
-                        </div>
-                        <b style="color:#64b5f6;">Чаты переданные на 2ЛТП:</b><br>${line2Html || "<i>нет таких</i>"}`;
+                        <div class="line2-section-title">🔀 Чаты переданные на 2ЛТП</div>
+                        <div class="line2-list">${line2Html || '<div class="line2-empty">Нет чатов на 2ЛТП за выбранный период</div>'}</div>`;
                 }
+                // ================================
             } catch (e) {
                 console.error(e);
-                if (out) out.innerHTML = "Ошибка!";
+                if (out) out.innerHTML = "Ошибка при загрузке статистики!";
             } finally {
                 btn.textContent = originalText;
             }
         };
     }
 
-    // Делегирование кликов — обрабатывает и основное окно, и окно избранного
+    // Делегирование кликов
     document.addEventListener('click', async function (e) {
         const target = e.target.closest('.toggle-fav-btn');
         if (target) {
@@ -382,7 +516,6 @@ function attachEventHandlers() {
                 }
             }
             saveFavorites();
-            // Обновляем окно избранного, если оно открыто
             const favWin = document.getElementById('AF_Fav');
             if (favWin && favWin.style.display === 'block') {
                 renderFavoritesWindow();
@@ -422,7 +555,6 @@ function attachEventHandlers() {
 function initAll() {
     initWindows();
 
-    // Ждём появления элементов в DOM, затем вешаем обработчики
     if (document.getElementById('showFavoritesBtn')) {
         attachEventHandlers();
     } else {
