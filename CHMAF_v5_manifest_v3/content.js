@@ -1149,9 +1149,6 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     }
     document.getElementById('rightPanel').appendChild(MainMenuBtn) // добавляем на панель кнопку Меню, которая содержит в себе при клики пункты подменю
 
-
-
-
     // 1. Конфигурация кнопок: ID, Текст, Функция, Только для ТП?
     const menuConfig = [
         { id: "servDsk", text: "🛠 ServiceDesk", fn: window.getservDskPress, tp: true },
