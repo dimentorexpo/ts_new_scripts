@@ -147,14 +147,14 @@ const win_Chathis = `
             </select>
             <button class="afg-btn afg-btn-small" title="Обновить статус операторов" id="RefrehOperators">♻</button>
         </div>
-        <button class="afg-btn afg-btn-small" title="Информация пользователя" id="getdatafrchat">👤</button>
+        <button class="afg-btn afg-btn-small" title="Информация пользователя" id="getdatafrchat">🗒️</button>
         <button class="afg-btn afg-btn-small" title="Очистка полей" id="clearallinfo">🧹</button>
     </div>
 
     <div class="afg-controls">
         <button class="afg-btn afg-btn-small" title="Назад к списку" id="back_to_chat_his">🔙</button>
-        <input class="afg-input" id="chatuserhis" placeholder="ID юзера" autocomplete="off" type="text" style="flex: 1; min-width: 0;">
-        <input class="afg-input" id="hashchathis" placeholder="Хеш чата" autocomplete="off" type="text" style="flex: 1; min-width: 0;">
+        <input class="afg-input" id="chatuserhis" placeholder="ID юзера" autocomplete="off" type="text" style="flex: 1; min-width: 0; text-align:center;">
+        <input class="afg-input" id="hashchathis" placeholder="Хеш чата" autocomplete="off" type="text" style="flex: 1; min-width: 0; text-align:center;">
         <button class="afg-btn afg-btn-small" title="Поиск" id="btn_search_history">🔎</button>
     </div>
 
@@ -182,7 +182,7 @@ const win_Chathis = `
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <span id="chid" style="cursor:pointer; opacity: 0.8;" title="Копировать ссылку">Chat ID:</span>
+                <span id="chid" style="cursor:pointer; opacity: 0.8; user-select:none" title="Копировать ссылку">Chat ID:</span>
                 <span id="placechatid" style="font-weight: bold;"></span>
             </div>
             <button class="afg-btn afg-btn-small" id="reassign" title="Перевести на выбранного оператора">🔀</button>
@@ -192,7 +192,7 @@ const win_Chathis = `
     <div id="infofield" class="afg-chat-area theme-dark"></div>
 
     <div class="afg-footer" id="bottommenuchhis" style="display:none; flex-direction: column;">
-        <textarea class="afg-input" id="msgftochatornotes" style="width: 100%; height: 40px; resize: none; margin-bottom: 5px;" placeholder="Сообщение..."></textarea>
+        <textarea class="afg-input" id="msgftochatornotes" style="width: 100%; height: 40px; resize: none; margin-bottom: 5px; text-align:center" placeholder="Введите текст сообщения или заметки"></textarea>
         <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
             <button class="afg-btn" id="sendmsgtochatornotes">Отправить</button>
             <div style="display: flex; gap: 10px; align-items: center;">
