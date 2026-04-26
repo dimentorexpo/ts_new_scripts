@@ -12,13 +12,14 @@ const editorExtensionId = localStorage.getItem('ext_id');
 var nameContainer = '';
 
 const UI_PREFIX = 'usinf';
+
 const usersConfig = [
     {
         rowId: '',
         rowVisible: true,
         labelId: 'CurrUser',
         labelTitle: 'Открыть в CRM',
-        shortLabel: 'CRM', // Метка для иконки пользователя
+        shortLabel: 'CRM',
         buttons: [
             { id: 'CurUsLoginer', title: 'Логинер', content: '🔑', label: 'Логинер' },
             { id: 'CurUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'ТШ' },
@@ -44,7 +45,7 @@ const usersConfig = [
     }
 ];
 
-
+// 1. Обновляем CSS — делаем его более "неубиваемым"
 const glassmorphismCSS = `
 .${UI_PREFIX}-glass-panel {
     background: rgba(255, 255, 255, 0.45);
@@ -56,7 +57,7 @@ const glassmorphismCSS = `
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
     width: fit-content;
 }
 
@@ -65,86 +66,99 @@ const glassmorphismCSS = `
     align-items: center !important;
 }
 
-/* Общий стиль кнопок */
 .${UI_PREFIX}-btn-glass, .${UI_PREFIX}-btn-user-glass {
     cursor: pointer;
     height: 36px;
-    min-width: 36px; /* Минимальная ширина - круг */
-    width: auto;     /* Позволяем кнопке расширяться */
+    min-width: 36px;
+    width: auto;
     border-radius: 20px;
     border: 1px solid rgba(0, 0, 0, 0.06);
     background: rgba(255, 255, 255, 0.85);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    padding: 0 10px; /* Отступы для текста внутри */
+    padding: 0 10px;
     margin-left: -12px;
     box-shadow: 2px 0 8px rgba(0,0,0,0.04);
     font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
-    overflow: hidden; /* Скрываем выезжающий текст */
     white-space: nowrap;
     outline: none;
+    position: relative;
+    overflow: hidden;
 }
 
 .${UI_PREFIX}-btn-user-glass {
     margin-left: 0;
     margin-right: 15px;
-    background: #fff;
+    background: #ffffff;
     z-index: 5;
-    font-weight: bold;
+    padding: 0 12px;
 }
 
-.${UI_PREFIX}-btn-glass:first-of-type {
-    margin-left: 0;
-}
-
-/* Скрытый текст подписи */
-.${UI_PREFIX}-btn-label {
+/* Эта часть отвечает за текст, который появляется ПОСЛЕ эмодзи */
+.${UI_PREFIX}-btn-user-glass::after,
+.${UI_PREFIX}-btn-glass::after {
+    content: attr(data-label); /* Берем текст из атрибута data-label */
     max-width: 0;
     opacity: 0;
     margin-left: 0;
-    transition: all 0.3s ease;
+    transition: all 0.35s ease;
     font-family: 'Segoe UI', Roboto, sans-serif;
     font-size: 13px;
     font-weight: 600;
     color: #444;
-    pointer-events: none;
+    overflow: hidden;
 }
 
-/* Эффект при наведении: РАЗДВИГАЕМ кнопку */
 .${UI_PREFIX}-btn-glass:hover, .${UI_PREFIX}-btn-user-glass:hover {
     transform: translateY(-4px);
     z-index: 10;
     background: #ffffff;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
     margin-left: 5px;
     margin-right: 5px;
+    padding: 0 15px;
 }
 
-.${UI_PREFIX}-btn-glass:hover .${UI_PREFIX}-btn-label,
-.${UI_PREFIX}-btn-user-glass:hover .${UI_PREFIX}-btn-label {
-    max-width: 100px; /* Лимит ширины текста */
+.${UI_PREFIX}-btn-user-glass:hover {
+    margin-left: 0;
+    margin-right: 15px;
+}
+
+/* При наведении показываем текст из аттрибута */
+.${UI_PREFIX}-btn-glass:hover::after,
+.${UI_PREFIX}-btn-user-glass:hover::after {
+    max-width: 120px;
     opacity: 1;
-    margin-left: 8px; /* Отступ от иконки до текста */
+    margin-left: 8px;
 }
 
 .${UI_PREFIX}-btn-img {
     width: 18px;
     height: 18px;
-    flex-shrink: 0;
 }
 `;
 
+// 2. Обновляем функции сборки — теперь мы используем data-label
 function buildButton(cfg) {
     const icon = cfg.isImage
         ? `<img src="${cfg.src}" alt="${cfg.alt}" class="${UI_PREFIX}-btn-img">`
         : `<span>${cfg.content}</span>`;
 
+    // Мы записываем название в data-label, чтобы CSS сам его вывел
     return `
-    <button class="mainButton ${UI_PREFIX}-btn-glass" id="${cfg.id}" title="${cfg.title}">
+    <button class="mainButton ${UI_PREFIX}-btn-glass" id="${cfg.id}" title="${cfg.title}" data-label="${cfg.label || ''}">
         ${icon}
-        <span class="${UI_PREFIX}-btn-label">${cfg.label || ''}</span>
+    </button>`;
+}
+
+function buildUserButton(cfg) {
+    // Для инопланетянина и студента
+    const defaultEmoji = cfg.labelId === 'CurrUser' ? '👽' : '👨‍🎓';
+    return `
+    <button id="${cfg.labelId}" title="${cfg.labelTitle}" class="${UI_PREFIX}-btn-user-glass" data-label="CRM">
+        ${defaultEmoji}
     </button>`;
 }
 
@@ -152,15 +166,9 @@ function buildRow(cfg) {
     const displayStyle = cfg.rowVisible ? 'display: flex;' : 'display: none;';
     const rowIdAttr = cfg.rowId ? ` id="${cfg.rowId}"` : '';
 
-    // Для кнопки пользователя используем ту же логику с выезжающей надписью
-    const userBtn = `
-    <button id="${cfg.labelId}" title="${cfg.labelTitle}" class="${UI_PREFIX}-btn-user-glass">
-        <span class="user-icon-placeholder"></span> <span class="${UI_PREFIX}-btn-label">${cfg.shortLabel}</span>
-    </button>`;
-
     return `
     <div${rowIdAttr} class="${UI_PREFIX}-row" style="${displayStyle}">
-        ${userBtn}
+        ${buildUserButton(cfg)}
         <div style="display: flex; flex-direction: row; align-items: center;">
             ${cfg.buttons.map(buildButton).join('')}
         </div>
