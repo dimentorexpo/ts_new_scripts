@@ -314,14 +314,18 @@ function renderMedia(url) {
         return `<img src="${url}" class="chat-history-image" data-full="${url}">`;
     }
     if (lower.match(/\.(mp4|mov|mkv|webm)$/)) {
-        return `<video src="${url}" controls style="max-width:100%; border-radius:8px;"></video>`;
+        // Используем структуру со <source> и добавляем preload="metadata"
+        return `
+            <video controls playsinline preload="metadata" style="max-width:100%; border-radius:8px; display:block; margin-top:5px;">
+                <source src="${url}" type="video/mp4">
+                Ваш браузер не поддерживает видео. <a href="${url}" target="_blank">Скачать файл</a>
+            </video>`;
     }
     if (lower.match(/\.(mp3|wav|ogg|oga)$/)) {
-        return `<audio src="${url}" controls style="max-width:100%;"></audio>`;
+        return `<audio src="${url}" controls style="max-width:100%; margin-top:5px;"></audio>`;
     }
     return `<a href="${url}" target="_blank">${url}</a>`;
 }
-
 function getOperatorNameById(operatorId, defaultName) {
     const operator = typeof operatorsarray !== 'undefined' ? operatorsarray.find(op => op.operator && op.operator.id === operatorId) : null;
     return (operator && operator.operator.fullName) || defaultName;
@@ -391,37 +395,26 @@ function fillchatbox() {
         switch (message.tpe) {
             case "Question":
                 const name = user.fullName || "Widget";
-                let content = "";
+                let content = message.txt; // Сначала берем весь текст
 
-                if (message.click !== undefined) {
-                    content = message.click.clickLabel;
-                } else {
-                    let isHtmlLink = false;
-                    let extractedUrl = null;
+                // 1. Сначала обрабатываем ссылки в тегах <p>, если они есть
+                content = content.replace(/<p>(https?:\/\/[^<]+\.(png|jpg|jpeg|gif|webp|mp4|mov|mkv|webm|mp3|wav|ogg|oga))<\/p>/gi, (match, url) => {
+                    return `<div>${renderMedia(url)}</div>`;
+                });
 
-                    if (message.txt.includes('<a ') && message.txt.includes('href=')) {
-                        extractedUrl = extractUrlFromHtml(message.txt);
-                        if (extractedUrl && extractedUrl.match(/\.(mp4|mov|mkv|webm|mp3|wav|ogg|oga|png|jpg|jpeg|gif|webp)$/i)) {
-                            isHtmlLink = true;
-                        }
-                    }
-
-                    if (isHtmlLink) {
-                        content = renderMedia(extractedUrl);
-                    } else {
-                        const mediaMatch = message.txt.match(/(https:\/\/vimbox-resource[^\s<>"']+\.(mp4|mov|mkv|webm|mp3|wav|ogg|oga|png|jpg|jpeg|gif|webp))/gi);
-                        if (mediaMatch && mediaMatch.length === 1) {
-                            content = renderMedia(mediaMatch[0]);
-                        } else {
-                            content = message.txt.replace(/<p>(https?:\/\/[^<]+\.(png|jpg|jpeg|gif|webp))<\/p>/gi, '<img src="$1" class="chat-history-image" data-full="$1">');
-                        }
-                    }
+                // 2. Если ссылки присланы просто текстом (без <p>), ищем их через regex
+                // Но делаем это только если они еще не превратились в медиа выше
+                if (!content.includes('<video') && !content.includes('<img')) {
+                    const mediaRegex = /(https:\/\/vimbox-resource[^\s<>"']+\.(mp4|mov|mkv|webm|mp3|wav|ogg|oga|png|jpg|jpeg|gif|webp))/gi;
+                    content = content.replace(mediaRegex, (url) => {
+                        return renderMedia(url);
+                    });
                 }
 
                 htmlBuilder += `
                     <div class="afg-msg afg-msg-user">
                         <div class="afg-msg-header"><span>${name}</span><span class="afg-msg-date">${date}</span></div>
-                        <div>${content}</div>
+                        <div class="afg-msg-body">${content}</div>
                     </div>`;
                 break;
 
