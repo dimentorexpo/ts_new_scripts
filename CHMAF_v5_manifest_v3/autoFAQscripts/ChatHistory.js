@@ -24,10 +24,20 @@ afgStyles.textContent = `
         border-radius: 8px; color: inherit; cursor: pointer; padding: 6px 12px;
         transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center;
         backdrop-filter: blur(5px);
+        text-shadow: 0 1px 3px rgba(0,0,0,0.6); /* Делает эмодзи более контрастными */
     }
     .afg-btn:hover { background: var(--afg-hover); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
     .afg-btn:active { transform: translateY(1px); }
     .afg-btn-small { padding: 4px 8px; font-size: 16px; }
+
+        .afg-btn-accent {
+        background: rgba(0, 191, 255, 0.2);
+        border-color: rgba(0, 191, 255, 0.4);
+    }
+    .afg-btn-accent:hover {
+        background: rgba(0, 191, 255, 0.4);
+        border-color: rgba(0, 191, 255, 0.6);
+    }
 
     /* Инпуты и Селекты */
     .afg-input {
@@ -41,7 +51,7 @@ afgStyles.textContent = `
     /* Секции */
     .afg-header, .afg-controls, .afg-footer {
         padding: 10px; display: flex; align-items: center; background: rgba(0,0,0,0.1);
-        border-bottom: 1px solid rgba(255,255,255,0.05); gap: 8px; flex-wrap: nowrap;
+        border-bottom: 1px solid rgba(255,255,255,0.05); gap: 8px; flex-wrap: wrap;
     }
     .afg-chat-info { padding: 10px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 
@@ -132,7 +142,7 @@ const win_Chathis = `
     <div class="afg-header" style="justify-content: space-between;">
         <button class="afg-btn afg-btn-small" title="Скрыть панель" id="hideMeChHis">❌</button>
         <div style="display:flex; flex:1; margin: 0 8px; gap: 4px;">
-            <select class="afg-input" style="flex: 1; min-width: 0;" id="operatorstp">
+            <select class="afg-input" style="flex: 1; width:100px" id="operatorstp">
                 <option selected disabled>Операторы на линии</option>
             </select>
             <button class="afg-btn afg-btn-small" title="Обновить статус операторов" id="RefrehOperators">♻</button>
@@ -649,7 +659,9 @@ function getopennewcatButtonPress() {
 document.getElementById('getdatafrchat').onclick = () => {
     if (typeof convdata !== 'undefined' && convdata) {
         const modal = document.getElementById('userchatdata');
-        modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+
+        // ИСПРАВЛЕНА ЛОГИКА ПЕРЕКЛЮЧЕНИЯ
+        modal.style.display = (modal.style.display === 'block') ? 'none' : 'block';
 
         let userData = convdata.channelUser.payload || {};
         let techScreeningData = userData.techScreeningData || userData["Тех.инфа об устройствах"] || "";
