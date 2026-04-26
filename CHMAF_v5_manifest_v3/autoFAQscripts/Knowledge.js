@@ -79,6 +79,7 @@
                 border-radius: 10px;
                 padding: 5px;
                 outline: none;
+                text-align:center;
             }
 
             .knw-scroll-area {
@@ -132,7 +133,7 @@
                     <span style="font-weight: 600; color: #fff;">📚 База Знаний</span>
                     <div id="knw-loader" class="knw-loader">🟢</div>
                 </div>
-                <button id="hideMeKnowledge" class="knw-btn">❌</button>
+                <button id="hideMeKnowledge" class="knw-btn buttonHide">❌</button>
             </div>
 
             <div class="knw-body">

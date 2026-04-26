@@ -229,7 +229,7 @@ const win_serviceinfo = `
     <div class="af-gl-panel">
 
         <div class="af-gl-header" id="servicehead" style="cursor: -webkit-grab;">
-            <button title="Скрыть меню" id="hideMeservice" class="af-gl-btn af-gl-btn-icon" style="color: #ef4444;">❌</button>
+            <button title="Скрыть меню" id="hideMeservice" class="af-gl-btn af-gl-btn-icon buttonHide" style="color: #ef4444;">❌</button>
             <button title="CRM" id="GotoCRM" class="af-gl-btn">CRM</button>
             <button title="Показать контакты" id="dounhidemailandphone" class="af-gl-btn af-gl-btn-icon">👁‍🗨</button>
             <button title="Статус CRM" id="CrmStatus" class="af-gl-btn af-gl-btn-icon" style="display:none;"></button>
