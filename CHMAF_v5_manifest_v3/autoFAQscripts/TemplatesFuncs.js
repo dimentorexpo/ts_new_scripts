@@ -13,14 +13,13 @@ var nameContainer = '';
 
 const UI_PREFIX = 'usinf';
 
+// 1. Конфиг (CRM теперь просто часть массива кнопок для чистоты)
 const usersConfig = [
     {
-        rowId: '',
+        rowId: 'currUserRow',
         rowVisible: true,
-        labelId: 'CurrUser',
-        labelTitle: 'Открыть в CRM',
-        shortLabel: 'CRM',
         buttons: [
+            { id: 'CurrUser', title: 'Открыть в CRM', content: '👨‍🎓', label: 'CRM' },
             { id: 'CurUsLoginer', title: 'Логинер', content: '🔑', label: 'Логинер' },
             { id: 'CurUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'ТШ' },
             { id: 'CurUsChatHis', title: 'История чатов', content: '☢️', label: 'История' },
@@ -32,10 +31,8 @@ const usersConfig = [
     {
         rowId: 'nextUsersp',
         rowVisible: false,
-        labelId: 'NextUser',
-        labelTitle: 'Следующий CRM',
-        shortLabel: 'Next CRM',
         buttons: [
+            { id: 'NextUser', title: 'CRM', content: '👽', label: 'CRM' },
             { id: 'NextUsLoginer', title: 'Логинер', content: '🔑', label: 'Логинер' },
             { id: 'NextUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'ТШ' },
             { id: 'NextUsChatHis', title: 'История', content: '☢️', label: 'История' },
@@ -45,193 +42,121 @@ const usersConfig = [
     }
 ];
 
-// 1. Обновляем CSS — делаем его более "неубиваемым"
+// 2. Стили (единые для всех)
 const glassmorphismCSS = `
 .${UI_PREFIX}-glass-panel {
-    background: rgba(255, 255, 255, 0.45);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 26px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    width: fit-content;
+    background: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: blur(15px) saturate(150%) !important;
+    border-radius: 20px !important;
+    padding: 12px 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: fit-content !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important;
 }
 
 .${UI_PREFIX}-row {
     display: flex !important;
     align-items: center !important;
+    height: 40px !important;
 }
 
-.${UI_PREFIX}-btn-glass, .${UI_PREFIX}-btn-user-glass {
-    cursor: pointer;
-    height: 36px;
-    min-width: 36px;
-    width: auto;
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    background: rgba(255, 255, 255, 0.85);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    padding: 0 10px;
-    margin-left: -12px;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.04);
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
-    white-space: nowrap;
-    outline: none;
-    position: relative;
-    overflow: hidden;
+.${UI_PREFIX}-btn-glass {
+    cursor: pointer !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    border-radius: 19px !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    background: #ffffff !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    margin-left: -12px !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow: hidden !important;
+    position: relative !important;
 }
 
-.${UI_PREFIX}-btn-user-glass {
-    margin-left: 0;
-    margin-right: 15px;
-    background: #ffffff;
-    z-index: 5;
-    padding: 0 12px;
+.${UI_PREFIX}-btn-glass:first-child {
+    margin-left: 0 !important;
 }
 
-/* Эта часть отвечает за текст, который появляется ПОСЛЕ эмодзи */
-.${UI_PREFIX}-btn-user-glass::after,
-.${UI_PREFIX}-btn-glass::after {
-    content: attr(data-label); /* Берем текст из атрибута data-label */
-    max-width: 0;
-    opacity: 0;
-    margin-left: 0;
-    transition: all 0.35s ease;
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: #444;
-    overflow: hidden;
+.${UI_PREFIX}-icon-box {
+    width: 38px !important;
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    font-size: 18px !important;
 }
 
-.${UI_PREFIX}-btn-glass:hover, .${UI_PREFIX}-btn-user-glass:hover {
-    transform: translateY(-4px);
-    z-index: 10;
-    background: #ffffff;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    margin-left: 5px;
-    margin-right: 5px;
-    padding: 0 15px;
+.${UI_PREFIX}-label-text {
+    max-width: 0 !important;
+    opacity: 0 !important;
+    white-space: nowrap !important;
+    transition: all 0.25s ease !important;
+    font-family: 'Segoe UI', system-ui, sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #333 !important;
+    overflow: hidden !important;
 }
 
-.${UI_PREFIX}-btn-user-glass:hover {
-    margin-left: 0;
-    margin-right: 15px;
+.${UI_PREFIX}-btn-glass:hover {
+    z-index: 100 !important;
+    transform: translateY(-2px) !important;
+    padding-right: 15px !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.12) !important;
 }
 
-/* При наведении показываем текст из аттрибута */
-.${UI_PREFIX}-btn-glass:hover::after,
-.${UI_PREFIX}-btn-user-glass:hover::after {
-    max-width: 120px;
-    opacity: 1;
-    margin-left: 8px;
+.${UI_PREFIX}-btn-glass:hover .${UI_PREFIX}-label-text {
+    max-width: 150px !important;
+    opacity: 1 !important;
+    margin-left: 6px !important;
 }
 
 .${UI_PREFIX}-btn-img {
-    width: 18px;
-    height: 18px;
-}
-
-#CurrUser:hover::after, #NextUser:hover::after {
-    content: "CRM" !important;
-    max-width: 100px !important;
-    opacity: 1 !important;
-    margin-left: 8px !important;
-}
-
-/* Фикс для того, чтобы кнопки не схлопывались */
-.${UI_PREFIX}-btn-user-glass {
-    min-width: 36px !important;
-    padding: 0 12px !important;
+    width: 20px !important;
+    height: 20px !important;
 }
 `;
 
-// 2. Обновляем функции сборки — теперь мы используем data-label
-function buildButton(cfg) {
-    const icon = cfg.isImage
+// 3. Функции сборки (без лишнего мусора)
+function buildBtn(cfg) {
+    const content = cfg.isImage
         ? `<img src="${cfg.src}" alt="${cfg.alt}" class="${UI_PREFIX}-btn-img">`
         : `<span>${cfg.content}</span>`;
 
-    // Мы записываем название в data-label, чтобы CSS сам его вывел
     return `
-    <button class="mainButton ${UI_PREFIX}-btn-glass" id="${cfg.id}" title="${cfg.title}" data-label="${cfg.label || ''}">
-        ${icon}
-    </button>`;
-}
-
-function buildUserButton(cfg) {
-    const defaultEmoji = cfg.labelId === 'CurrUser' ? '👽' : '👨‍🎓';
-    // Добавляем data-label="CRM" явно
-    return `
-    <button id="${cfg.labelId}"
-            title="${cfg.labelTitle}"
-            class="${UI_PREFIX}-btn-user-glass"
-            data-label="CRM">
-        <span class="${UI_PREFIX}-icon-wrapper">${defaultEmoji}</span>
+    <button class="${UI_PREFIX}-btn-glass" id="${cfg.id}" title="${cfg.title}">
+        <div class="${UI_PREFIX}-icon-box">${content}</div>
+        <span class="${UI_PREFIX}-label-text">${cfg.label}</span>
     </button>`;
 }
 
 function buildRow(cfg) {
-    const displayStyle = cfg.rowVisible ? 'display: flex;' : 'display: none;';
-    const rowIdAttr = cfg.rowId ? ` id="${cfg.rowId}"` : '';
-
+    const display = cfg.rowVisible ? 'flex' : 'none';
     return `
-    <div${rowIdAttr} class="${UI_PREFIX}-row" style="${displayStyle}">
-        ${buildUserButton(cfg)}
-        <div style="display: flex; flex-direction: row; align-items: center;">
-            ${cfg.buttons.map(buildButton).join('')}
-        </div>
+    <div id="${cfg.rowId}" class="${UI_PREFIX}-row" style="display: ${display}">
+        ${cfg.buttons.map(buildBtn).join('')}
     </div>`;
 }
 
+// 4. Финальный результат
 var win_UsersInfo = `
 <style>${glassmorphismCSS}</style>
 <div class="${UI_PREFIX}-glass-panel">
     ${usersConfig.map(buildRow).join('')}
 </div>
 `;
-
 /* ============================================
    ОРИГИНАЛЬНЫЕ INLINE-СТИЛИ (сохранены)
    ============================================ */
 const StylesElemValues = "cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji; border-radius: 15px;";
-
-/* ============================================
-   КОНФИГУРАЦИЯ КНОПОК (DRY)
-   ============================================ */
-
-
-/* ============================================
-   ФУНКЦИИ-СТРОИТЕЛИ
-   ============================================ */
-function buildUserButton(cfg) {
-    // Вставляем пустой контейнер для текста, куда ваш скрипт напишет "👽"
-    return `<button id="${cfg.labelId}" title="${cfg.labelTitle}" class="${UI_PREFIX}-btn-user-glass ${UI_PREFIX}-label-text"></button>`;
-}
-
-var win_UsersInfo = `
-<style>${glassmorphismCSS}</style>
-<div class="${UI_PREFIX}-glass-panel">
-    ${usersConfig.map(buildRow).join('')}
-</div>
-`;
-
-/* ============================================
-   ИТОГОВЫЙ ШАБЛОН ОКНА
-   ============================================ */
-var win_UsersInfo = `
-<style>${glassmorphismCSS}</style>
-<div class="${UI_PREFIX}-glass-panel">
-    ${usersConfig.map(buildRow).join('')}
-</div>
-`;
 
 // Блок для работы с шаблонами из гугл таблиц
 
@@ -449,22 +374,46 @@ function startTimer() {
 
 
                     if (usertypeis === "teacher") {
-                        iframeDoc.getElementById('CurrUser').innerHTML = "👽";
+                        iframeDoc.getElementById('userTypeId').textContent = " (П)";
+                        iframeDoc.getElementById('userTypeId').style.color = "#1E90FF";
+
+                        // Меняем иконку и текст для ТЕКУЩЕГО (учитель - инопланетянин)
+                        const currIcon = iframeDoc.querySelector('#CurrUser .usinf-icon-box span');
+                        const currLabel = iframeDoc.querySelector('#CurrUser .usinf-label-text');
+                        if (currIcon) currIcon.textContent = "👽";
+                        if (currLabel) currLabel.textContent = "CRM П"; // Текст для учителя
+
                         let nextuseris = SearchinAFnewUI("nextClass-studentId");
                         if (nextuseris != '') {
-                            iframeDoc.getElementById('NextUser').innerHTML = "👨‍🎓";
-                            iframeDoc.getElementById('nextUsersp').style.display = 'block';
+                            // Меняем иконку и текст для СЛЕДУЮЩЕГО (ученик)
+                            const nextIcon = iframeDoc.querySelector('#NextUser .usinf-icon-box span');
+                            const nextLabel = iframeDoc.querySelector('#NextUser .usinf-label-text');
+                            if (nextIcon) nextIcon.textContent = "👨‍🎓";
+                            if (nextLabel) nextLabel.textContent = "CRM У"; // Текст для ученика
+                            iframeDoc.getElementById('nextUsersp').style.display = 'flex';
                         }
                     } else if (usertypeis === "student" || usertypeis === "parent") {
-                        iframeDoc.getElementById('CurrUser').innerHTML = "👨‍🎓";
+                        iframeDoc.getElementById('userTypeId').textContent = " (У)";
+                        iframeDoc.getElementById('userTypeId').style.color = "#DC143C";
+
+                        // Текущий (ученик)
+                        const currIcon = iframeDoc.querySelector('#CurrUser .usinf-icon-box span');
+                        const currLabel = iframeDoc.querySelector('#CurrUser .usinf-label-text');
+                        if (currIcon) currIcon.textContent = "👨‍🎓";
+                        if (currLabel) currLabel.textContent = "CRM У";
+
                         let nextuseris = SearchinAFnewUI("nextClass-teacherId");
                         if (nextuseris != '') {
-                            iframeDoc.getElementById('NextUser').innerHTML = "👽";
-                            iframeDoc.getElementById('nextUsersp').style.display = 'block';
+                            // Следующий (учитель)
+                            const nextIcon = iframeDoc.querySelector('#NextUser .usinf-icon-box span');
+                            const nextLabel = iframeDoc.querySelector('#NextUser .usinf-label-text');
+                            if (nextIcon) nextIcon.textContent = "👽";
+                            if (nextLabel) nextLabel.textContent = "CRM П";
+                            iframeDoc.getElementById('nextUsersp').style.display = 'flex';
                         }
                     } else {
-                        iframeDoc.getElementById('CurrUser').innerHTML = "❓ :";
-                        iframeDoc.getElementById('CurrUser').title += ". Тип пользователя не определен, кнопки могут не работать"
+                        const currIcon = iframeDoc.querySelector('#CurrUser .usinf-icon-box span');
+                        if (currIcon) currIcon.textContent = "❓";
                     }
                     buttonsfunctionsinfo(iframeDoc, usertypeis);
                 } else if (hrefisnow.includes('skyeng.autofaq.ai/tickets/assigned') && Usernamefield && iframeDoc.getElementsByClassName('UsersInfo').length == 1) { // убираем кнопки для обновления.
