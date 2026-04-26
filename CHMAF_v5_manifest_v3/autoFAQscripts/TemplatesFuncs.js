@@ -10,97 +10,168 @@ chrome.storage.local.get({ TP_addrRzrv: '' }, function (result) {
 });
 const editorExtensionId = localStorage.getItem('ext_id');
 var nameContainer = '';
+
 const UI_PREFIX = 'usinf';
+const usersConfig = [
+    {
+        rowId: '',
+        rowVisible: true,
+        labelId: 'CurrUser',
+        labelTitle: 'Открыть в CRM',
+        shortLabel: 'CRM', // Метка для иконки пользователя
+        buttons: [
+            { id: 'CurUsLoginer', title: 'Логинер', content: '🔑', label: 'Логинер' },
+            { id: 'CurUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'ТШ' },
+            { id: 'CurUsChatHis', title: 'История чатов', content: '☢️', label: 'История' },
+            { id: 'CurUsChatHisWA', title: 'WA', isImage: true, src: `chrome-extension://${editorExtensionId}/Images/WA.png`, alt: 'WA', label: 'WhatsApp' },
+            { id: 'CurUsUserInf', title: 'UserInf', content: '⚜️', label: 'Инфо' },
+            { id: 'CurUsAdminka', title: 'Админка', content: '✏️', label: 'Админка' }
+        ]
+    },
+    {
+        rowId: 'nextUsersp',
+        rowVisible: false,
+        labelId: 'NextUser',
+        labelTitle: 'Следующий CRM',
+        shortLabel: 'Next CRM',
+        buttons: [
+            { id: 'NextUsLoginer', title: 'Логинер', content: '🔑', label: 'Логинер' },
+            { id: 'NextUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'ТШ' },
+            { id: 'NextUsChatHis', title: 'История', content: '☢️', label: 'История' },
+            { id: 'NextUsUserInf', title: 'Инфо', content: '⚜️', label: 'Инфо' },
+            { id: 'NextUsAdminka', title: 'Админка', content: '✏️', label: 'Админка' }
+        ]
+    }
+];
+
 
 const glassmorphismCSS = `
 .${UI_PREFIX}-glass-panel {
-    /* Светлое "молочное" стекло */
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(15px) saturate(160%);
-    -webkit-backdrop-filter: blur(15px) saturate(160%);
-
-    /* Тонкая серая граница, чтобы панель не терялась на белом фоне */
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 24px;
-
-    /* Очень мягкая светлая тень */
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.08),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-
-    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 26px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
     width: fit-content;
-    position: relative;
 }
 
 .${UI_PREFIX}-row {
     display: flex !important;
-    flex-direction: row !important;
     align-items: center !important;
-    justify-content: flex-start;
 }
 
-/* Общий стиль для всех круглых кнопок (включая иконку пользователя) */
+/* Общий стиль кнопок */
 .${UI_PREFIX}-btn-glass, .${UI_PREFIX}-btn-user-glass {
     cursor: pointer;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
+    height: 36px;
+    min-width: 36px; /* Минимальная ширина - круг */
+    width: auto;     /* Позволяем кнопке расширяться */
+    border-radius: 20px;
     border: 1px solid rgba(0, 0, 0, 0.06);
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-    position: relative;
-    padding: 0;
-    margin-left: -8px;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 0 10px; /* Отступы для текста внутри */
+    margin-left: -12px;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    overflow: hidden; /* Скрываем выезжающий текст */
+    white-space: nowrap;
     outline: none;
-
-    /* ФИКС ЦВЕТА: форсируем отображение Emoji и размер */
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-    font-size: 18px;
-    line-height: 1;
 }
 
-/* Убираем прозрачность с самих эмодзи, чтобы они были сочными */
-.${UI_PREFIX}-btn-glass span {
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.${UI_PREFIX}-btn-user-glass {
+    margin-left: 0;
+    margin-right: 15px;
+    background: #fff;
+    z-index: 5;
+    font-weight: bold;
 }
 
 .${UI_PREFIX}-btn-glass:first-of-type {
     margin-left: 0;
 }
 
-/* Эффект при наведении на ЛЮБУЮ кнопку */
-.${UI_PREFIX}-btn-glass:hover, .${UI_PREFIX}-btn-user-glass:hover {
-    transform: translateY(-4px) scale(1.1);
-    z-index: 10;
-    background: #ffffff;
-    border-color: rgba(0, 0, 0, 0.1);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+/* Скрытый текст подписи */
+.${UI_PREFIX}-btn-label {
+    max-width: 0;
+    opacity: 0;
+    margin-left: 0;
+    transition: all 0.3s ease;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    pointer-events: none;
 }
 
-/* Специально для двоеточия, чтобы оно было всегда ровно */
-.${UI_PREFIX}-label-text {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    color: #333;
+/* Эффект при наведении: РАЗДВИГАЕМ кнопку */
+.${UI_PREFIX}-btn-glass:hover, .${UI_PREFIX}-btn-user-glass:hover {
+    transform: translateY(-4px);
+    z-index: 10;
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.${UI_PREFIX}-btn-glass:hover .${UI_PREFIX}-btn-label,
+.${UI_PREFIX}-btn-user-glass:hover .${UI_PREFIX}-btn-label {
+    max-width: 100px; /* Лимит ширины текста */
+    opacity: 1;
+    margin-left: 8px; /* Отступ от иконки до текста */
 }
 
 .${UI_PREFIX}-btn-img {
     width: 18px;
     height: 18px;
-    object-fit: contain;
+    flex-shrink: 0;
 }
+`;
+
+function buildButton(cfg) {
+    const icon = cfg.isImage
+        ? `<img src="${cfg.src}" alt="${cfg.alt}" class="${UI_PREFIX}-btn-img">`
+        : `<span>${cfg.content}</span>`;
+
+    return `
+    <button class="mainButton ${UI_PREFIX}-btn-glass" id="${cfg.id}" title="${cfg.title}">
+        ${icon}
+        <span class="${UI_PREFIX}-btn-label">${cfg.label || ''}</span>
+    </button>`;
+}
+
+function buildRow(cfg) {
+    const displayStyle = cfg.rowVisible ? 'display: flex;' : 'display: none;';
+    const rowIdAttr = cfg.rowId ? ` id="${cfg.rowId}"` : '';
+
+    // Для кнопки пользователя используем ту же логику с выезжающей надписью
+    const userBtn = `
+    <button id="${cfg.labelId}" title="${cfg.labelTitle}" class="${UI_PREFIX}-btn-user-glass">
+        <span class="user-icon-placeholder"></span> <span class="${UI_PREFIX}-btn-label">${cfg.shortLabel}</span>
+    </button>`;
+
+    return `
+    <div${rowIdAttr} class="${UI_PREFIX}-row" style="${displayStyle}">
+        ${userBtn}
+        <div style="display: flex; flex-direction: row; align-items: center;">
+            ${cfg.buttons.map(buildButton).join('')}
+        </div>
+    </div>`;
+}
+
+var win_UsersInfo = `
+<style>${glassmorphismCSS}</style>
+<div class="${UI_PREFIX}-glass-panel">
+    ${usersConfig.map(buildRow).join('')}
+</div>
 `;
 
 /* ============================================
@@ -111,35 +182,7 @@ const StylesElemValues = "cursor: pointer; width: 30px; height: 30px; font-size:
 /* ============================================
    КОНФИГУРАЦИЯ КНОПОК (DRY)
    ============================================ */
-const usersConfig = [
-    {
-        rowId: '',
-        rowVisible: true,
-        labelId: 'CurrUser',
-        labelTitle: 'Открыть в CRM обратившегося пользователя',
-        buttons: [
-            { id: 'CurUsLoginer', title: 'Скопировать в буфер обмена ссылку логинер для обратившегося пользователя', content: '🔑' },
-            { id: 'CurUstroublesh', title: 'Открыть в ТШ обратившегося пользователя', content: '🕵️‍♀️' },
-            { id: 'CurUsChatHis', title: 'Открыть историю чатов обратившегося пользователя', content: '☢' },
-            { id: 'CurUsChatHisWA', title: 'Открыть историю чатов WA обратившегося пользователя', isImage: true, src: `chrome-extension://${editorExtensionId}/Images/WA.png`, alt: 'WA' },
-            { id: 'CurUsUserInf', title: 'Открыть в ⚜ обратившегося пользователя', content: '⚜' },
-            { id: 'CurUsAdminka', title: 'Открыть в админке обратившегося пользователя', content: '✏️' }
-        ]
-    },
-    {
-        rowId: 'nextUsersp',
-        rowVisible: false,
-        labelId: 'NextUser',
-        labelTitle: 'Открыть в CRM У/П с кем следующий урок',
-        buttons: [
-            { id: 'NextUsLoginer', title: 'Скопировать в буфер обмена ссылку логинер для У/П с кем следующий урок', content: '🔑' },
-            { id: 'NextUstroublesh', title: 'Открыть в ТШ У/П с кем следующий урок', content: '🕵️‍♀️' },
-            { id: 'NextUsChatHis', title: 'Открыть историю чатов У/П с кем следующий урок', content: '☢' },
-            { id: 'NextUsUserInf', title: 'Открыть в ⚜ У/П с кем следующий урок', content: '⚜' },
-            { id: 'NextUsAdminka', title: 'Открыть в админке обратившегося пользователя', content: '✏️' }
-        ]
-    }
-];
+
 
 /* ============================================
    ФУНКЦИИ-СТРОИТЕЛИ
@@ -147,26 +190,6 @@ const usersConfig = [
 function buildUserButton(cfg) {
     // Вставляем пустой контейнер для текста, куда ваш скрипт напишет "👽"
     return `<button id="${cfg.labelId}" title="${cfg.labelTitle}" class="${UI_PREFIX}-btn-user-glass ${UI_PREFIX}-label-text"></button>`;
-}
-
-function buildButton(cfg) {
-    const inner = cfg.isImage
-        ? `<img src="${cfg.src}" alt="${cfg.alt}" class="${UI_PREFIX}-btn-img">`
-        : `<span>${cfg.content}</span>`;
-    return `<button class="mainButton ${UI_PREFIX}-btn-glass" id="${cfg.id}" title="${cfg.title}">${inner}</button>`;
-}
-
-function buildRow(cfg) {
-    const displayStyle = cfg.rowVisible ? 'display: flex;' : 'display: none;';
-    const rowIdAttr = cfg.rowId ? ` id="${cfg.rowId}"` : '';
-
-    return `
-    <div${rowIdAttr} class="${UI_PREFIX}-row" style="${displayStyle}">
-        ${buildUserButton(cfg)}
-        <div style="display: flex; flex-direction: row;">
-            ${cfg.buttons.map(buildButton).join('')}
-        </div>
-    </div>`;
 }
 
 var win_UsersInfo = `
