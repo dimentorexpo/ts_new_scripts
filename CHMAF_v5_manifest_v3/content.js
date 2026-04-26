@@ -192,7 +192,6 @@ var win_mainmenu = // описание кнопок меню
         <div id="smartroomform" class="onlyfortp">🦐Smartroom</div>
         <div id="butLessonInfo" >🎓 Lesson Info</div>
 		<div id="butFrozeChat" >❄ Auto Respond</div>
-        <div id="radioPlayer" >📻 Radio</div>
         <div id="buttonGetStat" >📊 Статистика</div>
 		<div id="buttonGetQueue" >🚧 Очередь</div>
     </div>`;
@@ -995,7 +994,6 @@ async function move_again_AF() { //с АФ шняга там стили шмил
         { id: "smartroomform", text: "🦐 Smartroom", fn: window.getsmartroomformButtonPress, tp: true },
         { id: "butLessonInfo", text: "🎓 Lesson Info", fn: window.getbutLessonInfoButtonPress, tp: false },
         { id: "butFrozeChat", text: "❄ Auto Respond", fn: window.getbutFrozeChatButtonPress, tp: false },
-        { id: "radioPlayer", text: "📻 Radio", fn: window.toggleRadioWindow, tp: false },
         { id: "buttonGetStat", text: "📊 Статистика", fn: window.getbuttonGetStatButtonPress, tp: false },
         { id: "buttonGetQueue", text: "🚧 Очередь", fn: window.getQueuePress, tp: false }
     ];
