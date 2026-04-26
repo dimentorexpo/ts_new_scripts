@@ -174,9 +174,9 @@ const injectGlassStyles = () => {
         .af-gl-bg-info { background: rgba(30, 144, 255, 0.3); }
         .af-gl-bg-danger { background: rgba(220, 20, 60, 0.3); }
         .af-gl-bg-success { background: rgba(46, 139, 87, 0.3); }
-        .af-gl-bg-vu { background: rgba(194, 105, 25, 0.25); border-color: rgba(194, 105, 25, 0.5); }
-        .af-gl-bg-regular { background: rgba(48, 80, 140, 0.25); border-color: rgba(48, 80, 140, 0.5); }
-        .af-gl-bg-lost { background: rgba(98, 99, 103, 0.25); border-color: rgba(98, 99, 103, 0.5); }
+        .af-gl-bg-vu { background: rgba(245, 131, 32, 0.79); border-color: rgba(194, 105, 25, 0.5); }
+        .af-gl-bg-regular { background: rgba(69, 199, 52, 0.25); border-color: rgba(48, 80, 140, 0.5); }
+        .af-gl-bg-lost { background: rgba(138, 28, 129, 0.51); border-color: rgba(98, 99, 103, 0.5); }
 
         .af-gl-text-accent { color: #38bdf8; }
         .af-gl-text-success { color: #4ade80; }

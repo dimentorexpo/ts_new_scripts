@@ -10,26 +10,180 @@ chrome.storage.local.get({ TP_addrRzrv: '' }, function (result) {
 });
 const editorExtensionId = localStorage.getItem('ext_id');
 var nameContainer = '';
+const UI_PREFIX = 'usinf';
+
+const glassmorphismCSS = `
+.${UI_PREFIX}-glass-panel {
+    /* Светлое "молочное" стекло */
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(15px) saturate(160%);
+    -webkit-backdrop-filter: blur(15px) saturate(160%);
+
+    /* Тонкая серая граница, чтобы панель не терялась на белом фоне */
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 24px;
+
+    /* Очень мягкая светлая тень */
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.08),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: fit-content;
+    position: relative;
+}
+
+.${UI_PREFIX}-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start;
+}
+
+/* Общий стиль для всех круглых кнопок (включая иконку пользователя) */
+.${UI_PREFIX}-btn-glass, .${UI_PREFIX}-btn-user-glass {
+    cursor: pointer;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    padding: 0;
+    margin-left: -8px;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+    outline: none;
+
+    /* ФИКС ЦВЕТА: форсируем отображение Emoji и размер */
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Убираем прозрачность с самих эмодзи, чтобы они были сочными */
+.${UI_PREFIX}-btn-glass span {
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.${UI_PREFIX}-btn-glass:first-of-type {
+    margin-left: 0;
+}
+
+/* Эффект при наведении на ЛЮБУЮ кнопку */
+.${UI_PREFIX}-btn-glass:hover, .${UI_PREFIX}-btn-user-glass:hover {
+    transform: translateY(-4px) scale(1.1);
+    z-index: 10;
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Специально для двоеточия, чтобы оно было всегда ровно */
+.${UI_PREFIX}-label-text {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    color: #333;
+}
+
+.${UI_PREFIX}-btn-img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+`;
+
+/* ============================================
+   ОРИГИНАЛЬНЫЕ INLINE-СТИЛИ (сохранены)
+   ============================================ */
 const StylesElemValues = "cursor: pointer; width: 30px; height: 30px; font-size: 15px; margin-left: -8px; font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji; border-radius: 15px;";
-var win_UsersInfo = // описание окна тестовых пользователей
-    `<span style="display: block;">
-        <span id="CurrUser" title="Открыть в CRM обратившегося пользователя" style="cursor:pointer;"></span>
-        <button class="mainButton" id="CurUsLoginer" title="Скопировать в буфер обмена ссылку логинер для обратившегося пользователя" style="${StylesElemValues}">🔑</button>
-        <button class="mainButton" id="CurUstroublesh" title="Открыть в ТШ обратившегося пользователя" style="${StylesElemValues}">🕵️‍♀️</button>
-        <button class="mainButton" id="CurUsChatHis" title="Открыть историю чатов обратившегося пользователя" style="${StylesElemValues}">☢</button>
-        <button class="mainButton" id="CurUsChatHisWA" title="Открыть историю чатов WA обратившегося пользователя" style="${StylesElemValues}">
-            <img src="chrome-extension://${editorExtensionId}/Images/WA.png" alt="WA" width="20" height="20" vertical-align="top"></button>
-        <button class="mainButton" id="CurUsUserInf" title="Открыть в ⚜ обратившегося пользователя" style="${StylesElemValues}">⚜</button>
-        <button class="mainButton" id="CurUsAdminka" title="Открыть в админке обратившегося пользователя" style="${StylesElemValues}">✏️</button>
-    </span>
-    <span id="nextUsersp" style="display: none;">
-        <span id="NextUser" title="Открыть в CRM У/П с кем следующий урок" style="cursor:pointer;"></span>
-        <button class="mainButton" id="NextUsLoginer" title="Скопировать в буфер обмена ссылку логинер для У/П с кем следующий урок" style="${StylesElemValues}">🔑</button>
-        <button class="mainButton" id="NextUstroublesh" title="Открыть в ТШ У/П с кем следующий урок" style="${StylesElemValues}">🕵️‍♀️</button>
-        <button class="mainButton" id="NextUsChatHis" title="Открыть историю чатов У/П с кем следующий урок" style="${StylesElemValues}">☢</button>
-        <button class="mainButton" id="NextUsUserInf" title="Открыть в ⚜ У/П с кем следующий урок" style="${StylesElemValues}">⚜</button>
-        <button class="mainButton" id="NextUsAdminka" title="Открыть в админке обратившегося пользователя" style="${StylesElemValues}">✏️</button>
-    </span>
+
+/* ============================================
+   КОНФИГУРАЦИЯ КНОПОК (DRY)
+   ============================================ */
+const usersConfig = [
+    {
+        rowId: '',
+        rowVisible: true,
+        labelId: 'CurrUser',
+        labelTitle: 'Открыть в CRM обратившегося пользователя',
+        buttons: [
+            { id: 'CurUsLoginer', title: 'Скопировать в буфер обмена ссылку логинер для обратившегося пользователя', content: '🔑' },
+            { id: 'CurUstroublesh', title: 'Открыть в ТШ обратившегося пользователя', content: '🕵️‍♀️' },
+            { id: 'CurUsChatHis', title: 'Открыть историю чатов обратившегося пользователя', content: '☢' },
+            { id: 'CurUsChatHisWA', title: 'Открыть историю чатов WA обратившегося пользователя', isImage: true, src: `chrome-extension://${editorExtensionId}/Images/WA.png`, alt: 'WA' },
+            { id: 'CurUsUserInf', title: 'Открыть в ⚜ обратившегося пользователя', content: '⚜' },
+            { id: 'CurUsAdminka', title: 'Открыть в админке обратившегося пользователя', content: '✏️' }
+        ]
+    },
+    {
+        rowId: 'nextUsersp',
+        rowVisible: false,
+        labelId: 'NextUser',
+        labelTitle: 'Открыть в CRM У/П с кем следующий урок',
+        buttons: [
+            { id: 'NextUsLoginer', title: 'Скопировать в буфер обмена ссылку логинер для У/П с кем следующий урок', content: '🔑' },
+            { id: 'NextUstroublesh', title: 'Открыть в ТШ У/П с кем следующий урок', content: '🕵️‍♀️' },
+            { id: 'NextUsChatHis', title: 'Открыть историю чатов У/П с кем следующий урок', content: '☢' },
+            { id: 'NextUsUserInf', title: 'Открыть в ⚜ У/П с кем следующий урок', content: '⚜' },
+            { id: 'NextUsAdminka', title: 'Открыть в админке обратившегося пользователя', content: '✏️' }
+        ]
+    }
+];
+
+/* ============================================
+   ФУНКЦИИ-СТРОИТЕЛИ
+   ============================================ */
+function buildUserButton(cfg) {
+    // Вставляем пустой контейнер для текста, куда ваш скрипт напишет "👽"
+    return `<button id="${cfg.labelId}" title="${cfg.labelTitle}" class="${UI_PREFIX}-btn-user-glass ${UI_PREFIX}-label-text"></button>`;
+}
+
+function buildButton(cfg) {
+    const inner = cfg.isImage
+        ? `<img src="${cfg.src}" alt="${cfg.alt}" class="${UI_PREFIX}-btn-img">`
+        : `<span>${cfg.content}</span>`;
+    return `<button class="mainButton ${UI_PREFIX}-btn-glass" id="${cfg.id}" title="${cfg.title}">${inner}</button>`;
+}
+
+function buildRow(cfg) {
+    const displayStyle = cfg.rowVisible ? 'display: flex;' : 'display: none;';
+    const rowIdAttr = cfg.rowId ? ` id="${cfg.rowId}"` : '';
+
+    return `
+    <div${rowIdAttr} class="${UI_PREFIX}-row" style="${displayStyle}">
+        ${buildUserButton(cfg)}
+        <div style="display: flex; flex-direction: row;">
+            ${cfg.buttons.map(buildButton).join('')}
+        </div>
+    </div>`;
+}
+
+var win_UsersInfo = `
+<style>${glassmorphismCSS}</style>
+<div class="${UI_PREFIX}-glass-panel">
+    ${usersConfig.map(buildRow).join('')}
+</div>
+`;
+
+/* ============================================
+   ИТОГОВЫЙ ШАБЛОН ОКНА
+   ============================================ */
+var win_UsersInfo = `
+<style>${glassmorphismCSS}</style>
+<div class="${UI_PREFIX}-glass-panel">
+    ${usersConfig.map(buildRow).join('')}
+</div>
 `;
 
 // Блок для работы с шаблонами из гугл таблиц
@@ -248,17 +402,17 @@ function startTimer() {
 
 
                     if (usertypeis === "teacher") {
-                        iframeDoc.getElementById('CurrUser').innerHTML = "👽 :";
+                        iframeDoc.getElementById('CurrUser').innerHTML = "👽";
                         let nextuseris = SearchinAFnewUI("nextClass-studentId");
                         if (nextuseris != '') {
-                            iframeDoc.getElementById('NextUser').innerHTML = "👨‍🎓 :";
+                            iframeDoc.getElementById('NextUser').innerHTML = "👨‍🎓";
                             iframeDoc.getElementById('nextUsersp').style.display = 'block';
                         }
                     } else if (usertypeis === "student" || usertypeis === "parent") {
-                        iframeDoc.getElementById('CurrUser').innerHTML = "👨‍🎓 :";
+                        iframeDoc.getElementById('CurrUser').innerHTML = "👨‍🎓";
                         let nextuseris = SearchinAFnewUI("nextClass-teacherId");
                         if (nextuseris != '') {
-                            iframeDoc.getElementById('NextUser').innerHTML = "👽 :";
+                            iframeDoc.getElementById('NextUser').innerHTML = "👽";
                             iframeDoc.getElementById('nextUsersp').style.display = 'block';
                         }
                     } else {
