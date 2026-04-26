@@ -38,7 +38,6 @@ hideWindowOnDoubleClick('AF_NaborStatus');
 // ---------------------------
 const NAB = {
     win: document.getElementById('AF_NaborStatus'),
-    btnOpen: document.getElementById('butTeacherNabor'),
     btnHide: document.getElementById('hideNaborStatus'),
     btnGet: document.getElementById('getNaborInfo'),
     btnTRM: document.getElementById('openTrmTeacher'),
@@ -183,15 +182,27 @@ function decodeUserHash(hash) {
 // ---------------------------
 // Обработчики
 // ---------------------------
-NAB.btnOpen.addEventListener('click', () => {
-    const win = NAB.win;
 
-    if (win.style.display === '') {
-        win.style.display = 'none';
-    } else {
-        win.style.display = '';
-        NAB.input.value = document.getElementById('idstudent').value.trim();
-        getNaborStatus();
+// ⚡ ИСПОЛЬЗУЕМ ДЕЛЕГИРОВАНИЕ СОБЫТИЙ:
+// Ждем клика по всему документу. Если кликнули по кнопке из окна Userinfo, скрипт сработает на 100%,
+// даже если на момент запуска скрипта Nabor.js этой кнопки еще не существовало в коде страницы.
+document.addEventListener('click', (e) => {
+    const btnOpen = e.target.closest('#butTeacherNabor');
+
+    if (btnOpen) {
+        const win = NAB.win;
+        if (win.style.display === '') {
+            win.style.display = 'none';
+        } else {
+            win.style.display = '';
+
+            // Безопасно тянем ID студента
+            const idInput = document.getElementById('idstudent');
+            if (idInput) {
+                NAB.input.value = idInput.value.trim();
+            }
+            getNaborStatus();
+        }
     }
 });
 
