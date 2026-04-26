@@ -254,7 +254,7 @@ function getSlotData(index) {
         div.style.display = "flex";
         div.style.gap = "5px";
         div.innerHTML = `
-            <input class="${exttheme} af-glass-input" name="slotInfo" style="flex-grow: 1;">
+            <input class=" af-glass-input" name="slotInfo" style="flex-grow: 1;">
             <button class="af-glass-btn" name="saveToCalend" title="Сохранить">💾</button>
             <button class="af-glass-btn" name="deleteFromCalend" title="Удалить">❌</button>
         `;
@@ -471,7 +471,7 @@ function refreshActiveOperSlots() {
             div.style = "display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05);";
             div.innerHTML = `
                 <span class="af-glass-slot-time" style="margin: 0;">${event.slotTime}</span>
-                <input class="${exttheme} af-glass-input" name="slotToDelete" data-id="${event.eventId}" value="${slotToDelete}" style="width: 70px; text-align: center; font-size: 12px;">
+                <input class=" af-glass-input" name="slotToDelete" data-id="${event.eventId}" value="${slotToDelete}" style="width: 70px; text-align: center; font-size: 12px;">
                 ${statusHtml}
                 <button class="af-glass-btn" name="deleMySlot" style="padding: 4px 8px; margin-left: auto;">❌</button>
             `;

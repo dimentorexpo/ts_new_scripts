@@ -22,18 +22,18 @@ var win_AFhelper = `
     </div>
 
     <div class="flex-row" style="justify-content: center;">
-        <input id="phone_tr" class="glass-input onlyfortp ${exttheme}" placeholder="Телефон" autocomplete="off" type="text" style="width: 180px; text-align: center;">
-        <input id="email_tr" class="glass-input onlyfortp ${exttheme}" placeholder="Почта" autocomplete="off" type="text" style="width: 180px; text-align: center;">
+        <input id="phone_tr" class="glass-input onlyfortp" placeholder="Телефон" autocomplete="off" type="text" style="width: 180px; text-align: center;">
+        <input id="email_tr" class="glass-input onlyfortp" placeholder="Почта" autocomplete="off" type="text" style="width: 180px; text-align: center;">
     </div>
 
     <div id="pages" style="margin-bottom: 5px; font-size: 17px;"></div>
     <div id="7str"></div>
     <div id="6str"></div>
 
-    <textarea id="inp" class="glass-textarea ${exttheme}" style="width: 100%; min-height: 100px; max-height: 350px; resize: vertical; margin-bottom: 8px; box-sizing: border-box;"></textarea>
+    <textarea id="inp" class="glass-textarea" style="width: 100%; min-height: 100px; max-height: 350px; resize: vertical; margin-bottom: 8px; box-sizing: border-box;"></textarea>
 
     <div id="hyperlnk" class="flex-row hyper-bar">
-        <input id="bindlinktotext" class="glass-input ${exttheme}" type="text" placeholder="Enter your link 🔗 here" title="Ссылка для встраивания" style="flex-grow: 1; text-align: center;">
+        <input id="bindlinktotext" class="glass-input" type="text" placeholder="Enter your link 🔗 here" title="Ссылка для встраивания" style="flex-grow: 1; text-align: center;">
         <button class="glass-btn mainButton" id="insertlinktotext">Insert ✅</button>
     </div>
 

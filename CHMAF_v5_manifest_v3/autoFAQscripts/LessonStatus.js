@@ -8,10 +8,10 @@ var win_LessonStatus =  // описание элементов окна стат
                                 <button class="mainButton smallbtn" id="clearlessonstatus">🧹</button>
                         </div>
 						 <div style="margin: 5px; width: 1050px" id="databox">
-                            <span style="color:bisque; margin-top:5px; margin-left:5px;">Начальная дата<input class="${exttheme}" type="date" style="margin-left:5px; width:125px;" name="StartDataLS" id="dateFromLS"></span>
-							<span style="color:bisque; margin-top:2px; margin-left: 10px; height:28px;">Конечная дата<input class="${exttheme}" type="date" style="margin-left:5px; width:125px;" name="EndDataLS" id="dateToLS"></span>
-                            <input id="idteacherforsearch" class="${exttheme}" placeholder="Teacher ID" title="Введите ID учителя, чтобы проверить информацию по урокам" autocomplete="off" type="text" style="position:relative;text-align: center;width: 100px; margin-left: 15%;">
-							<input id="idstudentforsearch" class="${exttheme}" placeholder="Student ID" title="Введите ID ученика, чтобы отфильтровать поиск" autocomplete="off" type="text" style="position:relative; text-align: center; width: 100px; margin-left:5px;">
+                            <span style="color:bisque; margin-top:5px; margin-left:5px;">Начальная дата<input class="" type="date" style="margin-left:5px; width:125px;" name="StartDataLS" id="dateFromLS"></span>
+							<span style="color:bisque; margin-top:2px; margin-left: 10px; height:28px;">Конечная дата<input class="" type="date" style="margin-left:5px; width:125px;" name="EndDataLS" id="dateToLS"></span>
+                            <input id="idteacherforsearch" class="" placeholder="Teacher ID" title="Введите ID учителя, чтобы проверить информацию по урокам" autocomplete="off" type="text" style="position:relative;text-align: center;width: 100px; margin-left: 15%;">
+							<input id="idstudentforsearch" class="" placeholder="Student ID" title="Введите ID ученика, чтобы отфильтровать поиск" autocomplete="off" type="text" style="position:relative; text-align: center; width: 100px; margin-left:5px;">
                             <button class="mainButton" title="Запускает процесс поиска информации по статусам урока (отменен, перенесен, удален)" id="startlookstatus" style="float: right; margin-right: 10px;">Получить инфо об уроках</button>
                         </div>
 				</span>

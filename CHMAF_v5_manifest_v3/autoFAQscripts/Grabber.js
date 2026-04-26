@@ -244,10 +244,10 @@ var win_Grabber =  // описание элементов окна Grabber
 						</div>
 
                         <div style="margin: 5px; width: 960px" id="grabbox">
-								 <span style="color:bisque; margin-top:5px; margin-left:10px;">Начальная дата <input class="${exttheme}" type="date" style="margin-left:20px;  width:125px;" name="FirstData" id="dateFromGrab"></span>
+								 <span style="color:bisque; margin-top:5px; margin-left:10px;">Начальная дата <input class="" type="date" style="margin-left:20px;  width:125px;" name="FirstData" id="dateFromGrab"></span>
 								 <button class="mainButton" style="margin-left:15%" id="dayminus">◀</button>
 								 <button class="mainButton" id="dayplus">▶</button>
-								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input class="${exttheme}" type="date" style="float:right; margin-left:20px; margin-right:10px; width:125px;" name="LastData" id="dateToGrab"</span>
+								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input class="" type="date" style="float:right; margin-left:20px; margin-right:10px; width:125px;" name="LastData" id="dateToGrab"</span>
                         </div>
 
 						<div style="display:flex; justify-content: space-evenly; margin-bottom: 5px;">
@@ -383,7 +383,7 @@ var win_Grabber =  // описание элементов окна Grabber
 							</div>
 
 						<div style="padding-bottom: 5px;">
-                        <select id="ThemesToSearch" class="${exttheme}" style="margin-left:150px; margin-top:10px;"></select>
+                        <select id="ThemesToSearch" class="" style="margin-left:150px; margin-top:10px;"></select>
 
                                <button class="mainButton" style=" title="ищет чаты по тематике" id="stargrab">Find</button>
 							   	<button class="mainButton" id="webtoCSV">💾 Download CSV</button>

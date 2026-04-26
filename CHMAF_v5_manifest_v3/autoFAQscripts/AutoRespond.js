@@ -7,9 +7,9 @@ var win_FrozeChat = `<div style="display: flex; width: 400px;">
                 <button class="mainButton smallbtn" id="arinfo" style="float:right; margin-right: 5px;" title="Auto-reply settings">❓</button>
             </div>
             <div>
-                <input id="chatfrozehash" class="${exttheme}" placeholder="Введите хэш чата" title="Chat hash for auto-reply" autocomplete="off" type="text" style="text-align: center; width: 290px; margin-left:5px">
-                <textarea id="chatfrozemsg" class="${exttheme}" placeholder="Введите текст сообщения" title="Custom response (optional)" autocomplete="off" style="text-align: center; width: 290px; margin-left:5px"></textarea>
-                <input id="frozetimer" class="${exttheme}" value="6" style="position:absolute; right: 62px; top: 37px; width:38px;" type="number" min="0" max="59">
+                <input id="chatfrozehash" placeholder="Введите хэш чата" title="Chat hash for auto-reply" autocomplete="off" type="text" style="text-align: center; width: 290px; margin-left:5px">
+                <textarea id="chatfrozemsg" placeholder="Введите текст сообщения" title="Custom response (optional)" autocomplete="off" style="text-align: center; width: 290px; margin-left:5px"></textarea>
+                <input id="frozetimer" value="6" style="position:absolute; right: 62px; top: 37px; width:38px;" type="number" min="0" max="59">
                 <span style="color:bisque;position: absolute;right: 34px; top: 42px;">min</span>
                 <button class="mainButton smallbtn" id="freezechat" title="Set auto-reply timer" style="position: absolute; right: 28px; top: 72px; width: 66px; height: 38px; font-size: 22px;">❄</button>
             </div>

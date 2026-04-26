@@ -24,7 +24,6 @@ var win_Stat = `
                         <input type="date"
                             id="dateFrom"
                             name="StartData"
-                            class="${exttheme}"
                             style="margin-left: 20px; width: 125px;">
                     </span>
 
@@ -33,7 +32,6 @@ var win_Stat = `
                         <input type="date"
                             id="dateTo"
                             name="EndData"
-                            class="${exttheme}"
                             style="margin-left: 20px; width: 125px;">
                     </span>
                 </div>
@@ -41,14 +39,14 @@ var win_Stat = `
 
             <!-- Поиск по заметкам -->
             <div>
-                <input id="commenttosearch" class="${exttheme}" autocomplete="off"
+                <input id="commenttosearch" autocomplete="off"
                        placeholder="Слово или фраза для поиска среди закрытых чатов по заметкам"
                        title="Введите слово или фразу для поиска по заметкам в закрытом чате"
                        type="text"
                        style="text-align: center; width: 540px; margin-left: 5px;">
 
                 <!-- Тематики -->
-                <select id="thematics" class="${exttheme}" style="margin-left: 150px; margin-top: 10px;">
+                <select id="thematics" style="margin-left: 150px; margin-top: 10px;">
                     <option class="${selecttheme}" value="skmob">Skyeng👨‍🎓Mob</option>
                     <option value="1804">-Авторизация</option>
                     <option value="1805">-Домашка</option>

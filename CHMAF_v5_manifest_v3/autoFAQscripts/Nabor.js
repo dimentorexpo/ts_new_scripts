@@ -11,7 +11,7 @@ const win_NaborStatus = `
             </div>
 
             <div class="nabor-input-row" id="databoNabor">
-                <input class="nabor-input ${exttheme}" id="tidNabor"
+                <input class="nabor-input " id="tidNabor"
                     placeholder="Teacher ID"
                     title="Введите ID учителя, чтобы проверить информацию по статусу набора"
                     autocomplete="off" type="text">

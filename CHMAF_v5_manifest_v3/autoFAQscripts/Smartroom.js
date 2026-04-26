@@ -33,7 +33,7 @@ var win_smartroomform =  // описание элементов окна Мул�
 							    <input class = "smartroom-radio" type="radio" id="formatPU" name="formattoform" value="ПУ">
 								<label class = "smartroom-label" for="formatPU">ПУ</label>
 							</div>
-							<input class="${exttheme}" id="clientid" placeholder="ID пользователя" autocomplete="off" type="text" style="margin-left: 5px; width: calc(100% - 10px); padding-top: 5px; font-size: 16px; vertical-align: middle;">
+							<input class="" id="clientid" placeholder="ID пользователя" autocomplete="off" type="text" style="margin-left: 5px; width: calc(100% - 10px); padding-top: 5px; font-size: 16px; vertical-align: middle;">
 							<br>
 							<div style="margin-top:5px; color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);" id = "smartroomquestion">
                                 <label style="color:#c4ffd3; padding:5px; font-weight: 600;">С чем обратились?</label> <br>
@@ -51,7 +51,7 @@ var win_smartroomform =  // описание элементов окна Мул�
                                 <label class = "smartroom-label" for="ecosystemandr">МП Android</label>
 							</div>
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);">
-								<input type="text" id="cattwosmatrtoom" list="cattwosmatrtoom-options-list" placeholder="Выбрать тему" class="${exttheme} listinput" style="margin-left: 5px; width: calc(100% - 10px); padding-top: 5px; font-size: 16px; vertical-align: middle;">
+								<input type="text" id="cattwosmatrtoom" list="cattwosmatrtoom-options-list" placeholder="Выбрать тему" class=" listinput" style="margin-left: 5px; width: calc(100% - 10px); padding-top: 5px; font-size: 16px; vertical-align: middle;">
                                 <datalist id="cattwosmatrtoom-options-list">
 									<option value="Домашние задания">
 									<option value="Интерфейс платформы">
@@ -63,7 +63,7 @@ var win_smartroomform =  // описание элементов окна Мул�
 							</div>
 
 							<div style="color:#c4ffd3; padding:5px; font-weight: 600; border-bottom: 2px dashed rgb(101, 101, 207);">
-								<input type="text" id="catthreesmatrtoom" list="catthreesmatrtoom-options-list" placeholder="Выбрать подтему" class="${exttheme} listinput" style="margin-left: 5px; width: calc(100% - 10px); padding-top: 5px; font-size: 16px; vertical-align: middle;">
+								<input type="text" id="catthreesmatrtoom" list="catthreesmatrtoom-options-list" placeholder="Выбрать подтему" class=" listinput" style="margin-left: 5px; width: calc(100% - 10px); padding-top: 5px; font-size: 16px; vertical-align: middle;">
                                 <datalist id="catthreesmatrtoom-options-list">
 									<option value="Интерфейс раздела домашки">
 									<option value="Нет">
@@ -99,7 +99,7 @@ var win_smartroomform =  // описание элементов окна Мул�
                             </div>
 
 						<div>
-							<textarea class="${exttheme}" id="fullcomentsmartroom" placeholder="Полный комментарий предложения по улучшению" autocomplete="off" type="text" style="text-align: center; width: 405px; margin-top: 5px" data-gramm="false" wt-ignore-input="true"></textarea>
+							<textarea class="" id="fullcomentsmartroom" placeholder="Полный комментарий предложения по улучшению" autocomplete="off" type="text" style="text-align: center; width: 405px; margin-top: 5px" data-gramm="false" wt-ignore-input="true"></textarea>
 						<br>
 							<button class="mainButton" title="Отправляет заполненные поля формы в док" id="send2smartroom" style="width:105px; position: relative; left: 50%; margin-top: 5px; transform: translate(-50%, 0);">Отправить</button>
 						</div>

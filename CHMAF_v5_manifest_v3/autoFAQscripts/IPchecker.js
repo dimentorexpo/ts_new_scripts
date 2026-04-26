@@ -17,7 +17,7 @@ function createIPCheckerWindow() {
             </div>
 
             <div class="ipchecker-controls">
-                <input id="ipdigits" class="${exttheme}"
+                <input id="ipdigits" class=""
                        placeholder="Enter user IP xx.xx.xx.xx"
                        autocomplete="off"
                        style="text-align:center;"

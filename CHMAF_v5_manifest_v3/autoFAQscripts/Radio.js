@@ -15,8 +15,8 @@ const win_Radio = `
             </div>
             <div id="audioPlayer" class="mainplayer">
                 <div id="audioControls">
-                    <input class="${exttheme || ''}" type="text" id="audioUrl" placeholder="URL радио" style="flex-grow: 1;">
-                    <input class="${exttheme || ''}" type="text" id="audioName" placeholder="Название" style="width:120px;">
+                    <input type="text" id="audioUrl" placeholder="URL радио" style="flex-grow: 1;">
+                    <input type="text" id="audioName" placeholder="Название" style="width:120px;">
                     <button class="mainButton" id="addAudio" title="Добавить">➕</button>
                     <button class="mainButton" id="playAudio" title="Играть">▶</button>
                     <button class="mainButton" id="pauseAudio" title="Пауза">⏸</button>

@@ -132,16 +132,16 @@ var win_taskform = `
             </div>
 
             <div id="create_form_menu" style="display: flex; flex-direction: column; gap: 8px;">
-                <input class="glass-input-task ${exttheme}" disabled id="chathashlnk" placeholder="Хэш чата" autocomplete="off" style="text-align: center;">
+                <input class="glass-input-task " disabled id="chathashlnk" placeholder="Хэш чата" autocomplete="off" style="text-align: center;">
 
-                <select class="glass-select-task ${exttheme}" id="priority" style="text-align: center;">
+                <select class="glass-select-task " id="priority" style="text-align: center;">
                     <option disabled selected value="">Укажите Приоритет</option>
                     <option value="low" style="color: #4CAF50; font-weight:600">🟢 Низкий</option>
                     <option value="high" style="color: #FFC107; font-weight:600">🟡 Высокий</option>
                     <option value="highest" style="color: #F44336; font-weight:600">🔴 Критический</option>
                 </select>
 
-                <select class="glass-select-task ${exttheme}" id="customerservice" style="text-align: center;">
+                <select class="glass-select-task " id="customerservice" style="text-align: center;">
                     <option disabled selected value="">Укажите Отдел</option>
                     <option value="tech_support_outgoing_crm2" style="color: #F44336;">🛠️ Техподдержка 1Л CRM (исход)</option>
                     <option value="teachers_care_crm">👽 Teachers Care</option>
@@ -152,10 +152,10 @@ var win_taskform = `
                     <option value="personal_support">🅿️ Персональное сопровождение (Premium)</option>
                 </select>
 
-                <input class="glass-input-task ${exttheme}" id="taskserviceid" placeholder="🆔 ID услуги">
+                <input class="glass-input-task " id="taskserviceid" placeholder="🆔 ID услуги">
 
                 <div style="display: flex; gap: 8px;">
-                    <input class="glass-input-task ${exttheme}" id="taskuserid" placeholder="🆔 ID пользователя">
+                    <input class="glass-input-task " id="taskuserid" placeholder="🆔 ID пользователя">
                     <button class="glass-btn-task" id="searchuserservices" title="Найти услуги">🔎</button>
                 </div>
 
@@ -166,7 +166,7 @@ var win_taskform = `
 
                 <button class="glass-btn-task" style="display:none; background: rgba(76, 175, 80, 0.4);" id="taskcreate2linecrm">Создать задачу на 2ЛТП по календарю</button>
 
-                <textarea class="glass-textarea-task ${exttheme}" id="taskcomment" placeholder="Комментарий к задаче" autocomplete="off"></textarea>
+                <textarea class="glass-textarea-task " id="taskcomment" placeholder="Комментарий к задаче" autocomplete="off"></textarea>
 
                 <div class="btn-row-task" style="margin-top: 5px;">
                     <button class="glass-btn-task" id="studcontact">Обр П ➔ У</button>
@@ -181,7 +181,7 @@ var win_taskform = `
 
         <div id="servicehelper" class="glass-panel-task srvhhelpnomove" style="position: absolute; top: 0; left: -320px; width: 310px; max-height: 500px; overflow-y: auto; z-index: 1;">
             <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <input class="glass-input-task ${exttheme}" id="useriddata" placeholder="ID студента (услуги)">
+                <input class="glass-input-task " id="useriddata" placeholder="ID студента (услуги)">
                 <button class="glass-btn-task" id="getuserservices">🔎</button>
             </div>
             <div id="serviceinf" style="display: flex; flex-direction: column; gap: 8px;"></div>

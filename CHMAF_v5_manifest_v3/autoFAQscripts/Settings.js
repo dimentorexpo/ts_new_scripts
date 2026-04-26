@@ -6,7 +6,6 @@
 async function init_settings() {
     // --- Constants & Configuration ---
     const DEFAULTS = {
-        extentiontheme: 'light',
         defaclschatcolor: '#FF47CA',
         answchatcolor: '#A0522D',
         responschatcolor: '#DDA0DD',

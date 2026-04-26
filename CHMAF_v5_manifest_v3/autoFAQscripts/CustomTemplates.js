@@ -48,7 +48,7 @@ function addNewString(index) {
         <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.2);" tmp="template_${languageTmplt}${index}" index="${index}">
             <div class="flex-row" style="margin-bottom: 5px;">
                 <input id="checkboxInp${languageTmplt}${index}" type="checkbox" style="cursor: pointer; width: 16px; height: 16px;" title="Отображать в быстром меню" ${checkboxValue ? 'checked' : ''}>
-                <input id="tmpNameInp${languageTmplt}${index}" class="glass-input ${exttheme}" style="width: 140px;" placeholder="Имя шаблона">
+                <input id="tmpNameInp${languageTmplt}${index}" class="glass-input " style="width: 140px;" placeholder="Имя шаблона">
 
                 <button id="sortUpBtn${index}" class="glass-btn mainButton" title="Вверх" style="padding: 2px 8px;">↑</button>
                 <button id="sortDownBtn${index}" class="glass-btn mainButton" title="Вниз" style="padding: 2px 8px;">↓</button>
@@ -59,7 +59,7 @@ function addNewString(index) {
                     <button id="sendBtn${index}" class="glass-btn mainButton primary">Send</button>
                 </div>
             </div>
-            <textarea id="cstmTmpInp${languageTmplt}${index}" class="glass-textarea ${exttheme}" style="width: 100%; min-height: 45px; resize: vertical; box-sizing: border-box;" placeholder="Текст шаблона..."></textarea>
+            <textarea id="cstmTmpInp${languageTmplt}${index}" class="glass-textarea " style="width: 100%; min-height: 45px; resize: vertical; box-sizing: border-box;" placeholder="Текст шаблона..."></textarea>
         </div>
     `;
 
