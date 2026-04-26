@@ -314,7 +314,7 @@ const win_Timetable = `
     <div class="af-gl-panel">
         <div class="af-gl-header" id="HeadTimetable" style="cursor: -webkit-grab; justify-content: space-between;">
             <span style="font-weight: bold; font-size: 14px;">📅 Расписание</span>
-            <button class="af-gl-btn" id="hideMeTT" style="color: #ef4444;">❌ Скрыть</button>
+            <button class="af-gl-btn" id="hideMeTT" style="color: #ef4444;">❌</button>
         </div>
         <div class="af-gl-row" style="justify-content: center;">
             <button class="af-gl-btn" id="getlessonpast">Прошедшие</button>
@@ -331,7 +331,7 @@ const win_Complectations = `
     <div class="af-gl-panel">
         <div class="af-gl-header" id="headComplectations" style="cursor: -webkit-grab; justify-content: space-between;">
             <span style="font-weight: bold; font-size: 14px;">📦 Комплектации</span>
-            <button class="af-gl-btn" id="hideComplecations" style="color: #ef4444;">❌ Скрыть</button>
+            <button class="af-gl-btn" id="hideComplecations" style="color: #ef4444;">❌</button>
         </div>
         <div id="cmplInfo" class="af-gl-scrollable">
             <div id="cmplData"></div>
@@ -590,7 +590,7 @@ function getusernamecrm() {
         document.getElementById('usrType').innerHTML = isStudent ? `<span class="af-gl-text-success">🎓 Ученик</span>` : `<span class="af-gl-text-accent">👨‍🏫 Преподаватель</span>`;
         document.getElementById('usrCountry').textContent = data.country || '';
 
-        // Новая логика отрисовки аватара внутри info-card
+        // Логика отрисовки аватара внутри info-card
         const avatarWrapper = document.getElementById('avatarWrapper');
         const avatarEl = document.getElementById('useravatar');
         if (data.avatarUrl) {
@@ -610,9 +610,16 @@ function getusernamecrm() {
         elsToHide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
         if (isStudent) {
-            ['checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'pochtaIdentity', 'telefonIdentity'].forEach(id => document.getElementById(id).style.display = '');
+            // ВАЖНО: Добавили 'complekttable' обратно в список элементов, которые нужно показать для студента
+            ['checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'pochtaIdentity', 'telefonIdentity', 'complekttable'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = '';
+            });
         } else {
-            ['newTrm', 'butTeacherNabor', 'personalteacherpage'].forEach(id => document.getElementById(id).style.display = '');
+            ['newTrm', 'butTeacherNabor', 'personalteacherpage'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = '';
+            });
             document.getElementById('usrAge').style.display = 'none';
             document.getElementById('servicetable').innerHTML = '';
         }
@@ -678,6 +685,7 @@ async function getservices(stidNew) {
     compTable.innerHTML = "";
     linkTable.innerHTML = "";
 
+    // --- 1. ЗАПРОС КОМПЛЕКТАЦИЙ ---
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: `https://backend.skyeng.ru/api/v1/students/${stidNew}/education-service-kits/`, requestOptions: { method: 'GET' } }, function (res) {
         if (!res.success) return;
         const data = JSON.parse(res.fetchansver);
@@ -698,22 +706,64 @@ async function getservices(stidNew) {
                             <td class="af-gl-text-accent"><a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:inherit;">${el.id}</a></td>
                             <td>${formattedText}</td>
                             <td>${el.balance}</td>
+                            <td style="text-align: right; width: 30px;">
+                                <span class="cursor-pointer btn-sync-srv" data-srvid="${el.id}" title="Синхронизировать">♻️</span>
+                            </td>
                         </tr>`;
                     });
                     sHtml += `</table>`;
+
+                    let opNote = service.operatorNote ? `title="${service.operatorNote.replace(/"/g, '&quot;')}"` : "";
+
                     compTable.innerHTML += `<div class="af-gl-card" style="margin-bottom:8px;">
-                        <div class="af-gl-card-header af-gl-bg-success">ℹ️[${service.id}] ${service.productKit.title}</div>
+                        <div class="af-gl-card-header af-gl-bg-success" ${opNote}>
+                            ℹ️ [${service.id}] ${service.productKit.title} | ${service.stage === "regular_lessons" ? "Регулярные" : service.stage === "lost" ? "Потерянная" : service.stage}
+                        </div>
                         ${sHtml}
                     </div>`;
                 } else {
                     compTable.innerHTML += `<div class="af-gl-card af-gl-bg-danger" style="margin-bottom:8px; text-align:center;">[${service.id}] '${service.productKit.title}' - некорректна</div>`;
                 }
             });
+
+            // ВОЗВРАЩАЕМ ЛОГИКУ КНОПКИ ♻️ (Синхронизация)
+            document.querySelectorAll('.btn-sync-srv').forEach(btn => {
+                btn.onclick = function () {
+                    const srvId = this.getAttribute('data-srvid');
+                    const emojiSpan = this;
+
+                    emojiSpan.innerText = "⏳";
+                    const gToken = localStorage.getItem('token_global');
+
+                    const fetchURL = `https://skysmart-core.skyeng.ru/api/v1/academic-activity/upsert-education-service-history/${srvId}`;
+                    const requestOptions = {
+                        headers: {
+                            "accept": "application/json, text/plain, */*",
+                            "authorization": `Bearer ${gToken}`
+                        },
+                        method: "POST",
+                        mode: "cors"
+                    };
+
+                    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+                        if (!response.success) {
+                            alert('Не удалось выполнить запрос: ' + response.error + '. Если запускали синхронизацию через расширение, то необходимо после закрытия окна повторно открыть в новой вкладке CRM на 5 секунд. После чего вернуться в окно AF и обновить страницу');
+                            emojiSpan.innerText = "❌";
+                            localStorage.removeItem('token_global');
+                        } else {
+                            emojiSpan.innerText = "✅";
+                            setTimeout(() => { emojiSpan.innerText = "♻️"; }, 5000);
+                        }
+                    });
+                };
+            });
+
         } else {
             linkTable.innerHTML += `<div class="af-gl-card af-gl-bg-danger" style="text-align:center;">❌ Нет комплектаций</div>`;
         }
     });
 
+    // --- 2. ЗАПРОС ОБЫЧНЫХ УСЛУГ ---
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: `https://backend.skyeng.ru/api/persons/${stidNew}/education-services/`, requestOptions: { method: 'GET' } }, function (res) {
         if (!res.success) return;
         const data = JSON.parse(res.fetchansver);
