@@ -17,7 +17,7 @@ const glassStylesMarks = `
         box-sizing: border-box;
         gap: 12px;
     }
-    .af-gl-header { display: flex; justify-content: space-between; align-items: center; }
+    .marks-gl-header { display: flex; justify-content: space-between; align-items: center; }
     .af-gl-btn {
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -66,7 +66,7 @@ const glassStylesMarks = `
 // --- Описание элементов окна ---
 var win_Marks = glassStylesMarks + `
 <div class="af-gl-container" id="marks_wrapper">
-    <div class="af-gl-header" id="marks_header" style="cursor: move;">
+    <div class="marks-gl-header" id="marks_header" style="cursor: move;">
         <button class="af-gl-btn buttonHide" title="Скрыть меню" id="hideMeMarks">❌</button>
         <button class="af-gl-btn" id="marksinstr" title="Инструкция по этой форме">❓ Инструкция</button>
     </div>

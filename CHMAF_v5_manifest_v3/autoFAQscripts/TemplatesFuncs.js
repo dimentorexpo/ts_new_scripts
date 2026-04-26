@@ -138,6 +138,19 @@ const glassmorphismCSS = `
     width: 18px;
     height: 18px;
 }
+
+#CurrUser:hover::after, #NextUser:hover::after {
+    content: "CRM" !important;
+    max-width: 100px !important;
+    opacity: 1 !important;
+    margin-left: 8px !important;
+}
+
+/* Фикс для того, чтобы кнопки не схлопывались */
+.${UI_PREFIX}-btn-user-glass {
+    min-width: 36px !important;
+    padding: 0 12px !important;
+}
 `;
 
 // 2. Обновляем функции сборки — теперь мы используем data-label
@@ -154,11 +167,14 @@ function buildButton(cfg) {
 }
 
 function buildUserButton(cfg) {
-    // Для инопланетянина и студента
     const defaultEmoji = cfg.labelId === 'CurrUser' ? '👽' : '👨‍🎓';
+    // Добавляем data-label="CRM" явно
     return `
-    <button id="${cfg.labelId}" title="${cfg.labelTitle}" class="${UI_PREFIX}-btn-user-glass" data-label="CRM">
-        ${defaultEmoji}
+    <button id="${cfg.labelId}"
+            title="${cfg.labelTitle}"
+            class="${UI_PREFIX}-btn-user-glass"
+            data-label="CRM">
+        <span class="${UI_PREFIX}-icon-wrapper">${defaultEmoji}</span>
     </button>`;
 }
 
