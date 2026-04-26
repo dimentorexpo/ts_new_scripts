@@ -1,53 +1,63 @@
-// ---------- Разметка окна статистики ----------
+// ---------- 1. Хранилище избранного ----------
+const FAV_STORAGE_KEY = 'af_stat_favorites';
+let favoritesChats = {};
+try {
+    const stored = localStorage.getItem(FAV_STORAGE_KEY);
+    if (stored) favoritesChats = JSON.parse(stored);
+} catch (e) {
+    console.error('Ошибка чтения избранного из localStorage:', e);
+    favoritesChats = {};
+}
 
+function saveFavorites() {
+    localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify(favoritesChats));
+}
+
+// Функция для кнопки в боковом меню (открыть/скрыть основное окно)
+window.getStatsButtonPress = function () {
+    let win = document.getElementById('AF_Stat');
+    if (!win) return;
+    win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'block' : 'none';
+};
+
+// ---------- 2. Разметка основного окна ----------
 var win_Stat = `
-<div style="display: flex; width: 550px;">
-    <div style="width: 550px;">
-        <div style="cursor: grab;">
+<style>
+    .adds-glass-container { display: flex; width: 580px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .adds-glass-panel { width: 100%; background: rgba(30, 35, 45, 0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); color: #e0e6ed; padding: 15px; }
+    .adds-glass-header { cursor: grab; }
+    .adds-glass-input, .adds-glass-select { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #fff; padding: 6px 10px; outline: none; transition: all 0.3s ease; }
+    .adds-glass-input:focus, .adds-glass-select:focus { background: rgba(255, 255, 255, 0.15); border-color: rgba(100, 150, 255, 0.6); box-shadow: 0 0 8px rgba(100, 150, 255, 0.3); }
+    .adds-glass-select option { background: #232732; color: #fff; }
+    .adds-glass-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #fff; padding: 8px 12px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
+    .adds-glass-btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-1px); }
+    .adds-flex-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .adds-chat-link { color: #64b5f6; text-decoration: none; font-weight: bold; }
+    .adds-action-icon { cursor: pointer; margin-left: 8px; transition: transform 0.2s; display: inline-block; font-size: 16px; }
+    .adds-action-icon:hover { transform: scale(1.3); }
+    .adds-fav-comment { font-size: 0.85em; color: #a5d6a7; margin-left: 10px; font-style: italic; }
+    .adds-content-area { max-height: 380px; overflow-y: auto; margin-top: 15px; padding-right: 5px; }
+    .adds-content-area::-webkit-scrollbar { width: 6px; }
+    .adds-content-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+    .stat-label-group { margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+</style>
 
-            <!-- Верхняя панель -->
-            <div id="statdata" style="margin: 5px; width: 550px;">
-                <button class="mainButton buttonHide" id="hideMeStat">hide</button>
+<div class="adds-glass-container">
+    <div class="adds-glass-panel">
+        <div class="adds-glass-header">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <button class="adds-glass-btn" id="hideMeStat" style="padding: 4px 10px;">Скрыть</button>
             </div>
 
-            <!-- Даты -->
-            <div id="statbox" style="margin: 5px; width: 550px;">
-                <div style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    color: bisque;
-                    margin: 5px 10px;
-                ">
-                    <span>
-                        Начальная дата
-                        <input type="date"
-                            id="dateFrom"
-                            name="StartData"
-                            style="margin-left: 20px; width: 125px;">
-                    </span>
-
-                    <span>
-                        Конечная дата
-                        <input type="date"
-                            id="dateTo"
-                            name="EndData"
-                            style="margin-left: 20px; width: 125px;">
-                    </span>
-                </div>
+            <div class="adds-flex-row">
+                <span>Начальная <input type="date" id="dateFrom" class="adds-glass-input" style="width: 120px;"></span>
+                <span>Конечная <input type="date" id="dateTo" class="adds-glass-input" style="width: 120px;"></span>
             </div>
 
-            <!-- Поиск по заметкам -->
-            <div>
-                <input id="commenttosearch" autocomplete="off"
-                       placeholder="Слово или фраза для поиска среди закрытых чатов по заметкам"
-                       title="Введите слово или фразу для поиска по заметкам в закрытом чате"
-                       type="text"
-                       style="text-align: center; width: 540px; margin-left: 5px;">
-
-                <!-- Тематики -->
-                <select id="thematics" style="margin-left: 150px; margin-top: 10px;">
-                    <option class="${selecttheme}" value="skmob">Skyeng👨‍🎓Mob</option>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <input id="commenttosearch" class="adds-glass-input" autocomplete="off" placeholder="Слово/фраза для поиска по заметкам" style="width: 100%; margin-bottom: 10px;">
+                <select id="thematics" class="adds-glass-select" style="width: 60%; margin-right: 10px;">
+                    <option class="${typeof selecttheme !== 'undefined' ? selecttheme : ''}" value="skmob">Skyeng👨‍🎓Mob</option>
                     <option value="1804">-Авторизация</option>
                     <option value="1805">-Домашка</option>
                     <option value="1806">-Оплата</option>
@@ -56,7 +66,7 @@ var win_Stat = `
                     <option value="1809">-Уроки</option>
                     <option value="1810">-Чат</option>
 
-                    <option class="${selecttheme}" value="tmob">Teachers👽Mob</option>
+                    <option class="${typeof selecttheme !== 'undefined' ? selecttheme : ''}" value="tmob">Teachers👽Mob</option>
                     <option value="1833">-Авторизация</option>
                     <option value="1836">-Виджет расписания</option>
                     <option value="1839">-Чат</option>
@@ -66,7 +76,7 @@ var win_Stat = `
                     <option value="1837">-Стр расписания</option>
                     <option value="1834">-Стр финансов</option>
 
-                    <option class="${selecttheme}" value="sksmpar">Skysmart👪родит</option>
+                    <option class="${typeof selecttheme !== 'undefined' ? selecttheme : ''}" value="sksmpar">Skysmart👪родит</option>
                     <option value="1884">-Другое</option>
                     <option value="1883">-Материалы</option>
                     <option value="1880">-Предметы и баланс</option>
@@ -74,7 +84,7 @@ var win_Stat = `
                     <option value="1879">-Расписание</option>
                     <option value="1882">-Чат</option>
 
-                    <option class="${selecttheme}" value="solanka">Different</option>
+                    <option class="${typeof selecttheme !== 'undefined' ? selecttheme : ''}" value="solanka">Different</option>
                     <option value="2034">-Прочее</option>
                     <option value="2030">-Slack-вход</option>
                     <option value="2020">-Логи ур У</option>
@@ -82,613 +92,351 @@ var win_Stat = `
                     <option value="2018">-БД ур оператор</option>
                     <option value="2017">-БД ур система</option>
 
-                    <option class="${selecttheme}" value="payf">Проблемы с оплатой</option>
+                    <option class="${typeof selecttheme !== 'undefined' ? selecttheme : ''}" value="payf">Проблемы с оплатой</option>
                     <option value="1077">-Вина школы</option>
                     <option value="1658">-Консультация</option>
                     <option value="1661">-Карта У</option>
                     <option value="1662">-Сбой</option>
                     <option value="1660">-Подписки</option>
 
-                    <option class="${selecttheme}" value="hwtr">Проблемы с ДЗ</option>
+                    <option class="${typeof selecttheme !== 'undefined' ? selecttheme : ''}" value="hwtr">Проблемы с ДЗ</option>
                     <option value="1744">-Контент</option>
                     <option value="1745">-Оценка</option>
                     <option value="1746">-Словарь</option>
                     <option value="1747">-Упражнение</option>
 
-                    <option class="${selecttheme}" value="svyaz">Проблемы связь</option>
+                    <option class="${typeof selecttheme !== 'undefined' ? selecttheme : ''}" value="svyaz">Проблемы связь</option>
                     <option value="1581">-ОС/брауз ниж мин</option>
                     <option value="1589">-Конс раб св</option>
-                    <option value="1582">-Корп с/ус</option>
-                    <option value="1583">-ОС/браузер</option>
-                    <option value="1586">-ПК</option>
-                    <option value="1584">-Гарнитура</option>
-                    <option value="1585">-Камера</option>
-                    <option value="1580">-Блок ПО</option>
-                    <option value="1594">-Не подерж брауз</option>
-                    <option value="1595">-Не под кам гарн пк</option>
-                    <option value="1593">-Сбой платф</option>
-                    <option value="1592">-Сб задерж кам</option>
-                    <option value="1587">-Инет ниж мин</option>
-                    <option value="1590">-Сб плат блк прер</option>
-                    <option value="1588">-Хар ниж мин</option>
-                    <option value="1591">-Сб задерж зв</option>
-
-                    <option class="${selecttheme}" value="lkp">Проблемы ЛКП</option>
-                    <option value="1721">-Группа</option>
-                    <option value="1714">-Чат</option>
-                    <option value="1719">-Финансы</option>
-                    <option value="1717">-Упражнения</option>
-                    <option value="1712">-Карта роста</option>
-                    <option value="1716">-Настройки</option>
-                    <option value="1718">-Перерыв</option>
-                    <option value="1715">-Профиль</option>
-                    <option value="1720">-Раб на пров</option>
-                    <option value="1713">-Расписание</option>
-
-                    <option class="${selecttheme}" value="lku">Проблемы ЛКУ</option>
-                    <option value="1708">-Чат</option>
-                    <option value="1710">-Профиль</option>
-                    <option value="1706">-Видж прогр</option>
-                    <option value="1707">-Ис зан/портф</option>
-                    <option value="1709">-Семья</option>
-                    <option value="1711">-Настройки</option>
-                    <option value="1705">-Навыки</option>
-                    <option value="1704">-Грамматика</option>
-
-                    <option class="${selecttheme}" value="problvh">Проблемы вход</option>
-                    <option value="1632">-Не привяз почт/тел</option>
-                    <option value="1635">-Данные</option>
-                    <option value="1634">-Сброс пароля</option>
-                    <option value="1631">-Консультация</option>
-                    <option value="1633">-Сбой</option>
-
-                    <option class="${selecttheme}" value="problpodk">Проблемы подкл</option>
-                    <option value="1624">-Истек подпис</option>
-                    <option value="1627">-Консультациия</option>
-                    <option value="1629">-Нет кн входа</option>
-                    <option value="1628">-У не в ГУ</option>
-                    <option value="1625">-Ур в др вр</option>
-                    <option value="1626">-У отпуск</option>
-                    <option value="1630">-Неакт кн вх</option>
-
-                    <option class="${selecttheme}" value="lesfunc">Функционал урок</option>
-                    <option value="1772">-STT</option>
-                    <option value="1773">-TTT</option>
-                    <option value="1767">-Вложения</option>
-                    <option value="1771">-Демонстрация экр</option>
-                    <option value="1768">-Доска</option>
-                    <option value="2037">-Заметки</option>
-                    <option value="1775">-Отпр ДЗ на ур</option>
-                    <option value="1770">-Перекл материалов</option>
-                    <option value="1776">-Ауд/вид плеер</option>
-                    <option value="1769">-Словарь на ур</option>
-                    <option value="1774">-Упражн на ур</option>
-
-                    <option class="${selecttheme}" value="feedbk">Отзывы и пожел</option>
-                    <option value="1970">-Vim-контент</option>
-                    <option value="1971">-Vim-оценка</option>
-                    <option value="1972">-Vim-словарь</option>
-                    <option value="1973">-Vim-упражнения</option>
-
-                    <option class="${selecttheme}" value="1966">-ЛК-ОС род</option>
-                    <option value="1965">-ЛК-пер,отм ур</option>
-                    <option value="1967">-ЛК-профиль</option>
-                    <option value="1968">-ЛК-семья</option>
-                    <option value="1969">-ЛК чат</option>
-
-                    <option class="${selecttheme}" value="1974">-App Skyeng</option>
-                    <option value="1975">-App Teachers</option>
-                    <option value="1979">-App Skypro</option>
-                    <option value="1976">-App класс</option>
-                    <option value="1977">-App решения</option>
-                    <option value="1978">-App Skysmart род</option>
-                    <option value="1980">-Прочее</option>
                 </select>
-
-                <button class="mainButton" id="gofindit" title="Ищет чаты по тематике">Find</button>
-                <button class="mainButton" id="changetheme" title="Меняет тематику в хеше чата">Change</button>
+                <button class="adds-glass-btn" id="gofindit">Find</button>
+                <button class="adds-glass-btn" id="changetheme">Change</button>
             </div>
 
-            <!-- Кнопки статистики -->
-            <div style="display:flex; justify-content:space-evenly; margin-top:5px;">
-                <button class="mainButton" id="getstatfromperiod" title="Получает статистику">Получить статистику</button>
-                <button class="mainButton" id="getlowcsat" title="Чаты с КСАТ < 4">Чаты с КСАТ < 4</button>
-                <button class="mainButton" id="parsechat" title="Поиск по комментарию">Найти по комменту</button>
-                <button class="mainButton" id="clearall" title="Очистить поля">Очистить</button>
-                <button class="mainButton" id="getfile" title="Скачать результаты">🔰</button>
+            <div style="display:flex; justify-content:space-between; flex-wrap: wrap; gap: 8px;">
+                <button class="adds-glass-btn" id="getstatfromperiod">Статистика</button>
+                <button class="adds-glass-btn" id="getlowcsat">КСАТ < 4</button>
+                <button class="adds-glass-btn" id="parsechat">Поиск</button>
+                <button class="adds-glass-btn" id="showFavoritesBtn" style="color:#ffb74d; border-color:#ffb74d;">Избранное ⭐</button>
+                <button class="adds-glass-btn" id="clearall" style="color:#ef5350;">Очистить</button>
+                <button class="adds-glass-btn" id="getfile">🔰</button>
             </div>
 
-            <!-- Вывод данных -->
-            <div id="chatcoutnsinfo">
-                <span id="sumchatcounttouched" style="margin-left: 5px; color: bisque;"></span><br>
-                <span id="sumchatcountclosed" style="margin-left: 5px; color: bisque;"></span>
-
-                <p id="chatsinfoout" style="width:550px; color:bisque; margin-left:5px;"></p>
-                <p id="lowCSATcount" style="width:550px; max-height:400px; color:bisque; margin-left:5px; overflow:auto;"></p>
-                <p id="themesdata" style="width:550px; max-height:400px; color:bisque; margin-left:5px; overflow:auto;"></p>
-                <p id="chatcommentsdata" style="width:550px; max-height:400px; color:bisque; margin-left:5px; overflow:auto;"></p>
+            <div id="chatcoutnsinfo" class="adds-content-area">
+                <div id="mainStatsLabels" class="stat-label-group">
+                    <span id="sumchatcounttouched"></span><br>
+                    <span id="sumchatcountclosed"></span>
+                </div>
+                <div id="chatsinfoout"></div>
+                <div id="lowCSATcount" style="display:none;"></div>
+                <div id="chatcommentsdata" style="display:none;"></div>
+                <div id="favoritesSection" style="display:none;"></div>
             </div>
-
         </div>
     </div>
 </div>
 `;
 
-// ---------- Создание окна и базовые хендлеры ----------
+// ---------- Разметка ОТДЕЛЬНОГО окна избранного ----------
+var win_Fav = `
+<style>
+    .fav-glass-container { display: flex; width: 420px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .fav-glass-panel { width: 100%; background: rgba(30, 35, 45, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(255, 183, 77, 0.3); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: #e0e6ed; padding: 15px; }
+    .fav-header { cursor: grab; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+    .fav-title { color: #ffb74d; font-weight: bold; font-size: 16px; }
+    .fav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; padding: 4px 10px; cursor: pointer; font-size: 12px; }
+    .fav-btn:hover { background: rgba(255,255,255,0.2); }
+    .fav-content { max-height: 400px; overflow-y: auto; padding-right: 4px; }
+    .fav-content::-webkit-scrollbar { width: 6px; }
+    .fav-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+    .fav-empty { text-align: center; padding: 30px 20px; color: #aaa; }
+    .fav-item { margin-bottom: 10px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border-left: 3px solid #ffb74d; }
+    .fav-link { color: #64b5f6; text-decoration: none; font-weight: bold; }
+    .fav-actions { margin-top: 6px; }
+    .fav-icon { cursor: pointer; margin-right: 10px; font-size: 15px; display: inline-block; transition: transform 0.2s; }
+    .fav-icon:hover { transform: scale(1.2); }
+    .fav-comment { font-size: 0.85em; color: #a5d6a7; margin-top: 4px; font-style: italic; }
+    .fav-date { color: #777; font-style: normal; font-size: 0.8em; }
+</style>
+<div class="fav-glass-container">
+    <div class="fav-glass-panel">
+        <div class="fav-header">
+            <span class="fav-title">⭐ Избранные задачи</span>
+            <button class="fav-btn" id="hideMeFav">Скрыть</button>
+        </div>
+        <div id="favContent" class="fav-content">
+            <div class="fav-empty">Загрузка...</div>
+        </div>
+    </div>
+</div>
+`;
 
-const wintStat = createWindow('AF_Stat', 'winTopStat', 'winLeftStat', win_Stat);
-hideWindowOnDoubleClick('AF_Stat');
-hideWindowOnClick('AF_Stat', 'hideMeStat');
-
-// ---------- Хелперы ----------
-
-function fmtDate(d) {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+// ---------- 3. Создание окон ----------
+function initWindows() {
+    if (!document.getElementById('AF_Stat')) {
+        createWindow('AF_Stat', 'winTopStat', 'winLeftStat', win_Stat);
+        hideWindowOnDoubleClick('AF_Stat');
+        hideWindowOnClick('AF_Stat', 'hideMeStat');
+    }
+    // Создаём отдельное окно избранного, если его ещё нет
+    if (!document.getElementById('AF_Fav') && typeof createWindow === 'function') {
+        createWindow('AF_Fav', 'winTopFav', 'winLeftFav', win_Fav);
+        hideWindowOnDoubleClick('AF_Fav');
+        hideWindowOnClick('AF_Fav', 'hideMeFav');
+        // По умолчанию скрыто
+        const favWin = document.getElementById('AF_Fav');
+        if (favWin) favWin.style.display = 'none';
+    }
 }
 
-// MSK → UTC (Москва = UTC+3)
+// ---------- 4. Вспомогательные функции ----------
+function fmtDate(d) { return d.toISOString().split('T')[0]; }
 function toUTC(dateStr, h, m, s, ms) {
     const d = new Date(dateStr + "T00:00:00");
     d.setHours(h - 3, m, s, ms);
     return d.toISOString();
 }
 
-// ---------- Очистка ----------
-
-document.getElementById('clearall').onclick = function () {
-    document.querySelector('#sumchatcounttouched').innerText = "";
-    document.querySelector('#sumchatcountclosed').innerText = "";
-    document.querySelector('#chatsinfoout').innerText = "";
-    document.querySelector('#lowCSATcount').innerText = "";
-    document.querySelector('#lowCSATcount').style.display = "none";
-    document.querySelector('#chatcommentsdata').innerText = "";
-    document.querySelector('#chatcommentsdata').style.display = "none";
-    document.querySelector('#commenttosearch').value = "";
-    document.querySelector('#themesdata').innerText = "";
-};
-
-// ---------- Открытие окна статистики и установка дат ----------
-
-function getStatsButtonPress() {
-    const now = new Date();
-
-    const toDate = new Date(now);          // конечная дата
-    const fromDate = new Date(now);        // начальная дата
-
-    document.getElementById("dateFrom").value = fmtDate(fromDate);
-    document.getElementById("dateTo").value = fmtDate(toDate);
-
-    document.querySelector('#chatcommentsdata').style.display = "none";
-    document.querySelector('#lowCSATcount').style.display = "none";
-
-    const stat = document.getElementById('AF_Stat');
-    stat.style.display = stat.style.display === '' ? 'none' : '';
+function switchView(activeId) {
+    const views = ['chatsinfoout', 'lowCSATcount', 'chatcommentsdata', 'favoritesSection'];
+    views.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (id === activeId) ? 'block' : 'none';
+    });
+    const labels = document.getElementById('mainStatsLabels');
+    if (labels) {
+        labels.style.display = (activeId === 'chatsinfoout') ? 'block' : 'none';
+    }
 }
 
-// ---------- Получение статистики за период ----------
+// ---------- 5. Логика Избранного (ОТДЕЛЬНОЕ ОКНО) ----------
+function renderFavoritesWindow() {
+    const container = document.getElementById('favContent');
+    const favWin = document.getElementById('AF_Fav');
+    if (!container) return;
 
-document.getElementById('getstatfromperiod').onclick = async function () {
+    const favKeys = Object.keys(favoritesChats);
 
-    const datefrom = toUTC(
-        document.getElementById('dateFrom').value,
-        0, 0, 0, 0
-    );
-
-    const dateto = toUTC(
-        document.getElementById('dateTo').value,
-        23, 59, 59, 59
-    );
-
-    const strnew = document.getElementById('chatsinfoout');
-    const btn = document.getElementById('getstatfromperiod');
-
-    const touchedEl = document.getElementById('sumchatcounttouched');
-    const closedEl = document.getElementById('sumchatcountclosed');
-
-    btn.textContent = "Загрузка";
-    touchedEl.textContent = "Загрузка";
-    closedEl.textContent = "Загрузка";
-    strnew.textContent = "Загрузка";
-
-    // 1. Пощупанные чаты
-    try {
-        const bodyTouched = {
-            serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
-            mode: "Json",
-            participatingOperatorsIds: [operatorId],
-            tsFrom: datefrom,
-            tsTo: dateto,
-            orderBy: "ts",
-            orderDirection: "Asc",
-            page: 1,
-            limit: 1
-        };
-
-        const touched = await doOperationsWithHistory(JSON.stringify(bodyTouched));
-        touchedEl.textContent = "Количество пощупанных чатов: " + (touched?.total ?? 0);
-
-    } catch (e) {
-        touchedEl.textContent = "Ошибка загрузки";
-        console.error(e);
+    if (favKeys.length === 0) {
+        container.innerHTML = `<div class="fav-empty"><b>Избранных чатов пока нет.</b><br><small>Добавляйте их через ❤️ в статистике</small></div>`;
+        return;
     }
 
-    // 2. Закрытые чаты
-    try {
-        const bodyClosed = {
-            serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
-            mode: "Json",
-            participatingOperatorsIds: [operatorId],
-            usedStatuses: ["ClosedByOperator"],
-            tsFrom: datefrom,
-            tsTo: dateto,
-            orderBy: "ts",
-            orderDirection: "Asc",
-            page: 1,
-            limit: 1
-        };
-
-        const closed = await doOperationsWithHistory(JSON.stringify(bodyClosed));
-        closedEl.textContent = "Количество закрытых чатов: " + (closed?.total ?? 0);
-
-    } catch (e) {
-        closedEl.textContent = "Ошибка загрузки";
-        console.error(e);
-    }
-
-    // 3. КСАТ и чаты, переданные на 2ЛТП
-    try {
-        let page = 1;
-        let csatScore = 0;
-        let csatCount = 0;
-        const rateStats = {
-            1: 0,
-            2: 0,
-            3: 0,
-            4: 0,
-            5: 0
-        };
-        let chatsWith2line = "";
-
-        while (true) {
-
-            const bodyArchive = {
-                serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
-                mode: "Json",
-                tsFrom: datefrom,
-                tsTo: dateto,
-                orderBy: "ts",
-                orderDirection: "Asc",
-                page: page,
-                limit: 100
-            };
-
-            const response = await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                    "x-csrf-token": aftoken
-                },
-                body: JSON.stringify(bodyArchive)
-            });
-
-            const test = await response.json();
-
-            if (!test?.items?.length) break;
-
-            for (const item of test.items) {
-
-                let flagCsat = 0;
-                let flag2LTP = 0;
-
-                const conv = await doOperationsWithConversations(item.conversationId);
-
-                if (conv.operatorId === operatorId) {
-                    flagCsat = 1;
-
-                    if (Array.isArray(conv.messages)) {
-                        for (const msg of conv.messages) {
-                            if (typeof msg.txt === "string" &&
-                                msg.txt.includes("Техподдержка 2-я линия")) {
-                                flag2LTP = 1;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (flagCsat === 1) {
-                    const rate = item.stats?.rate?.rate;
-                    if (typeof rate === "number") {
-                        csatScore += rate;
-                        csatCount++;
-                        if (rateStats.hasOwnProperty(rate)) {
-                            rateStats[rate]++; // ← вот это и есть подсчёт по каждой оценке
-                        }
-                    }
-                }
-
-                if (flag2LTP === 1) {
-                    chatsWith2line +=
-                        `<span style="color:#00FA9A">&#5129;</span> ` +
-                        `<a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" style="color:#1E90FF;" name="itemsChatsId">${item.conversationId}</a>` +
-                        `<span name="CheckThroughChatHistory" style="margin-left:10px; cursor:pointer">👁️</span>` + `<br>`;
-                }
-            }
-
-            if (page < Math.ceil(test.total / 100)) {
-                page++;
-            } else break;
-        }
-
-        if (!chatsWith2line) chatsWith2line = "нет таких<br>";
-
-        const avgCsat = csatCount ? (Math.round((csatScore / csatCount) * 100) / 100) : 0;
-
-        strnew.innerHTML =
-            `<div style="margin-bottom:10px;">
-            <b>Средняя оценка:</b> ${avgCsat}
-        </div>
-
-        <div style="margin-bottom:10px;">
-            <b>Распределение оценок:</b><br>
-            1 ⭐ — ${rateStats[1]}<br>
-            2 ⭐ — ${rateStats[2]}<br>
-            3 ⭐ — ${rateStats[3]}<br>
-            4 ⭐ — ${rateStats[4]}<br>
-            5 ⭐ — ${rateStats[5]}
-        </div>
-
-        <div>
-            <b>Чаты переданные на 2ЛТП:</b><br>
-            ${chatsWith2line}
+    let html = "";
+    favKeys.forEach(chatId => {
+        const favData = favoritesChats[chatId];
+        html += `<div class="fav-item">
+            <span style="color:#00FA9A">&#5129;</span>
+            <a href="https://skyeng.autofaq.ai/logs/${chatId}" target="_blank" class="fav-link">${chatId}</a>
+            <div class="fav-actions">
+                <span class="fav-icon open-history-btn" data-id="${chatId}" title="История">👁️</span>
+                <span class="fav-icon toggle-fav-btn" data-id="${chatId}" title="Удалить из избранного">❤️</span>
+            </div>
+            <div class="fav-comment">💬 ${favData.comment} <span class="fav-date">(${favData.date})</span></div>
         </div>`;
+    });
+    container.innerHTML = html;
+}
 
-        const chatscontainer = document.querySelectorAll('span[name="CheckThroughChatHistory"]');
-        const chatids = document.querySelectorAll('a[name="itemsChatsId"]');
+function toggleFavoritesWindow() {
+    const favWin = document.getElementById('AF_Fav');
+    if (!favWin) {
+        console.warn('Окно AF_Fav не найдено');
+        return;
+    }
+    if (favWin.style.display === 'none' || favWin.style.display === '') {
+        renderFavoritesWindow();
+        favWin.style.display = 'block';
+    } else {
+        favWin.style.display = 'none';
+    }
+}
 
-        chatscontainer.forEach((el, idx) => {
-            el.onclick = function () {
-                const id = chatids[idx].innerText;
-
-                if (document.getElementById('AF_ChatHis').style.display == 'none') {
-                    document.getElementById('opennewcat').click();
-                }
-                document.getElementById('hashchathis').value = id;
-                btn_search_history.click();
-            };
-        });
-
-
-    } catch (e) {
-        console.error(e);
-        strnew.textContent = "Что-то пошло не так. Сделайте скрин консоли и отправьте в канал chm-dev, пожалуйста";
+// ---------- 6. Безопасная инициализация обработчиков ----------
+function attachEventHandlers() {
+    // Кнопка "Избранное" в основном окне — открывает ОТДЕЛЬНОЕ окно
+    const showFavBtn = document.getElementById('showFavoritesBtn');
+    if (showFavBtn) {
+        showFavBtn.onclick = toggleFavoritesWindow;
     }
 
-    btn.textContent = "Получить статистику";
-};
-
-// ---------- Низкий КСАТ ----------
-
-let stringChatsWithLowCsat = "";
-
-document.getElementById('getlowcsat').onclick = async function () {
-
-    const datefrom = toUTC(
-        document.getElementById('dateFrom').value,
-        0, 0, 0, 0
-    );
-
-    const dateto = toUTC(
-        document.getElementById('dateTo').value,
-        23, 59, 59, 59
-    );
-
-    const strcsatnew = document.getElementById('lowCSATcount');
-    const btn = document.getElementById('getlowcsat');
-
-    strcsatnew.textContent = "Загрузка";
-    btn.textContent = "Загрузка";
-
-    try {
-        let page = 1;
-        stringChatsWithLowCsat = "";
-
-        while (true) {
-            const bodyArchive = {
-                serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
-                mode: "Json",
-                tsFrom: datefrom,
-                tsTo: dateto,
-                orderBy: "ts",
-                orderDirection: "Asc",
-                page: page,
-                limit: 100
-            };
-
-            const response = await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                    "x-csrf-token": aftoken
-                },
-                body: JSON.stringify(bodyArchive)
+    // Кнопка "Очистить"
+    const clearBtn = document.getElementById('clearall');
+    if (clearBtn) {
+        clearBtn.onclick = function () {
+            ['sumchatcounttouched', 'sumchatcountclosed'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = "";
             });
-
-            const test = await response.json();
-
-            if (!test?.items?.length) break;
-
-            for (const item of test.items) {
-                const conv = await doOperationsWithConversations(item.conversationId);
-
-                if (conv.operatorId !== operatorId) continue;
-
-                const rate = item.stats?.rate?.rate;
-                if (typeof rate === "number" && rate < 4) {
-                    stringChatsWithLowCsat +=
-                        `<span style="color:#00FA9A">&#5129;</span> ` +
-                        `<a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" style="color:#1E90FF;" class="csatchatids">${item.conversationId}</a>` +
-                        `<span class="lowcsatschats" style="margin-left:10px; cursor:pointer">👁‍🗨</span><br>`;
-                }
-            }
-
-            if (page < Math.ceil(test.total / 100)) {
-                page++;
-            } else break;
-        }
-
-        if (!stringChatsWithLowCsat) stringChatsWithLowCsat = " нет таких<br>";
-
-        document.querySelector('#lowCSATcount').style.display = "";
-        strcsatnew.innerHTML =
-            'Чаты с плохими оценками: (открывать в режиме инкогнито!)<br>' +
-            stringChatsWithLowCsat;
-
-        const csatcontainer = document.querySelectorAll('.lowcsatschats');
-        const csatchattids = document.querySelectorAll('.csatchatids');
-
-        csatcontainer.forEach((el, idx) => {
-            el.onclick = function () {
-                const id = csatchattids[idx].innerText;
-
-                if (document.querySelector('#hide_or_display').textContent != "свернуть") {
-                    hide_or_display.click();
-                }
-                document.getElementById('chat_id').value = id;
-                search.click();
-            };
-        });
-
-    } catch (e) {
-        console.error(e);
-    } finally {
-        btn.textContent = "Чаты с КСАТ<4";
+            ['chatsinfoout', 'lowCSATcount', 'chatcommentsdata', 'favoritesSection'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = "";
+            });
+            const commentSearch = document.getElementById('commenttosearch');
+            if (commentSearch) commentSearch.value = "";
+            switchView('chatsinfoout');
+        };
     }
-};
 
-// ---------- Выгрузка файла ----------
+    // Кнопка "Статистика"
+    const statBtn = document.getElementById('getstatfromperiod');
+    if (statBtn) {
+        statBtn.onclick = async function () {
+            switchView('chatsinfoout');
+            const dateFromEl = document.getElementById('dateFrom');
+            const dateToEl = document.getElementById('dateTo');
+            if (!dateFromEl || !dateToEl) return;
 
-document.getElementById('getfile').onclick = function () {
-    if (stringChatsWithComment) {
-        const blob = new Blob([stringChatsWithComment], { type: "text/plain" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "FoundComments.html";
-        link.click();
-    } else if (stringChatsWithLowCsat) {
-        const blob = new Blob([stringChatsWithLowCsat], { type: "text/plain" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "LowCSAT.html";
-        link.click();
-    }
-};
+            const datefrom = toUTC(dateFromEl.value, 0, 0, 0, 0);
+            const dateto = toUTC(dateToEl.value, 23, 59, 59, 59);
 
-// ---------- Поиск по комментарию ----------
+            const out = document.getElementById('chatsinfoout');
+            const btn = this;
+            const originalText = btn.textContent;
+            btn.textContent = "⏳...";
+            if (out) out.innerHTML = "<i>Идет расчет...</i>";
 
-let stringChatsWithComment = "";
+            try {
+                let page = 1, manualClosed = 0, csatScore = 0, csatCount = 0;
+                const rates = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+                let line2Html = "";
 
-document.getElementById('parsechat').onclick = async function () {
+                const bodyTouched = { serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json", participatingOperatorsIds: [typeof operatorId !== 'undefined' ? operatorId : ''], tsFrom: datefrom, tsTo: dateto, page: 1, limit: 1 };
+                const touchedData = await doOperationsWithHistory(JSON.stringify(bodyTouched));
+                const touchedEl = document.getElementById('sumchatcounttouched');
+                if (touchedEl) touchedEl.textContent = "Количество пощупанных чатов: " + (touchedData?.total || 0);
 
-    stringChatsWithComment = "";
+                while (true) {
+                    const bodyArchive = { serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json", tsFrom: datefrom, tsTo: dateto, orderBy: "ts", orderDirection: "Asc", page: page, limit: 100 };
+                    const resp = await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
+                        method: "POST",
+                        headers: { "content-type": "application/json", "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
+                        body: JSON.stringify(bodyArchive)
+                    });
+                    const data = await resp.json();
+                    if (!data?.items?.length) break;
 
-    const datefrom = toUTC(
-        document.getElementById('dateFrom').value,
-        0, 0, 0, 0
-    );
+                    for (const item of data.items) {
+                        const convReq = await doOperationsWithConversations(item.conversationId);
+                        const conv = await convReq.json();
 
-    const dateto = toUTC(
-        document.getElementById('dateTo').value,
-        23, 59, 59, 59
-    );
+                        const currentOp = conv.operatorId || conv.assigneeId || item.operatorId;
+                        if (typeof operatorId !== 'undefined' && String(currentOp) !== String(operatorId)) continue;
 
-    const btn = document.getElementById('parsechat');
-    const out = document.getElementById('chatcommentsdata');
-    const searchText = document.getElementById('commenttosearch').value;
+                        manualClosed++;
 
-    btn.textContent = "Идёт поиск";
+                        const rate = item.stats?.rate?.rate || item.stats?.rate || conv.stats?.rate?.rate || (conv.stats?.rate ? conv.stats.rate : 0);
+                        if (rate && rate > 0) {
+                            csatScore += Number(rate);
+                            csatCount++;
+                            if (rates.hasOwnProperty(rate)) rates[rate]++;
+                        }
 
-    try {
-        let page = 1;
-
-        while (true) {
-            const bodyToFunc = {
-                serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
-                mode: "Json",
-                participatingOperatorsIds: [operatorId],
-                tsFrom: datefrom,
-                tsTo: dateto,
-                orderBy: "ts",
-                orderDirection: "Asc",
-                page: page,
-                limit: 100
-            };
-
-            const test = await doOperationsWithHistory(JSON.stringify(bodyToFunc));
-
-            if (!test?.items?.length) break;
-
-            for (const item of test.items) {
-                const conv = await doOperationsWithConversations(item.conversationId);
-
-                let flagComment = 0;
-
-                if (Array.isArray(conv.messages)) {
-                    for (const msg of conv.messages) {
-                        if (msg.tpe === "OperatorComment" &&
-                            msg.txt === searchText) {
-                            flagComment = 1;
-                            break;
+                        if (conv.messages?.some(m => m.txt?.includes("Техподдержка 2-я линия"))) {
+                            const isFav = !!favoritesChats[item.conversationId];
+                            line2Html += `<div style="margin-bottom: 5px;"><span style="color:#00FA9A">&#5129;</span> <a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" target="_blank" class="adds-chat-link">${item.conversationId}</a> <span class="adds-action-icon open-history-btn" data-id="${item.conversationId}">👁️</span> <span class="adds-action-icon toggle-fav-btn" data-id="${item.conversationId}">${isFav ? '❤️' : '🤍'}</span></div>`;
                         }
                     }
+                    if (page * 100 < data.total) page++; else break;
                 }
 
-                if (flagComment === 1) {
-                    stringChatsWithComment +=
-                        `<span style="color:#00FA9A">&#5129;</span> ` +
-                        `<a href="https://skyeng.autofaq.ai/logs/${conv.id}" style="color:#1E90FF;" class="chatids">${conv.id}</a>` +
-                        `<span class="chatswithcomments" style="margin-left:10px; cursor:pointer">👁️</span><br>`;
+                const closedEl = document.getElementById('sumchatcountclosed');
+                if (closedEl) closedEl.textContent = "Количество закрытых чатов: " + manualClosed;
+
+                if (out) {
+                    out.innerHTML = `
+                        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align:center;">
+                            <b>Средняя оценка КСАТ:</b> <span style="color:#4db6ac; font-size:18px;">${csatCount ? (csatScore / csatCount).toFixed(2) : "0.00"}</span><br>
+                            <small>Всего оценок: ${csatCount}</small>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-size:12px; color:#aaa;">
+                            <span>1⭐:${rates[1]}</span><span>2⭐:${rates[2]}</span><span>3⭐:${rates[3]}</span><span>4⭐:${rates[4]}</span><span>5⭐:${rates[5]}</span>
+                        </div>
+                        <b style="color:#64b5f6;">Чаты переданные на 2ЛТП:</b><br>${line2Html || "<i>нет таких</i>"}`;
+                }
+            } catch (e) {
+                console.error(e);
+                if (out) out.innerHTML = "Ошибка!";
+            } finally {
+                btn.textContent = originalText;
+            }
+        };
+    }
+
+    // Делегирование кликов — обрабатывает и основное окно, и окно избранного
+    document.addEventListener('click', async function (e) {
+        const target = e.target.closest('.toggle-fav-btn');
+        if (target) {
+            const id = target.getAttribute('data-id');
+            if (!id) return;
+            e.preventDefault();
+
+            if (favoritesChats[id]) {
+                delete favoritesChats[id];
+                target.textContent = '🤍';
+            } else {
+                const comment = prompt("Введите заметку для этой задачи:", "На контроле (2ЛТП)");
+                if (comment !== null) {
+                    favoritesChats[id] = { comment: comment || "Без комментария", date: new Date().toLocaleDateString() };
+                    target.textContent = '❤️';
                 }
             }
-
-            if (page < Math.ceil(test.total / 100)) {
-                page++;
-            } else break;
+            saveFavorites();
+            // Обновляем окно избранного, если оно открыто
+            const favWin = document.getElementById('AF_Fav');
+            if (favWin && favWin.style.display === 'block') {
+                renderFavoritesWindow();
+            }
+            return;
         }
 
-        if (!stringChatsWithComment) stringChatsWithComment = " нет таких<br>";
+        const historyTarget = e.target.closest('.open-history-btn');
+        if (historyTarget) {
+            const id = historyTarget.getAttribute('data-id');
+            if (!id) return;
 
-        document.querySelector('#chatcommentsdata').style.display = "";
-        out.innerHTML = 'Чаты с найденными комментариями<br>' + stringChatsWithComment;
-
-        const chatscontainer = document.querySelectorAll('.chatswithcomments');
-        const chatids = document.querySelectorAll('.chatids');
-
-        chatscontainer.forEach((el, idx) => {
-            el.onclick = function () {
-                const id = chatids[idx].innerText;
-
-                if (document.getElementById('AF_ChatHis').style.display == 'none') {
-                    document.getElementById('opennewcat').click();
+            const isCsat = historyTarget.getAttribute('data-type') === 'csat';
+            if (isCsat) {
+                const hideBtn = document.querySelector('#hide_or_display');
+                if (hideBtn && hideBtn.textContent !== "свернуть") hideBtn.click();
+                const chatIdInput = document.getElementById('chat_id');
+                if (chatIdInput) chatIdInput.value = id;
+                const searchBtn = document.getElementById('search');
+                if (searchBtn) searchBtn.click();
+            } else {
+                const chatHisWin = document.getElementById('AF_ChatHis');
+                if (chatHisWin && chatHisWin.style.display === 'none') {
+                    const openBtn = document.getElementById('opennewcat');
+                    if (openBtn) openBtn.click();
                 }
-                document.getElementById('hashchathis').value = id;
-                btn_search_history.click();
-            };
-        });
-
-    } catch (e) {
-        console.error(e);
-    } finally {
-        btn.textContent = "Найти по комменту";
-    }
-};
-
-// Если нужно — по Enter запускать поиск по комменту
-let searchCommentsByEnter = document.querySelector('#commenttosearch');
-if (searchCommentsByEnter) {
-    searchCommentsByEnter.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-            document.getElementById('parsechat').click();
+                const hashInput = document.getElementById('hashchathis');
+                if (hashInput) hashInput.value = id;
+                const btnSearch = document.getElementById('btn_search_history');
+                if (btnSearch) btnSearch.click();
+            }
         }
     });
 }
+
+// ---------- 7. Запуск ----------
+function initAll() {
+    initWindows();
+
+    // Ждём появления элементов в DOM, затем вешаем обработчики
+    if (document.getElementById('showFavoritesBtn')) {
+        attachEventHandlers();
+    } else {
+        setTimeout(initAll, 50);
+    }
+}
+
+initAll();
+
+// Инициализация дат
+(function () {
+    const now = new Date();
+    const dateFrom = document.getElementById("dateFrom");
+    const dateTo = document.getElementById("dateTo");
+    if (dateFrom) dateFrom.value = fmtDate(now);
+    if (dateTo) dateTo.value = fmtDate(now);
+})();

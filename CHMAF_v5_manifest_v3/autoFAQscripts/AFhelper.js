@@ -215,8 +215,7 @@ document.getElementById('sndbot').addEventListener('click', async function () {
 document.getElementById('hideMenuMain').addEventListener('click', function () {
     const windowsToHide = [
         'AF_helper', 'AF_CustomTemplates', 'AF_Links',
-        'AF_AlarmClock', 'AF_Stat', 'AF_LessonStatus',
-        'AF_Linksd', 'AF_Settings'
+        'AF_AlarmClock', 'AF_Linksd', 'AF_Settings'
     ];
 
     windowsToHide.forEach(id => {
