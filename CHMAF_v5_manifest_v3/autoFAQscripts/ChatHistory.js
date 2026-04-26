@@ -9,7 +9,7 @@ afgStyles.textContent = `
         --afg-hover: rgba(255, 255, 255, 0.2);
     }
 
-    /* Основной контейнер панели (теперь всегда темный/стеклянный) */
+    /* Основной контейнер панели */
     .afg-panel {
         position: fixed; top: 0; right: 0; width: 420px; height: 100vh;
         z-index: 1000000; display: flex; flex-direction: column;
@@ -38,7 +38,7 @@ afgStyles.textContent = `
     .afg-input::placeholder { color: rgba(255,255,255,0.6); }
     select.afg-input option { background: #2c2c35; color: #fff; }
 
-    /* Секции - Сделаны ровными и симметричными */
+    /* Секции */
     .afg-header, .afg-controls, .afg-footer {
         padding: 10px; display: flex; align-items: center; background: rgba(0,0,0,0.1);
         border-bottom: 1px solid rgba(255,255,255,0.05); gap: 8px; flex-wrap: nowrap;
@@ -53,23 +53,21 @@ afgStyles.textContent = `
     .afg-chat-area::-webkit-scrollbar { width: 6px; }
     .afg-chat-area::-webkit-scrollbar-thumb { background: rgba(150,150,150,0.5); border-radius: 10px; }
 
-    /* Темы только для области сообщений */
+    /* Темы */
     .theme-light { background: rgba(245, 245, 245, 0.95); color: #111; border-radius: 8px 0 0 8px; }
     .theme-dark { background: transparent; color: #f0f0f0; }
 
-    /* Стили сообщений (Glassmorphism) */
+    /* Стили сообщений */
     .afg-msg { padding: 10px 14px; border-radius: 14px; max-width: 90%; word-break: break-word; position: relative; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-
-    /* Цвета сообщений */
     .afg-msg-user { background: rgba(0, 191, 255, 0.15); border-color: rgba(0, 191, 255, 0.3); border-bottom-left-radius: 4px; align-self: flex-start; }
     .afg-msg-oper { background: rgba(152, 155, 30, 0.26); border-color: rgba(147, 112, 219, 0.3); border-bottom-right-radius: 4px; align-self: flex-end; } /* Изменил на фиолетовый, чтобы отделить от бота */
-    .afg-msg-comment { background: rgba(183, 166, 134, 0.15); border-color: rgba(57, 184, 225, 0.3); align-self: center; font-style: italic; width: 90%; }
+	.afg-msg-comment { background: rgba(91, 89, 85, 0.5); border-color: rgba(57, 184, 225, 0.3); align-self: center; font-style: italic; width: 90%; }
     .afg-msg-event { text-align: center; font-size: 12px; opacity: 0.7; padding: 6px; align-self: center; background: rgba(0,0,0,0.05); border-radius: 20px; }
 
-    /* Бот окрашивается в зеленый в зависимости от темы чата */
+    /* Бот */
     .afg-msg-bot { border-bottom-right-radius: 4px; align-self: flex-end; }
-    .theme-dark .afg-msg-bot { background: rgba(50, 205, 50, 0.15); border-color: rgba(50, 205, 50, 0.3); } /* Темная тема - яркий зеленый */
-    .theme-light .afg-msg-bot { background: rgba(34, 139, 34, 0.2); border-color: rgba(34, 139, 34, 0.4); } /* Светлая тема - более темный зеленый для читаемости */
+    .theme-dark .afg-msg-bot { background: rgba(50, 205, 50, 0.15); border-color: rgba(50, 205, 50, 0.3); }
+    .theme-light .afg-msg-bot { background: rgba(34, 139, 34, 0.2); border-color: rgba(34, 139, 34, 0.4); }
 
     .theme-light .afg-msg { color: #111; border-color: rgba(0,0,0,0.1); }
     .theme-dark .afg-msg { color: #f0f0f0; }
@@ -77,7 +75,7 @@ afgStyles.textContent = `
     .afg-msg-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; opacity: 0.8; font-weight: bold; }
     .afg-msg-date { font-weight: normal; opacity: 0.6; font-size: 11px; margin-left: 10px; }
 
-    /* Модальное окно с информацией */
+    /* Модалка */
     .afg-modal {
         position: absolute; top: 20px; left: -380px; width: 360px; max-height: 80vh; overflow: auto;
         border-radius: 16px; padding: 15px; display: none; z-index: 100;
@@ -94,9 +92,25 @@ afgStyles.textContent = `
     .chatlist { padding: 6px; border-radius: 6px; transition: 0.2s; display: block; margin-bottom: 4px; background: rgba(0,0,0,0.05); }
     .chatlist:hover { background: rgba(150,150,150,0.15); transform: translateX(5px); cursor: pointer; }
 
-    /* Оверлей Viewer */
-    .afg-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999999; cursor: zoom-out; backdrop-filter: blur(5px); }
-    .afg-overlay img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+    /* --- ГАЛЕРЕЯ OVERLAY --- */
+    .afg-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 9999999; cursor: zoom-out; backdrop-filter: blur(8px); }
+    .afg-overlay img { max-width: 90vw; max-height: 90vh; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); transition: opacity 0.2s; }
+
+    .afg-gallery-nav {
+        position: absolute; top: 50%; transform: translateY(-50%);
+        background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); font-size: 24px;
+        width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; border-radius: 50%; z-index: 10000000;
+        transition: 0.2s; backdrop-filter: blur(5px);
+    }
+    .afg-gallery-nav:hover { background: rgba(0,191,255,0.8); transform: translateY(-50%) scale(1.1); border-color: transparent; }
+    .afg-nav-left { left: 30px; }
+    .afg-nav-right { right: 30px; }
+
+    .afg-gallery-counter {
+        position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+        background: rgba(255,255,255,0.1); color: white; padding: 6px 16px; border-radius: 20px;
+        font-size: 15px; font-weight: bold; backdrop-filter: blur(5px); z-index: 10000000; border: 1px solid rgba(255,255,255,0.2);
+    }
 `;
 document.head.appendChild(afgStyles);
 
@@ -187,20 +201,101 @@ const win_Chathis = `
     </div>
 `;
 
-// Создаем и внедряем DOM-элемент
 let wintChatHis = document.createElement('div');
-wintChatHis.className = 'afg-panel'; // Сама панель всегда единого цвета
+wintChatHis.className = 'afg-panel';
 wintChatHis.style.display = 'none';
 wintChatHis.setAttribute('id', 'AF_ChatHis');
 wintChatHis.innerHTML = win_Chathis;
 document.body.append(wintChatHis);
 
-// --- ДЕЛЕГИРОВАНИЕ СОБЫТИЙ ДЛЯ КАРТИНОК ---
+// --- ГАЛЕРЕЯ ИЗОБРАЖЕНИЙ ---
 document.getElementById('infofield').addEventListener('click', (e) => {
     if (e.target.tagName === 'IMG' && e.target.classList.contains('chat-history-image')) {
-        openImageViewerChatHistory(e.target.dataset.full || e.target.src);
+        // Собираем все картинки из текущего чата
+        const allImages = Array.from(document.querySelectorAll('#infofield .chat-history-image'));
+        const currentIndex = allImages.indexOf(e.target);
+        openImageGallery(allImages, currentIndex);
     }
 });
+
+function openImageGallery(imagesArray, startIndex) {
+    if (document.querySelector('.afg-overlay')) return; // Защита от дублей
+
+    let currentIndex = startIndex !== -1 ? startIndex : 0;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'afg-overlay';
+
+    const img = document.createElement('img');
+    img.src = imagesArray[currentIndex].dataset.full || imagesArray[currentIndex].src;
+
+    // Функция обновления картинки с плавной анимацией
+    const updateGalleryView = () => {
+        img.style.opacity = '0';
+        setTimeout(() => {
+            img.src = imagesArray[currentIndex].dataset.full || imagesArray[currentIndex].src;
+            img.style.opacity = '1';
+            updateCounter();
+        }, 150);
+    };
+
+    // Навигация и счетчик
+    let btnPrev, btnNext, counter;
+
+    if (imagesArray.length > 1) {
+        btnPrev = document.createElement('button');
+        btnPrev.innerHTML = '&#10094;'; // Стрелка влево
+        btnPrev.className = 'afg-gallery-nav afg-nav-left';
+        btnPrev.title = "Назад (Клавиша: Влево)";
+        btnPrev.onclick = (e) => {
+            e.stopPropagation(); // Чтобы не закрывался оверлей
+            currentIndex = (currentIndex - 1 + imagesArray.length) % imagesArray.length;
+            updateGalleryView();
+        };
+
+        btnNext = document.createElement('button');
+        btnNext.innerHTML = '&#10095;'; // Стрелка вправо
+        btnNext.className = 'afg-gallery-nav afg-nav-right';
+        btnNext.title = "Вперед (Клавиша: Вправо)";
+        btnNext.onclick = (e) => {
+            e.stopPropagation();
+            currentIndex = (currentIndex + 1) % imagesArray.length;
+            updateGalleryView();
+        };
+
+        counter = document.createElement('div');
+        counter.className = 'afg-gallery-counter';
+
+        overlay.appendChild(btnPrev);
+        overlay.appendChild(btnNext);
+        overlay.appendChild(counter);
+    }
+
+    const updateCounter = () => { if (counter) counter.innerText = `${currentIndex + 1} / ${imagesArray.length}`; };
+    updateCounter();
+
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+
+    // Функция закрытия
+    const closeOverlay = () => {
+        overlay.remove();
+        document.removeEventListener('keydown', keyHandler);
+    };
+
+    // Клик в любом месте оверлея закрывает галерею
+    overlay.onclick = closeOverlay;
+
+    // Управление с клавиатуры
+    const keyHandler = (e) => {
+        if (e.key === 'Escape') closeOverlay();
+        if (imagesArray.length > 1) {
+            if (e.key === 'ArrowLeft') btnPrev.click();
+            if (e.key === 'ArrowRight') btnNext.click();
+        }
+    };
+    document.addEventListener('keydown', keyHandler);
+}
 
 // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 function extractUrlFromHtml(htmlString) {
@@ -211,16 +306,6 @@ function extractUrlFromHtml(htmlString) {
     } catch (e) { }
     const match = htmlString.match(/href="([^"]+)"/);
     return match ? match[1] : null;
-}
-
-function openImageViewerChatHistory(src) {
-    const overlay = document.createElement('div');
-    overlay.className = 'afg-overlay';
-    const img = document.createElement('img');
-    img.src = src;
-    overlay.appendChild(img);
-    document.body.appendChild(overlay);
-    overlay.onclick = () => overlay.remove();
 }
 
 function renderMedia(url) {
@@ -251,7 +336,6 @@ function convertToMSK(dateString) {
     return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${String(d.getFullYear()).slice(-2)} в ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-// Применение темы ИСКЛЮЧИТЕЛЬНО для поля сообщений
 function checkAndChangeStyle() {
     const theme = localStorage.getItem('theme');
     const infoField = document.getElementById('infofield');
@@ -494,7 +578,6 @@ function setDefaultDates() {
     document.getElementById('dateFromChHis').value = `${dFrom.getFullYear()}-${pad(dFrom.getMonth() + 1)}-${pad(dFrom.getDate())}`;
 }
 
-// Кнопки интерфейса
 document.getElementById('hideMeChHis').onclick = () => {
     wintChatHis.style.display = 'none';
     const openBtn = document.getElementById('opennewcat');
@@ -518,7 +601,6 @@ document.getElementById('gotocrmhis').onclick = () => {
     if (match) window.open(`https://crm2.skyeng.ru/persons/${match[1]}`);
 };
 
-// Смена темы переключает классы только на #infofield
 document.getElementById('chagetheme').onclick = () => {
     const current = localStorage.getItem('theme');
     localStorage.setItem('theme', current === 'light' ? 'dark' : 'light');
@@ -571,7 +653,6 @@ function getopennewcatButtonPress() {
     document.getElementById('RefrehOperators').click();
 }
 
-// Данные о пользователе
 document.getElementById('getdatafrchat').onclick = () => {
     if (typeof convdata !== 'undefined' && convdata) {
         const modal = document.getElementById('userchatdata');
@@ -597,7 +678,6 @@ document.getElementById('getdatafrchat').onclick = () => {
     }
 };
 
-// Поиск
 document.getElementById('btn_search_history').onclick = async () => {
     let userId = document.getElementById('chatuserhis').value.trim();
     let chatHash = document.getElementById('hashchathis').value.trim();
@@ -681,7 +761,6 @@ async function updateChatInfo(chatId) {
     } catch (err) { console.error(err); }
 }
 
-// Забрать чат
 document.getElementById('takechat').onclick = async function () {
     const timeStart = document.getElementById('infofield').getAttribute('openhistorytime');
     if (!timeStart || (new Date() - new Date(timeStart)) / 1000 > 60) {
@@ -705,7 +784,6 @@ document.getElementById('takechat').onclick = async function () {
     setTimeout(() => assignChat(operatorId), 2000);
 };
 
-// Перевести чат
 document.getElementById('reassign').onclick = () => {
     const selected = document.querySelector('#operatorstp option:checked');
     const chatId = document.getElementById('placechatid').innerText.trim();
@@ -719,7 +797,6 @@ document.getElementById('reassign').onclick = () => {
     }).then(() => console.log("Успешный перевод")).catch(e => alert("Ошибка передачи"));
 };
 
-// Отправка сообщений
 document.getElementById('sendmsgtochatornotes').onclick = async () => {
     const mode = document.querySelector('input[name="chatornotes"]:checked')?.value;
     const chatId = document.getElementById('placechatid').innerText.trim();
