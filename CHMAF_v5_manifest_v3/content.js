@@ -1784,50 +1784,6 @@ let checkRespondToken = setInterval(async function () {
     }
 }, 4000);
 
-function showNotification(message) { // функция отображения уведомления средствами самого браузера
-    if (!("Notification" in window)) {
-        console.log("Этот браузер не поддерживает уведомления.");
-    }
-    else if (Notification.permission === "granted") {
-        new Notification(message);
-    }
-    else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(function (permission) {
-            if (permission === "granted") {
-                new Notification(message);
-            }
-        });
-    }
-}
-
-function showCustomAlert(message, notif = 0) { //функция создания уведомления взамен алерта, который стопает выполнение скриптов, а тут продолжается.
-    if (localStorage.getItem('brnotificatios') == '0' && notif == 1) {
-        showNotification(message);
-    }
-
-    // Создаем элемент контейнера уведомления
-    const alertContainer = document.createElement('div');
-    alertContainer.classList.add('extwindows', 'alert-container');
-
-    // Добавляем текст уведомления
-    const alertMessage = document.createElement('span');
-    alertMessage.innerText = message;
-    alertMessage.classList.add('alert-message');
-    alertContainer.appendChild(alertMessage);
-
-    // Добавляем кнопку закрытия
-    const closeButton = document.createElement('button');
-    closeButton.innerText = 'OK';
-    closeButton.classList.add('mainButton');
-    closeButton.onclick = function () {
-        document.body.removeChild(alertContainer);
-    };
-    alertContainer.appendChild(closeButton);
-
-    // Добавляем уведомление на страницу
-    document.body.appendChild(alertContainer);
-}
-
 // Функция для замены предмета
 function formatServiceType(serviceTypeKey) {
     let parts = serviceTypeKey.split('_');

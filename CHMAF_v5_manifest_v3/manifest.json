@@ -34,6 +34,7 @@
 				"/Extras/chart.js",
 				"/Extras/jquery-3.7.1.js",
 				"/Extras/moment.js",
+				"/autoFAQscripts/utils.js",
 				"/autoFAQscripts/AutoRespond.js",
 				"/autoFAQscripts/AFhelper.js",
 				"/autoFAQscripts/AFOperatorStatus.js",
