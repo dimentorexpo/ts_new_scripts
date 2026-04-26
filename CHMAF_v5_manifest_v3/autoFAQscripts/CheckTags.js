@@ -18,6 +18,13 @@
     let listObserver = null;
     let activeContainer = null;
 
+    // Универсальные селекторы (защита от смены хешей в классах)
+    const SELECTORS = {
+        container: '[class*="Operator_DialogsList"]',
+        card: '[class*="DialogsCard_Card"]',
+        timer: '[class*="DialogsCard_Timer"]'
+    };
+
     // Вспомогательная функция для получения текущего "живого" iframe
     function getActiveIframeDoc() {
         const iframeNew = document.querySelector('[class^="NEW_FRONTEND__frame"]');
@@ -60,7 +67,8 @@
     }
 
     function getSecondsFromCard(card) {
-        const timerEl = card.querySelector('.DialogsCard_Timer__XBR_3');
+        // Используем универсальный селектор таймера
+        const timerEl = card.querySelector(SELECTORS.timer);
         let timeStr = timerEl ? timerEl.textContent.trim() : null;
         if (!timeStr) {
             const match = card.textContent.match(/\b(\d{2}:\d{2}(?::\d{2})?)\b/);
@@ -84,16 +92,18 @@
                 pinnedOrder = pinnedOrder.filter(id => id !== convId);
                 savePinned();
                 card.classList.remove('skyeng-mod-pinned');
-                const container = card.closest('.Operator_DialogsList__4Q5tH');
+                // Используем универсальный селектор контейнера
+                const container = card.closest(SELECTORS.container);
                 if (container) sortDialogs(container);
             });
         }
     }
 
     function sortDialogs(container) {
-        if (isDragging || !container) return;
+        if (isDragging || !container || !container.parentNode) return;
 
-        const dialogs = Array.from(container.querySelectorAll('.DialogsCard_Card__dU57S'));
+        // ИСПРАВЛЕНО: querySelectorAll вместо querySelector для получения всех карточек
+        const dialogs = Array.from(container.querySelectorAll(SELECTORS.card));
         if (dialogs.length === 0) return;
 
         const pinnedElements = [];
@@ -126,8 +136,16 @@
 
         if (orderChanged) {
             if (listObserver) listObserver.disconnect();
-            finalOrder.forEach(dialog => container.appendChild(dialog));
-            if (listObserver) listObserver.observe(container, { childList: true, subtree: true });
+
+            finalOrder.forEach(dialog => {
+                if (container && dialog) {
+                    container.appendChild(dialog);
+                }
+            });
+
+            if (listObserver) {
+                listObserver.observe(container, { childList: true, subtree: true });
+            }
         }
     }
 
@@ -151,7 +169,8 @@
             isDragging = false;
             draggedItem = null;
 
-            const currentContainer = this.closest('.Operator_DialogsList__4Q5tH');
+            // Используем универсальный селектор
+            const currentContainer = this.closest(SELECTORS.container);
             if (!currentContainer) return;
 
             if (hasReordered) {
@@ -243,15 +262,18 @@
                         transition: background 0.3s;
                     }
                 `;
-                doc.head.appendChild(style);
+                const target = doc.head || doc.getElementsByTagName('head')[0] || doc.documentElement;
+                if (target) {
+                    target.appendChild(style);
+                }
             }
 
-            const container = doc.querySelector('.Operator_DialogsList__4Q5tH');
+            // Используем универсальный селектор
+            const container = doc.querySelector(SELECTORS.container);
 
             // ЗАЩИТА №2: Обработка ухода со страницы /assigned на страницу /archive
             if (!container) {
                 if (activeContainer) {
-                    // Контейнер пропал (мы ушли с нужной вкладки). Очищаем память.
                     activeContainer = null;
                     if (listObserver) {
                         listObserver.disconnect();
@@ -260,7 +282,7 @@
                     isDragging = false;
                     draggedItem = null;
                 }
-                return; // Ждем, пока пользователь вернется
+                return;
             }
 
             if (isDragging && draggedItem && !doc.contains(draggedItem)) {
@@ -274,13 +296,15 @@
                 activeContainer = container;
                 if (listObserver) listObserver.disconnect();
 
-                container.querySelectorAll('.DialogsCard_Card__dU57S').forEach(card => initDraggable(card));
+                // Универсальный поиск карточек
+                container.querySelectorAll(SELECTORS.card).forEach(card => initDraggable(card));
 
                 listObserver = new MutationObserver((mutations) => {
                     let hasNew = false;
                     mutations.forEach(m => {
                         m.addedNodes.forEach(node => {
-                            if (node.nodeType === 1 && node.classList.contains('DialogsCard_Card__dU57S')) {
+                            // Проверяем совпадение части класса через matches()
+                            if (node.nodeType === 1 && node.matches(SELECTORS.card)) {
                                 initDraggable(node);
                                 hasNew = true;
                             }
@@ -306,12 +330,10 @@
                 const doc = getActiveIframeDoc();
                 if (!doc) return;
 
-                // ЗАЩИТА №3: Безопасный парсинг URL (защита от падения на /archive)
                 const currentUrl = doc.location ? doc.location.pathname : window.location.pathname;
                 const urlParts = currentUrl.split('/').filter(Boolean);
                 const currentConvId = urlParts[urlParts.length - 1];
 
-                // Если ID диалога нет (например, URL просто /tickets/assigned), прерываем шаг
                 if (!currentConvId || currentConvId === 'assigned' || currentConvId === 'archive') return;
 
                 const convElement = doc.querySelector(`[data-conv-id="${currentConvId}"]`);
