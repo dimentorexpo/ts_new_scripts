@@ -489,8 +489,10 @@ function fillchatbox() {
 // --- СОБЫТИЯ И ЛОГИКА ---
 document.getElementById('operatorstp').addEventListener('change', async function () {
     let objSel = this;
-    const dFrom = document.getElementById('dateFromChHis').value;
-    const dTo = document.getElementById('dateToChHis').value;
+
+    // Получаем текущую дату в формате YYYY-MM-DD
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     flagsearch = 'searchbyoperator';
     document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 20px;">Загрузка...</div>';
@@ -505,7 +507,8 @@ document.getElementById('operatorstp').addEventListener('change', async function
                     body: JSON.stringify({
                         serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json",
                         participatingOperatorsIds: [objSel[i].value],
-                        tsFrom: `${dFrom}T00:00:00.000Z`, tsTo: `${dTo}T23:59:59.000Z`,
+                        tsFrom: `${todayStr}T00:00:00.000Z`, // Подставляем сегодняшний день
+                        tsTo: `${todayStr}T23:59:59.000Z`,   // Подставляем сегодняшний день
                         usedStatuses: ["OnOperator", "AssignedToOperator", "Active"], orderBy: "ts", orderDirection: "Asc", page: 1, limit: 20
                     })
                 });
@@ -526,7 +529,7 @@ document.getElementById('operatorstp').addEventListener('change', async function
                     let name = item.channelUser.fullName;
                     if (item.channelUser.payload?.userFullName) name = item.channelUser.payload.userFullName;
 
-                    foundarr += `<span class="chatlist" data-id="${item.conversationId}"><b>${dateStr}</b> <span style="color:var(--afg-accent);">${name}</span></span>`;
+                    foundarr += `<span class="chatlist" data-id="${item.conversationId}"><b>${dateStr}</b> <span style="color:#00fb00">${item.channelUser.payload?.userType || ""}</span>  <span style="color:var(--afg-accent);">${name}</span></span>`;
                 });
 
                 document.getElementById('infofield').innerHTML = foundarr;
@@ -634,7 +637,7 @@ function getopennewcatButtonPress() {
         }
 
         let objSel = document.getElementById("operatorstp");
-        objSel.length = 1;
+        objSel.length = 1; // Очищаем список, оставляем только дефолтный 1й элемент
 
         try {
             let res = await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
@@ -650,6 +653,10 @@ function getopennewcatButtonPress() {
                     objSel.appendChild(opt);
                 }
             });
+
+            // --- Сброс селекта на первый пункт ("Операторы на линии") ---
+            objSel.selectedIndex = 0;
+
         } catch (e) { console.error(e); }
     };
 
@@ -686,8 +693,10 @@ document.getElementById('getdatafrchat').onclick = () => {
 document.getElementById('btn_search_history').onclick = async () => {
     let userId = document.getElementById('chatuserhis').value.trim();
     let chatHash = document.getElementById('hashchathis').value.trim();
-    let dFrom = document.getElementById('dateFromChHis').value;
-    let dTo = document.getElementById('dateToChHis').value;
+
+    // Получаем текущую дату в формате YYYY-MM-DD для запроса
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 20px;">Загрузка...</div>';
     resetChatInfo();
@@ -700,7 +709,9 @@ document.getElementById('btn_search_history').onclick = async () => {
                 headers: { "content-type": "application/json", "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
                 body: JSON.stringify({
                     serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json",
-                    channelUserFullTextLike: userId, tsFrom: `${dFrom}T00:00:00.000Z`, tsTo: `${dTo}T23:59:59.000Z`,
+                    channelUserFullTextLike: userId,
+                    tsFrom: `${todayStr}T00:00:00.000Z`, // Подставляем сегодняшний день
+                    tsTo: `${todayStr}T23:59:59.000Z`,   // Подставляем сегодняшний день
                     orderBy: "ts", orderDirection: "Desc", page: 1, limit: 20
                 })
             });
