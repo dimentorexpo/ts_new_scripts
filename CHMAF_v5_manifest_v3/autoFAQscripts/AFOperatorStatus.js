@@ -152,7 +152,6 @@ const injectOpStatusStyles = () => {
 };
 
 const showEmergencyQueueAlert = (count) => {
-    notify("📢ВНИМАНИЕ, НЕРАСПРЕД!")
     const now = Date.now();
     if (now - lastAlertTime < 5 * 60 * 1000) return;
 

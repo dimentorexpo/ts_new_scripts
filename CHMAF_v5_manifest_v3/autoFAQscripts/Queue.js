@@ -262,7 +262,6 @@
                 credentials: "include"
             });
             assign("null").then(() => setTimeout(() => assign(typeof operatorId !== 'undefined' ? operatorId : null), 2000));
-            showCustomAlert?.("Забираем чат...", 1);
         }
     };
 

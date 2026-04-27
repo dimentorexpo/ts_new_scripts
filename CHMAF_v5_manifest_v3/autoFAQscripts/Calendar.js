@@ -272,9 +272,11 @@ function getSlotData(index) {
                 inputs[n].title = match.eventId;
                 inputs[n].setAttribute('data-operator', match.createdBy);
 
-                // === ВОТ ЗДЕСЬ ПРИМЕНЯЕМ ЗЕЛЕНЫЙ ЦВЕТ ===
+                // === ИСПРАВЛЕНИЕ: Добавлена проверка на существование exttheme ===
                 if (operNamesAF.includes(match.createdBy)) {
-                    inputs[n].classList.remove(exttheme);
+                    if (typeof exttheme !== 'undefined') {
+                        inputs[n].classList.remove(exttheme);
+                    }
                     if (typeof selectedinpth !== 'undefined') inputs[n].classList.add(selectedinpth);
                     // Добавляем поверх наш стеклянный зелёный стиль
                     inputs[n].classList.add('af-glass-input-my');
@@ -299,9 +301,11 @@ function getSlotData(index) {
         saveBtn.onclick = () => {
             const isNew = !input.title;
             const url = isNew ? `https://datsy.ru/api/slot-event/add.php` : `https://datsy.ru/api/slot-event/save.php`;
+
+            // === ИСПРАВЛЕНИЕ: Добавлен encodeURIComponent для input.value ===
             const bodyData = isNew
-                ? `addinput=${input.value}&slotname=${curSlotTime}&date=${curSlotDate}`
-                : `event-text=${input.value}&save-slot=${input.title}`;
+                ? `addinput=${encodeURIComponent(input.value)}&slotname=${curSlotTime}&date=${curSlotDate}`
+                : `event-text=${encodeURIComponent(input.value)}&save-slot=${input.title}`;
 
             sendFetchRequest(url, {
                 method: "POST",
@@ -313,9 +317,10 @@ function getSlotData(index) {
 
         delBtn.onclick = () => {
             if (input.title && confirm("Вы действительно хотите удалить этот слот?")) {
-                const reason = encodeURIComponent(prompt("Укажите причину удаления:"));
-                if (reason) {
-                    removeSlot(input.title, reason);
+                // === ИСПРАВЛЕНИЕ: Проверка на отмену (null) перед кодированием ===
+                const rawReason = prompt("Укажите причину удаления:");
+                if (rawReason) {
+                    removeSlot(input.title, encodeURIComponent(rawReason));
                     input.title = '';
                     input.value = '';
                 }
@@ -485,8 +490,9 @@ function refreshActiveOperSlots() {
             btn.onclick = () => {
                 const id = inputs[idx].getAttribute('data-id');
                 if (id && confirm("Удалить этот слот?")) {
-                    const reason = encodeURIComponent(prompt("Укажите причину:"));
-                    if (reason) removeSlot(id, reason);
+                    // === ИСПРАВЛЕНИЕ: Проверка на отмену (null) перед кодированием ===
+                    const rawReason = prompt("Укажите причину:");
+                    if (rawReason) removeSlot(id, encodeURIComponent(rawReason));
                 }
             };
         });
