@@ -1,5 +1,5 @@
 /**
- * Refactored AFOperatorStatus with Glassmorphism & Emergency Alerts
+ * Refactored AFOperatorStatus with Cyber-Dark UI (Sleek Dark Mode) & Emergency Alerts
  * Filename: refactor.js
  */
 
@@ -42,63 +42,111 @@ const injectOpStatusStyles = () => {
     const style = document.createElement('style');
     style.id = 'op-status-styles';
     style.innerHTML = `
+        /* === CYBER-DARK MAIN CONTAINER === */
         .op-st-main-container {
-            width: 195px; margin: 10px auto; padding: 10px;
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; color: #eee;
-            font-family: 'Segoe UI', system-ui, sans-serif; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            width: 200px; margin: 10px auto; padding: 12px;
+            background: #0b0c10;
+            border: 1px solid #1f2029;
+            border-radius: 12px; color: #c5c6c7;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+            position: relative; overflow: hidden;
         }
+        /* Top glowing accent line */
+        .op-st-main-container::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, #4ade80, transparent);
+            opacity: 0.6;
+        }
+
+        /* === QUEUE BOX === */
         .op-st-queue-box {
-            background: rgba(121, 37, 37, 0.7); border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 10px; padding: 6px; text-align: center; font-weight: bold;
-            font-size: 14px; margin-bottom: 10px; text-shadow: 0 1px 2px rgba(0,0,0,0.6);
-            color: bisque;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.02) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px; padding: 8px; text-align: center; font-weight: 600;
+            font-size: 13px; margin-bottom: 12px; letter-spacing: 0.5px;
+            color: #ff6b6b; box-shadow: inset 0 0 12px rgba(239,68,68,0.05);
+            text-shadow: 0 0 8px rgba(255,107,107,0.4);
         }
+
+        /* === OPERATOR ROWS === */
         .op-st-row {
-            display: flex; align-items: center; gap: 10px; padding: 5px 8px;
-            margin: 3px 0; border-radius: 8px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); font-size: 12px;
+            display: flex; align-items: center; gap: 10px; padding: 6px 8px;
+            margin: 4px 0; border-radius: 6px; cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); font-size: 12px;
+            background: transparent; border: 1px solid transparent; border-left: 2px solid transparent;
         }
-        .op-st-row:hover { background: rgba(255,255,255,0.12); transform: translateX(4px); }
+        .op-st-row:hover {
+            background: #14151c; border-color: #2a2b36;
+            transform: translateX(4px); box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            color: #fff;
+        }
+
+        /* Выделение для ТП ОС (Cyber-Cyan) */
+        .op-st-row.tp-os-row {
+            background: linear-gradient(90deg, rgba(6, 182, 212, 0.1) 0%, transparent 100%);
+            border-left: 2px solid #06b6d4;
+        }
+        .op-st-row.tp-os-row:hover {
+            background: linear-gradient(90deg, rgba(6, 182, 212, 0.2) 0%, transparent 100%);
+            border-left-color: #22d3ee;
+        }
+
+        /* Улучшенные четкие бейджи */
         .op-st-badge {
             min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; font-weight: 800; font-size: 11px; border: 1px solid rgba(0,0,0,0.2);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border-radius: 4px; font-weight: 800; font-size: 13px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5); letter-spacing: 0.5px;
         }
-        .op-st-toggle {
-            text-align: center; font-size: 11px; padding: 6px; cursor: pointer;
-            color: #bbb; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 8px;
-            font-size: 14px;
-            transition: color 0.2s;
-        }
-        .op-st-toggle:hover { color: #fff; }
-        .op-st-stats-grid { display: grid; grid-template-columns: 1fr; gap: 4px; margin-top: 8px; font-size: 11px; }
-        .op-st-stat-item { padding: 4px 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
 
+        /* === TOGGLE BUTTON & STATS === */
+        .op-st-toggle {
+            text-align: center; font-size: 10px; padding: 8px; cursor: pointer;
+            color: #6c757d; border-top: 1px dashed #1f2029; margin-top: 10px;
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+            transition: color 0.2s, text-shadow 0.2s;
+        }
+        .op-st-toggle:hover { color: #4ade80; text-shadow: 0 0 8px rgba(74, 222, 128, 0.4); }
+        .op-st-stats-grid { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 10px; font-size: 11px; }
+        .op-st-stat-item {
+            padding: 6px 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;
+            font-weight: 500; letter-spacing: 0.5px; background: #121319;
+        }
+        .op-st-stat-item b { font-size: 13px; font-weight: 700; }
+
+        /* === CYBER-DARK ALERT MODAL === */
         .op-st-alert-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 10000000;
-            display: flex; align-items: center; justify-content: center; animation: opFadeIn 0.4s ease;
+            background: rgba(5, 5, 8, 0.85); backdrop-filter: blur(10px); z-index: 10000000;
+            display: flex; align-items: center; justify-content: center; animation: opFadeIn 0.3s ease;
         }
         .op-st-alert-modal {
-            background: rgba(30, 32, 45, 0.95); border: 2px solid #ff3b3b; border-radius: 24px;
-            padding: 35px; width: 420px; text-align: center; box-shadow: 0 0 50px rgba(255, 59, 59, 0.4);
-            animation: opShake 0.6s ease-in-out; color: #fff;
+            background: #0d0d12; border: 1px solid #ff2a2a; border-radius: 16px;
+            padding: 40px; width: 440px; text-align: center;
+            box-shadow: 0 0 40px rgba(255, 42, 42, 0.15), inset 0 0 20px rgba(255, 42, 42, 0.05);
+            animation: opPulse 2s infinite, opFadeIn 0.4s ease-out; color: #e2e8f0;
+            position: relative; overflow: hidden;
+        }
+        .op-st-alert-modal::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, transparent, #ff2a2a, transparent);
         }
         .op-st-alert-btn {
-            margin-top: 25px; padding: 14px 35px; background: #ff3b3b; border: none;
-            border-radius: 12px; color: white; font-weight: 800; cursor: pointer;
-            transition: all 0.2s; box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3);
-            text-transform: uppercase; letter-spacing: 1px;
+            margin-top: 30px; padding: 12px 30px; background: transparent; border: 1px solid #ff2a2a;
+            border-radius: 6px; color: #ff2a2a; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 0 10px rgba(255, 42, 42, 0.1);
+            text-transform: uppercase; letter-spacing: 1.5px; font-size: 13px;
         }
-        .op-st-alert-btn:hover { transform: scale(1.05); background: #ff5252; box-shadow: 0 6px 20px rgba(255, 59, 59, 0.4); }
-        @keyframes opShake {
-            0%, 100% { transform: translateX(0); }
-            15% { transform: translateX(-12px); }
-            30% { transform: translateX(12px); }
-            45% { transform: translateX(-8px); }
-            60% { transform: translateX(8px); }
+        .op-st-alert-btn:hover {
+            background: #ff2a2a; color: #fff; box-shadow: 0 0 20px rgba(255, 42, 42, 0.4);
+            transform: translateY(-2px);
         }
-        @keyframes opFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes opPulse {
+            0% { box-shadow: 0 0 40px rgba(255, 42, 42, 0.15), inset 0 0 20px rgba(255, 42, 42, 0.05); }
+            50% { box-shadow: 0 0 50px rgba(255, 42, 42, 0.25), inset 0 0 30px rgba(255, 42, 42, 0.1); }
+            100% { box-shadow: 0 0 40px rgba(255, 42, 42, 0.15), inset 0 0 20px rgba(255, 42, 42, 0.05); }
+        }
+        @keyframes opFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     `;
     document.head.appendChild(style);
 };
@@ -108,20 +156,20 @@ const showEmergencyQueueAlert = (count) => {
     const now = Date.now();
     if (now - lastAlertTime < 5 * 60 * 1000) return;
 
-    // Удаляем старые алерты если они есть
     document.querySelectorAll('.op-st-alert-overlay').forEach(el => el.remove());
 
     const overlay = document.createElement('div');
     overlay.className = 'op-st-alert-overlay';
     overlay.innerHTML = `
         <div class="op-st-alert-modal">
-            <div style="font-size: 60px; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));">📢</div>
-            <h2 style="color: #ff3b3b; margin: 0 0 15px 0; font-size: 24px; font-weight: 900;">НУЖНА ПОМОЩЬ!</h2>
-            <p style="color: #e0e0e0; font-size: 17px; line-height: 1.5;">
-                В основной очереди ТП <b style="font-size: 24px; color: #ff3b3b;">${count}</b> чатов!<br>
-                Ребята не справляются, пора на подмогу 🚀
+            <div style="font-size: 50px; margin-bottom: 15px; filter: drop-shadow(0 0 15px rgba(255,42,42,0.6));">⚠️</div>
+            <h2 style="color: #ff2a2a; margin: 0 0 15px 0; font-size: 22px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">Системная тревога</h2>
+            <p style="color: #94a3b8; font-size: 16px; line-height: 1.6;">
+                В основной очереди ТП критическая нагрузка: <br>
+                <b style="font-size: 28px; color: #ff2a2a; text-shadow: 0 0 10px rgba(255,42,42,0.4); display: block; margin: 10px 0;">${count} чатов</b>
+                Требуется немедленное подключение! 🚀
             </p>
-            <button class="op-st-alert-btn" id="op-st-alert-close">Понял, выхожу!</button>
+            <button class="op-st-alert-btn" id="op-st-alert-close">Принято, выхожу</button>
         </div>`;
     document.body.appendChild(overlay);
 
@@ -150,7 +198,7 @@ async function waitForOpSectionNew(timeout = 3000) {
                     const sectionName = el.textContent.split('-')[0].trim();
                     return resolve(sectionName);
                 }
-            } catch (e) { /* Cross-origin or other error */ }
+            } catch (e) { }
 
             if (Date.now() - start > timeout) return resolve(null);
             requestAnimationFrame(check);
@@ -179,15 +227,34 @@ function filterOperatorsLocal(result, cfg) {
 }
 
 const renderOperatorRows = (opstats) => {
-    const statusMap = { Online: { bg: '#388e3c', c: '#fff' }, Busy: { bg: '#fbc02d', c: '#000' }, Pause: { bg: '#d32f2f', c: '#fff' } };
+    // Cyber-Dark Status Theme Map: Идеальная четкость с белым текстом и неоновым свечением
+    const statusMap = {
+        Online: { bg: 'rgba(16, 185, 129, 0.15)', glow: '#10b981', b: '#059669' },
+        Busy: { bg: 'rgba(245, 158, 11, 0.15)', glow: '#f59e0b', b: '#d97706' },
+        Pause: { bg: 'rgba(239, 68, 68, 0.15)', glow: '#ef4444', b: '#dc2626' }
+    };
+
     return opstats.sort((a, b) => a.operator.status.localeCompare(b.operator.status))
         .map(item => {
             const op = item.operator;
-            const theme = statusMap[op.status] || { bg: '#555', c: '#fff' };
+            const theme = statusMap[op.status] || { bg: 'rgba(100,100,100,0.15)', glow: '#aaa', b: '#555' };
+
+            // Логика выделения ТП ОС
             const isTpOs = op.fullName?.toUpperCase().includes('ТП ОС');
+
+            // Цвет имени: если ТП ОС, то неоновый голубой, иначе стандартный светлый/серый
+            let opColor = op.status === 'Online' ? '#e2e8f0' : '#94a3b8';
+            if (isTpOs) {
+                opColor = op.status === 'Online' ? '#22d3ee' : '#0891b2';
+            }
+
             return `<div class="op-st-row ${isTpOs ? 'tp-os-row' : ''}" name="operrow" value="${op.id}">
-                        <span class="op-st-badge" style="background: ${theme.bg}; color: ${theme.c};">${item.aCnt || 0}</span>
-                        <span style="opacity: ${op.status === 'Online' ? 1 : 0.7}">${op.fullName}</span>
+                        <span class="op-st-badge" style="background: ${theme.bg}; color: #12b52f; border: 1px solid ${theme.b}; text-shadow: 0 0 6px ${theme.glow};">
+                            ${item.aCnt || 0}
+                        </span>
+                        <span style="opacity: ${op.status === 'Online' ? 1 : 0.7}; color: ${opColor}; font-weight: ${isTpOs ? '500' : 'normal'};">
+                            ${op.fullName}
+                        </span>
                     </div>`;
         }).join('');
 };
@@ -195,9 +262,7 @@ const renderOperatorRows = (opstats) => {
 async function operstatusleftbar() {
     try {
         const key = await waitForOpSectionNew();
-        // Если не нашли через iframe, пробуем найти по конфигу (вдруг переменная уже есть или DOM изменился)
         if (!key || !OP_GROUP_CONFIG[key]) {
-            // Если мы вообще не в нужной секции, очищаем контейнер
             if (key !== null) statusContainer.innerHTML = '';
             return;
         }
@@ -213,7 +278,6 @@ async function operstatusleftbar() {
         const tpOsQueue = getUnassignedCount(result, OP_GROUP_CONFIG['ТП ОС']);
         const currentQueue = getUnassignedCount(result, cfg);
 
-        // ПРОВЕРКА АЛЕРТА: Если мы в ТП ОС и в основном ТП есть нераспред
         if (key === 'ТП ОС' && tpQueue > 0) {
             showEmergencyQueueAlert(tpQueue);
         }
@@ -236,21 +300,26 @@ async function operstatusleftbar() {
 
         const hidesummary = localStorage.getItem('hidesummaryflag') === '1';
 
-        // HTML с текстом "Нераспред"
         statusContainer.innerHTML = `
             <div class="op-st-queue-box">
                 ${(key === 'ТП' || key === 'ТП ОС')
-                ? `🚧Нераспред <br> ТП:  ${tpQueue}${tpQueue > 10 ? ' ⚠️' : ''} | ТП ОС: ${tpOsQueue}`
+                ? `🚧 ОЧЕРЕДЬ <br> ТП:  <span style="color: ${tpQueue > 10 ? '#ff2a2a' : '#fca5a5'}; font-size: 14px;">${tpQueue}${tpQueue > 10 ? ' ⚠️' : ''}</span> | ТП ОС: ${tpOsQueue}`
                 : `Очередь: ${currentQueue}`}
             </div>
             <div class="op-st-list">${renderOperatorRows(opstats)}</div>
             <div class="op-st-toggle" id="op-st-toggle-btn">
-                ${hidesummary ? '🔽 Показать сводку' : '🔼 Скрыть сводку'}
+                ${hidesummary ? '🔽 Сводка' : '🔼 Скрыть'}
             </div>
             <div id="op-st-stats-panel" class="op-st-stats-grid" style="display: ${hidesummary ? 'none' : 'grid'}">
-                <div class="op-st-stat-item" style="background: rgba(56, 142, 60, 0.25)"><span>Онлайн</span> <b>${stats.online}</b></div>
-                <div class="op-st-stat-item" style="background: rgba(251, 192, 45, 0.25); color: #fbc02d"><span>Заняты</span> <b>${stats.busy}</b></div>
-                <div class="op-st-stat-item" style="background: rgba(211, 47, 47, 0.25)"><span>Перерыв</span> <b>${stats.pause}</b></div>
+                <div class="op-st-stat-item" style="border-left: 2px solid #10b981;">
+                    <span style="color: #94a3b8">Онлайн</span> <b style="color: #10b981; text-shadow: 0 0 8px rgba(16,185,129,0.3)">${stats.online}</b>
+                </div>
+                <div class="op-st-stat-item" style="border-left: 2px solid #f59e0b;">
+                    <span style="color: #94a3b8">Заняты</span> <b style="color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.3)">${stats.busy}</b>
+                </div>
+                <div class="op-st-stat-item" style="border-left: 2px solid #ef4444;">
+                    <span style="color: #94a3b8">Перерыв</span> <b style="color: #ef4444; text-shadow: 0 0 8px rgba(239,68,68,0.3)">${stats.pause}</b>
+                </div>
             </div>
         `;
 
