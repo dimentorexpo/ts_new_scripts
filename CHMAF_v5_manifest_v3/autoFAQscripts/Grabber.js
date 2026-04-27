@@ -1,8 +1,9 @@
+// --- VARIABLES & STATE ---
 let chosentheme;
 let pureArray = [];
 let filteredArrayTags = [];
 let cleanedarray = [];
-let themesarray = []
+let themesarray = [];
 let avgCsatCountVar;
 let countsArray = [];
 let countsCountryArray = [];
@@ -15,13 +16,18 @@ let payloadarray = [];
 let chatswithmarksarray = [];
 let checkmarksarr = [];
 let operstagsarray = [];
-let otherfilters = "off"
-let keyMatch = "Высокий"
+let otherfilters = "off";
+let keyMatch = "Высокий";
 let currentTableData = [];
-let isDescending = false;
+let isDescending = true; // Сортировка по умолчанию DESC
 let lastTableParams = null;
 let criticalChats = new Map();
-let dataToRender;
+let dataToRender = [];
+
+// STATE ДЛЯ УНИВЕРСАЛЬНЫХ ФИЛЬТРОВ И ГРАФИКОВ
+let tableColumnFilters = {};
+let currentFilterColIndex = -1;
+let currentChartState = null;
 
 const timeOptions = {
     timeZone: 'Europe/Moscow',
@@ -30,7 +36,6 @@ const timeOptions = {
     day: 'numeric',
     hour: 'numeric',
     minute: 'numeric'
-    // second: 'numeric'
 };
 
 const categoryMap = [
@@ -41,610 +46,512 @@ const categoryMap = [
     { key: "Категория: Кризис менеджеры", label: "Кризис менеджеры" }
 ];
 
+// --- THEMES ---
 const themes = [
-    // --- SYSTEM ---
-    { value: "parseallthemes", label: "ALL", style: "background-color:#69b930; color:white; font-weight:700; text-align:center" },
-    { value: "parsenothemes", label: "Without themes", style: "background-color:coral; color:white; font-weight:700; text-align:center" },
-
-    // --- Skyeng Mob ---
+    { value: "parseallthemes", label: "ALL", style: "background-color:#0d9488; color:white; font-weight:700;" },
+    { value: "parsenothemes", label: "Without themes", style: "background-color:#e11d48; color:white; font-weight:700;" },
     { group: "skmob", label: "Skyeng👨‍🎓Mob" },
-    { value: "1804", label: "📱‍👨‍🎓Авторизация" },
-    { value: "1805", label: "📱‍👨‍🎓Домашка" },
-    { value: "1806", label: "📱‍👨‍🎓Оплата" },
-    { value: "1807", label: "📱‍👨‍🎓Профиль" },
-    { value: "1808", label: "📱‍👨‍🎓Тренажер слов" },
-    { value: "1809", label: "📱‍👨‍🎓Уроки" },
-    { value: "1810", label: "📱‍👨‍🎓Чат" },
-
-    // --- Teachers Mob ---
+    { value: "1804", label: "📱‍👨‍🎓Авторизация" }, { value: "1805", label: "📱‍👨‍🎓Домашка" }, { value: "1806", label: "📱‍👨‍🎓Оплата" }, { value: "1807", label: "📱‍👨‍🎓Профиль" }, { value: "1808", label: "📱‍👨‍🎓Тренажер слов" }, { value: "1809", label: "📱‍👨‍🎓Уроки" }, { value: "1810", label: "📱‍👨‍🎓Чат" },
     { group: "tmob", label: "Teachers👽Mob" },
-    { value: "1833", label: "📱👽Авторизация" },
-    { value: "1836", label: "📱👽Виджет расписания" },
-    { value: "1839", label: "📱👽Чат" },
-    { value: "1835", label: "📱👽Виджет финансов" },
-    { value: "1838", label: "📱👽Профиль" },
-    { value: "1840", label: "📱👽3Сторис" },
-    { value: "1837", label: "📱👽Страница расписания" },
-    { value: "1834", label: "📱👽Страница финансов" },
-
-    // --- Skysmart Parents App ---
+    { value: "1833", label: "📱👽Авторизация" }, { value: "1836", label: "📱👽Виджет расписания" }, { value: "1839", label: "📱👽Чат" }, { value: "1835", label: "📱👽Виджет финансов" }, { value: "1838", label: "📱👽Профиль" }, { value: "1840", label: "📱👽3Сторис" }, { value: "1837", label: "📱👽Страница расписания" }, { value: "1834", label: "📱👽Страница финансов" },
     { group: "sksmpartapp", label: "Skysmart👪родит" },
-    { value: "1884", label: "📱👪Другое" },
-    { value: "1883", label: "📱👪Материалы" },
-    { value: "1880", label: "📱👪Предметы и баланс" },
-    { value: "1881", label: "📱👪Профиль родителя" },
-    { value: "1879", label: "📱👪Расписание" },
-    { value: "1882", label: "📱👪Чат" },
-
-    // --- Skypro App ---
+    { value: "1884", label: "📱👪Другое" }, { value: "1883", label: "📱👪Материалы" }, { value: "1880", label: "📱👪Предметы и баланс" }, { value: "1881", label: "📱👪Профиль родителя" }, { value: "1879", label: "📱👪Расписание" }, { value: "1882", label: "📱👪Чат" },
     { group: "skyproapp", label: "Приложение Skypro" },
     { value: "1904", label: "Skypro App - Виджет входа на урок" },
-
-    // --- Different ---
     { group: "solanka", label: "Different" },
-    { value: "2034", label: "🚫Прочее" },
-    { value: "2030", label: "ⓂSlack-проблемы со входом" },
-    { value: "69", label: "☎Проблемы с телефонией" },
-
-    // --- Payment ---
+    { value: "2034", label: "🚫Прочее" }, { value: "2030", label: "ⓂSlack-проблемы со входом" }, { value: "69", label: "☎Проблемы с телефонией" },
     { group: "payf", label: "Проблемы с оплатой" },
-    { value: "1077", label: "💳Вина школы" },
-    { value: "1658", label: "💳Консультация" },
-    { value: "1661", label: "💳Карта У" },
-    { value: "1662", label: "💳Сбой оплаты" },
-    { value: "1660", label: "💳Подписки" },
-
-    // --- Homework ---
+    { value: "1077", label: "💳Вина школы" }, { value: "1658", label: "💳Консультация" }, { value: "1661", label: "💳Карта У" }, { value: "1662", label: "💳Сбой оплаты" }, { value: "1660", label: "💳Подписки" },
     { group: "hwtr", label: "Проблемы с ДЗ" },
-    { value: "1744", label: "💼Контент" },
-    { value: "1745", label: "💼Оценка" },
-    { value: "1746", label: "💼Словарь" },
-    { value: "1747", label: "💼Упражнение" },
-
-    // --- Connection ---
+    { value: "1744", label: "💼Контент" }, { value: "1745", label: "💼Оценка" }, { value: "1746", label: "💼Словарь" }, { value: "1747", label: "💼Упражнение" },
     { group: "svyaz", label: "Проблемы связь" },
-    { value: "1581", label: "💻ОС/брауз ниж мин" },
-    { value: "1589", label: "💻Консультация работы связи" },
-    { value: "1582", label: "💻Корп сеть/ус-во" },
-    { value: "1583", label: "💻ОС/браузер" },
-    { value: "1586", label: "💻ПК" },
-    { value: "1584", label: "💻Гарнитура" },
-    { value: "1585", label: "💻Камера" },
-    { value: "1580", label: "💻Блокировалось ПО" },
-    { value: "1594", label: "💻Не подерж браузер" },
-    { value: "1595", label: "💻Не подерж камера гарнитура пк" },
-    { value: "1593", label: "💻Сбой платф" },
-    { value: "1592", label: "💻Сб задерж кам" },
-    { value: "1587", label: "💻Инет ниж мин" },
-    { value: "1590", label: "💻Сб плат блок прерыв связь" },
-    { value: "1588", label: "💻Хар ниж мин" },
-    { value: "1591", label: "💻Сб задерж звука" },
-
-    // --- LKP ---
+    { value: "1581", label: "💻ОС/брауз ниж мин" }, { value: "1589", label: "💻Консультация работы связи" }, { value: "1582", label: "💻Корп сеть/ус-во" }, { value: "1583", label: "💻ОС/браузер" }, { value: "1586", label: "💻ПК" }, { value: "1584", label: "💻Гарнитура" }, { value: "1585", label: "💻Камера" }, { value: "1580", label: "💻Блокировалось ПО" }, { value: "1594", label: "💻Не подерж браузер" }, { value: "1595", label: "💻Не подерж камера гарнитура пк" }, { value: "1593", label: "💻Сбой платф" }, { value: "1592", label: "💻Сб задерж кам" }, { value: "1587", label: "💻Инет ниж мин" }, { value: "1590", label: "💻Сб плат блок прерыв связь" }, { value: "1588", label: "💻Хар ниж мин" }, { value: "1591", label: "💻Сб задерж звука" },
     { group: "lkp", label: "Проблемы ЛКП" },
-    { value: "1721", label: "👽ЛКП - Группа" },
-    { value: "1714", label: "👽ЛКП - Чат" },
-    { value: "1719", label: "👽ЛКП - Финансы" },
-    { value: "1717", label: "👽ЛКП - Упражнения" },
-    { value: "1712", label: "👽ЛКП - Карта роста" },
-    { value: "1716", label: "👽ЛКП - Настройки" },
-    { value: "1718", label: "👽ЛКП - Перерыв" },
-    { value: "1715", label: "👽ЛКП - Профиль" },
-    { value: "1720", label: "👽ЛКП - Работы на проверку" },
-    { value: "1713", label: "👽ЛКП - Расписание" },
-
-    // --- LKU ---
+    { value: "1721", label: "👽ЛКП - Группа" }, { value: "1714", label: "👽ЛКП - Чат" }, { value: "1719", label: "👽ЛКП - Финансы" }, { value: "1717", label: "👽ЛКП - Упражнения" }, { value: "1712", label: "👽ЛКП - Карта роста" }, { value: "1716", label: "👽ЛКП - Настройки" }, { value: "1718", label: "👽ЛКП - Перерыв" }, { value: "1715", label: "👽ЛКП - Профиль" }, { value: "1720", label: "👽ЛКП - Работы на проверку" }, { value: "1713", label: "👽ЛКП - Расписание" },
     { group: "lku", label: "Проблемы ЛКУ" },
-    { value: "1708", label: "👨‍🎓ЛКУ - Чат" },
-    { value: "1710", label: "👨‍🎓ЛКУ - Профиль" },
-    { value: "1706", label: "👨‍🎓ЛКУ - Виджет прогресса" },
-    { value: "1707", label: "👨‍🎓ЛКУ - История занятий/портфолио" },
-    { value: "1709", label: "👨‍🎓ЛКУ - Семья" },
-    { value: "1711", label: "👨‍🎓ЛКУ - Настройки" },
-    { value: "1705", label: "👨‍🎓ЛКУ - Навыки" },
-    { value: "1704", label: "👨‍🎓ЛКУ - Грамматика" },
-
-    // --- Login Problems ---
+    { value: "1708", label: "👨‍🎓ЛКУ - Чат" }, { value: "1710", label: "👨‍🎓ЛКУ - Профиль" }, { value: "1706", label: "👨‍🎓ЛКУ - Виджет прогресса" }, { value: "1707", label: "👨‍🎓ЛКУ - История занятий/портфолио" }, { value: "1709", label: "👨‍🎓ЛКУ - Семья" }, { value: "1711", label: "👨‍🎓ЛКУ - Настройки" }, { value: "1705", label: "👨‍🎓ЛКУ - Навыки" }, { value: "1704", label: "👨‍🎓ЛКУ - Грамматика" },
     { group: "problvh", label: "Проблемы вход" },
-    { value: "1632", label: "🔐Не привяз почт/тел" },
-    { value: "1635", label: "🔐Данные для входа" },
-    { value: "1634", label: "🔐Сброс пароля" },
-    { value: "1631", label: "🔐Консультация авторизации" },
-    { value: "1633", label: "🔐Сбой авторизации" },
-
-    // --- Subscription / Access ---
+    { value: "1632", label: "🔐Не привяз почт/тел" }, { value: "1635", label: "🔐Данные для входа" }, { value: "1634", label: "🔐Сброс пароля" }, { value: "1631", label: "🔐Консультация авторизации" }, { value: "1633", label: "🔐Сбой авторизации" },
     { group: "problpodk", label: "Проблемы подкл" },
-    { value: "1624", label: "🔌Истекла подписка" },
-    { value: "1627", label: "🔌Консультациия" },
-    { value: "1629", label: "🔌Нет кнопки входа" },
-    { value: "1628", label: "🔌У не в ГУ" },
-    { value: "1625", label: "🔌Ур в др вр" },
-    { value: "1626", label: "🔌У отпуск" },
-    { value: "1630", label: "🔌Неактивна кнопка входа" },
-
-    // --- Lesson Functionality ---
+    { value: "1624", label: "🔌Истекла подписка" }, { value: "1627", label: "🔌Консультациия" }, { value: "1629", label: "🔌Нет кнопки входа" }, { value: "1628", label: "🔌У не в ГУ" }, { value: "1625", label: "🔌Ур в др вр" }, { value: "1626", label: "🔌У отпуск" }, { value: "1630", label: "🔌Неактивна кнопка входа" },
     { group: "lesfunc", label: "Функционал урок" },
-    { value: "1772", label: "👨‍🎓STT" },
-    { value: "1773", label: "👽TTT" },
-    { value: "1767", label: "📎Вложения" },
-    { value: "1771", label: "🖥Демонстрация экр" },
-    { value: "1768", label: "⌨Доска" },
-    { value: "2037", label: "📝Заметки" },
-    { value: "1775", label: "💨Отправка ДЗ на уроке" },
-    { value: "1770", label: "🔀Перекл материалов" },
-    { value: "1776", label: "🎵/📽Ауд/вид плеер" },
-    { value: "1769", label: "📙Словарь на уроке" },
-    { value: "1774", label: "🎯Упражнения на уроке" },
-
-    // --- Feedback ---
+    { value: "1772", label: "👨‍🎓STT" }, { value: "1773", label: "👽TTT" }, { value: "1767", label: "📎Вложения" }, { value: "1771", label: "🖥Демонстрация экр" }, { value: "1768", label: "⌨Доска" }, { value: "2037", label: "📝Заметки" }, { value: "1775", label: "💨Отправка ДЗ на уроке" }, { value: "1770", label: "🔀Перекл материалов" }, { value: "1776", label: "🎵/📽Ауд/вид плеер" }, { value: "1769", label: "📙Словарь на уроке" }, { value: "1774", label: "🎯Упражнения на уроке" },
     { group: "feedbk", label: "Отзывы и пожел" },
-    { value: "1970", label: "💭Vim-контент" },
-    { value: "1971", label: "💭Vim-оценка" },
-    { value: "1972", label: "💭Vim-словарь" },
-    { value: "1973", label: "💭Vim-упражнения" },
-    { value: "1966", label: "💭ЛК-ОС род" },
-    { value: "1965", label: "💭ЛК-перенос отмена ур" },
-    { value: "1967", label: "💭ЛК-профиль" },
-    { value: "1968", label: "💭ЛК-семья" },
-    { value: "1969", label: "💭ЛК чат" },
-    { value: "1974", label: "💭App Skyeng" },
-    { value: "1975", label: "💭App Teachers" },
-    { value: "1979", label: "💭App Skypro" },
-    { value: "1976", label: "💭App класс" },
-    { value: "1977", label: "💭App решения" },
-    { value: "1978", label: "💭App Skysmart род" },
-    { value: "1980", label: "💭Прочее" },
-
-    // --- CC Themes ---
+    { value: "1970", label: "💭Vim-контент" }, { value: "1971", label: "💭Vim-оценка" }, { value: "1972", label: "💭Vim-словарь" }, { value: "1973", label: "💭Vim-упражнения" }, { value: "1966", label: "💭ЛК-ОС род" }, { value: "1965", label: "💭ЛК-перенос отмена ур" }, { value: "1967", label: "💭ЛК-профиль" }, { value: "1968", label: "💭ЛК-семья" }, { value: "1969", label: "💭ЛК чат" }, { value: "1974", label: "💭App Skyeng" }, { value: "1975", label: "💭App Teachers" }, { value: "1979", label: "💭App Skypro" }, { value: "1976", label: "💭App класс" }, { value: "1977", label: "💭App решения" }, { value: "1978", label: "💭App Skysmart род" }, { value: "1980", label: "💭Прочее" },
     { group: "difCCthemes", label: "Разные тематики с КЦ" },
-    { value: "479", label: "💰КЦ-Проблемы с оплатой" },
-    { value: "63", label: "💻КЦ-Нет видео или звука" },
-    { value: "68", label: "📍КЦ-Другие тех проблемы" },
-    { value: "66", label: "💼КЦ-ДЗ и вирт класс" },
-    { value: "109", label: "💼КЦ-Сброс" },
-    { value: "73", label: "🏝КЦ-Отпуск У" },
-    { value: "107", label: "📱КЦ-Проч обр по Skyeng App" },
-    { value: "1249", label: "💋КЦ-Talks" },
-    { value: "2426", label: "Запланирована связь с пользователем" }
+    { value: "479", label: "💰КЦ-Проблемы с оплатой" }, { value: "63", label: "💻КЦ-Нет видео или звука" }, { value: "68", label: "📍КЦ-Другие тех проблемы" }, { value: "66", label: "💼КЦ-ДЗ и вирт класс" }, { value: "109", label: "💼КЦ-Сброс" }, { value: "73", label: "🏝КЦ-Отпуск У" }, { value: "107", label: "📱КЦ-Проч обр по Skyeng App" }, { value: "1249", label: "💋КЦ-Talks" }, { value: "2426", label: "Запланирована связь с пользователем" }
 ];
 
-// let convDurationArr=[];
-var win_Grabber =  // описание элементов окна Grabber
-    `<div style="display: flex; width: 960px;">
-        <span style="width: 960px">
-                <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 960px; display:flex; justify-content:space-evenly;" id="grabdata">
-                                <button class="mainButton buttonHide" id="hideMeGrabber">hide</button>
-                                <button class="mainButton" id="GatherStatByThemes" disabled>🧮</button>
-								<div style="width:450px;background: #5f7875;height: 21px;"><div id="progressBarGrabber" style="width: 0%; height: 20px; background-color: #e38118; border: 1px solid black; text-align:center; font-weight:700; color:white;"></div></div>
-                        </div>
+// --- CYBER-DARK UI & HTML TEMPLATE ---
+var win_Grabber = `
+<style>
+.cdu-app-wrapper { display: flex; align-items: flex-start; gap: 15px; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+.cdu-app-container { display: flex; width: 960px; color: #cbd5e1; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); overflow: hidden; flex-shrink: 0; }
+.cdu-sidebar { display: none; flex-direction: column; gap: 15px; width: 260px; flex-shrink: 0; }
+.cdu-main-col { width: 100%; display: flex; flex-direction: column; padding: 15px; }
+.cdu-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background: rgba(30, 41, 59, 0.6); border-radius: 8px; border: 1px solid #1e293b; }
+.cdu-btn { background: transparent; border: 1px solid #38bdf8; color: #38bdf8; padding: 6px 14px; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 11px; letter-spacing: 1px; transition: all 0.2s ease; box-shadow: 0 0 3px rgba(56, 189, 248, 0.1); display: inline-flex; justify-content: center; align-items: center; }
+.cdu-btn:hover:not(:disabled) { background: #38bdf8; color: #0f172a; box-shadow: 0 0 8px #38bdf8; text-shadow: none; }
+.cdu-btn:disabled { border-color: #334155; color: #475569; box-shadow: none; cursor: not-allowed; }
+.cdu-btn-hide { border-color: #f43f5e; color: #f43f5e; box-shadow: 0 0 3px rgba(244, 63, 94, 0.1); }
+.cdu-btn-hide:hover:not(:disabled) { background: #f43f5e; color: #fff; box-shadow: 0 0 8px #f43f5e; }
+.cdu-btn-accent { border-color: #a855f7; color: #a855f7; box-shadow: 0 0 3px rgba(168, 85, 247, 0.1); }
+.cdu-btn-accent:hover:not(:disabled) { background: #a855f7; color: #fff; box-shadow: 0 0 8px #a855f7; }
+.cdu-progress-container { flex-grow: 1; max-width: 450px; background: #1e293b; height: 18px; border-radius: 9px; overflow: hidden; border: 1px solid #334155; margin-left: 20px; }
+.cdu-progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #a855f7); color: #fff; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: width 0.3s ease; }
+.cdu-panel { background: rgba(15, 23, 42, 0.96); border: 1px solid #38bdf8; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); overflow: hidden; display: flex; flex-direction: column; }
+.cdu-date-picker { background: #1e293b; border: 1px solid #38bdf8; color: #e2e8f0; padding: 4px 8px; border-radius: 4px; outline: none; transition: border-color 0.2s; font-family: monospace; }
+.cdu-date-picker:focus { border-color: #a855f7; }
+.cdu-filter-box { background: rgba(30, 41, 59, 0.6); border: 1px solid #334155; border-radius: 8px; cursor: pointer; text-align: center; padding: 8px; font-size: 14px; flex: 1; margin: 0 5px; transition: all 0.2s ease; user-select: none; }
+.cdu-filter-box:hover { border-color: #38bdf8; color: #38bdf8; }
+.glowing-border-animation { border-color: #a855f7 !important; box-shadow: 0 0 6px rgba(168, 85, 247, 0.2) !important; color: #a855f7 !important; text-shadow: none; }
+.cdu-options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 8px; margin: 5px; max-height: 200px; overflow-y: auto; }
+.cdu-checkbox-label { display: flex; align-items: center; font-size: 13px; color: #cbd5e1; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
+.cdu-checkbox-label:hover { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
+.cdu-checkbox-label input[type="checkbox"] { accent-color: #38bdf8; margin-right: 8px; width: 14px; height: 14px; cursor: pointer; }
+.cdu-select { background: #1e293b; border: 1px solid #38bdf8; color: #e2e8f0; padding: 6px; border-radius: 4px; outline: none; margin: 0 15px; max-width: 300px; font-size: 13px; }
+.cdu-table-wrapper { flex-grow: 1; overflow-y: auto; margin-top: 15px; border-radius: 8px; border: 1px solid #1e293b; position: relative; background: #0b0f19; max-height: 400px; }
+.cdu-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.cdu-table th { background: #1e293b; color: #38bdf8; padding: 10px 5px; position: sticky; top: 0; text-transform: uppercase; border-bottom: 1px solid #38bdf8; z-index: 10; font-weight: 600; user-select: none; transition: background 0.2s; }
+.cdu-table th:hover { background: rgba(56, 189, 248, 0.15); cursor: pointer; }
+.cdu-table td { padding: 8px 5px; border-bottom: 1px solid #1e293b; color: #e2e8f0; }
+.cdu-table tr.rowOfChatGrabbed:hover td { background: rgba(56, 189, 248, 0.08); color: #fff; cursor: pointer; }
+.cdu-stat-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; margin-top: 10px; margin-right: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+.cdu-stat-primary { background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8; }
+.cdu-stat-accent { background: rgba(168, 85, 247, 0.2); border: 1px solid #a855f7; color: #a855f7; }
+.cdu-stat-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
+.cdu-tools-header { font-size: 12px; color: #94a3b8; text-transform: uppercase; margin: 10px 0 5px; letter-spacing: 1px; border-bottom: 1px solid #334155; padding-bottom: 3px; }
+.cdu-input-text { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; outline: none; margin-bottom: 10px; transition: border-color 0.2s; }
+.cdu-input-text:focus { border-color: #38bdf8; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
+</style>
 
-						<div id="AgregatedDataThemes" style="display:none; width:400px; min-height:100px; max-height:800px; background: rgb(70, 68, 81); position:absolute; top:-1px; left:-400px; overflow-y:auto">
-							<div style="margin:5px;">
-								<button class="mainButton buttonHide" id="HideToolsPanel">hide</button>
-							</div>
+<div class="cdu-app-wrapper">
+    <div class="cdu-app-container">
+        <div class="cdu-main-col">
+            <div class="cdu-topbar" id="grabdata">
+                <button class="cdu-btn cdu-btn-hide" id="hideMeGrabber">Hide App</button>
+                <button class="cdu-btn cdu-btn-accent" id="GatherStatByThemes" disabled style="margin-left:10px;">🧮 Stats</button>
+                <div class="cdu-progress-container">
+                    <div id="progressBarGrabber" class="cdu-progress-bar">0%</div>
+                </div>
+            </div>
 
-							<div id="ToolsPanel" style="padding:5px;">
-								<div style="color:bisque">Графическое и табличное представление подтематик</div>
-								<button class="mainButton" id="SwitchToGraph">🔀📊</button>
-								<button class="mainButton" id="SwitchToTable">🔀🧮</button>
-								<button class="mainButton" id="SwitchToIntervalGraph">🔀📊〰</button>
-								<button class="mainButton" id="SwitchToIntervalTable">🔀🧮〰</button>
-								<button class="mainButton" id="SaveIntervalCSV" disabled>〰💾CSV</button>
-							<div style="color:bisque">Графическое и табличное представление по странам пользователей</div>
-								<button class="mainButton" id="SwitchToGraphCountry">🔀📊</button>
-								<button class="mainButton" id="SwitchToTableCountry">🔀🧮</button>
-								<button class="mainButton" title="Сохраняет в CSV обобщенные значения по странам" id="SaveСountryTableCSV">〰💾🧮CSV</button>
-								<br>
-								<button class="mainButton" id="SwitchToIntervalGraphCountry" >〰📊Country</button>
-								<button class="mainButton" id="SwitchToIntervalTableCountry" >〰🧮Country</button>
-								<button class="mainButton" title="Сохраняет в CSVзначения по странам за разные периоды времени"  id="SaveIntervalСountryCSV" disabled>〰💾CSV</button>
-							</div>
-							<div id="AgregatedDataOut" style="color: bisque; padding: 5px; text-align: center;"></div>
-						</div>
+            <div class="cdu-topbar" id="grabbox" style="justify-content: flex-start; gap: 15px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:12px; font-weight:bold; color:#94a3b8;">Start:</span>
+                    <input class="cdu-date-picker" type="date" name="FirstData" id="dateFromGrab">
+                </div>
+                <div>
+                    <button class="cdu-btn" id="dayminus">◀ -1 Day</button>
+                    <button class="cdu-btn" id="dayplus">+1 Day ▶</button>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-left:auto;">
+                    <span style="font-size:12px; font-weight:bold; color:#94a3b8;">End:</span>
+                    <input class="cdu-date-picker" type="date" name="LastData" id="dateToGrab">
+                </div>
+            </div>
 
-                        <div style="margin: 5px; width: 960px" id="grabbox">
-								 <span style="color:bisque; margin-top:5px; margin-left:10px;">Начальная дата <input class="" type="date" style="margin-left:20px;  width:125px;" name="FirstData" id="dateFromGrab"></span>
-								 <button class="mainButton" style="margin-left:15%" id="dayminus">◀</button>
-								 <button class="mainButton" id="dayplus">▶</button>
-								 <span style="color:bisque; margin-top:2px; float:right; margin-right:10px; height:28px;">Конечная дата <input class="" type="date" style="float:right; margin-left:20px; margin-right:10px; width:125px;" name="LastData" id="dateToGrab"</span>
-                        </div>
+            <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
+                <div id="opscontainer" class="cdu-filter-box">🔱 Operators 🦸‍♂️</div>
+                <div id="markscontainer" class="cdu-filter-box">🔱 Marks 🔢</div>
+                <div id="tagscontainer" class="cdu-filter-box">🔱 Tags 🏷</div>
+                <div id="othercontainer" class="cdu-filter-box">🔱 Advanced Filters</div>
+            </div>
 
-						<div style="display:flex; justify-content: space-evenly; margin-bottom: 5px;">
-							<div id="opscontainer" class="filtersList" style="color: bisque; background: #ff7f507d; font-size: 16px; padding: 5px; width: 33%; border-radius: 20px; text-align: center; cursor: pointer; border: 1px solid black;">🔱Фильтр по операторам🦸‍♂️</div>
-							<div id="markscontainer" class="filtersList"  style="color: bisque; background: #ff7f507d; font-size: 16px; padding: 5px; width: 33%; border-radius: 20px; text-align: center; cursor: pointer; border: 1px solid black;">🔱Фильтр по оценкам🔢</div>
-							<div id="tagscontainer" class="filtersList"  style="color: bisque; background: #ff7f507d; font-size: 16px; padding: 5px; width: 33%; border-radius: 20px; text-align: center; cursor: pointer; border: 1px solid black;">🔱Фильтр по тегам🏷</div>
-                            <div id="othercontainer" class="filtersList"  style="color: bisque; background: #ff7f507d; font-size: 16px; padding: 5px; width: 33%; border-radius: 20px; text-align: center; cursor: pointer; border: 1px solid black;">🔱Другие фильтры</div>
-						</div>
+            <div id="activeoperatorsgroup" class="cdu-options-grid" style="display:none;"></div>
+            <label id="hideselecall" class="cdu-checkbox-label" style="display:none; color:#10b981; margin-left:10px; font-weight:bold;"><input type="checkbox" id="checkthemall"> Select All Operators</label>
 
-							<div id="activeoperatorsgroup" style="max-height:200px; overflow-y:auto; display: none; grid-template-columns: repeat(3, 1fr); margin-left:5px; border:1px solid lightslategrey;">
-							</div>
-								<label id="hideselecall" style="display: none; color:#93f5a6; margin-left:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); font-weight: 700;"><input type="checkbox" id="checkthemall"> Select All</label>
+            <div id="listofthemarks" class="cdu-options-grid" style="display:none; grid-template-columns: repeat(6, 1fr);">
+                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="5"> 5 🤩</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="4"> 4 🙂</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="3"> 3 😑</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="2"> 2 😠</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="1"> 1 🤬</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="undefined"> No marks ⭕</label>
+            </div>
+            <label id="hideselecallmarks" class="cdu-checkbox-label" style="display:none; color:#10b981; margin-left:10px; font-weight:bold;"><input type="checkbox" id="checkthemallmarks"> Select All Marks</label>
 
-							<div id="listofthemarks" style="display: none; color:bisque; border:1px solid lightslategrey; margin-left:5px;">
-							  <label><input type="checkbox" name="marks" value="5"> 5</label>
-							  <label><input type="checkbox" name="marks" value="4"> 4</label>
-							  <label><input type="checkbox" name="marks" value="3"> 3</label>
-							  <label><input type="checkbox" name="marks" value="2"> 2</label>
-							  <label><input type="checkbox" name="marks" value="1"> 1</label>
-							  <label><input type="checkbox" name="marks" value="undefined"> No marks</label>
-							  <label id="hideselecallmarks" style="display: none; color:#93f5a6; margin-left:5px; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); font-weight: 700;"><input type="checkbox" id="checkthemallmarks"> Select All</label>
-							</div>
+            <div id="listofotheroptions" style="display:none; background: rgba(15, 23, 42, 0.95); border: 1px solid #38bdf8; border-radius: 8px; width:100%; padding:20px; box-sizing:border-box; margin-bottom:10px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px;">
+                    <div>
+                        <div class="cdu-tools-header" style="text-align:center; border:none; color:#10b981;">Priority</div>
+                        <label class="cdu-checkbox-label"><input type="checkbox" checked name="priorityfilter" value="Any"> Any</label>
+                        <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Низкий"> Low</label>
+                        <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Высокий"> High</label>
+                        <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Критический"> Critical</label>
+                    </div>
+                    <div>
+                        <div class="cdu-tools-header" style="text-align:center; border:none; color:#10b981;">Department</div>
+                        <label class="cdu-checkbox-label"><input type="checkbox" checked name="deptfilter" value="Any"> Any</label>
+                        <label class="cdu-checkbox-label" title="Техподдержка 1Л CRM (исход)"><input type="checkbox" name="deptfilter" value="Техподдержка исход crm2"> TP Outbound</label>
+                        <label class="cdu-checkbox-label" title="Техподдержка 2Л CRM"><input type="checkbox" name="deptfilter" value="Техподдержка 2-я линия crm2"> TP 2L</label>
+                        <label class="cdu-checkbox-label" title="Teachers Care"><input type="checkbox" name="deptfilter" value="Teachers Care crm2"> Teachers Care</label>
+                        <label class="cdu-checkbox-label" title="Кризис менеджмент"><input type="checkbox" name="deptfilter" value="Кризис менеджеры"> Crisis Management</label>
+                        <label class="cdu-checkbox-label" title="Исходящие звонки crm2"><input type="checkbox" name="deptfilter" value="Исходящие звонки (crm2)"> CC Outbound</label>
+                    </div>
+                    <div>
+                        <div class="cdu-tools-header" style="text-align:center; border:none; color:#10b981;">User Type</div>
+                        <label class="cdu-checkbox-label"><input type="checkbox" checked name="usrtypefilter" value="Any"> Any</label>
+                        <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="student"> Student</label>
+                        <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="parent"> Parent</label>
+                        <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="teacher"> Teacher</label>
+                        <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="null"> Unknown</label>
+                    </div>
+                </div>
+                <hr style="border-color:#334155; margin:15px 0;">
+                <input class="cdu-input-text" placeholder="Search in Comment..." style="text-align:center;">
+                <input class="cdu-input-text" placeholder="Search in Message..." style="text-align:center; margin-bottom:0;">
+            </div>
 
+            <div id="listofthetags" class="cdu-options-grid" style="display:none; margin-bottom:10px;">
+                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="server_issues"> Server</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="untargeted"> Untargeted</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_tc"> ➔ TC</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_channel_qa"> ➔ QA</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_development"> ➔ Dev</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="refusal_of_help"> Refusal</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_outgoing_tp_crm2"> ➔ TP Out</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="queue"> Queue</label>
+                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="oo"> CC Error</label>
+                <div style="grid-column: span 3; display:flex; gap:10px; margin-top:10px;">
+                    <button class="cdu-btn" id="hideselecalltags" style="flex:1;">🚀 Apply Tag Filter</button>
+                    <button class="cdu-btn cdu-btn-accent" id="SaveToCSVFilteredByTags" style="flex:1;">💾 Export Tag CSV</button>
+                </div>
+            </div>
 
-                            <div id="listofotheroptions"
-                                style="display:none; color:bisque; margin:0 auto; padding:15px;
-                                        background:#3f3d47; border:1px solid #6a6a6a; border-radius:12px;
-                                        width:500px;">
+            <div style="display:flex; justify-content: center; align-items:center; margin-bottom: 15px; gap: 15px;">
+                <select id="ThemesToSearch" class="cdu-select"></select>
+                <button class="cdu-btn" id="stargrab" title="Search chats by selected theme">🔍 Search</button>
+                <button class="cdu-btn cdu-btn-accent" id="webtoCSV">💾 Download Main CSV</button>
+            </div>
 
-                                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px;">
+            <div id="grabbedchats" style="display:flex; flex-direction:column; flex-grow:1; min-height:0;">
+                <div id="themesgrabbeddata" class="cdu-table-wrapper"></div>
+                <div style="display:flex; flex-wrap:wrap; margin-top:10px;">
+                    <div id="foundcount"></div>
+                    <div id="avgCsatCount"></div>
+                    <div id="avgSLAClosedData"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                                    <!-- Левая колонка — Приоритет -->
-                                    <div>
-                                        <div style="font-weight:700; margin-bottom:5px; color:#93f5a6; text-align:center;">
-                                            Приоритет
-                                        </div>
+    <div class="cdu-sidebar" id="SideBarContainer">
+        <div id="UniversalFilterPanel" class="cdu-panel" style="display:none; flex-grow:0;">
+            <div style="background: rgba(30,41,59,0.9); border-bottom: 1px solid #38bdf8; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <span id="FilterTitle" style="color:#38bdf8; font-weight:bold; font-size:12px; text-transform:uppercase;">Filter</span>
+                <span id="CloseFilterBtn" style="cursor:pointer; color:#f43f5e; font-weight:bold; font-size: 16px;" title="Close">✖</span>
+            </div>
+            <div style="padding: 15px;">
+                <div id="FilterCheckboxList" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px; display:flex; flex-direction:column; gap:5px;">
+                    </div>
+                <div style="display: flex; gap: 5px;">
+                   <button class="cdu-btn" id="FilterSelectAll" style="flex:1;">Select All</button>
+                   <button class="cdu-btn" id="FilterClearAll" style="flex:1;">Clear All</button>
+                </div>
+                <button class="cdu-btn cdu-btn-accent" id="DownloadFilteredCSV" style="width:100%; margin-top:10px;">💾 Save Visible to CSV</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-                                        <label style="display:block; margin-left:10px;">
-                                            <input type="checkbox" checked name="priorityfilter" value="Any"> Any
-                                        </label>
-                                        <label style="display:block; margin-left:10px;">
-                                            <input type="checkbox" name="priorityfilter" value="Низкий"> Низкий
-                                        </label>
-                                        <label style="display:block; margin-left:10px;">
-                                            <input type="checkbox" name="priorityfilter" value="Высокий"> Высокий
-                                        </label>
-                                        <label style="display:block; margin-left:10px;">
-                                            <input type="checkbox" name="priorityfilter" value="Критический"> Критический
-                                        </label>
-                                    </div>
+<div id="AgregatedDataThemes" class="cdu-panel" style="display:none; position:fixed; top:80px; left:60px; z-index:9999; flex-direction: column; transition: width 0.3s ease;">
+    <div id="StatsDragHandle" style="cursor:move; background: rgba(30,41,59,0.9); border-bottom: 1px solid #a855f7; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color:#a855f7; font-weight:bold; font-size:12px; text-transform:uppercase;">📊 Analytics Board</span>
+        <span id="HideToolsPanel" style="cursor:pointer; color:#f43f5e; font-weight:bold; font-size: 16px;" title="Close">✖</span>
+    </div>
+    <div style="padding:15px; max-height:80vh; overflow-y:auto; flex-grow: 1;">
+        <div class="cdu-tools-header">By Theme (Chart/Table)</div>
+        <div style="display:flex; gap:5px; margin-bottom:5px;">
+            <button class="cdu-btn" id="SwitchToGraph" style="flex:1;">📊 Base</button>
+            <button class="cdu-btn" id="SwitchToTable" style="flex:1;">🧮 Base</button>
+        </div>
+        <div style="display:flex; gap:5px; margin-bottom:5px;">
+            <button class="cdu-btn" id="SwitchToIntervalGraph" style="flex:1;">📊 Timeline</button>
+            <button class="cdu-btn" id="SwitchToIntervalTable" style="flex:1;">🧮 Timeline</button>
+        </div>
+        <button class="cdu-btn cdu-btn-accent" id="SaveIntervalCSV" disabled style="width:100%; margin-bottom:15px;">💾 Export Theme Timeline CSV</button>
 
-                                    <!-- Центральная колонка — Отдел -->
-                                    <div>
-                                        <div style="font-weight:700; margin-bottom:5px; color:#93f5a6; text-align:center;">
-                                            Отдел
-                                        </div>
+        <div class="cdu-tools-header">By Country (Chart/Table)</div>
+        <div style="display:flex; gap:5px; margin-bottom:5px;">
+            <button class="cdu-btn" id="SwitchToGraphCountry" style="flex:1;">📊 Base</button>
+            <button class="cdu-btn" id="SwitchToTableCountry" style="flex:1;">🧮 Base</button>
+        </div>
+        <button class="cdu-btn cdu-btn-accent" id="SaveСountryTableCSV" style="width:100%; margin-bottom:5px;">💾 Export Country Base CSV</button>
+        <div style="display:flex; gap:5px; margin-bottom:5px;">
+            <button class="cdu-btn" id="SwitchToIntervalGraphCountry" style="flex:1;">📊 Timeline</button>
+            <button class="cdu-btn" id="SwitchToIntervalTableCountry" style="flex:1;">🧮 Timeline</button>
+        </div>
+        <button class="cdu-btn cdu-btn-accent" id="SaveIntervalСountryCSV" disabled style="width:100%;">💾 Export Country Timeline CSV</button>
 
-                                        <label style="display:block; margin-left:10px;">
-                                            <input type="checkbox" checked name="deptfilter" value="Any"> Any
-                                        </label>
-                                        <label style="display:block; margin-left:10px;">
-                                            <input title="Техподдержка 1Л CRM (исход)"  type="checkbox" name="deptfilter" value="Техподдержка исход crm2"> ТП Исход
-                                        </label>
-                                        <label style="display:block; margin-left:10px;">
-                                            <input title="Техподдержка 2Л CRM"  type="checkbox" name="deptfilter" value="Техподдержка 2-я линия crm2"> ТП2Л
-                                        </label>
-                                        <label style="display:block; margin-left:10px;">
-                                            <input title="Teachers Care" type="checkbox" name="deptfilter" value="Teachers Care crm2""> TC
-                                        </label>
-                                        <label style="display:block; margin-left:10px;">
-                                            <input title="Кризис менеджмент" type="checkbox" name="deptfilter" value="Кризис менеджеры"> КМ
-                                        </label>
-                                        <label style="display:block; margin-left:10px;">
-                                            <input title="Исходящие звонки crm2" type="checkbox" name="deptfilter" value="Исходящие звонки (crm2)"> КЦ Исход
-                                        </label>
-                                    </div>
+        <div id="AgregatedDataOut" style="margin-top: 15px; max-width: 100%; overflow-x: auto;"></div>
+    </div>
+</div>
+`;
 
-                                    <!-- Правая колонка — Отдел -->
-                                    <div>
-                                        <div style="font-weight:700; margin-bottom:5px; color:#93f5a6; text-align:center;">
-                                            Тип пользователя
-                                        </div>
-
-                                        <label style="display:block; margin-left:10px;">
-                                            <input type="checkbox" checked name="usrtypefilter" value="Any"> Any
-                                        </label>
-                                        <label style="display:block; margin-left:10px;">
-                                            <input type="checkbox" name="usrtypefilter" value="student"> Ученик
-                                        </label>
-                                         <label style="display:block; margin-left:10px;">
-                                            <input type="checkbox" name="usrtypefilter" value="parent"> Родитель У
-                                        </label>
-                                        <label style="display:block; margin-left:10px;">
-                                            <input type="checkbox" name="usrtypefilter" value="teacher"> Преподаватель
-                                        </label>
-                                         <label style="display:block; margin-left:10px;">
-                                            <input type="checkbox" name="usrtypefilter" value="null"> Неизвестно
-                                        </label>
-                                    </div>
-
-                                </div>
-
-                                <hr style="border-color:#6a6a6a; margin:15px 0;">
-
-                                <!-- Поля ввода -->
-                                <div style="display:flex; flex-direction:column; gap:10px;">
-                                    <input placeholder="Поиск по комментарию"
-                                        style="padding:6px; border-radius:6px; border:1px solid #6a6a6a;
-                                                background:#2f2d35; color:bisque; text-align:center;">
-                                    <input placeholder="Поиск по сообщению"
-                                        style="padding:6px; border-radius:6px; border:1px solid #6a6a6a;
-                                                background:#2f2d35; color:bisque;  text-align:center;">
-                                </div>
-                            </div>
-
-							<div id="listofthetags" style="display: none; color:bisque; margin-left:5px;">
-								<div style="display: grid; grid-template-columns: repeat(3, 1fr); border:1px solid lightslategrey;">
-								  <label><input type="checkbox" name="tagsforfilter" value="server_issues"> Серверные</label>
-								  <label><input type="checkbox" name="tagsforfilter" value="untargeted"> Нецелевой</label>
-								  <label><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_tc"> Передача в TC</label>
-								  <label><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_channel_qa"> Передача в QA</label>
-								  <label><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_development"> Передача в разработку</label>
-								  <label><input type="checkbox" name="tagsforfilter" value="refusal_of_help"> Отказ от помощи</label>
-								  <label><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_outgoing_tp_crm2"> Передача на ТП Исход</label>
-								  <label><input type="checkbox" name="tagsforfilter" value="queue"> Очередь</label>
-								  <label><input type="checkbox" name="tagsforfilter" value="oo"> Ошибка КЦ</label>
-							  </div>
-
-							  <div style="display: flex;">
-								  <button class="mainButton" id="hideselecalltags" style="flex-grow:1">🚀Apply</button>
-								  <button class="mainButton" id="SaveToCSVFilteredByTags" style="flex-grow:1">💾CSV</button>
-							  </div>
-							</div>
-
-						<div style="padding-bottom: 5px;">
-                        <select id="ThemesToSearch" class="" style="margin-left:150px; margin-top:10px;"></select>
-
-                               <button class="mainButton" style=" title="ищет чаты по тематике" id="stargrab">Find</button>
-							   	<button class="mainButton" id="webtoCSV">💾 Download CSV</button>
-						</div>
-						</span>
-
-						<div id="grabbedchats" style="margin-left: 15px;">
-							 <p id="themesgrabbeddata" style="width:960px; max-height:400px; color:bisque; margin-left:5px; overflow:auto"></p>
-							 <p id="foundcount"></p>
-							 <p id="avgCsatCount"></p>
-							 <p id="avgSLAClosedData"></p>
-							 <div id="CSATFilterField" style="display:none; position: absolute; top: 300px; left: 820px; background: #464451; color:bisque;">
-							 <span id="hidefilter" style="cursor:pointer; border: 1px solid; padding: 2px; color:black; font-weight:700; background: tan;">🌀CSAT filter</span> <br>
-							  <label><input type="checkbox" name="marksFilter" value="5" style="width:15px; height:15px"> 🤩5</label> <br>
-							  <label><input type="checkbox" name="marksFilter" value="4" style="width:15px; height:15px"> 🙂4</label> <br>
-							  <label><input type="checkbox" name="marksFilter" value="3" style="width:15px; height:15px"> 😑3</label> <br>
-							  <label><input type="checkbox" name="marksFilter" value="2" style="width:15px; height:15px"> 😠2</label> <br>
-							  <label><input type="checkbox" name="marksFilter" value="1" style="width:15px; height:15px"> 🤬1</label> <br>
-							  <label><input type="checkbox" name="marksFilter" value="-" style="width:15px; height:15px"> ⭕No marks</label> <br>
-							  <button class="mainButton" id="downloadfilteredtocsv" style="margin-left: 25%; margin-bottom: 10px;">💾CSV</button>
-							 </div>
-						</div>
-        </span>
-</div>`;
-
+// INITIALIZATION CALLS
 const wintGrabber = createWindow('AF_Grabber', 'winTopGrabber', 'winLeftGrabber', win_Grabber);
 hideWindowOnDoubleClick('AF_Grabber');
 hideWindowOnClick('AF_Grabber', 'hideMeGrabber');
 
+// --- ROBUST DRAGGABLE LOGIC FOR STATS PANEL ---
+function makeDraggable(elementId, handleId) {
+    const element = document.getElementById(elementId);
+    const handle = document.getElementById(handleId);
+    if (!element || !handle) return;
+    if (element.dataset.draggableAttached) return;
+
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    handle.onmousedown = function (e) {
+        e.preventDefault();
+        e.stopPropagation(); // БЛОКИРОВКА ВСПЛЫТИЯ (фикст таскание родительского окна)
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    };
+    function elementDrag(e) {
+        e.preventDefault();
+        e.stopPropagation(); // БЛОКИРОВКА ВСПЛЫТИЯ
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        element.style.top = (element.offsetTop - pos2) + "px";
+        element.style.left = (element.offsetLeft - pos1) + "px";
+        element.style.right = 'auto';
+        element.style.bottom = 'auto';
+    }
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+    element.dataset.draggableAttached = "true";
+}
+
+document.getElementById('HideToolsPanel').onclick = () => document.getElementById('AgregatedDataThemes').style.display = 'none';
+document.getElementById('GatherStatByThemes').onclick = () => {
+    const pnl = document.getElementById('AgregatedDataThemes');
+    pnl.style.display = pnl.style.display === 'none' ? 'flex' : 'none';
+    makeDraggable('AgregatedDataThemes', 'StatsDragHandle');
+}
+
+// --- SIDEBAR TOGGLE LOGIC (Filters ONLY) ---
+function toggleFilterSidebar(forceOpen = false) {
+    const sidebar = document.getElementById('SideBarContainer');
+    const panel = document.getElementById('UniversalFilterPanel');
+
+    if (forceOpen || panel.style.display === 'none') {
+        sidebar.style.display = 'flex';
+        panel.style.display = 'flex';
+    } else {
+        panel.style.display = 'none';
+        sidebar.style.display = 'none';
+    }
+}
+document.getElementById('CloseFilterBtn').onclick = () => toggleFilterSidebar(false);
+
+
+// --- UNIVERSAL COLUMN FILTERING LOGIC ---
+function openColumnFilter(colIndex, colName) {
+    currentFilterColIndex = colIndex;
+    document.getElementById('FilterTitle').textContent = `Filter: ${colName}`;
+    const rows = document.querySelectorAll('.rowOfChatGrabbed');
+    const uniqueValues = new Set();
+
+    rows.forEach(row => uniqueValues.add(row.cells[colIndex].textContent.trim()));
+
+    if (!tableColumnFilters[colIndex]) tableColumnFilters[colIndex] = new Set(uniqueValues);
+    const activeSet = tableColumnFilters[colIndex];
+    const listContainer = document.getElementById('FilterCheckboxList');
+    listContainer.innerHTML = '';
+
+    const sortedValues = Array.from(uniqueValues).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+    sortedValues.forEach(val => {
+        const isChecked = activeSet.has(val) ? 'checked' : '';
+        const label = document.createElement('label');
+        label.className = 'cdu-checkbox-label';
+
+        const safeVal = val.replace(/"/g, '&quot;');
+        label.innerHTML = `<input type="checkbox" value="${safeVal}" ${isChecked}> <span style="word-break: break-all;">${val === '' ? '(Empty)' : val}</span>`;
+
+        const input = label.querySelector('input');
+        input.addEventListener('change', (e) => {
+            if (e.target.checked) activeSet.add(val);
+            else activeSet.delete(val);
+            applyTableFilters();
+        });
+        listContainer.appendChild(label);
+    });
+
+    toggleFilterSidebar(true);
+}
+
+function applyTableFilters() {
+    const rows = document.querySelectorAll('.rowOfChatGrabbed');
+    rows.forEach(row => {
+        let isVisible = true;
+        for (const colIdx in tableColumnFilters) {
+            const cellVal = row.cells[colIdx].textContent.trim();
+            if (!tableColumnFilters[colIdx].has(cellVal)) {
+                isVisible = false;
+                break;
+            }
+        }
+        row.style.display = isVisible ? '' : 'none';
+    });
+    calcAvgCsat();
+    calcAvgSLACompleted();
+}
+
+document.getElementById('FilterSelectAll').onclick = () => {
+    document.querySelectorAll('#FilterCheckboxList input[type="checkbox"]').forEach(input => {
+        input.checked = true;
+        tableColumnFilters[currentFilterColIndex].add(input.value.replace(/&quot;/g, '"'));
+    });
+    applyTableFilters();
+};
+
+document.getElementById('FilterClearAll').onclick = () => {
+    document.querySelectorAll('#FilterCheckboxList input[type="checkbox"]').forEach(input => {
+        input.checked = false;
+        tableColumnFilters[currentFilterColIndex].delete(input.value.replace(/&quot;/g, '"'));
+    });
+    applyTableFilters();
+};
+
+document.getElementById('DownloadFilteredCSV').onclick = saveFilteredTableCSV;
+
+// --- ANY LOGIC SETUP ---
 function setupAnyLogic(groupName) {
     const checkboxes = document.querySelectorAll(`input[name="${groupName}"]`);
-
     checkboxes.forEach(cb => {
         cb.addEventListener('change', () => {
             if (cb.value === "Any" && cb.checked) {
-                // Если выбрали Any → снимаем остальные
-                checkboxes.forEach(other => {
-                    if (other.value !== "Any") other.checked = false;
-                });
+                checkboxes.forEach(other => { if (other.value !== "Any") other.checked = false; });
             } else if (cb.value !== "Any" && cb.checked) {
-                // Если выбрали любой другой → снимаем Any
-                checkboxes.forEach(other => {
-                    if (other.value === "Any") other.checked = false;
-                });
+                checkboxes.forEach(other => { if (other.value === "Any") other.checked = false; });
             }
         });
     });
 }
-
 setupAnyLogic("priorityfilter");
 setupAnyLogic("deptfilter");
 setupAnyLogic("usrtypefilter");
 
-//Блок функций для "другие фильтры"
+const commentInputEl = document.querySelector('#listofotheroptions input[placeholder="Search in Comment..."]');
+const messageInputEl = document.querySelector('#listofotheroptions input[placeholder="Search in Message..."]');
 
-const commentInputEl = document.querySelector('#listofotheroptions input[placeholder="Поиск по комментарию"]');
-const messageInputEl = document.querySelector('#listofotheroptions input[placeholder="Поиск по сообщению"]');
-
-commentInputEl.addEventListener("input", () => {
-    if (commentInputEl.value.trim() !== "") {
-        messageInputEl.value = "";
-    }
-});
-
-messageInputEl.addEventListener("input", () => {
-    if (messageInputEl.value.trim() !== "") {
-        commentInputEl.value = "";
-    }
-});
-
+commentInputEl.addEventListener("input", () => { if (commentInputEl.value.trim() !== "") messageInputEl.value = ""; });
+messageInputEl.addEventListener("input", () => { if (messageInputEl.value.trim() !== "") commentInputEl.value = ""; });
 
 function getCheckedValues(name) {
-    const arr = [...document.querySelectorAll(`input[name="${name}"]:checked`)]
-        .map(cb => cb.value);
-
+    const arr = [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(cb => cb.value);
     return arr.length ? arr : ["Any"];
 }
 
-
 function collectOtherFilters() {
-
     const priority = getCheckedValues("priorityfilter");
     const dept = getCheckedValues("deptfilter");
     const usertype = getCheckedValues("usrtypefilter");
-
     const commentInput = commentInputEl.value.trim();
     const messageInput = messageInputEl.value.trim();
-
-    // === CSAT ===
     const markscheklist = document.getElementsByName('marks');
-
     const csatValues = [];
     for (let i = 0; i < markscheklist.length - 1; i++) {
-        if (markscheklist[i].checked) {
-            csatValues.push(Number(markscheklist[i].value));
-        }
+        if (markscheklist[i].checked) csatValues.push(Number(markscheklist[i].value));
     }
-
     const csatIncludeUndefined = markscheklist[5]?.checked === true;
-
-    // === Тематика ===
     let theme = '';
     const selTheme = document.getElementById('ThemesToSearch').options;
     for (let i = 0; i < selTheme.length; i++) {
         if (selTheme[i].selected) theme = selTheme[i].value;
     }
-
-    return {
-        priority,
-        dept,
-        usertype,
-        commentInput,
-        messageInput,
-        csatValues,
-        csatIncludeUndefined,
-        theme
-    };
-}
-
-///Конец блока функций
-
-document.getElementById('HideToolsPanel').onclick = function () {
-    if (document.getElementById('AgregatedDataThemes').style.display == '') {
-        document.getElementById('AgregatedDataThemes').style.display = 'none'
-        document.getElementById('themesgrabbeddata').style.display = ''
-    }
-}
-
-document.getElementById('GatherStatByThemes').onclick = function () {
-    if (document.getElementById('AgregatedDataThemes').style.display == 'none') {
-        document.getElementById('AgregatedDataThemes').style.display = ''
-    } else document.getElementById('AgregatedDataThemes').style.display = 'none'
+    return { priority, dept, usertype, commentInput, messageInput, csatValues, csatIncludeUndefined, theme };
 }
 
 async function getlistofopers() {
-    await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", { "headers": { "x-csrf-token": aftoken } }).then(r => r.json()).then(r => dataInfo = r)
+    await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", { "headers": { "x-csrf-token": aftoken } })
+        .then(r => r.json())
+        .then(r => dataInfo = r);
 
     let tpopers = dataInfo.onOperator
         .map(el => el.groupId === "c7bbb211-a217-4ed3-8112-98728dc382d8" ? ({ id: el.operator.id, name: el.operator.fullName }) : el.groupId === "8266dbb1-db44-4910-8b5f-a140deeec5c0" ? ({ id: el.operator.id, name: el.operator.fullName }) : null)
         .filter(el => el !== null)
         .filter(el => /ТП[^0-9]/.test(el.name));
 
-    activeoperatorsgroup.innerHTML = ''
+    const activeOperatorsGroup = document.getElementById('activeoperatorsgroup');
+    activeOperatorsGroup.innerHTML = '';
     for (let i = 0; i < tpopers.length; i++) {
-        if (tpopers[i].name != 'ТП/ОКК-Березкин Александр' && tpopers[i].name != 'ТП-Борисов Евгений(СRM2)') {
-            activeoperatorsgroup.innerHTML += `<span><label><input type="checkbox" name="chekforsearch"><span style="color:bisque;"  name="listofops" value='${tpopers[i].id}'>${tpopers[i].name}</span></label></span>`
+        if (tpopers[i].name !== 'ТП/ОКК-Березкин Александр' && tpopers[i].name !== 'ТП-Борисов Евгений(СRM2)') {
+            activeOperatorsGroup.innerHTML += `<label class="cdu-checkbox-label"><input type="checkbox" name="chekforsearch" checked><span name="listofops" value='${tpopers[i].id}'>${tpopers[i].name}</span></label>`;
         }
     }
+    document.getElementById('checkthemall').checked = true;
 
-    let listofchkbx = document.getElementsByName('chekforsearch')
-    for (let i = 0; i < listofchkbx.length; i++) {
-        if (!listofchkbx[i].checked) {
-            listofchkbx[i].checked = true;
-        }
-    }
-    document.getElementById('checkthemall').checked = true
-
-
-    let listofchkbxmarks = document.getElementsByName('marks')
-    for (let i = 0; i < listofchkbxmarks.length; i++) {
-        if (!listofchkbxmarks[i].checked) {
-            listofchkbxmarks[i].checked = true;
-        }
-    }
-    document.getElementById('checkthemallmarks').checked = true
-
+    let listofchkbxmarks = document.getElementsByName('marks');
+    for (let i = 0; i < listofchkbxmarks.length; i++) { listofchkbxmarks[i].checked = true; }
+    document.getElementById('checkthemallmarks').checked = true;
 }
 
 function calcAvgCsat() {
     const csatCells = document.getElementsByName('CSATvalue');
-    const selectedValues = getSelectedCheckboxValues();
-
     const marks = [];
 
     for (let i = 0; i < csatCells.length; i++) {
-        const cellValue = csatCells[i].textContent;
+        const row = csatCells[i].parentElement;
+        if (row && window.getComputedStyle(row).display === "none") continue;
 
-        // пропускаем пустые и "-"
+        const cellValue = csatCells[i].textContent;
         if (cellValue === '-' || cellValue.trim() === '') continue;
 
         const numeric = Number(cellValue);
-        if (isNaN(numeric)) continue;
-
-        // если фильтр пуст — берём все
-        if (selectedValues.length === 0) {
-            marks.push(numeric);
-        }
-        // если фильтр есть — берём только совпадающие
-        else if (selectedValues.includes(cellValue)) {
-            marks.push(numeric);
-        }
+        if (!isNaN(numeric)) marks.push(numeric);
     }
 
-    // считаем сумму и количество
     let sum = 0;
     for (const m of marks) sum += m;
-
-    const count = marks.length;
-
-    // защита от деления на 0
-    const avg = count > 0 ? (sum / count) : 0;
-
-    // защита от NaN и Infinity
+    const avg = marks.length > 0 ? (sum / marks.length) : 0;
     const safeAvg = Number.isFinite(avg) ? avg : 0;
 
-    document.getElementById('avgCsatCount').innerHTML =
-        `<span style="background:#2960ae;padding:5px;color:floralwhite;font-weight:700;border-radius:10px;">
-            Средний CSAT по выгрузке: ${safeAvg.toFixed(2)}
-        </span>`;
+    document.getElementById('avgCsatCount').innerHTML = `<span class="cdu-stat-badge cdu-stat-primary">Avg CSAT: ${safeAvg.toFixed(2)}</span>`;
 }
 
 function calcAvgSLACompleted() {
     const SLACompContainer = document.getElementsByName('SLACompletedValue');
     let outtimedCount = 0;
+    let totalVisible = 0;
 
     for (let i = 0; i < SLACompContainer.length; i++) {
-        if (SLACompContainer[i].textContent === "0") {
-            outtimedCount++;
-        }
+        const row = SLACompContainer[i].parentElement;
+        if (row && window.getComputedStyle(row).display === "none") continue;
+        totalVisible++;
+        if (SLACompContainer[i].textContent === "0") outtimedCount++;
     }
 
-    const total = SLACompContainer.length;
-
-    // защита от деления на 0
-    const percent = total > 0
-        ? ((total - outtimedCount) / total) * 100
-        : 0;
-
-    document.getElementById('avgSLAClosedData').innerHTML =
-        `<span style="background:#bb680f;padding:5px;color:floralwhite;font-weight:700;border-radius:10px;">
-            SLA закрытия: ${percent.toFixed(1)}%
-        </span>`;
+    const percent = totalVisible > 0 ? ((totalVisible - outtimedCount) / totalVisible) * 100 : 0;
+    document.getElementById('avgSLAClosedData').innerHTML = `<span class="cdu-stat-badge cdu-stat-accent">SLA Closing: ${percent.toFixed(1)}%</span>`;
 }
-
 
 function saveFilteredTableCSV() {
     let nwtable = document.getElementById("TableGrabbed");
+    if (!nwtable) return;
     let csvData = [];
-
     for (let i = 0; i < nwtable.rows.length; i++) {
-
-        // Надёжная проверка видимости
-        const isVisible = window.getComputedStyle(nwtable.rows[i]).display !== "none";
-        if (!isVisible) continue;
-
-        let rowData = [];
-
-        for (let j = 0; j < nwtable.rows[i].cells.length; j++) {
-            let cellText = nwtable.rows[i].cells[j].textContent
-                .trim()
-                .replace(/"/g, '""'); // экранирование кавычек
-
-            rowData.push(`"${cellText}"`);
+        if (window.getComputedStyle(nwtable.rows[i]).display !== "none") {
+            let rowData = [];
+            for (let j = 0; j < nwtable.rows[i].cells.length; j++) {
+                rowData.push(`"${nwtable.rows[i].cells[j].textContent.trim().replace(/"/g, '""')}"`);
+            }
+            csvData.push(rowData.join(","));
         }
-
-        csvData.push(rowData.join(","));
     }
-
-    let csvString = csvData.join("\n");
-    let csvContent = "\uFEFF" + csvString; // BOM для кириллицы
-
+    let csvContent = "\uFEFF" + csvData.join("\n");
     let downloadLink = document.createElement("a");
     downloadLink.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
     downloadLink.download = "filtered_table.csv";
@@ -654,36 +561,30 @@ function saveFilteredTableCSV() {
 function getopenGrabberButtonPress() {
     const select = document.getElementById("ThemesToSearch");
     select.innerHTML = "";
-
     themes.forEach(t => {
         const opt = document.createElement("option");
         opt.value = t.value || t.group;
         opt.textContent = t.label;
-
-        if (t.style) opt.style = t.style;
-        if (t.group) opt.className = selecttheme;
-
+        if (t.group) opt.style.fontWeight = 'bold';
         select.appendChild(opt);
     });
 
-    let parseThemesAndVals = document.getElementById('ThemesToSearch')
+    themesarray = [];
+    const parseThemesAndVals = document.getElementById('ThemesToSearch');
     for (let i = 0; i < parseThemesAndVals.length; i++) {
         themesarray.push({ value: parseThemesAndVals[i].value, ThemeName: parseThemesAndVals[i].textContent });
     }
 
-    if (document.getElementById('AF_Grabber').style.display == '')
-        document.getElementById('AF_Grabber').style.display = 'none'
-    else document.getElementById('AF_Grabber').style.display = ''
+    const modal = document.getElementById('AF_Grabber');
+    modal.style.display = modal.style.display === '' ? 'none' : '';
 
     let getcurdate = new Date();
     let year = getcurdate.getFullYear();
     let day = String(getcurdate.getDate()).padStart(2, "0");
-
     let lastDayOfPrevMonth = new Date(year, getcurdate.getMonth(), 0).getDate();
     let toDate = new Date(year, getcurdate.getMonth(), day);
 
     if (day === "01") {
-        // set date range to previous month
         dateFromGrab = new Date(year, getcurdate.getMonth() - 1, lastDayOfPrevMonth);
         dateToGrab = new Date(year, getcurdate.getMonth(), 1);
     }
@@ -691,446 +592,448 @@ function getopenGrabberButtonPress() {
     document.getElementById("dateFromGrab").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
     document.getElementById("dateToGrab").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
 
-    getlistofopers()
-
+    getlistofopers();
 }
 
 document.getElementById('checkthemall').onclick = function () {
-    let listofchkbx = document.getElementsByName('chekforsearch')
-    for (let i = 0; i < listofchkbx.length; i++) {
-        if (listofchkbx[i].checked == true) {
-            listofchkbx[i].checked = false;
-            document.getElementById('checkthemall').checked = false
-        } else {
-            listofchkbx[i].checked = true;
-            document.getElementById('checkthemall').checked = true
-        }
-    }
-}
+    const c = !this.checked;
+    this.checked = !c;
+    document.getElementsByName('chekforsearch').forEach(cb => cb.checked = !c);
+};
 
 document.getElementById('checkthemallmarks').onclick = function () {
-    let listofchkbxmarks = document.getElementsByName('marks')
-    for (let i = 0; i < listofchkbxmarks.length; i++) {
-        if (listofchkbxmarks[i].checked == true) {
-            listofchkbxmarks[i].checked = false;
-            document.getElementById('checkthemallmarks').checked = false
-        } else {
-            listofchkbxmarks[i].checked = true;
-            document.getElementById('checkthemallmarks').checked = true
-        }
-    }
-}
+    const c = !this.checked;
+    this.checked = !c;
+    document.getElementsByName('marks').forEach(cb => cb.checked = !c);
+};
 
-// Функция для получения выбранных значений чекбоксов оценок
-function getSelectedCheckboxValues() {
-    const checkboxes = document.querySelectorAll('input[name="marksFilter"]:checked');
-    const selectedValues = [];
+function getSelectedCheckboxTagsValues() { return [...document.querySelectorAll('input[name="tagsforfilter"]:checked')].map(cb => cb.value); }
 
-    checkboxes.forEach(function (checkbox) {
-        selectedValues.push(checkbox.value);
-    });
-
-    return selectedValues;
-}
-
-// Функция для получения выбранных значений чекбоксов тегов
-function getSelectedCheckboxTagsValues() {
-    const checkboxes = document.querySelectorAll('input[name="tagsforfilter"]:checked');
-    const selectedValues = [];
-
-    checkboxes.forEach(function (checkbox) {
-        selectedValues.push(checkbox.value);
-    });
-
-    return selectedValues;
-}
-///////////// Вспомогательные функции для работы с агрегированными таблицами и позже в планах сюда графики добавить
-function buildUniversalTable({
-    mode,          // "simple" или "interval"
-    groupField,    // "ThemeValue" или "Country"
-    columnTitle,   // "Тематика" или "Страна"
-    saveButtonId,   // id кнопки CSV или null
-    useExistingData = false   // <--- добавлено
-}) {
-    document.getElementById('AgregatedDataThemes').style.width = "400px";
-    document.getElementById('themesgrabbeddata').style.display = '';
-
+function buildUniversalTable({ mode, groupField, columnTitle, saveButtonId }) {
+    document.getElementById('AgregatedDataThemes').style.width = "450px";
     const tableContainer = document.getElementById('AgregatedDataOut');
     tableContainer.innerHTML = '';
 
-    let data;
-
-    if (useExistingData) {
-        data = currentTableData; // <--- используем отсортированные данные
-    } else {
-        if (mode === "interval") {
-            data = buildIntervalData(groupField);
-        } else {
-            data = buildSimpleData(groupField);
-        }
-        currentTableData = data; // сохраняем
-    }
+    isDescending = true; // Сбрасываем сортировку на DESC при каждом новом построении
+    let data = mode === "interval" ? buildIntervalData(groupField) : buildSimpleData(groupField);
+    currentTableData = data;
 
     const table = buildHTMLTable(data, columnTitle, mode, groupField);
     tableContainer.appendChild(table);
 
-    if (saveButtonId) {
-        document.getElementById(saveButtonId).removeAttribute('disabled');
-    }
-
+    if (saveButtonId) document.getElementById(saveButtonId).removeAttribute('disabled');
     lastTableParams = { mode, groupField, columnTitle, saveButtonId };
+}
 
+function isTimeInInterval(time, start, end) {
+    if (end === "00:00") end = "24:00";
+    return time >= start && time < end;
 }
 
 function buildIntervalData(groupField) {
-
     const intervals = [
-        '07:00 - 07:30', '07:30 - 08:00', '08:00 - 08:30', '08:30 - 09:00',
-        '09:00 - 09:30', '09:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00',
-        '11:00 - 11:30', '11:30 - 12:00', '12:00 - 12:30', '12:30 - 13:00',
-        '13:00 - 13:30', '13:30 - 14:00', '14:00 - 14:30', '14:30 - 15:00',
-        '15:00 - 15:30', '15:30 - 16:00', '16:00 - 16:30', '16:30 - 17:00',
-        '17:00 - 17:30', '17:30 - 18:00', '18:00 - 18:30', '18:30 - 19:00',
-        '19:00 - 19:30', '19:30 - 20:00', '20:00 - 20:30', '20:30 - 21:00',
-        '21:00 - 21:30', '21:30 - 22:00', '22:00 - 22:30', '22:30 - 23:00',
+        '07:00 - 07:30', '07:30 - 08:00', '08:00 - 08:30', '08:30 - 09:00', '09:00 - 09:30', '09:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00',
+        '11:00 - 11:30', '11:30 - 12:00', '12:00 - 12:30', '12:30 - 13:00', '13:00 - 13:30', '13:30 - 14:00', '14:00 - 14:30', '14:30 - 15:00',
+        '15:00 - 15:30', '15:30 - 16:00', '16:00 - 16:30', '16:30 - 17:00', '17:00 - 17:30', '17:30 - 18:00', '18:00 - 18:30', '18:30 - 19:00',
+        '19:00 - 19:30', '19:30 - 20:00', '20:00 - 20:30', '20:30 - 21:00', '21:00 - 21:30', '21:30 - 22:00', '22:00 - 22:30', '22:30 - 23:00',
         '23:00 - 23:30', '23:30 - 00:00'
     ];
 
     const result = payloadarray.reduce((acc, obj) => {
         const value = obj[groupField];
-        const timeKey = moment(obj.timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
+        const timeMatch = obj.timeStamp.match(/\b(\d{1,2}:\d{2})\b/);
+        const timeKey = timeMatch ? timeMatch[1].padStart(5, '0') : "00:00";
 
-        const interval = intervals.find(interval => {
-            const [start, end] = interval.split(' - ');
-            return moment(timeKey, 'HH:mm')
-                .isBetween(moment(start, 'HH:mm'), moment(end, 'HH:mm'), null, '[]');
+        const interval = intervals.find(inv => {
+            const [s, e] = inv.split(' - ');
+            return isTimeInInterval(timeKey, s, e);
         });
 
         if (interval) {
             acc.counts[interval] = acc.counts[interval] || {};
             acc.counts[interval][value] = (acc.counts[interval][value] || 0) + 1;
         }
-
         return acc;
     }, { counts: {} });
 
     const data = Object.entries(result.counts).flatMap(([interval, counts]) =>
         Object.entries(counts).map(([value, count]) => ({
-            [groupField]: value,   // <-- ключ теперь правильный
+            [groupField]: value,
             TimeStamp: interval,
             Count: count
         }))
     );
 
-    data.sort((a, b) => {
-        const tA = a.TimeStamp.split(" - ")[0];
-        const tB = b.TimeStamp.split(" - ")[0];
-        return moment(tA, "HH:mm").diff(moment(tB, "HH:mm"));
-    });
-
+    data.sort((a, b) => a.TimeStamp.localeCompare(b.TimeStamp));
+    countsArrayInterval = data;
     return data;
 }
 
-
 function buildSimpleData(groupField) {
-
-    const counts = payloadarray.reduce((acc, obj) => {
+    const targetArray = groupField === "Country" ? pureArray : payloadarray;
+    const counts = targetArray.reduce((acc, obj) => {
         const value = obj[groupField];
         acc[value] = (acc[value] || 0) + 1;
         return acc;
     }, {});
 
-    return Object.entries(counts).map(([value, count]) => ({
-        [groupField]: value,   // <-- ключ теперь правильный
-        Count: count
-    }));
+    let result = Object.entries(counts).map(([value, count]) => ({ [groupField]: value, Count: count }));
+    // Сортировка по умолчанию (от большего к меньшему)
+    result.sort((a, b) => b.Count - a.Count);
+    return result;
 }
 
-
 function buildHTMLTable(data, columnTitle, mode, groupField) {
-
     const table = document.createElement('table');
+    table.className = 'cdu-table';
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
 
-    const headers = mode === "interval"
-        ? ['№п.п', columnTitle, 'Интервал', 'Количество']
-        : ['№п.п', columnTitle, 'Количество'];
+    // Добавляем индикатор сортировки для красоты и понимания
+    const countTitle = `Count ${isDescending ? '▼' : '▲'}`;
+    const headers = mode === "interval" ? ['№', columnTitle, 'Interval', countTitle] : ['№', columnTitle, countTitle];
 
-    headers.forEach((text, index) => {
+    headers.forEach((text) => {
         const th = document.createElement('th');
         th.textContent = text;
-        th.style = "text-align:center;font-weight:700;background:dimgrey;border:1px solid black;padding:5px;position:sticky;top:0;";
-
-        // Если это колонка "Количество" — вешаем сортировку
-        if (text === "Количество") {
+        if (text.includes("Count")) {
             th.style.cursor = "pointer";
-            th.title = "Клик — сортировка по возрастанию/убыванию";
+            th.title = "Click to sort";
             th.addEventListener('click', sortUniversalTableByCount);
         }
-
         headerRow.appendChild(th);
     });
 
-
     thead.appendChild(headerRow);
     table.appendChild(thead);
-
     const tbody = document.createElement('tbody');
 
     data.forEach((item, index) => {
         const row = document.createElement('tr');
-
         if (mode === "interval") {
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${item[groupField]}</td>
-                <td>${item.TimeStamp}</td>
-                <td>${item.Count}</td>
-            `;
+            row.innerHTML = `<td>${index + 1}</td><td>${item[groupField]}</td><td>${item.TimeStamp}</td><td>${item.Count}</td>`;
         } else {
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${item[groupField]}</td>
-                <td>${item.Count}</td>
-            `;
+            row.innerHTML = `<td>${index + 1}</td><td>${item[groupField]}</td><td>${item.Count}</td>`;
         }
-
         tbody.appendChild(row);
     });
-
     table.appendChild(tbody);
     return table;
 }
 
-function rebuildLastTable() {
-    if (!lastTableParams) return;
-
-    buildUniversalTable({
-        ...lastTableParams,
-        useExistingData: true   // <--- ключевой момент
-    });
-}
-
+function rebuildLastTable() { if (lastTableParams) buildUniversalTable(lastTableParams); }
 function sortUniversalTableByCount() {
-    currentTableData.sort((a, b) => {
-        return isDescending
-            ? b.Count - a.Count
-            : a.Count - b.Count;
-    });
+    isDescending = !isDescending; // Меняем флаг ДО сортировки, чтобы таблица перестроилась
+    currentTableData.sort((a, b) => isDescending ? b.Count - a.Count : a.Count - b.Count);
 
-    isDescending = !isDescending;
-
-    rebuildLastTable();
+    const tableContainer = document.getElementById('AgregatedDataOut');
+    tableContainer.innerHTML = '';
+    const table = buildHTMLTable(currentTableData, lastTableParams.columnTitle, lastTableParams.mode, lastTableParams.groupField);
+    tableContainer.appendChild(table);
 }
 
-//new Graph функция
-function drawUniversalGraph({
-    mode,          // "simple" или "interval"
-    groupField,    // ThemeValue или Country
-    chartType,     // bar или line
-    title          // Тематика или Страна
-}) {
-    document.getElementById('AgregatedDataThemes').style.width = "1200px";
-    document.getElementById('themesgrabbeddata').style.display = 'none';
+// --- NEW INTERACTIVE CHART LOGIC ---
+function drawUniversalGraph({ mode, groupField, chartType, title }) {
+    // Вычисляем оптимальную ширину на основе экрана (максимум 90% или 1400px)
+    const maxWidth = Math.min(window.innerWidth * 0.9, 1400);
+    const panelWidth = mode === "interval" ? maxWidth : 940; // Base график может быть 940, Timeline - шире
+
+    document.getElementById('AgregatedDataThemes').style.width = panelWidth + "px";
 
     const graphContainer = document.getElementById('AgregatedDataOut');
     graphContainer.innerHTML = '';
-
     const canvas = document.createElement('canvas');
+    canvas.width = panelWidth - 40;
+    canvas.height = 450;
+    canvas.style.width = "100%";
+    canvas.style.height = "auto";
     graphContainer.appendChild(canvas);
-    const ctx = canvas.getContext('2d');
 
     let labels = [];
     let datasets = [];
 
     if (mode === "simple") {
-
-        let source;
-
-        // Если таблица была построена — используем её данные
-        if (currentTableData.length > 0) {
-            source = currentTableData;
-        } else {
-            // Если таблицы не было — используем оригинальные массивы
-            source = groupField === "ThemeValue" ? countsArray : countsCountryArray;
-        }
-
-
+        let source = buildSimpleData(groupField); // Он уже отсортирован по убыванию
         labels = source.map(item => item[groupField]);
-        const counts = source.map(item => item.Count);
-
+        const colors = ['#38bdf8', '#a855f7', '#f43f5e', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316'];
         datasets = [{
-            label: "Количество",
-            data: counts,
-            backgroundColor: 'rgba(54, 162, 235, 0.5)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
+            label: "Count",
+            data: source.map(item => item.Count),
+            colors: labels.map((_, i) => colors[i % colors.length])
         }];
-    }
-
-
-    if (mode === "interval") {
-        // INTERVAL MODE (line chart)
+    } else if (mode === "interval") {
         const intervals = [
-            '07:00 - 07:30', '07:30 - 08:00', '08:00 - 08:30', '08:30 - 09:00',
-            '09:00 - 09:30', '09:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00',
-            '11:00 - 11:30', '11:30 - 12:00', '12:00 - 12:30', '12:30 - 13:00',
-            '13:00 - 13:30', '13:30 - 14:00', '14:00 - 14:30', '14:30 - 15:00',
-            '15:00 - 15:30', '15:30 - 16:00', '16:00 - 16:30', '16:30 - 17:00',
-            '17:00 - 17:30', '17:30 - 18:00', '18:00 - 18:30', '18:30 - 19:00',
-            '19:00 - 19:30', '19:30 - 20:00', '20:00 - 20:30', '20:30 - 21:00',
-            '21:00 - 21:30', '21:30 - 22:00', '22:00 - 22:30', '22:30 - 23:00',
+            '07:00 - 07:30', '07:30 - 08:00', '08:00 - 08:30', '08:30 - 09:00', '09:00 - 09:30', '09:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00',
+            '11:00 - 11:30', '11:30 - 12:00', '12:00 - 12:30', '12:30 - 13:00', '13:00 - 13:30', '13:30 - 14:00', '14:00 - 14:30', '14:30 - 15:00',
+            '15:00 - 15:30', '15:30 - 16:00', '16:00 - 16:30', '16:30 - 17:00', '17:00 - 17:30', '17:30 - 18:00', '18:00 - 18:30', '18:30 - 19:00',
+            '19:00 - 19:30', '19:30 - 20:00', '20:00 - 20:30', '20:30 - 21:00', '21:00 - 21:30', '21:30 - 22:00', '22:00 - 22:30', '22:30 - 23:00',
             '23:00 - 23:30', '23:30 - 00:00'
         ];
-
         labels = intervals;
 
-        // Группировка
         const result = payloadarray.reduce((acc, obj) => {
             const value = obj[groupField];
-            const timeKey = moment(obj.timeStamp, 'DD.MM.YYYY, HH:mm').format('HH:mm');
+            const timeMatch = obj.timeStamp.match(/\b(\d{1,2}:\d{2})\b/);
+            const timeKey = timeMatch ? timeMatch[1].padStart(5, '0') : "00:00";
 
-            const interval = intervals.find(interval => {
-                const [start, end] = interval.split(' - ');
-                return moment(timeKey, 'HH:mm')
-                    .isBetween(moment(start, 'HH:mm'), moment(end, 'HH:mm'), null, '[]');
+            const interval = intervals.find(inv => {
+                const [s, e] = inv.split(' - ');
+                return isTimeInInterval(timeKey, s, e);
             });
 
             if (interval) {
                 acc.counts[interval] = acc.counts[interval] || {};
                 acc.counts[interval][value] = (acc.counts[interval][value] || 0) + 1;
             }
-
             acc.unique.add(value);
             return acc;
         }, { counts: {}, unique: new Set() });
 
-        const uniqueValues = Array.from(result.unique);
-
-        datasets = uniqueValues.map(value => {
-            const data = intervals.map(interval => {
-                const obj = result.counts[interval];
-                return obj && obj[value] ? obj[value] : 0;
-            });
-
-            const color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;
-
-            return {
-                label: value,
-                data,
-                backgroundColor: color,
-                borderColor: color,
-                borderWidth: 2,
-                pointRadius: 3
-            };
-        });
+        const colors = ['#38bdf8', '#a855f7', '#f43f5e', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316'];
+        datasets = Array.from(result.unique).map((value, idx) => ({
+            label: value,
+            data: intervals.map(inv => (result.counts[inv] && result.counts[inv][value]) ? result.counts[inv][value] : 0),
+            color: colors[idx % colors.length]
+        }));
     }
 
-    // Рисуем график
-    new Chart(ctx, {
-        type: chartType,
-        data: { labels, datasets },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: 'bisque' }
-                },
-                x: {
-                    ticks: { color: 'bisque' }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: 'LightSalmon',
-                        font: { weight: 'bold' }
-                    }
-                }
-            }
-        }
-    });
+    currentChartState = { canvas, mode, chartType, labels, datasets, hiddenItems: new Set() };
+    canvas.addEventListener('click', handleChartClick);
+
+    renderCyberChartInteractive();
 }
 
+function handleChartClick(e) {
+    if (!currentChartState || !currentChartState.canvas.__legendBoxes) return;
 
-/////////////
+    const canvas = currentChartState.canvas;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clickX = (e.clientX - rect.left) * scaleX;
+    const clickY = (e.clientY - rect.top) * scaleY;
 
-function saveToCSVInterval() {
-    let csvContent = "\uFEFF"; // Добавление BOM символа для корректной кодировки UTF-8
+    // Сначала проверяем клик по легенде
+    let clickedItemLabel = null;
+    const clickedLegend = canvas.__legendBoxes.find(b => clickX >= b.x && clickX <= b.x + b.w && clickY >= b.y && clickY <= b.y + b.h);
 
-    // Добавление заголовков столбцов
-    csvContent += "TimeStamp,ThemeValue,Count\n";
+    if (clickedLegend) {
+        clickedItemLabel = clickedLegend.label;
+    } else if (canvas.__dataShapes) {
+        // Если не легенда, проверяем элементы графика (хитбоксы столбцов или увеличенные хитбоксы точек)
+        const clickedShape = canvas.__dataShapes.find(s => {
+            if (s.type === 'rect') {
+                return clickX >= s.x && clickX <= s.x + s.w && clickY >= s.y && clickY <= s.y + s.h;
+            }
+            if (s.type === 'circle') {
+                return Math.hypot(clickX - s.cx, clickY - s.cy) <= s.r;
+            }
+            return false;
+        });
+        if (clickedShape) clickedItemLabel = clickedShape.label;
+    }
 
-    // Добавление данных
-    countsArrayInterval.forEach(item => {
-        const { TimeStamp, ThemeValue, Count } = item;
-        const row = `${TimeStamp},${ThemeValue},${Count}\n`;
-        csvContent += row;
+    // Если кликнули по чему-то осмысленному
+    if (clickedItemLabel) {
+        const hidden = currentChartState.hiddenItems;
+        const allItems = currentChartState.mode === "simple" ? currentChartState.labels : currentChartState.datasets.map(d => d.label);
+
+        if (e.ctrlKey || e.metaKey) {
+            if (hidden.has(clickedItemLabel)) hidden.delete(clickedItemLabel);
+            else hidden.add(clickedItemLabel);
+        } else {
+            const isOnlyVisible = !hidden.has(clickedItemLabel) && hidden.size === allItems.length - 1;
+            if (isOnlyVisible) {
+                hidden.clear();
+            } else {
+                hidden.clear();
+                allItems.forEach(i => { if (i !== clickedItemLabel) hidden.add(i); });
+            }
+        }
+        renderCyberChartInteractive();
+    }
+}
+
+function renderCyberChartInteractive() {
+    const { canvas, mode, chartType, labels, datasets, hiddenItems } = currentChartState;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    let h = canvas.height;
+
+    let activeLabels = [];
+    let activeDatasets = [];
+
+    if (mode === "simple") {
+        activeLabels = labels.filter(l => !hiddenItems.has(l));
+        const filteredData = datasets[0].data.filter((_, i) => !hiddenItems.has(labels[i]));
+        const filteredColors = datasets[0].colors.filter((_, i) => !hiddenItems.has(labels[i]));
+        activeDatasets = [{ ...datasets[0], data: filteredData, colors: filteredColors }];
+    } else {
+        activeLabels = labels;
+        activeDatasets = datasets.filter(ds => !hiddenItems.has(ds.label));
+    }
+
+    const padL = 35, padR = 15, padB = 80;
+    canvas.__legendBoxes = [];
+    canvas.__dataShapes = []; // Хранилище хитбоксов для кликов по графику
+
+    let legX = 10;
+    let legY = 10;
+    const legendItems = mode === "simple" ? labels : datasets.map(ds => ds.label);
+    const legendColors = mode === "simple" ? datasets[0].colors : datasets.map(ds => ds.color);
+
+    ctx.font = '12px sans-serif';
+    legendItems.forEach((itemLabel, i) => {
+        const textWidth = ctx.measureText(itemLabel).width;
+        const itemWidth = 18 + textWidth + 15;
+
+        if (legX + itemWidth > w - 10) {
+            legX = 10;
+            legY += 20;
+        }
+        canvas.__legendBoxes.push({ label: itemLabel, x: legX, y: legY, w: itemWidth, h: 15, color: legendColors[i] });
+        legX += itemWidth;
     });
 
-    // Создание элемента ссылки для скачивания CSV-файла
+    const padT = legY + 30;
+    if (h < padT + 200) {
+        canvas.height = padT + 300;
+        h = canvas.height;
+    }
+
+    ctx.clearRect(0, 0, w, h);
+    const chartW = w - padL - padR;
+    const chartH = h - padT - padB;
+
+    // Отрисовка легенды
+    canvas.__legendBoxes.forEach(box => {
+        const isHidden = hiddenItems.has(box.label);
+        ctx.fillStyle = isHidden ? '#334155' : box.color;
+        ctx.fillRect(box.x, box.y, 12, 12);
+        ctx.fillStyle = isHidden ? '#64748b' : '#e2e8f0';
+        ctx.textAlign = 'left';
+        ctx.fillText(box.label, box.x + 18, box.y + 10);
+    });
+
+    if (activeDatasets.length === 0 || (mode === "simple" && activeLabels.length === 0)) return;
+
+    let maxVal = Math.max(...activeDatasets.flatMap(ds => ds.data.length ? ds.data : [0]));
+    maxVal = maxVal === 0 ? 10 : Math.ceil(maxVal * 1.2);
+
+    // Сетка
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(51, 65, 85, 0.3)';
+    ctx.lineWidth = 1;
+    const ySteps = 5;
+    for (let i = 0; i <= ySteps; i++) {
+        const y = padT + (chartH * (ySteps - i) / ySteps);
+        ctx.moveTo(padL, y); ctx.lineTo(w - padR, y);
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'right';
+        ctx.fillText(Math.round(maxVal * i / ySteps), padL - 5, y + 4);
+    }
+    ctx.stroke();
+
+    // Подписи X
+    const xStep = chartW / Math.max(activeLabels.length, 1);
+    ctx.fillStyle = '#cbd5e1';
+    activeLabels.forEach((lbl, i) => {
+        const x = padL + (i * xStep) + (xStep / 2);
+        ctx.save();
+        ctx.translate(x, h - padB + 20);
+        ctx.rotate(-Math.PI / 6);
+        ctx.textAlign = 'right';
+
+        let displayLbl = lbl;
+        if (displayLbl.length > 15) displayLbl = displayLbl.substring(0, 15) + '...';
+        ctx.fillText(displayLbl, 0, 0);
+        ctx.restore();
+    });
+
+    // Данные
+    if (chartType === 'bar' && mode === "simple") {
+        const ds = activeDatasets[0];
+        const barW = (xStep * 0.7);
+        activeLabels.forEach((labelName, i) => {
+            const val = ds.data[i] || 0;
+            const barColor = ds.colors[i] || '#38bdf8';
+            const barH = (val / maxVal) * chartH;
+            const x = padL + (i * xStep) + (xStep * 0.15);
+            const y = padT + chartH - barH;
+
+            ctx.fillStyle = barColor;
+            ctx.shadowBlur = 3;
+            ctx.shadowColor = barColor;
+            ctx.fillRect(x, y, barW, barH);
+            ctx.shadowBlur = 0;
+
+            // Записываем хитбокс для клика
+            canvas.__dataShapes.push({ label: labelName, type: 'rect', x, y, w: barW, h: barH });
+        });
+    } else if (chartType === 'line' && mode === "interval") {
+        activeDatasets.forEach(ds => {
+            const lineColor = ds.color || '#a855f7';
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 3;
+            ctx.shadowColor = lineColor;
+
+            ctx.beginPath();
+            activeLabels.forEach((_, i) => {
+                const val = ds.data[i] || 0;
+                const x = padL + (i * xStep) + (xStep / 2);
+                const y = padT + chartH - ((val / maxVal) * chartH);
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = '#0f172a';
+            activeLabels.forEach((_, i) => {
+                const val = ds.data[i] || 0;
+                const x = padL + (i * xStep) + (xStep / 2);
+                const y = padT + chartH - ((val / maxVal) * chartH);
+
+                ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+                // Хитбокс для точки: даем комфортный радиус в 12px, чтобы было легко попасть мышкой
+                canvas.__dataShapes.push({ label: ds.label, type: 'circle', cx: x, cy: y, r: 12 });
+            });
+        });
+    }
+}
+
+// --- CSV SAVING ---
+function triggerDownload(csvContent, filename) {
     const downloadLink = document.createElement("a");
     downloadLink.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
-    downloadLink.setAttribute("download", "data.csv");
+    downloadLink.setAttribute("download", filename);
     document.body.appendChild(downloadLink);
-
-    // Нажатие на ссылку для скачивания файла
     downloadLink.click();
-
-    // Удаление ссылки из DOM
     document.body.removeChild(downloadLink);
+}
+
+function saveToCSVInterval() {
+    let csvContent = "\uFEFFTimeStamp,ThemeValue,Count\n";
+    countsArrayInterval.forEach(({ TimeStamp, ThemeValue, Count }) => csvContent += `${TimeStamp},${ThemeValue},${Count}\n`);
+    triggerDownload(csvContent, "data.csv");
 }
 
 function SaveIntervalСountryCSV() {
-    let csvContent = "\uFEFF"; // Добавление BOM символа для корректной кодировки UTF-8
-    // Добавление заголовков столбцов
-    csvContent += "TimeStamp,Country,Count\n";
-    // Добавление данных
-    countsArrayInterval.forEach(item => {
-        const { TimeStamp, Country, Count } = item;
-        const row = `${TimeStamp},${Country},${Count}\n`;
-        csvContent += row;
-    });
-    // Создание элемента ссылки для скачивания CSV-файла
-    const downloadLink = document.createElement("a");
-    downloadLink.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
-    downloadLink.setAttribute("download", "data.csv");
-    document.body.appendChild(downloadLink);
-    // Нажатие на ссылку для скачивания файла
-    downloadLink.click();
-    // Удаление ссылки из DOM
-    document.body.removeChild(downloadLink);
+    let csvContent = "\uFEFFTimeStamp,Country,Count\n";
+    countsArrayInterval.forEach(({ TimeStamp, Country, Count }) => csvContent += `${TimeStamp},${Country},${Count}\n`);
+    triggerDownload(csvContent, "data.csv");
 }
 
 function SaveСountryCSV(filename) {
     const csvRows = [];
-    // Получаем заголовки таблицы
-    const headers = Array.from(document.querySelectorAll('#AgregatedDataOut thead th')).map(header => header.innerText);
+    const headers = Array.from(document.querySelectorAll('#AgregatedDataOut thead th')).map(h => h.innerText);
     csvRows.push(headers.join(','));
-    // Получаем строки таблицы
     const rows = document.querySelectorAll('#AgregatedDataOut tbody tr');
     for (const row of rows) {
-        const values = Array.from(row.querySelectorAll('td')).map(cell => cell.innerText);
-        csvRows.push(values.join(','));
+        csvRows.push(Array.from(row.querySelectorAll('td')).map(cell => cell.innerText).join(','));
     }
-    // Создаем CSV строку
-    const csvString = csvRows.join('\n');
-    // Создаем Blob объект
-    const blob = new Blob([csvString], { type: 'text/csv' });
-    // Создаем ссылку для скачивания
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    // Эмулируем нажатие на ссылку для скачивания файла
-    document.body.appendChild(link);
-    link.click();
-    // document.body.removeChild(link);
-
-    setTimeout(() => {
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(link.href); // Освободить память
-    }, 0);
+    triggerDownload("\uFEFF" + csvRows.join('\n'), filename);
 }
 
 function resolveThemeLabel(topicValue) {
@@ -1139,624 +1042,267 @@ function resolveThemeLabel(topicValue) {
     return theme ? theme.label : '⁉Unknown theme';
 }
 
-
 async function getChat(id) {
-    const r = await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, {
-        headers: { "x-csrf-token": aftoken }
-    });
-    return r.json();
+    return await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, { headers: { "x-csrf-token": aftoken } }).then(r => r.json());
 }
 
 function pushPayload({ r, duration, operatorName, csat }) {
-
     const topicValue = r.payload?.topicId?.value;
     const themeLabel = resolveThemeLabel(topicValue);
-
     const isActive = duration == null;
-
     payloadarray.push({
         ChatId: r.id,
         OperatorName: operatorName,
-
-        timeStamp: isActive
-            ? "Active chat, ⏳"
-            : new Date(r.tsCreate + duration)
-                .toLocaleString('ru-RU', timeOptions),
-
+        timeStamp: isActive ? "Active chat, ⏳" : new Date(r.tsCreate + duration).toLocaleString('ru-RU', timeOptions),
         CSAT: csat,
-
         ThemeValue: themeLabel,
-
-        SLACompleted: isActive
-            ? null
-            : ((duration / 1000 / 60) > 25 ? 0 : 1),
-
+        SLACompleted: isActive ? null : ((duration / 1000 / 60) > 25 ? 0 : 1),
         Country: r.channelUser?.payload?.country ?? "-"
     });
 }
 
-
-function pushTags(r) {
-    operstagsarray.push({
-        ChatId: r.id,
-        Tags: r.payload?.tags?.value || ''
-    });
-}
-
+function pushTags(r) { operstagsarray.push({ ChatId: r.id, Tags: r.payload?.tags?.value || '' }); }
 function themeMatches(r, chosen) {
     if (chosen === "parseallthemes") return true;
     if (chosen === "parsenothemes") return r.payload.topicId?.value === '';
     return r.payload.topicId?.value === chosen;
 }
 
-//функции для фильтрации КСАТ
-
-function toggleCSATBlock() {
-    const block = document.getElementById('CSATFilterField');
-    block.style.display = block.style.display === 'none' ? '' : 'none';
-}
-
-function filterCSATRows() {
-    const rows = document.querySelectorAll('.rowOfChatGrabbed');
-    const selectedValues = getSelectedCheckboxValues();
-
-    rows.forEach(row => {
-        const cellValue = row.querySelector('[name="CSATvalue"]').textContent;
-
-        const match =
-            selectedValues.length === 0 ||
-            selectedValues.includes(cellValue);
-
-        row.style.display = match ? '' : 'none';
-    });
-
-    calcAvgCsat();
-    calcAvgSLACompleted();
-}
-
-function initCSATCheckboxHandlers() {
-    const checkboxes = document.querySelectorAll('input[name="marksFilter"]');
-    checkboxes.forEach(cb => cb.addEventListener('change', filterCSATRows));
-}
-
 function filterTableRowsByTags() {
-    // Получаем выбранные чекбоксы
     const selectedValues = getSelectedCheckboxTagsValues();
-
+    const rows = document.querySelectorAll('.rowOfChatGrabbed');
     if (selectedValues.length > 0) {
-        const rows = document.querySelectorAll('.rowOfChatGrabbed');
-        rows.forEach(function (row) {
+        rows.forEach(row => {
             const cellValue = row.children[3].textContent;
-            let isMatched = false; // Флаг для отслеживания совпадения
-
-            selectedValues.forEach(function (selectedValue) {
-                const filteredArray = cleanedarray.filter(item => {
-                    const tags = item.Tags.split(',').map(tag => tag.trim());
-                    return tags.includes(selectedValue);
-                });
-
-                filteredArray.forEach(function (item) {
-                    if (item.ChatId === cellValue) {
-                        isMatched = true;
-                        return; // Прерываем цикл, если найдено совпадение
-                    }
-                });
+            let isMatched = false;
+            selectedValues.forEach(val => {
+                const filtered = cleanedarray.filter(item => item.Tags.split(',').map(tag => tag.trim()).includes(val));
+                if (filtered.some(i => i.ChatId === cellValue)) isMatched = true;
             });
-
-            if (isMatched) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+            row.style.display = isMatched ? '' : 'none';
         });
-
-        calcAvgCsat();
-        calcAvgSLACompleted()
-    } else {
-        const rows = document.querySelectorAll('.rowOfChatGrabbed');
-        rows.forEach(function (row) {
-            row.style.display = '';
-        });
-        calcAvgCsat();
-        calcAvgSLACompleted()
-    }
-}
-
-function isJsonString(str) {
-    try {
-        if (typeof str !== 'string') throw new Error('Not a string');
-        let parsed = JSON.parse(str);
-
-        // Не допускаем другие типы кроме массивов
-        if (!Array.isArray(parsed)) throw new Error('Not an array');
-    } catch (e) {
-        console.log('Invalid JSON for:', str, 'Error:', e.message);
-        return false;
-    }
-    return true;
-}
-
-function isValidItem(item) {
-    return item.hasOwnProperty('ChatId') && item.hasOwnProperty('Tags');
-}
-
-function downloadCSV(array) {
-    let csvContent = ''; // Убрали начальную строку
-    let header = "ChatId,Tag1,Tag2,Tag3,Tag4,Tag5,Tag6";
-    csvContent += header + "\r\n";
-
-    array.forEach((item, index) => {
-        if (!isValidItem(item)) {
-            console.warn(`Element at index ${index} is invalid. Skipping...`, item);
-            return;
-        }
-
-        let tags = [];
-        if (item.Tags === "") {
-            tags = [];
-        } else if (isJsonString(item.Tags)) {
-            tags = JSON.parse(item.Tags);
-        } else {
-            console.warn(`Element at index ${index} has invalid Tags. Using empty array.`, item);
-        }
-
-        let row = [item.ChatId, ...tags];
-        csvContent += row.join(",") + "\r\n";
-        console.log(`Processed element at index ${index}:`, row.join(","));
-    });
-
-    // Создание Blob из строки CSV и загрузка файла
-    let blob = new Blob([csvContent], { type: 'text/csv' });
-    let link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "export.csv";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    } else rows.forEach(row => row.style.display = '');
+    calcAvgCsat(); calcAvgSLACompleted();
 }
 
 function toggleBlock({ containerId, blockId, extraId }) {
     const block = document.getElementById(blockId);
     const extra = extraId ? document.getElementById(extraId) : null;
     const container = document.getElementById(containerId);
-
     const isHidden = window.getComputedStyle(block).display === "none";
 
-
     if (isHidden) {
-        block.style.display = blockId === "activeoperatorsgroup" ? "grid" : "";
-        if (extra) extra.style.display = "";
+        block.style.display = blockId === "activeoperatorsgroup" ? "grid" : "block";
+        if (extra) extra.style.display = "flex";
         container.classList.add("glowing-border-animation");
-
-        // --- Специальная логика для othercontainer ---
-        if (containerId === "othercontainer") {
-            otherfilters = "on";
-            console.log("otherfilters:", otherfilters);
-        }
-
+        if (containerId === "othercontainer") otherfilters = "on";
     } else {
         block.style.display = "none";
         if (extra) extra.style.display = "none";
         container.classList.remove("glowing-border-animation");
-
-        // --- Специальная логика для othercontainer ---
-        if (containerId === "othercontainer") {
-            otherfilters = "off";
-            console.log("otherfilters:", otherfilters);
-        }
+        if (containerId === "othercontainer") otherfilters = "off";
     }
 }
 
 function aggregateCounts(array, field) {
-    return array.reduce((acc, obj) => {
-        const value = obj[field];
-        acc[value] = (acc[value] || 0) + 1;
-        return acc;
-    }, {});
+    return array.reduce((acc, obj) => { acc[obj[field]] = (acc[obj[field]] || 0) + 1; return acc; }, {});
 }
 
-function addCell(row, value, extraStyles = "", attrs = {}) {
+function addCell(row, value, attrs = {}) {
     const cell = document.createElement('td');
     cell.textContent = value;
-    cell.style.border = "1px solid black";
-    cell.style.fontSize = "12px";
-
-    if (extraStyles) cell.style.cssText += extraStyles;
-
-    for (const [key, val] of Object.entries(attrs)) {
-        cell.setAttribute(key, val);
-    }
-
+    for (const [key, val] of Object.entries(attrs)) cell.setAttribute(key, val);
     row.appendChild(cell);
 }
 
 function initRowClickHandlers() {
     document.querySelectorAll('.rowOfChatGrabbed').forEach(row => {
         row.onclick = () => {
-            const chatId = row.children[3].textContent;
-            document.getElementById('hashchathis').value = chatId;
-
-            if (document.getElementById('AF_ChatHis').style.display === 'none') {
-                document.getElementById('opennewcat').click();
-            }
-
+            document.getElementById('hashchathis').value = row.children[3].textContent;
+            if (document.getElementById('AF_ChatHis').style.display === 'none') document.getElementById('opennewcat').click();
             btn_search_history.click();
         };
     });
 }
 
-function initCSATFilterButtonHandlers() {
-    const btnFilters = document.getElementsByName('btnNameFilter');
-
-    btnFilters.forEach(btn => {
-        if (btn.textContent === '🏁 CSAT') {
-            btn.onclick = () => {
-                toggleCSATBlock();
-                initCSATCheckboxHandlers();
-                document.getElementById('hidefilter').onclick = toggleCSATBlock;
-                document.getElementById('downloadfilteredtocsv').onclick = saveFilteredTableCSV;
-            };
-        }
-    });
-}
-
 function getDateRange() {
-    const padStart = (string, targetLength, padString) =>
-        String(string).padStart(targetLength, padString);
-
     const formatDate = (date, time) => {
         const y = date.getFullYear();
-        const m = padStart(date.getMonth() + 1, 2, '0');
-        const d = padStart(date.getDate(), 2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
         return `${y}-${m}-${d}T${time}`;
     };
-
     const selectedDate = new Date(document.getElementById("dateFromGrab").value);
     selectedDate.setDate(selectedDate.getDate() - 1);
-
     const selectedEndDate = new Date(document.getElementById("dateToGrab").value);
-
-    return {
-        leftDateFromGrab: formatDate(selectedDate, "21:00:00.000z"),
-        rightDateToGrab: formatDate(selectedEndDate, "20:59:59.059z")
-    };
+    return { leftDateFromGrab: formatDate(selectedDate, "21:00:00.000z"), rightDateToGrab: formatDate(selectedEndDate, "20:59:59.059z") };
 }
 
 function getSelectedOperators() {
     const ops = document.getElementsByName('listofops');
     const checks = document.getElementsByName('chekforsearch');
-
-    const ids = [];
-    const names = [];
-
+    const ids = [], names = [];
     for (let i = 0; i < checks.length; i++) {
-        if (checks[i].checked) {
-            ids.push(ops[i].getAttribute('value'));
-            names.push(ops[i].textContent);
-        }
+        if (checks[i].checked) { ids.push(ops[i].getAttribute('value')); names.push(ops[i].textContent); }
     }
-
     return { ids, names };
 }
 
 async function loadChatsForOperator(operatorId, operatorName, leftDate, rightDate, filters) {
-    let page = 1;
-    let opgrdata;
-    const tmponlyoperhashes = [];
+    let page = 1; let opgrdata; const tmponlyoperhashes = [];
     do {
-        const body = {
-            serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
-            mode: "Json",
-            participatingOperatorsIds: [operatorId],
-            tsFrom: leftDate,
-            tsTo: rightDate,
-            orderBy: "ts",
-            orderDirection: "Asc",
-            page,
-            limit: 100
-        };
-
-        opgrdata = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-            method: "POST",
-            headers: { "content-type": "application/json", "x-csrf-token": aftoken },
-            body: JSON.stringify(body),
-            credentials: "include"
-        }).then(r => r.json());
-
+        const body = { serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json", participatingOperatorsIds: [operatorId], tsFrom: leftDate, tsTo: rightDate, orderBy: "ts", orderDirection: "Asc", page, limit: 100 };
+        opgrdata = await fetch("https://skyeng.autofaq.ai/api/conversations/history", { method: "POST", headers: { "content-type": "application/json", "x-csrf-token": aftoken }, body: JSON.stringify(body), credentials: "include" }).then(r => r.json());
         if (!opgrdata?.items) break;
-
         for (const el of opgrdata.items) {
             const rate = el.stats.rate.rate;
-
-            const allowedValues = filters.csatValues;
-            const includeUndefined = filters.csatIncludeUndefined;
-
-            const csatAllowed = includeUndefined
-                ? (rate === undefined || allowedValues.includes(rate))
-                : (rate !== undefined && allowedValues.includes(rate));
-
-
-            if (csatAllowed) {
-                chatswithmarksarray.push({ ConvId: el.conversationId, Rate: rate });
-            }
-
-            if (el.operatorId === operatorId) {
-                tmponlyoperhashes.push({
-                    HashId: el.conversationId,
-                    Duration: el.stats.conversationDuration,
-                    operatorName
-                });
-            }
+            const csatAllowed = filters.csatIncludeUndefined ? (rate === undefined || filters.csatValues.includes(rate)) : (rate !== undefined && filters.csatValues.includes(rate));
+            if (csatAllowed) chatswithmarksarray.push({ ConvId: el.conversationId, Rate: rate });
+            if (el.operatorId === operatorId) tmponlyoperhashes.push({ HashId: el.conversationId, Duration: el.stats.conversationDuration, operatorName });
         }
-
         page++;
     } while ((page - 1) < (opgrdata.total / 100));
-
     return tmponlyoperhashes;
 }
 
-function extractComment(fullText) {
-    const idx = fullText.toLowerCase().indexOf("комментарий:");
-    if (idx === -1) return fullText; // если вдруг нет слова — возвращаем всё
-    return fullText.substring(idx).trim();
-}
-
 function extractCommentLine(txt) {
-    const lines = txt.split(/<br\s*\/?>/i); // разбиваем по <br />
+    const lines = txt.split(/<br\s*\/?>/i);
     const line = lines.find(l => l.toLowerCase().includes("комментарий:"));
     return line ? line.trim() : "";
 }
 
-
 async function processChat(chat, filters, criticalChats) {
     const matched = chatswithmarksarray.find(x => x.ConvId === chat.HashId);
     if (!matched) return;
-
     const r = await getChat(chat.HashId);
     if (!themeMatches(r, filters.theme)) return;
-
     pushTags(r);
 
     const priorityFilters = filters.priority ?? ["Any"];
     const deptFilters = filters.dept ?? ["Any"];
     const userTypeFilters = filters.usertype ?? ["Any"];
-    //const isCommentFilterActive = commentSearch !== "";
     const commentSearch = (filters.commentInput ?? "").toLowerCase();
     const messageSearch = (filters.messageInput ?? "").toLowerCase();
 
     const actualUserType = r.channelUser.payload?.userType ?? null;
-    const messageTypes = ["Question", "AnswerOperator", "AnswerOperatorWithBot"];
-
-    // --- PRIORITY & DEPARTMENT & CATEGORY проверяем по OperatorComment ---
     const operatorComments = r.messages.filter(m => m.tpe === "OperatorComment");
     const allOpText = operatorComments.map(m => m.txt.toLowerCase()).join("\n");
 
-    // PRIORITY
-    if (!priorityFilters.includes("Any")) {
-        const ok = priorityFilters.some(p =>
-            allOpText.includes(`критичность: ${p.toLowerCase()}`)
-        );
-        if (!ok) return;
-    }
+    if (!priorityFilters.includes("Any") && !priorityFilters.some(p => allOpText.includes(`критичность: ${p.toLowerCase()}`))) return;
+    if (!deptFilters.includes("Any") && !deptFilters.some(d => allOpText.includes(`категория: ${d.toLowerCase()}`))) return;
 
-    // DEPARTMENT
-    if (!deptFilters.includes("Any")) {
-        const ok = deptFilters.some(d =>
-            allOpText.includes(`категория: ${d.toLowerCase()}`)
-        );
-        if (!ok) return;
-    }
-
-    // CATEGORY
-    const found = categoryMap.find(c =>
-        allOpText.includes(c.key.toLowerCase())
-    );
+    const found = categoryMap.find(c => allOpText.includes(c.key.toLowerCase()));
     const label = found ? found.label : "";
 
-    // USER TYPE
     if (!userTypeFilters.includes("Any")) {
-        if (userTypeFilters.includes("null")) {
-            if (actualUserType !== null) return;
-        } else {
-            if (!userTypeFilters.includes(actualUserType)) return;
-        }
+        if (userTypeFilters.includes("null") && actualUserType !== null) return;
+        if (!userTypeFilters.includes("null") && !userTypeFilters.includes(actualUserType)) return;
     }
-
-    // --- COMMENT SEARCH (OperatorComment) ---
 
     let matchedCommentMsg = null;
     if (commentSearch !== "") {
-        matchedCommentMsg = operatorComments.find(m =>
-            m.txt.toLowerCase().includes(commentSearch)
-        );
+        matchedCommentMsg = operatorComments.find(m => m.txt.toLowerCase().includes(commentSearch));
         if (!matchedCommentMsg) return;
     }
 
-    // --- MESSAGE SEARCH (Question/AnswerOperator/AnswerOperatorWithBot) ---
     let matchedUserMsg = null;
     if (messageSearch !== "") {
-        matchedUserMsg = r.messages.find(m =>
-            messageTypes.includes(m.tpe) &&
-            (m.txt ?? "").toLowerCase().includes(messageSearch)
-        );
+        matchedUserMsg = r.messages.find(m => ["Question", "AnswerOperator", "AnswerOperatorWithBot"].includes(m.tpe) && (m.txt ?? "").toLowerCase().includes(messageSearch));
         if (!matchedUserMsg) return;
     }
 
-    // --- Что выводить в text? ---
-    // 1) Если искали комментарий → выводим комментарий
-    // 2) Если искали сообщение → выводим сообщение
-    // 3) Если оба → выводим оба (или только комментарий — как хочешь)
-    //3. Формируем finalText
-    const blockComment = operatorComments.find(m => {
-        const t = m.txt.toLowerCase();
-        return t.includes("критичность:") || t.includes("категория:");
-    });
+    const blockComment = operatorComments.find(m => { const t = m.txt.toLowerCase(); return t.includes("критичность:") || t.includes("категория:"); });
+    let finalText = blockComment ? extractCommentLine(blockComment.txt) : "";
+    if (matchedUserMsg) finalText += "\n\n" + matchedUserMsg.txt;
 
-    let finalText = ""; if (blockComment) {
-        finalText = extractCommentLine(blockComment.txt);
-    }
-    if (matchedUserMsg) {
-        finalText += "\n\n" + matchedUserMsg.txt;
-    }
-    finalText = finalText.trim();
-
-    const entry = {
-        ChatId: r.id,
-        timeStamp: new Date(r.tsCreate).toLocaleString('ru-RU', timeOptions),
-        OperatorName: chat.operatorName,
-        CSAT: matched.Rate,
-        Department: label,
-        text: finalText.trim()
-    };
-
-    criticalChats.set(r.id, entry);
-
-    pushPayload({
-        r,
-        duration: r.tsMod ? r.tsMod - r.tsCreate : undefined,
-        operatorName: chat.operatorName,
-        csat: matched.Rate
-    });
-
+    criticalChats.set(r.id, { ChatId: r.id, timeStamp: new Date(r.tsCreate).toLocaleString('ru-RU', timeOptions), OperatorName: chat.operatorName, CSAT: matched.Rate, Department: label, text: finalText.trim() });
+    pushPayload({ r, duration: r.tsMod ? r.tsMod - r.tsCreate : undefined, operatorName: chat.operatorName, csat: matched.Rate });
 }
 
 function renderMainTable(pureArray, chatswithmarksarray) {
     const table = document.createElement('table');
-    table.className = 'srvhhelpnomove';
-    table.id = "TableGrabbed";
-
-    const headerRow = document.createElement('tr');
-    const columnNames = ['№', 'Date', 'Operator', 'ChatId', '🏁 CSAT', 'Тема', 'SLACompl', 'Country'];
-
-    columnNames.forEach(name => {
+    table.className = 'cdu-table srvhhelpnomove'; table.id = "TableGrabbed";
+    const headerRow = document.createElement('tr');['№', 'Date', 'Operator', 'ChatId', '🏁 CSAT', 'Тема', 'SLACompl', 'Country'].forEach((name, index) => {
         const th = document.createElement('th');
         th.textContent = name;
         th.setAttribute('name', 'btnNameFilter');
-        th.style = 'text-align:center; font-weight:700; background:dimgrey; border:1px solid black; padding:5px; position: sticky; top: 0;';
-        if (name === '🏁 CSAT') th.style.cursor = 'pointer';
+        th.title = index > 0 ? `Click to filter by ${name}` : "";
+        if (index > 0) {
+            th.onclick = () => openColumnFilter(index, name);
+        }
         headerRow.appendChild(th);
     });
-
     table.appendChild(headerRow);
 
     pureArray.forEach((el, index) => {
-        const row = document.createElement('tr');
-        row.className = "rowOfChatGrabbed";
-        row.style.border = "1px solid black";
-
+        const row = document.createElement('tr'); row.className = "rowOfChatGrabbed";
         addCell(row, index + 1);
         addCell(row, el.timeStamp);
-        addCell(row, el.OperatorName, "text-align:center;");
-        addCell(row, el.ChatId, "font-size:11px;");
-
+        addCell(row, el.OperatorName);
+        addCell(row, el.ChatId, { style: "font-family:monospace; color:#38bdf8;" });
         const matched = chatswithmarksarray.find(x => x.ConvId === el.ChatId);
-        addCell(row, matched ? (matched.Rate ?? '-') : '-', "text-align:center;", { name: "CSATvalue" });
-        addCell(row, el.ThemeValue, "text-align:center;");
-        addCell(row, el.SLACompleted, "text-align:center;", { name: "SLACompletedValue" });
-        addCell(row, el.Country, "text-align:center;");
-
+        addCell(row, matched ? (matched.Rate ?? '-') : '-', { name: "CSATvalue", style: "text-align:center; font-weight:bold;" });
+        addCell(row, el.ThemeValue);
+        addCell(row, el.SLACompleted, { name: "SLACompletedValue", style: "text-align:center;" });
+        addCell(row, el.Country, { style: "text-align:center;" });
         table.appendChild(row);
     });
-
     return table;
 }
 
 function renderCriticalTable(pureArray) {
     const table = document.createElement('table');
-    table.className = 'srvhhelpnomove';
-    table.id = "TableGrabbed";
-
-    const headerRow = document.createElement('tr');
-    const columnNames = ['№', 'Date', 'Operator', 'ChatId', '🏁 CSAT', 'Отдел', "Text"];// тут любые твои
-
-    columnNames.forEach(name => {
+    table.className = 'cdu-table srvhhelpnomove'; table.id = "TableGrabbed";
+    const headerRow = document.createElement('tr');['№', 'Date', 'Operator', 'ChatId', '🏁 CSAT', 'Отдел', "Text"].forEach((name, index) => {
         const th = document.createElement('th');
         th.textContent = name;
         th.setAttribute('name', 'btnNameFilter');
-        th.style = 'text-align:center; font-weight:700; background:dimgrey; border:1px solid black; padding:5px; position: sticky; top: 0;';
+        th.title = index > 0 ? `Click to filter by ${name}` : "";
+        if (index > 0) {
+            th.onclick = () => openColumnFilter(index, name);
+        }
         headerRow.appendChild(th);
     });
-
     table.appendChild(headerRow);
 
     pureArray.forEach((el, index) => {
-        const row = document.createElement('tr');
-        row.className = "rowOfChatGrabbed";
-        row.style.border = "1px solid black";
-
+        const row = document.createElement('tr'); row.className = "rowOfChatGrabbed";
         addCell(row, index + 1);
         addCell(row, el.timeStamp);
-        addCell(row, el.OperatorName, "text-align:center;");
-        addCell(row, el.ChatId, "font-size:11px;");
-
+        addCell(row, el.OperatorName);
+        addCell(row, el.ChatId, { style: "font-family:monospace; color:#38bdf8;" });
         const matched = chatswithmarksarray.find(x => x.ConvId === el.ChatId);
-        addCell(row, matched ? (matched.Rate ?? '-') : '-', "text-align:center;", { name: "CSATvalue" });
-        addCell(row, el.Department, "text-align:center;");
-        addCell(row, el.text, "text-align:center;");
-
+        addCell(row, matched ? (matched.Rate ?? '-') : '-', { name: "CSATvalue", style: "text-align:center; font-weight:bold;" });
+        addCell(row, el.Department);
+        addCell(row, el.text, { style: "max-width: 250px; white-space: pre-wrap; word-wrap: break-word;" });
         table.appendChild(row);
     });
-
     return table;
 }
 
-
-//
-
 document.getElementById('stargrab').onclick = async function () {
-
     const filters = collectOtherFilters();
     if (!filters) return;
 
-    document.getElementById('CSATFilterField').style.display = "none";
+    tableColumnFilters = {};
     document.getElementById('GatherStatByThemes').setAttribute('disabled', '');
-    document.getElementById('themesgrabbeddata').innerHTML = '⏳ Загрузка...';
+    document.getElementById('themesgrabbeddata').innerHTML = '<div style="padding:20px; text-align:center; color:#38bdf8;">⏳ System Processing Data...</div>';
 
-    payloadarray = [];
-    chatswithmarksarray = [];
-    operstagsarray = [];
-    arrofthemes = [];
-    dataToRender = []
-    criticalChats = new Map();
-
+    payloadarray = []; chatswithmarksarray = []; operstagsarray = []; arrofthemes = []; dataToRender = []; criticalChats = new Map();
     const { leftDateFromGrab, rightDateToGrab } = getDateRange();
     const { ids: operatorIds, names: operatorNames } = getSelectedOperators();
 
-    let progress = 0;
-    const step = 100 / operatorIds.length;
+    let progress = 0; const step = 100 / Math.max(operatorIds.length, 1);
     const progressBar = document.getElementById("progressBarGrabber");
 
     for (let i = 0; i < operatorIds.length; i++) {
-
-        const chats = await loadChatsForOperator(
-            operatorIds[i],
-            operatorNames[i],
-            leftDateFromGrab,
-            rightDateToGrab,
-            filters
-        );
-
-        for (const chat of chats) {
-            await processChat(chat, filters, criticalChats);
-        }
-
+        const chats = await loadChatsForOperator(operatorIds[i], operatorNames[i], leftDateFromGrab, rightDateToGrab, filters);
+        for (const chat of chats) await processChat(chat, filters, criticalChats);
         progress += step;
-        progressBar.style.width = progress.toFixed(1) + "%";
-        progressBar.textContent = progress.toFixed(1) + "%";
+        progressBar.style.width = `${progress}%`; progressBar.textContent = `${Math.round(progress)}%`;
     }
 
-    // Уникальные чаты
-
     let table;
-
-    console.log("otherfilters is", otherfilters)
-
-    console.log("commentInput =", filters.commentInput);
-    console.log("otherfilters =", otherfilters);
-    console.log("criticalChats size =", criticalChats.size);
-    console.log("payloadarray size =", payloadarray.length);
-
-
     if (otherfilters == "on") {
         dataToRender = [...criticalChats.values()];
         table = renderCriticalTable(dataToRender);
@@ -1765,236 +1311,70 @@ document.getElementById('stargrab').onclick = async function () {
         table = renderMainTable(dataToRender, chatswithmarksarray);
     }
 
+    pureArray = dataToRender;
 
-    // Рендер таблицы
     const container = document.getElementById('themesgrabbeddata');
-    container.innerHTML = '';
-    container.appendChild(table);
+    container.innerHTML = ''; container.appendChild(table);
 
-    initCSATFilterButtonHandlers();
     initRowClickHandlers();
-
     countsArray = Object.entries(aggregateCounts(payloadarray, "ThemeValue")).map(([ThemeValue, Count]) => ({ ThemeValue, Count }));
     countsCountryArray = Object.entries(aggregateCounts(pureArray, "Country")).map(([Country, Count]) => ({ Country, Count }));
 
-    document.getElementById('foundcount').innerHTML =
-        `<span style="background:#166945;padding:5px;color:floralwhite;font-weight:700;border-radius:10px;">
-            Всего найдено: ${pureArray.length} обращений
-        </span>`;
-
-    calcAvgCsat();
-    calcAvgSLACompleted();
-
+    document.getElementById('foundcount').innerHTML = `<span class="cdu-stat-badge cdu-stat-success">Total Records: ${pureArray.length}</span>`;
+    calcAvgCsat(); calcAvgSLACompleted();
     document.getElementById('GatherStatByThemes').removeAttribute('disabled');
 };
 
-
-// End of stargrab
-
-document.getElementById('SwitchToTable').onclick = () =>
-    buildUniversalTable({
-        mode: "simple",
-        groupField: "ThemeValue",
-        columnTitle: "Тематика"
-    });
-
-document.getElementById('SwitchToGraph').onclick = () =>
-    drawUniversalGraph({
-        mode: "simple",
-        groupField: "ThemeValue",
-        chartType: "bar",
-        title: "Тематика"
-    });
-
-document.getElementById('SwitchToTableCountry').onclick = () =>
-    buildUniversalTable({
-        mode: "simple",
-        groupField: "Country",
-        columnTitle: "Страна",
-        saveButtonId: null
-    });
-
-document.getElementById('SwitchToGraphCountry').onclick = () =>
-    drawUniversalGraph({
-        mode: "simple",
-        groupField: "Country",
-        chartType: "bar",
-        title: "Страна"
-    });
-
-document.getElementById('SwitchToIntervalTable').onclick = () =>
-    buildUniversalTable({
-        mode: "interval",
-        groupField: "ThemeValue",
-        columnTitle: "Тематика",
-        saveButtonId: "SaveIntervalCSV"
-    });
-
-document.getElementById('SwitchToIntervalGraph').onclick = () =>
-    drawUniversalGraph({
-        mode: "interval",
-        groupField: "ThemeValue",
-        chartType: "line",
-        title: "Тематика"
-    });
-
+// ACTIONS HOOKS
+document.getElementById('SwitchToTable').onclick = () => buildUniversalTable({ mode: "simple", groupField: "ThemeValue", columnTitle: "Тематика" });
+document.getElementById('SwitchToGraph').onclick = () => drawUniversalGraph({ mode: "simple", groupField: "ThemeValue", chartType: "bar", title: "Тематика" });
+document.getElementById('SwitchToTableCountry').onclick = () => buildUniversalTable({ mode: "simple", groupField: "Country", columnTitle: "Страна", saveButtonId: null });
+document.getElementById('SwitchToGraphCountry').onclick = () => drawUniversalGraph({ mode: "simple", groupField: "Country", chartType: "bar", title: "Страна" });
+document.getElementById('SwitchToIntervalTable').onclick = () => buildUniversalTable({ mode: "interval", groupField: "ThemeValue", columnTitle: "Тематика", saveButtonId: "SaveIntervalCSV" });
+document.getElementById('SwitchToIntervalGraph').onclick = () => drawUniversalGraph({ mode: "interval", groupField: "ThemeValue", chartType: "line", title: "Тематика" });
 document.getElementById('SaveIntervalCSV').onclick = saveToCSVInterval;
-
-document.getElementById('SwitchToIntervalTableCountry').onclick = () =>
-    buildUniversalTable({
-        mode: "interval",
-        groupField: "Country",
-        columnTitle: "Страна",
-        saveButtonId: "SaveIntervalCountryCSV"
-    })
-
-document.getElementById('SwitchToIntervalGraphCountry').onclick = () =>
-    drawUniversalGraph({
-        mode: "interval",
-        groupField: "Country",
-        chartType: "line",
-        title: "Страна"
-    });
-
+document.getElementById('SwitchToIntervalTableCountry').onclick = () => buildUniversalTable({ mode: "interval", groupField: "Country", columnTitle: "Страна", saveButtonId: "SaveIntervalCountryCSV" });
+document.getElementById('SwitchToIntervalGraphCountry').onclick = () => drawUniversalGraph({ mode: "interval", groupField: "Country", chartType: "line", title: "Страна" });
 document.getElementById('SaveIntervalСountryCSV').onclick = SaveIntervalСountryCSV;
+document.getElementById('SaveСountryTableCSV').onclick = () => SaveСountryCSV('Country_Aggregated.csv');
+document.getElementById('hideselecalltags').onclick = filterTableRowsByTags;
 
 document.getElementById('SaveToCSVFilteredByTags').onclick = () => {
-    const checkboxes = document.querySelectorAll('input[name="tagsforfilter"]');
-    const allUnchecked = [...checkboxes].every(cb => !cb.checked);
-    allUnchecked ? downloadCSV(operstagsarray) : saveFilteredTableCSV();
+    const allUnchecked = [...document.querySelectorAll('input[name="tagsforfilter"]')].every(cb => !cb.checked);
+    allUnchecked ? (function () {
+        let csvContent = "ChatId,Tag1,Tag2,Tag3,Tag4,Tag5,Tag6\r\n";
+        operstagsarray.forEach(item => {
+            let tags = [];
+            if (item.Tags) { try { tags = JSON.parse(item.Tags); } catch (e) { } }
+            csvContent += [item.ChatId, ...tags].join(",") + "\r\n";
+        });
+        triggerDownload("\uFEFF" + csvContent, "export.csv");
+    })() : saveFilteredTableCSV();
 };
 
-document.getElementById('SaveСountryTableCSV').onclick = () => SaveСountryCSV('Country_Aggregated.csv');
-document.getElementById('hideselecalltags').onclick = filterTableRowsByTags
-
-
-///
-
-document.getElementById('opscontainer').onclick = () =>
-    toggleBlock({
-        containerId: 'opscontainer',
-        blockId: 'activeoperatorsgroup',
-        extraId: 'hideselecall'
-    });
-
-document.getElementById('markscontainer').onclick = () =>
-    toggleBlock({
-        containerId: 'markscontainer',
-        blockId: 'listofthemarks',
-        extraId: 'hideselecallmarks'
-    });
-
-document.getElementById('tagscontainer').onclick = () =>
-    toggleBlock({
-        containerId: 'tagscontainer',
-        blockId: 'listofthetags',
-        extraId: 'hideselecalltags'
-    });
-
-document.getElementById('othercontainer').onclick = () =>
-    toggleBlock({
-        containerId: 'othercontainer',
-        blockId: 'listofotheroptions',
-        extraId: null
-    });
-
-function downloadCSV(data, filename) {
-    const csvContent = "\uFEFF" + convertArrayToCSV(data);
-    const encodedUri = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-function convertArrayToCSV(data) {
-    const csvRows = [];
-    const headers = Object.keys(data[0]);
-    csvRows.push(headers.join(","));
-    for (const row of data) {
-        const values = headers.map(header => {
-            const escaped = String(row[header]).replace(/"/g, '\\"');
-            return `"${escaped}"`;
-        });
-        csvRows.push(values.join(","));
-    }
-    return csvRows.join("\n");
-}
-
-function downloadCriticalCSV(array) {
-    // Заголовки CSV
-    const header = [
-        "ChatId",
-        "Department",
-        "timeStamp",
-        "OperatorName",
-        "CSAT",
-        "text"
-    ];
-
-    let csvContent = "\uFEFF" + header.join(",") + "\r\n";
-
-
-    array.forEach((item) => {
-        if (!item) return;
-
-        // Экранируем кавычки и переносы строк
-        const safe = str =>
-            `"${String(str ?? "").replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
-
-        const row = [
-            safe(item.ChatId),
-            safe(item.Department),
-            safe(item.timeStamp),
-            safe(item.OperatorName),
-            safe(item.CSAT),
-            safe(item.text) // ← твой комментарий
-        ];
-
-        csvContent += row.join(",") + "\r\n";
-    });
-
-    // Создаём Blob и скачиваем
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "critical_chats.csv";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
+document.getElementById('opscontainer').onclick = () => toggleBlock({ containerId: 'opscontainer', blockId: 'activeoperatorsgroup', extraId: 'hideselecall' });
+document.getElementById('markscontainer').onclick = () => toggleBlock({ containerId: 'markscontainer', blockId: 'listofthemarks', extraId: 'hideselecallmarks' });
+document.getElementById('tagscontainer').onclick = () => toggleBlock({ containerId: 'tagscontainer', blockId: 'listofthetags', extraId: 'hideselecalltags' });
+document.getElementById('othercontainer').onclick = () => toggleBlock({ containerId: 'othercontainer', blockId: 'listofotheroptions', extraId: null });
 
 document.getElementById('webtoCSV').onclick = function () {
-    const filename = "data.csv";
     if (otherfilters == "off") {
-        downloadCSV(dataToRender, filename);
+        const csvRows = [Object.keys(dataToRender[0]).join(",")];
+        dataToRender.forEach(row => csvRows.push(Object.keys(dataToRender[0]).map(h => `"${String(row[h]).replace(/"/g, '""')}"`).join(",")));
+        triggerDownload("\uFEFF" + csvRows.join("\n"), "data.csv");
     } else {
-        console.log("criticalChats size =", criticalChats.size);
-        downloadCriticalCSV([...criticalChats.values()]);
+        let csvContent = "\uFEFFChatId,Department,timeStamp,OperatorName,CSAT,text\r\n";[...criticalChats.values()].forEach(item => {
+            const safe = str => `"${String(str ?? "").replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
+            csvContent += [safe(item.ChatId), safe(item.Department), safe(item.timeStamp), safe(item.OperatorName), safe(item.CSAT), safe(item.text)].join(",") + "\r\n";
+        });
+        triggerDownload(csvContent, "critical_chats.csv");
     }
+};
 
-}
-
-document.getElementById('dayplus').onclick = function () {
-    const adjustDate = (dateId) => {
-        let date = new Date(document.getElementById(dateId).value);
-        date.setDate(date.getDate() + 1);
-        return date.toISOString().split('T')[0];
-    };
-
-    document.getElementById('dateFromGrab').value = adjustDate('dateFromGrab');
-    document.getElementById('dateToGrab').value = adjustDate('dateToGrab');
-}
-
-document.getElementById('dayminus').onclick = function () {
-    const adjustDate = (dateId) => {
-        let date = new Date(document.getElementById(dateId).value);
-        date.setDate(date.getDate() - 1);
-        return date.toISOString().split('T')[0];
-    };
-
-    document.getElementById('dateFromGrab').value = adjustDate('dateFromGrab');
-    document.getElementById('dateToGrab').value = adjustDate('dateToGrab');
-}
+const adjustDateGrabber = (dateId, offset) => {
+    let date = new Date(document.getElementById(dateId).value);
+    date.setDate(date.getDate() + offset);
+    return date.toISOString().split('T')[0];
+};
+document.getElementById('dayplus').onclick = () => { document.getElementById('dateFromGrab').value = adjustDateGrabber('dateFromGrab', 1); document.getElementById('dateToGrab').value = adjustDateGrabber('dateToGrab', 1); };
+document.getElementById('dayminus').onclick = () => { document.getElementById('dateFromGrab').value = adjustDateGrabber('dateFromGrab', -1); document.getElementById('dateToGrab').value = adjustDateGrabber('dateToGrab', -1); };
