@@ -266,17 +266,23 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
                 let newTop = elemTop + deltaY;
 
                 // Ограничения по ширине экрана
+                // Получаем реальные размеры окна с учетом масштаба (scale)
+                let rect = windowElement.getBoundingClientRect();
+                let actualWidth = rect.width;
+                let actualHeight = rect.height;
+
+                // Ограничения по ширине экрана
                 if (newLeft < 0) {
                     newLeft = 0;
-                } else if (newLeft + windowElement.offsetWidth > window.innerWidth) {
-                    newLeft = window.innerWidth - windowElement.offsetWidth;
+                } else if (newLeft + actualWidth > window.innerWidth) {
+                    newLeft = window.innerWidth - actualWidth;
                 }
 
                 // Ограничения по высоте экрана
                 if (newTop < 0) {
                     newTop = 0;
-                } else if (newTop + windowElement.offsetHeight > window.innerHeight) {
-                    newTop = window.innerHeight - windowElement.offsetHeight;
+                } else if (newTop + actualHeight > window.innerHeight) {
+                    newTop = window.innerHeight - actualHeight;
                 }
 
                 windowElement.style.left = `${newLeft}px`;
