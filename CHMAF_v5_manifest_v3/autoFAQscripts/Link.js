@@ -100,7 +100,10 @@ const win_Links = `
 
     <!-- Подвал с версиями -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid #eee; padding-top: 5px;">
-        <button class="sky-btn" id="restartlesson" style="background: #2ed573; color: white;">Classwork💾</button>
+        <div style="display: flex; gap: 5px;">
+            <button class="sky-btn" id="restartlesson" style="background: #2ed573; color: white;">Classwork💾</button>
+            <button class="sky-btn" id="openGrabber" title="Парсинг чатов" style="background: #ffa502; color: white;">Grabber 🔎</button>
+        </div>
         <div style="display: flex; gap: 5px;">
             <button class="sky-btn" id="curVeriOS" style="font-size: 13px;">iOS: ⏳</button>
             <button class="sky-btn" id="curVerAndroid" style="font-size: 13px;">Android: ⏳</button>
