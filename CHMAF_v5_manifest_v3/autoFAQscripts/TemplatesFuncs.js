@@ -21,7 +21,7 @@ const usersConfig = [
         buttons: [
             { id: 'CurrUser', title: 'Открыть в CRM', content: '👨‍🎓', label: 'CRM' },
             { id: 'CurUsLoginer', title: 'Логинер', content: '🔑', label: 'Логинер' },
-            { id: 'CurUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'ТШ' },
+            { id: 'CurUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'Troubleshooter' },
             { id: 'CurUsChatHis', title: 'История чатов', content: '☢️', label: 'История' },
             { id: 'CurUsChatHisWA', title: 'WA', isImage: true, src: `chrome-extension://${editorExtensionId}/Images/WA.png`, alt: 'WA', label: 'WhatsApp' },
             { id: 'CurUsUserInf', title: 'UserInf', content: '⚜️', label: 'Инфо' },
@@ -34,7 +34,7 @@ const usersConfig = [
         buttons: [
             { id: 'NextUser', title: 'CRM', content: '👽', label: 'CRM' },
             { id: 'NextUsLoginer', title: 'Логинер', content: '🔑', label: 'Логинер' },
-            { id: 'NextUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'ТШ' },
+            { id: 'NextUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'Troubleshooter' },
             { id: 'NextUsChatHis', title: 'История', content: '☢️', label: 'История' },
             { id: 'NextUsUserInf', title: 'Инфо', content: '⚜️', label: 'Инфо' },
             { id: 'NextUsAdminka', title: 'Админка', content: '✏️', label: 'Админка' }
@@ -44,14 +44,16 @@ const usersConfig = [
 
 // 2. Стили (единые для всех)
 const glassmorphismCSS = `
+/* Основная панель */
 .${UI_PREFIX}-glass-panel {
     background: rgba(255, 255, 255, 0.4) !important;
     backdrop-filter: blur(15px) saturate(150%) !important;
     border-radius: 20px !important;
-    padding: 12px 16px !important;
+    /* Увеличен верхний отступ, чтобы было место для всплывающих подсказок */
+    padding: 24px 16px 16px 16px !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 12px !important;
+    gap: 16px !important;
     width: fit-content !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
     box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important;
@@ -63,21 +65,36 @@ const glassmorphismCSS = `
     height: 40px !important;
 }
 
+/* Кнопка - теперь это всегда ровный круг, который не меняет ширину */
 .${UI_PREFIX}-btn-glass {
     cursor: pointer !important;
-    height: 38px !important;
-    min-width: 38px !important;
-    border-radius: 19px !important;
+    height: 42px !important;
+    width: 42px !important;
+    min-width: 42px !important;
+    border-radius: 50% !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
-    background: #ffffff !important;
+
+    /* УБРАЛИ !important отсюда, чтобы JS мог менять цвет */
+    background: #ffffff;
+
     display: inline-flex !important;
     align-items: center !important;
-    justify-content: flex-start !important;
+    justify-content: center !important;
     padding: 0 !important;
     margin-left: -12px !important;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    overflow: hidden !important;
     position: relative !important;
+    z-index: 1 !important;
+
+    /* ДОБАВИЛИ background в transition для плавного перетекания цвета */
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease, z-index 0s linear 0.2s !important;
+    will-change: transform, background;
+}
+
+/* НОВАЯ ФИЧА: Физическое "нажатие" кнопки при клике (микро-уменьшение) */
+.${UI_PREFIX}-btn-glass:active {
+    transform: translateY(0px) scale(0.92) !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+    transition: transform 0.05s ease, box-shadow 0.05s ease !important;
 }
 
 .${UI_PREFIX}-btn-glass:first-child {
@@ -85,43 +102,60 @@ const glassmorphismCSS = `
 }
 
 .${UI_PREFIX}-icon-box {
-    width: 38px !important;
-    height: 38px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    flex-shrink: 0 !important;
     font-size: 18px !important;
 }
 
+/* ПАРЯЩАЯ ПОДСКАЗКА (TOOLTIP) - магия происходит здесь */
 .${UI_PREFIX}-label-text {
-    max-width: 0 !important;
+    position: absolute !important;
+    bottom: calc(100% + 10px) !important; /* Парит над кнопкой */
+    left: 50% !important;
+    /* Изначально скрыта и смещена вниз */
+    transform: translateX(-50%) translateY(8px) scale(0.9) !important;
     opacity: 0 !important;
+    pointer-events: none !important; /* Важно: чтобы мышка не цеплялась за сам текст */
+
+    /* Стеклянный дизайн подсказки */
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+
+    /* Текст */
     white-space: nowrap !important;
-    transition: all 0.25s ease !important;
     font-family: 'Segoe UI', system-ui, sans-serif !important;
     font-size: 13px !important;
     font-weight: 700 !important;
     color: #333 !important;
-    overflow: hidden !important;
+
+    /* Эффект пружины (Spring Animation) для вау-эффекта */
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    will-change: transform, opacity;
 }
 
+/* СОСТОЯНИЕ ПРИ НАВЕДЕНИИ */
 .${UI_PREFIX}-btn-glass:hover {
-    z-index: 100 !important;
-    transform: translateY(-2px) !important;
-    padding-right: 15px !important;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.12) !important;
+    z-index: 100 !important; /* Выходит на передний план */
+    transform: translateY(-4px) !important; /* Кнопка слегка приподнимается */
+    box-shadow: 0 8px 16px rgba(0,0,0,0.12) !important;
+    /* z-index меняется мгновенно */
+    transition: transform 0.2s ease, box-shadow 0.2s ease, z-index 0s linear 0s !important;
 }
 
+/* Анимация подсказки при наведении */
 .${UI_PREFIX}-btn-glass:hover .${UI_PREFIX}-label-text {
-    max-width: 150px !important;
     opacity: 1 !important;
-    margin-left: 6px !important;
+    transform: translateX(-50%) translateY(0) scale(1) !important; /* Выпрыгивает наверх */
 }
 
 .${UI_PREFIX}-btn-img {
-    width: 20px !important;
-    height: 20px !important;
+    width: 22px !important;
+    height: 22px !important;
 }
 `;
 
@@ -471,9 +505,15 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
         const idNode = SearchinAFnewUI("id");
         if (idNode) {
             await handleLoginLinkClick(idNode, this.style);
+            createAndShowButton('💾 Ссылка-логинер скопирована', 'message');
         } else {
-            this.style.background = "rgb(201, 17, 17)";
-            setTimeout(() => { this.style.background = ""; }, 1000);
+            // Плавно красим в красный
+            this.style.setProperty('background', 'rgba(255, 71, 87, 0.9)', 'important');
+
+            // Через секунду убираем стиль (он плавно вернется к белому благодаря CSS)
+            setTimeout(() => {
+                this.style.removeProperty('background');
+            }, 1000);
         }
     };
 
@@ -583,9 +623,14 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
 
         if (idNode) {
             await handleLoginLinkClick(idNode, this.style);
+            createAndShowButton('💾 Ссылка-логинер скопирована', 'message');
         } else {
-            this.style.background = "rgb(201, 17, 17)";
-            setTimeout(() => { this.style.background = ""; }, 1000);
+            // Плавно красим в красный
+            this.style.setProperty('background', 'rgba(255, 71, 87, 0.9)', 'important');
+
+            setTimeout(() => {
+                this.style.removeProperty('background');
+            }, 1000);
         }
     };
 

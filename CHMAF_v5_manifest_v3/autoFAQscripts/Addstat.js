@@ -64,16 +64,21 @@ var win_Stat = `
     .stat-label-group { margin-bottom: 10px; border-bottom: 1px solid #1f2430; padding-bottom: 12px; }
 
     /* === CYBER STAT CARDS === */
-    .stat-cards-row { display: flex; gap: 12px; margin-bottom: 10px; }
-    .stat-card { flex: 1; background: #131722; border-radius: 10px; padding: 16px 10px; text-align: center; border: 1px solid #1f2430; transition: all 0.3s ease; position: relative; overflow: hidden; }
+    .stat-cards-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .stat-card { flex: 1; background: #131722; border-radius: 10px; padding: 14px 6px; text-align: center; border: 1px solid #1f2430; transition: all 0.3s ease; position: relative; overflow: hidden; }
     .stat-card:hover { transform: translateY(-3px); background: #161b28; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
     .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 10px 10px 0 0; }
+
     .stat-card-touched::before { background: #00f0ff; box-shadow: 0 0 15px #00f0ff; }
     .stat-card-closed::before { background: #39ff14; box-shadow: 0 0 15px #39ff14; }
-    .stat-card-icon { font-size: 14px; margin-bottom: 8px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-card-value { display: block; font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-top: 4px; font-family: 'Inter', sans-serif; }
+    .stat-card-transferred::before { background: #b829ea; box-shadow: 0 0 15px #b829ea; }
+
+    .stat-card-icon { font-size: 12px; margin-bottom: 8px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card-value { display: block; font-size: 28px; font-weight: 800; letter-spacing: -1px; margin-top: 4px; font-family: 'Inter', sans-serif; }
+
     .stat-card-touched .stat-card-value { color: #00f0ff; text-shadow: 0 0 12px rgba(0,240,255,0.4); }
     .stat-card-closed .stat-card-value { color: #39ff14; text-shadow: 0 0 12px rgba(57,255,20,0.4); }
+    .stat-card-transferred .stat-card-value { color: #b829ea; text-shadow: 0 0 12px rgba(184,41,234,0.4); }
 
     /* === PREMIUM CYBER CSAT === */
     .csat-premium-container { background: #0f131c; border-radius: 12px; padding: 18px; margin-bottom: 16px; border: 1px solid #1f2430; box-shadow: inset 0 0 30px rgba(0,0,0,0.6); animation: fadeIn 0.4s ease-out; }
@@ -150,13 +155,17 @@ var win_Stat = `
                 <div id="mainStatsLabels" class="stat-label-group">
                     <div class="stat-cards-row">
                         <div class="stat-card stat-card-touched">
-                            <div class="stat-card-icon">👆 Пощупано</div>
+                            <div class="stat-card-icon" title="Общее количество взятых в работу">👆 Пощупано</div>
                             <span class="stat-card-value" id="sumchatcounttouched">—</span>
                         </div>
                         <div class="stat-card stat-card-closed">
-                            <div class="stat-card-icon">✅ Закрыто</div>
+                            <div class="stat-card-icon" title="Закрыто лично вами">✅ Закрыто</div>
                             <span class="stat-card-value" id="sumchatcountclosed">—</span>
                         </div>
+<div class="stat-card stat-card-transferred">
+    <div class="stat-card-icon" title="Переведено на 2-ю линию техподдержки">🤝 2-я линия</div>
+    <span class="stat-card-value" id="sumchatcounttransferred">—</span>
+</div>
                     </div>
                 </div>
                 <div id="chatsinfoout"></div>
@@ -338,8 +347,10 @@ function attachEventHandlers() {
         clearBtn.onclick = function () {
             const touchedEl = document.getElementById('sumchatcounttouched');
             const closedEl = document.getElementById('sumchatcountclosed');
+            const transferredEl = document.getElementById('sumchatcounttransferred');
             if (touchedEl) touchedEl.textContent = '—';
-            if (closedEl) closedEl.textContent = '—';['chatsinfoout', 'lowCSATcount', 'chatcommentsdata', 'favoritesSection'].forEach(id => {
+            if (closedEl) closedEl.textContent = '—';
+            if (transferredEl) transferredEl.textContent = '—';['chatsinfoout', 'lowCSATcount', 'chatcommentsdata', 'favoritesSection'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = "";
             });
@@ -368,7 +379,6 @@ function attachEventHandlers() {
             const originalText = btn.textContent;
             btn.textContent = "⏳...";
 
-            // Внедряем Cyber Progress Bar
             if (out) {
                 out.innerHTML = `
                     <div style="padding: 20px 10px;">
@@ -381,15 +391,15 @@ function attachEventHandlers() {
             }
 
             try {
-                let page = 1, manualClosed = 0, csatScore = 0, csatCount = 0;
+                let page = 1, touchedCount = 0, manualClosed = 0, line2Count = 0, csatScore = 0, csatCount = 0;
                 let processedCount = 0, totalArchiveItems = 0;
                 const rates = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
                 let line2Html = "";
 
-                const bodyTouched = { serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json", participatingOperatorsIds: [typeof operatorId !== 'undefined' ? operatorId : ''], tsFrom: datefrom, tsTo: dateto, page: 1, limit: 1 };
-                const touchedData = await doOperationsWithHistory(JSON.stringify(bodyTouched));
+                // ВАЖНО: Мы удалили старый кривой API-запрос doOperationsWithHistory для "Пощупано"
+                // Теперь считаем всё абсолютно честно на лету из спарсенных чатов.
                 const touchedEl = document.getElementById('sumchatcounttouched');
-                if (touchedEl) touchedEl.textContent = (touchedData?.total || 0);
+                if (touchedEl) touchedEl.textContent = "⏳...";
 
                 while (true) {
                     const bodyArchive = { serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json", tsFrom: datefrom, tsTo: dateto, orderBy: "ts", orderDirection: "Asc", page: page, limit: 100 };
@@ -402,7 +412,6 @@ function attachEventHandlers() {
 
                     if (!data?.items?.length) break;
 
-                    // Общее количество задач из пула для расчета прогресса
                     if (page === 1) totalArchiveItems = data.total || 1;
 
                     for (const item of data.items) {
@@ -410,33 +419,78 @@ function attachEventHandlers() {
                         const conv = await convReq.json();
 
                         processedCount++;
-                        // Обновляем прогресс-бар
                         let percent = Math.min(100, Math.round((processedCount / totalArchiveItems) * 100));
                         const fill = document.getElementById('statProgressFill');
                         const text = document.getElementById('statProgressText');
                         if (fill) fill.style.width = percent + '%';
-                        if (text) text.textContent = `Анализ чатов... ${processedCount} / ${totalArchiveItems} (${percent}%)`;
+                        if (text) text.textContent = `Анализ пула очереди... ${processedCount} / ${totalArchiveItems} (${percent}%)`;
 
-                        const currentOp = conv.operatorId || conv.assigneeId || item.operatorId;
-                        if (typeof operatorId !== 'undefined' && String(currentOp) !== String(operatorId)) continue;
+                        const myOpId = typeof operatorId !== 'undefined' ? String(operatorId) : '';
 
-                        manualClosed++;
+                        let isTouchedByMe = false;
+                        let isClosedByMe = false;
+                        let isLine2 = false;
 
-                        const rate = item.stats?.rate?.rate || item.stats?.rate || conv.stats?.rate?.rate || (conv.stats?.rate ? conv.stats.rate : 0);
-                        if (rate && rate > 0) {
-                            csatScore += Number(rate);
-                            csatCount++;
-                            if (rates.hasOwnProperty(rate)) rates[rate]++;
+                        // 1. Проверяем список участников
+                        let participants = conv.participatingOperatorsIds || item.participatingOperatorsIds || [];
+                        if (myOpId && participants.map(String).includes(myOpId)) {
+                            isTouchedByMe = true;
                         }
 
-                        // Поиск "техподдержка 2-я линия"
-                        const isLine2 = conv.messages?.some(m => {
-                            const msgStr = JSON.stringify(m).toLowerCase();
-                            const normalizedStr = msgStr.replace(/&nbsp;/g, ' ').replace(/\\u00a0/g, ' ');
-                            return normalizedStr.includes("техподдержка 2-я линия");
-                        });
+                        if (conv.messages && Array.isArray(conv.messages)) {
+                            for (const m of conv.messages) {
+                                // 2. Глубокая проверка: если я не в участниках, но что-то писал/делал в чате
+                                if (myOpId) {
+                                    if (String(m.sender) === myOpId ||
+                                        (m.payload && String(m.payload.sender) === myOpId) ||
+                                        (m.payload && String(m.payload.oid) === myOpId)) {
+                                        isTouchedByMe = true;
+                                    }
+
+                                    // 3. Кто реально нажал кнопку "ЗАКРЫТЬ ЧАТ"
+                                    // Читаем событие, перехватываем последнее закрытие
+                                    if (m.eventTpe === "CloseConversation" || String(m.payload?.status).includes("Closed")) {
+                                        if (String(m.payload?.sender) === myOpId || String(m.payload?.oid) === myOpId) {
+                                            isClosedByMe = true;
+                                        } else {
+                                            // Если кто-то другой закрыл после нас (например, переоткрыли и закрыли)
+                                            isClosedByMe = false;
+                                        }
+                                    }
+                                }
+
+                                // 4. Поиск 2ЛТП (по тексту и событиям)
+                                let rawText = m.txt || m.text || "";
+                                if (m.tpe === "Event" && m.payload) {
+                                    rawText += " " + (m.payload.awakeText || "");
+                                    rawText += " " + (m.payload.comment || "");
+                                    if (m.payload.status) rawText += " " + m.payload.status;
+                                }
+                                if (!rawText && m.payload) rawText = JSON.stringify(m.payload);
+
+                                let cleanText = String(rawText).toLowerCase().replace(/<[^>]*>?/gm, ' ');
+                                const normalizedStr = cleanText.replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ');
+
+                                if (normalizedStr.includes("техподдержка 2-я линия") ||
+                                    normalizedStr.includes("техподдержка 2 линия") ||
+                                    normalizedStr.includes("2-я линия crm2")) {
+                                    isLine2 = true;
+                                }
+                            }
+                        }
+
+                        // Если явного системного события не было, но я остался последним владельцем
+                        const currentOp = conv.operatorId || conv.assigneeId || item.operatorId;
+                        if (!isClosedByMe && myOpId && String(currentOp) === myOpId && isTouchedByMe) {
+                            isClosedByMe = true;
+                        }
+
+                        // УВЕЛИЧИВАЕМ СЧЕТЧИКИ
+                        if (isTouchedByMe) touchedCount++;
+                        if (isClosedByMe) manualClosed++;
 
                         if (isLine2) {
+                            line2Count++;
                             const isFav = !!favoritesChats[item.conversationId];
                             line2Html += `<div class="line2-item">
                                 <div class="line2-left">
@@ -449,14 +503,35 @@ function attachEventHandlers() {
                                 </div>
                             </div>`;
                         }
+
+                        // === ПОДСЧЕТ CSAT ТОЛЬКО ДЛЯ ВАШИХ ЗАКРЫТЫХ ЧАТОВ ===
+                        let rawRate = item.stats?.rate || conv.stats?.rate;
+                        let rate = 0;
+                        if (typeof rawRate === 'object' && rawRate !== null) {
+                            rate = Number(rawRate.rate || 0);
+                        } else {
+                            rate = Number(rawRate || 0);
+                        }
+
+                        if (rate > 0 && isClosedByMe) {
+                            csatScore += rate;
+                            csatCount++;
+                            if (rates.hasOwnProperty(rate)) rates[rate]++;
+                        }
                     }
                     if (page * 100 < data.total) page++; else break;
                 }
 
+                // === ФИНАЛЬНАЯ ЗАПИСЬ В КАРТОЧКИ ===
+                if (touchedEl) touchedEl.textContent = touchedCount;
+
                 const closedEl = document.getElementById('sumchatcountclosed');
                 if (closedEl) closedEl.textContent = manualClosed;
 
-                // ===== CYBER CSAT RENDER =====
+                const transferredEl = document.getElementById('sumchatcounttransferred');
+                if (transferredEl) transferredEl.textContent = line2Count;
+
+                // === CYBER CSAT RENDER ===
                 const csatAvg = csatCount ? (csatScore / csatCount).toFixed(2) : "0.00";
                 const maxRate = Math.max(...Object.values(rates), 1);
 
@@ -483,6 +558,7 @@ function attachEventHandlers() {
                 const scoreColor = csatAvg >= 4.5 ? '#00f0ff' : csatAvg >= 4 ? '#39ff14' : csatAvg >= 3 ? '#ffea00' : '#ff003c';
                 const emoji = csatAvg >= 4.5 ? '🏆' : csatAvg >= 4 ? '🔥' : csatAvg >= 3 ? '😐' : '💀';
 
+                const out = document.getElementById('chatsinfoout');
                 if (out) {
                     out.innerHTML = `
                         <div class="csat-premium-container">
@@ -495,8 +571,10 @@ function attachEventHandlers() {
                         <div class="line2-section-title">Переведено на 2ЛТП</div>
                         <div class="line2-list">${line2Html || '<div class="line2-empty">Система не зафиксировала чатов на 2ЛТП за этот период.</div>'}</div>`;
                 }
+
             } catch (e) {
                 console.error(e);
+                const out = document.getElementById('chatsinfoout');
                 if (out) out.innerHTML = "<div style='color:#ef4444; padding:10px;'>Ошибка при загрузке. Проверьте консоль.</div>";
             } finally {
                 btn.textContent = originalText;
