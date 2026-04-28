@@ -1,176 +1,315 @@
 // ═══════════════════════════════════════════════════════════════
-//  CYBER-DARK UI  —  TestUsers Module  (176px Ultra-Compact)
+//  NEON GLASS ULTRA — TestUsers Module (176px Premium Compact)
 // ═══════════════════════════════════════════════════════════════
 
-// ─── 1. INJECT STYLES ───
 const cyberStyles = document.createElement('style');
 cyberStyles.textContent = `
 :root {
-    --cd-bg: rgba(16,16,24,0.8);
-    --cd-border: rgba(255,255,255,0.07);
-    --cd-text: #e0e0e6;
-    --cd-text2: #7a7a8a;
-    --cd-cyan: #00e5ff;
-    --cd-green: #00d9a0;
-    --cd-red: #ff3b5c;
-    --cd-purple: #c840f5;
-    --cd-orange: #ff9f40;
+    --nu-bg: rgba(18, 18, 32, 0.85);        /* было rgba(10,10,22,0.82) */
+    --nu-border: rgba(255, 255, 255, 0.1);  /* было 0.07 */
+    --nu-text: #e2e8f0;
+    --nu-text2: #94a3b8;                    /* было #64748b — светлее */
+    --nu-cyan: #22d3ee;
+    --nu-green: #34d399;
+    --nu-red: #f87171;
+    --nu-purple: #a78bfa;
+    --nu-orange: #fb923c;
 }
 
+/* === MAIN GLASS PANEL === */
 .glass-panel-testuser {
     width: 176px;
-    padding: 8px;
-    background: var(--cd-bg);
+    padding: 10px;
+    background:
+        linear-gradient(135deg, rgba(22, 22, 38, 0.9) 0%, rgba(14, 14, 28, 0.92) 100%),  /* светлее */
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23202040' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     backdrop-filter: blur(20px) saturate(1.3);
     -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    border: 1px solid var(--cd-border);
-    border-radius: 10px;
-    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-    animation: cdIn 0.5s cubic-bezier(0.16,1,0.3,1);
+    border: 1px solid rgba(255, 255, 255, 0.1);   /* чётче граница */
+    border-radius: 16px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.4),
+        0 16px 40px rgba(0,0,0,0.5),
+        0 0 25px rgba(139, 92, 246, 0.06),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+    animation: nuIn 0.5s cubic-bezier(0.16,1,0.3,1);
     cursor: default;
 }
-@keyframes cdIn {
-    from { opacity:0; transform:translateY(10px) scale(0.98); }
-    to   { opacity:1; transform:translateY(0) scale(1); }
-}
 
+/* Animated neon top line */
 .glass-panel-testuser::before {
     content: '';
     position: absolute;
-    top: 0; left: 10%; right: 10%;
-    height: 1.5px;
-    background: linear-gradient(90deg, transparent, var(--cd-cyan), var(--cd-purple), transparent);
-    opacity: 0.5;
-    border-radius: 0 0 2px 2px;
+    top: 0;
+    left: -50%;
+    right: -50%;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        #8b5cf6 25%,
+        #ec4899 50%,
+        #06b6d4 75%,
+        transparent 100%);
+    background-size: 200% 100%;
+    animation: nuBorderFlow 3s linear infinite;
+    opacity: 0.7;
 }
 
+/* Inner radial glow */
+.glass-panel-testuser::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes nuIn {
+    from { opacity:0; transform: translateY(10px) scale(0.98); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+@keyframes nuBorderFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+/* === ROWS === */
 .glass-row-testuser {
     display: flex;
-    gap: 3px;
+    gap: 4px;
     align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
+/* === INPUT === */
 .glass-input-testuser {
     flex: 1;
     height: 28px;
     padding: 0 8px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--cd-border);
-    border-radius: 6px;
-    color: var(--cd-text);
-    font: 12px/1 'JetBrains Mono', 'Fira Code', monospace;
+    background: rgba(255,255,255,0.04);       /* было 0.025 */
+    border: 1px solid rgba(255,255,255,0.08); /* было 0.06 */
+    border-radius: 8px;
+    color: var(--nu-text);
+    font: 11px/1 'JetBrains Mono', 'Fira Code', monospace;
     outline: none;
-    transition: 0.2s;
+    transition: all 0.25s ease;
     cursor: text;
+    position: relative;
+    z-index: 1;
 }
-.glass-input-testuser::placeholder { color: #555560; font-size: 12px; }
-.glass-input-testuser:hover  { border-color: rgba(0,229,255,0.18); background: rgba(255,255,255,0.04); }
-.glass-input-testuser:focus  { border-color: var(--cd-cyan); box-shadow: 0 0 0 2px rgba(0,229,255,0.06), 0 0 10px rgba(0,229,255,0.08); }
 
+.glass-input-testuser::placeholder {
+    color: #6b7280;        /* было #475569 — ярче */
+    font-size: 11px;
+    opacity: 0.9;          /* чётче видно */
+}
+
+.glass-input-testuser:hover {
+    border-color: rgba(34, 211, 238, 0.25);
+    background: rgba(255,255,255,0.06);
+}
+
+.glass-input-testuser:focus {
+    border-color: rgba(34, 211, 238, 0.55);
+    box-shadow:
+        0 0 0 2px rgba(34, 211, 238, 0.07),
+        0 0 12px rgba(34, 211, 238, 0.12);
+}
+
+/* === BUTTONS === */
 .glass-btn-testuser {
     height: 28px;
     padding: 0 8px;
     background: rgba(255,255,255,0.03);
-    border: 1px solid var(--cd-border);
-    border-radius: 6px;
-    color: var(--cd-text2);
-    font: 11px/1 Inter, sans-serif;
-    font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    color: var(--nu-text2);
+    font: 10px/1 'Inter', sans-serif;
+    font-weight: 600;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 3px;
-    transition: 0.2s;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
 }
-.glass-btn-testuser:hover {
-    color: var(--cd-text);
-    transform: translateY(-1px);
-}
-.glass-btn-testuser:active { transform: translateY(0) scale(0.97); }
 
+/* Glass shine on buttons */
+.glass-btn-testuser::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+    border-radius: 8px 8px 0 0;
+    pointer-events: none;
+}
+
+.glass-btn-testuser:hover {
+    color: #fff;
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.glass-btn-testuser:active {
+    transform: translateY(0) scale(0.97);
+}
+
+/* Search button */
 #openuserinfo {
     width: 28px;
     padding: 0;
     font-size: 12px;
 }
-#openuserinfo:hover { color: var(--cd-cyan); border-color: var(--cd-cyan); box-shadow: 0 0 10px rgba(0,229,255,0.12); }
+#openuserinfo:hover {
+    color: var(--nu-cyan);
+    border-color: rgba(34, 211, 238, 0.4);
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.15), inset 0 0 8px rgba(34, 211, 238, 0.05);
+}
 
+/* Icon buttons row */
 .glass-row-testuser:nth-of-type(3) .glass-btn-testuser {
     flex: 1;
     font-size: 14px;
     padding: 0;
     height: 30px;
 }
-#sidcode:hover   { color: var(--cd-green);  border-color: var(--cd-green);  box-shadow: 0 0 10px rgba(0,217,160,0.12); }
-#tidcode:hover   { color: var(--cd-purple); border-color: var(--cd-purple); box-shadow: 0 0 10px rgba(200,64,245,0.12); }
-#TestRooms:hover { color: var(--cd-orange); border-color: var(--cd-orange); box-shadow: 0 0 10px rgba(255,159,64,0.12); }
-#link2lessbtn:hover { color: var(--cd-cyan); border-color: var(--cd-cyan); box-shadow: 0 0 10px rgba(0,229,255,0.12); }
 
+#sidcode:hover   {
+    color: var(--nu-green);
+    border-color: rgba(52, 211, 153, 0.4);
+    box-shadow: 0 0 12px rgba(52, 211, 153, 0.15), inset 0 0 8px rgba(52, 211, 153, 0.05);
+}
+#tidcode:hover   {
+    color: var(--nu-purple);
+    border-color: rgba(167, 139, 250, 0.4);
+    box-shadow: 0 0 12px rgba(167, 139, 250, 0.15), inset 0 0 8px rgba(167, 139, 250, 0.05);
+}
+#TestRooms:hover {
+    color: var(--nu-orange);
+    border-color: rgba(251, 146, 60, 0.4);
+    box-shadow: 0 0 12px rgba(251, 146, 60, 0.15), inset 0 0 8px rgba(251, 146, 60, 0.05);
+}
+#link2lessbtn:hover {
+    color: var(--nu-cyan);
+    border-color: rgba(34, 211, 238, 0.4);
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.15), inset 0 0 8px rgba(34, 211, 238, 0.05);
+}
+
+/* === DIVIDER === */
 .glass-divider-horizontal-testuser {
-    height: 1px;
-    margin: 7px 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), rgba(0,229,255,0.08), rgba(255,255,255,0.05), transparent);
+    height: 1.5px;          /* было 1px */
+    margin: 8px 0;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255,255,255,0.08) 15%,
+        rgba(139, 92, 246, 0.2) 50%,    /* было 0.1 */
+        rgba(255,255,255,0.08) 85%,
+        transparent);
+    position: relative;
+    z-index: 1;
+    opacity: 0.8;           /* чуть ярче */
 }
 
-.glass-btn-testuser.active { animation: cdPulse 1s ease-in-out infinite; }
-@keyframes cdPulse {
-    0%,100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.15); }
-    50%     { box-shadow: 0 0 0 4px rgba(0,229,255,0); }
+/* === STATES === */
+.glass-btn-testuser.active {
+    animation: nuPulse 1.2s ease-in-out infinite;
 }
+
+@keyframes nuPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.12); }
+    50%     { box-shadow: 0 0 0 4px rgba(34, 211, 238, 0); }
+}
+
 .glass-btn-testuser.successbtn {
-    background: rgba(0,217,160,0.1) !important;
-    border-color: var(--cd-green) !important;
-    color: var(--cd-green) !important;
-    box-shadow: 0 0 10px rgba(0,217,160,0.12) !important;
+    background: rgba(52, 211, 153, 0.1) !important;
+    border-color: rgba(52, 211, 153, 0.4) !important;
+    color: var(--nu-green) !important;
+    box-shadow: 0 0 12px rgba(52, 211, 153, 0.15), inset 0 0 8px rgba(52, 211, 153, 0.05) !important;
 }
+
 .glass-btn-testuser.errorbtn {
-    background: rgba(255,59,92,0.1) !important;
-    border-color: var(--cd-red) !important;
-    color: var(--cd-red) !important;
-    box-shadow: 0 0 10px rgba(255,59,92,0.12) !important;
+    background: rgba(248, 113, 113, 0.1) !important;
+    border-color: rgba(248, 113, 113, 0.4) !important;
+    color: var(--nu-red) !important;
+    box-shadow: 0 0 12px rgba(248, 113, 113, 0.15), inset 0 0 8px rgba(248, 113, 113, 0.05) !important;
 }
 
+/* === INFO BLOCK === */
 #addInfoUser {
-    margin-top: 7px;
-    padding: 7px;
-    background: rgba(255,255,255,0.015);
-    border: 1px solid var(--cd-border);
-    border-radius: 6px;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px;
     font-size: 10px;
-    color: var(--cd-text2);
+    color: var(--nu-text2);
     line-height: 1.4;
+    position: relative;
+    z-index: 1;
 }
 
+/* === TOAST === */
 .cyber-toast {
     position: fixed;
     bottom: 14px;
     left: 50%;
     transform: translateX(-50%) translateY(10px);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font: 10px/1 Inter, sans-serif;
-    font-weight: 500;
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--cd-border);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font: 10px/1 'Inter', sans-serif;
+    font-weight: 600;
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    border: 1px solid rgba(255,255,255,0.06);
     opacity: 0;
     pointer-events: none;
     z-index: 99999;
-    transition: 0.25s;
+    transition: all 0.25s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
 }
-.cyber-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.cyber-toast.message { background: rgba(0,217,160,0.08); border-color: rgba(0,217,160,0.15); color: var(--cd-green); }
-.cyber-toast.error   { background: rgba(255,59,92,0.08); border-color: rgba(255,59,92,0.15); color: var(--cd-red); }
+
+.cyber-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.cyber-toast.message {
+    background: rgba(52, 211, 153, 0.08);
+    border-color: rgba(52, 211, 153, 0.15);
+    color: var(--nu-green);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 15px rgba(52, 211, 153, 0.08);
+}
+
+.cyber-toast.error {
+    background: rgba(248, 113, 113, 0.08);
+    border-color: rgba(248, 113, 113, 0.15);
+    color: var(--nu-red);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 15px rgba(248, 113, 113, 0.08);
+}
 `;
 document.head.appendChild(cyberStyles);
 
 
-// ─── 2. HTML TEMPLATE ───
+// ─── HTML TEMPLATE (unchanged structure, neon glass classes) ───
 const win_TestUsers = `
 <div class="glass-panel-testuser">
     <div class="glass-row-testuser">
-        <!-- Добавлен класс teststudteachinp для работы Drag'n'Drop -->
         <input id="iduserinfo" placeholder="ID У/П" title="Введите ID У/П" class="teststudteachinp glass-input-testuser" autocomplete="off" type="text">
         <button id="openuserinfo" title="Поиск" class="glass-btn-testuser">🔍</button>
     </div>
