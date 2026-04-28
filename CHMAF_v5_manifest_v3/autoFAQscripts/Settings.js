@@ -107,12 +107,21 @@ async function init_settings() {
                 color: ${textColor} !important;
             }
 
-            /* 3. ФОНЫ ОСНОВНЫХ КОНТЕЙНЕРОВ */
-            [class*="Operator_Root"], [class*="Layout_Header"], [class*="ChatMessages_Root"],
-            [class*="ConversationScreen_Messages"], [class*="ConversationScreen_Header"],
-            [class*="text-editor_Toolbar"] {
-                background-color: ${color} !important;
-            }
+        /* 3. ФОНЫ ОСНОВНЫХ КОНТЕЙНЕРОВ + МОДАЛКИ */
+        [class*="Operator_Root"], [class*="Layout_Header"], [class*="ChatMessages_Root"],
+        [class*="ConversationScreen_Messages"], [class*="ConversationScreen_Header"],
+        [class*="text-editor_Toolbar"],
+        [class*="mantine-Modal-modal"],
+        [class*="mantine-Paper-root"][class*="Modal_"] {
+            background-color: ${color} !important;
+        }
+
+                /* ТЕКСТ ВНУТРИ МОДАЛОК */
+        [class*="mantine-Modal-modal"] [class*="mantine-Text-root"],
+        [class*="mantine-Modal-modal"] [class*="mantine-Modal-title"],
+        [class*="mantine-Modal-modal"] [class*="mantine-Input-input"] {
+            color: ${textColor} !important;
+        }
 
         /* 4. КНОПКИ И КАРТОЧКИ (не белые) */
         [class*="Buttons_SharedButton"],
