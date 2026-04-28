@@ -1044,7 +1044,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
         if (config && typeof config.fn === 'function') {
             config.fn();
             // По желанию: скрывать меню после клика
-            // menubar.style.display = 'none';
+            menubar.style.display = 'none';
         }
     };
 

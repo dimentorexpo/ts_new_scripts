@@ -1124,23 +1124,92 @@
 
 	/* Основной контейнер меню где Сервис Деск, Джира серч и тп */
 	.m-menu-panel {
-		background: rgba(25, 27, 35, 0.75) !important;
-		backdrop-filter: blur(16px) saturate(150%);
-		-webkit-backdrop-filter: blur(16px);
+		background:
+			linear-gradient(135deg, rgba(22, 22, 38, 0.92) 0%, rgba(14, 14, 28, 0.95) 100%),
+			url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23202040' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") !important;
+		backdrop-filter: blur(20px) saturate(1.4) !important;
+		-webkit-backdrop-filter: blur(20px) saturate(1.4) !important;
 		border: 1px solid rgba(255, 255, 255, 0.1) !important;
 		border-radius: 16px;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-		padding: 8px;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.5),
+			0 16px 40px rgba(0, 0, 0, 0.6),
+			0 0 30px rgba(139, 92, 246, 0.06),
+			inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+		padding: 10px;
 		width: 180px;
 		z-index: 1000000;
-		transition: all 0.3s ease;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		position: absolute !important;
+		overflow: hidden;
+		animation: menuFadeInUltra 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+		/* ← ВОТ ЭТО главное — сдвигаем влево от кнопки */
+		left: auto !important;
+		right: calc(100% + 6px) !important;
+		top: 0 !important;
+		bottom: auto !important;
+		transform-origin: right top !important;
 	}
 
-	/* Светлая тема (если exttheme == 'lightinputs') */
-	.m-menu-panel.light {
-		background: rgba(255, 255, 255, 0.6) !important;
-		border-color: rgba(0, 0, 0, 0.05) !important;
-		box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+	/* Если меню выше экрана — прижимаем к верху */
+	.m-menu-panel[style*="top: -"] {
+		top: 0 !important;
+	}
+
+	/* Animated neon top line */
+	.m-menu-panel::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: -50%;
+		right: -50%;
+		height: 2px;
+		background: linear-gradient(90deg,
+				transparent 0%,
+				#8b5cf6 25%,
+				#ec4899 50%,
+				#06b6d4 75%,
+				transparent 100%);
+		background-size: 200% 100%;
+		animation: neonBorderFlow 3s linear infinite;
+		opacity: 0.7;
+		pointer-events: none;
+	}
+
+	/* Inner radial glow */
+	.m-menu-panel::after {
+		content: '';
+		position: absolute;
+		top: -50%;
+		left: -50%;
+		width: 200%;
+		height: 200%;
+		background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	@keyframes neonBorderFlow {
+		0% {
+			background-position: 0% 50%;
+		}
+
+		100% {
+			background-position: 200% 50%;
+		}
+	}
+
+	@keyframes menuFadeInUltra {
+		from {
+			opacity: 0;
+			transform: translateX(10px) scale(0.96);
+		}
+
+		to {
+			opacity: 1;
+			transform: translateX(0) scale(1);
+		}
 	}
 
 	/* Общие стили кнопок */
@@ -1193,10 +1262,6 @@
 			opacity: 1;
 			transform: translateY(0);
 		}
-	}
-
-	.m-menu-panel {
-		animation: menuFadeIn 0.3s ease-out;
 	}
 
 	/* Конец*/
