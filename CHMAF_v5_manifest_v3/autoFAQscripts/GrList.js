@@ -15,21 +15,21 @@ const neonGlassStyles = `
         --ngu-border: rgba(48, 56, 72, 0.4);
         --ngu-border-active: rgba(0, 240, 255, 0.35);
 
-        --ngu-cyan: #00f0ff;
-        --ngu-cyan-soft: rgba(0, 240, 255, 0.08);
-        --ngu-cyan-glow: 0 0 20px rgba(0, 240, 255, 0.15), 0 0 40px rgba(0, 240, 255, 0.05);
+        --ngu-cyan: #22d3ee;
+        --ngu-cyan-soft: rgba(34, 211, 238, 0.08);
+        --ngu-cyan-glow: 0 0 20px rgba(34, 211, 238, 0.15), 0 0 40px rgba(34, 211, 238, 0.05);
 
-        --ngu-purple: #c084fc;
-        --ngu-purple-core: #a855f7;
-        --ngu-purple-glow: 0 0 15px rgba(192, 132, 252, 0.2);
+        --ngu-purple: #a78bfa;
+        --ngu-purple-core: #8b5cf6;
+        --ngu-purple-glow: 0 0 15px rgba(167, 139, 250, 0.2);
 
-        --ngu-green: #4ade80;
-        --ngu-red: #fb7185;
+        --ngu-green: #34d399;
+        --ngu-red: #f87171;
         --ngu-gold: #fbbf24;
 
-        --ngu-text-primary: #f1f5f9;
-        --ngu-text-secondary: #94a3b8;
-        --ngu-text-muted: #475569;
+        --ngu-text-primary: #f8fafc;
+        --ngu-text-secondary: #cbd5e1;
+        --ngu-text-muted: #94a3b8;
 
         --ngu-radius-sm: 8px;
         --ngu-radius: 12px;
@@ -51,8 +51,8 @@ const neonGlassStyles = `
         100% { background-position: 300% 0; }
     }
     @keyframes ngu-pulse-cyan {
-        0%, 100% { box-shadow: 0 0 5px rgba(0,240,255,0.2), 0 0 20px rgba(0,240,255,0.05); }
-        50% { box-shadow: 0 0 15px rgba(0,240,255,0.3), 0 0 40px rgba(0,240,255,0.1); }
+        0%, 100% { box-shadow: 0 0 5px rgba(34,211,238,0.2), 0 0 20px rgba(34,211,238,0.05); }
+        50% { box-shadow: 0 0 15px rgba(34,211,238,0.3), 0 0 40px rgba(34,211,238,0.1); }
     }
     @keyframes ngu-float {
         0%, 100% { transform: translateY(0); }
@@ -80,7 +80,7 @@ const neonGlassStyles = `
             0 32px 64px -16px rgba(0, 0, 0, 0.85),
             0 0 0 1px rgba(255, 255, 255, 0.04),
             inset 0 1px 0 rgba(255, 255, 255, 0.06),
-            0 0 60px rgba(0, 240, 255, 0.03);
+            0 0 60px rgba(34, 211, 238, 0.03);
         font-family: 'Inter', -apple-system, system-ui, sans-serif;
         overflow: hidden;
         color: var(--ngu-text-primary);
@@ -96,7 +96,7 @@ const neonGlassStyles = `
         position: absolute;
         inset: 0;
         background-image:
-            radial-gradient(circle at 1px 1px, rgba(0, 240, 255, 0.04) 1px, transparent 0);
+            radial-gradient(circle at 1px 1px, rgba(34, 211, 238, 0.04) 1px, transparent 0);
         background-size: 32px 32px;
         mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
         -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
@@ -112,7 +112,7 @@ const neonGlassStyles = `
         background: linear-gradient(
             to bottom,
             transparent 50%,
-            rgba(0, 240, 255, 0.015) 50%
+            rgba(34, 211, 238, 0.015) 50%
         );
         background-size: 100% 4px;
         pointer-events: none;
@@ -164,7 +164,7 @@ const neonGlassStyles = `
         height: 8px;
         background: var(--ngu-cyan);
         border-radius: 50%;
-        box-shadow: 0 0 12px var(--ngu-cyan), 0 0 24px rgba(0,240,255,0.3);
+        box-shadow: 0 0 12px var(--ngu-cyan), 0 0 24px rgba(34,211,238,0.3);
         animation: ngu-pulse-cyan 2.5s ease-in-out infinite;
         position: relative;
     }
@@ -174,7 +174,7 @@ const neonGlassStyles = `
         position: absolute;
         inset: -4px;
         border-radius: 50%;
-        border: 1px solid rgba(0,240,255,0.2);
+        border: 1px solid rgba(34,211,238,0.2);
         animation: ngu-pulse-cyan 2.5s ease-in-out infinite 0.3s;
     }
 
@@ -184,7 +184,7 @@ const neonGlassStyles = `
         letter-spacing: 2.5px;
         color: var(--ngu-text-primary);
         text-transform: uppercase;
-        text-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+        text-shadow: 0 0 30px rgba(34, 211, 238, 0.2);
     }
 
     .ngu-subtitle {
@@ -218,7 +218,7 @@ const neonGlassStyles = `
         border-radius: var(--ngu-radius-sm);
         padding: 11px 14px;
         font-size: 14px;
-        font-weight: 500;
+        font-weight: 600;
         font-family: 'JetBrains Mono', monospace;
         outline: none;
         text-align: center;
@@ -229,17 +229,17 @@ const neonGlassStyles = `
     }
 
     .ngu-input::placeholder {
-        color: var(--ngu-text-muted);
+        color: #64748b;
         font-family: 'Inter', sans-serif;
         font-weight: 400;
         letter-spacing: 0.5px;
     }
 
     .ngu-input:focus {
-        border-color: rgba(0, 240, 255, 0.5);
+        border-color: rgba(34, 211, 238, 0.5);
         box-shadow:
             inset 0 2px 8px rgba(0,0,0,0.4),
-            0 0 0 3px rgba(0, 240, 255, 0.08),
+            0 0 0 3px rgba(34, 211, 238, 0.08),
             var(--ngu-cyan-glow);
         background: rgba(2, 6, 12, 0.9);
     }
@@ -303,17 +303,17 @@ const neonGlassStyles = `
 
     .ngu-btn-primary {
         color: var(--ngu-cyan);
-        border-color: rgba(0, 240, 255, 0.25);
-        background: linear-gradient(145deg, rgba(0,240,255,0.06), rgba(0,240,255,0.02));
-        text-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+        border-color: rgba(34, 211, 238, 0.25);
+        background: linear-gradient(145deg, rgba(34,211,238,0.06), rgba(34,211,238,0.02));
+        text-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
     }
 
     .ngu-btn-primary:hover {
-        background: linear-gradient(145deg, rgba(0,240,255,0.12), rgba(0,240,255,0.04));
-        border-color: rgba(0, 240, 255, 0.5);
+        background: linear-gradient(145deg, rgba(34,211,238,0.12), rgba(34,211,238,0.04));
+        border-color: rgba(34, 211, 238, 0.5);
         box-shadow:
-            0 0 25px rgba(0, 240, 255, 0.15),
-            0 0 50px rgba(0, 240, 255, 0.05),
+            0 0 25px rgba(34, 211, 238, 0.15),
+            0 0 50px rgba(34, 211, 238, 0.05),
             inset 0 1px 0 rgba(255,255,255,0.05);
         color: #fff;
         transform: translateY(-1px);
@@ -327,10 +327,10 @@ const neonGlassStyles = `
     }
 
     .ngu-btn-danger:hover {
-        background: linear-gradient(145deg, rgba(251,113,133,0.12), rgba(251,113,133,0.04));
+        background: linear-gradient(145deg, rgba(248,113,133,0.12), rgba(248,113,133,0.04));
         color: var(--ngu-red);
-        border-color: rgba(251,113,133,0.4);
-        box-shadow: 0 0 20px rgba(251, 113, 133, 0.15);
+        border-color: rgba(248,113,133,0.4);
+        box-shadow: 0 0 20px rgba(248, 113, 133, 0.15);
         transform: translateY(-1px);
     }
 
@@ -348,10 +348,10 @@ const neonGlassStyles = `
     .ngu-content::-webkit-scrollbar { width: 4px; }
     .ngu-content::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
     .ngu-content::-webkit-scrollbar-thumb {
-        background: rgba(48, 56, 72, 0.6);
+        background: rgba(139, 92, 246, 0.4);
         border-radius: 10px;
     }
-    .ngu-content::-webkit-scrollbar-thumb:hover { background: var(--ngu-text-secondary); }
+    .ngu-content::-webkit-scrollbar-thumb:hover { background: rgba(167, 139, 250, 0.6); }
 
     /* === LOADER === */
     .ngu-loader {
@@ -363,11 +363,11 @@ const neonGlassStyles = `
         width: 40px;
         height: 40px;
         margin: 0 auto 16px;
-        border: 2px solid rgba(0, 240, 255, 0.1);
+        border: 2px solid rgba(34, 211, 238, 0.1);
         border-top-color: var(--ngu-cyan);
         border-radius: 50%;
         animation: spin 1s linear infinite;
-        box-shadow: 0 0 15px rgba(0,240,255,0.1);
+        box-shadow: 0 0 15px rgba(34,211,238,0.1);
     }
 
     @keyframes spin {
@@ -379,13 +379,13 @@ const neonGlassStyles = `
         font-size: 11px;
         letter-spacing: 3px;
         text-transform: uppercase;
-        font-weight: 700;
-        text-shadow: 0 0 15px rgba(0,240,255,0.2);
+        font-weight: 800;
+        text-shadow: 0 0 15px rgba(34,211,238,0.2);
         animation: ngu-pulse-cyan 2s infinite;
     }
 
     .ngu-loader-sub {
-        color: var(--ngu-text-muted);
+        color: #64748b;
         font-size: 10px;
         margin-top: 6px;
         font-family: 'JetBrains Mono', monospace;
@@ -397,7 +397,7 @@ const neonGlassStyles = `
         align-items: center;
         padding: 12px 14px;
         margin-bottom: 8px;
-        background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+        background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
         border: 1px solid rgba(48, 56, 72, 0.25);
         border-radius: var(--ngu-radius);
         gap: 12px;
@@ -422,12 +422,12 @@ const neonGlassStyles = `
     }
 
     .ngu-student-card:hover {
-        background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-        border-color: rgba(0, 240, 255, 0.15);
+        background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+        border-color: rgba(34, 211, 238, 0.15);
         transform: translateX(6px) scale(1.01);
         box-shadow:
             0 8px 32px rgba(0, 0, 0, 0.4),
-            0 0 20px rgba(0, 240, 255, 0.04);
+            0 0 20px rgba(34, 211, 238, 0.04);
     }
 
     .ngu-student-card:hover::before {
@@ -435,8 +435,8 @@ const neonGlassStyles = `
     }
 
     .ngu-index {
-        color: var(--ngu-text-muted);
-        font-size: 10px;
+        color: #64748b;
+        font-size: 11px;
         font-weight: 800;
         min-width: 28px;
         text-align: center;
@@ -448,16 +448,16 @@ const neonGlassStyles = `
         width: 32px;
         height: 32px;
         border-radius: 10px;
-        background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(168,85,247,0.15));
-        border: 1px solid rgba(0,240,255,0.15);
+        background: linear-gradient(135deg, rgba(34,211,238,0.15), rgba(139,92,246,0.15));
+        border: 1px solid rgba(34,211,238,0.15);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 800;
         color: var(--ngu-cyan);
         flex-shrink: 0;
-        text-shadow: 0 0 10px rgba(0,240,255,0.3);
+        text-shadow: 0 0 10px rgba(34,211,238,0.3);
         position: relative;
         overflow: hidden;
     }
@@ -471,9 +471,9 @@ const neonGlassStyles = `
     }
 
     .ngu-crm-btn {
-        background: linear-gradient(135deg, rgba(168,85,247,0.12), rgba(168,85,247,0.04));
+        background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04));
         color: var(--ngu-purple);
-        border: 1px solid rgba(168, 85, 247, 0.35);
+        border: 1px solid rgba(139, 92, 246, 0.35);
         padding: 5px 12px;
         border-radius: var(--ngu-radius-sm);
         font-size: 9px;
@@ -489,9 +489,9 @@ const neonGlassStyles = `
     }
 
     .ngu-crm-btn:hover {
-        background: linear-gradient(135deg, var(--ngu-purple-core), rgba(168,85,247,0.8));
+        background: linear-gradient(135deg, var(--ngu-purple-core), rgba(139,92,246,0.8));
         color: #fff;
-        box-shadow: 0 0 25px rgba(168, 85, 247, 0.3);
+        box-shadow: 0 0 25px rgba(139, 92, 246, 0.3);
         transform: scale(1.08);
         border-color: transparent;
     }
@@ -502,9 +502,9 @@ const neonGlassStyles = `
     }
 
     .ngu-name {
-        color: var(--ngu-text-primary);
-        font-weight: 600;
-        font-size: 13px;
+        color: #f1f5fc;
+        font-weight: 700;
+        font-size: 14px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -512,9 +512,9 @@ const neonGlassStyles = `
     }
 
     .ngu-meta {
-        color: var(--ngu-text-muted);
-        font-size: 10px;
-        margin-top: 3px;
+        color: #94a3b8;
+        font-size: 11px;
+        margin-top: 4px;
         font-family: 'JetBrains Mono', monospace;
         cursor: pointer;
         transition: all 0.2s;
@@ -525,12 +525,12 @@ const neonGlassStyles = `
 
     .ngu-meta:hover {
         color: var(--ngu-cyan);
-        text-shadow: 0 0 10px rgba(0,240,255,0.2);
+        text-shadow: 0 0 10px rgba(34,211,238,0.2);
     }
 
     .ngu-meta::after {
         content: '⎘';
-        font-size: 9px;
+        font-size: 10px;
         opacity: 0;
         transition: opacity 0.2s;
     }
@@ -540,8 +540,8 @@ const neonGlassStyles = `
     }
 
     .ngu-service-tag {
-        color: var(--ngu-text-secondary);
-        font-size: 9px;
+        color: #94a3b8;
+        font-size: 10px;
         background: rgba(30, 40, 60, 0.6);
         padding: 5px 10px;
         border-radius: var(--ngu-radius-sm);
@@ -549,19 +549,20 @@ const neonGlassStyles = `
         white-space: nowrap;
         border: 1px solid rgba(48, 56, 72, 0.4);
         letter-spacing: 0.5px;
+        font-weight: 500;
     }
 
     /* === TEACHER === */
     .ngu-teacher {
         margin-top: 20px;
         padding: 16px;
-        background: linear-gradient(135deg, rgba(74,222,128,0.06), rgba(74,222,128,0.02));
+        background: linear-gradient(135deg, rgba(52,211,153,0.06), rgba(52,211,153,0.02));
         color: var(--ngu-green);
-        font-weight: 700;
+        font-weight: 800;
         text-align: center;
-        border: 1px solid rgba(74, 222, 128, 0.15);
+        border: 1px solid rgba(52, 211, 153, 0.15);
         border-radius: var(--ngu-radius);
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 2px;
         text-transform: uppercase;
         position: relative;
@@ -576,7 +577,7 @@ const neonGlassStyles = `
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(74,222,128,0.08), transparent);
+        background: linear-gradient(90deg, transparent, rgba(52,211,153,0.08), transparent);
         animation: ngu-shimmer 4s infinite;
     }
 
@@ -591,9 +592,9 @@ const neonGlassStyles = `
         padding: 32px 24px;
         text-align: center;
         color: var(--ngu-text-secondary);
-        font-size: 13px;
+        font-size: 14px;
         border-radius: var(--ngu-radius);
-        background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+        background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
         border: 1px dashed rgba(48, 56, 72, 0.3);
         margin-top: 4px;
         position: relative;
@@ -602,9 +603,9 @@ const neonGlassStyles = `
 
     .ngu-status.error {
         color: var(--ngu-red);
-        border-color: rgba(251, 113, 133, 0.25);
-        background: linear-gradient(135deg, rgba(251,113,133,0.04), rgba(251,113,133,0.01));
-        text-shadow: 0 0 15px rgba(251, 113, 133, 0.15);
+        border-color: rgba(248, 113, 133, 0.25);
+        background: linear-gradient(135deg, rgba(248,113,133,0.04), rgba(248,113,133,0.01));
+        text-shadow: 0 0 15px rgba(248, 113, 133, 0.15);
     }
 
     .ngu-status.empty {
@@ -622,14 +623,14 @@ const neonGlassStyles = `
     }
 
     .ngu-status-title {
-        font-weight: 600;
-        font-size: 14px;
+        font-weight: 700;
+        font-size: 15px;
         margin-bottom: 4px;
     }
 
     .ngu-status-desc {
-        font-size: 12px;
-        color: var(--ngu-text-muted);
+        font-size: 13px;
+        color: #94a3b8;
     }
 
     /* === COUNTERS === */
@@ -639,8 +640,8 @@ const neonGlassStyles = `
         gap: 24px;
         padding: 12px 20px;
         margin: 0 20px 16px;
-        background: rgba(0, 240, 255, 0.03);
-        border: 1px solid rgba(0, 240, 255, 0.08);
+        background: rgba(34, 211, 238, 0.03);
+        border: 1px solid rgba(34, 211, 238, 0.08);
         border-radius: var(--ngu-radius-sm);
     }
 
@@ -649,19 +650,20 @@ const neonGlassStyles = `
     }
 
     .ngu-counter-value {
-        font-size: 18px;
-        font-weight: 800;
+        font-size: 20px;
+        font-weight: 900;
         color: var(--ngu-cyan);
         font-family: 'JetBrains Mono', monospace;
-        text-shadow: 0 0 15px rgba(0,240,255,0.2);
+        text-shadow: 0 0 15px rgba(34,211,238,0.2);
     }
 
     .ngu-counter-label {
-        font-size: 9px;
-        color: var(--ngu-text-muted);
+        font-size: 10px;
+        color: #94a3b8;
         text-transform: uppercase;
         letter-spacing: 1.5px;
-        margin-top: 2px;
+        margin-top: 4px;
+        font-weight: 700;
     }
 </style>
 `;
@@ -673,8 +675,8 @@ var win_GrList = `
             <div class="ngu-title-group">
                 <div class="ngu-title-icon"></div>
                 <div>
-                    <div class="ngu-title">Group List Info</div>
-                    <div class="ngu-subtitle">skyeng learning groups</div>
+                    <div class="ngu-title">Group information</div>
+                    <div class="ngu-subtitle">Список участников группы</div>
                 </div>
             </div>
             <button class="ngu-btn ngu-btn-danger" id="ngu-hide-btn">✕ Close</button>
@@ -845,6 +847,13 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
                 </div>
             </div>`;
 
+        if (teacherCount > 0) {
+            const teacherRow = document.createElement('div');
+            teacherRow.className = 'ngu-teacher';
+            teacherRow.innerHTML = `<span class="ngu-teacher-icon">●</span> Преподаватель: ${teachers[0].userId}`;
+            container.appendChild(teacherRow);
+        }
+
         students.forEach((student, index) => {
             const name = namesMap[student.userId] || 'Имя не определено';
             const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
@@ -882,12 +891,7 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
             container.appendChild(card);
         });
 
-        if (teacherCount > 0) {
-            const teacherRow = document.createElement('div');
-            teacherRow.className = 'ngu-teacher';
-            teacherRow.innerHTML = `<span class="ngu-teacher-icon">●</span> Преподаватель: ${teachers[0].userId}`;
-            container.appendChild(teacherRow);
-        }
+
 
     } catch (error) {
         console.error('[GrList]', error);
