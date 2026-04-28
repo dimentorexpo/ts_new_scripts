@@ -264,6 +264,34 @@ async function init_settings() {
             [class*="ChatMessages_CommentMessagesGroup__"] a:hover {
                 color: #b3e5fc !important;
             }
+
+                        /* ═══ 14. QUICK TAGS ОКОШКО ═══ */
+            #quickTagsdiv {
+                background-color: ${getRgba(color, 0.85)} !important;
+                border: 1px solid ${getRgba(textColor, 0.15)} !important;
+                border-radius: 10px !important;
+                padding: 8px !important;
+                backdrop-filter: blur(10px) !important;
+            }
+            #quickTagsdiv a {
+                color: ${textColor} !important;
+                text-decoration: none !important;
+                transition: all 0.15s ease !important;
+            }
+            #quickTagsdiv a:hover {
+                color: #ffffff !important;
+                text-decoration: underline !important;
+                text-underline-offset: 2px !important;
+            }
+            /* Специальные цветные теги — яркие для тёмной темы */
+            #quickTagsdiv #svyazsU a,
+            #quickTagsdiv #PNO a {
+                color: #4fc3f7 !important; /* яркий голубой */
+            }
+            #quickTagsdiv #svyazsP a,
+            #quickTagsdiv #UNO a {
+                color: #ff6b81 !important; /* яркий розовый */
+            }
         `;
         }
 
