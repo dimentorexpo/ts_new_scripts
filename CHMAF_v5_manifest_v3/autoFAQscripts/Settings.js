@@ -451,6 +451,111 @@ async function init_settings() {
                 color: ${textColor} !important;
                 background: transparent !important;
             }
+
+                        /* ═══ 21. CHIPS / MULTISELECT VALUES ═══ */
+            [class*="Chips_Chip__"],
+            [class*="mantine-MultiSelect-value"] {
+                background-color: ${getRgba(textColor, 0.1)} !important;
+                border: 1px solid ${getRgba(textColor, 0.2)} !important;
+                color: ${textColor} !important;
+            }
+            [class*="Chips_Chip__"] [class*="Chips_Label__"],
+            [class*="mantine-MultiSelect-value"] [class*="Typography_Type_body-description__"] {
+                color: ${textColor} !important;
+            }
+            /* Кнопка-крестик внутри чипсы */
+            [class*="Chips_Chip__"] [class*="Chips_CloseIcon__"] {
+                color: ${textColor} !important;
+            }
+            [class*="Chips_Chip__"] [class*="Chips_CloseIcon__"]:hover {
+                color: #ffffff !important;
+                background-color: rgba(255, 255, 255, 0.1) !important;
+                border-radius: 50% !important;
+            }
+
+                        /* ═══ 22. INPUT (поиск и др.) ═══ */
+            [class*="Inputs_Input__"],
+            input[class*="Inputs_"] {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                color: ${textColor} !important;
+                border: 1px solid ${getRgba(textColor, 0.2)} !important;
+                border-radius: 8px !important;
+                padding: 8px 12px !important;
+            }
+            [class*="Inputs_Input__"]::placeholder,
+            input[class*="Inputs_"]::placeholder {
+                color: ${getRgba(textColor, 0.4)} !important;
+            }
+            [class*="Inputs_Input__"]:focus,
+            input[class*="Inputs_"]:focus {
+                border-color: #7c4dff !important;
+                background-color: ${getRgba(textColor, 0.12)} !important;
+                outline: none !important;
+            }
+            /* Иконка внутри инпута */
+            [class*="Inputs_WithIcon__"] svg,
+            [class*="Inputs_WithIcon__"] [class*="mantine-Input-icon"] {
+                color: ${getRgba(textColor, 0.5)} !important;
+            }
+
+            /* ═══ 23. HISTORY / ИСТОРИЯ ДИАЛОГОВ ═══ */
+            [class*="History_ListItem__"],
+            [class*="History_ConversationHeader__"],
+            [class*="History_ConversationBody__"] {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+            }
+            [class*="History_ListItem__"] {
+                border-bottom: 1px solid ${getRgba(textColor, 0.08)} !important;
+            }
+            [class*="History_ListItem__"] [class*="Typography_Type_body__"],
+            [class*="History_InitMessage__"],
+            [class*="History_ConversationBody__"] span {
+                color: ${textColor} !important;
+                background: transparent !important;
+            }
+            /* SVG стрелка в истории */
+            [class*="History_Arrow__"] path {
+                fill: ${getRgba(textColor, 0.5)} !important;
+            }
+            /* Кнопка-копировать в шапке истории */
+            [class*="History_ConversationHeader__"] button svg {
+                color: ${textColor} !important;
+            }
+            [class*="History_ConversationHeader__"] button:hover svg {
+                color: #ffffff !important;
+            }
+
+                        /* ═══ 24. SANITIZED HTML (текст внутри сообщений) ═══ */
+            [class*="SanitizedHtml_SanitizedHtml__"] {
+                color: ${textColor} !important;
+                background: transparent !important;
+            }
+                            /* ═══ 25. ACCORDION / SUGGESTIONS (подсказки ответов) ═══ */
+            [class*="mantine-Accordion-control"],
+            [class*="Suggestions_SuggestionPreviewWrapper__"] {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+            }
+            [class*="mantine-Accordion-control"]:hover,
+            [class*="Suggestions_SuggestionPreviewWrapper__"]:hover {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+            }
+            [class*="mantine-Accordion-control"][data-active="true"],
+            [class*="Suggestions_SuggestionPreviewWrapper__"][data-active="true"] {
+                background-color: ${getRgba(textColor, 0.12)} !important;
+            }
+            /* Текст внутри аккордеона */
+            [class*="Suggestions_SuggestionPreview__"] [class*="Typography_Type_body-description__"],
+            [class*="Suggestions_SuggestionPreview__"] [class*="Typography_Type_body__"],
+            [class*="Suggestions_SuggestionPreview__"] [class*="SanitizedHtml_SanitizedHtml__"] {
+                color: ${textColor} !important;
+                background: transparent !important;
+            }
+            /* Стрелка аккордеона */
+            [class*="mantine-Accordion-chevron"] svg {
+                color: ${textColor} !important;
+            }
         `;
         }
 
