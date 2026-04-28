@@ -104,6 +104,63 @@ async function init_settings() {
     border-bottom-color: #7c4dff !important;
 }
 
+        /* СООБЩЕНИЯ ОТ БОТА — зелёная плашка */
+        [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] {
+            background-color: rgba(46, 125, 50, 0.25) !important;
+            border: 1px solid rgba(76, 175, 80, 0.35) !important;
+            border-radius: 12px !important;
+            padding: 8px !important;
+            margin: 4px 0 !important;
+        }
+
+        /* Текст внутри бот-сообщений — мягкий светло-зелёный */
+        [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="ChatMessages_Author__"],
+        [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="ChatMessages_Date__"],
+        [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="ChatMessages_HtmlContent__"] {
+            color: #e8f5e9 !important;
+            background: transparent !important;
+        }
+
+        /* Кнопки-оценки внутри бот-сообщений */
+        [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="Buttons_SharedButton__"] {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            color: #c8e6c9 !important;
+            border-color: rgba(76, 175, 80, 0.4) !important;
+        }
+
+                /* СООБЩЕНИЯ ОТ ПОЛЬЗОВАТЕЛЯ ("Вы") — тёплый жёлтый */
+        [class*="ChatMessages_RegularMessage__"][data-author-type="user"] {
+            background-color: rgba(255, 193, 7, 0.22) !important;
+            border: 1px solid rgba(255, 179, 0, 0.4) !important;
+            border-radius: 12px !important;
+            padding: 8px !important;
+            margin: 4px 0 !important;
+        }
+
+        /* Текст внутри жёлтых сообщений — тёмно-коричневый (лучше читается на янтарном) */
+        [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"],
+        [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Date__"],
+        [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
+            color: #3e2723 !important; /* тёплый тёмно-коричневый, не резкий чёрный */
+            background: transparent !important;
+        }
+
+        /* Имя "Вы" можно чуть жирнее для контраста */
+        [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"] {
+            font-weight: 600 !important;
+        }
+
+        /* ПРИЯТНЫЙ СЕРЫЙ ФОН ДЛЯ СООБЩЕНИЙ */
+
+
+        [class*="ChatMessages_HtmlContent__"] {
+            background-color: rgba(141, 136, 136, 0.61) !important;
+            color: ${textColor} !important;
+            border-radius: 0 0 10px 10px;
+            padding: 10px !important;
+            display: block !important;
+        }
+
 
             /* 1. ПРИНУДИТЕЛЬНОЕ ОБНУЛЕНИЕ ФОНОВ ДЛЯ ТЕКСТОВЫХ ЭЛЕМЕНТОВ */
             [class*="Typography_Typography"],
