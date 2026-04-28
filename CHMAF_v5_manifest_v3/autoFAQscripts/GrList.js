@@ -1,219 +1,790 @@
 // === 1. ВСТРАИВАЕМЫЕ СТИЛИ (CYBER-DARK UI) ===
-const cyberDarkStyles = `
+// ==========================================
+// NEON GLASS ULTRA — Premium Cyber-Dark UI
+// ==========================================
+
+const neonGlassStyles = `
 <style>
-    .cdui-gl-wrapper {
-        width: 450px;
-        background: #0d1117;
-        border: 1px solid #30363d;
-        border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 240, 255, 0.1);
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        overflow: hidden;
-        color: #c9d1d9;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    /* === CORE SYSTEM === */
+    :root {
+        --ngu-deep: #030508;
+        --ngu-surface: rgba(8, 12, 20, 0.85);
+        --ngu-surface-elevated: rgba(14, 20, 32, 0.9);
+        --ngu-border: rgba(48, 56, 72, 0.4);
+        --ngu-border-active: rgba(0, 240, 255, 0.35);
+
+        --ngu-cyan: #00f0ff;
+        --ngu-cyan-soft: rgba(0, 240, 255, 0.08);
+        --ngu-cyan-glow: 0 0 20px rgba(0, 240, 255, 0.15), 0 0 40px rgba(0, 240, 255, 0.05);
+
+        --ngu-purple: #c084fc;
+        --ngu-purple-core: #a855f7;
+        --ngu-purple-glow: 0 0 15px rgba(192, 132, 252, 0.2);
+
+        --ngu-green: #4ade80;
+        --ngu-red: #fb7185;
+        --ngu-gold: #fbbf24;
+
+        --ngu-text-primary: #f1f5f9;
+        --ngu-text-secondary: #94a3b8;
+        --ngu-text-muted: #475569;
+
+        --ngu-radius-sm: 8px;
+        --ngu-radius: 12px;
+        --ngu-radius-lg: 16px;
+        --ngu-transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .cdui-gl-header {
+
+    /* === ANIMATIONS === */
+    @keyframes ngu-appear {
+        0% { opacity: 0; transform: translateY(-20px) scale(0.95) rotateX(5deg); }
+        100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0); }
+    }
+    @keyframes ngu-slide-up {
+        0% { opacity: 0; transform: translateY(16px) scale(0.98); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes ngu-shimmer {
+        0% { background-position: -300% 0; }
+        100% { background-position: 300% 0; }
+    }
+    @keyframes ngu-pulse-cyan {
+        0%, 100% { box-shadow: 0 0 5px rgba(0,240,255,0.2), 0 0 20px rgba(0,240,255,0.05); }
+        50% { box-shadow: 0 0 15px rgba(0,240,255,0.3), 0 0 40px rgba(0,240,255,0.1); }
+    }
+    @keyframes ngu-float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+    }
+    @keyframes ngu-scanline {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100vh); }
+    }
+    @keyframes ngu-border-rotate {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* === WRAPPER === */
+    .ngu-wrapper {
+        width: 500px;
+        background: var(--ngu-surface);
+        backdrop-filter: blur(24px) saturate(160%);
+        -webkit-backdrop-filter: blur(24px) saturate(160%);
+        border: 1px solid var(--ngu-border);
+        border-radius: var(--ngu-radius-lg);
+        box-shadow:
+            0 32px 64px -16px rgba(0, 0, 0, 0.85),
+            0 0 0 1px rgba(255, 255, 255, 0.04),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06),
+            0 0 60px rgba(0, 240, 255, 0.03);
+        font-family: 'Inter', -apple-system, system-ui, sans-serif;
+        overflow: hidden;
+        color: var(--ngu-text-primary);
+        animation: ngu-appear 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        transform-style: preserve-3d;
+        perspective: 1000px;
+    }
+
+    /* Holographic grid overlay */
+    .ngu-wrapper::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            radial-gradient(circle at 1px 1px, rgba(0, 240, 255, 0.04) 1px, transparent 0);
+        background-size: 32px 32px;
+        mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+        -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* Scanline effect */
+    .ngu-wrapper::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            to bottom,
+            transparent 50%,
+            rgba(0, 240, 255, 0.015) 50%
+        );
+        background-size: 100% 4px;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    /* === HEADER === */
+    .ngu-header {
+        position: relative;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #161b22;
-        padding: 12px 16px;
-        border-bottom: 1px solid #30363d;
+        background: linear-gradient(180deg, rgba(16,24,40,0.9) 0%, rgba(8,12,20,0.6) 100%);
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--ngu-border);
         cursor: -webkit-grab;
+        z-index: 2;
+        overflow: hidden;
     }
-    .cdui-gl-title {
-        font-size: 14px;
-        font-weight: 600;
-        letter-spacing: 1px;
-        color: #e6edf3;
-        text-transform: uppercase;
-        text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
-    }
-    .cdui-gl-controls {
-        display: flex;
-        gap: 12px;
-        padding: 16px;
-        background: #0d1117;
-    }
-    .cdui-gl-input {
-        flex: 1;
-        background: #010409;
-        border: 1px solid #30363d;
-        color: #00f0ff;
-        border-radius: 6px;
-        padding: 8px 12px;
-        font-size: 14px;
-        outline: none;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-    .cdui-gl-input:focus {
-        border-color: #00f0ff;
-        box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
-    }
-    .cdui-gl-btn {
-        background: #21262d;
-        color: #c9d1d9;
-        border: 1px solid #363e48;
-        border-radius: 6px;
-        padding: 8px 16px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        text-transform: uppercase;
-        transition: all 0.2s ease;
-    }
-    .cdui-gl-btn-primary {
-        color: #00f0ff;
-        border-color: rgba(0, 240, 255, 0.4);
-    }
-    .cdui-gl-btn-primary:hover {
-        background: rgba(0, 240, 255, 0.1);
-        border-color: #00f0ff;
-        box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
-    }
-    .cdui-gl-btn-danger:hover {
-        background: rgba(255, 51, 102, 0.1);
-        color: #ff3366;
-        border-color: #ff3366;
-        box-shadow: 0 0 12px rgba(255, 51, 102, 0.4);
-    }
-    .cdui-gl-content {
-        max-height: 500px;
-        overflow-y: auto;
-        padding: 0 16px 16px 16px;
-        font-size: 13px;
-    }
-    /* Стилизация скроллбара */
-    .cdui-gl-content::-webkit-scrollbar { width: 6px; }
-    .cdui-gl-content::-webkit-scrollbar-track { background: #010409; }
-    .cdui-gl-content::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
-    .cdui-gl-content::-webkit-scrollbar-thumb:hover { background: #8b949e; }
 
-    /* Элементы списка */
-    .cdui-gl-student-row {
+    /* Animated border bottom */
+    .ngu-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: -50%;
+        right: -50%;
+        height: 1px;
+        background: linear-gradient(90deg,
+            transparent,
+            var(--ngu-cyan),
+            var(--ngu-purple),
+            var(--ngu-cyan),
+            transparent
+        );
+        background-size: 200% 100%;
+        animation: ngu-border-rotate 4s linear infinite;
+        opacity: 0.5;
+    }
+
+    .ngu-title-group {
         display: flex;
         align-items: center;
-        padding: 8px 10px;
-        border-bottom: 1px solid #21262d;
         gap: 10px;
-        transition: background 0.2s;
     }
-    .cdui-gl-student-row:hover { background: #161b22; }
-    .cdui-gl-crm-badge {
-        background: rgba(176, 38, 255, 0.15);
-        color: #d2a8ff;
-        border: 1px solid #b026ff;
-        padding: 2px 6px;
-        border-radius: 4px;
+
+    .ngu-title-icon {
+        width: 8px;
+        height: 8px;
+        background: var(--ngu-cyan);
+        border-radius: 50%;
+        box-shadow: 0 0 12px var(--ngu-cyan), 0 0 24px rgba(0,240,255,0.3);
+        animation: ngu-pulse-cyan 2.5s ease-in-out infinite;
+        position: relative;
+    }
+
+    .ngu-title-icon::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 1px solid rgba(0,240,255,0.2);
+        animation: ngu-pulse-cyan 2.5s ease-in-out infinite 0.3s;
+    }
+
+    .ngu-title {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 2.5px;
+        color: var(--ngu-text-primary);
+        text-transform: uppercase;
+        text-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+    }
+
+    .ngu-subtitle {
         font-size: 10px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.2s;
+        color: var(--ngu-text-muted);
+        letter-spacing: 1px;
+        margin-top: 2px;
+        font-family: 'JetBrains Mono', monospace;
     }
-    .cdui-gl-crm-badge:hover {
-        background: #b026ff;
-        color: #fff;
-        box-shadow: 0 0 8px rgba(176, 38, 255, 0.6);
+
+    /* === CONTROLS === */
+    .ngu-controls {
+        display: flex;
+        gap: 12px;
+        padding: 20px;
+        background: transparent;
+        position: relative;
+        z-index: 2;
     }
-    .cdui-gl-student-name { color: #e6edf3; flex: 1; }
-    .cdui-gl-student-service { color: #8b949e; font-size: 11px; }
-    .cdui-gl-teacher-row {
-        margin-top: 15px;
-        padding: 8px;
-        color: #3fb950;
-        font-weight: 600;
+
+    .ngu-input-wrap {
+        flex: 1;
+        position: relative;
+    }
+
+    .ngu-input {
+        width: 100%;
+        background: rgba(2, 6, 12, 0.7);
+        border: 1px solid var(--ngu-border);
+        color: var(--ngu-cyan);
+        border-radius: var(--ngu-radius-sm);
+        padding: 11px 14px;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: 'JetBrains Mono', monospace;
+        outline: none;
         text-align: center;
-        border-top: 1px dashed #30363d;
+        letter-spacing: 1px;
+        transition: var(--ngu-transition);
+        box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+        box-sizing: border-box;
     }
-    .cdui-gl-status { padding: 10px; text-align: center; color: #8b949e; }
-    .cdui-gl-status.error { color: #ff3366; }
+
+    .ngu-input::placeholder {
+        color: var(--ngu-text-muted);
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+    }
+
+    .ngu-input:focus {
+        border-color: rgba(0, 240, 255, 0.5);
+        box-shadow:
+            inset 0 2px 8px rgba(0,0,0,0.4),
+            0 0 0 3px rgba(0, 240, 255, 0.08),
+            var(--ngu-cyan-glow);
+        background: rgba(2, 6, 12, 0.9);
+    }
+
+    /* Input glow line */
+    .ngu-input-wrap::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--ngu-cyan), transparent);
+        transition: all 0.4s ease;
+        transform: translateX(-50%);
+        border-radius: 2px;
+    }
+
+    .ngu-input-wrap:focus-within::after {
+        width: 80%;
+    }
+
+    /* === BUTTONS === */
+    .ngu-btn {
+        background: linear-gradient(145deg, rgba(30,36,48,0.9), rgba(18,24,36,0.9));
+        color: var(--ngu-text-secondary);
+        border: 1px solid rgba(56, 64, 80, 0.5);
+        border-radius: var(--ngu-radius-sm);
+        padding: 11px 20px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        transition: var(--ngu-transition);
+        position: relative;
+        overflow: hidden;
+        font-family: inherit;
+        white-space: nowrap;
+    }
+
+    .ngu-btn::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
+        opacity: 0;
+        transition: opacity 0.4s;
+    }
+
+    .ngu-btn:hover::before {
+        opacity: 1;
+    }
+
+    .ngu-btn:active {
+        transform: scale(0.96) translateY(1px);
+    }
+
+    .ngu-btn-primary {
+        color: var(--ngu-cyan);
+        border-color: rgba(0, 240, 255, 0.25);
+        background: linear-gradient(145deg, rgba(0,240,255,0.06), rgba(0,240,255,0.02));
+        text-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+    }
+
+    .ngu-btn-primary:hover {
+        background: linear-gradient(145deg, rgba(0,240,255,0.12), rgba(0,240,255,0.04));
+        border-color: rgba(0, 240, 255, 0.5);
+        box-shadow:
+            0 0 25px rgba(0, 240, 255, 0.15),
+            0 0 50px rgba(0, 240, 255, 0.05),
+            inset 0 1px 0 rgba(255,255,255,0.05);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .ngu-btn-danger {
+        padding: 8px 14px;
+        font-size: 10px;
+        border-radius: var(--ngu-radius-sm);
+        letter-spacing: 1px;
+    }
+
+    .ngu-btn-danger:hover {
+        background: linear-gradient(145deg, rgba(251,113,133,0.12), rgba(251,113,133,0.04));
+        color: var(--ngu-red);
+        border-color: rgba(251,113,133,0.4);
+        box-shadow: 0 0 20px rgba(251, 113, 133, 0.15);
+        transform: translateY(-1px);
+    }
+
+    /* === CONTENT === */
+    .ngu-content {
+        max-height: 480px;
+        overflow-y: auto;
+        padding: 0 20px 20px 20px;
+        font-size: 13px;
+        position: relative;
+        z-index: 2;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(48,56,72,0.6) transparent;
+    }
+    .ngu-content::-webkit-scrollbar { width: 4px; }
+    .ngu-content::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
+    .ngu-content::-webkit-scrollbar-thumb {
+        background: rgba(48, 56, 72, 0.6);
+        border-radius: 10px;
+    }
+    .ngu-content::-webkit-scrollbar-thumb:hover { background: var(--ngu-text-secondary); }
+
+    /* === LOADER === */
+    .ngu-loader {
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .ngu-loader-ring {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto 16px;
+        border: 2px solid rgba(0, 240, 255, 0.1);
+        border-top-color: var(--ngu-cyan);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        box-shadow: 0 0 15px rgba(0,240,255,0.1);
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .ngu-loader-text {
+        color: var(--ngu-cyan);
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        font-weight: 700;
+        text-shadow: 0 0 15px rgba(0,240,255,0.2);
+        animation: ngu-pulse-cyan 2s infinite;
+    }
+
+    .ngu-loader-sub {
+        color: var(--ngu-text-muted);
+        font-size: 10px;
+        margin-top: 6px;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* === STUDENT CARDS === */
+    .ngu-student-card {
+        display: flex;
+        align-items: center;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+        border: 1px solid rgba(48, 56, 72, 0.25);
+        border-radius: var(--ngu-radius);
+        gap: 12px;
+        transition: var(--ngu-transition);
+        opacity: 0;
+        animation: ngu-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ngu-student-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(to bottom, var(--ngu-cyan), transparent);
+        opacity: 0;
+        transition: opacity 0.3s;
+        border-radius: 3px 0 0 3px;
+    }
+
+    .ngu-student-card:hover {
+        background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+        border-color: rgba(0, 240, 255, 0.15);
+        transform: translateX(6px) scale(1.01);
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            0 0 20px rgba(0, 240, 255, 0.04);
+    }
+
+    .ngu-student-card:hover::before {
+        opacity: 0.7;
+    }
+
+    .ngu-index {
+        color: var(--ngu-text-muted);
+        font-size: 10px;
+        font-weight: 800;
+        min-width: 28px;
+        text-align: center;
+        font-family: 'JetBrains Mono', monospace;
+        letter-spacing: 1px;
+    }
+
+    .ngu-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(168,85,247,0.15));
+        border: 1px solid rgba(0,240,255,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--ngu-cyan);
+        flex-shrink: 0;
+        text-shadow: 0 0 10px rgba(0,240,255,0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ngu-avatar::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+        animation: ngu-shimmer 3s infinite;
+    }
+
+    .ngu-crm-btn {
+        background: linear-gradient(135deg, rgba(168,85,247,0.12), rgba(168,85,247,0.04));
+        color: var(--ngu-purple);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        padding: 5px 12px;
+        border-radius: var(--ngu-radius-sm);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        cursor: pointer;
+        transition: var(--ngu-transition);
+        text-transform: uppercase;
+        flex-shrink: 0;
+        font-family: inherit;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ngu-crm-btn:hover {
+        background: linear-gradient(135deg, var(--ngu-purple-core), rgba(168,85,247,0.8));
+        color: #fff;
+        box-shadow: 0 0 25px rgba(168, 85, 247, 0.3);
+        transform: scale(1.08);
+        border-color: transparent;
+    }
+
+    .ngu-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ngu-name {
+        color: var(--ngu-text-primary);
+        font-weight: 600;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        letter-spacing: 0.2px;
+    }
+
+    .ngu-meta {
+        color: var(--ngu-text-muted);
+        font-size: 10px;
+        margin-top: 3px;
+        font-family: 'JetBrains Mono', monospace;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .ngu-meta:hover {
+        color: var(--ngu-cyan);
+        text-shadow: 0 0 10px rgba(0,240,255,0.2);
+    }
+
+    .ngu-meta::after {
+        content: '⎘';
+        font-size: 9px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .ngu-meta:hover::after {
+        opacity: 0.6;
+    }
+
+    .ngu-service-tag {
+        color: var(--ngu-text-secondary);
+        font-size: 9px;
+        background: rgba(30, 40, 60, 0.6);
+        padding: 5px 10px;
+        border-radius: var(--ngu-radius-sm);
+        font-family: 'JetBrains Mono', monospace;
+        white-space: nowrap;
+        border: 1px solid rgba(48, 56, 72, 0.4);
+        letter-spacing: 0.5px;
+    }
+
+    /* === TEACHER === */
+    .ngu-teacher {
+        margin-top: 20px;
+        padding: 16px;
+        background: linear-gradient(135deg, rgba(74,222,128,0.06), rgba(74,222,128,0.02));
+        color: var(--ngu-green);
+        font-weight: 700;
+        text-align: center;
+        border: 1px solid rgba(74, 222, 128, 0.15);
+        border-radius: var(--ngu-radius);
+        font-size: 11px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .ngu-teacher::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(74,222,128,0.08), transparent);
+        animation: ngu-shimmer 4s infinite;
+    }
+
+    .ngu-teacher-icon {
+        display: inline-block;
+        margin-right: 8px;
+        animation: ngu-float 3s ease-in-out infinite;
+    }
+
+    /* === STATUSES === */
+    .ngu-status {
+        padding: 32px 24px;
+        text-align: center;
+        color: var(--ngu-text-secondary);
+        font-size: 13px;
+        border-radius: var(--ngu-radius);
+        background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+        border: 1px dashed rgba(48, 56, 72, 0.3);
+        margin-top: 4px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ngu-status.error {
+        color: var(--ngu-red);
+        border-color: rgba(251, 113, 133, 0.25);
+        background: linear-gradient(135deg, rgba(251,113,133,0.04), rgba(251,113,133,0.01));
+        text-shadow: 0 0 15px rgba(251, 113, 133, 0.15);
+    }
+
+    .ngu-status.empty {
+        border-style: dashed;
+        border-color: rgba(251, 191, 36, 0.2);
+        color: var(--ngu-gold);
+    }
+
+    .ngu-status-icon {
+        font-size: 28px;
+        margin-bottom: 10px;
+        display: block;
+        opacity: 0.4;
+        filter: saturate(0.5);
+    }
+
+    .ngu-status-title {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .ngu-status-desc {
+        font-size: 12px;
+        color: var(--ngu-text-muted);
+    }
+
+    /* === COUNTERS === */
+    .ngu-counter {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        padding: 12px 20px;
+        margin: 0 20px 16px;
+        background: rgba(0, 240, 255, 0.03);
+        border: 1px solid rgba(0, 240, 255, 0.08);
+        border-radius: var(--ngu-radius-sm);
+    }
+
+    .ngu-counter-item {
+        text-align: center;
+    }
+
+    .ngu-counter-value {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--ngu-cyan);
+        font-family: 'JetBrains Mono', monospace;
+        text-shadow: 0 0 15px rgba(0,240,255,0.2);
+    }
+
+    .ngu-counter-label {
+        font-size: 9px;
+        color: var(--ngu-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-top: 2px;
+    }
 </style>
 `;
-
-// === 2. РАЗМЕТКА (HTML) ===
-var win_GrList =
-    `${cyberDarkStyles}
-    <div class="cdui-gl-wrapper">
-        <div class="cdui-gl-header">
-            <span class="cdui-gl-title">Group List Info</span>
-            <button class="cdui-gl-btn cdui-gl-btn-danger" id="cdui-gl-hide-btn">Hide</button>
+// === HTML STRUCTURE ===
+var win_GrList = `
+    ${neonGlassStyles}
+    <div class="ngu-wrapper">
+        <div class="ngu-header">
+            <div class="ngu-title-group">
+                <div class="ngu-title-icon"></div>
+                <div>
+                    <div class="ngu-title">Group List Info</div>
+                    <div class="ngu-subtitle">skyeng learning groups</div>
+                </div>
+            </div>
+            <button class="ngu-btn ngu-btn-danger" id="ngu-hide-btn">✕ Close</button>
         </div>
-        <div class="cdui-gl-controls">
-            <input id="cdui-gl-input-id" class="cdui-gl-input" placeholder="ID группы" title="Введите ID группы для получения списка учеников" autocomplete="off" type="text">
-            <button class="cdui-gl-btn cdui-gl-btn-primary" id="cdui-gl-get-btn" title="Запуск получения списка учеников группы">Get Info</button>
+        <div class="ngu-controls">
+            <div class="ngu-input-wrap" style="flex: 1;">
+                <input id="ngu-input-id" class="ngu-input" placeholder="Введите ID группы..." autocomplete="off" type="text">
+            </div>
+            <button class="ngu-btn ngu-btn-primary" id="ngu-get-btn">Get Info</button>
         </div>
-        <div id="cdui-gl-results" class="cdui-gl-content"></div>
-    </div>`;
+        <div id="ngu-results" class="ngu-content"></div>
+    </div>
+`;
 
-// Вызовы существующих глобальных функций
+// === WINDOW INIT ===
 const wintGrList = createWindow('AF_GrList', 'winTopGrList', 'winTopGrList', win_GrList);
 hideWindowOnDoubleClick('AF_GrList');
 
-// === 3. ЛОГИКА ОТОБРАЖЕНИЯ ОКНА ===
-// 1. Используем классическую декларацию (чтобы работало "всплытие" / hoisting)
+// === SANITIZE POSITION (защита от улёта) ===
+function sanitizeWindowPosition(winElement) {
+    if (!winElement) return;
+    const rect = winElement.getBoundingClientRect();
+    const padding = 60;
+    let top = parseInt(winElement.style.top) || 120;
+    let left = parseInt(winElement.style.left) || 295;
+
+    const maxTop = window.innerHeight - padding;
+    const maxLeft = window.innerWidth - padding;
+
+    if (top < -rect.height + padding) top = padding;
+    if (top > maxTop) top = Math.max(padding, maxTop - rect.height);
+    if (left < -rect.width + padding) left = padding;
+    if (left > maxLeft) left = Math.max(padding, maxLeft - rect.width);
+
+    winElement.style.top = `${top}px`;
+    winElement.style.left = `${left}px`;
+    localStorage.setItem('winTopGrList', String(top));
+    localStorage.setItem('winLeftGrList', String(left));
+}
+
+// === TOGGLE ===
 function getGrListDataButtonPress() {
     const win = document.getElementById('AF_GrList');
     if (!win) {
-        console.warn("Окно AF_GrList не найдено в DOM!");
+        console.warn('[GrList] Окно не найдено');
         return;
     }
-
-    // 2. Используем getComputedStyle — это 100% надежный способ узнать, видно ли окно,
-    // даже если display: none задан через классы, а не inline-стилем.
+    sanitizeWindowPosition(win);
     const isHidden = window.getComputedStyle(win).display === 'none';
-
-    if (isHidden) {
-        win.style.display = ''; // Показываем
-    } else {
-        win.style.display = 'none'; // Скрываем
-    }
+    win.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) setTimeout(() => document.getElementById('ngu-input-id')?.focus(), 50);
 }
-
-// 3. ПРИНУДИТЕЛЬНО отправляем функцию в глобальную область видимости (Global Scope).
-// Это решает проблему, если bindExternalFunc вызывается из другого скрипта расширения.
 window.getGrListDataButtonPress = getGrListDataButtonPress;
 
-document.getElementById('cdui-gl-hide-btn').addEventListener('click', () => {
+// === EVENTS ===
+document.getElementById('ngu-hide-btn').addEventListener('click', () => {
     const win = document.getElementById('AF_GrList');
-    if (win && win.style.display === '') {
+    if (win) {
         win.style.display = 'none';
-        document.getElementById('cdui-gl-results').innerHTML = "";
-        document.getElementById('cdui-gl-input-id').value = "";
+        document.getElementById('ngu-results').innerHTML = '';
+        document.getElementById('ngu-input-id').value = '';
     }
 });
 
-// === 4. ОПТИМИЗИРОВАННАЯ ЛОГИКА ЗАПРОСОВ (ASYNC/AWAIT PROMISE WRAPPER) ===
+document.getElementById('ngu-input-id').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('ngu-get-btn').click();
+    if (e.key === 'Escape') document.getElementById('ngu-hide-btn').click();
+});
 
-// Обертка для chrome.runtime.sendMessage в Promise для чистого кода
-const fetchViaBackground = (messagePayload) => {
-    return new Promise((resolve) => {
-        chrome.runtime.sendMessage(messagePayload, (response) => {
-            resolve(response);
-        });
-    });
-};
+// === API ===
+const fetchViaBackground = (payload) => new Promise((resolve) => {
+    chrome.runtime.sendMessage(payload, (response) => resolve(response));
+});
 
-document.getElementById('cdui-gl-get-btn').addEventListener('click', async function () {
-    const resultContainer = document.getElementById('cdui-gl-results');
-    const inputGroupId = document.getElementById('cdui-gl-input-id').value.trim();
+// === MAIN LOGIC ===
+document.getElementById('ngu-get-btn').addEventListener('click', async function () {
+    const container = document.getElementById('ngu-results');
+    const groupId = document.getElementById('ngu-input-id').value.trim();
 
-    if (!inputGroupId) {
-        resultContainer.innerHTML = `<div class="cdui-gl-status error">Укажите ID группы!</div>`;
+    if (!groupId) {
+        container.innerHTML = `
+            <div class="ngu-status error">
+                <span class="ngu-status-icon">⚠</span>
+                <div class="ngu-status-title">Требуется ID группы</div>
+                <div class="ngu-status-desc">Введите идентификатор для поиска</div>
+            </div>`;
         return;
     }
 
-    resultContainer.innerHTML = `<div class="cdui-gl-status" style="color: #00f0ff; text-shadow: 0 0 5px rgba(0,240,255,0.5);">Загрузка данных...</div>`;
+    container.innerHTML = `
+        <div class="ngu-loader">
+            <div class="ngu-loader-ring"></div>
+            <div class="ngu-loader-text">Загрузка данных</div>
+            <div class="ngu-loader-sub">skyeng api v1 › groups › participants</div>
+        </div>`;
 
     try {
-        // --- ЗАПРОС 1: Получение списка группы ---
         const groupResponse = await fetchViaBackground({
             action: 'getFetchRequest',
-            fetchURL: `https://learning-groups-storage-api.skyeng.ru/api/v1/groupParticipants/getParticipants/${inputGroupId}`,
+            fetchURL: `https://learning-groups-storage-api.skyeng.ru/api/v1/groupParticipants/getParticipants/${groupId}`,
             requestOptions: { method: 'GET' }
         });
 
-        if (!groupResponse || !groupResponse.success) {
-            resultContainer.innerHTML = `<div class="cdui-gl-status error">Не удалось получить список: ${groupResponse?.error || 'Unknown error'}</div>`;
+        if (!groupResponse?.success) {
+            container.innerHTML = `
+                <div class="ngu-status error">
+                    <span class="ngu-status-icon">✕</span>
+                    <div class="ngu-status-title">Ошибка запроса</div>
+                    <div class="ngu-status-desc">${groupResponse?.error || 'Unknown error'}</div>
+                </div>`;
             return;
         }
 
@@ -222,11 +793,15 @@ document.getElementById('cdui-gl-get-btn').addEventListener('click', async funct
         const userIds = students.map(s => s.userId);
 
         if (userIds.length === 0) {
-            resultContainer.innerHTML = `<div class="cdui-gl-status error">В группе нет учеников или группа не найдена.</div>`;
+            container.innerHTML = `
+                <div class="ngu-status empty">
+                    <span class="ngu-status-icon">◯</span>
+                    <div class="ngu-status-title">Группа пуста</div>
+                    <div class="ngu-status-desc">Ученики не найдены или неверный ID</div>
+                </div>`;
             return;
         }
 
-        // --- ЗАПРОС 2: Получение имен ---
         const namesResponse = await fetchViaBackground({
             action: 'getFetchRequest',
             fetchURL: "https://learning-groups-storage-api.skyeng.ru/api/v1/userInfo/findByIds",
@@ -240,55 +815,106 @@ document.getElementById('cdui-gl-get-btn').addEventListener('click', async funct
             }
         });
 
-        // Создаем словарь (Map) для привязки имени к ID ученика
-        // (это надежнее, чем поиск по индексам)
         const namesMap = {};
-        if (namesResponse && namesResponse.success) {
+        if (namesResponse?.success) {
             const namesData = JSON.parse(namesResponse.fetchansver);
-            namesData.data.forEach(user => {
+            namesData.data?.forEach(user => {
                 const first = user.name?.first || '';
                 const last = user.name?.last || '';
                 namesMap[user.id] = `${first} ${last}`.trim() || 'Без имени';
             });
         }
 
-        // --- РЕНДЕРИНГ РЕЗУЛЬТАТА ---
-        resultContainer.innerHTML = ''; // Очищаем статус загрузки
+        // Counter
+        const teachers = groupData.data?.teachers || groupData.teachers;
+        const teacherCount = teachers?.length || 0;
+
+        container.innerHTML = `
+            <div class="ngu-counter">
+                <div class="ngu-counter-item">
+                    <div class="ngu-counter-value">${students.length}</div>
+                    <div class="ngu-counter-label">Учеников</div>
+                </div>
+                <div class="ngu-counter-item">
+                    <div class="ngu-counter-value">${teacherCount}</div>
+                    <div class="ngu-counter-label">Преподавателей</div>
+                </div>
+                <div class="ngu-counter-item">
+                    <div class="ngu-counter-value">${groupId}</div>
+                    <div class="ngu-counter-label">Group ID</div>
+                </div>
+            </div>`;
 
         students.forEach((student, index) => {
-            const studentName = namesMap[student.userId] || 'Загрузка имени не удалась';
+            const name = namesMap[student.userId] || 'Имя не определено';
+            const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
-            // Создаем DOM элементы напрямую, чтобы безопасно вешать EventListeners
-            const row = document.createElement('div');
-            row.className = 'cdui-gl-student-row';
+            const card = document.createElement('div');
+            card.className = 'ngu-student-card';
+            card.style.animationDelay = `${index * 60}ms`;
 
-            row.innerHTML = `
-                <span style="color: #484f58; width: 20px;">${index + 1}.</span>
-                <span class="cdui-gl-crm-badge" data-userid="${student.userId}" title="Открыть профиль в CRM">CRM</span>
-                <span class="cdui-gl-student-name">${studentName} <span style="color:#8b949e; font-size:11px;">(ID: ${student.userId})</span></span>
-                <span class="cdui-gl-student-service">Услуга: ${student.educationServiceId}</span>
+            card.innerHTML = `
+                <span class="ngu-index">${String(index + 1).padStart(2, '0')}</span>
+                <div class="ngu-avatar">${initials}</div>
+                <div class="ngu-info">
+                    <div class="ngu-name">${name}</div>
+                    <div class="ngu-meta" data-copy="${student.userId}">ID: ${student.userId}</div>
+                </div>
+                <button class="ngu-crm-btn" data-userid="${student.userId}">CRM</button>
+                <span class="ngu-service-tag">${student.educationServiceId}</span>
             `;
 
-            // Привязка клика для CRM
-            row.querySelector('.cdui-gl-crm-badge').addEventListener('click', (e) => {
-                const id = e.target.getAttribute('data-userid');
-                window.open(`https://crm2.skyeng.ru/persons/${id}`, '_blank');
+            card.querySelector('.ngu-crm-btn').addEventListener('click', (e) => {
+                window.open(`https://crm2.skyeng.ru/persons/${e.currentTarget.dataset.userid}`, '_blank');
             });
 
-            resultContainer.appendChild(row);
+            const meta = card.querySelector('.ngu-meta');
+            meta.addEventListener('click', async () => {
+                await copyToClipboard(student.userId);
+                meta.textContent = 'Скопировано!';
+                meta.style.color = 'var(--ngu-cyan)';
+                setTimeout(() => {
+                    meta.textContent = `ID: ${student.userId}`;
+                    meta.style.color = '';
+                }, 1500);
+            });
+
+            container.appendChild(card);
         });
 
-        // Обработка преподавателя (Исправлена логика доступа к teachers, если он лежит в data)
-        const teachers = groupData.data?.teachers || groupData.teachers;
-        if (teachers && teachers.length > 0) {
+        if (teacherCount > 0) {
             const teacherRow = document.createElement('div');
-            teacherRow.className = 'cdui-gl-teacher-row';
-            teacherRow.innerText = `ID Преподавателя: ${teachers[0].userId}`;
-            resultContainer.appendChild(teacherRow);
+            teacherRow.className = 'ngu-teacher';
+            teacherRow.innerHTML = `<span class="ngu-teacher-icon">●</span> Преподаватель: ${teachers[0].userId}`;
+            container.appendChild(teacherRow);
         }
 
     } catch (error) {
-        console.error("Ошибка UI Списка Группы:", error);
-        resultContainer.innerHTML = `<div class="cdui-gl-status error">Системная ошибка: ${error.message}</div>`;
+        console.error('[GrList]', error);
+        container.innerHTML = `
+            <div class="ngu-status error">
+                <span class="ngu-status-icon">⚡</span>
+                <div class="ngu-status-title">Системная ошибка</div>
+                <div class="ngu-status-desc">${error.message}</div>
+            </div>`;
     }
 });
+
+// === BIND BUTTON (fallback) ===
+(function initBinding() {
+    const tryBind = () => {
+        const btn = document.getElementById('GrListData');
+        if (btn && !btn._nguBound) {
+            btn.onclick = getGrListDataButtonPress;
+            btn._nguBound = true;
+            return true;
+        }
+        return false;
+    };
+
+    if (!tryBind()) {
+        const obs = new MutationObserver(() => { if (tryBind()) obs.disconnect(); });
+        obs.observe(document.body, { childList: true, subtree: true });
+        setTimeout(() => obs.disconnect(), 15000);
+    }
+})();
