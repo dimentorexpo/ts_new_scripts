@@ -1495,48 +1495,68 @@ function convertToSeconds(TimeToClose, TimeToAnswer, i) {
 }
 
 function checkchats() {
-    const allChats = getAllChatsList();
-    if (allChats) {
-        const timers = allChats.chatsTimerList;
-        const chats = allChats.chatsList;
+    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+    if (!iframe) return;
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
 
-        const getAllInformators = Array.from(allChats.chatsList).flatMap(chat => chat.querySelectorAll('div[class*="DialogsCard_PayloadStatus"]'));
+    const cards = doc.querySelectorAll('[class*="DialogsCard_Card"]');
+    const timers = doc.querySelectorAll('[class*="DialogsCard_Timers"]');
 
-        for (let i = 0; i < getAllInformators.length; i++) {
-            const svg = getAllInformators[i][0]?.childNodes?.[0];
-            const path = svg?.childNodes?.[0];
+    // 1. Сброс цвета у ВСЕХ карточек
+    cards.forEach(card => card.style.removeProperty('--chat-card-bg'));
 
-            const d = path?.getAttribute?.('d');
-            const start = d?.split(' ')[0]?.slice(0, 2);
+    // 2. Проходим по таймерам и ищем родительскую карточку
+    timers.forEach(timer => {
+        const card = timer.closest('[class*="DialogsCard_Card"]');
+        if (!card) return;
 
-            if (start === "M7") {
-                svg.style = "background-color: green;width: 30px;height: 30px;border-radius: 20px;";
-            } else if (start) {
-                svg.style = "border: 5px dashed #ffffff;background-color: red;width: 30px;height: 30px;font-size: 40px;border-radius: 20px;";
-            } else {
-                console.warn(`❗️Пустой или недоступный d у элемента #${i}`);
+        const timeClose = timer.children[2]?.textContent?.trim();
+        const timeAnswer = timer.children[1]?.textContent?.trim();
+
+        if (!timeClose && !timeAnswer) {
+            // Новый чат (нет таймеров вообще)
+            card.style.setProperty('--chat-card-bg', localStorage.getItem('answchatcolor'));
+        } else if (!timeClose && timeAnswer) {
+            // Есть время на ответ, но нет времени до закрытия
+            card.style.setProperty('--chat-card-bg', localStorage.getItem('responschatcolor'));
+        } else if (timeClose) {
+            // Парсим время закрытия
+            const [h, m, s] = timeClose.split(':').map(Number);
+            const totalSeconds = (h * 3600) + (m * 60) + (s || 0);
+
+            if (totalSeconds < 120) {
+                card.style.setProperty('--chat-card-bg', localStorage.getItem('defaclschatcolor'));
             }
         }
-
-        // ВАЖНО: Вместо "white", мы просто СТИРАЕМ переменную.
-        // Тогда тема автоматически закрасит карточку в нужный темный/светлый цвет!
-        for (let j = 0; j < chats.length; j++) {
-            chats[j].style.removeProperty('--chat-card-bg');
-        }
-
-        for (let i = 0; i < timers.length; i++) {
-            const TimeToClose = timers[i].children[2];
-            const TimeToAnswer = timers[i].children[1];
-            if (TimeToClose) {
-                try {
-                    convertToSeconds(TimeToClose.textContent, TimeToAnswer.textContent, i);
-                } catch (error) {
-                    console.log(`Error with timer ${i}: ${error.message}`);
-                }
-            }
-        }
-    }
+    });
 }
+
+// === ФИКС ЗАКРАСКИ КАРТОЧЕК ===
+// Инжектим стили ПРЯМО В IFRAME, где живут чаты
+function injectChatCardStyle() {
+    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+    if (!iframe) return;
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc || !doc.head) return;
+
+    let style = doc.getElementById('chmaf-card-fix');
+    if (!style) {
+        style = doc.createElement('style');
+        style.id = 'chmaf-card-fix';
+        doc.head.appendChild(style);
+    }
+    // ВАЖНО: !important обязателен, чтобы пробить заводские стили
+    style.textContent = `
+        [class*="DialogsCard_Card"] {
+            background-color: var(--chat-card-bg, transparent) !important;
+            transition: background-color 0.3s ease;
+        }
+    `;
+}
+
+// Запускаем сразу и повторяем (iframe может пересоздаваться)
+injectChatCardStyle();
+setInterval(injectChatCardStyle, 2000);
 
 function toggleButtonState(buttonId, className) { // Функция для переключения состояния кнопки
     const button = document.getElementById(buttonId);

@@ -84,6 +84,11 @@ async function init_settings() {
 
         if (!isWhite) {
             cssRules += `
+                [class*="DialogsCard_Card"] {
+        background-color: var(--chat-card-bg, ${isWhite ? '#FFFFFF' : getRgba(color, 0.85)}) !important;
+        transition: background-color 0.3s ease;
+    }
+
             /* 1. ПРИНУДИТЕЛЬНОЕ ОБНУЛЕНИЕ ФОНОВ ДЛЯ ТЕКСТОВЫХ ЭЛЕМЕНТОВ */
             [class*="Typography_Typography"],
             [class*="ChatMessages_Author"],
@@ -109,14 +114,21 @@ async function init_settings() {
                 background-color: ${color} !important;
             }
 
-            /* 4. КНОПКИ И КАРТОЧКИ (не белые) */
-            [class*="Buttons_SharedButton"],
-            [class*="DialogsCard_Card"],
-            [class*="Operator_TakeRequestButton"] {
-                background-color: ${getRgba(textColor, 0.05)} !important;
-                color: ${textColor} !important;
-                border: 1px solid ${getRgba(textColor, 0.1)} !important;
-            }
+        /* 4. КНОПКИ И КАРТОЧКИ (не белые) */
+        [class*="Buttons_SharedButton"],
+        [class*="Operator_TakeRequestButton"] {
+            background-color: ${getRgba(textColor, 0.05)} !important;
+            color: ${textColor} !important;
+            border: 1px solid ${getRgba(textColor, 0.1)} !important;
+        }
+
+        /* КАРТОЧКИ ЧАТОВ — с поддержкой цвета таймера */
+        [class*="DialogsCard_Card"] {
+            background-color: var(--chat-card-bg, ${getRgba(textColor, 0.05)}) !important;
+            color: ${textColor} !important;
+            border: 1px solid ${getRgba(textColor, 0.1)} !important;
+            transition: background-color 0.3s ease;
+        }
 
             /* 5. ПОЛНОЕ УДАЛЕНИЕ БЕЛОГО ИЗ СТИЛЕЙ КНОПОК РЕДАКТОРА */
             [data-rich-text-editor-control="true"],
