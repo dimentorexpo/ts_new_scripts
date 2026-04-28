@@ -170,7 +170,8 @@ document.head.appendChild(cyberStyles);
 const win_TestUsers = `
 <div class="glass-panel-testuser">
     <div class="glass-row-testuser">
-        <input id="iduserinfo" placeholder="ID У/П" title="Введите ID У/П" class="glass-input-testuser" autocomplete="off" type="text">
+        <!-- Добавлен класс teststudteachinp для работы Drag'n'Drop -->
+        <input id="iduserinfo" placeholder="ID У/П" title="Введите ID У/П" class="teststudteachinp glass-input-testuser" autocomplete="off" type="text">
         <button id="openuserinfo" title="Поиск" class="glass-btn-testuser">🔍</button>
     </div>
 
@@ -185,68 +186,55 @@ const win_TestUsers = `
     <div id="addInfoUser" style="display: none;"></div>
 </div>
 `;
-
-
 // ─── 3. INIT WINDOW ───
 const TestUsersdiv = createWindow('TestUsers', 'winTopTestUsers', 'winLeftTestUsers', win_TestUsers);
 
+// ─── 4. ПОСТ-НАСТРОЙКА (Исправление багов позиции и драга) ───
+(function fixPosition() {
+    if (!TestUsersdiv) return;
 
-// ─── 4. DRAG BY INPUT ───
-(function setupDrag() {
-    const input = document.getElementById('iduserinfo');
-    if (!input || !TestUsersdiv) return;
-
-    let isDragging = false;
-    let offsetX = 0;
-    let offsetY = 0;
-    let startX = 0;
-    let startY = 0;
-    const THRESHOLD = 4;
-
-    input.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return;
-        startX = e.clientX;
-        startY = e.clientY;
-        offsetX = e.clientX - TestUsersdiv.offsetLeft;
-        offsetY = e.clientY - TestUsersdiv.offsetTop;
-        isDragging = false;
-
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
+    // 1. Чистим кэш от старых "px", чтобы не было багов с координатами
+    ['winTopTestUsers', 'winLeftTestUsers'].forEach(key => {
+        let val = localStorage.getItem(key);
+        if (val && val.includes('px')) {
+            localStorage.setItem(key, val.replace('px', ''));
+        }
     });
 
-    function onMove(e) {
-        const dx = Math.abs(e.clientX - startX);
-        const dy = Math.abs(e.clientY - startY);
+    // 2. Улучшаем работу инпута (чтобы фокус не пропадал при клике)
+    const input = document.getElementById('iduserinfo');
+    if (input) {
+        input.addEventListener('mousedown', (e) => {
+            // Даем инпуту фокус, несмотря на то что родитель может начать Drag
+            setTimeout(() => input.focus(), 10);
+        });
+    }
 
-        if (!isDragging && (dx > THRESHOLD || dy > THRESHOLD)) {
-            isDragging = true;
-            input.style.pointerEvents = 'none';
-            input.blur();
-            TestUsersdiv.style.userSelect = 'none';
-        }
+    // 3. Функция валидации позиции (чтобы не улетало за экран)
+    function validatePosition() {
+        const rect = TestUsersdiv.getBoundingClientRect();
+        let currentTop = parseFloat(TestUsersdiv.style.top);
+        let currentLeft = parseFloat(TestUsersdiv.style.left);
+        let changed = false;
 
-        if (isDragging) {
-            TestUsersdiv.style.left = (e.clientX - offsetX) + 'px';
-            TestUsersdiv.style.top = (e.clientY - offsetY) + 'px';
+        if (currentLeft + rect.width > window.innerWidth) { currentLeft = window.innerWidth - rect.width - 20; changed = true; }
+        if (currentTop + rect.height > window.innerHeight) { currentTop = window.innerHeight - rect.height - 20; changed = true; }
+        if (currentLeft < 0) { currentLeft = 20; changed = true; }
+        if (currentTop < 0) { currentTop = 20; changed = true; }
+
+        if (changed) {
+            TestUsersdiv.style.left = currentLeft + 'px';
+            TestUsersdiv.style.top = currentTop + 'px';
+            localStorage.setItem('winLeftTestUsers', String(currentLeft));
+            localStorage.setItem('winTopTestUsers', String(currentTop));
         }
     }
 
-    function onUp(e) {
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-
-        if (isDragging) {
-            input.style.pointerEvents = '';
-            TestUsersdiv.style.userSelect = '';
-            localStorage.setItem('winLeftTestUsers', TestUsersdiv.style.left);
-            localStorage.setItem('winTopTestUsers', TestUsersdiv.style.top);
-        } else {
-            input.focus();
-        }
-    }
+    // Проверяем позицию при загрузке и изменении размера окна
+    window.addEventListener('load', validatePosition);
+    window.addEventListener('resize', validatePosition);
+    setTimeout(validatePosition, 500); // Дополнительная проверка после рендера
 })();
-
 
 // ─── 5. SCRIPT LOGIC (unchanged) ───
 

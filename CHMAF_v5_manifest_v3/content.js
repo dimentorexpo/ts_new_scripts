@@ -362,17 +362,27 @@ function timerHideButtons() { // функция прячет кнопку одн
     }
 }
 
-function checkelementtype(a) { // проверка на какой элемент нажали для выполнения перетягивания Drag'n'Drop, убрал && elem.nodeName != 'INPUT'
-    let elem = document.elementFromPoint(a.clientX, a.clientY)
+function checkelementtype(a) {
+    let elem = document.elementFromPoint(a.clientX, a.clientY);
+    if (!elem) return false;
 
-    if (elem.className == 'teststudteachinp' || elem.className == "teststudteachinp darkinputs") { // делает возможным перетягивать элемент с этим классом, по аналогии можно для других элементов сделать
+    // ПРОВЕРКА 1: Разрешаем перетаскивание, если есть спец. класс (даже если это INPUT)
+    if (elem.classList.contains('teststudteachinp')) {
         return true;
     }
 
-    if (elem.nodeName != 'BUTTON' && elem.nodeName != 'LABEL' && elem.nodeName != 'INPUT' && elem.nodeName != 'TEXTAREA' && elem.nodeName != 'SELECT' & elem.nodeName != 'P' && elem.className != 'checkbox-audio-switch' && elem.className != 'checkbox-refresh-switch' && elem.className != 'srvhhelpnomove' && elem.className != 'rowOfChatGrabbed' && elem.id !== 'CSATFilterField' && elem.id !== 'AgregatedDataThemes' && elem.nodeName !== 'TABLE' && elem.nodeName !== 'TH' && elem.nodeName !== 'TR' && elem.id !== 'AgregatedDataOut' && elem.nodeName !== 'CANVAS' && elem.id !== "ToolsPanel" && elem.id !== "ProblemsSolution") {
-        return true;
-    }
-    return false;
+    // ПРОВЕРКА 2: Список исключений (где драг запрещен)
+    const forbiddenNodes = ['BUTTON', 'LABEL', 'INPUT', 'TEXTAREA', 'SELECT', 'P', 'TABLE', 'TH', 'TR', 'CANVAS'];
+    const forbiddenClasses = ['checkbox-audio-switch', 'checkbox-refresh-switch', 'srvhhelpnomove', 'rowOfChatGrabbed'];
+    const forbiddenIds = ['CSATFilterField', 'AgregatedDataThemes', 'AgregatedDataOut', 'ToolsPanel', 'ProblemsSolution'];
+
+    if (forbiddenNodes.includes(elem.nodeName)) return false;
+    if (forbiddenIds.includes(elem.id)) return false;
+
+    // Проверка классов через перебор
+    if (forbiddenClasses.some(cls => elem.classList.contains(cls))) return false;
+
+    return true;
 }
 
 async function sendComment(txt, activeConvId) { // Функция отправки комментария
