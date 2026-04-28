@@ -229,3 +229,20 @@ document.getElementById('hideMenuMain').addEventListener('click', function () {
 
 // Обновление данных шаблона
 document.getElementById('getnewtmpldata').addEventListener('click', getText);
+
+// --- Фикс: снятие выделения в textarea при клике внутри ---
+const inpTextarea = document.getElementById('inp');
+
+inpTextarea.addEventListener('mousedown', function (e) {
+    // Останавливаем всплытие, чтобы drag-обработчики родителя не мешали
+    e.stopPropagation();
+
+    // Если есть выделение и не зажат Shift — снимаем его и ставим курсор в точку клика
+    if (this.selectionStart !== this.selectionEnd && !e.shiftKey) {
+        // Небольшая задержка, чтобы браузер успел определить позицию курсора по клику
+        requestAnimationFrame(() => {
+            const pos = this.selectionStart;
+            this.setSelectionRange(pos, pos);
+        });
+    }
+});

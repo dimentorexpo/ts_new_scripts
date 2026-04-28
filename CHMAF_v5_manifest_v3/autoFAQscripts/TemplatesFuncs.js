@@ -46,17 +46,13 @@ const usersConfig = [
 const glassmorphismCSS = `
 /* Основная панель */
 .${UI_PREFIX}-glass-panel {
-    background: rgba(255, 255, 255, 0.4) !important;
-    backdrop-filter: blur(15px) saturate(150%) !important;
-    border-radius: 20px !important;
-    /* Увеличен верхний отступ, чтобы было место для всплывающих подсказок */
+border-radius: 20px !important;
     padding: 24px 16px 16px 16px !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 16px !important;
     width: fit-content !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important;
+    /* Цвета теперь придут из JS динамически */
 }
 
 .${UI_PREFIX}-row {

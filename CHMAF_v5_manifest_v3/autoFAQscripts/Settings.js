@@ -1,8 +1,3 @@
-/**
- * Refactored Settings for ChMAF Extension
- * Visual Style: Glassmorphism (Scoped)
- */
-
 async function init_settings() {
     // --- Constants & Configuration ---
     const DEFAULTS = {
@@ -20,7 +15,8 @@ async function init_settings() {
         disablelpmwindow: 0,
         AF_windowScale: 100,
         afterLoginFunction: 'Online',
-        sound_str: 'https://grumstv.github.io/Sounds/msg.mp3'
+        sound_str: 'https://grumstv.github.io/Sounds/msg.mp3',
+        appBgColor: '#FFFFFF' // Дефолтный белый цвет фона
     };
 
     const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']);
@@ -40,18 +36,137 @@ async function init_settings() {
             Object.entries(DEFAULTS).forEach(([key, val]) => {
                 if (localStorage.getItem(key) === null) this.set(key, val);
             });
-            // Initialize global audio if not present
             const savedVol = parseFloat(this.get('audiovol'));
             if (typeof audio === 'undefined' || audio === null) {
                 audio = new Audio(this.get('sound_str'));
             }
             audio.volume = savedVol;
         },
-
-
     };
 
     Settings.initDefaults();
+
+    // ====================================================================================
+    // Универсальная функция для цвета с учетом IFRAME и динамических хэшей классов
+    // ====================================================================================
+    const applyAppBgColor = () => {
+        const color = Settings.get('appBgColor') || '#FFFFFF';
+        const isWhite = color.toUpperCase() === '#FFFFFF';
+
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+
+        const textColor = brightness >= 128 ? '#1A1A1A' : '#E0E0E0';
+        const secondaryTextColor = brightness >= 128 ? 'rgba(0,0,0,0.5)' : 'rgba(224,224,224,0.5)';
+
+        const getRgba = (hex, alpha) => {
+            const r1 = parseInt(hex.slice(1, 3), 16);
+            const g1 = parseInt(hex.slice(3, 5), 16);
+            const b1 = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r1}, ${g1}, ${b1}, ${alpha})`;
+        };
+
+        let cssRules = `
+        .usinf-glass-panel {
+            background: ${isWhite ? 'rgba(255, 255, 255, 0.7)' : getRgba(color, 0.7)} !important;
+            backdrop-filter: blur(20px) saturate(160%) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+            border: 1px solid ${isWhite ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)'} !important;
+            color: ${textColor} !important;
+        }
+        .usinf-btn-glass {
+            background: ${isWhite ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)'} !important;
+            color: ${textColor} !important;
+        }
+    `;
+
+        if (!isWhite) {
+            cssRules += `
+            /* 1. ПРИНУДИТЕЛЬНОЕ ОБНУЛЕНИЕ ФОНОВ ДЛЯ ТЕКСТОВЫХ ЭЛЕМЕНТОВ */
+            [class*="Typography_Typography"],
+            [class*="ChatMessages_Author"],
+            [class*="ChatMessages_Date"],
+            [id*="mantine-"][id*="-target"] {
+                background: transparent !important;
+                background-color: transparent !important;
+                color: ${textColor} !important;
+            }
+
+            /* 2. ИСПРАВЛЕНИЕ РЕДАКТОРА (все слои) */
+            [class*="mantine-RichTextEditor"],
+            [class*="text-editor_Content"],
+            .ProseMirror {
+                background-color: ${color} !important;
+                color: ${textColor} !important;
+            }
+
+            /* 3. ФОНЫ ОСНОВНЫХ КОНТЕЙНЕРОВ */
+            [class*="Operator_Root"], [class*="Layout_Header"], [class*="ChatMessages_Root"],
+            [class*="ConversationScreen_Messages"], [class*="ConversationScreen_Header"],
+            [class*="text-editor_Toolbar"] {
+                background-color: ${color} !important;
+            }
+
+            /* 4. КНОПКИ И КАРТОЧКИ (не белые) */
+            [class*="Buttons_SharedButton"],
+            [class*="DialogsCard_Card"],
+            [class*="Operator_TakeRequestButton"] {
+                background-color: ${getRgba(textColor, 0.05)} !important;
+                color: ${textColor} !important;
+                border: 1px solid ${getRgba(textColor, 0.1)} !important;
+            }
+
+            /* 5. ПОЛНОЕ УДАЛЕНИЕ БЕЛОГО ИЗ СТИЛЕЙ КНОПОК РЕДАКТОРА */
+            [data-rich-text-editor-control="true"],
+            [class*="mantine-RichTextEditor-control"] {
+                background: transparent !important;
+                border: none !important;
+            }
+
+            /* ИМЕНА БОТОВ И АВТОРОВ (твой новый класс) */
+            .ChatMessages_Author__x4Gye {
+                color: ${textColor} !important;
+                background: transparent !important;
+            }
+
+            /* ФИКС СЕРОГО ID */
+            [class*="UserInfo_UserIdContainer"] {
+                color: #ffffff !important;
+                opacity: 1 !important;
+            }
+
+            /* ЗАЩИТА ТАЙМЕРА (НЕ КРАСИМ ЦВЕТНОЕ) */
+            [style*="background-color"]:not([style*="rgb(255, 255, 255)"]):not([style*="#fff"]):not([style*="#FFF"]):not([style*="white"]) {
+            }
+        `;
+        }
+
+        const injectStyle = (targetDoc, styleId) => {
+            if (!targetDoc || !targetDoc.head) return;
+            let styleEl = targetDoc.getElementById(styleId);
+            if (!styleEl) {
+                styleEl = targetDoc.createElement('style');
+                styleEl.id = styleId;
+                targetDoc.head.appendChild(styleEl);
+            }
+            styleEl.innerHTML = cssRules;
+        };
+
+        injectStyle(document, 'chmaf-bg-main');
+        const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+        if (iframe) {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+            if (iframeDoc) injectStyle(iframeDoc, 'chmaf-bg-iframe');
+        }
+    };
+    // Применяем при запуске.
+    // Ставим setInterval, так как iframe загружается с задержкой или может быть пересоздан SPA-роутером
+    applyAppBgColor();
+    setInterval(applyAppBgColor, 2000);
+    // ====================================================================================
+
 
     // --- UI Component (Scoped Glassmorphism Styles) ---
     const injectStyles = () => {
@@ -59,123 +174,28 @@ async function init_settings() {
         const style = document.createElement('style');
         style.id = 'chmaf-settings-styles';
         style.innerHTML = `
-            .set-glass-panel {
-                background: rgba(30, 32, 45, 0.8) !important;
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                border-radius: 20px;
-                color: #e0e0e0;
-                font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
-                padding: 0 !important;
-                overflow: hidden;
-                z-index: 1000001;
-            }
-            .set-glass-header {
-                background: rgba(255, 255, 255, 0.07);
-                padding: 12px 18px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                cursor: grab;
-            }
-            .set-glass-content {
-                padding: 20px;
-                max-height: 80vh;
-                overflow-y: auto;
-            }
+            .set-glass-panel { background: rgba(30, 32, 45, 0.8) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 20px; color: #e0e0e0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5); padding: 0 !important; overflow: hidden; z-index: 1000001; }
+            .set-glass-header { background: rgba(255, 255, 255, 0.07); padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: grab; }
+            .set-glass-content { padding: 20px; max-height: 80vh; overflow-y: auto; }
             .set-glass-content::-webkit-scrollbar { width: 6px; }
             .set-glass-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-
-            .set-group {
-                background: rgba(255, 255, 255, 0.04);
-                border-radius: 14px;
-                padding: 16px;
-                margin-bottom: 16px;
-                border: 1px solid rgba(255, 255, 255, 0.06);
-            }
-            .set-row {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                margin-bottom: 14px;
-                flex-wrap: nowrap;
-            }
-            .set-label {
-                color: #bbb;
-                font-size: 0.9em;
-                min-width: 140px;
-                flex-shrink: 0;
-            }
-            .set-btn {
-                background: rgba(255, 255, 255, 0.08);
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                color: #fff;
-                padding: 6px 14px;
-                border-radius: 10px;
-                cursor: pointer;
-                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-                font-size: 13px;
-                white-space: nowrap;
-            }
+            .set-group { background: rgba(255, 255, 255, 0.04); border-radius: 14px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255, 255, 255, 0.06); }
+            .set-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: nowrap; }
+            .set-label { color: #bbb; font-size: 0.9em; min-width: 140px; flex-shrink: 0; }
+            .set-btn { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; padding: 6px 14px; border-radius: 10px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; white-space: nowrap; }
             .set-btn:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-1.5px); border-color: rgba(255,255,255,0.2); }
             .set-btn:active { transform: translateY(0.5px); }
             .set-btn.active { background: #388e3c; border-color: #4caf50; }
-
-            .set-input {
-                background: rgba(0, 0, 0, 0.4);
-                border: 1px solid rgba(255, 255, 255, 0.15);
-                border-radius: 8px;
-                color: #fff;
-                padding: 6px 12px;
-                outline: none;
-                font-size: 13px;
-                transition: all 0.2s;
-            }
+            .set-input { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #fff; padding: 6px 12px; outline: none; font-size: 13px; transition: all 0.2s; }
             .set-input:focus { border-color: #7c4dff; background: rgba(0,0,0,0.5); }
+            .set-select { background: #1e202d; color: #fff; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 6px; font-size: 13px; outline: none; }
+            .set-slider { flex-grow: 1; accent-color: #7c4dff; height: 4px; cursor: pointer; }
+            .set-dept-badge { flex: 1; font-size: 12px; font-weight: 600; text-align: center; padding: 8px 4px; }
+            .set-grid-colors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; }
+            .set-color-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: #999; }
 
-            .set-select {
-                background: #1e202d;
-                color: #fff;
-                border: 1px solid rgba(255, 255, 255, 0.15);
-                border-radius: 8px;
-                padding: 6px;
-                font-size: 13px;
-                outline: none;
-            }
-            .set-slider {
-                flex-grow: 1;
-                accent-color: #7c4dff;
-                height: 4px;
-                cursor: pointer;
-            }
-            .set-dept-badge {
-                flex: 1;
-                font-size: 12px;
-                font-weight: 600;
-                text-align: center;
-                padding: 8px 4px;
-            }
-            .set-grid-colors {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 12px;
-                width: 100%;
-            }
-            .set-color-wrap {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 6px;
-                font-size: 11px;
-                color: #999;
-            }
+            /* Стили для круглых кнопок-пресетов */
+            .bg-preset { width: 32px !important; height: 32px !important; padding: 0 !important; border-radius: 50% !important; border: 2px solid rgba(255, 255, 255, 0.2) !important; }
         `;
         document.head.appendChild(style);
     };
@@ -230,7 +250,24 @@ async function init_settings() {
                 <!-- Темы и Цвета -->
                 <div class="set-group">
 
-                    <div class="set-row" style="margin-top: 10px;">
+                    <!-- Выбор фона приложения -->
+                    <div class="set-row" style="margin-top: 5px; flex-direction: column; align-items: flex-start; background: rgba(0,0,0,0.15); padding: 12px; border-radius: 10px;">
+                        <span class="set-label" style="margin-bottom: 8px;">Цвет фона диалогов:</span>
+                        <div style="display: flex; gap: 12px; width: 100%; align-items: center;">
+                            <input type="color" id="appBgColorPicker" class="set-input" title="Свой цвет" style="padding:0; width:34px; height:34px; border-radius:8px; cursor:pointer; flex-shrink: 0;">
+                            <div style="width: 1px; height: 25px; background: rgba(255,255,255,0.2); margin: 0 4px;"></div>
+
+                            <button class="set-btn bg-preset" data-color="#FFFFFF" title="Белый (Дефолт)" style="background:#FFFFFF;"></button>
+                            <button class="set-btn bg-preset" data-color="#2B2D30" title="Darcula (JetBrains)" style="background:#2B2D30;"></button>
+                            <button class="set-btn bg-preset" data-color="#282C34" title="One Dark" style="background:#282C34;"></button>
+                            <button class="set-btn bg-preset" data-color="#22272e" title="GitHub Dark" style="background:#22272e;"></button>
+                            <button class="set-btn bg-preset" data-color="#1A1B26" title="Tokyo Night" style="background:#1A1B26;"></button>
+                            <button class="set-btn bg-preset" data-color="#1E1E2E" title="Catppuccin (Пастель)" style="background:#1E1E2E;"></button>
+                            <button class="set-btn bg-preset" data-color="#2E3440" title="Nord (Холодная)" style="background:#2E3440;"></button>
+                        </div>
+                    </div>
+
+                    <div class="set-row" style="margin-top: 15px;">
                         <div class="set-grid-colors">
                             <div class="set-color-wrap">
                                 <input type="color" id="aclstimepicker" class="set-input" style="padding:0; width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,0.1); cursor:pointer;">
@@ -256,7 +293,7 @@ async function init_settings() {
                     </div>
                 </div>
 
-                <!-- Функционал (Checkbox list) -->
+                <!-- Функционал -->
                 <div class="set-group onlyfortp">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85em; color: #ccc;">
                         <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="hidelpmwindow"> Скрыть окно У/П</label>
@@ -327,10 +364,8 @@ async function init_settings() {
         statusList: document.getElementById('defaultStatusAfterLogin'),
         scaleSlider: document.getElementById('scaleSliderAF'),
         scaleVal: document.getElementById('scale_val'),
-
     };
 
-    // --- Scale Logic (Global for init) ---
     const applyScale = (val, isInit = false) => {
         const target = document.getElementById('AF_helper') || document.getElementById('addTmpWrapper');
         if (target) {
@@ -342,14 +377,12 @@ async function init_settings() {
         if (scaleValEl) scaleValEl.innerText = `${val}%`;
     };
 
-    // Apply scale immediately on load
     setTimeout(() => applyScale(Settings.get('AF_windowScale'), true), 100);
 
     ui.btnSetting.onclick = () => {
         ui.win.style.display = ui.win.style.display === 'none' ? '' : 'none';
         if (ui.win.style.display === 'none') return;
 
-        // Sync UI
         bindInput('aclstimepicker', 'defaclschatcolor');
         bindInput('answtimepicker', 'answchatcolor');
         bindInput('responstimepicker', 'responschatcolor');
@@ -375,6 +408,24 @@ async function init_settings() {
             }
         });
 
+        // --- Логика для Цвета Фона ---
+        const bgPicker = document.getElementById('appBgColorPicker');
+        bgPicker.value = Settings.get('appBgColor');
+
+        bgPicker.oninput = (e) => {
+            Settings.set('appBgColor', e.target.value);
+            applyAppBgColor(); // Применяем сразу (и в main, и в iframe)
+        };
+
+        document.querySelectorAll('.bg-preset').forEach(btn => {
+            btn.onclick = () => {
+                const color = btn.getAttribute('data-color');
+                bgPicker.value = color;
+                Settings.set('appBgColor', color);
+                applyAppBgColor();
+            };
+        });
+
         // Volume
         const range = document.getElementById('range');
         range.value = Settings.get('audiovol');
@@ -383,11 +434,10 @@ async function init_settings() {
             if (typeof audio !== 'undefined' && audio) audio.volume = range.value;
         };
 
-        // Scale Sync
+        // Scale
         const scaleVal = Settings.get('AF_windowScale');
         ui.scaleSlider.value = scaleVal;
         ui.scaleVal.innerText = `${scaleVal}%`;
-
         ui.scaleSlider.oninput = () => applyScale(ui.scaleSlider.value);
         ui.scaleSlider.onchange = () => Settings.set('AF_windowScale', ui.scaleSlider.value);
 
@@ -400,11 +450,9 @@ async function init_settings() {
         };
         ui.statusList.dispatchEvent(new Event('change'));
 
-        // TP/KC visibility
         const isTP = (opsection === 'ТП' || opsection === 'ТП ОС');
         document.querySelectorAll('.onlyfortp').forEach(el => el.style.display = isTP ? '' : 'none');
 
-        // Active department highlight
         const activeAddr = localStorage.getItem('scriptAdr');
         const deptMap = { [ADDR.TP]: 'set_TP', [ADDR.TP_Rzrv]: 'set_TPrezerv', [ADDR.KC]: 'set_KC', [ADDR.KC_Rzrv]: 'set_KCrezerv' };
         if (deptMap[activeAddr]) document.getElementById(deptMap[activeAddr]).classList.add('active');
@@ -446,7 +494,6 @@ async function init_settings() {
         setTimeout(() => document.getElementById('sound_save').innerText = '💾', 2000);
     };
 
-    // Load Sounds
     if (ui.soundList.length < 3) {
         try {
             const resp = await fetch('https://script.google.com/macros/s/AKfycbyD1l-oLcE-BBmyN1QmcHKoi0rwVfCwWjE6cfTqw6Y9QQGAju-9inKbwSOfHCI6qBEjtg/exec');
