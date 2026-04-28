@@ -150,31 +150,31 @@ const injectOpStatusStyles = () => {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 4px 8px;
-    margin: 2px 0;
-    border-radius: 8px;
+    gap: 10px;
+    padding: 6px 10px;
+    margin: 3px 0;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 11px;
+    font-size: 11.5px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.04);
     border-left: 3px solid transparent;
     z-index: 1;
     overflow: hidden;
+    vertical-align:middle;
 }
 
 .op-st-row:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);
-    transform: translateX(4px) scale(1.01);
+    transform: translateX(5px) scale(1.01);
     box-shadow:
         0 6px 20px rgba(0, 0, 0, 0.4),
         0 0 15px rgba(139, 92, 246, 0.08);
     color: #fff;
 }
 
-/* ТП ОС — тоже компактно */
 .op-st-row.tp-os-row {
     background: linear-gradient(90deg,
         rgba(6, 182, 212, 0.08) 0%,
@@ -196,24 +196,69 @@ const injectOpStatusStyles = () => {
 }
 
         /* === ULTRA BADGES === */
-/* === ULTRA BADGES (без shine, с pulse на изменение) === */
+/* === PREMIUM BADGES === */
 .op-st-badge {
-    min-width: 22px;
-    height: 22px;
+    min-width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
-    font-weight: 800;
-    font-size: 11px;
-    box-shadow:
-        0 2px 6px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-weight: 900;
+    font-size: 12px;
     letter-spacing: 0.5px;
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
     transition: all 0.4s ease;
+
+    /* Многослойный премиум-эффект */
+    background:
+        linear-gradient(135deg,
+            rgba(255,255,255,0.08) 0%,
+            rgba(255,255,255,0) 50%),
+        var(--badge-bg, rgba(100,100,100,0.12));
+    border: 1px solid var(--badge-border, rgba(100,100,100,0.3));
+    color: var(--badge-color, #aaa);
+    text-shadow: var(--badge-glow, none);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 0 0 1px rgba(0,0,0,0.3);
+}
+
+/* Внутренний блик стекла */
+.op-st-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.15) 0%,
+        rgba(255,255,255,0) 100%);
+    border-radius: 8px 8px 0 0;
+    pointer-events: none;
+}
+
+/* Нижнее свечение */
+.op-st-badge::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 15%;
+    right: 15%;
+    height: 4px;
+    background: var(--badge-color, #aaa);
+    border-radius: 50%;
+    filter: blur(4px);
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
+}
+
+.op-st-badge:hover::after {
+    opacity: 0.7;
 }
 
 .op-st-badge.pulse-up {
@@ -237,16 +282,6 @@ const injectOpStatusStyles = () => {
     60% { transform: scale(1.04); }
     100% { transform: scale(1); filter: brightness(1); }
 }
-
-        .op-st-badge::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        }
 
         /* === TOGGLE BUTTON — NEON GLASS === */
         .op-st-toggle {
@@ -576,7 +611,9 @@ const renderOperatorRows = (opstats) => {
     opstats.forEach(item => {
         const id = item.operator.id;
         if (merged.has(id)) {
-            merged.get(id).aCnt = (merged.get(id).aCnt || 0) + (item.aCnt || 0);
+            const existing = merged.get(id);
+            existing.aCnt = (existing.aCnt || 0) + (item.aCnt || 0);
+            existing.cCnt = (existing.cCnt || 0) + (item.cCnt || 0);  // ← добавили
         } else {
             merged.set(id, { ...item });
         }
@@ -615,7 +652,7 @@ const renderOperatorRows = (opstats) => {
             };
 
             const isTpOs = op.fullName?.toUpperCase().includes('ТП ОС');
-            const currentCount = item.aCnt || 0;
+            const currentCount = (item.aCnt || 0) + (item.cCnt || 0);  // ← сумма обоих
 
             const existingBadge = document.querySelector(`.op-st-row[value="${op.id}"] .op-st-badge`);
             let pulseClass = '';
@@ -630,11 +667,11 @@ const renderOperatorRows = (opstats) => {
                 opColor = op.status === 'Online' ? '#22d3ee' : '#0891b2';
             }
 
-            // Используем очищенное имя для отображения
             const displayName = cleanOperatorName(op.fullName);
 
             return `<div class="op-st-row ${isTpOs ? 'tp-os-row' : ''}" name="operrow" value="${op.id}">
-                        <span class="op-st-badge ${pulseClass}" data-count="${currentCount}" style="background: ${theme.bg}; color: ${theme.glow}; border: 1px solid ${theme.b}; text-shadow: ${theme.textGlow};">
+                        <span class="op-st-badge ${pulseClass}" data-count="${currentCount}"
+                            style="--badge-bg: ${theme.bg}; --badge-color: ${theme.glow}; --badge-border: ${theme.b}; --badge-glow: ${theme.textGlow};">
                             ${currentCount}
                         </span>
                         <span style="opacity: ${op.status === 'Online' ? 1 : 0.7}; color: ${opColor}; font-weight: ${isTpOs ? '600' : '500'}; letter-spacing: 0.3px;">
@@ -693,7 +730,7 @@ async function operstatusleftbar() {
             </div>
             <div class="op-st-list">${renderOperatorRows(opstats)}</div>
             <div class="op-st-toggle" id="op-st-toggle-btn">
-                ${hidesummary ? '🔽 Раскрыть сводку' : '🔼 Скрыть сводку'}
+                ${hidesummary ? '🔽 Сводка' : '🔼 Скрыть'}
             </div>
             <div id="op-st-stats-panel" class="op-st-stats-grid" style="display: ${hidesummary ? 'none' : 'grid'}">
                 <div class="op-st-stat-item" style="border-left: 3px solid #10b981;">
