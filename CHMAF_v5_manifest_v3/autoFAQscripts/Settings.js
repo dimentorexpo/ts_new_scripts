@@ -292,6 +292,165 @@ async function init_settings() {
             #quickTagsdiv #UNO a {
                 color: #ff6b81 !important; /* яркий розовый */
             }
+
+                        /* ═══ 15. POPOVER / DROPDOWN / AUTOCOMPLETE (выбор темы) ═══ */
+            [class*="mantine-Popover-dropdown"],
+            [class*="Autocomplete_Dropdown__"] {
+                background-color: ${color} !important;
+                border: 1px solid ${getRgba(textColor, 0.15)} !important;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important;
+            }
+            [class*="mantine-Popover-dropdown"] label,
+            [class*="mantine-Popover-dropdown"] [class*="Typography_Type_label__"] {
+                color: ${textColor} !important;
+            }
+            [class*="mantine-Popover-dropdown"] input,
+            [class*="mantine-Select-input"],
+            [class*="mantine-Input-input"] {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                color: ${textColor} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+            }
+            [class*="mantine-Select-item"] {
+                color: ${textColor} !important;
+                background-color: transparent !important;
+            }
+            [class*="mantine-Select-item"]:hover,
+            [class*="mantine-Select-item"][data-selected="true"],
+            [class*="mantine-Select-item"][aria-selected="true"] {
+                background-color: ${getRgba(textColor, 0.12)} !important;
+            }
+            [class*="mantine-Select-rightSection"] svg {
+                color: ${textColor} !important;
+            }
+
+            /* Switch внутри дропдауна */
+            [class*="mantine-Switch-track"] {
+                background-color: ${getRgba(textColor, 0.2)} !important;
+                border-color: ${getRgba(textColor, 0.3)} !important;
+            }
+            [class*="mantine-Switch-input"]:checked + [class*="mantine-Switch-track"] {
+                background-color: #4caf50 !important;
+            }
+            [class*="mantine-Switch-thumb"] {
+                background-color: ${textColor} !important;
+            }
+
+                        /* ═══ 16. DROPDOWN ДЕЙСТВИЙ (ConversationActions) ═══ */
+            [class*="ConversationActions_ActionDropdown__"],
+            [class*="Popover_Dropdown__"] {
+                background-color: ${color} !important;
+                border: 1px solid ${getRgba(textColor, 0.15)} !important;
+            }
+            [class*="ConversationActions_ActionDropdown__"] [class*="List_List__"],
+            [class*="Popover_Dropdown__"] [class*="List_List__"] {
+                background-color: transparent !important;
+            }
+            [class*="ConversationActions_ActionDropdown__"] [class*="List_Item__"],
+            [class*="Popover_Dropdown__"] [class*="List_Item__"] {
+                background-color: transparent !important;
+            }
+            [class*="ConversationActions_ActionDropdown__"] [class*="mantine-NavLink-root"],
+            [class*="Popover_Dropdown__"] [class*="mantine-NavLink-root"] {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+            }
+            [class*="ConversationActions_ActionDropdown__"] [class*="mantine-NavLink-label"],
+            [class*="Popover_Dropdown__"] [class*="mantine-NavLink-label"],
+            [class*="ConversationActions_ActionDropdown__"] [class*="mantine-NavLink-description"],
+            [class*="Popover_Dropdown__"] [class*="mantine-NavLink-description"] {
+                color: ${textColor} !important;
+            }
+            [class*="ConversationActions_ActionDropdown__"] [class*="List_Item__"]:hover [class*="mantine-NavLink-root"],
+            [class*="Popover_Dropdown__"] [class*="List_Item__"]:hover [class*="mantine-NavLink-root"] {
+                background-color: ${getRgba(textColor, 0.1)} !important;
+            }
+            /* Стрелка поповера */
+            [class*="mantine-Popover-arrow"] {
+                background-color: ${color} !important;
+                border-color: ${getRgba(textColor, 0.15)} !important;
+            }
+
+                        /* ═══ 17. SELECT DROPDOWN (список отделов и т.д.) ═══ */
+            [class*="mantine-Select-dropdown"] {
+                background-color: ${color} !important;
+                border: 1px solid ${getRgba(textColor, 0.15)} !important;
+            }
+            [class*="mantine-Select-dropdown"] [class*="mantine-ScrollArea-viewport"],
+            [class*="mantine-Select-dropdown"] [class*="mantine-Select-itemsWrapper"] {
+                background-color: transparent !important;
+            }
+            /* Элемент списка */
+            [class*="Combobox_Item__"],
+            [class*="mantine-Select-item"] {
+                color: ${textColor} !important;
+                background-color: transparent !important;
+            }
+            /* Ховер / выделение клавишами */
+            [class*="Combobox_Item__"][data-hovered="true"],
+            [class*="mantine-Select-item"][data-hovered="true"],
+            [class*="Combobox_Item__"]:hover,
+            [class*="mantine-Select-item"]:hover {
+                background-color: ${getRgba(textColor, 0.12)} !important;
+            }
+            /* Активный / выбранный */
+            [class*="Combobox_Item__"][data-selected="true"],
+            [class*="mantine-Select-item"][data-selected="true"] {
+                background-color: ${getRgba(textColor, 0.18)} !important;
+            }
+            /* SVG галочка внутри */
+            [class*="Combobox_Item__"] svg path {
+                fill: ${textColor} !important;
+            }
+            /* Скроллбар внутри дропдауна */
+            [class*="mantine-Select-dropdown"] [class*="mantine-ScrollArea-thumb"] {
+                background-color: ${getRgba(textColor, 0.25)} !important;
+            }
+
+                        /* ═══ 18. TEXTAREA (комментарии) ═══ */
+            [class*="Inputs_TextArea__"] {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                color: ${textColor} !important;
+                border: 1px solid ${getRgba(textColor, 0.2)} !important;
+                border-radius: 8px !important;
+                padding: 8px 12px !important;
+            }
+            [class*="Inputs_TextArea__"]::placeholder {
+                color: ${getRgba(textColor, 0.4)} !important;
+            }
+            [class*="Inputs_TextArea__"]:focus {
+                border-color: #7c4dff !important;
+                background-color: ${getRgba(textColor, 0.12)} !important;
+                outline: none !important;
+            }
+                            /* ═══ 19. CHECKBOX LABEL ═══ */
+            [class*="mantine-Checkbox-label"],
+            label[class*="mantine-"][for*="mantine-"] {
+                color: ${textColor} !important;
+            }
+            /* Сам чекбокс (квадратик) */
+            [class*="mantine-Checkbox-input"] {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.3)} !important;
+            }
+            [class*="mantine-Checkbox-input"]:checked {
+                background-color: #7c4dff !important;
+                border-color: #7c4dff !important;
+            }
+                            /* ═══ 20. EMPTY STATE (пустые рекомендации и т.д.) ═══ */
+            [class*="Empty_EmptyCard__"] {
+                background-color: ${getRgba(textColor, 0.06)} !important;
+                border: 1px solid ${getRgba(textColor, 0.1)} !important;
+                border-radius: 10px !important;
+                padding: 16px !important;
+            }
+            [class*="Empty_Label__"],
+            [class*="Empty_Description__"],
+            [class*="Suggestions_EmptyPossibleAnswersLabel__"],
+            [class*="Suggestions_EmptyPossibleAnswers__"] [class*="Typography_Type_body-description__"] {
+                color: ${textColor} !important;
+                background: transparent !important;
+            }
         `;
         }
 
