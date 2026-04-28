@@ -68,7 +68,9 @@ border-radius: 20px !important;
     width: 42px !important;
     min-width: 42px !important;
     border-radius: 50% !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+
+     /* border без !important — иначе он всегда чёрный */
+    border: 1px solid rgba(0, 0, 0, 0.08);
 
     /* УБРАЛИ !important отсюда, чтобы JS мог менять цвет */
     background: #ffffff;
@@ -501,12 +503,18 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
         const idNode = SearchinAFnewUI("id");
         if (idNode) {
             await handleLoginLinkClick(idNode, this.style);
+
+            // --- ЗЕЛЁНАЯ вспышка при успехе ---
+            this.style.setProperty('background', 'rgba(46, 213, 115, 0.9)', 'important');
+            setTimeout(() => {
+                this.style.removeProperty('background');
+            }, 1000);
+            // ----------------------------------
+
             createAndShowButton('💾 Ссылка-логинер скопирована', 'message');
         } else {
-            // Плавно красим в красный
+            // Красная вспышка при ошибке
             this.style.setProperty('background', 'rgba(255, 71, 87, 0.9)', 'important');
-
-            // Через секунду убираем стиль (он плавно вернется к белому благодаря CSS)
             setTimeout(() => {
                 this.style.removeProperty('background');
             }, 1000);
@@ -619,14 +627,22 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
 
         if (idNode) {
             await handleLoginLinkClick(idNode, this.style);
-            createAndShowButton('💾 Ссылка-логинер скопирована', 'message');
-        } else {
-            // Плавно красим в красный
-            this.style.setProperty('background', 'rgba(255, 71, 87, 0.9)', 'important');
 
+            // --- ЗЕЛЁНАЯ вспышка при успехе ---
+            this.style.setProperty('background', 'rgba(46, 213, 115, 0.9)', 'important');
             setTimeout(() => {
                 this.style.removeProperty('background');
             }, 1000);
+            // ----------------------------------
+
+            createAndShowButton('💾 Ссылка-логинер скопирована', 'message');
+        } else {
+            // --- КРАСНАЯ вспышка при ошибке ---
+            this.style.setProperty('background', 'rgba(255, 71, 87, 0.9)', 'important');
+            setTimeout(() => {
+                this.style.removeProperty('background');
+            }, 1000);
+            // ----------------------------------
         }
     };
 

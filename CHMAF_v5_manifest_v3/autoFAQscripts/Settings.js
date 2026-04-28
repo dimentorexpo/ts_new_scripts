@@ -68,18 +68,22 @@ async function init_settings() {
         };
 
         let cssRules = `
-        .usinf-glass-panel {
-            background: ${isWhite ? 'rgba(255, 255, 255, 0.7)' : getRgba(color, 0.7)} !important;
-            backdrop-filter: blur(20px) saturate(160%) !important;
-            -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
-            border: 1px solid ${isWhite ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)'} !important;
-            color: ${textColor} !important;
-        }
-        .usinf-btn-glass {
-            background: ${isWhite ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)'} !important;
-            color: ${textColor} !important;
-        }
-    `;
+    .usinf-glass-panel {
+        background: ${isWhite ? 'rgba(255, 255, 255, 0.7)' : getRgba(color, 0.7)} !important;
+        backdrop-filter: blur(20px) saturate(160%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+        border: 1px solid ${isWhite ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)'} !important;
+        color: ${textColor} !important;
+    }
+.usinf-btn-glass {
+    /* !important здесь обязателен, иначе #ffffff из glassmorphismCSS победит */
+    background: ${isWhite ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)'} !important;
+    color: ${textColor} !important;
+
+    /* адаптивный border теперь тоже !important и перебьёт базовый */
+    border: 1px solid ${isWhite ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.15)'} !important;
+}
+`;
 
         if (!isWhite) {
             cssRules += `

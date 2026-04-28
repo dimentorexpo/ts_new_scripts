@@ -620,20 +620,36 @@
         `;
 
         // Attach interactions
+        // Attach interactions
         $$(`[name="idToCRM"]`, content).forEach(cell => {
             const id = cell.dataset.id;
             if (!id) return;
 
             cell.addEventListener('click', () => {
-                window.open(`https://crm2.skyeng.ru/persons/${id}`, '_blank');
+                window.open(`https://crm2.skyeng.ru/persons/${id}`, '_blank'); // убран пробел
             });
 
             cell.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 if (typeof copyToClipboard === 'function') {
-                    copyToClipboard(id);
+                    copyToClipboard(id).catch(err => {
+                        console.log('Не удалось скопировать ID:', err);
+                        // Можно добавить визуальный фидбек, если нужно
+                    });
                 } else {
-                    navigator.clipboard?.writeText(id);
+                    // Fallback на execCommand напрямую, если copyToClipboard недоступна
+                    try {
+                        const ta = document.createElement('textarea');
+                        ta.value = id;
+                        ta.style.position = 'fixed';
+                        ta.style.left = '-9999px';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    } catch (err) {
+                        console.log('Fallback копирование не сработал:', err);
+                    }
                 }
             });
         });
