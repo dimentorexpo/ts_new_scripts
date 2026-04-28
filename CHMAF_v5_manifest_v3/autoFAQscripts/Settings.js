@@ -87,7 +87,23 @@ async function init_settings() {
                 [class*="DialogsCard_Card"] {
         background-color: var(--chat-card-bg, ${isWhite ? '#FFFFFF' : getRgba(color, 0.85)}) !important;
         transition: background-color 0.3s ease;
-    }
+                 }
+/* ТАБЫ — строго внутри tabsList, TabPanel не трогаем */
+[class*="mantine-Tabs-tabsList"] [class*="mantine-Tabs-tab"],
+[class*="mantine-Tabs-tabsList"] [class*="ConversationScreen_Tab__"] {
+    color: ${textColor} !important;
+    background-color: transparent !important;
+}
+[class*="mantine-Tabs-tabsList"] [class*="mantine-Tabs-tab"]:hover,
+[class*="mantine-Tabs-tabsList"] [class*="ConversationScreen_Tab__"]:hover {
+    background-color: ${getRgba(textColor, 0.08)} !important;
+}
+[class*="mantine-Tabs-tabsList"] [class*="mantine-Tabs-tab"][data-active="true"],
+[class*="mantine-Tabs-tabsList"] [class*="ConversationScreen_Tab__"][data-active="true"] {
+    background-color: ${getRgba(textColor, 0.15)} !important;
+    border-bottom-color: #7c4dff !important;
+}
+
 
             /* 1. ПРИНУДИТЕЛЬНОЕ ОБНУЛЕНИЕ ФОНОВ ДЛЯ ТЕКСТОВЫХ ЭЛЕМЕНТОВ */
             [class*="Typography_Typography"],
