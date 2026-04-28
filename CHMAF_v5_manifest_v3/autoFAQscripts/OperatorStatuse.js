@@ -104,30 +104,70 @@ const win_OperStatus = `
 
 <style>
 /* ============================================
-   AF OperStatus — Cyber-Dark UI
+   AF OperStatus — NEON GLASS ULTRA
    ============================================ */
 
 .${AFOS_PREFIX}wrapper {
     display: flex;
     width: 420px;
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    color: #e0e0e0;
+    color: #e2e8f0;
 }
 
 .${AFOS_PREFIX}inner {
     width: 100%;
     margin: 6px;
     position: relative;
-    background: linear-gradient(145deg, rgba(12, 12, 16, 0.95) 0%, rgba(6, 6, 8, 0.98) 100%);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
+    background:
+        linear-gradient(135deg, rgba(26, 26, 44, 0.94) 0%, rgba(18, 18, 34, 0.96) 100%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23242850' fill-opacity='0.25'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    backdrop-filter: blur(20px) saturate(1.3);
+    -webkit-backdrop-filter: blur(20px) saturate(1.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
     box-shadow:
-        0 30px 60px -10px rgba(0, 0, 0, 0.9),
-        0 0 0 1px rgba(0, 229, 255, 0.03),
-        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        0 0 0 1px rgba(0, 0, 0, 0.5),
+        0 20px 50px rgba(0, 0, 0, 0.7),
+        0 0 30px rgba(139, 92, 246, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
     overflow: hidden;
+    animation: ${AFOS_PREFIX}fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* Animated neon top border */
+.${AFOS_PREFIX}inner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -50%; right: -50%;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        #8b5cf6 20%,
+        #ec4899 40%,
+        #06b6d4 60%,
+        #8b5cf6 80%,
+        transparent 100%);
+    background-size: 200% 100%;
+    animation: ${AFOS_PREFIX}neonBorderFlow 3s linear infinite;
+    opacity: 0.7;
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* Inner radial glow */
+.${AFOS_PREFIX}inner::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes ${AFOS_PREFIX}neonBorderFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
 }
 
 .${AFOS_PREFIX}ambient-glow {
@@ -135,8 +175,8 @@ const win_OperStatus = `
     top: -50%; left: -50%;
     width: 200%; height: 200%;
     background:
-        radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.02), transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(213, 0, 249, 0.02), transparent 50%);
+        radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.03), transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.03), transparent 50%);
     animation: ${AFOS_PREFIX}ambientMove 25s linear infinite;
     pointer-events: none;
     z-index: 0;
@@ -150,7 +190,7 @@ const win_OperStatus = `
 
 .${AFOS_PREFIX}noise {
     position: absolute; inset: 0;
-    opacity: 0.02;
+    opacity: 0.012;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     pointer-events: none;
     z-index: 1;
@@ -162,11 +202,13 @@ const win_OperStatus = `
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
-    background: linear-gradient(180deg, rgba(20, 20, 26, 0.8) 0%, rgba(12, 12, 16, 0.8) 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 14px 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     cursor: grab;
     user-select: none;
+    position: relative;
+    z-index: 3;
 }
 
 .${AFOS_PREFIX}drag-handle:active { cursor: grabbing; }
@@ -174,125 +216,170 @@ const win_OperStatus = `
 .${AFOS_PREFIX}title {
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-size: 13px;
-    font-weight: 700;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 800;
     letter-spacing: 1.5px;
     text-transform: uppercase;
     color: #fff;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
 }
 
 .${AFOS_PREFIX}title-dot {
-    width: 6px; height: 6px;
-    background: #00e5ff;
+    width: 7px; height: 7px;
+    background: #22d3ee;
     border-radius: 50%;
-    box-shadow: 0 0 8px #00e5ff, 0 0 16px rgba(0, 229, 255, 0.6);
-    animation: ${AFOS_PREFIX}pulseNeon 2s ease-in-out infinite;
+    box-shadow: 0 0 8px #22d3ee, 0 0 16px rgba(34, 211, 238, 0.5);
+    animation: ${AFOS_PREFIX}pulseNeon 2.5s ease-in-out infinite;
 }
 
 @keyframes ${AFOS_PREFIX}pulseNeon {
-    0%, 100% { opacity: 1; box-shadow: 0 0 8px #00e5ff, 0 0 16px rgba(0,229,255,0.6); }
-    50% { opacity: 0.5; box-shadow: 0 0 4px #00e5ff, 0 0 8px rgba(0,229,255,0.2); }
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px #22d3ee, 0 0 16px rgba(34,211,238,0.5); }
+    50% { opacity: 0.5; box-shadow: 0 0 4px #22d3ee, 0 0 8px rgba(34,211,238,0.2); }
 }
 
-.${AFOS_PREFIX}header-actions { display: flex; gap: 8px; }
+.${AFOS_PREFIX}header-actions { display: flex; gap: 6px; }
 
 .${AFOS_PREFIX}btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 30px; height: 30px;
+    width: 28px; height: 28px;
     padding: 0;
-    font-size: 13px;
+    font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.${AFOS_PREFIX}btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 45%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+    border-radius: 8px 8px 0 0;
+    pointer-events: none;
 }
 
 .${AFOS_PREFIX}btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
     color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .${AFOS_PREFIX}btn-clear:hover {
-    border-color: rgba(0, 229, 255, 0.4);
-    color: #00e5ff;
-    box-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
+    border-color: rgba(34, 211, 238, 0.4);
+    color: #22d3ee;
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.15), inset 0 0 8px rgba(34, 211, 238, 0.05);
 }
 
 .${AFOS_PREFIX}btn-hide:hover {
-    border-color: rgba(255, 23, 68, 0.4);
-    color: #ff1744;
-    box-shadow: 0 0 12px rgba(255, 23, 68, 0.15);
+    border-color: rgba(248, 113, 113, 0.4);
+    color: #f87171;
+    box-shadow: 0 0 12px rgba(248, 113, 113, 0.15), inset 0 0 8px rgba(248, 113, 113, 0.05);
 }
 
-.${AFOS_PREFIX}content { padding: 16px; }
+.${AFOS_PREFIX}content { padding: 14px; }
 
 .${AFOS_PREFIX}table {
     max-height: 700px;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 6px;
+    padding-right: 4px;
 }
 
 .${AFOS_PREFIX}table::-webkit-scrollbar { width: 4px; }
-.${AFOS_PREFIX}table::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.4); border-radius: 2px; }
-.${AFOS_PREFIX}table::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
-.${AFOS_PREFIX}table::-webkit-scrollbar-thumb:hover { background: rgba(0, 229, 255, 0.5); }
+.${AFOS_PREFIX}table::-webkit-scrollbar-track { background: transparent; }
+.${AFOS_PREFIX}table::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 4px; }
+.${AFOS_PREFIX}table::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.5); }
 
-/* Status Block — Cyber Card */
+/* Status Block — Neon Glass Card */
 .${AFOS_PREFIX}status-block {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     position: relative;
-    background: linear-gradient(145deg, rgba(20, 20, 26, 0.8) 0%, rgba(12, 12, 16, 0.9) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    background: linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-left: 3px solid var(--afos-accent);
-    border-radius: 8px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     animation: ${AFOS_PREFIX}fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    overflow: hidden;
+}
+
+.${AFOS_PREFIX}status-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%);
+    border-radius: 12px 12px 0 0;
+    pointer-events: none;
 }
 
 .${AFOS_PREFIX}status-block:hover {
-    transform: translateX(2px) translateY(-1px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px var(--afos-glow, transparent);
-    background: linear-gradient(145deg, rgba(26, 26, 32, 0.9) 0%, rgba(14, 14, 18, 1) 100%);
+    transform: translateX(3px) translateY(-1px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 20px var(--afos-glow, transparent);
+    background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+    border-color: rgba(255, 255, 255, 0.08);
 }
 
 .${AFOS_PREFIX}status-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 16px;
+    padding: 8px 14px;
     font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 1px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--afos-accent, #fff);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(0, 0, 0, 0.15);
+    position: relative;
+    z-index: 1;
 }
 
+/* Premium Neon Glass Badge */
 .${AFOS_PREFIX}status-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 32px;
-    padding: 4px 10px;
+    min-width: 28px;
+    padding: 3px 8px;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 900;
     font-family: 'Consolas', monospace;
     color: var(--afos-accent);
-    background: rgba(0, 0, 0, 0.5);
+    background:
+        linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%),
+        rgba(0, 0, 0, 0.35);
     border: 1px solid var(--afos-accent);
-    border-radius: 6px;
-    box-shadow: 0 0 10px var(--afos-glow), inset 0 0 5px var(--afos-glow);
+    border-radius: 8px;
+    box-shadow:
+        0 2px 6px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 0 10px var(--afos-glow);
     text-shadow: 0 0 8px var(--afos-accent);
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.${AFOS_PREFIX}status-badge::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 15%; right: 15%;
+    height: 4px;
+    background: var(--afos-accent);
+    border-radius: 50%;
+    filter: blur(4px);
+    opacity: 0.4;
 }
 
 .${AFOS_PREFIX}status-badge.${AFOS_PREFIX}badge-pop {
@@ -305,18 +392,18 @@ const win_OperStatus = `
     100% { transform: scale(1); box-shadow: 0 0 10px var(--afos-glow); }
 }
 
-.${AFOS_PREFIX}status-list { padding: 8px 16px; }
+.${AFOS_PREFIX}status-list { padding: 6px 14px; position: relative; z-index: 1; }
 
 .${AFOS_PREFIX}status-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 6px 0;
-    font-size: 13px;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 12px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.6);
     border-bottom: 1px dotted rgba(255, 255, 255, 0.04);
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
     opacity: 1;
     transform: translateX(0);
 }
@@ -326,8 +413,6 @@ const win_OperStatus = `
 .${AFOS_PREFIX}status-item:hover {
     color: #fff;
     transform: translateX(5px);
-    background: linear-gradient(90deg, var(--afos-glow), transparent 60%);
-    -webkit-background-clip: text;
     text-shadow: 0 0 8px var(--afos-glow);
 }
 
@@ -351,48 +436,76 @@ const win_OperStatus = `
 }
 
 .${AFOS_PREFIX}status-icon {
-    font-size: 14px;
+    font-size: 13px;
     filter: drop-shadow(0 0 4px rgba(255,255,255,0.2));
     flex-shrink: 0;
 }
 
-/* Total Block — Cyber Core */
+/* Total Block — Cyan Neon Glass Core */
 .${AFOS_PREFIX}total-block {
     margin-top: 10px;
     position: relative;
-    background: linear-gradient(135deg, rgba(10, 15, 20, 0.9) 0%, rgba(5, 8, 12, 1) 100%);
-    border: 1px solid rgba(0, 229, 255, 0.15);
-    border-left: 4px solid #00e5ff;
-    border-radius: 8px;
-    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border: 1px solid rgba(34, 211, 238, 0.15);
+    border-left: 3px solid #22d3ee;
+    border-radius: 12px;
+    padding: 10px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.5px;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    color: #e0e0e0;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 229, 255, 0.05);
+    color: #e2e8f0;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(34, 211, 238, 0.06), inset 0 1px 0 rgba(255,255,255,0.03);
     animation: ${AFOS_PREFIX}fadeInUp 0.5s 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    overflow: hidden;
+}
+
+.${AFOS_PREFIX}total-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+    border-radius: 12px 12px 0 0;
+    pointer-events: none;
 }
 
 .${AFOS_PREFIX}total-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 40px;
-    padding: 4px 12px;
-    font-size: 14px;
-    font-weight: 800;
+    min-width: 36px;
+    padding: 3px 10px;
+    font-size: 13px;
+    font-weight: 900;
     font-family: 'Consolas', monospace;
-    color: #00e5ff;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid #00e5ff;
-    border-radius: 6px;
-    box-shadow: 0 0 12px rgba(0, 229, 255, 0.3), inset 0 0 8px rgba(0, 229, 255, 0.2);
-    text-shadow: 0 0 8px #00e5ff;
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    color: #22d3ee;
+    background:
+        linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%),
+        rgba(0, 0, 0, 0.35);
+    border: 1px solid #22d3ee;
+    border-radius: 8px;
+    box-shadow:
+        0 2px 6px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 0 12px rgba(34, 211, 238, 0.25);
+    text-shadow: 0 0 8px #22d3ee;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.${AFOS_PREFIX}total-badge::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 15%; right: 15%;
+    height: 4px;
+    background: #22d3ee;
+    border-radius: 50%;
+    filter: blur(4px);
+    opacity: 0.4;
 }
 
 .${AFOS_PREFIX}total-badge.${AFOS_PREFIX}badge-pop {
@@ -400,9 +513,9 @@ const win_OperStatus = `
 }
 
 @keyframes ${AFOS_PREFIX}badgeTotalPop {
-    0% { transform: scale(1); box-shadow: 0 0 12px rgba(0, 229, 255, 0.3); }
-    40% { transform: scale(1.25); box-shadow: 0 0 30px #00e5ff, inset 0 0 15px #00e5ff; }
-    100% { transform: scale(1); box-shadow: 0 0 12px rgba(0, 229, 255, 0.3); }
+    0% { transform: scale(1); box-shadow: 0 0 12px rgba(34, 211, 238, 0.25); }
+    40% { transform: scale(1.25); box-shadow: 0 0 30px #22d3ee, inset 0 0 15px #22d3ee; }
+    100% { transform: scale(1); box-shadow: 0 0 12px rgba(34, 211, 238, 0.25); }
 }
 
 /* Base Animations */
