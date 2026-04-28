@@ -146,88 +146,68 @@ const injectOpStatusStyles = () => {
         }
 
         /* === NEON GLASS OPERATOR ROWS === */
-        .op-st-row {
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 10px;
-            margin: 6px 0;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-left: 3px solid transparent;
-            z-index: 1;
-            overflow: hidden;
-        }
+.op-st-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    margin: 2px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-left: 3px solid transparent;
+    z-index: 1;
+    overflow: hidden;
+}
 
-        .op-st-row::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg,
-                rgba(255, 255, 255, 0.03) 0%,
-                transparent 60%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            border-radius: 12px;
-            pointer-events: none;
-        }
+.op-st-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px) scale(1.01);
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.4),
+        0 0 15px rgba(139, 92, 246, 0.08);
+    color: #fff;
+}
 
-        .op-st-row:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
-            transform: translateX(6px) scale(1.02);
-            box-shadow:
-                0 8px 25px rgba(0, 0, 0, 0.4),
-                0 0 20px rgba(139, 92, 246, 0.1);
-            color: #fff;
-        }
+/* ТП ОС — тоже компактно */
+.op-st-row.tp-os-row {
+    background: linear-gradient(90deg,
+        rgba(6, 182, 212, 0.08) 0%,
+        rgba(6, 182, 212, 0.02) 100%);
+    border-left: 3px solid #06b6d4;
+    box-shadow:
+        inset 0 0 10px rgba(6, 182, 212, 0.04),
+        0 0 10px rgba(6, 182, 212, 0.04);
+}
 
-        .op-st-row:hover::before {
-            opacity: 1;
-        }
-
-        /* ТП ОС — Cyber-Cyan Neon Glass */
-        .op-st-row.tp-os-row {
-            background: linear-gradient(90deg,
-                rgba(6, 182, 212, 0.08) 0%,
-                rgba(6, 182, 212, 0.02) 100%);
-            border-left: 3px solid #06b6d4;
-            box-shadow:
-                inset 0 0 15px rgba(6, 182, 212, 0.05),
-                0 0 15px rgba(6, 182, 212, 0.05);
-        }
-
-        .op-st-row.tp-os-row:hover {
-            background: linear-gradient(90deg,
-                rgba(6, 182, 212, 0.15) 0%,
-                rgba(6, 182, 212, 0.05) 100%);
-            border-left-color: #22d3ee;
-            box-shadow:
-                inset 0 0 20px rgba(6, 182, 212, 0.1),
-                0 0 25px rgba(6, 182, 212, 0.15);
-        }
+.op-st-row.tp-os-row:hover {
+    background: linear-gradient(90deg,
+        rgba(6, 182, 212, 0.15) 0%,
+        rgba(6, 182, 212, 0.05) 100%);
+    border-left-color: #22d3ee;
+    box-shadow:
+        inset 0 0 15px rgba(6, 182, 212, 0.08),
+        0 0 20px rgba(6, 182, 212, 0.12);
+}
 
         /* === ULTRA BADGES === */
 /* === ULTRA BADGES (без shine, с pulse на изменение) === */
 .op-st-badge {
-    min-width: 28px;
-    height: 28px;
+    min-width: 22px;
+    height: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: 6px;
     font-weight: 800;
-    font-size: 13px;
+    font-size: 11px;
     box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.5),
+        0 2px 6px rgba(0, 0, 0, 0.5),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
     letter-spacing: 0.5px;
     position: relative;
@@ -236,7 +216,6 @@ const injectOpStatusStyles = () => {
     transition: all 0.4s ease;
 }
 
-/* Пульс при изменении числа — мягкий, не отвлекающий */
 .op-st-badge.pulse-up {
     animation: badgePulseSoft 0.6s ease;
 }
@@ -247,15 +226,15 @@ const injectOpStatusStyles = () => {
 
 @keyframes badgePulseSoft {
     0% { transform: scale(1); }
-    30% { transform: scale(1.15); filter: brightness(1.3); }
-    60% { transform: scale(0.95); }
+    30% { transform: scale(1.12); filter: brightness(1.25); }
+    60% { transform: scale(0.96); }
     100% { transform: scale(1); filter: brightness(1); }
 }
 
 @keyframes badgePulseSoftDown {
     0% { transform: scale(1); }
-    30% { transform: scale(0.85); filter: brightness(0.7); }
-    60% { transform: scale(1.05); }
+    30% { transform: scale(0.88); filter: brightness(0.75); }
+    60% { transform: scale(1.04); }
     100% { transform: scale(1); filter: brightness(1); }
 }
 
@@ -584,8 +563,26 @@ function filterOperatorsLocal(result, cfg) {
     });
 }
 
+const cleanOperatorName = (fullName) => {
+    if (!fullName) return '';
+    // ТП ОС оставляем как есть
+    if (fullName.startsWith('ТП ОС-')) return fullName;
+    // Убираем префиксы: ТП-, Prem-, КЦ-, Teachers Care-
+    return fullName.replace(/^(ТП|Prem|КЦ|Teachers Care)-/, '');
+};
+
 const renderOperatorRows = (opstats) => {
-    // NEON GLASS ULTRA Status Theme Map
+    const merged = new Map();
+    opstats.forEach(item => {
+        const id = item.operator.id;
+        if (merged.has(id)) {
+            merged.get(id).aCnt = (merged.get(id).aCnt || 0) + (item.aCnt || 0);
+        } else {
+            merged.set(id, { ...item });
+        }
+    });
+    const uniqueOps = Array.from(merged.values());
+
     const statusMap = {
         Online: {
             bg: 'rgba(16, 185, 129, 0.12)',
@@ -607,7 +604,7 @@ const renderOperatorRows = (opstats) => {
         }
     };
 
-    return opstats.sort((a, b) => a.operator.status.localeCompare(b.operator.status))
+    return uniqueOps.sort((a, b) => a.operator.status.localeCompare(b.operator.status))
         .map(item => {
             const op = item.operator;
             const theme = statusMap[op.status] || {
@@ -620,7 +617,6 @@ const renderOperatorRows = (opstats) => {
             const isTpOs = op.fullName?.toUpperCase().includes('ТП ОС');
             const currentCount = item.aCnt || 0;
 
-            // Получаем предыдущее значение из DOM
             const existingBadge = document.querySelector(`.op-st-row[value="${op.id}"] .op-st-badge`);
             let pulseClass = '';
             if (existingBadge) {
@@ -634,12 +630,15 @@ const renderOperatorRows = (opstats) => {
                 opColor = op.status === 'Online' ? '#22d3ee' : '#0891b2';
             }
 
+            // Используем очищенное имя для отображения
+            const displayName = cleanOperatorName(op.fullName);
+
             return `<div class="op-st-row ${isTpOs ? 'tp-os-row' : ''}" name="operrow" value="${op.id}">
                         <span class="op-st-badge ${pulseClass}" data-count="${currentCount}" style="background: ${theme.bg}; color: ${theme.glow}; border: 1px solid ${theme.b}; text-shadow: ${theme.textGlow};">
                             ${currentCount}
                         </span>
                         <span style="opacity: ${op.status === 'Online' ? 1 : 0.7}; color: ${opColor}; font-weight: ${isTpOs ? '600' : '500'}; letter-spacing: 0.3px;">
-                            ${op.fullName}
+                            ${displayName}
                         </span>
                     </div>`;
         }).join('');
