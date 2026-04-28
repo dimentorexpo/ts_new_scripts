@@ -324,6 +324,7 @@
     }
 
     // === МОДУЛЬ 2: ПРОВЕРКА ТЕГОВ ===
+    // === МОДУЛЬ 2: ПРОВЕРКА ТЕГОВ И ТЕМЫ/ПОДТЕМЫ ===
     function initTagChecker() {
         setInterval(() => {
             try {
@@ -340,9 +341,18 @@
                 if (!convElement) return;
 
                 const wrappers = doc.querySelectorAll('#__next div[class*="List_ListWrapper"]');
-                let targetBlock = null;
-                wrappers.forEach(wrap => { if (wrap.innerText.includes("Выбор тегов")) targetBlock = wrap; });
-                if (!targetBlock) return;
+
+                // Ищем оба блока одновременно
+                let tagBlock = null;
+                let topicBlock = null;
+                wrappers.forEach(wrap => {
+                    const txt = wrap.innerText;
+                    if (txt.includes("Выбор тегов")) tagBlock = wrap;
+                    if (txt.includes("Выбор темы/подтемы")) topicBlock = wrap;
+                });
+
+                // Если нет нужных блоков на странице — выходим
+                if (!tagBlock && !topicBlock) return;
 
                 const btn = doc.querySelector('button[title="Закрыть"]');
 
@@ -354,23 +364,48 @@
                     convElement.append(existing);
                 }
 
-                const text = targetBlock.innerText.trim();
-                if (text.includes("Пусто")) {
-                    if (btn) btn.disabled = true;
-                    if (targetBlock.children[0]?.children[0]) {
-                        targetBlock.children[0].children[0].style.border = "2px solid firebrick";
-                        targetBlock.children[0].children[0].style.background = "rgba(178,34,34, 0.1)";
+                // Проверяем "Пусто" в каждом блоке
+                const tagEmpty = tagBlock ? tagBlock.innerText.trim().includes("Пусто") : false;
+                const topicEmpty = topicBlock ? topicBlock.innerText.trim().includes("Пусто") : false;
+                const hasEmpty = tagEmpty || topicEmpty;
+
+                // Универсальная функция стилизации пустого поля
+                const styleEmptyBlock = (block, isEmpty) => {
+                    if (!block) return;
+                    const target = block.children[0]?.children[0];
+                    if (!target) return;
+
+                    if (isEmpty) {
+                        target.style.border = "2px solid #ff1744";
+                        target.style.background = "rgba(255, 23, 68, 0.06)";
+                        target.style.borderRadius = "8px";
+                        target.classList.add('skyeng-mod-pulse');
+                    } else {
+                        target.style.border = "";
+                        target.style.background = "";
+                        target.style.borderRadius = "";
+                        target.classList.remove('skyeng-mod-pulse');
                     }
-                    existing.textContent = "❌ Нет тега";
-                    existing.style.background = "linear-gradient(135deg, #ff9800, #ff5722)";
+                };
+
+                styleEmptyBlock(tagBlock, tagEmpty);
+                styleEmptyBlock(topicBlock, topicEmpty);
+
+                if (hasEmpty) {
+                    if (btn) btn.disabled = true;
+
+                    const missing = [];
+                    if (tagEmpty) missing.push("тега");
+                    if (topicEmpty) missing.push("темы");
+
+                    existing.textContent = `❌ Нет ${missing.join(' и ')}`;
+                    existing.style.background = "linear-gradient(135deg, #ff1744, #b71c1c)";
+                    existing.style.boxShadow = "0 0 12px rgba(255, 23, 68, 0.5)";
                 } else {
                     if (btn) btn.disabled = false;
-                    if (targetBlock.children[0]?.children[0]) {
-                        targetBlock.children[0].children[0].style.border = "";
-                        targetBlock.children[0].children[0].style.background = "";
-                    }
-                    existing.textContent = "☑️ Есть тег";
+                    existing.textContent = "☑️ Всё заполнено";
                     existing.style.background = "linear-gradient(135deg, #4caf50, #087f23)";
+                    existing.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
                 }
             } catch (e) {
                 // Молча глотаем ошибки в цикле, чтобы скрипт не умер

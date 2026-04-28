@@ -2850,3 +2850,21 @@
 		background: rgba(211, 47, 47, 0.4) !important;
 		border-color: rgba(244, 67, 54, 0.5) !important;
 	}
+
+	@keyframes skyeng-mod-pulse {
+		0% {
+			box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.5);
+		}
+
+		70% {
+			box-shadow: 0 0 0 10px rgba(255, 23, 68, 0);
+		}
+
+		100% {
+			box-shadow: 0 0 0 0 rgba(255, 23, 68, 0);
+		}
+	}
+
+	.skyeng-mod-pulse {
+		animation: skyeng-mod-pulse 1.5s infinite;
+	}
