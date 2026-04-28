@@ -59,7 +59,6 @@ async function init_settings() {
         const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
 
         const textColor = brightness >= 128 ? '#1A1A1A' : '#E0E0E0';
-        const secondaryTextColor = brightness >= 128 ? 'rgba(0,0,0,0.5)' : 'rgba(224,224,224,0.5)';
 
         const getRgba = (hex, alpha) => {
             const r1 = parseInt(hex.slice(1, 3), 16);
@@ -84,85 +83,68 @@ async function init_settings() {
 
         if (!isWhite) {
             cssRules += `
-                [class*="DialogsCard_Card"] {
-        background-color: var(--chat-card-bg, ${isWhite ? '#FFFFFF' : getRgba(color, 0.85)}) !important;
-        transition: background-color 0.3s ease;
-                 }
-/* ТАБЫ — строго внутри tabsList, TabPanel не трогаем */
-[class*="mantine-Tabs-tabsList"] [class*="mantine-Tabs-tab"],
-[class*="mantine-Tabs-tabsList"] [class*="ConversationScreen_Tab__"] {
-    color: ${textColor} !important;
-    background-color: transparent !important;
-}
-[class*="mantine-Tabs-tabsList"] [class*="mantine-Tabs-tab"]:hover,
-[class*="mantine-Tabs-tabsList"] [class*="ConversationScreen_Tab__"]:hover {
-    background-color: ${getRgba(textColor, 0.08)} !important;
-}
-[class*="mantine-Tabs-tabsList"] [class*="mantine-Tabs-tab"][data-active="true"],
-[class*="mantine-Tabs-tabsList"] [class*="ConversationScreen_Tab__"][data-active="true"] {
-    background-color: ${getRgba(textColor, 0.15)} !important;
-    border-bottom-color: #7c4dff !important;
-}
+            /* ═══ 1. КАРТОЧКИ ДИАЛОГОВ (с поддержкой цвета таймера) ═══ */
+            [class*="DialogsCard_Card"] {
+                background-color: var(--chat-card-bg, ${getRgba(textColor, 0.05)}) !important;
+                color: ${textColor} !important;
+                border: 1px solid ${getRgba(textColor, 0.1)} !important;
+                transition: background-color 0.3s ease;
+            }
 
-        /* СООБЩЕНИЯ ОТ БОТА — зелёная плашка */
-        [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] {
-            background-color: rgba(46, 125, 50, 0.25) !important;
-            border: 1px solid rgba(76, 175, 80, 0.35) !important;
-            border-radius: 12px !important;
-            padding: 8px !important;
-            margin: 4px 0 !important;
-        }
+            /* ═══ 2. ТАБЫ (только внутри tabsList) ═══ */
+            [class*="mantine-Tabs-tabsList"] [class*="mantine-Tabs-tab"],
+            [class*="mantine-Tabs-tabsList"] [class*="ConversationScreen_Tab__"] {
+                color: ${textColor} !important;
+                background-color: transparent !important;
+            }
+            [class*="mantine-Tabs-tabsList"] [class*="mantine-Tabs-tab"]:hover,
+            [class*="mantine-Tabs-tabsList"] [class*="ConversationScreen_Tab__"]:hover {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+            }
+            [class*="mantine-Tabs-tabsList"] [class*="mantine-Tabs-tab"][data-active="true"],
+            [class*="mantine-Tabs-tabsList"] [class*="ConversationScreen_Tab__"][data-active="true"] {
+                background-color: ${getRgba(textColor, 0.15)} !important;
+                border-bottom-color: #7c4dff !important;
+            }
 
-        /* Текст внутри бот-сообщений — мягкий светло-зелёный */
-        [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="ChatMessages_Author__"],
-        [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="ChatMessages_Date__"],
-        [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="ChatMessages_HtmlContent__"] {
-            color: #e8f5e9 !important;
-            background: transparent !important;
-        }
+            /* ═══ 3. ОСНОВНЫЕ КОНТЕЙНЕРЫ + МОДАЛКИ ═══ */
+            [class*="Operator_Root"], [class*="Layout_Header"], [class*="ChatMessages_Root"],
+            [class*="ConversationScreen_Messages"], [class*="ConversationScreen_Header"],
+            [class*="text-editor_Toolbar"],
+            [class*="mantine-Modal-modal"],
+            [class*="mantine-Paper-root"][class*="Modal_"] {
+                background-color: ${color} !important;
+            }
 
-        /* Кнопки-оценки внутри бот-сообщений */
-        [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="Buttons_SharedButton__"] {
-            background-color: rgba(255, 255, 255, 0.08) !important;
-            color: #c8e6c9 !important;
-            border-color: rgba(76, 175, 80, 0.4) !important;
-        }
+            /* ═══ 4. РЕДАКТОР ═══ */
+            [class*="mantine-RichTextEditor"],
+            [class*="text-editor_Content"],
+            .ProseMirror {
+                background-color: ${color} !important;
+                color: ${textColor} !important;
+            }
+            [data-rich-text-editor-control="true"],
+            [class*="mantine-RichTextEditor-control"] {
+                background: transparent !important;
+                border: none !important;
+            }
 
-                /* СООБЩЕНИЯ ОТ ПОЛЬЗОВАТЕЛЯ ("Вы") — тёплый жёлтый */
-        [class*="ChatMessages_RegularMessage__"][data-author-type="user"] {
-            background-color: rgba(255, 193, 7, 0.22) !important;
-            border: 1px solid rgba(255, 179, 0, 0.4) !important;
-            border-radius: 12px !important;
-            padding: 8px !important;
-            margin: 4px 0 !important;
-        }
+            /* ═══ 5. ТЕКСТ В МОДАЛКАХ ═══ */
+            [class*="mantine-Modal-modal"] [class*="mantine-Text-root"],
+            [class*="mantine-Modal-modal"] [class*="mantine-Modal-title"],
+            [class*="mantine-Modal-modal"] [class*="mantine-Input-input"] {
+                color: ${textColor} !important;
+            }
 
-        /* Текст внутри жёлтых сообщений — тёмно-коричневый (лучше читается на янтарном) */
-        [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"],
-        [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Date__"],
-        [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
-            color: #3e2723 !important; /* тёплый тёмно-коричневый, не резкий чёрный */
-            background: transparent !important;
-        }
+            /* ═══ 6. КНОПКИ ═══ */
+            [class*="Buttons_SharedButton"],
+            [class*="Operator_TakeRequestButton"] {
+                background-color: ${getRgba(textColor, 0.05)} !important;
+                color: ${textColor} !important;
+                border: 1px solid ${getRgba(textColor, 0.1)} !important;
+            }
 
-        /* Имя "Вы" можно чуть жирнее для контраста */
-        [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"] {
-            font-weight: 600 !important;
-        }
-
-        /* ПРИЯТНЫЙ СЕРЫЙ ФОН ДЛЯ СООБЩЕНИЙ */
-
-
-        [class*="ChatMessages_HtmlContent__"] {
-            background-color: rgba(141, 136, 136, 0.61) !important;
-            color: ${textColor} !important;
-            border-radius: 0 0 10px 10px;
-            padding: 10px !important;
-            display: block !important;
-        }
-
-
-            /* 1. ПРИНУДИТЕЛЬНОЕ ОБНУЛЕНИЕ ФОНОВ ДЛЯ ТЕКСТОВЫХ ЭЛЕМЕНТОВ */
+            /* ═══ 7. ОБЩАЯ ТИПОГРАФИКА (базовая, будет перебита специфичными ниже) ═══ */
             [class*="Typography_Typography"],
             [class*="ChatMessages_Author"],
             [class*="ChatMessages_Date"],
@@ -172,67 +154,107 @@ async function init_settings() {
                 color: ${textColor} !important;
             }
 
-            /* 2. ИСПРАВЛЕНИЕ РЕДАКТОРА (все слои) */
-            [class*="mantine-RichTextEditor"],
-            [class*="text-editor_Content"],
-            .ProseMirror {
-                background-color: ${color} !important;
-                color: ${textColor} !important;
-            }
-
-        /* 3. ФОНЫ ОСНОВНЫХ КОНТЕЙНЕРОВ + МОДАЛКИ */
-        [class*="Operator_Root"], [class*="Layout_Header"], [class*="ChatMessages_Root"],
-        [class*="ConversationScreen_Messages"], [class*="ConversationScreen_Header"],
-        [class*="text-editor_Toolbar"],
-        [class*="mantine-Modal-modal"],
-        [class*="mantine-Paper-root"][class*="Modal_"] {
-            background-color: ${color} !important;
-        }
-
-                /* ТЕКСТ ВНУТРИ МОДАЛОК */
-        [class*="mantine-Modal-modal"] [class*="mantine-Text-root"],
-        [class*="mantine-Modal-modal"] [class*="mantine-Modal-title"],
-        [class*="mantine-Modal-modal"] [class*="mantine-Input-input"] {
-            color: ${textColor} !important;
-        }
-
-        /* 4. КНОПКИ И КАРТОЧКИ (не белые) */
-        [class*="Buttons_SharedButton"],
-        [class*="Operator_TakeRequestButton"] {
-            background-color: ${getRgba(textColor, 0.05)} !important;
-            color: ${textColor} !important;
-            border: 1px solid ${getRgba(textColor, 0.1)} !important;
-        }
-
-        /* КАРТОЧКИ ЧАТОВ — с поддержкой цвета таймера */
-        [class*="DialogsCard_Card"] {
-            background-color: var(--chat-card-bg, ${getRgba(textColor, 0.05)}) !important;
-            color: ${textColor} !important;
-            border: 1px solid ${getRgba(textColor, 0.1)} !important;
-            transition: background-color 0.3s ease;
-        }
-
-            /* 5. ПОЛНОЕ УДАЛЕНИЕ БЕЛОГО ИЗ СТИЛЕЙ КНОПОК РЕДАКТОРА */
-            [data-rich-text-editor-control="true"],
-            [class*="mantine-RichTextEditor-control"] {
-                background: transparent !important;
-                border: none !important;
-            }
-
-            /* ИМЕНА БОТОВ И АВТОРОВ (твой новый класс) */
-            .ChatMessages_Author__x4Gye {
-                color: ${textColor} !important;
-                background: transparent !important;
-            }
-
-            /* ФИКС СЕРОГО ID */
+            /* ═══ 8. ФИКСЫ ═══ */
             [class*="UserInfo_UserIdContainer"] {
                 color: #ffffff !important;
                 opacity: 1 !important;
             }
-
-            /* ЗАЩИТА ТАЙМЕРА (НЕ КРАСИМ ЦВЕТНОЕ) */
             [style*="background-color"]:not([style*="rgb(255, 255, 255)"]):not([style*="#fff"]):not([style*="#FFF"]):not([style*="white"]) {
+            }
+
+            /* ═══ 9. ОБЩИЙ ФОН ДЛЯ ОБЫЧНЫХ СООБЩЕНИЙ (серый) ═══ */
+            [class*="ChatMessages_RegularMessage__"]:not([data-author-type="bot"]):not([data-author-type="user"]):not([data-author-type="user-with-bot"]) {
+                background-color: rgba(255, 255, 255, 0.05) !important;
+                border-radius: 12px !important;
+                padding: 8px !important;
+                margin: 4px 0 !important;
+            }
+            [class*="ChatMessages_RegularMessageHeader"] {
+                background: transparent !important;
+                padding: 6px 10px !important;
+            }
+            [class*="ChatMessages_HtmlContent__"] {
+                background-color: rgba(255, 255, 255, 0.04) !important;
+                color: ${textColor} !important;
+                border-radius: 0 0 10px 10px;
+                padding: 10px !important;
+                display: block !important;
+            }
+
+            /* ═══ 10. БОТ — зелёный ═══ */
+            [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] {
+                background-color: rgba(46, 125, 50, 0.22) !important;
+                border: 1px solid rgba(76, 175, 80, 0.35) !important;
+                border-radius: 12px !important;
+                padding: 8px !important;
+                margin: 4px 0 !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="ChatMessages_Author__"],
+            [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="ChatMessages_Date__"],
+            [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="ChatMessages_HtmlContent__"] {
+                color: #e8f5e9 !important;
+                background: transparent !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="Buttons_SharedButton__"] {
+                background-color: rgba(255, 255, 255, 0.08) !important;
+                color: #c8e6c9 !important;
+                border-color: rgba(76, 175, 80, 0.4) !important;
+            }
+
+            /* ═══ 11. USER-WITH-BOT — тоже зелёный ═══ */
+            [class*="ChatMessages_RegularMessage__"][data-author-type="user-with-bot"] {
+                background-color: rgba(46, 125, 50, 0.22) !important;
+                border: 1px solid rgba(76, 175, 80, 0.35) !important;
+                border-radius: 12px !important;
+                padding: 8px !important;
+                margin: 4px 0 !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-author-type="user-with-bot"] [class*="ChatMessages_Author__"],
+            [class*="ChatMessages_RegularMessage__"][data-author-type="user-with-bot"] [class*="ChatMessages_Date__"],
+            [class*="ChatMessages_RegularMessage__"][data-author-type="user-with-bot"] [class*="ChatMessages_HtmlContent__"] {
+                color: #e8f5e9 !important;
+                background: transparent !important;
+            }
+
+            /* ═══ 12. USER (Вы) — янтарно-оранжевый ═══ */
+            [class*="ChatMessages_RegularMessage__"][data-author-type="user"] {
+                background-color: rgba(255, 152, 0, 0.2) !important;
+                border: 1px solid rgba(255, 152, 0, 0.4) !important;
+                border-radius: 12px !important;
+                padding: 8px !important;
+                margin: 4px 0 !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"],
+            [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Date__"],
+            [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
+                color: #fff3e0 !important; /* кремовый, отлично на оранжевом */
+                background: transparent !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"] {
+                font-weight: 600 !important;
+            }
+
+                        /* ═══ 13. ЗАМЕТКИ (CommentMessagesGroup) — серый ═══ */
+            [class*="ChatMessages_CommentMessagesGroup__"] {
+                background-color: rgba(150, 157, 160, 0.53) !important;
+                border: 1px solid rgba(96, 125, 139, 0.4) !important;
+                border-radius: 12px !important;
+
+                margin: 6px 0 !important;
+            }
+            /* Внутренний RegularMessage в заметке — прозрачный, чтобы не перебивать серый фон */
+            [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_RegularMessage__"] {
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            /* Текст внутри заметок */
+            [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_Author__"],
+            [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_Date__"],
+            [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_HtmlContent__"] {
+                color: #eceff1 !important; /* мягкий светло-серый */
+                background: transparent !important;
             }
         `;
         }
