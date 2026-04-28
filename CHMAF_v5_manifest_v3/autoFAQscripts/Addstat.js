@@ -23,87 +23,549 @@ window.getStatsButtonPress = function () {
 // ---------- 2. Разметка основного окна (Cyber-Dark UI) ----------
 var win_Stat = `
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-    .adds-glass-container { display: flex; width: 580px; font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    /* ============================================
+       AF Stat — NEON GLASS ULTRA
+       ============================================ */
 
-    /* Cyber-Dark Base Panel */
-    .adds-glass-panel { width: 100%; background: #0a0d14; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid #1f2430; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 20px rgba(0, 240, 255, 0.03); color: #a1aab8; padding: 18px; position: relative; overflow: hidden; }
+    .adds-glass-container {
+        display: flex;
+        width: 580px;
+        font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    }
 
-    .adds-glass-header { cursor: grab; }
+    /* Main Panel */
+    .adds-glass-panel {
+        width: 100%;
+        position: relative;
+        background:
+            linear-gradient(135deg, rgba(26, 26, 44, 0.94) 0%, rgba(18, 18, 34, 0.96) 100%),
+            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23242850' fill-opacity='0.25'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        backdrop-filter: blur(20px) saturate(1.3);
+        -webkit-backdrop-filter: blur(20px) saturate(1.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        box-shadow:
+            0 0 0 1px rgba(0, 0, 0, 0.5),
+            0 20px 50px rgba(0, 0, 0, 0.7),
+            0 0 30px rgba(139, 92, 246, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+        padding: 16px;
+        overflow: hidden;
+        animation: nuFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-    /* Inputs & Selects */
-    .adds-glass-input, .adds-glass-select { background: #131722; border: 1px solid #282e3e; border-radius: 6px; color: #e2e8f0; padding: 8px 12px; outline: none; transition: all 0.3s ease; font-family: inherit; font-size: 13px; }
-    .adds-glass-input:focus, .adds-glass-select:focus { background: #181d2a; border-color: #00f0ff; box-shadow: 0 0 10px rgba(0, 240, 255, 0.2); color: #fff; }
-    .adds-glass-select option { background: #131722; color: #fff; }
+    /* Animated neon top border */
+    .adds-glass-panel::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -50%; right: -50%;
+        height: 2px;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            #8b5cf6 20%,
+            #ec4899 40%,
+            #06b6d4 60%,
+            #8b5cf6 80%,
+            transparent 100%);
+        background-size: 200% 100%;
+        animation: nuBorderFlow 3s linear infinite;
+        opacity: 0.7;
+        z-index: 5;
+        pointer-events: none;
+    }
 
-    /* Cyber Buttons */
-    .adds-glass-btn { background: #131722; border: 1px solid #282e3e; border-radius: 6px; color: #94a3b8; padding: 8px 14px; cursor: pointer; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; }
-    .adds-glass-btn:hover { background: #1a202c; border-color: #00f0ff; color: #00f0ff; box-shadow: 0 0 12px rgba(0, 240, 255, 0.25); text-shadow: 0 0 5px rgba(0,240,255,0.5); transform: translateY(-1px); }
+    /* Inner radial glow */
+    .adds-glass-panel::after {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
+        background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+    }
 
-    /* Grid Buttons Layout */
-    .action-buttons-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; border-top: 1px dashed #1f2430; padding-top: 15px; margin-top: 5px; }
+    @keyframes nuBorderFlow {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+    }
+
+    @keyframes nuFadeIn {
+        from { opacity: 0; transform: translateY(10px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .adds-glass-header {
+        position: relative;
+        z-index: 2;
+        cursor: grab;
+    }
+
+    /* Inputs & Selects — Neon Glass */
+    .adds-glass-input, .adds-glass-select {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        color: #e2e8f0;
+        padding: 7px 10px;
+        outline: none;
+        transition: all 0.25s ease;
+        font-family: inherit;
+        font-size: 12px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .adds-glass-input:focus, .adds-glass-select:focus {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(34, 211, 238, 0.5);
+        box-shadow:
+            0 0 0 2px rgba(34, 211, 238, 0.05),
+            0 0 12px rgba(34, 211, 238, 0.1);
+        color: #fff;
+    }
+
+    .adds-glass-select option {
+        background: #1a1a2e;
+        color: #e2e8f0;
+    }
+
+    /* Neon Glass Buttons */
+    .adds-glass-btn {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        color: #94a3b8;
+        padding: 7px 12px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .adds-glass-btn::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 45%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+        border-radius: 8px 8px 0 0;
+        pointer-events: none;
+    }
+
+    .adds-glass-btn:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    /* Button color accents */
+    #gofindit:hover, #changetheme:hover {
+        border-color: rgba(34, 211, 238, 0.4);
+        color: #22d3ee;
+        box-shadow: 0 0 12px rgba(34, 211, 238, 0.15), inset 0 0 8px rgba(34, 211, 238, 0.05);
+    }
+
+    #getstatfromperiod:hover {
+        border-color: rgba(52, 211, 153, 0.4);
+        color: #34d399;
+        box-shadow: 0 0 12px rgba(52, 211, 153, 0.15), inset 0 0 8px rgba(52, 211, 153, 0.05);
+    }
+
+    #getlowcsat:hover {
+        border-color: rgba(248, 113, 113, 0.4);
+        color: #f87171;
+        box-shadow: 0 0 12px rgba(248, 113, 113, 0.15), inset 0 0 8px rgba(248, 113, 113, 0.05);
+    }
+
+    #parsechat:hover {
+        border-color: rgba(167, 139, 250, 0.4);
+        color: #a78bfa;
+        box-shadow: 0 0 12px rgba(167, 139, 250, 0.15), inset 0 0 8px rgba(167, 139, 250, 0.05);
+    }
+
+    #showFavoritesBtn:hover {
+        color: #fbbf24 !important;
+        border-color: rgba(251, 191, 36, 0.4) !important;
+        box-shadow: 0 0 12px rgba(251, 191, 36, 0.15), inset 0 0 8px rgba(251, 191, 36, 0.05) !important;
+    }
+
+    #clearall:hover {
+        color: #f87171 !important;
+        border-color: rgba(248, 113, 113, 0.4) !important;
+        box-shadow: 0 0 12px rgba(248, 113, 113, 0.15), inset 0 0 8px rgba(248, 113, 113, 0.05) !important;
+    }
+
+    #hideMeStat:hover {
+        color: #f87171 !important;
+        border-color: rgba(248, 113, 113, 0.4) !important;
+        box-shadow: 0 0 12px rgba(248, 113, 113, 0.15), inset 0 0 8px rgba(248, 113, 113, 0.05) !important;
+    }
+
+    /* Grid Buttons */
+    .action-buttons-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        padding-top: 14px;
+        margin-top: 5px;
+        position: relative;
+        z-index: 1;
+    }
+
     .action-buttons-grid .adds-glass-btn { width: 100%; box-sizing: border-box; }
 
     /* Flex Layouts */
-    .adds-flex-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .adds-flex-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+        position: relative;
+        z-index: 1;
+    }
 
-    /* Custom Scrollbar */
-    .adds-content-area { max-height: 380px; overflow-y: auto; margin-top: 15px; padding-right: 8px; }
-    .adds-content-area::-webkit-scrollbar { width: 6px; }
-    .adds-content-area::-webkit-scrollbar-track { background: #0a0d14; border-radius: 4px; }
-    .adds-content-area::-webkit-scrollbar-thumb { background: #282e3e; border-radius: 4px; border: 1px solid #131722; }
-    .adds-content-area::-webkit-scrollbar-thumb:hover { background: #00f0ff; box-shadow: 0 0 10px #00f0ff; }
+    /* Custom Scrollbar — Neon */
+    .adds-content-area {
+        max-height: 380px;
+        overflow-y: auto;
+        margin-top: 14px;
+        padding-right: 6px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .adds-content-area::-webkit-scrollbar { width: 4px; }
+    .adds-content-area::-webkit-scrollbar-track { background: transparent; }
+    .adds-content-area::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 4px; }
+    .adds-content-area::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.5); }
 
     /* Link & Action Icons */
-    .adds-chat-link { color: #cbd5e1; text-decoration: none; font-weight: 600; transition: color 0.2s; }
-    .adds-chat-link:hover { color: #00f0ff; text-shadow: 0 0 8px rgba(0,240,255,0.4); }
-    .adds-action-icon { cursor: pointer; margin-left: 8px; transition: all 0.2s; display: inline-block; font-size: 16px; opacity: 0.8; }
-    .adds-action-icon:hover { transform: scale(1.2); opacity: 1; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+    .adds-chat-link {
+        color: #cbd5e1;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
 
-    .stat-label-group { margin-bottom: 10px; border-bottom: 1px solid #1f2430; padding-bottom: 12px; }
+    .adds-chat-link:hover {
+        color: #22d3ee;
+        text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+    }
 
-    /* === CYBER STAT CARDS === */
-    .stat-cards-row { display: flex; gap: 8px; margin-bottom: 10px; }
-    .stat-card { flex: 1; background: #131722; border-radius: 10px; padding: 14px 6px; text-align: center; border: 1px solid #1f2430; transition: all 0.3s ease; position: relative; overflow: hidden; }
-    .stat-card:hover { transform: translateY(-3px); background: #161b28; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
-    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 10px 10px 0 0; }
+    .adds-action-icon {
+        cursor: pointer;
+        margin-left: 8px;
+        transition: all 0.2s ease;
+        display: inline-block;
+        font-size: 15px;
+        opacity: 0.7;
+    }
 
-    .stat-card-touched::before { background: #00f0ff; box-shadow: 0 0 15px #00f0ff; }
-    .stat-card-closed::before { background: #39ff14; box-shadow: 0 0 15px #39ff14; }
-    .stat-card-transferred::before { background: #b829ea; box-shadow: 0 0 15px #b829ea; }
+    .adds-action-icon:hover {
+        transform: scale(1.15);
+        opacity: 1;
+        filter: drop-shadow(0 0 5px rgba(255,255,255,0.3));
+    }
 
-    .stat-card-icon { font-size: 12px; margin-bottom: 8px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-card-value { display: block; font-size: 28px; font-weight: 800; letter-spacing: -1px; margin-top: 4px; font-family: 'Inter', sans-serif; }
+    .stat-label-group {
+        margin-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        padding-bottom: 12px;
+        position: relative;
+        z-index: 1;
+    }
 
-    .stat-card-touched .stat-card-value { color: #00f0ff; text-shadow: 0 0 12px rgba(0,240,255,0.4); }
-    .stat-card-closed .stat-card-value { color: #39ff14; text-shadow: 0 0 12px rgba(57,255,20,0.4); }
-    .stat-card-transferred .stat-card-value { color: #b829ea; text-shadow: 0 0 12px rgba(184,41,234,0.4); }
+    /* === NEON GLASS STAT CARDS === */
+    .stat-cards-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+    }
 
-    /* === PREMIUM CYBER CSAT === */
-    .csat-premium-container { background: #0f131c; border-radius: 12px; padding: 18px; margin-bottom: 16px; border: 1px solid #1f2430; box-shadow: inset 0 0 30px rgba(0,0,0,0.6); animation: fadeIn 0.4s ease-out; }
-    @keyframes fadeIn { from { opacity:0; transform: translateY(-10px);} to { opacity:1; transform: translateY(0);} }
-    .csat-premium-header { text-align: center; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px dashed #282e3e; }
-    .csat-premium-score { font-size: 42px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
-    .csat-premium-total { color: #64748b; font-size: 11px; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-    .csat-premium-bars { display: flex; flex-direction: column; gap: 12px; }
-    .csat-premium-row { display: flex; align-items: center; gap: 12px; }
-    .csat-premium-label { width: 32px; text-align: center; font-weight: 800; font-size: 15px; }
-    .csat-premium-bar-wrap { flex: 1; height: 18px; background: #131722; border-radius: 4px; border: 1px solid #1f2430; overflow: hidden; position: relative; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
-    .csat-premium-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; box-sizing: border-box; min-width: 28px; position: relative; }
-    .csat-premium-count { font-size: 11px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); z-index: 2; }
-    .csat-premium-percent { width: 45px; text-align: right; font-size: 12px; color: #94a3b8; font-weight: 700; }
+    .stat-card {
+        flex: 1;
+        position: relative;
+        background: linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 12px 6px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
 
-    /* === CYBER 2ЛТП LIST === */
-    .line2-section-title { color: #00f0ff; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; font-size: 12px; margin: 20px 0 12px; text-shadow: 0 0 8px rgba(0,240,255,0.4); display: flex; align-items: center; gap: 8px; }
-    .line2-section-title::before { content: '⚡'; text-shadow: none; font-size: 14px; }
-    .line2-list { display: flex; flex-direction: column; gap: 8px; }
-    .line2-item { display: flex; align-items: center; justify-content: space-between; background: #131722; border-radius: 8px; padding: 10px 14px; border: 1px solid #1f2430; transition: all 0.2s ease; }
-    .line2-item:hover { background: #161b28; border-color: #00f0ff; box-shadow: inset 0 0 15px rgba(0,240,255,0.05), 0 4px 10px rgba(0,0,0,0.4); transform: translateX(4px); }
-    .line2-left { display: flex; align-items: center; gap: 10px; }
-    .line2-arrow { color: #b829ea; font-size: 12px; text-shadow: 0 0 8px rgba(184,41,234,0.6); }
-    .line2-actions { display: flex; gap: 10px; align-items: center; }
-    .line2-empty { color: #475569; font-style: italic; font-size: 12px; padding: 10px 4px; text-align: center; }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 40%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+        border-radius: 12px 12px 0 0;
+        pointer-events: none;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 20px var(--card-glow, transparent);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-card-touched { --card-glow: rgba(34, 211, 238, 0.1); }
+    .stat-card-closed { --card-glow: rgba(52, 211, 153, 0.1); }
+    .stat-card-transferred { --card-glow: rgba(167, 139, 250, 0.1); }
+
+    .stat-card-touched::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 2px;
+        background: linear-gradient(90deg, transparent, #22d3ee, transparent);
+        opacity: 0.6;
+    }
+
+    .stat-card-closed::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 2px;
+        background: linear-gradient(90deg, transparent, #34d399, transparent);
+        opacity: 0.6;
+    }
+
+    .stat-card-transferred::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 2px;
+        background: linear-gradient(90deg, transparent, #a78bfa, transparent);
+        opacity: 0.6;
+    }
+
+    .stat-card-icon {
+        font-size: 10px;
+        margin-bottom: 6px;
+        color: #94a3b8;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-card-value {
+        display: block;
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: -1px;
+        margin-top: 2px;
+        font-family: 'Inter', sans-serif;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-card-touched .stat-card-value { color: #22d3ee; text-shadow: 0 0 12px rgba(34, 211, 238, 0.4); }
+    .stat-card-closed .stat-card-value { color: #34d399; text-shadow: 0 0 12px rgba(52, 211, 153, 0.4); }
+    .stat-card-transferred .stat-card-value { color: #a78bfa; text-shadow: 0 0 12px rgba(167, 139, 250, 0.4); }
+
+    /* === NEON GLASS CSAT === */
+    .csat-premium-container {
+        background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
+        animation: nuFadeIn 0.4s ease-out;
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+    }
+
+    .csat-premium-container::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 40%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%);
+        border-radius: 12px 12px 0 0;
+        pointer-events: none;
+    }
+
+    .csat-premium-header {
+        text-align: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        position: relative;
+        z-index: 1;
+    }
+
+    .csat-premium-score {
+        font-size: 40px;
+        font-weight: 900;
+        letter-spacing: -1.5px;
+        line-height: 1;
+    }
+
+    .csat-premium-total {
+        color: #64748b;
+        font-size: 10px;
+        margin-top: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 700;
+    }
+
+    .csat-premium-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .csat-premium-row { display: flex; align-items: center; gap: 10px; }
+
+    .csat-premium-label {
+        width: 32px;
+        text-align: center;
+        font-weight: 900;
+        font-size: 14px;
+    }
+
+    .csat-premium-bar-wrap {
+        flex: 1;
+        height: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    .csat-premium-bar-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 8px;
+        box-sizing: border-box;
+        min-width: 28px;
+        position: relative;
+        box-shadow: 0 0 10px var(--bar-glow, transparent);
+    }
+
+    .csat-premium-count {
+        font-size: 10px;
+        font-weight: 900;
+        color: #fff;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        z-index: 2;
+    }
+
+    .csat-premium-percent {
+        width: 45px;
+        text-align: right;
+        font-size: 11px;
+        color: #94a3b8;
+        font-weight: 700;
+    }
+
+    /* === NEON GLASS 2ЛТП LIST === */
+    .line2-section-title {
+        color: #22d3ee;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 800;
+        font-size: 11px;
+        margin: 18px 0 10px;
+        text-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .line2-section-title::before { content: '⚡'; text-shadow: none; font-size: 13px; }
+
+    .line2-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .line2-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+        border-radius: 10px;
+        padding: 8px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .line2-item::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 40%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+        border-radius: 10px 10px 0 0;
+        pointer-events: none;
+    }
+
+    .line2-item:hover {
+        background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+        border-color: rgba(34, 211, 238, 0.15);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4), 0 0 15px rgba(34, 211, 238, 0.05);
+        transform: translateX(4px);
+    }
+
+    .line2-left { display: flex; align-items: center; gap: 8px; position: relative; z-index: 1; }
+
+    .line2-arrow {
+        color: #a78bfa;
+        font-size: 11px;
+        text-shadow: 0 0 8px rgba(167, 139, 250, 0.5);
+    }
+
+    .line2-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .line2-empty {
+        color: #475569;
+        font-style: italic;
+        font-size: 11px;
+        padding: 10px 4px;
+        text-align: center;
+    }
 </style>
 
 <div class="adds-glass-container">
@@ -130,12 +592,142 @@ var win_Stat = `
                 <input id="commenttosearch" class="adds-glass-input" autocomplete="off" placeholder="Слово/фраза для поиска по заметкам" style="width: 100%; box-sizing: border-box;">
                 <div style="display: flex; gap: 10px;">
                     <select id="thematics" class="adds-glass-select" style="flex: 1;">
-                        <option class="${typeof selecttheme !== 'undefined' ? selecttheme : ''}" value="skmob">Skyeng👨‍🎓Mob</option>
-                        <option value="1804">-Авторизация</option>
-                        <option value="1805">-Домашка</option>
-                        <option value="1810">-Чат</option>
-                        <option value="payf">Проблемы с оплатой</option>
-                        <option value="hwtr">Проблемы с ДЗ</option>
+                  <option  value="skmob">Skyeng👨‍🎓Mob</option>
+                    <option value="1804">-Авторизация</option>
+                    <option value="1805">-Домашка</option>
+                    <option value="1806">-Оплата</option>
+                    <option value="1807">-Профиль</option>
+                    <option value="1808">-Тренажер слов</option>
+                    <option value="1809">-Уроки</option>
+                    <option value="1810">-Чат</option>
+
+                    <option  value="tmob">Teachers👽Mob</option>
+                    <option value="1833">-Авторизация</option>
+                    <option value="1836">-Виджет расписания</option>
+                    <option value="1839">-Чат</option>
+                    <option value="1835">-Виджет финансов</option>
+                    <option value="1838">-Профиль</option>
+                    <option value="1840">-Сторис</option>
+                    <option value="1837">-Стр расписания</option>
+                    <option value="1834">-Стр финансов</option>
+
+                    <option  value="sksmpar">Skysmart👪родит</option>
+                    <option value="1884">-Другое</option>
+                    <option value="1883">-Материалы</option>
+                    <option value="1880">-Предметы и баланс</option>
+                    <option value="1881">-Профиль родителя</option>
+                    <option value="1879">-Расписание</option>
+                    <option value="1882">-Чат</option>
+
+                    <option  value="solanka">Different</option>
+                    <option value="2034">-Прочее</option>
+                    <option value="2030">-Slack-вход</option>
+                    <option value="2020">-Логи ур У</option>
+                    <option value="2019">-Логи ур П</option>
+                    <option value="2018">-БД ур оператор</option>
+                    <option value="2017">-БД ур система</option>
+
+                    <option  value="payf">Проблемы с оплатой</option>
+                    <option value="1077">-Вина школы</option>
+                    <option value="1658">-Консультация</option>
+                    <option value="1661">-Карта У</option>
+                    <option value="1662">-Сбой</option>
+                    <option value="1660">-Подписки</option>
+
+                    <option  value="hwtr">Проблемы с ДЗ</option>
+                    <option value="1744">-Контент</option>
+                    <option value="1745">-Оценка</option>
+                    <option value="1746">-Словарь</option>
+                    <option value="1747">-Упражнение</option>
+
+                    <option  value="svyaz">Проблемы связь</option>
+                    <option value="1581">-ОС/брауз ниж мин</option>
+                    <option value="1589">-Конс раб св</option>
+                    <option value="1582">-Корп с/ус</option>
+                    <option value="1583">-ОС/браузер</option>
+                    <option value="1586">-ПК</option>
+                    <option value="1584">-Гарнитура</option>
+                    <option value="1585">-Камера</option>
+                    <option value="1580">-Блок ПО</option>
+                    <option value="1594">-Не подерж брауз</option>
+                    <option value="1595">-Не под кам гарн пк</option>
+                    <option value="1593">-Сбой платф</option>
+                    <option value="1592">-Сб задерж кам</option>
+                    <option value="1587">-Инет ниж мин</option>
+                    <option value="1590">-Сб плат блк прер</option>
+                    <option value="1588">-Хар ниж мин</option>
+                    <option value="1591">-Сб задерж зв</option>
+
+                    <option  value="lkp">Проблемы ЛКП</option>
+                    <option value="1721">-Группа</option>
+                    <option value="1714">-Чат</option>
+                    <option value="1719">-Финансы</option>
+                    <option value="1717">-Упражнения</option>
+                    <option value="1712">-Карта роста</option>
+                    <option value="1716">-Настройки</option>
+                    <option value="1718">-Перерыв</option>
+                    <option value="1715">-Профиль</option>
+                    <option value="1720">-Раб на пров</option>
+                    <option value="1713">-Расписание</option>
+
+                    <option  value="lku">Проблемы ЛКУ</option>
+                    <option value="1708">-Чат</option>
+                    <option value="1710">-Профиль</option>
+                    <option value="1706">-Видж прогр</option>
+                    <option value="1707">-Ис зан/портф</option>
+                    <option value="1709">-Семья</option>
+                    <option value="1711">-Настройки</option>
+                    <option value="1705">-Навыки</option>
+                    <option value="1704">-Грамматика</option>
+
+                    <option  value="problvh">Проблемы вход</option>
+                    <option value="1632">-Не привяз почт/тел</option>
+                    <option value="1635">-Данные</option>
+                    <option value="1634">-Сброс пароля</option>
+                    <option value="1631">-Консультация</option>
+                    <option value="1633">-Сбой</option>
+
+                    <option  value="problpodk">Проблемы подкл</option>
+                    <option value="1624">-Истек подпис</option>
+                    <option value="1627">-Консультациия</option>
+                    <option value="1629">-Нет кн входа</option>
+                    <option value="1628">-У не в ГУ</option>
+                    <option value="1625">-Ур в др вр</option>
+                    <option value="1626">-У отпуск</option>
+                    <option value="1630">-Неакт кн вх</option>
+
+                    <option  value="lesfunc">Функционал урок</option>
+                    <option value="1772">-STT</option>
+                    <option value="1773">-TTT</option>
+                    <option value="1767">-Вложения</option>
+                    <option value="1771">-Демонстрация экр</option>
+                    <option value="1768">-Доска</option>
+                    <option value="2037">-Заметки</option>
+                    <option value="1775">-Отпр ДЗ на ур</option>
+                    <option value="1770">-Перекл материалов</option>
+                    <option value="1776">-Ауд/вид плеер</option>
+                    <option value="1769">-Словарь на ур</option>
+                    <option value="1774">-Упражн на ур</option>
+
+                    <option  value="feedbk">Отзывы и пожел</option>
+                    <option value="1970">-Vim-контент</option>
+                    <option value="1971">-Vim-оценка</option>
+                    <option value="1972">-Vim-словарь</option>
+                    <option value="1973">-Vim-упражнения</option>
+
+                    <option  value="1966">-ЛК-ОС род</option>
+                    <option value="1965">-ЛК-пер,отм ур</option>
+                    <option value="1967">-ЛК-профиль</option>
+                    <option value="1968">-ЛК-семья</option>
+                    <option value="1969">-ЛК чат</option>
+
+                    <option  value="1974">-App Skyeng</option>
+                    <option value="1975">-App Teachers</option>
+                    <option value="1979">-App Skypro</option>
+                    <option value="1976">-App класс</option>
+                    <option value="1977">-App решения</option>
+                    <option value="1978">-App Skysmart род</option>
+                    <option value="1980">-Прочее</option>
                     </select>
                     <button class="adds-glass-btn" id="gofindit">Search</button>
                     <button class="adds-glass-btn" id="changetheme">Change</button>
@@ -148,7 +740,6 @@ var win_Stat = `
                 <button class="adds-glass-btn" id="parsechat">Поиск</button>
                 <button class="adds-glass-btn" id="showFavoritesBtn" style="color:#fbbf24; border-color: rgba(251,191,36,0.3);">Избранное ⭐</button>
                 <button class="adds-glass-btn" id="clearall" style="color:#ef4444; border-color: rgba(239,68,68,0.3);">Очистить</button>
-                <button class="adds-glass-btn" id="getfile" style="color:#39ff14; border-color: rgba(57,255,20,0.3);">Экспорт 🔰</button>
             </div>
 
             <div id="chatcoutnsinfo" class="adds-content-area">
@@ -181,30 +772,201 @@ var win_Stat = `
 // ---------- Разметка ОТДЕЛЬНОГО окна избранного ----------
 var win_Fav = `
 <style>
-    .fav-glass-container { display: flex; width: 440px; font-family: 'Inter', 'Segoe UI', sans-serif; }
-    .fav-glass-panel { width: 100%; background: #0a0d14; border: 1px solid #fbbf24; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 20px rgba(251,191,36,0.1); color: #a1aab8; padding: 18px; }
-    .fav-header { cursor: grab; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px dashed #1f2430; padding-bottom: 12px; }
-    .fav-title { color: #fbbf24; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(251,191,36,0.3); }
-    .fav-btn { background: #131722; border: 1px solid #ef4444; border-radius: 6px; color: #ef4444; padding: 6px 10px; cursor: pointer; font-size: 11px; font-weight: bold; transition: all 0.2s; }
-    .fav-btn:hover { background: #1a202c; color: #fff; box-shadow: 0 0 10px rgba(239,68,68,0.5); }
+     /* === FAVORITES WINDOW — NEON GLASS === */
+    .fav-glass-container {
+        display: flex;
+        width: 440px;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
 
-    .fav-content { max-height: 400px; overflow-y: auto; padding-right: 6px; }
-    .fav-content::-webkit-scrollbar { width: 6px; }
-    .fav-content::-webkit-scrollbar-track { background: #0a0d14; }
-    .fav-content::-webkit-scrollbar-thumb { background: #282e3e; border-radius: 4px; }
+    .fav-glass-panel {
+        width: 100%;
+        position: relative;
+        background:
+            linear-gradient(135deg, rgba(26, 26, 44, 0.94) 0%, rgba(18, 18, 34, 0.96) 100%),
+            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23242850' fill-opacity='0.25'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        border: 1px solid rgba(251, 191, 36, 0.2);
+        border-radius: 16px;
+        box-shadow:
+            0 0 0 1px rgba(0, 0, 0, 0.5),
+            0 20px 50px rgba(0, 0, 0, 0.7),
+            0 0 30px rgba(251, 191, 36, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+        padding: 16px;
+        overflow: hidden;
+        animation: nuFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-    .fav-empty { text-align: center; padding: 40px 20px; color: #475569; font-size: 13px; }
+    .fav-glass-panel::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -50%; right: -50%;
+        height: 2px;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            #fbbf24 30%,
+            #fb923c 60%,
+            transparent 100%);
+        background-size: 200% 100%;
+        animation: nuBorderFlow 3s linear infinite;
+        opacity: 0.6;
+        pointer-events: none;
+    }
 
-    .fav-item { margin-bottom: 10px; background: #131722; padding: 12px; border-radius: 8px; border: 1px solid #1f2430; border-left: 3px solid #fbbf24; transition: all 0.2s ease; }
-    .fav-item:hover { background: #161b28; border-color: #fbbf24; box-shadow: inset 0 0 15px rgba(251,191,36,0.05); transform: translateX(3px); }
-    .fav-link { color: #e2e8f0; text-decoration: none; font-weight: 700; transition: color 0.2s; font-size: 14px; }
+    .fav-glass-panel::after {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
+        background: radial-gradient(circle at 50% 0%, rgba(251, 191, 36, 0.06) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .fav-header {
+        cursor: grab;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        padding-bottom: 12px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .fav-title {
+        color: #fbbf24;
+        font-weight: 900;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        text-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+    }
+
+    .fav-btn {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(248, 113, 113, 0.3);
+        border-radius: 8px;
+        color: #f87171;
+        padding: 6px 10px;
+        cursor: pointer;
+        font-size: 10px;
+        font-weight: 700;
+        transition: all 0.25s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .fav-btn:hover {
+        background: rgba(248, 113, 113, 0.1);
+        border-color: rgba(248, 113, 113, 0.5);
+        color: #fff;
+        box-shadow: 0 0 12px rgba(248, 113, 113, 0.15);
+        transform: translateY(-1px);
+    }
+
+    .fav-content {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 4px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .fav-content::-webkit-scrollbar { width: 4px; }
+    .fav-content::-webkit-scrollbar-track { background: transparent; }
+    .fav-content::-webkit-scrollbar-thumb { background: rgba(251, 191, 36, 0.3); border-radius: 4px; }
+    .fav-content::-webkit-scrollbar-thumb:hover { background: rgba(251, 191, 36, 0.5); }
+
+    .fav-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: #475569;
+        font-size: 12px;
+    }
+
+    .fav-item {
+        margin-bottom: 8px;
+        background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-left: 3px solid #fbbf24;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .fav-item::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 40%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+        border-radius: 10px 10px 0 0;
+        pointer-events: none;
+    }
+
+    .fav-item:hover {
+        background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+        border-color: rgba(251, 191, 36, 0.15);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4), 0 0 15px rgba(251, 191, 36, 0.05);
+        transform: translateX(3px);
+    }
+
+    .fav-link {
+        color: #e2e8f0;
+        text-decoration: none;
+        font-weight: 700;
+        transition: color 0.2s;
+        font-size: 13px;
+        position: relative;
+        z-index: 1;
+    }
+
     .fav-item:hover .fav-link { color: #fbbf24; }
-    .fav-actions { margin-top: 10px; border-top: 1px solid #1f2430; padding-top: 8px; display: flex; gap: 12px; }
-    .fav-icon { cursor: pointer; font-size: 16px; transition: transform 0.2s; opacity: 0.8; }
-    .fav-icon:hover { transform: scale(1.2); opacity: 1; }
-    .fav-comment { font-size: 12px; color: #94a3b8; margin-top: 6px; }
-    .fav-comment-text { color: #39ff14; font-weight: 500; }
-    .fav-date { color: #475569; font-size: 10px; float: right; margin-top: 2px; }
+
+    .fav-actions {
+        margin-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 8px;
+        display: flex;
+        gap: 12px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .fav-icon {
+        cursor: pointer;
+        font-size: 15px;
+        transition: all 0.2s ease;
+        opacity: 0.7;
+    }
+
+    .fav-icon:hover {
+        transform: scale(1.15);
+        opacity: 1;
+        filter: drop-shadow(0 0 5px rgba(255,255,255,0.3));
+    }
+
+    .fav-comment {
+        font-size: 11px;
+        color: #94a3b8;
+        margin-top: 6px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .fav-comment-text { color: #34d399; font-weight: 600; }
+
+    .fav-date {
+        color: #475569;
+        font-size: 10px;
+        float: right;
+        margin-top: 2px;
+    }
 </style>
 <div class="fav-glass-container">
     <div class="fav-glass-panel">
