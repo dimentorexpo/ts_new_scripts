@@ -162,22 +162,22 @@ async function init_settings() {
             [style*="background-color"]:not([style*="rgb(255, 255, 255)"]):not([style*="#fff"]):not([style*="#FFF"]):not([style*="white"]) {
             }
 
-            /* ═══ 9. ОБЩИЙ ФОН ДЛЯ ОБЫЧНЫХ СООБЩЕНИЙ (серый) ═══ */
+                      /* ═══ 9. ОБЩИЙ ФОН ДЛЯ ОБЫЧНЫХ СООБЩЕНИЙ (серый) ═══ */
             [class*="ChatMessages_RegularMessage__"]:not([data-author-type="bot"]):not([data-author-type="user"]):not([data-author-type="user-with-bot"]) {
                 background-color: rgba(255, 255, 255, 0.05) !important;
-                border-radius: 12px !important;
-                padding: 8px !important;
-                margin: 4px 0 !important;
+                border-radius: 8px !important;
+                padding: 3px 6px !important;
+                margin: 2px 0 !important;
             }
             [class*="ChatMessages_RegularMessageHeader"] {
                 background: transparent !important;
-                padding: 6px 10px !important;
+                padding: 2px 4px !important;
             }
             [class*="ChatMessages_HtmlContent__"] {
                 background-color: rgba(255, 255, 255, 0.04) !important;
                 color: ${textColor} !important;
-                border-radius: 0 0 10px 10px;
-                padding: 10px !important;
+                border-radius: 0 0 6px 6px;
+                padding: 4px 6px !important;
                 display: block !important;
             }
 
@@ -185,9 +185,9 @@ async function init_settings() {
             [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] {
                 background-color: rgba(46, 125, 50, 0.22) !important;
                 border: 1px solid rgba(76, 175, 80, 0.35) !important;
-                border-radius: 12px !important;
-                padding: 8px !important;
-                margin: 4px 0 !important;
+                border-radius: 8px !important;
+                padding: 3px 6px !important;
+                margin: 2px 0 !important;
             }
             [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="ChatMessages_Author__"],
             [class*="ChatMessages_RegularMessage__"][data-author-type="bot"] [class*="ChatMessages_Date__"],
@@ -205,9 +205,9 @@ async function init_settings() {
             [class*="ChatMessages_RegularMessage__"][data-author-type="user-with-bot"] {
                 background-color: rgba(46, 125, 50, 0.22) !important;
                 border: 1px solid rgba(76, 175, 80, 0.35) !important;
-                border-radius: 12px !important;
-                padding: 8px !important;
-                margin: 4px 0 !important;
+                border-radius: 8px !important;
+                padding: 3px 6px !important;
+                margin: 2px 0 !important;
             }
             [class*="ChatMessages_RegularMessage__"][data-author-type="user-with-bot"] [class*="ChatMessages_Author__"],
             [class*="ChatMessages_RegularMessage__"][data-author-type="user-with-bot"] [class*="ChatMessages_Date__"],
@@ -220,41 +220,49 @@ async function init_settings() {
             [class*="ChatMessages_RegularMessage__"][data-author-type="user"] {
                 background-color: rgba(255, 152, 0, 0.2) !important;
                 border: 1px solid rgba(255, 152, 0, 0.4) !important;
-                border-radius: 12px !important;
-                padding: 8px !important;
-                margin: 4px 0 !important;
+                border-radius: 8px !important;
+                padding: 3px 6px !important;
+                margin: 2px 0 !important;
             }
             [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"],
             [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Date__"],
             [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
-                color: #fff3e0 !important; /* кремовый, отлично на оранжевом */
+                color: #fff3e0 !important;
                 background: transparent !important;
             }
             [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"] {
                 font-weight: 600 !important;
             }
 
-                        /* ═══ 13. ЗАМЕТКИ (CommentMessagesGroup) — серый ═══ */
+            /* ═══ 13. ЗАМЕТКИ (CommentMessagesGroup) — серый ═══ */
             [class*="ChatMessages_CommentMessagesGroup__"] {
-                background-color: rgba(150, 157, 160, 0.53) !important;
+                background-color: rgba(96, 125, 139, 0.25) !important;
                 border: 1px solid rgba(96, 125, 139, 0.4) !important;
-                border-radius: 12px !important;
-
-                margin: 6px 0 !important;
+                border-radius: 8px !important;
+                padding: 4px 8px !important;
+                margin: 3px 0 !important;
             }
-            /* Внутренний RegularMessage в заметке — прозрачный, чтобы не перебивать серый фон */
             [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_RegularMessage__"] {
                 background: transparent !important;
                 border: none !important;
                 padding: 0 !important;
                 margin: 0 !important;
             }
-            /* Текст внутри заметок */
             [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_Author__"],
             [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_Date__"],
             [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_HtmlContent__"] {
-                color: #eceff1 !important; /* мягкий светло-серый */
+                color: #eceff1 !important;
                 background: transparent !important;
+            }
+            /* ССЫЛКИ В ЗАМЕТКАХ */
+            [class*="ChatMessages_CommentMessagesGroup__"] a,
+            [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_HtmlContent__"] a {
+                color: #81d4fa !important;
+                text-decoration: underline !important;
+                text-underline-offset: 2px !important;
+            }
+            [class*="ChatMessages_CommentMessagesGroup__"] a:hover {
+                color: #b3e5fc !important;
             }
         `;
         }
