@@ -50,6 +50,11 @@ async function init_settings() {
     // Универсальная функция для цвета с учетом IFRAME и динамических хэшей классов
     // ====================================================================================
     const applyAppBgColor = () => {
+        // ⛔ Не применять стили на странице авторизации
+        if (window.location.href === 'https://skyeng.autofaq.ai/login') {
+            return;
+        }
+
         const color = Settings.get('appBgColor') || '#FFFFFF';
         const isWhite = color.toUpperCase() === '#FFFFFF';
 
@@ -785,6 +790,16 @@ async function init_settings() {
         scaleSlider: document.getElementById('scaleSliderAF'),
         scaleVal: document.getElementById('scale_val'),
     };
+
+    // Загрузить сохранённое значение при открытии настроек
+    if (ui.statusList) {
+        ui.statusList.value = Settings.get('defaultStatusAfterLogin') || 'Online';
+
+        // Сохранять при изменении
+        ui.statusList.addEventListener('change', (e) => {
+            Settings.set('defaultStatusAfterLogin', e.target.value);
+        });
+    }
 
     const applyScale = (val, isInit = false) => {
         const target = document.getElementById('AF_helper') || document.getElementById('addTmpWrapper');

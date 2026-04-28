@@ -4,6 +4,77 @@
  * Filename: refactor-neon-glass.js
  */
 
+async function operstatusleftbar() {
+    try {
+        const key = await waitForOpSectionNew();
+        if (!key || !OP_GROUP_CONFIG[key]) {
+            if (key !== null) statusContainer.innerHTML = '';
+            return;
+        }
+
+        const cfg = OP_GROUP_CONFIG[key];
+        const response = await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
+            headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
+            credentials: "include"
+        });
+        const result = await response.json();
+
+        const tpQueue = getUnassignedCount(result, OP_GROUP_CONFIG['ТП']);
+        const tpOsQueue = getUnassignedCount(result, OP_GROUP_CONFIG['ТП ОС']);
+        const currentQueue = getUnassignedCount(result, cfg);
+
+        if (key === 'ТП ОС' && tpQueue > 0) {
+            showEmergencyQueueAlert(tpQueue);
+        }
+
+        let opstats = [];
+        if (key === 'ТП ОС') {
+            const map = new Map();
+            filterOperatorsLocal(result, OP_GROUP_CONFIG['ТП']).forEach(o => map.set(o.operator.id, o));
+            filterOperatorsLocal(result, OP_GROUP_CONFIG['ТП ОС']).forEach(o => map.set(o.operator.id, o));
+            opstats = Array.from(map.values());
+        } else {
+            opstats = filterOperatorsLocal(result, cfg);
+        }
+
+        const stats = {
+            online: opstats.filter(o => o.operator.status === 'Online').length,
+            busy: opstats.filter(o => o.operator.status === 'Busy').length,
+            pause: opstats.filter(o => o.operator.status === 'Pause').length
+        };
+
+        const hidesummary = localStorage.getItem('hidesummaryflag') === '1';
+
+        statusContainer.innerHTML = `
+            <div class="op-st-queue-box">
+                ${(key === 'ТП' || key === 'ТП ОС')
+                ? `🚧 ОЧЕРЕДЬ <br> ТП:  <span style="color: ${tpQueue > 10 ? '#ff2a2a' : '#fca5a5'}; font-size: 16px; font-weight: 900; text-shadow: 0 0 10px ${tpQueue > 10 ? 'rgba(255,42,42,0.5)' : 'rgba(252,165,165,0.3)'}">${tpQueue}${tpQueue > 10 ? ' ⚠️' : ''}</span> | ТП ОС: ${tpOsQueue}`
+                : `Очередь: ${currentQueue}`}
+            </div>
+            <div class="op-st-list">${renderOperatorRows(opstats)}</div>
+            <div class="op-st-toggle" id="op-st-toggle-btn">
+                ${hidesummary ? '🔽 Сводка' : '🔼 Скрыть'}
+            </div>
+            <div id="op-st-stats-panel" class="op-st-stats-grid" style="display: ${hidesummary ? 'none' : 'grid'}">
+                <div class="op-st-stat-item" style="border-left: 3px solid #10b981;">
+                    <span style="color: #94a3b8">Онлайн</span>
+                    <b style="color: #10b981; text-shadow: 0 0 10px rgba(16,185,129,0.4)">${stats.online}</b>
+                </div>
+                <div class="op-st-stat-item" style="border-left: 3px solid #f59e0b;">
+                    <span style="color: #94a3b8">Заняты</span>
+                    <b style="color: #f59e0b; text-shadow: 0 0 10px rgba(245,158,11,0.4)">${stats.busy}</b>
+                </div>
+                <div class="op-st-stat-item" style="border-left: 3px solid #ef4444;">
+                    <span style="color: #94a3b8">Перерыв</span>
+                    <b style="color: #ef4444; text-shadow: 0 0 10px rgba(239,68,68,0.4)">${stats.pause}</b>
+                </div>
+            </div>
+        `;
+
+        attachOpHandlers();
+    } catch (e) { console.error('OpStatus Error:', e); }
+}
+
 let opStatusInterval;
 let lastAlertTime = 0;
 const statusContainer = document.createElement('div');
@@ -681,76 +752,7 @@ const renderOperatorRows = (opstats) => {
         }).join('');
 };
 
-async function operstatusleftbar() {
-    try {
-        const key = await waitForOpSectionNew();
-        if (!key || !OP_GROUP_CONFIG[key]) {
-            if (key !== null) statusContainer.innerHTML = '';
-            return;
-        }
 
-        const cfg = OP_GROUP_CONFIG[key];
-        const response = await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
-            headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
-            credentials: "include"
-        });
-        const result = await response.json();
-
-        const tpQueue = getUnassignedCount(result, OP_GROUP_CONFIG['ТП']);
-        const tpOsQueue = getUnassignedCount(result, OP_GROUP_CONFIG['ТП ОС']);
-        const currentQueue = getUnassignedCount(result, cfg);
-
-        if (key === 'ТП ОС' && tpQueue > 0) {
-            showEmergencyQueueAlert(tpQueue);
-        }
-
-        let opstats = [];
-        if (key === 'ТП ОС') {
-            const map = new Map();
-            filterOperatorsLocal(result, OP_GROUP_CONFIG['ТП']).forEach(o => map.set(o.operator.id, o));
-            filterOperatorsLocal(result, OP_GROUP_CONFIG['ТП ОС']).forEach(o => map.set(o.operator.id, o));
-            opstats = Array.from(map.values());
-        } else {
-            opstats = filterOperatorsLocal(result, cfg);
-        }
-
-        const stats = {
-            online: opstats.filter(o => o.operator.status === 'Online').length,
-            busy: opstats.filter(o => o.operator.status === 'Busy').length,
-            pause: opstats.filter(o => o.operator.status === 'Pause').length
-        };
-
-        const hidesummary = localStorage.getItem('hidesummaryflag') === '1';
-
-        statusContainer.innerHTML = `
-            <div class="op-st-queue-box">
-                ${(key === 'ТП' || key === 'ТП ОС')
-                ? `🚧 ОЧЕРЕДЬ <br> ТП:  <span style="color: ${tpQueue > 10 ? '#ff2a2a' : '#fca5a5'}; font-size: 16px; font-weight: 900; text-shadow: 0 0 10px ${tpQueue > 10 ? 'rgba(255,42,42,0.5)' : 'rgba(252,165,165,0.3)'}">${tpQueue}${tpQueue > 10 ? ' ⚠️' : ''}</span> | ТП ОС: ${tpOsQueue}`
-                : `Очередь: ${currentQueue}`}
-            </div>
-            <div class="op-st-list">${renderOperatorRows(opstats)}</div>
-            <div class="op-st-toggle" id="op-st-toggle-btn">
-                ${hidesummary ? '🔽 Сводка' : '🔼 Скрыть'}
-            </div>
-            <div id="op-st-stats-panel" class="op-st-stats-grid" style="display: ${hidesummary ? 'none' : 'grid'}">
-                <div class="op-st-stat-item" style="border-left: 3px solid #10b981;">
-                    <span style="color: #94a3b8">Онлайн</span>
-                    <b style="color: #10b981; text-shadow: 0 0 10px rgba(16,185,129,0.4)">${stats.online}</b>
-                </div>
-                <div class="op-st-stat-item" style="border-left: 3px solid #f59e0b;">
-                    <span style="color: #94a3b8">Заняты</span>
-                    <b style="color: #f59e0b; text-shadow: 0 0 10px rgba(245,158,11,0.4)">${stats.busy}</b>
-                </div>
-                <div class="op-st-stat-item" style="border-left: 3px solid #ef4444;">
-                    <span style="color: #94a3b8">Перерыв</span>
-                    <b style="color: #ef4444; text-shadow: 0 0 10px rgba(239,68,68,0.4)">${stats.pause}</b>
-                </div>
-            </div>
-        `;
-
-        attachOpHandlers();
-    } catch (e) { console.error('OpStatus Error:', e); }
-}
 
 function attachOpHandlers() {
     const toggleBtn = document.getElementById('op-st-toggle-btn');

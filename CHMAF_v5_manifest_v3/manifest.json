@@ -12,28 +12,19 @@
 	},
 	"externally_connectable": {
 		"matches": [
-			"http://skyeng.autofaq.ai/",
-			"https://skyeng.autofaq.ai/",
-			"http://crm2.skyeng.ru/",
-			"https://crm2.skyeng.ru/"
+			"http://skyeng.autofaq.ai/*",
+			"https://skyeng.autofaq.ai/*",
+			"http://crm2.skyeng.ru/*",
+			"https://crm2.skyeng.ru/*"
 		]
 	},
 	"content_scripts": [
 		{
 			"js": [
-				"content.js"
-			],
-			"matches": [
-				"*://skyeng.autofaq.ai/*",
-				"*://*.skyeng.ru/*"
-			],
-			"run_at": "document_end"
-		},
-		{
-			"js": [
 				"/Extras/jquery-3.7.1.js",
 				"/Extras/moment.js",
 				"/autoFAQscripts/utils.js",
+				"/autoFAQscripts/Settings.js",
 				"/autoFAQscripts/Link.js",
 				"/autoFAQscripts/AutoRespond.js",
 				"/autoFAQscripts/AFhelper.js",
@@ -53,7 +44,6 @@
 				"/autoFAQscripts/Linksdostup.js",
 				"/autoFAQscripts/Marks.js",
 				"/autoFAQscripts/OperatorStatuse.js",
-				"/autoFAQscripts/Settings.js",
 				"/autoFAQscripts/Statistica.js",
 				"/autoFAQscripts/Smartroom.js",
 				"/autoFAQscripts/TaskCreate.js",
@@ -69,7 +59,8 @@
 				"/NG/Chekgirlyanda.js",
 				"/NG/gerljanda1.js",
 				"/NG/gerljanda2.js",
-				"/NG/snow.js"
+				"/NG/snow.js",
+				"content.js"
 			],
 			"css": [
 				"/CSS/style.css"
@@ -78,6 +69,15 @@
 				"*://skyeng.autofaq.ai/*"
 			],
 			"run_at": "document_idle"
+		},
+		{
+			"js": [
+				"content.js"
+			],
+			"matches": [
+				"*://*.skyeng.ru/*"
+			],
+			"run_at": "document_end"
 		},
 		{
 			"js": [
