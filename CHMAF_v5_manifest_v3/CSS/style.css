@@ -1870,7 +1870,7 @@
 
 	/* Основа Glassmorphism AF_Helper*/
 	.glass-panel {
-		width: 570px;
+		width: 580px;
 		background: rgba(40, 42, 54, 0.6);
 		/* Темный полупрозрачный фон */
 		backdrop-filter: blur(12px);
