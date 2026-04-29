@@ -193,11 +193,30 @@ const StylesElemValues = "cursor: pointer; width: 30px; height: 30px; font-size:
 // Блок для работы с шаблонами из гугл таблиц
 
 function requestsRed(taketaskElement) {
+    if (!taketaskElement) return;
 
-    if (taketaskElement) {
-        const text = taketaskElement.textContent.trim();
-        const color = text === 'Нет входящих запросов' ? 'white' : '#F34723';
-        taketaskElement.style.background = color;
+    const text = taketaskElement.textContent.trim();
+    // Проверяем именно "Взять запрос (любое число)"
+    const hasRequests = /Взять запрос\s*\(\d+\)/.test(text);
+
+    // Определяем, активна ли тёмная/кастомная тема
+    // (вы инжектите 'chmaf-bg-iframe' во фрейм и 'chmaf-bg-main' в основной документ)
+    const doc = taketaskElement.ownerDocument;
+    const isDark = !!(doc.getElementById('chmaf-bg-iframe') || document.getElementById('chmaf-bg-main'));
+
+    if (hasRequests) {
+        // Принудительно красим в красный с !important, чтобы перебить CSS тёмной темы
+        taketaskElement.style.setProperty('background', '#F34723', 'important');
+        taketaskElement.style.setProperty('color', '#ffffff', 'important');
+    } else {
+        // Сбрасываем inline-стили, чтобы работали стили темы/сайта
+        taketaskElement.style.removeProperty('background');
+        taketaskElement.style.removeProperty('color');
+
+        // Для светлой темы сохраняем старое поведение: "Нет входящих запросов" → белый
+        if (!isDark && text === 'Нет входящих запросов') {
+            taketaskElement.style.setProperty('background', 'white', 'important');
+        }
     }
 }
 

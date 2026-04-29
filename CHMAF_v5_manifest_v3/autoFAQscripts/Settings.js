@@ -171,6 +171,13 @@ async function init_settings() {
                 border: 1px solid ${getRgba(textColor, 0.1)} !important;
             }
 
+            [class*="Operator_TakeRequestButton"] {
+    transition: filter 0.2s ease, transform 0.1s ease;
+}
+[class*="Operator_TakeRequestButton"]:hover {
+    filter: brightness(1.15);
+}
+
             /* ═══ 7. ОБЩАЯ ТИПОГРАФИКА (базовая, будет перебита специфичными ниже) ═══ */
             [class*="Typography_Typography"],
             [class*="ChatMessages_Author"],
