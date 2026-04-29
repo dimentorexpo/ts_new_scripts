@@ -77,6 +77,40 @@ function createWindow(id, topKey, leftKey, content) { // Функция для �
 
     return windowElement;
 }
+
+// Функция для получения данных из хранилища
+async function getStorageData(keys) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.get(keys, function (result) {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+}
+
+// Переписал на современный Fetch (намного стабильнее и чище, чем XMLHttpRequest)
+async function getText() {
+    try {
+        const response = await fetch(scriptAdr);
+        if (response.ok) {
+            const data = await response.json();
+
+            // ВАЖНО: Убрали window.table. Оставляем просто присваивание к вашей переменной table
+            table = data.result;
+
+            refreshTemplates();
+        } else {
+            console.error('Ошибка при загрузке шаблонов:', response.status);
+        }
+    } catch (e) {
+        console.error('Сетевая ошибка getText:', e);
+    }
+}
+
+
 function showNotification(message) { // отображает уведомление за счет API браузера
     if (!("Notification" in window)) return false;
 
