@@ -904,31 +904,13 @@ async function doOperationsWithHistory(body = "") {  // общая функци�
     }
 }
 
-async function doOperationsWithConversations(chathash) { // общая функция для получения информации по конкретному диалогу по его хешу
-    const url = "https://skyeng.autofaq.ai/api/conversations/" + chathash; // URL с аргументом adr
-    const headers = {
-        "content-type": "application/json",
-        "x-csrf-token": aftoken // Динамически подставляем токен
-    };
-
-    try {
-        const response = await fetch(url, {
-            method: "GET", // Статичный метод GET
-            headers: headers,
-            credentials: "include", // Включение cookies
-            mode: "cors" // Режим CORS
-        });
-
-        if (!response.ok) {
-            throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
-        }
-
-        const data = await response.json(); // Преобразуем ответ в JSON
-        return data; // Возвращаем данные
-    } catch (error) {
-        console.error("Ошибка выполнения запроса:", error);
-        throw error; // Пробрасываем ошибку для обработки
-    }
+async function doOperationsWithConversations(id) {
+    const response = await fetch(`${CONFIGSTAT.API.BASE_URL}${CONFIGSTAT.API.CONVERSATIONS}/${id}`, {
+        headers: { 'x-csrf-token': aftoken },
+        credentials: 'include'
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json(); // ← парсим здесь
 }
 
 async function fetchStaticData() { // общая функция проверки статусов операторов

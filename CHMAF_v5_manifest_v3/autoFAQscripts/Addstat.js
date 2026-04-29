@@ -1177,8 +1177,7 @@ function attachEventHandlers() {
                     if (page === 1) totalArchiveItems = data.total || 1;
 
                     for (const item of data.items) {
-                        const convReq = await doOperationsWithConversations(item.conversationId);
-                        const conv = await convReq.json();
+                        const conv = await doOperationsWithConversations(item.conversationId);
 
                         processedCount++;
                         let percent = Math.min(100, Math.round((processedCount / totalArchiveItems) * 100));

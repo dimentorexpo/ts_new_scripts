@@ -74,12 +74,7 @@ async function doOperationsWithHistory(body = "") {
 async function fetchStaticDataStat() {
     return apiFetch(CONFIGSTAT.API.OPERATORS_STATS);
 }
-async function doOperationsWithConversations(id) {
-    return fetch(`${CONFIGSTAT.API.BASE_URL}${CONFIGSTAT.API.CONVERSATIONS}/${id}`, {
-        headers: { 'x-csrf-token': aftoken },
-        credentials: 'include'
-    });
-}
+
 
 // ============================================================================
 // 📊 getStats()
