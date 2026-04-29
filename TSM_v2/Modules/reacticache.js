@@ -1,6 +1,9 @@
+/* =========================================================
+   TSM ReactiCache — NEON GLASS ULTRA Refactored
+   ========================================================= */
+
 function addbuttonhesh() {
     let headers = document.querySelectorAll(".header");
-
     headers.forEach(headarea => {
         if (headarea.innerText == "Уроки" && !headarea.querySelector("#reactcachebtn")) {
             let reactcachebtn = document.createElement('span');
@@ -22,11 +25,7 @@ const observer = new MutationObserver(mutations => {
     });
 });
 
-observer.observe(document.body, {
-    childList: true,
-    subtree: true
-});
-
+observer.observe(document.body, { childList: true, subtree: true });
 
 function getTeachToken() {
     const tokenPrefix = 'token_global=';
@@ -36,23 +35,19 @@ function getTeachToken() {
         ?.substring(tokenPrefix.length);
 }
 
-
 function ClearReactCashe() {
     let myToken = getTeachToken();
     if (!myToken) {
         console.error('Токен не найден');
         return;
     }
-
     const urlBase = 'https://academic-gateway.skyeng.ru/academic/api/teacher-classroom/get-data/';
     const urlSegments = document.URL.split('/');
     const urlmatches = ['personal', 'parallel', 'group', 'webinar'];
     const currentSegment = urlSegments[7].split("?")[0];
-
     if (urlmatches.includes(currentSegment)) {
         let fullUrl = urlBase + currentSegment;
         console.log(fullUrl);
-
         fetch(fullUrl, {
             method: 'POST',
             headers: {
@@ -62,17 +57,11 @@ function ClearReactCashe() {
             body: JSON.stringify({ refreshCache: 1 })
         })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Сетевой ответ был неудачным');
-                }
+                if (!response.ok) throw new Error('Сетевой ответ был неудачным');
                 return response.json();
             })
-            .then(data => {
-                console.log('Данные ответа:', data);
-            })
-            .catch(error => {
-                console.error('Произошла ошибка при выполнении запроса:', error);
-            });
+            .then(data => { console.log('Данные ответа:', data); })
+            .catch(error => { console.error('Произошла ошибка при выполнении запроса:', error); });
     } else {
         console.error('Сегмент URL не соответствует ни одному из указанных шаблонов.');
     }

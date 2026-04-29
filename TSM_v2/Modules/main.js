@@ -1,70 +1,61 @@
-var win_addMenu = `
-<div class="menu-container-ext">
+/* =========================================================
+   TSM Main Menu — NEON GLASS ULTRA Refactored
+   ========================================================= */
+
+const win_addMenu = `
+<div class="tsm-menu-container">
     <span style="cursor: -webkit-grab;">
-
         <div>
-            <button class="hide-btn" id="hidemainmenu">С к р ы т ь</button>
+            <button class="tsm-btn tsm-btn-hide" id="hidemainmenu">С к р ы т ь</button>
         </div>
-
-        <div id="mainmenu" class="menu-ext" style="display:block;">
-            <button id="openchataddmenu" class="menu-item-ext">
-                <span class="icon-ext">💬</span>
-                <span class="text-ext">Меню чата</span>
+        <div id="mainmenu" class="tsm-menu" style="display:block;">
+            <button id="openchataddmenu" class="tsm-menu-item">
+                <span class="tsm-menu-icon">💬</span>
+                <span class="tsm-menu-text">Меню чата</span>
             </button>
-
-            <button id="openlesinfomenu" class="menu-item-ext">
-                <span class="icon-ext">ℹ</span>
-                <span class="text-ext">Инфо комнаты</span>
+            <button id="openlesinfomenu" class="tsm-menu-item">
+                <span class="tsm-menu-icon">ℹ</span>
+                <span class="tsm-menu-text">Инфо комнаты</span>
             </button>
-
-            <button id="openstudentsmenu" class="menu-item-ext">
-                <span class="icon-ext">👨‍🎓</span>
-                <span class="text-ext">Ученики (в ЛКП)</span>
+            <button id="openstudentsmenu" class="tsm-menu-item">
+                <span class="tsm-menu-icon">👨‍🎓</span>
+                <span class="tsm-menu-text">Ученики (в ЛКП)</span>
             </button>
-
-            <button id="openexercisesmenu" class="menu-item-ext">
-                <span class="icon-ext">🎯</span>
-                <span class="text-ext">Упражнения</span>
+            <button id="openexercisesmenu" class="tsm-menu-item">
+                <span class="tsm-menu-icon">🎯</span>
+                <span class="tsm-menu-text">Упражнения</span>
             </button>
-
-            <button id="VocabularyMenu" class="menu-item-ext" title="Открывает меню для работы со словарем">
-                <span class="icon-ext">📚</span>
-                <span class="text-ext">Словарь</span>
+            <button id="VocabularyMenu" class="tsm-menu-item" title="Открывает меню для работы со словарем">
+                <span class="tsm-menu-icon">📚</span>
+                <span class="tsm-menu-text">Словарь</span>
             </button>
         </div>
-
-        <div id="exercisesmenu" class="menu-ext" style="display:none;">
-            <button id="exercisekysmart" class="menu-item-ext">
-                <span class="icon-ext">🎓</span>
-                <span class="text-ext">Smartroom</span>
+        <div id="exercisesmenu" class="tsm-menu" style="display:none;">
+            <button id="exercisekysmart" class="tsm-menu-item">
+                <span class="tsm-menu-icon">🎓</span>
+                <span class="tsm-menu-text">Smartroom</span>
             </button>
-
-            <button id="exercisesttc" class="menu-item-ext">
-                <span class="icon-ext">👽</span>
-                <span class="text-ext">TTC</span>
+            <button id="exercisesttc" class="tsm-menu-item">
+                <span class="tsm-menu-icon">👽</span>
+                <span class="tsm-menu-text">TTC</span>
             </button>
-
-            <button id="exercisesComplect" class="menu-item-ext">
-                <span class="icon-ext">🛍</span>
-                <span class="text-ext">Комплектации</span>
+            <button id="exercisesComplect" class="tsm-menu-item">
+                <span class="tsm-menu-icon">🛍</span>
+                <span class="tsm-menu-text">Комплектации</span>
             </button>
-
-            <button id="backmainmenufromexercises" class="menu-item-ext">
-                <span class="icon-ext">🔙</span>
-                <span class="text-ext">Back</span>
+            <button id="backmainmenufromexercises" class="tsm-menu-item">
+                <span class="tsm-menu-icon">🔙</span>
+                <span class="tsm-menu-text">Back</span>
             </button>
         </div>
-
     </span>
-</div>
-`;
-
+</div>`;
 
 const wintAddMenu = createTSMWindow('AFMS_addMenu', 'winTopAddMenu', 'winLeftAddMenu', win_addMenu);
-wintAddMenu.className = 'wintInitialize';
+wintAddMenu.className = 'tsm-window tsm-window-main';
 
 document.querySelector('body').addEventListener('dblclick', (event) => {
-    let tags = ["INPUT", "TEXTAREA", "BUTTON", "H1", "H2", "H3", "UL", "LI", "VIM-WORD", "P", "SPAN", "TD", "TR", "TBODY", "THEAD"];
+    const tags = ["INPUT", "TEXTAREA", "BUTTON", "H1", "H2", "H3", "UL", "LI", "VIM-WORD", "P", "SPAN", "TD", "TR", "TBODY", "THEAD"];
     if (!tags.includes(event.target.tagName)) {
         wintAddMenu.style.display = "block";
         wintAddMenu.style.left = (event.clientX - 120) + "px";
@@ -74,7 +65,7 @@ document.querySelector('body').addEventListener('dblclick', (event) => {
             const [key, ...v] = c.split('=');
             return [key, decodeURIComponent(v.join('='))];
         }));
-        console.log(token)
+        console.log(token);
     }
 });
 
@@ -86,7 +77,7 @@ document.querySelector('body').addEventListener('click', (event) => {
 
 document.getElementById('hidemainmenu').onclick = function () {
     wintAddMenu.style.display = 'none';
-}
+};
 
 document.onkeydown = function (event) {
     if ((event.altKey && event.code == 'Numpad0') || (event.altKey && event.code == 'Digit0')) {
@@ -101,20 +92,19 @@ document.onkeydown = function (event) {
             wintAddMenu.style.display = 'none';
         }
     }
-}
+};
 
 document.getElementById('openstudentsmenu').onclick = function () {
-    document.getElementById('mainmenu').style.display = 'none'
-}
+    document.getElementById('mainmenu').style.display = 'none';
+};
 document.getElementById('openexercisesmenu').onclick = function () {
-    document.getElementById('mainmenu').style.display = 'none'
-    document.getElementById('exercisesmenu').style.display = ''
-}
-
+    document.getElementById('mainmenu').style.display = 'none';
+    document.getElementById('exercisesmenu').style.display = '';
+};
 document.getElementById('backmainmenufromexercises').onclick = function () {
-    document.getElementById('mainmenu').style.display = ''
-    document.getElementById('exercisesmenu').style.display = 'none'
-}
+    document.getElementById('mainmenu').style.display = '';
+    document.getElementById('exercisesmenu').style.display = 'none';
+};
 
 document.getElementById('openchataddmenu').onclick = OpenAddChatMenu;
 document.getElementById('exercisekysmart').onclick = OpenExercisesSmartroom;
@@ -122,43 +112,39 @@ document.getElementById('exercisesttc').onclick = OpenExercisesTTC;
 document.getElementById('exercisesComplect').onclick = OpenExercisesComplect;
 document.getElementById('openlesinfomenu').onclick = OpenLessonmInfoMenu;
 
-function checkelementt(a) { // проверка на какой элемент нажали
-    let elem = document.elementFromPoint(a.clientX, a.clientY)
-
+function checkelementt(a) {
+    let elem = document.elementFromPoint(a.clientX, a.clientY);
     if (elem.nodeName != 'BUTTON' && elem.nodeName != 'INPUT' && elem.nodeName != 'TEXTAREA' && elem.nodeName != 'SELECT') {
         return true;
     }
     return false;
 }
 
-async function getUserId() { // получаем Id пользователя
+async function getUserId() {
     try {
         const response = await fetch("https://rooms-vimbox.skyeng.ru/users/api/v2/auth/config", {
             credentials: "include",
             method: "POST"
         });
-
         if (response.ok) {
             const data = await response.json();
-            const userId = data?.user?.id || '';
-            return userId;
+            return data?.user?.id || '';
         } else {
             throw new Error(`Failed to fetch data. Status: ${response.status}`);
         }
     } catch (error) {
         console.error(error);
-        //        return '';
     }
 }
 
-function addOption(oListbox, text, value) {  //функция добавления опции в список
+function addOption(oListbox, text, value) {
     var oOption = document.createElement("option");
     oOption.appendChild(document.createTextNode(text));
     oOption.setAttribute("value", value);
     oListbox.appendChild(oOption);
 }
 
-const copyToClipboardTSM = str => { // функция копирования в буфер обмена
+const copyToClipboardTSM = str => {
     const el = document.createElement('textarea');
     el.value = str;
     document.body.appendChild(el);
@@ -167,7 +153,7 @@ const copyToClipboardTSM = str => { // функция копирования в 
     document.body.removeChild(el);
 };
 
-function fetchaddchat(userid1, userid2, method) { //вспомогательная функция просто добавления чата мекжду пользователям
+function fetchaddchat(userid1, userid2, method) {
     fetch("https://notify-vimbox.skyeng.ru/api/v1/chat/contact", {
         "headers": {
             "content-type": "application/json",
@@ -176,7 +162,7 @@ function fetchaddchat(userid1, userid2, method) { //вспомогательна
         },
         "referrer": "https://vimbox.skyeng.ru/",
         "referrerPolicy": "strict-origin-when-cross-origin",
-        "body": `{\"userId1\":${userid1},\"userId2\":${userid2}}`,
+        "body": `\{"userId1":${userid1},"userId2":${userid2}\}`,
         "method": method,
         "mode": "cors",
         "credentials": "include"

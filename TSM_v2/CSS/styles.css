@@ -1,1030 +1,1356 @@
-.commonbtn {
-    background-color: #768d87;
-    border-radius: 5px;
-    border: 1px solid #566963;
-    color: #ffffff;
-    padding: 2px 2px;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+/* =========================================================
+   NEON GLASS ULTRA 3.0 — Premium Cyber-Dark UI
+   Technical Support Master Refactored & Polished
+   ========================================================= */
+
+:root {
+    /* Deep background & Glass Panels */
+    --tsm-bg-deep: #050508;
+    --tsm-bg-panel: rgba(10, 14, 24, 0.85); /* Более плотное премиальное стекло */
+    --tsm-bg-card: rgba(18, 24, 40, 0.6);
+    
+    /* Borders & Glows */
+    --tsm-glass-border: rgba(0, 240, 255, 0.18);
+    --tsm-glass-border-hover: rgba(0, 240, 255, 0.4);
+    --tsm-glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 20px rgba(0, 240, 255, 0.03);
+
+    /* Neon Palette */
+    --tsm-neon-cyan: #00f0ff;
+    --tsm-neon-magenta: #ff00a0;
+    --tsm-neon-lime: #39ff14;
+    --tsm-neon-orange: #ff8c00;
+    --tsm-neon-violet: #bf00ff;
+    --tsm-neon-gold: #ffd700;
+    --tsm-neon-red: #ff2a6d;
+
+    /* Typography */
+    --tsm-text-primary: #f0f9ff;
+    --tsm-text-secondary: #a1b3d1;
+    --tsm-text-dim: #5c7094;
+    --tsm-text-bisque: #ffe4c4;
+
+    /* Geometry */
+    --tsm-radius-sm: 8px;
+    --tsm-radius-md: 14px;
+    --tsm-radius-lg: 20px;
+    --tsm-radius-xl: 28px;
+
+    /* Shadows */
+    --tsm-shadow-cyan: 0 0 16px rgba(0, 240, 255, 0.3), 0 0 4px rgba(0, 240, 255, 0.2);
+    --tsm-shadow-magenta: 0 0 16px rgba(255, 0, 160, 0.3), 0 0 4px rgba(255, 0, 160, 0.2);
+    --tsm-shadow-lime: 0 0 16px rgba(57, 255, 20, 0.3), 0 0 4px rgba(57, 255, 20, 0.2);
+    --tsm-shadow-orange: 0 0 16px rgba(255, 140, 0, 0.3), 0 0 4px rgba(255, 140, 0, 0.2);
+    --tsm-shadow-panel: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 240, 255, 0.08);
+
+    /* Fonts */
+    --tsm-font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+    --tsm-font-ui: 'Segoe UI', 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+
+    /* Animations */
+    --tsm-transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --tsm-bounce: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.commonbtn:hover {
-    background: #6A5ACD;
-    box-shadow: 1px 1px 10px;
+/* ─── Base Window & Glassmorphism ─── */
+.tsm-window,
+.tsm-window-chat,
+.tsm-window-exercises,
+.tsm-window-lesson,
+.tsm-window-main,
+.tsm-window-students-adult,
+.tsm-window-students-kids,
+.tsm-window-vocabulary {
+    position: fixed !important;
+    z-index: 999999 !important;
+    font-family: var(--tsm-font-ui);
+    color: var(--tsm-text-primary);
+    background: var(--tsm-bg-panel);
+    backdrop-filter: blur(28px) saturate(1.5);
+    -webkit-backdrop-filter: blur(28px) saturate(1.5);
+    border: 1px solid var(--tsm-glass-border);
+    border-radius: var(--tsm-radius-lg);
+    box-shadow: var(--tsm-shadow-panel), var(--tsm-glass-highlight);
+    padding: 16px;
+    min-width: 240px;
+    overflow: hidden;
+    
+    /* ИСПРАВЛЕНО: Убрано свойство 'all'. Анимируем только цвет и тени, 
+       чтобы координаты left/top менялись мгновенно без рывков! */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    animation: tsm-fade-in 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
 }
 
-.commonbtn:active {
-    box-shadow: inset 1px 1px 20px -1px;
+.tsm-window:hover {
+    border-color: var(--tsm-glass-border-hover);
+    box-shadow: var(--tsm-shadow-panel), 0 0 60px rgba(0, 240, 255, 0.12), var(--tsm-glass-highlight);
 }
 
-button.dobig:hover {
+@keyframes tsm-fade-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.96); filter: blur(4px); }
+    to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+/* ─── Buttons ─── */
+.tsm-btn {
+    font-family: var(--tsm-font-ui);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--tsm-text-primary);
+    background: linear-gradient(145deg, rgba(0,240,255,0.1), rgba(0,240,255,0.03));
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: var(--tsm-radius-sm);
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: var(--tsm-bounce);
+    position: relative;
+    overflow: hidden;
+    text-shadow: 0 0 6px rgba(0, 240, 255, 0.4);
+    box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.05);
+}
+
+.tsm-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transform: translateX(-150%) skewX(-30deg);
+    transition: transform 0.6s ease;
+}
+
+.tsm-btn:hover {
+    background: linear-gradient(145deg, rgba(0,240,255,0.2), rgba(0,240,255,0.08));
+    border-color: var(--tsm-neon-cyan);
+    box-shadow: var(--tsm-shadow-cyan), inset 0 0 15px rgba(0, 240, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.tsm-btn:hover::before {
+    transform: translateX(150%) skewX(-30deg);
+}
+
+.tsm-btn:active {
+    transform: translateY(0) scale(0.96);
+}
+
+.tsm-btn-hide {
+    composes: tsm-btn;
+    background: linear-gradient(145deg, rgba(255,42,109,0.15), rgba(255,42,109,0.04));
+    border-color: rgba(255, 42, 109, 0.4);
+    color: #ffb3c6;
+    text-shadow: 0 0 6px rgba(255, 42, 109, 0.5);
+    box-shadow: inset 0 0 10px rgba(255, 42, 109, 0.05);
+}
+
+.tsm-btn-hide:hover {
+    background: linear-gradient(145deg, rgba(255,42,109,0.3), rgba(255,42,109,0.1));
+    border-color: var(--tsm-neon-red);
+    box-shadow: 0 0 16px rgba(255, 42, 109, 0.4), inset 0 0 15px rgba(255, 42, 109, 0.2);
+}
+
+.tsm-btn-sm {
+    composes: tsm-btn;
+    padding: 0;
+    font-size: 12px;
+    border-radius: 50%;
+    width: 34px !important;
+    height: 34px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tsm-btn-vertical {
+    composes: tsm-btn;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    min-width: 72px;
+    border-radius: var(--tsm-radius-md);
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.tsm-btn-vertical .emoji {
+    font-size: 20px;
+    filter: drop-shadow(0 0 6px rgba(0,240,255,0.5));
+    transition: transform 0.3s ease;
+}
+
+.tsm-btn-vertical:hover .emoji {
     transform: scale(1.15);
 }
 
-button.dobig:active {
-    box-shadow: inset 1px 1px 20px -1px;
-}
-
-.hidebtns {
-    width: 50px;
-    height: 30px;
-    background: #228B22;
-}
-
-.hidebtns:hover {
-    background: #187018 !important;
-}
-
-.smallbtns {
-    width: 30px !important;
-    height: 30px !important;
-    padding: 0;
-}
-
-.wintInitialize {
-    min-height: 20px;
-    max-height: 750px;
-    min-width: 35px;
-    max-width: 370px;
-    font-size: 14px;
-    z-index: 20;
-    position: fixed;
-    border: 1px solid rgb(56, 56, 56);
-    background: rgb(70, 68, 81);
-    color: white;
-    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-    border-radius: 20px;
-}
-
-.wintInitializeChat {
-    min-height: 75px;
-    min-width: 200px;
-    font-size: 14px;
-    z-index: 20;
-    position: fixed;
-    border: 1px solid rgb(56, 56, 56);
-    background: rgb(70, 68, 81);
-    color: white;
-    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-}
-
-.wintInitializeLessonInfo {
-    height: 232px;
-    width: 500px;
-    font-size: 14px;
-    z-index: 20;
-    position: fixed;
-    border: 1px solid rgb(56, 56, 56);
-    background: rgb(70, 68, 81);
-    color: black;
-    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-}
-
-.wintInitializeAdultsStudentsInfo {
-    min-height: 170px;
-    max-height: 490px;
-    width: 668px;
-    font-size: 14px;
-    z-index: 20;
-    position: fixed;
-    border: 1px solid rgb(56, 56, 56);
-    background: rgb(70, 68, 81);
-    color: black;
-    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-}
-
-.wintInitializeSkysmartStudentsInfo {
-    min-height: 170px;
-    max-height: 490px;
-    width: 668px;
-    font-size: 14px;
-    z-index: 20;
-    position: fixed;
-    border: 1px solid rgb(56, 56, 56);
-    background: rgb(70, 68, 81);
-    color: black;
-    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-}
-
-.wintInitializeVocabulary {
-    min-height: 170px;
-    max-height: 790px;
-    width: 514px;
-    font-size: 14px;
-    z-index: 20;
-    position: fixed;
-    border: 1px solid rgb(56, 56, 56);
-    background: rgb(70, 68, 81);
-    color: black;
-    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-}
-
-.wintInitializeExercisesData {
-    min-height: 170px;
-    max-height: 790px;
-    width: 560px;
-    font-size: 14px;
-    z-index: 99999;
-    position: fixed;
-    border: 1px solid rgb(56, 56, 56);
-    background: rgb(70, 68, 81);
-    color: black;
-    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-}
-
-.lesson-field-name {
-    width: 50px;
-    text-align: center;
-    color: bisque;
-    margin: 5px;
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-}
-
-.lesson-field-value {
-    width: 150px;
-    min-height: 20px;
-    text-align: center;
-    color: #fff;
-    border-radius: 5px;
-    background: #2569c3f0;
-    padding: 5px;
-    margin: 5px;
-    border: 1px solid white;
-    font-weight: 500;
-    padding-top: 7px;
-    box-shadow: 0px 5px 5px rgb(0 0 0 / 55%);
-    cursor: text;
-}
-
-.lesson-field-value:hover {
-    background: #65227f70;
-}
-
-.lesson-field-value::selection {
-    background: #d4180c;
-}
-
-#vidserverurl::selection {
-    background: #d4180c;
-}
-
-#hidemainmenu {
-    cursor: pointer;
-    width: 268px;
-    background: #8bacb9d1;
-    color: #8bacb9d1;
-    font-size: 3px;
-    margin-top: 15px;
-    margin-left: 2px;
+.tsm-btn-vertical hr {
+    width: 80%;
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--tsm-neon-cyan), transparent);
+    margin: 2px 0;
     opacity: 0.7;
-    transition: all 0.5s cubic-bezier(0.89, 0.38, 0.57, 0.43);
 }
 
+.tsm-btn-save, .tsm-btn-save-ttc, .tsm-btn-save-word,
+.tsm-btn-reset, .tsm-btn-report, .tsm-btn-profile, .tsm-btn-payment {
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: var(--tsm-bounce);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+}
 
-#hidemainmenu:hover {
-    opacity: 1;
+.tsm-btn-save:hover, .tsm-btn-save-ttc:hover, .tsm-btn-save-word:hover,
+.tsm-btn-report:hover, .tsm-btn-profile:hover, .tsm-btn-payment:hover {
+    background: rgba(0, 240, 255, 0.15);
+    border-color: rgba(0, 240, 255, 0.4);
+    box-shadow: var(--tsm-shadow-cyan);
+    transform: translateY(-2px) scale(1.1);
+}
+
+.tsm-btn-reset:hover {
+    background: rgba(255, 140, 0, 0.15);
+    border-color: rgba(255, 140, 0, 0.4);
+    box-shadow: var(--tsm-shadow-orange);
+    transform: translateY(-2px) scale(1.1);
+}
+
+/* ─── Inputs ─── */
+.tsm-input,
+.tsm-input-hash {
+    font-family: var(--tsm-font-mono);
     font-size: 12px;
-    background: #16fe55bf;
-    color: rgb(69 57 192 / 80%);
-    font-weight: 700;
-    border-radius: 20px;
-}
-
-.rowadultdata {
-    width: 146px;
-    min-height: 80px;
-    background: #a9a9a9;
-    margin: 5px;
-    border-radius: 5px;
-    padding-left: 5px;
-    color: #000;
-    text-shadow: 1px 1px 1px rgb(0 0 0 / 30%);
-    box-shadow: 0px 5px 5px rgb(0 0 0 / 35%);
-}
-
-.kidsoutdata {
-    width: 146px;
-    min-height: 80px;
-    background: #a9a9a9;
-    margin: 5px;
-    border-radius: 5px;
-    padding-left: 5px;
-    color: #000;
-    text-shadow: 1px 1px 1px rgb(0 0 0 / 30%);
-    box-shadow: 0px 5px 5px rgb(0 0 0 / 35%);
-}
-
-.infbaradult {
-    width: 670px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    overflow-x: hidden;
-    max-height: 421px;
-}
-
-.infbarskysmart {
-    width: 670px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    overflow-x: hidden;
-    max-height: 421px;
-}
-
-.rowadultdata:hover .studadultname {
-    background: #6A5ACD;
-    color: #fff;
-    font-weight: 600;
-    cursor: default;
-}
-
-.rowadultdata:hover {
-    background: #6A5ACD;
-    color: #fff;
-    font-weight: 600;
-}
-
-.kidsoutdata:hover {
-    background: #6A5ACD;
-    color: #fff;
-    font-weight: 600;
-}
-
-.studadultname {
-    text-align: center;
-    color: honeydew;
-    font-weight: 600;
-    margin: 5px;
-    border-bottom: 2.5px solid;
-    word-break: break-all;
-}
-
-.studkidstname {
-    text-align: center;
-    color: honeydew;
-    font-weight: 600;
-    margin: 5px;
-    border-bottom: 2.5px solid;
-    word-break: break-all;
-}
-
-.idadultstyle {
-    text-align: center;
-    margin-top: 5px;
-    cursor: default;
-}
-
-.idkidsstyle {
-    text-align: center;
-    margin-top: 5px;
-    cursor: default;
-}
-
-.kidsoutdata.sleep {
-    background-color: #646464;
-    color: gainsboro;
-}
-
-.kidsoutdata.sleep:hover {
-    background: #6A5ACD;
-    color: #fff;
-    font-weight: 600;
-}
-
-.kidsoutdata.sleep>.studkidstname {
-    color: gainsboro;
-}
-
-.kidsoutdata.vacation {
-    background-color: #888e7a;
-    color: gainsboro;
-}
-
-.kidsoutdata.vacation:hover {
-    background: #6A5ACD;
-    color: #fff;
-    font-weight: 600;
-}
-
-.kidsoutdata.vacation>.studkidstname {
-    color: gainsboro;
-}
-
-.kidsoutdata:hover .studkidstname {
-    background: #6A5ACD;
-    color: aqua;
-    font-weight: 600;
-    cursor: default;
-}
-
-.kidsoutdata:hover .studadultname {
-    background: #6A5ACD;
-    color: aqua;
-    font-weight: 600;
-    cursor: default;
-}
-
-.mvushka {
-    cursor: pointer;
-    transition: all 0.7s ease;
-}
-
-.mvushka:hover {
-    font-size: 20px;
-    ;
-}
-
-.adultprofile {
-    cursor: pointer;
-    transition: all 0.7s ease;
-}
-
-.adultprofile:hover {
-    font-size: 20px;
-    ;
-}
-
-.paymenthistory {
-    cursor: pointer;
-    transition: all 0.7s ease;
-}
-
-.paymenthistory:hover {
-    font-size: 20px;
-}
-
-.homeworklist {
-    cursor: pointer;
-    transition: all 0.7s ease;
-}
-
-.homeworklist:hover {
-    font-size: 20px;
-}
-
-.portfoliolist {
-    cursor: pointer;
-    transition: all 0.7s ease;
-}
-
-.portfoliolist:hover {
-    font-size: 20px;
-}
-
-.removestudent {
-    cursor: pointer;
-    transition: all 0.7s ease;
-}
-
-.removestudent:hover {
-    font-size: 20px;
-}
-
-.subjname {
-    color: bisque;
-    width: 630px;
-    margin: 5px;
-    border: 1px solid #516051;
-    text-align: center;
-    background: #647b7b;
-    font-weight: 700;
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    border-radius: 20px;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-}
-
-.wordsetname {
-    color: bisque;
-    width: 480px;
-    margin: 5px;
-    border: 1px solid #516051;
-    text-align: center;
-    background: #647b7b;
-    font-weight: 700;
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    border-radius: 20px;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-}
-
-.wordsetname:hover {
-    background: #2eb05e;
-}
-
-#listofsubjects {
-    background: rgb(70, 68, 81);
-    height: 30px;
-    color: bisque;
-    border-radius: 5px;
-    text-align: center;
-}
-
-#listofsubjects:hover {
-    box-shadow: 0px 5px 5px rgb(0 0 0 / 45%);
-    border: 1px solid #7d5e5e;
-}
-
-#listofsubjects>option {
-    background: rgb(70, 68, 81);
-}
-
-.sbjnamesearch {
-    color: white;
-    text-align: center;
-    font-weight: 700;
-    border: 1px solid black;
-    margin: 2px;
-    background: #2b6da5;
-    margin-right: 5px;
-}
-
-.badgename {
-    text-align: center;
-    border: 1px solid black;
-    background: #2f7d35;
-    margin-right: 5px;
-    color: bisque;
-    border-radius: 20px;
-}
-
-.languageobsl {
-    text-align: center;
-    padding: 2px;
-    font-weight: 600;
-    text-shadow: 1px 0 1px #000,
-        0 1px 1px #000,
-        -1px 0 1px #000,
-        0 -1px 1px #000;
-    color: gainsboro;
-}
-
-.homeworklistkids {
-    cursor: pointer;
-    transition: all 0.7s ease;
-}
-
-.homeworklistkids:hover {
-    font-size: 20px;
-}
-
-.vocabularbarcls {
-    text-align: center;
-    justify-content: space-between;
-    padding: 0 5px;
-}
-
-.vocabularremtools,
-#searchtoolswords {
-    margin: 5px 0;
-    display: flex;
-    justify-content: space-between;
-}
-
-#searchwordinput,
-#iduserwords,
-#deleteallwords,
-#unlearnallwords,
-#delunlearnallwords,
-#learncheckedwords,
-#selectallwords,
-#findwords {
-    flex-grow: 1;
-    margin: 0 5px;
-}
-
-.vocabularremtools>button {
-    padding: 3px;
-    min-width: 80px;
-}
-
-.wordsout {
-    width: 515px;
-    max-height: 500px;
-    overflow-x: hidden;
-    margin-top: 5px;
-}
-
-.checkdel {
-    float: right;
-    margin-right: 5px;
-    transition: all 0.5s ease;
-    width: 14px;
-    height: 14px;
-    margin-top: 2px;
-}
-
-.savelinktowordcms {
-    cursor: pointer;
-    float: right;
-    font-size: 14px;
-    transition: all 0.5s ease;
-}
-
-.headerexplain {
-    background: cadetblue;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    color: lemonchiffon;
-    margin: 5px 0;
-}
-
-.selectonesection {
-    float: right;
-    margin-right: 5px;
-    transition: all 0.5s ease;
-    width: 14px;
-    height: 14px;
-}
-
-.selectonesection:hover {
-    width: 18px;
-    height: 18px;
-}
-
-.adultsexcbar {
-    width: 535px;
-    max-height: 500px;
-    overflow-x: hidden;
-    margin-top: 5px;
-}
-
-.skysmartexcbar {
-    width: 560px;
-    max-height: 500px;
-    overflow-x: hidden;
-    margin-top: 5px;
-}
-
-.roomtype {
-    color: bisque;
-    width: 550px;
-    margin: 5px;
-    border: 1px solid #516051;
-    text-align: center;
-    background: #647b7b;
-    font-weight: 700;
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    border-radius: 20px;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    cursor: pointer;
-}
-
-.roomtype.collapsible:hover {
-    background: #2eb05e;
-}
-
-.roomtypekids {
-    color: #c2f4c0;
-    width: 550px;
-    margin: 5px;
-    border: 1px solid #516051;
-    text-align: center;
-    background: #ac7b30;
-    font-weight: 700;
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    border-radius: 20px;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    cursor: pointer;
-}
-
-.itemexercises {
-    color: bisque;
-    margin: 5px;
-}
-
-.itemexerciseskids {
-    color: bisque;
-    margin: 5px;
-}
-
-.itemexerciseskids:hover {
-    background: cornflowerblue;
-}
-
-.savelinktocmsttc {
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.5s ease;
-}
-
-.checkslides {
-    float: right;
-    margin-right: 5px;
-    transition: all 0.5s ease;
-    width: 14px;
-    height: 14px;
-    margin-top: 4px;
-}
-
-.checkroom {
-    float: right;
-    margin-right: 10px;
-    margin-top: 2px;
-}
-
-#toolsforslides>button {
-    padding: 3px;
-    min-width: 100px;
-}
-
-#toolsforroom>button {
-    padding: 3px;
-    min-width: 100px;
-    height: 27px;
-}
-
-.sucsbtn {
-    z-index: 999999;
-    position: fixed;
-    bottom: 15px;
-    font-size: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: green;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    display: none;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-}
-
-.countdown-bar {
-    z-index: 999999;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    background-color: coral;
-    height: 5px;
-    animation: countdown 3.5s linear forwards;
-}
-
-/* Анимация для уменьшения полоски */
-@keyframes countdown {
-    from {
-        width: 100%;
-    }
-
-    to {
-        width: 0;
-    }
-}
-
-.theme-row {
-    color: #c2f4c0;
-    width: 550px;
-    margin: 5px;
-    border: 1px solid #516051;
-    text-align: center;
-    background: #ac7b30;
-    font-weight: 700;
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    border-radius: 20px;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    cursor: pointer;
-}
-
-.card-row {
-    color: bisque;
-}
-
-.card-row:hover {
-    background: cornflowerblue;
-}
-
-.resetprogress {
-    text-align: center;
-    border: 1px solid black;
-}
-
-.savelinktocms:hover,
-.resetprogress:hover {
-    background: #27B06C;
-    cursor: pointer;
-}
-
-.sucsbtnAF {
-    z-index: 999999;
-    position: fixed;
-    bottom: 15px;
-    font-size: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: green;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    display: none;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-}
-
-.sucsbtnok {
-    background-color: green;
-}
-
-.sucsbtnnotok {
-    background-color: darkred;
-}
-
-.menu-container-ext {
-    width: 272px;
-}
-
-/* Контейнер */
-.menu-ext {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    width: 240px;
-    padding: 18px;
-
-    background: dimgrey;
-    border-radius: 22px;
-    backdrop-filter: blur(16px);
-    box-shadow:
-        0 0 30px rgba(74, 243, 255, 0.08),
-        inset 0 0 20px rgba(255, 255, 255, 0.02),
-        0 0 0 1px rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 20px;
-
-}
-
-/* Капсула */
-.menu-item-ext {
+    color: var(--tsm-text-primary);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: var(--tsm-radius-md); /* Изменили на менее круглый для серьезного вида */
+    padding: 10px 16px;
+    outline: none;
     width: 100%;
-    /* 👈 растягиваем */
     box-sizing: border-box;
-    /* 👈 учитываем padding и border */
+    transition: var(--tsm-transition);
+    caret-color: var(--tsm-neon-cyan);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.tsm-input:focus,
+.tsm-input-hash:focus {
+    border-color: var(--tsm-neon-cyan);
+    box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.1), var(--tsm-shadow-cyan), inset 0 2px 4px rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.6);
+    transform: translateY(-1px);
+}
+
+.tsm-input::placeholder,
+.tsm-input-hash::placeholder {
+    color: var(--tsm-text-dim);
+    font-family: var(--tsm-font-ui);
+}
+
+/* ─── Cards & Panels ─── */
+.tsm-card {
+    background: var(--tsm-bg-card);
+    border: 1px solid rgba(0, 240, 255, 0.12);
+    border-radius: var(--tsm-radius-md);
+    padding: 14px;
+    margin: 10px 0;
+    transition: var(--tsm-transition);
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.tsm-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--tsm-neon-cyan), transparent);
+    opacity: 0.6;
+}
+
+.tsm-card:hover {
+    border-color: rgba(0, 240, 255, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 240, 255, 0.08), inset 0 1px 0 rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+}
+
+.tsm-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tsm-neon-cyan);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 6px 12px;
-    margin-bottom: 2px;
-    border-radius: 999px;
+}
 
-    background: linear-gradient(120deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.45));
-    border: 1px solid rgba(255, 255, 255, 0.06);
+.tsm-card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--tsm-neon-cyan), transparent);
+    opacity: 0.5;
+}
 
+.tsm-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.tsm-field:last-child {
+    border-bottom: none;
+}
+
+.tsm-field-label {
+    font-size: 11px;
+    color: var(--tsm-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+}
+
+.tsm-field-value {
+    font-family: var(--tsm-font-mono);
+    font-size: 12px;
+    color: var(--tsm-text-bisque);
+    text-shadow: 0 0 8px rgba(255, 228, 196, 0.25);
+    font-weight: 500;
+    text-align: right;
+}
+
+/* ─── Menu ─── */
+.tsm-menu-container {
+    user-select: none;
+}
+
+.tsm-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px;
+	
+	    width: 100%;
+    min-width: 220px; 
+    box-sizing: border-box;
+}
+
+.tsm-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(0,240,255,0.04), rgba(191,0,255,0.02));
+    border: 1px solid rgba(0, 240, 255, 0.12);
+    border-radius: var(--tsm-radius-md);
     cursor: pointer;
+    transition: var(--tsm-transition);
     position: relative;
     overflow: hidden;
-    color: bisque;
-
-    transition:
-        background 0.25s ease,
-        transform 0.2s ease,
-        box-shadow 0.25s ease,
-        border-color 0.25s ease;
+	
+	    width: 100% !important;
+    box-sizing: border-box;
+    justify-content: flex-start !important; /* Гарантирует, что текст и иконки всегда выровнены по левому краю */
 }
 
-/* Неоновая полоса слева */
-.menu-item-ext::before {
-    content: "";
+.tsm-menu-item::before {
+    content: '';
     position: absolute;
-    left: 0;
-    top: 6px;
-    bottom: 6px;
-    width: 7px;
-    border-radius: 999px;
-    background: linear-gradient(180deg, #4af3ff, #1864ff);
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--tsm-neon-cyan);
     opacity: 0;
-    transform: scaleY(0.6);
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 12px var(--tsm-neon-cyan);
 }
 
-/* Иконка */
-.icon-ext {
-    font-size: 18px;
-    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.25));
+.tsm-menu-item:hover {
+    background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(191,0,255,0.08));
+    border-color: rgba(0, 240, 255, 0.3);
+    transform: translateX(6px);
+    box-shadow: var(--tsm-shadow-cyan);
 }
 
-/* Текст */
-.text-ext {
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    opacity: 0.95;
-}
-
-/* Hover */
-.menu-item-ext:hover {
-    background: linear-gradient(120deg, rgba(74, 243, 255, 0.15), rgba(0, 0, 0, 0.65));
-    transform: translateX(4px);
-    border-color: rgba(74, 243, 255, 0.6);
-    box-shadow:
-        0 0 18px rgba(74, 243, 255, 0.25),
-        inset 0 0 12px rgba(74, 243, 255, 0.15);
-}
-
-.menu-item-ext:hover::before {
+.tsm-menu-item:hover::before {
     opacity: 1;
-    transform: scaleY(1);
 }
 
-/* Активный пункт */
-.menu-item-ext.active {
-    background: linear-gradient(120deg, rgba(74, 243, 255, 0.25), rgba(0, 0, 0, 0.7));
-    border-color: rgba(74, 243, 255, 0.6);
-    box-shadow:
-        0 0 22px rgba(74, 243, 255, 0.35),
-        inset 0 0 14px rgba(74, 243, 255, 0.25);
+.tsm-menu-icon {
+    font-size: 20px;
+    filter: drop-shadow(0 0 4px rgba(0,240,255,0.5));
+    transition: var(--tsm-bounce);
 }
 
-.menu-item-ext.active::before {
-    opacity: 1;
-    transform: scaleY(1);
+.tsm-menu-item:hover .tsm-menu-icon {
+    transform: scale(1.2) rotate(5deg);
 }
 
-.exercisetable {
+.tsm-menu-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tsm-text-primary);
+    letter-spacing: 0.5px;
+}
+
+/* ─── Tables ─── */
+.tsm-table-wrapper {
+    border-radius: var(--tsm-radius-sm);
+    overflow: hidden;
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    margin-top: 12px;
+}
+
+.tsm-table,
+.tsm-slide-table,
+.tsm-exercise-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 10px 0;
-    font-size: 14px;
-    background: #4f4e5a;
-    color: #e0f0ff;
+    font-size: 12px;
+    background: rgba(0,0,0,0.2);
 }
 
-.exercisetable th,
-.exercisetable td {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 6px 10px;
-}
-
-.exercisetable th {
-    background: rgba(255, 255, 255, 0.08);
+.tsm-table thead tr,
+.tsm-slide-table thead tr,
+.tsm-exercise-table thead tr,
+.tsm-table-header {
+    background: linear-gradient(90deg, rgba(0,240,255,0.15), rgba(191,0,255,0.1));
+    color: var(--tsm-neon-cyan);
+    font-weight: 700;
     text-transform: uppercase;
-    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
 }
 
-.theme-title {
-    background: rgba(255, 255, 255, 0.05);
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.roomtype.collapsible {
-    cursor: pointer;
-    padding: 6px;
-    background: darkcyan;
-    margin-top: 10px;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 18px
-}
-
-.category-info {
-    background: rgba(255, 255, 255, 0.05);
+.tsm-table th,
+.tsm-slide-table th,
+.tsm-exercise-table th,
+.tsm-table-header span {
     padding: 10px;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+    text-align: left;
+}
+
+.tsm-table td,
+.tsm-slide-table td,
+.tsm-exercise-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--tsm-text-primary);
+    transition: background 0.2s ease;
+}
+
+.tsm-table tbody tr:last-child td,
+.tsm-slide-table tbody tr:last-child td,
+.tsm-exercise-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tsm-table tbody tr:hover,
+.tsm-slide-table tbody tr:hover,
+.tsm-exercise-table tbody tr:hover {
+    background: rgba(0, 240, 255, 0.06);
+}
+
+/* ─── Exercise & Slide Boxes ─── */
+.tsm-exercise-bar {
+    max-height: 520px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+}
+
+.tsm-collapsible {
+    background: linear-gradient(90deg, rgba(0,240,255,0.12), rgba(0,240,255,0.03));
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: var(--tsm-radius-md);
+    padding: 12px 18px;
+    margin: 10px 0 0;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--tsm-neon-cyan);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+    transition: var(--tsm-transition);
+    position: relative;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tsm-collapsible:hover {
+    background: linear-gradient(90deg, rgba(0,240,255,0.2), rgba(0,240,255,0.08));
+    border-color: var(--tsm-neon-cyan);
+    box-shadow: var(--tsm-shadow-cyan);
+    transform: translateX(4px);
+}
+
+.tsm-collapsible::after {
+    content: '▼';
+    font-size: 10px;
+    transition: transform 0.3s ease;
+    text-shadow: none;
+}
+
+.tsm-collapsible.active::after {
+    transform: rotate(180deg);
+}
+
+.tsm-slide-box {
+    border-top: none;
+    border-radius: 0 0 var(--tsm-radius-md) var(--tsm-radius-md);
+    padding: 14px;
     margin-bottom: 10px;
-    border-radius: 4px;
+    animation: tsm-slide-down 0.3s ease-out forwards;
+    transform-origin: top;
+	background: rgba(255, 255, 255, 0.05) !important; /* Был черный rgba(0,0,0,0.3) */
+    border: 1px solid rgba(0, 240, 255, 0.15) !important;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.15) !important;
+}
+
+@keyframes tsm-slide-down {
+    from { opacity: 0; transform: scaleY(0.95); }
+    to   { opacity: 1; transform: scaleY(1); }
+}
+
+.tsm-exercise-item {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--tsm-radius-sm);
+    padding: 10px 14px;
+    margin: 6px 0;
+    font-size: 12px;
+    color: var(--tsm-text-primary);
+    transition: var(--tsm-transition);
+}
+
+.tsm-exercise-item:hover {
+    background: rgba(0, 240, 255, 0.08);
+    border-color: rgba(0, 240, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transform: translateX(2px);
+}
+
+.tsm-room-type {
     font-size: 14px;
-    line-height: 1.4;
+    font-weight: 700;
+    color: var(--tsm-text-bisque);
+    text-shadow: 0 0 10px rgba(255, 228, 196, 0.3);
+    cursor: default;
+    margin-bottom: 8px;
 }
 
-.userinfo-block {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    line-height: 1.5;
-    font-size: 15px;
-    color: #e0f0ff;
+.tsm-theme-row {
+    background: rgba(191, 0, 255, 0.1) !important;
+    font-weight: 700;
+    color: var(--tsm-neon-violet) !important;
+    text-shadow: 0 0 8px rgba(191, 0, 255, 0.4);
 }
 
-.userinfo-separator {
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin: 15px 0;
+.tsm-card-row td {
+    font-size: 11px;
 }
 
-.commonbtn-vocab {
-    padding: 8px 16px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #fff;
-    font-weight: 500;
+/* ─── Students ─── */
+.tsm-info-bar-adult,
+.tsm-info-bar-kids {
+    max-height: 480px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 6px;
+}
+
+.tsm-kid-card {
+    background: linear-gradient(145deg, rgba(18,24,40,0.8), rgba(10,15,30,0.6));
+    border: 1px solid rgba(0, 240, 255, 0.12);
+    border-radius: var(--tsm-radius-md);
+    padding: 14px;
+    margin: 10px 0;
+    transition: var(--tsm-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.tsm-kid-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--tsm-neon-cyan);
+    opacity: 0.4;
     transition: all 0.3s ease;
 }
 
-.commonbtn-vocab:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: scale(1.03);
+.tsm-kid-card:hover {
+    border-color: rgba(0, 240, 255, 0.3);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 20px rgba(0, 240, 255, 0.1);
+    transform: translateY(-3px) scale(1.01);
 }
 
-.vertical-btn-ext {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: start;
-    width: 60px;
-    height: 70px;
-    padding: 8px;
-    margin: 5px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #2c3e50, #4ca1af);
-    color: white;
-    font-weight: 500;
-    font-size: 14px;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.2s ease;
+.tsm-kid-card:hover::before {
+    opacity: 1;
+    box-shadow: 0 0 12px var(--tsm-neon-cyan);
 }
 
-.vertical-btn-ext:hover {
-    transform: scale(1.05);
+.tsm-kid-card.sleep {
+    border-color: rgba(255, 140, 0, 0.2);
+}
+.tsm-kid-card.sleep::before {
+    background: var(--tsm-neon-orange);
+}
+.tsm-kid-card.sleep:hover {
+    border-color: rgba(255, 140, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 20px rgba(255, 140, 0, 0.15);
 }
 
-.vertical-btn-ext .emoji {
-    font-size: 13px;
-    margin-bottom: 4px;
+.tsm-kid-card.vacation {
+    border-color: rgba(255, 215, 0, 0.2);
+}
+.tsm-kid-card.vacation::before {
+    background: var(--tsm-neon-gold);
+}
+.tsm-kid-card.vacation:hover {
+    border-color: rgba(255, 215, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 20px rgba(255, 215, 0, 0.15);
 }
 
-.vertical-btn-ext hr {
-    width: 80%;
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.5);
-    margin: 4px 0;
-}
-
-.vertical-btn-ext .label {
-    text-align: center;
-    font-size: 13px;
-}
-
-.lesson-card {
-    background: #464451;
-    padding: 10px 15px;
-    margin: 8px 0;
-    border-radius: 8px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
-}
-
-.lesson-title {
-    color: #ffd28a;
-    font-weight: 600;
+.tsm-student-name,
+.tsm-student-name-kid {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--tsm-text-primary);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
     margin-bottom: 6px;
-}
-
-.lesson-field {
     display: flex;
-    justify-content: space-between;
-    margin: 4px 0;
+    align-items: center;
+    gap: 8px;
 }
 
-.lesson-field-name {
-    color: #b5b5b5;
+.tsm-id-badge {
+    font-family: var(--tsm-font-mono);
+    font-size: 11px;
+    color: var(--tsm-text-bisque);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 3px 8px;
+    border-radius: var(--tsm-radius-sm);
+    display: inline-block;
+    margin: 4px 4px 4px 0;
+    border: 1px solid rgba(255, 228, 196, 0.15);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
 }
 
-.lesson-field-value {
-    color: #fff;
-    font-weight: 500;
+.tsm-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--tsm-neon-lime);
+    background: rgba(57, 255, 20, 0.1);
+    border: 1px solid rgba(57, 255, 20, 0.3);
+    padding: 3px 8px;
+    border-radius: var(--tsm-radius-sm);
+    display: inline-block;
+    margin: 4px 4px 4px 0;
+    text-shadow: 0 0 8px rgba(57, 255, 20, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.lesson-actions {
+.tsm-lang-badge {
+    font-size: 11px;
+    color: var(--tsm-text-secondary);
+    background: rgba(255,255,255,0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.tsm-subj-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tsm-neon-magenta);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 14px 0 8px;
+    text-shadow: 0 0 10px rgba(255, 0, 160, 0.4);
     display: flex;
-    justify-content: center;
+    align-items: center;
     gap: 10px;
 }
 
-.hash-input {
-    width: 100%;
-    text-align: center;
+.tsm-subj-title::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--tsm-neon-magenta);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--tsm-neon-magenta), 0 0 4px #fff;
+}
+
+/* ─── Vocabulary ─── */
+.tsm-vocab-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px 0;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--tsm-radius-md);
+    border: 1px solid rgba(0, 240, 255, 0.1);
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+}
+
+.tsm-words-out {
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+}
+
+.tsm-wordset-title {
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.04));
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    border-radius: var(--tsm-radius-md);
+    padding: 12px 16px;
+    margin: 10px 0 0;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 13px;
+    color: #fbbf24;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+    transition: var(--tsm-transition);
+    user-select: none;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tsm-wordset-title:hover {
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.25), rgba(245, 158, 11, 0.08));
+    border-color: rgba(251, 191, 36, 0.6);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+    transform: translateX(4px);
+}
+
+.tsm-words-box {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(251, 191, 36, 0.15);
+    border-top: none;
+    border-radius: 0 0 var(--tsm-radius-md) var(--tsm-radius-md);
+    padding: 12px;
+    margin-bottom: 10px;
+    animation: tsm-slide-down 0.3s ease-out forwards;
+    transform-origin: top;
+}
+
+.tsm-word-id {
+    font-family: var(--tsm-font-mono);
+    font-size: 10px;
+    color: var(--tsm-text-dim);
+    background: rgba(0,0,0,0.5);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.tsm-learned-status {
+    float: right;
+    margin-right: 20px;
+}
+
+.tsm-checkbox,
+.tsm-checkbox-all {
+    accent-color: var(--tsm-neon-cyan);
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    filter: drop-shadow(0 0 4px rgba(0,240,255,0.4));
+}
+
+/* ─── Progress Bar ─── */
+#progressBarDeleteWords {
+    transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.3s ease;
+    box-shadow: 0 0 15px rgba(227, 129, 24, 0.5);
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+    font-family: var(--tsm-font-mono);
+    font-size: 11px;
+    letter-spacing: 0.5px;
     border-radius: 10px;
 }
 
-.participants-table {
-    width: 100%;
-    border-collapse: collapse;
+/* ─── Toast / Notify ─── */
+.tsm-toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999999;
+    padding: 16px 24px;
+    border-radius: var(--tsm-radius-md);
+    font-family: var(--tsm-font-ui);
     font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+    overflow: hidden;
+    animation: tsm-toast-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-.participants-table th {
-    background: #3a3a3f;
-    padding: 6px;
-    border-bottom: 1px solid #666;
-    position: sticky;
-    top: 0;
+@keyframes tsm-toast-in {
+    from { opacity: 0; transform: translateX(50px) scale(0.9); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
 }
 
-.participants-table td {
-    padding: 6px;
-    border-bottom: 1px solid #555;
+.tsm-toast.sucsbtnok {
+    background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(5, 46, 22, 0.95));
+    border-color: rgba(52, 211, 153, 0.6);
+    text-shadow: 0 0 12px rgba(52, 211, 153, 0.5), 0 1px 2px rgba(0,0,0,0.8);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-#allParticipants,
-#allParticipants * {
-    user-select: text !important;
+.tsm-toast.sucsbtnnotok {
+    background: linear-gradient(135deg, rgba(127, 29, 29, 0.95), rgba(69, 10, 10, 0.95));
+    border-color: rgba(248, 113, 113, 0.6);
+    text-shadow: 0 0 12px rgba(248, 113, 113, 0.5), 0 1px 2px rgba(0,0,0,0.8);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(239, 68, 68, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-#participantsOutput {
-    user-select: text !important;
+.tsm-countdown-bar {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--tsm-neon-cyan), var(--tsm-neon-violet));
+    animation: tsm-countdown 3.5s linear forwards;
+    box-shadow: 0 0 10px var(--tsm-neon-cyan);
+}
+
+@keyframes tsm-countdown {
+    from { width: 100%; }
+    to   { width: 0%; }
+}
+
+/* ─── Status Badges ─── */
+#outputstatus {
+    background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(0,240,255,0.05)) !important;
+    border: 1px solid rgba(0, 240, 255, 0.3) !important;
+    box-shadow: var(--tsm-shadow-cyan), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+    color: var(--tsm-neon-cyan) !important;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
+    font-family: var(--tsm-font-mono) !important;
+    letter-spacing: 0.5px !important;
+    padding: 6px 12px !important;
+    border-radius: var(--tsm-radius-md) !important;
+}
+
+/* ─── Select ─── */
+#listofsubjects {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: var(--tsm-radius-sm);
+    color: var(--tsm-neon-cyan);
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    transition: var(--tsm-transition);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+#listofsubjects:focus, #listofsubjects:hover {
+    border-color: var(--tsm-neon-cyan);
+    box-shadow: var(--tsm-shadow-cyan), inset 0 2px 4px rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.7);
+}
+
+#listofsubjects option {
+    background: var(--tsm-bg-deep);
+    color: var(--tsm-text-primary);
+    padding: 8px;
+}
+
+
+/* =========================================================
+   ИСПРАВЛЕНИЕ БАГОВ: Участники (Participant Counter & Modal)
+   ========================================================= */
+
+/* БАГ 1: Перекрываем жесткие inline стили счетчика (chocolate/yellowgreen) */
+#participantCounter {
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(255, 140, 0, 0.05)) !important;
+    border: 1px solid rgba(255, 140, 0, 0.5) !important;
+    border-radius: 12px !important;
+    color: var(--tsm-neon-orange) !important;
+    text-shadow: 0 0 10px rgba(255, 140, 0, 0.6) !important;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.2), inset 0 0 8px rgba(255, 140, 0, 0.15) !important;
+    padding: 4px 10px !important;
+    font-family: var(--tsm-font-mono) !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 28px !important;
+    transition: var(--tsm-bounce) !important;
+    margin-left: 8px !important;
+}
+
+#participantCounter:hover {
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(255, 140, 0, 0.1)) !important;
+    border-color: var(--tsm-neon-orange) !important;
+    box-shadow: 0 0 20px rgba(255, 140, 0, 0.4), inset 0 0 10px rgba(255, 140, 0, 0.25) !important;
+    transform: translateY(-2px) scale(1.05) !important;
+}
+
+/* БАГ 1: Фиксация модального окна на фоне (мелькание и пропажа) */
+#allParticipants {
+    position: fixed !important;
+    z-index: 10000000 !important;
+    background: rgba(10, 14, 24, 0.92) !important;
+    backdrop-filter: blur(32px) saturate(1.5) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(1.5) !important;
+    border: 1px solid rgba(0, 240, 255, 0.3) !important;
+    border-radius: var(--tsm-radius-xl) !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(0, 240, 255, 0.15) !important;
+    padding: 20px !important;
+    min-width: 320px !important;
+    max-width: 90vw !important;
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+    color: var(--tsm-text-primary) !important;
+    font-family: var(--tsm-font-ui) !important;
+    /* top/left/transform убраны — задаются через JS при открытии и drag */
+}
+
+/* Анимация открытия (без !important, чтобы не блокировать drag) */
+#allParticipants.tsm-modal-animate {
+    animation: tsm-modal-center-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes tsm-modal-center-pop {
+    0% { opacity: 0; transform: scale(0.9); filter: blur(5px); }
+    100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+/* Стилизация поиска и строк пользователей внутри модального окна */
+#searchForParticipant {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-bottom: 16px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(0, 240, 255, 0.25) !important;
+    color: var(--tsm-neon-cyan) !important;
+    font-family: var(--tsm-font-mono) !important;
+    font-size: 13px !important;
+    padding: 12px 16px !important;
+    border-radius: var(--tsm-radius-md) !important;
+    outline: none !important;
+    transition: var(--tsm-transition) !important;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5) !important;
+}
+
+#searchForParticipant:focus {
+    border-color: var(--tsm-neon-cyan) !important;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 2px 5px rgba(0,0,0,0.5) !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+}
+/* ─── Scrollbar Global (Ограничено только для TSM, чтобы не ломать сайт) ─── */
+.tsm-window ::-webkit-scrollbar,
+#allParticipants::-webkit-scrollbar,
+#allParticipants *::-webkit-scrollbar,
+.tsm-exercise-bar::-webkit-scrollbar,
+.tsm-info-bar-adult::-webkit-scrollbar,
+.tsm-info-bar-kids::-webkit-scrollbar,
+.tsm-words-out::-webkit-scrollbar,
+.tsm-toast ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.tsm-window ::-webkit-scrollbar-track,
+#allParticipants::-webkit-scrollbar-track,
+#allParticipants *::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+
+.tsm-window ::-webkit-scrollbar-thumb,
+#allParticipants::-webkit-scrollbar-thumb,
+#allParticipants *::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--tsm-neon-cyan), var(--tsm-neon-violet));
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.tsm-window ::-webkit-scrollbar-thumb:hover,
+#allParticipants::-webkit-scrollbar-thumb:hover,
+#allParticipants *::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--tsm-neon-cyan), var(--tsm-neon-magenta));
+    box-shadow: 0 0 10px var(--tsm-neon-cyan);
+}
+
+#allParticipants {
+    position: fixed !important;
+    z-index: 10000000 !important;
+    /* УБРАНЫ top: 50% !important и left: 50% !important, чтобы JS скрипт мог его двигать */
+    background: rgba(10, 14, 24, 0.92) !important;
+    backdrop-filter: blur(32px) saturate(1.5) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(1.5) !important;
+    border: 1px solid rgba(0, 240, 255, 0.3) !important;
+    border-radius: var(--tsm-radius-xl) !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(0, 240, 255, 0.15) !important;
+    padding: 20px !important;
+    min-width: 320px !important;
+    max-width: 90vw !important;
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+    color: var(--tsm-text-primary) !important;
+    font-family: var(--tsm-font-ui) !important;
+}
+
+.tsm-close-modal {
+position: absolute !important;
+top: 12px !important;
+right: 12px !important;
+background: transparent !important;
+border: none !important;
+color: var(--tsm-text-secondary) !important;
+font-size: 16px !important;
+font-weight: bold !important;
+cursor: pointer !important;
+transition: var(--tsm-transition) !important;
+padding: 4px 8px !important;
+border-radius: var(--tsm-radius-sm) !important;
+}
+.tsm-close-modal:hover {
+color: var(--tsm-neon-red) !important;
+background: rgba(255, 42, 109, 0.1) !important;
+text-shadow: 0 0 8px rgba(255, 42, 109, 0.5) !important;
+transform: scale(1.1) !important;
+}
+
+/* Темная капсула-подложка */
+.tsm-progress-wrapper {
+    flex-grow: 1;
+    background: rgba(0, 0, 0, 0.6);
+    height: 24px; /* Увеличили высоту, чтобы текст дышал */
+    border-radius: 12px;
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Сама цветная неоновая линия загрузки */
+.tsm-progress-base {
+    height: 100% !important;
+    margin: 0 !important; /* УБРАЛИ кривой отступ */
+    border-radius: 12px;
+    transition: width 0.3s ease-out;
+    
+    /* Красивое выравнивание текста внутри полоски */
+    display: flex;
+    align-items: center;
+    padding-left: 12px;
+    white-space: nowrap;
+    
+    font-family: var(--tsm-font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.8);
+    box-sizing: border-box;
+}
+
+/* Добавим блик на сами цветные полоски, чтобы они были как стеклянные трубки */
+#progressBarSearch, #progressBarDelete, #progressBarReset, #progressBarDeleteLearned, #progressBarLearn {
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 0 12px currentColor;
+}
+/* 1. Поиск слов (Голубой) */
+#progressBarSearch {
+background: linear-gradient(90deg, #0055ff, var(--tsm-neon-cyan));
+box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+}
+/* 2. Удаление слов (Красный) */
+#progressBarDelete {
+background: linear-gradient(90deg, #8b0000, var(--tsm-neon-red));
+box-shadow: 0 0 12px rgba(255, 42, 109, 0.5);
+}
+/* 3. Сброс прогресса слов (Оранжево-Золотой) */
+#progressBarReset {
+background: linear-gradient(90deg, #b8860b, var(--tsm-neon-gold));
+box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+}
+/* 4. Удаление выученных (Маджента / Фиолетовый) */
+#progressBarDeleteLearned {
+background: linear-gradient(90deg, #4b0082, var(--tsm-neon-magenta));
+box-shadow: 0 0 12px rgba(255, 0, 160, 0.5);
+}
+/* 5. Выучивание слов (Ярко-Зеленый / Лайм) */
+#progressBarLearn {
+background: linear-gradient(90deg, #006400, var(--tsm-neon-lime));
+box-shadow: 0 0 12px rgba(57, 255, 20, 0.5);
+}
+/* =========================================================
+Кнопка Паузы / Продолжения
+========================================================= */
+.tsm-btn-pause {
+background: linear-gradient(145deg, rgba(255,215,0,0.1), rgba(255,215,0,0.03));
+border: 1px solid rgba(255, 215, 0, 0.3);
+color: var(--tsm-neon-gold);
+text-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+}
+.tsm-btn-pause:hover {
+background: linear-gradient(145deg, rgba(255,215,0,0.2), rgba(255,215,0,0.08));
+border-color: var(--tsm-neon-gold);
+box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+}
+.tsm-btn-resume {
+background: linear-gradient(145deg, rgba(57,255,20,0.1), rgba(57,255,20,0.03));
+border: 1px solid rgba(57, 255, 20, 0.3);
+color: var(--tsm-neon-lime);
+text-shadow: 0 0 6px rgba(57, 255, 20, 0.4);
+}
+.tsm-btn-resume:hover {
+background: linear-gradient(145deg, rgba(57,255,20,0.2), rgba(57,255,20,0.08));
+border-color: var(--tsm-neon-lime);
+box-shadow: 0 0 12px rgba(57, 255, 20, 0.3);
+}
+
+/* =========================================================
+   ИСПРАВЛЕНИЯ: Модалки, Хедеры (Чипы), Чекбоксы и Сетка слов
+   ========================================================= */
+
+/* 1. Окно участников (Исправление перетягивания и закрытия) */
+.tsm-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--tsm-glass-border);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    cursor: grab; /* Показывает, что за это место можно тянуть */
+}
+.tsm-modal-header:active {
+    cursor: grabbing;
+}
+.tsm-modal-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--tsm-neon-cyan);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tsm-close-modal {
+    background: rgba(255, 42, 109, 0.1);
+    border: 1px solid rgba(255, 42, 109, 0.3);
+    color: #ffb3c6;
+    font-size: 12px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--tsm-bounce);
+}
+.tsm-close-modal:hover {
+    background: var(--tsm-neon-red);
+    color: #fff;
+    box-shadow: 0 0 15px var(--tsm-neon-red);
+    transform: scale(1.1) rotate(90deg);
+}
+
+/* 2. Премиальные хедеры (Инфо-чипы для Ученика и Учителя) */
+.tsm-info-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 10px 0 15px 0;
+    width: 100%;
+}
+.tsm-info-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.tsm-chip {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: var(--tsm-font-mono);
+    color: var(--tsm-text-bisque);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.05);
+    white-space: nowrap;
+}
+.tsm-chip-blue {
+    border-color: rgba(0, 240, 255, 0.3);
+    background: rgba(0, 240, 255, 0.05);
+    color: var(--tsm-neon-cyan);
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+}
+.tsm-chip-purple {
+    border-color: rgba(191, 0, 255, 0.3);
+    background: rgba(191, 0, 255, 0.05);
+    color: var(--tsm-neon-violet);
+    text-shadow: 0 0 8px rgba(191, 0, 255, 0.3);
+}
+.tsm-chip-green {
+    border-color: rgba(57, 255, 20, 0.3);
+    background: rgba(57, 255, 20, 0.05);
+    color: var(--tsm-neon-lime);
+    text-shadow: 0 0 8px rgba(57, 255, 20, 0.3);
+}
+.tsm-chip-title {
+    font-size: 14px;
+    font-family: var(--tsm-font-ui);
+}
+
+/* 3. Центрирование заголовков План Урока (tsm-collapsible) */
+.tsm-collapsible {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Центрируем текст */
+    position: relative;
+    padding: 12px 30px; /* Даем отступ, чтобы текст не наехал на стрелку */
+    text-align: center;
+}
+.tsm-collapsible::after {
+    position: absolute;
+    right: 16px; /* Жестко фиксируем стрелку справа */
+    top: 50%;
+    transform: translateY(-50%);
+}
+.tsm-collapsible.active::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* 4. Сетка Слов (CSS Grid вместо span и br) */
+.tsm-word-row {
+    display: grid;
+    grid-template-columns: 32px 1fr 30px 60px 45px 50px;
+    align-items: center;
+    padding: 8px 10px;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+    transition: var(--tsm-transition);
+    gap: 8px;
+}
+.tsm-word-row:last-child { border-bottom: none; }
+.tsm-word-row:hover {
+    background: rgba(0, 240, 255, 0.06);
+}
+.tsm-word-row-header {
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.1), transparent);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #fbbf24;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+.tsm-word-text {
+    color: #30dbe3;
+    font-size: 13px;
+    font-weight: 500;
+    text-shadow: 0 0 6px rgba(0, 240, 255, 0.3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tsm-word-stat {
+    font-family: var(--tsm-font-mono);
+    font-size: 11px;
+    text-align: right;
+    color: var(--tsm-text-bisque);
+}
+
+/* 5. Кастомные Неоновые Чекбоксы */
+.tsm-custom-checkbox {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.tsm-custom-checkbox input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+    margin: 0;
+    padding: 0;
+}
+
+.tsm-checkmark {
+    position: absolute;
+    inset: 0;
+    width: 18px;
+    height: 18px;
+    background-color: rgba(0,0,0,0.5);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
+    pointer-events: none; /* пропускаем клики на input */
+    z-index: 1;
+}
+
+.tsm-custom-checkbox:hover input ~ .tsm-checkmark {
+    border-color: var(--tsm-neon-cyan);
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.3), inset 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.tsm-custom-checkbox input:checked ~ .tsm-checkmark {
+    background-color: rgba(0, 240, 255, 0.2);
+    border-color: var(--tsm-neon-cyan);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.tsm-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid var(--tsm-neon-cyan);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    filter: drop-shadow(0 0 2px var(--tsm-neon-cyan));
+}
+
+.tsm-custom-checkbox input:checked ~ .tsm-checkmark:after {
+    display: block;
 }

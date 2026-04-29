@@ -1,32 +1,32 @@
+/* =========================================================
+   TSM Chat Menu — NEON GLASS ULTRA Refactored
+   ========================================================= */
+
 var win_addChatMenu = `<div style="display: flex;">
-					<span style="cursor: -webkit-grab;">
-
-					     <div style="margin: 5px;" id="addChatMenuHeader">
-                            <button class="commonbtn hidebtns" title="скрывает меню" id="hideMeAddChatMenu">hide</button>
-							<span id="outputstatus" style="display:none; background:#537068; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border-radius: 20px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); border: 1px solid black; font-weight:700;padding: 5px;"></span>
-                        </div>
-
-						<input id="userid1" style="margin-left: 5px; width:100px; text-align:center;" placeholder="teacherId">
-						<input id="userid2" style="width:100px; text-align:center;" placeholder="userId #2">
-						<button class="commonbtn" id="addChat" style="margin:5px">➕💬</button>
-						<button class="commonbtn" id="RemoveChat" style="margin:5px">❌💬</button>
-					</span>
-				   </div>`;
+    <span style="cursor: -webkit-grab;">
+        <div style="margin: 5px;" id="addChatMenuHeader">
+            <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideMeAddChatMenu">hide</button>
+            <span id="outputstatus" style="display:none; background:#537068; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border-radius: 20px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); border: 1px solid black; font-weight:700;padding: 5px;"></span>
+        </div>
+        <input id="userid1" style="margin-left: 5px; width:100px; text-align:center;" class="tsm-input" placeholder="teacherId">
+        <input id="userid2" style="width:100px; text-align:center;" class="tsm-input" placeholder="userId #2">
+        <button class="tsm-btn" id="addChat" style="margin:5px">➕💬</button>
+        <button class="tsm-btn" id="RemoveChat" style="margin:5px">❌💬</button>
+    </span>
+</div>`;
 
 const wintAddChatMenu = createTSMWindow('AFMS_addChatMenu', 'winTopAddChatMenu', 'winLeftAddChatMenu', win_addChatMenu);
-wintAddChatMenu.className = 'wintInitializeChat';
+wintAddChatMenu.className = 'tsm-window tsm-window-chat';
 
-async function OpenAddChatMenu() { // открывает меню для удаления и добавления чатов
+async function OpenAddChatMenu() {
     if (wintAddChatMenu.style.display == 'none') {
-        wintAddChatMenu.style.display = ''
-
+        wintAddChatMenu.style.display = '';
         document.getElementById('userid1').value = await getUserId();
-        const fetchURLToken = "https://communications.skyeng.ru/gateway/support/chat-management"
+        const fetchURLToken = "https://communications.skyeng.ru/gateway/support/chat-management";
 
-
-        document.getElementById('addChat').addEventListener('click', function () { //функция добавления чата
+        document.getElementById('addChat').addEventListener('click', function () {
             const requestOptionsToken = {
-                method: 'POST', // Исправляем метод обратно на POST
+                method: 'POST',
                 credentials: 'include',
                 headers: {
                     "accept": "*/*",
@@ -43,24 +43,22 @@ async function OpenAddChatMenu() { // открывает меню для уда�
             chrome.runtime.sendMessage({ action: 'getOvercomeCORS', fetchURL: fetchURLToken, requestOptions: requestOptionsToken }, function (responseToken) {
                 if (responseToken.success) {
                     console.log('%cChat was added successfully!', 'color:lightgreen; font-weight:700');
-                    document.getElementById('outputstatus').innerText = "Чат добавлен"
-                    document.getElementById('outputstatus').style.color = "#48e114"
-                    document.getElementById('outputstatus').style.display = ""
+                    document.getElementById('outputstatus').innerText = "Чат добавлен";
+                    document.getElementById('outputstatus').style.color = "#48e114";
+                    document.getElementById('outputstatus').style.display = "";
                     setTimeout(() => {
-                        document.getElementById('outputstatus').innerText = ""
-                        document.getElementById('outputstatus').style.display = "none"
-                    }, 3000)
+                        document.getElementById('outputstatus').innerText = "";
+                        document.getElementById('outputstatus').style.display = "none";
+                    }, 3000);
                 } else {
                     console.log('Ошибка при добавлении чата');
                 }
             });
+        });
 
-        })
-
-        document.getElementById('RemoveChat').addEventListener('click', function () { //функция удаления чата
-
+        document.getElementById('RemoveChat').addEventListener('click', function () {
             const requestOptionsToken = {
-                method: 'POST', // Исправляем метод обратно на POST
+                method: 'POST',
                 credentials: 'include',
                 headers: {
                     "accept": "*/*",
@@ -77,27 +75,24 @@ async function OpenAddChatMenu() { // открывает меню для уда�
             chrome.runtime.sendMessage({ action: 'getOvercomeCORS', fetchURL: fetchURLToken, requestOptions: requestOptionsToken }, function (responseToken) {
                 if (responseToken.success) {
                     console.log('%cChat was removed successfully!', 'color:orange; font-weight:700');
-
-                    document.getElementById('outputstatus').innerText = "Чат удалён"
-                    document.getElementById('outputstatus').style.color = "orange"
-                    document.getElementById('outputstatus').style.display = ""
+                    document.getElementById('outputstatus').innerText = "Чат удалён";
+                    document.getElementById('outputstatus').style.color = "orange";
+                    document.getElementById('outputstatus').style.display = "";
                     setTimeout(() => {
-                        document.getElementById('outputstatus').innerText = ""
-                        document.getElementById('outputstatus').style.color = "#48e114"
-                        document.getElementById('outputstatus').style.display = "none"
-                    }, 3000)
+                        document.getElementById('outputstatus').innerText = "";
+                        document.getElementById('outputstatus').style.color = "#48e114";
+                        document.getElementById('outputstatus').style.display = "none";
+                    }, 3000);
                 } else {
                     console.log('Ошибка при удалении чата');
                 }
             });
+        });
 
-
-
-        })
-
-        document.getElementById('hideMeAddChatMenu').onclick = function () { //функция скрытия меню чатов
-            wintAddChatMenu.style.display = 'none'
-        }
+        document.getElementById('hideMeAddChatMenu').onclick = function () {
+            wintAddChatMenu.style.display = 'none';
+        };
+    } else {
+        wintAddChatMenu.style.display = 'none';
     }
-    else wintAddChatMenu.style.display = 'none'
 }

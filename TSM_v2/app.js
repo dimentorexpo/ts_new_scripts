@@ -1,3 +1,7 @@
+/* =========================================================
+   TSM Background Service Worker — NEON GLASS ULTRA Refactored
+   ========================================================= */
+
 const Messanger_API_URL = "https://mm-time.skyeng.tech/api/v4/posts";
 const OperId_API_URL = "https://mm-time.skyeng.tech/api/v4/users/me";
 let MMostOperId = '';
@@ -7,22 +11,22 @@ const ListTaskUrlPattern = "https://crm2.skyeng.ru/persons/*/customer-support/li
 const showForPages = ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*", "*://*.skyeng.tech/*"];
 const ChanelDev = "hg8rcub4pfg3dcae8jxkwzkq9h";
 const ChanelSupport = "pspyooisr3rd7qzx9as8uc96xc";
-let lastChatId = null; // Глобальная переменная для хранения последнего chatid
-let lastMessage = null; // Глобальная переменная для хранения последнего сообщения
+let lastChatId = null;
+let lastMessage = null;
 
 chrome.webRequest.onCompleted.addListener(
     function(details) {
-      if ((details.statusCode >= 400) && (details.statusCode <= 511)) {
-        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-          if (tabs[0]) {
-            chrome.tabs.sendMessage(tabs[0].id, { message: 'logRequest', details: details });
-          }
-        });
-      }
+        if ((details.statusCode >= 400) && (details.statusCode <= 511)) {
+            chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+                if (tabs[0]) {
+                    chrome.tabs.sendMessage(tabs[0].id, { message: 'logRequest', details: details });
+                }
+            });
+        }
     },
     {urls: ["<all_urls>"]}
-  );
-  
+);
+
 function createContextMenu(id, options) {
     chrome.contextMenus.remove(id, function () {
         if (chrome.runtime.lastError) {
@@ -99,14 +103,12 @@ chrome.runtime.onMessage.addListener(function (message) {
     }
 });
 
-createContextMenu("linkOption", { "id": "linkOption", "title": "Technical Support Master", "contexts": ["link"], "documentUrlPatterns": showForPages, "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] }); // обьявляем контекстное меню при выделении текста отвечает свойство selection
+createContextMenu("linkOption", { "id": "linkOption", "title": "Technical Support Master", "contexts": ["link"], "documentUrlPatterns": showForPages, "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] });
 
-createContextMenu("cancel1linebaseId", { "id": "cancel1linebaseId", "title": "🚫 Отмена ТП1Л (исход)", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] }); //опция для копирования ссылки для test msg
-createContextMenu("cancel1linewithtextId", { "id": "cancel1linewithtextId", "title": "💬 Написать ТП1Л (исход) со ссылкой", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] }); //опция для копирования ссылки для test msg
-createContextMenu("cancel2linewithtextId", { "id": "cancel2linewithtextId", "title": "💬 Написать 2ЛТП со ссылкой", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] }); //опция для копирования ссылки для test msg
-createContextMenu("cancel2linebaseId", { "id": "cancel2linebaseId", "title": "🚫 Отмена 2ЛТП", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] }); //опция для копирования ссылки для test msg
-
-// Обработка кликов
+createContextMenu("cancel1linebaseId", { "id": "cancel1linebaseId", "title": "🚫 Отмена ТП1Л (исход)", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] });
+createContextMenu("cancel1linewithtextId", { "id": "cancel1linewithtextId", "title": "💬 Написать ТП1Л (исход) со ссылкой", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] });
+createContextMenu("cancel2linewithtextId", { "id": "cancel2linewithtextId", "title": "💬 Написать 2ЛТП со ссылкой", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] });
+createContextMenu("cancel2linebaseId", { "id": "cancel2linebaseId", "title": "🚫 Отмена 2ЛТП", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] });
 
 const menuActions = {
     "searchPaymentId": searchpayment,
@@ -131,7 +133,6 @@ const menuActions = {
     "cancel1linewithtextId": sendCustomMessage1line,
     "cancel2linewithtextId": sendCustomMessage2line,
     "cancel2linebaseId": cancelsecondline
-    // Продолжите добавлять другие идентификаторы и функции здесь
 };
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -140,38 +141,37 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
 });
 
-// Функции для обработки действий
-function searchpayment(info, tab) { //опция открывает поиск платежа
+function searchpayment(info, tab) {
     const createProperties = { url: encodeURI("https://accounting.skyeng.ru/userpayment/search/transaction") };
     chrome.tabs.create(createProperties);
 }
 
-function balanceinfo(info, tab) { //опция открывает раздел Начислятор для просмотра баланса
+function balanceinfo(info, tab) {
     const createProperties = { url: encodeURI("https://billing-api.skyeng.ru/operations") };
     chrome.tabs.create(createProperties);
 }
 
-function certandpromo(info, tab) { //опция открывает раздел с сертификатом и промокодами
+function certandpromo(info, tab) {
     const createProperties = { url: encodeURI("https://billing-marketing.skyeng.ru/certificate/certSearch") };
     chrome.tabs.create(createProperties);
 }
 
-function opentt(info, tab) { // опция открывает раздел Timetable
+function opentt(info, tab) {
     const createProperties = { url: encodeURI("https://timetable.skyeng.ru/") };
     chrome.tabs.create(createProperties);
 }
 
-function opencalendar(info, tab) { // опция открывает datsy.info
+function opencalendar(info, tab) {
     const createProperties = { url: encodeURI("https://datsy.info/") };
     chrome.tabs.create(createProperties);
 }
 
-function makecompens(info, tab) { // опция открывает сайт с созданием компенсации
+function makecompens(info, tab) {
     const createProperties = { url: encodeURI("https://billing-marketing.skyeng.ru/accrual-operations/create") };
     chrome.tabs.create(createProperties);
 }
 
-function opentalksadm(info, tab) { // опция открывает админку Talks
+function opentalksadm(info, tab) {
     const createProperties = { url: encodeURI("https://vimbox.skyeng.ru/talks/admin/statistics") };
     chrome.tabs.create(createProperties);
 }
@@ -180,24 +180,18 @@ async function sendtodisaster(info, tab) {
     if (!MMostOperId) {
         MMostOperId = await getMMostOperId();
     }
-
-    // Запрос подтверждения от контентного скрипта
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, { action: "showConfirmDialog" }, async function (response) {
             if (response && response.confirmed) {
-                // Получение текста сообщения
                 const textmsg = response.textmsg;
-
                 if (!textmsg || textmsg.length <= 3) {
                     console.error("Текст слишком короткий или пустой");
                     return;
                 }
-
                 try {
                     let response = await sendFetchMessage(`:alert: ${textmsg}`, ChanelDev);
                     let tsresponse = response.id;
                     console.log(tsresponse);
-
                     await sendFetchMessage(`@techsupport-team @techsupport-leads @tech-curators @pk-chats @sos-inform-teachers @teacherscareteam @outbound-team-new @m-vhod @pm-team1 @premium-support @a-players @news`, ChanelDev, tsresponse);
                 } catch (error) {
                     console.error("Ошибка при отправке сообщения: ", error);
@@ -209,7 +203,6 @@ async function sendtodisaster(info, tab) {
     });
 }
 
-
 async function sendFetchMessage(message, channelId, rootId = "") {
     const headers = {
         "accept": "*/*",
@@ -219,16 +212,13 @@ async function sendFetchMessage(message, channelId, rootId = "") {
         "sec-fetch-site": "same-origin",
         "x-requested-with": "XMLHttpRequest"
     };
-
     const bodyData = {
         "message": message,
         "channel_id": channelId,
         "pending_post_id": `${MMostOperId}:`,
         "user_id": MMostOperId
     };
-
     if (rootId) bodyData.root_id = rootId;
-
     const response = await fetch(Messanger_API_URL, {
         headers,
         "referrerPolicy": "no-referrer",
@@ -237,31 +227,22 @@ async function sendFetchMessage(message, channelId, rootId = "") {
         "mode": "cors",
         "credentials": "include"
     });
-
     return await response.json();
 }
 
-function openinfo(info, tab) { // открытие информации в scriptPackage
+function openinfo(info, tab) {
     let selid = info.selectionText.replace(/\D/g, '');
-    console.log(selid)
+    console.log(selid);
     const laserExtensionId = "kggpdmfnfmmkneemhknlojemcjmdlpjb";
     let messageValue = {
         message: 'open-user-info',
         userId: selid,
-    }
-    console.log(messageValue)
-
-    let tabId = tab.id
-    console.log(tabId)
-
-    const message = {
-        messageValue,
-        tabId
-    }
-
-    chrome.runtime.sendMessage(laserExtensionId,
-        message,
-    );
+    };
+    console.log(messageValue);
+    let tabId = tab.id;
+    console.log(tabId);
+    const message = { messageValue, tabId };
+    chrome.runtime.sendMessage(laserExtensionId, message);
 }
 
 function extractLoginLink(text) {
@@ -274,10 +255,9 @@ function extractLoginLink(text) {
     return null;
 }
 
-function dologginer(info, tab) { // создание ссылки логинера
+function dologginer(info, tab) {
     let selid = info.selectionText.replace(/\D/g, '');
-    let tokenId = null; // Установите соответствующий токен здесь
-
+    let tokenId = null;
     fetch("https://id.skyeng.ru/admin/auth/login-links", {
         headers: { "content-type": "application/x-www-form-urlencoded" },
         referrer: "https://id.skyeng.ru/admin/auth/login-links",
@@ -299,51 +279,50 @@ function dologginer(info, tab) { // создание ссылки логинер
         });
 }
 
-function opencrmid(info, tab) { //открытие СРМки по выделенному ID пользователя
+function opencrmid(info, tab) {
     let selid = info.selectionText.replace(/\D/g, '');
     const createProperties = { url: encodeURI("https://crm2.skyeng.ru/persons/" + selid) };
     chrome.tabs.create(createProperties);
 }
 
-function creditpayments(info, tab) { //открытие рассрочек по выделенному ID пользователя 
+function creditpayments(info, tab) {
     let selid = info.selectionText.replace(/\D/g, '');
     const createProperties = { url: encodeURI("https://accounting.skyeng.ru/credit/list?studentId=" + selid) };
     chrome.tabs.create(createProperties);
 }
 
-function editadmacc(info, tab) { //открытие админки по выделенному ID пользователя
+function editadmacc(info, tab) {
     let selid = info.selectionText.replace(/\D/g, '');
     const createProperties = { url: encodeURI("https://id.skyeng.ru/admin/users/" + selid + "/update-contacts") };
     chrome.tabs.create(createProperties);
 }
 
-function copytoskipap(info, tab) { // копирование ссылки для пропуска АП
+function copytoskipap(info, tab) {
     let selid = info.selectionText.replace(/\D/g, '');
     let textToCopy = "https://student.skyeng.ru/product-stage?stage=auto-schedule&educationServiceId=" + selid;
     chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: textToCopy });
-
 }
 
-function copytoskipob(info, tab) { // копирование ссылки для пропуска Onboarding
+function copytoskipob(info, tab) {
     let selid = info.selectionText.replace(/\D/g, '');
     let textToCopy = "https://student.skyeng.ru/product-stage?stage=onboarding&educationServiceId=" + selid;
     chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: textToCopy });
 }
 
-function opentrm(info, tab) { //опция для открытия TRM2
+function opentrm(info, tab) {
     let selid = info.selectionText.replace(/\D/g, '');
-    const createProperties = { url: encodeURI("https://trm.skyeng.ru/teacher/" + selid) }
+    const createProperties = { url: encodeURI("https://trm.skyeng.ru/teacher/" + selid) };
     chrome.tabs.create(createProperties);
 }
 
-function openlgs(info, tab) { //опция для открытия LGS
+function openlgs(info, tab) {
     let selid = info.selectionText.replace(/\D/g, '');
-    const createProperties = { url: encodeURI("https://learning-groups-storage.skyeng.ru/group/" + selid + "?cp=(section:participants)") }
+    const createProperties = { url: encodeURI("https://learning-groups-storage.skyeng.ru/group/" + selid + "?cp=(section:participants)") };
     chrome.tabs.create(createProperties);
 }
 
-function opntshash(info, tab) { //опция для открытия ТШ по хэш комнаты
-    const createProperties = { url: encodeURI("https://video-trouble-shooter.skyeng.ru/?hash=" + info.selectionText) }
+function opntshash(info, tab) {
+    const createProperties = { url: encodeURI("https://video-trouble-shooter.skyeng.ru/?hash=" + info.selectionText) };
     chrome.tabs.create(createProperties);
 }
 
@@ -362,18 +341,15 @@ async function sendCustomMessage(info, tab, recipient) {
             console.error("MMostOperId не найден");
             return;
         }
-
         const activeTab = await getActiveTab();
         if (!activeTab) {
             console.error("Активная вкладка не найдена");
             return;
         }
-
         const response = await sendMessageToTab(activeTab.id, {
             action: "showPromptDialog",
             linkUrl: info.linkUrl,
         });
-
         if (response && response.textmsg) {
             if (response.textmsg.length > 3) {
                 const message = `@techsupport-${recipient} ${info.linkUrl} ${response.textmsg}`;
@@ -413,7 +389,6 @@ async function sendMessageToTab(tabId, message) {
     });
 }
 
-
 async function cancelsecondline(info, tab) {
     MMostOperId = await getMMostOperId();
     MMostOperId = await getMMostOperId();
@@ -423,7 +398,6 @@ async function cancelsecondline(info, tab) {
     }
 }
 
-// функция общения с stat.js чтобы отправлять запрос на получение какой либо инфы для обхода CORS
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.name === "Ctxt") {
         if (request.question == 'sendResponse') {
@@ -433,32 +407,27 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             return true;
         }
     }
-	
-		if (request.action === 'getOvercomeCORS') {
-		const url = request.fetchURL;
-		const requestOptions = request.requestOptions;
-
-		(async () => {
-			try {
-				const response = await fetch(url, requestOptions);
-				if (!response.ok) {
-					throw new Error('Network response was not ok (проверь авторизацию в CRM, после чего повтори попытку): ' + response.status + " " + response.statusText);
-				}
-				const text = await response.text(); // Или response.json(), если ожидается JSON
-				sendResponse({ success: true, fetchansver: text });
-			} catch (error) {
-				sendResponse({ success: false, error: error.message });
-			}
-		})();
-
-		return true; // Возвращаем true для асинхронной отправки ответа
-	}
-	
+    if (request.action === 'getOvercomeCORS') {
+        const url = request.fetchURL;
+        const requestOptions = request.requestOptions;
+        (async () => {
+            try {
+                const response = await fetch(url, requestOptions);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok (проверь авторизацию в CRM, после чего повтори попытку): ' + response.status + " " + response.statusText);
+                }
+                const text = await response.text();
+                sendResponse({ success: true, fetchansver: text });
+            } catch (error) {
+                sendResponse({ success: false, error: error.message });
+            }
+        })();
+        return true;
+    }
 });
 
 async function getMMostOperId() {
     try {
-        // Получаем значение из хранилища Chrome
         const MMostOperId = await new Promise((resolve, reject) => {
             chrome.storage.local.get(['matermost_oid'], function (result) {
                 if (chrome.runtime.lastError) {
@@ -467,19 +436,13 @@ async function getMMostOperId() {
                 resolve(result.matermost_oid);
             });
         });
-
-        // Если значение найдено в хранилище, возвращаем его
         if (MMostOperId) {
             return MMostOperId;
         } else {
-            // Запрашиваем данные из API
             const response = await fetch(OperId_API_URL);
             if (!response.ok) throw new Error("Failed to fetch user data.");
-
             const data = await response.json();
             const newMMostOperId = data.id;
-
-            // Сохраняем полученный ID в хранилище Chrome
             await new Promise((resolve, reject) => {
                 chrome.storage.local.set({ 'matermost_oid': newMMostOperId }, function () {
                     if (chrome.runtime.lastError) {
@@ -488,7 +451,6 @@ async function getMMostOperId() {
                     resolve();
                 });
             });
-
             return newMMostOperId;
         }
     } catch (error) {
@@ -497,17 +459,14 @@ async function getMMostOperId() {
     }
 }
 
-
 function sendMattermostMessage(message) {
-    lastMessage = message; // Сохраняем каждое новое сообщение
-
+    lastMessage = message;
     let bodyData = {
         message: message,
         channel_id: ChanelSupport,
         pending_post_id: `${MMostOperId}:`,
         user_id: MMostOperId
     };
-
     fetch(Messanger_API_URL, {
         "headers": {
             "accept": "*/*",
@@ -533,13 +492,11 @@ function sendMattermostMessage(message) {
 }
 
 function transfertoTSM(Chatid) {
-    if (Chatid === lastChatId) { // Если текущий chatid такой же, как и передыдущий
-        sendMattermostMessage(lastMessage); // Пересылаем сообщение заново
-        return; // Прекращаем выполнение функции, чтобы не отправлять сообщение в content.js
+    if (Chatid === lastChatId) {
+        sendMattermostMessage(lastMessage);
+        return;
     }
-
-    lastChatId = Chatid; // Обновляем последний chatid
-
+    lastChatId = Chatid;
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const activeTab = tabs[0];
         if (activeTab) {
