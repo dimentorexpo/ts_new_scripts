@@ -68,9 +68,7 @@ const adjustDate = (id, delta) => {
 // 🌐 ФУНКЦИИ ЗАПРОСОВ
 // ============================================================================
 
-async function doOperationsWithHistory(body = "") {
-    return apiFetch(CONFIGSTAT.API.CONVERSATIONS_HISTORY, body, 'POST');
-}
+
 async function fetchStaticDataStat() {
     return apiFetch(CONFIGSTAT.API.OPERATORS_STATS);
 }
