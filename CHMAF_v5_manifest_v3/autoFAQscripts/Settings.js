@@ -677,6 +677,11 @@ async function init_settings() {
 
             /* Стили для круглых кнопок-пресетов */
             .bg-preset { width: 32px !important; height: 32px !important; padding: 0 !important; border-radius: 50% !important; border: 2px solid rgba(255, 255, 255, 0.2) !important; }
+            .bg-preset.active {
+                box-shadow: 0 0 0 2px #7c4dff, 0 0 8px rgba(124, 77, 255, 0.5) !important;
+                border-color: #7c4dff !important;
+                transform: scale(1.15) !important;
+            }
         `;
         document.head.appendChild(style);
     };
@@ -900,12 +905,28 @@ async function init_settings() {
         });
 
         // --- Логика для Цвета Фона ---
+        // --- Логика для Цвета Фона ---
         const bgPicker = document.getElementById('appBgColorPicker');
+
+        // Подсветка выбранного пресета
+        const updateActivePreset = (currentColor) => {
+            const normalized = currentColor.toUpperCase();
+            document.querySelectorAll('.bg-preset').forEach(btn => {
+                if (btn.getAttribute('data-color').toUpperCase() === normalized) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        };
+
         bgPicker.value = Settings.get('appBgColor');
+        updateActivePreset(Settings.get('appBgColor')); // подсветить при открытии
 
         bgPicker.oninput = (e) => {
             Settings.set('appBgColor', e.target.value);
-            applyAppBgColor(); // Применяем сразу (и в main, и в iframe)
+            updateActivePreset(e.target.value); // снять подсветку, если кастомный цвет
+            applyAppBgColor();
         };
 
         document.querySelectorAll('.bg-preset').forEach(btn => {
@@ -913,6 +934,7 @@ async function init_settings() {
                 const color = btn.getAttribute('data-color');
                 bgPicker.value = color;
                 Settings.set('appBgColor', color);
+                updateActivePreset(color); // подсветить нажатый
                 applyAppBgColor();
             };
         });

@@ -2825,25 +2825,69 @@
 	}
 
 	/* ═══ gpanneon GLASS ULTRA ═══ */
+	/* ═══ NEON GLASS ULTRA v2 ═══ */
+	:root {
+		--neon-h: 190;
+		--neon-s: 90%;
+		--neon-l: 60%;
+		/* Cyan по умолчанию */
+		--neon: hsl(var(--neon-h), var(--neon-s), var(--neon-l));
+		--neon-dim: hsl(var(--neon-h), var(--neon-s), 45%);
+		--neon-bright: hsl(var(--neon-h), var(--neon-s), 75%);
+		--neon-glow: hsla(var(--neon-h), var(--neon-s), var(--neon-l), 0.4);
+	}
+
+	/* Темы (добавь класс к кнопке) */
+	.neon-cyan {
+		--neon-h: 190;
+		--neon-s: 95%;
+		--neon-l: 58%;
+	}
+
+	.neon-amber {
+		--neon-h: 35;
+		--neon-s: 95%;
+		--neon-l: 58%;
+	}
+
+	.neon-emerald {
+		--neon-h: 150;
+		--neon-s: 80%;
+		--neon-l: 55%;
+	}
+
+	.neon-rose {
+		--neon-h: 340;
+		--neon-s: 90%;
+		--neon-l: 65%;
+	}
+
+	.neon-violet {
+		--neon-h: 265;
+		--neon-s: 90%;
+		--neon-l: 68%;
+	}
+
 	.gpanneon-glass-btn {
-		width: 52px;
-		height: 52px;
+		--size: 50px;
+		width: var(--size);
+		height: var(--size);
 		background:
-			linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%),
-			rgba(15, 10, 35, 0.6);
-		backdrop-filter: blur(14px) saturate(150%);
-		-webkit-backdrop-filter: blur(14px) saturate(150%);
-		border: 1.5px solid rgba(137, 22, 220, 0.45);
+			linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%),
+			rgba(12, 10, 28, 0.55);
+		backdrop-filter: blur(16px) saturate(140%);
+		-webkit-backdrop-filter: blur(16px) saturate(140%);
+		border: 1px solid hsla(var(--neon-h), var(--neon-s), 55%, 0.35);
 		border-radius: 50%;
-		color: #f0e6ff;
-		font-size: 22px;
+		color: hsl(var(--neon-h), 30%, 92%);
+		font-size: 20px;
 		line-height: 1;
 		cursor: pointer;
 		box-shadow:
-			0 0 10px rgba(137, 22, 220, 0.35),
-			0 0 25px rgba(137, 22, 220, 0.15),
-			inset 0 1px 0 rgba(255, 255, 255, 0.12);
-		transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+			0 0 8px hsla(var(--neon-h), var(--neon-s), 50%, 0.15),
+			0 4px 12px rgba(0, 0, 0, 0.25),
+			inset 0 1px 0 rgba(255, 255, 255, 0.08);
+		transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 		position: relative;
 		overflow: hidden;
 		display: inline-flex;
@@ -2853,82 +2897,87 @@
 		margin: 0;
 		outline: none;
 		-webkit-tap-highlight-color: transparent;
+		user-select: none;
 	}
 
+	/* Блик сверху */
 	.gpanneon-glass-btn::before {
 		content: '';
 		position: absolute;
-		top: -50%;
-		left: -50%;
-		width: 200%;
-		height: 200%;
-		background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.08) 50%, transparent 60%);
-		transform: rotate(45deg) translateX(-100%);
-		transition: transform 0.7s ease;
+		inset: 0;
+		border-radius: 50%;
+		background: radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.12) 0%, transparent 55%);
 		pointer-events: none;
 	}
 
+	/* Анимированное свечение по ободу */
 	.gpanneon-glass-btn::after {
 		content: '';
 		position: absolute;
-		inset: -3px;
+		inset: -2px;
 		border-radius: 50%;
-		border: 1.5px solid transparent;
-		background: conic-gradient(from 0deg, transparent, rgba(137, 22, 220, 0.7), transparent 35%) border-box;
-		-webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+		padding: 1.5px;
+		background: conic-gradient(from var(--angle, 0deg),
+				transparent 0%,
+				var(--neon) 18%,
+				var(--neon-bright) 25%,
+				transparent 35%);
+		-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
 		-webkit-mask-composite: xor;
 		mask-composite: exclude;
 		opacity: 0;
 		transition: opacity 0.4s ease;
-		animation: gpanneonSpin 2.5s linear infinite;
+		animation: neonRotate 3s linear infinite;
 		pointer-events: none;
 	}
 
-	@keyframes gpanneonSpin {
+	@property --angle {
+		syntax: '<angle>';
+		initial-value: 0deg;
+		inherits: false;
+	}
+
+	@keyframes neonRotate {
 		to {
-			transform: rotate(360deg);
+			--angle: 360deg;
 		}
 	}
 
+	/* Hover — мягкое усиление */
 	.gpanneon-glass-btn:hover {
 		background:
-			linear-gradient(135deg, rgba(137, 22, 220, 0.2) 0%, rgba(60, 0, 140, 0.12) 100%),
-			rgba(20, 5, 45, 0.7);
-		color: #ffffff;
-		border-color: rgba(190, 120, 255, 0.8);
+			linear-gradient(145deg, hsla(var(--neon-h), var(--neon-s), 50%, 0.15) 0%, hsla(var(--neon-h), var(--neon-s), 30%, 0.05) 100%),
+			rgba(16, 12, 38, 0.65);
+		color: #fff;
+		border-color: hsla(var(--neon-h), var(--neon-s), 65%, 0.7);
 		box-shadow:
-			0 0 20px rgba(137, 22, 220, 0.6),
-			0 0 45px rgba(137, 22, 220, 0.3),
-			0 0 80px rgba(137, 22, 220, 0.1),
-			inset 0 1px 0 rgba(255, 255, 255, 0.2);
-		transform: scale(1.1);
-		text-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
-	}
-
-	.gpanneon-glass-btn:hover::before {
-		transform: rotate(45deg) translateX(100%);
+			0 0 16px var(--neon-glow),
+			0 0 32px hsla(var(--neon-h), var(--neon-s), 50%, 0.15),
+			0 6px 20px rgba(0, 0, 0, 0.3),
+			inset 0 1px 0 rgba(255, 255, 255, 0.15);
+		transform: scale(1.12);
+		text-shadow: 0 0 10px var(--neon-glow);
 	}
 
 	.gpanneon-glass-btn:hover::after {
-		opacity: 1;
+		opacity: 0.85;
 	}
 
+	/* Active — мгновенный отклик */
 	.gpanneon-glass-btn:active {
-		transform: scale(0.95);
-		background:
-			linear-gradient(135deg, rgba(137, 22, 220, 0.3) 0%, rgba(30, 0, 80, 0.25) 100%),
-			rgba(8, 2, 25, 0.95);
-		border-color: rgba(210, 150, 255, 1);
+		transform: scale(0.92);
+		background: rgba(8, 6, 22, 0.85);
+		border-color: var(--neon);
 		box-shadow:
-			0 0 30px rgba(137, 22, 220, 0.8),
-			0 0 60px rgba(137, 22, 220, 0.4),
-			inset 0 2px 10px rgba(0, 0, 0, 0.5);
-		transition: all 0.08s ease;
+			0 0 24px var(--neon-glow),
+			inset 0 2px 8px rgba(0, 0, 0, 0.5);
+		transition: all 0.06s ease;
 	}
 
+	/* Focus */
 	.gpanneon-glass-btn:focus-visible {
 		outline: none;
 		box-shadow:
-			0 0 20px rgba(137, 22, 220, 0.5),
-			0 0 0 3px rgba(137, 22, 220, 0.25);
+			0 0 0 2px rgba(12, 10, 28, 0.8),
+			0 0 0 4px hsla(var(--neon-h), var(--neon-s), 60%, 0.4);
 	}
