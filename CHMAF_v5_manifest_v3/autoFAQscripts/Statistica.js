@@ -799,7 +799,7 @@ async function checkCSAT() {
                     loaderProgress.style.width = `${pct}%`;
                 }
 
-                const chat = await doOperationsWithConversations(item.conversationId).then(r => r.json());
+                const chat = await doOperationsWithConversations(item.conversationId);
 
                 if (typeof operatorId !== 'undefined' && chat.operatorId !== operatorId) continue;
 

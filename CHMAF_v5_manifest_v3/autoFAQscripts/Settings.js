@@ -243,6 +243,29 @@ async function init_settings() {
                 font-weight: 600 !important;
             }
 
+            /* ═══ 12.5. USER (data-author-type="user") — приятный синий ═══ */
+[class*="ChatMessages_RegularMessage__"][data-author-type="user"] {
+    background-color: rgba(66, 133, 244, 0.18) !important;
+    border: 1px solid rgba(66, 133, 244, 0.35) !important;
+    border-radius: 8px !important;
+    padding: 3px 6px !important;
+    margin: 2px 0 !important;
+}
+[class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"],
+[class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Date__"],
+[class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
+    color: #e3f2fd !important;
+    background: transparent !important;
+}
+[class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"] {
+    font-weight: 600 !important;
+}
+[class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="Buttons_SharedButton__"] {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #bbdefb !important;
+    border-color: rgba(66, 133, 244, 0.4) !important;
+}
+
             /* ═══ 13. ЗАМЕТКИ (CommentMessagesGroup) — серый ═══ */
             [class*="ChatMessages_CommentMessagesGroup__"] {
                 background-color: rgba(96, 125, 139, 0.25) !important;
