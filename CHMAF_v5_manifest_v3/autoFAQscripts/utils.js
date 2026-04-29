@@ -108,13 +108,13 @@ async function move_again_AF() { //с АФ шняга там стили шмил
 
     let sidePanel = document.createElement('div') // добавляем невидимую боковую панель, на которой будем размещать кнопки
     sidePanel.id = "rightPanel"
-    sidePanel.style = 'position: fixed; top: 110px; right: 22px; z-index: 1000000; width: 40px; font-size: 22px; cursor: pointer; transition: all 0.5s ease;'
+    sidePanel.style = 'position: fixed; top: 200px; right: 22px; z-index: 1000000; width: 40px; font-size: 22px; cursor: pointer; transition: all 0.5s ease;'
     document.body.append(sidePanel)
 
     let ScriptBut = document.createElement('button');
     ScriptBut.id = 'scriptBut';
     ScriptBut.innerHTML = "🧩";
-    ScriptBut.classList.add(rightPanelBtn, 'mainButton')
+    ScriptBut.classList.add('gpanneon-glass-btn')
     ScriptBut.onclick = function () {
         if (document.getElementById('AF_helper').style.display != 'flex') {
             document.getElementById('AF_helper').style.display = 'flex'
@@ -131,7 +131,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     butThemes.id = "themes"
     butThemes.innerHTML = "📚"
     butThemes.title = "[Темы] - кнопка открывающая окно с темами и тегами"
-    butThemes.classList.add(rightPanelBtn, 'mainButton')
+    butThemes.classList.add('gpanneon-glass-btn')
     document.getElementById('rightPanel').appendChild(butThemes)
     document.getElementById('themes').onclick = getThemesButtonPress;
 
@@ -139,7 +139,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     MainMenuBtn.textContent = "👺"
     MainMenuBtn.id = 'MainMenuBtn'
     MainMenuBtn.title = '[Меню] - По клику открывает список инструментов необходимых для работы'
-    MainMenuBtn.classList.add(rightPanelBtn, 'mainButton')
+    MainMenuBtn.classList.add('gpanneon-glass-btn')
     MainMenuBtn.onclick = function () {
         if (document.getElementById('idmymenu').style.display == 'none') {
             document.getElementById('idmymenu').style.display = ''
@@ -202,7 +202,7 @@ async function move_again_AF() { //с АФ шняга там стили шмил
     openchhis.innerHTML = '☢'
     openchhis.id = 'opennewcat'
     openchhis.title = 'Открывает виджет просмотра истории чатов'
-    openchhis.classList.add(rightPanelBtn, 'mainButton')
+    openchhis.classList.add('gpanneon-glass-btn')
     document.getElementById('rightPanel').appendChild(openchhis) // добавляем на панель кнопку открытия формы просмотра истории чата
     document.getElementById('opennewcat').onclick = getopennewcatButtonPress;
 
@@ -367,7 +367,7 @@ function prepTp() {
         button.id = id;
         button.innerHTML = innerHTML;
         button.title = title || '';
-        button.className = ['onlyfortp', rightPanelBtn, 'mainButton'].concat(classes || []).join(' ');
+        button.className = ['onlyfortp', 'gpanneon-glass-btn'].concat(classes || []).join(' ');
         button.onclick = onClick;
         return button;
     };

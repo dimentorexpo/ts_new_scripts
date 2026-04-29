@@ -1266,51 +1266,6 @@
 
 	/* Конец*/
 
-	.rightPanelBtnlight {
-		width: 40px;
-		height: 40px;
-		margin-bottom: 4px;
-		font-size: 22px;
-		cursor: pointer;
-		border-radius: 50%;
-		opacity: 0.5;
-		transition: all 0.5s ease;
-	}
-
-	.rightPanelBtnlight:hover {
-		opacity: 1 !important;
-		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-		text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-		width: 45px !important;
-		height: 45px !important;
-		font-size: 23px !important;
-	}
-
-	.rightPanelBtndark {
-		width: 40px;
-		height: 40px;
-		margin-bottom: 4px;
-		font-size: 22px;
-		cursor: pointer;
-		border-radius: 50%;
-		opacity: 0.6;
-		background: rgba(0, 0, 0, 0.9);
-		color: bisque;
-		border: 2px solid bisque;
-		transition: all 0.5s ease;
-	}
-
-	.rightPanelBtndark:hover {
-		opacity: 1 !important;
-		background: #8916dc;
-		color: black;
-		box-shadow: 0px 3px 1px rgba(218, 165, 32, 0.6);
-		text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.6);
-		width: 45px !important;
-		height: 45px !important;
-		font-size: 23px !important;
-	}
-
 	.snowflake {
 		/* стиль для снежинок */
 		position: absolute;
@@ -2867,4 +2822,113 @@
 
 	.skyeng-mod-pulse {
 		animation: skyeng-mod-pulse 1.5s infinite;
+	}
+
+	/* ═══ gpanneon GLASS ULTRA ═══ */
+	.gpanneon-glass-btn {
+		width: 52px;
+		height: 52px;
+		background:
+			linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%),
+			rgba(15, 10, 35, 0.6);
+		backdrop-filter: blur(14px) saturate(150%);
+		-webkit-backdrop-filter: blur(14px) saturate(150%);
+		border: 1.5px solid rgba(137, 22, 220, 0.45);
+		border-radius: 50%;
+		color: #f0e6ff;
+		font-size: 22px;
+		line-height: 1;
+		cursor: pointer;
+		box-shadow:
+			0 0 10px rgba(137, 22, 220, 0.35),
+			0 0 25px rgba(137, 22, 220, 0.15),
+			inset 0 1px 0 rgba(255, 255, 255, 0.12);
+		transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+		position: relative;
+		overflow: hidden;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		margin: 0;
+		outline: none;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.gpanneon-glass-btn::before {
+		content: '';
+		position: absolute;
+		top: -50%;
+		left: -50%;
+		width: 200%;
+		height: 200%;
+		background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.08) 50%, transparent 60%);
+		transform: rotate(45deg) translateX(-100%);
+		transition: transform 0.7s ease;
+		pointer-events: none;
+	}
+
+	.gpanneon-glass-btn::after {
+		content: '';
+		position: absolute;
+		inset: -3px;
+		border-radius: 50%;
+		border: 1.5px solid transparent;
+		background: conic-gradient(from 0deg, transparent, rgba(137, 22, 220, 0.7), transparent 35%) border-box;
+		-webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+		-webkit-mask-composite: xor;
+		mask-composite: exclude;
+		opacity: 0;
+		transition: opacity 0.4s ease;
+		animation: gpanneonSpin 2.5s linear infinite;
+		pointer-events: none;
+	}
+
+	@keyframes gpanneonSpin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	.gpanneon-glass-btn:hover {
+		background:
+			linear-gradient(135deg, rgba(137, 22, 220, 0.2) 0%, rgba(60, 0, 140, 0.12) 100%),
+			rgba(20, 5, 45, 0.7);
+		color: #ffffff;
+		border-color: rgba(190, 120, 255, 0.8);
+		box-shadow:
+			0 0 20px rgba(137, 22, 220, 0.6),
+			0 0 45px rgba(137, 22, 220, 0.3),
+			0 0 80px rgba(137, 22, 220, 0.1),
+			inset 0 1px 0 rgba(255, 255, 255, 0.2);
+		transform: scale(1.1);
+		text-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+	}
+
+	.gpanneon-glass-btn:hover::before {
+		transform: rotate(45deg) translateX(100%);
+	}
+
+	.gpanneon-glass-btn:hover::after {
+		opacity: 1;
+	}
+
+	.gpanneon-glass-btn:active {
+		transform: scale(0.95);
+		background:
+			linear-gradient(135deg, rgba(137, 22, 220, 0.3) 0%, rgba(30, 0, 80, 0.25) 100%),
+			rgba(8, 2, 25, 0.95);
+		border-color: rgba(210, 150, 255, 1);
+		box-shadow:
+			0 0 30px rgba(137, 22, 220, 0.8),
+			0 0 60px rgba(137, 22, 220, 0.4),
+			inset 0 2px 10px rgba(0, 0, 0, 0.5);
+		transition: all 0.08s ease;
+	}
+
+	.gpanneon-glass-btn:focus-visible {
+		outline: none;
+		box-shadow:
+			0 0 20px rgba(137, 22, 220, 0.5),
+			0 0 0 3px rgba(137, 22, 220, 0.25);
 	}

@@ -90,6 +90,24 @@ async function init_settings() {
 }
 `;
 
+        // ⬇️ ДОБАВИТЬ ЭТО — для светлой темы
+        if (isWhite) {
+            cssRules += `
+        [class*="DialogsCard_PayloadStatus__"] svg {
+            color: #e65100 !important;
+            filter: drop-shadow(0 1px 2px rgba(230, 81, 0, 0.2)) !important;
+            width: 22px !important;
+            height: 22px !important;
+            transition: all 0.2s ease;
+        }
+        [class*="DialogsCard_Card"]:hover [class*="DialogsCard_PayloadStatus__"] svg {
+            color: #ff3d00 !important;
+            filter: drop-shadow(0 2px 4px rgba(255, 61, 0, 0.3)) !important;
+            transform: scale(1.1) !important;
+        }
+    `;
+        }
+
         if (!isWhite) {
             cssRules += `
             /* ═══ 1. КАРТОЧКИ ДИАЛОГОВ (с поддержкой цвета таймера) ═══ */
@@ -588,6 +606,21 @@ async function init_settings() {
             [class*="mantine-Accordion-chevron"] svg {
                 color: ${textColor} !important;
             }
+
+            /* ═══ СТАТУС ДИАЛОГА (SVG иконка) — ярко-оранжевая, хорошо видна на тёмном ═══ */
+[class*="DialogsCard_PayloadStatus__"] svg {
+    color: #ff9800 !important;           /* Янтарно-оранжевый, как у user-сообщений */
+    filter: drop-shadow(0 0 3px rgba(255, 152, 0, 0.6)) !important;
+    width: 22px !important;               /* Чуть крупнее */
+    height: 22px !important;
+    transition: filter 0.2s ease;
+}
+
+/* При наведении на карточку — усиливаем свечение */
+[class*="DialogsCard_Card"]:hover [class*="DialogsCard_PayloadStatus__"] svg {
+    filter: drop-shadow(0 0 6px rgba(255, 152, 0, 0.9)) !important;
+    color: #ffb74d !important;
+}
         `;
         }
 

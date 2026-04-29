@@ -181,7 +181,6 @@ let selectedinpth = 'calendarmyinputsdark';
 let otherinpth = 'othercalendardark';
 let selecttheme = 'darkopts';
 let menutheme = 'menubarstyledark';
-let rightPanelBtn = 'rightPanelBtndark';
 
 var win_mainmenu = // описание кнопок меню
     `<div>
@@ -953,7 +952,7 @@ maskBack.id = "maskBack"
 maskBack.innerHTML = "↩️"
 maskBack.title = "Вернуть скрытое окно"
 maskBack.style = 'display: none;'
-maskBack.classList.add(rightPanelBtn, 'mainButton')
+maskBack.classList.add('gpanneon-glass-btn')
 
 maskBack.onclick = function () { // функция кнопки вернуть
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
