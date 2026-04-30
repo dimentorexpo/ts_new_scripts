@@ -122,17 +122,17 @@ async function operstatusleftbar() {
             <div id="op-st-stats-panel" class="op-st-hud-trench" style="display: ${hidesummary ? 'none' : 'flex'}">
                 <div class="hud-module m-online">
                     <div class="hud-mod-glow"></div>
-                    <div class="hud-mod-header"><span class="hud-diamond"></span>ОНЛАЙН</div>
+                    <div class="hud-mod-header">ОНЛАЙН</div>
                     <div class="hud-mod-value">${stats.online}</div>
                 </div>
                 <div class="hud-module m-busy">
                     <div class="hud-mod-glow"></div>
-                    <div class="hud-mod-header"><span class="hud-diamond"></span>ЗАНЯТ</div>
+                    <div class="hud-mod-header">ЗАНЯТ</div>
                     <div class="hud-mod-value">${stats.busy}</div>
                 </div>
                 <div class="hud-module m-pause">
                     <div class="hud-mod-glow"></div>
-                    <div class="hud-mod-header"><span class="hud-diamond"></span>ПЕРЕРЫВ</div>
+                    <div class="hud-mod-header">ПЕРЕРЫВ</div>
                     <div class="hud-mod-value">${stats.pause}</div>
                 </div>
             </div>
@@ -342,7 +342,6 @@ const injectOpStatusStyles = () => {
         .op-st-main-container {
             width: 200px;
             margin: 12px auto;
-            padding: 16px;
             background:
                 linear-gradient(135deg, var(--glass-bg) 0%, rgba(5, 5, 15, 0.96) 100%),
                 url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23181830' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
@@ -379,8 +378,7 @@ const injectOpStatusStyles = () => {
             background: linear-gradient(145deg, rgba(22, 22, 38, 0.55) 0%, rgba(12, 12, 22, 0.75) 100%);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 16px;
-            padding: 14px;
-            margin-bottom: 16px;
+            margin-bottom: 5px;
             box-shadow:
                 0 8px 32px rgba(0, 0, 0, 0.35),
                 inset 0 1px 0 rgba(255, 255, 255, 0.04);
