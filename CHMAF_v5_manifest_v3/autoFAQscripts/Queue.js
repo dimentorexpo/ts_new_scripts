@@ -1,12 +1,12 @@
 /**
- * Refactored Chat Queue Module (Stable Version 5.0)
- * Visual Style: Glassmorphism
+ * Refactored Chat Queue Module (Premium Edition 5.0)
+ * Visual Style: Luxury Glassmorphism
  * Unique Prefix: qg5-
  * Filename: pisa.js
  */
 
 (function () {
-    let dataChts = []; // Глобальная внутри модуля для совместимости с логикой пользователя
+    let dataChts = [];
 
     const state = {
         refreshInterval: null,
@@ -21,32 +21,258 @@
         style.id = 'qg5-styles';
         style.innerHTML = `
             .qg5-panel {
-                background: rgba(30, 32, 45, 0.9) !important;
-                backdrop-filter: blur(25px);
-                border: 1px solid rgba(255, 255, 255, 0.15) !important;
-                border-radius: 20px;
-                color: #e0e0e0;
-                font-family: 'Segoe UI', system-ui, sans-serif;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-                padding: 18px !important;
-                width: 620px;
+                background: linear-gradient(145deg, rgba(28, 31, 48, 0.96) 0%, rgba(38, 42, 64, 0.96) 50%, rgba(32, 36, 56, 0.96) 100%) !important;
+                backdrop-filter: blur(40px) saturate(180%);
+                -webkit-backdrop-filter: blur(40px) saturate(180%);
+                border: 1px solid rgba(212, 175, 55, 0.18) !important;
+                border-radius: 24px;
+                color: #e8eaf6;
+                font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
+                box-shadow:
+                    0 24px 80px rgba(0, 0, 0, 0.55),
+                    0 0 0 1px rgba(212, 175, 55, 0.06),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+                padding: 24px !important;
+                width: 640px;
                 z-index: 1000003;
+                position: relative;
+                overflow: hidden;
             }
-            .qg5-header { display: flex; align-items: center; gap: 15px; margin-bottom: 18px; cursor: grab; }
-            .qg5-stats { display: flex; gap: 12px; font-size: 13px; background: rgba(0, 0, 0, 0.4); padding: 6px 15px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
-            .qg5-controls { display: flex; gap: 12px; margin-bottom: 18px; align-items: center; flex-wrap: wrap; }
-            .qg5-input { background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: #fff; padding: 7px 12px; outline: none; font-size: 14px; }
-            .qg5-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 8px 16px; border-radius: 12px; cursor: pointer; transition: all 0.3s; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-            .qg5-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); border-color: #4facfe; transform: translateY(-1px); }
-            .qg5-list { max-height: 520px; overflow-y: auto; padding-right: 8px; }
-            .qg5-list::-webkit-scrollbar { width: 5px; }
-            .qg5-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
-            .qg5-item { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; transition: all 0.25s; cursor: pointer; }
-            .qg5-item:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2); transform: translateX(4px); }
-            .qg5-time { font-family: monospace; color: #0be90b; font-weight: 800; width: 75px; font-size: 14px; }
-            .qg5-timer { font-family: monospace; color: #fbc02d; min-width: 80px; text-align: right; font-size: 14px; }
-            .qg5-usr-name { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; color: bisque; }
-            .qg5-badge { font-size: 16px; min-width: 25px; text-align: center; }
+            .qg5-panel::before {
+                content: '';
+                position: absolute;
+                top: 0; left: 15%; right: 15%; height: 1px;
+                background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.35), transparent);
+                pointer-events: none;
+            }
+            .qg5-header {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                margin-bottom: 20px;
+                cursor: grab;
+                padding-bottom: 16px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .qg5-stats {
+                display: flex;
+                gap: 16px;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.8px;
+                text-transform: uppercase;
+                background: rgba(0, 0, 0, 0.28);
+                padding: 8px 18px;
+                border-radius: 50px;
+                border: 1px solid rgba(212, 175, 55, 0.1);
+                box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
+                color: #8e96b8;
+            }
+            .qg5-stats b {
+                color: #f0c674;
+                font-weight: 800;
+                font-family: 'JetBrains Mono', 'SF Mono', monospace;
+                letter-spacing: 0;
+            }
+            .qg5-controls {
+                display: flex;
+                gap: 14px;
+                margin-bottom: 20px;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            .qg5-input {
+                background: rgba(0, 0, 0, 0.35);
+                border: 1px solid rgba(212, 175, 55, 0.12);
+                border-radius: 12px;
+                color: #f0f2ff;
+                padding: 9px 14px;
+                outline: none;
+                font-size: 13px;
+                font-family: inherit;
+                transition: all 0.3s ease;
+                box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .qg5-input:focus {
+                border-color: rgba(212, 175, 55, 0.4);
+                box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08), inset 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .qg5-input option {
+                background: #1e2235;
+                color: #e8eaf6;
+            }
+            .qg5-btn {
+                background: linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+                border: 1px solid rgba(212, 175, 55, 0.12);
+                color: #f0f2ff;
+                padding: 9px 18px;
+                border-radius: 14px;
+                cursor: pointer;
+                transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+                font-size: 13px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                letter-spacing: 0.3px;
+                position: relative;
+                overflow: hidden;
+                font-family: inherit;
+            }
+            .qg5-btn:hover:not(:disabled) {
+                background: linear-gradient(145deg, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05));
+                border-color: rgba(212, 175, 55, 0.4);
+                transform: translateY(-2px);
+                box-shadow: 0 8px 28px rgba(212, 175, 55, 0.12);
+                color: #ffffff;
+            }
+            .qg5-btn:active:not(:disabled) {
+                transform: translateY(0);
+            }
+            .qg5-btn:disabled {
+                opacity: 0.35;
+                cursor: not-allowed;
+                filter: grayscale(0.6);
+            }
+            #qg5-hide {
+                background: rgba(239, 83, 80, 0.12) !important;
+                border-color: rgba(239, 83, 80, 0.25) !important;
+                color: #ff8a80 !important;
+                padding: 8px 12px !important;
+                font-size: 12px !important;
+            }
+            #qg5-hide:hover:not(:disabled) {
+                background: rgba(239, 83, 80, 0.25) !important;
+                box-shadow: 0 4px 16px rgba(239, 83, 80, 0.15) !important;
+                border-color: rgba(239, 83, 80, 0.4) !important;
+            }
+            #qg5-manual-refresh {
+                background: linear-gradient(145deg, rgba(66, 133, 244, 0.12), rgba(66, 133, 244, 0.03));
+                border-color: rgba(66, 133, 244, 0.25);
+                color: #8ab4f8;
+                margin-left: auto;
+            }
+            #qg5-manual-refresh:hover:not(:disabled) {
+                background: linear-gradient(145deg, rgba(66, 133, 244, 0.25), rgba(66, 133, 244, 0.08));
+                border-color: rgba(66, 133, 244, 0.45);
+                box-shadow: 0 8px 28px rgba(66, 133, 244, 0.15);
+                color: #fff;
+            }
+            .qg5-list {
+                max-height: 520px;
+                overflow-y: auto;
+                padding-right: 10px;
+                margin-right: -4px;
+            }
+            .qg5-list::-webkit-scrollbar { width: 6px; }
+            .qg5-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.15); border-radius: 10px; }
+            .qg5-list::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(212, 175, 55, 0.35), rgba(212, 175, 55, 0.1)); border-radius: 10px; }
+            .qg5-list::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgba(212, 175, 55, 0.55), rgba(212, 175, 55, 0.2)); }
+            .qg5-item {
+                background: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01));
+                border: 1px solid rgba(212, 175, 55, 0.07);
+                border-radius: 16px;
+                padding: 14px;
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+            }
+            .qg5-item::before {
+                content: '';
+                position: absolute;
+                top: 0; left: 0; width: 3px; height: 100%;
+                background: linear-gradient(180deg, rgba(212, 175, 55, 0.5), transparent);
+                opacity: 0;
+                transition: opacity 0.3s;
+            }
+            .qg5-item:hover {
+                background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+                border-color: rgba(212, 175, 55, 0.25);
+                transform: translateX(6px) scale(1.01);
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 24px rgba(212, 175, 55, 0.04);
+            }
+            .qg5-item:hover::before {
+                opacity: 1;
+            }
+            .qg5-time {
+                font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+                color: #7ee787;
+                font-weight: 700;
+                width: 80px;
+                font-size: 13px;
+                letter-spacing: 0.5px;
+            }
+            .qg5-timer {
+                font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+                color: #f0c674;
+                min-width: 85px;
+                text-align: right;
+                font-size: 13px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+            }
+            .qg5-usr-name {
+                flex: 1;
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-size: 14px;
+                color: #f0f2ff;
+                letter-spacing: 0.2px;
+            }
+            .qg5-badge {
+                font-size: 18px;
+                min-width: 28px;
+                text-align: center;
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+                transition: transform 0.3s;
+            }
+            .qg5-item:hover .qg5-badge {
+                transform: scale(1.15);
+            }
+            .qg5-flag {
+                font-size: 15px;
+                filter: drop-shadow(0 0 4px rgba(255,255,255,0.08));
+                min-width: 22px;
+                text-align: center;
+            }
+            .qg5-country {
+                font-size: 11px;
+                color: #d4af37;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                background: rgba(212, 175, 55, 0.08);
+                padding: 3px 8px;
+                border-radius: 6px;
+                border: 1px solid rgba(212, 175, 55, 0.1);
+            }
+            button[name="assignToMe"] {
+                background: linear-gradient(145deg, rgba(82, 196, 26, 0.18), rgba(82, 196, 26, 0.04)) !important;
+                border-color: rgba(82, 196, 26, 0.25) !important;
+                color: #a8e063 !important;
+                font-size: 16px !important;
+                padding: 6px 12px !important;
+                border-radius: 10px !important;
+                transition: all 0.3s ease !important;
+            }
+            button[name="assignToMe"]:hover {
+                background: linear-gradient(145deg, rgba(82, 196, 26, 0.32), rgba(82, 196, 26, 0.08)) !important;
+                border-color: rgba(82, 196, 26, 0.45) !important;
+                box-shadow: 0 4px 16px rgba(82, 196, 26, 0.15) !important;
+                transform: translateY(-1px) scale(1.08) !important;
+            }
+            #qg5-count {
+                color: #f0c674;
+            }
+            #qg5-timer-refresh {
+                color: #7ee787;
+            }
         `;
         document.head.appendChild(style);
     };
@@ -117,11 +343,11 @@
                     <div class="qg5-header" id="qg5-drag-handle">
                         <button class="qg5-btn buttonHide" id="qg5-hide">❌</button>
                         <div class="qg5-stats">
-                            <span>Всего чатов: <b id="qg5-count" style="color:coral;">0</b></span>
+                            <span>Всего чатов: <b id="qg5-count">0</b></span>
                             <span style="opacity: 0.3;">|</span>
-                            <span>Обновление через: <b id="qg5-timer-refresh" style="color:#00e9a0;">0</b>с</span>
+                            <span>Обновление через: <b id="qg5-timer-refresh">0</b>с</span>
                         </div>
-                        <button class="qg5-btn" id="qg5-manual-refresh" style="margin-left:auto;">🔎 Check Queue</button>
+                        <button class="qg5-btn" id="qg5-manual-refresh">🔎 Check Queue</button>
                     </div>
                     <div class="qg5-controls">
                         <select class="qg5-input" id="qg5-status-type" style="flex:1;">
@@ -178,9 +404,9 @@
                         <span class="qg5-badge" title="${uType || ''}">${getUserTypeEmoji(uType)}</span>
                         <span class="qg5-usr-name">${el.channelUser.fullName || 'User'}</span>
                         <span class="qg5-timer" data-start="${ts.getTime()}">00:00:00</span>
-                        <span title="Флаг ответа">${getFirstAnswerFlag(el.stats)}</span>
-                        <span style="font-size:11px; color:bisque;">${el.channelUser.payload?.country || "➖"}</span>
-                        <button class="qg5-btn" name="assignToMe" style="padding:4px 10px; background:rgba(82,196,26,0.2);">🫳</button>
+                        <span class="qg5-flag" title="Флаг ответа">${getFirstAnswerFlag(el.stats)}</span>
+                        <span class="qg5-country">${el.channelUser.payload?.country || "➖"}</span>
+                        <button class="qg5-btn" name="assignToMe">🫳</button>
                     </div>`;
             }).join('');
 
