@@ -257,16 +257,17 @@ function changeStatus(status, token = aftoken) {
 // ─── Авто-статус при входе ───
 // Вызывайте эту функцию один раз после того, как aftoken уже получен
 // (например, в конце инициализации content.js или после события загрузки токена)
+// ─── Авто-статус при входе ───
 function applyLoginStatus() {
     // Не трогаем страницу логина
     if (window.location.href === 'https://skyeng.autofaq.ai/login') return;
     if (!aftoken) return;
 
-    const savedStatus = Settings.get('defaultStatusAfterLogin');
-    if (savedStatus && savedStatus !== 'Offline') {
-        console.log('[AutoStatus] Applying saved status:', savedStatus);
-        changeStatus(savedStatus, aftoken);
-    }
+    // Ищем новый ключ, если его нет — старый, если пусто — ставим 'Online' по дефолту
+    const savedStatus = Settings.get('defaultStatusAfterLogin') || Settings.get('afterLoginFunction') || 'Online';
+
+    console.log('[AutoStatus] Applying saved status:', savedStatus);
+    changeStatus(savedStatus, aftoken);
 }
 
 // Вызовите applyLoginStatus() в том месте, где точно есть aftoken.

@@ -14,7 +14,7 @@ async function init_settings() {
         clearlessoninfo: 0,
         disablelpmwindow: 0,
         AF_windowScale: 100,
-        afterLoginFunction: 'Online',
+        defaultStatusAfterLogin: 'Online',
         sound_str: 'https://grumstv.github.io/Sounds/msg.mp3',
         appBgColor: '#FFFFFF' // Дефолтный белый цвет фона
     };
@@ -864,16 +864,6 @@ async function init_settings() {
         scaleVal: document.getElementById('scale_val'),
     };
 
-    // Загрузить сохранённое значение при открытии настроек
-    if (ui.statusList) {
-        ui.statusList.value = Settings.get('defaultStatusAfterLogin') || 'Online';
-
-        // Сохранять при изменении
-        ui.statusList.addEventListener('change', (e) => {
-            Settings.set('defaultStatusAfterLogin', e.target.value);
-        });
-    }
-
     const applyScale = (val, isInit = false) => {
         const target = document.getElementById('AF_helper') || document.getElementById('addTmpWrapper');
         if (target) {
@@ -967,9 +957,9 @@ async function init_settings() {
         ui.scaleSlider.onchange = () => Settings.set('AF_windowScale', ui.scaleSlider.value);
 
         // Status
-        ui.statusList.value = Settings.get('afterLoginFunction');
+        ui.statusList.value = Settings.get('defaultStatusAfterLogin') || 'Online';
         ui.statusList.onchange = () => {
-            Settings.set('afterLoginFunction', ui.statusList.value);
+            Settings.set('defaultStatusAfterLogin', ui.statusList.value);
             const colors = { Online: '#388e3c', Busy: '#fbc02d', Offline: '#d32f2f' };
             ui.statusList.style.background = colors[ui.statusList.value];
         };
