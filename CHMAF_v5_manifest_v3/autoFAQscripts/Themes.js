@@ -1,7 +1,7 @@
 let tableth = [];
 let KCThemesFlag = 0;
 
-// ===== PREMIUM GLASSMORPHISM STYLES =====
+// ===== PREMIUM GLASSMORPHISM STYLES (compact) =====
 const themesCSS = document.createElement('style');
 themesCSS.id = 'af-themes-premium-css';
 themesCSS.textContent = `
@@ -10,14 +10,14 @@ themesCSS.textContent = `
     backdrop-filter: blur(24px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 20px !important;
+    border-radius: 16px !important;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6),
                 0 0 0 1px rgba(255, 255, 255, 0.05),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
     color: #e2e8f0 !important;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     overflow: hidden !important;
-    min-width: 460px !important;
+    min-width: 420px !important;
     will-change: transform;
     transform: translate3d(0,0,0);
   }
@@ -29,7 +29,7 @@ themesCSS.textContent = `
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
+    padding: 10px 16px;
     background: rgba(255, 255, 255, 0.03);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     cursor: grab;
@@ -39,7 +39,7 @@ themesCSS.textContent = `
 
   #AF_Themes .af-header-btns {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
   }
 
@@ -48,15 +48,15 @@ themesCSS.textContent = `
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.08);
     color: #cbd5e1;
-    border-radius: 10px;
-    padding: 8px 14px;
-    font-size: 13px;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     backdrop-filter: blur(4px);
     outline: none;
   }
@@ -82,9 +82,9 @@ themesCSS.textContent = `
     background: rgba(239, 68, 68, 0.15);
     border: 1px solid rgba(239, 68, 68, 0.3);
     color: #fca5a5;
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 12px;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 11px;
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
@@ -99,10 +99,10 @@ themesCSS.textContent = `
     width: 100%;
     background: rgba(15, 23, 42, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 10px 14px;
+    border-radius: 10px;
+    padding: 8px 12px;
     color: #f1f5f9;
-    font-size: 14px;
+    font-size: 13px;
     font-family: inherit;
     transition: all 0.2s;
     outline: none;
@@ -117,21 +117,21 @@ themesCSS.textContent = `
   /* Search row */
   #AF_Themes .af-search-row {
     display: flex;
-    gap: 10px;
-    padding: 16px 20px 0;
+    gap: 8px;
+    padding: 10px 16px 0;
   }
   #AF_Themes .af-search-col { flex: 1; }
   #AF_Themes .af-search-col-flex {
     flex: 1;
     display: flex;
-    gap: 8px;
+    gap: 6px;
   }
 
   /* Found subthemes area */
   #AF_Themes #foundSubthemes {
-    padding: 0 20px;
-    margin-top: 10px;
-    max-height: 200px;
+    padding: 0 16px;
+    margin-top: 8px;
+    max-height: 180px;
     overflow-y: auto;
   }
 
@@ -139,24 +139,24 @@ themesCSS.textContent = `
   #AF_Themes .af-main-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    padding: 16px 20px 20px;
+    gap: 12px;
+    padding: 12px 16px 16px;
     max-height: 65vh;
     overflow-y: auto;
   }
   #AF_Themes .af-column {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
   #AF_Themes .af-section-title {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: #94a3b8;
     padding: 0 4px;
-    margin-bottom: 2px;
+    margin-bottom: 0;
   }
 
   /* Grids */
@@ -164,7 +164,7 @@ themesCSS.textContent = `
   #AF_Themes .af-grid-tags {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
   }
 
   /* Theme main buttons */
@@ -173,10 +173,10 @@ themesCSS.textContent = `
     text-align: left;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
-    padding: 12px 16px;
+    border-radius: 10px;
+    padding: 8px 12px;
     color: #e2e8f0;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -209,10 +209,10 @@ themesCSS.textContent = `
     text-align: left;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    padding: 10px 14px;
+    border-radius: 8px;
+    padding: 7px 11px;
     color: #cbd5e1;
-    font-size: 13px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.15s ease;
     font-family: inherit;
@@ -230,10 +230,10 @@ themesCSS.textContent = `
     text-align: left;
     background: rgba(16, 185, 129, 0.08);
     border: 1px solid rgba(16, 185, 129, 0.15);
-    border-radius: 10px;
-    padding: 10px 14px;
+    border-radius: 8px;
+    padding: 7px 11px;
     color: #6ee7b7;
-    font-size: 13px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.15s ease;
     font-family: inherit;
@@ -249,9 +249,9 @@ themesCSS.textContent = `
   #AF_Themes .af-tag-row {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 4px;
-    border-radius: 10px;
+    gap: 8px;
+    padding: 2px;
+    border-radius: 8px;
     transition: background 0.15s;
   }
   #AF_Themes .af-tag-row:hover { background: rgba(255, 255, 255, 0.03); }
@@ -265,7 +265,7 @@ themesCSS.textContent = `
     min-width: 26px;
     background: rgba(15, 23, 42, 0.8);
     border: 2px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
+    border-radius: 7px;
     cursor: pointer;
     position: relative;
     transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -298,14 +298,14 @@ themesCSS.textContent = `
   #AF_Themes .af-found-card {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 14px;
-    padding: 14px;
+    border-radius: 12px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     transition: all 0.2s;
     animation: afSlideIn 0.3s ease;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   #AF_Themes .af-found-card:hover {
     background: rgba(255, 255, 255, 0.07);
@@ -322,9 +322,9 @@ themesCSS.textContent = `
     background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2));
     border: 1px solid rgba(99, 102, 241, 0.3);
     color: #a5b4fc;
-    padding: 4px 10px;
+    padding: 3px 8px;
     border-radius: 20px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -335,12 +335,12 @@ themesCSS.textContent = `
   #AF_Themes .theme-page {
     display: none;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     grid-column: 1 / span 2;
   }
 
   /* Scrollbar */
-  #AF_Themes ::-webkit-scrollbar { width: 6px; }
+  #AF_Themes ::-webkit-scrollbar { width: 5px; }
   #AF_Themes ::-webkit-scrollbar-track { background: transparent; }
   #AF_Themes ::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.1);
@@ -349,7 +349,7 @@ themesCSS.textContent = `
   #AF_Themes ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
 
   /* Multitag */
-  #AF_Themes #multitag_body { margin-top: 4px; }
+  #AF_Themes #multitag_body { margin-top: 2px; }
 
   /* Window entrance animation */
   @keyframes afWindowIn {
@@ -381,11 +381,11 @@ const win_Themes = `
         </div>
         <div class="af-search-col-flex">
             <input class="af-input" id="linktojiracoment" placeholder="Ссылка на Jira">
-            <button class="af-btn primary" id="linktojirasend" style="height: 38px; flex-shrink: 0;">🚀</button>
+            <button class="af-btn primary" id="linktojirasend" style="height: 34px; flex-shrink: 0;">🚀</button>
         </div>
     </div>
 
-    <div id="foundSubthemes" class="af-grid" style="margin-top: 10px;"></div>
+    <div id="foundSubthemes" class="af-grid" style="margin-top: 8px;"></div>
 
     <div class="af-main-layout">
         <div class="af-column">
@@ -397,7 +397,7 @@ const win_Themes = `
             <div class="af-section-title">Теги</div>
             <div id="tags_body" class="af-grid-tags"></div>
             <div id="multitag_body" class="thonlyfortp">
-                <button class="af-btn primary" id="multitag" style="width: 100%; margin-top: 10px; padding: 8px; font-size: 12px;">Отправить мультитэг</button>
+                <button class="af-btn primary" id="multitag" style="width: 100%; margin-top: 6px; padding: 7px; font-size: 11px;">Отправить мультитэг</button>
             </div>
         </div>
     </div>
