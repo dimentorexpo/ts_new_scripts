@@ -13,7 +13,7 @@ const injectGlassStyles = () => {
     text-shadow: 0 1px 3px rgba(0,0,0,0.6);
     font-size: 13px;
     box-sizing: border-box;
-    width: 460px;  /* БЫЛО 380px — УВЕЛИЧИЛ */
+    width: 520px;  /* БЫЛО 380px — УВЕЛИЧИЛ */
     line-height: 1.5;
     letter-spacing: 0.01em;
 }
@@ -516,11 +516,35 @@ const injectGlassStyles = () => {
     font-size: 11px;
     color: #94a3b8;
     background: rgba(0,0,0,0.3);
-    padding: 3px 10px;  /* Больше горизонтальный паддинг */
+    padding: 3px 8px;
     border-radius: 8px;
     border: 1px solid rgba(255,255,255,0.08);
     white-space: nowrap;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.af-gl-service-id .af-gl-icon-btn {
+    font-size: 12px;
+    opacity: 0.5;
+    line-height: 1;
+}
+
+.af-gl-service-id:hover .af-gl-icon-btn {
+    opacity: 1;
+}
+
+.af-gl-copy-sid {
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.af-gl-copy-sid:hover {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.6));
 }
 
 /* Баланс */
@@ -757,6 +781,253 @@ const injectGlassStyles = () => {
     color: #f87171;
     text-shadow: 0 0 6px rgba(248, 113, 113, 0.4);
 }
+
+/* Компактный инфо-контейнер */
+.af-gl-info-compact {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow:
+        0 4px 16px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* Верхняя строка: аватар + имя */
+.af-gl-info-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.af-gl-avatar-wrapper-compact {
+    display: flex;
+    flex-shrink: 0;
+}
+
+/* Убираем overflow у ВСЕХ родителей аватарки */
+.af-gl-wrapper,
+.af-gl-panel,
+.af-gl-info-compact,
+.af-gl-info-main,
+.af-gl-avatar-wrapper-compact {
+    overflow: visible !important; /* Принудительно */
+}
+
+/* Аватарка при ховере */
+.af-gl-avatar-compact {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    border: 2px solid rgba(56, 189, 248, 0.4);
+    object-fit: cover;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: zoom-in;
+    position: relative;
+    z-index: 1;
+}
+
+.af-gl-avatar-compact:hover {
+    transform: scale(3.5);
+    z-index: 999999;
+    position: relative; /* Остаёмся в потоке но поверх */
+    border-radius: 16px;
+    border-color: rgba(56, 189, 248, 0.9);
+    box-shadow:
+        0 25px 80px rgba(0,0,0,0.7),
+        0 0 0 8px rgba(56, 189, 248, 0.3),
+        0 0 100px rgba(56, 189, 248, 0.4);
+
+    /* Смещаем вправо, чтобы не обрезалось слева */
+    margin-right: -100px;
+    margin-left: 20px;
+}
+
+.af-gl-info-core {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.af-gl-user-type {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.af-gl-user-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.af-gl-age-badge {
+    font-size: 13px;
+    line-height: 1;
+}
+
+.af-gl-user-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.af-gl-icon-btn {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.2s;
+    font-size: 13px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.af-gl-icon-btn:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+/* Сетка контактов 2×2 */
+.af-gl-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.af-gl-info-cell {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    transition: all 0.2s;
+}
+
+.af-gl-info-cell:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(56, 189, 248, 0.15);
+}
+
+.af-gl-info-label {
+    font-size: 10px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+.af-gl-info-value-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.af-gl-info-value {
+    font-size: 12px;
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+/* Identity строка */
+.af-gl-info-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Время — чипсы */
+.af-gl-info-time {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 11px;
+}
+
+.af-gl-time-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.af-gl-time-label {
+    color: #94a3b8;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+}
+
+.af-gl-time-value {
+    color: #38bdf8;
+    font-weight: 700;
+    font-family: 'SF Mono', monospace;
+    font-size: 11px;
+}
+
+.af-gl-time-divider {
+    color: rgba(148, 163, 184, 0.4);
+    font-size: 10px;
+}
+
+.af-gl-service-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.af-gl-service-meta {
+    font-size: 11px;
+    color: #64748b;
+    font-family: 'SF Mono', monospace;
+}
+
+.af-gl-service-meta strong {
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.af-gl-copy-inline {
+    background: transparent;
+    border: none;
+    color: #38bdf8;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.af-gl-copy-inline:hover {
+    background: rgba(56, 189, 248, 0.1);
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
     `;
     document.head.appendChild(style);
 };
@@ -842,44 +1113,77 @@ const win_serviceinfo = `
             <button title="Vimbot" id="openVimbotWindowsUserinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">▶️</button>
         </div>
 
-        <div id="basicInfo" class="af-gl-info-container">
-            <div id="avatarWrapper" class="af-gl-avatar-wrapper" style="display:none;">
-                <img id="useravatar" class="af-gl-avatar" src="">
+        <!-- НОВЫЙ КОМПАКТНЫЙ ИНФО-БЛОК -->
+        <div id="basicInfo" class="af-gl-info-container af-gl-info-compact">
+
+            <!-- Верхняя строка: аватар + основная инфа -->
+            <div class="af-gl-info-main">
+                <div id="avatarWrapper" class="af-gl-avatar-wrapper-compact" style="display:none;">
+                    <img id="useravatar" class="af-gl-avatar-compact" src="">
+                </div>
+
+                <div class="af-gl-info-core">
+                    <div id="usrType" class="af-gl-user-type"></div>
+                    <div class="af-gl-user-name-row">
+                        <span id="usrAge" class="af-gl-age-badge"></span>
+                        <span id="usrName" class="af-gl-user-name"></span>
+                        <span id="getloginer" class="af-gl-icon-btn" title="Ссылка-логгинер">🔑</span>
+                    </div>
+                </div>
             </div>
 
-            <div id="usrType" style="font-size: 15px; text-align: center; margin-bottom: 2px;"></div>
+            <!-- Сетка контактов -->
+            <div class="af-gl-info-grid">
+                <div class="af-gl-info-cell">
+                    <span class="af-gl-info-label">📧 Почта</span>
+                    <div class="af-gl-info-value-row">
+                        <span id="mailunhidden" class="af-gl-text-accent">hidden</span>
+                        <span class="af-gl-icon-btn" id="getusremail" title="Скопировать">📋</span>
+                    </div>
+                </div>
 
-            <div class="af-gl-info-row">
-                <span id="usrAge"></span>
-                <span id="getloginer" class="cursor-pointer" title="Ссылка-логгинер" style="padding: 2px 4px; border-radius: 6px;">🔑</span>
-                <span class="af-gl-text-muted">Имя:</span>
-                <span id="usrName" style="font-weight: bold; font-size: 14px;"></span>
+                <div class="af-gl-info-cell">
+                    <span class="af-gl-info-label">☎️ Телефон</span>
+                    <div class="af-gl-info-value-row">
+                        <span id="phoneunhidden" class="af-gl-text-accent">hidden</span>
+                        <span class="af-gl-icon-btn" id="getusrphone" title="Скопировать">📋</span>
+                    </div>
+                </div>
+
+                <div class="af-gl-info-cell">
+                    <span class="af-gl-info-label">🌍 Страна</span>
+                    <span id="usrCountry" class="af-gl-info-value">—</span>
+                </div>
+
+                <div class="af-gl-info-cell">
+                    <span class="af-gl-info-label">🌐 Язык</span>
+                    <span id="usrServLang" class="af-gl-info-value">—</span>
+                </div>
             </div>
 
-            <div class="af-gl-info-row">
-                <span class="cursor-pointer" title="Скопировать" id="getusremail">📧</span>
-                <span id="mailunhidden" class="af-gl-text-accent">hidden</span>
+            <!-- Identity статус -->
+            <div class="af-gl-info-identity" name="studentosFields">
+                <span class="af-gl-info-label">Identity:</span>
+                <span id="pochtaIdentity"></span>
+                <span id="telefonIdentity"></span>
             </div>
 
-            <div class="af-gl-info-row">
-                <span class="cursor-pointer" title="Скопировать" id="getusrphone">☎️</span>
-                <span id="phoneunhidden" class="af-gl-text-accent">hidden</span>
-                <span class="af-gl-text-muted" style="margin-left: 4px;">• 🌍: </span>
-                <span id="usrCountry"></span>
-            </div>
-
-            <div class="af-gl-info-row" style="margin-top: 4px;">
-                <span class="af-gl-text-muted" name="studentosFields">Identity:</span>
-                <span id="pochtaIdentity" name="studentosFields"></span>
-                <span id="telefonIdentity" name="studentosFields"></span>
-                <span class="af-gl-text-muted" name="studentosFields" style="margin-left: 4px;">• Язык: </span>
-                <span id="usrServLang" name="studentosFields" style="font-weight: bold;"></span>
-            </div>
-
-            <div class="af-gl-info-row af-gl-text-muted" style="font-size: 11px; margin-top: 4px;">
-                <span name="studentosFields">UTC: <span id="utcOffset" style="color:#fff;"></span></span> |
-                <span name="studentosFields">MSK: <span id="UTCtoMSK" style="color:#fff;"></span></span> |
-                <span name="studentosFields">Местное: <span id="localTime" style="color:#fff;"></span></span>
+            <!-- Время -->
+            <div class="af-gl-info-time">
+                <span class="af-gl-time-chip">
+                    <span class="af-gl-time-label">UTC</span>
+                    <span id="utcOffset" class="af-gl-time-value">—</span>
+                </span>
+                <span class="af-gl-time-divider">|</span>
+                <span class="af-gl-time-chip">
+                    <span class="af-gl-time-label">MSK</span>
+                    <span id="UTCtoMSK" class="af-gl-time-value">—</span>
+                </span>
+                <span class="af-gl-time-divider">|</span>
+                <span class="af-gl-time-chip">
+                    <span class="af-gl-time-label">Местное время: </span>
+                    <span id="localTime" class="af-gl-time-value">—</span>
+                </span>
             </div>
         </div>
 
@@ -1237,11 +1541,19 @@ function getusernamecrm() {
         window.flagusertype = data.type;
         const isStudent = data.type === "student";
 
+        // Имя и тип
         document.getElementById('usrName').textContent = `${data.name} ${data.surname || ''}`;
-        document.getElementById('usrType').innerHTML = isStudent ? `<span class="af-gl-text-success">🎓 Ученик</span>` : `<span class="af-gl-text-accent">👨‍🏫 Преподаватель</span>`;
-        document.getElementById('usrCountry').textContent = data.country || '';
+        const typeEl = document.getElementById('usrType');
+        if (isStudent) {
+            typeEl.innerHTML = `<span class="af-gl-text-success">🎓 Ученик</span>`;
+        } else {
+            typeEl.innerHTML = `<span class="af-gl-text-accent">👨‍🏫 Преподаватель</span>`;
+        }
 
-        // Логика отрисовки аватара внутри info-card
+        // Страна
+        document.getElementById('usrCountry').textContent = data.country || '—';
+
+        // Аватар — компактный, сбоку
         const avatarWrapper = document.getElementById('avatarWrapper');
         const avatarEl = document.getElementById('useravatar');
         if (data.avatarUrl) {
@@ -1256,12 +1568,19 @@ function getusernamecrm() {
             avatarWrapper.style.display = 'none';
         }
 
-        // Переключение блоков для Студент/Препод
+        // Возраст
+        let ageIco = "❓";
+        if (data.birthday) {
+            const age = new Date().getFullYear() - Number(data.birthday.split('-')[0]);
+            ageIco = age < 18 ? "🔞" : age < 99 ? "🅰️" : "❓";
+        }
+        document.getElementById('usrAge').textContent = ageIco;
+
+        // Скрываем/показываем студентские поля
         const elsToHide = ['pochtaIdentity', 'telefonIdentity', 'checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'complekttable', 'newTrm', 'butTeacherNabor', 'personalteacherpage'];
         elsToHide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
         if (isStudent) {
-            // ВАЖНО: Добавили 'complekttable' обратно в список элементов, которые нужно показать для студента
             ['checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'pochtaIdentity', 'telefonIdentity', 'complekttable'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = '';
@@ -1275,20 +1594,15 @@ function getusernamecrm() {
             document.getElementById('servicetable').innerHTML = '';
         }
 
+        // Язык
         const locale = data.serviceLocale || "⭕";
         document.getElementById('usrServLang').textContent = locale;
         document.getElementById('changeLocaleLng').style.display = locale === "ru" ? "none" : "";
 
+        // Время
         document.getElementById('utcOffset').textContent = data.utcOffset;
         document.getElementById('UTCtoMSK').textContent = data.utcOffset - 3;
         document.getElementById('localTime').textContent = new Date(Date.now() + data.utcOffset * 3600000).toISOString().substr(11, 5);
-
-        let ageIco = "❓";
-        if (data.birthday) {
-            const age = new Date().getFullYear() - Number(data.birthday.split('-')[0]);
-            ageIco = age < 18 ? "🔞" : age < 99 ? "🅰️" : "❓";
-        }
-        document.getElementById('usrAge').textContent = ageIco;
     });
 }
 
@@ -1438,7 +1752,6 @@ function getservices(stidNew) {
 
                 // Определяем статус и стили
                 let statusClass, statusText, statusIcon;
-                let teacherHtml = '';
                 let balanceHtml = `<div class="af-gl-service-balance">${service.balance}</div>`;
 
                 if (service.stage === "after_trial" || service.stage === "before_call") {
@@ -1450,19 +1763,19 @@ function getservices(stidNew) {
                     <div class="af-gl-service-card">
                         <div class="af-gl-service-header">
                             <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
-                            <span class="af-gl-service-id">#${service.id}</span>
+                            <span class="af-gl-service-id">
+                                #${service.id}
+                                <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID услуги">📋</span>
+                            </span>
                         </div>
                         ${balanceHtml}
                         <div class="af-gl-service-type">💡 ${sType}</div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
-                            <span class="af-gl-copy-btn" data-sid="${service.id}" title="Копировать ID">💾</span>
-                        </div>
                     </div>`;
 
                 } else if (service.stage === "regular_lessons") {
                     statusClass = 'af-gl-status-regular';
                     statusText = 'Регулярные';
-                    statusIcon = '✅';
+                    statusIcon = '';
 
                     const t = service.teacher
                         ? `<div class="af-gl-service-teacher">👨‍🏫 ${service.teacher.general.id}, ${service.teacher.general.name} ${service.teacher.general.surname}</div>`
@@ -1475,15 +1788,15 @@ function getservices(stidNew) {
                     <div class="af-gl-service-card">
                         <div class="af-gl-service-header">
                             <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
-                            <span class="af-gl-service-id">#${service.id}</span>
+                            <span class="af-gl-service-id">
+                                #${service.id}
+                                <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID услуги">📋</span>
+                            </span>
                         </div>
                         ${balanceHtml}
                         <div class="af-gl-service-type">💡 ${sType}</div>
                         ${t}
                         ${tmp}
-                        <div style="display:flex; justify-content:flex-end; margin-top: 4px;">
-                            <span class="af-gl-copy-btn" data-sid="${service.id}" title="Копировать ID">💾</span>
-                        </div>
                     </div>`;
 
                 } else if (service.stage === "lost") {
@@ -1495,23 +1808,30 @@ function getservices(stidNew) {
                     <div class="af-gl-service-card">
                         <div class="af-gl-service-header">
                             <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
-                            <span class="af-gl-service-id">#${service.id}</span>
+                            <span class="af-gl-service-id">
+                                #${service.id}
+                                <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID услуги">📋</span>
+                            </span>
                         </div>
                         ${balanceHtml}
                         <div class="af-gl-service-type">💡 ${sType}</div>
-                        <div style="display:flex; justify-content:flex-end; margin-top: 4px;">
-                            <span class="af-gl-copy-btn" data-sid="${service.id}" title="Копировать ID">💾</span>
-                        </div>
                     </div>`;
                 }
             });
 
             servTable.innerHTML = htmlStr || '<div class="af-gl-empty-state">Нет отображаемых услуг</div>';
 
-            document.querySelectorAll('.af-gl-copy-btn').forEach(btn => {
-                btn.onclick = () => {
-                    copyToClipboard(btn.dataset.sid);
-                    createAndShowButton(`ID ${btn.dataset.sid} скопирован`, 'message');
+            // Обработчики копирования ID услуги
+            document.querySelectorAll('.af-gl-copy-sid').forEach(btn => {
+                btn.onclick = function (e) {
+                    e.stopPropagation();
+                    const sid = this.dataset.sid;
+                    copyToClipboard(sid);
+                    createAndShowButton(`ID услуги ${sid} скопирован`, 'message');
+
+                    // Визуальный фидбек
+                    this.textContent = '✅';
+                    setTimeout(() => this.textContent = '📋', 1200);
                 };
             });
 
