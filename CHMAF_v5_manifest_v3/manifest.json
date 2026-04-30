@@ -54,10 +54,6 @@
 				"/autoFAQscripts/Nabor.js",
 				"/autoFAQscripts/Vimbot.js",
 				"/autoFAQscripts/CheckTags.js",
-				"/NG/Chekgirlyanda.js",
-				"/NG/gerljanda1.js",
-				"/NG/gerljanda2.js",
-				"/NG/snow.js",
 				"content.js"
 			],
 			"css": [
@@ -127,8 +123,7 @@
 			"resources": [
 				"OtherScripts/*",
 				"autoFAQscripts/*",
-				"Images/*",
-				"/NG/*"
+				"Images/*"
 			],
 			"matches": [
 				"<all_urls>"

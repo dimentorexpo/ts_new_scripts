@@ -1,3 +1,9 @@
+localStorage.removeItem('girlyanda');
+localStorage.removeItem('snowcursor');
+localStorage.removeItem('AF_elka');
+localStorage.removeItem('AF_hat');
+localStorage.removeItem('AF_bag');
+
 function createWindow(id, topKey, leftKey, content) {
     const windowElement = document.createElement('div');
     document.body.append(windowElement);
@@ -20,42 +26,43 @@ function createWindow(id, topKey, leftKey, content) {
     windowElement.setAttribute('id', id);
     windowElement.innerHTML = content;
 
-    // ===== ФИКС: Навешиваем защиту input/textarea ОДИН РАЗ при создании окна =====
-    // Используем делегирование — ловим mousedown на windowElement, но останавливаем
-    // всплытие ТОЛЬКО если клик был по input/textarea/select
+    // ===== ФИКС: защита input/textarea от начала drag =====
     windowElement.addEventListener('mousedown', function (e) {
         const tag = e.target.tagName;
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
             const el = e.target;
-
-            // Если есть выделение и не зажат Shift — снимаем его,
-            // но каретку ставим в координаты клика, а не в начало выделения
             if (el.selectionStart !== el.selectionEnd && !e.shiftKey) {
-                e.preventDefault(); // ← БЛОКИРУЕМ стандартное поведение браузера
-
-                // После preventDefault браузер НЕ ставит каретку автоматически,
-                // поэтому ставим её сами через setSelectionRange в координаты клика
+                e.preventDefault();
                 requestAnimationFrame(() => {
-                    // Используем caretPositionFromPoint или эвристику
                     const pos = getCaretPositionFromPoint(el, e.clientX, e.clientY);
                     el.focus();
                     el.setSelectionRange(pos, pos);
                 });
             }
-
-            // stopPropagation делаем в любом случае, чтобы drag не мешал
             e.stopPropagation();
         }
     });
 
-    // ===== ОБРАБОТЧИК DRAG (отдельно, не мешает input'ам) =====
+    // ===== ОБРАБОТЧИК DRAG (оптимизированный) =====
     windowElement.onmousedown = function (event) {
         if (checkelementtype(event)) {
+            event.preventDefault();
+
             let startX = event.clientX;
             let startY = event.clientY;
             let isDragging = false;
             let elemLeft = windowElement.offsetLeft;
             let elemTop = windowElement.offsetTop;
+
+            // КЭШИРУЕМ размеры ОДИН РАЗ при старте drag
+            let rect = windowElement.getBoundingClientRect();
+            let actualWidth = rect.width;
+            let actualHeight = rect.height;
+
+            // Блокируем выделение текста на время drag
+            const originalUserSelect = windowElement.style.userSelect;
+            windowElement.style.userSelect = 'none';
+            if (window.getSelection) window.getSelection().removeAllRanges();
 
             function onMouseMove(event) {
                 let deltaX = event.clientX - startX;
@@ -69,10 +76,6 @@ function createWindow(id, topKey, leftKey, content) {
                 let newLeft = elemLeft + deltaX;
                 let newTop = elemTop + deltaY;
 
-                let rect = windowElement.getBoundingClientRect();
-                let actualWidth = rect.width;
-                let actualHeight = rect.height;
-
                 if (newLeft < 0) newLeft = 0;
                 else if (newLeft + actualWidth > window.innerWidth) newLeft = window.innerWidth - actualWidth;
 
@@ -81,12 +84,20 @@ function createWindow(id, topKey, leftKey, content) {
 
                 windowElement.style.left = `${newLeft}px`;
                 windowElement.style.top = `${newTop}px`;
-
-                localStorage.setItem(topKey, String(newTop));
-                localStorage.setItem(leftKey, String(newLeft));
             }
 
             function onMouseUp() {
+                // Восстанавливаем выделение
+                windowElement.style.userSelect = originalUserSelect;
+
+                // Сохраняем в localStorage ТОЛЬКО при отпускании мыши
+                if (isDragging) {
+                    const finalLeft = parseInt(windowElement.style.left, 10);
+                    const finalTop = parseInt(windowElement.style.top, 10);
+                    if (!isNaN(finalLeft)) localStorage.setItem(leftKey, String(finalLeft));
+                    if (!isNaN(finalTop)) localStorage.setItem(topKey, String(finalTop));
+                }
+
                 document.removeEventListener('mousemove', onMouseMove);
                 document.removeEventListener('mouseup', onMouseUp);
                 document.removeEventListener('mouseleave', onMouseUp);

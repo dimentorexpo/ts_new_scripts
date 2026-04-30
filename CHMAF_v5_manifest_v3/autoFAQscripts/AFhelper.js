@@ -4,9 +4,6 @@ var win_AFhelper = `
 <div class="glass-panel" id="addTmpWrapper">
     <div class="glass-warning-bar"></div>
 
-    <img src="chrome-extension://${editorExtensionIdNew}/Images/hat.png" id="hatSack" alt="Шляпа" width="140" style="position: absolute; top: -104px; right: -60px; z-index: 9999999; user-select: none; pointer-events: none;">
-    <img src="chrome-extension://${editorExtensionIdNew}/Images/bag.png" id="giftSack" alt="Мешок" width="112" style="position: absolute; top: -98px; left: -72px; z-index: 9999999; user-select: none; pointer-events: none; transform: rotate(-30deg);">
-
     <div class="flex-row" id="1str" style="cursor: -webkit-grab; padding-top: 5px;">
         <button class="glass-btn mainButton" id="languageAF" title="Переключает язык Русский/Английский" style="width: 94px;">Русский</button>
         <button class="glass-btn mainButton" id="testCustTMPL" title="Открывает окно для добавления своих шаблонов">📒</button>
