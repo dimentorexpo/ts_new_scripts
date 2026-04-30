@@ -1215,8 +1215,12 @@ async function processChat(chat, filters, criticalChats) {
     let finalText = blockComment ? extractCommentLine(blockComment.txt) : "";
     if (matchedUserMsg) finalText += "\n\n" + matchedUserMsg.txt;
 
-    criticalChats.set(r.id, { ChatId: r.id, timeStamp: new Date(r.tsCreate).toLocaleString('ru-RU', timeOptions), OperatorName: chat.operatorName, CSAT: matched.Rate, Department: label, text: finalText.trim() });
-    pushPayload({ r, duration: r.tsMod ? r.tsMod - r.tsCreate : undefined, operatorName: chat.operatorName, csat: matched.Rate });
+    criticalChats.set(r.id, {
+        ChatId: r.id, timeStamp: new Date(r.tsCreate).toLocaleString('ru-RU', timeOptions), OperatorName: chat.operatorName, CSAT: matched.Rate, Department: label, text: finalText.trim(), Country: r.channelUser?.payload?.country ?? "-"
+    });
+    pushPayload({
+        r, duration: r.tsMod ? r.tsMod - r.tsCreate : undefined, operatorName: chat.operatorName, csat: matched.Rate
+    });
 }
 
 function renderMainTable(pureArray, chatswithmarksarray) {

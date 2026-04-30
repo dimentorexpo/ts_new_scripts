@@ -485,12 +485,14 @@ function fillchatbox() {
                 break;
 
             case "OperatorComment":
-                const opName = message.operatorId !== 'autoFAQ' ? getOperatorNameById(message.operatorId, "Оператор") : message.operatorId;
+                const commentAuthor = message.operatorId === "autoFAQ"
+                    ? "autoFAQ"
+                    : getOperatorNameById(message.operatorId, "Оператор");
                 htmlBuilder += `
-                    <div class="afg-msg afg-msg-comment">
-                        <div class="afg-msg-header"><span>(Заметка)</span><span class="afg-msg-date">${date}</span></div>
-                        <div>${message.txt}</div>
-                    </div>`;
+        <div class="afg-msg afg-msg-comment">
+            <div class="afg-msg-header"><span>${commentAuthor}</span><span class="afg-msg-date">${date}</span></div>
+            <div>${message.txt}</div>
+        </div>`;
                 break;
         }
     }
