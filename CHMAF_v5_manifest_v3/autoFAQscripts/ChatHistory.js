@@ -82,7 +82,46 @@ afgStyles.textContent = `
     .theme-light .afg-msg { color: #111; border-color: rgba(0,0,0,0.1); }
     .theme-dark .afg-msg { color: #f0f0f0; }
 
-    .afg-msg-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; opacity: 0.8; font-weight: bold; }
+/* Липкий заголовок сообщения */
+.afg-msg-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 4px 0;
+    margin: -4px -14px 5px -14px; /* Растягиваем на всю ширину сообщения с учётом padding */
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 12px 12px 0 0;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Фон заголовка под тему сообщения */
+.afg-msg-user .afg-msg-header {
+    background: rgba(0, 191, 255, 0.25);
+}
+
+.afg-msg-oper .afg-msg-header {
+    background: rgba(152, 155, 30, 0.4);
+}
+
+.afg-msg-bot .afg-msg-header {
+    background: rgba(50, 205, 50, 0.25);
+}
+
+.afg-msg-comment .afg-msg-header {
+    background: rgba(91, 89, 85, 0.7);
+}
+
+/* Для тёмной темы общий фон */
+.theme-dark .afg-msg-header {
+    color: #f0f0f0;
+}
+
+/* Для светлой темы */
+.theme-light .afg-msg-header {
+    color: #111;
+}
     .afg-msg-date { font-weight: normal; opacity: 0.6; font-size: 11px; margin-left: 10px; }
 
     /* Модалка */
@@ -121,6 +160,18 @@ afgStyles.textContent = `
         background: rgba(255,255,255,0.1); color: white; padding: 6px 16px; border-radius: 20px;
         font-size: 15px; font-weight: bold; backdrop-filter: blur(5px); z-index: 10000000; border: 1px solid rgba(255,255,255,0.2);
     }
+
+    /* Сообщения подряд от одного автора — убираем верхние скругления и отступы */
+.afg-msg-continuous {
+    margin-top: 2px !important;
+    border-top-left-radius: 4px !important;
+    border-top-right-radius: 4px !important;
+}
+
+/* Скрываем заголовок у непрерывных сообщений (он уже есть у первого) */
+.afg-msg-continuous .afg-msg-header {
+    display: none;
+}
 `;
 document.head.appendChild(afgStyles);
 
@@ -397,35 +448,38 @@ function fillchatbox() {
     document.getElementById('bottommenuchhis').style.display = 'flex';
 
     let htmlBuilder = '';
+    let lastAuthor = null;
+    let lastType = null;
 
     for (let i = convdata.messages.length - 1; i >= 0; i--) {
         const message = convdata.messages[i];
         const date = extractDate(message.ts);
+        let msgClass = '';
+        let authorName = '';
+        let currentType = '';
 
         switch (message.tpe) {
             case "Question":
                 const name = user.fullName || "Widget";
-                let content = message.txt; // Сначала берем весь текст
+                let content = message.txt;
 
-                // 1. НОВОЕ: Ищем теги <a>, у которых href ведет на медиафайл (как в вашем примере с Telegram)
+                // 1. Обработка медиа-ссылок в тегах <a>
                 content = content.replace(/<a\s+(?:[^>]*?\s+)?href="([^"]+)"[^>]*>.*?<\/a>/gi, (match, url) => {
-                    // Проверяем, есть ли в ссылке расширение медиафайла
                     if (url.match(/\.(png|jpg|jpeg|gif|webp|mp4|mov|mkv|webm|mp3|wav|ogg|oga)(?:[?#]|$)/i)) {
-                        return `<div>${renderMedia(url)}</div>`; // Отдаем ссылку в ваш плеер
+                        return `<div>${renderMedia(url)}</div>`;
                     }
-                    return match; // Если это обычная ссылка на сайт, не трогаем её
+                    return match;
                 });
 
-                // 2. НОВОЕ: Удаляем технический тег <p> со ссылкой на /attachment,
-                // который часто прилетает вместе с медиафайлами, чтобы не засорять окно чата
+                // 2. Удаляем технический тег <p> со ссылкой на /attachment
                 content = content.replace(/<p>https?:\/\/[^<]+\/attachment<\/p>/gi, '');
 
-                // 3. Старая логика: обрабатываем прямые ссылки в тегах <p>, если они остались
+                // 3. Обрабатываем прямые ссылки в тегах <p>
                 content = content.replace(/<p>(https?:\/\/[^<]+\.(png|jpg|jpeg|gif|webp|mp4|mov|mkv|webm|mp3|wav|ogg|oga))<\/p>/gi, (match, url) => {
                     return `<div>${renderMedia(url)}</div>`;
                 });
 
-                // 4. Старая логика: Если ссылки присланы просто текстом
+                // 4. Если ссылки присланы просто текстом
                 if (!content.includes('<video') && !content.includes('<img')) {
                     const mediaRegex = /(https:\/\/vimbox-resource[^\s<>"']+\.(mp4|mov|mkv|webm|mp3|wav|ogg|oga|png|jpg|jpeg|gif|webp))/gi;
                     content = content.replace(mediaRegex, (url) => {
@@ -433,11 +487,17 @@ function fillchatbox() {
                     });
                 }
 
+                // Определяем, нужно ли показывать заголовок (новый автор или другой тип сообщения)
+                const isNewGroup = lastAuthor !== name || lastType !== 'user';
+
                 htmlBuilder += `
-                    <div class="afg-msg afg-msg-user">
-                        <div class="afg-msg-header"><span>${name}</span><span class="afg-msg-date">${date}</span></div>
+                    <div class="afg-msg afg-msg-user ${!isNewGroup ? 'afg-msg-continuous' : ''}">
+                        ${isNewGroup ? `<div class="afg-msg-header"><span>${name}</span><span class="afg-msg-date">${date}</span></div>` : ''}
                         <div class="afg-msg-body">${content}</div>
                     </div>`;
+
+                lastAuthor = name;
+                lastType = 'user';
                 break;
 
             case "Event":
@@ -465,34 +525,55 @@ function fillchatbox() {
                     evMsg = mapping[message.eventTpe] || '';
                 }
 
-                if (evMsg) htmlBuilder += `<div class="afg-msg-event">${evMsg} &bull; ${extractTime(message.ts)}</div>`;
+                if (evMsg) {
+                    htmlBuilder += `<div class="afg-msg-event">${evMsg} &bull; ${extractTime(message.ts)}</div>`;
+                    lastAuthor = null;
+                    lastType = 'event';
+                }
                 break;
 
             case "AnswerOperatorWithBot": case "AnswerOperatorQuickReply": case "AnswerSystem": case "AnswerBot": case "AnswerChatterbox":
+                const botName = "AutoFAQ bot";
+                const isNewBotGroup = lastAuthor !== botName || lastType !== 'bot';
+
                 htmlBuilder += `
-                    <div class="afg-msg afg-msg-bot">
-                        <div class="afg-msg-header"><span>AutoFAQ bot</span><span class="afg-msg-date">${date}</span></div>
+                    <div class="afg-msg afg-msg-bot ${!isNewBotGroup ? 'afg-msg-continuous' : ''}">
+                        ${isNewBotGroup ? `<div class="afg-msg-header"><span>${botName}</span><span class="afg-msg-date">${date}</span></div>` : ''}
                         <div>${message.txt}</div>
                     </div>`;
+
+                lastAuthor = botName;
+                lastType = 'bot';
                 break;
 
             case "AnswerOperator":
+                const operName = getOperatorNameById(message.operatorId, "Оператор");
+                const isNewOperGroup = lastAuthor !== operName || lastType !== 'oper';
+
                 htmlBuilder += `
-                    <div class="afg-msg afg-msg-oper">
-                        <div class="afg-msg-header"><span>${getOperatorNameById(message.operatorId, "Оператор")}</span><span class="afg-msg-date">${date}</span></div>
+                    <div class="afg-msg afg-msg-oper ${!isNewOperGroup ? 'afg-msg-continuous' : ''}">
+                        ${isNewOperGroup ? `<div class="afg-msg-header"><span>${operName}</span><span class="afg-msg-date">${date}</span></div>` : ''}
                         <div>${message.txt}</div>
                     </div>`;
+
+                lastAuthor = operName;
+                lastType = 'oper';
                 break;
 
             case "OperatorComment":
                 const commentAuthor = message.operatorId === "autoFAQ"
                     ? "autoFAQ"
                     : getOperatorNameById(message.operatorId, "Оператор");
+                const isNewCommentGroup = lastAuthor !== commentAuthor || lastType !== 'comment';
+
                 htmlBuilder += `
-        <div class="afg-msg afg-msg-comment">
-            <div class="afg-msg-header"><span>${commentAuthor}</span><span class="afg-msg-date">${date}</span></div>
-            <div>${message.txt}</div>
-        </div>`;
+                    <div class="afg-msg afg-msg-comment ${!isNewCommentGroup ? 'afg-msg-continuous' : ''}">
+                        ${isNewCommentGroup ? `<div class="afg-msg-header"><span>${commentAuthor}</span><span class="afg-msg-date">${date}</span></div>` : ''}
+                        <div>${message.txt}</div>
+                    </div>`;
+
+                lastAuthor = commentAuthor;
+                lastType = 'comment';
                 break;
         }
     }
