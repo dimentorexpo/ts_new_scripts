@@ -1,5 +1,5 @@
-// --- ВНЕДРЕНИЕ ИЗОЛИРОВАННЫХ СТИЛЕЙ (GLASSMORPHISM v2) ---
 // --- ВНЕДРЕНИЕ ИЗОЛИРОВАННЫХ СТИЛЕЙ (PREMIUM GLASSMORPHISM v3) ---
+let otpTimerInterval = null;
 const injectGlassStyles = () => {
     if (document.getElementById('af-glass-styles')) return;
     const style = document.createElement('style');
@@ -667,6 +667,96 @@ const injectGlassStyles = () => {
     transform: rotate(180deg);
     filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
 }
+
+/* Группа OTP — инпут + таймер */
+.af-gl-otp-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.af-gl-input-otp {
+    min-width: 80px;
+    text-align: center;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
+/* Таймер обратного отсчёта */
+.af-gl-otp-timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.af-gl-otp-timer-ring {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.af-gl-otp-timer-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.af-gl-otp-timer-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 2.5;
+}
+
+.af-gl-otp-timer-progress {
+    fill: none;
+    stroke: #38bdf8;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 62.83; /* 2 * PI * 10 */
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.1s linear;
+    filter: drop-shadow(0 0 3px rgba(56, 189, 248, 0.5));
+}
+
+.af-gl-otp-timer-text {
+    font-size: 10px;
+    font-weight: 700;
+    color: #38bdf8;
+    z-index: 1;
+    font-family: 'SF Mono', monospace;
+    text-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
+}
+
+/* Анимация пульсации когда мало времени */
+@keyframes otpUrgent {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+.af-gl-otp-timer.urgent .af-gl-otp-timer-ring {
+    animation: otpUrgent 0.8s ease-in-out infinite;
+}
+
+.af-gl-otp-timer.urgent .af-gl-otp-timer-progress {
+    stroke: #f87171;
+    filter: drop-shadow(0 0 4px rgba(248, 113, 113, 0.6));
+}
+
+.af-gl-otp-timer.urgent .af-gl-otp-timer-text {
+    color: #f87171;
+    text-shadow: 0 0 6px rgba(248, 113, 113, 0.4);
+}
     `;
     document.head.appendChild(style);
 };
@@ -731,7 +821,18 @@ const win_serviceinfo = `
         </div>
 
         <div class="af-gl-row af-gl-row-wrap">
-            <input id="onetimepassout" class="af-gl-input" readonly placeholder="OTP код" style="min-width: 70px;">
+            <div class="af-gl-otp-group">
+                <input id="onetimepassout" class="af-gl-input af-gl-input-otp" readonly placeholder="OTP код">
+                <div id="otpTimer" class="af-gl-otp-timer" style="display: none;">
+                    <span class="af-gl-otp-timer-ring">
+                        <svg viewBox="0 0 24 24" class="af-gl-otp-timer-svg">
+                            <circle cx="12" cy="12" r="10" class="af-gl-otp-timer-bg"/>
+                            <circle cx="12" cy="12" r="10" class="af-gl-otp-timer-progress" id="otpTimerCircle"/>
+                        </svg>
+                        <span id="otpTimerText" class="af-gl-otp-timer-text">15</span>
+                    </span>
+                </div>
+            </div>
             <button title="Сген. код (МП)" id="getonetimepass" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">📱</button>
             <button title="Админка" id="editadmbtn" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">✏️</button>
             <button title="История чатов" id="catchathistory" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">🗄</button>
@@ -914,26 +1015,81 @@ document.getElementById('getonetimepass')?.addEventListener('click', async funct
     const userId = getStudentId();
     if (!userId) return;
     const outputField = document.getElementById('onetimepassout');
+    const timerContainer = document.getElementById('otpTimer');
+    const timerText = document.getElementById('otpTimerText');
+    const timerCircle = document.getElementById('otpTimerCircle');
+
+    // Сбрасываем предыдущий таймер если есть
+    if (otpTimerInterval) {
+        clearInterval(otpTimerInterval);
+        otpTimerInterval = null;
+    }
 
     this.disabled = true;
-    this.innerHTML = '✅';
+    this.innerHTML = '⏳';
+
     try {
         const reqOpts = {
             headers: { 'content-type': 'application/x-www-form-urlencoded' },
             body: `user_id_or_identity_for_one_time_password_form%5BuserIdOrIdentity%5D=${userId}&user_id_or_identity_for_one_time_password_form%5Bgenerate%5D=&user_id_or_identity_for_one_time_password_form%5B_token%5D=null`,
             method: 'POST'
         };
-        const response = await sendMessageAsync({ action: 'getFetchRequest', fetchURL: 'https://id.skyeng.ru/admin/auth/one-time-password', requestOptions: reqOpts });
+        const response = await sendMessageAsync({
+            action: 'getFetchRequest',
+            fetchURL: 'https://id.skyeng.ru/admin/auth/one-time-password',
+            requestOptions: reqOpts
+        });
         const otpMatch = response.fetchansver.match(/Одноразовый пароль: (\d+)\./);
-        outputField.value = otpMatch ? otpMatch[1] : 'Не найден';
+        const otpCode = otpMatch ? otpMatch[1] : 'Не найден';
+
+        outputField.value = otpCode;
+
+        // Запускаем таймер на 15 секунд
+        if (otpMatch) {
+            startOtpTimer(15, timerContainer, timerText, timerCircle, outputField);
+        }
+
     } catch (e) {
         alert(`Ошибка: ${e.message}`);
+        timerContainer.style.display = 'none';
     } finally {
         this.disabled = false;
         this.innerHTML = '📱';
-        setTimeout(() => outputField.value = '', 15000);
     }
 });
+
+// Функция таймера
+function startOtpTimer(duration, container, textEl, circleEl, inputEl) {
+    const totalDuration = duration;
+    let remaining = duration;
+    const circumference = 62.83; // 2 * PI * 10
+
+    container.style.display = 'flex';
+    container.classList.remove('urgent');
+    textEl.textContent = remaining;
+    circleEl.style.strokeDashoffset = 0;
+
+    otpTimerInterval = setInterval(() => {
+        remaining--;
+        textEl.textContent = remaining;
+
+        // Обновляем кольцо
+        const offset = circumference - (remaining / totalDuration) * circumference;
+        circleEl.style.strokeDashoffset = offset;
+
+        // Краснеем когда мало времени (последние 5 сек)
+        if (remaining <= 5) {
+            container.classList.add('urgent');
+        }
+
+        if (remaining <= 0) {
+            clearInterval(otpTimerInterval);
+            otpTimerInterval = null;
+            container.style.display = 'none';
+            inputEl.value = '';
+        }
+    }, 1000);
+}
 
 // Управление окнами Timetable / Complectations
 document.getElementById('AF_Timetable')?.addEventListener('dblclick', (a) => {
