@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "ChMAF",
-	"version": "5.0.119",
+	"version": "5.0.120",
 	"description": "Твой мультитул в работе с чатами",
 	"background": {
 		"service_worker": "bg.js"
@@ -21,8 +21,6 @@
 	"content_scripts": [
 		{
 			"js": [
-				"/Extras/jquery-3.7.1.js",
-				"/Extras/moment.js",
 				"/autoFAQscripts/utils.js",
 				"/autoFAQscripts/Settings.js",
 				"/autoFAQscripts/Link.js",
