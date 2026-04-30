@@ -65,12 +65,12 @@ const glassStylesTask = `
         border-color: #ff4d4d !important;
         background: rgba(255, 77, 77, 0.15) !important;
     }
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        50% { transform: translateX(5px); }
-        75% { transform: translateX(-5px); }
-    }
+@keyframes shake {
+    0%, 100% { margin-left: 0; }
+    25% { margin-left: -5px; }
+    50% { margin-left: 5px; }
+    75% { margin-left: -5px; }
+}
     /* Кастомный красивый скроллбар */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 4px; }
@@ -239,7 +239,7 @@ const sendBgRequest = (url, options = { method: 'GET' }) => {
     });
 };
 
-function doHideForm(flag = localStorage.getItem('hideTaskWindow')) {
+/* function doHideForm(flag = localStorage.getItem('hideTaskWindow')) {
     if (location.href.indexOf('skyeng.autofaq.ai/tickets/assigned') !== -1) {
         if (flag == 1) {
             let newFrontend = document.getElementsByTagName('iframe');
@@ -254,7 +254,102 @@ function doHideForm(flag = localStorage.getItem('hideTaskWindow')) {
 
         }
     }
+} */
+
+// === НАБЛЮДАТЕЛЬ: скрываем нативное окно "Создать задачу" внутри iframe ===
+
+let _nativeModalObserver = null;
+let _suppressTimer = null;
+
+/**
+ * Скрывает нативную модалку Autofaq внутри iframe, если включена настройка hideTaskWindow.
+ */
+function suppressNativeTaskModal() {
+    clearTimeout(_suppressTimer);
+    _suppressTimer = setTimeout(() => {
+        if (localStorage.getItem('hideTaskWindow') !== '1') return;
+        if (!location.href.includes('skyeng.autofaq.ai/tickets/assigned')) return;
+
+        // Получаем iframe (первый, основной документ Autofaq)
+        const iframe = document.querySelector('iframe');
+        if (!iframe?.contentDocument) return;
+
+        const iframeDoc = iframe.contentDocument;
+
+        // === Способ 1: Ищем по role="dialog" (новый Mantine) ===
+        const dialogs = iframeDoc.querySelectorAll('[role="dialog"]');
+        for (const dialog of dialogs) {
+            const title = dialog.querySelector('.mantine-Modal-title, [id$="-title"]');
+            if (!title || title.textContent.trim() !== 'Создать задачу') continue;
+            if (dialog.style.display === 'none') continue;
+
+            dialog.style.display = 'none';
+
+            // Оверлей — ищем внутри того же документа
+            const overlay = iframeDoc.querySelector('.mantine-Overlay-root, [class*="Overlay_"]');
+            if (overlay) overlay.style.display = 'none';
+            return; // Скрыли — выходим
+        }
+
+        // === Способ 2: Fallback на старый метод (если Mantine обновился и классы изменились) ===
+        // Ищем по тексту внутри iframe
+        const allElements = iframeDoc.querySelectorAll('*');
+        for (const el of allElements) {
+            // Проверяем только "листовые" текстовые ноды или элементы с текстом
+            if (el.children.length === 0 && el.textContent?.trim() === 'Создать задачу') {
+                // Поднимаемся вверх до контейнера модалки
+                let modal = el.closest('[role="dialog"]')
+                    || el.closest('.mantine-Modal-modal')
+                    || el.closest('.mantine-Paper-root')
+                    || el.parentElement?.parentElement?.parentElement?.parentElement;
+
+                if (modal && modal.style.display !== 'none') {
+                    modal.style.display = 'none';
+                    return;
+                }
+            }
+        }
+
+    }, 30);
 }
+
+/**
+ * Запускаем наблюдатель на iframe.contentDocument.body
+ */
+function initNativeModalObserver() {
+    if (_nativeModalObserver) return;
+
+    const tryObserve = () => {
+        const iframe = document.querySelector('iframe');
+        const body = iframe?.contentDocument?.body;
+
+        if (!body) {
+            // iframe ещё не загрузился — пробуем позже
+            setTimeout(tryObserve, 500);
+            return;
+        }
+
+        // Скрываем сразу, если модалка уже открыта
+        suppressNativeTaskModal();
+
+        _nativeModalObserver = new MutationObserver((mutations) => {
+            const hasAdded = mutations.some(m => m.addedNodes.length > 0);
+            if (hasAdded) suppressNativeTaskModal();
+        });
+
+        _nativeModalObserver.observe(body, {
+            childList: true,
+            subtree: true
+        });
+
+        console.log('[AF] Modal observer attached to iframe');
+    };
+
+    tryObserve();
+}
+
+// === ЗАПУСК ===
+initNativeModalObserver();
 
 // ГЛАВНАЯ ФУНКЦИЯ
 async function gettaskButButtonPress() {
@@ -681,6 +776,8 @@ async function sendAutofaqAction(conversationId, elements = null, isClickMode = 
     }
 }
 
-// start test
-setInterval(doHideForm, 500);
-// end test
+/* // start test
+//setInterval(doHideForm, 500);
+const observer = new MutationObserver(() => doHideForm());
+observer.observe(document.body, { childList: true, subtree: true });
+// end test */

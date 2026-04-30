@@ -302,23 +302,22 @@ function timerHideButtons() { // функция прячет кнопку одн
 }
 
 function checkelementtype(a) {
-    let elem = document.elementFromPoint(a.clientX, a.clientY);
+    let elem = a.target;
     if (!elem) return false;
 
-    // ПРОВЕРКА 1: Разрешаем перетаскивание, если есть спец. класс (даже если это INPUT)
-    if (elem.classList.contains('teststudteachinp')) {
-        return true;
-    }
+    // ← ДОБАВЬТЕ: ищем ближайший input/textarea вверх по дереву
+    const closestInput = elem.closest('input, textarea, select');
+    if (closestInput) return false; // Если клик внутри input/textarea — drag запрещён
 
-    // ПРОВЕРКА 2: Список исключений (где драг запрещен)
+    // Остальной код без изменений...
+    if (elem.classList.contains('teststudteachinp')) return true;
+
     const forbiddenNodes = ['BUTTON', 'LABEL', 'INPUT', 'TEXTAREA', 'SELECT', 'P', 'TABLE', 'TH', 'TR', 'CANVAS'];
     const forbiddenClasses = ['checkbox-audio-switch', 'checkbox-refresh-switch', 'srvhhelpnomove', 'rowOfChatGrabbed'];
     const forbiddenIds = ['CSATFilterField', 'AgregatedDataThemes', 'AgregatedDataOut', 'ToolsPanel', 'ProblemsSolution'];
 
     if (forbiddenNodes.includes(elem.nodeName)) return false;
     if (forbiddenIds.includes(elem.id)) return false;
-
-    // Проверка классов через перебор
     if (forbiddenClasses.some(cls => elem.classList.contains(cls))) return false;
 
     return true;

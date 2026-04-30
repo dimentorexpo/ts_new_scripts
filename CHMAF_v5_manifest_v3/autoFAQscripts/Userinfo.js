@@ -1,114 +1,212 @@
 // --- ВНЕДРЕНИЕ ИЗОЛИРОВАННЫХ СТИЛЕЙ (GLASSMORPHISM v2) ---
+// --- ВНЕДРЕНИЕ ИЗОЛИРОВАННЫХ СТИЛЕЙ (PREMIUM GLASSMORPHISM v3) ---
 const injectGlassStyles = () => {
     if (document.getElementById('af-glass-styles')) return;
     const style = document.createElement('style');
     style.id = 'af-glass-styles';
     style.innerHTML = `
-        .af-gl-wrapper {
-            font-family: system-ui, -apple-system, sans-serif;
-            color: #e2e8f0;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-            font-size: 13px;
-            box-sizing: border-box;
-            width: 380px; /* Увеличили ширину для ровного ряда кнопок */
-            line-height: 1.4;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.af-gl-wrapper {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #f1f5f9;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    font-size: 13px;
+    box-sizing: border-box;
+    width: 460px;  /* БЫЛО 380px — УВЕЛИЧИЛ */
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+}
+
+/* Новый класс для рядов кнопок — разрешаем перенос если не влезают */
+.af-gl-row-wrap {
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
         .af-gl-panel {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-            padding: 16px;
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.9));
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            box-shadow:
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+                0 0 80px rgba(56, 189, 248, 0.03) inset;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
         }
+
+        .af-gl-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .af-gl-panel > * {
+            position: relative;
+            z-index: 1;
+        }
+
         .af-gl-header {
             display: flex;
             gap: 8px;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 14px;
+            position: relative;
         }
+
+        .af-gl-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 40%;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.5), transparent);
+        }
+
         .af-gl-row {
             display: flex;
-            flex-wrap: nowrap; /* Запрещаем перенос, чтобы поле ввода сжималось */
+            flex-wrap: nowrap;
             gap: 6px;
             align-items: center;
         }
-        .af-gl-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            padding: 6px 12px;
-            height: 32px;
+
+.af-gl-btn {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: #f8fafc;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 14px;
+    height: 34px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    flex-shrink: 0;  /* НЕ СЖИМАТЬ */
+    white-space: nowrap;  /* Текст не переносить */
+}
+
+        .af-gl-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
         }
-        .af-gl-btn-icon {
-            width: 32px;
-            padding: 0; /* Делаем кнопку квадратной для эмодзи */
-            font-size: 15px;
-            flex-shrink: 0; /* Чтобы кнопки не сжимались */
+
+        .af-gl-btn:hover::before {
+            left: 100%;
         }
+
+.af-gl-btn-icon {
+    width: 34px;
+    padding: 0;
+    font-size: 15px;
+    flex-shrink: 0;
+    min-width: 34px;  /* Фиксированная минимальная ширина */
+}
+
         .af-gl-btn:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            transform: translateY(-2px);
+            box-shadow:
+                0 8px 25px rgba(0,0,0,0.3),
+                0 0 20px rgba(56, 189, 248, 0.15);
+            border-color: rgba(56, 189, 248, 0.4);
         }
+
         .af-gl-btn:active:not(:disabled) {
-            transform: translateY(1px);
+            transform: translateY(0) scale(0.98);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
+
         .af-gl-btn:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
+            filter: grayscale(0.5);
         }
-        .af-gl-input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: #fff;
-            padding: 0 10px;
-            height: 32px;
-            outline: none;
-            text-align: center;
-            transition: all 0.2s;
-            flex: 1; /* Поле ввода занимает всё оставшееся место */
-            min-width: 80px;
-        }
+
+.af-gl-input {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    color: #f1f5f9;
+    padding: 0 12px;
+    height: 34px;
+    outline: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 80px;  /* Минимальная ширина */
+    font-weight: 500;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
         .af-gl-input:focus {
             border-color: rgba(56, 189, 248, 0.6);
-            box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+            box-shadow:
+                0 0 0 3px rgba(56, 189, 248, 0.1),
+                0 0 20px rgba(56, 189, 248, 0.2),
+                inset 0 2px 4px rgba(0,0,0,0.2);
             background: rgba(0, 0, 0, 0.5);
         }
+
+        .af-gl-input::placeholder {
+            color: rgba(148, 163, 184, 0.6);
+        }
+
         .af-gl-badge {
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(255,255,255,0.1);
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.12);
             font-weight: 600;
             display: inline-flex;
             align-items: center;
-            height: 32px;
+            height: 34px;
             box-sizing: border-box;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
         /* Стили блока информации пользователя */
         .af-gl-info-container {
-            background: rgba(255, 255, 255, 0.03);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 16px 12px;
+            border-radius: 16px;
+            padding: 18px 14px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
+            box-shadow:
+                0 4px 16px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.05);
         }
+
         .af-gl-info-row {
             display: flex;
             align-items: center;
@@ -117,74 +215,458 @@ const injectGlassStyles = () => {
             flex-wrap: wrap;
         }
 
-        /* Стили аватара (теперь он внутри блока, а не висит сбоку) */
+        /* Стили аватара */
         .af-gl-avatar-wrapper {
             display: flex;
             justify-content: center;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
+
         .af-gl-avatar {
-            width: 70px;
-            height: 70px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
-            border: 2px solid rgba(56, 189, 248, 0.5);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            border: 2px solid rgba(56, 189, 248, 0.4);
+            box-shadow:
+                0 4px 20px rgba(0,0,0,0.4),
+                0 0 0 4px rgba(56, 189, 248, 0.1),
+                0 0 30px rgba(56, 189, 248, 0.15);
             object-fit: cover;
-            transition: transform 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .af-gl-avatar:hover {
-            transform: scale(1.8);
+            transform: scale(1.9);
             z-index: 100;
-            border-color: rgba(56, 189, 248, 1);
+            border-color: rgba(56, 189, 248, 0.9);
+            box-shadow:
+                0 8px 40px rgba(0,0,0,0.5),
+                0 0 0 6px rgba(56, 189, 248, 0.2),
+                0 0 60px rgba(56, 189, 248, 0.3);
         }
 
         .af-gl-scrollable {
             max-height: 400px;
             overflow-y: auto;
-            padding-right: 6px;
+            padding-right: 8px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
-        .af-gl-scrollable::-webkit-scrollbar { width: 6px; }
-        .af-gl-scrollable::-webkit-scrollbar-track { background: rgba(0,0,0,0.15); border-radius: 4px; }
-        .af-gl-scrollable::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 4px; }
-        .af-gl-scrollable::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
 
-        .af-gl-card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .af-gl-scrollable::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .af-gl-scrollable::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
             border-radius: 10px;
-            padding: 12px;
-            text-align: left;
-            transition: transform 0.2s;
         }
-        .af-gl-card:hover {
-            background: rgba(255, 255, 255, 0.06);
-        }
-        .af-gl-card-header {
-            font-weight: 700;
-            padding: 6px 10px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            text-align: center;
+
+        .af-gl-scrollable::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(56, 189, 248, 0.4), rgba(168, 85, 247, 0.4));
+            border-radius: 10px;
             border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .af-gl-bg-info { background: rgba(30, 144, 255, 0.3); }
-        .af-gl-bg-danger { background: rgba(220, 20, 60, 0.3); }
-        .af-gl-bg-success { background: rgba(46, 139, 87, 0.3); }
-        .af-gl-bg-vu { background: rgba(245, 131, 32, 0.79); border-color: rgba(194, 105, 25, 0.5); }
-        .af-gl-bg-regular { background: rgba(69, 199, 52, 0.25); border-color: rgba(48, 80, 140, 0.5); }
-        .af-gl-bg-lost { background: rgba(138, 28, 129, 0.51); border-color: rgba(98, 99, 103, 0.5); }
+        .af-gl-scrollable::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, rgba(56, 189, 248, 0.6), rgba(168, 85, 247, 0.6));
+        }
 
-        .af-gl-text-accent { color: #38bdf8; }
-        .af-gl-text-success { color: #4ade80; }
-        .af-gl-text-warning { color: #fbbf24; }
+        .af-gl-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 14px;
+            text-align: left;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .af-gl-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .af-gl-card:hover {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            transform: translateY(-2px);
+            box-shadow:
+                0 12px 30px rgba(0,0,0,0.25),
+                0 0 0 1px rgba(56, 189, 248, 0.1);
+        }
+
+        .af-gl-card:hover::before {
+            opacity: 1;
+        }
+
+        .af-gl-card-header {
+            font-weight: 700;
+            padding: 8px 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px;
+            letter-spacing: 0.02em;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .af-gl-bg-info {
+            background: linear-gradient(135deg, rgba(30, 144, 255, 0.35), rgba(30, 144, 255, 0.2));
+            border-color: rgba(30, 144, 255, 0.3);
+        }
+
+        .af-gl-bg-danger {
+            background: linear-gradient(135deg, rgba(220, 20, 60, 0.35), rgba(220, 20, 60, 0.2));
+            border-color: rgba(220, 20, 60, 0.3);
+        }
+
+        .af-gl-bg-success {
+            background: linear-gradient(135deg, rgba(46, 139, 87, 0.35), rgba(46, 139, 87, 0.2));
+            border-color: rgba(46, 139, 87, 0.3);
+        }
+
+        .af-gl-bg-vu {
+            background: linear-gradient(135deg, rgba(245, 131, 32, 0.6), rgba(245, 131, 32, 0.3));
+            border-color: rgba(245, 131, 32, 0.4);
+            box-shadow: 0 0 20px rgba(245, 131, 32, 0.1);
+        }
+
+        .af-gl-bg-regular {
+            background: linear-gradient(135deg, rgba(69, 199, 52, 0.3), rgba(69, 199, 52, 0.15));
+            border-color: rgba(69, 199, 52, 0.3);
+        }
+
+        .af-gl-bg-lost {
+            background: linear-gradient(135deg, rgba(138, 28, 129, 0.55), rgba(138, 28, 129, 0.3));
+            border-color: rgba(138, 28, 129, 0.4);
+        }
+
+        .af-gl-text-accent { color: #7dd3fc; font-weight: 500; }
+        .af-gl-text-success { color: #86efac; font-weight: 500; }
+        .af-gl-text-warning { color: #fde047; font-weight: 500; }
         .af-gl-text-muted { color: #94a3b8; }
 
-        .cursor-pointer { cursor: pointer; transition: opacity 0.2s; }
-        .cursor-pointer:hover { opacity: 0.7; }
+        .cursor-pointer {
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .cursor-pointer:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        /* Анимация появления */
+        @keyframes afFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .af-gl-panel {
+            animation: afFadeIn 0.4s ease-out;
+        }
+
+        /* Glow эффект для активных элементов */
+        .af-gl-btn-primary {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(37, 99, 235, 0.3));
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+
+        .af-gl-btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.5), rgba(37, 99, 235, 0.5));
+            box-shadow:
+                0 8px 25px rgba(0,0,0,0.3),
+                0 0 30px rgba(56, 189, 248, 0.25);
+        }
+
+        /* Заголовки секций */
+.af-gl-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #e2e8f0;
+    margin-bottom: 4px;
+    padding: 0 4px;
+}
+
+.af-gl-section-icon {
+    font-size: 14px;
+    filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4));
+}
+
+.af-gl-section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.3), transparent);
+    margin-left: 4px;
+}
+
+/* Сетка услуг — 2 колонки */
+.af-gl-services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* Карточка услуги премиум */
+.af-gl-service-card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 16px;  /* БЫЛО 14px */
+    position: relative;
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 4px 15px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;  /* БЫЛО 8px */
+    min-width: 0;  /* Разрешаем сжиматься в grid */
+}
+
+.af-gl-service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg,
+        rgba(56, 189, 248, 0.8),
+        rgba(168, 85, 247, 0.6),
+        rgba(56, 189, 248, 0.8)
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+    opacity: 0.7;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.af-gl-service-card:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow:
+        0 12px 35px rgba(0,0,0,0.3),
+        0 0 30px rgba(56, 189, 248, 0.1),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+    border-color: rgba(56, 189, 248, 0.25);
+}
+
+/* Статус-бейдж на карточке */
+.af-gl-service-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    width: fit-content;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.af-gl-status-vu {
+    background: linear-gradient(135deg, rgba(245, 131, 32, 0.25), rgba(245, 131, 32, 0.1));
+    border: 1px solid rgba(245, 131, 32, 0.4);
+    color: #fdba74;
+}
+
+.af-gl-status-regular {
+    background: linear-gradient(135deg, rgba(69, 199, 52, 0.2), rgba(69, 199, 52, 0.08));
+    border: 1px solid rgba(69, 199, 52, 0.35);
+    color: #86efac;
+}
+
+.af-gl-status-lost {
+    background: linear-gradient(135deg, rgba(138, 28, 129, 0.25), rgba(138, 28, 129, 0.1));
+    border: 1px solid rgba(138, 28, 129, 0.4);
+    color: #d8b4fe;
+}
+
+/* Заголовок карточки */
+.af-gl-service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.af-gl-service-id {
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 11px;
+    color: #94a3b8;
+    background: rgba(0,0,0,0.3);
+    padding: 3px 10px;  /* Больше горизонтальный паддинг */
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Баланс */
+.af-gl-service-balance {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fde047;
+}
+
+.af-gl-service-balance::before {
+    content: '💰Баланс';
+    font-size: 10px;
+}
+
+/* Тип услуги — перенос длинных строк */
+.af-gl-service-type {
+    font-size: 12px;
+    color: #7dd3fc;
+    font-weight: 500;
+    line-height: 1.4;
+    padding: 4px 0;
+    word-break: break-word;  /* Перенос длинных слов */
+    hyphens: auto;
+}
+
+/* Преподаватель — компактнее но читаемо */
+.af-gl-service-teacher {
+    font-size: 11px;
+    color: #86efac;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;  /* Больше паддинг */
+    background: rgba(69, 199, 52, 0.08);
+    border-radius: 10px;
+    border: 1px solid rgba(69, 199, 52, 0.15);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.af-gl-service-teacher.missing {
+    color: #fca5a5;
+    background: rgba(220, 20, 60, 0.08);
+    border-color: rgba(220, 20, 60, 0.15);
+}
+
+/* Кнопка копирования ID */
+.af-gl-copy-btn {
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.6;
+    font-size: 13px;
+}
+
+.af-gl-copy-btn:hover {
+    opacity: 1;
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.6));
+}
+
+/* Адаптив — на узких экранах одна колонка */
+@media (max-width: 480px) {
+    .af-gl-wrapper {
+        width: 100%;
+        max-width: 460px;
+    }
+    .af-gl-services-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Пустое состояние */
+.af-gl-empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 30px;
+    color: #94a3b8;
+    font-size: 13px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border-radius: 16px;
+    border: 1px dashed rgba(255,255,255,0.1);
+}
+
+/* Комплектации — компактные карточки */
+.af-gl-complect-card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.af-gl-complect-card:hover {
+    background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
+    transform: translateX(4px);
+}
+
+.af-gl-complect-header {
+    font-weight: 700;
+    font-size: 12px;
+    margin-bottom: 8px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.af-gl-complect-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+    font-size: 12px;
+}
+
+.af-gl-complect-table td {
+    padding: 6px 8px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+}
+
+.af-gl-complect-table td:first-child {
+    border-radius: 6px 0 0 6px;
+    font-family: monospace;
+    color: #7dd3fc;
+}
+
+.af-gl-complect-table td:last-child {
+    border-radius: 0 6px 6px 0;
+    text-align: right;
+    width: 30px;
+}
+
+/* Синхронизация кнопка */
+.af-gl-sync-btn {
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-block;
+}
+
+.af-gl-sync-btn:hover {
+    transform: rotate(180deg);
+    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
+}
     `;
     document.head.appendChild(style);
 };
@@ -229,34 +711,34 @@ const win_serviceinfo = `
     <div class="af-gl-panel">
 
         <div class="af-gl-header" id="servicehead" style="cursor: -webkit-grab;">
-            <button title="Скрыть меню" id="hideMeservice" class="af-gl-btn af-gl-btn-icon buttonHide" style="color: #ef4444;">❌</button>
-            <button title="CRM" id="GotoCRM" class="af-gl-btn">CRM</button>
-            <button title="Показать контакты" id="dounhidemailandphone" class="af-gl-btn af-gl-btn-icon">👁‍🗨</button>
-            <button title="Статус CRM" id="CrmStatus" class="af-gl-btn af-gl-btn-icon" style="display:none;"></button>
+            <button title="Скрыть меню" id="hideMeservice" class="af-gl-btn af-gl-btn-icon buttonHide" style="color: #ef4444; min-width: 32px;">❌</button>
+            <button title="CRM" id="GotoCRM" class="af-gl-btn" style="min-width: 50px;">CRM</button>
+            <button title="Показать контакты" id="dounhidemailandphone" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">👁‍🗨</button>
+            <button title="Статус CRM" id="CrmStatus" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 32px;"></button>
             <span id="getcurrentstatus" class="af-gl-badge af-gl-bg-info" style="display:none;"></span>
         </div>
 
-        <div class="af-gl-row">
-            <input id="idstudent" class="af-gl-input" placeholder="ID У/П" autocomplete="off">
-            <button title="Поиск" id="getidstudent" class="af-gl-btn af-gl-btn-icon">🚀</button>
-            <button title="Все задачи" id="crmactivetasks" class="af-gl-btn af-gl-btn-icon">📋</button>
-            <button title="TRM 2.0" id="newTrm" class="af-gl-btn af-gl-btn-icon" style="display:none;">🗿</button>
-            <button title="Стран. учителя" id="personalteacherpage" class="af-gl-btn af-gl-btn-icon" style="display:none;">🎭</button>
-            <button title="Язык: RU" id="changeLocaleLng" class="af-gl-btn af-gl-btn-icon">🌍</button>
-            <button title="Баланс" id="checkBalance" class="af-gl-btn af-gl-btn-icon">💰</button>
-            <button title="Уроки" id="getPastAndFutureLessons" class="af-gl-btn af-gl-btn-icon">📆</button>
-            <button title="Очистить" id="clearservinfo" class="af-gl-btn af-gl-btn-icon">🧹</button>
+        <div class="af-gl-row af-gl-row-wrap">
+            <input id="idstudent" class="af-gl-input" placeholder="ID У/П" autocomplete="off" style="min-width: 90px;">
+            <button title="Поиск" id="getidstudent" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">🚀</button>
+            <button title="Все задачи" id="crmactivetasks" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">📋</button>
+            <button title="TRM 2.0" id="newTrm" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 32px;">🗿</button>
+            <button title="Стран. учителя" id="personalteacherpage" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 32px;">🎭</button>
+            <button title="Язык: RU" id="changeLocaleLng" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">🌍</button>
+            <button title="Баланс" id="checkBalance" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">💰</button>
+            <button title="Уроки" id="getPastAndFutureLessons" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">📆</button>
+            <button title="Очистить" id="clearservinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">🧹</button>
         </div>
 
-        <div class="af-gl-row">
-            <input id="onetimepassout" class="af-gl-input" readonly placeholder="OTP код">
-            <button title="Сген. код (МП)" id="getonetimepass" class="af-gl-btn af-gl-btn-icon">📱</button>
-            <button title="Админка" id="editadmbtn" class="af-gl-btn af-gl-btn-icon">✏️</button>
-            <button title="История чатов" id="catchathistory" class="af-gl-btn af-gl-btn-icon">🗄</button>
-            <button title="Набор" id="butTeacherNabor" class="af-gl-btn af-gl-btn-icon" style="display:none;">🚷</button>
-            <button title="Рассрочка" id="partialPaymentinfo" class="af-gl-btn af-gl-btn-icon">💸</button>
-            <button title="Подписка" id="subscriptioninfo" class="af-gl-btn af-gl-btn-icon">💵</button>
-            <button title="Vimbot" id="openVimbotWindowsUserinfo" class="af-gl-btn af-gl-btn-icon">▶️</button>
+        <div class="af-gl-row af-gl-row-wrap">
+            <input id="onetimepassout" class="af-gl-input" readonly placeholder="OTP код" style="min-width: 70px;">
+            <button title="Сген. код (МП)" id="getonetimepass" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">📱</button>
+            <button title="Админка" id="editadmbtn" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">✏️</button>
+            <button title="История чатов" id="catchathistory" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">🗄</button>
+            <button title="Набор" id="butTeacherNabor" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 32px;">🚷</button>
+            <button title="Рассрочка" id="partialPaymentinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">💸</button>
+            <button title="Подписка" id="subscriptioninfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">💵</button>
+            <button title="Vimbot" id="openVimbotWindowsUserinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">▶️</button>
         </div>
 
         <div id="basicInfo" class="af-gl-info-container">
@@ -300,9 +782,22 @@ const win_serviceinfo = `
             </div>
         </div>
 
-        <div id="serviceList" class="af-gl-scrollable">
-            <div id="servicetable"></div>
+        <div class="af-gl-section-title">
+            <span class="af-gl-section-icon">✨</span>
+            <span>Информация об услугах</span>
+            <div class="af-gl-section-line"></div>
         </div>
+
+        <div id="serviceList" class="af-gl-scrollable">
+            <div id="servicetable" class="af-gl-services-grid"></div>
+        </div>
+
+        <div class="af-gl-section-title" style="margin-top: 8px;">
+            <span class="af-gl-section-icon">📦</span>
+            <span>Комплектации</span>
+            <div class="af-gl-section-line"></div>
+        </div>
+
         <div id="complektList" class="af-gl-scrollable">
             <div id="complekttable"></div>
         </div>
@@ -676,12 +1171,12 @@ function crmstatus() {
     });
 }
 
-async function getservices(stidNew) {
+function getservices(stidNew) {
     const servTable = document.getElementById('servicetable');
     const compTable = document.getElementById('cmplData');
     const linkTable = document.getElementById('complekttable');
 
-    servTable.innerHTML = "Загрузка...";
+    servTable.innerHTML = '<div class="af-gl-empty-state">Загрузка услуг...</div>';
     compTable.innerHTML = "";
     linkTable.innerHTML = "";
 
@@ -691,7 +1186,7 @@ async function getservices(stidNew) {
         const data = JSON.parse(res.fetchansver);
 
         if (data.data.length > 0) {
-            linkTable.innerHTML += `<div id="openOneComplectation" class="af-gl-card cursor-pointer af-gl-bg-success" style="text-align:center;">✅ Есть комплектации >>></div>`;
+            linkTable.innerHTML += `<div id="openOneComplectation" class="af-gl-card cursor-pointer af-gl-bg-success" style="text-align:center; margin-bottom: 8px;">✅ Есть комплектации <span style="font-size: 11px; opacity: 0.8;">(кликни)</span></div>`;
             document.getElementById('openOneComplectation')?.addEventListener('click', () => {
                 const w = document.getElementById('AF_Complectations');
                 w.style.display = w.style.display === "none" ? "" : "none";
@@ -699,67 +1194,69 @@ async function getservices(stidNew) {
 
             data.data.forEach(service => {
                 if (service.incorrectnessReason == null) {
-                    let sHtml = `<table style="width: 100%; border-collapse: collapse; margin-top: 5px;">`;
+                    let sHtml = `<table class="af-gl-complect-table">`;
                     service.educationServices.forEach(el => {
                         let { formattedText } = typeof formatServiceType === 'function' ? formatServiceType(el.serviceTypeKey) : { formattedText: el.serviceTypeKey };
                         sHtml += `<tr>
-                            <td class="af-gl-text-accent"><a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:inherit;">${el.id}</a></td>
+                            <td><a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:inherit; text-decoration:none;">${el.id}</a></td>
                             <td>${formattedText}</td>
-                            <td>${el.balance}</td>
-                            <td style="text-align: right; width: 30px;">
-                                <span class="cursor-pointer btn-sync-srv" data-srvid="${el.id}" title="Синхронизировать">♻️</span>
-                            </td>
+                            <td style="color: #fde047; font-weight: 600;">${el.balance}</td>
+                            <td><span class="af-gl-sync-btn" data-srvid="${el.id}" title="Синхронизировать">♻️</span></td>
                         </tr>`;
                     });
                     sHtml += `</table>`;
 
                     let opNote = service.operatorNote ? `title="${service.operatorNote.replace(/"/g, '&quot;')}"` : "";
+                    const stageClass = service.stage === "regular_lessons" ? "af-gl-bg-regular" : service.stage === "lost" ? "af-gl-bg-lost" : "af-gl-bg-success";
 
-                    compTable.innerHTML += `<div class="af-gl-card" style="margin-bottom:8px;">
-                        <div class="af-gl-card-header af-gl-bg-success" ${opNote}>
-                            ℹ️ [${service.id}] ${service.productKit.title} | ${service.stage === "regular_lessons" ? "Регулярные" : service.stage === "lost" ? "Потерянная" : service.stage}
+                    compTable.innerHTML += `<div class="af-gl-complect-card" style="margin-bottom:10px;">
+                        <div class="af-gl-complect-header ${stageClass}" ${opNote}>
+                            📦 [${service.id}] ${service.productKit.title}
+                            <span style="font-size: 10px; opacity: 0.8; display: block; margin-top: 2px; font-weight: 500;">
+                                ${service.stage === "regular_lessons" ? "Регулярные занятия" : service.stage === "lost" ? "Потерянная" : service.stage}
+                            </span>
                         </div>
                         ${sHtml}
                     </div>`;
                 } else {
-                    compTable.innerHTML += `<div class="af-gl-card af-gl-bg-danger" style="margin-bottom:8px; text-align:center;">[${service.id}] '${service.productKit.title}' - некорректна</div>`;
+                    compTable.innerHTML += `<div class="af-gl-complect-card" style="margin-bottom:10px; text-align:center; border: 1px solid rgba(220, 20, 60, 0.3); background: linear-gradient(145deg, rgba(220, 20, 60, 0.1), rgba(220, 20, 60, 0.05));">
+                        <div style="color: #fca5a5; font-weight: 600; font-size: 12px;">⚠️ [${service.id}] '${service.productKit.title}' — некорректна</div>
+                    </div>`;
                 }
             });
 
-            // ВОЗВРАЩАЕМ ЛОГИКУ КНОПКИ ♻️ (Синхронизация)
-            document.querySelectorAll('.btn-sync-srv').forEach(btn => {
+            // Синхронизация
+            document.querySelectorAll('.af-gl-sync-btn').forEach(btn => {
                 btn.onclick = function () {
                     const srvId = this.getAttribute('data-srvid');
-                    const emojiSpan = this;
-
-                    emojiSpan.innerText = "⏳";
+                    this.innerText = "⏳";
                     const gToken = localStorage.getItem('token_global');
 
-                    const fetchURL = `https://skysmart-core.skyeng.ru/api/v1/academic-activity/upsert-education-service-history/${srvId}`;
-                    const requestOptions = {
-                        headers: {
-                            "accept": "application/json, text/plain, */*",
-                            "authorization": `Bearer ${gToken}`
-                        },
-                        method: "POST",
-                        mode: "cors"
-                    };
-
-                    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+                    chrome.runtime.sendMessage({
+                        action: 'getFetchRequest',
+                        fetchURL: `https://skysmart-core.skyeng.ru/api/v1/academic-activity/upsert-education-service-history/${srvId}`,
+                        requestOptions: {
+                            headers: { "accept": "application/json, text/plain, */*", "authorization": `Bearer ${gToken}` },
+                            method: "POST",
+                            mode: "cors"
+                        }
+                    }, function (response) {
                         if (!response.success) {
-                            alert('Не удалось выполнить запрос: ' + response.error + '. Если запускали синхронизацию через расширение, то необходимо после закрытия окна повторно открыть в новой вкладке CRM на 5 секунд. После чего вернуться в окно AF и обновить страницу');
-                            emojiSpan.innerText = "❌";
+                            alert('Не удалось выполнить запрос: ' + response.error);
+                            btn.innerText = "❌";
                             localStorage.removeItem('token_global');
                         } else {
-                            emojiSpan.innerText = "✅";
-                            setTimeout(() => { emojiSpan.innerText = "♻️"; }, 5000);
+                            btn.innerText = "✅";
+                            setTimeout(() => btn.innerText = "♻️", 3000);
                         }
                     });
                 };
             });
 
         } else {
-            linkTable.innerHTML += `<div class="af-gl-card af-gl-bg-danger" style="text-align:center;">❌ Нет комплектаций</div>`;
+            linkTable.innerHTML += `<div class="af-gl-card" style="text-align:center; background: linear-gradient(145deg, rgba(220, 20, 60, 0.15), rgba(220, 20, 60, 0.05)); border: 1px solid rgba(220, 20, 60, 0.2);">
+                <span style="color: #fca5a5; font-size: 13px;">❌ Нет комплектаций</span>
+            </div>`;
         }
     });
 
@@ -769,9 +1266,8 @@ async function getservices(stidNew) {
         const data = JSON.parse(res.fetchansver);
 
         if (data.data.length > 0) {
-            let htmlStr = `<div style="font-weight:bold; margin-bottom: 8px; font-size: 14px;" class="af-gl-text-accent">Информация об услугах:</div>`;
+            let htmlStr = '';
             let arrservice = [];
-
             let srvKeyMap = new Map((servicecontainer?.data || []).map(d => [d.serviceTypeKey, d.shortTitle]));
 
             data.data.forEach((service, i) => {
@@ -780,52 +1276,104 @@ async function getservices(stidNew) {
 
                 const sType = service.serviceTypeKey;
                 const ignoreTypes = ["Англ Talks 15 min", "Skyeng Space", "Групповые онлайн-мероприятия Life", "Скрининг", "Англ adult АЯ Даунсейл"];
-
                 if (ignoreTypes.includes(sType)) return;
 
                 arrservice.push(service.id);
 
+                // Определяем статус и стили
+                let statusClass, statusText, statusIcon;
+                let teacherHtml = '';
+                let balanceHtml = `<div class="af-gl-service-balance">${service.balance}</div>`;
+
                 if (service.stage === "after_trial" || service.stage === "before_call") {
-                    htmlStr += `<div class="af-gl-card af-gl-bg-vu" style="margin-bottom: 10px;">
-                        <div class="af-gl-card-header">Этап ВУ | 💰 Баланс: ${service.balance}</div>
-                        <div>${i + 1}) 🆔: ${service.id} <span class="copyserviceid cursor-pointer" data-sid="${service.id}" style="font-size:16px;">💾</span></div>
-                        <div class="af-gl-text-warning" style="margin-top: 4px;">💡: ${sType}</div>
+                    statusClass = 'af-gl-status-vu';
+                    statusText = 'Этап ВУ';
+                    statusIcon = '⚡';
+
+                    htmlStr += `
+                    <div class="af-gl-service-card">
+                        <div class="af-gl-service-header">
+                            <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
+                            <span class="af-gl-service-id">#${service.id}</span>
+                        </div>
+                        ${balanceHtml}
+                        <div class="af-gl-service-type">💡 ${sType}</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
+                            <span class="af-gl-copy-btn" data-sid="${service.id}" title="Копировать ID">💾</span>
+                        </div>
                     </div>`;
+
                 } else if (service.stage === "regular_lessons") {
-                    const t = service.teacher ? `👨‍🏫 ${service.teacher.general.id}, ${service.teacher.general.name} ${service.teacher.general.surname}` : `👨‍🏫 Не закреплен!`;
-                    const tmp = service.temporaryTeacher ? `<br>⏳ ${service.temporaryTeacher.general.id}, ${service.temporaryTeacher.general.name} ${service.temporaryTeacher.general.surname}` : '';
-                    htmlStr += `<div class="af-gl-card af-gl-bg-regular" style="margin-bottom: 10px;">
-                        <div class="af-gl-card-header">Регулярные занятия | 💰 Баланс: ${service.balance}</div>
-                        <div>${i + 1}) 🆔: ${service.id} <span class="copyserviceid cursor-pointer" data-sid="${service.id}" style="font-size:16px;">💾</span></div>
-                        <div class="af-gl-text-warning" style="margin-top: 4px; margin-bottom: 4px;">💡: ${sType}</div>
-                        <div class="af-gl-text-muted">${t}${tmp}</div>
+                    statusClass = 'af-gl-status-regular';
+                    statusText = 'Регулярные';
+                    statusIcon = '✅';
+
+                    const t = service.teacher
+                        ? `<div class="af-gl-service-teacher">👨‍🏫 ${service.teacher.general.id}, ${service.teacher.general.name} ${service.teacher.general.surname}</div>`
+                        : `<div class="af-gl-service-teacher missing">👨‍🏫 Не закреплен!</div>`;
+                    const tmp = service.temporaryTeacher
+                        ? `<div class="af-gl-service-teacher" style="margin-top:4px; background: rgba(253, 224, 71, 0.08); border-color: rgba(253, 224, 71, 0.2); color: #fde047;">⏳ ${service.temporaryTeacher.general.id}, ${service.temporaryTeacher.general.name}</div>`
+                        : '';
+
+                    htmlStr += `
+                    <div class="af-gl-service-card">
+                        <div class="af-gl-service-header">
+                            <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
+                            <span class="af-gl-service-id">#${service.id}</span>
+                        </div>
+                        ${balanceHtml}
+                        <div class="af-gl-service-type">💡 ${sType}</div>
+                        ${t}
+                        ${tmp}
+                        <div style="display:flex; justify-content:flex-end; margin-top: 4px;">
+                            <span class="af-gl-copy-btn" data-sid="${service.id}" title="Копировать ID">💾</span>
+                        </div>
                     </div>`;
+
                 } else if (service.stage === "lost") {
-                    htmlStr += `<div class="af-gl-card af-gl-bg-lost" style="margin-bottom: 10px;">
-                        <div class="af-gl-card-header">Потерянная услуга | 💰 Баланс: ${service.balance}</div>
-                        <div>${i + 1}) 🆔: ${service.id} <span class="copyserviceid cursor-pointer" data-sid="${service.id}" style="font-size:16px;">💾</span></div>
-                        <div class="af-gl-text-warning" style="margin-top: 4px;">💡: ${sType}</div>
+                    statusClass = 'af-gl-status-lost';
+                    statusText = 'Потерянная';
+                    statusIcon = '💀';
+
+                    htmlStr += `
+                    <div class="af-gl-service-card">
+                        <div class="af-gl-service-header">
+                            <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
+                            <span class="af-gl-service-id">#${service.id}</span>
+                        </div>
+                        ${balanceHtml}
+                        <div class="af-gl-service-type">💡 ${sType}</div>
+                        <div style="display:flex; justify-content:flex-end; margin-top: 4px;">
+                            <span class="af-gl-copy-btn" data-sid="${service.id}" title="Копировать ID">💾</span>
+                        </div>
                     </div>`;
                 }
             });
-            servTable.innerHTML = htmlStr;
 
-            document.querySelectorAll('.copyserviceid').forEach(btn => {
-                btn.onclick = () => copyToClipboard(btn.dataset.sid);
+            servTable.innerHTML = htmlStr || '<div class="af-gl-empty-state">Нет отображаемых услуг</div>';
+
+            document.querySelectorAll('.af-gl-copy-btn').forEach(btn => {
+                btn.onclick = () => {
+                    copyToClipboard(btn.dataset.sid);
+                    createAndShowButton(`ID ${btn.dataset.sid} скопирован`, 'message');
+                };
             });
 
             document.getElementById('getusremail').onclick = () => {
                 const text = document.getElementById('mailunhidden').textContent;
                 copyToClipboard(text);
-                createAndShowButton(`Почта ${text} скопирована`, 'message');
+                createAndShowButton(`Почта скопирована`, 'message');
             };
             document.getElementById('getusrphone').onclick = () => {
                 const text = document.getElementById('phoneunhidden').textContent;
                 copyToClipboard(text);
-                createAndShowButton(`Телефон ${text} скопирован`, 'message');
+                createAndShowButton(`Телефон скопирован`, 'message');
             };
         } else {
-            servTable.innerHTML = `<div class="af-gl-card af-gl-bg-danger" style="text-align:center;">Услуг вообще нет!</div>`;
+            servTable.innerHTML = `<div class="af-gl-empty-state" style="border-color: rgba(220, 20, 60, 0.3);">
+                <div style="font-size: 24px; margin-bottom: 8px;">📭</div>
+                <div style="color: #fca5a5; font-weight: 600;">Услуг не найдено</div>
+            </div>`;
         }
     });
 }

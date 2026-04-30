@@ -250,45 +250,50 @@ async function init_settings() {
                 background: transparent !important;
             }
 
-            /* ═══ 12. USER (Вы) — янтарно-оранжевый ═══ */
-            [class*="ChatMessages_RegularMessage__"][data-author-type="user"] {
-                background-color: rgba(255, 152, 0, 0.2) !important;
-                border: 1px solid rgba(255, 152, 0, 0.4) !important;
-                border-radius: 8px !important;
-                padding: 3px 6px !important;
-                margin: 2px 0 !important;
-            }
-            [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"],
-            [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Date__"],
-            [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
-                color: #fff3e0 !important;
-                background: transparent !important;
-            }
-            [class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"] {
-                font-weight: 600 !important;
-            }
-
-            /* ═══ 12.5. USER (data-author-type="user") — приятный синий ═══ */
-[class*="ChatMessages_RegularMessage__"][data-author-type="user"] {
+            /* ═══ 12. USER (receiver) — приятный синий ═══ */
+[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] {
     background-color: rgba(66, 133, 244, 0.18) !important;
     border: 1px solid rgba(66, 133, 244, 0.35) !important;
     border-radius: 8px !important;
     padding: 3px 6px !important;
     margin: 2px 0 !important;
 }
-[class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"],
-[class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Date__"],
-[class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
+[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_Author__"],
+[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_Date__"],
+[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
     color: #e3f2fd !important;
     background: transparent !important;
 }
-[class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="ChatMessages_Author__"] {
+[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_Author__"] {
     font-weight: 600 !important;
 }
-[class*="ChatMessages_RegularMessage__"][data-author-type="user"] [class*="Buttons_SharedButton__"] {
+[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="Buttons_SharedButton__"] {
     background-color: rgba(255, 255, 255, 0.08) !important;
     color: #bbdefb !important;
     border-color: rgba(66, 133, 244, 0.4) !important;
+}
+
+            /* ═══ 12.5. USER (sender) — премиальный золотой ═══ */
+[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] {
+    background-color: rgba(255, 193, 7, 0.18) !important;
+    border: 1px solid rgba(255, 193, 7, 0.4) !important;
+    border-radius: 8px !important;
+    padding: 3px 6px !important;
+    margin: 2px 0 !important;
+}
+[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] [class*="ChatMessages_Author__"],
+[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] [class*="ChatMessages_Date__"],
+[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
+    color: #fff8e1 !important;
+    background: transparent !important;
+}
+[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] [class*="ChatMessages_Author__"] {
+    font-weight: 600 !important;
+}
+[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] [class*="Buttons_SharedButton__"] {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffecb3 !important;
+    border-color: rgba(255, 193, 7, 0.45) !important;
 }
 
             /* ═══ 13. ЗАМЕТКИ (CommentMessagesGroup) — серый ═══ */

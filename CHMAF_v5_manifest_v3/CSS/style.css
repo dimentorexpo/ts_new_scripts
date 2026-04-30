@@ -1,3 +1,20 @@
+	/* Принудительно разрешаем выделение во всех полях ввода внутри окон расширения */
+.extwindows input,
+.extwindows textarea,
+.extwindows select,
+.testuserwindow input,
+.testuserwindow textarea,
+.wintInitializeChat input,
+.wintInitializeChat textarea,
+.glass-panel-task input,
+.glass-panel-task textarea,
+.glass-panel-task select,
+#AF_helper input,
+#AF_helper textarea {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+}
+
 	body {
 		overflow: hidden;
 	}
@@ -2981,3 +2998,9 @@
 			0 0 0 2px rgba(12, 10, 28, 0.8),
 			0 0 0 4px hsla(var(--neon-h), var(--neon-s), 60%, 0.4);
 	}
+
+	//
+	input, textarea, [contenteditable] {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+}
