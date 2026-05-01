@@ -256,61 +256,187 @@ const sendBgRequest = (url, options = { method: 'GET' }) => {
     }
 } */
 
-// === НАБЛЮДАТЕЛЬ: скрываем нативное окно "Создать задачу" внутри iframe ===
+// === НАБЛЮДАТЕЛЬ: полностью скрываем нативное окно "Создать задачу" внутри iframe ===
 
 let _nativeModalObserver = null;
 let _suppressTimer = null;
+let _lastModalState = null; // Отслеживаем состояние, чтобы не дублировать операции
 
 /**
- * Скрывает нативную модалку Autofaq внутри iframe, если включена настройка hideTaskWindow.
+ * Полностью скрывает нативную модалку Autofaq внутри iframe, если включена настройка hideTaskWindow.
+ * Скрывает: саму модалку + оверлей (затемнение) + фиксит body (убирает overflow:hidden)
  */
 function suppressNativeTaskModal() {
     clearTimeout(_suppressTimer);
     _suppressTimer = setTimeout(() => {
-        if (localStorage.getItem('hideTaskWindow') !== '1') return;
+        if (localStorage.getItem('hideTaskWindow') !== '1') {
+            // Если настройка выключена — показываем обратно, если были скрыты
+            restoreNativeTaskModal();
+            return;
+        }
         if (!location.href.includes('skyeng.autofaq.ai/tickets/assigned')) return;
 
-        // Получаем iframe (первый, основной документ Autofaq)
-        const iframe = document.querySelector('iframe');
+        const iframe = document.querySelector('iframe[class^="NEW_FRONTEND"], iframe');
         if (!iframe?.contentDocument) return;
 
         const iframeDoc = iframe.contentDocument;
+        const iframeWin = iframe.contentWindow;
 
-        // === Способ 1: Ищем по role="dialog" (новый Mantine) ===
+        let foundAndHidden = false;
+
+        // === Способ 1: Современный Mantine (role="dialog") ===
         const dialogs = iframeDoc.querySelectorAll('[role="dialog"]');
         for (const dialog of dialogs) {
-            const title = dialog.querySelector('.mantine-Modal-title, [id$="-title"]');
+            const title = dialog.querySelector('.mantine-Modal-title, [id$="-title"], .mantine-Text-root');
             if (!title || title.textContent.trim() !== 'Создать задачу') continue;
-            if (dialog.style.display === 'none') continue;
 
-            dialog.style.display = 'none';
+            // Получаем рут модалки (обычно это .mantine-Modal-root или ближайший wrapper)
+            const modalRoot = dialog.closest('.mantine-Modal-root')
+                || dialog.closest('[class*="Modal_"]')
+                || dialog.parentElement?.parentElement;
 
-            // Оверлей — ищем внутри того же документа
-            const overlay = iframeDoc.querySelector('.mantine-Overlay-root, [class*="Overlay_"]');
-            if (overlay) overlay.style.display = 'none';
-            return; // Скрыли — выходим
+            // Получаем оверлей (затемнение) — ищем внутри modalRoot или по классу
+            let overlay = null;
+            if (modalRoot) {
+                overlay = modalRoot.querySelector('.mantine-Overlay-root, [class*="Overlay_"], .mantine-Modal-overlay');
+            }
+            // Fallback: ищем оверлей по всему документу, если не нашли внутри modalRoot
+            if (!overlay) {
+                overlay = iframeDoc.querySelector('.mantine-Overlay-root, [class*="Overlay_"], .mantine-Modal-overlay');
+            }
+
+            // СКРЫВАЕМ всё
+            if (modalRoot) {
+                modalRoot.style.display = 'none';
+                modalRoot.style.visibility = 'hidden';
+                modalRoot.style.pointerEvents = 'none';
+            } else {
+                dialog.style.display = 'none';
+                dialog.style.visibility = 'hidden';
+                dialog.style.pointerEvents = 'none';
+            }
+
+            if (overlay) {
+                overlay.style.display = 'none';
+                overlay.style.visibility = 'hidden';
+                overlay.style.pointerEvents = 'none';
+            }
+
+            // КРИТИЧНО: Убираем overflow:hidden у body, чтобы страница была прокручиваемой
+            if (iframeDoc.body) {
+                iframeDoc.body.style.overflow = '';
+                iframeDoc.body.style.paddingRight = ''; // Убираем компенсацию скроллбара
+            }
+            if (iframeDoc.documentElement) {
+                iframeDoc.documentElement.style.overflow = '';
+            }
+
+            // Убираем aria-hidden с основного контента (если Mantine его ставит)
+            const mainContent = iframeDoc.querySelector('[aria-hidden="true"]:not([role="dialog"])');
+            if (mainContent) {
+                mainContent.removeAttribute('aria-hidden');
+            }
+
+            foundAndHidden = true;
+            _lastModalState = 'hidden';
+            break;
         }
 
-        // === Способ 2: Fallback на старый метод (если Mantine обновился и классы изменились) ===
-        // Ищем по тексту внутри iframe
-        const allElements = iframeDoc.querySelectorAll('*');
-        for (const el of allElements) {
-            // Проверяем только "листовые" текстовые ноды или элементы с текстом
-            if (el.children.length === 0 && el.textContent?.trim() === 'Создать задачу') {
-                // Поднимаемся вверх до контейнера модалки
-                let modal = el.closest('[role="dialog"]')
-                    || el.closest('.mantine-Modal-modal')
-                    || el.closest('.mantine-Paper-root')
-                    || el.parentElement?.parentElement?.parentElement?.parentElement;
+        // === Способ 2: Fallback — по тексту внутри iframe (если Mantine обновился) ===
+        if (!foundAndHidden) {
+            const allElements = iframeDoc.querySelectorAll('*');
+            for (const el of allElements) {
+                if (el.children.length === 0 && el.textContent?.trim() === 'Создать задачу') {
+                    let modal = el.closest('[role="dialog"]')
+                        || el.closest('.mantine-Modal-modal')
+                        || el.closest('.mantine-Paper-root')
+                        || el.closest('[class*="Modal_"]')
+                        || el.parentElement?.parentElement?.parentElement?.parentElement?.parentElement;
 
-                if (modal && modal.style.display !== 'none') {
-                    modal.style.display = 'none';
-                    return;
+                    if (modal) {
+                        // Ищем оверлей рядом (обычно соседний элемент или внутри того же контейнера)
+                        const parent = modal.parentElement;
+                        let overlay = null;
+                        if (parent) {
+                            overlay = parent.querySelector('.mantine-Overlay-root, [class*="Overlay_"]')
+                                || parent.previousElementSibling
+                                || parent.nextElementSibling;
+                        }
+
+                        modal.style.display = 'none';
+                        modal.style.visibility = 'hidden';
+                        modal.style.pointerEvents = 'none';
+
+                        if (overlay) {
+                            overlay.style.display = 'none';
+                            overlay.style.visibility = 'hidden';
+                            overlay.style.pointerEvents = 'none';
+                        }
+
+                        if (iframeDoc.body) {
+                            iframeDoc.body.style.overflow = '';
+                            iframeDoc.body.style.paddingRight = '';
+                        }
+
+                        foundAndHidden = true;
+                        _lastModalState = 'hidden';
+                        break;
+                    }
                 }
             }
         }
 
-    }, 30);
+    }, 50); // Увеличили до 50мс для надёжности
+}
+
+/**
+ * Восстанавливает отображение модалки (когда настройка hideTaskWindow выключена)
+ */
+function restoreNativeTaskModal() {
+    if (_lastModalState !== 'hidden') return;
+
+    const iframe = document.querySelector('iframe[class^="NEW_FRONTEND"], iframe');
+    if (!iframe?.contentDocument) return;
+
+    const iframeDoc = iframe.contentDocument;
+
+    // Восстанавливаем все скрытые модалки
+    const dialogs = iframeDoc.querySelectorAll('[role="dialog"]');
+    for (const dialog of dialogs) {
+        const title = dialog.querySelector('.mantine-Modal-title, [id$="-title"], .mantine-Text-root');
+        if (!title || title.textContent.trim() !== 'Создать задачу') continue;
+
+        const modalRoot = dialog.closest('.mantine-Modal-root')
+            || dialog.closest('[class*="Modal_"]')
+            || dialog.parentElement?.parentElement;
+
+        let overlay = null;
+        if (modalRoot) {
+            overlay = modalRoot.querySelector('.mantine-Overlay-root, [class*="Overlay_"], .mantine-Modal-overlay');
+        }
+        if (!overlay) {
+            overlay = iframeDoc.querySelector('.mantine-Overlay-root, [class*="Overlay_"], .mantine-Modal-overlay');
+        }
+
+        if (modalRoot) {
+            modalRoot.style.display = '';
+            modalRoot.style.visibility = '';
+            modalRoot.style.pointerEvents = '';
+        } else {
+            dialog.style.display = '';
+            dialog.style.visibility = '';
+            dialog.style.pointerEvents = '';
+        }
+
+        if (overlay) {
+            overlay.style.display = '';
+            overlay.style.visibility = '';
+            overlay.style.pointerEvents = '';
+        }
+
+        _lastModalState = 'visible';
+        break;
+    }
 }
 
 /**
@@ -320,11 +446,10 @@ function initNativeModalObserver() {
     if (_nativeModalObserver) return;
 
     const tryObserve = () => {
-        const iframe = document.querySelector('iframe');
+        const iframe = document.querySelector('iframe[class^="NEW_FRONTEND"], iframe');
         const body = iframe?.contentDocument?.body;
 
         if (!body) {
-            // iframe ещё не загрузился — пробуем позже
             setTimeout(tryObserve, 500);
             return;
         }
@@ -334,12 +459,24 @@ function initNativeModalObserver() {
 
         _nativeModalObserver = new MutationObserver((mutations) => {
             const hasAdded = mutations.some(m => m.addedNodes.length > 0);
-            if (hasAdded) suppressNativeTaskModal();
+            const hasRemoved = mutations.some(m => m.removedNodes.length > 0);
+
+            // Проверяем при любых изменениях DOM
+            if (hasAdded || hasRemoved) {
+                suppressNativeTaskModal();
+            }
         });
 
         _nativeModalObserver.observe(body, {
             childList: true,
             subtree: true
+        });
+
+        // Также наблюдаем за изменениями атрибутов (на случай если модалка показывается через CSS)
+        _nativeModalObserver.observe(body, {
+            attributes: true,
+            subtree: true,
+            attributeFilter: ['style', 'class', 'role']
         });
 
         console.log('[AF] Modal observer attached to iframe');
@@ -350,6 +487,9 @@ function initNativeModalObserver() {
 
 // === ЗАПУСК ===
 initNativeModalObserver();
+
+// Дополнительно: периодическая проверка на случай, если MutationObserver пропустит
+setInterval(suppressNativeTaskModal, 1000);
 
 // ГЛАВНАЯ ФУНКЦИЯ
 async function gettaskButButtonPress() {
