@@ -44,68 +44,61 @@ function createWindow(id, topKey, leftKey, content) {
     });
 
     // ===== ОБРАБОТЧИК DRAG (оптимизированный) =====
+    // Внутри функции createWindow
     windowElement.onmousedown = function (event) {
         if (checkelementtype(event)) {
-            event.preventDefault();
+            // Не даем выделять текст во время перетаскивания
+            if (!['INPUT', 'TEXTAREA'].includes(event.target.tagName)) {
+                event.preventDefault();
+            }
 
             let startX = event.clientX;
             let startY = event.clientY;
-            let isDragging = false;
-            let elemLeft = windowElement.offsetLeft;
-            let elemTop = windowElement.offsetTop;
 
-            // КЭШИРУЕМ размеры ОДИН РАЗ при старте drag
-            let rect = windowElement.getBoundingClientRect();
-            let actualWidth = rect.width;
-            let actualHeight = rect.height;
+            // Начальные координаты из стилей или localStorage
+            let initialLeft = parseInt(windowElement.style.left) || 0;
+            let initialTop = parseInt(windowElement.style.top) || 0;
 
-            // Блокируем выделение текста на время drag
-            const originalUserSelect = windowElement.style.userSelect;
-            windowElement.style.userSelect = 'none';
-            if (window.getSelection) window.getSelection().removeAllRanges();
+            let currentX = initialLeft;
+            let currentY = initialTop;
 
-            function onMouseMove(event) {
-                let deltaX = event.clientX - startX;
-                let deltaY = event.clientY - startY;
+            let rafId = null;
 
-                if (!isDragging && Math.abs(deltaX) < 3 && Math.abs(deltaY) < 3) {
-                    return;
+            function updatePosition() {
+                // Используем translate3d для аппаратного ускорения
+                // Мы не меняем top/left в процессе движения, а только сдвигаем "картинку"
+                windowElement.style.transform = `translate3d(${currentX - initialLeft}px, ${currentY - initialTop}px, 0)`;
+                rafId = requestAnimationFrame(updatePosition);
+            }
+
+            function onMouseMove(e) {
+                currentX = initialLeft + (e.clientX - startX);
+                currentY = initialTop + (e.clientY - startY);
+
+                if (!rafId) {
+                    rafId = requestAnimationFrame(updatePosition);
                 }
-                isDragging = true;
-
-                let newLeft = elemLeft + deltaX;
-                let newTop = elemTop + deltaY;
-
-                if (newLeft < 0) newLeft = 0;
-                else if (newLeft + actualWidth > window.innerWidth) newLeft = window.innerWidth - actualWidth;
-
-                if (newTop < 0) newTop = 0;
-                else if (newTop + actualHeight > window.innerHeight) newTop = window.innerHeight - actualHeight;
-
-                windowElement.style.left = `${newLeft}px`;
-                windowElement.style.top = `${newTop}px`;
             }
 
             function onMouseUp() {
-                // Восстанавливаем выделение
-                windowElement.style.userSelect = originalUserSelect;
+                cancelAnimationFrame(rafId);
+                rafId = null;
 
-                // Сохраняем в localStorage ТОЛЬКО при отпускании мыши
-                if (isDragging) {
-                    const finalLeft = parseInt(windowElement.style.left, 10);
-                    const finalTop = parseInt(windowElement.style.top, 10);
-                    if (!isNaN(finalLeft)) localStorage.setItem(leftKey, String(finalLeft));
-                    if (!isNaN(finalTop)) localStorage.setItem(topKey, String(finalTop));
-                }
+                // Только в самом конце применяем финальные координаты к top/left
+                windowElement.style.left = currentX + 'px';
+                windowElement.style.top = currentY + 'px';
+                windowElement.style.transform = ''; // Сбрасываем трансформ
+
+                // Сохраняем результат
+                localStorage.setItem(leftKey, currentX);
+                localStorage.setItem(topKey, currentY);
 
                 document.removeEventListener('mousemove', onMouseMove);
                 document.removeEventListener('mouseup', onMouseUp);
-                document.removeEventListener('mouseleave', onMouseUp);
             }
 
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
-            document.addEventListener('mouseleave', onMouseUp);
         }
     };
 

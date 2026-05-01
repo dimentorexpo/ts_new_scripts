@@ -5,13 +5,15 @@ var win_AFhelper = `
     <div class="glass-warning-bar"></div>
 
     <div class="flex-row" id="1str" style="cursor: -webkit-grab; padding-top: 5px;">
-        <button class="glass-btn mainButton" id="languageAF" title="Переключает язык Русский/Английский" style="width: 94px;">Русский</button>
+        <button class="glass-btn mainButton" id="languageAF" title="Переключает язык Русский/Английский">Русский</button>
         <button class="glass-btn mainButton" id="testCustTMPL" title="Открывает окно для добавления своих шаблонов">📒</button>
         <button class="glass-btn mainButton buttonHide" id="hideMenuMain" title="Скрывает расширение">Скрыть</button>
 
         <div class="flex-right">
             <button class="glass-btn mainButton" id="reminderstatus" title="Статус будильника 🔔 - вкл, 🔕 - выкл"></button>
-            <button class="glass-btn mainButton" id="getnewtmpldata" title="Обновляет шаблоны">🔄</button>
+<button class="glass-btn mainButton" id="getnewtmpldata" title="Обновляет шаблоны">
+    <span class="btn-icon">🔄</span>
+</button>
             <button class="glass-btn mainButton onlyfortp" id="addsrc" title="Доп меню для работы с сервисами школы">*</button>
             <button class="glass-btn mainButton" id="links" title="Открывает доп.меню со ссылками">L</button>
             <button class="glass-btn mainButton" id="setting" title="Настройки">⚙</button>
@@ -35,11 +37,11 @@ var win_AFhelper = `
     </div>
 
     <div class="flex-row">
-        <button class="glass-btn mainButton" id="msg1" title="Отправить или доработать" style="width: 90px;">Доработать</button>
+        <button class="glass-btn mainButton" id="msg1" title="Отправить или доработать">Доработать</button>
         <button class="glass-btn mainButton msgtype" id="msg" title="Отправить в заметки или в чат">Чат</button>
         <button class="glass-btn mainButton" id="opandclsbarhyper" title="Прикрепить ссылку">🔗</button>
         <button class="glass-btn mainButton" id="sndbot" title="Отправить от имени бота">🤖</button>
-        <button class="glass-btn mainButton primary" id="snd" title="Отправить текст" style="width: 70px;">Send</button>
+        <button class="glass-btn mainButton primary" id="snd" title="Отправить текст">Send</button>
 
         <div class="flex-right">
             <button class="glass-btn mainButton" id="addtocusttmplt" title="Сохранить в личные шаблоны">⬆️+Tmpl</button>
@@ -87,35 +89,53 @@ function replaceSelectedText(elem, formatCallback) {
 const msgBtn = document.getElementById('msg');
 const msg1Btn = document.getElementById('msg1');
 
+// Восстанавливаем состояние "Чат/Заметки"
 if (localStorage.getItem('msg')) {
     msgBtn.textContent = localStorage.getItem('msg');
-    // Заменен класс notes на notes
-    msgBtn.classList.toggle('notes', msgBtn.textContent === 'Заметки');
+    // Проверяем по наличию слова "Заметки" (чтобы эмодзи не мешали)
+    msgBtn.classList.toggle('notes', msgBtn.textContent.includes('Заметки'));
+} else {
+    msgBtn.textContent = "Чат"; // Значение по умолчанию
 }
 
+// Добавляем класс-базу для колбы
+msg1Btn.classList.add('msg1type');
+
+// Восстанавливаем состояние "Доработать/Отправить"
 if (localStorage.getItem('msg1')) {
     msg1Btn.textContent = localStorage.getItem('msg1');
+    // Включаем зеленую колбу, если там "Отправить"
+    msg1Btn.classList.toggle('send-mode', msg1Btn.textContent.includes('Отправить'));
+} else {
+    msg1Btn.textContent = "Доработать"; // Значение по умолчанию
 }
 
 // --- Обработчики событий ---
 
-// Обработчик ползунка масштаба (Используем zoom для корректных границ)
-// Обработчик ползунка масштаба с плавным переходом
-
-
-
 // Переключатель: Чат / Заметки
 msgBtn.addEventListener('click', function () {
-    const isChat = this.textContent === "Чат";
+    // Используем .includes(), чтобы игнорировать эмодзи при проверке
+    const isChat = this.textContent.includes("Чат");
+
+    // Меняем текст и эмодзи
     this.textContent = isChat ? "Заметки" : "Чат";
-    this.classList.toggle('notes'); // Заменен класс
+
+    // Включаем/выключаем класс для подсветки
+    this.classList.toggle('notes', isChat);
+
     localStorage.setItem('msg', this.textContent);
 });
 
 // Переключатель: Отправить / Доработать
 msg1Btn.addEventListener('click', function () {
-    const isSend = this.textContent === "Отправить";
+    const isSend = this.textContent.includes("Отправить");
+
+    // Меняем текст (было "Отправить" -> станет "Доработать")
     this.textContent = isSend ? "Доработать" : "Отправить";
+
+    // Если сейчас НЕ isSend (то есть мы переключили НА "Отправить"), вешаем зеленую колбу
+    this.classList.toggle('send-mode', !isSend);
+
     localStorage.setItem('msg1', this.textContent);
 });
 
@@ -225,7 +245,34 @@ document.getElementById('hideMenuMain').addEventListener('click', function () {
 });
 
 // Обновление данных шаблона
-document.getElementById('getnewtmpldata').addEventListener('click', getText);
+// Обновление данных шаблона с анимацией и блокировкой от дабл-клика
+const refreshBtnAFH = document.getElementById('getnewtmpldata');
+
+refreshBtnAFH.addEventListener('click', async function () {
+    // 1. Ставим статус "Загрузка" (оранжевый)
+    this.classList.add('loading-orange');
+    this.disabled = true;
+
+    try {
+        await getText(); // Твой запрос данных
+
+        // 2. Ставим статус "Успех" (зеленый)
+        this.classList.remove('loading-orange');
+        this.classList.add('success-green');
+
+        // 3. Через 3 секунды сбрасываем всё в исходный вид
+        setTimeout(() => {
+            this.classList.remove('success-green');
+            this.disabled = false;
+        }, 3000);
+
+    } catch (err) {
+        console.error("Ошибка обновления:", err);
+        // Если ошибка — можно просто вернуть в обычный вид сразу
+        this.classList.remove('loading-orange');
+        this.disabled = false;
+    }
+});
 
 // --- Фикс: снятие выделения в textarea при клике внутри ---
 const inpTextarea = document.getElementById('inp');

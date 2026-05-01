@@ -1,20 +1,3 @@
-	/* Принудительно разрешаем выделение во всех полях ввода внутри окон расширения */
-.extwindows input,
-.extwindows textarea,
-.extwindows select,
-.testuserwindow input,
-.testuserwindow textarea,
-.wintInitializeChat input,
-.wintInitializeChat textarea,
-.glass-panel-task input,
-.glass-panel-task textarea,
-.glass-panel-task select,
-#AF_helper input,
-#AF_helper textarea {
-    user-select: text !important;
-    -webkit-user-select: text !important;
-}
-
 	body {
 		overflow: hidden;
 	}
@@ -746,18 +729,62 @@
 		background: rgba(255, 99, 71, 0.3) !important;
 	}
 
-	.msgtype {
-		border-left: 8px solid #4ce479;
-		width: 70px;
-		transition: all 1s ease;
-	}
+/* =========================================
+   2. КНОПКА ЧАТ/ЗАМЕТКИ (СТЕКЛЯННАЯ КОЛБА)
+   ========================================= */
+/* Добавили #msg, чтобы сделать приоритет максимальным и победить наезд на текст */
+#msg.msgtype {
+  /* Возвращаем стандартные отступы и убираем лишние левые рамки */
+  border-left: 1px solid var(--btn-border) !important;
+  padding: 0 16px !important;
+  position: relative;
+  transition: all 0.3s ease;
+}
 
-	.msgtype.notes {
-		border-left: 8px solid #b4b4b4;
-		transition: all 1s ease;
-		width: 70px;
-	}
+/* Горизонтальная стеклянная пилюля сверху по центру */
+#msg.msgtype::after {
+  content: '';
+  position: absolute;
+  top: 5px; /* Располагаем прямо у верхнего края внутри кнопки */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px; /* Длина пилюли */
+  height: 4px; /* Толщина пилюли */
+  border-radius: 4px;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2;
+}
 
+/* 🟢 Включен ЧАТ: Яркий зеленый неон */
+#msg.msgtype:not(.notes) {
+  text-shadow: 0 0 8px rgba(76, 228, 121, 0.4);
+  color: #fff !important;
+}
+#msg.msgtype:not(.notes)::after {
+  background: #4ce479;
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Блик на стекле */
+  box-shadow:
+    0 2px 8px #4ce479, /* Мягкое свечение вниз */
+    0 0 4px #4ce479,
+    inset 0 1px 2px rgba(255, 255, 255, 0.8), /* Внутренний свет */
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 🔵 Включены ЗАМЕТКИ: Темно-синяя сапфировая колба (выключена) */
+#msg.msgtype.notes {
+  color: #fff !important; /* Текст тоже делаем белым для контраста */
+  text-shadow: 0 0 8px rgba(30, 144, 255, 0.6); /* Легкое синее свечение текста */
+}
+
+#msg.msgtype.notes::after {
+  background: #1e90ff; /* Тот самый насыщенный сапфировый/синий цвет */
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Блик на стекле */
+  box-shadow:
+    0 2px 8px rgba(30, 144, 255, 0.8), /* Свечение вниз */
+    0 0 4px rgba(30, 144, 255, 0.8), /* Общее свечение */
+    inset 0 1px 2px rgba(255, 255, 255, 0.8), /* Внутренний блик */
+    inset 0 -1px 2px rgba(0, 0, 150, 0.6); /* Глубина на дне колбы */
+}
 	.statMMactive {
 		width: 40px;
 		height: 40px;
@@ -1832,158 +1859,539 @@
 	}
 
 	/* Основа Glassmorphism AF_Helper*/
-	.glass-panel {
-		width: 580px;
-		background: rgba(40, 42, 54, 0.6);
-		/* Темный полупрозрачный фон */
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		border: 1px solid rgba(255, 255, 255, 0.15);
-		border-radius: 12px;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-		padding: 10px;
-		color: #fff;
-		position: relative;
-		box-sizing: border-box;
-		font-family: sans-serif;
-	}
+	/* ═══════════════════════════════════════════════════
+   AF Helper — Premium Glassmorphism
+   ═══════════════════════════════════════════════════ */
 
-	/* Верхняя полосатая рамка */
-	.glass-warning-bar {
-		position: absolute;
-		top: -10px;
-		left: 0;
-		width: 100%;
-		height: 10px;
-		background: repeating-linear-gradient(135deg, #000 0px, #000 15px, #FFD700 15px, #FFD700 30px);
-		border-top-left-radius: 12px;
-		border-top-right-radius: 12px;
-		cursor: -webkit-grab;
-	}
+/* --- Основная панель (глубже, насыщеннее) --- */
+.glass-panel {
+  width: 630px;
+  background: var(--glass-gradient);
+  /* Сильный блюр + увеличение насыщенности цветов под панелью */
+  backdrop-filter: blur(35px) saturate(150%);
+  -webkit-backdrop-filter: blur(35px) saturate(150%);
 
-	/* Кнопки в стиле Glass */
-	.glass-btn {
-		background: rgba(255, 255, 255, 0.1);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		color: #fff;
-		border-radius: 8px;
-		padding: 5px 10px;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-	}
+  /* Сложная рамка 3D: сверху светлая, снизу темная */
+  border-top: 1px solid var(--glass-border-top);
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  border-right: 1px solid var(--glass-border-bottom);
+  border-bottom: 1px solid var(--glass-border-bottom);
 
-	.glass-btn:hover {
-		background: rgba(255, 255, 255, 0.2);
-		box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-		transform: translateY(-1px);
-	}
+  border-radius: 18px;
+  box-shadow: var(--panel-shadow);
+  padding: 18px;
+  padding-top: 22px; /* Чуть больше места под желтую полосу */
+  color: var(--text-primary);
+  position: relative;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 
-	.glass-btn:active {
-		transform: translateY(1px);
-	}
+/* При наведении на панель она чуть "оживает" */
+.glass-panel:hover {
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.85);
+}
 
-	.glass-btn.primary {
-		background: rgba(34, 139, 34, 0.6);
-		border-color: rgba(34, 139, 34, 0.8);
-	}
+/* --- ЖЕЛТО-ЧЕРНАЯ ЛЕНТА (С анимацией) --- */
+.glass-warning-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: repeating-linear-gradient(
+    135deg,
+    #111 0px, #111 12px,
+    #f1c40f 12px, #f1c40f 24px
+  );
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  cursor: grab;
+  opacity: 0.85;
+  box-shadow: inset 0 -1px 2px rgba(0,0,0,0.5);
+  /* Магия движения */
+  background-size: 34px 100%;
+  animation: warning-slide 4s linear infinite;
+}
 
-	.glass-btn.primary:hover {
-		background: rgba(34, 139, 34, 0.8);
-	}
+@keyframes warning-slide {
+  from { background-position: 0 0; }
+  to { background-position: -34px 0; }
+}
 
-	.glass-btn.mainButton.buttonHide {
-		width: 188px;
-	}
+/* --- РЯДЫ И ВЫРАВНИВАНИЕ --- */
+.flex-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
 
-	/* Инпуты и Текстареа */
-	.glass-input,
-	.glass-textarea {
-		background: rgba(0, 0, 0, 0.2);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		color: #fff;
-		border-radius: 8px;
-		padding: 8px;
-		outline: none;
-		transition: border 0.2s;
-	}
+.flex-right {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
 
-	.glass-input::placeholder,
-	.glass-textarea::placeholder {
-		color: rgba(255, 255, 255, 0.5);
-	}
+/* --- УНИВЕРСАЛЬНЫЕ КНОПКИ --- */
+.glass-btn, .glass-btn.mainButton {
+  width: auto !important;
+  min-width: 38px;
+  height: 36px;
+  padding: 0 14px !important;
+  margin: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 
-	.glass-input:focus,
-	.glass-textarea:focus {
-		border-color: rgba(255, 255, 255, 0.5);
-		background: rgba(0, 0, 0, 0.3);
-	}
+  background: var(--btn-bg);
+  border: 1px solid var(--btn-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 10px !important;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 
-	/* Флекс-контейнеры для ровного расположения */
-	.flex-row {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
-		align-items: center;
-		margin-bottom: 8px;
-	}
+  /* Элегантная тень */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  backdrop-filter: blur(10px);
+}
 
-	.flex-right {
-		margin-left: auto;
-		display: flex;
-		gap: 6px;
-	}
+/* Блик света при наведении */
+.glass-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
 
-	/* Гиперссылка */
-	.hyper-bar {
-		display: none;
-		margin-bottom: 8px;
-		flex-wrap: nowrap;
-	}
+.glass-btn:hover::before { left: 150%; }
 
-	.hyper-bar.active {
-		display: flex;
-	}
+.glass-btn:hover {
+  background: var(--btn-bg-hover);
+  border-color: var(--btn-border-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+}
 
-	/* Красивый ползунок масштаба в стиле Glassmorphism */
-	.glass-slider {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 75px;
-		height: 6px;
-		background: rgba(255, 255, 255, 0.15);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 4px;
-		outline: none;
-		margin-right: 8px;
-		box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-		cursor: pointer;
-		transition: background 0.3s;
-	}
+.glass-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition-duration: 0.05s;
+}
 
-	.glass-slider:hover {
-		background: rgba(255, 255, 255, 0.25);
-	}
+/* --- ТЕ САМЫЕ КНОПКИ SEND И СКРЫТЬ --- */
+.glass-btn.primary {
+  background: var(--btn-primary-bg) !important;
+  border-color: var(--btn-primary-border) !important;
+  color: var(--btn-primary-text) !important;
+  font-weight: 600;
+  min-width: 80px;
+  text-shadow: 0 0 8px var(--neon-glow);
+}
+.glass-btn.primary:hover {
+  background: var(--btn-primary-hover) !important;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3), 0 0 20px var(--neon-glow);
+}
 
-	/* Ползунок (сам кружок) */
-	.glass-slider::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		background: #fff;
-		box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-		cursor: pointer;
-		transition: transform 0.15s ease, background 0.2s ease;
-	}
+.glass-btn.buttonHide {
+  background: var(--btn-danger-bg) !important;
+  border-color: var(--btn-danger-border) !important;
+  color: var(--btn-danger-text) !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px;
+}
+.glass-btn.buttonHide:hover {
+  background: var(--btn-danger-hover) !important;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3), 0 0 15px rgba(231, 76, 60, 0.3);
+}
 
-	.glass-slider::-webkit-slider-thumb:hover {
-		transform: scale(1.3);
-		/* Плавное увеличение кружочка */
-		background: #FFD700;
-		/* Желтый цвет в стиль рамки */
-	}
+/* Индикатор msgtype */
+.msgtype {
+  border-left: 4px solid var(--btn-primary-text) !important;
+}
+.msgtype.notes {
+  border-left-color: var(--text-secondary) !important;
+}
+
+/* --- ПОЛЯ ВВОДА (ПРЕМИАЛЬНЫЕ УГЛУБЛЕНИЯ) --- */
+.glass-input, .glass-textarea {
+  background: var(--input-bg);
+  border: 1px solid rgba(0,0,0,0.8); /* Темная граница для контраста */
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: 10px 14px;
+  outline: none;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  box-shadow: var(--input-shadow);
+}
+
+.glass-input::placeholder, .glass-textarea::placeholder {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.glass-input:focus, .glass-textarea:focus {
+  background: var(--input-focus);
+  border-color: var(--input-focus-ring);
+  box-shadow:
+    var(--input-shadow),
+    0 0 0 1px var(--input-focus-ring),
+    0 0 15px var(--neon-glow); /* Твой неон светится внутри! */
+}
+
+.glass-textarea {
+  width: 100%;
+  min-height: 110px;
+  max-height: 350px;
+  resize: vertical;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+/* --- ПАНЕЛЬ ССЫЛОК --- */
+.hyper-bar {
+  display: none;
+  margin-bottom: 12px;
+  flex-wrap: nowrap;
+  gap: 8px;
+  background: rgba(0,0,0,0.2);
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border-bottom);
+}
+
+.hyper-bar.active {
+  display: flex;
+}
+
+/* --- СЕКСУАЛЬНЫЙ СКРОЛЛБАР --- */
+.glass-textarea::-webkit-scrollbar { width: 8px; }
+.glass-textarea::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+.glass-textarea::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  border: 2px solid rgba(15, 17, 21, 0.45); /* Создает эффект отступа */
+}
+.glass-textarea::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+/* --- ОТКЛЮЧЕННЫЕ КНОПКИ --- */
+.glass-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: grayscale(1);
+}
+/* --- Бегущая строка (Marquee) ---
+   Требуется обернуть текст кнопки:
+   <button class="glass-btn"><span class="btn-text" data-text="Доработать">Доработать</span></button>
+   Авто-обертка через JS ниже */
+.glass-btn .btn-text {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  position: relative;
+  pointer-events: none;
+  gap: 2rem; /* расстояние между оригиналом и дублем */
+}
+
+/* Дублируем текст через ::after для бесконечной прокрутки */
+.glass-btn .btn-text::after {
+  content: attr(data-text);
+  display: inline-block;
+}
+
+/* Запускаем анимацию только если текст реально не влезает */
+.glass-btn:hover .btn-text {
+  overflow: visible;
+  animation: btn-marquee 3.5s linear infinite;
+  text-overflow: clip;
+}
+
+@keyframes btn-marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* --- Поля ввода (вдавленные, премиальные) --- */
+.glass-input, .glass-textarea {
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 8px 12px;
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 3px var(--glass-shadow);
+}
+
+.glass-input::placeholder, .glass-textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.glass-input:focus, .glass-textarea:focus {
+  background: var(--input-focus);
+  border-color: var(--input-focus-ring);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
+}
+
+.glass-textarea {
+  width: 100%;
+  min-height: 100px;
+  max-height: 350px;
+  resize: vertical;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+/* --- Панель гиперссылок --- */
+.hyper-bar {
+  display: none;
+  margin-bottom: 12px;
+  flex-wrap: nowrap;
+  gap: 8px;
+  background: var(--input-bg);
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+}
+
+.hyper-bar.active {
+  display: flex;
+}
+
+/* --- Скроллбар --- */
+.glass-textarea::-webkit-scrollbar { width: 6px; }
+.glass-textarea::-webkit-scrollbar-track { background: transparent; }
+.glass-textarea::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+.glass-textarea::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* --- Disabled состояние --- */
+.glass-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+/* --- КНОПКИ ВКЛАДОК (Шаб, Win, Mac и т.д.) --- */
+/* =========================================
+   1. ПАНЕЛЬ ВЕРХНИХ ВКЛАДОК (#pages) - СЛИТЫЙ ДИЗАЙН (Tab Bar)
+   ========================================= */
+#pages {
+  display: flex;
+  flex-wrap: nowrap; /* Все кнопки строго в один ряд */
+  gap: 0 !important; /* 🛑 ПОЛНОСТЬЮ УБИРАЕМ ПУСТОТЫ */
+  margin-bottom: 16px !important;
+
+  /* Создаем общую форму для всего блока кнопок */
+  border-radius: 12px;
+  overflow: hidden; /* Обрезает углы у крайних кнопок по форме контейнера */
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--glass-border-bottom);
+  background: rgba(0, 0, 0, 0.2); /* Легкая темная подложка */
+}
+
+#pages .glass-btn {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  height: 42px !important; /* Делаем их чуть выше для удобства клика */
+  padding: 0 6px !important;
+  margin: 0 !important;
+
+  /* 🛑 Делаем их прямоугольными, скругление будет только у родителя */
+  border-radius: 0 !important;
+
+  /* Создаем стильный разделитель (эффект вдавленной линии между кнопками) */
+  border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.4) !important;
+  border-bottom: none !important;
+  /* border-top не трогаем, чтобы твои инлайн-стили с оранжевой полоской работали! */
+
+  flex: 1 1 auto !important; /* Кнопки сами поделят ширину поровну */
+  min-width: 0; /* Не дает кнопкам ломать сетку, если текста много */
+}
+
+/* Убираем лишние рамки у самой первой и последней кнопки */
+#pages .glass-btn:first-child {
+  border-left: none !important;
+}
+#pages .glass-btn:last-child {
+  border-right: none !important;
+}
+
+#pages .glass-btn:hover {
+  /* В слитом блоке мы НЕ двигаем кнопку, чтобы не было "дырок" под ней */
+  transform: none !important;
+  filter: brightness(1.35) saturate(1.2); /* Делаем инлайн-цвет ярче и сочнее */
+  box-shadow:
+    inset 0 0 20px rgba(255, 255, 255, 0.15),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.3) !important;
+  z-index: 2; /* При наведении рамки не перекрываются соседями */
+}
+
+/* Активная или "нажатая" кнопка в блоке */
+#pages .glass-btn:active {
+  filter: brightness(0.9);
+  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* =========================================
+   2. ПРЕМИАЛЬНАЯ НИЖНЯЯ ПАНЕЛЬ (Dock Bar)
+   ========================================= */
+/* Оборачиваем нижний ряд в красивую вдавленную "нишу" */
+#hyperlnk + .flex-row {
+  background: rgba(10, 12, 16, 0.4);
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.5);
+  margin-top: 10px;
+  margin-bottom: 0;
+  gap: 6px; /* Чуть уменьшили отступ, чтобы всё 100% влезло */
+
+  /* 🛑 ВОТ ЭТОТ ФИКС НЕ ДАЕТ КНОПКАМ ПРЫГАТЬ ВНИЗ */
+  flex-wrap: nowrap !important;
+  justify-content: flex-start;
+}
+
+#hyperlnk + .flex-row .glass-btn {
+  height: 38px !important;
+  border-radius: 10px !important;
+  padding: 0 10px !important; /* Делаем боковые отступы чуть компактнее */
+  white-space: nowrap; /* Запрещаем тексту внутри кнопок ломаться */
+}
+
+/* Правую группу кнопок жестко держим справа */
+#hyperlnk + .flex-row .flex-right {
+  margin-left: auto;
+  flex-shrink: 0; /* Запрещаем сжиматься */
+}
+
+/* Улучшаем кнопку "Доработать" */
+/* =========================================
+   КНОПКА ДОРАБОТАТЬ / ОТПРАВИТЬ (Вторая колба)
+   ========================================= */
+#msg1.msg1type {
+  border-left: 1px solid var(--btn-border) !important;
+  padding: 0 16px !important;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+#msg1.msg1type::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 4px;
+  border-radius: 4px;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2;
+}
+
+/* 🟣 Включено ДОРАБОТАТЬ (По умолчанию): Фиолетовый сапфир */
+#msg1.msg1type:not(.send-mode) {
+  text-shadow: 0 0 8px rgba(186, 85, 211, 0.6);
+  color: #fff !important;
+}
+#msg1.msg1type:not(.send-mode)::after {
+  background: #ba55d3; /* Красивый фиолетовый (MediumOrchid) */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 2px 8px #ba55d3,
+    0 0 4px #ba55d3,
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 🟢 Включено ОТПРАВИТЬ (.send-mode): Зеленый неон (как в Чате) */
+#msg1.msg1type.send-mode {
+  text-shadow: 0 0 8px rgba(76, 228, 121, 0.4);
+  color: #fff !important;
+}
+#msg1.msg1type.send-mode::after {
+  background: #4ce479;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 2px 8px #4ce479,
+    0 0 4px #4ce479,
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* =========================================
+   ПРЕМИАЛЬНАЯ ЗАГРУЗКА (Обновление шаблонов)
+   ========================================= */
+@keyframes premium-pulse {
+  0% {
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2), inset 0 0 5px rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3) !important;
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.8) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+  }
+}
+
+/* Успокаиваем второстепенные кнопки (+Tmpl и Vimbot) */
+#addtocusttmplt, #openVimbotWindows {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5) !important;
+  font-size: 12px !important;
+}
+
+#addtocusttmplt:hover, #openVimbotWindows:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+/* Состояние: Идет загрузка (оранжевый) */
+.loading-orange {
+    background-color: #ff8c00 !important; /* Насыщенный оранжевый */
+    border-color: #cc7000 !important;
+    pointer-events: none; /* Блокируем клики */
+}
+
+/* Состояние: Успешно загрузилось (зеленый) */
+.success-green {
+    background-color: #2e8b57 !important; /* Морская волна/зеленый */
+    border-color: #226b42 !important;
+    pointer-events: none;
+}
+
 
 	/* Новые стили Links */
 	/* Добавь это в head или инжекти через JS */
@@ -2834,16 +3242,82 @@
 
 	/* ═══ gpanneon GLASS ULTRA ═══ */
 	/* ═══ NEON GLASS ULTRA v2 ═══ */
-	:root {
-		--neon-h: 190;
-		--neon-s: 90%;
-		--neon-l: 60%;
-		/* Cyan по умолчанию */
-		--neon: hsl(var(--neon-h), var(--neon-s), var(--neon-l));
-		--neon-dim: hsl(var(--neon-h), var(--neon-s), 45%);
-		--neon-bright: hsl(var(--neon-h), var(--neon-s), 75%);
-		--neon-glow: hsla(var(--neon-h), var(--neon-s), var(--neon-l), 0.4);
-	}
+/* --- Общий блок переменных (Светлая тема + Ваш Неон) --- */
+:root {
+  /* Твой фирменный цвет */
+  --neon-h: 190;
+  --neon-s: 90%;
+  --neon-l: 60%;
+  --neon: hsl(var(--neon-h), var(--neon-s), var(--neon-l));
+  --neon-glow: hsla(var(--neon-h), var(--neon-s), var(--neon-l), 0.35); /* Нежное свечение */
+  --neon-dim: hsl(var(--neon-h), var(--neon-s), 50%);
+
+  /* 💎 ПРЕМИАЛЬНОЕ СВЕТЛО-ТЕМНОЕ СТЕКЛО (Матовый Обсидиан) */
+  --glass-gradient: linear-gradient(140deg, rgba(65, 70, 85, 0.75) 0%, rgba(35, 38, 48, 0.85) 100%);
+  --glass-border-top: rgba(255, 255, 255, 0.25);
+  --glass-border-bottom: rgba(0, 0, 0, 0.4);
+
+  /* Тени: глубокая черная тень + фирменное неоновое свечение */
+  --panel-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+
+  /* Кнопки стали чуть светлее и контрастнее */
+  --btn-bg: rgba(255, 255, 255, 0.08);
+  --btn-bg-hover: rgba(255, 255, 255, 0.16);
+  --btn-border: rgba(255, 255, 255, 0.15);
+  --btn-border-hover: rgba(255, 255, 255, 0.3);
+
+  /* Поля ввода - эффект глубокой ниши */
+  --input-bg: rgba(15, 17, 21, 0.45);
+  --input-focus: rgba(0, 0, 0, 0.6);
+  --input-shadow: inset 0 3px 8px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.1);
+  --input-focus-ring: var(--neon);
+
+  /* Цвета акцентных кнопок (ты просил их сохранить) */
+  --btn-primary-bg: hsla(var(--neon-h), var(--neon-s), var(--neon-l), 0.15);
+  --btn-primary-hover: hsla(var(--neon-h), var(--neon-s), var(--neon-l), 0.3);
+  --btn-primary-border: hsla(var(--neon-h), var(--neon-s), var(--neon-l), 0.6);
+  --btn-primary-text: var(--neon);
+
+  --btn-danger-bg: rgba(231, 76, 60, 0.15);
+  --btn-danger-hover: rgba(231, 76, 60, 0.3);
+  --btn-danger-border: rgba(231, 76, 60, 0.5);
+  --btn-danger-text: #ff6b6b;
+}
+
+
+/* --- Темная тема --- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --glass-bg: rgba(30, 30, 35, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: rgba(0, 0, 0, 0.3);
+    --text-primary: #f5f5f7;
+    --text-secondary: rgba(255, 255, 255, 0.5);
+
+    --btn-bg: rgba(255, 255, 255, 0.06);
+    --btn-bg-hover: rgba(255, 255, 255, 0.15);
+    --btn-border: rgba(255, 255, 255, 0.08);
+
+    --input-bg: rgba(0, 0, 0, 0.25);
+    --input-focus: rgba(0, 0, 0, 0.4);
+
+    /* ВАШ НЕОН В ТЕМНОЙ ТЕМЕ: */
+    --input-focus-ring: var(--neon-glow);
+
+    --btn-primary-bg: hsla(var(--neon-h), var(--neon-s), var(--neon-l), 0.15);
+    --btn-primary-hover: hsla(var(--neon-h), var(--neon-s), var(--neon-l), 0.3);
+    --btn-primary-border: hsla(var(--neon-h), var(--neon-s), var(--neon-l), 0.5);
+    --btn-primary-text: var(--neon-bright); /* В темной теме текст яркий */
+
+    --btn-danger-bg: rgba(231, 76, 60, 0.15);
+    --btn-danger-hover: rgba(231, 76, 60, 0.3);
+    --btn-danger-border: rgba(231, 76, 60, 0.4);
+    --btn-danger-text: #ff6b6b;
+  }
+}
 
 	/* Темы (добавь класс к кнопке) */
 	.neon-cyan {
