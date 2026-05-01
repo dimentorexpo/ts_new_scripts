@@ -660,7 +660,8 @@ const injectOpStatusStyles = () => {
         .op-st-badge {
             min-width: 26px;
             height: 26px;
-            display: flex;
+            display: grid;
+            place-items: center;
             align-items: center;
             justify-content: center;
             border-radius: 8px;
@@ -683,7 +684,18 @@ const injectOpStatusStyles = () => {
                 0 2px 8px rgba(0, 0, 0, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.12),
                 0 0 0 1px rgba(0,0,0,0.3);
+                    line-height: 1;           /* убираем лишний line-height */
+    padding-bottom: 1px;      /* микро-сдвиг вверх для цифр */
+         padding-top: 1px;  /* если line-height уже 1 */
+         font-feature-settings: "tnum";  /* табличные цифры, равномерные метрики */
         }
+
+        .op-st-badge span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -52%);  /* -52% вместо -50% — поднять на 2% */
+}
 
         .op-st-badge::before {
             content: '';
