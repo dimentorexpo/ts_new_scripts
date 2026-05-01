@@ -263,7 +263,6 @@ function suppressNativeTaskModal() {
         if (!iframe?.contentDocument) return;
 
         const iframeDoc = iframe.contentDocument;
-        const iframeWin = iframe.contentWindow;
 
         let foundAndHidden = false;
 
