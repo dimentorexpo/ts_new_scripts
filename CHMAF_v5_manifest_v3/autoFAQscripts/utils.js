@@ -62,12 +62,16 @@ function createWindow(id, topKey, leftKey, content) {
             let currentX = initialLeft;
             let currentY = initialTop;
 
+            // Сохраняем текущий scale из transform, чтобы не потерять масштабирование
+            const currentTransform = windowElement.style.transform || '';
+            const scaleMatch = currentTransform.match(/scale\([^\)]+\)/);
+            const savedScale = scaleMatch ? scaleMatch[0] : '';
+
             let rafId = null;
 
             function updatePosition() {
-                // Используем translate3d для аппаратного ускорения
-                // Мы не меняем top/left в процессе движения, а только сдвигаем "картинку"
-                windowElement.style.transform = `translate3d(${currentX - initialLeft}px, ${currentY - initialTop}px, 0)`;
+                const translate = `translate3d(${currentX - initialLeft}px, ${currentY - initialTop}px, 0)`;
+                windowElement.style.transform = savedScale ? `${translate} ${savedScale}` : translate;
                 rafId = requestAnimationFrame(updatePosition);
             }
 
@@ -87,7 +91,7 @@ function createWindow(id, topKey, leftKey, content) {
                 // Только в самом конце применяем финальные координаты к top/left
                 windowElement.style.left = currentX + 'px';
                 windowElement.style.top = currentY + 'px';
-                windowElement.style.transform = ''; // Сбрасываем трансформ
+                windowElement.style.transform = savedScale; // Восстанавливаем scale вместо сброса; // Сбрасываем трансформ
 
                 // Сохраняем результат
                 localStorage.setItem(leftKey, currentX);
