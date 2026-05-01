@@ -72,45 +72,41 @@ async function init_settings() {
             return `rgba(${r1}, ${g1}, ${b1}, ${alpha})`;
         };
 
+        // ─── Удаление стилей при белом фоне (возврат к дефолту) ───
+        const removeStyle = (targetDoc, styleId) => {
+            if (!targetDoc || !targetDoc.head) return;
+            const el = targetDoc.getElementById(styleId);
+            if (el) el.remove();
+        };
+
+        if (isWhite) {
+            removeStyle(document, 'chmaf-bg-main');
+            const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+            if (iframe) {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                if (iframeDoc) removeStyle(iframeDoc, 'chmaf-bg-iframe');
+            }
+            return; // дефолт — не инжектим кастом
+        }
+
         let cssRules = `
     .usinf-glass-panel {
-        background: ${isWhite ? 'rgba(255, 255, 255, 0.7)' : getRgba(color, 0.7)} !important;
+        background: ${getRgba(color, 0.7)} !important;
         backdrop-filter: blur(20px) saturate(160%) !important;
         -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
-        border: 1px solid ${isWhite ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)'} !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
         color: ${textColor} !important;
     }
 .usinf-btn-glass {
-    /* !important здесь обязателен, иначе #ffffff из glassmorphismCSS победит */
-    background: ${isWhite ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)'} !important;
+    background: rgba(255,255,255,0.1) !important;
     color: ${textColor} !important;
-
-    /* адаптивный border теперь тоже !important и перебьёт базовый */
-    border: 1px solid ${isWhite ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.15)'} !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
 }
 `;
 
-        // ⬇️ ДОБАВИТЬ ЭТО — для светлой темы
-        if (isWhite) {
-            cssRules += `
-        [class*="DialogsCard_PayloadStatus__"] svg {
-            color: #e65100 !important;
-            filter: drop-shadow(0 1px 2px rgba(230, 81, 0, 0.2)) !important;
-            width: 22px !important;
-            height: 22px !important;
-            transition: all 0.2s ease;
-        }
-        [class*="DialogsCard_Card"]:hover [class*="DialogsCard_PayloadStatus__"] svg {
-            color: #ff3d00 !important;
-            filter: drop-shadow(0 2px 4px rgba(255, 61, 0, 0.3)) !important;
-            transform: scale(1.1) !important;
-        }
-    `;
-        }
-
         if (!isWhite) {
             cssRules += `
-            /* ═══ 1. КАРТОЧКИ ДИАЛОГОВ (с поддержкой цвета таймера) ═══ */
+            /* ═══ 1. КАРТОЧКИ ДИАЛОГОВ ═══ */
             [class*="DialogsCard_Card"] {
                 background-color: var(--chat-card-bg, ${getRgba(textColor, 0.05)}) !important;
                 color: ${textColor} !important;
@@ -118,7 +114,7 @@ async function init_settings() {
                 transition: background-color 0.3s ease;
             }
 
-            /* ═══ 2. ТАБЫ (только внутри tabsList) ═══ */
+            /* ═══ 2. ТАБЫ ═══ */
             [class*="mantine-Tabs-tabsList"] [class*="mantine-Tabs-tab"],
             [class*="mantine-Tabs-tabsList"] [class*="ConversationScreen_Tab__"] {
                 color: ${textColor} !important;
@@ -178,7 +174,7 @@ async function init_settings() {
     filter: brightness(1.15);
 }
 
-            /* ═══ 7. ОБЩАЯ ТИПОГРАФИКА (базовая, будет перебита специфичными ниже) ═══ */
+            /* ═══ 7. ОБЩАЯ ТИПОГРАФИКА ═══ */
             [class*="Typography_Typography"],
             [class*="ChatMessages_Author"],
             [class*="ChatMessages_Date"],
@@ -193,11 +189,9 @@ async function init_settings() {
                 color: #ffffff !important;
                 opacity: 1 !important;
             }
-            [style*="background-color"]:not([style*="rgb(255, 255, 255)"]):not([style*="#fff"]):not([style*="#FFF"]):not([style*="white"]) {
-            }
 
-                      /* ═══ 9. ОБЩИЙ ФОН ДЛЯ ОБЫЧНЫХ СООБЩЕНИЙ (серый) ═══ */
-            [class*="ChatMessages_RegularMessage__"]:not([data-author-type="bot"]):not([data-author-type="user"]):not([data-author-type="user-with-bot"]) {
+                       /* ═══ 9. ОБЩИЙ ФОН ДЛЯ ОБЫЧНЫХ СООБЩЕНИЙ (серый) ═══ */
+            [class*="ChatMessages_RegularMessage__"]:not([data-author-type="bot"]):not([data-author-type="user"]):not([data-author-type="user-with-bot"]):not([data-operator-comment="true"]) {
                 background-color: rgba(255, 255, 255, 0.05) !important;
                 border-radius: 8px !important;
                 padding: 3px 6px !important;
@@ -251,50 +245,70 @@ async function init_settings() {
             }
 
             /* ═══ 12. USER (receiver) — приятный синий ═══ */
-[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] {
-    background-color: rgba(66, 133, 244, 0.18) !important;
-    border: 1px solid rgba(66, 133, 244, 0.35) !important;
-    border-radius: 8px !important;
-    padding: 3px 6px !important;
-    margin: 2px 0 !important;
-}
-[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_Author__"],
-[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_Date__"],
-[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
-    color: #e3f2fd !important;
-    background: transparent !important;
-}
-[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_Author__"] {
-    font-weight: 600 !important;
-}
-[class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="Buttons_SharedButton__"] {
-    background-color: rgba(255, 255, 255, 0.08) !important;
-    color: #bbdefb !important;
-    border-color: rgba(66, 133, 244, 0.4) !important;
-}
+            [class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] {
+                background-color: rgba(66, 133, 244, 0.18) !important;
+                border: 1px solid rgba(66, 133, 244, 0.35) !important;
+                border-radius: 8px !important;
+                padding: 3px 6px !important;
+                margin: 2px 0 !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_Author__"],
+            [class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_Date__"],
+            [class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
+                color: #e3f2fd !important;
+                background: transparent !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="ChatMessages_Author__"] {
+                font-weight: 600 !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] [class*="Buttons_SharedButton__"] {
+                background-color: rgba(255, 255, 255, 0.08) !important;
+                color: #bbdefb !important;
+                border-color: rgba(66, 133, 244, 0.4) !important;
+            }
 
             /* ═══ 12.5. USER (sender) — премиальный золотой ═══ */
-[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] {
-    background-color: rgba(255, 193, 7, 0.18) !important;
-    border: 1px solid rgba(255, 193, 7, 0.4) !important;
-    border-radius: 8px !important;
-    padding: 3px 6px !important;
-    margin: 2px 0 !important;
-}
-[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] [class*="ChatMessages_Author__"],
-[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] [class*="ChatMessages_Date__"],
-[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] [class*="ChatMessages_HtmlContent__"] {
-    color: #fff8e1 !important;
-    background: transparent !important;
-}
-[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] [class*="ChatMessages_Author__"] {
-    font-weight: 600 !important;
-}
-[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] [class*="Buttons_SharedButton__"] {
-    background-color: rgba(255, 255, 255, 0.08) !important;
-    color: #ffecb3 !important;
-    border-color: rgba(255, 193, 7, 0.45) !important;
-}
+            [class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-operator-comment="true"]) {
+                background-color: rgba(255, 193, 7, 0.18) !important;
+                border: 1px solid rgba(255, 193, 7, 0.4) !important;
+                border-radius: 8px !important;
+                padding: 3px 6px !important;
+                margin: 2px 0 !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-operator-comment="true"]) [class*="ChatMessages_Author__"],
+            [class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-operator-comment="true"]) [class*="ChatMessages_Date__"],
+            [class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-operator-comment="true"]) [class*="ChatMessages_HtmlContent__"] {
+                color: #fff8e1 !important;
+                background: transparent !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-operator-comment="true"]) [class*="ChatMessages_Author__"] {
+                font-weight: 600 !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-operator-comment="true"]) [class*="Buttons_SharedButton__"] {
+                background-color: rgba(255, 255, 255, 0.08) !important;
+                color: #ffecb3 !important;
+                border-color: rgba(255, 193, 7, 0.45) !important;
+            }
+
+            /* ═══ 12.6. OperatorComment — СЕРЫЙ (перекрывает золотой sender/user) ═══ */
+            [class*="ChatMessages_RegularMessage__"][data-operator-comment="true"] {
+                background-color: rgba(96, 125, 139, 0.25) !important;
+                border: 1px solid rgba(96, 125, 139, 0.4) !important;
+                border-radius: 8px !important;
+                padding: 3px 6px !important;
+                margin: 2px 0 !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-operator-comment="true"] [class*="ChatMessages_Author__"],
+            [class*="ChatMessages_RegularMessage__"][data-operator-comment="true"] [class*="ChatMessages_Date__"],
+            [class*="ChatMessages_RegularMessage__"][data-operator-comment="true"] [class*="ChatMessages_HtmlContent__"] {
+                color: #eceff1 !important;
+                background: transparent !important;
+            }
+            [class*="ChatMessages_RegularMessage__"][data-operator-comment="true"] [class*="Buttons_SharedButton__"] {
+                background-color: rgba(255, 255, 255, 0.08) !important;
+                color: #b0bec5 !important;
+                border-color: rgba(96, 125, 139, 0.45) !important;
+            }
 
             /* ═══ 13. ЗАМЕТКИ (CommentMessagesGroup) — серый ═══ */
             [class*="ChatMessages_CommentMessagesGroup__"] {
@@ -304,8 +318,21 @@ async function init_settings() {
                 padding: 4px 8px !important;
                 margin: 3px 0 !important;
             }
+            /* Сбрасываем ЛЮБЫЕ цветные фоны сообщений внутри группы комментариев */
             [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_RegularMessage__"] {
                 background: transparent !important;
+                background-color: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            /* Явно перебиваем цветные селекторы (bot, receiver, sender, user-with-bot) внутри группы */
+            [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_RegularMessage__"][data-author-type="bot"],
+            [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_RegularMessage__"][data-author-type="user-with-bot"],
+            [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"],
+            [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"] {
+                background: transparent !important;
+                background-color: transparent !important;
                 border: none !important;
                 padding: 0 !important;
                 margin: 0 !important;
@@ -327,7 +354,7 @@ async function init_settings() {
                 color: #b3e5fc !important;
             }
 
-                        /* ═══ 14. QUICK TAGS ОКОШКО ═══ */
+            /* ═══ 14. QUICK TAGS ═══ */
             #quickTagsdiv {
                 background-color: ${getRgba(color, 0.85)} !important;
                 border: 1px solid ${getRgba(textColor, 0.15)} !important;
@@ -345,17 +372,16 @@ async function init_settings() {
                 text-decoration: underline !important;
                 text-underline-offset: 2px !important;
             }
-            /* Специальные цветные теги — яркие для тёмной темы */
             #quickTagsdiv #svyazsU a,
             #quickTagsdiv #PNO a {
-                color: #4fc3f7 !important; /* яркий голубой */
+                color: #4fc3f7 !important;
             }
             #quickTagsdiv #svyazsP a,
             #quickTagsdiv #UNO a {
-                color: #ff6b81 !important; /* яркий розовый */
+                color: #ff6b81 !important;
             }
 
-                        /* ═══ 15. POPOVER / DROPDOWN / AUTOCOMPLETE (выбор темы) ═══ */
+            /* ═══ 15. POPOVER / DROPDOWN ═══ */
             [class*="mantine-Popover-dropdown"],
             [class*="Autocomplete_Dropdown__"] {
                 background-color: ${color} !important;
@@ -386,7 +412,6 @@ async function init_settings() {
                 color: ${textColor} !important;
             }
 
-            /* Switch внутри дропдауна */
             [class*="mantine-Switch-track"] {
                 background-color: ${getRgba(textColor, 0.2)} !important;
                 border-color: ${getRgba(textColor, 0.3)} !important;
@@ -398,7 +423,7 @@ async function init_settings() {
                 background-color: ${textColor} !important;
             }
 
-                        /* ═══ 16. DROPDOWN ДЕЙСТВИЙ (ConversationActions) ═══ */
+            /* ═══ 16. DROPDOWN ДЕЙСТВИЙ ═══ */
             [class*="ConversationActions_ActionDropdown__"],
             [class*="Popover_Dropdown__"] {
                 background-color: ${color} !important;
@@ -427,13 +452,12 @@ async function init_settings() {
             [class*="Popover_Dropdown__"] [class*="List_Item__"]:hover [class*="mantine-NavLink-root"] {
                 background-color: ${getRgba(textColor, 0.1)} !important;
             }
-            /* Стрелка поповера */
             [class*="mantine-Popover-arrow"] {
                 background-color: ${color} !important;
                 border-color: ${getRgba(textColor, 0.15)} !important;
             }
 
-                        /* ═══ 17. SELECT DROPDOWN (список отделов и т.д.) ═══ */
+            /* ═══ 17. SELECT DROPDOWN ═══ */
             [class*="mantine-Select-dropdown"] {
                 background-color: ${color} !important;
                 border: 1px solid ${getRgba(textColor, 0.15)} !important;
@@ -442,34 +466,29 @@ async function init_settings() {
             [class*="mantine-Select-dropdown"] [class*="mantine-Select-itemsWrapper"] {
                 background-color: transparent !important;
             }
-            /* Элемент списка */
             [class*="Combobox_Item__"],
             [class*="mantine-Select-item"] {
                 color: ${textColor} !important;
                 background-color: transparent !important;
             }
-            /* Ховер / выделение клавишами */
             [class*="Combobox_Item__"][data-hovered="true"],
             [class*="mantine-Select-item"][data-hovered="true"],
             [class*="Combobox_Item__"]:hover,
             [class*="mantine-Select-item"]:hover {
                 background-color: ${getRgba(textColor, 0.12)} !important;
             }
-            /* Активный / выбранный */
             [class*="Combobox_Item__"][data-selected="true"],
             [class*="mantine-Select-item"][data-selected="true"] {
                 background-color: ${getRgba(textColor, 0.18)} !important;
             }
-            /* SVG галочка внутри */
             [class*="Combobox_Item__"] svg path {
                 fill: ${textColor} !important;
             }
-            /* Скроллбар внутри дропдауна */
             [class*="mantine-Select-dropdown"] [class*="mantine-ScrollArea-thumb"] {
                 background-color: ${getRgba(textColor, 0.25)} !important;
             }
 
-                        /* ═══ 18. TEXTAREA (комментарии) ═══ */
+            /* ═══ 18. TEXTAREA ═══ */
             [class*="Inputs_TextArea__"] {
                 background-color: ${getRgba(textColor, 0.08)} !important;
                 color: ${textColor} !important;
@@ -485,12 +504,12 @@ async function init_settings() {
                 background-color: ${getRgba(textColor, 0.12)} !important;
                 outline: none !important;
             }
-                            /* ═══ 19. CHECKBOX LABEL ═══ */
+
+            /* ═══ 19. CHECKBOX LABEL ═══ */
             [class*="mantine-Checkbox-label"],
             label[class*="mantine-"][for*="mantine-"] {
                 color: ${textColor} !important;
             }
-            /* Сам чекбокс (квадратик) */
             [class*="mantine-Checkbox-input"] {
                 background-color: ${getRgba(textColor, 0.08)} !important;
                 border-color: ${getRgba(textColor, 0.3)} !important;
@@ -499,7 +518,8 @@ async function init_settings() {
                 background-color: #7c4dff !important;
                 border-color: #7c4dff !important;
             }
-                            /* ═══ 20. EMPTY STATE (пустые рекомендации и т.д.) ═══ */
+
+            /* ═══ 20. EMPTY STATE ═══ */
             [class*="Empty_EmptyCard__"] {
                 background-color: ${getRgba(textColor, 0.06)} !important;
                 border: 1px solid ${getRgba(textColor, 0.1)} !important;
@@ -514,7 +534,7 @@ async function init_settings() {
                 background: transparent !important;
             }
 
-                        /* ═══ 21. CHIPS / MULTISELECT VALUES ═══ */
+            /* ═══ 21. CHIPS / MULTISELECT ═══ */
             [class*="Chips_Chip__"],
             [class*="mantine-MultiSelect-value"] {
                 background-color: ${getRgba(textColor, 0.1)} !important;
@@ -525,7 +545,6 @@ async function init_settings() {
             [class*="mantine-MultiSelect-value"] [class*="Typography_Type_body-description__"] {
                 color: ${textColor} !important;
             }
-            /* Кнопка-крестик внутри чипсы */
             [class*="Chips_Chip__"] [class*="Chips_CloseIcon__"] {
                 color: ${textColor} !important;
             }
@@ -535,7 +554,7 @@ async function init_settings() {
                 border-radius: 50% !important;
             }
 
-                        /* ═══ 22. INPUT (поиск и др.) ═══ */
+            /* ═══ 22. INPUT ═══ */
             [class*="Inputs_Input__"],
             input[class*="Inputs_"] {
                 background-color: ${getRgba(textColor, 0.08)} !important;
@@ -554,13 +573,12 @@ async function init_settings() {
                 background-color: ${getRgba(textColor, 0.12)} !important;
                 outline: none !important;
             }
-            /* Иконка внутри инпута */
             [class*="Inputs_WithIcon__"] svg,
             [class*="Inputs_WithIcon__"] [class*="mantine-Input-icon"] {
                 color: ${getRgba(textColor, 0.5)} !important;
             }
 
-            /* ═══ 23. HISTORY / ИСТОРИЯ ДИАЛОГОВ ═══ */
+            /* ═══ 23. HISTORY ═══ */
             [class*="History_ListItem__"],
             [class*="History_ConversationHeader__"],
             [class*="History_ConversationBody__"] {
@@ -576,11 +594,9 @@ async function init_settings() {
                 color: ${textColor} !important;
                 background: transparent !important;
             }
-            /* SVG стрелка в истории */
             [class*="History_Arrow__"] path {
                 fill: ${getRgba(textColor, 0.5)} !important;
             }
-            /* Кнопка-копировать в шапке истории */
             [class*="History_ConversationHeader__"] button svg {
                 color: ${textColor} !important;
             }
@@ -588,12 +604,13 @@ async function init_settings() {
                 color: #ffffff !important;
             }
 
-                        /* ═══ 24. SANITIZED HTML (текст внутри сообщений) ═══ */
+            /* ═══ 24. SANITIZED HTML ═══ */
             [class*="SanitizedHtml_SanitizedHtml__"] {
                 color: ${textColor} !important;
                 background: transparent !important;
             }
-                            /* ═══ 25. ACCORDION / SUGGESTIONS (подсказки ответов) ═══ */
+
+            /* ═══ 25. ACCORDION / SUGGESTIONS ═══ */
             [class*="mantine-Accordion-control"],
             [class*="Suggestions_SuggestionPreviewWrapper__"] {
                 background-color: transparent !important;
@@ -607,32 +624,28 @@ async function init_settings() {
             [class*="Suggestions_SuggestionPreviewWrapper__"][data-active="true"] {
                 background-color: ${getRgba(textColor, 0.12)} !important;
             }
-            /* Текст внутри аккордеона */
             [class*="Suggestions_SuggestionPreview__"] [class*="Typography_Type_body-description__"],
             [class*="Suggestions_SuggestionPreview__"] [class*="Typography_Type_body__"],
             [class*="Suggestions_SuggestionPreview__"] [class*="SanitizedHtml_SanitizedHtml__"] {
                 color: ${textColor} !important;
                 background: transparent !important;
             }
-            /* Стрелка аккордеона */
             [class*="mantine-Accordion-chevron"] svg {
                 color: ${textColor} !important;
             }
 
-            /* ═══ СТАТУС ДИАЛОГА (SVG иконка) — ярко-оранжевая, хорошо видна на тёмном ═══ */
-[class*="DialogsCard_PayloadStatus__"] svg {
-    color: #ff9800 !important;           /* Янтарно-оранжевый, как у user-сообщений */
-    filter: drop-shadow(0 0 3px rgba(255, 152, 0, 0.6)) !important;
-    width: 22px !important;               /* Чуть крупнее */
-    height: 22px !important;
-    transition: filter 0.2s ease;
-}
-
-/* При наведении на карточку — усиливаем свечение */
-[class*="DialogsCard_Card"]:hover [class*="DialogsCard_PayloadStatus__"] svg {
-    filter: drop-shadow(0 0 6px rgba(255, 152, 0, 0.9)) !important;
-    color: #ffb74d !important;
-}
+            /* ═══ СТАТУС ДИАЛОГА (SVG) ═══ */
+            [class*="DialogsCard_PayloadStatus__"] svg {
+                color: #ff9800 !important;
+                filter: drop-shadow(0 0 3px rgba(255, 152, 0, 0.6)) !important;
+                width: 22px !important;
+                height: 22px !important;
+                transition: filter 0.2s ease;
+            }
+            [class*="DialogsCard_Card"]:hover [class*="DialogsCard_PayloadStatus__"] svg {
+                filter: drop-shadow(0 0 6px rgba(255, 152, 0, 0.9)) !important;
+                color: #ffb74d !important;
+            }
         `;
         }
 
@@ -653,11 +666,1130 @@ async function init_settings() {
             const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
             if (iframeDoc) injectStyle(iframeDoc, 'chmaf-bg-iframe');
         }
+
+        // ─── Помечаем комментарии оператора (OperatorComment) ───
+        const markOperatorComments = () => {
+            document.querySelectorAll(
+                '[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-comment-checked])'
+            ).forEach(msg => {
+                const hasActionButtons = msg.querySelector('[class*="Buttons_SharedButton"]');
+                const hasForwarded = msg.querySelector('[class*="ChatMessages_RegularMessageForwardedMessagesContainer__"] > *');
+                // Если нет кнопок действий и нет пересланных сообщений — это внутренний комментарий
+                if (!hasActionButtons && !hasForwarded) {
+                    msg.setAttribute('data-operator-comment', 'true');
+                }
+                msg.setAttribute('data-comment-checked', 'true');
+            });
+        };
+        markOperatorComments();
     };
     // Применяем при запуске.
     // Ставим setInterval, так как iframe загружается с задержкой или может быть пересоздан SPA-роутером
     applyAppBgColor();
     setInterval(applyAppBgColor, 2000);
+
+
+
+    /* ============================================================
+       DARK THEME for /tickets/archive
+       Target: .ant-layout.app-body
+       ============================================================ */
+
+    const applyTicketsArchiveDarkTheme = () => {
+        // ⛔ Только для страницы архива тикетов
+        if (!window.location.href.includes('/tickets/archive')) {
+            return;
+        }
+
+        const color = Settings.get('appBgColor') || '#FFFFFF';
+        const isWhite = color.toUpperCase() === '#FFFFFF';
+
+        // ─── Белый фон = удаляем кастом и выходим (дефолт) ───
+        if (isWhite) {
+            const el = document.getElementById('chmaf-tickets-archive-dark');
+            if (el) el.remove();
+            return;
+        }
+
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+
+        const textColor = brightness >= 128 ? '#1A1A1A' : '#E0E0E0';
+        const isDarkBg = brightness < 128;
+
+        const getRgba = (hex, alpha) => {
+            const r1 = parseInt(hex.slice(1, 3), 16);
+            const g1 = parseInt(hex.slice(3, 5), 16);
+            const b1 = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r1}, ${g1}, ${b1}, ${alpha})`;
+        };
+
+        let cssRules = `
+    /* ═══ 0. ОСНОВНОЙ КОНТЕЙНЕР — .ant-layout.app-body ═══ */
+    .ant-layout.app-body {
+        background-color: ${color} !important;
+        color: ${textColor} !important;
+    }
+
+    /* ═══ 1. ШАПКА (Header) ═══ */
+    .ant-layout.app-body .ant-layout-header,
+    .ant-layout.app-body [class*="Header"] {
+        background-color: ${getRgba(color, 0.95)} !important;
+        border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+        color: ${textColor} !important;
+        backdrop-filter: blur(10px) !important;
+    }
+    .ant-layout.app-body .ant-layout-header * {
+        color: ${textColor} !important;
+    }
+
+    /* ═══ 2. БОКОВОЕ МЕНЮ (Sider) ═══ */
+    .ant-layout.app-body .ant-layout-sider,
+    .ant-layout.app-body [class*="Sider"] {
+        background-color: ${getRgba(color, 0.98)} !important;
+        border-right: 1px solid ${getRgba(textColor, 0.08)} !important;
+    }
+    .ant-layout.app-body .ant-layout-sider .ant-menu,
+    .ant-layout.app-body [class*="Sider"] [class*="menu"] {
+        background-color: transparent !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-layout-sider .ant-menu-item,
+    .ant-layout.app-body .ant-layout-sider .ant-menu-submenu-title {
+        color: ${textColor} !important;
+        background: transparent !important;
+    }
+    .ant-layout.app-body .ant-layout-sider .ant-menu-item:hover,
+    .ant-layout.app-body .ant-layout-sider .ant-menu-submenu-title:hover {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        color: #ffffff !important;
+    }
+    .ant-layout.app-body .ant-layout-sider .ant-menu-item-selected,
+    .ant-layout.app-body .ant-layout-sider .ant-menu-item-active {
+        background-color: ${getRgba(textColor, 0.15)} !important;
+        color: #ffffff !important;
+        border-right: 3px solid #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-layout-sider .ant-menu-item-selected a,
+    .ant-layout.app-body .ant-layout-sider .ant-menu-item a {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-layout-sider .ant-menu-item-selected a {
+        color: #ffffff !important;
+    }
+
+    /* ═══ 3. КОНТЕНТ (Content) ═══ */
+    .ant-layout.app-body .ant-layout-content,
+    .ant-layout.app-body [class*="Content"] {
+        background-color: ${color} !important;
+        color: ${textColor} !important;
+    }
+
+    /* ═══ 4. ТАБЛИЦЫ (Table) ═══ */
+    .ant-layout.app-body .ant-table {
+        background-color: transparent !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-table-thead > tr > th {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        color: ${textColor} !important;
+        border-bottom: 1px solid ${getRgba(textColor, 0.15)} !important;
+        font-weight: 600 !important;
+    }
+    .ant-layout.app-body .ant-table-tbody > tr > td {
+        background-color: transparent !important;
+        color: ${textColor} !important;
+        border-bottom: 1px solid ${getRgba(textColor, 0.06)} !important;
+    }
+    .ant-layout.app-body .ant-table-tbody > tr:hover > td {
+        background-color: ${getRgba(textColor, 0.06)} !important;
+    }
+    .ant-layout.app-body .ant-table-tbody > tr.ant-table-row-selected > td {
+        background-color: ${getRgba('#7c4dff', 0.15)} !important;
+    }
+    .ant-layout.app-body .ant-table-cell-row-hover {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+    }
+    .ant-layout.app-body .ant-table-empty .ant-table-cell {
+        background-color: ${getRgba(textColor, 0.03)} !important;
+    }
+    .ant-layout.app-body .ant-empty-description {
+        color: ${getRgba(textColor, 0.5)} !important;
+    }
+
+    /* ═══ 5. ПАГИНАЦИЯ (Pagination) ═══ */
+    .ant-layout.app-body .ant-pagination {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-pagination-item {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        border-color: ${getRgba(textColor, 0.15)} !important;
+    }
+    .ant-layout.app-body .ant-pagination-item a {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-pagination-item:hover {
+        border-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-pagination-item-active {
+        background-color: #7c4dff !important;
+        border-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-pagination-item-active a {
+        color: #ffffff !important;
+    }
+    .ant-layout.app-body .ant-pagination-prev .ant-pagination-item-link,
+    .ant-layout.app-body .ant-pagination-next .ant-pagination-item-link {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        border-color: ${getRgba(textColor, 0.15)} !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-pagination-disabled .ant-pagination-item-link {
+        color: ${getRgba(textColor, 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-pagination-options-quick-jumper input {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        color: ${textColor} !important;
+        border-color: ${getRgba(textColor, 0.2)} !important;
+    }
+
+    /* ═══ 6. ИНПУТЫ, СЕЛЕКТЫ, ДАТАПИКЕРЫ ═══ */
+    .ant-layout.app-body .ant-input,
+    .ant-layout.app-body .ant-input-affix-wrapper,
+    .ant-layout.app-body .ant-select-selector,
+    .ant-layout.app-body .ant-picker {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        color: ${textColor} !important;
+        border-color: ${getRgba(textColor, 0.2)} !important;
+        border-radius: 6px !important;
+    }
+    .ant-layout.app-body .ant-input::placeholder,
+    .ant-layout.app-body .ant-input-affix-wrapper input::placeholder {
+        color: ${getRgba(textColor, 0.4)} !important;
+    }
+    .ant-layout.app-body .ant-input:hover,
+    .ant-layout.app-body .ant-input-affix-wrapper:hover,
+    .ant-layout.app-body .ant-select-selector:hover,
+    .ant-layout.app-body .ant-picker:hover {
+        border-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-input:focus,
+    .ant-layout.app-body .ant-input-affix-wrapper:focus,
+    .ant-layout.app-body .ant-input-focused,
+    .ant-layout.app-body .ant-select-focused .ant-select-selector,
+    .ant-layout.app-body .ant-picker-focused {
+        border-color: #7c4dff !important;
+        box-shadow: 0 0 0 2px ${getRgba('#7c4dff', 0.2)} !important;
+    }
+    .ant-layout.app-body .ant-input-prefix,
+    .ant-layout.app-body .ant-input-suffix,
+    .ant-layout.app-body .ant-select-arrow,
+    .ant-layout.app-body .ant-picker-suffix {
+        color: ${getRgba(textColor, 0.5)} !important;
+    }
+    .ant-layout.app-body .ant-select-dropdown {
+        background-color: ${color} !important;
+        border: 1px solid ${getRgba(textColor, 0.15)} !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important;
+    }
+    .ant-layout.app-body .ant-select-item {
+        color: ${textColor} !important;
+        background: transparent !important;
+    }
+    .ant-layout.app-body .ant-select-item-option-active,
+    .ant-layout.app-body .ant-select-item-option:hover {
+        background-color: ${getRgba(textColor, 0.12)} !important;
+    }
+    .ant-layout.app-body .ant-select-item-option-selected {
+        background-color: ${getRgba(textColor, 0.18)} !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+    .ant-layout.app-body .ant-picker-panel,
+    .ant-layout.app-body .ant-picker-dropdown {
+        background-color: ${color} !important;
+        border-color: ${getRgba(textColor, 0.15)} !important;
+    }
+    .ant-layout.app-body .ant-picker-cell {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-picker-cell-in-view {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-picker-cell:hover:not(.ant-picker-cell-selected):not(.ant-picker-cell-range-start):not(.ant-picker-cell-range-end) .ant-picker-cell-inner {
+        background-color: ${getRgba(textColor, 0.12)} !important;
+    }
+    .ant-layout.app-body .ant-picker-cell-selected .ant-picker-cell-inner,
+    .ant-layout.app-body .ant-picker-cell-range-start .ant-picker-cell-inner,
+    .ant-layout.app-body .ant-picker-cell-range-end .ant-picker-cell-inner {
+        background-color: #7c4dff !important;
+        color: #ffffff !important;
+    }
+    .ant-layout.app-body .ant-picker-header {
+        border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-picker-header button {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-picker-content th {
+        color: ${getRgba(textColor, 0.6)} !important;
+    }
+
+    /* ═══ 7. КНОПКИ (Buttons) ═══ */
+    .ant-layout.app-body .ant-btn {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        color: ${textColor} !important;
+        border-color: ${getRgba(textColor, 0.2)} !important;
+        border-radius: 6px !important;
+        transition: all 0.2s ease !important;
+    }
+    .ant-layout.app-body .ant-btn:hover {
+        border-color: #7c4dff !important;
+        color: #ffffff !important;
+        background-color: ${getRgba(textColor, 0.15)} !important;
+    }
+    .ant-layout.app-body .ant-btn-primary {
+        background-color: #7c4dff !important;
+        border-color: #7c4dff !important;
+        color: #ffffff !important;
+    }
+    .ant-layout.app-body .ant-btn-primary:hover {
+        background-color: #9575ff !important;
+        border-color: #9575ff !important;
+    }
+    .ant-layout.app-body .ant-btn-dangerous {
+        background-color: ${getRgba('#ff4d4f', 0.15)} !important;
+        border-color: #ff4d4f !important;
+        color: #ff4d4f !important;
+    }
+    .ant-layout.app-body .ant-btn-dangerous:hover {
+        background-color: #ff4d4f !important;
+        color: #ffffff !important;
+    }
+    .ant-layout.app-body .ant-btn-link {
+        background: transparent !important;
+        border: none !important;
+        color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-btn-link:hover {
+        color: #9575ff !important;
+        background: ${getRgba('#7c4dff', 0.1)} !important;
+    }
+
+    /* ═══ 8. ТЕГИ / БЕЙДЖИ (Tags) ═══ */
+    .ant-layout.app-body .ant-tag {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        color: ${textColor} !important;
+        border-color: ${getRgba(textColor, 0.15)} !important;
+    }
+    .ant-layout.app-body .ant-tag-blue {
+        background-color: ${getRgba('#1890ff', 0.15)} !important;
+        color: #69c0ff !important;
+        border-color: ${getRgba('#1890ff', 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-tag-green {
+        background-color: ${getRgba('#52c41a', 0.15)} !important;
+        color: #95de64 !important;
+        border-color: ${getRgba('#52c41a', 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-tag-red {
+        background-color: ${getRgba('#ff4d4f', 0.15)} !important;
+        color: #ff7875 !important;
+        border-color: ${getRgba('#ff4d4f', 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-tag-orange {
+        background-color: ${getRgba('#fa8c16', 0.15)} !important;
+        color: #ffc069 !important;
+        border-color: ${getRgba('#fa8c16', 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-tag-purple {
+        background-color: ${getRgba('#722ed1', 0.15)} !important;
+        color: #b37feb !important;
+        border-color: ${getRgba('#722ed1', 0.3)} !important;
+    }
+
+    /* ═══ 9. МОДАЛЬНЫЕ ОКНА (Modal) ═══ */
+    .ant-layout.app-body .ant-modal-content,
+    .ant-layout.app-body .ant-modal-header {
+        background-color: ${color} !important;
+        color: ${textColor} !important;
+        border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body .ant-modal-title {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-modal-close {
+        color: ${getRgba(textColor, 0.5)} !important;
+    }
+    .ant-layout.app-body .ant-modal-close:hover {
+        color: ${textColor} !important;
+        background-color: ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body .ant-modal-body {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-modal-footer {
+        border-top: 1px solid ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body ~ .ant-modal-mask,
+    .ant-modal-mask {
+        background-color: rgba(0, 0, 0, 0.7) !important;
+    }
+
+    /* ═══ 10. ДРОПДАУНЫ / МЕНЮ (Dropdown) ═══ */
+    .ant-layout.app-body .ant-dropdown-menu,
+    .ant-dropdown-menu {
+        background-color: ${color} !important;
+        border: 1px solid ${getRgba(textColor, 0.15)} !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important;
+    }
+    .ant-layout.app-body .ant-dropdown-menu-item,
+    .ant-dropdown-menu-item {
+        color: ${textColor} !important;
+        background: transparent !important;
+    }
+    .ant-layout.app-body .ant-dropdown-menu-item:hover,
+    .ant-dropdown-menu-item:hover {
+        background-color: ${getRgba(textColor, 0.12)} !important;
+        color: #ffffff !important;
+    }
+    .ant-layout.app-body .ant-dropdown-menu-item-danger,
+    .ant-dropdown-menu-item-danger {
+        color: #ff7875 !important;
+    }
+    .ant-layout.app-body .ant-dropdown-menu-item-danger:hover,
+    .ant-dropdown-menu-item-danger:hover {
+        background-color: ${getRgba('#ff4d4f', 0.15)} !important;
+    }
+    .ant-layout.app-body .ant-dropdown-menu-item-divider,
+    .ant-dropdown-menu-item-divider {
+        background-color: ${getRgba(textColor, 0.1)} !important;
+    }
+
+    /* ═══ 11. ЧЕКБОКСЫ И РАДИО ═══ */
+    .ant-layout.app-body .ant-checkbox-wrapper {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-checkbox-inner {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        border-color: ${getRgba(textColor, 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-checkbox-checked .ant-checkbox-inner {
+        background-color: #7c4dff !important;
+        border-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-checkbox-indeterminate .ant-checkbox-inner::after {
+        background-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-radio-wrapper {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-radio-inner {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        border-color: ${getRgba(textColor, 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-radio-checked .ant-radio-inner {
+        border-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-radio-checked .ant-radio-inner::after {
+        background-color: #7c4dff !important;
+    }
+
+    /* ═══ 12. ТАБЫ (Tabs) ═══ */
+    .ant-layout.app-body .ant-tabs {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-tabs-tab {
+        color: ${getRgba(textColor, 0.6)} !important;
+        background: transparent !important;
+    }
+    .ant-layout.app-body .ant-tabs-tab:hover {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-tabs-tab-active .ant-tabs-tab-btn {
+        color: #7c4dff !important;
+        font-weight: 600 !important;
+    }
+    .ant-layout.app-body .ant-tabs-ink-bar {
+        background-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-tabs-nav::before {
+        border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+    }
+
+    /* ═══ 13. КАРТОЧКИ (Card) ═══ */
+    .ant-layout.app-body .ant-card {
+        background-color: ${getRgba(textColor, 0.04)} !important;
+        border-color: ${getRgba(textColor, 0.1)} !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-card-head {
+        background-color: transparent !important;
+        border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-card-body {
+        color: ${textColor} !important;
+    }
+
+    /* ═══ 14. СКРОЛЛБАРЫ ═══ */
+    .ant-layout.app-body ::-webkit-scrollbar {
+        width: 8px !important;
+        height: 8px !important;
+    }
+    .ant-layout.app-body ::-webkit-scrollbar-track {
+        background: ${getRgba(textColor, 0.03)} !important;
+    }
+    .ant-layout.app-body ::-webkit-scrollbar-thumb {
+        background: ${getRgba(textColor, 0.2)} !important;
+        border-radius: 4px !important;
+    }
+    .ant-layout.app-body ::-webkit-scrollbar-thumb:hover {
+        background: ${getRgba(textColor, 0.35)} !important;
+    }
+
+    /* ═══ 15. ТУЛТИПЫ (Tooltip) ═══ */
+    .ant-layout.app-body .ant-tooltip-inner,
+    .ant-tooltip-inner {
+        background-color: ${getRgba(color, 0.95)} !important;
+        color: ${textColor} !important;
+        border: 1px solid ${getRgba(textColor, 0.15)} !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+    }
+    .ant-layout.app-body .ant-tooltip-arrow-content,
+    .ant-tooltip-arrow-content {
+        background-color: ${color} !important;
+    }
+
+    /* ═══ 16. ДРОВЕР / САЙДБАР (Drawer) ═══ */
+    .ant-layout.app-body .ant-drawer-content,
+    .ant-drawer-content {
+        background-color: ${color} !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-drawer-header,
+    .ant-drawer-header {
+        background-color: ${getRgba(color, 0.95)} !important;
+        border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body .ant-drawer-title,
+    .ant-drawer-title {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-drawer-close,
+    .ant-drawer-close {
+        color: ${getRgba(textColor, 0.5)} !important;
+    }
+    .ant-layout.app-body .ant-drawer-close:hover,
+    .ant-drawer-close:hover {
+        color: ${textColor} !important;
+        background-color: ${getRgba(textColor, 0.1)} !important;
+    }
+
+    /* ═══ 17. БРЕДКРАМБЫ ═══ */
+    .ant-layout.app-body .ant-breadcrumb {
+        color: ${getRgba(textColor, 0.6)} !important;
+    }
+    .ant-layout.app-body .ant-breadcrumb a {
+        color: ${getRgba(textColor, 0.6)} !important;
+    }
+    .ant-layout.app-body .ant-breadcrumb a:hover {
+        color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-breadcrumb-separator {
+        color: ${getRgba(textColor, 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-breadcrumb > span:last-child {
+        color: ${textColor} !important;
+        font-weight: 600 !important;
+    }
+
+    /* ═══ 18. СТАТУСЫ / БЕЙДЖИ (Badge) ═══ */
+    .ant-layout.app-body .ant-badge-status-text {
+        color: ${textColor} !important;
+    }
+
+    /* ═══ 19. СВИТЧ (Switch) ═══ */
+    .ant-layout.app-body .ant-switch {
+        background-color: ${getRgba(textColor, 0.2)} !important;
+    }
+    .ant-layout.app-body .ant-switch-checked {
+        background-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-switch-inner {
+        color: ${textColor} !important;
+    }
+
+    /* ═══ 20. СЛАЙДЕР / ПРОГРЕСС ═══ */
+    .ant-layout.app-body .ant-slider-rail {
+        background-color: ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body .ant-slider-track {
+        background-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-slider-handle {
+        background-color: #7c4dff !important;
+        border-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-progress-text {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-progress-bg {
+        background-color: #7c4dff !important;
+    }
+
+    /* ═══ 21. АЛЕРТЫ / НОТИФИКАЦИИ ═══ */
+    .ant-layout.app-body .ant-alert,
+    .ant-alert {
+        background-color: ${getRgba(textColor, 0.06)} !important;
+        border: 1px solid ${getRgba(textColor, 0.1)} !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-alert-message,
+    .ant-alert-message {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-alert-description,
+    .ant-alert-description {
+        color: ${getRgba(textColor, 0.7)} !important;
+    }
+    .ant-layout.app-body .ant-alert-success {
+        background-color: ${getRgba('#52c41a', 0.1)} !important;
+        border-color: ${getRgba('#52c41a', 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-alert-error {
+        background-color: ${getRgba('#ff4d4f', 0.1)} !important;
+        border-color: ${getRgba('#ff4d4f', 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-alert-warning {
+        background-color: ${getRgba('#fa8c16', 0.1)} !important;
+        border-color: ${getRgba('#fa8c16', 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-alert-info {
+        background-color: ${getRgba('#1890ff', 0.1)} !important;
+        border-color: ${getRgba('#1890ff', 0.3)} !important;
+    }
+    .ant-message-notice-content,
+    .ant-notification-notice {
+        background-color: ${color} !important;
+        color: ${textColor} !important;
+        border: 1px solid ${getRgba(textColor, 0.15)} !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important;
+    }
+    .ant-message-notice-content *,
+    .ant-notification-notice * {
+        color: ${textColor} !important;
+    }
+    .ant-notification-notice-close {
+        color: ${getRgba(textColor, 0.5)} !important;
+    }
+
+    /* ═══ 22. КОЛЛАПС / АККОРДЕОН ═══ */
+    .ant-layout.app-body .ant-collapse {
+        background-color: ${getRgba(textColor, 0.04)} !important;
+        border-color: ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body .ant-collapse > .ant-collapse-item {
+        border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body .ant-collapse-header {
+        color: ${textColor} !important;
+        background: transparent !important;
+    }
+    .ant-layout.app-body .ant-collapse-content {
+        background-color: transparent !important;
+        color: ${textColor} !important;
+        border-top: 1px solid ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body .ant-collapse-content-box {
+        color: ${textColor} !important;
+    }
+
+    /* ═══ 23. СПИН / ЛОАДЕР ═══ */
+    .ant-layout.app-body .ant-spin-dot-item {
+        background-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-spin-text {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-skeleton-title,
+    .ant-layout.app-body .ant-skeleton-paragraph > li {
+        background: linear-gradient(90deg, ${getRgba(textColor, 0.06)} 25%, ${getRgba(textColor, 0.12)} 37%, ${getRgba(textColor, 0.06)} 63%) !important;
+    }
+    .ant-layout.app-body .ant-skeleton-avatar,
+    .ant-layout.app-body .ant-skeleton-button,
+    .ant-layout.app-body .ant-skeleton-input {
+        background: linear-gradient(90deg, ${getRgba(textColor, 0.06)} 25%, ${getRgba(textColor, 0.12)} 37%, ${getRgba(textColor, 0.06)} 63%) !important;
+    }
+
+    /* ═══ 24. ПОПОВЕР (Popover) ═══ */
+    .ant-layout.app-body .ant-popover-inner,
+    .ant-popover-inner {
+        background-color: ${color} !important;
+        border: 1px solid ${getRgba(textColor, 0.15)} !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important;
+    }
+    .ant-layout.app-body .ant-popover-title,
+    .ant-popover-title {
+        color: ${textColor} !important;
+        border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body .ant-popover-inner-content,
+    .ant-popover-inner-content {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-popover-arrow-content,
+    .ant-popover-arrow-content {
+        background-color: ${color} !important;
+        border-color: ${getRgba(textColor, 0.15)} !important;
+    }
+
+    /* ═══ 25. СТЕППЕР / ТАЙМЛАЙН ═══ */
+    .ant-layout.app-body .ant-steps-item-title {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-steps-item-description {
+        color: ${getRgba(textColor, 0.6)} !important;
+    }
+    .ant-layout.app-body .ant-steps-item-wait .ant-steps-item-icon {
+        background-color: ${getRgba(textColor, 0.1)} !important;
+        border-color: ${getRgba(textColor, 0.2)} !important;
+    }
+    .ant-layout.app-body .ant-steps-item-wait .ant-steps-item-icon > .ant-steps-icon {
+        color: ${getRgba(textColor, 0.5)} !important;
+    }
+    .ant-layout.app-body .ant-steps-item-finish .ant-steps-item-icon {
+        background-color: ${getRgba('#7c4dff', 0.15)} !important;
+        border-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+        color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-steps-item-process .ant-steps-item-icon {
+        background-color: #7c4dff !important;
+        border-color: #7c4dff !important;
+    }
+    .ant-layout.app-body .ant-timeline-item-content {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-timeline-item-tail {
+        border-left-color: ${getRgba(textColor, 0.15)} !important;
+    }
+
+    /* ═══ 26. ТРЕЕ (Tree) ═══ */
+    .ant-layout.app-body .ant-tree {
+        background: transparent !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-tree-treenode {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-tree-treenode:hover {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+    }
+    .ant-layout.app-body .ant-tree-node-selected {
+        background-color: ${getRgba('#7c4dff', 0.15)} !important;
+        color: #ffffff !important;
+    }
+    .ant-layout.app-body .ant-tree-switcher {
+        color: ${getRgba(textColor, 0.5)} !important;
+    }
+
+    /* ═══ 27. ТРАНСФЕР (Transfer) ═══ */
+    .ant-layout.app-body .ant-transfer-list {
+        background-color: ${getRgba(textColor, 0.04)} !important;
+        border-color: ${getRgba(textColor, 0.1)} !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-transfer-list-header {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-transfer-list-content-item {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-transfer-list-content-item:hover {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+    }
+    .ant-layout.app-body .ant-transfer-list-content-item-checked {
+        background-color: ${getRgba('#7c4dff', 0.15)} !important;
+    }
+
+    /* ═══ 28. ДИВАЙДЕР (Divider) ═══ */
+    .ant-layout.app-body .ant-divider {
+        border-top-color: ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body .ant-divider-vertical {
+        border-left-color: ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body .ant-divider-inner-text {
+        color: ${getRgba(textColor, 0.5)} !important;
+        background-color: ${color} !important;
+    }
+
+    /* ═══ 29. СТАТИСТИКА ═══ */
+    .ant-layout.app-body .ant-statistic-title {
+        color: ${getRgba(textColor, 0.6)} !important;
+    }
+    .ant-layout.app-body .ant-statistic-content {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-statistic-content-value {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-statistic-content-suffix {
+        color: ${getRgba(textColor, 0.6)} !important;
+    }
+
+    /* ═══ 30. ДЕСКРИПШН (Descriptions) ═══ */
+    .ant-layout.app-body .ant-descriptions-title {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-descriptions-item-label {
+        color: ${getRgba(textColor, 0.7)} !important;
+        background-color: ${getRgba(textColor, 0.04)} !important;
+    }
+    .ant-layout.app-body .ant-descriptions-item-content {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-descriptions-bordered .ant-descriptions-item-label,
+    .ant-layout.app-body .ant-descriptions-bordered .ant-descriptions-item-content {
+        border-color: ${getRgba(textColor, 0.1)} !important;
+    }
+
+    /* ═══ 31. ЛИСТ (List) ═══ */
+    .ant-layout.app-body .ant-list {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-list-item {
+        border-bottom: 1px solid ${getRgba(textColor, 0.08)} !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-list-item-meta-title {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-list-item-meta-description {
+        color: ${getRgba(textColor, 0.6)} !important;
+    }
+    .ant-layout.app-body .ant-list-empty-text {
+        color: ${getRgba(textColor, 0.4)} !important;
+    }
+
+    /* ═══ 32. СЕГМЕНТ (Segmented) ═══ */
+    .ant-layout.app-body .ant-segmented {
+        background-color: ${getRgba(textColor, 0.08)} !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-segmented-item {
+        color: ${getRgba(textColor, 0.7)} !important;
+    }
+    .ant-layout.app-body .ant-segmented-item-selected {
+        background-color: ${getRgba(textColor, 0.15)} !important;
+        color: ${textColor} !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    }
+    .ant-layout.app-body .ant-segmented-item:hover:not(.ant-segmented-item-selected) {
+        color: ${textColor} !important;
+    }
+
+    /* ═══ 33. РЕЙТИНГ (Rate) ═══ */
+    .ant-layout.app-body .ant-rate-star-zero .ant-rate-star-second {
+        color: ${getRgba(textColor, 0.15)} !important;
+    }
+    .ant-layout.app-body .ant-rate-star-full .ant-rate-star-second,
+    .ant-layout.app-body .ant-rate-star-half .ant-rate-star-first {
+        color: #faad14 !important;
+    }
+
+    /* ═══ 34. АВАТАР ═══ */
+    .ant-layout.app-body .ant-avatar-string {
+        color: #ffffff !important;
+    }
+
+    /* ═══ 35. BACKTOP ═══ */
+    .ant-layout.app-body .ant-back-top-content {
+        background-color: ${getRgba(textColor, 0.15)} !important;
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-back-top-content:hover {
+        background-color: #7c4dff !important;
+        color: #ffffff !important;
+    }
+
+    /* ═══ 36. AFFIX ═══ */
+    .ant-layout.app-body .ant-affix {
+        background-color: ${getRgba(color, 0.95)} !important;
+        backdrop-filter: blur(10px) !important;
+    }
+
+    /* ═══ 37. ФИКС: svg иконки ═══ */
+    .ant-layout.app-body svg {
+        fill: currentColor !important;
+    }
+    .ant-layout.app-body .anticon {
+        color: ${getRgba(textColor, 0.7)} !important;
+    }
+    .ant-layout.app-body .anticon:hover {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-btn-primary .anticon,
+    .ant-layout.app-body .ant-btn:hover .anticon {
+        color: currentColor !important;
+    }
+
+    /* ═══ 38. ФИКС: ссылки ═══ */
+    .ant-layout.app-body a {
+        color: #7c4dff !important;
+        transition: color 0.2s ease !important;
+    }
+    .ant-layout.app-body a:hover {
+        color: #b39dff !important;
+        text-decoration: underline !important;
+    }
+
+    /* ═══ 39. ФИКС: текстовые элементы ═══ */
+    .ant-layout.app-body h1,
+    .ant-layout.app-body h2,
+    .ant-layout.app-body h3,
+    .ant-layout.app-body h4,
+    .ant-layout.app-body h5,
+    .ant-layout.app-body h6,
+    .ant-layout.app-body p,
+    .ant-layout.app-body span,
+    .ant-layout.app-body div {
+        background-color: transparent !important;
+    }
+
+    /* ═══ 40. ФИКС: подменю в сайдбаре ═══ */
+    .ant-layout.app-body .ant-menu-submenu-popup {
+        background-color: ${color} !important;
+        border: 1px solid ${getRgba(textColor, 0.15)} !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important;
+    }
+    .ant-layout.app-body .ant-menu-submenu-popup .ant-menu-item {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-menu-submenu-popup .ant-menu-item:hover {
+        background-color: ${getRgba(textColor, 0.12)} !important;
+        color: #ffffff !important;
+    }
+
+    /* ═══ 41. ФИКС: фильтры в шапке таблицы ═══ */
+    .ant-layout.app-body .ant-table-filter-trigger {
+        color: ${getRgba(textColor, 0.5)} !important;
+        background: transparent !important;
+    }
+    .ant-layout.app-body .ant-table-filter-trigger:hover {
+        color: ${textColor} !important;
+        background-color: ${getRgba(textColor, 0.08)} !important;
+    }
+    .ant-layout.app-body .ant-table-filter-dropdown {
+        background-color: ${color} !important;
+        border: 1px solid ${getRgba(textColor, 0.15)} !important;
+    }
+    .ant-layout.app-body .ant-table-filter-dropdown-tree {
+        color: ${textColor} !important;
+    }
+    .ant-layout.app-body .ant-table-filter-dropdown-search {
+        background-color: ${getRgba(textColor, 0.06)} !important;
+        border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+    }
+    .ant-layout.app-body .ant-table-filter-dropdown-btns {
+        border-top: 1px solid ${getRgba(textColor, 0.1)} !important;
+    }
+
+    /* ═══ 42. ФИКС: сортировка в таблице ═══ */
+    .ant-layout.app-body .ant-table-column-sorter {
+        color: ${getRgba(textColor, 0.3)} !important;
+    }
+    .ant-layout.app-body .ant-table-column-sorter-up.active,
+    .ant-layout.app-body .ant-table-column-sorter-down.active {
+        color: #7c4dff !important;
+    }
+
+    /* ═══ 43. ФИКС: резайз колонок ═══ */
+    .ant-layout.app-body .ant-table-cell-fix-left,
+    .ant-layout.app-body .ant-table-cell-fix-right {
+        background-color: ${getRgba(color, 0.98)} !important;
+    }
+    .ant-layout.app-body .ant-table-cell-fix-left::after,
+    .ant-layout.app-body .ant-table-cell-fix-right::after {
+        box-shadow: inset 10px 0 8px -8px ${getRgba(textColor, 0.1)} !important;
+    }
+
+    /* ═══ 44. ФИКС: выделение текста ═══ */
+    .ant-layout.app-body ::selection {
+        background-color: ${getRgba('#7c4dff', 0.3)} !important;
+        color: #ffffff !important;
+    }
+
+    /* ═══ 45. ФИКС: фокус-ринг ═══ */
+    .ant-layout.app-body *:focus-visible {
+        outline: 2px solid #7c4dff !important;
+        outline-offset: 2px !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ═══ БЛОК СООБЩЕНИЙ АРХИВА (классическая структура HTML) ═══
+       ═══════════════════════════════════════════════════════ */
+
+    /* ─── 0. БАЗОВЫЙ СБРОС: внешние обёртки прозрачны, фон только у внутреннего блока ─── */
+    .ant-layout.app-body .chat-message {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+    .ant-layout.app-body .chat-message-block {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+
+    /* ─── 1. ВОПРОС ПОЛЬЗОВАТЕЛЯ (chat-question) — СИНИЙ ═══ */
+    .ant-layout.app-body .chat-message.chat-question .chat-message-block--text,
+    .ant-layout.app-body .chat-message.chat-question .chat-message-block--html {
+        background-color: rgba(66, 133, 244, 0.18) !important;
+        border: 1px solid rgba(66, 133, 244, 0.35) !important;
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+    }
+    .ant-layout.app-body .chat-message.chat-question .chat-message-sender {
+        color: #e3f2fd !important;
+        font-weight: 600 !important;
+    }
+    .ant-layout.app-body .chat-message.chat-question .chat-message-time {
+        color: #bbdefb !important;
+    }
+    .ant-layout.app-body .chat-message.chat-question .chat-message-text-wrapper {
+        color: #e3f2fd !important;
+    }
+
+    /* ─── 2. КОММЕНТАРИЙ (chat-comment) — СЕРЫЙ ═══ */
+    .ant-layout.app-body .chat-message.chat-comment .chat-message-block--text,
+    .ant-layout.app-body .chat-message.chat-comment .chat-message-block--html {
+        background-color: rgba(96, 125, 139, 0.25) !important;
+        border: 1px solid rgba(96, 125, 139, 0.4) !important;
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+    }
+    .ant-layout.app-body .chat-message.chat-comment .chat-message-sender {
+        color: #eceff1 !important;
+        font-weight: 600 !important;
+    }
+    .ant-layout.app-body .chat-message.chat-comment .chat-message-time {
+        color: #b0bec5 !important;
+    }
+    .ant-layout.app-body .chat-message.chat-comment .chat-message-text-wrapper {
+        color: #eceff1 !important;
+    }
+
+    /* ─── 3. БОТ (chat-answer-from_bot) — ЗЕЛЁНЫЙ ═══ */
+    .ant-layout.app-body .chat-message.chat-answer-from_bot .chat-message-block--html,
+    .ant-layout.app-body .chat-message.chat-answer-from_bot .chat-message-block--text,
+    .ant-layout.app-body .chat-message[data-is-bot="true"] .chat-message-block--html,
+    .ant-layout.app-body .chat-message[data-is-bot="true"] .chat-message-block--text {
+        background-color: rgba(46, 125, 50, 0.22) !important;
+        border: 1px solid rgba(76, 175, 80, 0.35) !important;
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+    }
+    .ant-layout.app-body .chat-message.chat-answer-from_bot .chat-message-sender,
+    .ant-layout.app-body .chat-message[data-is-bot="true"] .chat-message-sender {
+        color: #e8f5e9 !important;
+        font-weight: 600 !important;
+    }
+    .ant-layout.app-body .chat-message.chat-answer-from_bot .chat-message-time,
+    .ant-layout.app-body .chat-message[data-is-bot="true"] .chat-message-time {
+        color: #c8e6c9 !important;
+    }
+    .ant-layout.app-body .chat-message.chat-answer-from_bot .chat-message-text-wrapper,
+    .ant-layout.app-body .chat-message[data-is-bot="true"] .chat-message-text-wrapper {
+        color: #e8f5e9 !important;
+    }
+
+    /* ─── 4. ОПЕРАТОР (chat-answer-from_operator) — ЯНТАРНЫЙ ═══ */
+    .ant-layout.app-body .chat-message.chat-answer-from_operator .chat-message-block--html,
+    .ant-layout.app-body .chat-message.chat-answer-from_operator .chat-message-block--text {
+        background-color: rgba(255, 193, 7, 0.18) !important;
+        border: 1px solid rgba(255, 193, 7, 0.4) !important;
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+    }
+    .ant-layout.app-body .chat-message.chat-answer-from_operator .chat-message-sender {
+        color: #fff8e1 !important;
+        font-weight: 600 !important;
+    }
+    .ant-layout.app-body .chat-message.chat-answer-from_operator .chat-message-time {
+        color: #ffecb3 !important;
+    }
+    .ant-layout.app-body .chat-message.chat-answer-from_operator .chat-message-text-wrapper {
+        color: #fff8e1 !important;
+    }
+`;
+
+        if (isDarkBg) {
+            cssRules += `
+        .ant-layout.app-body .ant-table-tbody > tr > td {
+            border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+        }
+        .ant-layout.app-body .ant-input,
+        .ant-layout.app-body .ant-select-selector,
+        .ant-layout.app-body .ant-picker {
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2) !important;
+        }
+        .ant-layout.app-body .ant-table-tbody > tr:hover > td {
+            background-color: ${getRgba(textColor, 0.1)} !important;
+        }
+    `;
+        }
+
+        const injectStyle = (targetDoc, styleId) => {
+            if (!targetDoc || !targetDoc.head) return;
+            let styleEl = targetDoc.getElementById(styleId);
+            if (!styleEl) {
+                styleEl = targetDoc.createElement('style');
+                styleEl.id = styleId;
+                targetDoc.head.appendChild(styleEl);
+            }
+            styleEl.innerHTML = cssRules;
+        };
+
+        injectStyle(document, 'chmaf-tickets-archive-dark');
+
+        // ─── Помечаем комментарии оператора и в архиве ───
+        const markOperatorCommentsArchive = () => {
+            document.querySelectorAll(
+                '.ant-layout.app-body [class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-comment-checked])'
+            ).forEach(msg => {
+                const hasActionButtons = msg.querySelector('[class*="Buttons_SharedButton"]');
+                const hasForwarded = msg.querySelector('[class*="ChatMessages_RegularMessageForwardedMessagesContainer__"] > *');
+                if (!hasActionButtons && !hasForwarded) {
+                    msg.setAttribute('data-operator-comment', 'true');
+                }
+                msg.setAttribute('data-comment-checked', 'true');
+            });
+        };
+        markOperatorCommentsArchive();
+    };
+
+    // Запускаем сразу
+    applyTicketsArchiveDarkTheme();
+
+    // И наблюдаем за изменениями URL (SPA-навигация)
+    let lastUrl = location.href;
+    new MutationObserver(() => {
+        const url = location.href;
+        if (url !== lastUrl) {
+            lastUrl = url;
+            if (url.includes('/tickets/archive')) {
+                setTimeout(applyTicketsArchiveDarkTheme, 300);
+            }
+        }
+    }).observe(document, { subtree: true, childList: true });
     // ====================================================================================
 
 
@@ -910,7 +2042,6 @@ async function init_settings() {
         // --- Логика для Цвета Фона ---
         const bgPicker = document.getElementById('appBgColorPicker');
 
-        // Подсветка выбранного пресета
         const updateActivePreset = (currentColor) => {
             const normalized = currentColor.toUpperCase();
             document.querySelectorAll('.bg-preset').forEach(btn => {
@@ -923,12 +2054,13 @@ async function init_settings() {
         };
 
         bgPicker.value = Settings.get('appBgColor');
-        updateActivePreset(Settings.get('appBgColor')); // подсветить при открытии
+        updateActivePreset(Settings.get('appBgColor'));
 
         bgPicker.oninput = (e) => {
             Settings.set('appBgColor', e.target.value);
-            updateActivePreset(e.target.value); // снять подсветку, если кастомный цвет
-            applyAppBgColor();
+            updateActivePreset(e.target.value);
+            applyAppBgColor();           // мгновенно: основной чат
+            applyTicketsArchiveDarkTheme(); // мгновенно: архив (если мы там)
         };
 
         document.querySelectorAll('.bg-preset').forEach(btn => {
@@ -936,8 +2068,9 @@ async function init_settings() {
                 const color = btn.getAttribute('data-color');
                 bgPicker.value = color;
                 Settings.set('appBgColor', color);
-                updateActivePreset(color); // подсветить нажатый
+                updateActivePreset(color);
                 applyAppBgColor();
+                applyTicketsArchiveDarkTheme();
             };
         });
 
