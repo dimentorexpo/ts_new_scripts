@@ -239,23 +239,6 @@ const sendBgRequest = (url, options = { method: 'GET' }) => {
     });
 };
 
-/* function doHideForm(flag = localStorage.getItem('hideTaskWindow')) {
-    if (location.href.indexOf('skyeng.autofaq.ai/tickets/assigned') !== -1) {
-        if (flag == 1) {
-            let newFrontend = document.getElementsByTagName('iframe');
-            if (newFrontend.length > 0 && document.getElementsByTagName('iframe')[0].contentDocument.children.length > 0) {
-                newFrontend = document.getElementsByTagName('iframe')[0].contentDocument.children[0].children[1].children
-                for (let g = 0; g < newFrontend.length; g++) {
-                    if (newFrontend[g].innerText.split('\n')[0] == "Создать задачу") {
-                        newFrontend[g].children[0].children[0].style.display = "none"
-                    }
-                }
-            }
-
-        }
-    }
-} */
-
 // === НАБЛЮДАТЕЛЬ: полностью скрываем нативное окно "Создать задачу" внутри iframe ===
 
 let _nativeModalObserver = null;
