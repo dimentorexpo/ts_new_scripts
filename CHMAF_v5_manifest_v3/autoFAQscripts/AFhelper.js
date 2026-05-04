@@ -29,7 +29,7 @@ var win_AFhelper = `
     <div id="7str"></div>
     <div id="6str"></div>
 
-    <textarea id="inp" class="glass-textarea" style="width: 100%; min-height: 100px; max-height: 350px; resize: vertical; margin-bottom: 8px; box-sizing: border-box;"></textarea>
+    <textarea id="inp" class="glass-textarea" style="width: 100%; min-height: 100px; max-height: 350px; resize: vertical; margin-bottom: 8px; box-sizing: border-box; font-size:17px"></textarea>
 
     <div id="hyperlnk" class="flex-row hyper-bar">
         <input id="bindlinktotext" class="glass-input" type="text" placeholder="Enter your link 🔗 here" title="Ссылка для встраивания" style="flex-grow: 1; text-align: center;">

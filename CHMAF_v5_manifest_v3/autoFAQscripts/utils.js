@@ -43,57 +43,49 @@ function createWindow(id, topKey, leftKey, content) {
         }
     });
 
-    // ===== ОБРАБОТЧИК DRAG (оптимизированный) =====
-    // Внутри функции createWindow
+    // ===== ОБРАБОТЧИК DRAG (исправленный, без мигания) =====
     windowElement.onmousedown = function (event) {
         if (checkelementtype(event)) {
-            // Не даем выделять текст во время перетаскивания
-            if (!['INPUT', 'TEXTAREA'].includes(event.target.tagName)) {
+            // Не даем начинать text-selection во время перетаскивания
+            if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) {
                 event.preventDefault();
             }
 
-            let startX = event.clientX;
-            let startY = event.clientY;
+            const startX = event.clientX;
+            const startY = event.clientY;
 
-            // Начальные координаты из стилей или localStorage
-            let initialLeft = parseInt(windowElement.style.left) || 0;
-            let initialTop = parseInt(windowElement.style.top) || 0;
+            // Берём текущие ВИЗУАЛЬНЫЕ координаты, чтобы не расходились left/top и transform
+            const rect = windowElement.getBoundingClientRect();
+            const initialLeft = rect.left;
+            const initialTop = rect.top;
 
             let currentX = initialLeft;
             let currentY = initialTop;
-
-            // Сохраняем текущий scale из transform, чтобы не потерять масштабирование
-            const currentTransform = windowElement.style.transform || '';
-            const scaleMatch = currentTransform.match(/scale\([^\)]+\)/);
-            const savedScale = scaleMatch ? scaleMatch[0] : '';
-
             let rafId = null;
-
-            function updatePosition() {
-                const translate = `translate3d(${currentX - initialLeft}px, ${currentY - initialTop}px, 0)`;
-                windowElement.style.transform = savedScale ? `${translate} ${savedScale}` : translate;
-                rafId = requestAnimationFrame(updatePosition);
-            }
 
             function onMouseMove(e) {
                 currentX = initialLeft + (e.clientX - startX);
                 currentY = initialTop + (e.clientY - startY);
 
                 if (!rafId) {
-                    rafId = requestAnimationFrame(updatePosition);
+                    rafId = requestAnimationFrame(() => {
+                        windowElement.style.left = currentX + 'px';
+                        windowElement.style.top = currentY + 'px';
+                        rafId = null;
+                    });
                 }
             }
 
             function onMouseUp() {
-                cancelAnimationFrame(rafId);
-                rafId = null;
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
 
-                // Только в самом конце применяем финальные координаты к top/left
+                // Финальная фиксация позиции
                 windowElement.style.left = currentX + 'px';
                 windowElement.style.top = currentY + 'px';
-                windowElement.style.transform = savedScale; // Восстанавливаем scale вместо сброса; // Сбрасываем трансформ
 
-                // Сохраняем результат
                 localStorage.setItem(leftKey, currentX);
                 localStorage.setItem(topKey, currentY);
 
