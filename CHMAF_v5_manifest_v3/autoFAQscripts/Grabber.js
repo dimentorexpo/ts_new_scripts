@@ -127,6 +127,84 @@ var win_Grabber = `
 ::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px; }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
+
+/* --- Улучшенная панель расширенных фильтров --- */
+.cdu-adv-panel {
+    background: rgba(15, 23, 42, 0.98);
+    border: 1px solid #38bdf8;
+    border-radius: 12px;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.08);
+}
+.cdu-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+.cdu-filter-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cdu-filter-card:hover {
+    border-color: #475569;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+.cdu-filter-card-title {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    text-align: center;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid #334155;
+}
+.cdu-filter-card .cdu-checkbox-label {
+    font-size: 12px;
+    padding: 5px 8px;
+    border-radius: 6px;
+}
+.cdu-filter-card .cdu-checkbox-label:hover {
+    background: rgba(56, 189, 248, 0.08);
+}
+.cdu-search-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #334155;
+}
+.cdu-search-row .cdu-input-text {
+    margin-bottom: 0;
+    background: #0f172a;
+    border-color: #475569;
+    font-size: 13px;
+}
+.cdu-search-row .cdu-input-text:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+}
+@media (max-width: 900px) {
+    .cdu-filter-grid { grid-template-columns: 1fr; }
+    .cdu-search-row { grid-template-columns: 1fr; }
+}
+
+.cdu-app-wrapper {
+zoom: 0.9;
+}
+.cdu-app-container {
+    width: 768px; /* было 960px → ужали под scale(0.8) */
+}
 </style>
 
 <div class="cdu-app-wrapper">
@@ -174,38 +252,38 @@ var win_Grabber = `
                 <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="undefined"> No marks ⭕</label>
             </div>
             <label id="hideselecallmarks" class="cdu-checkbox-label" style="display:none; color:#10b981; margin-left:10px; font-weight:bold;"><input type="checkbox" id="checkthemallmarks"> Select All Marks</label>
-
-            <div id="listofotheroptions" style="display:none; background: rgba(15, 23, 42, 0.95); border: 1px solid #38bdf8; border-radius: 8px; width:100%; padding:20px; box-sizing:border-box; margin-bottom:10px;">
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px;">
-                    <div>
-                        <div class="cdu-tools-header" style="text-align:center; border:none; color:#10b981;">Priority</div>
-                        <label class="cdu-checkbox-label"><input type="checkbox" checked name="priorityfilter" value="Any"> Any</label>
-                        <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Низкий"> Low</label>
-                        <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Высокий"> High</label>
-                        <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Критический"> Critical</label>
-                    </div>
-                    <div>
-                        <div class="cdu-tools-header" style="text-align:center; border:none; color:#10b981;">Department</div>
-                        <label class="cdu-checkbox-label"><input type="checkbox" checked name="deptfilter" value="Any"> Any</label>
-                        <label class="cdu-checkbox-label" title="Техподдержка 1Л CRM (исход)"><input type="checkbox" name="deptfilter" value="Техподдержка исход crm2"> TP Outbound</label>
-                        <label class="cdu-checkbox-label" title="Техподдержка 2Л CRM"><input type="checkbox" name="deptfilter" value="Техподдержка 2-я линия crm2"> TP 2L</label>
-                        <label class="cdu-checkbox-label" title="Teachers Care"><input type="checkbox" name="deptfilter" value="Teachers Care crm2"> Teachers Care</label>
-                        <label class="cdu-checkbox-label" title="Кризис менеджмент"><input type="checkbox" name="deptfilter" value="Кризис менеджеры"> Crisis Management</label>
-                        <label class="cdu-checkbox-label" title="Исходящие звонки crm2"><input type="checkbox" name="deptfilter" value="Исходящие звонки (crm2)"> CC Outbound</label>
-                    </div>
-                    <div>
-                        <div class="cdu-tools-header" style="text-align:center; border:none; color:#10b981;">User Type</div>
-                        <label class="cdu-checkbox-label"><input type="checkbox" checked name="usrtypefilter" value="Any"> Any</label>
-                        <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="student"> Student</label>
-                        <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="parent"> Parent</label>
-                        <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="teacher"> Teacher</label>
-                        <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="null"> Unknown</label>
-                    </div>
-                </div>
-                <hr style="border-color:#334155; margin:15px 0;">
-                <input class="cdu-input-text" placeholder="Search in Comment..." style="text-align:center;">
-                <input class="cdu-input-text" placeholder="Search in Message..." style="text-align:center; margin-bottom:0;">
-            </div>
+<div id="listofotheroptions" class="cdu-adv-panel" style="display:none;">
+    <div class="cdu-filter-grid">
+        <div class="cdu-filter-card">
+            <div class="cdu-filter-card-title" style="color:#f43f5e;">🔥 Priority</div>
+            <label class="cdu-checkbox-label"><input type="checkbox" checked name="priorityfilter" value="Any"> Any</label>
+            <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Низкий"> Low</label>
+            <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Высокий"> High</label>
+            <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Критический"> Critical</label>
+        </div>
+        <div class="cdu-filter-card">
+            <div class="cdu-filter-card-title" style="color:#38bdf8;">🏢 Department</div>
+            <label class="cdu-checkbox-label"><input type="checkbox" checked name="deptfilter" value="Any"> Any</label>
+            <label class="cdu-checkbox-label" title="Техподдержка 1Л CRM (исход)"><input type="checkbox" name="deptfilter" value="Техподдержка исход crm2"> TP Outbound</label>
+            <label class="cdu-checkbox-label" title="Техподдержка 2Л CRM"><input type="checkbox" name="deptfilter" value="Техподдержка 2-я линия crm2"> TP 2L</label>
+            <label class="cdu-checkbox-label" title="Teachers Care"><input type="checkbox" name="deptfilter" value="Teachers Care crm2"> Teachers Care</label>
+            <label class="cdu-checkbox-label" title="Кризис менеджмент"><input type="checkbox" name="deptfilter" value="Кризис менеджеры"> Crisis Management</label>
+            <label class="cdu-checkbox-label" title="Исходящие звонки crm2"><input type="checkbox" name="deptfilter" value="Исходящие звонки (crm2)"> CC Outbound</label>
+        </div>
+        <div class="cdu-filter-card">
+            <div class="cdu-filter-card-title" style="color:#10b981;">👤 User Type</div>
+            <label class="cdu-checkbox-label"><input type="checkbox" checked name="usrtypefilter" value="Any"> Any</label>
+            <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="student"> Student</label>
+            <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="parent"> Parent</label>
+            <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="teacher"> Teacher</label>
+            <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="null"> Unknown</label>
+        </div>
+    </div>
+<div class="cdu-search-row">
+    <input class="cdu-input-text" id="searchComment" placeholder="🔍 Search in Comment..." style="text-align:center;">
+    <input class="cdu-input-text" id="searchMessage" placeholder="🔍 Search in Message..." style="text-align:center;">
+</div>
+</div>
 
             <div id="listofthetags" class="cdu-options-grid" style="display:none; margin-bottom:10px;">
                 <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="server_issues"> Server</label>
@@ -444,8 +522,8 @@ setupAnyLogic("priorityfilter");
 setupAnyLogic("deptfilter");
 setupAnyLogic("usrtypefilter");
 
-const commentInputEl = document.querySelector('#listofotheroptions input[placeholder="Search in Comment..."]');
-const messageInputEl = document.querySelector('#listofotheroptions input[placeholder="Search in Message..."]');
+const commentInputEl = document.getElementById('searchComment');
+const messageInputEl = document.getElementById('searchMessage');
 
 commentInputEl.addEventListener("input", () => { if (commentInputEl.value.trim() !== "") messageInputEl.value = ""; });
 messageInputEl.addEventListener("input", () => { if (messageInputEl.value.trim() !== "") commentInputEl.value = ""; });
@@ -1166,9 +1244,20 @@ async function loadChatsForOperator(operatorId, operatorName, leftDate, rightDat
 }
 
 function extractCommentLine(txt) {
-    const lines = txt.split(/<br\s*\/?>/i);
-    const line = lines.find(l => l.toLowerCase().includes("комментарий:"));
-    return line ? line.trim() : "";
+    const lowerTxt = txt.toLowerCase();
+    const idx = lowerTxt.indexOf("комментарий:");
+    if (idx === -1) return "";
+
+    // Берём всё после "Комментарий:" (12 символов)
+    let commentPart = txt.substring(idx + 12);
+
+    // Заменяем все варианты <br> на \n, чтобы многострочность сохранилась
+    commentPart = commentPart.replace(/<br\s*\/?>/gi, '\n').trim();
+
+    // На всякий случай чистим остаточные HTML-теги
+    commentPart = commentPart.replace(/<[^>]+>/g, '');
+
+    return commentPart;
 }
 
 async function processChat(chat, filters, criticalChats) {
@@ -1278,7 +1367,9 @@ function renderCriticalTable(pureArray) {
         const matched = chatswithmarksarray.find(x => x.ConvId === el.ChatId);
         addCell(row, matched ? (matched.Rate ?? '-') : '-', { name: "CSATvalue", style: "text-align:center; font-weight:bold;" });
         addCell(row, el.Department);
-        addCell(row, el.text, { style: "max-width: 250px; white-space: pre-wrap; word-wrap: break-word;" });
+        addCell(row, el.text, {
+            style: "min-width: 320px; max-width: 480px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.5; font-size: 11px; color: #e2e8f0;"
+        });
         table.appendChild(row);
     });
     return table;
