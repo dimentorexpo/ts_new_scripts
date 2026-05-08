@@ -321,12 +321,10 @@ const win_Themes = `
 <div class="af-theme-widget" id="themes_widget_container">
     <div class="af-theme-header">
         <button class="buttonHide" id="hideMeThemes">Hide</button>
-        <div class="af-header-btns">
-            <button class="af-btn" id="ClearSmartroomData" title="Очистить теги">🧹</button>
+                    <button class="af-btn" id="ClearSmartroomData" title="Очистить теги">🧹</button>
             <button class="af-btn" id="backtomenu" style="display:none">🔙 Назад</button>
             <button class="af-btn" id="themesinstr">❓</button>
             <button class="af-btn primary" id="getnewthdata">🔄 Обновить</button>
-        </div>
     </div>
 
 <div class="af-search-row">

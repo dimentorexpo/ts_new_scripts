@@ -18,6 +18,34 @@
     let listObserver = null;
     let activeContainer = null;
 
+    // ─── Утилиты для настраиваемого цвета «Нет тега/темы» ───
+    const getMissingTagColor = () => {
+        // Пробуем сначала Settings (если объект доступен глобально)
+        if (typeof Settings !== 'undefined' && Settings.get) {
+            return Settings.get('missingTagColor') || '#ff1744';
+        }
+        // Fallback — читаем напрямую из localStorage
+        try { return localStorage.getItem('chmaf_missingTagColor') || '#ff1744'; }
+        catch (e) { return '#ff1744'; }
+    };
+
+    const hexToRgba = (hex, alpha) => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
+    // Затемняем HEX на N процентов для второго цвета градиента
+    const darkenHex = (hex, percent) => {
+        const num = parseInt(hex.replace('#', ''), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = Math.max((num >> 16) - amt, 0);
+        const G = Math.max((num >> 8 & 0x00FF) - amt, 0);
+        const B = Math.max((num & 0x0000FF) - amt, 0);
+        return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+    };
+
     // Универсальные селекторы (защита от смены хешей в классах)
     const SELECTORS = {
         container: '[class*="Operator_DialogsList"]',
@@ -328,6 +356,11 @@
     function initTagChecker() {
         setInterval(() => {
             try {
+                const missingColor = getMissingTagColor();          // ← выбранный цвет
+                const missingColorDark = darkenHex(missingColor, 40);   // ← авто-темнее для градиента
+                const missingRgbaBg = hexToRgba(missingColor, 0.06); // ← фон подсветки поля
+                const missingRgbaGlow = hexToRgba(missingColor, 0.5);  // ← тень бейджа
+
                 const doc = getActiveIframeDoc();
                 if (!doc) return;
 
@@ -342,7 +375,6 @@
 
                 const wrappers = doc.querySelectorAll('#__next div[class*="List_ListWrapper"]');
 
-                // Ищем оба блока одновременно
                 let tagBlock = null;
                 let topicBlock = null;
                 wrappers.forEach(wrap => {
@@ -351,7 +383,6 @@
                     if (txt.includes("Выбор темы/подтемы")) topicBlock = wrap;
                 });
 
-                // Если нет нужных блоков на странице — выходим
                 if (!tagBlock && !topicBlock) return;
 
                 const btn = doc.querySelector('button[title="Закрыть"]');
@@ -364,20 +395,19 @@
                     convElement.append(existing);
                 }
 
-                // Проверяем "Пусто" в каждом блоке
                 const tagEmpty = tagBlock ? tagBlock.innerText.trim().includes("Пусто") : false;
                 const topicEmpty = topicBlock ? topicBlock.innerText.trim().includes("Пусто") : false;
                 const hasEmpty = tagEmpty || topicEmpty;
 
-                // Универсальная функция стилизации пустого поля
+                // ─── Универсальная стилизация пустого поля ───
                 const styleEmptyBlock = (block, isEmpty) => {
                     if (!block) return;
                     const target = block.children[0]?.children[0];
                     if (!target) return;
 
                     if (isEmpty) {
-                        target.style.border = "2px solid #ff1744";
-                        target.style.background = "rgba(255, 23, 68, 0.06)";
+                        target.style.border = `2px solid ${missingColor}`;
+                        target.style.background = missingRgbaBg;
                         target.style.borderRadius = "8px";
                         target.classList.add('skyeng-mod-pulse');
                     } else {
@@ -399,8 +429,8 @@
                     if (topicEmpty) missing.push("темы");
 
                     existing.textContent = `❌ Нет ${missing.join(' и ')}`;
-                    existing.style.background = "linear-gradient(135deg, #ff1744, #b71c1c)";
-                    existing.style.boxShadow = "0 0 12px rgba(255, 23, 68, 0.5)";
+                    existing.style.background = `linear-gradient(135deg, ${missingColor}, ${missingColorDark})`;
+                    existing.style.boxShadow = `0 0 12px ${missingRgbaGlow}`;
                 } else {
                     if (btn) btn.disabled = false;
                     existing.textContent = "☑️ Всё заполнено";
@@ -408,7 +438,7 @@
                     existing.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
                 }
             } catch (e) {
-                // Молча глотаем ошибки в цикле, чтобы скрипт не умер
+                // молчим
             }
         }, 1500);
     }

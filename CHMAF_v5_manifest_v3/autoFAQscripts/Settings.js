@@ -16,7 +16,8 @@ async function init_settings() {
         AF_windowScale: 100,
         defaultStatusAfterLogin: 'Online',
         sound_str: 'https://grumstv.github.io/Sounds/msg.mp3',
-        appBgColor: '#FFFFFF' // Дефолтный белый цвет фона
+        appBgColor: '#FFFFFF', // Дефолтный белый цвет фона
+        missingTagColor: '#ff1744' // Дефолтный цвет окна "Нет темы и тега"
     };
 
     const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']);
@@ -634,6 +635,126 @@ async function init_settings() {
                 color: ${textColor} !important;
             }
 
+                        /* ═══ 26. ТАБЛИЦЫ (Table) ═══ */
+            [class*="Table_GlobalTableContainer__"],
+            [class*="Table_AreaContainer__"],
+            [class*="Table_ScrollContainer__"] {
+                background-color: ${color} !important;
+            }
+
+            [class*="Table_Table__"] {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+            }
+
+            /* Шапка таблицы */
+            [class*="Table_TableHeadCell__"] {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                color: ${textColor} !important;
+                border-bottom: 1px solid ${getRgba(textColor, 0.15)} !important;
+            }
+            [class*="Table_TableHeadCellContent__"] {
+                background: transparent !important;
+                color: ${textColor} !important;
+            }
+            [class*="Table_TableHeadCellText__"] {
+                color: ${textColor} !important;
+            }
+            [class*="Table_SortIconContainer__"][data-active="true"] {
+                filter: brightness(1.5) !important;
+            }
+
+            /* Строки таблицы */
+            [class*="Table_Row__"] {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+                border-bottom: 1px solid ${getRgba(textColor, 0.06)} !important;
+                transition: background-color 0.15s ease;
+            }
+            [class*="Table_Row__"]:hover {
+                background-color: ${getRgba(textColor, 0.06)} !important;
+            }
+
+            /* Zebra mode — чётные строки */
+            [class*="Table_ZebraMode__"] [class*="Table_Row__"]:nth-child(even) {
+                background-color: ${getRgba(textColor, 0.04)} !important;
+            }
+            [class*="Table_ZebraMode__"] [class*="Table_Row__"]:nth-child(even):hover {
+                background-color: ${getRgba(textColor, 0.1)} !important;
+            }
+
+            /* Ячейки */
+            [class*="Table_Cell__"] {
+                background: transparent !important;
+                color: ${textColor} !important;
+                border-color: ${getRgba(textColor, 0.08)} !important;
+            }
+            [class*="Table_ContentWrapper__"] {
+                background: transparent !important;
+                color: ${textColor} !important;
+            }
+            [class*="Table_Centered__"] {
+                color: ${textColor} !important;
+            }
+
+            /* ═══ 27. КНОПКИ В ТАБЛИЦЕ ═══ */
+            /* Primary / Contained */
+            [class*="Buttons_Color_primary__"][class*="Buttons_Appearance_contained__"] {
+                background-color: #7c4dff !important;
+                color: #ffffff !important;
+                border-color: #7c4dff !important;
+            }
+            [class*="Buttons_Color_primary__"][class*="Buttons_Appearance_contained__"]:hover {
+                background-color: #9575ff !important;
+                border-color: #9575ff !important;
+            }
+
+            /* Secondary / Outlined */
+            [class*="Buttons_Color_secondary__"][class*="Buttons_Appearance_outlined__"] {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+                border: 1px solid ${getRgba(textColor, 0.25)} !important;
+            }
+            [class*="Buttons_Color_secondary__"][class*="Buttons_Appearance_outlined__"]:hover {
+                background-color: ${getRgba(textColor, 0.1)} !important;
+                border-color: ${getRgba(textColor, 0.4)} !important;
+            }
+
+            /* SVG иконки в кнопках */
+            [class*="Buttons_SharedButton__"] svg,
+            [class*="Buttons_Button__"] svg {
+                color: currentColor !important;
+            }
+
+            /* ═══ 28. ФУТЕР ТАБЛИЦЫ + ПАГИНАЦИЯ ═══ */
+            [class*="Table_FooterContainer__"],
+            [class*="Table_PaginationContainer__"],
+            [class*="Table_ActionsContainer__"] {
+                background-color: ${getRgba(textColor, 0.04)} !important;
+                color: ${textColor} !important;
+                border-top: 1px solid ${getRgba(textColor, 0.1)} !important;
+            }
+            [class*="Pagination_Count__"] {
+                color: ${textColor} !important;
+            }
+            [class*="Pagination_Count__"] strong {
+                color: #ffffff !important;
+            }
+
+            /* ═══ 29. ТЕНИ И СКРОЛЛБАРЫ ТАБЛИЦЫ ═══ */
+            [class*="Table_OverflowShadowRight__"],
+            [class*="Table_OverflowShadowBottom__"] {
+                background: linear-gradient(to right, transparent, ${color}) !important;
+            }
+            [class*="Table_OverflowShadowBottom__"] {
+                background: linear-gradient(to bottom, transparent, ${color}) !important;
+            }
+
+            /* ═══ 30. ВСПЛЫВАЮЩИЕ ПОДСКАЗКИ/ДРОПДАУНЫ В ТАБЛИЦЕ ═══ */
+            [class*="Table_TableHeadCell__"] [id*="mantine-"][id*="-target"] {
+                color: ${textColor} !important;
+            }
+
             /* ═══ СТАТУС ДИАЛОГА (SVG) ═══ */
             [class*="DialogsCard_PayloadStatus__"] svg {
                 color: #ff9800 !important;
@@ -687,6 +808,8 @@ async function init_settings() {
     // Ставим setInterval, так как iframe загружается с задержкой или может быть пересоздан SPA-роутером
     applyAppBgColor();
     setInterval(applyAppBgColor, 2000);
+
+
 
 
 
@@ -1897,6 +2020,13 @@ async function init_settings() {
                         </div>
                     </div>
 
+                                                        <!-- Выбор цвета индикатора «Нет тега/темы» -->
+                    <div class="set-row" style="margin-top: 12px; align-items: center;">
+                        <span class="set-label">Индикатор «Нет тега»:</span>
+                        <input type="color" id="missingTagColorPicker" class="set-input" title="Цвет бейджа при отсутствии тега/темы" style="padding:0; width:34px; height:34px; border-radius:8px; cursor:pointer; flex-shrink: 0;">
+                        <span id="missingTagColorLabel" style="font-size: 12px; color: #888; font-family: monospace;">#ff1744</span>
+                    </div>
+
                     <div class="set-row" style="margin-top: 15px;">
                         <div class="set-grid-colors">
                             <div class="set-color-wrap">
@@ -1962,6 +2092,8 @@ async function init_settings() {
             </div>
         </div>
     `;
+
+
 
     injectStyles();
     createWindow('AF_Settings', 'winTopSettings', 'winLeftSettings', win_Settings);
@@ -2073,6 +2205,19 @@ async function init_settings() {
                 applyTicketsArchiveDarkTheme();
             };
         });
+
+        // --- Логика для Цвета индикатора «Нет тега/темы» ---
+        const missingTagPicker = document.getElementById('missingTagColorPicker');
+        const missingTagLabel = document.getElementById('missingTagColorLabel');
+
+        missingTagPicker.value = Settings.get('missingTagColor');
+        missingTagLabel.textContent = Settings.get('missingTagColor');
+
+        missingTagPicker.oninput = (e) => {
+            const val = e.target.value;
+            Settings.set('missingTagColor', val);
+            missingTagLabel.textContent = val;
+        };
 
         // Volume
         const range = document.getElementById('range');

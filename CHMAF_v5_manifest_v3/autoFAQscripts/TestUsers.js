@@ -38,26 +38,6 @@ cyberStyles.textContent = `
     animation: nuIn 0.5s cubic-bezier(0.16,1,0.3,1);
     cursor: default;
 }
-
-/* Animated neon top line */
-.glass-panel-testuser::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -50%;
-    right: -50%;
-    height: 2px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        #8b5cf6 25%,
-        #ec4899 50%,
-        #06b6d4 75%,
-        transparent 100%);
-    background-size: 200% 100%;
-    animation: nuBorderFlow 3s linear infinite;
-    opacity: 0.7;
-}
-
 /* Inner radial glow */
 .glass-panel-testuser::after {
     content: '';
