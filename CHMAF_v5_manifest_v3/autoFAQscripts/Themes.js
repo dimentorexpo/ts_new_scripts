@@ -5,358 +5,312 @@ let KCThemesFlag = 0;
 const themesCSS = document.createElement('style');
 themesCSS.id = 'af-themes-premium-css';
 themesCSS.textContent = `
-  #AF_Themes {
-    background: rgba(15, 23, 42, 0.88) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6),
-                0 0 0 1px rgba(255, 255, 255, 0.05),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-    color: #e2e8f0 !important;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+#AF_Themes {
+    --primary: #6366f1;
+    --primary-hover: #818cf8;
+    --bg-glass: rgba(15, 23, 42, 0.9);
+    --border-glass: rgba(255, 255, 255, 0.1);
+
+    background: var(--bg-glass) !important;
+    backdrop-filter: blur(25px) saturate(170%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(170%) !important;
+
+    border: 1px solid var(--border-glass) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+
+    color: #f1f5f9 !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+
+    /* Увеличиваем ширину, чтобы 2 колонки плиток не сжимались */
+    min-width: 550px !important;
     overflow: hidden !important;
-    min-width: 420px !important;
-    will-change: transform;
     transform: translate3d(0,0,0);
   }
 
   #AF_Themes * { box-sizing: border-box; }
 
-  /* Header */
-  #AF_Themes .af-theme-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.03);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    cursor: grab;
-    user-select: none;
-  }
-  #AF_Themes .af-theme-header:active { cursor: grabbing; }
-
-  #AF_Themes .af-header-btns {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-
-  /* Buttons */
-  #AF_Themes .af-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #cbd5e1;
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    font-family: inherit;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    backdrop-filter: blur(4px);
-    outline: none;
-  }
-  #AF_Themes .af-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(99, 102, 241, 0.4);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
-  #AF_Themes .af-btn.primary {
-    background: linear-gradient(135deg, rgba(99,102,241,0.9), rgba(79,70,229,0.9));
-    border-color: rgba(99,102,241,0.5);
-    color: white;
-    font-weight: 600;
-  }
-  #AF_Themes .af-btn.primary:hover {
-    background: linear-gradient(135deg, rgba(99,102,241,1), rgba(79,70,229,1));
-    box-shadow: 0 4px 20px rgba(99,102,241,0.3);
-    transform: translateY(-1px);
-  }
-
-  #AF_Themes .buttonHide {
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #fca5a5;
-    border-radius: 6px;
-    padding: 5px 10px;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-  }
-  #AF_Themes .buttonHide:hover {
-    background: rgba(239, 68, 68, 0.28);
-    transform: scale(1.05);
-  }
-
-  /* Inputs */
-  #AF_Themes .af-input {
-    width: 100%;
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 8px 12px;
-    color: #f1f5f9;
-    font-size: 13px;
-    font-family: inherit;
-    transition: all 0.2s;
-    outline: none;
-  }
-  #AF_Themes .af-input::placeholder { color: #64748b; }
-  #AF_Themes .af-input:focus {
-    border-color: rgba(99, 102, 241, 0.6);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), inset 0 1px 2px rgba(0,0,0,0.1);
-    background: rgba(15, 23, 42, 0.8);
-  }
-
-  /* Search row */
-  #AF_Themes .af-search-row {
-    display: flex;
-    gap: 8px;
-    padding: 10px 16px 0;
-  }
-  #AF_Themes .af-search-col { flex: 1; }
-  #AF_Themes .af-search-col-flex {
-    flex: 1;
-    display: flex;
-    gap: 6px;
-  }
-
-  /* Found subthemes area */
-  #AF_Themes #foundSubthemes {
-    padding: 0 16px;
-    margin-top: 8px;
-    max-height: 180px;
-    overflow-y: auto;
-  }
-
-  /* Main layout */
+  /* Основной макет: делаем его гибким */
   #AF_Themes .af-main-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 12px 16px 16px;
-    max-height: 65vh;
+    gap: 16px;
+    padding: 16px;
+    max-height: 70vh;
     overflow-y: auto;
   }
-  #AF_Themes .af-column {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
+
+  /* СЕКРЕТ ЧЕТКОСТИ: Заголовки */
   #AF_Themes .af-section-title {
-    font-size: 10px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #94a3b8;
-    padding: 0 4px;
-    margin-bottom: 0;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    margin-bottom: 10px;
+    padding-left: 4px;
   }
 
-  /* Grids */
-  #AF_Themes .af-grid-themes,
-  #AF_Themes .af-grid-tags {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  /* Theme main buttons */
+  /* Кнопки основных тем */
   #AF_Themes .theme-main-btn {
     width: 100%;
-    text-align: left;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
-    padding: 8px 12px;
+    border-radius: 12px;
+    padding: 12px 14px;
     color: #e2e8f0;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    font-family: inherit;
-  }
-  #AF_Themes .theme-main-btn::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: linear-gradient(to bottom, #6366f1, #8b5cf6);
-    opacity: 0;
-    transition: opacity 0.2s;
+    margin-bottom: 4px;
   }
   #AF_Themes .theme-main-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(99, 102, 241, 0.08);
     border-color: rgba(99, 102, 241, 0.3);
     transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
-  #AF_Themes .theme-main-btn:hover::before { opacity: 1; }
 
-  /* Subtheme buttons */
+  /* --- ПОДТЕМЫ (ПЛИТКИ 2 В РЯД) --- */
+  #AF_Themes .theme-page {
+    /* Растягиваем на всю ширину макета (2 колонки) */
+    grid-column: 1 / span 2;
+    display: none;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 8px 0 20px 0;
+    animation: afFadeIn 0.3s ease;
+  }
+
+  /* Принудительный Grid когда JS ставит display: flex или block */
+  #AF_Themes .theme-page[style*="display: flex"],
+  #AF_Themes .theme-page[style*="display: block"] {
+    display: grid !important;
+  }
+
   #AF_Themes .searchSubthemes {
-    width: 100%;
-    text-align: left;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 7px 11px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 16px;
     color: #cbd5e1;
-    font-size: 12px;
+    font-size: 13px; /* Читабельный размер */
+    line-height: 1.4;
     cursor: pointer;
-    transition: all 0.15s ease;
-    font-family: inherit;
-  }
-  #AF_Themes .searchSubthemes:hover {
-    background: rgba(99, 102, 241, 0.15);
-    border-color: rgba(99, 102, 241, 0.3);
-    color: #fff;
-    transform: translateX(2px);
-  }
-
-  /* Tag buttons */
-  #AF_Themes button[name="tagssbtn"] {
-    flex: 1;
-    text-align: left;
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px solid rgba(16, 185, 129, 0.15);
-    border-radius: 8px;
-    padding: 7px 11px;
-    color: #6ee7b7;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    font-family: inherit;
-  }
-  #AF_Themes button[name="tagssbtn"]:hover {
-    background: rgba(16, 185, 129, 0.2);
-    border-color: rgba(16, 185, 129, 0.4);
-    transform: translateX(3px);
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
-  }
-
-  /* Tag row */
-  #AF_Themes .af-tag-row {
+    transition: all 0.2s;
+    height: 100%;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 2px;
-    border-radius: 8px;
-    transition: background 0.15s;
-  }
-  #AF_Themes .af-tag-row:hover { background: rgba(255, 255, 255, 0.03); }
-
-  /* BIG CHECKBOXES */
-  #AF_Themes input[type="checkbox"].af-checkbox {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 26px;
-    height: 26px;
-    min-width: 26px;
-    background: rgba(15, 23, 42, 0.8);
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    border-radius: 7px;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    margin: 0;
-    outline: none;
-  }
-  #AF_Themes input[type="checkbox"].af-checkbox:hover {
-    border-color: rgba(99, 102, 241, 0.5);
-    box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
-  }
-  #AF_Themes input[type="checkbox"].af-checkbox:checked {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    border-color: transparent;
-    transform: scale(1.1);
-    box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
-  }
-  #AF_Themes input[type="checkbox"].af-checkbox:checked::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    text-align: left;
   }
 
-  /* Found cards */
-  #AF_Themes .af-found-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    transition: all 0.2s;
-    animation: afSlideIn 0.3s ease;
-    margin-bottom: 6px;
-  }
-  #AF_Themes .af-found-card:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(99, 102, 241, 0.2);
+  #AF_Themes .searchSubthemes:hover {
+    background: var(--primary);
+    border-color: var(--primary-hover);
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
   }
-  @keyframes afSlideIn {
-    from { opacity: 0; transform: translateY(-8px); }
+
+  /* Теги - колонка справа (скрывается когда открыты подтемы для чистоты) */
+  .theme-page[style*="display: grid"] ~ .af-column:last-child {
+    opacity: 0.3; /* Приглушаем теги, когда фокус на подтемах */
+    pointer-events: none;
+  }
+
+  /* Стили для Инпутов */
+  #AF_Themes .af-input {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px;
+    padding: 10px 15px;
+    color: #fff;
+    font-size: 14px;
+    transition: 0.2s;
+  }
+  #AF_Themes .af-input:focus {
+    border-color: var(--primary) !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+  }
+
+  /* Анимации */
+  @keyframes afFadeIn {
+    from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  #AF_Themes .af-found-badge {
-    display: inline-block;
-    background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2));
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    color: #a5b4fc;
-    padding: 3px 8px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    width: fit-content;
-  }
 
-  /* Theme pages */
-  #AF_Themes .theme-page {
-    display: none;
-    flex-direction: column;
-    gap: 5px;
-    grid-column: 1 / span 2;
-  }
-
-  /* Scrollbar */
-  #AF_Themes ::-webkit-scrollbar { width: 5px; }
-  #AF_Themes ::-webkit-scrollbar-track { background: transparent; }
+  /* Скроллбар */
+  #AF_Themes ::-webkit-scrollbar { width: 6px; }
   #AF_Themes ::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
   }
-  #AF_Themes ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
 
-  /* Multitag */
-  #AF_Themes #multitag_body { margin-top: 2px; }
-
-  /* Window entrance animation */
-  @keyframes afWindowIn {
-    from { opacity: 0; transform: scale(0.96) translate3d(0,0,0); }
-    to { opacity: 1; transform: scale(1) translate3d(0,0,0); }
+  /* Исправленный контейнер результатов поиска */
+#AF_Themes #foundSubthemes {
+    display: none; /* Скрыт по умолчанию */
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 10px 16px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    margin-bottom: 10px;
   }
-  #AF_Themes { animation: afWindowIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+
+  /* Карточка результата (прозрачная, без белого фона) */
+  #AF_Themes .af-found-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 10px !important;
+    padding: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+    transition: transform 0.2s, background 0.2s !important;
+    margin-bottom: 0 !important; /* Убираем отступ, так как есть gap в гриде */
+  }
+
+  #AF_Themes .af-found-card:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    transform: translateY(-2px);
+  }
+
+  /* Бейдж родительской темы (теперь читабельный и полный) */
+  #AF_Themes .af-found-badge {
+    background: transparent !important;
+    border: none !important;
+    color: #818cf8 !important; /* Акцентный цвет */
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 0 2px !important;
+    white-space: normal !important; /* Полное название без обрезки */
+    line-height: 1.2 !important;
+  }
+
+  /* Кнопка ВНУТРИ карточки поиска (лечим "белый" цвет) */
+  #AF_Themes .af-found-card button {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    font-size: 12px !important;
+    text-align: left !important;
+    box-shadow: none !important;
+  }
+
+  #AF_Themes .af-found-card button:hover {
+    background: #6366f1 !important;
+    color: #fff !important;
+    border-color: #818cf8 !important;
+  }
+
+  /* Компактная Jira и Поиск */
+#AF_Themes .af-search-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 8px;
+    padding: 12px 16px 8px;
+  }
+
+  /* Контейнер для Jira (инпут + кнопка внутри) */
+  .af-jira-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .af-jira-container .af-input {
+    padding-right: 35px !important; /* Место для ракеты внутри инпута */
+  }
+
+  .af-jira-btn {
+    position: absolute;
+    right: 5px;
+    background: none !important;
+    border: none !important;
+    padding: 5px !important;
+    cursor: pointer;
+    font-size: 16px;
+    transition: transform 0.2s;
+    line-height: 1;
+  }
+
+  .af-jira-btn:hover { transform: scale(1.2); }
+
+  /* Результаты живого поиска в 2 колонки */
+  #AF_Themes #foundSubthemes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 16px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  /* Те самые карточки поиска (лечим белые кнопки) */
+  #AF_Themes .af-found-card {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 10px !important;
+    padding: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px;
+    transition: 0.2s;
+  }
+
+  #AF_Themes .af-found-card:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: #6366f1 !important;
+  }
+
+  #AF_Themes .af-found-badge {
+    color: #818cf8 !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Кнопки внутри результатов поиска */
+  #AF_Themes .af-found-card button {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px !important;
+    color: #e2e8f0 !important;
+    font-size: 12px !important;
+    text-align: left !important;
+    padding: 6px 8px !important;
+    width: 100% !important;
+    cursor: pointer;
+  }
+
+  #AF_Themes .af-found-card button:hover {
+    background: #6366f1 !important;
+    color: #fff !important;
+  }
+
+  /* Основная сетка подтем (2 колонки) */
+  #AF_Themes .theme-page {
+    display: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  #AF_Themes .theme-page[style*="display: flex"],
+  #AF_Themes .theme-page[style*="display: block"] {
+    display: grid !important;
+  }
 `;
 if (!document.getElementById('af-themes-premium-css')) {
     document.head.appendChild(themesCSS);
@@ -375,13 +329,13 @@ const win_Themes = `
         </div>
     </div>
 
-    <div class="af-search-row">
+<div class="af-search-row">
         <div class="af-search-col">
             <input class="af-input" id="search4Theme" placeholder="Поиск подтемы...">
         </div>
-        <div class="af-search-col-flex">
+        <div class="af-jira-container">
             <input class="af-input" id="linktojiracoment" placeholder="Ссылка на Jira">
-            <button class="af-btn primary" id="linktojirasend" style="height: 34px; flex-shrink: 0;">🚀</button>
+            <button class="af-jira-btn" id="linktojirasend" title="Отправить ссылку">🚀</button>
         </div>
     </div>
 
@@ -540,6 +494,10 @@ document.getElementById('hideMeThemes').addEventListener('click', () => {
         afThemes.style.display = 'none';
         document.getElementById('themes').classList.remove('activeScriptBtn');
     }
+
+    // Сбрасываем поиск при закрытии
+    resetSearch();
+
     if (backBtn.style.display !== 'none') backBtn.click();
 });
 
@@ -672,8 +630,28 @@ function refreshThemesBtns() {
     }
 }
 
+// Функция для полного сброса поиска
+function resetSearch() {
+    const searchInput = document.getElementById('search4Theme');
+    const foundField = document.getElementById('foundSubthemes');
+    const themesColumnBody = document.getElementById('themes_body');
+
+    if (searchInput) searchInput.value = ""; // Очищаем текст в инпуте
+    if (foundField) {
+        foundField.innerHTML = ""; // Удаляем результаты поиска
+        foundField.style.display = 'none'; // Скрываем контейнер результатов
+    }
+    if (themesColumnBody) {
+        themesColumnBody.style.display = ''; // Возвращаем стандартный список тем
+    }
+}
+
 document.getElementById('ClearSmartroomData').addEventListener('click', () => {
+    // Очищаем чекбоксы тегов (твой старый код)
     document.querySelectorAll('input[name="tagcheck"]').forEach(cb => cb.checked = false);
+
+    // Добавляем очистку поиска
+    resetSearch();
 });
 
 document.getElementById('multitag').addEventListener('click', async () => {
@@ -750,9 +728,20 @@ document.getElementById('linktojirasend').addEventListener('click', async () => 
 document.getElementById("search4Theme").addEventListener("input", function () {
     const query = this.value.toLowerCase().trim();
     const foundField = document.getElementById('foundSubthemes');
-    foundField.innerHTML = "";
+    const mainLayout = document.querySelector('.af-main-layout');
+    const themesColumnBody = document.getElementById('themes_body'); // Берем только колонку тем
 
-    if (!query) return;
+    if (!query) {
+        foundField.innerHTML = "";
+        foundField.style.display = 'none';
+        themesColumnBody.style.display = ''; // Возвращаем обычные темы
+        return;
+    }
+
+    // Скрываем основные темы, но оставляем Теги (mainLayout не трогаем)
+    themesColumnBody.style.display = 'none';
+    foundField.style.display = 'grid';
+    foundField.innerHTML = "";
 
     const buttons = [...document.querySelectorAll(".searchSubthemes")].filter(btn => btn.name !== "tagssbtn");
 
@@ -760,7 +749,7 @@ document.getElementById("search4Theme").addEventListener("input", function () {
         if (btn.textContent.toLowerCase().includes(query)) {
             const themePageId = btn.dataset.theme;
             const parentThemeBtn = document.querySelector(`.theme-main-btn[data-page-id="${themePageId}"]`);
-            const themeName = parentThemeBtn ? parentThemeBtn.textContent : "Тема";
+            const themeName = parentThemeBtn ? parentThemeBtn.textContent.trim() : "Тема";
 
             const card = document.createElement('div');
             card.className = 'af-found-card';
@@ -768,10 +757,26 @@ document.getElementById("search4Theme").addEventListener("input", function () {
             const badge = document.createElement('div');
             badge.className = 'af-found-badge';
             badge.textContent = themeName;
-            badge.title = themeName;
 
             const cloneBtn = btn.cloneNode(true);
-            cloneBtn.addEventListener('click', () => setTheme(cloneBtn.value));
+
+            // НОВАЯ ЛОГИКА КЛИКА:
+            cloneBtn.addEventListener('click', () => {
+                setTheme(cloneBtn.value);
+
+                // Визуальный отклик, что нажато
+                const originalText = cloneBtn.textContent;
+                cloneBtn.textContent = "✅ Отправлено";
+                cloneBtn.style.backgroundColor = "rgba(34, 197, 94, 0.2)"; // Слегка зеленый
+
+                setTimeout(() => {
+                    cloneBtn.textContent = originalText;
+                    cloneBtn.style.backgroundColor = "";
+                }, 800);
+
+                // ТЕПЕРЬ МЫ НЕ ОЧИЩАЕМ ПОИСК И НЕ ЗАКРЫВАЕМ ЕГО
+                // Поле остается, результаты на месте.
+            });
 
             card.appendChild(badge);
             card.appendChild(cloneBtn);
