@@ -302,27 +302,6 @@ function timerHideButtons() { // функция прячет кнопку одн
     }
 }
 
-function checkelementtype(a) {
-    let elem = a.target;
-    if (!elem) return false;
-
-    // ← ДОБАВЬТЕ: ищем ближайший input/textarea вверх по дереву
-    const closestInput = elem.closest('input, textarea, select');
-    if (closestInput) return false; // Если клик внутри input/textarea — drag запрещён
-
-    // Остальной код без изменений...
-    if (elem.classList.contains('teststudteachinp')) return true;
-
-    const forbiddenNodes = ['BUTTON', 'LABEL', 'INPUT', 'TEXTAREA', 'SELECT', 'P', 'TABLE', 'TH', 'TR', 'CANVAS'];
-    const forbiddenClasses = ['checkbox-audio-switch', 'checkbox-refresh-switch', 'srvhhelpnomove', 'rowOfChatGrabbed'];
-    const forbiddenIds = ['CSATFilterField', 'AgregatedDataThemes', 'AgregatedDataOut', 'ToolsPanel', 'ProblemsSolution'];
-
-    if (forbiddenNodes.includes(elem.nodeName)) return false;
-    if (forbiddenIds.includes(elem.id)) return false;
-    if (forbiddenClasses.some(cls => elem.classList.contains(cls))) return false;
-
-    return true;
-}
 
 async function sendComment(txt, activeConvId) { // Функция отправки комментария
     var values = await getInfo(0);
@@ -1391,8 +1370,6 @@ setInterval(() => {
         // Если найден — удаляем
         if (promo) {
             promo.remove();
-            // Можно добавить лог, если нужно
-            // console.log("promo-image удалён");
         }
     }
 }, 500)
