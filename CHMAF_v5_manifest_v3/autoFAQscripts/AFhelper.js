@@ -2,9 +2,9 @@ const editorExtensionIdNew = localStorage.getItem('ext_id');
 
 var win_AFhelper = `
 <div class="glass-panel" id="addTmpWrapper">
-    <div class="glass-warning-bar chmaf-drag-handle"></div>
+    <div class="glass-warning-bar"></div>
 
-    <div class="flex-row chmaf-drag-handle" id="1str" style="padding-top: 5px;">
+    <div class="flex-row" id="1str" style="cursor: -webkit-grab; padding-top: 5px;">
         <button class="glass-btn mainButton" id="languageAF" title="Переключает язык Русский/Английский">Русский</button>
         <button class="glass-btn mainButton" id="testCustTMPL" title="Открывает окно для добавления своих шаблонов">📒</button>
         <button class="glass-btn mainButton buttonHide" id="hideMenuMain" title="Скрывает расширение">Скрыть</button>
@@ -275,4 +275,18 @@ refreshBtnAFH.addEventListener('click', async function () {
 });
 
 // --- Фикс: снятие выделения в textarea при клике внутри ---
-// (Удален старый хак, так как новая система Drag & Drop в utils.js корректно обрабатывает инпуты через checkelementtype)
+const inpTextarea = document.getElementById('inp');
+
+inpTextarea.addEventListener('mousedown', function (e) {
+    // Останавливаем всплытие, чтобы drag-обработчики родителя не мешали
+    e.stopPropagation();
+
+    // Если есть выделение и не зажат Shift — снимаем его и ставим курсор в точку клика
+    if (this.selectionStart !== this.selectionEnd && !e.shiftKey) {
+        // Небольшая задержка, чтобы браузер успел определить позицию курсора по клику
+        requestAnimationFrame(() => {
+            const pos = this.selectionStart;
+            this.setSelectionRange(pos, pos);
+        });
+    }
+});

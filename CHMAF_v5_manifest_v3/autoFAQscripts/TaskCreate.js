@@ -101,10 +101,9 @@ const glassStylesTask = `
 
 var win_taskform = `
     ${glassStylesTask}
-    <style>.chmaf-drag-handle { cursor: grab !important; user-select: none !important; }</style>
     <div style="display: flex; width: 420px; position: relative;">
         <div class="glass-panel-task" style="width: 100%; position: relative; z-index: 2;">
-            <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px;" id="create_form_header" class="chmaf-drag-handle">
+            <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px;" id="create_form_header">
                 <button class="glass-btn-task" title="Скрыть меню" id="hideMeCreateForm">❌</button>
                 <button class="glass-btn-task" title="Обновить хеш чата" id="refreshhashcreateform">♻</button>
                 <button class="glass-btn-task" title="Очистить форму" id="clearcreateform">🧹</button>
