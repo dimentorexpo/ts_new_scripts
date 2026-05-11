@@ -1,263 +1,139 @@
-var win_testroomsCRM =  // описание элементов окна создания тестовых комнат
-  `<div style="display: flex; width: 310px;">
-      <span style="width: 310px">
-          <span style="cursor: -webkit-grab;">
-              <div style="width: 310px; margin: 5px;" id="testroomsCRMhead">
-                  <button class="buttonHide" title="скрывает меню" id="hideMetestroomsCRM">hide</button>
-                  <button class="btnCRM btnCRMsmall" id="clrTestRooms" title="По нажатию очищает поля" style="width:30px;">🧹</button>
-                  <button class="btnCRM btnCRMsmall" id="aboutTestRooms" style="width:30px; float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
-                  <button class="btnCRM btnCRMsmall" id="confluenceTestRooms" title="Открывает раздел в Confluence по созданию тестовых комнат" style="width:30px; float: right; margin-right: 5px;">📋</button>
-              </div>
-
-              <div style="width: 310px; margin:5px; display:flex; justify-content:left;">
-                <select class="inputCRM" id="lessontypeselect" style="text-align: center; width: 290px; height: 26px; color: black; margin-left: 7px;">
-                    <option disabled="" selected="" value="lessonnotselect" style="background-color: orange; color: white;">Выбери тип урока</option>
-                    <option value="test">1 - 1</option>
-                    <option value="test-parallel">Паралельный</option>
-                    <option value="test-webinar">Вебинар</option>
-					<option value="test-group">Групповой</option>
-                </select>
-              </div>
-
-					    <div style="width: 310px; margin:5px; display:flex; justify-content:left;">
-                  <select class="inputCRM" id="subjecttypeselect" style="text-align: center; width: 290px; height: 26px; color: black; margin-left: 7px;">
-                      <option disabled="" selected="" value="subjnotselect" style="background-color: orange; color: white;">Выбери предмет</option>
-                      <option value="api-english">Английский</option>
-                      <option value="api-biology">Биология</option>
-                      <option value="api-geography">География</option>
-                      <option value="api-preschool">Дошкольная математика</option>
-                      <option value="api-history">История</option>
-                      <option value="api-computer-science">Компьютерные курсы</option>
-                      <option value="api-literature">Литература</option>
-                      <option value="api-math">Математика</option>
-                      <option value="api-social-science">Обществознание</option>
-                      <option value="api-russian">Русский язык</option>
-                      <option value="api-physics">Физика</option>
-                      <option value="api-chemistry">Химия</option>
-                      <option value="api-chess">Шахматы</option>
-                  </select>
-              </div>
-
-              <div style="width: 310px; margin:5px; display:flex; justify-content:left;">
-                  <input class="inputCRM" id="teachforroom" placeholder="Введи ID П" title="Введи id П для кого создать тестовую комнату" autocomplete="off" type="text" style="text-align: center; width: 135px; color: black; margin-left: 5px;">
-                  <input class="inputCRM" id="studforroom" placeholder="Введи ID У" title="Введи id У для кого создать тестовую комнату(Если У несколько, вводите через запятую)" autocomplete="off" type="text" style="text-align: center; width: 135px; color: black; margin-left: 5px;">
-    					</div>
-
-              <div style="width: 310px; margin:2px; display:flex; justify-content:left;">
-                  <button id="insertteachid" title="Поставить id вашего тестового П" class="btnCRM testroomsCRMbtn" style="margin-left:5px;">Тест П</button>
-                  <button id="insertstudid" title="Поставить id вашего тестового У" class="btnCRM testroomsCRMbtn">Тест У</button>
-                  <button id="userfromchatid" title="Подставить id пользователя из активной задачи и подставить id вашего тестового У или П" class="btnCRM testroomsCRMbtn">User ID</button>
-              </div>
-              <div style="width: 310px; margin:5px; display:flex; justify-content:left;">
-                  <button id="starttestroom" title="Тут и так понятно" class="btnCRM testroomsCRMcreate">Создать тестовый урок</button>
-              </div>
-              <div style="width: 310px; margin:5px; display:flex; justify-content:left;">
-              <label id="testroomsCRMmessage" style="color:bisque; width:298px; text-align: center; border: 1px solid #3e4f55; background: rgb(70, 68, 81); border-radius: 10px; font-size: 15px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);"></label>
-              </div>
-          </span>
-      </span>
-  </div>`;
+const win_testroomsCRM = `
+<div style="width: 330px;">
+  <span style="cursor: -webkit-grab; display: block;">
+    <div class="crm-win-header">
+      <button class="buttonHide" id="hideMetestroomsCRM">hide</button>
+      <button class="btnCRM btnCRMsmall" id="clrTestRooms" title="Очистить">🧹</button>
+      <button class="btnCRM btnCRMsmall crm-win-header-spacer" id="aboutTestRooms" title="Инструкция">❓</button>
+      <button class="btnCRM btnCRMsmall" id="confluenceTestRooms" title="Confluence">📋</button>
+    </div>
+    <div class="crm-flex-col" style="gap: 8px; padding: 8px;">
+      <select class="inputCRM" id="lessontypeselect">
+        <option disabled selected value="lessonnotselect">Выбери тип урока</option>
+        <option value="test">1 - 1</option>
+        <option value="test-parallel">Параллельный</option>
+        <option value="test-webinar">Вебинар</option>
+        <option value="test-group">Групповой</option>
+      </select>
+      <select class="inputCRM" id="subjecttypeselect">
+        <option disabled selected value="subjnotselect">Выбери предмет</option>
+        <option value="api-english">Английский</option>
+        <option value="api-biology">Биология</option>
+        <option value="api-geography">География</option>
+        <option value="api-preschool">Дошкольная математика</option>
+        <option value="api-history">История</option>
+        <option value="api-computer-science">Компьютерные курсы</option>
+        <option value="api-literature">Литература</option>
+        <option value="api-math">Математика</option>
+        <option value="api-social-science">Обществознание</option>
+        <option value="api-russian">Русский язык</option>
+        <option value="api-physics">Физика</option>
+        <option value="api-chemistry">Химия</option>
+        <option value="api-chess">Шахматы</option>
+      </select>
+      <div class="crm-flex-row">
+        <input class="inputCRM" id="teachforroom" placeholder="ID П" title="ID преподавателя">
+        <input class="inputCRM" id="studforroom" placeholder="ID У" title="ID ученика (через запятую)">
+      </div>
+      <div class="crm-flex-row">
+        <button class="btnCRM testroomsCRMbtn" id="insertteachid" title="Тестовый П">Тест П</button>
+        <button class="btnCRM testroomsCRMbtn" id="insertstudid" title="Тестовый У">Тест У</button>
+        <button class="btnCRM testroomsCRMbtn" id="userfromchatid" title="ID из чата">User ID</button>
+      </div>
+      <button class="btnCRM testroomsCRMcreate" id="starttestroom" title="Создать тестовый урок">Создать тестовый урок</button>
+      <label id="testroomsCRMmessage" style="display: none; text-align: center; padding: 8px; border-radius: 8px; color: #fff; font-weight: 500;"></label>
+    </div>
+  </span>
+</div>`;
 
 const winttestroomsCRM = createWindowCRM('testroomsCRM', 'winToptestroomsCRM', 'winLefttestroomsCRM', win_testroomsCRM);
-hideWindowOnDoubleClick('testroomsCRMhead');
+hideWindowOnDoubleClick('testroomsCRM'); // FIX: was 'testroomsCRMhead' — id didn't exist
 hideWindowOnClick('testroomsCRM', 'hideMetestroomsCRM');
 
 const messagefield = document.getElementById('testroomsCRMmessage');
-messagefield.display = 'none';
 
-document.getElementById('btnCreateTestRoom').onclick = function () { // открытие окна создания тестовых комнат
-  if (document.getElementById('testroomsCRM').style.display == 'none') {
-    document.getElementById('testroomsCRM').style.display = ''
-    document.getElementById('idmymenucrm').style.display = 'none'
-  } else {
-    document.getElementById('testroomsCRM').style.display = 'none'
-    document.getElementById('idmymenucrm').style.display = 'none'
-  }
-}
+document.getElementById('btnCreateTestRoom').onclick = () => {
+  const win = document.getElementById('testroomsCRM');
+  win.style.display = win.style.display === 'none' || !win.style.display ? '' : 'none';
+  document.getElementById('idmymenucrm').style.display = 'none';
+};
 
-function cleartestroomsCRMfields() { // очистка полей окно создания тестовых комнат
+function cleartestroomsCRMfields() {
   document.getElementById('teachforroom').value = '';
   document.getElementById('studforroom').value = '';
-  document.getElementById('subjecttypeselect').children[0].selected = true;
-  document.getElementById('lessontypeselect').children[0].selected = true;
+  document.getElementById('subjecttypeselect').selectedIndex = 0;
+  document.getElementById('lessontypeselect').selectedIndex = 0;
 }
 
-function testteachertofield() { // подставить тестового П
-  if (localStorage.getItem('test_teachCRM') != '' && localStorage.getItem('test_teachCRM') != null) {
-    document.getElementById('teachforroom').value = localStorage.getItem('test_teachCRM');
-  } else {
-    document.getElementById('teachforroom').placeholder = "Не указан ID П";
-    testroomsCRMshowmessage('error', 'В настройках расширения не указан id тестового преподавателя')
-  }
+function testteachertofield() {
+  const id = localStorage.getItem('test_teachCRM');
+  if (id) document.getElementById('teachforroom').value = id;
+  else { document.getElementById('teachforroom').placeholder = "Не указан ID П"; testroomsCRMshowmessage('error', 'В настройках не указан ID тестового преподавателя'); }
 }
 
-function teststudenttofield() { // подставить тестового У
-  if (localStorage.getItem('test_studCRM') != '' && localStorage.getItem('test_studCRM') != null) {
-    document.getElementById('studforroom').value = localStorage.getItem('test_studCRM');
-  } else {
-    document.getElementById('studforroom').placeholder = "Не указан ID У";
-    testroomsCRMshowmessage('error', 'В настройках расширения не указан id тестового ученика')
-  }
+function teststudenttofield() {
+  const id = localStorage.getItem('test_studCRM');
+  if (id) document.getElementById('studforroom').value = id;
+  else { document.getElementById('studforroom').placeholder = "Не указан ID У"; testroomsCRMshowmessage('error', 'В настройках не указан ID тестового ученика'); }
 }
 
-document.getElementById('userfromchatid').onclick = function () { // добавить id пользователя из активного чата и добавить id тестовго У или П
-  let userIDfromCRM = document.getElementsByClassName('id')[0].innerText;
-  if (userIDfromCRM) {
-    let flagwhouser = 0;
-    let insertionfield = document.getElementById('studforroom');
-    let UserTypeBages = document.querySelectorAll('div[data-qa]');
+document.getElementById('userfromchatid').onclick = () => {
+  const userID = document.querySelector('.id')?.innerText;
+  if (!userID) { testroomsCRMshowmessage('error', 'Нет открытой задачи'); return; }
+  const isTeacher = Array.from(document.querySelectorAll('div[data-qa]')).some(d => d.getAttribute('data-qa') === 'is-teacher-badge');
+  if (isTeacher) { document.getElementById('teachforroom').value = userID; teststudenttofield(); }
+  else { document.getElementById('studforroom').value = userID; testteachertofield(); }
+};
 
-    UserTypeBages.forEach(div => {
-      let bagetype = div.getAttribute('data-qa');
-      if (bagetype == 'is-teacher-badge') {
+document.getElementById('starttestroom').onclick = () => {
+  let errors = [];
+  let lessontype = document.getElementById('lessontypeselect').value;
+  let lessonsubject = document.getElementById('subjecttypeselect').value;
+  let teacherid = document.getElementById('teachforroom').value.trim();
+  let studentid = document.getElementById('studforroom').value.trim();
+  if (lessontype === 'lessonnotselect') errors.push('Не выбран тип урока');
+  if (lessonsubject === 'subjnotselect') errors.push('Не выбран предмет');
+  if (teacherid.length < 4) errors.push('Не указан ID преподавателя');
+  if (studentid.length < 4) errors.push('Не указан ID ученика');
+  if (errors.length) { testroomsCRMshowmessage('error', errors.join('\n')); return; }
 
-        insertionfield = document.getElementById('teachforroom')
-        flagwhouser = 1;
-      }
-    });
-    insertionfield.value = userIDfromCRM;
+  const randomHash = GenerateHash(14);
+  const requestBody = `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacherid.replace(/[^0-9,]/g, '')}&${randomHash}%5BstudentIds%5D=${studentid.replace(/[^0-9,]/g, '').replace(/,/g, '%2C')}&${randomHash}%5BisOpenEntryEnabled%5D=1&btn_create_and_list=`;
+  const requestreferrer = `https://${lessonsubject}.skyeng.ru/admin/tech-support-room/create`;
+  const requestAdr = `https://${lessonsubject}.skyeng.ru/admin/tech-support-room/create?uniqid=${randomHash}`;
 
-    if (flagwhouser == 1) {
-      teststudenttofield()
-    } else {
-      testteachertofield()
-    }
-  } else {
-    testroomsCRMshowmessage('error', 'Нет открытой задачи')
-  }
+  chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: requestAdr, requestOptions: {
+    headers: { "accept": "text/html,*/*", "content-type": "application/x-www-form-urlencoded", "sec-fetch-dest": "document", "sec-fetch-mode": "navigate", "sec-fetch-site": "same-origin", "upgrade-insecure-requests": "1" },
+    referrer: requestreferrer, referrerPolicy: 'strict-origin-when-cross-origin', body: requestBody, method: 'POST', mode: 'cors', credentials: 'include'
+  } }, (roomresponse) => {
+    if (roomresponse?.success) { testroomsCRMshowmessage('message', 'Тестовый урок создан!'); cleartestroomsCRMfields(); }
+    else { alert('Не удалось создать урок: ' + roomresponse?.error); }
+  });
+};
+
+function GenerateHash(length) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-document.getElementById('starttestroom').onclick = function () { // добавляем тестовую комнату
-  let randomHash = '';
-  let flagemptyttfields = '0';
-  let studentidforroom = '';
-  let teacheridforroom = '';
-  let lessonsubjecttype = '';
-  let lessontype = '';
-  let massagetexttoshow = '';
-
-  if (document.getElementById('lessontypeselect').value == 'lessonnotselect') { // проверяем выбран ли тип урока
-    flagemptyttfields = '1';
-    massagetexttoshow += 'Не выбран тип урока\n'
-    console.log('Не выбран тип урока');
-  } else { lessontype = document.getElementById('lessontypeselect').value }
-
-  if (document.getElementById('subjecttypeselect').value == 'subjnotselect') { // проверяем выбран ли предмет
-    flagemptyttfields = '1';
-    massagetexttoshow += 'Не выбран предмет\n'
-    console.log('Не выбран предмет');
-  } else { lessonsubjecttype = document.getElementById('subjecttypeselect').value }
-
-  if (document.getElementById('teachforroom').value.length < 4) { // проверяем введен ли id П
-    flagemptyttfields = '1';
-    massagetexttoshow += 'Не указан id преподавателя\n'
-    console.log('Не указан id преподавателя');
-  } else {
-    teacheridforroom = document.getElementById('teachforroom').value
-      .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой
-  }
-
-  if (document.getElementById('studforroom').value.length < 4) { // проверяем введен ли id У
-    flagemptyttfields = '1';
-    massagetexttoshow += 'Не указан id ученика\n'
-    console.log('Не указан id ученика');
-  } else {
-    studentidforroom = document.getElementById('studforroom').value
-      .replace(/[^0-9,]/g, '')   // Удалить все символы, кроме цифр и запятой
-      .replace(/,/g, '%2C');    // Заменить запятую на %2C
-  }
-
-  if (flagemptyttfields === '0') {
-    randomHash = GenerateHash(14);
-
-    const requestBody = `${randomHash}%5Btype%5D=${lessontype}&${randomHash}%5BteacherId%5D=${teacheridforroom}&${randomHash}%5BstudentIds%5D=${studentidforroom}&${randomHash}%5BisOpenEntryEnabled%5D=1&btn_create_and_list=`;
-    const requestreferrer = `https://${lessonsubjecttype}.skyeng.ru/admin/tech-support-room/create`;
-    const requestAdr = `https://${lessonsubjecttype}.skyeng.ru/admin/tech-support-room/create?uniqid=${randomHash}`;
-    const requestHeaders = {
-      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-      "accept-language": "en-US,en;q=0.9,ru;q=0.8",
-      "cache-control": "max-age=0",
-      "content-type": "application/x-www-form-urlencoded",
-      "sec-fetch-dest": "document",
-      "sec-fetch-mode": "navigate",
-      "sec-fetch-site": "same-origin",
-      "sec-fetch-user": "?1",
-      "upgrade-insecure-requests": "1"
-    };
-    const requestOptions = {
-      headers: requestHeaders,
-      referrer: requestreferrer,
-      referrerPolicy: 'strict-origin-when-cross-origin',
-      body: requestBody,
-      method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: requestAdr, requestOptions: requestOptions }, function (roomresponse) {
-      if (roomresponse.success) {
-        testroomsCRMshowmessage('message', 'Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
-        cleartestroomsCRMfields()
-      } else {
-        alert('Не удалось создать урок ' + roomresponse.error);
-      }
-    });
-
-  } else {
-    testroomsCRMshowmessage('error', massagetexttoshow);
-  }
-}
-
-function GenerateHash(length) { // генерируем случайный хэш
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  let counter = 0;
-  while (counter < length) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    counter += 1;
-  }
-  return result;
-}
-
-function testroomsCRMshowmessage(type, text) { // вывод уведомлений
-  if (type == 'error') {
-    messagefield.style.background = '#d5484f';
-  } else if (type == 'message') {
-    messagefield.style.background = '#46d17e';
-  } else {
-    console.log('Получен неизвестный тип сообщения');
-    messagefield.style.background = 'rgb(70, 68, 81)';
-  }
-
+function testroomsCRMshowmessage(type, text) {
+  messagefield.style.display = 'block';
   messagefield.innerText = text;
-  messagefield.display = '';
-  setTimeout(testroomsCRMhidemessage, 7000)
+  messagefield.className = type === 'error' ? 'highlight-error' : (type === 'message' ? 'success' : '');
+  setTimeout(testroomsCRMhidemessage, 7000);
 }
 
-function testroomsCRMhidemessage() { //скрытие уведомлений
-  messagefield.display = 'none';
+function testroomsCRMhidemessage() {
+  messagefield.style.display = 'none';
   messagefield.innerText = '';
-  messagefield.style.background = 'rgb(70, 68, 81)';
+  messagefield.className = '';
 }
 
-function opentestroomsCRMconf() { // Открывает раздел в Confluence по созданию тестовых комнат
-  window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=82244638")
-}
+document.getElementById('confluenceTestRooms').onclick = () => window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=82244638");
+document.getElementById('aboutTestRooms').onclick = () => window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-testrooms");
 
-function opentestroomsCRMhelp() { // Открывает раздел в Confluence инструкцию
-  window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-testrooms%D0%9E%D0%BA%D0%BD%D0%BE%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F%D1%82%D0%B5%D1%81%D1%82%D0%BE%D0%B2%D1%8B%D1%85%D1%83%D1%80%D0%BE%D0%BA%D0%BE%D0%B2")
-}
-teachforroom.addEventListener('input', function () {
-  onlyNumbers(this);
-});
-
-studforroom.addEventListener('input', function () {
-  onlyNumbersAndComma(this);
-});
-
+document.getElementById('teachforroom').addEventListener('input', function () { onlyNumbers(this); });
+document.getElementById('studforroom').addEventListener('input', function () { onlyNumbersAndComma(this); });
 document.getElementById("insertteachid").addEventListener("click", testteachertofield);
 document.getElementById("insertstudid").addEventListener("click", teststudenttofield);
 document.getElementById("clrTestRooms").addEventListener("click", cleartestroomsCRMfields);
-document.getElementById("aboutTestRooms").addEventListener("click", opentestroomsCRMhelp);
-document.getElementById("confluenceTestRooms").addEventListener("click", opentestroomsCRMconf);

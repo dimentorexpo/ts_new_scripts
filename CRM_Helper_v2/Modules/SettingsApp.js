@@ -1,314 +1,191 @@
-var win_SettingsApp =  // описание элементов главного окна
-    `<div style="border: 2px double black; background-color: #464451" id="SettingsApp_bar">
-        <div style="margin: 5px; width: 350px;" id="SettingsApp_1str">
-            <button class="buttonHide" title="скрывает меню" id="hideSettingsApp">hide</button>
-        </div>
-		<div style="margin: 5px; width: 350px">
-                <select class="inputCRM" style="height:28px; width:242px; text-align:center" id="soundlistaddrCRM">
-                    <option selected="" disabled="">Звук нового сообщения</option>
-                    <option value="othersound">Выбрать свой звук</option>
-                    </select>
-				<button class="btnCRM btnCRMsmall" title="Проверка звука при добавленной ссылке" id="sound_testCRM">▶</button>
-				<label title="Включение и отключение звука входящих запросов" class="checkbox-audio">
-					<input id="audioCRMswitcher" type="checkbox" checked="">
-						<span class="checkbox-audio-switch-CRM"></span>
-				</label>
-                <input class="inputCRM" id="sound_adrCRM" placeholder="Введи адрес звука" autocomplete="off" type="text" style="display: none; text-align: center; width: 235px; color: black; margin-top: 5px;">
-				<button class="btnCRM btnCRMsmall" title="Сохраняет ссылки на новый источник звука для входящего запроса" id="sound_saveCRM" style="display: none;">💾</button>
-				<br>
-				<span class="spanCRM" style="color:bisque; margin-top: 5px;">Громкость звука</span>
-				<input id="rangeCRM" min="0" max="1" value="1.0" step="0.1" type="range">
-                    <br>
-				<label class="spanCRM" style="color:bisque"><input type="checkbox" id="repeatsoundselectCRM">Повторять звук новой задачи</label>
-                    <br>
-				<span class="spanCRM" style="color:bisque">Интервал воспроизведения звука:</span>
-				<input class="inputCRM" title="Ввод интервала в секундах между повторами звука нового чата" id="soundplayintervalCRM" placeholder="N" autocomplete="off" type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px; width: 50px; color: black;">
-				<button class="btnCRM" title="Внести изменения в интервал между повторами звука нового чата" id="setsoundplayintervalCRM" style="margin-top: 5px">SET⌚</button>
-					<br>
-				<div style="margin-top: 5px; width: 350px">
-                    <input class="inputCRM" id="test_stdCRM" placeholder="ID тест У" autocomplete="off" title = "ID личного тестового ученика" type="text" style="text-align: center; width: 130px; color: black;">
-                    <button class="btnCRM btnCRMsmall" id="setteststdCRM" title="Добавить в localstorage ID тестового У" style="margin-top: 5px">💾</button>
-                    <input class="inputCRM" id="test_teachCRM" placeholder="ID тест П" autocomplete="off" title = "ID личного тестового преподавателя" type="text" style="text-align: center; width: 130px; color: black;">
-                    <button class="btnCRM btnCRMsmall" id="settestteachCRM" title="Добавить в localstorage ID тестового П" style="margin-top: 5px">💾</button>
-                </div>
-				<button class="btnCRM" id="savesettingstofileCRM" title="Сохраняет все настройки из localstorage в отдельный .json файл" style="color: #e5ece6; margin-top: 5px">💾 Сохранить настройки</button>
-				<input class="btnCRM" type="file" id="fileinputCRM" title="Загружает все настройки в localstorage из ранее сохраненного файла настроек в формте .json" style="display:none;">
-				<label class="btnCRM" style="color: #e5ece6; background: #768d87; padding: 5px; border-radius: 5px; border: 1px solid #566963;" for="fileinputCRM">⤵ Загрузить настройки</label>
-			</div>
-		</div>
-    </div>`;
+const win_SettingsApp = `
+<div class="maindivst" style="width: 360px;">
+  <div class="crm-win-header">
+    <button class="buttonHide" id="hideSettingsApp">hide</button>
+  </div>
+  <div style="padding: 8px; display: flex; flex-direction: column; gap: 8px;">
+    <div class="crm-flex-row">
+      <select class="inputCRM" id="soundlistaddrCRM" style="flex: 1;">
+        <option selected disabled>Звук нового сообщения</option>
+        <option value="othersound">Выбрать свой звук</option>
+      </select>
+      <button class="btnCRM btnCRMsmall" id="sound_testCRM" title="Тест">▶</button>
+      <label class="checkbox-audio">
+        <input id="audioCRMswitcher" type="checkbox" checked>
+        <span class="checkbox-audio-switch-CRM"></span>
+      </label>
+    </div>
+    <input class="inputCRM" id="sound_adrCRM" placeholder="Введи адрес звука" style="display: none;">
+    <button class="btnCRM btnCRMsmall" id="sound_saveCRM" style="display: none;">💾</button>
+    <span class="spanCRM">Громкость звука</span>
+    <input id="rangeCRM" class="crm-range" min="0" max="1" value="1.0" step="0.1" type="range">
+    <label class="spanCRM" style="display: flex; align-items: center; gap: 6px;">
+      <input type="checkbox" id="repeatsoundselectCRM"> Повторять звук новой задачи
+    </label>
+    <div class="crm-flex-row">
+      <span class="spanCRM">Интервал (сек):</span>
+      <input class="inputCRM" id="soundplayintervalCRM" placeholder="N" type="number" min="0" max="59" style="width: 60px; text-align: center;">
+      <button class="btnCRM" id="setsoundplayintervalCRM">SET ⌚</button>
+    </div>
+    <div class="crm-flex-row">
+      <input class="inputCRM" id="test_stdCRM" placeholder="ID тест У" title="Тестовый ученик" style="flex: 1;">
+      <button class="btnCRM btnCRMsmall" id="setteststdCRM" title="Сохранить">💾</button>
+      <input class="inputCRM" id="test_teachCRM" placeholder="ID тест П" title="Тестовый преподаватель" style="flex: 1;">
+      <button class="btnCRM btnCRMsmall" id="settestteachCRM" title="Сохранить">💾</button>
+    </div>
+    <div class="crm-flex-row">
+      <button class="btnCRM" id="savesettingstofileCRM" style="flex: 1;">💾 Сохранить настройки</button>
+      <input type="file" id="fileinputCRM" style="display: none;" accept=".json">
+      <label class="btnCRM" for="fileinputCRM" style="flex: 1; text-align: center;">⤵ Загрузить настройки</label>
+    </div>
+  </div>
+</div>`;
 
-let audioCRM
 let soundsfromdocCRM;
-let soundflagCRM = 0
+let soundflagCRM = 0;
 
-if (localStorage.getItem('sound_strCRM') !== null && localStorage.getItem('sound_strCRM') !== "")
-    audioCRM = new Audio(localStorage.getItem('sound_strCRM'));
-else
-    audioCRM = new Audio("https://dimentorexpo.github.io/Sounds/msg.mp3");
-
-if (localStorage.getItem('splinterCRM') == null) { //Задаем интервал воспроизведения если не задан
-    localStorage.setItem('splinterCRM', 3);
+if (localStorage.getItem('sound_strCRM')) {
+  audioCRM = new Audio(localStorage.getItem('sound_strCRM'));
+} else {
+  audioCRM = new Audio("https://dimentorexpo.github.io/Sounds/msg.mp3");
 }
 
-if (localStorage.getItem('audioCRMvol') != null) { //Задаем громкость если не задана
-    audioCRM.volume = localStorage.getItem('audioCRMvol');
-} else localStorage.setItem('audioCRMvol', 1);
-
-if (localStorage.getItem('audioCRM') == null) { // Задаем переключатель вкл/выкл звук
-    localStorage.setItem('audioCRM', 1);
+if (!localStorage.getItem('splinterCRM')) localStorage.setItem('splinterCRM', 3);
+if (localStorage.getItem('audioCRMvol')) {
+  audioCRM.volume = parseFloat(localStorage.getItem('audioCRMvol'));
+} else {
+  localStorage.setItem('audioCRMvol', 1);
 }
-
-if (localStorage.getItem('repeatsound') == null) { // Задаем переключатель повторять/не повторять звук
-    localStorage.setItem('repeatsound', 0);
-}
+if (!localStorage.getItem('audioCRM')) localStorage.setItem('audioCRM', 1);
+if (!localStorage.getItem('repeatsound')) localStorage.setItem('repeatsound', 0);
 
 const wintSettingsApp = createWindowCRM('winSettingsApp', 'winTopSettingsApp', 'winLeftSettingsApp', win_SettingsApp);
 hideWindowOnDoubleClick('winSettingsApp');
 hideWindowOnClick('winSettingsApp', 'hideSettingsApp');
 
-document.getElementById('winSettingsApp').addEventListener('input', function (event) {
-    // Проверяем, что событие произошло на интересующем нас элементе
-    if (event.target.matches('.inputCRM[type="number"]')) {
-        maxLengthCheck(event.target);
-        checkMinMaxValue(event.target);
-    }
-    // Дополнительная проверка для элементов с определёнными id, не зависимо от их типа
-    if (event.target.id === 'test_stdCRM' || event.target.id === 'test_teachCRM') {
-        onlyNumbers(event.target);
-    }
+document.getElementById('winSettingsApp').addEventListener('input', (e) => {
+  if (e.target.matches('.inputCRM[type="number"]')) { maxLengthCheck(e.target); checkMinMaxValue(e.target); }
+  if (['test_stdCRM', 'test_teachCRM'].includes(e.target.id)) onlyNumbers(e.target);
 });
 
+const objSoundListCRM = document.getElementById('soundlistaddrCRM');
+if (objSoundListCRM.length < 3) getsoundsfromdocCRM();
 
-let objSoundListCRM = document.getElementById('soundlistaddrCRM')
-if (objSoundListCRM.length < 3) { // если не загружен спискок звуков - загружаем
-    getsoundsfromdocCRM()
-}
+document.getElementById('btnSettingsApp').onclick = () => {
+  const win = document.getElementById('winSettingsApp');
+  const isHidden = win.style.display === 'none' || !win.style.display;
+  win.style.display = isHidden ? '' : 'none';
+  document.getElementById('idmymenucrm').style.display = 'none';
+  if (!isHidden) return;
+  document.getElementById('test_stdCRM').value = localStorage.getItem('test_studCRM') || '';
+  document.getElementById('test_teachCRM').value = localStorage.getItem('test_teachCRM') || '';
+  document.getElementById('soundplayintervalCRM').value = localStorage.getItem('splinterCRM') || 3;
+  document.getElementById('rangeCRM').value = localStorage.getItem('audioCRMvol') || 1;
+  document.getElementById('audioCRMswitcher').checked = localStorage.getItem('audioCRM') !== '0';
+  document.getElementById('repeatsoundselectCRM').checked = localStorage.getItem('repeatsound') === '1';
+  const checked = document.getElementById('repeatsoundselectCRM').checked;
+  document.getElementById('setsoundplayintervalCRM').toggleAttribute('disabled', !checked);
+  document.getElementById('soundplayintervalCRM').toggleAttribute('disabled', !checked);
+};
 
-document.getElementById('btnSettingsApp').onclick = function () { // открытие окна настроек
-    if (document.getElementById('winSettingsApp').style.display == '') {
-        document.getElementById('winSettingsApp').style.display = 'none'
-        document.getElementById('idmymenucrm').style.display = 'none'
-    } else {
-        document.getElementById('winSettingsApp').style.display = ''
-        document.getElementById('idmymenucrm').style.display = 'none'
-
-        if (localStorage.getItem('test_studCRM') != "" || localStorage.getItem('test_studCRM') != null) { // если в localStorage записан тестовый У отобразить
-            document.getElementById('test_stdCRM').value = localStorage.getItem('test_studCRM');
-        } else document.getElementById('test_stdCRM').value = "";
-
-        if (localStorage.getItem('test_teachCRM') != "" || localStorage.getItem('test_teachCRM') != null) { // если в localStorage записан тестовый У отобразить
-            document.getElementById('test_teachCRM').value = localStorage.getItem('test_teachCRM');
-        } else document.getElementById('test_teachCRM').value = "";
-
-        if (localStorage.getItem('splinterCRM') != null || localStorage.getItem('splinterCRM') != "") { //Загружаем интервал между воспроизведением звука
-            document.getElementById('soundplayintervalCRM').value = localStorage.getItem('splinterCRM');
-        } else {
-            localStorage.setItem('splinterCRM', 3);
-            document.getElementById('soundplayintervalCRM').value = localStorage.getItem('splinterCRM');
-        }
-
-        let rangeCRM = document.getElementById('rangeCRM'); // Загружаем громкость
-        rangeCRM.value = localStorage.getItem('audioCRMvol');
-
-        if (localStorage.getItem('audioCRM') == '0') // загружаем ВКЛ/ВЫКЛ звук
-            document.getElementById('audioCRMswitcher').checked = false;
-        else
-            document.getElementById('audioCRMswitcher').checked = true;
-
-        if (localStorage.getItem('repeatsound') == 1) {
-            document.getElementById("repeatsoundselectCRM").checked = true;
-        } else {
-            document.getElementById("repeatsoundselectCRM").checked = false;
-            document.getElementById('setsoundplayintervalCRM').setAttribute('disabled', 'disabled')
-            document.getElementById('soundplayintervalCRM').setAttribute('disabled', 'disabled')
-        }
+async function getsoundsfromdocCRM() {
+  soundsfromdocCRM = 'https://script.google.com/macros/s/AKfycbyD1l-oLcE-BBmyN1QmcHKoi0rwVfCwWjE6cfTqw6Y9QQGAju-9inKbwSOfHCI6qBEjtg/exec';
+  try {
+    const r = await fetch(soundsfromdocCRM);
+    const data = await r.json();
+    soundsconteinerCRM = data.result;
+    soundsconteinerCRM.forEach(([name, url]) => { if (name) addOptionCRM(objSoundListCRM, name, url); });
+    const saved = localStorage.getItem('sound_strCRM');
+    Array.from(objSoundListCRM.options).forEach((opt, i) => { if (opt.value === saved) objSoundListCRM.selectedIndex = i; });
+    if (objSoundListCRM.selectedIndex === 0) {
+      objSoundListCRM.selectedIndex = 1;
+      document.getElementById('sound_adrCRM').style.display = '';
+      document.getElementById('sound_saveCRM').style.display = '';
+      document.getElementById('sound_adrCRM').value = saved || '';
     }
+  } catch (e) { console.error('Sounds load error:', e); }
 }
 
-async function getsoundsfromdocCRM() { // загрузка списка звуков из файла
-    soundsfromdocCRM = 'https://script.google.com/macros/s/AKfycbyD1l-oLcE-BBmyN1QmcHKoi0rwVfCwWjE6cfTqw6Y9QQGAju-9inKbwSOfHCI6qBEjtg/exec'
-    await fetch(soundsfromdocCRM).then(r => r.json()).then(r => soundsdata = r)
-    soundsconteinerCRM = soundsdata.result;
-    console.log(soundsdata.result) //получим список звуков
-    for (j = 0; j < soundsconteinerCRM.length; j++) {
-        if (soundsconteinerCRM[j][0] != '') {
-            addOptionCRM(objSoundListCRM, `${soundsconteinerCRM[j][0]}`, `${soundsconteinerCRM[j][1]}`)
-        }
-    }
-    for (let i = 0; i < objSoundListCRM.length; i++) { // проверяем какой звук выбран
-        if (objSoundListCRM.children[i].value == localStorage.getItem('sound_strCRM')) {
-            objSoundListCRM.children[i].selected = true;
-        }
-    }
-    if (objSoundListCRM.children[0].selected) {
-        objSoundListCRM.children[1].selected = true
-        document.getElementById('sound_adrCRM').style.display = ''
-        document.getElementById('sound_saveCRM').style.display = ''
-        document.getElementById('sound_adrCRM').value = localStorage.getItem('sound_strCRM')
-    }
+function changesoundaddrCRM() {
+  const selected = objSoundListCRM.options[objSoundListCRM.selectedIndex];
+  if (selected.value === "othersound") {
+    document.getElementById('sound_adrCRM').style.display = '';
+    document.getElementById('sound_saveCRM').style.display = '';
+  } else {
+    document.getElementById('sound_adrCRM').style.display = 'none';
+    document.getElementById('sound_saveCRM').style.display = 'none';
+    document.getElementById('sound_adrCRM').value = "";
+    localStorage.setItem('sound_strCRM', selected.value);
+    audioCRM = new Audio(selected.value);
+  }
+}
+objSoundListCRM.addEventListener('change', changesoundaddrCRM);
+
+document.getElementById('repeatsoundselectCRM').addEventListener('change', () => {
+  const checked = document.getElementById('repeatsoundselectCRM').checked;
+  localStorage.setItem('repeatsound', checked ? '1' : '0');
+  document.getElementById('setsoundplayintervalCRM').toggleAttribute('disabled', !checked);
+  document.getElementById('soundplayintervalCRM').toggleAttribute('disabled', !checked);
+  if (!checked && typeof soundintervalsetCRM === 'number') { clearInterval(soundintervalsetCRM); soundintervalsetCRM = null; }
+});
+
+document.getElementById('setsoundplayintervalCRM').onclick = () => {
+  const val = document.getElementById('soundplayintervalCRM').value;
+  if (val) localStorage.setItem('splinterCRM', val);
+};
+
+document.getElementById('rangeCRM').onchange = function () {
+  audioCRM.volume = parseFloat(this.value);
+  localStorage.setItem('audioCRMvol', this.value);
+};
+
+document.querySelector('.checkbox-audio-switch-CRM').onclick = () => {
+  const newVal = localStorage.getItem('audioCRM') === '1' ? '0' : '1';
+  localStorage.setItem('audioCRM', newVal);
+  document.getElementById('audioCRMswitcher').checked = newVal === '1';
+};
+
+document.getElementById('sound_testCRM').onclick = () => {
+  const btn = document.getElementById('sound_testCRM');
+  if (btn.innerHTML === '▶') {
+    btn.innerHTML = '⏹';
+    btn.title = 'Остановить';
+    audioCRM.play();
+    setTimeout(() => { btn.innerHTML = '▶'; btn.title = 'Проверка звука'; }, (audioCRM.duration || 0) * 1000 + 100);
+  } else {
+    btn.innerHTML = '▶';
+    btn.title = 'Проверка звука';
+    audioCRM.pause();
+    audioCRM.currentTime = 0;
+  }
+};
+
+document.getElementById('setteststdCRM').onclick = () => { const val = document.getElementById('test_stdCRM').value; if (val) localStorage.setItem('test_studCRM', val); };
+document.getElementById('settestteachCRM').onclick = () => { const val = document.getElementById('test_teachCRM').value; if (val) localStorage.setItem('test_teachCRM', val); };
+
+function getLocalstorageToFileCRM(fileName) {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); data[k] = localStorage.getItem(k); }
+  const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = fileName; a.style.display = "none";
+  document.body.appendChild(a); a.click();
+  setTimeout(() => document.body.removeChild(a), 100);
 }
 
-function changesoundaddrCRM() { // сохранение измнений адресса звука    
-    if (objSoundListCRM.length > 1) {
-        for (let i = 1; i < objSoundListCRM.length; i++) {
-            if (objSoundListCRM[i].selected == true) {
-                if (objSoundListCRM[i].value == "othersound") {
-                    document.getElementById('sound_adrCRM').style.display = ''
-                    document.getElementById('sound_saveCRM').style.display = ''
-                } else {
-                    document.getElementById('sound_adrCRM').style.display = 'none'
-                    document.getElementById('sound_saveCRM').style.display = 'none'
-                    document.getElementById('sound_adrCRM').value = ""
-                    console.log(objSoundListCRM[i].innerText + ' ' + objSoundListCRM[i].value)
-                    localStorage.setItem('sound_strCRM', objSoundListCRM[i].value)
-                    audioCRM = new Audio(localStorage.getItem('sound_strCRM'))
-                }
-            }
-        }
-    }
-}
-document.getElementById('soundlistaddrCRM').addEventListener('change', changesoundaddrCRM);
+document.getElementById('savesettingstofileCRM').onclick = () => getLocalstorageToFileCRM('settings-CRMhelp');
 
-function changerepeatsoundCRM() {
-    if (localStorage.getItem('repeatsound') == 1) {
-        document.getElementById("repeatsoundselectCRM").checked = false;
-        localStorage.setItem('repeatsound', 0)
-        document.getElementById('setsoundplayintervalCRM').setAttribute('disabled', 'disabled')
-        document.getElementById('soundplayintervalCRM').setAttribute('disabled', 'disabled')
-        if (soundintervalsetCRM != null) {
-            clearInterval(soundintervalsetCRM)
-            soundintervalsetCRM = null
-        }
-    } else {
-        document.getElementById("repeatsoundselectCRM").checked = true;
-        localStorage.setItem('repeatsound', 1)
-        document.getElementById('setsoundplayintervalCRM').removeAttribute('disabled')
-        document.getElementById('soundplayintervalCRM').removeAttribute('disabled')
-    }
-}
-document.getElementById('repeatsoundselectCRM').addEventListener('change', changerepeatsoundCRM);
-
-document.getElementById('setsoundplayintervalCRM').onclick = function () { // сохранение изменения интервала воспроизведения звука
-    if (document.getElementById('soundplayintervalCRM').value != '') {
-        localStorage.setItem('splinterCRM', document.getElementById('soundplayintervalCRM').value);
-    } else console.log("Базовое значение равно 3 секунды")
-}
-
-rangeCRM.onchange = function () { // сохранение изменения громкости
-    if (localStorage.getItem('audioCRMvol') != null) {
-        audioCRM.volume = this.value;
-        localStorage.setItem('audioCRMvol', audioCRM.volume);
-    } else localStorage.setItem('audioCRMvol', this.value);
-}
-
-document.getElementsByClassName('checkbox-audio-switch-CRM')[0].onclick = function () {  // функция переключатели звука ВКЛ и ВЫКЛ
-
-    if (localStorage.getItem('audioCRM') != null) {
-        if (localStorage.getItem('audioCRM') == '0') {
-            document.getElementById('audioCRMswitcher').checked = false;
-            localStorage.setItem('audioCRM', '1');
-        } else if (localStorage.getItem('audioCRM') == '1') {
-            document.getElementById('audioCRMswitcher').checked = true;
-            localStorage.setItem('audioCRM', '0');
-        }
-    }
-}
-
-document.getElementById('sound_testCRM').onclick = function () { // кнопка тест звука
-    if (document.getElementById('sound_testCRM').innerHTML == '▶') {
-        document.getElementById('sound_testCRM').innerHTML = '⏹'
-        document.getElementById('sound_testCRM').title = 'Остановить воспроизведение'
-        audioCRM.play()
-        setTimeout(() => {
-            document.getElementById('sound_testCRM').innerHTML = '▶'
-            document.getElementById('sound_testCRM').title = 'Проверка звука при добавленной ссылке'
-        }, Number(audioCRM.duration * 1000 + 1).toFixed(0));
-    } else {
-        document.getElementById('sound_testCRM').innerHTML = '▶'
-        document.getElementById('sound_testCRM').title = 'Проверка звука при добавленной ссылке'
-        audioCRM.pause()
-        audioCRM.currentTime = 0
-    }
-}
-
-document.getElementById('setteststdCRM').onclick = function () { // сохраняется ID в настройках расширения тестового ученика в localstorage
-    if (document.getElementById('test_stdCRM').value != '') {
-        localStorage.setItem('test_studCRM', document.getElementById('test_stdCRM').value);
-    } else console.log("Ведите ID тестового ученика")
-}
-
-document.getElementById('settestteachCRM').onclick = function () { // сохраняется ID в настройках расширения тестового учителя в localstorage
-    if (document.getElementById('test_teachCRM').value != '') {
-        localStorage.setItem('test_teachCRM', document.getElementById('test_teachCRM').value);
-    } else console.log("Ведите ID тестового преподавателя")
-}
-
-function getLocalstorageToFileCRM(fileName) { //функция сохранения содержимого localstorage в файл на компьютере
-
-    /* dump local storage to string */
-
-    var a = {};
-    for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
-        var v = localStorage.getItem(k);
-        a[k] = v;
-    }
-
-    /* save as blob */
-
-    var textToSave = JSON.stringify(a)
-    var textToSaveAsBlob = new Blob([textToSave], {
-        type: "application/json"
-    });
-    var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
-
-    /* download without button hack */
-
-    var downloadLink = document.createElement("a");
-    downloadLink.download = fileName;
-    downloadLink.innerHTML = "Download File";
-    downloadLink.href = textToSaveAsURL;
-    downloadLink.onclick = function () {
-        document.body.removeChild(event.target);
-    };
-    downloadLink.style.display = "none";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-
-}
-document.getElementById('savesettingstofileCRM').onclick = function () {
-    getLocalstorageToFileCRM('settings-CRMhelp')
-}
-
-document.getElementById('fileinputCRM').onclick = function () { // по клику на кнопку Загрузить настройки предлагает выбрать файл настроек, добавлять при этом ранее сохраненный в формате .json
-    let fileinputCRM = document.getElementById('fileinputCRM');
-    let jsonparsed;
-
-    fileinputCRM.addEventListener('change', function (e) {
-        let file = fileinputCRM.files[0];
-        let textType = /.json/;
-
-        if (file.type.match(textType)) {
-            let reader = new FileReader();
-
-            reader.onload = function (e) {
-                console.log(reader.result)
-                jsonparsed = JSON.parse(reader.result)
-                console.log(jsonparsed)
-                console.log(Object.keys(jsonparsed).length)
-                for (let i = 0; i < Object.keys(jsonparsed).length; i++) {
-                    localStorage.setItem(Object.keys(jsonparsed)[i], Object.values(jsonparsed)[i])
-                }
-                alert("Настройки расширения в localstorage загружены успешно!")
-            }
-
-            reader.readAsText(file);
-        } else {
-            console.log("File not supported!")
-        }
-    });
-}
-
-
-
+document.getElementById('fileinputCRM').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (!file || !file.name.endsWith('.json')) { console.log("Неподдерживаемый файл"); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      Object.entries(data).forEach(([k, v]) => localStorage.setItem(k, v));
+      alert("Настройки загружены!");
+    } catch (err) { console.error("Parse error:", err); }
+  };
+  reader.readAsText(file);
+});

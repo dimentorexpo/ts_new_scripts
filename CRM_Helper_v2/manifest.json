@@ -1,79 +1,88 @@
 {
-    "manifest_version": 3,
-    "name": "CRMHelper",
-    "version": "2.0.12",
-    "description": "Твой мультитул в работе с обращениями",
-    "background": {
-        "service_worker": "bg.js"
-    },
-    "action": {
-        "default_icon": "/Icons/32.png",
-        "default_title": "CRMHelper - Easy help for your work"
-    },
-    "externally_connectable": {
-        "matches": ["*://crm2.skyeng.ru/*"]
-    },
-    "content_scripts": [
-        {
-            "js": ["content.js"],
-            "matches": [
-                "*://crm2.skyeng.ru/*",
-                "*://video-trouble-shooter.skyeng.ru/*"
-            ],
-            "run_at": "document_end"
-        },
-        {
-            "js": [
-                "/Extras/jquery-3.7.1.js",
-                "/Modules/AlarmClock.js",
-                "/Modules/BinBankInfo.js",
-                "/Modules/GrList.js",
-                "/Modules/JiraSearch.js",
-                "/Modules/LessonStatus.js",
-                "/Modules/Link.js",
-                "/Modules/OperatorStatuse.js",
-                "/Modules/ServiceDesk.js",
-                "/Modules/SettingsApp.js",
-                "/Modules/Smartroom.js",
-                "/Modules/TestRooms.js",
-				"/Modules/Autoschedule.js",
-                "/Lightbox/dist/js/lightbox.min.js"
-            ],
-            "css": [
-                "/CSS/styles.css",
-                "/Lightbox/dist/css/lightbox.min.css"
-            ],
-            "matches": ["*://crm2.skyeng.ru/*"],
-            "run_at": "document_idle"
-        },
-        {
-			"js": ["/Modules/Troubleshooter.js"],
-			"matches": ["*://video-trouble-shooter.skyeng.ru/*"],
-			"run_at": "document_end"
-		}
-    ],
-    "icons": {
-        "32": "/Icons/32.png",
-        "48": "/Icons/48.png",
-        "128": "/Icons/128.png"
-    },
-    "web_accessible_resources": [
-        {
-            "resources": ["Modules/*"],
-            "matches": ["<all_urls>"]
-        }
-    ],
-    "permissions": [
-        "storage",
-        "clipboardWrite"
-    ],
-    "host_permissions": [
-        "https://*.skyeng.ru/*",
-        "https://skyeng.autofaq.ai/*",
-        "https://jira.skyeng.tech/*",
-        "https://jira.skyeng.link/*",
-        "https://mm-time.skyeng.tech/*",
-        "https://*.datsy.info/*",
-        "https://docs.google.com/forms/*"
+  "manifest_version": 3,
+  "name": "CRMHelper",
+  "version": "2.0.12",
+  "description": "Твой мультитул в работе с обращениями",
+  "background": {
+    "service_worker": "bg.js"
+  },
+  "action": {
+    "default_icon": "/Icons/32.png",
+    "default_title": "CRMHelper"
+  },
+  "externally_connectable": {
+    "matches": [
+      "*://crm2.skyeng.ru/*"
     ]
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "content.js"
+      ],
+      "matches": [
+        "*://crm2.skyeng.ru/*",
+        "*://video-trouble-shooter.skyeng.ru/*"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "js": [
+        "/Modules/AlarmClock.js",
+        "/Modules/GrList.js",
+        "/Modules/JiraSearch.js",
+        "/Modules/LessonStatus.js",
+        "/Modules/Link.js",
+        "/Modules/OperatorStatuse.js",
+        "/Modules/SettingsApp.js",
+        "/Modules/Smartroom.js",
+        "/Modules/TestRooms.js",
+        "/Modules/Autoschedule.js"
+      ],
+      "css": [
+        "/CSS/styles.css"
+      ],
+      "matches": [
+        "*://crm2.skyeng.ru/*"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "js": [
+        "/Modules/Troubleshooter.js"
+      ],
+      "matches": [
+        "*://video-trouble-shooter.skyeng.ru/*"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "32": "/Icons/32.png",
+    "48": "/Icons/48.png",
+    "128": "/Icons/128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "Modules/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "permissions": [
+    "storage",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://*.skyeng.ru/*",
+    "https://skyeng.autofaq.ai/*",
+    "https://jira.skyeng.tech/*",
+    "https://jira.skyeng.link/*",
+    "https://mm-time.skyeng.tech/*",
+    "https://*.datsy.info/*",
+    "https://docs.google.com/forms/*"
+  ]
 }

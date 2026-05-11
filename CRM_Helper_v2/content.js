@@ -28,14 +28,15 @@ const win_Menu = // описание кнопок меню
     <div id="btnCreateTestRoom" class="menubtnsCRM">🎲 Create Test Room</div>
     <div id="btnAlarmclock" class="menubtnsCRM">🔕Reminder</div>
     <div id="btnSettingsApp" class="menubtnsCRM">⚙ Settings</div>
-    <span id="testuchenik" style="height: 277px;">Тест У</span>
-    <span id="testprepod" style="height: 277px;">Тест П</span>
+    <span id="testuchenik" class="crm-side-btn crm-side-btn-left" style="height: 277px;">Тест У</span>
+    <span id="testprepod" class="crm-side-btn crm-side-btn-right" style="height: 277px;">Тест П</span>
 `;
 
 //Объявление кнопки в верхней панели CRM
 let upmenubtn = document.createElement('span')
 upmenubtn.innerText = "Меню"
 upmenubtn.id = 'MenubarCRM'
+upmenubtn.className = 'crm-menu-trigger'
 upmenubtn.style = "cursor:pointer;font-weight:500; text-shadow: 1px 0 1px #000, 0 1px 1px #000, -1px 0 1px #000, 0 -1px 1px #000; border: 1px solid black; padding: 8px; background: #5083ff; border-radius:18px"
 //конец обьявления кнопки
 
@@ -46,7 +47,7 @@ function createWindowCRM(id, topKey, leftKey, content) { // Функция дл�
     const storedTop = localStorage.getItem(topKey) || '120';
     const storedLeft = localStorage.getItem(leftKey) || '295';
 
-    windowElement.classList.add('showedwindows');
+    windowElement.classList.add('showedwindows', 'crm-scope');
     windowElement.style = `top: ${storedTop}px; left: ${storedLeft}px;`;
     windowElement.style.display = 'none';
     windowElement.setAttribute('id', id);
@@ -67,11 +68,19 @@ function createWindowCRM(id, topKey, leftKey, content) { // Функция дл�
                 let deltaX = event.clientX - startX;
                 let deltaY = event.clientY - startY;
 
-                windowElement.style.left = `${elemLeft + deltaX}px`;
-                windowElement.style.top = `${elemTop + deltaY}px`;
+                // Boundary check
+                let newLeft = elemLeft + deltaX;
+                let newTop = elemTop + deltaY;
+                let maxLeft = window.innerWidth - windowElement.offsetWidth;
+                let maxTop = window.innerHeight - windowElement.offsetHeight;
+                newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                newTop = Math.max(0, Math.min(newTop, maxTop));
 
-                localStorage.setItem(topKey, String(elemTop + deltaY));
-                localStorage.setItem(leftKey, String(elemLeft + deltaX));
+                windowElement.style.left = `${newLeft}px`;
+                windowElement.style.top = `${newTop}px`;
+
+                localStorage.setItem(topKey, String(newTop));
+                localStorage.setItem(leftKey, String(newLeft));
             }
 
             document.addEventListener('mousemove', onMouseMove);
@@ -208,6 +217,44 @@ function extractLoginLink(text) {
     return null; // Возвращаем null, если совпадений нет
 }
 
+// ==================== Custom Image Viewer (replaces lightbox) ====================
+function createImageViewer() {
+    if (document.getElementById('crm-image-viewer')) return;
+    var viewer = document.createElement('div');
+    viewer.id = 'crm-image-viewer';
+    viewer.className = 'crm-scope';
+    viewer.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(10,10,18,0.95);display:none;align-items:center;justify-content:center;backdrop-filter:blur(16px);cursor:zoom-out;opacity:0;transition:opacity 0.25s ease;';
+    viewer.innerHTML = `
+        <img id="crm-viewer-img" style="max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,0.8);transform:scale(0.9);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);border:1px solid rgba(255,255,255,0.1);">
+        <button id="crm-viewer-close" style="position:absolute;top:24px;right:24px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;width:44px;height:44px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:all 0.2s;">✕</button>
+        <span id="crm-viewer-caption" style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:var(--crm-text-secondary);font-size:13px;background:rgba(0,0,0,0.5);padding:6px 16px;border-radius:20px;backdrop-filter:blur(8px);"></span>
+    `;
+    document.body.append(viewer);
+
+    function close() {
+        viewer.style.opacity = '0';
+        setTimeout(function() { viewer.style.display = 'none'; }, 250);
+    }
+    viewer.addEventListener('click', function(e) {
+        if (e.target === viewer || e.target.id === 'crm-viewer-close') close();
+    });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+}
+
+function openImageViewer(src, caption) {
+    createImageViewer();
+    var viewer = document.getElementById('crm-image-viewer');
+    var img = document.getElementById('crm-viewer-img');
+    var cap = document.getElementById('crm-viewer-caption');
+    img.src = src;
+    if (cap) cap.textContent = caption || '';
+    viewer.style.display = 'flex';
+    requestAnimationFrame(function() {
+        viewer.style.opacity = '1';
+        img.style.transform = 'scale(1)';
+    });
+}
+
 function initialize() { //функция инициализации кнопки меню в верхней области CRM
     try {
         if (location.origin == 'https://crm2.skyeng.ru')
@@ -239,6 +286,7 @@ let init = setInterval(initialize, 3000) //заносим в переменну�
 let menubarcrm = document.createElement('div')
 menubarcrm.style = `background: white; position:absolute; left: 950px; top: 50px; border: 0px solid #000000; display:none; min-height: 60px; min-width:170px; box-shadow: -1px 4px 16px 7px rgba(34, 60, 80, 0.09); z-index:999;`
 menubarcrm.id = 'idmymenucrm'
+menubarcrm.className = 'crm-scope'
 menubarcrm.innerHTML = win_Menu;
 
 document.body.append(menubarcrm)
@@ -286,36 +334,70 @@ document.getElementById('testprepod').onclick = function () {
 
 
 function screenshotsCRM() { //просмотр и трансформация скриншотов в активном чате
-    if (document.getElementsByTagName('crm-row').length != 0 || document.getElementsByTagName('crm-row') != null || document.getElementsByTagName('crm-row').length != undefined) {
-        for (let i = 0; i < document.getElementsByTagName('crm-row').length; i++) {
-            if (document.getElementsByTagName('crm-row')[i].children.length != 0 && document.getElementsByTagName('crm-row')[i].children[0].innerText == 'Комментарий') {
-                let divimg = document.getElementsByTagName('crm-row')[i]
-                for (let j = 0; j < divimg.querySelectorAll('a').length; j++) {
-                    if (divimg.querySelectorAll('a')[j].host == 'vimbox-resource-chat-prod.imgix.net' || divimg.querySelectorAll('a')[j].host == 'vimbox-resource-storage-prod-ru-1.storage.yandexcloud.net' || divimg.querySelectorAll('a')[j].host == 'math-prod.storage.yandexcloud.net' || divimg.querySelectorAll('a')[j].host == 'i.imgur.com' || divimg.querySelectorAll('a')[j].host == 'joxi.ru' || divimg.querySelectorAll('a')[j].host == 'skr.sh' && divimg.querySelectorAll('a')[j].hasAttribute('data-lightbox') == false) {
-                        let img = document.createElement('img')
-                        img.style.width = '100px'
-                        let alink = document.createElement('a')
-                        alink.setAttribute('data-lightbox', 'imgs');
-                        alink.append(img)
-                        img.src = divimg.querySelectorAll('a')[j].href
-                        img.alt = 'Изображение'
-                        alink.href = img.src;
-                        divimg.querySelectorAll('a')[j].replaceWith(alink)
-                    }
-                }
-
-
+    var rows = document.getElementsByTagName('crm-row');
+    if (!rows || !rows.length) return;
+    for (var i = 0; i < rows.length; i++) {
+        if (rows[i].children.length > 0 && rows[i].children[0].innerText == 'Комментарий') {
+            var divimg = rows[i];
+            var links = divimg.querySelectorAll('a');
+            for (var j = 0; j < links.length; j++) {
+                var link = links[j];
+                var allowedHosts = ['vimbox-resource-chat-prod.imgix.net', 'vimbox-resource-storage-prod-ru-1.storage.yandexcloud.net', 'math-prod.storage.yandexcloud.net', 'i.imgur.com', 'joxi.ru', 'skr.sh'];
+                if (allowedHosts.indexOf(link.host) === -1 || link.hasAttribute('data-crm-img')) continue;
+                var img = document.createElement('img');
+                img.style.width = '100px';
+                img.src = link.href;
+                img.alt = 'Изображение';
+                var alink = document.createElement('a');
+                alink.setAttribute('data-crm-img', 'true');
+                alink.style.cursor = 'zoom-in';
+                alink.appendChild(img);
+                alink.href = link.href;
+                alink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openImageViewer(this.href, '');
+                });
+                link.replaceWith(alink);
             }
         }
     }
 }
+
+// MutationObserver instead of setInterval for performance
+var screenshotsObserver = new MutationObserver(function(mutations) {
+    var shouldProcess = false;
+    for (var m = 0; m < mutations.length; m++) {
+        if (mutations[m].type === 'childList') {
+            for (var n = 0; n < mutations[m].addedNodes.length; n++) {
+                var node = mutations[m].addedNodes[n];
+                if (node.nodeType === 1 && (node.tagName === 'CRM-ROW' || (node.querySelector && node.querySelector('crm-row')))) {
+                    shouldProcess = true;
+                    break;
+                }
+            }
+        }
+        if (shouldProcess) break;
+    }
+    if (shouldProcess) screenshotsCRM();
+});
+
+if (document.body) {
+    screenshotsObserver.observe(document.body, { childList: true, subtree: true });
+    screenshotsCRM();
+} else {
+    window.addEventListener('DOMContentLoaded', function() {
+        screenshotsObserver.observe(document.body, { childList: true, subtree: true });
+        screenshotsCRM();
+    });
+}
+
 let takeTaskBtn;
 function checkforsoundplay() {
     takeTaskBtn = document.getElementsByClassName('mdc-button');
     if (localStorage.getItem('audioCRM') == 1 && window.location.href.indexOf('https://crm2.skyeng.ru/customer-support/start') !== -1) {
         if (takeTaskBtn.length > 0) {
-			
-			const btn = Array.from(takeTaskBtn).find(b => b.innerText.trim() === 'Взять новую задачу');	
+
+            const btn = Array.from(takeTaskBtn).find(b => b.innerText.trim() === 'Взять новую задачу');
             if (document.getElementsByClassName('mat-mdc-button-disabled').length == 0 && btn && !btn.classList.contains('mat-mdc-button-disabled')) {
                 if (localStorage.getItem('repeatsound') == 0) {
                     // soundintervalsetCRM = '';
@@ -363,9 +445,6 @@ function checkforsoundplay() {
 }
 
 setInterval(checkforsoundplay, 1000);
-
-screenshotsCRM()
-setInterval(screenshotsCRM, 5000)
 
 function createAndShowButton(text) {
     let btnSuccess = document.createElement("button");
