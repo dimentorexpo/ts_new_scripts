@@ -51,7 +51,9 @@ async function init_settings() {
     // Универсальная функция для цвета с учетом IFRAME и динамических хэшей классов
     // ====================================================================================
     const applyAppBgColor = () => {
-        // ⛔ Не применять стили на странице авторизации
+        const isLogsPage = window.location.href.includes('/logs/');
+        const isMainPage = !isLogsPage && window.location.href.includes('skyeng.autofaq.ai');
+
         if (window.location.href === 'https://skyeng.autofaq.ai/login') {
             return;
         }
@@ -73,7 +75,6 @@ async function init_settings() {
             return `rgba(${r1}, ${g1}, ${b1}, ${alpha})`;
         };
 
-        // ─── Удаление стилей при белом фоне (возврат к дефолту) ───
         const removeStyle = (targetDoc, styleId) => {
             if (!targetDoc || !targetDoc.head) return;
             const el = targetDoc.getElementById(styleId);
@@ -82,31 +83,505 @@ async function init_settings() {
 
         if (isWhite) {
             removeStyle(document, 'chmaf-bg-main');
+            removeStyle(document, 'chmaf-bg-logs');
             const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
             if (iframe) {
                 const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
                 if (iframeDoc) removeStyle(iframeDoc, 'chmaf-bg-iframe');
             }
-            return; // дефолт — не инжектим кастом
+            return;
         }
 
-        let cssRules = `
-    .usinf-glass-panel {
-        background: ${getRgba(color, 0.7)} !important;
-        backdrop-filter: blur(20px) saturate(160%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
-        border: 1px solid rgba(255,255,255,0.12) !important;
-        color: ${textColor} !important;
-    }
-.usinf-btn-glass {
-    background: rgba(255,255,255,0.1) !important;
-    color: ${textColor} !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
-}
-`;
+        let logsCssRules = '';
+        if (isLogsPage) {
+            logsCssRules = `
+            /* ═══ ОСНОВНЫЕ КОНТЕЙНЕРЫ ═══ */
+            .app-body,
+            .app-body-content,
+            .app-body-content-inner,
+            .app-body-content-inner-plain-deep,
+            .expert-body {
+                background-color: ${color} !important;
+                color: ${textColor} !important;
+            }
 
-        if (!isWhite) {
-            cssRules += `
+            /* ═══ ШАПКА ═══ */
+            .app-body-content-header {
+                background-color: ${getRgba(color, 0.95)} !important;
+                border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+                color: ${textColor} !important;
+            }
+            .app-body-content-title h3,
+            .app-body-content-title span {
+                color: ${textColor} !important;
+            }
+
+            /* ═══ ТАБЛИЦА ═══ */
+            .ant-table-wrapper,
+            .ant-table,
+            .ant-table-container,
+            .ant-table-content {
+                background-color: ${color} !important;
+                color: ${textColor} !important;
+            }
+            .ant-table-thead > tr > th {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                color: ${textColor} !important;
+                border-bottom: 1px solid ${getRgba(textColor, 0.15)} !important;
+            }
+            .ant-table-tbody > tr > td {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+                border-bottom: 1px solid ${getRgba(textColor, 0.06)} !important;
+            }
+            .ant-table-tbody > tr:hover > td {
+                background-color: ${getRgba(textColor, 0.06)} !important;
+            }
+            .ant-table-tbody > tr.active > td {
+                background-color: ${getRgba(textColor, 0.12)} !important;
+            }
+            .ant-table-cell {
+                color: ${textColor} !important;
+            }
+
+            /* ═══ ПАГИНАЦИЯ ═══ */
+            .ant-pagination {
+                color: ${textColor} !important;
+            }
+            .ant-pagination-item {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.15)} !important;
+            }
+            .ant-pagination-item a {
+                color: ${textColor} !important;
+            }
+            .ant-pagination-item-active {
+                background-color: #7c4dff !important;
+                border-color: #7c4dff !important;
+            }
+            .ant-pagination-item-active a {
+                color: #ffffff !important;
+            }
+            .ant-pagination-prev,
+            .ant-pagination-next {
+                color: ${textColor} !important;
+            }
+            .ant-pagination-disabled {
+                opacity: 0.5 !important;
+            }
+            .ant-select-selector {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.15)} !important;
+                color: ${textColor} !important;
+            }
+            .ant-select-arrow {
+                color: ${textColor} !important;
+            }
+
+            /* ═══ КНОПКИ ═══ */
+            .ant-btn {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+                color: ${textColor} !important;
+            }
+            .ant-btn-primary {
+                background-color: #7c4dff !important;
+                border-color: #7c4dff !important;
+                color: #ffffff !important;
+            }
+            .ant-btn:hover {
+                border-color: ${getRgba(textColor, 0.4)} !important;
+                color: #ffffff !important;
+            }
+
+            /* ═══ ФИЛЬТРЫ / ФОРМЫ ═══ */
+            .ant-form,
+            .ant-card {
+                background-color: ${getRgba(color, 0.7)} !important;
+                border-color: ${getRgba(textColor, 0.1)} !important;
+                color: ${textColor} !important;
+            }
+            .ant-card-body {
+                background: transparent !important;
+                color: ${textColor} !important;
+            }
+
+            /* ═══ САЙДБАР ═══ */
+            .expert-sidebar,
+            .expert-sidebar-right,
+            .ant-layout-sider {
+                background-color: ${color} !important;
+                border-left: 1px solid ${getRgba(textColor, 0.1)} !important;
+            }
+            .expert-sidebar-inner {
+                background-color: ${color} !important;
+            }
+            .expert-chat-header-button {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                color: ${textColor} !important;
+                border: 1px solid ${getRgba(textColor, 0.15)} !important;
+            }
+
+            /* ═══ ТАБЫ В САЙДБАРЕ ═══ */
+            .ant-tabs-nav {
+                background-color: ${getRgba(color, 0.95)} !important;
+                border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+            }
+            .ant-tabs-tab {
+                background-color: transparent !important;
+                color: ${getRgba(textColor, 0.6)} !important;
+            }
+            .ant-tabs-tab-active {
+                background-color: ${getRgba(textColor, 0.1)} !important;
+                color: ${textColor} !important;
+            }
+            .ant-tabs-tab-btn {
+                color: inherit !important;
+            }
+            .ant-tabs-ink-bar {
+                background-color: #7c4dff !important;
+            }
+
+            /* ═══ СООБЩЕНИЯ В ЧАТЕ (сайдбар) ═══ */
+            .chat-messages {
+                background-color: ${color} !important;
+            }
+
+            /* ═══ СИСТЕМНЫЕ СОБЫТИЯ (chat_event) ═══ */
+            .chat_event {
+                background-color: ${getRgba(textColor, 0.04)} !important;
+                border: 1px solid ${getRgba(textColor, 0.08)} !important;
+                border-radius: 6px !important;
+                padding: 4px 8px !important;
+                margin: 4px 0 !important;
+            }
+            .chat_event-text,
+            .chat_event-time,
+            .chat_event * {
+                background: transparent !important;
+                background-color: transparent !important;
+            }
+            .chat_event-text {
+                color: ${getRgba(textColor, 0.85)} !important;
+                font-weight: 500 !important;
+            }
+            .chat_event-time {
+                color: ${getRgba(textColor, 0.5)} !important;
+                font-size: 0.85em !important;
+            }
+
+            /* ═══ ВОПРОС ПОЛЬЗОВАТЕЛЯ ═══ */
+            .chat-message.chat-question {
+                background-color: rgba(66, 133, 244, 0.15) !important;
+                border: 1px solid rgba(66, 133, 244, 0.3) !important;
+                border-radius: 8px !important;
+                padding: 6px 10px !important;
+                margin: 4px 0 !important;
+            }
+            .chat-message.chat-question .chat-message-sender {
+                color: #bbdefb !important;
+                font-weight: 600 !important;
+            }
+            .chat-message.chat-question .chat-message-time-question {
+                color: ${getRgba(textColor, 0.6)} !important;
+            }
+            .chat-message.chat-question .chat-message-text-wrapper {
+                color: #e3f2fd !important;
+            }
+
+            /* ═══ ОТВЕТ ОПЕРАТОРА ═══ */
+            .chat-message.chat-answer.chat-answer-from_operator {
+                background-color: rgba(255, 193, 7, 0.15) !important;
+                border: 1px solid rgba(255, 193, 7, 0.3) !important;
+                border-radius: 8px !important;
+                padding: 6px 10px !important;
+                margin: 4px 0 !important;
+            }
+            .chat-message.chat-answer.chat-answer-from_operator .chat-message-sender {
+                color: #ffecb3 !important;
+                font-weight: 600 !important;
+            }
+            .chat-message.chat-answer.chat-answer-from_operator .chat-message-time-answer {
+                color: ${getRgba(textColor, 0.6)} !important;
+            }
+            .chat-message.chat-answer.chat-answer-from_operator .chat-message-text-wrapper {
+                color: #fff8e1 !important;
+            }
+
+            /* ═══ ОТВЕТ БОТА ═══ */
+            .chat-message.chat-answer.chat-answer-from_bot {
+                background-color: rgba(46, 125, 50, 0.2) !important;
+                border: 1px solid rgba(76, 175, 80, 0.35) !important;
+                border-radius: 8px !important;
+                padding: 6px 10px !important;
+                margin: 4px 0 !important;
+            }
+            .chat-message.chat-answer.chat-answer-from_bot .chat-message-sender {
+                color: #c8e6c9 !important;
+            }
+            .chat-message.chat-answer.chat-answer-from_bot .chat-message-text-wrapper {
+                color: #e8f5e9 !important;
+            }
+
+            /* ═══ КОММЕНТАРИИ ОПЕРАТОРА (внутренние) ═══ */
+            .chat-message.chat-comment {
+                background-color: rgba(96, 125, 139, 0.25) !important;
+                border: 1px solid rgba(96, 125, 139, 0.4) !important;
+                border-radius: 8px !important;
+                padding: 6px 10px !important;
+                margin: 4px 0 !important;
+            }
+            .chat-message.chat-comment .chat-message-sender {
+                color: #b0bec5 !important;
+            }
+            .chat-message.chat-comment .chat-message-text-wrapper {
+                color: #eceff1 !important;
+            }
+
+            /* ═══ ОБЩИЕ СТИЛИ ДЛЯ ВСЕХ СООБЩЕНИЙ ═══ */
+            .chat-message {
+                background-color: transparent !important;
+            }
+            .chat-message-header {
+                background: transparent !important;
+            }
+            .chat-message-block {
+                background: transparent !important;
+            }
+            .chat-message * {
+                background-color: transparent !important;
+            }
+            .chat-message-text-wrapper {
+                color: ${textColor} !important;
+            }
+            .chat-message-sender {
+                color: ${textColor} !important;
+            }
+
+            /* ═══ ССЫЛКИ В СООБЩЕНИЯХ ═══ */
+            .chat-message a {
+                color: #81d4fa !important;
+                text-decoration: underline !important;
+            }
+            .chat-message a:hover {
+                color: #b3e5fc !important;
+            }
+
+            /* ═══ БЛОК ОЦЕНКИ (ЗВЁЗДЫ) ═══ */
+            .anticon-star svg {
+                color: #ffb300 !important;
+            }
+
+            /* ═══ КНОПКИ ОЦЕНКИ (disabled) ═══ */
+            .ant-btn[disabled] {
+                opacity: 0.5 !important;
+                background-color: ${getRgba(textColor, 0.05)} !important;
+            }
+
+            /* ═══ ЮЗЕР-МЕНЮ ═══ */
+            .user_menu {
+                color: ${textColor} !important;
+            }
+            .user_menu-dropdown-user_name {
+                color: ${textColor} !important;
+            }
+            .user_menu-dropdown-avatar {
+                background-color: ${getRgba(textColor, 0.1)} !important;
+                color: ${textColor} !important;
+            }
+            .user_menu-language_switcher .ant-btn {
+                color: ${textColor} !important;
+            }
+
+            /* ═══ ИКОНКИ ═══ */
+            .anticon {
+                color: ${textColor} !important;
+            }
+            .ant-btn-primary .anticon,
+            .ant-pagination-item-active .anticon {
+                color: #ffffff !important;
+            }
+
+            /* ═══ СКРОЛЛБАР ═══ */
+            ::-webkit-scrollbar {
+                width: 8px !important;
+                height: 8px !important;
+            }
+            ::-webkit-scrollbar-track {
+                background: ${getRgba(textColor, 0.05)} !important;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: ${getRgba(textColor, 0.2)} !important;
+                border-radius: 4px !important;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: ${getRgba(textColor, 0.3)} !important;
+            }
+
+            /* ═══ РЕСАЙЗ-ХЭНДЛ САЙДБАРА ═══ */
+            .export-sidebar-left-handle {
+                background-color: ${getRgba(textColor, 0.1)} !important;
+            }
+            .export-sidebar-left-handle:hover {
+                background-color: #7c4dff !important;
+            }
+
+            /* ═══════════════════════════════════════════════════════════ */
+            /* ⭐ ПАНЕЛЬ ПОЛЬЗОВАТЕЛЯ (вкладка "Пользователь") */
+            /* ═══════════════════════════════════════════════════════════ */
+
+            /* Основной контейнер панели */
+            .expert-user_info_panel,
+            .expert-user_details,
+            .expert-user_info_panel-footer,
+            .expert-user_info_panel-footer-inner {
+                background-color: ${color} !important;
+                color: ${textColor} !important;
+            }
+
+            /* Имя пользователя */
+            .expert-user_details-name {
+                color: ${textColor} !important;
+                font-weight: 600 !important;
+                font-size: 1.1em !important;
+            }
+
+            /* Разделители */
+            .expert-user_details-divider,
+            .ant-divider {
+                background-color: ${getRgba(textColor, 0.15)} !important;
+                border-color: ${getRgba(textColor, 0.15)} !important;
+            }
+
+            /* Список деталей */
+            .expert-user_details-list {
+                background: transparent !important;
+            }
+            .expert-user_details-row {
+                background: transparent !important;
+                border-bottom: 1px solid ${getRgba(textColor, 0.06)} !important;
+                padding: 4px 0 !important;
+            }
+            .expert-user_details-dt {
+                color: ${getRgba(textColor, 0.7)} !important;
+                background: transparent !important;
+            }
+            .expert-user_details-dd {
+                color: ${textColor} !important;
+                background: transparent !important;
+            }
+
+            /* Иконки в деталях */
+            .expert-user_details-dt .anticon {
+                color: ${getRgba(textColor, 0.6)} !important;
+            }
+
+            /* Ссылки в деталях */
+            .expert-user_details-dd a {
+                color: #81d4fa !important;
+                text-decoration: underline !important;
+            }
+            .expert-user_details-dd a:hover {
+                color: #b3e5fc !important;
+            }
+
+            /* Теги/чипы (sc-fzpmMD dJAzFc) */
+            .sc-fzpmMD,
+            [class*="sc-fzpmMD"] {
+                background-color: ${getRgba(textColor, 0.12)} !important;
+                color: ${textColor} !important;
+                border: 1px solid ${getRgba(textColor, 0.2)} !important;
+                border-radius: 4px !important;
+                padding: 2px 6px !important;
+            }
+
+            /* Форма в футере панели */
+            #DateFilter,
+            .ant-form-horizontal {
+                background: transparent !important;
+            }
+            .ant-form-item {
+                background: transparent !important;
+            }
+            .ant-form-item-control-input-content {
+                color: ${textColor} !important;
+            }
+            .ant-form-item-control-input-content span {
+                color: ${textColor} !important;
+            }
+
+            /* Лейблы в форме (sc-fzoyTs jZUSDr) */
+            .sc-fzoyTs,
+            [class*="sc-fzoyTs"] {
+                color: ${getRgba(textColor, 0.7)} !important;
+            }
+
+            /* Контент в форме (sc-fznxKY kGAtdi) */
+            .sc-fznxKY,
+            [class*="sc-fznxKY"] {
+                color: ${textColor} !important;
+            }
+
+            /* "Пусто" — приглушённый цвет */
+            .sc-fznxKY.cAnFnm,
+            [class*="cAnFnm"] {
+                color: ${getRgba(textColor, 0.5)} !important;
+                font-style: italic !important;
+            }
+
+            /* Список внутри dd (ol, li) */
+            .expert-user_details-dd ol,
+            .expert-user_details-dd ul,
+            .expert-user_details-dd li {
+                background: transparent !important;
+                color: ${textColor} !important;
+            }
+
+            /* techScreeningData — мелкий текст */
+            .expert-user_details-dd p {
+                color: ${getRgba(textColor, 0.85)} !important;
+                background: transparent !important;
+            }
+            .expert-user_details-dd p b,
+            .expert-user_details-dd p strong {
+                color: ${textColor} !important;
+            }
+
+            /* Ресайз-хэндл панели пользователя */
+            .expert-user_info_panel-footer-handle {
+                background-color: ${getRgba(textColor, 0.1)} !important;
+            }
+            .expert-user_info_panel-footer-handle:hover {
+                background-color: #7c4dff !important;
+            }
+
+            /* Spin-загрузчик */
+            .ant-spin-container {
+                background: transparent !important;
+            }
+            .ant-spin-nested-loading {
+                background: transparent !important;
+            }
+        `;
+        }
+
+        // ... остальной код без изменений (mainCssRules, injectStyle и т.д.)
+        let mainCssRules = '';
+        if (isMainPage) {
+            mainCssRules = `
+            .usinf-glass-panel {
+                background: ${getRgba(color, 0.7)} !important;
+                backdrop-filter: blur(20px) saturate(160%) !important;
+                -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+                border: 1px solid rgba(255,255,255,0.12) !important;
+                color: ${textColor} !important;
+            }
+            .usinf-btn-glass {
+                background: rgba(255,255,255,0.1) !important;
+                color: ${textColor} !important;
+                border: 1px solid rgba(255,255,255,0.15) !important;
+            }
+
             /* ═══ 1. КАРТОЧКИ ДИАЛОГОВ ═══ */
             [class*="DialogsCard_Card"] {
                 background-color: var(--chat-card-bg, ${getRgba(textColor, 0.05)}) !important;
@@ -167,13 +642,12 @@ async function init_settings() {
                 color: ${textColor} !important;
                 border: 1px solid ${getRgba(textColor, 0.1)} !important;
             }
-
             [class*="Operator_TakeRequestButton"] {
-    transition: filter 0.2s ease, transform 0.1s ease;
-}
-[class*="Operator_TakeRequestButton"]:hover {
-    filter: brightness(1.15);
-}
+                transition: filter 0.2s ease, transform 0.1s ease;
+            }
+            [class*="Operator_TakeRequestButton"]:hover {
+                filter: brightness(1.15);
+            }
 
             /* ═══ 7. ОБЩАЯ ТИПОГРАФИКА ═══ */
             [class*="Typography_Typography"],
@@ -191,7 +665,7 @@ async function init_settings() {
                 opacity: 1 !important;
             }
 
-                       /* ═══ 9. ОБЩИЙ ФОН ДЛЯ ОБЫЧНЫХ СООБЩЕНИЙ (серый) ═══ */
+            /* ═══ 9. ОБЩИЙ ФОН ДЛЯ ОБЫЧНЫХ СООБЩЕНИЙ ═══ */
             [class*="ChatMessages_RegularMessage__"]:not([data-author-type="bot"]):not([data-author-type="user"]):not([data-author-type="user-with-bot"]):not([data-operator-comment="true"]) {
                 background-color: rgba(255, 255, 255, 0.05) !important;
                 border-radius: 8px !important;
@@ -245,7 +719,7 @@ async function init_settings() {
                 background: transparent !important;
             }
 
-            /* ═══ 12. USER (receiver) — приятный синий ═══ */
+            /* ═══ 12. USER (receiver) — синий ═══ */
             [class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"] {
                 background-color: rgba(66, 133, 244, 0.18) !important;
                 border: 1px solid rgba(66, 133, 244, 0.35) !important;
@@ -268,7 +742,7 @@ async function init_settings() {
                 border-color: rgba(66, 133, 244, 0.4) !important;
             }
 
-            /* ═══ 12.5. USER (sender) — премиальный золотой ═══ */
+            /* ═══ 12.5. USER (sender) — золотой ═══ */
             [class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-operator-comment="true"]) {
                 background-color: rgba(255, 193, 7, 0.18) !important;
                 border: 1px solid rgba(255, 193, 7, 0.4) !important;
@@ -291,7 +765,7 @@ async function init_settings() {
                 border-color: rgba(255, 193, 7, 0.45) !important;
             }
 
-            /* ═══ 12.6. OperatorComment — СЕРЫЙ (перекрывает золотой sender/user) ═══ */
+            /* ═══ 12.6. OperatorComment — СЕРЫЙ ═══ */
             [class*="ChatMessages_RegularMessage__"][data-operator-comment="true"] {
                 background-color: rgba(96, 125, 139, 0.25) !important;
                 border: 1px solid rgba(96, 125, 139, 0.4) !important;
@@ -319,7 +793,6 @@ async function init_settings() {
                 padding: 4px 8px !important;
                 margin: 3px 0 !important;
             }
-            /* Сбрасываем ЛЮБЫЕ цветные фоны сообщений внутри группы комментариев */
             [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_RegularMessage__"] {
                 background: transparent !important;
                 background-color: transparent !important;
@@ -327,7 +800,6 @@ async function init_settings() {
                 padding: 0 !important;
                 margin: 0 !important;
             }
-            /* Явно перебиваем цветные селекторы (bot, receiver, sender, user-with-bot) внутри группы */
             [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_RegularMessage__"][data-author-type="bot"],
             [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_RegularMessage__"][data-author-type="user-with-bot"],
             [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_RegularMessage__"][data-orientation="receiver"][data-author-type="user"],
@@ -344,7 +816,6 @@ async function init_settings() {
                 color: #eceff1 !important;
                 background: transparent !important;
             }
-            /* ССЫЛКИ В ЗАМЕТКАХ */
             [class*="ChatMessages_CommentMessagesGroup__"] a,
             [class*="ChatMessages_CommentMessagesGroup__"] [class*="ChatMessages_HtmlContent__"] a {
                 color: #81d4fa !important;
@@ -412,7 +883,6 @@ async function init_settings() {
             [class*="mantine-Select-rightSection"] svg {
                 color: ${textColor} !important;
             }
-
             [class*="mantine-Switch-track"] {
                 background-color: ${getRgba(textColor, 0.2)} !important;
                 border-color: ${getRgba(textColor, 0.3)} !important;
@@ -635,19 +1105,16 @@ async function init_settings() {
                 color: ${textColor} !important;
             }
 
-                        /* ═══ 26. ТАБЛИЦЫ (Table) ═══ */
+            /* ═══ 26. ТАБЛИЦЫ (Table) ═══ */
             [class*="Table_GlobalTableContainer__"],
             [class*="Table_AreaContainer__"],
             [class*="Table_ScrollContainer__"] {
                 background-color: ${color} !important;
             }
-
             [class*="Table_Table__"] {
                 background-color: transparent !important;
                 color: ${textColor} !important;
             }
-
-            /* Шапка таблицы */
             [class*="Table_TableHeadCell__"] {
                 background-color: ${getRgba(textColor, 0.08)} !important;
                 color: ${textColor} !important;
@@ -663,8 +1130,6 @@ async function init_settings() {
             [class*="Table_SortIconContainer__"][data-active="true"] {
                 filter: brightness(1.5) !important;
             }
-
-            /* Строки таблицы */
             [class*="Table_Row__"] {
                 background-color: transparent !important;
                 color: ${textColor} !important;
@@ -674,16 +1139,12 @@ async function init_settings() {
             [class*="Table_Row__"]:hover {
                 background-color: ${getRgba(textColor, 0.06)} !important;
             }
-
-            /* Zebra mode — чётные строки */
             [class*="Table_ZebraMode__"] [class*="Table_Row__"]:nth-child(even) {
                 background-color: ${getRgba(textColor, 0.04)} !important;
             }
             [class*="Table_ZebraMode__"] [class*="Table_Row__"]:nth-child(even):hover {
                 background-color: ${getRgba(textColor, 0.1)} !important;
             }
-
-            /* Ячейки */
             [class*="Table_Cell__"] {
                 background: transparent !important;
                 color: ${textColor} !important;
@@ -698,7 +1159,6 @@ async function init_settings() {
             }
 
             /* ═══ 27. КНОПКИ В ТАБЛИЦЕ ═══ */
-            /* Primary / Contained */
             [class*="Buttons_Color_primary__"][class*="Buttons_Appearance_contained__"] {
                 background-color: #7c4dff !important;
                 color: #ffffff !important;
@@ -708,8 +1168,6 @@ async function init_settings() {
                 background-color: #9575ff !important;
                 border-color: #9575ff !important;
             }
-
-            /* Secondary / Outlined */
             [class*="Buttons_Color_secondary__"][class*="Buttons_Appearance_outlined__"] {
                 background-color: transparent !important;
                 color: ${textColor} !important;
@@ -719,8 +1177,6 @@ async function init_settings() {
                 background-color: ${getRgba(textColor, 0.1)} !important;
                 border-color: ${getRgba(textColor, 0.4)} !important;
             }
-
-            /* SVG иконки в кнопках */
             [class*="Buttons_SharedButton__"] svg,
             [class*="Buttons_Button__"] svg {
                 color: currentColor !important;
@@ -770,6 +1226,15 @@ async function init_settings() {
         `;
         }
 
+        let cssRules = '';
+        if (isLogsPage && logsCssRules) {
+            cssRules = logsCssRules;
+        } else if (isMainPage && mainCssRules) {
+            cssRules = mainCssRules;
+        } else {
+            return;
+        }
+
         const injectStyle = (targetDoc, styleId) => {
             if (!targetDoc || !targetDoc.head) return;
             let styleEl = targetDoc.getElementById(styleId);
@@ -781,28 +1246,35 @@ async function init_settings() {
             styleEl.innerHTML = cssRules;
         };
 
-        injectStyle(document, 'chmaf-bg-main');
-        const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-        if (iframe) {
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-            if (iframeDoc) injectStyle(iframeDoc, 'chmaf-bg-iframe');
+        if (isLogsPage) {
+            injectStyle(document, 'chmaf-bg-logs');
+            removeStyle(document, 'chmaf-bg-main');
+        } else {
+            injectStyle(document, 'chmaf-bg-main');
+            removeStyle(document, 'chmaf-bg-logs');
+
+            const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+            if (iframe) {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                if (iframeDoc) injectStyle(iframeDoc, 'chmaf-bg-iframe');
+            }
         }
 
-        // ─── Помечаем комментарии оператора (OperatorComment) ───
-        const markOperatorComments = () => {
-            document.querySelectorAll(
-                '[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-comment-checked])'
-            ).forEach(msg => {
-                const hasActionButtons = msg.querySelector('[class*="Buttons_SharedButton"]');
-                const hasForwarded = msg.querySelector('[class*="ChatMessages_RegularMessageForwardedMessagesContainer__"] > *');
-                // Если нет кнопок действий и нет пересланных сообщений — это внутренний комментарий
-                if (!hasActionButtons && !hasForwarded) {
-                    msg.setAttribute('data-operator-comment', 'true');
-                }
-                msg.setAttribute('data-comment-checked', 'true');
-            });
-        };
-        markOperatorComments();
+        if (isMainPage) {
+            const markOperatorComments = () => {
+                document.querySelectorAll(
+                    '[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-comment-checked])'
+                ).forEach(msg => {
+                    const hasActionButtons = msg.querySelector('[class*="Buttons_SharedButton"]');
+                    const hasForwarded = msg.querySelector('[class*="ChatMessages_RegularMessageForwardedMessagesContainer__"] > *');
+                    if (!hasActionButtons && !hasForwarded) {
+                        msg.setAttribute('data-operator-comment', 'true');
+                    }
+                    msg.setAttribute('data-comment-checked', 'true');
+                });
+            };
+            markOperatorComments();
+        }
     };
     // Применяем при запуске.
     // Ставим setInterval, так как iframe загружается с задержкой или может быть пересоздан SPA-роутером
