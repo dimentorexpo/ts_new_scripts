@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "ChMAF",
-	"version": "5.0.124",
+	"version": "5.0.125",
 	"description": "Твой мультитул в работе с чатами",
 	"background": {
 		"service_worker": "bg.js"
@@ -23,7 +23,8 @@
 			"js": [
 				"/autoFAQscripts/utils.js",
 				"/autoFAQscripts/Settings.js",
-				"/autoFAQscripts/Link.js",
+				"/autoFAQscripts/Link_v2_part1.js",
+				"/autoFAQscripts/Link_v2_part2.js",
 				"/autoFAQscripts/AutoRespond.js",
 				"/autoFAQscripts/AFhelper.js",
 				"/autoFAQscripts/AFOperatorStatus.js",
@@ -57,7 +58,9 @@
 				"content.js"
 			],
 			"css": [
-				"/CSS/style.css"
+				"/CSS/design-system.css",
+				"/CSS/style.css",
+				"/CSS/premium-links.css"
 			],
 			"matches": [
 				"*://skyeng.autofaq.ai/*"

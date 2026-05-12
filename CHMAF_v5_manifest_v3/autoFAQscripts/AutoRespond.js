@@ -104,7 +104,7 @@ const fz_styles = `
 
 var win_FrozeChat = fz_styles + `
 <div class="fz-container">
-    <div class="fz-header" id="froze_chat_header">
+    <div class="fz-header chmaf-drag-handle" id="froze_chat_header">
         <span class="fz-title">Auto-Reply Timer</span>
         <div style="display:flex; gap: 8px;">
             <button class="fz-btn fz-btn-icon" id="clearallchathash" title="Очистить все таймеры">Очистить</button>

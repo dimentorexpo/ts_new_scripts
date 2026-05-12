@@ -767,7 +767,7 @@
 
     const win_Alarm = `
         <div class="alc-panel">
-            <div class="alc-header" id="alc_drag">
+            <div class="alc-header chmaf-drag-handle" id="alc_drag">
                 <span class="alc-title">
                     <span class="alc-title-icon">⏰</span>
                     Автостатус "занят"

@@ -18,9 +18,9 @@
 
         const win_VimbotMenu = `
         <div class="vimbot-glass">
-            <div class="vimbot-warning-bar"></div>
+            <div class="vimbot-warning-bar chmaf-drag-handle"></div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; margin-top: 5px;">
+            <div class="chmaf-drag-handle" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; margin-top: 5px;">
                 <span style="font-size: 11px; font-weight: bold; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1.5px;">Vimbot Chat Support</span>
                 <div style="display:flex; gap: 8px;">
                     <button class="vimbot-btn" id="clearVimbotMenu" title="Очистить всё">🧹</button>

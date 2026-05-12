@@ -234,6 +234,13 @@ const glassStyles = `
         color: var(--ngu-text-muted);
     }
 
+    /* === БЕГУЩАЯ СТРОКА ДЛЯ ЗАНЯТЫХ СЛОТОВ === */
+    input[name="slotInfo"] {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: clip;
+    }
+
     /* === OPERATOR INPUT (Neon Green) === */
     .af-glass-input-my {
         background: rgba(52, 211, 153, 0.08) !important;
@@ -249,108 +256,166 @@ const glassStyles = `
         color: #fff;
         font-weight: 700;
         border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        font-size: 13px;
-        height: 38px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 14px;
+        height: 36px;
         margin: 0 5px 8px 0;
         display: flex;
         justify-content: center;
         align-items: center;
-        text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
         z-index: 1;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
     .af-glass-slot::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; right: 0; height: 40%;
-        background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+        top: 0; left: 0; right: 0; height: 45%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%);
         border-radius: 10px 10px 0 0;
         pointer-events: none;
     }
 
     .af-glass-slot:hover {
-        transform: scale(1.05) translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        transform: scale(1.04) translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.5);
         z-index: 2;
+        border-color: rgba(255, 255, 255, 0.15);
     }
 
-    /* === ОБНОВЛЕННЫЙ ВИД ЦИФР ВРЕМЕНИ === */
+    .af-glass-slot:active {
+        transform: scale(1.01) translateY(-1px);
+    }
+
+    /* === ПРЕМИАЛЬНЫЙ ВИД ЦИФР ВРЕМЕНИ === */
     .af-glass-slot-time {
-        background: rgba(0,0,0,0.4);
-        border-radius: 6px;
-        padding: 3px 8px;
-        margin-right: 6px;
+        background: transparent;
+        border-radius: 0;
+        padding: 0;
+        margin-right: 0;
         font-family: 'JetBrains Mono', monospace;
-        font-size: 14px;
-        font-weight: 800;
-        letter-spacing: 0.5px;
+        font-size: 15px;
+        font-weight: 900;
+        letter-spacing: 1px;
         position: relative;
         z-index: 1;
-        box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), 0 0 5px rgba(255,255,255,0.05);
+        border: none;
+        box-shadow: none;
+        transition: all 0.25s ease;
+    }
+
+    .af-glass-slot-time::before {
+        content: '🕐';
+        position: absolute;
+        left: -18px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 13px;
+        opacity: 0.5;
+        filter: grayscale(0.3);
+    }
+
+    .af-glass-slot:hover .af-glass-slot-time {
+        text-shadow: 0 0 12px currentColor;
     }
 
     /* === OPERATOR SLOT HIGHLIGHT === */
     .af-glass-slot-my {
-        border: 2px solid rgba(52, 211, 153, 0.6) !important;
-        box-shadow: inset 0 0 15px rgba(52, 211, 153, 0.2), 0 0 15px rgba(52, 211, 153, 0.15) !important;
+        border: 2px solid rgba(52, 211, 153, 0.9) !important;
+        box-shadow:
+            inset 0 0 20px rgba(52, 211, 153, 0.3),
+            0 0 25px rgba(52, 211, 153, 0.4),
+            0 0 40px rgba(52, 211, 153, 0.2) !important;
+        animation: mySlotPulse 2s ease-in-out infinite;
+        position: relative;
+    }
+
+    /* Яркий индикатор "МОЙ СЛОТ" */
+    .af-glass-slot-my::before {
+        content: '★';
+        position: absolute;
+        top: 2px;
+        right: 4px;
+        font-size: 14px;
+        color: #fbbf24;
+        text-shadow: 0 0 10px rgba(251, 191, 36, 0.8), 0 0 20px rgba(251, 191, 36, 0.4);
+        z-index: 10;
+        animation: starPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes starPulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.2); }
     }
 
     .af-glass-slot-my::after {
         content: '';
         position: absolute;
-        bottom: -2px; left: 20%; right: 20%;
-        height: 3px;
+        bottom: -2px; left: 15%; right: 15%;
+        height: 4px;
         background: var(--ngu-green);
         border-radius: 50%;
-        filter: blur(3px);
-        opacity: 0.6;
+        filter: blur(4px);
+        opacity: 0.8;
+        box-shadow: 0 0 15px rgba(52, 211, 153, 0.6);
+    }
+
+    @keyframes mySlotPulse {
+        0%, 100% {
+            box-shadow:
+                inset 0 0 20px rgba(52, 211, 153, 0.3),
+                0 0 25px rgba(52, 211, 153, 0.4),
+                0 0 40px rgba(52, 211, 153, 0.2);
+        }
+        50% {
+            box-shadow:
+                inset 0 0 25px rgba(52, 211, 153, 0.4),
+                0 0 35px rgba(52, 211, 153, 0.6),
+                0 0 50px rgba(52, 211, 153, 0.3);
+        }
     }
 
     /* === SLOT STATUSES === */
     .af-slot-full {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.1)) !important;
-        border-color: rgba(239, 68, 68, 0.4) !important;
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.12)) !important;
+        border-color: rgba(239, 68, 68, 0.5) !important;
         color: #fecaca !important;
     }
     .af-slot-full:hover {
-        box-shadow: 0 8px 20px rgba(0,0,0,0.4), 0 0 20px rgba(239, 68, 68, 0.2);
-        border-color: rgba(239, 68, 68, 0.6) !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 25px rgba(239, 68, 68, 0.25);
+        border-color: rgba(239, 68, 68, 0.7) !important;
     }
     .af-slot-full .af-glass-slot-time {
-        background: rgba(239, 68, 68, 0.15);
         color: #fff;
-        text-shadow: 0 0 8px rgba(239, 68, 68, 0.9);
-        border: 1px solid rgba(239, 68, 68, 0.4);
+        text-shadow: 0 0 10px rgba(239, 68, 68, 1), 0 2px 4px rgba(0,0,0,0.6);
     }
 
     .af-slot-free {
-        background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(34, 197, 94, 0.1)) !important;
-        border-color: rgba(34, 197, 94, 0.4) !important;
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(34, 197, 94, 0.12)) !important;
+        border-color: rgba(34, 197, 94, 0.5) !important;
         color: #bbf7d0 !important;
     }
     .af-slot-free:hover {
-        box-shadow: 0 8px 20px rgba(0,0,0,0.4), 0 0 20px rgba(34, 197, 94, 0.2);
-        border-color: rgba(34, 197, 94, 0.6) !important;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.5), 0 0 20px rgba(34, 197, 94, 0.25);
+        border-color: rgba(34, 197, 94, 0.7) !important;
     }
     .af-slot-free .af-glass-slot-time {
-        background: rgba(34, 197, 94, 0.15);
         color: #fff;
-        text-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
-        border: 1px solid rgba(34, 197, 94, 0.4);
+        text-shadow: 0 0 10px rgba(34, 197, 94, 1), 0 2px 4px rgba(0,0,0,0.6);
     }
 
     .af-slot-past {
-        background: linear-gradient(135deg, rgba(100, 116, 139, 0.2), rgba(100, 116, 139, 0.05)) !important;
-        border-color: rgba(100, 116, 139, 0.25) !important;
+        background: linear-gradient(135deg, rgba(100, 116, 139, 0.25), rgba(100, 116, 139, 0.08)) !important;
+        border-color: rgba(100, 116, 139, 0.3) !important;
         color: #cbd5e1 !important;
+        opacity: 0.7;
     }
     .af-slot-past .af-glass-slot-time {
-        background: rgba(100, 116, 139, 0.15);
         color: #e2e8f0;
-        border: 1px solid rgba(100, 116, 139, 0.3);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
 
     /* === GLOWING BORDER ANIMATION === */
@@ -432,6 +497,23 @@ const glassStyles = `
         font-size: 13px !important;
         font-weight: 700 !important;
         text-shadow: 0 0 8px rgba(34, 211, 238, 0.3) !important;
+    }
+
+    /* === TIMEZONE BADGE (МСК) === */
+    .af-timezone-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        color: #c4b5fd;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 8px;
+        margin-left: 8px;
+        text-shadow: 0 0 6px rgba(139, 92, 246, 0.2);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+        letter-spacing: 0.5px;
     }
 
     /* === LABELS & TEXT === */
@@ -617,7 +699,7 @@ ${glassStyles}
 
     <!-- ЛЕВАЯ ПАНЕЛЬ: Редактирование выбранного слота -->
     <div id="slotList" class="af-glass-sidepanel af-slot-edit-panel" style="display: none;">
-        <div class="panel-header">
+        <div class="panel-header chmaf-drag-handle">
             <span class="panel-title">📋 Редактирование слота</span>
             <span id="hideSlot" class="close-btn" title="Закрыть слоты">✕</span>
         </div>
@@ -631,7 +713,7 @@ ${glassStyles}
     <div class="af-glass-wrapper" id="AF_Calendar_Container">
         <div class="af-glass-scroll-area">
             <div style="cursor: default;">
-                <div style="margin: 10px; display: flex; align-items: center; gap: 8px;" id="stataaf_header">
+                <div style="margin: 10px; display: flex; align-items: center; gap: 8px;" class="chmaf-drag-handle" id="stataaf_header">
                     <button class="\${otherinpth} af-glass-btn" title="Скрывает меню" id="hidecalendar">❌</button>
                     <button class="\${otherinpth} af-glass-btn" title="Очистить окно" id="clearcalendar">🧹</button>
                     <button class="\${otherinpth} af-glass-btn" title="Обновить информацию" id="refreshcalendar">♻</button>
@@ -656,6 +738,7 @@ ${glassStyles}
                     <span style="font-size: 13px; margin-left: 10px; opacity: 0.8;">Обновлено:</span>
                     <!-- Только время, ширина 90px -->
                     <input class="\${otherinpth} af-glass-input" type="text" id="datenowtime" style="width: 90px; text-align: center;" disabled></input>
+                    <span class="af-timezone-badge">МСК (GMT+3)</span>
                 </div>
 
                 <div id="outputcalendarfield" style="display: flex; flex-wrap: wrap; justify-content: center; padding: 0 5px 10px 5px;"></div>
@@ -678,6 +761,63 @@ hideWindowOnDoubleClick('AF_Calendar');
 const compareTimes = (time1, time2) => {
     return new Date(`1970-01-01 ${time1}`).getTime() - new Date(`1970-01-01 ${time2}`).getTime();
 };
+
+// Функция бегущей строки для input полей
+const marqueeIntervals = new Map();
+
+function startMarquee(inputElement) {
+    if (!inputElement || !inputElement.value) return;
+
+    const originalText = inputElement.value;
+    const textLength = originalText.length;
+
+    // Если текст короткий, не запускаем анимацию
+    if (textLength <= 20) return;
+
+    let position = 0;
+
+    // Останавливаем предыдущую анимацию, если была
+    stopMarquee(inputElement);
+
+    // Запускаем новую анимацию
+    const intervalId = setInterval(() => {
+        if (document.activeElement === inputElement) {
+            // Если поле в фокусе, показываем оригинальный текст
+            inputElement.value = originalText;
+            return;
+        }
+
+        position = (position + 1) % (textLength + 3);
+        const shifted = originalText.substring(position) + '   ' + originalText.substring(0, position);
+        inputElement.value = shifted;
+    }, 200);
+
+    marqueeIntervals.set(inputElement, { intervalId, originalText });
+
+    // Останавливаем при фокусе
+    inputElement.addEventListener('focus', () => {
+        inputElement.value = originalText;
+        if (marqueeIntervals.has(inputElement)) {
+            clearInterval(marqueeIntervals.get(inputElement).intervalId);
+        }
+    });
+
+    // Возобновляем после потери фокуса
+    inputElement.addEventListener('blur', () => {
+        if (inputElement.value === originalText && textLength > 20) {
+            startMarquee(inputElement);
+        }
+    });
+}
+
+function stopMarquee(inputElement) {
+    if (marqueeIntervals.has(inputElement)) {
+        const { intervalId, originalText } = marqueeIntervals.get(inputElement);
+        clearInterval(intervalId);
+        inputElement.value = originalText;
+        marqueeIntervals.delete(inputElement);
+    }
+}
 
 const sendFetchRequest = (url, options, successCallback) => {
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url, requestOptions: options }, (response) => {
@@ -771,6 +911,11 @@ function getSlotData(index) {
                     }
                     if (typeof selectedinpth !== 'undefined') inputs[n].classList.add(selectedinpth);
                     inputs[n].classList.add('af-glass-input-my');
+                }
+
+                // Запуск бегущей строки для заполненных полей
+                if (inputs[n].value && inputs[n].value.length > 20) {
+                    startMarquee(inputs[n]);
                 }
             }
         });
@@ -1002,7 +1147,7 @@ function getdatsyCalendarButtonPress() {
 
     if (calendarUI.style.display === "none" || !calendarUI.style.display) {
         calendarUI.style.display = "block";
-        if (triggerBtn) triggerBtn.classList.add('activeScriptBtn');
+        if (triggerBtn) triggerBtn.classList.add('active');
 
         const userNameElem = document.querySelector('.user_menu-dropdown-user_name');
         if (userNameElem) {
@@ -1023,7 +1168,7 @@ function getdatsyCalendarButtonPress() {
         }
     } else {
         calendarUI.style.display = "none";
-        if (triggerBtn) triggerBtn.classList.remove('activeScriptBtn');
+        if (triggerBtn) triggerBtn.classList.remove('active');
     }
 }
 
@@ -1058,7 +1203,7 @@ document.getElementById('autorefreshswitcher').addEventListener('change', (e) =>
 document.getElementById('hidecalendar').onclick = () => {
     document.getElementById('AF_Calendar').style.display = "none";
     const triggerBtn = document.getElementById('datsyCalendar');
-    if (triggerBtn) triggerBtn.classList.remove('activeScriptBtn');
+    if (triggerBtn) triggerBtn.classList.remove('active');
 };
 
 document.getElementById('clearcalendar').onclick = () => {

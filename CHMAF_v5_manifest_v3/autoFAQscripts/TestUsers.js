@@ -5,10 +5,10 @@
 const cyberStyles = document.createElement('style');
 cyberStyles.textContent = `
 :root {
-    --nu-bg: rgba(18, 18, 32, 0.85);        /* было rgba(10,10,22,0.82) */
-    --nu-border: rgba(255, 255, 255, 0.1);  /* было 0.07 */
+    --nu-bg: rgba(18, 18, 32, 0.85);
+    --nu-border: rgba(255, 255, 255, 0.1);
     --nu-text: #e2e8f0;
-    --nu-text2: #94a3b8;                    /* было #64748b — светлее */
+    --nu-text2: #94a3b8;
     --nu-cyan: #22d3ee;
     --nu-green: #34d399;
     --nu-red: #f87171;
@@ -21,11 +21,11 @@ cyberStyles.textContent = `
     width: 176px;
     padding: 10px;
     background:
-        linear-gradient(135deg, rgba(22, 22, 38, 0.9) 0%, rgba(14, 14, 28, 0.92) 100%),  /* светлее */
+        linear-gradient(135deg, rgba(22, 22, 38, 0.9) 0%, rgba(14, 14, 28, 0.92) 100%),
         url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23202040' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     backdrop-filter: blur(20px) saturate(1.3);
     -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);   /* чётче граница */
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     box-shadow:
@@ -36,7 +36,15 @@ cyberStyles.textContent = `
     position: relative;
     overflow: hidden;
     animation: nuIn 0.5s cubic-bezier(0.16,1,0.3,1);
-    cursor: default;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.glass-panel-testuser:active {
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.4),
+        0 8px 20px rgba(0,0,0,0.6),
+        0 0 30px rgba(139, 92, 246, 0.1),
+        inset 0 1px 0 rgba(255,255,255,0.06);
 }
 /* Inner radial glow */
 .glass-panel-testuser::after {
@@ -75,22 +83,21 @@ cyberStyles.textContent = `
     flex: 1;
     height: 28px;
     padding: 0 8px;
-    background: rgba(255,255,255,0.04);       /* было 0.025 */
-    border: 1px solid rgba(255,255,255,0.08); /* было 0.06 */
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
     color: var(--nu-text);
     font: 11px/1 'JetBrains Mono', 'Fira Code', monospace;
     outline: none;
     transition: all 0.25s ease;
-    cursor: text;
     position: relative;
     z-index: 1;
 }
 
 .glass-input-testuser::placeholder {
-    color: #6b7280;        /* было #475569 — ярче */
+    color: #6b7280;
     font-size: 11px;
-    opacity: 0.9;          /* чётче видно */
+    opacity: 0.9;
 }
 
 .glass-input-testuser:hover {
@@ -193,17 +200,17 @@ cyberStyles.textContent = `
 
 /* === DIVIDER === */
 .glass-divider-horizontal-testuser {
-    height: 1.5px;          /* было 1px */
+    height: 1.5px;
     margin: 8px 0;
     background: linear-gradient(90deg,
         transparent,
         rgba(255,255,255,0.08) 15%,
-        rgba(139, 92, 246, 0.2) 50%,    /* было 0.1 */
+        rgba(139, 92, 246, 0.2) 50%,
         rgba(255,255,255,0.08) 85%,
         transparent);
     position: relative;
     z-index: 1;
-    opacity: 0.8;           /* чуть ярче */
+    opacity: 0.8;
 }
 
 /* === STATES === */
@@ -286,9 +293,9 @@ cyberStyles.textContent = `
 document.head.appendChild(cyberStyles);
 
 
-// ─── HTML TEMPLATE (unchanged structure, neon glass classes) ───
+// ─── HTML TEMPLATE ───
 const win_TestUsers = `
-<div class="glass-panel-testuser">
+<div class="glass-panel-testuser chmaf-drag-handle">
     <div class="glass-row-testuser">
         <input id="iduserinfo" placeholder="ID У/П" title="Введите ID У/П" class="teststudteachinp glass-input-testuser" autocomplete="off" type="text">
         <button id="openuserinfo" title="Поиск" class="glass-btn-testuser">🔍</button>
@@ -308,71 +315,81 @@ const win_TestUsers = `
 // ─── 3. INIT WINDOW ───
 const TestUsersdiv = createWindow('TestUsers', 'winTopTestUsers', 'winLeftTestUsers', win_TestUsers);
 
-// ─── 4. ПОСТ-НАСТРОЙКА (Исправление багов позиции и драга) ───
-(function fixPosition() {
+// ─── 4. POSITION & DRAG FIX ───
+(function initTestUsers() {
     if (!TestUsersdiv) return;
 
-    // 1. Чистим кэш от старых "px", чтобы не было багов с координатами
+    // Очистка старых значений с "px"
     ['winTopTestUsers', 'winLeftTestUsers'].forEach(key => {
-        let val = localStorage.getItem(key);
-        if (val && val.includes('px')) {
+        const val = localStorage.getItem(key);
+        if (val?.includes('px')) {
             localStorage.setItem(key, val.replace('px', ''));
         }
     });
 
-    // 2. Улучшаем работу инпута (чтобы фокус не пропадал при клике)
-    const input = document.getElementById('iduserinfo');
-    if (input) {
-        input.addEventListener('mousedown', (e) => {
-            // Даем инпуту фокус, несмотря на то что родитель может начать Drag
-            setTimeout(() => input.focus(), 10);
-        });
-    }
-
-    // 3. Функция валидации позиции (чтобы не улетало за экран)
-    function validatePosition() {
+    // Валидация позиции окна
+    const validatePosition = () => {
         const rect = TestUsersdiv.getBoundingClientRect();
-        let currentTop = parseFloat(TestUsersdiv.style.top);
-        let currentLeft = parseFloat(TestUsersdiv.style.left);
+        let top = parseFloat(TestUsersdiv.style.top) || 0;
+        let left = parseFloat(TestUsersdiv.style.left) || 0;
         let changed = false;
 
-        if (currentLeft + rect.width > window.innerWidth) { currentLeft = window.innerWidth - rect.width - 20; changed = true; }
-        if (currentTop + rect.height > window.innerHeight) { currentTop = window.innerHeight - rect.height - 20; changed = true; }
-        if (currentLeft < 0) { currentLeft = 20; changed = true; }
-        if (currentTop < 0) { currentTop = 20; changed = true; }
+        const margin = 20;
+        if (left + rect.width > window.innerWidth) { left = window.innerWidth - rect.width - margin; changed = true; }
+        if (top + rect.height > window.innerHeight) { top = window.innerHeight - rect.height - margin; changed = true; }
+        if (left < 0) { left = margin; changed = true; }
+        if (top < 0) { top = margin; changed = true; }
 
         if (changed) {
-            TestUsersdiv.style.left = currentLeft + 'px';
-            TestUsersdiv.style.top = currentTop + 'px';
-            localStorage.setItem('winLeftTestUsers', String(currentLeft));
-            localStorage.setItem('winTopTestUsers', String(currentTop));
+            TestUsersdiv.style.left = `${left}px`;
+            TestUsersdiv.style.top = `${top}px`;
+            localStorage.setItem('winLeftTestUsers', String(left));
+            localStorage.setItem('winTopTestUsers', String(top));
         }
-    }
+    };
 
-    // Проверяем позицию при загрузке и изменении размера окна
     window.addEventListener('load', validatePosition);
     window.addEventListener('resize', validatePosition);
-    setTimeout(validatePosition, 500); // Дополнительная проверка после рендера
+    setTimeout(validatePosition, 500);
 })();
 
-// ─── 5. SCRIPT LOGIC (unchanged) ───
+// ─── 5. TOAST NOTIFICATION ───
+function createAndShowButton(message, type = 'message') {
+    let toast = document.querySelector('.cyber-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'cyber-toast';
+        document.body.appendChild(toast);
+    }
 
-const btnsid = document.getElementById('sidcode');
-const btntid = document.getElementById('tidcode');
-const idUserInfoInput = document.getElementById('iduserinfo');
-const openUserInfoButton = document.getElementById('openuserinfo');
+    toast.textContent = message;
+    toast.className = `cyber-toast ${type}`;
 
-document.getElementById('TestRooms').onclick = getTestRoomsButtonPress;
-document.getElementById('link2lessbtn').onclick = getlink2lessButtonPress;
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
 
+// ─── 6. EVENT HANDLERS ───
+const UI = {
+    input: document.getElementById('iduserinfo'),
+    searchBtn: document.getElementById('openuserinfo'),
+    studentBtn: document.getElementById('sidcode'),
+    teacherBtn: document.getElementById('tidcode'),
+    testRoomsBtn: document.getElementById('TestRooms'),
+    linkToLessonBtn: document.getElementById('link2lessbtn')
+};
+
+// Обработчик кликов по кнопкам
 async function handleButtonClick(buttonId, storageKey) {
     const userId = localStorage.getItem(storageKey);
     if (!userId) {
         createAndShowButton('ID не найден в настройках', 'error');
         return;
     }
+
     const btn = document.getElementById(buttonId);
     btn.classList.add('active');
+
     try {
         await getLoginLink(userId);
         btn.classList.add('successbtn');
@@ -386,59 +403,77 @@ async function handleButtonClick(buttonId, storageKey) {
     }
 }
 
+// Обработчик контекстного меню (ПКМ)
 function handleContextMenu(e, storageKey, buttonId) {
     e.preventDefault();
     const userId = localStorage.getItem(storageKey);
+
     if (userId) {
-        copyToClipboard(userId);
-        createAndShowButton('ID скопирован: ' + userId, 'message');
-        const btn = document.getElementById(buttonId);
-        btn.classList.add('successbtn');
-        setTimeout(() => btn.classList.remove('successbtn'), 1000);
+        copyToClipboard(userId)
+            .then(() => {
+                createAndShowButton(`ID скопирован: ${userId}`, 'message');
+                const btn = document.getElementById(buttonId);
+                btn.classList.add('successbtn');
+                setTimeout(() => btn.classList.remove('successbtn'), 1000);
+            })
+            .catch(() => {
+                createAndShowButton('Ошибка копирования ID', 'error');
+            });
     }
 }
 
-btnsid.onclick = () => handleButtonClick('sidcode', 'test_stud');
-btnsid.oncontextmenu = (e) => handleContextMenu(e, 'test_stud', 'sidcode');
-btntid.onclick = () => handleButtonClick('tidcode', 'test_teach');
-btntid.oncontextmenu = (e) => handleContextMenu(e, 'test_teach', 'tidcode');
-
+// Обработчик вставки текста
 function handlePaste(e) {
-    let data = (e.clipboardData || window.clipboardData).getData('text').trim();
+    const data = (e.clipboardData || window.clipboardData).getData('text').trim();
     if (/^\d+$/.test(data)) {
         e.preventDefault();
-        idUserInfoInput.value = data;
-        openUserInfoButton.click();
+        UI.input.value = data;
+        UI.searchBtn.click();
     }
 }
-idUserInfoInput.addEventListener('paste', handlePaste);
-idUserInfoInput.addEventListener('input', () => { if (window.onlyNumber) onlyNumber(idUserInfoInput); });
 
-openUserInfoButton.onclick = () => {
-    const val = idUserInfoInput.value.trim();
+// Обработчик поиска
+function handleSearch() {
+    const val = UI.input.value.trim();
     if (!val) return;
 
-    const svc = document.getElementById('AF_Service');
-    if (svc && svc.style.display === 'none') {
-        svc.style.display = '';
-        const b = document.getElementById('butServ');
-        if (b) b.classList.add('activeScriptBtn');
+    const serviceWindow = document.getElementById('AF_Service');
+    if (serviceWindow && serviceWindow.style.display === 'none') {
+        serviceWindow.style.display = '';
+        const btn = document.getElementById('butServ');
+        if (btn) btn.classList.add('activeScriptBtn');
     }
 
-    const inp = document.getElementById('idstudent');
-    const btn = document.getElementById('getidstudent');
-    if (inp && btn) {
-        inp.value = val;
-        btn.click();
-        idUserInfoInput.value = '';
-    }
-};
+    const studentInput = document.getElementById('idstudent');
+    const studentBtn = document.getElementById('getidstudent');
 
-function updateVisibility() {
-    const show = window.location.host === "skyeng.autofaq.ai" &&
-        window.location.pathname !== "/login" &&
-        localStorage.getItem('disablelpmwindow') !== '1';
-    TestUsersdiv.style.display = show ? 'block' : 'none';
+    if (studentInput && studentBtn) {
+        studentInput.value = val;
+        studentBtn.click();
+        UI.input.value = '';
+    }
 }
+
+// Привязка событий
+UI.studentBtn.onclick = () => handleButtonClick('sidcode', 'test_stud');
+UI.studentBtn.oncontextmenu = (e) => handleContextMenu(e, 'test_stud', 'sidcode');
+UI.teacherBtn.onclick = () => handleButtonClick('tidcode', 'test_teach');
+UI.teacherBtn.oncontextmenu = (e) => handleContextMenu(e, 'test_teach', 'tidcode');
+UI.testRoomsBtn.onclick = getTestRoomsButtonPress;
+UI.linkToLessonBtn.onclick = getlink2lessButtonPress;
+UI.input.addEventListener('paste', handlePaste);
+UI.input.addEventListener('input', () => { if (window.onlyNumber) onlyNumber(UI.input); });
+UI.input.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSearch(); });
+UI.searchBtn.onclick = handleSearch;
+
+// ─── 7. VISIBILITY CONTROL ───
+function updateVisibility() {
+    const isAutofaqPage = window.location.host === "skyeng.autofaq.ai";
+    const isNotLoginPage = window.location.pathname !== "/login";
+    const isEnabled = localStorage.getItem('disablelpmwindow') !== '1';
+
+    TestUsersdiv.style.display = (isAutofaqPage && isNotLoginPage && isEnabled) ? 'block' : 'none';
+}
+
 setInterval(updateVisibility, 1000);
 updateVisibility();

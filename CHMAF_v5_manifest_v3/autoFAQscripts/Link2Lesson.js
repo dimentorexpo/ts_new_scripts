@@ -96,7 +96,7 @@
 
     const win_Template = `
         <div class="l2l-panel" id="l2l-container">
-            <div class="l2l-header" id="l2l-drag">
+            <div class="l2l-header chmaf-drag-handle" id="l2l-drag">
                 <button id="l2l-hide" class="buttonHide" style="background: rgba(56, 142, 60, 0.3);">hide</button>
                 <div style="display:flex; gap:5px;">
                     <button id="l2l-clear" class="l2l-btn" title="Очистить">🧹</button>

@@ -298,7 +298,7 @@ document.head.appendChild(afLxStyle);
 var win_linksd = `
 <div class="aflx-shell">
     <span class="aflx-shell-inner">
-        <span class="aflx-grab">
+        <span class="aflx-grab chmaf-drag-handle">
             <div id="linksd_1str">
                 <button class="aflx-btn-hide" title="Скрывает меню" id="hideMeLinksd">Hide</button>
             </div>

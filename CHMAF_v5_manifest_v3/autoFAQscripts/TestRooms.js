@@ -87,7 +87,7 @@
 
     const win_Template = `
         <div class="trm-panel" id="trm-container">
-            <div class="trm-header" id="trm-drag">
+            <div class="trm-header chmaf-drag-handle" id="trm-drag">
                 <button id="hideMetestrooms" class="trm-btn trm-btn-hide">hide</button>
                 <div style="display:flex; gap:5px;">
                     <button id="clrTestRooms" class="trm-btn" title="Очистить" style="font-size:14px;">🧹</button>

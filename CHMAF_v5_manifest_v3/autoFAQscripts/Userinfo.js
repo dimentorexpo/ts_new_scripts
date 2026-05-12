@@ -5,17 +5,17 @@ const injectGlassStyles = () => {
     const style = document.createElement('style');
     style.id = 'af-glass-styles';
     style.innerHTML = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
 
 .af-gl-wrapper {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: #f1f5f9;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-    font-size: 13px;
+    color: #f8fafc;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+    font-size: 12px;
     box-sizing: border-box;
-    width: 520px;  /* БЫЛО 380px — УВЕЛИЧИЛ */
+    width: 500px;
     line-height: 1.5;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
 }
 
 /* Новый класс для рядов кнопок — разрешаем перенос если не влезают */
@@ -25,19 +25,20 @@ const injectGlassStyles = () => {
 }
 
         .af-gl-panel {
-            background: linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.9));
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: linear-gradient(145deg,
+                rgba(15, 20, 35, 0.95),
+                rgba(20, 25, 40, 0.97));
+            backdrop-filter: blur(32px) saturate(200%);
+            -webkit-backdrop-filter: blur(32px) saturate(200%);
+            border: 2px solid rgba(255, 215, 0, 0.25);
             border-radius: 20px;
             box-shadow:
-                0 25px 50px -12px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-                0 0 80px rgba(56, 189, 248, 0.03) inset;
+                0 20px 40px -10px rgba(0, 0, 0, 0.7),
+                0 0 0 1px rgba(255, 215, 0, 0.1) inset;
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
             position: relative;
             overflow: hidden;
         }
@@ -45,12 +46,11 @@ const injectGlassStyles = () => {
         .af-gl-panel::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 50%);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 215, 0, 0.02);
             pointer-events: none;
             z-index: 0;
         }
@@ -64,19 +64,19 @@ const injectGlassStyles = () => {
             display: flex;
             gap: 8px;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 14px;
+            border-bottom: 1.5px solid rgba(255, 215, 0, 0.2);
+            padding-bottom: 12px;
             position: relative;
         }
 
         .af-gl-header::after {
             content: '';
             position: absolute;
-            bottom: -1px;
+            bottom: -1.5px;
             left: 0;
-            width: 40%;
-            height: 1px;
-            background: linear-gradient(90deg, rgba(56, 189, 248, 0.5), transparent);
+            width: 50%;
+            height: 1.5px;
+            background: rgba(255, 215, 0, 0.6);
         }
 
         .af-gl-row {
@@ -87,24 +87,27 @@ const injectGlassStyles = () => {
         }
 
 .af-gl-btn {
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: linear-gradient(145deg,
+        rgba(255, 255, 255, 0.12),
+        rgba(255, 255, 255, 0.06));
+    border: 1.5px solid rgba(255, 215, 0, 0.25);
     border-radius: 10px;
-    color: #f8fafc;
+    color: #fefefe;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 7px 14px;
-    height: 34px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    height: 30px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    flex-shrink: 0;  /* НЕ СЖИМАТЬ */
-    white-space: nowrap;  /* Текст не переносить */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    flex-shrink: 0;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
 }
 
         .af-gl-btn::before {
@@ -114,8 +117,11 @@ const injectGlassStyles = () => {
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s;
+            background: linear-gradient(90deg,
+                transparent,
+                rgba(255, 215, 0, 0.15),
+                transparent);
+            transition: left 0.6s;
         }
 
         .af-gl-btn:hover::before {
@@ -123,88 +129,103 @@ const injectGlassStyles = () => {
         }
 
 .af-gl-btn-icon {
-    width: 34px;
+    width: 30px;
     padding: 0;
-    font-size: 15px;
+    font-size: 14px;
     flex-shrink: 0;
-    min-width: 34px;  /* Фиксированная минимальная ширина */
+    min-width: 30px;
 }
 
         .af-gl-btn:hover:not(:disabled) {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-            transform: translateY(-2px);
+            background: linear-gradient(145deg,
+                rgba(255, 215, 0, 0.2),
+                rgba(255, 255, 255, 0.12));
+            transform: translateY(-1px);
             box-shadow:
-                0 8px 25px rgba(0,0,0,0.3),
-                0 0 20px rgba(56, 189, 248, 0.15);
-            border-color: rgba(56, 189, 248, 0.4);
+                0 8px 20px rgba(0,0,0,0.4),
+                0 0 20px rgba(255, 215, 0, 0.2);
+            border-color: rgba(255, 215, 0, 0.5);
         }
 
         .af-gl-btn:active:not(:disabled) {
             transform: translateY(0) scale(0.98);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
         .af-gl-btn:disabled {
-            opacity: 0.4;
+            opacity: 0.35;
             cursor: not-allowed;
-            filter: grayscale(0.5);
+            filter: grayscale(0.7);
         }
 
 .af-gl-input {
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(145deg,
+        rgba(0, 0, 0, 0.5),
+        rgba(10, 15, 30, 0.6));
+    border: 1.5px solid rgba(255, 215, 0, 0.2);
     border-radius: 10px;
-    color: #f1f5f9;
+    color: #fefefe;
     padding: 0 12px;
-    height: 34px;
+    height: 30px;
     outline: none;
     text-align: center;
     transition: all 0.3s ease;
     flex: 1;
-    min-width: 80px;  /* Минимальная ширина */
-    font-weight: 500;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    min-width: 70px;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
 }
 
         .af-gl-input:focus {
-            border-color: rgba(56, 189, 248, 0.6);
+            border-color: rgba(255, 215, 0, 0.6);
             box-shadow:
-                0 0 0 3px rgba(56, 189, 248, 0.1),
-                0 0 20px rgba(56, 189, 248, 0.2),
-                inset 0 2px 4px rgba(0,0,0,0.2);
-            background: rgba(0, 0, 0, 0.5);
+                0 0 0 3px rgba(255, 215, 0, 0.12),
+                0 0 20px rgba(255, 215, 0, 0.2),
+                inset 0 2px 6px rgba(0,0,0,0.3);
+            background: linear-gradient(145deg,
+                rgba(0, 0, 0, 0.6),
+                rgba(10, 15, 30, 0.7));
         }
 
         .af-gl-input::placeholder {
-            color: rgba(148, 163, 184, 0.6);
+            color: rgba(148, 163, 184, 0.5);
+            font-weight: 500;
         }
 
         .af-gl-badge {
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.12);
-            font-weight: 600;
+            border: 1.5px solid rgba(255, 215, 0, 0.3);
+            font-weight: 700;
             display: inline-flex;
             align-items: center;
-            height: 34px;
+            height: 30px;
             box-sizing: border-box;
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg,
+                rgba(255, 215, 0, 0.12),
+                rgba(255, 255, 255, 0.06));
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            letter-spacing: 0.02em;
+            font-size: 11px;
         }
 
         /* Стили блока информации пользователя */
         .af-gl-info-container {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: linear-gradient(145deg,
+                rgba(255, 255, 255, 0.05),
+                rgba(255, 255, 255, 0.02));
+            border: 1.5px solid rgba(255, 215, 0, 0.15);
             border-radius: 16px;
-            padding: 18px 14px;
+            padding: 16px 14px;
             display: flex;
             flex-direction: column;
             gap: 10px;
             box-shadow:
-                0 4px 16px rgba(0,0,0,0.2),
-                inset 0 1px 0 rgba(255,255,255,0.05);
+                0 4px 16px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255, 215, 0, 0.08);
         }
 
         .af-gl-info-row {
@@ -223,35 +244,33 @@ const injectGlassStyles = () => {
         }
 
         .af-gl-avatar {
-            width: 72px;
-            height: 72px;
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
-            border: 2px solid rgba(56, 189, 248, 0.4);
+            border: 2.5px solid rgba(255, 215, 0, 0.5);
             box-shadow:
-                0 4px 20px rgba(0,0,0,0.4),
-                0 0 0 4px rgba(56, 189, 248, 0.1),
-                0 0 30px rgba(56, 189, 248, 0.15);
+                0 4px 20px rgba(0,0,0,0.5),
+                0 0 0 4px rgba(255, 215, 0, 0.12);
             object-fit: cover;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .af-gl-avatar:hover {
-            transform: scale(1.9);
+            transform: scale(2);
             z-index: 100;
-            border-color: rgba(56, 189, 248, 0.9);
+            border-color: rgba(255, 215, 0, 1);
             box-shadow:
-                0 8px 40px rgba(0,0,0,0.5),
-                0 0 0 6px rgba(56, 189, 248, 0.2),
-                0 0 60px rgba(56, 189, 248, 0.3);
+                0 8px 40px rgba(0,0,0,0.7),
+                0 0 0 6px rgba(255, 215, 0, 0.25);
         }
 
         .af-gl-scrollable {
-            max-height: 400px;
+            max-height: 336px;
             overflow-y: auto;
             padding-right: 8px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .af-gl-scrollable::-webkit-scrollbar {
@@ -259,28 +278,30 @@ const injectGlassStyles = () => {
         }
 
         .af-gl-scrollable::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.2);
+            background: rgba(0,0,0,0.3);
             border-radius: 10px;
         }
 
         .af-gl-scrollable::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, rgba(56, 189, 248, 0.4), rgba(168, 85, 247, 0.4));
+            background: rgba(255, 215, 0, 0.4);
             border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 215, 0, 0.2);
         }
 
         .af-gl-scrollable::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(180deg, rgba(56, 189, 248, 0.6), rgba(168, 85, 247, 0.6));
+            background: rgba(255, 215, 0, 0.6);
         }
 
         .af-gl-card {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            padding: 14px;
+            background: linear-gradient(145deg,
+                rgba(255, 255, 255, 0.06),
+                rgba(255, 255, 255, 0.03));
+            border: 1.5px solid rgba(255, 215, 0, 0.2);
+            border-radius: 12px;
+            padding: 12px;
             text-align: left;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
             position: relative;
             overflow: hidden;
         }
@@ -292,17 +313,20 @@ const injectGlassStyles = () => {
             left: 0;
             width: 100%;
             height: 2px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: rgba(255, 215, 0, 0.3);
             opacity: 0;
             transition: opacity 0.3s;
         }
 
         .af-gl-card:hover {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            background: linear-gradient(145deg,
+                rgba(255, 255, 255, 0.09),
+                rgba(255, 255, 255, 0.05));
             transform: translateY(-2px);
             box-shadow:
-                0 12px 30px rgba(0,0,0,0.25),
-                0 0 0 1px rgba(56, 189, 248, 0.1);
+                0 8px 24px rgba(0,0,0,0.35),
+                0 0 0 1px rgba(255, 215, 0, 0.25);
+            border-color: rgba(255, 215, 0, 0.35);
         }
 
         .af-gl-card:hover::before {
@@ -315,46 +339,45 @@ const injectGlassStyles = () => {
             border-radius: 10px;
             margin-bottom: 10px;
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-            font-size: 13px;
+            border: 1.5px solid rgba(255, 215, 0, 0.2);
+            font-size: 12px;
             letter-spacing: 0.02em;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
         .af-gl-bg-info {
-            background: linear-gradient(135deg, rgba(30, 144, 255, 0.35), rgba(30, 144, 255, 0.2));
-            border-color: rgba(30, 144, 255, 0.3);
+            background: rgba(30, 144, 255, 0.3);
+            border-color: rgba(30, 144, 255, 0.4);
         }
 
         .af-gl-bg-danger {
-            background: linear-gradient(135deg, rgba(220, 20, 60, 0.35), rgba(220, 20, 60, 0.2));
-            border-color: rgba(220, 20, 60, 0.3);
+            background: rgba(220, 20, 60, 0.3);
+            border-color: rgba(220, 20, 60, 0.4);
         }
 
         .af-gl-bg-success {
-            background: linear-gradient(135deg, rgba(46, 139, 87, 0.35), rgba(46, 139, 87, 0.2));
-            border-color: rgba(46, 139, 87, 0.3);
+            background: rgba(46, 139, 87, 0.3);
+            border-color: rgba(46, 139, 87, 0.4);
         }
 
         .af-gl-bg-vu {
-            background: linear-gradient(135deg, rgba(245, 131, 32, 0.6), rgba(245, 131, 32, 0.3));
-            border-color: rgba(245, 131, 32, 0.4);
-            box-shadow: 0 0 20px rgba(245, 131, 32, 0.1);
+            background: rgba(245, 131, 32, 0.5);
+            border-color: rgba(245, 131, 32, 0.5);
         }
 
         .af-gl-bg-regular {
-            background: linear-gradient(135deg, rgba(69, 199, 52, 0.3), rgba(69, 199, 52, 0.15));
-            border-color: rgba(69, 199, 52, 0.3);
+            background: rgba(69, 199, 52, 0.25);
+            border-color: rgba(69, 199, 52, 0.4);
         }
 
         .af-gl-bg-lost {
-            background: linear-gradient(135deg, rgba(138, 28, 129, 0.55), rgba(138, 28, 129, 0.3));
-            border-color: rgba(138, 28, 129, 0.4);
+            background: rgba(138, 28, 129, 0.45);
+            border-color: rgba(138, 28, 129, 0.5);
         }
 
-        .af-gl-text-accent { color: #7dd3fc; font-weight: 500; }
-        .af-gl-text-success { color: #86efac; font-weight: 500; }
-        .af-gl-text-warning { color: #fde047; font-weight: 500; }
+        .af-gl-text-accent { color: #7dd3fc; font-weight: 600; }
+        .af-gl-text-success { color: #86efac; font-weight: 600; }
+        .af-gl-text-warning { color: #fde047; font-weight: 600; }
         .af-gl-text-muted { color: #94a3b8; }
 
         .cursor-pointer {
@@ -363,7 +386,7 @@ const injectGlassStyles = () => {
         }
 
         .cursor-pointer:hover {
-            opacity: 0.8;
+            opacity: 0.85;
             transform: scale(1.05);
         }
 
@@ -379,15 +402,17 @@ const injectGlassStyles = () => {
 
         /* Glow эффект для активных элементов */
         .af-gl-btn-primary {
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(37, 99, 235, 0.3));
-            border-color: rgba(56, 189, 248, 0.4);
+            background: linear-gradient(135deg,
+                rgba(255, 215, 0, 0.3),
+                rgba(56, 189, 248, 0.25));
+            border-color: rgba(255, 215, 0, 0.4);
         }
 
         .af-gl-btn-primary:hover:not(:disabled) {
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.5), rgba(37, 99, 235, 0.5));
-            box-shadow:
-                0 8px 25px rgba(0,0,0,0.3),
-                0 0 30px rgba(56, 189, 248, 0.25);
+            background: linear-gradient(135deg,
+                rgba(255, 215, 0, 0.45),
+                rgba(56, 189, 248, 0.35));
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
         }
 
         /* Заголовки секций */
@@ -395,22 +420,26 @@ const injectGlassStyles = () => {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-weight: 600;
-    font-size: 13px;
-    color: #e2e8f0;
-    margin-bottom: 4px;
+    font-weight: 700;
+    font-size: 12px;
+    color: #fefefe;
+    margin-bottom: 6px;
     padding: 0 4px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .af-gl-section-icon {
-    font-size: 14px;
-    filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4));
+    font-size: 13px;
+    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4));
 }
 
 .af-gl-section-line {
     flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(56, 189, 248, 0.3), transparent);
+    height: 1.5px;
+    background: linear-gradient(90deg,
+        rgba(255, 215, 0, 0.4),
+        transparent);
     margin-left: 4px;
 }
 
@@ -418,25 +447,25 @@ const injectGlassStyles = () => {
 .af-gl-services-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 10px;
 }
 
 /* Карточка услуги премиум */
 .af-gl-service-card {
-    background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px;
-    padding: 16px;  /* БЫЛО 14px */
+    background: linear-gradient(145deg,
+        rgba(255,255,255,0.08),
+        rgba(255,255,255,0.03));
+    border: 1.5px solid rgba(255, 215, 0, 0.2);
+    border-radius: 14px;
+    padding: 12px;
     position: relative;
     overflow: hidden;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow:
-        0 4px 15px rgba(0,0,0,0.2),
-        inset 0 1px 0 rgba(255,255,255,0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
-    gap: 10px;  /* БЫЛО 8px */
-    min-width: 0;  /* Разрешаем сжиматься в grid */
+    gap: 8px;
+    min-width: 0;
 }
 
 .af-gl-service-card::before {
@@ -446,14 +475,8 @@ const injectGlassStyles = () => {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg,
-        rgba(56, 189, 248, 0.8),
-        rgba(168, 85, 247, 0.6),
-        rgba(56, 189, 248, 0.8)
-    );
-    background-size: 200% 100%;
-    animation: shimmer 3s linear infinite;
-    opacity: 0.7;
+    background: rgba(255, 215, 0, 0.6);
+    opacity: 0.8;
 }
 
 @keyframes shimmer {
@@ -462,12 +485,11 @@ const injectGlassStyles = () => {
 }
 
 .af-gl-service-card:hover {
-    transform: translateY(-3px) scale(1.01);
+    transform: translateY(-2px);
     box-shadow:
-        0 12px 35px rgba(0,0,0,0.3),
-        0 0 30px rgba(56, 189, 248, 0.1),
-        inset 0 1px 0 rgba(255,255,255,0.12);
-    border-color: rgba(56, 189, 248, 0.25);
+        0 8px 24px rgba(0,0,0,0.4),
+        0 0 20px rgba(255, 215, 0, 0.1);
+    border-color: rgba(255, 215, 0, 0.35);
 }
 
 /* Статус-бейдж на карточке */
@@ -477,29 +499,29 @@ const injectGlassStyles = () => {
     gap: 4px;
     padding: 4px 10px;
     border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 10px;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     width: fit-content;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
 .af-gl-status-vu {
-    background: linear-gradient(135deg, rgba(245, 131, 32, 0.25), rgba(245, 131, 32, 0.1));
-    border: 1px solid rgba(245, 131, 32, 0.4);
+    background: rgba(245, 131, 32, 0.3);
+    border: 1.5px solid rgba(245, 131, 32, 0.5);
     color: #fdba74;
 }
 
 .af-gl-status-regular {
-    background: linear-gradient(135deg, rgba(69, 199, 52, 0.2), rgba(69, 199, 52, 0.08));
-    border: 1px solid rgba(69, 199, 52, 0.35);
+    background: rgba(69, 199, 52, 0.25);
+    border: 1.5px solid rgba(69, 199, 52, 0.45);
     color: #86efac;
 }
 
 .af-gl-status-lost {
-    background: linear-gradient(135deg, rgba(138, 28, 129, 0.25), rgba(138, 28, 129, 0.1));
-    border: 1px solid rgba(138, 28, 129, 0.4);
+    background: rgba(138, 28, 129, 0.3);
+    border: 1.5px solid rgba(138, 28, 129, 0.5);
     color: #d8b4fe;
 }
 
@@ -513,22 +535,23 @@ const injectGlassStyles = () => {
 
 .af-gl-service-id {
     font-family: 'SF Mono', 'Consolas', monospace;
-    font-size: 11px;
-    color: #94a3b8;
-    background: rgba(0,0,0,0.3);
+    font-size: 10px;
+    color: #cbd5e1;
+    background: rgba(0,0,0,0.4);
     padding: 3px 8px;
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255, 215, 0, 0.15);
     white-space: nowrap;
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .af-gl-service-id .af-gl-icon-btn {
-    font-size: 12px;
-    opacity: 0.5;
+    font-size: 11px;
+    opacity: 0.6;
     line-height: 1;
 }
 
@@ -538,13 +561,13 @@ const injectGlassStyles = () => {
 
 .af-gl-copy-sid {
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s;
     display: inline-block;
 }
 
 .af-gl-copy-sid:hover {
     transform: scale(1.2);
-    filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.6));
+    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
 }
 
 /* Баланс */
@@ -553,23 +576,24 @@ const injectGlassStyles = () => {
     align-items: center;
     gap: 4px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     color: #fde047;
 }
 
 .af-gl-service-balance::before {
     content: '💰Баланс';
     font-size: 10px;
+    font-weight: 600;
 }
 
 /* Тип услуги — перенос длинных строк */
 .af-gl-service-type {
     font-size: 12px;
     color: #7dd3fc;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.4;
     padding: 4px 0;
-    word-break: break-word;  /* Перенос длинных слов */
+    word-break: break-word;
     hyphens: auto;
 }
 
@@ -580,40 +604,41 @@ const injectGlassStyles = () => {
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 5px 10px;  /* Больше паддинг */
-    background: rgba(69, 199, 52, 0.08);
+    padding: 5px 10px;
+    background: rgba(69, 199, 52, 0.12);
     border-radius: 10px;
-    border: 1px solid rgba(69, 199, 52, 0.15);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    border: 1.5px solid rgba(69, 199, 52, 0.25);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    word-wrap: break-word;
+    white-space: normal;
+    line-height: 1.4;
 }
 
 .af-gl-service-teacher.missing {
     color: #fca5a5;
-    background: rgba(220, 20, 60, 0.08);
-    border-color: rgba(220, 20, 60, 0.15);
+    background: rgba(220, 20, 60, 0.12);
+    border-color: rgba(220, 20, 60, 0.25);
 }
 
 /* Кнопка копирования ID */
 .af-gl-copy-btn {
     cursor: pointer;
-    transition: all 0.2s;
-    opacity: 0.6;
-    font-size: 13px;
+    transition: all 0.25s;
+    opacity: 0.7;
+    font-size: 12px;
 }
 
 .af-gl-copy-btn:hover {
     opacity: 1;
     transform: scale(1.2);
-    filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.6));
+    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
 }
 
 /* Адаптив — на узких экранах одна колонка */
 @media (max-width: 480px) {
     .af-gl-wrapper {
         width: 100%;
-        max-width: 460px;
+        max-width: 420px;
     }
     .af-gl-services-grid {
         grid-template-columns: 1fr;
@@ -624,47 +649,56 @@ const injectGlassStyles = () => {
 .af-gl-empty-state {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 30px;
-    color: #94a3b8;
-    font-size: 13px;
-    background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-    border-radius: 16px;
-    border: 1px dashed rgba(255,255,255,0.1);
+    padding: 24px;
+    color: #cbd5e1;
+    font-size: 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 14px;
+    border: 2px dashed rgba(255, 215, 0, 0.2);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
 }
 
 /* Комплектации — компактные карточки */
 .af-gl-complect-card {
-    background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 14px;
-    padding: 12px;
+    background: linear-gradient(145deg,
+        rgba(255,255,255,0.06),
+        rgba(255,255,255,0.02));
+    border: 1.5px solid rgba(255, 215, 0, 0.2);
+    border-radius: 12px;
+    padding: 10px;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
 }
 
 .af-gl-complect-card:hover {
-    background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
-    transform: translateX(4px);
+    background: linear-gradient(145deg,
+        rgba(255,255,255,0.09),
+        rgba(255,255,255,0.04));
+    transform: translateX(3px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    border-color: rgba(255, 215, 0, 0.3);
 }
 
 .af-gl-complect-header {
     font-weight: 700;
-    font-size: 12px;
+    font-size: 11px;
     margin-bottom: 8px;
     padding: 6px 10px;
     border-radius: 10px;
     text-align: center;
+    letter-spacing: 0.02em;
 }
 
 .af-gl-complect-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 4px;
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .af-gl-complect-table td {
-    padding: 6px 8px;
-    background: rgba(0,0,0,0.2);
+    padding: 5px 8px;
+    background: rgba(0,0,0,0.3);
     border-radius: 6px;
 }
 
@@ -672,6 +706,7 @@ const injectGlassStyles = () => {
     border-radius: 6px 0 0 6px;
     font-family: monospace;
     color: #7dd3fc;
+    font-weight: 600;
 }
 
 .af-gl-complect-table td:last-child {
@@ -689,7 +724,7 @@ const injectGlassStyles = () => {
 
 .af-gl-sync-btn:hover {
     transform: rotate(180deg);
-    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
 }
 
 /* Группа OTP — инпут + таймер */
@@ -702,11 +737,11 @@ const injectGlassStyles = () => {
 }
 
 .af-gl-input-otp {
-    min-width: 80px;
+    min-width: 70px;
     text-align: center;
     font-family: 'SF Mono', 'Consolas', monospace;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
     letter-spacing: 2px;
 }
 
@@ -720,8 +755,8 @@ const injectGlassStyles = () => {
 
 .af-gl-otp-timer-ring {
     position: relative;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -738,28 +773,27 @@ const injectGlassStyles = () => {
 
 .af-gl-otp-timer-bg {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.1);
+    stroke: rgba(255, 255, 255, 0.15);
     stroke-width: 2.5;
 }
 
 .af-gl-otp-timer-progress {
     fill: none;
-    stroke: #38bdf8;
+    stroke: #ffd700;
     stroke-width: 2.5;
     stroke-linecap: round;
-    stroke-dasharray: 62.83; /* 2 * PI * 10 */
+    stroke-dasharray: 62.83;
     stroke-dashoffset: 0;
     transition: stroke-dashoffset 0.1s linear;
-    filter: drop-shadow(0 0 3px rgba(56, 189, 248, 0.5));
+    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.5));
 }
 
 .af-gl-otp-timer-text {
     font-size: 10px;
-    font-weight: 700;
-    color: #38bdf8;
+    font-weight: 800;
+    color: #ffd700;
     z-index: 1;
     font-family: 'SF Mono', monospace;
-    text-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
 }
 
 /* Анимация пульсации когда мало времени */
@@ -769,31 +803,32 @@ const injectGlassStyles = () => {
 }
 
 .af-gl-otp-timer.urgent .af-gl-otp-timer-ring {
-    animation: otpUrgent 0.8s ease-in-out infinite;
+    animation: otpUrgent 0.7s ease-in-out infinite;
 }
 
 .af-gl-otp-timer.urgent .af-gl-otp-timer-progress {
     stroke: #f87171;
-    filter: drop-shadow(0 0 4px rgba(248, 113, 113, 0.6));
+    filter: drop-shadow(0 0 5px rgba(248, 113, 113, 0.6));
 }
 
 .af-gl-otp-timer.urgent .af-gl-otp-timer-text {
     color: #f87171;
-    text-shadow: 0 0 6px rgba(248, 113, 113, 0.4);
 }
 
 /* Компактный инфо-контейнер */
 .af-gl-info-compact {
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(145deg,
+        rgba(255, 255, 255, 0.05),
+        rgba(255, 255, 255, 0.02));
+    border: 1.5px solid rgba(255, 215, 0, 0.15);
     border-radius: 16px;
     padding: 14px;
     display: flex;
     flex-direction: column;
     gap: 10px;
     box-shadow:
-        0 4px 16px rgba(0,0,0,0.2),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+        0 4px 16px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255, 215, 0, 0.08);
 }
 
 /* Верхняя строка: аватар + имя */
@@ -814,35 +849,35 @@ const injectGlassStyles = () => {
 .af-gl-info-compact,
 .af-gl-info-main,
 .af-gl-avatar-wrapper-compact {
-    overflow: visible !important; /* Принудительно */
+    overflow: visible !important;
 }
 
 /* Аватарка при ховере */
 .af-gl-avatar-compact {
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
     border-radius: 12px;
-    border: 2px solid rgba(56, 189, 248, 0.4);
+    border: 2px solid rgba(255, 215, 0, 0.5);
     object-fit: cover;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     cursor: zoom-in;
     position: relative;
     z-index: 1;
+    box-shadow:
+        0 2px 12px rgba(0,0,0,0.4),
+        0 0 15px rgba(255, 215, 0, 0.12);
 }
 
 .af-gl-avatar-compact:hover {
-    transform: scale(3.5);
+    transform: scale(3.2);
     z-index: 999999;
-    position: relative; /* Остаёмся в потоке но поверх */
-    border-radius: 16px;
-    border-color: rgba(56, 189, 248, 0.9);
+    position: relative;
+    border-radius: 14px;
+    border-color: rgba(255, 215, 0, 1);
     box-shadow:
-        0 25px 80px rgba(0,0,0,0.7),
-        0 0 0 8px rgba(56, 189, 248, 0.3),
-        0 0 100px rgba(56, 189, 248, 0.4);
-
-    /* Смещаем вправо, чтобы не обрезалось слева */
-    margin-right: -100px;
+        0 20px 60px rgba(0,0,0,0.8),
+        0 0 0 6px rgba(255, 215, 0, 0.3);
+    margin-right: -80px;
     margin-left: 20px;
 }
 
@@ -855,10 +890,10 @@ const injectGlassStyles = () => {
 }
 
 .af-gl-user-type {
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
 }
 
 .af-gl-user-name-row {
@@ -874,8 +909,8 @@ const injectGlassStyles = () => {
 
 .af-gl-user-name {
     font-weight: 700;
-    font-size: 15px;
-    color: #f1f5f9;
+    font-size: 14px;
+    color: #fefefe;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -883,9 +918,9 @@ const injectGlassStyles = () => {
 
 .af-gl-icon-btn {
     cursor: pointer;
-    opacity: 0.6;
-    transition: all 0.2s;
-    font-size: 13px;
+    opacity: 0.7;
+    transition: all 0.25s;
+    font-size: 12px;
     line-height: 1;
     flex-shrink: 0;
 }
@@ -893,6 +928,7 @@ const injectGlassStyles = () => {
 .af-gl-icon-btn:hover {
     opacity: 1;
     transform: scale(1.2);
+    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.5));
 }
 
 /* Сетка контактов 2×2 */
@@ -903,27 +939,29 @@ const injectGlassStyles = () => {
 }
 
 .af-gl-info-cell {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1.5px solid rgba(255, 215, 0, 0.12);
     border-radius: 10px;
     padding: 8px 10px;
     display: flex;
     flex-direction: column;
     gap: 3px;
-    transition: all 0.2s;
+    transition: all 0.25s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .af-gl-info-cell:hover {
-    background: rgba(0, 0, 0, 0.3);
-    border-color: rgba(56, 189, 248, 0.15);
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 215, 0, 0.2);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
 }
 
 .af-gl-info-label {
-    font-size: 10px;
-    color: #94a3b8;
+    font-size: 9px;
+    color: #cbd5e1;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .af-gl-info-value-row {
@@ -934,9 +972,9 @@ const injectGlassStyles = () => {
 }
 
 .af-gl-info-value {
-    font-size: 12px;
-    color: #e2e8f0;
-    font-weight: 500;
+    font-size: 11px;
+    color: #f1f5f9;
+    font-weight: 600;
 }
 
 /* Identity строка */
@@ -946,9 +984,10 @@ const injectGlassStyles = () => {
     gap: 8px;
     font-size: 11px;
     padding: 6px 10px;
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.25);
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 215, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 /* Время — чипсы */
@@ -965,28 +1004,29 @@ const injectGlassStyles = () => {
     align-items: center;
     gap: 4px;
     padding: 3px 10px;
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.35);
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(255, 215, 0, 0.15);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .af-gl-time-label {
-    color: #94a3b8;
-    font-size: 9px;
+    color: #cbd5e1;
+    font-size: 8px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .af-gl-time-value {
-    color: #38bdf8;
-    font-weight: 700;
+    color: #ffd700;
+    font-weight: 800;
     font-family: 'SF Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .af-gl-time-divider {
-    color: rgba(148, 163, 184, 0.4);
+    color: rgba(148, 163, 184, 0.5);
     font-size: 10px;
 }
 
@@ -996,37 +1036,38 @@ const injectGlassStyles = () => {
     align-items: center;
     margin-top: 8px;
     padding-top: 8px;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1.5px solid rgba(255, 215, 0, 0.1);
 }
 
 .af-gl-service-meta {
-    font-size: 11px;
-    color: #64748b;
+    font-size: 10px;
+    color: #94a3b8;
     font-family: 'SF Mono', monospace;
 }
 
 .af-gl-service-meta strong {
-    color: #94a3b8;
-    font-weight: 600;
+    color: #cbd5e1;
+    font-weight: 700;
 }
 
 .af-gl-copy-inline {
     background: transparent;
     border: none;
-    color: #38bdf8;
+    color: #ffd700;
     font-size: 11px;
     cursor: pointer;
     padding: 4px 8px;
     border-radius: 6px;
-    transition: all 0.2s;
+    transition: all 0.25s;
     display: flex;
     align-items: center;
     gap: 4px;
+    font-weight: 600;
 }
 
 .af-gl-copy-inline:hover {
-    background: rgba(56, 189, 248, 0.1);
-    text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+    background: rgba(255, 215, 0, 0.12);
+    transform: scale(1.05);
 }
     `;
     document.head.appendChild(style);
@@ -1071,7 +1112,7 @@ const win_serviceinfo = `
 <div class="af-gl-wrapper">
     <div class="af-gl-panel">
 
-        <div class="af-gl-header" id="servicehead" style="cursor: -webkit-grab;">
+        <div class="af-gl-header chmaf-drag-handle" id="servicehead" style="cursor: -webkit-grab;">
             <button title="Скрыть меню" id="hideMeservice" class="af-gl-btn af-gl-btn-icon buttonHide" style="color: #ef4444; min-width: 32px;">❌</button>
             <button title="CRM" id="GotoCRM" class="af-gl-btn" style="min-width: 50px;">CRM</button>
             <button title="Показать контакты" id="dounhidemailandphone" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">👁‍🗨</button>
@@ -1187,7 +1228,7 @@ const win_serviceinfo = `
             </div>
         </div>
 
-        <div class="af-gl-section-title">
+        <div id="serviceSectionTitle" class="af-gl-section-title">
             <span class="af-gl-section-icon">✨</span>
             <span>Информация об услугах</span>
             <div class="af-gl-section-line"></div>
@@ -1197,7 +1238,7 @@ const win_serviceinfo = `
             <div id="servicetable" class="af-gl-services-grid"></div>
         </div>
 
-        <div class="af-gl-section-title" style="margin-top: 8px;">
+        <div id="complektSectionTitle" class="af-gl-section-title" style="margin-top: 8px;">
             <span class="af-gl-section-icon">📦</span>
             <span>Комплектации</span>
             <div class="af-gl-section-line"></div>
@@ -1212,7 +1253,7 @@ const win_serviceinfo = `
 const win_Timetable = `
 <div class="af-gl-wrapper" style="width: 450px;">
     <div class="af-gl-panel">
-        <div class="af-gl-header" id="HeadTimetable" style="cursor: -webkit-grab; justify-content: space-between;">
+        <div class="af-gl-header chmaf-drag-handle" id="HeadTimetable" style="cursor: -webkit-grab; justify-content: space-between;">
             <span style="font-weight: bold; font-size: 14px;">📅 Расписание</span>
             <button class="af-gl-btn" id="hideMeTT" style="color: #ef4444;">❌</button>
         </div>
@@ -1229,7 +1270,7 @@ const win_Timetable = `
 const win_Complectations = `
 <div class="af-gl-wrapper" style="width: 500px;">
     <div class="af-gl-panel">
-        <div class="af-gl-header" id="headComplectations" style="cursor: -webkit-grab; justify-content: space-between;">
+        <div class="af-gl-header chmaf-drag-handle" id="headComplectations" style="cursor: -webkit-grab; justify-content: space-between;">
             <span style="font-weight: bold; font-size: 14px;">📦 Комплектации</span>
             <button class="af-gl-btn" id="hideComplecations" style="color: #ef4444;">❌</button>
         </div>
@@ -1275,12 +1316,12 @@ const sendMessageAsync = (message) => {
 document.getElementById('servicehead')?.addEventListener('dblclick', (a) => {
     if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') {
         document.getElementById('AF_Service').style.display = 'none';
-        document.getElementById('butServ')?.classList.remove('activeScriptBtn');
+        document.getElementById('butServ')?.classList.remove('active');
     }
 });
 document.getElementById('hideMeservice')?.addEventListener('click', () => {
     document.getElementById('AF_Service').style.display = 'none';
-    document.getElementById('butServ')?.classList.remove('activeScriptBtn');
+    document.getElementById('butServ')?.classList.remove('active');
 });
 
 // Кнопка Identity (раскрыть почту/телефон)
@@ -1577,11 +1618,11 @@ function getusernamecrm() {
         document.getElementById('usrAge').textContent = ageIco;
 
         // Скрываем/показываем студентские поля
-        const elsToHide = ['pochtaIdentity', 'telefonIdentity', 'checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'complekttable', 'newTrm', 'butTeacherNabor', 'personalteacherpage'];
+        const elsToHide = ['pochtaIdentity', 'telefonIdentity', 'checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'complekttable', 'newTrm', 'butTeacherNabor', 'personalteacherpage', 'serviceList', 'complektList', 'serviceSectionTitle', 'complektSectionTitle'];
         elsToHide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
         if (isStudent) {
-            ['checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'pochtaIdentity', 'telefonIdentity', 'complekttable'].forEach(id => {
+            ['checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'pochtaIdentity', 'telefonIdentity', 'complekttable', 'serviceList', 'complektList', 'serviceSectionTitle', 'complektSectionTitle'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = '';
             });
@@ -1592,6 +1633,7 @@ function getusernamecrm() {
             });
             document.getElementById('usrAge').style.display = 'none';
             document.getElementById('servicetable').innerHTML = '';
+            // Секции услуг и комплектаций уже скрыты через elsToHide
         }
 
         // Язык
@@ -1813,7 +1855,6 @@ function getservices(stidNew) {
                                 <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID услуги">📋</span>
                             </span>
                         </div>
-                        ${balanceHtml}
                         <div class="af-gl-service-type">💡 ${sType}</div>
                     </div>`;
                 }

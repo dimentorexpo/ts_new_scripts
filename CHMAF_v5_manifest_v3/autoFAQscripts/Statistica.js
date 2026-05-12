@@ -138,15 +138,47 @@ async function getStats() {
 // ============================================================================
 
 function renderStatsTable(operators, chatCountMap, currentOperator) {
-    // Уменьшен шрифт и padding для компактности
-    const table = Object.assign(document.createElement('table'), { id: 'tableStats', style: 'table-layout:auto;width:750px;text-align:center;border-collapse:collapse;font-size:13px' });
-    const columns = ["👨‍💻Оператор", "💪Закрыто", "⚡Пощупано", "🕒SLA", "⚠AvgCSAT", "🤖%A3"];
+    const table = Object.assign(document.createElement('table'), {
+        id: 'tableStats',
+        style: `
+            table-layout: auto;
+            width: 100%;
+            text-align: center;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.2);
+            animation: tableEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        `
+    });
 
-    const thead = document.createElement('thead'), headerRow = document.createElement('tr');
-    headerRow.style.backgroundColor = 'hsl(210, 53%, 48%)';
+    const columns = ["👨‍💻Оператор", "💪Закрыто", "⚡Пощупано", "🕒SLA", "⚠AvgCSAT", "🤖%A3", "⏱AHT"];
+
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    headerRow.style.cssText = `
+        background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+        box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+    `;
 
     columns.forEach(text => {
-        const th = Object.assign(document.createElement('th'), { textContent: text, style: 'padding:5px 8px;border:1px solid #dee2e6;font-weight:600' });
+        const th = Object.assign(document.createElement('th'), {
+            textContent: text,
+            style: `
+                padding: 14px 12px;
+                border: none;
+                font-weight: 700;
+                color: #0f172a;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                font-size: 12px;
+                text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+                position: relative;
+            `
+        });
         headerRow.appendChild(th);
     });
     thead.appendChild(headerRow);
@@ -155,23 +187,73 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
     const tbody = document.createElement('tbody');
     const fragment = document.createDocumentFragment();
 
-    operators.forEach((op) => {
-        const tr = Object.assign(document.createElement('tr'), { style: 'borderBottom:1px solid #eee' });
-        tr.style.border = '1px solid bisque';
+    operators.forEach((op, index) => {
+        const tr = Object.assign(document.createElement('tr'), {
+            style: `
+                border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+                transition: all 0.3s ease;
+                animation: rowFadeIn 0.4s ease forwards;
+                animation-delay: ${index * 0.05}s;
+                opacity: 0;
+            `
+        });
+
+        tr.onmouseenter = function() {
+            this.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(168, 85, 247, 0.1) 100%)';
+            this.style.transform = 'scale(1.02)';
+            this.style.boxShadow = '0 4px 20px rgba(56, 189, 248, 0.3)';
+        };
+        tr.onmouseleave = function() {
+            this.style.background = '';
+            this.style.transform = '';
+            this.style.boxShadow = '';
+        };
 
         const isCurrent = op.operator === currentOperator;
-        const nameStyle = `text-align:left;padding:4px 8px${isCurrent ? ';color:#53db4b;font-weight:700;text-shadow:1px 2px 5px rgba(0,0,0,0.55)' : ''}`;
+        const nameStyle = `
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: ${isCurrent ? '800' : '600'};
+            color: ${isCurrent ? '#53db4b' : '#e2e8f0'};
+            text-shadow: ${isCurrent ? '0 0 10px rgba(83, 219, 75, 0.6), 1px 2px 5px rgba(0,0,0,0.55)' : 'none'};
+            position: relative;
+        `;
 
         const tdName = Object.assign(document.createElement('td'), { textContent: op.operator, style: nameStyle });
-        tr.appendChild(tdName);['chtclosed', 'chtcnt', 'sladata', 'csatdata', 'aclosedchatsdata'].forEach((attr, i) => {
+
+        if (isCurrent) {
+            const badge = document.createElement('span');
+            badge.textContent = '⭐';
+            badge.style.cssText = `
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 16px;
+                animation: starPulse 2s ease-in-out infinite;
+            `;
+            tdName.style.paddingLeft = '28px';
+            tdName.appendChild(badge);
+        }
+
+        tr.appendChild(tdName);
+
+        ['chtclosed', 'chtcnt', 'sladata', 'csatdata', 'aclosedchatsdata', 'ahtdata'].forEach((attr, i) => {
             const td = document.createElement('td');
-            td.style.padding = '4px 8px'; // Компактный padding
-            td.style.border = '1px solid bisque';
+            td.style.cssText = `
+                padding: 12px 10px;
+                border: none;
+                color: #cbd5e1;
+                font-weight: 600;
+            `;
+
             if (attr === 'chtcnt') {
                 td.textContent = chatCountMap.get(op.operator) ?? 0;
                 td.className = 'chtcnt';
+                td.style.color = '#38bdf8';
+                td.style.textShadow = '0 0 8px rgba(56, 189, 248, 0.5)';
             } else {
-                td.innerHTML = '<span style="font-size: 10px; opacity: 0.7;">⏳</span>';
+                td.innerHTML = '<span style="font-size: 10px; opacity: 0.7; animation: loadingPulse 1.5s ease-in-out infinite;">⏳</span>';
                 td.setAttribute('name', attr);
             }
             tr.appendChild(td);
@@ -182,6 +264,28 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
 
     tbody.appendChild(fragment);
     table.appendChild(tbody);
+
+    // Добавляем CSS анимации
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes tableEntrance {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes rowFadeIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes starPulse {
+            0%, 100% { transform: translateY(-50%) scale(1); filter: brightness(1); }
+            50% { transform: translateY(-50%) scale(1.2); filter: brightness(1.5); }
+        }
+        @keyframes loadingPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
 
     const output = document.getElementById('outputstatafield');
     if (output) {
@@ -195,26 +299,228 @@ function renderSummaryStats(operators, chatCountMap) {
     const output = document.getElementById('outputstatafield');
     if (!output) return;
 
-    // Считаем только пощупанные сразу, закрытые теперь будут "⏳", пока не посчитаются реальные
     const totalTouched = operators.reduce((s, o) => s + (chatCountMap.get(o.operator) ?? 0), 0);
 
-    const summary = Object.assign(document.createElement('div'), { style: 'margin:15px 0 0 50px;font-size:14px;line-height:1.8' });
+    const summary = Object.assign(document.createElement('div'), {
+        style: `
+            margin: 30px 0 0 0;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border-radius: 16px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: summaryEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
+        `
+    });
 
     const stats = [
-        { label: '📦 Закрыто чатов:', value: '<span id="allChatsClsd">⏳</span>' },
-        { label: '✋ Пощупано чатов:', value: totalTouched },
-        { label: '🤖 Средний %АЗ:', value: '<span id="avgAutoClosedGroup">⏳</span>' },
-        { label: '🌟 Средний CSAT:', value: '<span id="avgCsatonGroup">⏳</span>' },
-        { label: '📋 Разбивка по оценкам:', value: '<span id="CSATDetails">⏳</span>' },
-        { label: '🕒 SLA закрытия:', value: '<span id="SLAonGroup">⏳</span>' },
-        { label: '🚀 AFRT:', value: '<span id="AFRTGroup">⏳</span>' },
+        { label: '📦 Закрыто чатов:', value: '<span id="allChatsClsd" class="stat-loading">⏳</span>', icon: '📦', color: '#38bdf8', compact: true },
+        { label: '✋ Пощупано чатов:', value: totalTouched, icon: '✋', color: '#a855f7', compact: true },
+        { label: '🤖 Средний %АЗ:', value: '<span id="avgAutoClosedGroup" class="stat-loading">⏳</span>', icon: '🤖', color: '#10b981', compact: true },
+        { label: '🌟 Средний CSAT:', value: '<span id="avgCsatonGroup" class="stat-loading">⏳</span>', icon: '🌟', color: '#f59e0b', compact: true },
+        { label: '⏱ Средний AHT:', value: '<span id="avgAHTGroup" class="stat-loading">⏳</span>', icon: '⏱', color: '#06b6d4', compact: true },
+        { label: '📋 Разбивка по оценкам:', value: '<span id="CSATDetails" class="stat-loading">⏳</span>', icon: '📋', color: '#ec4899', compact: false },
+        { label: '🕒 SLA закрытия:', value: '<span id="SLAonGroup" class="stat-loading">⏳</span>', icon: '🕒', color: '#8b5cf6', compact: false },
+        { label: '🚀 AFRT:', value: '<span id="AFRTGroup" class="stat-loading">⏳</span>', icon: '🚀', color: '#14b8a6', compact: false },
     ];
 
-    stats.forEach(stat => {
-        const div = document.createElement('div');
-        div.innerHTML = `${stat.label} <strong>${stat.value}</strong>`;
-        summary.appendChild(div);
+    // Компактные карточки (2 колонки)
+    const compactGrid = document.createElement('div');
+    compactGrid.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 15px;
+    `;
+
+    stats.filter(s => s.compact).forEach((stat, index) => {
+        const statCard = document.createElement('div');
+        statCard.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(${stat.color === '#38bdf8' ? '56, 189, 248' : stat.color === '#a855f7' ? '168, 85, 247' : stat.color === '#10b981' ? '16, 185, 129' : stat.color === '#06b6d4' ? '6, 182, 212' : '245, 158, 11'}, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            animation: statCardSlide 0.5s ease forwards;
+            animation-delay: ${index * 0.1}s;
+            opacity: 0;
+            position: relative;
+            overflow: hidden;
+        `;
+
+        statCard.onmouseenter = function() {
+            this.style.transform = 'translateY(-3px) scale(1.02)';
+            this.style.boxShadow = `0 8px 30px rgba(0, 0, 0, 0.5), 0 0 25px ${stat.color}50`;
+            this.style.borderColor = stat.color + '80';
+        };
+
+        statCard.onmouseleave = function() {
+            this.style.transform = '';
+            this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)';
+            this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        };
+
+        const iconBox = document.createElement('div');
+        iconBox.style.cssText = `
+            font-size: 36px;
+            min-width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, ${stat.color}30, ${stat.color}10);
+            border-radius: 12px;
+            border: 1px solid ${stat.color}40;
+            box-shadow: 0 0 20px ${stat.color}30, inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            filter: drop-shadow(0 0 10px ${stat.color});
+        `;
+        iconBox.textContent = stat.icon;
+
+        const contentBox = document.createElement('div');
+        contentBox.style.cssText = `
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        `;
+
+        const labelDiv = document.createElement('div');
+        labelDiv.style.cssText = `
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        `;
+        labelDiv.textContent = stat.label.replace(/[📦✋🤖🌟📋🕒🚀]/g, '').trim();
+
+        const valueDiv = document.createElement('div');
+        valueDiv.style.cssText = `
+            font-size: 22px;
+            font-weight: 800;
+            color: ${stat.color};
+            text-shadow: 0 0 10px ${stat.color}80;
+            line-height: 1.2;
+        `;
+        valueDiv.innerHTML = typeof stat.value === 'number' ? stat.value : stat.value;
+
+        contentBox.appendChild(labelDiv);
+        contentBox.appendChild(valueDiv);
+
+        statCard.appendChild(iconBox);
+        statCard.appendChild(contentBox);
+
+        compactGrid.appendChild(statCard);
     });
+
+    summary.appendChild(compactGrid);
+
+    // Полноразмерные карточки (1 колонка)
+    stats.filter(s => !s.compact).forEach((stat, index) => {
+        const statCard = document.createElement('div');
+        statCard.style.cssText = `
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 18px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(${stat.color === '#ec4899' ? '236, 72, 153' : stat.color === '#8b5cf6' ? '139, 92, 246' : '20, 184, 166'}, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            animation: statCardSlide 0.5s ease forwards;
+            animation-delay: ${(index + 4) * 0.1}s;
+            opacity: 0;
+            position: relative;
+            overflow: hidden;
+        `;
+
+        statCard.onmouseenter = function() {
+            this.style.transform = 'translateX(5px)';
+            this.style.boxShadow = `0 6px 25px rgba(0, 0, 0, 0.5), 0 0 20px ${stat.color}40`;
+            this.style.borderColor = stat.color + '80';
+        };
+
+        statCard.onmouseleave = function() {
+            this.style.transform = '';
+            this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)';
+            this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        };
+
+        const iconBox = document.createElement('div');
+        iconBox.style.cssText = `
+            font-size: 32px;
+            min-width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, ${stat.color}30, ${stat.color}10);
+            border-radius: 12px;
+            border: 1px solid ${stat.color}40;
+            box-shadow: 0 0 20px ${stat.color}30, inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            filter: drop-shadow(0 0 10px ${stat.color});
+        `;
+        iconBox.textContent = stat.icon;
+
+        const contentBox = document.createElement('div');
+        contentBox.style.cssText = `
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        `;
+
+        const labelDiv = document.createElement('div');
+        labelDiv.style.cssText = `
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        `;
+        labelDiv.textContent = stat.label.replace(/[📦✋🤖🌟📋🕒🚀]/g, '').trim();
+
+        const valueDiv = document.createElement('div');
+        valueDiv.style.cssText = `
+            font-size: 18px;
+            font-weight: 800;
+            color: ${stat.color};
+            text-shadow: 0 0 10px ${stat.color}80;
+            line-height: 1.4;
+        `;
+        valueDiv.innerHTML = typeof stat.value === 'number' ? stat.value : stat.value;
+
+        contentBox.appendChild(labelDiv);
+        contentBox.appendChild(valueDiv);
+
+        statCard.appendChild(iconBox);
+        statCard.appendChild(contentBox);
+
+        summary.appendChild(statCard);
+    });
+
+    // Добавляем CSS анимации
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes summaryEntrance {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes statCardSlide {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .stat-loading {
+            animation: loadingPulse 1.5s ease-in-out infinite;
+        }
+    `;
+    document.head.appendChild(style);
 
     output.appendChild(summary);
 }
@@ -236,12 +542,17 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
     // Переменная для подсчета общего количества всех автозакрытий по отделу
     let totalGroupAutoClosed = 0;
 
+    // Переменные для подсчета среднего AHT по отделу
+    let totalGroupHandleTimeSeconds = 0;
+    let totalGroupClosedChatsForAHT = 0;
+
     let massivchikUntarget = new Set(), massivchikTarget = new Set(), massivchikQueue = new Set();
 
     const closedchatsDataCells = document.getElementsByName('chtclosed');
     const slaDataCells = document.getElementsByName('sladata');
     const csatDataCells = document.getElementsByName('csatdata');
     const aclosedchatsDataCells = document.getElementsByName('aclosedchatsdata');
+    const ahtDataCells = document.getElementsByName('ahtdata');
 
     resetRateCounts();
     window.filteredarray = [];
@@ -258,6 +569,9 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
 
         let totalChatsForOper = 0;
         let processedChatsForOper = 0;
+
+        let totalHandleTimeSeconds = 0;
+        let closedChatsCountForAHT = 0;
 
         window.operatorAutoClosedDetails[i] = { inactivity: [], pause: [], totalClosed: 0 };
 
@@ -325,7 +639,9 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
                         window.operatorAutoClosedDetails[i].totalClosed = operclschatcount; // Сохраняем всего закрыто
 
                         // Вычисляем автозакрытия ТОЛЬКО для чатов этого оператора
-                        const autoClosedMsg = messages.find(msg => msg.eventTpe === 'CloseConversation' && ["inactivity_timer", "pause"].includes(msg.payload?.src));
+                        const messages = fres.messages || [];
+                        const autoClosedMsg = messages.find(msg => msg.eventTpe === 'CloseConversation' && msg.payload?.src && ["inactivity_timer", "pause"].includes(msg.payload.src));
+
                         if (autoClosedMsg) {
                             aclschtscount++;
                             arrayaclosedchatscount[i] = aclschtscount;
@@ -335,6 +651,36 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
                                 window.operatorAutoClosedDetails[i].inactivity.push(item.conversationId);
                             } else if (srcReason === 'pause') {
                                 window.operatorAutoClosedDetails[i].pause.push(item.conversationId);
+                            }
+                        }
+
+                        // 🕒 РАСЧЕТ AHT - только для чатов, закрытых этим оператором
+                        const closeEvent = messages.find(msg => msg.eventTpe === 'CloseConversation');
+                        const isClosedByThisOperator = closeEvent &&
+                            (closeEvent.payload?.oid === operatorIds[i] ||
+                             (closeEvent.payload?.status === 'ClosedByOperator' && closeEvent.payload?.sender === operatorIds[i]));
+
+                        // Проверяем, что чат закрыт НЕ на паузу
+                        const isClosedNotPause = closeEvent && (!closeEvent.payload?.src || closeEvent.payload.src !== "pause");
+
+                        if (isClosedByThisOperator && isClosedNotPause) {
+                            // Ищем последнее событие AssignToOperator для этого оператора
+                            const assignEvents = messages.filter(msg =>
+                                msg.eventTpe === 'AssignToOperator' &&
+                                msg.payload?.oid === operatorIds[i]
+                            );
+
+                            if (assignEvents.length > 0) {
+                                // Берем последнее назначение на этого оператора
+                                const lastAssign = assignEvents[assignEvents.length - 1];
+                                const startTime = new Date(lastAssign.ts);
+                                const endTime = new Date(closeEvent.ts);
+
+                                const durationSeconds = (endTime - startTime) / 1000;
+                                if (durationSeconds > 0) {
+                                    totalHandleTimeSeconds += durationSeconds;
+                                    closedChatsCountForAHT++;
+                                }
                             }
                         }
 
@@ -385,6 +731,18 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
             }
         }
 
+        // Обновление AHT
+        if (ahtDataCells[i]) {
+            if (closedChatsCountForAHT > 0) {
+                const ahtValue = Math.round(totalHandleTimeSeconds / closedChatsCountForAHT);
+                ahtDataCells[i].textContent = ahtValue + 's';
+                ahtDataCells[i].style.color = '#f59e0b';
+                ahtDataCells[i].style.fontWeight = '700';
+            } else {
+                ahtDataCells[i].textContent = '-';
+            }
+        }
+
         if (arraycsatcount[i] && arraycsatsumma[i]) { alloperCSATsumma += arraycsatsumma[i]; alloperCSATcount += arraycsatcount[i]; }
         if (operatorOverdueChats[i]) { alloperSLAclsed += operatorOverdueChats[i]; }
         // Фикс логики, чтобы правильно считались все закрытые чаты для отдела (а не только тех, у кого были просрочки)
@@ -393,6 +751,10 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
 
         // Считаем общее кол-во АЗ по всем операторам
         totalGroupAutoClosed += aclschtscount;
+
+        // Суммируем AHT по всем операторам
+        totalGroupHandleTimeSeconds += totalHandleTimeSeconds;
+        totalGroupClosedChatsForAHT += closedChatsCountForAHT;
 
         currentWidth += step;
         if (progressBar) {
@@ -446,6 +808,10 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
     // Добавляем вычисление Среднего %АЗ по всему отделу
     const avgAclsPct = alloperChatsclsed > 0 ? ((totalGroupAutoClosed / alloperChatsclsed) * 100).toFixed(1) + '%' : '0.0%';
     setHTML('avgAutoClosedGroup', `<span style="color:#53db4b; font-weight:bold;">${avgAclsPct}</span> <span style="font-size:12px;color:#aaa;">(АЗ: ${totalGroupAutoClosed} / Закрыто: ${alloperChatsclsed})</span>`);
+
+    // Добавляем вычисление Среднего AHT по всему отделу
+    const avgAHTValue = totalGroupClosedChatsForAHT > 0 ? Math.round(totalGroupHandleTimeSeconds / totalGroupClosedChatsForAHT) : 0;
+    set('avgAHTGroup', avgAHTValue > 0 ? avgAHTValue + 's' : 'N/A');
 
     const slaPercent = alloperChatsclsed > 0 ? ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' : '100%';
     const slaCalcColor = Number(calcChatsClsContainer) < 0 ? 'coral' : 'rgb(83, 219, 75)';
@@ -535,7 +901,7 @@ function renderAclsModal(idx, opName) {
     });
 
     modal.innerHTML = `
-        <div class="acls-modal-header" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background: rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
+        <div class="acls-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background: rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
             <div>
                 <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">Детали %A3: <span style="color:#53db4b">${opName}</span></h3>
                 <div style="font-size:13px; color:#aaa; margin-top:6px;">
@@ -623,9 +989,377 @@ function renderAclsModal(idx, opName) {
 // ============================================================================
 
 var win_StatisticaAF = `
+<style>
+/* ============================================================================
+   🎨 ПРЕМИАЛЬНЫЙ LUXURY ДИЗАЙН ДАШБОРДА
+   ============================================================================ */
+
+#af-dashboard-wrapper {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    border: 2px solid transparent;
+    border-image: linear-gradient(135deg, #38bdf8, #a855f7, #f43f5e) 1;
+    border-radius: 16px;
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.9),
+        0 0 60px rgba(56, 189, 248, 0.3),
+        0 0 40px rgba(168, 85, 247, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    position: relative;
+    animation: dashboardEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#af-dashboard-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #38bdf8, #a855f7, #f43f5e, transparent);
+    animation: borderShimmer 4s linear infinite;
+}
+
+@keyframes dashboardEntrance {
+    from { opacity: 0; transform: scale(0.95) translateY(-20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes borderShimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Шапка */
+#stataaf_header {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid rgba(56, 189, 248, 0.3);
+    cursor: move;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+#stataaf_header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+#stataaf_header:hover::before {
+    left: 100%;
+}
+
+.af-title {
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #38bdf8, #a855f7, #f43f5e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(56, 189, 248, 0.5);
+    letter-spacing: 0.5px;
+    animation: titlePulse 3s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
+}
+
+.af-window-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.af-win-btn {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.05) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.af-win-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.4);
+    transition: width 0.4s, height 0.4s, top 0.4s, left 0.4s;
+}
+
+.af-win-btn:hover {
+    background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+    color: #0f172a;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), 0 0 40px rgba(56, 189, 248, 0.3);
+    transform: translateY(-2px) scale(1.05);
+}
+
+.af-win-btn:hover::before {
+    width: 300px;
+    height: 300px;
+    top: -150px;
+    left: -150px;
+}
+
+.buttonHide {
+    border-color: rgba(244, 63, 94, 0.4);
+    color: #f43f5e;
+    background: linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(244, 63, 94, 0.05) 100%);
+}
+
+.buttonHide:hover {
+    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    color: #fff;
+    box-shadow: 0 0 25px rgba(244, 63, 94, 0.6);
+}
+
+/* Панель дат */
+.af-dates-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+    gap: 20px;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.af-date-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #cbd5e1;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.af-date-input {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #e2e8f0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.af-date-input:focus {
+    outline: none;
+    border-color: #a855f7;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.af-nav-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.af-nav-btn {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%);
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    color: #a855f7;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.af-nav-btn:hover {
+    background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+    color: #fff;
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
+    transform: translateY(-2px);
+}
+
+/* Вкладки */
+.af-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+    overflow-x: auto;
+}
+
+.af-tab {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #cbd5e1;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.af-tab::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #38bdf8, #a855f7);
+    transition: width 0.3s ease;
+}
+
+.af-tab:hover {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(168, 85, 247, 0.15) 100%);
+    border-color: #38bdf8;
+    color: #38bdf8;
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3);
+    transform: translateY(-2px);
+}
+
+.af-tab:hover::before {
+    width: 100%;
+}
+
+.af-tab.active-stat-tab {
+    background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+    border-color: #38bdf8;
+    color: #0f172a;
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.6), 0 0 50px rgba(56, 189, 248, 0.3);
+    transform: translateY(-2px);
+}
+
+.af-tab-icon {
+    font-size: 14px;
+    filter: drop-shadow(0 0 5px currentColor);
+}
+
+/* Статус-бар */
+.af-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.af-clock {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+    min-width: 120px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(56, 189, 248, 0.1);
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+.af-progress-bg {
+    flex: 1;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    height: 24px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 15px rgba(56, 189, 248, 0.1);
+    position: relative;
+}
+
+#progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #38bdf8, #a855f7, #f43f5e);
+    background-size: 200% 100%;
+    animation: progressFlow 2s ease infinite;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+    transition: width 0.3s ease;
+}
+
+@keyframes progressFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Контент */
+.af-content-area {
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+    min-height: 300px;
+    max-height: 65vh;
+    overflow-y: auto;
+    color: bisque;
+    box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.af-content-area::-webkit-scrollbar {
+    width: 10px;
+}
+
+.af-content-area::-webkit-scrollbar-track {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 5px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
+}
+
+.af-content-area::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #38bdf8 0%, #a855f7 100%);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+.af-content-area::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #0ea5e9 0%, #9333ea 100%);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+}
+</style>
+
 <div id="af-dashboard-wrapper">
     <!-- Шапка -->
-    <div id="stataaf_header">
+    <div id="stataaf_header" class="chmaf-drag-handle">
         <div class="af-title">🚀 AutoFAQ Dashboard</div>
         <div class="af-window-controls">
             <button class="af-win-btn" id="clearstatawindow" title="Очистить данные">🧹</button>
@@ -798,9 +1532,16 @@ async function checkCSAT() {
 
                 clschatarr.push(item.conversationId);
 
-                const autoClosedMsg = chat.messages?.find(msg => msg.eventTpe === 'CloseConversation' && msg.payload?.src === "inactivity_timer");
+                // Проверяем автозакрытия в массиве messages
+                const messages = chat.messages || [];
+
+                const autoClosedMsg = messages.find(msg => msg.eventTpe === 'CloseConversation' && msg.payload?.src && ["inactivity_timer", "pause"].includes(msg.payload.src));
                 if (autoClosedMsg) {
-                    aclosedchats.push(`<span style="color:#dfd1f5; font-weight:700">&#5129;</span> <span name="aclsconv">${item.conversationId}</span> <span class="lookaclschat modal-lookchat" data-hash="${item.conversationId}" style="margin-left: 10px; cursor: pointer">👁‍🗨</span>`);
+                    const srcReason = autoClosedMsg.payload.src;
+                    const srcLabel = srcReason === 'pause' ? '⏸️' : '⏳';
+                    const srcText = srcReason === 'pause' ? 'отложка' : 'таймер';
+                    console.log(`✅ Найдено автозакрытие: ${item.conversationId}, тип: ${srcReason}`);
+                    aclosedchats.push(`<span style="color:#dfd1f5; font-weight:700">${srcLabel}</span> <span name="aclsconv">${item.conversationId}</span> <span style="color:#64748b; font-size:10px;">(${srcText})</span> <span class="lookaclschat modal-lookchat" data-hash="${item.conversationId}" style="margin-left: 10px; cursor: pointer">👁‍🗨</span>`);
                 }
 
                 let tagStr = chat.payload?.tags?.value || '';
@@ -846,41 +1587,135 @@ async function checkCSAT() {
 
                 if (loader) loader.style.display = "none";
 
-                const mainStats = `Оценка: <strong>${avg}</strong><br>
-                    Чаты без тематики: <br>${stringChatsWithoutTopic || '✅ нет чатов без тематики'}<br>
-                    Количество оценок: ${csatCount}<br>`;
-
                 const c5 = count[5] || 0, c4 = count[4] || 0, c3 = count[3] || 0, c2 = count[2] || 0, c1 = count[1] || 0;
-                const ratesBreakdown = `
-                    <div style="margin-top: 15px; margin-bottom: 15px; border-radius: 6px; overflow: hidden; display: inline-block; border: 1px solid #5f7875; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
-                        <table style="text-align: center; border-collapse: collapse; background: rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; margin: 0; white-space: nowrap;">
-                            <tr style="background: rgba(0,0,0,0.4); font-size: 13px; color: bisque;">
-                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">5 😊</td>
-                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">4 🥴</td>
-                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">3 😐</td>
-                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">2 🤢</td>
-                                <td style="padding: 6px 14px;">1 🤬</td>
-                            </tr>
-                            <tr style="font-size: 15px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #53db4b; font-weight: bold;">${c5}</td>
-                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #b8db4b; font-weight: bold;">${c4}</td>
-                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #dbd24b; font-weight: bold;">${c3}</td>
-                                <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #db8c4b; font-weight: bold;">${c2}</td>
-                                <td style="padding: 6px 14px; color: #ff6b6b; font-weight: bold;">${c1}</td>
-                            </tr>
-                        </table>
+                const totalRatings = c5 + c4 + c3 + c2 + c1;
+
+                str.innerHTML = `
+                    <div style="padding: 12px;">
+                        <!-- Главные метрики -->
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                            <!-- CSAT Score -->
+                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid rgba(56, 189, 248, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease;">
+                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                                <div style="position: relative; z-index: 1;">
+                                    <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">⭐</div>
+                                    <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Средний CSAT</div>
+                                    <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);">${avg}</div>
+                                    <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Всего оценок: ${csatCount}</div>
+                                </div>
+                            </div>
+
+                            <!-- SLA Закрытия -->
+                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid rgba(168, 85, 247, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.1s backwards;">
+                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                                <div style="position: relative; z-index: 1;">
+                                    <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5));">🕒</div>
+                                    <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">SLA Закрытия</div>
+                                    <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);">${slaPct}%</div>
+                                    <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Просрочено: ${slacount} из ${clschatarr.length}</div>
+                                </div>
+                            </div>
+
+                            <!-- Автозакрытия -->
+                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid rgba(16, 185, 129, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.2s backwards;">
+                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                                <div style="position: relative; z-index: 1;">
+                                    <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));">🤖</div>
+                                    <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Автозакрытия</div>
+                                    <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #10b981, #14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">${aclosedchats.length}</div>
+                                    <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Потеряшки</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Разбивка оценок -->
+                        <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border-radius: 12px; padding: 16px; border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.3s backwards;">
+                            <div style="font-size: 14px; font-weight: 700; color: #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 20px;">📊</span>
+                                <span>Детализация оценок CSAT</span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 12px;">
+                                ${[
+                                    { rate: 5, count: c5, emoji: '😊', color: '#10b981', label: 'Отлично' },
+                                    { rate: 4, count: c4, emoji: '🙂', color: '#84cc16', label: 'Хорошо' },
+                                    { rate: 3, count: c3, emoji: '😐', color: '#f59e0b', label: 'Средне' },
+                                    { rate: 2, count: c2, emoji: '😞', color: '#f97316', label: 'Плохо' },
+                                    { rate: 1, count: c1, emoji: '😡', color: '#ef4444', label: 'Ужасно' }
+                                ].map(item => {
+                                    const percentage = totalRatings > 0 ? ((item.count / totalRatings) * 100).toFixed(1) : 0;
+                                    return `
+                                        <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%); border-radius: 10px; padding: 12px; border: 1px solid ${item.color}40; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px ${item.color}60';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.3)';">
+                                            <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px ${item.color});">${item.emoji}</div>
+                                            <div style="font-size: 22px; font-weight: 800; color: ${item.color}; text-shadow: 0 0 12px ${item.color}80; margin-bottom: 4px;">${item.count}</div>
+                                            <div style="font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px;">${item.label}</div>
+                                            <div style="background: rgba(0,0,0,0.3); height: 4px; border-radius: 2px; overflow: hidden; margin-top: 6px;">
+                                                <div style="width: ${percentage}%; height: 100%; background: linear-gradient(90deg, ${item.color}, ${item.color}cc); box-shadow: 0 0 8px ${item.color}; transition: width 0.5s ease;"></div>
+                                            </div>
+                                            <div style="font-size: 9px; color: #64748b; margin-top: 4px;">${percentage}%</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+
+                            <!-- Списки плохих оценок -->
+                            ${flagmid || flagbad || flagvbad ? `
+                                <div style="background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <div style="font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 10px;">⚠️ Чаты с низкими оценками:</div>
+                                    ${flagmid ? `<div style="margin-bottom: 10px; padding: 10px; background: rgba(245, 158, 11, 0.1); border-left: 3px solid #f59e0b; border-radius: 6px;"><div style="color: #f59e0b; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😐 Оценки 3:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagmid}</div></div>` : ''}
+                                    ${flagbad ? `<div style="margin-bottom: 10px; padding: 10px; background: rgba(249, 115, 22, 0.1); border-left: 3px solid #f97316; border-radius: 6px;"><div style="color: #f97316; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😞 Оценки 2:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagbad}</div></div>` : ''}
+                                    ${flagvbad ? `<div style="padding: 10px; background: rgba(239, 68, 68, 0.1); border-left: 3px solid #ef4444; border-radius: 6px;"><div style="color: #ef4444; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😡 Оценки 1:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagvbad}</div></div>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Чаты без тематики -->
+                        ${stringChatsWithoutTopic ? `
+                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border-radius: 12px; padding: 16px; border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.4s backwards;">
+                                <div style="font-size: 14px; font-weight: 700; color: #f59e0b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 20px;">⚠️</span>
+                                    <span>Чаты без тематики</span>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
+                                    ${stringChatsWithoutTopic}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- SLA Просрочки -->
+                        ${abovecloseslaarr ? `
+                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border-radius: 12px; padding: 16px; border: 1px solid rgba(239, 68, 68, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.5s backwards;">
+                                <div style="font-size: 14px; font-weight: 700; color: #ef4444; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 20px;">🚨</span>
+                                    <span>Чаты с превышением SLA (> 25 минут)</span>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
+                                    ${abovecloseslaarr}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Автозакрытые чаты -->
+                        ${aclosedchats.length > 0 ? `
+                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border-radius: 12px; padding: 16px; border: 1px solid rgba(16, 185, 129, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); animation: cardEntrance 0.5s ease 0.6s backwards;">
+                                <div style="font-size: 14px; font-weight: 700; color: #10b981; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 20px;">🤖</span>
+                                    <span>Автозакрытые чаты (потеряшки)</span>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
+                                    ${aclosedchats.join('<br>')}
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
-                    <div style="line-height: 1.4;">
-                        ${flagmid ? `<div style="color:#dbd24b; font-size: 13px; margin-bottom: 8px;"><strong>Оценки 3:</strong><br>${flagmid}</div>` : ''}
-                        ${flagbad ? `<div style="color:#db8c4b; font-size: 13px; margin-bottom: 8px;"><strong>Оценки 2:</strong><br>${flagbad}</div>` : ''}
-                        ${flagvbad ? `<div style="color:#ff6b6b; font-size: 13px; margin-bottom: 8px;"><strong>Оценки 1:</strong><br>${flagvbad}</div>` : ''}
-                    </div>`;
 
-                const slaStats = `Чаты СЛА закрытия > 25m: <br>${abovecloseslaarr}<br>
-                    Просроченных: ${slacount} (SLA Закрытия: ${slaPct}%)<br>
-                    Автозакрытые (потеряшки): <br>${aclosedchats.join('<br>') || '✅ нет'}`;
-
-                str.innerHTML = mainStats + ratesBreakdown + slaStats;
+                    <style>
+                        @keyframes cardEntrance {
+                            from { opacity: 0; transform: translateY(20px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+                    </style>
+                `;
                 break;
             }
         }
@@ -929,41 +1764,106 @@ async function checkload(department, flag) {
 
         if (load) {
             load.innerHTML = `
-            <div style="padding: 15px 50px;">
-                <div style="display:flex; gap:15px; margin-bottom: 25px;">
-                    <div style="flex:1; background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; border:1px solid #5f7875; text-align:center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                        <div style="color:#aaa; font-size:13px; margin-bottom:5px;">👨‍💻 Операторов на линии</div>
-                        <div style="font-size:26px; font-weight:bold; color:bisque; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${ops.length}</div>
-                        <div style="font-size:12px; margin-top:5px; color:#ddd;">🟢 ${onLine} &nbsp;|&nbsp; 🟡 ${busy} &nbsp;|&nbsp; 🔴 ${pause}</div>
+            <div style="padding: 12px;">
+                <!-- Главные метрики нагрузки -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                    <!-- Операторы на линии -->
+                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid rgba(56, 189, 248, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease;">
+                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                        <div style="position: relative; z-index: 1;">
+                            <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">👨‍💻</div>
+                            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Операторов на линии</div>
+                            <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);">${ops.length}</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 16px;">🟢</div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #10b981;">${onLine}</div>
+                                    <div style="font-size: 8px; color: #64748b; text-transform: uppercase;">Online</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 16px;">🟡</div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #f59e0b;">${busy}</div>
+                                    <div style="font-size: 8px; color: #64748b; text-transform: uppercase;">Busy</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 16px;">🔴</div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #ef4444;">${pause}</div>
+                                    <div style="font-size: 8px; color: #64748b; text-transform: uppercase;">Pause</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div style="flex:1; background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; border:1px solid #5f7875; text-align:center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                        <div style="color:#aaa; font-size:13px; margin-bottom:5px;">💬 Всего чатов в работе</div>
-                        <div style="font-size:26px; font-weight:bold; color:#53db4b; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${totalChats}</div>
-                        <div style="font-size:12px; margin-top:5px; color:#aaa;">Распределено по операторам</div>
+
+                    <!-- Всего чатов -->
+                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid rgba(16, 185, 129, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.1s backwards;">
+                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                        <div style="position: relative; z-index: 1;">
+                            <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));">💬</div>
+                            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Чатов в работе</div>
+                            <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #10b981, #14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">${totalChats}</div>
+                            <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Распределено по операторам</div>
+                        </div>
                     </div>
-                    <div style="flex:1; background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; border:1px solid #5f7875; text-align:center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                        <div style="color:#aaa; font-size:13px; margin-bottom:5px;">⚖️ Уровень нагрузки</div>
-                        <div style="font-size:20px; font-weight:bold; margin-top:4px; color:${loadColor}; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${loadTxt}</div>
-                        <div style="font-size:12px; margin-top:5px; color:#ddd;">~ ${ratio.toFixed(1)} чат. / оп.</div>
+
+                    <!-- Уровень нагрузки -->
+                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid ${loadColor}50; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px ${loadColor}30; position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.2s backwards;">
+                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, ${loadColor}20 0%, transparent 70%); border-radius: 50%;"></div>
+                        <div style="position: relative; z-index: 1;">
+                            <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px ${loadColor});">⚖️</div>
+                            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Уровень нагрузки</div>
+                            <div style="font-size: 20px; font-weight: 800; color: ${loadColor}; text-shadow: 0 0 15px ${loadColor}80; margin-bottom: 4px;">${loadTxt}</div>
+                            <div style="font-size: 13px; color: #cbd5e1; font-weight: 600;">~ ${ratio.toFixed(1)} чат / оператор</div>
+                            <div style="background: rgba(0,0,0,0.3); height: 6px; border-radius: 3px; overflow: hidden; margin-top: 10px;">
+                                <div style="width: ${Math.min((ratio / 5) * 100, 100)}%; height: 100%; background: linear-gradient(90deg, ${loadColor}, ${loadColor}cc); box-shadow: 0 0 12px ${loadColor}; transition: width 0.5s ease;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div style="background:rgba(0,0,0,0.15); border-radius:8px; border:1px solid rgba(255,255,255,0.05); padding:15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
-                    <div style="margin-bottom: 15px; font-weight: bold; color: bisque; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">📋 Детализация по операторам:</div>
-                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;">
-                        ${ops.map(o => `
-                            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
-                                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 10px;" title="${o.name}">
-                                    ${o.status} <span style="color:#dfd1f5; font-size:13px; margin-left: 5px;">${o.name}</span>
+                <!-- Детализация по операторам -->
+                <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border-radius: 12px; padding: 16px; border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); animation: cardEntrance 0.5s ease 0.3s backwards;">
+                    <div style="font-size: 14px; font-weight: 700; color: #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 20px;">📋</span>
+                        <span>Детализация по операторам</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px;">
+                        ${ops.map((o, idx) => {
+                            const chatColor = o.chats === 0 ? '#64748b' : o.chats <= 2 ? '#10b981' : o.chats <= 4 ? '#f59e0b' : '#ef4444';
+                            return `
+                                <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%); border-radius: 10px; padding: 10px; border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: all 0.3s ease; animation: operatorCardSlide 0.4s ease ${idx * 0.03}s backwards;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(56, 189, 248, 0.4)'; this.style.borderColor='rgba(56, 189, 248, 0.5)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.3)'; this.style.borderColor='rgba(56, 189, 248, 0.2)';">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                                <span style="font-size: 16px; filter: drop-shadow(0 0 4px currentColor);">${o.status}</span>
+                                                <span style="color: #e2e8f0; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${o.name}">${o.name}</span>
+                                            </div>
+                                            <div style="font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px;">
+                                                ${o.status === '🟢' ? 'Доступен' : o.status === '🟡' ? 'Занят' : o.status === '🔴' ? 'На паузе' : 'Неизвестно'}
+                                            </div>
+                                        </div>
+                                        <div style="background: linear-gradient(135deg, ${chatColor}30, ${chatColor}10); border: 1px solid ${chatColor}40; border-radius: 10px; padding: 8px 12px; text-align: center; min-width: 60px; box-shadow: 0 0 15px ${chatColor}30;">
+                                            <div style="font-size: 18px; font-weight: 800; color: ${chatColor}; text-shadow: 0 0 8px ${chatColor}80; line-height: 1;">${o.chats}</div>
+                                            <div style="font-size: 8px; color: #94a3b8; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.3px;">чатов</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div style="background:rgba(83,219,75,0.15); color:#53db4b; padding:2px 8px; border-radius:12px; font-size:12px; font-weight:bold; border:1px solid rgba(83,219,75,0.3); min-width: 40px; text-align: center;">
-                                    ${o.chats} 💬
-                                </div>
-                            </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                 </div>
-            </div>`;
+            </div>
+
+            <style>
+                @keyframes cardEntrance {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes operatorCardSlide {
+                    from { opacity: 0; transform: translateX(-20px); }
+                    to { opacity: 1; transform: translateX(0); }
+                }
+            </style>
+            `;
         }
     } catch (e) {
         if (load) load.innerHTML = `<span style="color:red; padding-left:50px">Ошибка: ${e.message}</span>`;

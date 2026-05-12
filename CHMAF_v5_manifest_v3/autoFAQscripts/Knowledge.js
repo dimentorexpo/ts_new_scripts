@@ -128,7 +128,7 @@
 
     const win_Knowledge = `
         <div class="knw-panel" style="width: 550px;">
-            <div class="knw-header" id="knw_drag_handle">
+            <div class="knw-header chmaf-drag-handle" id="knw_drag_handle">
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <span style="font-weight: 600; color: #fff;">📚 База Знаний</span>
                     <div id="knw-loader" class="knw-loader">🟢</div>
@@ -265,17 +265,17 @@
 
         if (dom.win.style.display === 'none') {
             dom.win.style.display = '';
-            dom.toggleBtn?.classList.add('activeScriptBtn');
+            dom.toggleBtn?.classList.add('active');
             if (state.data.length === 0) loadData();
         } else {
             dom.win.style.display = 'none';
-            dom.toggleBtn?.classList.remove('activeScriptBtn');
+            dom.toggleBtn?.classList.remove('active');
         }
     };
 
     document.getElementById('hideMeKnowledge').onclick = () => {
         dom.win.style.display = 'none';
-        document.getElementById('knowledgeCenter')?.classList.remove('activeScriptBtn');
+        document.getElementById('knowledgeCenter')?.classList.remove('active');
     };
 
 })();

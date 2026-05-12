@@ -124,7 +124,7 @@
     `;
 
     const TEMPLATE = `
-        <div class="${CONFIG.prefix}-header" id="${CONFIG.prefix}-drag">
+        <div class="${CONFIG.prefix}-header chmaf-drag-handle" id="${CONFIG.prefix}-drag">
             <span class="${CONFIG.prefix}-title">📋 Просмотр статуса набора</span>
             <div style="display: flex; gap: 8px;">
                 <button class="af-btn" id="${CONFIG.prefix}-trm">🧑‍🏫 TRM</button>

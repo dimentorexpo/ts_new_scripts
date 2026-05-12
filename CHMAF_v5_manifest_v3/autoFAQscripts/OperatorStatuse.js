@@ -82,7 +82,7 @@ const win_OperStatus = `
     <div class="${AFOS_PREFIX}inner">
         <div class="${AFOS_PREFIX}ambient-glow"></div>
         <div class="${AFOS_PREFIX}noise"></div>
-        <div class="${AFOS_PREFIX}drag-handle" id="${AFOS_CONFIG.headerId}">
+        <div class="${AFOS_PREFIX}drag-handle chmaf-drag-handle" id="${AFOS_CONFIG.headerId}">
             <div class="${AFOS_PREFIX}title">
                 <span class="${AFOS_PREFIX}title-dot"></span>
                 <span>Операторы CRM</span>

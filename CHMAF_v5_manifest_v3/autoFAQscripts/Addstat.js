@@ -570,7 +570,7 @@ var win_Stat = `
 
 <div class="adds-glass-container">
     <div class="adds-glass-panel">
-        <div class="adds-glass-header">
+        <div class="adds-glass-header chmaf-drag-handle">
             <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
                 <button class="adds-glass-btn buttonHide" id="hideMeStat" style="padding: 4px 10px; border-color: #ef4444; color: #ef4444;">❌</button>
             </div>
@@ -970,7 +970,7 @@ var win_Fav = `
 </style>
 <div class="fav-glass-container">
     <div class="fav-glass-panel">
-        <div class="fav-header">
+        <div class="fav-header chmaf-drag-handle">
             <span class="fav-title">⭐ Избранные задачи</span>
             <button class="fav-btn buttonHide" id="hideMeFav">Закрыть ❌</button>
         </div>

@@ -37,6 +37,13 @@
                 z-index: 1000003;
                 position: relative;
                 overflow: hidden;
+                transition: box-shadow 0.3s ease;
+            }
+            .qg5-panel:active {
+                box-shadow:
+                    0 16px 60px rgba(0, 0, 0, 0.6),
+                    0 0 0 1px rgba(212, 175, 55, 0.1),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.07);
             }
             .qg5-panel::before {
                 content: '';
@@ -50,7 +57,6 @@
                 align-items: center;
                 gap: 16px;
                 margin-bottom: 20px;
-                cursor: grab;
                 padding-bottom: 16px;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             }
@@ -61,12 +67,25 @@
                 font-weight: 700;
                 letter-spacing: 0.8px;
                 text-transform: uppercase;
-                background: rgba(0, 0, 0, 0.28);
+                background: rgba(0, 0, 0, 0.35);
                 padding: 8px 18px;
                 border-radius: 50px;
-                border: 1px solid rgba(212, 175, 55, 0.1);
-                box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
+                border: 1px solid rgba(212, 175, 55, 0.15);
+                box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 20px rgba(212, 175, 55, 0.05);
                 color: #8e96b8;
+                position: relative;
+                overflow: hidden;
+            }
+            .qg5-stats::before {
+                content: '';
+                position: absolute;
+                top: 0; left: -100%; width: 100%; height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+                animation: qg5-shimmer 3s infinite;
+            }
+            @keyframes qg5-shimmer {
+                0% { left: -100%; }
+                100% { left: 200%; }
             }
             .qg5-stats b {
                 color: #f0c674;
@@ -82,8 +101,8 @@
                 flex-wrap: wrap;
             }
             .qg5-input {
-                background: rgba(0, 0, 0, 0.35);
-                border: 1px solid rgba(212, 175, 55, 0.12);
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(212, 175, 55, 0.15);
                 border-radius: 12px;
                 color: #f0f2ff;
                 padding: 9px 14px;
@@ -91,19 +110,25 @@
                 font-size: 13px;
                 font-family: inherit;
                 transition: all 0.3s ease;
-                box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+                box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+                position: relative;
+            }
+            .qg5-input:hover {
+                border-color: rgba(212, 175, 55, 0.25);
+                background: rgba(0, 0, 0, 0.45);
             }
             .qg5-input:focus {
-                border-color: rgba(212, 175, 55, 0.4);
-                box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08), inset 0 2px 4px rgba(0,0,0,0.2);
+                border-color: rgba(212, 175, 55, 0.5);
+                box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1), 0 0 20px rgba(212, 175, 55, 0.15), inset 0 2px 6px rgba(0,0,0,0.3);
+                background: rgba(0, 0, 0, 0.5);
             }
             .qg5-input option {
                 background: #1e2235;
                 color: #e8eaf6;
             }
             .qg5-btn {
-                background: linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
-                border: 1px solid rgba(212, 175, 55, 0.12);
+                background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+                border: 1px solid rgba(212, 175, 55, 0.15);
                 color: #f0f2ff;
                 padding: 9px 18px;
                 border-radius: 14px;
@@ -118,12 +143,23 @@
                 position: relative;
                 overflow: hidden;
                 font-family: inherit;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            }
+            .qg5-btn::before {
+                content: '';
+                position: absolute;
+                top: 0; left: -100%; width: 100%; height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+                transition: left 0.5s ease;
+            }
+            .qg5-btn:hover::before {
+                left: 100%;
             }
             .qg5-btn:hover:not(:disabled) {
-                background: linear-gradient(145deg, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05));
-                border-color: rgba(212, 175, 55, 0.4);
+                background: linear-gradient(145deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.08));
+                border-color: rgba(212, 175, 55, 0.45);
                 transform: translateY(-2px);
-                box-shadow: 0 8px 28px rgba(212, 175, 55, 0.12);
+                box-shadow: 0 8px 28px rgba(212, 175, 55, 0.15), 0 0 20px rgba(212, 175, 55, 0.1);
                 color: #ffffff;
             }
             .qg5-btn:active:not(:disabled) {
@@ -164,37 +200,65 @@
                 padding-right: 10px;
                 margin-right: -4px;
             }
-            .qg5-list::-webkit-scrollbar { width: 6px; }
-            .qg5-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.15); border-radius: 10px; }
-            .qg5-list::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(212, 175, 55, 0.35), rgba(212, 175, 55, 0.1)); border-radius: 10px; }
-            .qg5-list::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgba(212, 175, 55, 0.55), rgba(212, 175, 55, 0.2)); }
+            .qg5-list::-webkit-scrollbar { width: 8px; }
+            .qg5-list::-webkit-scrollbar-track {
+                background: rgba(0,0,0,0.2);
+                border-radius: 10px;
+                border: 1px solid rgba(212, 175, 55, 0.05);
+            }
+            .qg5-list::-webkit-scrollbar-thumb {
+                background: linear-gradient(180deg, rgba(212, 175, 55, 0.4), rgba(212, 175, 55, 0.15));
+                border-radius: 10px;
+                border: 1px solid rgba(212, 175, 55, 0.1);
+                box-shadow: inset 0 0 6px rgba(212, 175, 55, 0.2);
+            }
+            .qg5-list::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(180deg, rgba(212, 175, 55, 0.6), rgba(212, 175, 55, 0.25));
+                box-shadow: 0 0 12px rgba(212, 175, 55, 0.3), inset 0 0 6px rgba(212, 175, 55, 0.3);
+            }
             .qg5-item {
                 background: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01));
                 border: 1px solid rgba(212, 175, 55, 0.07);
-                border-radius: 16px;
-                padding: 14px;
-                margin-bottom: 12px;
+                border-radius: 14px;
+                padding: 10px 12px;
+                margin-bottom: 8px;
                 display: flex;
                 align-items: center;
-                gap: 16px;
+                gap: 12px;
                 transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                 cursor: pointer;
                 position: relative;
                 overflow: hidden;
+                min-height: 42px;
             }
             .qg5-item::before {
                 content: '';
                 position: absolute;
                 top: 0; left: 0; width: 3px; height: 100%;
-                background: linear-gradient(180deg, rgba(212, 175, 55, 0.5), transparent);
+                background: linear-gradient(180deg, rgba(212, 175, 55, 0.6), rgba(212, 175, 55, 0.2));
                 opacity: 0;
                 transition: opacity 0.3s;
+            }
+            .qg5-item::after {
+                content: '';
+                position: absolute;
+                top: 50%; left: 50%;
+                width: 0; height: 0;
+                background: radial-gradient(circle, rgba(212, 175, 55, 0.1), transparent);
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                transition: width 0.4s ease, height 0.4s ease;
+                pointer-events: none;
+            }
+            .qg5-item:hover::after {
+                width: 100%;
+                height: 100%;
             }
             .qg5-item:hover {
                 background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
                 border-color: rgba(212, 175, 55, 0.25);
-                transform: translateX(6px) scale(1.01);
-                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 24px rgba(212, 175, 55, 0.04);
+                transform: translateX(4px) scale(1.005);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(212, 175, 55, 0.04);
             }
             .qg5-item:hover::before {
                 opacity: 1;
@@ -203,18 +267,18 @@
                 font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
                 color: #7ee787;
                 font-weight: 700;
-                width: 80px;
-                font-size: 13px;
-                letter-spacing: 0.5px;
+                width: 70px;
+                font-size: 12px;
+                letter-spacing: 0.3px;
             }
             .qg5-timer {
                 font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
                 color: #f0c674;
-                min-width: 85px;
+                min-width: 75px;
                 text-align: right;
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: 700;
-                letter-spacing: 0.5px;
+                letter-spacing: 0.3px;
             }
             .qg5-usr-name {
                 flex: 1;
@@ -222,33 +286,40 @@
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                font-size: 14px;
+                font-size: 13px;
                 color: #f0f2ff;
                 letter-spacing: 0.2px;
             }
             .qg5-badge {
-                font-size: 18px;
-                min-width: 28px;
+                font-size: 16px;
+                min-width: 24px;
                 text-align: center;
-                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-                transition: transform 0.3s;
+                filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+                transition: transform 0.3s ease, filter 0.3s ease;
+                position: relative;
+                z-index: 1;
             }
             .qg5-item:hover .qg5-badge {
-                transform: scale(1.15);
+                transform: scale(1.2) rotate(5deg);
+                filter: drop-shadow(0 4px 12px rgba(212, 175, 55, 0.3));
             }
             .qg5-flag {
-                font-size: 15px;
-                filter: drop-shadow(0 0 4px rgba(255,255,255,0.08));
-                min-width: 22px;
+                font-size: 14px;
+                filter: drop-shadow(0 0 6px rgba(255,255,255,0.1));
+                min-width: 20px;
                 text-align: center;
+                transition: transform 0.3s ease;
+            }
+            .qg5-item:hover .qg5-flag {
+                transform: scale(1.15);
             }
             .qg5-country {
-                font-size: 11px;
+                font-size: 10px;
                 color: #d4af37;
                 font-weight: 600;
                 letter-spacing: 0.5px;
                 background: rgba(212, 175, 55, 0.08);
-                padding: 3px 8px;
+                padding: 2px 6px;
                 border-radius: 6px;
                 border: 1px solid rgba(212, 175, 55, 0.1);
             }
@@ -256,16 +327,21 @@
                 background: linear-gradient(145deg, rgba(82, 196, 26, 0.18), rgba(82, 196, 26, 0.04)) !important;
                 border-color: rgba(82, 196, 26, 0.25) !important;
                 color: #a8e063 !important;
-                font-size: 16px !important;
-                padding: 6px 12px !important;
+                font-size: 14px !important;
+                padding: 4px 10px !important;
                 border-radius: 10px !important;
                 transition: all 0.3s ease !important;
+                min-width: 36px !important;
             }
             button[name="assignToMe"]:hover {
                 background: linear-gradient(145deg, rgba(82, 196, 26, 0.32), rgba(82, 196, 26, 0.08)) !important;
                 border-color: rgba(82, 196, 26, 0.45) !important;
-                box-shadow: 0 4px 16px rgba(82, 196, 26, 0.15) !important;
-                transform: translateY(-1px) scale(1.08) !important;
+                box-shadow: 0 4px 16px rgba(82, 196, 26, 0.2), 0 0 20px rgba(82, 196, 26, 0.1) !important;
+                transform: translateY(-1px) scale(1.05) !important;
+            }
+            button[name="assignToMe"]:active {
+                transform: translateY(0) scale(1) !important;
+                box-shadow: 0 2px 8px rgba(82, 196, 26, 0.15) !important;
             }
             #qg5-count {
                 color: #f0c674;
@@ -339,8 +415,8 @@
             if (document.getElementById('AF_Queue')) return;
             injectStyles();
             createWindow('AF_Queue', 'winTopQueue', 'winLeftQueue', `
-                <div class="qg5-panel" id="qg5-container">
-                    <div class="qg5-header" id="qg5-drag-handle">
+                <div class="qg5-panel chmaf-drag-handle" id="qg5-container">
+                    <div class="qg5-header chmaf-drag-handle" id="qg5-drag-handle">
                         <button class="qg5-btn buttonHide" id="qg5-hide">❌</button>
                         <div class="qg5-stats">
                             <span>Всего чатов: <b id="qg5-count">0</b></span>

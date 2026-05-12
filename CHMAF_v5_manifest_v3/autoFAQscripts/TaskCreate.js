@@ -1,201 +1,425 @@
-// --- CSS СТИЛИ ДЛЯ GLASSMORPHISM ---
+// --- PREMIUM LUXURY GLASSMORPHISM STYLES ---
 const glassStylesTask = `
 <style>
-    .glass-panel-task {
-        background: rgba(45, 47, 56, 0.7);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
-        color: bisque;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding: 10px;
-        box-sizing: border-box;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+        --glass-bg-primary: rgba(15, 23, 42, 0.85);
+        --glass-bg-secondary: rgba(30, 41, 59, 0.75);
+        --glass-border: rgba(148, 163, 184, 0.12);
+        --glass-border-hover: rgba(148, 163, 184, 0.24);
+        --accent-cyan: #06b6d4;
+        --accent-violet: #8b5cf6;
+        --accent-emerald: #10b981;
+        --accent-rose: #f43f5e;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
+        --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.18);
+        --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.24);
+        --shadow-glow-cyan: 0 0 24px rgba(6, 182, 212, 0.3);
+        --shadow-glow-violet: 0 0 24px rgba(139, 92, 246, 0.3);
+        --shadow-glow-rose: 0 0 24px rgba(244, 63, 94, 0.3);
     }
+
+    .glass-panel-task {
+        background: var(--glass-bg-primary);
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        padding: 16px;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .glass-panel-task::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        pointer-events: none;
+    }
+
     .glass-btn-task {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        color: #fff;
-        padding: 6px 12px;
-        transition: all 0.3s ease;
+        background: var(--glass-bg-secondary);
+        border: 1px solid var(--glass-border);
+        border-radius: 10px;
+        color: var(--text-primary);
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         outline: none;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        overflow: hidden;
     }
+
+    .glass-btn-task::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .glass-btn-task:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
     .glass-btn-task:hover {
-        background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.4);
-        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--glass-border-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
     }
+
     .glass-btn-task:active {
-        transform: translateY(1px);
+        transform: translateY(0) scale(0.98);
+        box-shadow: var(--shadow-sm);
     }
+
     .glass-input-task,
     .glass-select-task,
     .glass-textarea-task {
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 8px;
-        color: #fff;
-        padding: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        color: var(--text-primary);
+        padding: 10px 14px;
+        font-size: 14px;
+        font-weight: 400;
         outline: none;
-        transition: all 0.3s ease;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         width: 100%;
         box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
     }
+
     .glass-input-task::placeholder,
     .glass-textarea-task::placeholder {
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
+        font-weight: 400;
     }
+
     .glass-input-task:focus,
     .glass-select-task:focus,
     .glass-textarea-task:focus {
-        background: rgba(0, 0, 0, 0.3);
-        border-color: rgba(105, 164, 199, 0.8);
-        box-shadow: 0 0 10px rgba(105, 164, 199, 0.3);
+        background: rgba(0, 0, 0, 0.4);
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15), var(--shadow-glow-cyan);
+        transform: translateY(-1px);
     }
+
     .glass-textarea-task {
         resize: vertical;
-        min-height: 80px;
+        min-height: 90px;
+        line-height: 1.5;
     }
+
     .err-shake-task {
-        animation: shake 0.4s;
-        border-color: #ff4d4d !important;
-        background: rgba(255, 77, 77, 0.15) !important;
+        animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        border-color: var(--accent-rose) !important;
+        background: rgba(244, 63, 94, 0.12) !important;
+        box-shadow: var(--shadow-glow-rose) !important;
     }
-@keyframes shake {
-    0%, 100% { margin-left: 0; }
-    25% { margin-left: -5px; }
-    50% { margin-left: 5px; }
-    75% { margin-left: -5px; }
-}
-    /* Кастомный красивый скроллбар */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+        20%, 40%, 60%, 80% { transform: translateX(4px); }
+    }
+
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, rgba(148, 163, 184, 0.4), rgba(148, 163, 184, 0.6));
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, rgba(148, 163, 184, 0.6), rgba(148, 163, 184, 0.8));
+        background-clip: padding-box;
+    }
 
     .status-badge-task {
-        padding: 4px 8px;
-        border-radius: 12px;
+        padding: 6px 12px;
+        border-radius: 16px;
         font-weight: 600;
         font-size: 12px;
+        letter-spacing: 0.02em;
         display: inline-block;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        text-transform: uppercase;
     }
+
     .btn-row-task {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 6px;
-        gap: 6px;
+        margin-bottom: 8px;
+        gap: 8px;
     }
+
     .btn-row-task .glass-btn-task {
         flex: 1;
-        font-size: 13px;
-        padding: 6px;
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .glass-panel-task {
+        animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 </style>
 `;
 
 var win_taskform = `
     ${glassStylesTask}
-    <div style="display: flex; width: 420px; position: relative;">
+    <style>
+        .chmaf-drag-handle {
+            cursor: grab !important;
+            user-select: none !important;
+        }
+        .task-header-btn {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            border-radius: 10px;
+        }
+        .task-status-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-right: 6px;
+        }
+        .preset-btn-critical {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(220, 38, 38, 0.2));
+            border-color: rgba(244, 63, 94, 0.3);
+        }
+        .preset-btn-critical:hover {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.3), rgba(220, 38, 38, 0.3));
+            box-shadow: var(--shadow-glow-rose);
+        }
+        .preset-btn-high {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.2));
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        .preset-btn-high:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(124, 58, 237, 0.3));
+            box-shadow: var(--shadow-glow-violet);
+        }
+        .preset-btn-low {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(14, 165, 233, 0.2));
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+        .preset-btn-low:hover {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(14, 165, 233, 0.3));
+            box-shadow: var(--shadow-glow-cyan);
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(139, 92, 246, 0.4));
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            font-weight: 600;
+            font-size: 14px;
+            padding: 14px;
+            margin-top: 8px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        .submit-btn:hover {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.5), rgba(139, 92, 246, 0.5));
+            box-shadow: var(--shadow-glow-cyan), var(--shadow-glow-violet);
+        }
+        .note-notice {
+            font-size: 12px;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(139, 92, 246, 0.15));
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            line-height: 1.4;
+        }
+        .note-notice-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .note-notice-text {
+            color: var(--text-primary);
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 2px;
+        }
+        .search-btn {
+            width: 44px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+    <div style="display: flex; width: 440px; position: relative;">
         <div class="glass-panel-task" style="width: 100%; position: relative; z-index: 2;">
-            <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px;" id="create_form_header">
-                <button class="glass-btn-task" title="Скрыть меню" id="hideMeCreateForm">❌</button>
-                <button class="glass-btn-task" title="Обновить хеш чата" id="refreshhashcreateform">♻</button>
-                <button class="glass-btn-task" title="Очистить форму" id="clearcreateform">🧹</button>
-                <span style="font-size: 13px; margin-left: auto;">Статус: <span id="statusuroka" class="status-badge-task" style="background: #69a4c7;">Загрузка...</span></span>
-            </div>
-
-            <div id="addcreateformbtns" style="margin-bottom: 15px;">
-                <div class="btn-row-task">
-                    <button class="glass-btn-task" id="critteachertostudent">🔴 👽П -&gt; У👨‍🎓</button>
-                    <button class="glass-btn-task" id="critstudenttoteacher">🔴 👨‍🎓У -&gt; П👽</button>
-                </div>
-                <div class="btn-row-task">
-                    <button class="glass-btn-task" id="critteacherno">🔴 👽П н.о.</button>
-                    <button class="glass-btn-task" id="critstudentno">🔴 👨‍🎓У н.о.</button>
-                </div>
-                <div class="btn-row-task">
-                    <button class="glass-btn-task" id="highteachersc">👽 Исх. (SC)</button>
-                    <button class="glass-btn-task" id="highteachertc">👽 Teachers Care</button>
-                </div>
-                <div class="btn-row-task">
-                    <button class="glass-btn-task" id="highsecondline" style="flex: 1.5;">🗓 Календарь У/П</button>
-                    <button class="glass-btn-task" id="lowkm">😡 КМ</button>
-                    <button class="glass-btn-task" id="highprem">🅿️ Prem</button>
-                    <button class="glass-btn-task" id="low2lvimbug">🐞2Л vim</button>
+            <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;" id="create_form_header" class="chmaf-drag-handle">
+                <button class="glass-btn-task task-header-btn" title="Скрыть меню" id="hideMeCreateForm">✕</button>
+                <button class="glass-btn-task task-header-btn" title="Обновить хеш чата" id="refreshhashcreateform">↻</button>
+                <button class="glass-btn-task task-header-btn" title="Очистить форму" id="clearcreateform">⌫</button>
+                <div style="margin-left: auto; display: flex; align-items: center;">
+                    <span class="task-status-label">Статус</span>
+                    <span id="statusuroka" class="status-badge-task" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(14, 165, 233, 0.4));">Загрузка...</span>
                 </div>
             </div>
 
-            <div id="create_form_menu" style="display: flex; flex-direction: column; gap: 8px;">
-                <input class="glass-input-task " disabled id="chathashlnk" placeholder="Хэш чата" autocomplete="off" style="text-align: center;">
+            <div id="addcreateformbtns" style="margin-bottom: 20px;">
+                <div class="btn-row-task">
+                    <button class="glass-btn-task preset-btn-critical" id="critteachertostudent" title="Критический: Преподаватель → Ученик">🔴 П → У</button>
+                    <button class="glass-btn-task preset-btn-critical" id="critstudenttoteacher" title="Критический: Ученик → Преподаватель">🔴 У → П</button>
+                </div>
+                <div class="btn-row-task">
+                    <button class="glass-btn-task preset-btn-critical" id="critteacherno" title="Критический: Преподаватель Н.О.">🔴 П Н.О.</button>
+                    <button class="glass-btn-task preset-btn-critical" id="critstudentno" title="Критический: Ученик Н.О.">🔴 У Н.О.</button>
+                </div>
+                <div class="btn-row-task">
+                    <button class="glass-btn-task preset-btn-high" id="highteachersc" title="Исходящие звонки КЦ ученикам">КЦ Исход</button>
+                    <button class="glass-btn-task preset-btn-high" id="highteachertc" title="Teachers Care">Teachers Care</button>
+                </div>
+                <div class="btn-row-task">
+                    <button class="glass-btn-task preset-btn-high" id="highsecondline" style="flex: 1.5;" title="Календарь У/П">Календарь</button>
+                    <button class="glass-btn-task preset-btn-low" id="lowkm" title="Кризис менеджеры">Кризис менеджер</button>
+                    <button class="glass-btn-task preset-btn-high" id="highprem" title="Premium">Prem Исход</button>
+                    <button class="glass-btn-task preset-btn-low" id="low2lvimbug" title="2Л vim баг">2ЛТП</button>
+                </div>
+            </div>
 
-                <select class="glass-select-task " id="priority" style="text-align: center;">
+            <div id="create_form_menu" style="display: flex; flex-direction: column; gap: 12px;">
+                <input class="glass-input-task" disabled id="chathashlnk" placeholder="Хэш чата" autocomplete="off" style="text-align: center; font-weight: 500;">
+
+                <select class="glass-select-task" id="priority" style="text-align: center; font-weight: 500;">
                     <option disabled selected value="">Укажите Приоритет</option>
-                    <option value="low" style="color: #4CAF50; font-weight:600">🟢 Низкий</option>
-                    <option value="high" style="color: #FFC107; font-weight:600">🟡 Высокий</option>
-                    <option value="highest" style="color: #F44336; font-weight:600">🔴 Критический</option>
+                    <option value="low" style="color: #10b981; font-weight:600">🟢 Низкий</option>
+                    <option value="high" style="color: #8b5cf6; font-weight:600">🟣 Высокий</option>
+                    <option value="highest" style="color: #f43f5e; font-weight:600">🔴 Критический</option>
                 </select>
 
-                <select class="glass-select-task " id="customerservice" style="text-align: center;">
+                <select class="glass-select-task" id="customerservice" style="text-align: center; font-weight: 500;">
                     <option disabled selected value="">Укажите Отдел</option>
-                    <option value="tech_support_outgoing_crm2" style="color: #F44336;">🛠️ Техподдержка 1Л CRM (исход)</option>
-                    <option value="teachers_care_crm">👽 Teachers Care</option>
+                    <option value="tech_support_outgoing_crm2" style="color: #f43f5e;">🛠️ Техподдержка 1Л CRM (исход)</option>
+                    <option value="teachers_care_crm">👨‍🏫 Teachers Care</option>
                     <option value="content_management">📄 Контент</option>
                     <option value="outgoing_calls_crm2">📞 Исходящие звонки (КЦ исход)</option>
-                    <option value="tech_support_second_line_crm2" style="color: #4CAF50;">🥈 Техподдержка 2Л CRM</option>
-                    <option value="crisis_manager">😡 Кризис менеджеры</option>
-                    <option value="personal_support">🅿️ Персональное сопровождение (Premium)</option>
+                    <option value="tech_support_second_line_crm2" style="color: #10b981;">🥈 Техподдержка 2Л CRM</option>
+                    <option value="crisis_manager">⚡ Кризис менеджеры</option>
+                    <option value="personal_support">💎 Персональное сопровождение (Premium)</option>
                 </select>
 
-                <input class="glass-input-task " id="taskserviceid" placeholder="🆔 ID услуги">
+                <input class="glass-input-task" id="taskserviceid" placeholder="ID услуги">
 
                 <div style="display: flex; gap: 8px;">
-                    <input class="glass-input-task " id="taskuserid" placeholder="🆔 ID пользователя">
-                    <button class="glass-btn-task" id="searchuserservices" title="Найти услуги">🔎</button>
+                    <input class="glass-input-task" id="taskuserid" placeholder="ID пользователя">
+                    <button class="glass-btn-task search-btn" id="searchuserservices" title="Найти услуги">🔍</button>
                 </div>
 
-                <div id="NoteNoticeWrap" style="font-size: 13px; display: none; background: rgba(105, 164, 199, 0.3); padding: 6px; border-radius: 6px;">
-                    <span style="color: bisque;">Будет добавлена заметка: </span>
-                    <span id="NoteNoticeText" title="Нажми для отмены" style="color: #fff; cursor: pointer; text-decoration: underline;"></span>
+                <div id="NoteNoticeWrap" class="note-notice" style="display: none;">
+                    <span class="note-notice-label">Будет добавлена заметка:</span>
+                    <span id="NoteNoticeText" class="note-notice-text" title="Нажми для отмены"></span>
                 </div>
 
-                <button class="glass-btn-task" style="display:none; background: rgba(76, 175, 80, 0.4);" id="taskcreate2linecrm">Создать задачу на 2ЛТП по календарю</button>
+                <button class="glass-btn-task preset-btn-high" style="display:none;" id="taskcreate2linecrm">Создать задачу на 2ЛТП по календарю</button>
 
-                <textarea class="glass-textarea-task " id="taskcomment" placeholder="Комментарий к задаче" autocomplete="off"></textarea>
+                <textarea class="glass-textarea-task" id="taskcomment" placeholder="Комментарий к задаче" autocomplete="off"></textarea>
 
-                <div class="btn-row-task" style="margin-top: 5px;">
-                    <button class="glass-btn-task" id="studcontact">Обр П ➔ У</button>
-                    <button class="glass-btn-task" id="teachcontact">Обр У ➔ П</button>
-                    <button class="glass-btn-task" id="nrteacher">Крит П Н.О</button>
-                    <button class="glass-btn-task" id="nrstudent">Крит У Н.О</button>
+                <div class="btn-row-task" style="margin-top: 4px;">
+                    <button class="glass-btn-task" id="studcontact" title="Обратился П → У">П → У</button>
+                    <button class="glass-btn-task" id="teachcontact" title="Обратился У → П">У → П</button>
+                    <button class="glass-btn-task" id="nrteacher" title="Критический П Н.О">П Н.О</button>
+                    <button class="glass-btn-task" id="nrstudent" title="Критический У Н.О">У Н.О</button>
                 </div>
 
-                <button class="glass-btn-task" id="createtask" style="background: rgba(210, 105, 30, 0.8); font-weight: bold; font-size: 15px; padding: 10px; margin-top: 5px;">🚀 Отправить задачу</button>
+                <button class="glass-btn-task submit-btn" id="createtask">🚀 Отправить задачу</button>
             </div>
         </div>
 
-        <div id="servicehelper" class="glass-panel-task srvhhelpnomove" style="position: absolute; top: 0; left: -320px; width: 310px; max-height: 500px; overflow-y: auto; z-index: 1;">
-            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <input class="glass-input-task " id="useriddata" placeholder="ID студента (услуги)">
-                <button class="glass-btn-task" id="getuserservices">🔎</button>
+        <div id="servicehelper" class="glass-panel-task srvhhelpnomove" style="position: absolute; top: 0; left: -330px; width: 320px; max-height: 520px; overflow-y: auto; z-index: 1;">
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <input class="glass-input-task" id="useriddata" placeholder="ID студента (услуги)">
+                <button class="glass-btn-task search-btn" id="getuserservices">🔍</button>
             </div>
-            <div id="serviceinf" style="display: flex; flex-direction: column; gap: 8px;"></div>
-            <div id="serviceComplinf" style="margin-top: 10px;"></div>
+            <div id="serviceinf" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            <div id="serviceComplinf" style="margin-top: 12px;"></div>
         </div>
     </div>`;
 
 var win_speccommwindow = `
     ${glassStylesTask}
-    <div class="glass-panel-task" style="width: 350px; cursor: -webkit-grab;">
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;">
-            <button title="Скрыть меню" id="hideMeSpecComm" class="glass-btn-task" style="padding: 2px 8px; font-size: 12px;">❌</button>
+    <style>
+        .spec-comm-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+        }
+        .spec-comm-close {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .spec-comm-content {
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 320px;
+            overflow-y: auto;
+            padding: 12px;
+            word-wrap: break-word;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+    </style>
+    <div class="glass-panel-task" style="width: 360px; cursor: -webkit-grab;">
+        <div class="spec-comm-header">
+            <button title="Скрыть меню" id="hideMeSpecComm" class="glass-btn-task spec-comm-close">✕</button>
         </div>
-        <div id="speccommtext" style="font-size: 14px; max-height: 300px; overflow-y: auto; padding: 5px; word-wrap: break-word;"></div>
+        <div id="speccommtext" class="spec-comm-content"></div>
     </div>`;
 
 // Глобальные переменные
@@ -480,7 +704,7 @@ async function gettaskButButtonPress() {
 
     if (document.getElementById('AF_Createtask').style.display === 'none') {
         document.getElementById('AF_Createtask').style.display = '';
-        if (typeof taskBut !== 'undefined') taskBut.classList.add('activeScriptBtn');
+        if (typeof taskBut !== 'undefined') taskBut.classList.add('active');
 
         // Запрашиваем конфигурацию (Один раз при открытии)
         if (!srvcont) {
@@ -520,19 +744,21 @@ async function gettaskButButtonPress() {
                             let studentInfo = `${srv.student.general.id} ${srv.student.general.name || ''} ${srv.student.general.surname || ''}`;
                             let teacherInfo = srv.teacher ? `${srv.teacher.general.id} ${srv.teacher.general.name} ${srv.teacher.general.surname}` : '—';
 
-                            let stageObj = { bg: '#2b602b', text: 'bisque', title: 'Регулярные занятия' }; // regular_lessons
-                            if (srv.stage === 'lost') stageObj = { bg: '#5a0f77', text: 'bisque', title: 'Потерянная услуга' };
-                            else if (["after_trial", "before_call"].includes(srv.stage)) stageObj = { bg: '#d59f34', text: '#fff', title: 'Этап ВУ' };
+                            let stageObj = { bg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.3))', border: 'rgba(16, 185, 129, 0.4)', text: 'var(--text-primary)', title: 'Регулярные занятия' };
+                            if (srv.stage === 'lost') stageObj = { bg: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(124, 58, 237, 0.3))', border: 'rgba(139, 92, 246, 0.4)', text: 'var(--text-primary)', title: 'Потерянная услуга' };
+                            else if (["after_trial", "before_call"].includes(srv.stage)) stageObj = { bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3))', border: 'rgba(245, 158, 11, 0.4)', text: 'var(--text-primary)', title: 'Этап ВУ' };
 
                             let html = `
-                                <div class="glass-panel-task srvhhelpnomove outservfield-item" data-id="${srv.id}" style="background: ${stageObj.bg}; color: ${stageObj.text}; font-size: 13px; border-color: rgba(255,255,255,0.2);">
-                                    <div style="text-align:center; background: rgba(0,0,0,0.4); padding: 4px; border-radius: 4px; margin-bottom: 4px;">
-                                        ${stageObj.title} <span class="specomment-btn" data-id="${srv.id}" style="cursor:pointer;" title="Спец. комментарий">💭</span> | 💰 Баланс: ${balance}
+                                <div class="glass-panel-task srvhhelpnomove outservfield-item" data-id="${srv.id}" style="background: ${stageObj.bg}; color: ${stageObj.text}; font-size: 13px; border: 1px solid ${stageObj.border}; padding: 12px;">
+                                    <div style="text-align:center; background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 10px; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.01em;">
+                                        ${stageObj.title} <span class="specomment-btn" data-id="${srv.id}" style="cursor:pointer; opacity: 0.8; transition: opacity 0.2s;" title="Спец. комментарий">💭</span> | 💰 ${balance}
                                     </div>
-                                    🆔 <span style="font-weight: bold;">${srv.id}</span> — ${srv.serviceTypeKey}
-                                    <span class="movetoservid-btn" title="Перенести ID" style="cursor:pointer; float:right; font-size: 16px;">➡️</span><br>
-                                    👨‍🎓 Студент: ${studentInfo}<br>
-                                    👽 Препод: ${teacherInfo}
+                                    <div style="line-height: 1.5;">
+                                        🆔 <span style="font-weight: 600;">${srv.id}</span> — ${srv.serviceTypeKey}
+                                        <span class="movetoservid-btn" title="Перенести ID" style="cursor:pointer; float:right; font-size: 18px; opacity: 0.8; transition: all 0.2s;">➡️</span><br>
+                                        👨‍🎓 ${studentInfo}<br>
+                                        👨‍🏫 ${teacherInfo}
+                                    </div>
                                 </div>`;
                             document.getElementById('serviceinf').insertAdjacentHTML('beforeend', html);
                         }
@@ -542,7 +768,7 @@ async function gettaskButButtonPress() {
                 // Рендер комплектаций
                 if (chechkComplectations?.data?.length > 0) {
                     let lnkTaskCrCompl = document.getElementById('serviceComplinf');
-                    lnkTaskCrCompl.innerHTML = '<div id="openComplectationTaskCreate" class="glass-btn" style="background: rgba(78, 120, 145, 0.8); text-align:center;">✅ Открыть комплектации ➔</div>';
+                    lnkTaskCrCompl.innerHTML = '<div id="openComplectationTaskCreate" class="glass-btn-task preset-btn-high" style="text-align:center; font-weight: 600;">✅ Открыть комплектации</div>';
 
                     document.getElementById('openComplectationTaskCreate').addEventListener('click', () => {
                         let getComplWindow = document.getElementById('AF_Complectations');
@@ -551,25 +777,29 @@ async function gettaskButButtonPress() {
 
                     chechkComplectations.data.forEach(service => {
                         if (service.incorrectnessReason == null && complectationServInfo) {
-                            let tableHTML = `<table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 5px;">`;
-                            tableHTML += `<tr style="background: rgba(0,0,0,0.5); border-bottom: 1px solid #555;">
-                                <th>ID</th><th>STK</th><th>Урок</th><th>СК</th><th></th></tr>`;
+                            let tableHTML = `<table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px;">`;
+                            tableHTML += `<tr style="background: rgba(0,0,0,0.4); border-bottom: 1px solid rgba(148, 163, 184, 0.2);">
+                                <th style="padding: 6px; font-weight: 600; text-align: left;">ID</th>
+                                <th style="padding: 6px; font-weight: 600; text-align: left;">STK</th>
+                                <th style="padding: 6px; font-weight: 600; text-align: left;">Урок</th>
+                                <th style="padding: 6px; font-weight: 600; text-align: center;">СК</th>
+                                <th style="padding: 6px;"></th></tr>`;
 
                             service.educationServices.forEach(el => {
                                 let { formattedText, lessontype } = formatServiceType(el.serviceTypeKey);
                                 tableHTML += `
-                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                    <td style="padding: 4px;"><a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:#69a4c7;">${el.id}</a></td>
-                                    <td>${formattedText}</td>
-                                    <td data-id="${el.id}" lessontype="${lessontype}" class="complect-nextlesson">⏳</td>
-                                    <td class="specomment-compl" data-id="${el.id}" style="cursor:pointer;">💭</td>
-                                    <td class="insert-complect-id" data-id="${el.id}" style="cursor:pointer;">➡️</td>
+                                <tr style="border-bottom: 1px solid rgba(148, 163, 184, 0.1); transition: background 0.2s;">
+                                    <td style="padding: 6px;"><a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color: var(--accent-cyan); text-decoration: none; font-weight: 500;">${el.id}</a></td>
+                                    <td style="padding: 6px;">${formattedText}</td>
+                                    <td data-id="${el.id}" lessontype="${lessontype}" class="complect-nextlesson" style="padding: 6px;">⏳</td>
+                                    <td class="specomment-compl" data-id="${el.id}" style="padding: 6px; cursor:pointer; text-align: center; opacity: 0.8; transition: opacity 0.2s;">💭</td>
+                                    <td class="insert-complect-id" data-id="${el.id}" style="padding: 6px; cursor:pointer; text-align: center; font-size: 16px; opacity: 0.8; transition: all 0.2s;">➡️</td>
                                 </tr>`;
                             });
                             tableHTML += '</table>';
                             complectationServInfo.insertAdjacentHTML('beforeend',
-                                `<div class="glass-panel-task" style="margin-bottom: 8px; background: rgba(74, 125, 85, 0.6); padding: 5px;">
-                                    <div style="text-align: center; font-weight: bold;">${service.productKit.title} | ${service.stage}</div>
+                                `<div class="glass-panel-task" style="margin-bottom: 10px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.25)); padding: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                                    <div style="text-align: center; font-weight: 600; margin-bottom: 8px; font-size: 13px; letter-spacing: 0.01em;">${service.productKit.title} | ${service.stage}</div>
                                     ${tableHTML}
                                 </div>`);
                         }
@@ -629,8 +859,9 @@ async function gettaskButButtonPress() {
                             const now = new Date();
                             const diffMinutes = (now - lessonDateObj) / (1000 * 60);
                             if (diffMinutes >= -50 && diffMinutes <= 10) {
-                                el.style.color = '#ff4d4d';
-                                el.style.fontWeight = 'bold';
+                                el.style.color = 'var(--accent-rose)';
+                                el.style.fontWeight = '700';
+                                el.style.textShadow = '0 0 8px rgba(244, 63, 94, 0.4)';
                             }
                         } else {
                             el.innerText = '—';
@@ -665,18 +896,20 @@ async function gettaskButButtonPress() {
             const lessonStatus = SearchinAFnewUI("nextClass-statusHTML") || "";
             const statusEl = document.getElementById('statusuroka');
             if (lessonStatus.includes("идет") || lessonStatus.includes("идёт")) {
-                statusEl.innerHTML = "Урок идет 🔴";
-                statusEl.style.background = "#d32f2f";
+                statusEl.innerHTML = "Урок идет";
+                statusEl.style.background = "linear-gradient(135deg, rgba(244, 63, 94, 0.5), rgba(220, 38, 38, 0.5))";
+                statusEl.style.borderColor = "rgba(244, 63, 94, 0.6)";
             } else {
-                statusEl.innerHTML = "Урок не идет 🔵";
-                statusEl.style.background = "#69a4c7";
+                statusEl.innerHTML = "Урок не идет";
+                statusEl.style.background = "linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(14, 165, 233, 0.4))";
+                statusEl.style.borderColor = "rgba(6, 182, 212, 0.5)";
             }
         };
         document.getElementById('refreshhashcreateform').click();
 
         document.getElementById('hideMeCreateForm').onclick = () => {
             document.getElementById('AF_Createtask').style.display = 'none';
-            if (typeof taskBut !== 'undefined') taskBut.classList.remove('activeScriptBtn');
+            if (typeof taskBut !== 'undefined') taskBut.classList.remove('active');
             if (document.getElementById('AF_Complectations')) document.getElementById('AF_Complectations').style.display = 'none';
             document.getElementById('hideMeSpecComm').click();
 
@@ -775,6 +1008,8 @@ async function gettaskButButtonPress() {
             // Если всё ок — отправляем
             const btn = this;
             btn.disabled = true;
+            btn.style.opacity = '0.6';
+            btn.style.cursor = 'not-allowed';
             btn.innerHTML = '⏳ Отправка...';
 
             let usluga = tservid.value.trim() === "" ? "null" : tservid.value.trim(); // Если пусто, отправляем пустую строку
@@ -800,7 +1035,7 @@ async function gettaskButButtonPress() {
 
                 // Просто скрываем форму напрямую, не вызывая событие клика по кнопке "Hide"
                 document.getElementById('AF_Createtask').style.display = 'none';
-                if (typeof taskBut !== 'undefined') taskBut.classList.remove('activeScriptBtn');
+                if (typeof taskBut !== 'undefined') taskBut.classList.remove('active');
 
                 document.getElementById('clearcreateform').click();
             } else {
@@ -808,6 +1043,8 @@ async function gettaskButButtonPress() {
             }
 
             btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
             btn.innerHTML = '🚀 Отправить задачу';
         };
 

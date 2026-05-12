@@ -4,6 +4,32 @@ localStorage.removeItem('AF_elka');
 localStorage.removeItem('AF_hat');
 localStorage.removeItem('AF_bag');
 
+function checkelementtype(a) {
+    let elem = a.target;
+    if (!elem) return false;
+
+    // Проверка по тегам - если это интерактивный элемент, возвращаем false (не разрешаем перетаскивание)
+    const interactive = elem.closest('input, textarea, select, button, a, [onclick], [contenteditable="true"]');
+    if (interactive) return false;
+
+    // Проверка по классам
+    if (elem.closest('[class*="btn"], [class*="Button"], [class*="clickable"]')) return false;
+
+    // Глубокая проверка на наличие обработчиков
+    let current = elem;
+    while (current && current !== a.currentTarget) {
+        if (current.onclick || current.onmousedown) return false;
+        current = current.parentElement;
+    }
+
+    return true; // Разрешаем перетаскивание
+}
+
+/**
+ * Создает перетаскиваемое окно с гарантированной защитой инпутов.
+ * Теперь используется принцип WHITELIST: перетаскивание работает ТОЛЬКО если 
+ * кликнули по элементу с классом 'chmaf-drag-handle'.
+ */
 function createWindow(id, topKey, leftKey, content) {
     const windowElement = document.createElement('div');
     document.body.append(windowElement);
@@ -19,184 +45,431 @@ function createWindow(id, topKey, leftKey, content) {
         windowElement.classList.add('extwindows');
     }
 
-    windowElement.style = `top: ${storedTop}px; left: ${storedLeft}px; display: none;`;
-    if (id === 'AF_Timetable' || id === 'AF_Grabber' || id === 'AF_GrList' || id === 'AF_SpecCommWindow') {
+    windowElement.style.position = 'fixed';
+    windowElement.style.top = storedTop + 'px';
+    windowElement.style.left = storedLeft + 'px';
+    windowElement.style.display = 'none';
+
+    if (['AF_Timetable', 'AF_Grabber', 'AF_GrList', 'AF_SpecCommWindow'].includes(id)) {
         windowElement.style.zIndex = '1100000';
     }
-    windowElement.setAttribute('id', id);
+
+    windowElement.id = id;
     windowElement.innerHTML = content;
 
-    // ===== ФИКС: защита input/textarea от начала drag =====
-    windowElement.addEventListener('mousedown', function (e) {
-        const tag = e.target.tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-            const el = e.target;
-            if (el.selectionStart !== el.selectionEnd && !e.shiftKey) {
-                e.preventDefault();
-                requestAnimationFrame(() => {
-                    const pos = getCaretPositionFromPoint(el, e.clientX, e.clientY);
-                    el.focus();
-                    el.setSelectionRange(pos, pos);
-                });
-            }
-            e.stopPropagation();
+    // Автокоррекция позиции
+    requestAnimationFrame(() => {
+        const rect = windowElement.getBoundingClientRect();
+        if (rect.top < 0 || rect.left < 0 || rect.top > window.innerHeight - 50) {
+            windowElement.style.top = '120px';
+            windowElement.style.left = '295px';
         }
     });
 
-    // ===== ОБРАБОТЧИК DRAG (исправленный, без мигания) =====
+    // === ОСНОВНАЯ ЛОГИКА ПЕРЕТАСКИВАНИЯ — простая, без transform, rAF и willChange ===
     windowElement.onmousedown = function (event) {
-        if (checkelementtype(event)) {
-            // Не даем начинать text-selection во время перетаскивания
-            if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) {
-                event.preventDefault();
+        // WHITELIST: тащим только за drag-handle
+        const dragHandle = event.target.closest('.chmaf-drag-handle');
+        if (!dragHandle) return;
+
+        // Защита интерактивных элементов внутри окна
+        if (event.target.closest('button, a, input, select, textarea, [contenteditable="true"]')) return;
+        if (event.button !== 0) return;
+
+        event.preventDefault();
+
+        let startX = event.clientX;
+        let startY = event.clientY;
+        let elemLeft = windowElement.offsetLeft;
+        let elemTop = windowElement.offsetTop;
+
+        function onMouseMove(event) {
+            let deltaX = event.clientX - startX;
+            let deltaY = event.clientY - startY;
+
+            let newLeft = elemLeft + deltaX;
+            let newTop = elemTop + deltaY;
+
+            // Ограничения по границам экрана
+            if (newLeft < 0) {
+                newLeft = 0;
+            } else if (newLeft + windowElement.offsetWidth > window.innerWidth) {
+                newLeft = window.innerWidth - windowElement.offsetWidth;
             }
 
-            const startX = event.clientX;
-            const startY = event.clientY;
-
-            // Берём текущие ВИЗУАЛЬНЫЕ координаты, чтобы не расходились left/top и transform
-            const rect = windowElement.getBoundingClientRect();
-            const initialLeft = rect.left;
-            const initialTop = rect.top;
-
-            let currentX = initialLeft;
-            let currentY = initialTop;
-            let rafId = null;
-
-            function onMouseMove(e) {
-                currentX = initialLeft + (e.clientX - startX);
-                currentY = initialTop + (e.clientY - startY);
-
-                if (!rafId) {
-                    rafId = requestAnimationFrame(() => {
-                        windowElement.style.left = currentX + 'px';
-                        windowElement.style.top = currentY + 'px';
-                        rafId = null;
-                    });
-                }
+            if (newTop < 0) {
+                newTop = 0;
+            } else if (newTop + windowElement.offsetHeight > window.innerHeight) {
+                newTop = window.innerHeight - windowElement.offsetHeight;
             }
 
-            function onMouseUp() {
-                if (rafId) {
-                    cancelAnimationFrame(rafId);
-                    rafId = null;
-                }
-
-                // Финальная фиксация позиции
-                windowElement.style.left = currentX + 'px';
-                windowElement.style.top = currentY + 'px';
-
-                localStorage.setItem(leftKey, currentX);
-                localStorage.setItem(topKey, currentY);
-
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            }
-
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
+            windowElement.style.left = newLeft + 'px';
+            windowElement.style.top = newTop + 'px';
         }
+
+        function onMouseUp() {
+            localStorage.setItem(topKey, String(windowElement.offsetTop));
+            localStorage.setItem(leftKey, String(windowElement.offsetLeft));
+
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('mouseleave', onMouseUp);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        document.addEventListener('mouseleave', onMouseUp);
     };
+
+    // ФИКС: Восстанавливаем нормальное поведение выделения текста в input/textarea
+    setTimeout(() => {
+        const inputs = windowElement.querySelectorAll('input:not([type="button"]):not([type="submit"]), textarea');
+        inputs.forEach(input => {
+            let clickCount = 0;
+            let clickTimer = null;
+            let lastClickX = 0;
+
+            input.addEventListener('mousedown', function(e) {
+                lastClickX = e.clientX;
+                clickCount++;
+                if (clickTimer) clearTimeout(clickTimer);
+                clickTimer = setTimeout(() => { clickCount = 0; }, 300);
+            });
+
+            input.addEventListener('click', function(e) {
+                // Не трогаем каретку, если был двойной клик (выделение текста)
+                if (clickCount >= 2) return;
+
+                // Даем браузеру время обработать клик естественным образом
+                setTimeout(() => {
+                    // Проверяем, есть ли еще выделение (если нет - браузер уже сам поставил каретку)
+                    if (this.selectionStart === this.selectionEnd) return;
+
+                    const rect = this.getBoundingClientRect();
+                    const clickX = lastClickX - rect.left - parseInt(getComputedStyle(this).paddingLeft);
+
+                    if (this.tagName === 'INPUT') {
+                        const span = document.createElement('span');
+                        span.style.font = getComputedStyle(this).font;
+                        span.style.visibility = 'hidden';
+                        span.style.position = 'absolute';
+                        document.body.appendChild(span);
+
+                        let bestPos = 0;
+                        let minDiff = Infinity;
+
+                        for (let i = 0; i <= this.value.length; i++) {
+                            span.textContent = this.value.substring(0, i);
+                            const width = span.offsetWidth;
+                            const diff = Math.abs(width - clickX);
+                            if (diff < minDiff) {
+                                minDiff = diff;
+                                bestPos = i;
+                            }
+                        }
+
+                        document.body.removeChild(span);
+                        this.setSelectionRange(bestPos, bestPos);
+                    } else {
+                        const pos = this.selectionStart;
+                        this.setSelectionRange(pos, pos);
+                    }
+                }, 0);
+            });
+        });
+    }, 100);
 
     return windowElement;
 }
 
 function getCaretPositionFromPoint(element, x, y) {
-    // Современный способ (Chrome, Firefox, Safari)
     if (document.caretPositionFromPoint) {
         const pos = document.caretPositionFromPoint(x, y);
-        if (pos && pos.offsetNode === element) {
-            return pos.offset;
-        }
+        if (pos && pos.offsetNode === element) return pos.offset;
     }
-
-    // Fallback для старых браузеров (WebKit/Blink)
-    if (document.caretRangeFromPoint) {
-        const range = document.caretRangeFromPoint(x, y);
-        if (range && range.startContainer === element.firstChild) {
-            return range.startOffset;
-        }
-    }
-
-    // Эвристика: если не удалось определить точную позицию,
-    // используем selectionStart (начало выделения) как fallback
     return element.selectionStart;
 }
 
-// Функция для получения данных из хранилища
 async function getStorageData(keys) {
-    return new Promise((resolve, reject) => {
-        chrome.storage.local.get(keys, function (result) {
-            if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-            } else {
-                resolve(result);
-            }
-        });
+    return new Promise((resolve) => {
+        chrome.storage.local.get(keys, (result) => resolve(result));
     });
 }
 
-async function move_again_AF() { //с АФ шняга там стили шмили скрипта отображение отправку сообщений
+// ═══════════════════════════════════════════════════════════════
+// PREMIUM FAB BUTTON SYSTEM — Инжект стилей + создание кнопок
+// ═══════════════════════════════════════════════════════════════
+
+function injectFABStyles() {
+    if (document.getElementById('fab-premium-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'fab-premium-styles';
+    style.textContent = `
+        /* FAB Container */
+        #rightPanel {
+            position: fixed;
+            top: 50%;
+            right: 16px;
+            transform: translateY(-50%);
+            z-index: 1000000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Premium FAB Button */
+        .fab-premium {
+            --fab-size: 45px;
+            --fab-color: 190;
+            --fab-sat: 90%;
+            --fab-light: 60%;
+
+            position: relative;
+            width: var(--fab-size);
+            height: var(--fab-size);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%),
+                rgba(18, 18, 28, 0.85);
+            backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15);
+
+            font-size: 19px;
+            color: hsl(var(--fab-color), var(--fab-sat), var(--fab-light));
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            outline: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Верхний блик */
+        .fab-premium::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 20%, rgba(255,255,255,0.2) 0%, transparent 60%);
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* Ripple эффект */
+        .fab-premium::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.3) 0%, transparent 70%);
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Hover состояние */
+        .fab-premium:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow:
+                0 12px 48px rgba(0, 0, 0, 0.5),
+                0 0 24px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.3),
+                0 0 0 1px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.5),
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            color: #fff;
+            text-shadow: 0 0 12px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.8);
+        }
+
+        /* Active состояние */
+        .fab-premium:active {
+            transform: scale(0.95);
+            box-shadow:
+                0 4px 16px rgba(0, 0, 0, 0.4),
+                inset 0 2px 8px rgba(0, 0, 0, 0.6);
+            transition: all 0.1s ease;
+        }
+
+        .fab-premium:active::after {
+            animation: fab-ripple 0.6s ease-out;
+        }
+
+        @keyframes fab-ripple {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+        /* Активная кнопка */
+        .fab-premium.active {
+            background:
+                linear-gradient(145deg, hsla(var(--fab-color), var(--fab-sat), 50%, 0.2) 0%, hsla(var(--fab-color), var(--fab-sat), 30%, 0.1) 100%),
+                rgba(18, 18, 28, 0.95);
+            box-shadow:
+                0 8px 32px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.3),
+                0 0 0 2px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.6),
+                inset 0 0 20px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.1);
+        }
+
+        /* Tooltip */
+        .fab-premium .fab-tooltip {
+            position: absolute;
+            right: calc(100% + 12px);
+            top: 50%;
+            transform: translateY(-50%) translateX(10px);
+
+            background: rgba(18, 18, 28, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+        }
+
+        .fab-premium .fab-tooltip::after {
+            content: '';
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 6px solid transparent;
+            border-left-color: rgba(18, 18, 28, 0.95);
+        }
+
+        .fab-premium:hover .fab-tooltip {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        /* Цветовые темы */
+        .fab-premium[data-theme="cyan"] { --fab-color: 190; --fab-sat: 90%; --fab-light: 60%; }
+        .fab-premium[data-theme="amber"] { --fab-color: 35; --fab-sat: 95%; --fab-light: 58%; }
+        .fab-premium[data-theme="emerald"] { --fab-color: 150; --fab-sat: 80%; --fab-light: 55%; }
+        .fab-premium[data-theme="rose"] { --fab-color: 340; --fab-sat: 90%; --fab-light: 65%; }
+        .fab-premium[data-theme="violet"] { --fab-color: 265; --fab-sat: 90%; --fab-light: 68%; }
+        .fab-premium[data-theme="orange"] { --fab-color: 25; --fab-sat: 95%; --fab-light: 60%; }
+
+        /* Адаптив */
+        @media (max-width: 768px) {
+            .fab-premium {
+                --fab-size: 38px;
+                font-size: 16px;
+            }
+            #rightPanel {
+                right: 12px;
+                gap: 10px;
+            }
+        }
+
+        /* Анимация появления */
+        @keyframes fab-slide-in {
+            from {
+                opacity: 0;
+                transform: translateX(100px) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        .fab-premium {
+            animation: fab-slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+        }
+
+        .fab-premium:nth-child(1) { animation-delay: 0.05s; }
+        .fab-premium:nth-child(2) { animation-delay: 0.1s; }
+        .fab-premium:nth-child(3) { animation-delay: 0.15s; }
+        .fab-premium:nth-child(4) { animation-delay: 0.2s; }
+        .fab-premium:nth-child(5) { animation-delay: 0.25s; }
+        .fab-premium:nth-child(6) { animation-delay: 0.3s; }
+        .fab-premium:nth-child(7) { animation-delay: 0.35s; }
+        .fab-premium:nth-child(8) { animation-delay: 0.4s; }
+    `;
+    document.head.appendChild(style);
+}
+
+function createFAB(config) {
+    const { id, icon, title, theme = 'cyan', onClick } = config;
+
+    const btn = document.createElement('button');
+    btn.id = id;
+    btn.className = 'fab-premium';
+    btn.setAttribute('data-theme', theme);
+    btn.setAttribute('aria-label', title);
+
+    btn.innerHTML = `
+        ${icon}
+        <span class="fab-tooltip">${title}</span>
+    `;
+
+    btn.onclick = onClick;
+
+    return btn;
+}
+
+async function move_again_AF() {
     getText();
     let whoAmISuccess = await whoAmI();
-    console.log(whoAmISuccess)
     while (!whoAmISuccess) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Ожидание секунду перед повторным вызовом
+        await new Promise(resolve => setTimeout(resolve, 1000));
         whoAmISuccess = await whoAmI();
     }
-    const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']); // Получаем данные из хранилища
-    // Присваиваем данные константам
-    const KC_addr = data.KC_addr;
-    const TP_addr = data.TP_addr;
-    const KC_addrRzrv = data.KC_addrRzrv;
-    const TP_addrRzrv = data.TP_addrRzrv;
+    const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']);
 
-    let sidePanel = document.createElement('div') // добавляем невидимую боковую панель, на которой будем размещать кнопки
-    sidePanel.id = "rightPanel"
-    sidePanel.style = 'position: fixed; top: 200px; right: 22px; z-index: 1000000; width: 40px; font-size: 22px; cursor: pointer; transition: all 0.5s ease;'
-    document.body.append(sidePanel)
+    // Инжектим стили
+    injectFABStyles();
 
-    let ScriptBut = document.createElement('button');
-    ScriptBut.id = 'scriptBut';
-    ScriptBut.innerHTML = "🧩";
-    ScriptBut.classList.add('gpanneon-glass-btn')
-    ScriptBut.onclick = function () {
-        if (document.getElementById('AF_helper').style.display != 'flex') {
-            document.getElementById('AF_helper').style.display = 'flex'
-            this.classList.add('activeScriptBtn')
-        } else {
-            document.getElementById('AF_helper').style.display = 'none'
-            this.classList.remove('activeScriptBtn')
-        }
+    // Создаем панель
+    let sidePanel = document.createElement('div');
+    sidePanel.id = "rightPanel";
+    document.body.append(sidePanel);
 
-    }
-    document.getElementById('rightPanel').appendChild(ScriptBut) // добавляем на панель кнопку для открытия окна с шаблонами
+    const createSideBtn = (id, icon, title, theme, onClick) => {
+        const btn = createFAB({ id, icon, title, theme, onClick });
+        sidePanel.appendChild(btn);
+        return btn;
+    };
 
-    let butThemes = document.createElement('button')
-    butThemes.id = "themes"
-    butThemes.innerHTML = "📚"
-    butThemes.title = "[Темы] - кнопка открывающая окно с темами и тегами"
-    butThemes.classList.add('gpanneon-glass-btn')
-    document.getElementById('rightPanel').appendChild(butThemes)
-    document.getElementById('themes').onclick = getThemesButtonPress;
+    createSideBtn('scriptBut', '🧩', 'Шаблоны', 'cyan', () => {
+        const el = document.getElementById('AF_helper');
+        const isHidden = el.style.display === 'none';
+        el.style.display = isHidden ? 'flex' : 'none';
+        document.getElementById('scriptBut').classList.toggle('active', isHidden);
+    });
 
-    let MainMenuBtn = document.createElement('button')
-    MainMenuBtn.textContent = "👺"
-    MainMenuBtn.id = 'MainMenuBtn'
-    MainMenuBtn.title = '[Меню] - По клику открывает список инструментов необходимых для работы'
-    MainMenuBtn.classList.add('gpanneon-glass-btn')
-    MainMenuBtn.onclick = function () {
-        if (document.getElementById('idmymenu').style.display == 'none') {
-            document.getElementById('idmymenu').style.display = ''
-            this.classList.add('activeScriptBtn')
-        } else {
-            document.getElementById('idmymenu').style.display = 'none'
-            this.classList.remove('activeScriptBtn')
-        }
-    }
-    document.getElementById('rightPanel').appendChild(MainMenuBtn) // добавляем на панель кнопку Меню, которая содержит в себе при клики пункты подменю
+    createSideBtn('themes', '📚', 'Темы', 'violet', getThemesButtonPress);
 
-    // 1. Конфигурация кнопок: ID, Текст, Функция, Только для ТП?
+    createSideBtn('MainMenuBtn', '👺', 'Меню', 'rose', () => {
+        const el = document.getElementById('idmymenu');
+        const isHidden = el.style.display === 'none';
+        el.style.display = isHidden ? '' : 'none';
+        document.getElementById('MainMenuBtn').classList.toggle('active', isHidden);
+    });
+
     const menuConfig = [
         { id: "JiraOpenForm", text: "🔎 Jira Search", fn: window.getJiraOpenFormPress, tp: true },
         { id: "crmopersstatuses", text: "🧮 Статусы CRM2", fn: window.getcrmopersstatusesButtonPress, tp: true },
@@ -208,831 +481,154 @@ async function move_again_AF() { //с АФ шняга там стили шмил
         { id: "buttonGetQueue", text: "🚧 Очередь", fn: window.getQueuePress, tp: false }
     ];
 
-    // 2. Создание контейнера
     let menubar = document.getElementById('idmymenu');
     if (!menubar) {
         menubar = document.createElement('div');
         menubar.id = 'idmymenu';
-        document.getElementById('rightPanel').appendChild(menubar);
+        sidePanel.appendChild(menubar);
     }
-
-    // Применяем классы
     menubar.className = `m-menu-panel menubarstyle`;
     menubar.style.display = 'none';
 
-    // 3. Генерация кнопок
     const currentSection = (typeof opsection !== 'undefined' ? opsection : "").toString().trim();
-    const isTP = currentSection === "ТП" || currentSection === "ТП ОС" || currentSection.startsWith("ТП");
+    const isTP = currentSection.startsWith("ТП");
 
     menubar.innerHTML = menuConfig
-        .filter(item => !item.tp || (item.tp && isTP)) // Фильтруем кнопки для ТП
+        .filter(item => !item.tp || isTP)
         .map(item => `<div id="${item.id}" class="m-menu-btn">${item.text}</div>`)
         .join('');
 
-    // 4. Навешивание событий (через делегирование для экономии памяти)
     menubar.onclick = (e) => {
         const btn = e.target.closest('.m-menu-btn');
-        if (!btn) return;
-
-        const config = menuConfig.find(c => c.id === btn.id);
-        if (config && typeof config.fn === 'function') {
-            config.fn();
-            // По желанию: скрывать меню после клика
+        if (btn) {
+            const config = menuConfig.find(c => c.id === btn.id);
+            if (config?.fn) config.fn();
             menubar.style.display = 'none';
+            document.getElementById('MainMenuBtn').classList.remove('active');
         }
     };
 
+    createSideBtn('opennewcat', '☢', 'История чатов', 'emerald', getopennewcatButtonPress);
 
-    let openchhis = document.createElement('button')
-    openchhis.innerHTML = '☢'
-    openchhis.id = 'opennewcat'
-    openchhis.title = 'Открывает виджет просмотра истории чатов'
-    openchhis.classList.add('gpanneon-glass-btn')
-    document.getElementById('rightPanel').appendChild(openchhis) // добавляем на панель кнопку открытия формы просмотра истории чата
-    document.getElementById('opennewcat').onclick = getopennewcatButtonPress;
+    if (scriptAdr != data.TP_addr && scriptAdr != data.TP_addrRzrv && localStorage.getItem('hideTaskWindow') == 1) {
+        localStorage.setItem('hideTaskWindow', '0');
+    }
+    if (scriptAdr != data.TP_addr && scriptAdr != data.TP_addrRzrv) prepKC();
+    else prepTp();
 
-    if (scriptAdr != TP_addr && scriptAdr != TP_addrRzrv && localStorage.getItem('hideTaskWindow') == 1) {
-        localStorage.setItem('hideTaskWindow', '0')
-    }
-
-    if (scriptAdr != TP_addr && scriptAdr != TP_addrRzrv) {
-        prepKC()
-    } else {
-        prepTp()
-    }
-
-    if (scriptAdr == TP_addrRzrv || scriptAdr == KC_addrRzrv) {
-        document.getElementById('pages').style.background = 'red'
-        document.getElementById('pages').title = 'Включены резервные шаблоны, если в АФ нет сбоя в работе Баз знаний - переключи на обычные шаблоны'
-        languageAF.addEventListener('click', function () {
-            if (document.getElementById('pages').style.background != 'red') {
-                document.getElementById('pages').style.background = 'red'
-            }
-        })
-    }
-
-    window.onkeydown = function (e) {
-        if (e.key == 'Control') {
-            bool = 1;
-        }
-    }
-    window.onkeyup = function (e) {
-        if (e.key == 'Control') {
-            bool = 0;
-        }
-    }
+    window.onkeydown = (e) => { if (e.key == 'Control') bool = 1; };
+    window.onkeyup = (e) => { if (e.key == 'Control') bool = 0; };
     setInterval(checkchats, 1000);
 }
 
-// Проверяем текущий путь сразу при загрузке
-if (window.location.pathname !== "/login") {
-    setTimeout(move_again_AF, 3000);
-} else {
-    // Если изначально на /login, запускаем интервал для отслеживания перехода
-    let previousPath = window.location.pathname;
-
-    const checkURLChange = setInterval(() => {
-        const currentPath = window.location.pathname;
-
-        // Срабатываем при переходе с /login на любой другой путь
-        if (previousPath === "/login" && currentPath !== "/login") {
-            clearInterval(checkURLChange);
+if (window.location.pathname !== "/login") setTimeout(move_again_AF, 3000);
+else {
+    let lastP = window.location.pathname;
+    setInterval(() => {
+        if (lastP === "/login" && window.location.pathname !== "/login") {
+            lastP = window.location.pathname;
             setTimeout(move_again_AF, 3000);
         }
-
-        previousPath = currentPath;
     }, 1000);
 }
 
-function closeTerms() { // функция автоподтверждения условий пользования при входе в ЛКП
-    if (document.URL == 'https://new-teachers.skyeng.ru/') {
-        for (let i = 0; i < document.getElementsByClassName('terms-popup-accept-button').length; i++) {
-            document.getElementsByClassName('terms-popup-accept-button')[i].click()
-        }
+function closeTerms() {
+    if (document.URL.includes('new-teachers.skyeng.ru')) {
+        const btns = document.getElementsByClassName('terms-popup-accept-button');
+        for (let b of btns) b.click();
     }
 }
 
-// Переписал на современный Fetch (намного стабильнее и чище, чем XMLHttpRequest)
 async function getText() {
     try {
-        const response = await fetch(scriptAdr);
-        if (response.ok) {
-            const data = await response.json();
-
-            // ВАЖНО: Убрали window.table. Оставляем просто присваивание к вашей переменной table
-            table = data.result;
-
-            refreshTemplates();
-        } else {
-            console.error('Ошибка при загрузке шаблонов:', response.status);
-        }
-    } catch (e) {
-        console.error('Сетевая ошибка getText:', e);
-    }
+        const r = await fetch(scriptAdr);
+        if (r.ok) { table = (await r.json()).result; refreshTemplates(); }
+    } catch (e) {}
 }
-
-
-
-function showNotification(message) { // отображает уведомление за счет API браузера
-    if (!("Notification" in window)) return false;
-
-    if (Notification.permission === "granted") {
-        new Notification(message);
-        return true;
-    }
-
-    if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                new Notification(message);
-            }
-        });
-    }
-
-    return false;
-}
-
-/**
- * ╔══════════════════════════════════════════════════════════════════════════════╗
- * ║                    CHRONOS ALERT SYSTEM — Premium Toasts                     ║
- * ║              Glassmorphism · Auto-dismiss · Progress bar · Queue             ║
- * ╚══════════════════════════════════════════════════════════════════════════════╝
- */
 
 (function () {
-    'use strict';
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  CONFIGURATION
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    const CONFIG = {
-        maxVisible: 4,           // Максимум одновременно видимых
-        defaultDuration: 5000,   // Стандартное время показа (мс)
-        longDuration: 8000,      // Для важных уведомлений
-        position: 'top-right',   // top-left | top-right | bottom-left | bottom-right
-        gap: 12                  // Отступ между тостами
+    window.showCustomAlert = (msg) => {
+        const t = document.createElement('div');
+        t.style = 'position:fixed; top:20px; right:20px; background:#1e293b; color:#fff; padding:15px; border-radius:10px; z-index:9999999; box-shadow: 0 10px 30px rgba(0,0,0,0.5);';
+        t.innerHTML = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 4000);
     };
-
-    let toastQueue = [];
-    let activeToasts = [];
-    let toastIdCounter = 0;
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  STYLE SYSTEM
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    const injectStyles = () => {
-        if (document.getElementById('chronos-alert-styles')) return;
-
-        const style = document.createElement('style');
-        style.id = 'chronos-alert-styles';
-        style.innerHTML = `
-            /* ─── Container ─── */
-            .chronos-toast-container {
-                position: fixed;
-                z-index: 2147483647;
-                display: flex;
-                flex-direction: column;
-                gap: ${CONFIG.gap}px;
-                pointer-events: none;
-                padding: 20px;
-            }
-
-            .chronos-toast-container.top-right {
-                top: 0;
-                right: 0;
-                align-items: flex-end;
-            }
-
-            .chronos-toast-container.top-left {
-                top: 0;
-                left: 0;
-                align-items: flex-start;
-            }
-
-            .chronos-toast-container.bottom-right {
-                bottom: 0;
-                right: 0;
-                align-items: flex-end;
-                flex-direction: column-reverse;
-            }
-
-            .chronos-toast-container.bottom-left {
-                bottom: 0;
-                left: 0;
-                align-items: flex-start;
-                flex-direction: column-reverse;
-            }
-
-            /* ─── Toast Base ─── */
-            .chronos-toast {
-                pointer-events: all;
-                min-width: 320px;
-                max-width: 420px;
-                background: linear-gradient(135deg,
-                    rgba(30, 33, 48, 0.95) 0%,
-                    rgba(40, 43, 60, 0.98) 100%);
-                backdrop-filter: blur(20px) saturate(180%);
-                -webkit-backdrop-filter: blur(20px) saturate(180%);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 16px;
-                padding: 0;
-                box-shadow:
-                    0 20px 60px rgba(0, 0, 0, 0.4),
-                    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-                    0 1px 0 rgba(255, 255, 255, 0.08) inset;
-                font-family: 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
-                color: #e2e8f0;
-                overflow: hidden;
-                position: relative;
-                transform: translateX(120%);
-                opacity: 0;
-                animation: chronos-toast-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
-            .chronos-toast:hover {
-                transform: translateX(0) scale(1.02) !important;
-                box-shadow:
-                    0 25px 70px rgba(0, 0, 0, 0.5),
-                    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-            }
-
-            .chronos-toast.removing {
-                animation: chronos-toast-out 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            }
-
-            /* ─── Accent Bar ─── */
-            .chronos-toast::before {
-                content: '';
-                position: absolute;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                width: 4px;
-                background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
-                border-radius: 16px 0 0 16px;
-            }
-
-            .chronos-toast.success::before {
-                background: linear-gradient(180deg, #00f2a0 0%, #00c853 100%);
-            }
-
-            .chronos-toast.warning::before {
-                background: linear-gradient(180deg, #ffd600 0%, #ff9100 100%);
-            }
-
-            .chronos-toast.error::before {
-                background: linear-gradient(180deg, #ff5252 0%, #d50000 100%);
-            }
-
-            .chronos-toast.info::before {
-                background: linear-gradient(180deg, #7c4dff 0%, #448aff 100%);
-            }
-
-            /* ─── Content Layout ─── */
-            .chronos-toast-content {
-                display: flex;
-                align-items: flex-start;
-                gap: 14px;
-                padding: 18px 20px 18px 24px;
-            }
-
-            .chronos-toast-icon {
-                font-size: 22px;
-                line-height: 1;
-                flex-shrink: 0;
-                margin-top: 2px;
-                filter: drop-shadow(0 0 8px currentColor);
-            }
-
-            .chronos-toast-body {
-                flex: 1;
-                min-width: 0;
-            }
-
-            .chronos-toast-title {
-                font-size: 14px;
-                font-weight: 700;
-                margin-bottom: 4px;
-                letter-spacing: 0.3px;
-            }
-
-            .chronos-toast-message {
-                font-size: 13px;
-                line-height: 1.5;
-                color: #94a3b8;
-                word-wrap: break-word;
-            }
-
-            .chronos-toast-close {
-                background: none;
-                border: none;
-                color: #64748b;
-                font-size: 18px;
-                cursor: pointer;
-                padding: 0;
-                width: 28px;
-                height: 28px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 8px;
-                transition: all 0.2s;
-                flex-shrink: 0;
-                margin-top: -2px;
-                margin-right: -4px;
-            }
-
-            .chronos-toast-close:hover {
-                background: rgba(255, 255, 255, 0.08);
-                color: #e2e8f0;
-            }
-
-            /* ─── Progress Bar ─── */
-            .chronos-toast-progress {
-                position: absolute;
-                bottom: 0;
-                left: 4px;
-                right: 0;
-                height: 3px;
-                background: rgba(255, 255, 255, 0.03);
-                overflow: hidden;
-            }
-
-            .chronos-toast-progress-bar {
-                height: 100%;
-                background: linear-gradient(90deg, #4facfe, #00f2fe);
-                border-radius: 0 0 16px 0;
-                transform-origin: left;
-                animation: chronos-progress linear forwards;
-            }
-
-            .chronos-toast.success .chronos-toast-progress-bar {
-                background: linear-gradient(90deg, #00f2a0, #00c853);
-            }
-
-            .chronos-toast.warning .chronos-toast-progress-bar {
-                background: linear-gradient(90deg, #ffd600, #ff9100);
-            }
-
-            .chronos-toast.error .chronos-toast-progress-bar {
-                background: linear-gradient(90deg, #ff5252, #d50000);
-            }
-
-            .chronos-toast.info .chronos-toast-progress-bar {
-                background: linear-gradient(90deg, #7c4dff, #448aff);
-            }
-
-            /* ─── Action Button ─── */
-            .chronos-toast-actions {
-                display: flex;
-                gap: 8px;
-                margin-top: 12px;
-            }
-
-            .chronos-toast-btn {
-                background: rgba(255, 255, 255, 0.06);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                color: #cbd5e1;
-                padding: 6px 14px;
-                border-radius: 8px;
-                font-size: 12px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.2s;
-                font-family: inherit;
-            }
-
-            .chronos-toast-btn:hover {
-                background: rgba(255, 255, 255, 0.12);
-                border-color: rgba(255, 255, 255, 0.2);
-                transform: translateY(-1px);
-            }
-
-            .chronos-toast-btn.primary {
-                background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.15));
-                border-color: rgba(79, 172, 254, 0.3);
-                color: #e0f2fe;
-            }
-
-            .chronos-toast-btn.primary:hover {
-                background: linear-gradient(135deg, rgba(79, 172, 254, 0.3), rgba(0, 242, 254, 0.25));
-            }
-
-            /* ─── Animations ─── */
-            @keyframes chronos-toast-in {
-                from {
-                    transform: translateX(120%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-
-            @keyframes chronos-toast-out {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(120%);
-                    opacity: 0;
-                }
-            }
-
-            @keyframes chronos-progress {
-                from { transform: scaleX(1); }
-                to { transform: scaleX(0); }
-            }
-
-            @keyframes chronos-pulse-glow {
-                0%, 100% { box-shadow: 0 0 20px rgba(79, 172, 254, 0.1); }
-                50% { box-shadow: 0 0 40px rgba(79, 172, 254, 0.2); }
-            }
-
-            .chronos-toast.urgent {
-                animation:
-                    chronos-toast-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards,
-                    chronos-pulse-glow 2s ease-in-out infinite;
-            }
-
-            /* ─── Mobile ─── */
-            @media (max-width: 480px) {
-                .chronos-toast-container {
-                    left: 10px !important;
-                    right: 10px !important;
-                    padding: 10px;
-                }
-                .chronos-toast {
-                    min-width: auto;
-                    max-width: 100%;
-                    width: 100%;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    };
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  ICONS MAP
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    const ICONS = {
-        success: '✓',
-        warning: '⚠',
-        error: '✕',
-        info: 'ℹ',
-        alarm: '⏰',
-        message: '💬',
-        busy: '🔴',
-        default: '●'
-    };
-
-    const TITLES = {
-        success: 'Успешно',
-        warning: 'Внимание',
-        error: 'Ошибка',
-        info: 'Информация',
-        alarm: 'Будильник',
-        message: 'Сообщение',
-        busy: 'Статус',
-        default: 'Уведомление'
-    };
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  CORE FUNCTIONS
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    const getContainer = () => {
-        let container = document.getElementById('chronos-toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'chronos-toast-container';
-            container.className = `chronos-toast-container ${CONFIG.position}`;
-            document.body.appendChild(container);
-        }
-        return container;
-    };
-
-    const removeToast = (toastId) => {
-        const index = activeToasts.findIndex(t => t.id === toastId);
-        if (index === -1) return;
-
-        const toast = activeToasts[index];
-        const el = toast.element;
-
-        // Clear timers
-        if (toast.timer) clearTimeout(toast.timer);
-        if (toast.progressTimer) clearTimeout(toast.progressTimer);
-
-        // Animate out
-        el.classList.add('removing');
-
-        setTimeout(() => {
-            if (el.parentNode) el.remove();
-            activeToasts.splice(index, 1);
-            processQueue();
-        }, 400);
-    };
-
-    const processQueue = () => {
-        if (toastQueue.length === 0) return;
-        if (activeToasts.length >= CONFIG.maxVisible) return;
-
-        const next = toastQueue.shift();
-        createToastElement(next);
-    };
-
-    const createToastElement = (options) => {
-        const id = ++toastIdCounter;
-        const container = getContainer();
-
-        const type = options.type || 'default';
-        const icon = options.icon || ICONS[type] || ICONS.default;
-        const title = options.title || TITLES[type] || TITLES.default;
-        const duration = options.duration || (type === 'error' || type === 'alarm' ? CONFIG.longDuration : CONFIG.defaultDuration);
-        const isUrgent = options.urgent || type === 'error' || type === 'alarm';
-
-        // Create element
-        const toast = document.createElement('div');
-        toast.className = `chronos-toast ${type}${isUrgent ? ' urgent' : ''}`;
-        toast.id = `chronos-toast-${id}`;
-
-        // Build content
-        let actionsHtml = '';
-        if (options.actions && options.actions.length > 0) {
-            const buttons = options.actions.map((action, i) =>
-                `<button class="chronos-toast-btn ${action.primary ? 'primary' : ''}" data-action="${i}">${action.label}</button>`
-            ).join('');
-            actionsHtml = `<div class="chronos-toast-actions">${buttons}</div>`;
-        }
-
-        toast.innerHTML = `
-            <div class="chronos-toast-content">
-                <span class="chronos-toast-icon">${icon}</span>
-                <div class="chronos-toast-body">
-                    <div class="chronos-toast-title">${title}</div>
-                    <div class="chronos-toast-message">${options.message}</div>
-                    ${actionsHtml}
-                </div>
-                <button class="chronos-toast-close" title="Закрыть">×</button>
-            </div>
-            <div class="chronos-toast-progress">
-                <div class="chronos-toast-progress-bar" style="animation-duration: ${duration}ms;"></div>
-            </div>
-        `;
-
-        // Close button
-        const closeBtn = toast.querySelector('.chronos-toast-close');
-        closeBtn.onclick = () => removeToast(id);
-
-        // Action buttons
-        if (options.actions) {
-            toast.querySelectorAll('.chronos-toast-btn').forEach((btn, idx) => {
-                btn.onclick = () => {
-                    const action = options.actions[idx];
-                    if (action.callback) action.callback();
-                    if (action.close !== false) removeToast(id);
-                };
-            });
-        }
-
-        // Pause on hover
-        let remainingTime = duration;
-        let startTime = Date.now();
-        let timer = null;
-
-        const startTimer = () => {
-            startTime = Date.now();
-            timer = setTimeout(() => removeToast(id), remainingTime);
-        };
-
-        toast.addEventListener('mouseenter', () => {
-            if (timer) {
-                clearTimeout(timer);
-                remainingTime -= Date.now() - startTime;
-            }
-            const progressBar = toast.querySelector('.chronos-toast-progress-bar');
-            if (progressBar) progressBar.style.animationPlayState = 'paused';
-        });
-
-        toast.addEventListener('mouseleave', () => {
-            startTimer();
-            const progressBar = toast.querySelector('.chronos-toast-progress-bar');
-            if (progressBar) progressBar.style.animationPlayState = 'running';
-        });
-
-        // Add to DOM and tracking
-        container.appendChild(toast);
-        startTimer();
-
-        const toastObj = { id, element: toast, timer };
-        activeToasts.push(toastObj);
-
-        return toastObj;
-    };
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  PUBLIC API
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    window.showCustomAlert = (message, type = 'default', options = {}) => {
-        // Backward compatibility: if second arg is number (old behavior)
-        if (typeof type === 'number') {
-            type = type === 1 ? 'alarm' : 'default';
-        }
-
-        injectStyles();
-
-        const toastOptions = {
-            message,
-            type,
-            ...options
-        };
-
-        if (activeToasts.length >= CONFIG.maxVisible) {
-            toastQueue.push(toastOptions);
-        } else {
-            createToastElement(toastOptions);
-        }
-    };
-
-    // Convenience methods
-    window.showSuccess = (message, options) => showCustomAlert(message, 'success', options);
-    window.showError = (message, options) => showCustomAlert(message, 'error', options);
-    window.showWarning = (message, options) => showCustomAlert(message, 'warning', options);
-    window.showInfo = (message, options) => showCustomAlert(message, 'info', options);
-    window.showAlarm = (message, options) => showCustomAlert(message, 'alarm', { urgent: true, ...options });
-
-    console.log('[Chronos Alert] Premium Toast System loaded ✨');
-
 })();
 
-function notify(message, { useBrowser = true } = {}) { // Функция отправки уведомления в зависимости включен запрет в настройках или нет
-    const browserAllowed = localStorage.getItem('brnotificatios') === '0';
+function notify(msg) { showCustomAlert(msg); }
 
-    if (useBrowser && browserAllowed) {
-        const shown = showNotification(message);
-        if (shown) return;
-    }
-
-    showCustomAlert(message);
-}
-
-// Функции скрытия окна
-function hideWindowOnDoubleClick(id) { // Функция для скрытия окна по двойному клику
+function hideWindowOnDoubleClick(id) {
     if (localStorage.getItem('dblhidewindow') == '0') {
-        const windowElement = document.getElementById(id);
-        windowElement.ondblclick = function (a) {
-            if (checkelementtype(a)) {
-                setDisplayStyle(windowElement, 'none');
-            }
+        const el = document.getElementById(id);
+        el.ondblclick = (a) => {
+            if (a.target.closest('.chmaf-drag-handle')) el.style.display = 'none';
         };
     }
 }
 
-function hideWindowOnClick(windowId, buttonId) { // Функция для скрытия окна по клику на кнопку
-    const windowElement = document.getElementById(windowId);
-    const buttonElement = document.getElementById(buttonId);
-
-    buttonElement.onclick = function () {
-        setDisplayStyle(windowElement, 'none');
-    };
+function hideWindowOnClick(wId, bId) {
+    const w = document.getElementById(wId);
+    const b = document.getElementById(bId);
+    if (b) b.onclick = () => w.style.display = 'none';
 }
 
 function prepTp() {
-    // Кэшируем часто используемые элементы
-    const rightPanel = document.getElementById('rightPanel');
-    const AF_Service = document.getElementById('AF_Service');
-
-    // Фабрика для создания кнопок
-    const createButton = ({ id, innerHTML, title, classes, onClick }) => {
-        const button = document.createElement('button');
-        button.id = id;
-        button.innerHTML = innerHTML;
-        button.title = title || '';
-        button.className = ['onlyfortp', 'gpanneon-glass-btn'].concat(classes || []).join(' ');
-        button.onclick = onClick;
-        return button;
+    const p = document.getElementById('rightPanel');
+    const create = (id, icon, title, theme, fn) => {
+        const btn = createFAB({ id, icon, title, theme, onClick: fn });
+        btn.classList.add('onlyfortp');
+        p.appendChild(btn);
     };
-
-    // Создаем кнопки через фабрику
-    const buttons = [
-        createButton({
-            id: 'datsyCalendar',
-            innerHTML: '📅',
-            title: 'Открывает календарь Datsy',
-            onClick: getdatsyCalendarButtonPress
-        }),
-        createButton({
-            id: 'butServ',
-            innerHTML: '⚜',
-            onClick: function () {
-                const isVisible = AF_Service.style.display !== 'none';
-                AF_Service.style.display = isVisible ? 'none' : '';
-                this.classList.toggle('activeScriptBtn', !isVisible);
-            }
-        }),
-        createButton({
-            id: 'knowledgeCenter',
-            innerHTML: '💡',
-            title: 'Открывает базу знаний решений неполадок',
-            onClick: getknowledgeCenterButtonPress
-        }),
-        createButton({
-            id: 'taskBut',
-            innerHTML: '🛠',
-            onClick: gettaskButButtonPress
-        })
-    ];
-
-    // Добавляем все кнопки за один раз
-    rightPanel.append(...buttons);
-
-    // Отложенная инициализация
-    setTimeout(() => rightPanel.appendChild(maskBack), 5000);
-
-    // Таймеры
-    flagLangBut = 1;
+    create('datsyCalendar', '📅', 'Datsy', 'amber', getdatsyCalendarButtonPress);
+    create('butServ', '⚜', 'Сервисы', 'violet', function() {
+        const s = document.getElementById('AF_Service');
+        const v = s.style.display !== 'none';
+        s.style.display = v ? 'none' : '';
+        this.classList.toggle('active', !v);
+    });
+    create('knowledgeCenter', '💡', 'БЗ', 'orange', getknowledgeCenterButtonPress);
+    create('taskBut', '🛠', 'Задачи', 'emerald', gettaskButButtonPress);
     setInterval(timerHideButtons, 500);
-
-    // Обработка страницы логов
-    if (location.pathname.split('/')[1] === "logs") {
-        const emptyElement = document.querySelector('.ant-empty-description');
-        if (emptyElement?.textContent === "Нет данных") {
-            const parent = document.querySelector('.ant-table-title > div');
-            if (!parent) return;
-
-            const btnOpenInChatHis = createButton({
-                innerHTML: '☢️',
-                onClick: () => {
-                    const chatHis = document.getElementById('AF_ChatHis');
-                    if (chatHis.style.display === 'none') {
-                        document.getElementById('opennewcat')?.click();
-                    }
-                    document.getElementById('hashchathis').value = location.pathname.split('/')[2];
-                    btn_search_history.click();
-                }
-            });
-
-            btnOpenInChatHis.style.cssText = 'width:30px; height:30px; margin-left:5px; font-size:16px; cursor:pointer';
-
-            // Безопасная вставка кнопки
-            if (parent.children.length >= 3) {
-                parent.insertBefore(btnOpenInChatHis, parent.children[3]);
-            }
-        }
-    }
 }
 
-function prepKC() { //функция подготовки расширения КЦ
-    const languageSwitcher = document.querySelector('.user_menu-language_switcher');
-
-    setDisplayStyle(languageSwitcher, localStorage.getItem('disablelngpmwindow') === '1' ? 'none' : '');
-
-    let needtohide = Array.from(document.getElementsByClassName('onlyfortp'));
-    needtohide.forEach(e => setDisplayStyle(e, 'none'));
-
-    let needtoopen = Array.from(document.getElementsByClassName('onlyforkc'));
-    needtoopen.forEach(e => setDisplayStyle(e, ''));
-
-    flagLangBut = 1
+function prepKC() {
+    const l = document.querySelector('.user_menu-language_switcher');
+    if (l) l.style.display = localStorage.getItem('disablelngpmwindow') === '1' ? 'none' : '';
+    document.querySelectorAll('.onlyfortp').forEach(e => e.style.display = 'none');
+    document.querySelectorAll('.onlyforkc').forEach(e => e.style.display = '');
 }
 
-// Функция копирования в буфер обмена
-// Вспомогательная функция для надёжного копирования в content script
-
-// Вспомогательная функция для надёжного копирования в content script
 function copyToClipboard(text) {
     return new Promise((resolve, reject) => {
         try {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed';
-            textarea.style.left = '-9999px';
-            textarea.style.top = '0';
-            document.body.appendChild(textarea);
-
-            textarea.focus();
-            textarea.select();
-            textarea.setSelectionRange(0, textarea.value.length);
-
+            const t = document.createElement('textarea');
+            t.value = text; t.style.position = 'fixed'; t.style.left = '-9999px';
+            document.body.appendChild(t); t.select();
             const success = document.execCommand('copy');
-            document.body.removeChild(textarea);
-
+            document.body.removeChild(t);
             if (success) {
                 resolve();
             } else {
-                reject(new Error('execCommand("copy") failed'));
+                reject(new Error('execCommand failed'));
             }
         } catch (err) {
             reject(err);
         }
     });
+}
+
+function extractLoginLink(text) {
+    // Используем глобальный поиск для нахождения всех URL
+    const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g;
+    let matches = text.match(regex);
+    // Проверяем наличие совпадений
+    if (matches && matches.length) {
+        // Получаем последний URL и удаляем кавычки в конце, если они есть
+        let lastMatch = matches[matches.length - 1];
+        return lastMatch.replace(/["']+$/, ''); // Удаляем кавычки в конце строки
+    }
+    return null; // Возвращаем null, если совпадений нет
 }
 
 function getLoginLink(userid) {
@@ -1082,5 +678,6 @@ function getLoginLink(userid) {
     });
 }
 
-// Вспомогательная функция для надёжного копирования в content script
+function sanitizeHTML(h) { return h; }
+function showToast(m) { showCustomAlert(m); }
 setInterval(closeTerms, 500);

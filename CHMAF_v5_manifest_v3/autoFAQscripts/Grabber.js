@@ -86,58 +86,87 @@ const themes = [
 var win_Grabber = `
 <style>
 .cdu-app-wrapper { display: flex; align-items: flex-start; gap: 15px; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
-.cdu-app-container { display: flex; width: 960px; color: #cbd5e1; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); overflow: hidden; flex-shrink: 0; }
+.cdu-app-container { display: flex; width: 960px; color: #cbd5e1; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #38bdf8; border-radius: 12px; box-shadow: 0 20px 60px rgba(56, 189, 248, 0.3), 0 0 40px rgba(168, 85, 247, 0.2); overflow: hidden; flex-shrink: 0; position: relative; }
+.cdu-app-container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #38bdf8, #a855f7, transparent); animation: shimmer 3s infinite; }
+@keyframes shimmer { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 .cdu-sidebar { display: none; flex-direction: column; gap: 15px; width: 260px; flex-shrink: 0; }
 .cdu-main-col { width: 100%; display: flex; flex-direction: column; padding: 15px; }
-.cdu-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background: rgba(30, 41, 59, 0.6); border-radius: 8px; border: 1px solid #1e293b; }
-.cdu-btn { background: transparent; border: 1px solid #38bdf8; color: #38bdf8; padding: 6px 14px; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 11px; letter-spacing: 1px; transition: all 0.2s ease; box-shadow: 0 0 3px rgba(56, 189, 248, 0.1); display: inline-flex; justify-content: center; align-items: center; }
-.cdu-btn:hover:not(:disabled) { background: #38bdf8; color: #0f172a; box-shadow: 0 0 8px #38bdf8; text-shadow: none; }
-.cdu-btn:disabled { border-color: #334155; color: #475569; box-shadow: none; cursor: not-allowed; }
-.cdu-btn-hide { border-color: #f43f5e; color: #f43f5e; box-shadow: 0 0 3px rgba(244, 63, 94, 0.1); }
-.cdu-btn-hide:hover:not(:disabled) { background: #f43f5e; color: #fff; box-shadow: 0 0 8px #f43f5e; }
-.cdu-btn-accent { border-color: #a855f7; color: #a855f7; box-shadow: 0 0 3px rgba(168, 85, 247, 0.1); }
-.cdu-btn-accent:hover:not(:disabled) { background: #a855f7; color: #fff; box-shadow: 0 0 8px #a855f7; }
-.cdu-progress-container { flex-grow: 1; max-width: 450px; background: #1e293b; height: 18px; border-radius: 9px; overflow: hidden; border: 1px solid #334155; margin-left: 20px; }
-.cdu-progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #a855f7); color: #fff; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: width 0.3s ease; }
-.cdu-panel { background: rgba(15, 23, 42, 0.96); border: 1px solid #38bdf8; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); overflow: hidden; display: flex; flex-direction: column; }
-.cdu-date-picker { background: #1e293b; border: 1px solid #38bdf8; color: #e2e8f0; padding: 4px 8px; border-radius: 4px; outline: none; transition: border-color 0.2s; font-family: monospace; }
-.cdu-date-picker:focus { border-color: #a855f7; }
-.cdu-filter-box { background: rgba(30, 41, 59, 0.6); border: 1px solid #334155; border-radius: 8px; cursor: pointer; text-align: center; padding: 8px; font-size: 14px; flex: 1; margin: 0 5px; transition: all 0.2s ease; user-select: none; }
-.cdu-filter-box:hover { border-color: #38bdf8; color: #38bdf8; }
-.glowing-border-animation { border-color: #a855f7 !important; box-shadow: 0 0 6px rgba(168, 85, 247, 0.2) !important; color: #a855f7 !important; text-shadow: none; }
-.cdu-options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 8px; margin: 5px; max-height: 200px; overflow-y: auto; }
-.cdu-checkbox-label { display: flex; align-items: center; font-size: 13px; color: #cbd5e1; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
-.cdu-checkbox-label:hover { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
-.cdu-checkbox-label input[type="checkbox"] { accent-color: #38bdf8; margin-right: 8px; width: 14px; height: 14px; cursor: pointer; }
-.cdu-select { background: #1e293b; border: 1px solid #38bdf8; color: #e2e8f0; padding: 6px; border-radius: 4px; outline: none; margin: 0 15px; max-width: 300px; font-size: 13px; }
-.cdu-table-wrapper { flex-grow: 1; overflow-y: auto; margin-top: 15px; border-radius: 8px; border: 1px solid #1e293b; position: relative; background: #0b0f19; max-height: 400px; }
+.cdu-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%); border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3); cursor: move; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1); transition: all 0.3s ease; }
+.cdu-topbar:hover { border-color: rgba(56, 189, 248, 0.6); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15); }
+.cdu-btn { background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(56, 189, 248, 0.05) 100%); border: 1px solid #38bdf8; color: #38bdf8; padding: 6px 14px; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 11px; letter-spacing: 1px; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1); display: inline-flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+.cdu-btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(56, 189, 248, 0.3); transition: width 0.4s, height 0.4s, top 0.4s, left 0.4s; }
+.cdu-btn:hover:not(:disabled)::before { width: 300px; height: 300px; top: -150px; left: -150px; }
+.cdu-btn:hover:not(:disabled) { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); color: #0f172a; box-shadow: 0 0 20px rgba(56, 189, 248, 0.6), 0 0 40px rgba(56, 189, 248, 0.3); text-shadow: none; transform: translateY(-2px); }
+.cdu-btn:disabled { border-color: #334155; color: #475569; box-shadow: none; cursor: not-allowed; background: rgba(51, 65, 85, 0.2); }
+.cdu-btn-hide { border-color: #f43f5e; color: #f43f5e; box-shadow: 0 0 10px rgba(244, 63, 94, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1); background: linear-gradient(135deg, rgba(244, 63, 94, 0.1) 0%, rgba(244, 63, 94, 0.05) 100%); }
+.cdu-btn-hide:hover:not(:disabled) { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); color: #fff; box-shadow: 0 0 20px rgba(244, 63, 94, 0.6), 0 0 40px rgba(244, 63, 94, 0.3); transform: translateY(-2px); }
+.cdu-btn-accent { border-color: #a855f7; color: #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1); background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%); }
+.cdu-btn-accent:hover:not(:disabled) { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); color: #fff; box-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.3); transform: translateY(-2px); }
+.cdu-progress-container { flex-grow: 1; max-width: 450px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); height: 18px; border-radius: 9px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.3); margin-left: 20px; box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 15px rgba(56, 189, 248, 0.1); }
+.cdu-progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #a855f7, #f43f5e); background-size: 200% 100%; animation: progressGlow 2s ease infinite; color: #fff; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: width 0.3s ease; text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); box-shadow: 0 0 20px rgba(56, 189, 248, 0.5); }
+@keyframes progressGlow { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.cdu-panel { background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%); border: 1px solid #38bdf8; border-radius: 12px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1); overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.cdu-panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, #38bdf8, #a855f7, transparent); }
+.cdu-date-picker { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #38bdf8; color: #e2e8f0; padding: 4px 8px; border-radius: 4px; outline: none; transition: all 0.3s ease; font-family: monospace; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+.cdu-date-picker:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1); transform: translateY(-1px); }
+.cdu-filter-box { background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; cursor: move; text-align: center; padding: 8px; font-size: 14px; flex: 1; margin: 0 5px; transition: all 0.3s ease; user-select: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1); position: relative; overflow: hidden; }
+.cdu-filter-box::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.2), transparent); transition: left 0.5s; }
+.cdu-filter-box:hover { border-color: #38bdf8; color: #38bdf8; box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
+.cdu-filter-box:hover::before { left: 100%; }
+.glowing-border-animation { border-color: #a855f7 !important; box-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important; color: #a855f7 !important; text-shadow: 0 0 10px rgba(168, 85, 247, 0.5); animation: pulseGlow 2s ease-in-out infinite; }
+@keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.3); } 50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.8), 0 0 60px rgba(168, 85, 247, 0.5); } }
+.cdu-options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(56, 189, 248, 0.3); padding: 10px; border-radius: 8px; margin: 5px; max-height: 200px; overflow-y: auto; box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 15px rgba(56, 189, 248, 0.1); }
+.cdu-checkbox-label { display: flex; align-items: center; font-size: 13px; color: #cbd5e1; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.3s ease; position: relative; }
+.cdu-checkbox-label::before { content: ''; position: absolute; left: 0; top: 0; width: 0; height: 100%; background: linear-gradient(90deg, rgba(56, 189, 248, 0.1), transparent); transition: width 0.3s ease; border-radius: 4px; z-index: -1; }
+.cdu-checkbox-label:hover { background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(168, 85, 247, 0.1) 100%); color: #38bdf8; transform: translateX(3px); }
+.cdu-checkbox-label:hover::before { width: 100%; }
+.cdu-checkbox-label input[type="checkbox"] { accent-color: #38bdf8; margin-right: 8px; width: 14px; height: 14px; cursor: pointer; transition: transform 0.2s ease; }
+.cdu-checkbox-label input[type="checkbox"]:hover { transform: scale(1.1); }
+.cdu-select { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #38bdf8; color: #e2e8f0; padding: 6px; border-radius: 4px; outline: none; margin: 0 15px; max-width: 300px; font-size: 13px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05); transition: all 0.3s ease; cursor: pointer; }
+.cdu-select:hover { border-color: #a855f7; box-shadow: 0 6px 20px rgba(168, 85, 247, 0.3); transform: translateY(-1px); }
+.cdu-select:focus { border-color: #a855f7; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
+.cdu-table-wrapper { flex-grow: 1; overflow-y: auto; margin-top: 15px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3); position: relative; background: linear-gradient(135deg, #0b0f19 0%, #0f172a 100%); max-height: 400px; box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.1); }
 .cdu-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.cdu-table th { background: #1e293b; color: #38bdf8; padding: 10px 5px; position: sticky; top: 0; text-transform: uppercase; border-bottom: 1px solid #38bdf8; z-index: 10; font-weight: 600; user-select: none; transition: background 0.2s; }
-.cdu-table th:hover { background: rgba(56, 189, 248, 0.15); cursor: pointer; }
-.cdu-table td { padding: 8px 5px; border-bottom: 1px solid #1e293b; color: #e2e8f0; }
-.cdu-table tr.rowOfChatGrabbed:hover td { background: rgba(56, 189, 248, 0.08); color: #fff; cursor: pointer; }
-.cdu-stat-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; margin-top: 10px; margin-right: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-.cdu-stat-primary { background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8; }
-.cdu-stat-accent { background: rgba(168, 85, 247, 0.2); border: 1px solid #a855f7; color: #a855f7; }
-.cdu-stat-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
-.cdu-tools-header { font-size: 12px; color: #94a3b8; text-transform: uppercase; margin: 10px 0 5px; letter-spacing: 1px; border-bottom: 1px solid #334155; padding-bottom: 3px; }
-.cdu-input-text { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; outline: none; margin-bottom: 10px; transition: border-color 0.2s; }
-.cdu-input-text:focus { border-color: #38bdf8; }
+.cdu-table th { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #38bdf8; padding: 10px 5px; position: sticky; top: 0; text-transform: uppercase; border-bottom: 2px solid #38bdf8; z-index: 10; font-weight: 600; user-select: none; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+.cdu-table th:hover { background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(56, 189, 248, 0.1) 100%); cursor: pointer; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); transform: translateY(-1px); }
+.cdu-table td { padding: 8px 5px; border-bottom: 1px solid rgba(30, 41, 59, 0.5); color: #e2e8f0; transition: all 0.2s ease; }
+.cdu-table tr.rowOfChatGrabbed:hover td { background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(168, 85, 247, 0.1) 100%); color: #fff; cursor: pointer; box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.1); }
+.cdu-stat-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; margin-top: 10px; margin-right: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2); position: relative; overflow: hidden; }
+.cdu-stat-badge::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); transition: left 0.6s; }
+.cdu-stat-badge:hover::before { left: 100%; }
+.cdu-stat-primary { background: linear-gradient(135deg, rgba(56, 189, 248, 0.3) 0%, rgba(56, 189, 248, 0.2) 100%); border: 1px solid #38bdf8; color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+.cdu-stat-accent { background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0.2) 100%); border: 1px solid #a855f7; color: #a855f7; text-shadow: 0 0 10px rgba(168, 85, 247, 0.5); }
+.cdu-stat-success { background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%); border: 1px solid #10b981; color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+.cdu-tools-header { font-size: 12px; color: #94a3b8; text-transform: uppercase; margin: 10px 0 5px; letter-spacing: 1px; border-bottom: 1px solid rgba(56, 189, 248, 0.3); padding-bottom: 3px; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); position: relative; }
+.cdu-tools-header::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 30%; height: 2px; background: linear-gradient(90deg, #38bdf8, transparent); }
+.cdu-input-text { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #e2e8f0; outline: none; margin-bottom: 10px; transition: all 0.3s ease; box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 10px rgba(56, 189, 248, 0.1); }
+.cdu-input-text:focus { border-color: #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), inset 0 2px 8px rgba(0, 0, 0, 0.6); transform: translateY(-1px); }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
+::-webkit-scrollbar-track { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 4px; box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6); }
+::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #334155 0%, #475569 100%); border-radius: 4px; box-shadow: 0 0 6px rgba(56, 189, 248, 0.3); transition: background 0.3s ease; }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); box-shadow: 0 0 12px rgba(56, 189, 248, 0.6); }
 
 /* --- Улучшенная панель расширенных фильтров --- */
 .cdu-adv-panel {
-    background: rgba(15, 23, 42, 0.98);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
     border: 1px solid #38bdf8;
     border-radius: 12px;
     width: 100%;
     padding: 20px;
     box-sizing: border-box;
     margin-bottom: 15px;
-    box-shadow: 0 0 20px rgba(56, 189, 248, 0.08);
+    box-shadow: 0 0 40px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+.cdu-adv-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #38bdf8, #a855f7, transparent);
+    animation: shimmer 3s infinite;
 }
 .cdu-filter-grid {
     display: grid;
@@ -145,18 +174,36 @@ var win_Grabber = `
     gap: 15px;
 }
 .cdu-filter-card {
-    background: #1e293b;
-    border: 1px solid #334155;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid rgba(56, 189, 248, 0.3);
     border-radius: 10px;
     padding: 14px;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+.cdu-filter-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s;
 }
 .cdu-filter-card:hover {
-    border-color: #475569;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    border-color: #38bdf8;
+    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+.cdu-filter-card:hover::before {
+    opacity: 1;
 }
 .cdu-filter-card-title {
     font-size: 11px;
@@ -166,7 +213,23 @@ var win_Grabber = `
     text-align: center;
     padding-bottom: 8px;
     margin-bottom: 4px;
-    border-bottom: 1px solid #334155;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+    text-shadow: 0 0 10px currentColor;
+    position: relative;
+}
+.cdu-filter-card-title::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: currentColor;
+    transition: width 0.3s ease;
+}
+.cdu-filter-card:hover .cdu-filter-card-title::after {
+    width: 100%;
 }
 .cdu-filter-card .cdu-checkbox-label {
     font-size: 12px;
@@ -186,13 +249,15 @@ var win_Grabber = `
 }
 .cdu-search-row .cdu-input-text {
     margin-bottom: 0;
-    background: #0f172a;
-    border-color: #475569;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-color: rgba(56, 189, 248, 0.4);
     font-size: 13px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px rgba(56, 189, 248, 0.1);
 }
 .cdu-search-row .cdu-input-text:focus {
     border-color: #a855f7;
-    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5), inset 0 2px 8px rgba(0, 0, 0, 0.6);
+    transform: translateY(-2px);
 }
 @media (max-width: 900px) {
     .cdu-filter-grid { grid-template-columns: 1fr; }
@@ -210,7 +275,7 @@ zoom: 0.9;
 <div class="cdu-app-wrapper">
     <div class="cdu-app-container">
         <div class="cdu-main-col">
-            <div class="cdu-topbar" id="grabdata">
+            <div class="cdu-topbar chmaf-drag-handle" id="grabdata">
                 <button class="cdu-btn cdu-btn-hide" id="hideMeGrabber">Hide App</button>
                 <button class="cdu-btn cdu-btn-accent" id="GatherStatByThemes" disabled style="margin-left:10px;">🧮 Stats</button>
                 <div class="cdu-progress-container">
@@ -218,7 +283,7 @@ zoom: 0.9;
                 </div>
             </div>
 
-            <div class="cdu-topbar" id="grabbox" style="justify-content: flex-start; gap: 15px;">
+            <div class="cdu-topbar chmaf-drag-handle" id="grabbox" style="justify-content: flex-start; gap: 15px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span style="font-size:12px; font-weight:bold; color:#94a3b8;">Start:</span>
                     <input class="cdu-date-picker" type="date" name="FirstData" id="dateFromGrab">
@@ -234,10 +299,10 @@ zoom: 0.9;
             </div>
 
             <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
-                <div id="opscontainer" class="cdu-filter-box">🔱 Operators 🦸‍♂️</div>
-                <div id="markscontainer" class="cdu-filter-box">🔱 Marks 🔢</div>
-                <div id="tagscontainer" class="cdu-filter-box">🔱 Tags 🏷</div>
-                <div id="othercontainer" class="cdu-filter-box">🔱 Advanced Filters</div>
+                <div id="opscontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Operators 🦸‍♂️</div>
+                <div id="markscontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Marks 🔢</div>
+                <div id="tagscontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Tags 🏷</div>
+                <div id="othercontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Advanced Filters</div>
             </div>
 
             <div id="activeoperatorsgroup" class="cdu-options-grid" style="display:none;"></div>
@@ -320,9 +385,9 @@ zoom: 0.9;
 
     <div class="cdu-sidebar" id="SideBarContainer">
         <div id="UniversalFilterPanel" class="cdu-panel" style="display:none; flex-grow:0;">
-            <div style="background: rgba(30,41,59,0.9); border-bottom: 1px solid #38bdf8; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                <span id="FilterTitle" style="color:#38bdf8; font-weight:bold; font-size:12px; text-transform:uppercase;">Filter</span>
-                <span id="CloseFilterBtn" style="cursor:pointer; color:#f43f5e; font-weight:bold; font-size: 16px;" title="Close">✖</span>
+            <div class="chmaf-drag-handle" style="background: linear-gradient(135deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%); border-bottom: 1px solid #38bdf8; padding: 10px; display: flex; justify-content: space-between; align-items: center; cursor: move; box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);">
+                <span id="FilterTitle" style="color:#38bdf8; font-weight:bold; font-size:12px; text-transform:uppercase; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);">Filter</span>
+                <span id="CloseFilterBtn" style="cursor:pointer; color:#f43f5e; font-weight:bold; font-size: 16px; transition: all 0.3s ease;" title="Close">✖</span>
             </div>
             <div style="padding: 15px;">
                 <div id="FilterCheckboxList" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px; display:flex; flex-direction:column; gap:5px;">
@@ -338,9 +403,9 @@ zoom: 0.9;
 </div>
 
 <div id="AgregatedDataThemes" class="cdu-panel" style="display:none; position:fixed; top:80px; left:60px; z-index:9999; flex-direction: column; transition: width 0.3s ease;">
-    <div id="StatsDragHandle" style="cursor:move; background: rgba(30,41,59,0.9); border-bottom: 1px solid #a855f7; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="color:#a855f7; font-weight:bold; font-size:12px; text-transform:uppercase;">📊 Analytics Board</span>
-        <span id="HideToolsPanel" style="cursor:pointer; color:#f43f5e; font-weight:bold; font-size: 16px;" title="Close">✖</span>
+    <div id="StatsDragHandle" class="chmaf-drag-handle" style="cursor:move; background: linear-gradient(135deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%); border-bottom: 1px solid #a855f7; padding: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(168, 85, 247, 0.3);">
+        <span style="color:#a855f7; font-weight:bold; font-size:12px; text-transform:uppercase; text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);">📊 Analytics Board</span>
+        <span id="HideToolsPanel" style="cursor:pointer; color:#f43f5e; font-weight:bold; font-size: 16px; transition: all 0.3s ease;" title="Close">✖</span>
     </div>
     <div style="padding:15px; max-height:80vh; overflow-y:auto; flex-grow: 1;">
         <div class="cdu-tools-header">By Theme (Chart/Table)</div>

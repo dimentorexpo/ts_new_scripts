@@ -671,7 +671,7 @@ const neonGlassStyles = `
 var win_GrList = `
     ${neonGlassStyles}
     <div class="ngu-wrapper">
-        <div class="ngu-header">
+        <div class="ngu-header chmaf-drag-handle">
             <div class="ngu-title-group">
                 <div class="ngu-title-icon"></div>
                 <div>

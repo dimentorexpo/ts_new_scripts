@@ -325,7 +325,7 @@ window.getsmartroomformButtonPress = function () {
     const win_smartroomform = `
         <style>${styles}</style>
         <div class="${CONFIG.prefix}">
-            <div class="${CONFIG.prefix}__header" id="smartroomsug_form_header">
+            <div class="${CONFIG.prefix}__header chmaf-drag-handle" id="smartroomsug_form_header">
                 <button class="${CONFIG.prefix}__header-btn ${CONFIG.prefix}__header-btn--icon buttonHide" title="скрывает меню" id="hideMeSmartRoomForm">✕</button>
                 <button class="${CONFIG.prefix}__header-btn ${CONFIG.prefix}__header-btn--icon" title="Обновляет хеш чата" id="refreshhashsmartform">↻</button>
                 <button class="${CONFIG.prefix}__header-btn ${CONFIG.prefix}__header-btn--icon" title="Очищает поля формы" id="clearsmartroomform">🧹</button>

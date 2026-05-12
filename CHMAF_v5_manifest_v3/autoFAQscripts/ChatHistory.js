@@ -1,183 +1,352 @@
-// --- СТИЛИ GLASSMORPHISM ---
+// --- ПРЕМИАЛЬНЫЕ СТИЛИ GLASSMORPHISM ---
 const afgStyles = document.createElement('style');
 afgStyles.textContent = `
     /* Глобальные CSS переменные */
     :root {
-        --afg-dark-bg: rgba(30, 30, 40, 0.85);
-        --afg-dark-border: rgba(255, 255, 255, 0.15);
-        --afg-accent: rgba(0, 191, 255, 0.8);
-        --afg-hover: rgba(255, 255, 255, 0.2);
+        --afg-dark-bg: linear-gradient(135deg, rgba(22, 25, 35, 0.95) 0%, rgba(15, 18, 28, 0.98) 100%);
+        --afg-dark-border: rgba(255, 255, 255, 0.12);
+        --afg-accent: #00d4ff;
+        --afg-accent-glow: rgba(0, 212, 255, 0.3);
+        --afg-hover: rgba(255, 255, 255, 0.15);
     }
 
     /* Основной контейнер панели */
     .afg-panel {
-        position: fixed; top: 0; right: 0; width: 420px; height: 100vh;
+        position: fixed; top: 0; right: 0; width: 480px; height: 100vh;
         z-index: 1000000; display: flex; flex-direction: column;
-        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-        box-shadow: -5px 0 25px rgba(0,0,0,0.25); font-family: 'Segoe UI', Tahoma, sans-serif;
-        font-size: 14px; background: var(--afg-dark-bg); border-left: 1px solid var(--afg-dark-border); color: #f0f0f0;
+        backdrop-filter: blur(24px) saturate(140%); -webkit-backdrop-filter: blur(24px) saturate(140%);
+        box-shadow: -8px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgba(255,255,255,0.05);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px; background: var(--afg-dark-bg);
+        border-left: 1px solid var(--afg-dark-border); color: #f0f0f0;
     }
 
     /* Кнопки */
     .afg-btn {
-        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 8px; color: inherit; cursor: pointer; padding: 6px 12px;
-        transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center;
-        backdrop-filter: blur(5px);
-        text-shadow: 0 1px 3px rgba(0,0,0,0.6); /* Делает эмодзи более контрастными */
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 10px; color: #fff; cursor: pointer; padding: 8px 14px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex; align-items: center; justify-content: center;
+        backdrop-filter: blur(8px); font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
     }
-    .afg-btn:hover { background: var(--afg-hover); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-    .afg-btn:active { transform: translateY(1px); }
-    .afg-btn-small { padding: 4px 8px; font-size: 16px; }
+    .afg-btn:hover {
+        background: rgba(255,255,255,0.12); transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25); border-color: rgba(255,255,255,0.2);
+    }
+    .afg-btn:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .afg-btn-small { padding: 6px 10px; font-size: 16px; }
 
-        .afg-btn-accent {
-        background: rgba(0, 191, 255, 0.2);
-        border-color: rgba(0, 191, 255, 0.4);
+    .afg-btn-accent {
+        background: rgba(0, 212, 255, 0.15);
+        border-color: rgba(0, 212, 255, 0.4);
+        color: var(--afg-accent);
+        text-shadow: 0 0 8px var(--afg-accent-glow);
     }
     .afg-btn-accent:hover {
-        background: rgba(0, 191, 255, 0.4);
-        border-color: rgba(0, 191, 255, 0.6);
+        background: rgba(0, 212, 255, 0.25);
+        border-color: rgba(0, 212, 255, 0.6);
+        box-shadow: 0 6px 20px rgba(0, 212, 255, 0.2);
     }
 
     /* Инпуты и Селекты */
     .afg-input {
-        background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.15);
-        border-radius: 8px; color: #f0f0f0; padding: 6px 10px; outline: none; transition: 0.2s;
+        background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px; color: #f0f0f0; padding: 8px 12px; outline: none;
+        transition: all 0.2s ease; font-size: 13px;
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
     }
-    .afg-input:focus { border-color: var(--afg-accent); box-shadow: 0 0 8px var(--afg-accent); }
-    .afg-input::placeholder { color: rgba(255,255,255,0.6); }
-    select.afg-input option { background: #2c2c35; color: #fff; }
+    .afg-input:focus {
+        border-color: var(--afg-accent); background: rgba(0,0,0,0.4);
+        box-shadow: 0 0 0 3px var(--afg-accent-glow), inset 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .afg-input::placeholder { color: rgba(255,255,255,0.4); }
+    select.afg-input option { background: #1a1d28; color: #fff; }
 
     /* Секции */
     .afg-header, .afg-controls, .afg-footer {
-        padding: 10px; display: flex; align-items: center; background: rgba(0,0,0,0.1);
-        border-bottom: 1px solid rgba(255,255,255,0.05); gap: 8px; flex-wrap: wrap;
+        padding: 12px; display: flex; align-items: center;
+        background: rgba(0,0,0,0.2);
+        border-bottom: 1px solid rgba(255,255,255,0.08); gap: 8px; flex-wrap: wrap;
     }
-    .afg-chat-info { padding: 10px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .afg-chat-info {
+        padding: 12px; font-size: 13px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        background: rgba(0,0,0,0.15);
+    }
 
     /* Область сообщений */
     .afg-chat-area {
-        flex: 1; overflow-y: auto; overflow-x: hidden; padding: 15px 10px;
-        display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; transition: 0.3s;
+        flex: 1; overflow-y: auto; overflow-x: hidden; padding: 20px 15px;
+        display: flex; flex-direction: column; gap: 16px; scrollbar-width: thin;
     }
-    .afg-chat-area::-webkit-scrollbar { width: 6px; }
-    .afg-chat-area::-webkit-scrollbar-thumb { background: rgba(150,150,150,0.5); border-radius: 10px; }
+    .afg-chat-area::-webkit-scrollbar { width: 8px; }
+    .afg-chat-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+    .afg-chat-area::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.15); border-radius: 10px;
+        border: 2px solid rgba(15, 18, 28, 0.5);
+    }
+    .afg-chat-area::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
 
     /* Темы */
-    .theme-light { background: rgba(245, 245, 245, 0.95); color: #111; border-radius: 8px 0 0 8px; }
+    .theme-light {
+        background: linear-gradient(135deg, rgba(245, 248, 252, 0.98) 0%, rgba(235, 240, 248, 0.98) 100%);
+        color: #1a1d28; border-radius: 8px 0 0 8px;
+    }
     .theme-dark { background: transparent; color: #f0f0f0; }
 
-    /* Стили сообщений */
-    .afg-msg { padding: 10px 14px; border-radius: 14px; max-width: 90%; word-break: break-word; position: relative; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .afg-msg-user { background: rgba(0, 191, 255, 0.15); border-color: rgba(0, 191, 255, 0.3); border-bottom-left-radius: 4px; align-self: flex-start; }
-    .afg-msg-oper { background: rgba(152, 155, 30, 0.26); border-color: rgba(147, 112, 219, 0.3); border-bottom-right-radius: 4px; align-self: flex-end; } /* Изменил на фиолетовый, чтобы отделить от бота */
-	.afg-msg-comment { background: rgba(91, 89, 85, 0.5); border-color: rgba(57, 184, 225, 0.3); align-self: center; font-style: italic; width: 90%; }
-    .afg-msg-event { text-align: center; font-size: 12px; opacity: 0.7; padding: 6px; align-self: center; background: rgba(0,0,0,0.05); border-radius: 20px; }
+    /* НОВЫЕ СТИЛИ СООБЩЕНИЙ - Всегда показываем дату/время */
+    .afg-msg {
+        padding: 12px 16px; border-radius: 16px; max-width: 85%;
+        word-break: break-word; position: relative;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+        backdrop-filter: blur(8px);
+        animation: msgFadeIn 0.3s ease;
+    }
 
-    /* Бот */
-    .afg-msg-bot { border-bottom-right-radius: 4px; align-self: flex-end; }
-    .theme-dark .afg-msg-bot { background: rgba(50, 205, 50, 0.15); border-color: rgba(50, 205, 50, 0.3); }
-    .theme-light .afg-msg-bot { background: rgba(34, 139, 34, 0.2); border-color: rgba(34, 139, 34, 0.4); }
+    @keyframes msgFadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-    .theme-light .afg-msg { color: #111; border-color: rgba(0,0,0,0.1); }
-    .theme-dark .afg-msg { color: #f0f0f0; }
+    /* Заголовок сообщения - ВСЕГДА ВИДИМЫЙ */
+    .afg-msg-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 8px; padding-bottom: 6px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        font-size: 12px; font-weight: 600;
+    }
 
-/* Липкий заголовок сообщения */
-.afg-msg-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    padding: 4px 0;
-    margin: -4px -14px 5px -14px; /* Растягиваем на всю ширину сообщения с учётом padding */
-    padding-left: 14px;
-    padding-right: 14px;
-    border-radius: 12px 12px 0 0;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-}
+    .afg-msg-author { color: inherit; opacity: 0.9; }
+    .afg-msg-date {
+        font-weight: 400; opacity: 0.6; font-size: 11px;
+        font-family: 'SF Mono', 'Consolas', monospace;
+    }
 
-/* Фон заголовка под тему сообщения */
-.afg-msg-user .afg-msg-header {
-    background: rgba(0, 191, 255, 0.25);
-}
+    /* Типы сообщений */
+    .afg-msg-user {
+        background: linear-gradient(135deg, rgba(0, 191, 255, 0.12) 0%, rgba(0, 150, 255, 0.08) 100%);
+        border-color: rgba(0, 191, 255, 0.25);
+        border-left: 3px solid var(--afg-accent);
+        align-self: flex-start;
+    }
+    .afg-msg-user .afg-msg-author { color: var(--afg-accent); }
 
-.afg-msg-oper .afg-msg-header {
-    background: rgba(152, 155, 30, 0.4);
-}
+    .afg-msg-oper {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.12) 0%, rgba(255, 160, 0, 0.08) 100%);
+        border-color: rgba(255, 193, 7, 0.25);
+        border-right: 3px solid #ffc107;
+        align-self: flex-end;
+    }
+    .afg-msg-oper .afg-msg-author { color: #ffc107; }
 
-.afg-msg-bot .afg-msg-header {
-    background: rgba(50, 205, 50, 0.25);
-}
+    .afg-msg-bot {
+        background: linear-gradient(135deg, rgba(76, 175, 80, 0.12) 0%, rgba(56, 142, 60, 0.08) 100%);
+        border-color: rgba(76, 175, 80, 0.25);
+        border-right: 3px solid #4caf50;
+        align-self: flex-end;
+    }
+    .afg-msg-bot .afg-msg-author { color: #4caf50; }
 
-.afg-msg-comment .afg-msg-header {
-    background: rgba(91, 89, 85, 0.7);
-}
+    .afg-msg-comment {
+        background: linear-gradient(135deg, rgba(158, 158, 158, 0.12) 0%, rgba(117, 117, 117, 0.08) 100%);
+        border-color: rgba(158, 158, 158, 0.25);
+        align-self: center; font-style: italic; width: 85%;
+        border-left: 3px solid #9e9e9e;
+    }
+    .afg-msg-comment .afg-msg-author { color: #9e9e9e; }
 
-/* Для тёмной темы общий фон */
-.theme-dark .afg-msg-header {
-    color: #f0f0f0;
-}
+    .afg-msg-event {
+        text-align: center; font-size: 12px; opacity: 0.7; padding: 8px 16px;
+        align-self: center; background: rgba(0,0,0,0.15);
+        border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
+        font-weight: 500; letter-spacing: 0.3px;
+    }
 
-/* Для светлой темы */
-.theme-light .afg-msg-header {
-    color: #111;
-}
-    .afg-msg-date { font-weight: normal; opacity: 0.6; font-size: 11px; margin-left: 10px; }
+    /* Светлая тема */
+    .theme-light .afg-msg { color: #1a1d28; border-color: rgba(0,0,0,0.08); }
+    .theme-light .afg-msg-header { border-bottom-color: rgba(0,0,0,0.1); }
+
+    /* Улучшенная контрастность для светлой темы */
+    .theme-light .afg-msg-user {
+        background: linear-gradient(135deg, rgba(0, 150, 255, 0.15) 0%, rgba(0, 120, 255, 0.1) 100%);
+        border-color: rgba(0, 120, 255, 0.3);
+    }
+    .theme-light .afg-msg-user .afg-msg-author {
+        color: #0066cc; /* Тёмно-синий вместо светло-голубого */
+        font-weight: 600;
+    }
+
+    .theme-light .afg-msg-comment {
+        background: linear-gradient(135deg, rgba(100, 100, 100, 0.2) 0%, rgba(80, 80, 80, 0.15) 100%);
+        border-color: rgba(80, 80, 80, 0.4);
+    }
+    .theme-light .afg-msg-comment .afg-msg-author {
+        color: #424242; /* Тёмно-серый вместо светло-серого */
+        font-weight: 600;
+    }
+
+    .theme-light .afg-msg-oper .afg-msg-author {
+        color: #d68000; /* Более тёмный оранжевый */
+        font-weight: 600;
+    }
+
+    .theme-light .afg-msg-bot .afg-msg-author {
+        color: #2e7d32; /* Более тёмный зелёный */
+        font-weight: 600;
+    }
 
     /* Модалка */
     .afg-modal {
-        position: absolute; top: 20px; left: -380px; width: 360px; max-height: 80vh; overflow: auto;
-        border-radius: 16px; padding: 15px; display: none; z-index: 100;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2);
-        background: rgba(40,40,50,0.95); backdrop-filter: blur(20px); color: #f0f0f0;
+        position: absolute; top: 20px; left: -400px; width: 380px; max-height: 80vh; overflow: auto;
+        border-radius: 16px; padding: 20px; display: none; z-index: 100;
+        box-shadow: 0 16px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.12);
+        background: linear-gradient(135deg, rgba(30, 35, 45, 0.98) 0%, rgba(20, 25, 35, 0.98) 100%);
+        backdrop-filter: blur(24px); color: #f0f0f0;
     }
 
     /* Ссылки и картинки */
-    .afg-chat-area a { color: var(--afg-accent); text-decoration: none; }
-    .afg-chat-area a:hover { text-decoration: underline; }
-    .chat-history-image { border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.2s; max-width: 200px; cursor: zoom-in; }
-    .chat-history-image:hover { transform: scale(1.02); }
+    .afg-chat-area a {
+        color: var(--afg-accent); text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .afg-chat-area a:hover {
+        text-decoration: underline;
+        text-shadow: 0 0 8px var(--afg-accent-glow);
+    }
+    .chat-history-image {
+        border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        max-width: 240px; cursor: zoom-in;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .chat-history-image:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
 
-    .chatlist { padding: 6px; border-radius: 6px; transition: 0.2s; display: block; margin-bottom: 4px; background: rgba(0,0,0,0.05); }
-    .chatlist:hover { background: rgba(150,150,150,0.15); transform: translateX(5px); cursor: pointer; }
+    .chatlist {
+        padding: 10px 12px; border-radius: 10px;
+        transition: all 0.2s ease; display: block; margin-bottom: 6px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.06);
+        cursor: pointer;
+    }
+    .chatlist:hover {
+        background: rgba(255,255,255,0.1);
+        transform: translateX(8px);
+        border-color: rgba(255,255,255,0.15);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
 
     /* --- ГАЛЕРЕЯ OVERLAY --- */
-    .afg-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 9999999; cursor: zoom-out; backdrop-filter: blur(8px); }
-    .afg-overlay img { max-width: 90vw; max-height: 90vh; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); transition: opacity 0.2s; }
+    .afg-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+        display: flex; justify-content: center; align-items: center;
+        z-index: 9999999; cursor: zoom-out;
+        backdrop-filter: blur(12px);
+        animation: overlayFadeIn 0.3s ease;
+    }
+    @keyframes overlayFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .afg-overlay img {
+        max-width: 90vw; max-height: 90vh; border-radius: 16px;
+        box-shadow: 0 16px 60px rgba(0,0,0,0.8);
+        transition: opacity 0.2s;
+    }
 
     .afg-gallery-nav {
         position: absolute; top: 50%; transform: translateY(-50%);
-        background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); font-size: 24px;
-        width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; border-radius: 50%; z-index: 10000000;
-        transition: 0.2s; backdrop-filter: blur(5px);
+        background: rgba(255,255,255,0.08); color: white;
+        border: 1px solid rgba(255,255,255,0.15); font-size: 28px;
+        width: 60px; height: 60px; display: flex; justify-content: center; align-items: center;
+        cursor: pointer; border-radius: 50%; z-index: 10000000;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     }
-    .afg-gallery-nav:hover { background: rgba(0,191,255,0.8); transform: translateY(-50%) scale(1.1); border-color: transparent; }
-    .afg-nav-left { left: 30px; }
-    .afg-nav-right { right: 30px; }
+    .afg-gallery-nav:hover {
+        background: rgba(0,212,255,0.9);
+        transform: translateY(-50%) scale(1.15);
+        border-color: transparent;
+        box-shadow: 0 12px 32px rgba(0,212,255,0.4);
+    }
+    .afg-nav-left { left: 40px; }
+    .afg-nav-right { right: 40px; }
 
     .afg-gallery-counter {
-        position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-        background: rgba(255,255,255,0.1); color: white; padding: 6px 16px; border-radius: 20px;
-        font-size: 15px; font-weight: bold; backdrop-filter: blur(5px); z-index: 10000000; border: 1px solid rgba(255,255,255,0.2);
+        position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,0.7); color: white; padding: 10px 20px;
+        border-radius: 24px; font-size: 16px; font-weight: 600;
+        backdrop-filter: blur(12px); z-index: 10000000;
+        border: 1px solid rgba(255,255,255,0.15);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
     }
 
-    /* Сообщения подряд от одного автора — убираем верхние скругления и отступы */
-.afg-msg-continuous {
-    margin-top: 2px !important;
-    border-top-left-radius: 4px !important;
-    border-top-right-radius: 4px !important;
-}
+    /* Убираем старую логику группировки - теперь каждое сообщение самостоятельное */
+    .afg-msg-continuous { display: none; } /* Больше не используется */
 
-/* Скрываем заголовок у непрерывных сообщений (он уже есть у первого) */
-.afg-msg-continuous .afg-msg-header {
-    display: none;
-}
+    /* Адаптивность для узких экранов */
+    @media (max-width: 500px) {
+        .afg-panel { width: 100vw; }
+    }
+
+    /* Плавная прокрутка */
+    .afg-chat-area {
+        scroll-behavior: smooth;
+    }
+
+    /* Улучшенная читаемость кода и ссылок */
+    .afg-msg code {
+        background: rgba(0,0,0,0.3);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'SF Mono', 'Consolas', monospace;
+        font-size: 12px;
+    }
+
+    .afg-msg pre {
+        background: rgba(0,0,0,0.3);
+        padding: 10px;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 8px 0;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Анимация для кнопок */
+    .afg-btn {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .afg-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.1);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .afg-btn:active::before {
+        width: 300px;
+        height: 300px;
+    }
 `;
 document.head.appendChild(afgStyles);
 
 // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
 let data = null;
-const DATE_OPTIONS = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+const DATE_OPTIONS = { year: 'numeric', month: 'long', day: 'numeric' }; // Убрали время отсюда
 const TIME_OPTIONS = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
 
 if (!localStorage.getItem('winTopChatHis')) {
@@ -188,77 +357,83 @@ if (!localStorage.getItem('theme')) {
     localStorage.setItem('theme', 'dark');
 }
 
-// --- HTML ШАБЛОН ---
+// --- ПРЕМИАЛЬНЫЙ HTML ШАБЛОН ---
 const win_Chathis = `
-    <div class="afg-header" style="justify-content: space-between;">
-        <button class="afg-btn afg-btn-small" title="Скрыть панель" id="hideMeChHis">❌</button>
-        <div style="display:flex; flex:1; margin: 0 8px; gap: 4px;">
-            <select class="afg-input" style="flex: 1; width:100px" id="operatorstp">
-                <option selected disabled>Операторы на линии</option>
+    <div class="afg-header chmaf-drag-handle" style="justify-content: space-between;">
+        <button class="afg-btn afg-btn-small" title="Скрыть панель" id="hideMeChHis">✕</button>
+        <div style="display:flex; flex:1; margin: 0 10px; gap: 6px;">
+            <select class="afg-input" style="flex: 1; min-width: 0;" id="operatorstp">
+                <option selected disabled>👥 Операторы на линии</option>
             </select>
-            <button class="afg-btn afg-btn-small" title="Обновить статус операторов" id="RefrehOperators">♻</button>
+            <button class="afg-btn afg-btn-small afg-btn-accent" title="Обновить статус операторов" id="RefrehOperators">↻</button>
         </div>
-        <button class="afg-btn afg-btn-small" title="Информация пользователя" id="getdatafrchat">🗒️</button>
-        <button class="afg-btn afg-btn-small" title="Очистка полей" id="clearallinfo">🧹</button>
+        <button class="afg-btn afg-btn-small" title="Информация пользователя" id="getdatafrchat">ℹ️</button>
+        <button class="afg-btn afg-btn-small" title="Очистка полей" id="clearallinfo">🗑️</button>
     </div>
 
     <div class="afg-controls">
-        <button class="afg-btn afg-btn-small" title="Назад к списку" id="back_to_chat_his">🔙</button>
-        <input class="afg-input" id="chatuserhis" placeholder="ID юзера" autocomplete="off" type="text" style="flex: 1; min-width: 0; text-align:center;">
-        <input class="afg-input" id="hashchathis" placeholder="Хеш чата" autocomplete="off" type="text" style="flex: 1; min-width: 0; text-align:center;">
-        <button class="afg-btn afg-btn-small" title="Поиск" id="btn_search_history">🔎</button>
+        <button class="afg-btn afg-btn-small" title="Назад к списку" id="back_to_chat_his">←</button>
+        <input class="afg-input" id="chatuserhis" placeholder="🔍 ID пользователя" autocomplete="off" type="text" style="flex: 1; min-width: 0; text-align:center;">
+        <input class="afg-input" id="hashchathis" placeholder="🔗 Хеш чата" autocomplete="off" type="text" style="flex: 1; min-width: 0; text-align:center;">
+        <button class="afg-btn afg-btn-small afg-btn-accent" title="Поиск" id="btn_search_history">⚡</button>
     </div>
 
     <div class="afg-controls" style="justify-content: space-between; font-size: 13px;">
-        <div style="display: flex; gap: 4px;">
-            <button class="afg-btn afg-btn-small" id="chhisinstr" title="Инструкция">❓</button>
-            <button class="afg-btn afg-btn-small" id="refreshchat" title="Обновить чат">🔄</button>
+        <div style="display: flex; gap: 6px;">
+            <button class="afg-btn afg-btn-small" id="chhisinstr" title="Инструкция">?</button>
+            <button class="afg-btn afg-btn-small afg-btn-accent" id="refreshchat" title="Обновить чат">⟳</button>
         </div>
-        <div style="display: flex; gap: 4px; align-items: center;">
-            <span style="opacity: 0.8;">С</span>
-            <input class="afg-input" type="date" style="padding: 2px 4px; font-size: 12px; width: 110px;" id="dateFromChHis">
-            <span style="opacity: 0.8;">По</span>
-            <input class="afg-input" type="date" style="padding: 2px 4px; font-size: 12px; width: 110px;" id="dateToChHis">
+        <div style="display: flex; gap: 6px; align-items: center; font-size: 12px; font-weight: 500;">
+            <span style="opacity: 0.7;">С</span>
+            <input class="afg-input" type="date" style="padding: 6px 8px; font-size: 12px; width: 120px;" id="dateFromChHis">
+            <span style="opacity: 0.7;">По</span>
+            <input class="afg-input" type="date" style="padding: 6px 8px; font-size: 12px; width: 120px;" id="dateToChHis">
         </div>
-        <button class="afg-btn afg-btn-small" id="chagetheme" title="Сменить тему">🌗</button>
+        <button class="afg-btn afg-btn-small" id="chagetheme" title="Сменить тему">◐</button>
     </div>
 
     <div class="afg-chat-info" id="somechatinfo" style="display:none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-            <div>
-                <span id="usidchat" style="cursor:pointer; opacity: 0.8;" title="Копировать ID">User ID:</span>
-                <span id="placeusid" style="font-weight: bold;"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="opacity: 0.7; font-size: 12px;">👤 User ID:</span>
+                <span id="placeusid" style="font-weight: 600; color: var(--afg-accent); cursor: pointer;" title="Копировать ID"></span>
             </div>
-            <button class="afg-btn afg-btn-small" id="takechat" title="Забрать чат на себя">Забрать</button>
+            <button class="afg-btn afg-btn-accent" id="takechat" title="Забрать чат на себя" style="padding: 6px 12px;">📥 Забрать</button>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <span id="chid" style="cursor:pointer; opacity: 0.8; user-select:none" title="Копировать ссылку">Chat ID:</span>
-                <span id="placechatid" style="font-weight: bold;"></span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="opacity: 0.7; font-size: 12px;">💬 Chat ID:</span>
+                <span id="placechatid" style="font-weight: 600; color: var(--afg-accent); cursor: pointer;" title="Копировать ссылку"></span>
             </div>
-            <button class="afg-btn afg-btn-small" id="reassign" title="Перевести на выбранного оператора">🔀</button>
+            <button class="afg-btn" id="reassign" title="Перевести на выбранного оператора" style="padding: 6px 12px;">🔄 Перевести</button>
         </div>
     </div>
 
     <div id="infofield" class="afg-chat-area theme-dark"></div>
 
-    <div class="afg-footer" id="bottommenuchhis" style="display:none; flex-direction: column;">
-        <textarea class="afg-input" id="msgftochatornotes" style="width: 100%; height: 40px; resize: none; margin-bottom: 5px; text-align:center" placeholder="Введите текст сообщения или заметки"></textarea>
+    <div class="afg-footer" id="bottommenuchhis" style="display:none; flex-direction: column; gap: 10px;">
+        <textarea class="afg-input" id="msgftochatornotes" style="width: 100%; height: 60px; resize: vertical; min-height: 60px; max-height: 200px; text-align: left; padding: 10px;" placeholder="✍️ Введите текст сообщения или заметки..."></textarea>
         <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-            <button class="afg-btn" id="sendmsgtochatornotes">Отправить</button>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <label style="cursor: pointer;"><input type="radio" name="chatornotes" value="Notes" checked> Заметки</label>
-                <label style="cursor: pointer;"><input type="radio" name="chatornotes" value="Chat"> Чат</label>
+            <button class="afg-btn afg-btn-accent" id="sendmsgtochatornotes" style="padding: 8px 20px; font-weight: 600;">📤 Отправить</button>
+            <div style="display: flex; gap: 16px; align-items: center; font-size: 13px;">
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <input type="radio" name="chatornotes" value="Notes" checked style="cursor: pointer;">
+                    <span>📝 Заметки</span>
+                </label>
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <input type="radio" name="chatornotes" value="Chat" style="cursor: pointer;">
+                    <span>💬 Чат</span>
+                </label>
             </div>
         </div>
     </div>
 
     <div id="userchatdata" class="afg-modal">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <button class="afg-btn" id="hideuserdatainfo" style="background: rgba(255, 0, 0, 0.2);">❌</button>
-            <button class="afg-btn" id="gotocrmhis" style="background: rgba(0, 191, 255, 0.2);">CRM</button>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 16px; gap: 8px;">
+            <button class="afg-btn" id="hideuserdatainfo" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); flex: 1;">✕ Закрыть</button>
+            <button class="afg-btn afg-btn-accent" id="gotocrmhis" style="flex: 1;">🔗 Открыть CRM</button>
         </div>
-        <div id="datafield" style="line-height: 1.5; font-size: 14px; word-break: break-all;"></div>
+        <div id="datafield" style="line-height: 1.6; font-size: 14px; word-break: break-word;"></div>
     </div>
 `;
 
@@ -372,20 +547,21 @@ function extractUrlFromHtml(htmlString) {
 function renderMedia(url) {
     const lower = url.toLowerCase();
     if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
-        return `<img src="${url}" class="chat-history-image" data-full="${url}">`;
+        return `<img src="${url}" class="chat-history-image" data-full="${url}" style="margin-top: 8px;">`;
     }
     if (lower.match(/\.(mp4|mov|mkv|webm)$/)) {
-        // Используем структуру со <source> и добавляем preload="metadata"
         return `
-            <video controls playsinline preload="metadata" style="max-width:100%; border-radius:8px; display:block; margin-top:5px;">
+            <video controls playsinline preload="metadata" style="max-width:100%; border-radius:12px; display:block; margin-top:8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                 <source src="${url}" type="video/mp4">
-                Ваш браузер не поддерживает видео. <a href="${url}" target="_blank">Скачать файл</a>
+                Ваш браузер не поддерживает видео. <a href="${url}" target="_blank" style="color: var(--afg-accent);">Скачать файл</a>
             </video>`;
     }
     if (lower.match(/\.(mp3|wav|ogg|oga)$/)) {
-        return `<audio src="${url}" controls style="max-width:100%; margin-top:5px;"></audio>`;
+        return `<audio src="${url}" controls style="max-width:100%; margin-top:8px; border-radius: 8px;"></audio>`;
     }
-    return `<a href="${url}" target="_blank">${url}</a>`;
+    return `<a href="${url}" target="_blank" style="color: var(--afg-accent); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 6px 10px; background: rgba(0,212,255,0.1); border-radius: 8px; border: 1px solid rgba(0,212,255,0.2); transition: all 0.2s;">
+        📎 ${url.split('/').pop() || 'Файл'}
+    </a>`;
 }
 function getOperatorNameById(operatorId, defaultName) {
     const operator = typeof operatorsarray !== 'undefined' ? operatorsarray.find(op => op.operator && op.operator.id === operatorId) : null;
@@ -448,15 +624,12 @@ function fillchatbox() {
     document.getElementById('bottommenuchhis').style.display = 'flex';
 
     let htmlBuilder = '';
-    let lastAuthor = null;
-    let lastType = null;
 
+    // УБРАЛИ ЛОГИКУ ГРУППИРОВКИ - каждое сообщение теперь полностью независимое
     for (let i = convdata.messages.length - 1; i >= 0; i--) {
         const message = convdata.messages[i];
         const date = extractDate(message.ts);
-        let msgClass = '';
-        let authorName = '';
-        let currentType = '';
+        const time = extractTime(message.ts);
 
         switch (message.tpe) {
             case "Question":
@@ -487,17 +660,15 @@ function fillchatbox() {
                     });
                 }
 
-                // Определяем, нужно ли показывать заголовок (новый автор или другой тип сообщения)
-                const isNewGroup = lastAuthor !== name || lastType !== 'user';
-
+                // ВСЕГДА показываем заголовок с датой и временем
                 htmlBuilder += `
-                    <div class="afg-msg afg-msg-user ${!isNewGroup ? 'afg-msg-continuous' : ''}">
-                        ${isNewGroup ? `<div class="afg-msg-header"><span>${name}</span><span class="afg-msg-date">${date}</span></div>` : ''}
+                    <div class="afg-msg afg-msg-user">
+                        <div class="afg-msg-header">
+                            <span class="afg-msg-author">${name}</span>
+                            <span class="afg-msg-date">${date} • ${time}</span>
+                        </div>
                         <div class="afg-msg-body">${content}</div>
                     </div>`;
-
-                lastAuthor = name;
-                lastType = 'user';
                 break;
 
             case "Event":
@@ -526,54 +697,52 @@ function fillchatbox() {
                 }
 
                 if (evMsg) {
-                    htmlBuilder += `<div class="afg-msg-event">${evMsg} &bull; ${extractTime(message.ts)}</div>`;
-                    lastAuthor = null;
-                    lastType = 'event';
+                    htmlBuilder += `<div class="afg-msg-event">${evMsg} • ${time}</div>`;
                 }
                 break;
 
             case "AnswerOperatorWithBot": case "AnswerOperatorQuickReply": case "AnswerSystem": case "AnswerBot": case "AnswerChatterbox":
                 const botName = "AutoFAQ bot";
-                const isNewBotGroup = lastAuthor !== botName || lastType !== 'bot';
 
+                // ВСЕГДА показываем заголовок
                 htmlBuilder += `
-                    <div class="afg-msg afg-msg-bot ${!isNewBotGroup ? 'afg-msg-continuous' : ''}">
-                        ${isNewBotGroup ? `<div class="afg-msg-header"><span>${botName}</span><span class="afg-msg-date">${date}</span></div>` : ''}
+                    <div class="afg-msg afg-msg-bot">
+                        <div class="afg-msg-header">
+                            <span class="afg-msg-author">${botName}</span>
+                            <span class="afg-msg-date">${date} • ${time}</span>
+                        </div>
                         <div>${message.txt}</div>
                     </div>`;
-
-                lastAuthor = botName;
-                lastType = 'bot';
                 break;
 
             case "AnswerOperator":
                 const operName = getOperatorNameById(message.operatorId, "Оператор");
-                const isNewOperGroup = lastAuthor !== operName || lastType !== 'oper';
 
+                // ВСЕГДА показываем заголовок
                 htmlBuilder += `
-                    <div class="afg-msg afg-msg-oper ${!isNewOperGroup ? 'afg-msg-continuous' : ''}">
-                        ${isNewOperGroup ? `<div class="afg-msg-header"><span>${operName}</span><span class="afg-msg-date">${date}</span></div>` : ''}
+                    <div class="afg-msg afg-msg-oper">
+                        <div class="afg-msg-header">
+                            <span class="afg-msg-author">${operName}</span>
+                            <span class="afg-msg-date">${date} • ${time}</span>
+                        </div>
                         <div>${message.txt}</div>
                     </div>`;
-
-                lastAuthor = operName;
-                lastType = 'oper';
                 break;
 
             case "OperatorComment":
                 const commentAuthor = message.operatorId === "autoFAQ"
                     ? "autoFAQ"
                     : getOperatorNameById(message.operatorId, "Оператор");
-                const isNewCommentGroup = lastAuthor !== commentAuthor || lastType !== 'comment';
 
+                // ВСЕГДА показываем заголовок
                 htmlBuilder += `
-                    <div class="afg-msg afg-msg-comment ${!isNewCommentGroup ? 'afg-msg-continuous' : ''}">
-                        ${isNewCommentGroup ? `<div class="afg-msg-header"><span>${commentAuthor}</span><span class="afg-msg-date">${date}</span></div>` : ''}
+                    <div class="afg-msg afg-msg-comment">
+                        <div class="afg-msg-header">
+                            <span class="afg-msg-author">${commentAuthor}</span>
+                            <span class="afg-msg-date">${date} • ${time}</span>
+                        </div>
                         <div>${message.txt}</div>
                     </div>`;
-
-                lastAuthor = commentAuthor;
-                lastType = 'comment';
                 break;
         }
     }
@@ -590,7 +759,7 @@ document.getElementById('operatorstp').addEventListener('change', async function
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     flagsearch = 'searchbyoperator';
-    document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 20px;">Загрузка...</div>';
+    document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.7;">⏳ Загрузка чатов оператора...</div>';
     resetChatInfo();
 
     for (let i = 1; i < objSel.length; i++) {
@@ -602,8 +771,8 @@ document.getElementById('operatorstp').addEventListener('change', async function
                     body: JSON.stringify({
                         serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json",
                         participatingOperatorsIds: [objSel[i].value],
-                        tsFrom: `${todayStr}T00:00:00.000Z`, // Подставляем сегодняшний день
-                        tsTo: `${todayStr}T23:59:59.000Z`,   // Подставляем сегодняшний день
+                        tsFrom: `${todayStr}T00:00:00.000Z`,
+                        tsTo: `${todayStr}T23:59:59.000Z`,
                         usedStatuses: ["OnOperator", "AssignedToOperator", "Active"], orderBy: "ts", orderDirection: "Asc", page: 1, limit: 20
                     })
                 });
@@ -611,7 +780,7 @@ document.getElementById('operatorstp').addEventListener('change', async function
 
                 if (operchatsdata.total === 0) {
                     alert(`У ${objSel[i].innerText} нет активных чатов в выбранном диапазоне`);
-                    document.getElementById('infofield').innerHTML = '';
+                    document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.5;">📭 Нет активных чатов</div>';
                     return;
                 }
 
@@ -624,13 +793,25 @@ document.getElementById('operatorstp').addEventListener('change', async function
                     let name = item.channelUser.fullName;
                     if (item.channelUser.payload?.userFullName) name = item.channelUser.payload.userFullName;
 
-                    foundarr += `<span class="chatlist" data-id="${item.conversationId}"><b>${dateStr}</b> <span style="color:#00fb00">${item.channelUser.payload?.userType || ""}</span>  <span style="color:var(--afg-accent);">${name}</span></span>`;
+                    const userType = item.channelUser.payload?.userType || "";
+                    const typeColor = userType ? 'style="color: #4caf50; font-weight: 600;"' : '';
+
+                    foundarr += `<span class="chatlist" data-id="${item.conversationId}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="opacity: 0.7; font-size: 12px;">🕐 ${dateStr}</span>
+                            <span ${typeColor}>${userType}</span>
+                        </div>
+                        <div style="margin-top: 4px; color: var(--afg-accent); font-weight: 500;">${name}</div>
+                    </span>`;
                 });
 
                 document.getElementById('infofield').innerHTML = foundarr;
                 bindChatListClicks(operchatsdata.items, 'searchbyoperator');
 
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; color: #ff6b6b;">❌ Ошибка загрузки</div>';
+            }
         }
     }
 });
@@ -639,7 +820,7 @@ function bindChatListClicks(items, mode) {
     document.querySelectorAll('.chatlist').forEach((el, index) => {
         const id = el.getAttribute('data-id');
         el.onclick = async () => {
-            document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 20px;">Загрузка чата...</div>';
+            document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.7;">⏳ Загрузка чата...</div>';
             try {
                 let r = await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, {
                     headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' }
@@ -647,7 +828,10 @@ function bindChatListClicks(items, mode) {
                 convdata = await r.json();
                 isChatOnOperator = convdata.status === 'AssignedToOperator';
                 fillchatbox();
-            } catch (e) { console.error(e); document.getElementById('infofield').innerHTML = 'Ошибка загрузки'; }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; color: #ff6b6b;">❌ Ошибка загрузки чата</div>';
+            }
         };
         el.oncontextmenu = (e) => { e.preventDefault(); typeof copyToClipboard === 'function' && copyToClipboard(id); };
     });
@@ -682,30 +866,203 @@ function setDefaultDates() {
 document.getElementById('hideMeChHis').onclick = () => {
     wintChatHis.style.display = 'none';
     const openBtn = document.getElementById('opennewcat');
-    if (openBtn) openBtn.classList.remove('activeScriptBtn');
+    if (openBtn) openBtn.classList.remove('active');
     const rightPanel = document.getElementById('rightPanel');
     if (rightPanel) rightPanel.style.right = "22px";
     resetChatHistoryUI();
 };
 
-document.getElementById('clearallinfo').onclick = resetChatHistoryUI;
-document.getElementById('chatuserhis').addEventListener('input', function () { typeof onlyNumbers === 'function' && onlyNumbers(this); });
+document.getElementById('clearallinfo').onclick = () => {
+    resetChatHistoryUI();
+    // Визуальная обратная связь
+    const btn = document.getElementById('clearallinfo');
+    btn.style.transform = 'scale(0.9)';
+    setTimeout(() => { btn.style.transform = 'scale(1)'; }, 150);
+};
 
-document.getElementById('chid').onclick = () => { typeof copyToClipboard === 'function' && copyToClipboard('https://skyeng.autofaq.ai/logs/' + document.getElementById('placechatid').innerText); };
-document.getElementById('usidchat').onclick = () => { typeof copyToClipboard === 'function' && copyToClipboard(document.getElementById('placeusid').innerText); };
+document.getElementById('chatuserhis').addEventListener('input', function () {
+    typeof onlyNumbers === 'function' && onlyNumbers(this);
+});
 
-document.getElementById('hideuserdatainfo').onclick = () => { document.getElementById('userchatdata').style.display = 'none'; };
+// Улучшенная обработка Enter в полях поиска
+document.getElementById('chatuserhis').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('btn_search_history').click();
+    }
+});
+
+document.getElementById('hashchathis').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('btn_search_history').click();
+    }
+});
+
+// Улучшенная обработка Enter в textarea
+document.getElementById('msgftochatornotes').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && e.ctrlKey) {
+        e.preventDefault();
+        document.getElementById('sendmsgtochatornotes').click();
+    }
+});
+
+document.getElementById('back_to_chat_his').onclick = () => {
+    resetChatInfo();
+    document.getElementById('infofield').innerHTML = foundarr || '<div style="text-align:center; padding: 40px; opacity: 0.5;">📋 История поиска пуста</div>';
+    if (foundarr) bindChatListClicks(null, flagsearch);
+};
+
+document.getElementById('chhisinstr').onclick = () => window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-chathistory%F0%9F%92%ACChatHistory');
+
+document.getElementById('refreshchat').onclick = async () => {
+    const chatId = document.getElementById('placechatid').innerText;
+    if (chatId) {
+        document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.7;">⏳ Обновление чата...</div>';
+        await updateChatInfo(chatId);
+    }
+};
+
+async function updateChatInfo(chatId) {
+    try {
+        const response = await fetch(`https://skyeng.autofaq.ai/api/conversations/${chatId}`, {
+            headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' }
+        });
+        if (!response.ok) throw new Error("Ошибка сети");
+        convdata = await response.json();
+        isChatOnOperator = convdata.status === 'AssignedToOperator';
+        fillchatbox();
+    } catch (err) {
+        console.error(err);
+        document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; color: #ff6b6b;">❌ Ошибка загрузки чата</div>';
+    }
+}
+
+document.getElementById('takechat').onclick = async function () {
+    const timeStart = document.getElementById('infofield').getAttribute('openhistorytime');
+    if (!timeStart || (new Date() - new Date(timeStart)) / 1000 > 60) {
+        return alert("⚠️ История чата открыта слишком долго. Пожалуйста, обновите чат.");
+    }
+
+    const chatId = document.getElementById('placechatid').innerText.trim();
+    if (!chatId || typeof operatorId === 'undefined' || !operatorId) return alert("❌ Чат не выбран или ID оператора не найден");
+
+    if (!confirm("📥 Забрать чат на себя?")) return;
+
+    const assignChat = async (id) => {
+        await fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+            method: "POST", credentials: "include",
+            headers: { "content-type": "application/json", "x-csrf-token": aftoken },
+            body: JSON.stringify({ command: "DO_ASSIGN_CONVERSATION", conversationId: chatId, assignToOperatorId: id })
+        });
+    };
+
+    try {
+        await assignChat('null');
+        setTimeout(() => assignChat(operatorId), 2000);
+    } catch (e) {
+        console.error(e);
+        alert("❌ Ошибка при попытке забрать чат");
+    }
+};
+
+document.getElementById('reassign').onclick = async () => {
+    const selected = document.querySelector('#operatorstp option:checked');
+    const chatId = document.getElementById('placechatid').innerText.trim();
+
+    if (!chatId || !selected || !selected.value) return alert("❌ Не выбран чат или оператор");
+
+    if (!confirm(`🔄 Перевести чат на ${selected.textContent}?`)) return;
+
+    try {
+        await fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+            method: "POST", credentials: "include", mode: "cors",
+            headers: { "content-type": "application/json", "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
+            body: JSON.stringify({ command: "DO_ASSIGN_CONVERSATION", conversationId: chatId, assignToOperatorId: selected.value })
+        });
+        console.log("✅ Успешный перевод");
+        alert("✅ Чат успешно переведён");
+    } catch (e) {
+        console.error(e);
+        alert("❌ Ошибка передачи чата");
+    }
+};
+
+document.getElementById('sendmsgtochatornotes').onclick = async () => {
+    const mode = document.querySelector('input[name="chatornotes"]:checked')?.value;
+    const chatId = document.getElementById('placechatid').innerText.trim();
+    const msgField = document.getElementById('msgftochatornotes');
+
+    if (!mode || !chatId || !msgField.value.trim()) return alert("❌ Не заполнены все поля");
+
+    const btn = document.getElementById('sendmsgtochatornotes');
+    const originalText = btn.textContent;
+    btn.textContent = '⏳ Отправка...';
+    btn.disabled = true;
+
+    try {
+        const conv = await fetch(`https://skyeng.autofaq.ai/api/conversations/${chatId}`, {
+            headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' }
+        }).then(r => r.json());
+
+        const payload = { sessionId: conv.sessionId, conversationId: chatId, text: `<p>${msgField.value}</p>` };
+        if (mode === "Notes") payload.isComment = true;
+
+        msgField.value = "";
+
+        const boundary = "----WebKitFormBoundary" + Math.random().toString(16).slice(2);
+        const body = `--${boundary}\r\nContent-Disposition: form-data; name="payload"\r\n\r\n${JSON.stringify(payload)}\r\n--${boundary}--\r\n`;
+
+        await fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
+            method: "POST", credentials: "include", mode: "cors",
+            headers: { "content-type": `multipart/form-data; boundary=${boundary}`, "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
+            body
+        });
+
+        btn.textContent = '✅ Отправлено';
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.disabled = false;
+            updateChatInfo(chatId);
+        }, 1000);
+    } catch (e) {
+        console.error(e);
+        btn.textContent = '❌ Ошибка';
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }, 2000);
+    }
+};
+
+document.getElementById('hideuserdatainfo').onclick = () => {
+    const modal = document.getElementById('userchatdata');
+    modal.style.display = 'none';
+};
 
 document.getElementById('gotocrmhis').onclick = () => {
-    let fdata = document.getElementById('datafield').innerText;
-    let match = fdata.match(/ID:\s?(\d+)/);
-    if (match) window.open(`https://crm2.skyeng.ru/persons/${match[1]}`);
+    if (typeof convdata !== 'undefined' && convdata) {
+        const userId = convdata.channelUser.payload?.id || convdata.channelUser.id;
+        if (userId) {
+            window.open(`https://crm2.skyeng.ru/persons/${userId}`);
+        } else {
+            alert('❌ ID пользователя не найден в данных чата');
+        }
+    } else {
+        alert('❌ Не выбран активный чат');
+    }
 };
 
 document.getElementById('chagetheme').onclick = () => {
     const current = localStorage.getItem('theme');
-    localStorage.setItem('theme', current === 'light' ? 'dark' : 'light');
+    const newTheme = current === 'light' ? 'dark' : 'light';
+    localStorage.setItem('theme', newTheme);
     checkAndChangeStyle();
+
+    // Визуальная обратная связь
+    const btn = document.getElementById('chagetheme');
+    btn.style.transform = 'rotate(180deg)';
+    setTimeout(() => { btn.style.transform = 'rotate(0deg)'; }, 300);
 };
 
 function getopennewcatButtonPress() {
@@ -713,10 +1070,10 @@ function getopennewcatButtonPress() {
     wintChatHis.style.display = isHidden ? 'flex' : 'none';
 
     const rp = document.getElementById('rightPanel');
-    if (rp) rp.style.right = isHidden ? "422px" : "22px";
+    if (rp) rp.style.right = isHidden ? "482px" : "22px";
 
     const btn = document.getElementById('opennewcat');
-    if (btn) isHidden ? btn.classList.add('activeScriptBtn') : btn.classList.remove('activeScriptBtn');
+    if (btn) isHidden ? btn.classList.add('active') : btn.classList.remove('active');
 
     if (!isHidden) return;
 
@@ -734,6 +1091,11 @@ function getopennewcatButtonPress() {
         let objSel = document.getElementById("operatorstp");
         objSel.length = 1; // Очищаем список, оставляем только дефолтный 1й элемент
 
+        const btn = document.getElementById('RefrehOperators');
+        const originalText = btn.textContent;
+        btn.textContent = '⏳';
+        btn.disabled = true;
+
         try {
             let res = await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
                 headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' }, credentials: "include"
@@ -749,10 +1111,17 @@ function getopennewcatButtonPress() {
                 }
             });
 
-            // --- Сброс селекта на первый пункт ("Операторы на линии") ---
+            // Сброс селекта на первый пункт
             objSel.selectedIndex = 0;
 
-        } catch (e) { console.error(e); }
+            btn.textContent = '✅';
+            setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 1000);
+
+        } catch (e) {
+            console.error(e);
+            btn.textContent = '❌';
+            setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 2000);
+        }
     };
 
     document.getElementById('RefrehOperators').click();
@@ -762,26 +1131,44 @@ document.getElementById('getdatafrchat').onclick = () => {
     if (typeof convdata !== 'undefined' && convdata) {
         const modal = document.getElementById('userchatdata');
 
-        // ИСПРАВЛЕНА ЛОГИКА ПЕРЕКЛЮЧЕНИЯ
+        // Переключение видимости модалки
         modal.style.display = (modal.style.display === 'block') ? 'none' : 'block';
 
-        let userData = convdata.channelUser.payload || {};
-        let techScreeningData = userData.techScreeningData || userData["Тех.инфа об устройствах"] || "";
+        if (modal.style.display === 'block') {
+            let userData = convdata.channelUser.payload || {};
+            let techScreeningData = userData.techScreeningData || userData["Тех.инфа об устройствах"] || "Нет данных";
 
-        document.getElementById('datafield').innerHTML = `
-            <div style="font-size:16px; margin-bottom:10px;">
-                <b style="color:var(--afg-accent);">${userData.userFullName || convdata.channelUser.fullName}</b>
-                <span style="opacity:0.8;">(${userData.userType || 'Нет типа'})</span>
-            </div>
-            <b>ID:</b> ${userData.id || 'N/A'}<br>
-            <b>📧:</b> ${userData.email || 'N/A'}<br>
-            <b>📞:</b> ${userData.phone || 'N/A'}<br>
-            <div style="margin-top:10px; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;">
-                <b>Tech Screening:</b><br>${techScreeningData}
-            </div>
-        `;
+            document.getElementById('datafield').innerHTML = `
+                <div style="font-size:16px; margin-bottom:16px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 10px; border-left: 3px solid var(--afg-accent);">
+                    <div style="font-size: 18px; font-weight: 600; color: var(--afg-accent); margin-bottom: 6px;">
+                        ${userData.userFullName || convdata.channelUser.fullName}
+                    </div>
+                    <div style="opacity: 0.7; font-size: 13px;">
+                        ${userData.userType || 'Тип не указан'}
+                    </div>
+                </div>
+                <div style="display: grid; gap: 10px;">
+                    <div style="padding: 10px; background: rgba(0,0,0,0.15); border-radius: 8px;">
+                        <div style="opacity: 0.6; font-size: 11px; margin-bottom: 4px;">USER ID</div>
+                        <div style="font-weight: 500;">${userData.id || 'N/A'}</div>
+                    </div>
+                    <div style="padding: 10px; background: rgba(0,0,0,0.15); border-radius: 8px;">
+                        <div style="opacity: 0.6; font-size: 11px; margin-bottom: 4px;">📧 EMAIL</div>
+                        <div style="font-weight: 500; word-break: break-all;">${userData.email || 'N/A'}</div>
+                    </div>
+                    <div style="padding: 10px; background: rgba(0,0,0,0.15); border-radius: 8px;">
+                        <div style="opacity: 0.6; font-size: 11px; margin-bottom: 4px;">📞 PHONE</div>
+                        <div style="font-weight: 500;">${userData.phone || 'N/A'}</div>
+                    </div>
+                    <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="opacity: 0.6; font-size: 11px; margin-bottom: 6px;">🖥️ TECH SCREENING</div>
+                        <div style="font-size: 13px; line-height: 1.5; white-space: pre-wrap;">${techScreeningData}</div>
+                    </div>
+                </div>
+            `;
+        }
     } else {
-        alert("Не выбран активный чат");
+        alert("❌ Не выбран активный чат");
     }
 };
 
@@ -799,12 +1186,10 @@ document.getElementById('btn_search_history').onclick = async () => {
     const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
 
     // ЛОГИКА СЦЕНАРИЕВ:
-    // 1. Если введен ID пользователя и даты есть в полях -> берем их.
-    // 2. Если ID пустой (или если кто-то стер дату в полях) -> жестко берем текущие сутки (сегодня).
     const dFromStr = (userId && dFrom) ? dFrom : todayStr;
     const dToStr = (userId && dTo) ? dTo : todayStr;
 
-    document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 20px;">Загрузка...</div>';
+    document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.7;">⏳ Поиск...</div>';
     resetChatInfo();
 
     if (userId && !chatHash) {
@@ -816,7 +1201,6 @@ document.getElementById('btn_search_history').onclick = async () => {
                 body: JSON.stringify({
                     serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json",
                     channelUserFullTextLike: userId,
-                    // Используем выбранные даты или сегодняшние сутки
                     tsFrom: `${dFromStr}T00:00:00.000Z`,
                     tsTo: `${dToStr}T23:59:59.000Z`,
                     orderBy: "ts", orderDirection: "Desc", page: 1, limit: 20
@@ -825,7 +1209,7 @@ document.getElementById('btn_search_history').onclick = async () => {
             data = await res.json();
 
             if (data.total === 0) {
-                document.getElementById('infofield').innerHTML = '<div style="text-align:center;">Чат не найден в выбранном диапазоне дат</div>';
+                document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.5;">📭 Чат не найден в выбранном диапазоне дат</div>';
                 return;
             }
 
@@ -835,115 +1219,66 @@ document.getElementById('btn_search_history').onclick = async () => {
                 let rating = item.stats.rate?.rate || '⭕';
                 let mark = item.status === "ClosedByBot" ? "🤖" : (item.stats.usedStatuses === "AssignedToOperator" ? "🛠" : rating);
                 let name = item.channelUser.payload?.userFullName || item.channelUser.fullName;
+                let userType = item.channelUser.payload?.userType || "";
+
+                const dateStr = `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+                const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
                 foundarr += `<span class="chatlist" data-id="${item.conversationId}">
-                    ${d.toLocaleDateString('ru-RU')} ${d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-                    <span style="color:var(--afg-accent);"><b>${item.channelUser.payload?.userType || ""}</b> ${name}</span>
-                    <span style="float:right;">Оценка: ${mark}</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="opacity: 0.7; font-size: 12px;">🕐 ${dateStr} ${timeStr}</span>
+                        <span style="font-size: 18px;" title="Оценка">${mark}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="color: #4caf50; font-weight: 600; font-size: 12px;">${userType}</span>
+                            <span style="color: var(--afg-accent); font-weight: 500; margin-left: 6px;">${name}</span>
+                        </div>
+                    </div>
                 </span>`;
             });
 
             document.getElementById('infofield').innerHTML = foundarr;
             bindChatListClicks(data.items, 'searchbyuser');
 
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; color: #ff6b6b;">❌ Ошибка поиска</div>';
+        }
 
     } else if (!userId && chatHash) {
         flagsearch = 'searchbyhash';
         updateChatInfo(chatHash);
     } else {
-        document.getElementById('infofield').innerHTML = '<div style="text-align:center;">Укажите только один параметр: ID пользователя или Хеш чата</div>';
+        document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.7;">⚠️ Укажите только один параметр:<br>ID пользователя или Хеш чата</div>';
     }
 };
 
-document.getElementById('back_to_chat_his').onclick = () => {
-    resetChatInfo();
-    document.getElementById('infofield').innerHTML = foundarr || '';
-    if (foundarr) bindChatListClicks(null, flagsearch);
+// Обработчики копирования
+document.getElementById('placeusid').onclick = () => {
+    const text = document.getElementById('placeusid').innerText;
+    if (typeof copyToClipboard === 'function') {
+        copyToClipboard(text);
+        // Визуальная обратная связь
+        const el = document.getElementById('placeusid');
+        const originalColor = el.style.color;
+        el.style.color = '#4caf50';
+        setTimeout(() => { el.style.color = originalColor; }, 300);
+    }
 };
 
-document.getElementById('chhisinstr').onclick = () => window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-chathistory%F0%9F%92%ACChatHistory');
-
-document.getElementById('refreshchat').onclick = async () => {
+document.getElementById('placechatid').onclick = () => {
     const chatId = document.getElementById('placechatid').innerText;
-    if (chatId) {
-        document.getElementById('infofield').innerHTML = '<div style="text-align:center;">Обновление...</div>';
-        await updateChatInfo(chatId);
+    if (typeof copyToClipboard === 'function') {
+        copyToClipboard('https://skyeng.autofaq.ai/logs/' + chatId);
+        // Визуальная обратная связь
+        const el = document.getElementById('placechatid');
+        const originalColor = el.style.color;
+        el.style.color = '#4caf50';
+        setTimeout(() => { el.style.color = originalColor; }, 300);
     }
 };
+// Инициализация при загрузке
+console.log("✅ ChatHistory Premium v2.0 загружен");
+console.log("📋 Особенности: Всегда видимые дата/время, премиальный Glassmorphism дизайн, улучшенная читаемость");
 
-async function updateChatInfo(chatId) {
-    try {
-        const response = await fetch(`https://skyeng.autofaq.ai/api/conversations/${chatId}`, {
-            headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' }
-        });
-        if (!response.ok) throw new Error("Ошибка сети");
-        convdata = await response.json();
-        isChatOnOperator = convdata.status === 'AssignedToOperator';
-        fillchatbox();
-    } catch (err) { console.error(err); }
-}
-
-document.getElementById('takechat').onclick = async function () {
-    const timeStart = document.getElementById('infofield').getAttribute('openhistorytime');
-    if (!timeStart || (new Date() - new Date(timeStart)) / 1000 > 60) {
-        return alert("История чата открыта слишком долго. Пожалуйста, обновите чат.");
-    }
-
-    const chatId = document.getElementById('placechatid').innerText.trim();
-    if (!chatId || typeof operatorId === 'undefined' || !operatorId) return alert("Чат не выбран или ID оператора не найден");
-
-    if (!confirm("Забрать чат?")) return;
-
-    const assignChat = async (id) => {
-        await fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-            method: "POST", credentials: "include",
-            headers: { "content-type": "application/json", "x-csrf-token": aftoken },
-            body: JSON.stringify({ command: "DO_ASSIGN_CONVERSATION", conversationId: chatId, assignToOperatorId: id })
-        });
-    };
-
-    await assignChat('null');
-    setTimeout(() => assignChat(operatorId), 2000);
-};
-
-document.getElementById('reassign').onclick = () => {
-    const selected = document.querySelector('#operatorstp option:checked');
-    const chatId = document.getElementById('placechatid').innerText.trim();
-
-    if (!chatId || !selected || !selected.value) return alert("Не выбран чат или оператор");
-
-    fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-        method: "POST", credentials: "include", mode: "cors",
-        headers: { "content-type": "application/json", "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
-        body: JSON.stringify({ command: "DO_ASSIGN_CONVERSATION", conversationId: chatId, assignToOperatorId: selected.value })
-    }).then(() => console.log("Успешный перевод")).catch(e => alert("Ошибка передачи"));
-};
-
-document.getElementById('sendmsgtochatornotes').onclick = async () => {
-    const mode = document.querySelector('input[name="chatornotes"]:checked')?.value;
-    const chatId = document.getElementById('placechatid').innerText.trim();
-    const msgField = document.getElementById('msgftochatornotes');
-
-    if (!mode || !chatId || !msgField.value.trim()) return alert("Не заполнены все поля");
-
-    try {
-        const conv = await fetch(`https://skyeng.autofaq.ai/api/conversations/${chatId}`, { headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' } }).then(r => r.json());
-
-        const payload = { sessionId: conv.sessionId, conversationId: chatId, text: `<p>${msgField.value}</p>` };
-        if (mode === "Notes") payload.isComment = true;
-
-        msgField.value = "";
-
-        const boundary = "----WebKitFormBoundary" + Math.random().toString(16).slice(2);
-        const body = `--${boundary}\r\nContent-Disposition: form-data; name="payload"\r\n\r\n${JSON.stringify(payload)}\r\n--${boundary}--\r\n`;
-
-        await fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-            method: "POST", credentials: "include", mode: "cors",
-            headers: { "content-type": `multipart/form-data; boundary=${boundary}`, "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
-            body
-        });
-
-        setTimeout(() => updateChatInfo(chatId), 1000);
-    } catch (e) { console.error(e); }
-};
