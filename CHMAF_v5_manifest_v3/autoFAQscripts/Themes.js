@@ -1,35 +1,40 @@
 let tableth = [];
 let KCThemesFlag = 0;
 
-// ===== LUXURY PREMIUM GLASSMORPHISM =====
+// ===== ULTRA PREMIUM COMPACT DESIGN =====
 const themesCSS = document.createElement('style');
 themesCSS.id = 'af-themes-premium-css';
 themesCSS.textContent = `
 #AF_Themes {
     --primary: #6366f1;
     --primary-hover: #818cf8;
-    --bg-glass: rgba(15, 23, 42, 0.92);
-    --border-glass: rgba(255, 255, 255, 0.1);
-    --text-primary: #f1f5f9;
+    --primary-glow: rgba(99, 102, 241, 0.4);
+    --bg-glass: rgba(10, 15, 30, 0.95);
+    --border-glass: rgba(255, 255, 255, 0.12);
+    --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
-    --spacing: 12px;
+    --text-muted: #64748b;
+    --spacing: 8px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
 
-    background: linear-gradient(135deg, rgba(22, 22, 38, 0.92) 0%, rgba(14, 14, 28, 0.95) 100%) !important;
-    backdrop-filter: blur(28px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+    background: linear-gradient(135deg, rgba(15, 20, 35, 0.96) 0%, rgba(8, 12, 22, 0.98) 100%) !important;
+    backdrop-filter: blur(32px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
 
     border: 1px solid var(--border-glass) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
-    border-radius: 18px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 12px !important;
     box-shadow:
-        0 0 0 1px rgba(0,0,0,0.5),
-        0 20px 50px rgba(0, 0, 0, 0.7),
-        0 0 30px rgba(99, 102, 241, 0.05),
-        inset 0 1px 0 rgba(255,255,255,0.06) !important;
+        0 0 0 1px rgba(0,0,0,0.6),
+        0 24px 60px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(99, 102, 241, 0.08),
+        inset 0 1px 0 rgba(255,255,255,0.08) !important;
 
     color: var(--text-primary) !important;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-family: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
     -webkit-font-smoothing: antialiased !important;
+    font-feature-settings: 'cv11', 'ss01';
     width: 720px !important;
     overflow: hidden !important;
     transform: translate3d(0,0,0);
@@ -37,94 +42,100 @@ themesCSS.textContent = `
 
   #AF_Themes * { box-sizing: border-box; }
 
-  /* === HEADER === */
+  /* === ULTRA COMPACT HEADER === */
   #AF_Themes .af-theme-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: var(--spacing);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 4px;
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     cursor: grab;
+    background: rgba(0, 0, 0, 0.2);
   }
 
   #AF_Themes .af-theme-header:active { cursor: grabbing; }
 
-  /* Унифицированные кнопки хедера */
+  /* Минималистичные кнопки хедера */
   #AF_Themes .af-btn {
-    height: 32px;
-    padding: 0 12px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    color: var(--text-secondary);
-    font-size: 12px;
+    height: 24px;
+    padding: 0 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
+    letter-spacing: 0.01em;
   }
 
   #AF_Themes .af-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
     color: var(--text-primary);
-    transform: translateY(-1px);
+    transform: translateY(-0.5px);
   }
 
   #AF_Themes .af-btn.primary {
-    background: rgba(99, 102, 241, 0.15);
-    border-color: rgba(99, 102, 241, 0.3);
-    color: var(--primary-hover);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.15));
+    border-color: rgba(99, 102, 241, 0.4);
+    color: #a5b4fc;
   }
 
   #AF_Themes .af-btn.primary:hover {
-    background: rgba(99, 102, 241, 0.25);
-    box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(99, 102, 241, 0.25));
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(99, 102, 241, 0.1);
+    color: #c7d2fe;
   }
 
   #AF_Themes .buttonHide {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.25);
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
     color: #fca5a5;
-    margin-left: auto;
+    order: -1;
   }
 
   #AF_Themes .buttonHide:hover {
-    background: rgba(239, 68, 68, 0.25);
+    background: rgba(239, 68, 68, 0.3);
     color: #fff;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
   }
 
-  /* === SEARCH ROW === */
+  /* === ULTRA COMPACT SEARCH ROW === */
   #AF_Themes .af-search-row {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
-    gap: 8px;
-    padding: var(--spacing);
-    padding-bottom: 8px;
+    gap: 6px;
+    padding: 8px;
+    padding-bottom: 6px;
+    background: rgba(0, 0, 0, 0.15);
   }
 
   #AF_Themes .af-input {
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
     color: var(--text-primary);
-    font-size: 13px;
+    font-size: 11px;
     outline: none;
-    transition: all 0.2s;
+    transition: all 0.15s;
+    font-weight: 500;
   }
 
   #AF_Themes .af-input::placeholder {
-    color: var(--text-secondary);
-    opacity: 0.7;
+    color: var(--text-muted);
+    opacity: 0.6;
   }
 
   #AF_Themes .af-input:focus {
     border-color: var(--primary);
-    background: rgba(0, 0, 0, 0.35);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2), 0 0 20px rgba(99, 102, 241, 0.15);
   }
 
   .af-jira-container {
@@ -134,90 +145,94 @@ themesCSS.textContent = `
   }
 
   .af-jira-container .af-input {
-    padding-right: 36px;
+    padding-right: 32px;
   }
 
   .af-jira-btn {
     position: absolute;
-    right: 6px;
+    right: 4px;
     background: none;
     border: none;
-    padding: 4px;
+    padding: 3px;
     cursor: pointer;
-    font-size: 16px;
-    transition: transform 0.2s;
+    font-size: 14px;
+    transition: transform 0.15s;
     line-height: 1;
-    color: var(--text-secondary);
+    color: var(--text-muted);
   }
 
   .af-jira-btn:hover {
-    transform: scale(1.15);
+    transform: scale(1.2);
     color: var(--primary-hover);
+    filter: drop-shadow(0 0 8px var(--primary-glow));
   }
 
-  /* === MAIN LAYOUT === */
+  /* === ULTRA COMPACT MAIN LAYOUT === */
   #AF_Themes .af-main-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing);
-    padding: var(--spacing);
-    max-height: 65vh;
+    gap: 8px;
+    max-height: 60vh;
     overflow-y: auto;
   }
 
-  /* Скроллбар */
-  #AF_Themes .af-main-layout::-webkit-scrollbar { width: 6px; }
+  /* Премиальный скроллбар */
+  #AF_Themes .af-main-layout::-webkit-scrollbar { width: 4px; }
   #AF_Themes .af-main-layout::-webkit-scrollbar-track { background: transparent; }
   #AF_Themes .af-main-layout::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.3), rgba(99, 102, 241, 0.15));
     border-radius: 10px;
   }
   #AF_Themes .af-main-layout::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.5), rgba(99, 102, 241, 0.3));
   }
 
-  /* Заголовки секций */
+  /* Минималистичные заголовки секций */
   #AF_Themes .af-section-title {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
     padding-left: 2px;
+    opacity: 0.7;
+  }
   }
 
-  /* === КНОПКИ ТЕМ === */
+  /* === ULTRA COMPACT THEME BUTTONS === */
   #AF_Themes .theme-main-btn {
     width: 100%;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
-    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    padding: 3px 6px;
     color: var(--text-primary);
-    font-size: 13px;
+    font-size: 10px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-bottom: 6px;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 2px;
     text-align: left;
+    line-height: 1.2;
   }
 
   #AF_Themes .theme-main-btn:hover {
-    background: rgba(99, 102, 241, 0.1);
-    border-color: rgba(99, 102, 241, 0.3);
-    transform: translateX(3px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.1));
+    border-color: rgba(99, 102, 241, 0.4);
+    transform: translateX(2px);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2), 0 0 20px rgba(99, 102, 241, 0.1);
+    color: #c7d2fe;
   }
 
-  /* === ПОДТЕМЫ === */
+  /* === ULTRA COMPACT SUBTHEMES === */
   #AF_Themes .theme-page {
     grid-column: 1 / span 2;
     display: none;
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    padding: 8px 0 16px 0;
-    animation: afFadeIn 0.25s ease;
+    gap: 4px;
+    padding: 4px 0 8px 0;
+    animation: afFadeIn 0.2s ease;
   }
 
   #AF_Themes .theme-page[style*="display: flex"],
@@ -226,122 +241,129 @@ themesCSS.textContent = `
   }
 
   #AF_Themes .searchSubthemes {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
     color: var(--text-primary);
-    font-size: 12px;
-    line-height: 1.3;
+    font-size: 13px;
+    line-height: 1.4;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
     display: flex;
     align-items: center;
     text-align: left;
+    font-weight: 500;
   }
 
   #AF_Themes .searchSubthemes:hover {
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), rgba(99, 102, 241, 0.9));
     border-color: var(--primary-hover);
     color: #fff;
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.25);
-    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3), 0 0 30px rgba(99, 102, 241, 0.15);
+    transform: translateY(-1px);
   }
 
   /* Приглушаем теги когда открыты подтемы */
   .theme-page[style*="display: grid"] ~ .af-column:last-child {
-    opacity: 0.25;
+    opacity: 0.3;
     pointer-events: none;
+    filter: blur(1px);
   }
 
-  /* === РЕЗУЛЬТАТЫ ПОИСКА === */
+  /* === ULTRA COMPACT SEARCH RESULTS === */
   #AF_Themes #foundSubthemes {
     display: none;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding: 0 var(--spacing) var(--spacing);
-    max-height: 280px;
+    gap: 4px;
+    padding: 0 8px 8px;
+    max-height: 240px;
     overflow-y: auto;
   }
 
-  #AF_Themes #foundSubthemes::-webkit-scrollbar { width: 6px; }
+  #AF_Themes #foundSubthemes::-webkit-scrollbar { width: 4px; }
   #AF_Themes #foundSubthemes::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.3), rgba(99, 102, 241, 0.15));
     border-radius: 10px;
   }
 
   #AF_Themes .af-found-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    padding: 5px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    transition: all 0.2s;
+    gap: 4px;
+    transition: all 0.15s;
   }
 
   #AF_Themes .af-found-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(99, 102, 241, 0.4);
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
   }
 
   #AF_Themes .af-found-badge {
     color: var(--primary-hover);
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     opacity: 0.8;
   }
 
   #AF_Themes .af-found-card button {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
-    font-size: 12px;
+    font-size: 10px;
     text-align: left;
-    padding: 8px 10px;
+    padding: 5px 7px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
+    line-height: 1.3;
+    font-weight: 500;
   }
 
   #AF_Themes .af-found-card button:hover {
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), rgba(99, 102, 241, 0.9));
     color: #fff;
     border-color: var(--primary-hover);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
   }
 
-  /* === ТЕГИ === */
+  /* === ULTRA COMPACT TAGS === */
   #AF_Themes .af-grid-tags {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 6px;
+    gap: 4px;
   }
 
   #AF_Themes .af-tag-row {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
     padding: 2px;
-    transition: all 0.2s;
-	word-wrap:break-word;
+    transition: all 0.15s;
+    word-wrap: break-word;
   }
 
   #AF_Themes .af-tag-row:hover {
     background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.1);
   }
 
   #AF_Themes .af-checkbox {
     margin: 0 6px;
     cursor: pointer;
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     accent-color: var(--primary);
     flex-shrink: 0;
   }
@@ -350,26 +372,28 @@ themesCSS.textContent = `
     border: none;
     background: transparent;
     text-align: left;
-    padding: 6px 8px;
-    font-size: 12px;
+    padding: 6px 7px;
+    font-size: 11px;
     color: var(--text-primary);
     cursor: pointer;
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-weight: 500;
+    line-height: 1.3;
   }
 
   #AF_Themes #multitag {
     width: 100%;
-    margin-top: 8px;
-    padding: 8px;
-    font-size: 12px;
+    margin-top: 6px;
+    padding: 6px;
+    font-size: 11px;
   }
 
-  /* === АНИМАЦИИ === */
+  /* === PREMIUM ANIMATIONS === */
   @keyframes afFadeIn {
-    from { opacity: 0; transform: translateY(4px); }
+    from { opacity: 0; transform: translateY(3px); }
     to { opacity: 1; transform: translateY(0); }
   }
 `;

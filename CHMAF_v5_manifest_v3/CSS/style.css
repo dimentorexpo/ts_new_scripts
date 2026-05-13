@@ -2405,9 +2405,9 @@
 		backdrop-filter: blur(16px);
 		-webkit-backdrop-filter: blur(16px);
 		border: 1px solid rgba(255, 255, 255, 0.08);
-		border-radius: 16px;
-		padding: 16px;
-		width: 650px;
+		border-radius: 12px;
+		padding: 10px;
+		width: 780px;
 		cursor: grab;
 		/* Мягкая, рассеянная тень для объема */
 		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -2420,8 +2420,8 @@
 	.sky-grid {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
-		gap: 8px;
-		margin-bottom: 12px;
+		gap: 5px;
+		margin-bottom: 7px;
 	}
 
 	/* Сетка для инпутов (без изменений) */
@@ -2429,8 +2429,8 @@
 	.sky-input-group {
 		display: flex;
 		gap: 4px;
-		/* Сузили щель между инпутом и кнопкой поиска */
-		margin-bottom: 6px;
+		/* Уменьшили щель между инпутом и кнопкой поиска */
+		margin-bottom: 5px;
 		/* Уменьшили отступ между рядами инпутов */
 	}
 
@@ -2438,12 +2438,12 @@
 	.sky-btn {
 		background: rgba(255, 255, 255, 0.05);
 		border: 1px solid rgba(255, 255, 255, 0.05);
-		border-radius: 8px;
+		border-radius: 6px;
 		color: #f8fafc;
 		font-size: 13px;
-		/* Было 12px — текст стал заметнее */
-		font-weight: 600;
-		/* Сделали чуть жирнее для четкости */
+		/* Уменьшили шрифт */
+		font-weight: 500;
+		/* Сделали чуть тоньше */
 		cursor: pointer;
 		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 		display: flex;
@@ -2451,9 +2451,12 @@
 		justify-content: center;
 		gap: 4px;
 		padding: 4px 6px;
-		/* Минимальный паддинг */
-		height: 32px;
-		/* Фиксированная высота для стройности рядов */
+		/* Уменьшили паддинг */
+		height: 31px;
+		/* Уменьшили высоту */
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	/* Приятный эффект при наведении */
@@ -2499,16 +2502,16 @@
 	.sky-input {
 		background: rgba(0, 0, 0, 0.2);
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 8px;
+		border-radius: 6px;
 		color: #fff;
 		flex-grow: 1;
 		transition: all 0.2s ease;
-		padding: 0 8px;
-		/* Убрали вертикальный паддинг совсем */
+		padding: 0 7px;
+		/* Уменьшили паддинг */
 		font-size: 13px;
-		/* Увеличили с 11px до 13px */
-		height: 32px;
-		/* Совпадает с высотой кнопки — идеальная линия */
+		/* Уменьшили шрифт */
+		height: 31px;
+		/* Уменьшили высоту */
 		text-align: center;
 	}
 
@@ -2518,12 +2521,13 @@
 		border-color: #6366f1;
 		/* Цвет Indigo */
 		background: rgba(0, 0, 0, 0.3);
-		box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+		box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 		/* Приятное свечение */
 	}
 
 	.sky-input::placeholder {
 		color: rgba(255, 255, 255, 0.4);
+		font-size: 12px;
 	}
 
 	/* Главный контейнер дашборда */
@@ -2849,7 +2853,7 @@
 		width: 720px;
 		/* Увеличили ширину для двух колонок */
 		border-radius: 12px;
-		padding: 20px;
+		padding: 5px;
 		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 		border: 1px solid #313244;
 		box-sizing: border-box;
@@ -3323,8 +3327,159 @@
 	   PREMIUM FAB BUTTONS — Встроенные стили
 	   ═══════════════════════════════════════════════════ */
 
-	//
-	input, textarea, [contenteditable] {
+	/* ═══════════════════════════════════════════════════
+	   PREMIUM MODAL STYLES
+	   ═══════════════════════════════════════════════════ */
+	.premium-modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.7);
+		backdrop-filter: blur(8px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 10000;
+		animation: fadeIn 0.2s ease;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	.premium-modal {
+		background: var(--glass-bg);
+		border: 1px solid var(--glass-border);
+		border-radius: 16px;
+		box-shadow: 0 8px 32px var(--glass-shadow);
+		backdrop-filter: blur(20px);
+		min-width: 400px;
+		max-width: 90vw;
+		animation: slideUp 0.3s ease;
+	}
+
+	@keyframes slideUp {
+		from { transform: translateY(20px); opacity: 0; }
+		to { transform: translateY(0); opacity: 1; }
+	}
+
+	.premium-modal-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 16px 20px;
+		border-bottom: 1px solid var(--glass-border);
+	}
+
+	.premium-modal-title {
+		font-size: 18px;
+		font-weight: 600;
+		color: var(--text-primary);
+	}
+
+	.premium-modal-close {
+		background: transparent;
+		border: none;
+		font-size: 18px;
+		cursor: pointer;
+		opacity: 0.7;
+		transition: opacity 0.2s;
+	}
+
+	.premium-modal-close:hover {
+		opacity: 1;
+	}
+
+	.premium-modal-body {
+		padding: 20px;
+	}
+
+	.premium-form-group {
+		margin-bottom: 16px;
+	}
+
+	.premium-form-label {
+		display: block;
+		margin-bottom: 6px;
+		font-size: 13px;
+		color: var(--text-secondary);
+		font-weight: 500;
+	}
+
+	.premium-form-input {
+		width: 100%;
+		padding: 10px 14px;
+		background: var(--input-bg);
+		border: 1px solid var(--glass-border);
+		border-radius: 8px;
+		color: var(--text-primary);
+		font-size: 14px;
+		transition: all 0.2s;
+		box-sizing: border-box;
+	}
+
+	.premium-form-input:focus {
+		outline: none;
+		background: var(--input-focus);
+		border-color: var(--neon);
+		box-shadow: 0 0 0 3px var(--input-focus-ring);
+	}
+
+	.premium-modal-footer {
+		display: flex;
+		gap: 10px;
+		padding: 16px 20px;
+		border-top: 1px solid var(--glass-border);
+		justify-content: flex-end;
+	}
+
+	.premium-btn {
+		padding: 10px 20px;
+		border-radius: 8px;
+		font-size: 14px;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s;
+		border: 1px solid;
+	}
+
+	.premium-btn-primary {
+		background: var(--btn-primary-bg);
+		border-color: var(--btn-primary-border);
+		color: var(--btn-primary-text);
+	}
+
+	.premium-btn-primary:hover {
+		background: var(--btn-primary-hover);
+	}
+
+	.premium-btn-secondary {
+		background: var(--btn-bg);
+		border-color: var(--btn-border);
+		color: var(--text-primary);
+	}
+
+	.premium-btn-secondary:hover {
+		background: var(--btn-bg-hover);
+	}
+
+	.premium-btn-danger {
+		background: var(--btn-danger-bg);
+		border-color: var(--btn-danger-border);
+		color: var(--btn-danger-text);
+	}
+
+	.premium-btn-danger:hover {
+		background: var(--btn-danger-hover);
+	}
+
+	/* Разрешаем выделение текста только внутри полей ввода, но НЕ на drag-handle */
+	input:not(.chmaf-drag-handle *),
+	textarea:not(.chmaf-drag-handle *),
+	[contenteditable]:not(.chmaf-drag-handle *) {
     user-select: text !important;
     -webkit-user-select: text !important;
 }

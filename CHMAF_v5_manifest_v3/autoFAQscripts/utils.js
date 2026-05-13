@@ -72,7 +72,7 @@ function createWindow(id, topKey, leftKey, content) {
         const dragHandle = event.target.closest('.chmaf-drag-handle');
         if (!dragHandle) return;
 
-        // Защита интерактивных элементов внутри окна
+        // Защита интерактивных элементов внутри окна — НЕ ТАЩИМ, если клик был на них
         if (event.target.closest('button, a, input, select, textarea, [contenteditable="true"]')) return;
         if (event.button !== 0) return;
 
@@ -121,60 +121,56 @@ function createWindow(id, topKey, leftKey, content) {
         document.addEventListener('mouseleave', onMouseUp);
     };
 
-    // ФИКС: Восстанавливаем нормальное поведение выделения текста в input/textarea
+    // Фикс выделения: сбрасываем выделение при одиночном клике
     setTimeout(() => {
         const inputs = windowElement.querySelectorAll('input:not([type="button"]):not([type="submit"]), textarea');
         inputs.forEach(input => {
             let clickCount = 0;
             let clickTimer = null;
             let lastClickX = 0;
+            let lastClickY = 0;
 
             input.addEventListener('mousedown', function(e) {
+                e.stopPropagation(); // Блокируем перетаскивание окна
+
                 lastClickX = e.clientX;
+                lastClickY = e.clientY;
                 clickCount++;
-                if (clickTimer) clearTimeout(clickTimer);
-                clickTimer = setTimeout(() => { clickCount = 0; }, 300);
+                clearTimeout(clickTimer);
+                clickTimer = setTimeout(() => { clickCount = 0; }, 400);
             });
 
             input.addEventListener('click', function(e) {
-                // Не трогаем каретку, если был двойной клик (выделение текста)
-                if (clickCount >= 2) return;
+                // Если это одиночный клик (не двойной/тройной) — сбрасываем выделение
+                if (clickCount === 1) {
+                    setTimeout(() => {
+                        // Проверяем, есть ли выделение
+                        if (this.selectionStart !== this.selectionEnd) {
+                            // Используем нативный API браузера для точного определения позиции
+                            let pos = null;
 
-                // Даем браузеру время обработать клик естественным образом
-                setTimeout(() => {
-                    // Проверяем, есть ли еще выделение (если нет - браузер уже сам поставил каретку)
-                    if (this.selectionStart === this.selectionEnd) return;
-
-                    const rect = this.getBoundingClientRect();
-                    const clickX = lastClickX - rect.left - parseInt(getComputedStyle(this).paddingLeft);
-
-                    if (this.tagName === 'INPUT') {
-                        const span = document.createElement('span');
-                        span.style.font = getComputedStyle(this).font;
-                        span.style.visibility = 'hidden';
-                        span.style.position = 'absolute';
-                        document.body.appendChild(span);
-
-                        let bestPos = 0;
-                        let minDiff = Infinity;
-
-                        for (let i = 0; i <= this.value.length; i++) {
-                            span.textContent = this.value.substring(0, i);
-                            const width = span.offsetWidth;
-                            const diff = Math.abs(width - clickX);
-                            if (diff < minDiff) {
-                                minDiff = diff;
-                                bestPos = i;
+                            if (document.caretPositionFromPoint) {
+                                const caretPos = document.caretPositionFromPoint(lastClickX, lastClickY);
+                                if (caretPos && caretPos.offsetNode) {
+                                    pos = caretPos.offset;
+                                }
+                            } else if (document.caretRangeFromPoint) {
+                                const range = document.caretRangeFromPoint(lastClickX, lastClickY);
+                                if (range) {
+                                    pos = range.startOffset;
+                                }
                             }
-                        }
 
-                        document.body.removeChild(span);
-                        this.setSelectionRange(bestPos, bestPos);
-                    } else {
-                        const pos = this.selectionStart;
-                        this.setSelectionRange(pos, pos);
-                    }
-                }, 0);
+                            // Если нативный API не сработал, используем фокус
+                            if (pos === null) {
+                                this.focus();
+                                return; // Пусть браузер сам разберётся
+                            }
+
+                            this.setSelectionRange(pos, pos);
+                        }
+                    }, 0);
+                }
             });
         });
     }, 100);
