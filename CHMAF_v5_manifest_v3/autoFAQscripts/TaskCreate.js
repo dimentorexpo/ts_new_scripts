@@ -328,50 +328,41 @@ var win_taskform = `
                 </div>
             </div>
 
-            <div id="create_form_menu" style="display: flex; flex-direction: column; gap: 12px;">
-                <input class="glass-input-task" disabled id="chathashlnk" placeholder="Хэш чата" autocomplete="off" style="text-align: center; font-weight: 500;">
-
+            <div id="create_form_menu" style="display: flex; flex-direction: column; gap: 6px;">
+                <input class="glass-input-task" disabled id="chathashlnk" placeholder="💬 Хэш чата" autocomplete="off" style="text-align: center; font-weight: 500;">
                 <select class="glass-select-task" id="priority" style="text-align: center; font-weight: 500;">
-                    <option disabled selected value="">Укажите Приоритет</option>
+                    <option disabled selected value="">⚡ Укажите Приоритет</option>
                     <option value="low" style="color: #10b981; font-weight:600">🟢 Низкий</option>
                     <option value="high" style="color: #8b5cf6; font-weight:600">🟣 Высокий</option>
                     <option value="highest" style="color: #f43f5e; font-weight:600">🔴 Критический</option>
                 </select>
-
                 <select class="glass-select-task" id="customerservice" style="text-align: center; font-weight: 500;">
-                    <option disabled selected value="">Укажите Отдел</option>
+                    <option disabled selected value="">🏢 Укажите Отдел</option>
                     <option value="tech_support_outgoing_crm2" style="color: #f43f5e;">🛠️ Техподдержка 1Л CRM (исход)</option>
-                    <option value="teachers_care_crm">👨‍🏫 Teachers Care</option>
+                    <option value="teachers_care_crm">👽 Teachers Care</option>
                     <option value="content_management">📄 Контент</option>
                     <option value="outgoing_calls_crm2">📞 Исходящие звонки (КЦ исход)</option>
                     <option value="tech_support_second_line_crm2" style="color: #10b981;">🥈 Техподдержка 2Л CRM</option>
-                    <option value="crisis_manager">⚡ Кризис менеджеры</option>
+                    <option value="crisis_manager">🤬 Кризис менеджеры</option>
                     <option value="personal_support">💎 Персональное сопровождение (Premium)</option>
                 </select>
-
-                <input class="glass-input-task" id="taskserviceid" placeholder="ID услуги">
-
+                <input class="glass-input-task" id="taskserviceid" placeholder="🎫 ID услуги">
                 <div style="display: flex; gap: 8px;">
-                    <input class="glass-input-task" id="taskuserid" placeholder="ID пользователя">
+                    <input class="glass-input-task" id="taskuserid" placeholder="👤 ID пользователя">
                     <button class="glass-btn-task search-btn" id="searchuserservices" title="Найти услуги">🔍</button>
                 </div>
-
                 <div id="NoteNoticeWrap" class="note-notice" style="display: none;">
                     <span class="note-notice-label">Будет добавлена заметка:</span>
                     <span id="NoteNoticeText" class="note-notice-text" title="Нажми для отмены"></span>
                 </div>
-
                 <button class="glass-btn-task preset-btn-high" style="display:none;" id="taskcreate2linecrm">Создать задачу на 2ЛТП по календарю</button>
-
-                <textarea class="glass-textarea-task" id="taskcomment" placeholder="Комментарий к задаче" autocomplete="off"></textarea>
-
+                <textarea class="glass-textarea-task" id="taskcomment" placeholder="📝 Комментарий к задаче" autocomplete="off"></textarea>
                 <div class="btn-row-task" style="margin-top: 4px;">
-                    <button class="glass-btn-task" id="studcontact" title="Обратился П → У">П → У</button>
-                    <button class="glass-btn-task" id="teachcontact" title="Обратился У → П">У → П</button>
-                    <button class="glass-btn-task" id="nrteacher" title="Критический П Н.О">П Н.О</button>
-                    <button class="glass-btn-task" id="nrstudent" title="Критический У Н.О">У Н.О</button>
+                    <button class="glass-btn-task" id="studcontact" title="Обратился П → У">👽 → 👨‍🎓</button>
+                    <button class="glass-btn-task" id="teachcontact" title="Обратился У → П">👨‍🎓 → 👽</button>
+                    <button class="glass-btn-task" id="nrteacher" title="Критический П Н.О">👽 Н.О</button>
+                    <button class="glass-btn-task" id="nrstudent" title="Критический У Н.О">👨‍🎓 Н.О</button>
                 </div>
-
                 <button class="glass-btn-task submit-btn" id="createtask">🚀 Отправить задачу</button>
             </div>
         </div>
@@ -945,10 +936,10 @@ async function gettaskButButtonPress() {
         };
 
         // ИСПРАВЛЕНИЕ: Кнопки пресетов теперь направляют в Техподдержку 1Л Исход.
-        document.getElementById('critteachertostudent').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', 'Обратился П. Связаться с У.', 'Проверил связь с П, все ок, свяжитесь с У! КРИТ', true, true);
-        document.getElementById('critstudenttoteacher').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', 'Обратился У. Связаться с П.', 'Проверил связь с У, все ок, свяжитесь с П! КРИТ', true, false);
-        document.getElementById('critteacherno').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', 'Крит Н.О. П', 'Неполадка со стороны П. в чате н.о. Пожалуйста, свяжитесь с П КРИТ', true, true);
-        document.getElementById('critstudentno').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', 'Крит Н.О. У', 'Неполадка со стороны У. в чате н.о. Пожалуйста, свяжитесь с У КРИТ', true, false);
+        document.getElementById('critteachertostudent').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', '👽 Обратился П. Связаться с 👨‍🎓 У.', '✅ Проверил связь с 👽 П, все ок, свяжитесь с 👨‍🎓 У! КРИТ', true, true);
+        document.getElementById('critstudenttoteacher').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', '👨‍🎓 Обратился У. Связаться с 👽 П.', '✅ Проверил связь с 👨‍🎓 У, все ок, свяжитесь с 👽 П! КРИТ', true, false);
+        document.getElementById('critteacherno').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', '🔴 Крит Н.О. 👽 П', '⚠️ Неполадка со стороны 👽 П. в чате н.о. Пожалуйста, свяжитесь с 👽 П КРИТ', true, true);
+        document.getElementById('critstudentno').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', '🔴 Крит Н.О. 👨‍🎓 У', '⚠️ Неполадка со стороны 👨‍🎓 У. в чате н.о. Пожалуйста, свяжитесь с 👨‍🎓 У КРИТ', true, false);
 
         document.getElementById('highsecondline').onclick = () => applyPreset('high', 'tech_support_second_line_crm2', null, 'Дата и время календаря:\nПриоритетный способ связи:\nОписание неполадки:\nЧто было сделано:', false, false);
         document.getElementById('highteachertc').onclick = () => applyPreset('high', 'teachers_care_crm', null, null, false, false);
@@ -1051,10 +1042,10 @@ async function gettaskButButtonPress() {
         const setupFastNote = (id, text) => {
             document.getElementById(id).onclick = () => { copyToClipboard(text); sendComment(text); };
         };
-        setupFastNote('studcontact', 'Обратился П. Связаться с У');
-        setupFastNote('teachcontact', 'Обратился У. Связаться с П');
-        setupFastNote('nrstudent', 'Крит Н.О. У');
-        setupFastNote('nrteacher', 'Крит Н.О. П');
+        setupFastNote('studcontact', '👽 Обратился П. Связаться с 👨‍🎓 У');
+        setupFastNote('teachcontact', '👨‍🎓 Обратился У. Связаться с 👽 П');
+        setupFastNote('nrstudent', '🔴 Крит Н.О. 👨‍🎓 У');
+        setupFastNote('nrteacher', '🔴 Крит Н.О. 👽 П');
 
         document.getElementById('clearcreateform').onclick = () => {
             document.getElementById('chathashlnk').value = '';

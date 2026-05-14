@@ -66,13 +66,13 @@ function createWindow(id, topKey, leftKey, content) {
         }
     });
 
-    // === ОСНОВНАЯ ЛОГИКА ПЕРЕТАСКИВАНИЯ — простая, без transform, rAF и willChange ===
+    // === ОСНОВНАЯ ЛОГИКА ПЕРЕТАСКИВАНИЯ — без жёстких границ экрана ===
     windowElement.onmousedown = function (event) {
         // WHITELIST: тащим только за drag-handle
         const dragHandle = event.target.closest('.chmaf-drag-handle');
         if (!dragHandle) return;
 
-        // Защита интерактивных элементов внутри окна — НЕ ТАЩИМ, если клик был на них
+        // Не тащим, если клик по интерактивному элементу
         if (event.target.closest('button, a, input, select, textarea, [contenteditable="true"]')) return;
         if (event.button !== 0) return;
 
@@ -87,24 +87,9 @@ function createWindow(id, topKey, leftKey, content) {
             let deltaX = event.clientX - startX;
             let deltaY = event.clientY - startY;
 
-            let newLeft = elemLeft + deltaX;
-            let newTop = elemTop + deltaY;
-
-            // Ограничения по границам экрана
-            if (newLeft < 0) {
-                newLeft = 0;
-            } else if (newLeft + windowElement.offsetWidth > window.innerWidth) {
-                newLeft = window.innerWidth - windowElement.offsetWidth;
-            }
-
-            if (newTop < 0) {
-                newTop = 0;
-            } else if (newTop + windowElement.offsetHeight > window.innerHeight) {
-                newTop = window.innerHeight - windowElement.offsetHeight;
-            }
-
-            windowElement.style.left = newLeft + 'px';
-            windowElement.style.top = newTop + 'px';
+            // Никаких ограничений — окно едет вслед за курсором
+            windowElement.style.left = (elemLeft + deltaX) + 'px';
+            windowElement.style.top = (elemTop + deltaY) + 'px';
         }
 
         function onMouseUp() {
@@ -120,6 +105,8 @@ function createWindow(id, topKey, leftKey, content) {
         document.addEventListener('mouseup', onMouseUp);
         document.addEventListener('mouseleave', onMouseUp);
     };
+
+    // Убрана автокоррекция при загрузке, чтобы окно не сбрасывало позицию за экраном
 
     // Фикс выделения: сбрасываем выделение при одиночном клике
     setTimeout(() => {
