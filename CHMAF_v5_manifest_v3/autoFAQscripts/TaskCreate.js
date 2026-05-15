@@ -936,10 +936,10 @@ async function gettaskButButtonPress() {
         };
 
         // ИСПРАВЛЕНИЕ: Кнопки пресетов теперь направляют в Техподдержку 1Л Исход.
-        document.getElementById('critteachertostudent').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', '👽 Обратился П. Связаться с 👨‍🎓 У.', '✅ Проверил связь с 👽 П, все ок, свяжитесь с 👨‍🎓 У! КРИТ', true, true);
-        document.getElementById('critstudenttoteacher').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', '👨‍🎓 Обратился У. Связаться с 👽 П.', '✅ Проверил связь с 👨‍🎓 У, все ок, свяжитесь с 👽 П! КРИТ', true, false);
-        document.getElementById('critteacherno').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', '🔴 Крит Н.О. 👽 П', '⚠️ Неполадка со стороны 👽 П. в чате н.о. Пожалуйста, свяжитесь с 👽 П КРИТ', true, true);
-        document.getElementById('critstudentno').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', '🔴 Крит Н.О. 👨‍🎓 У', '⚠️ Неполадка со стороны 👨‍🎓 У. в чате н.о. Пожалуйста, свяжитесь с 👨‍🎓 У КРИТ', true, false);
+        document.getElementById('critteachertostudent').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', 'Обратился П. Связаться с У.', '✅ Проверил связь с П, все ок, свяжитесь с У! КРИТ', true, true);
+        document.getElementById('critstudenttoteacher').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', 'Обратился У. Связаться с П.', '✅Проверил связь с У, все ок, свяжитесь с П! КРИТ', true, false);
+        document.getElementById('critteacherno').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', '🔴 Крит Н.О. П', '⚠️ Неполадка со стороны П. в чате н.о. Пожалуйста, свяжитесь с П КРИТ', true, true);
+        document.getElementById('critstudentno').onclick = () => applyPreset('highest', 'tech_support_outgoing_crm2', '🔴 Крит Н.О. У', '⚠️ Неполадка со стороны У. в чате н.о. Пожалуйста, свяжитесь с У КРИТ', true, false);
 
         document.getElementById('highsecondline').onclick = () => applyPreset('high', 'tech_support_second_line_crm2', null, 'Дата и время календаря:\nПриоритетный способ связи:\nОписание неполадки:\nЧто было сделано:', false, false);
         document.getElementById('highteachertc').onclick = () => applyPreset('high', 'teachers_care_crm', null, null, false, false);
