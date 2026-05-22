@@ -107,6 +107,58 @@ async function init_settings() {
 
         if (!isWhite) {
             cssRules += `
+/* ═══ PREMIUM BADGE ═══ */
+/* Один селектор максимальной специфичности — перебивает ВСЁ */
+span[data-premium-badge="true"][class*="Typography"],
+span[data-premium-badge="true"][id*="mantine-"] {
+    background-color: rgba(30, 58, 138, 0.95) !important;
+    color: #e3f2fd !important;
+    border: 1px solid rgba(66, 133, 244, 0.8) !important;
+    border-radius: 4px !important;
+    padding: 1px 6px !important;
+    font-weight: 700 !important;
+    font-size: 0.85em !important;
+    letter-spacing: 0.02em !important;
+    box-shadow: 0 0 8px rgba(66, 133, 244, 0.5), inset 0 0 3px rgba(100, 181, 246, 0.3) !important;
+    /* ⬇️ КЛЮЧЕВОЕ: inline-flex вместо inline-block — flex-контейнер никогда не разрывается */
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+    white-space: nowrap !important;
+    text-transform: uppercase !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+    vertical-align: middle !important;
+    /* ⬇️ Запрещаем любые разрывы */
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+    line-break: strict !important;
+}
+
+/* Звезда как часть flex-контейнера — не убежит */
+span[data-premium-badge="true"][class*="Typography"]::after,
+span[data-premium-badge="true"][id*="mantine-"]::after {
+    content: "★";
+    color: #ffd700 !important;
+    font-size: 0.9em !important;
+    text-shadow: 0 0 3px rgba(255, 215, 0, 0.8) !important;
+    /* ⬇️ Запрещаем перенос самой звезды */
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+}
+
+/* Hover-эффект */
+span[data-premium-badge="true"][class*="Typography"]:hover,
+span[data-premium-badge="true"][id*="mantine-"]:hover {
+    box-shadow: 0 0 12px rgba(66, 133, 244, 0.7), inset 0 0 5px rgba(100, 181, 246, 0.4) !important;
+    border-color: rgba(100, 181, 246, 1) !important;
+}
+
+/* ⛔ УДАЛИТЕ этот отдельный блок — он слабее и конфликтует */
+/* span[data-premium-badge="true"] {
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+} */
+
             /* ═══ 1. КАРТОЧКИ ДИАЛОГОВ ═══ */
             [class*="DialogsCard_Card"] {
                 background-color: var(--chat-card-bg, ${getRgba(textColor, 0.05)}) !important;
@@ -683,6 +735,20 @@ async function init_settings() {
                 background-color: ${getRgba(textColor, 0.1)} !important;
             }
 
+           /* Активная строка таблицы Ant Design */
+            .ant-table-row.active,
+            .ant-table-row.active td,
+            .ant-table-row.active [class*="Table_Cell__"] {
+                background-color: rgba(124, 77, 255, 0.22) !important;
+                border-color: rgba(124, 77, 255, 0.45) !important;
+                color: ${textColor} !important;
+            }
+            .ant-table-row.active:hover,
+            .ant-table-row.active:hover td,
+            .ant-table-row.active:hover [class*="Table_Cell__"] {
+                background-color: rgba(124, 77, 255, 0.32) !important;
+            }
+
             /* Ячейки */
             [class*="Table_Cell__"] {
                 background: transparent !important;
@@ -783,6 +849,168 @@ async function init_settings() {
                 border: 1px solid rgba(66, 133, 244, 0.4) !important;
                 font-weight: 500 !important;
             }
+
+            /* ═══ 31. СТРАНИЦА НАСТРОЕК (AutoFAQ Settings / Ant Design) ═══ */
+            .autofaq-settings-label-desc,
+            .autofaq-settings-label-inner,
+            .ant-form-item-label,
+            .ant-tabs-tab-btn,
+            .ant-collapse-header,
+            .ant-collapse-content-box,
+            .ant-collapse-content-box .ant-row,
+            .ant-collapse-content-box .ant-form-item {
+                color: ${textColor} !important;
+            }
+            .ant-tabs-tab-active .ant-tabs-tab-btn {
+                color: #7c4dff !important;
+                font-weight: 600 !important;
+            }
+            .ant-tabs-ink-bar {
+                background-color: #7c4dff !important;
+            }
+            .ant-input,
+            .ant-input-number-input,
+            textarea.ant-input {
+                color: ${textColor} !important;
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+            }
+            .ant-input::placeholder,
+            .ant-input-number-input::placeholder,
+            textarea.ant-input::placeholder {
+                color: ${getRgba(textColor, 0.4)} !important;
+            }
+            .ant-input-affix-wrapper {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+            }
+            .ant-input-suffix .anticon,
+            .ant-input-number-handler-wrap .anticon,
+            .ant-collapse-header .anticon {
+                color: ${textColor} !important;
+                fill: currentColor !important;
+            }
+            .ant-switch-checked {
+                background-color: #7c4dff !important;
+            }
+
+            /* ═══ 32. АРХИВ ТИКЕТОВ (Tickets Archive) ═══ */
+            .expert-user_details-dt,
+            .expert-user_details-dd {
+                color: ${textColor} !important;
+            }
+
+            /* ═══ 33. ANT DESIGN MODAL / FILTER DIALOG ═══ */
+            /* Само окно, шапка, подвал */
+            .ant-modal-content,
+            .ant-modal-header,
+            .ant-modal-footer {
+                background-color: ${color} !important;
+                border-color: ${getRgba(textColor, 0.15)} !important;
+            }
+            .ant-modal-title,
+            .ant-modal-close-x,
+            .ant-modal-body,
+            .ant-modal-body label,
+            .ant-modal-body .autofaq-settings-label-inner,
+            .ant-modal-body .autofaq-settings-label-desc,
+            .ant-modal-body .ant-form-item-label {
+                color: ${textColor} !important;
+            }
+            .ant-modal-close-x .anticon {
+                color: ${textColor} !important;
+                fill: currentColor !important;
+            }
+
+            /* DatePicker в модалке */
+            .ant-modal-body .ant-picker {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+            }
+            .ant-modal-body .ant-picker-input > input {
+                color: ${textColor} !important;
+            }
+            .ant-modal-body .ant-picker-suffix .anticon {
+                color: ${textColor} !important;
+            }
+
+            /* Select в модалке */
+            .ant-modal-body .ant-select-selector {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+            }
+            .ant-modal-body .ant-select-selection-placeholder,
+            .ant-modal-body .ant-select-selection-search-input {
+                color: ${getRgba(textColor, 0.5)} !important;
+            }
+            .ant-modal-body .ant-select-arrow .anticon {
+                color: ${textColor} !important;
+            }
+
+            /* Input / Affix в модалке */
+            .ant-modal-body .ant-input,
+            .ant-modal-body .ant-input-affix-wrapper {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                color: ${textColor} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+            }
+            .ant-modal-body .ant-input::placeholder {
+                color: ${getRgba(textColor, 0.4)} !important;
+            }
+            .ant-modal-body .ant-input-suffix .anticon-close-circle {
+                color: ${textColor} !important;
+            }
+
+            /* Кнопки футера модалки */
+            .ant-modal-footer .ant-btn {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                color: ${textColor} !important;
+                border-color: ${getRgba(textColor, 0.25)} !important;
+            }
+            .ant-modal-footer .ant-btn-primary {
+                background-color: #7c4dff !important;
+                border-color: #7c4dff !important;
+                color: #ffffff !important;
+            }
+
+            /* Выпадающие списки Ant Design (портал) */
+            .ant-select-dropdown,
+            .ant-picker-dropdown .ant-picker-panel-container {
+                background-color: ${color} !important;
+                border: 1px solid ${getRgba(textColor, 0.15)} !important;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important;
+            }
+            .ant-select-item,
+            .ant-picker-content th,
+            .ant-picker-cell,
+            .ant-picker-header-view,
+            .ant-picker-header button {
+                color: ${textColor} !important;
+            }
+            .ant-select-item-option-selected,
+            .ant-select-item-option-active,
+            .ant-picker-cell:hover:not(.ant-picker-cell-selected):not(.ant-picker-cell-range-start):not(.ant-picker-cell-range-end) .ant-picker-cell-inner {
+                background-color: ${getRgba(textColor, 0.12)} !important;
+            }
+            .ant-picker-cell-selected .ant-picker-cell-inner,
+            .ant-picker-cell-range-start .ant-picker-cell-inner,
+            .ant-picker-cell-range-end .ant-picker-cell-inner {
+                background-color: #7c4dff !important;
+                color: #ffffff !important;
+            }
+            .ant-picker-today-btn {
+                color: #7c4dff !important;
+            }
+            .ant-picker-header {
+                border-bottom-color: ${getRgba(textColor, 0.15)} !important;
+            }
+            .ant-picker-time-panel-column > li.ant-picker-time-panel-cell .ant-picker-time-panel-cell-inner {
+                color: ${textColor} !important;
+            }
+            .ant-picker-time-panel-column > li.ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner {
+                background-color: #7c4dff !important;
+                color: #ffffff !important;
+            }
         `;
         }
 
@@ -819,6 +1047,31 @@ async function init_settings() {
             });
         };
         markOperatorComments();
+
+        // ─── Подсветка PREMIUM-элементов ───
+        const highlightPremiumBadges = () => {
+            const processDoc = (doc) => {
+                if (!doc || !doc.body) return;
+                // Ищем span'ы с текстом premium
+                const spans = doc.querySelectorAll('span[class*="Typography_Type_body"], span[class*="Typography_Ellipsis"]');
+                spans.forEach(span => {
+                    if (span.textContent.match(/premium/i) && !span.hasAttribute('data-premium-badge')) {
+                        span.setAttribute('data-premium-badge', 'true');
+                        // ⛔ Убрали все span.style.* — всё делается через CSS !
+                    }
+                });
+            };
+            processDoc(document);
+            const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+            if (iframe) {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                if (iframeDoc) processDoc(iframeDoc);
+            }
+        };
+
+        setTimeout(highlightPremiumBadges, 2000);
+        setInterval(highlightPremiumBadges, 2000);
+
     };
     // Применяем при запуске.
     // Ставим setInterval, так как iframe загружается с задержкой или может быть пересоздан SPA-роутером

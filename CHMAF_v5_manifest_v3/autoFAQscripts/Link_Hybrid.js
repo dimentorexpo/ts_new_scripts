@@ -44,7 +44,7 @@ class LinksConfigHybrid {
             if (typeof scriptAdr !== 'undefined') {
                 return ![data.KC_addr, data.KC_addrRzrv].includes(scriptAdr);
             }
-        } catch (e) {}
+        } catch (e) { }
         return true;
     }
 
@@ -165,7 +165,7 @@ const getLinksHTML = (isTP, customButtons) => {
         <button class="sky-btn" id="AddRemoveChat" title="Добавить/Удалить чат">➕/➖ Чат</button>
         <button class="sky-btn" id="CheckPrices" title="Check Price">🤑 Prices</button>
         <button class="sky-btn" id="CheckVidConnection" title="Видеосервер">📹 Video</button>
-        <button class="sky-btn" id="openFinansoBin" title="Check BIN">💳 BIN</button>
+        <button class="sky-btn" id="goProcash" title="Check BIN">💳 BIN</button>
         <button class="sky-btn" id="faqext" title="Инструкция">❓ ChMAF</button>
         ${customButtons.map(btn => `<button class="sky-btn custom-btn" data-custom-id="${btn.id}" title="${btn.title}">${btn.icon} ${btn.title}</button>`).join('')}
     </div>
@@ -400,7 +400,7 @@ function initEventHandlers(section) {
         'AddRemoveChat': "https://communications.skyeng.ru/gateway/support/chat-management",
         'CheckPrices': "https://billing-marketing.skyeng.ru/priceSet/list",
         'CheckVidConnection': "https://video-check.skyeng.ru/",
-        'openFinansoBin': "https://finanso.ru/bin-search/",
+        'goProcash': "https://procash.app/tools/bin-lookup",
         'minecraftAccs': "https://disk.yandex.ru/edit/d/ARTwOEreBvxL1L4cDRCvEyPegnqahzm72s0qoIz-cKg6al9hdmhpLVFTZw",
         'deleteaclnk': "https://infra.skyeng.ru/request/create/166",
         'resetMMPassword': "https://infra.skyeng.ru/request/create/233",
