@@ -153,12 +153,6 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
     border-color: rgba(100, 181, 246, 1) !important;
 }
 
-/* ⛔ УДАЛИТЕ этот отдельный блок — он слабее и конфликтует */
-/* span[data-premium-badge="true"] {
-    word-break: keep-all !important;
-    overflow-wrap: normal !important;
-} */
-
             /* ═══ 1. КАРТОЧКИ ДИАЛОГОВ ═══ */
             [class*="DialogsCard_Card"] {
                 background-color: var(--chat-card-bg, ${getRgba(textColor, 0.05)}) !important;
@@ -1073,10 +1067,101 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
         setInterval(highlightPremiumBadges, 2000);
 
     };
+
+    // ═══════════════════════════════════════════════════════
+    // ═══ PREMIUM BADGE — УНИВЕРСАЛЬНЫЙ (светлая тема) ═══
+    // ═══════════════════════════════════════════════════════
+    const applyPremiumBadgeStyles = () => {
+        const isDark = (Settings.get('appBgColor') || '#FFFFFF').toUpperCase() !== '#FFFFFF';
+
+        // Если тёмный фон — пропускаем, там уже есть свой блок внутри cssRules
+        if (isDark) {
+            const el = document.getElementById('chmaf-premium-light');
+            const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+            const iframeDoc = iframe?.contentDocument || iframe?.contentWindow?.document;
+            if (el) el.remove();
+            if (iframeDoc) {
+                const elIf = iframeDoc.getElementById('chmaf-premium-light');
+                if (elIf) elIf.remove();
+            }
+            return;
+        }
+
+        const lightCss = `
+        span[data-premium-badge="true"][class*="Typography"],
+        span[data-premium-badge="true"][id*="mantine-"] {
+            background: linear-gradient(135deg, #ff6f00 0%, #ff3d00 100%) !important;
+            color: #ffffff !important;
+            border: 2px solid #ff9100 !important;
+            border-radius: 6px !important;
+            padding: 2px 8px !important;
+            font-weight: 800 !important;
+            font-size: 0.8em !important;
+            letter-spacing: 0.04em !important;
+            box-shadow: 0 2px 8px rgba(255, 109, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            white-space: nowrap !important;
+            text-transform: uppercase !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.25) !important;
+            vertical-align: middle !important;
+            word-break: keep-all !important;
+            overflow-wrap: normal !important;
+            line-break: strict !important;
+        }
+
+        span[data-premium-badge="true"][class*="Typography"]::after,
+        span[data-premium-badge="true"][id*="mantine-"]::after {
+            content: "★";
+            color: #ffeb3b !important;
+            font-size: 1em !important;
+            text-shadow: 0 0 4px rgba(255, 235, 59, 0.8) !important;
+            white-space: nowrap !important;
+            word-break: keep-all !important;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3)) !important;
+        }
+
+        span[data-premium-badge="true"][class*="Typography"]:hover,
+        span[data-premium-badge="true"][id*="mantine-"]:hover {
+            background: linear-gradient(135deg, #ff8f00 0%, #ff5722 100%) !important;
+            box-shadow: 0 4px 14px rgba(255, 109, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+            border-color: #ffc107 !important;
+            transform: translateY(-1px) !important;
+        }
+    `;
+
+        const inject = (targetDoc) => {
+            if (!targetDoc || !targetDoc.head) return;
+            let el = targetDoc.getElementById('chmaf-premium-light');
+            if (!el) {
+                el = targetDoc.createElement('style');
+                el.id = 'chmaf-premium-light';
+                targetDoc.head.appendChild(el);
+            }
+            el.innerHTML = lightCss;
+        };
+
+        inject(document);
+        const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+        if (iframe) {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+            if (iframeDoc) inject(iframeDoc);
+        }
+    };
+
+
+
+
     // Применяем при запуске.
     // Ставим setInterval, так как iframe загружается с задержкой или может быть пересоздан SPA-роутером
+    // Применяем при запуске.
     applyAppBgColor();
-    setInterval(applyAppBgColor, 2000);
+    applyPremiumBadgeStyles(); // ← ДОБАВИТЬ ЭТО
+    setInterval(() => {
+        applyAppBgColor();
+        applyPremiumBadgeStyles(); // ← И ЭТО
+    }, 2000);
 
 
 
