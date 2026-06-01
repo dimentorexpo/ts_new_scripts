@@ -296,7 +296,7 @@ var win_taskform = `
         }
     </style>
     <div style="display: flex; width: 440px; position: relative;">
-        <div class="glass-panel-task" style="width: 100%; position: relative; z-index: 2;">
+        <div class="glass-panel-task chmaf-drag-handle" style="width: 100%; position: relative; z-index: 2;">
             <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;" id="create_form_header" class="chmaf-drag-handle">
                 <button class="glass-btn-task task-header-btn" title="Скрыть меню" id="hideMeCreateForm">✕</button>
                 <button class="glass-btn-task task-header-btn" title="Обновить хеш чата" id="refreshhashcreateform">↻</button>
