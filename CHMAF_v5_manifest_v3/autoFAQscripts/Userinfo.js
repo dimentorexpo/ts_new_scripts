@@ -1665,92 +1665,103 @@ document.getElementById('changeLocaleLng')?.addEventListener('click', async func
     }
 });
 
-function getusernamecrm() {
+async function getusernamecrm() {
     const sid = idstudentField?.value.trim();
-    if (!sid) return;
+    if (!sid) throw new Error("Пустой userId");
     window.flagusertype = '';
 
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: `https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`, requestOptions: { method: 'GET' } }, function (res) {
-        if (!res.success) return alert('Ошибка: ' + res.error);
-        const data = JSON.parse(res.fetchansver).data;
-        window.flagusertype = data.type;
-        const isStudent = data.type === "student";
+    const res = await sendMessageAsync({
+        action: 'getFetchRequest',
+        fetchURL: `https://backend.skyeng.ru/api/persons/${sid}?crm2=true&debugParam=person-page`,
+        requestOptions: { method: 'GET' }
+    });
 
-        // Имя и тип
-        document.getElementById('usrName').textContent = `${data.name} ${data.surname || ''}`;
-        const typeEl = document.getElementById('usrType');
-        if (isStudent) {
-            typeEl.innerHTML = `<span class="af-gl-text-success">🎓 Ученик</span>`;
-        } else {
-            typeEl.innerHTML = `<span class="af-gl-text-accent">👨‍🏫 Преподаватель</span>`;
-        }
+    const data = JSON.parse(res.fetchansver).data;
+    window.flagusertype = data.type;
+    const isStudent = data.type === "student";
 
-        // Страна
-        document.getElementById('usrCountry').textContent = data.country || '—';
+    // Имя и тип
+    document.getElementById('usrName').textContent = `${data.name} ${data.surname || ''}`;
+    const typeEl = document.getElementById('usrType');
+    if (isStudent) {
+        typeEl.innerHTML = `<span class="af-gl-text-success">🎓 Ученик</span>`;
+    } else {
+        typeEl.innerHTML = `<span class="af-gl-text-accent">👨‍🏫 Преподаватель</span>`;
+    }
 
-        // Аватар — компактный, сбоку
-        const avatarWrapper = document.getElementById('avatarWrapper');
-        const avatarEl = document.getElementById('useravatar');
-        if (data.avatarUrl) {
-            const matchSrc = data.avatarUrl.match(/https:\/\/cdn-auth-avatars\.skyeng\.ru\/\d+\/[a-f0-9-]+$/)?.[0];
-            if (matchSrc) {
-                avatarEl.src = matchSrc;
-                avatarWrapper.style.display = 'flex';
-            } else {
-                avatarWrapper.style.display = 'none';
-            }
+    // Страна
+    document.getElementById('usrCountry').textContent = data.country || '—';
+
+    // Аватар
+    const avatarWrapper = document.getElementById('avatarWrapper');
+    const avatarEl = document.getElementById('useravatar');
+    if (data.avatarUrl) {
+        const matchSrc = data.avatarUrl.match(/https:\/\/cdn-auth-avatars\.skyeng\.ru\/\d+\/[a-f0-9-]+$/)?.[0];
+        if (matchSrc) {
+            avatarEl.src = matchSrc;
+            avatarWrapper.style.display = 'flex';
         } else {
             avatarWrapper.style.display = 'none';
         }
+    } else {
+        avatarWrapper.style.display = 'none';
+    }
 
-        // Возраст
-        let ageIco = "❓";
-        if (data.birthday) {
-            const age = new Date().getFullYear() - Number(data.birthday.split('-')[0]);
-            ageIco = age < 18 ? "🔞" : age < 99 ? "🅰️" : "❓";
-        }
-        document.getElementById('usrAge').textContent = ageIco;
+    // Возраст
+    let ageIco = "❓";
+    if (data.birthday) {
+        const age = new Date().getFullYear() - Number(data.birthday.split('-')[0]);
+        ageIco = age < 18 ? "🔞" : age < 99 ? "🅰️" : "❓";
+    }
+    document.getElementById('usrAge').textContent = ageIco;
 
-        // Скрываем/показываем студентские поля
-        const elsToHide = ['pochtaIdentity', 'telefonIdentity', 'checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'complekttable', 'newTrm', 'butTeacherNabor', 'personalteacherpage', 'serviceList', 'complektList', 'serviceSectionTitle', 'complektSectionTitle'];
-        elsToHide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    // Скрываем/показываем студентские поля
+    const elsToHide = ['pochtaIdentity', 'telefonIdentity', 'checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'complekttable', 'newTrm', 'butTeacherNabor', 'personalteacherpage', 'serviceList', 'complektList', 'serviceSectionTitle', 'complektSectionTitle'];
+    elsToHide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
-        if (isStudent) {
-            ['checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'pochtaIdentity', 'telefonIdentity', 'complekttable', 'serviceList', 'complektList', 'serviceSectionTitle', 'complektSectionTitle'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = '';
-            });
-        } else {
-            ['newTrm', 'butTeacherNabor', 'personalteacherpage'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = '';
-            });
-            document.getElementById('usrAge').style.display = 'none';
-            document.getElementById('servicetable').innerHTML = '';
-            // Секции услуг и комплектаций уже скрыты через elsToHide
-        }
+    if (isStudent) {
+        ['checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'pochtaIdentity', 'telefonIdentity', 'complekttable', 'serviceList', 'complektList', 'serviceSectionTitle', 'complektSectionTitle'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = '';
+        });
+    } else {
+        ['newTrm', 'butTeacherNabor', 'personalteacherpage'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = '';
+        });
+        document.getElementById('usrAge').style.display = 'none';
+        document.getElementById('servicetable').innerHTML = '';
+    }
 
-        // Язык
-        const locale = data.serviceLocale || "⭕";
-        document.getElementById('usrServLang').textContent = locale;
-        document.getElementById('changeLocaleLng').style.display = locale === "ru" ? "none" : "";
+    // Язык
+    const locale = data.serviceLocale || "⭕";
+    document.getElementById('usrServLang').textContent = locale;
+    document.getElementById('changeLocaleLng').style.display = locale === "ru" ? "none" : "";
 
-        // Время
-        document.getElementById('utcOffset').textContent = data.utcOffset;
-        document.getElementById('UTCtoMSK').textContent = data.utcOffset - 3;
-        document.getElementById('localTime').textContent = new Date(Date.now() + data.utcOffset * 3600000).toISOString().substr(11, 5);
-    });
+    // Время
+    document.getElementById('utcOffset').textContent = data.utcOffset;
+    document.getElementById('UTCtoMSK').textContent = data.utcOffset - 3;
+    document.getElementById('localTime').textContent = new Date(Date.now() + data.utcOffset * 3600000).toISOString().substr(11, 5);
+
+    return data;
 }
 
-function crmstatus() {
+async function crmstatus() {
     const userId = idstudentField?.value.trim();
     if (!userId) return;
+
     const statusEl = document.getElementById('getcurrentstatus');
     const crmEl = document.getElementById('CrmStatus');
-    statusEl.style.display = 'none'; crmEl.style.display = 'none';
+    statusEl.style.display = 'none';
+    crmEl.style.display = 'none';
 
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: `https://customer-support.skyeng.ru/task/user/${userId}`, requestOptions: { method: 'GET' } }, function (res) {
-        if (!res.success) return;
+    try {
+        const res = await sendMessageAsync({
+            action: 'getFetchRequest',
+            fetchURL: `https://customer-support.skyeng.ru/task/user/${userId}`,
+            requestOptions: { method: 'GET' }
+        });
+
         const tasks = JSON.parse(res.fetchansver).data;
         let flags = { tpOut: false, tp: false, notTp: false, wait: false, processing: false, operator: '' };
 
@@ -1764,8 +1775,16 @@ function crmstatus() {
             } else { flags.notTp = true; }
         });
 
-        if (flags.wait) { statusEl.style.display = ''; statusEl.innerText = 'В ожидании'; statusEl.className = 'af-gl-badge af-gl-bg-info'; }
-        else if (flags.processing) { statusEl.style.display = ''; statusEl.innerText = 'Решается'; statusEl.className = 'af-gl-badge af-gl-bg-danger'; statusEl.title = flags.operator; }
+        if (flags.wait) {
+            statusEl.style.display = '';
+            statusEl.innerText = 'В ожидании';
+            statusEl.className = 'af-gl-badge af-gl-bg-info';
+        } else if (flags.processing) {
+            statusEl.style.display = '';
+            statusEl.innerText = 'Решается';
+            statusEl.className = 'af-gl-badge af-gl-bg-danger';
+            statusEl.title = flags.operator;
+        }
 
         let icon = '📵';
         if (flags.tpOut && !flags.tp && !flags.notTp) icon = '💥';
@@ -1773,11 +1792,14 @@ function crmstatus() {
         else if (flags.tpOut && flags.tp) icon = '💥';
         else if (flags.tp && flags.notTp && !flags.tpOut) icon = '🛠';
 
-        crmEl.style.display = ''; crmEl.innerText = icon;
-    });
+        crmEl.style.display = '';
+        crmEl.innerText = icon;
+    } catch (e) {
+        console.error('crmstatus error:', e);
+    }
 }
 
-function getservices(stidNew) {
+async function getservices(stidNew) {
     const servTable = document.getElementById('servicetable');
     const compTable = document.getElementById('cmplData');
     const linkTable = document.getElementById('complekttable');
@@ -1786,19 +1808,32 @@ function getservices(stidNew) {
     compTable.innerHTML = "";
     linkTable.innerHTML = "";
 
-    // --- 1. ЗАПРОС КОМПЛЕКТАЦИЙ ---
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: `https://backend.skyeng.ru/api/v1/students/${stidNew}/education-service-kits/`, requestOptions: { method: 'GET' } }, function (res) {
-        if (!res.success) return;
-        const data = JSON.parse(res.fetchansver);
+    try {
+        // Параллельно грузим комплектации и услуги — в 2 раза быстрее
+        const [complectRes, servicesRes] = await Promise.all([
+            sendMessageAsync({
+                action: 'getFetchRequest',
+                fetchURL: `https://backend.skyeng.ru/api/v1/students/${stidNew}/education-service-kits/`,
+                requestOptions: { method: 'GET' }
+            }),
+            sendMessageAsync({
+                action: 'getFetchRequest',
+                fetchURL: `https://backend.skyeng.ru/api/persons/${stidNew}/education-services/`,
+                requestOptions: { method: 'GET' }
+            })
+        ]);
 
-        if (data.data.length > 0) {
+        // --- ОБРАБОТКА КОМПЛЕКТАЦИЙ ---
+        const complectData = JSON.parse(complectRes.fetchansver);
+
+        if (complectData.data.length > 0) {
             linkTable.innerHTML += `<div id="openOneComplectation" class="af-gl-card cursor-pointer af-gl-bg-success" style="text-align:center; margin-bottom: 8px;">✅ Есть комплектации <span style="font-size: 11px; opacity: 0.8;">(кликни)</span></div>`;
             document.getElementById('openOneComplectation')?.addEventListener('click', () => {
                 const w = document.getElementById('AF_Complectations');
                 w.style.display = w.style.display === "none" ? "" : "none";
             });
 
-            data.data.forEach(service => {
+            complectData.data.forEach(service => {
                 if (service.incorrectnessReason == null) {
                     let sHtml = `<table class="af-gl-complect-table">`;
                     service.educationServices.forEach(el => {
@@ -1833,29 +1868,28 @@ function getservices(stidNew) {
 
             // Синхронизация
             document.querySelectorAll('.af-gl-sync-btn').forEach(btn => {
-                btn.onclick = function () {
+                btn.onclick = async function () {
                     const srvId = this.getAttribute('data-srvid');
                     this.innerText = "⏳";
                     const gToken = localStorage.getItem('token_global');
 
-                    chrome.runtime.sendMessage({
-                        action: 'getFetchRequest',
-                        fetchURL: `https://skysmart-core.skyeng.ru/api/v1/academic-activity/upsert-education-service-history/${srvId}`,
-                        requestOptions: {
-                            headers: { "accept": "application/json, text/plain, */*", "authorization": `Bearer ${gToken}` },
-                            method: "POST",
-                            mode: "cors"
-                        }
-                    }, function (response) {
-                        if (!response.success) {
-                            alert('Не удалось выполнить запрос: ' + response.error);
-                            btn.innerText = "❌";
-                            localStorage.removeItem('token_global');
-                        } else {
-                            btn.innerText = "✅";
-                            setTimeout(() => btn.innerText = "♻️", 3000);
-                        }
-                    });
+                    try {
+                        await sendMessageAsync({
+                            action: 'getFetchRequest',
+                            fetchURL: `https://skysmart-core.skyeng.ru/api/v1/academic-activity/upsert-education-service-history/${srvId}`,
+                            requestOptions: {
+                                headers: { "accept": "application/json, text/plain, */*", "authorization": `Bearer ${gToken}` },
+                                method: "POST",
+                                mode: "cors"
+                            }
+                        });
+                        this.innerText = "✅";
+                        setTimeout(() => this.innerText = "♻️", 3000);
+                    } catch (response) {
+                        alert('Не удалось выполнить запрос: ' + (response?.error || response.message));
+                        this.innerText = "❌";
+                        localStorage.removeItem('token_global');
+                    }
                 };
             });
 
@@ -1864,12 +1898,9 @@ function getservices(stidNew) {
                 <span style="color: #fca5a5; font-size: 13px;">❌ Нет комплектаций</span>
             </div>`;
         }
-    });
 
-    // --- 2. ЗАПРОС ОБЫЧНЫХ УСЛУГ ---
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: `https://backend.skyeng.ru/api/persons/${stidNew}/education-services/`, requestOptions: { method: 'GET' } }, function (res) {
-        if (!res.success) return;
-        const data = JSON.parse(res.fetchansver);
+        // --- ОБРАБОТКА ОБЫЧНЫХ УСЛУГ ---
+        const data = JSON.parse(servicesRes.fetchansver);
 
         if (data.data.length > 0) {
             let htmlStr = '';
@@ -1886,7 +1917,6 @@ function getservices(stidNew) {
 
                 arrservice.push(service.id);
 
-                // Определяем статус и стили
                 let statusClass, statusText, statusIcon;
                 let balanceHtml = `<div class="af-gl-service-balance">${service.balance}</div>`;
 
@@ -1956,28 +1986,23 @@ function getservices(stidNew) {
 
             servTable.innerHTML = htmlStr || '<div class="af-gl-empty-state">Нет отображаемых услуг</div>';
 
-            // Обработчики копирования ID услуги
             document.querySelectorAll('.af-gl-copy-sid').forEach(btn => {
                 btn.onclick = function (e) {
                     e.stopPropagation();
                     const sid = this.dataset.sid;
                     copyToClipboard(sid);
                     createAndShowButton(`ID услуги ${sid} скопирован`, 'message');
-
-                    // Визуальный фидбек
                     this.textContent = '✅';
                     setTimeout(() => this.textContent = '📋', 1200);
                 };
             });
 
             document.getElementById('getusremail').onclick = () => {
-                const text = document.getElementById('mailunhidden').textContent;
-                copyToClipboard(text);
+                copyToClipboard(document.getElementById('mailunhidden').textContent);
                 createAndShowButton(`Почта скопирована`, 'message');
             };
             document.getElementById('getusrphone').onclick = () => {
-                const text = document.getElementById('phoneunhidden').textContent;
-                copyToClipboard(text);
+                copyToClipboard(document.getElementById('phoneunhidden').textContent);
                 createAndShowButton(`Телефон скопирован`, 'message');
             };
         } else {
@@ -1986,30 +2011,48 @@ function getservices(stidNew) {
                 <div style="color: #fca5a5; font-weight: 600;">Услуг не найдено</div>
             </div>`;
         }
-    });
+    } catch (e) {
+        console.error('getservices error:', e);
+        servTable.innerHTML = `<div class="af-gl-empty-state" style="color: #fca5a5;">❌ Ошибка загрузки услуг</div>`;
+    }
 }
 
-function getuserinfo() {
+async function getuserinfo() {
+    // Очистка
     ['pochtaIdentity', 'telefonIdentity', 'mailunhidden', 'phoneunhidden', 'usrType', 'usrAge', 'usrName', 'usrCountry', 'getcurrentstatus']
-        .forEach(id => { const el = document.getElementById(id); if (el) el.textContent = id.includes('hidden') ? 'hidden' : ''; });
+        .forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = id.includes('hidden') ? 'hidden' : '';
+        });
     document.getElementById('servicetable').innerHTML = "Загрузка...";
 
     const avaWrapper = document.getElementById('avatarWrapper');
     if (avaWrapper) avaWrapper.style.display = "none";
 
+    // Удаляем старый бейдж статуса, если был
+    const oldBadge = document.getElementById('userStatusBadge');
+    if (oldBadge) oldBadge.remove();
+
     stid = idstudentField?.value.trim();
     if (!stid) return;
 
-    setTimeout(getusernamecrm, 640);
-    setTimeout(getUserStatus, 660);
-    setTimeout(crmstatus, 700);
-    setTimeout(() => {
+    try {
+        // 1. Сначала базовые данные (это установит window.flagusertype)
+        await getusernamecrm();
+
+        // 2. Параллельно грузим статус пользователя и CRM-задачи
+        await Promise.all([getUserStatus(), crmstatus()]);
+
+        // 3. Услуги (зависят от flagusertype, установленного в п.1)
         if (window.flagusertype === "teacher") {
             document.getElementById('servicetable').innerHTML = '';
         } else {
-            getservices(stid);
+            await getservices(stid);
         }
-    }, 720);
+    } catch (err) {
+        console.error('Ошибка загрузки данных пользователя:', err);
+        document.getElementById('servicetable').innerHTML = `<div class="af-gl-empty-state" style="color: #fca5a5;">❌ ${err.message}</div>`;
+    }
 }
 
 document.getElementById('getidstudent')?.addEventListener('click', () => {
