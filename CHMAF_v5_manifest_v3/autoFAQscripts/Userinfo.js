@@ -1456,6 +1456,100 @@ document.getElementById('hideComplecations')?.addEventListener('click', () => {
 
 // --- ЛОГИКА ДАННЫХ ПОЛЬЗОВАТЕЛЯ ---
 
+function getUserStatus() {
+    return new Promise((resolve, reject) => {
+        const sid = idstudentField?.value.trim();
+        if (!sid) {
+            return reject(new Error("Пустой userId"));
+        }
+
+        const fetchURL = `https://id.skyeng.ru/admin/users/${encodeURIComponent(sid)}`;
+
+        const requestOptions = {
+            method: 'GET',
+            headers: {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                "accept-language": "ru,en;q=0.9",
+                "cache-control": "max-age=0",
+                "priority": "u=0, i",
+                "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"YaBrowser\";v=\"26.3\", \"Yowser\";v=\"2.5\", \"YaBrowserCorp\";v=\"144\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "document",
+                "sec-fetch-mode": "navigate",
+                "sec-fetch-site": "none",
+                "sec-fetch-user": "?1",
+                "sec-gpc": "1",
+                "upgrade-insecure-requests": "1"
+            },
+            credentials: 'include'
+        };
+
+        chrome.runtime.sendMessage(
+            { action: 'getFetchRequest', fetchURL, requestOptions },
+            (response) => {
+                if (!response || response.success !== true) {
+                    console.log('Ошибка при получении статуса: ', response?.error);
+                    return reject(new Error(response?.error || "Неизвестная ошибка"));
+                }
+
+                const html = response.fetchAnswer || response.fetchansver || '';
+
+                // Исправлено: убраны лишние < в регулярках
+                const tableMatch = html.match(/<th[^>]*>\s*Статус\s*<\/th>\s*<td>([^<<]+)<\/td>/i);
+                const divMatch = html.match(/статус:\s*<strong>([^<<]+)<\/strong>/i);
+                const looseMatch = html.match(/статус[:\s]*<strong>([^<<]+)<\/strong>/i);
+
+                const match = tableMatch || divMatch || looseMatch;
+
+                if (match && match[1]) {
+                    const status = match[1].trim();
+                    console.log(`Статус пользователя ${sid}:`, status);
+
+                    let lnkToAddStatus = document.getElementById('usrType');
+                    if (!lnkToAddStatus) {
+                        console.warn('Элемент #usrType не найден в DOM');
+                        return reject(new Error('Элемент #usrType не найден'));
+                    }
+
+                    let lnkForStatus = document.getElementById('userStatusBadge');
+
+                    if (!lnkForStatus) {
+                        lnkForStatus = document.createElement('span');
+                        lnkForStatus.id = 'userStatusBadge';
+                        lnkForStatus.style.cssText = "font-weight: 700; padding: 2px 6px; margin-left: 5px; border-radius: 3px; color: #fff; display: inline-block;";
+                        lnkToAddStatus.appendChild(lnkForStatus);
+                    }
+
+                    // Цвета по статусу
+                    if (status === 'активный') {
+                        lnkForStatus.style.backgroundColor = '#28a745'; // зелёный
+                    } else if (status === 'временно отключен') {
+                        lnkForStatus.style.backgroundColor = '#d32b49'; // красный
+                    } else {
+                        lnkForStatus.style.backgroundColor = '#6c757d'; // серый для остальных
+                    }
+
+                    lnkForStatus.textContent = status;
+
+                    // Защита: если внешний код/React перерисовывает DOM и элемент пропадает — вернуть через 500мс
+                    setTimeout(() => {
+                        const container = document.getElementById('usrType');
+                        if (!document.getElementById('userStatusBadge') && container) {
+                            container.appendChild(lnkForStatus);
+                        }
+                    }, 500);
+
+                    resolve(status);
+                } else {
+                    console.log('Статус не найден в ответе');
+                    reject(new Error('Статус не найден в ответе'));
+                }
+            }
+        );
+    });
+}
+
 async function checkEmailAndPhoneIdentity() {
     const userId = idstudentField?.value.trim();
     if (!userId || window.flagusertype !== "student") return;
@@ -1907,6 +2001,7 @@ function getuserinfo() {
     if (!stid) return;
 
     setTimeout(getusernamecrm, 640);
+    setTimeout(getUserStatus, 660);
     setTimeout(crmstatus, 700);
     setTimeout(() => {
         if (window.flagusertype === "teacher") {
