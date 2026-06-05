@@ -323,7 +323,6 @@ var win_taskform = `
                 <div class="btn-row-task">
                     <button class="glass-btn-task preset-btn-high" id="highsecondline" style="flex: 1.5;" title="Календарь У/П">Календарь</button>
                     <button class="glass-btn-task preset-btn-low" id="lowkm" title="Кризис менеджеры">Кризис менеджер</button>
-                    <button class="glass-btn-task preset-btn-high" id="highprem" title="Premium">Prem Исход</button>
                     <button class="glass-btn-task preset-btn-low" id="low2lvimbug" title="2Л vim баг">2ЛТП</button>
                 </div>
             </div>
@@ -344,7 +343,6 @@ var win_taskform = `
                     <option value="outgoing_calls_crm2">📞 Исходящие звонки (КЦ исход)</option>
                     <option value="tech_support_second_line_crm2" style="color: #10b981;">🥈 Техподдержка 2Л CRM</option>
                     <option value="crisis_manager">🤬 Кризис менеджеры</option>
-                    <option value="personal_support">💎 Персональное сопровождение (Premium)</option>
                 </select>
                 <input class="glass-input-task" id="taskserviceid" placeholder="🎫 ID услуги">
                 <div style="display: flex; gap: 8px;">
@@ -945,7 +943,6 @@ async function gettaskButButtonPress() {
         document.getElementById('highteachertc').onclick = () => applyPreset('high', 'teachers_care_crm', null, null, false, false);
         document.getElementById('highteachersc').onclick = () => applyPreset('high', 'outgoing_calls_crm2', null, null, false, false);
         document.getElementById('lowkm').onclick = () => applyPreset('low', 'crisis_manager', null, null, true, false);
-        document.getElementById('highprem').onclick = () => applyPreset('high', 'personal_support', null, null, true, false);
         document.getElementById('low2lvimbug').onclick = () => applyPreset('low', 'tech_support_second_line_crm2', null, 'Краткое описание:\nШаги воспроизведения:\nОП:\nФП:\nСсылки на скриншоты:\nНужна ли ОС:', false, false);
 
         const validateField = (el, condition) => {
