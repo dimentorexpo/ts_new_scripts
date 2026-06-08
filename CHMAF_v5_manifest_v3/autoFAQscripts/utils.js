@@ -624,7 +624,7 @@ function getLoginLink(userid) {
 
         const body =
             `login_link_form%5Bid%5D=${encodeURIComponent(userid)}` +
-            `&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru%2Fhome` +
+            `&login_link_form%5Btarget%5D=https%3A%2F%2Fvimbox.skyeng.ru` +
             `&login_link_form%5Blifetime%5D=3600` +
             `&login_link_form%5Bcreate%5D=`;
 
