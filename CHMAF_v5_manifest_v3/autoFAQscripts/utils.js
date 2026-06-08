@@ -27,7 +27,7 @@ function checkelementtype(a) {
 
 /**
  * Создает перетаскиваемое окно с гарантированной защитой инпутов.
- * Теперь используется принцип WHITELIST: перетаскивание работает ТОЛЬКО если 
+ * Теперь используется принцип WHITELIST: перетаскивание работает ТОЛЬКО если
  * кликнули по элементу с классом 'chmaf-drag-handle'.
  */
 function createWindow(id, topKey, leftKey, content) {
@@ -117,7 +117,7 @@ function createWindow(id, topKey, leftKey, content) {
             let lastClickX = 0;
             let lastClickY = 0;
 
-            input.addEventListener('mousedown', function(e) {
+            input.addEventListener('mousedown', function (e) {
                 e.stopPropagation(); // Блокируем перетаскивание окна
 
                 lastClickX = e.clientX;
@@ -127,7 +127,7 @@ function createWindow(id, topKey, leftKey, content) {
                 clickTimer = setTimeout(() => { clickCount = 0; }, 400);
             });
 
-            input.addEventListener('click', function(e) {
+            input.addEventListener('click', function (e) {
                 // Если это одиночный клик (не двойной/тройной) — сбрасываем выделение
                 if (clickCount === 1) {
                     setTimeout(() => {
@@ -526,7 +526,7 @@ async function getText() {
     try {
         const r = await fetch(scriptAdr);
         if (r.ok) { table = (await r.json()).result; refreshTemplates(); }
-    } catch (e) {}
+    } catch (e) { }
 }
 
 (function () {
@@ -564,7 +564,7 @@ function prepTp() {
         p.appendChild(btn);
     };
     create('datsyCalendar', '📅', 'Datsy', 'amber', getdatsyCalendarButtonPress);
-    create('butServ', '⚜', 'Сервисы', 'violet', function() {
+    create('butServ', '⚜', 'Сервисы', 'violet', function () {
         const s = document.getElementById('AF_Service');
         const v = s.style.display !== 'none';
         s.style.display = v ? 'none' : '';
@@ -624,7 +624,7 @@ function getLoginLink(userid) {
 
         const body =
             `login_link_form%5Bid%5D=${encodeURIComponent(userid)}` +
-            `&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru` +
+            `&login_link_form%5Btarget%5D=https%3A%2F%2Fskyeng.ru%2Fhome` +
             `&login_link_form%5Blifetime%5D=3600` +
             `&login_link_form%5Bcreate%5D=`;
 
