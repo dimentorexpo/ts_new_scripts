@@ -195,47 +195,22 @@ function createWindow(id, topKey, leftKey, content) {
     setTimeout(() => {
         const inputs = windowElement.querySelectorAll('input:not([type="button"]):not([type="submit"]), textarea');
         inputs.forEach(input => {
-            let clickCount = 0;
-            let clickTimer = null;
-            let lastClickX = 0;
-            let lastClickY = 0;
+            let lastClickTime = 0;
 
             input.addEventListener('mousedown', function (e) {
                 e.stopPropagation();
 
-                lastClickX = e.clientX;
-                lastClickY = e.clientY;
-                clickCount++;
-                clearTimeout(clickTimer);
-                clickTimer = setTimeout(() => { clickCount = 0; }, 400);
-            });
+                const now = Date.now();
+                const isDoubleClick = (now - lastClickTime) < 400;
+                lastClickTime = now;
 
-            input.addEventListener('click', function (e) {
-                if (clickCount === 1) {
-                    setTimeout(() => {
-                        if (this.selectionStart !== this.selectionEnd) {
-                            let pos = null;
+                if (isDoubleClick) return;
 
-                            if (document.caretPositionFromPoint) {
-                                const caretPos = document.caretPositionFromPoint(lastClickX, lastClickY);
-                                if (caretPos && caretPos.offsetNode) {
-                                    pos = caretPos.offset;
-                                }
-                            } else if (document.caretRangeFromPoint) {
-                                const range = document.caretRangeFromPoint(lastClickX, lastClickY);
-                                if (range) {
-                                    pos = range.startOffset;
-                                }
-                            }
+                const hasSelection = this.selectionStart !== this.selectionEnd;
 
-                            if (pos === null) {
-                                this.focus();
-                                return;
-                            }
-
-                            this.setSelectionRange(pos, pos);
-                        }
-                    }, 0);
+                if (hasSelection && e.detail === 1) {
+                    const pos = getCaretPositionFromPoint(this, e.clientX, e.clientY);
+                    this.setSelectionRange(pos, pos);
                 }
             });
         });
