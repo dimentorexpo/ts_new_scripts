@@ -1,8 +1,8 @@
 /**
  * ==========================================
- * GLASS LESSON STATUS MODULE
+ * CRYSTAL GLASS LESSON STATUS MODULE
  * Премиальный интерфейс проверки статусов уроков
- * Стиль: Glassmorphism + Neumorphism accents
+ * Стиль: Crystal Glassmorphism Dark UI
  * Префикс: gls- (glass-lesson-status)
  * ==========================================
  */
@@ -14,6 +14,7 @@
     const CONFIG = {
         prefix: 'gls',
         storageKey: 'clearlessoninfo',
+        dragStorageKey: 'gls_window_pos',
         apiUrl: 'https://timetable.skyeng.ru/api/teachers/search',
         timezone: 'Europe/Moscow',
         maxTableHeight: 420,
@@ -23,12 +24,33 @@
     const state = {
         isVisible: false,
         isLoading: false,
-        windowRef: null
+        windowRef: null,
+        isDragging: false,
+        dragOffsetX: 0,
+        dragOffsetY: 0
     };
 
     // ─── UNIQUE CSS STYLES ──────────────────────────────────────
     const glassStyles = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --gls-bg: rgba(8, 8, 22, 0.88);
+            --gls-bg-card: rgba(16, 18, 38, 0.7);
+            --gls-border: rgba(255, 255, 255, 0.06);
+            --gls-border-glow: rgba(124, 58, 237, 0.3);
+            --gls-accent: #8b5cf6;
+            --gls-accent-soft: rgba(139, 92, 246, 0.12);
+            --gls-accent-glow: rgba(139, 92, 246, 0.35);
+            --gls-cyan: #22d3ee;
+            --gls-cyan-soft: rgba(34, 211, 238, 0.1);
+            --gls-text: #f1f5f9;
+            --gls-text-secondary: #94a3b8;
+            --gls-text-muted: #64748b;
+            --gls-success: #34d399;
+            --gls-error: #f87171;
+            --gls-radius: 16px;
+        }
 
         /* === CORE WINDOW === */
         #${CONFIG.prefix}-window {
@@ -36,18 +58,36 @@
             position: fixed !important;
             z-index: 999999 !important;
             width: 1120px;
-            border-radius: 24px;
-            background: linear-gradient(135deg, rgba(20, 20, 35, 0.85) 0%, rgba(30, 30, 50, 0.9) 100%);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: var(--gls-radius);
+            background: var(--gls-bg);
+            backdrop-filter: blur(40px) saturate(200%) brightness(1.1);
+            -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.1);
+            border: 1px solid var(--gls-border);
             box-shadow:
-                0 25px 50px -12px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-                0 0 100px rgba(100, 100, 255, 0.08) inset;
+                0 25px 60px -12px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+                0 0 80px rgba(124, 58, 237, 0.06) inset;
             overflow: hidden;
             transition: opacity ${CONFIG.animDuration}ms ease, transform ${CONFIG.animDuration}ms cubic-bezier(0.34, 1.56, 0.64, 1);
-            cursor:grab;
+            cursor: default;
+        }
+        #${CONFIG.prefix}-window::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), rgba(34, 211, 238, 0.4), transparent);
+            z-index: 10;
+        }
+        #${CONFIG.prefix}-window::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(34, 211, 238, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         #${CONFIG.prefix}-window.${CONFIG.prefix}--hidden {
@@ -61,53 +101,57 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 20px 24px 16px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 18px 24px 14px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            border-bottom: 1px solid var(--gls-border);
+            cursor: grab;
+            user-select: none;
+            position: relative;
+            z-index: 5;
         }
+        .${CONFIG.prefix}__header:active { cursor: grabbing; }
 
         .${CONFIG.prefix}__title {
-            color: rgba(255, 255, 255, 0.95);
+            color: var(--gls-text);
             font-size: 15px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
             display: flex;
             align-items: center;
             gap: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .${CONFIG.prefix}__title-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3));
-            border: 1px solid rgba(255,255,255,0.15);
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, var(--gls-accent-soft), rgba(34, 211, 238, 0.08));
+            border: 1px solid rgba(139, 92, 246, 0.2);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 16px;
-            backdrop-filter: blur(10px);
+            box-shadow: 0 0 16px rgba(139, 92, 246, 0.1);
         }
 
         .${CONFIG.prefix}__toolbar {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         /* === GLASS BUTTONS === */
         .${CONFIG.prefix}__btn {
             position: relative;
             padding: 8px 16px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-            color: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            border: 1px solid var(--gls-border);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--gls-text-secondary);
             font-family: inherit;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
             overflow: hidden;
             outline: none;
@@ -118,52 +162,54 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent);
             opacity: 0;
             transition: opacity 0.2s;
         }
 
         .${CONFIG.prefix}__btn:hover {
-            transform: translateY(-1px);
-            border-color: rgba(255,255,255,0.2);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1) inset;
+            color: var(--gls-text);
+            border-color: rgba(255,255,255,0.12);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
         }
 
-        .${CONFIG.prefix}__btn:hover::before {
-            opacity: 1;
-        }
+        .${CONFIG.prefix}__btn:hover::before { opacity: 1; }
 
         .${CONFIG.prefix}__btn:active {
-            transform: translateY(0);
+            transform: scale(0.97);
             transition-duration: 0.05s;
         }
 
         .${CONFIG.prefix}__btn--primary {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.35));
-            border-color: rgba(129, 140, 248, 0.3);
-            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+            background: linear-gradient(135deg, var(--gls-accent), #6d28d9);
+            border-color: rgba(139, 92, 246, 0.5);
+            color: #fff;
+            box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3);
+            letter-spacing: 0.3px;
         }
-
         .${CONFIG.prefix}__btn--primary:hover {
-            box-shadow: 0 8px 28px rgba(99, 102, 241, 0.35);
-            border-color: rgba(165, 180, 252, 0.5);
+            background: linear-gradient(135deg, #9b6ef8, #7c3aed);
+            box-shadow: 0 4px 24px rgba(139, 92, 246, 0.4);
+            transform: translateY(-1px);
+            color: #fff;
         }
 
         .${CONFIG.prefix}__btn--danger {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(220, 38, 38, 0.2));
-            border-color: rgba(248, 113, 113, 0.25);
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
+            color: var(--gls-error);
             padding: 8px 12px;
             font-size: 15px;
         }
-
         .${CONFIG.prefix}__btn--danger:hover {
-            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.18);
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
         }
 
         .${CONFIG.prefix}__btn--icon {
             padding: 8px;
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -174,54 +220,51 @@
         .${CONFIG.prefix}__controls {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 16px 24px;
-            background: rgba(0,0,0,0.15);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            gap: 14px;
+            padding: 14px 24px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--gls-border);
             flex-wrap: wrap;
+            position: relative;
+            z-index: 5;
         }
 
         .${CONFIG.prefix}__field-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .${CONFIG.prefix}__label {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 12px;
-            font-weight: 500;
+            color: var(--gls-text-muted);
+            font-size: 11px;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             white-space: nowrap;
         }
 
         .${CONFIG.prefix}__input {
-            background: rgba(0,0,0,0.25);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
             padding: 8px 12px;
-            color: rgba(255,255,255,0.9);
+            color: var(--gls-text);
             font-family: inherit;
             font-size: 13px;
             outline: none;
-            transition: all 0.2s;
-            backdrop-filter: blur(10px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .${CONFIG.prefix}__input:hover {
-            border-color: rgba(255,255,255,0.15);
-        }
+        .${CONFIG.prefix}__input:hover { border-color: rgba(255,255,255,0.1); }
 
         .${CONFIG.prefix}__input:focus {
-            border-color: rgba(129, 140, 248, 0.5);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 0 20px rgba(99, 102, 241, 0.1);
-            background: rgba(0,0,0,0.35);
+            border-color: var(--gls-accent);
+            box-shadow: 0 0 0 3px var(--gls-accent-soft), 0 0 16px rgba(139, 92, 246, 0.08);
+            background: rgba(0, 0, 0, 0.4);
         }
 
-        .${CONFIG.prefix}__input::placeholder {
-            color: rgba(255,255,255,0.25);
-        }
+        .${CONFIG.prefix}__input::placeholder { color: var(--gls-text-muted); }
 
         .${CONFIG.prefix}__input--date {
             width: 130px;
@@ -232,12 +275,10 @@
             width: 110px;
             text-align: center;
             font-variant-numeric: tabular-nums;
+            font-weight: 600;
         }
 
-        .${CONFIG.prefix}__spacer {
-            flex: 1;
-            min-width: 20px;
-        }
+        .${CONFIG.prefix}__spacer { flex: 1; min-width: 20px; }
 
         /* === CONTENT AREA === */
         .${CONFIG.prefix}__content {
@@ -245,32 +286,28 @@
             max-height: ${CONFIG.maxTableHeight}px;
             overflow-y: auto;
             overflow-x: hidden;
+            position: relative;
+            z-index: 5;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(139, 92, 246, 0.25) transparent;
         }
 
-        .${CONFIG.prefix}__content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .${CONFIG.prefix}__content::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
+        .${CONFIG.prefix}__content::-webkit-scrollbar { width: 5px; }
+        .${CONFIG.prefix}__content::-webkit-scrollbar-track { background: transparent; }
         .${CONFIG.prefix}__content::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
+            background: rgba(139, 92, 246, 0.25);
+            border-radius: 3px;
         }
-
         .${CONFIG.prefix}__content::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(139, 92, 246, 0.4);
         }
 
         /* === TABLE === */
         .${CONFIG.prefix}__table-wrap {
-            border-radius: 16px;
+            border-radius: var(--gls-radius);
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.08);
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
+            border: 1px solid var(--gls-border);
+            background: var(--gls-bg-card);
         }
 
         .${CONFIG.prefix}__table {
@@ -282,92 +319,92 @@
         }
 
         .${CONFIG.prefix}__table thead th {
-            background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-            padding: 14px 12px;
-            font-weight: 600;
-            font-size: 11px;
+            background: linear-gradient(180deg, rgba(139, 92, 246, 0.08), rgba(0, 0, 0, 0.15));
+            padding: 12px 12px;
+            font-weight: 700;
+            font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: rgba(255,255,255,0.7);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            letter-spacing: 0.6px;
+            color: var(--gls-text-secondary);
+            border-bottom: 1px solid var(--gls-border);
             position: sticky;
             top: 0;
             z-index: 2;
             white-space: nowrap;
-            backdrop-filter: blur(10px);
         }
 
         .${CONFIG.prefix}__table tbody tr {
-            transition: background 0.15s;
+            transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .${CONFIG.prefix}__table tbody tr:hover {
-            background: rgba(255,255,255,0.04);
+            background: rgba(139, 92, 246, 0.04);
         }
 
         .${CONFIG.prefix}__table tbody tr:not(:last-child) td {
-            border-bottom: 1px solid rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
         }
 
         .${CONFIG.prefix}__table td {
-            padding: 12px;
+            padding: 10px 12px;
             text-align: center;
             font-size: 12px;
         }
 
         .${CONFIG.prefix}__cell--id {
-            font-weight: 600;
-            color: rgba(165, 180, 252, 0.95);
+            font-weight: 700;
+            color: var(--gls-accent);
             cursor: pointer;
             transition: all 0.2s;
             border-radius: 6px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 11px;
         }
 
         .${CONFIG.prefix}__cell--id:hover {
-            background: rgba(99, 102, 241, 0.15);
-            color: #a5b4fc;
-            text-shadow: 0 0 12px rgba(165, 180, 252, 0.4);
+            background: var(--gls-accent-soft);
+            color: #c4b5fd;
+            text-shadow: 0 0 10px var(--gls-accent-glow);
         }
 
         .${CONFIG.prefix}__status {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             padding: 4px 10px;
             border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
+            font-size: 10px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.3px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid;
         }
 
         .${CONFIG.prefix}__status--success {
-            background: rgba(34, 197, 94, 0.15);
-            color: #4ade80;
-            border-color: rgba(74, 222, 128, 0.2);
-            box-shadow: 0 0 16px rgba(34, 197, 94, 0.1);
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--gls-success);
+            border-color: rgba(34, 197, 94, 0.2);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.08);
         }
 
         .${CONFIG.prefix}__status--error {
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-            border-color: rgba(248, 113, 113, 0.2);
-            box-shadow: 0 0 16px rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--gls-error);
+            border-color: rgba(239, 68, 68, 0.2);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.08);
         }
 
         .${CONFIG.prefix}__status--removed {
-            background: rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.12);
             color: #fca5a5;
-            border-color: rgba(252, 165, 165, 0.25);
-            box-shadow: 0 0 16px rgba(239, 68, 68, 0.15);
+            border-color: rgba(252, 165, 165, 0.2);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.1);
         }
 
         .${CONFIG.prefix}__status--unknown {
-            background: rgba(156, 163, 175, 0.15);
-            color: #9ca3af;
-            border-color: rgba(156, 163, 175, 0.2);
+            background: rgba(100, 116, 139, 0.1);
+            color: var(--gls-text-muted);
+            border-color: rgba(100, 116, 139, 0.15);
         }
 
         .${CONFIG.prefix}__cell--comment {
@@ -375,13 +412,13 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            color: rgba(255,255,255,0.6);
+            color: var(--gls-text-muted);
             font-size: 11px;
         }
 
         .${CONFIG.prefix}__cell--type {
             font-size: 10px;
-            color: rgba(255,255,255,0.5);
+            color: var(--gls-text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -393,69 +430,38 @@
             align-items: center;
             justify-content: center;
             padding: 60px 20px;
-            gap: 16px;
-            color: rgba(255,255,255,0.5);
+            gap: 14px;
+            color: var(--gls-text-muted);
         }
 
         .${CONFIG.prefix}__spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255,255,255,0.08);
-            border-top-color: rgba(129, 140, 248, 0.8);
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(139, 92, 246, 0.15);
+            border-top-color: var(--gls-accent);
             border-radius: 50%;
-            animation: ${CONFIG.prefix}-spin 0.8s linear infinite;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+            animation: ${CONFIG.prefix}-spin 0.7s linear infinite;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
         }
 
-        @keyframes ${CONFIG.prefix}-spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes ${CONFIG.prefix}-spin { to { transform: rotate(360deg); } }
 
         .${CONFIG.prefix}__empty {
             text-align: center;
             padding: 50px 20px;
-            color: rgba(255,255,255,0.4);
+            color: var(--gls-text-muted);
         }
 
         .${CONFIG.prefix}__empty-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+            font-size: 44px;
+            margin-bottom: 10px;
             opacity: 0.3;
-        }
-
-        /* === GRAB CURSOR === */
-        .${CONFIG.prefix}__drag-handle {
-            cursor: grab;
-            cursor: -webkit-grab;
-            user-select: none;
-        }
-
-        .${CONFIG.prefix}__drag-handle:active {
-            cursor: grabbing;
-            cursor: -webkit-grabbing;
-        }
-
-        /* === TOOLTIP === */
-        .${CONFIG.prefix}__tooltip {
-            position: absolute;
-            background: rgba(15, 15, 25, 0.95);
-            color: rgba(255,255,255,0.9);
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            pointer-events: none;
-            z-index: 1000000;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            opacity: 0;
-            transition: opacity 0.2s;
-            white-space: nowrap;
         }
     `;
 
     // ─── HTML TEMPLATE ──────────────────────────────────────────
     const windowTemplate = `
-        <div class="${CONFIG.prefix}__header">
+        <div class="${CONFIG.prefix}__header" id="${CONFIG.prefix}-drag-handle">
             <div class="${CONFIG.prefix}__title">
                 <div class="${CONFIG.prefix}__title-icon">📊</div>
                 <span>Статус уроков</span>
@@ -477,11 +483,11 @@
             </div>
 
             <div class="${CONFIG.prefix}__field-group" style="margin-left: 12px;">
-                <span class="${CONFIG.prefix}__label">👽 Учитель</span>
+                <span class="${CONFIG.prefix}__label">Учитель</span>
                 <input type="text" class="${CONFIG.prefix}__input ${CONFIG.prefix}__input--id" id="${CONFIG.prefix}-teacher-id" placeholder="ID" title="ID учителя для поиска">
             </div>
             <div class="${CONFIG.prefix}__field-group">
-                <span class="${CONFIG.prefix}__label">🎒 Ученик</span>
+                <span class="${CONFIG.prefix}__label">Ученик</span>
                 <input type="text" class="${CONFIG.prefix}__input ${CONFIG.prefix}__input--id" id="${CONFIG.prefix}-student-id" placeholder="ID" title="Фильтр по ID ученика">
             </div>
 
@@ -541,10 +547,63 @@
         return `<span class="${CONFIG.prefix}__status ${CONFIG.prefix}__status--unknown">? Неизвестно</span>`;
     };
 
-    const getStatusColor = (status, isRemoved) => {
-        if (isRemoved || (status && status !== 'success')) return 'tomato';
-        if (status === 'success') return '#50e850';
-        return 'orange';
+    // ─── DRAG & DROP WITH PERSISTENCE ───────────────────────────
+
+    const saveWindowPosition = (x, y) => {
+        try {
+            localStorage.setItem(CONFIG.dragStorageKey, JSON.stringify({ x, y }));
+        } catch (e) { /* ignore */ }
+    };
+
+    const loadWindowPosition = () => {
+        try {
+            const raw = localStorage.getItem(CONFIG.dragStorageKey);
+            if (raw) return JSON.parse(raw);
+        } catch (e) { /* ignore */ }
+        return null;
+    };
+
+    const initDrag = () => {
+        const handle = $(`#${CONFIG.prefix}-drag-handle`);
+        const win = state.windowRef;
+        if (!handle || !win) return;
+
+        const saved = loadWindowPosition();
+        if (saved) {
+            win.style.left = saved.x + 'px';
+            win.style.top = saved.y + 'px';
+            win.style.right = 'auto';
+        }
+
+        handle.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button')) return;
+            state.isDragging = true;
+            state.dragOffsetX = e.clientX - win.getBoundingClientRect().left;
+            state.dragOffsetY = e.clientY - win.getBoundingClientRect().top;
+            win.style.transition = 'none';
+            document.body.style.userSelect = 'none';
+            document.body.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!state.isDragging) return;
+            const x = e.clientX - state.dragOffsetX;
+            const y = e.clientY - state.dragOffsetY;
+            win.style.left = x + 'px';
+            win.style.top = y + 'px';
+            win.style.right = 'auto';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (!state.isDragging) return;
+            state.isDragging = false;
+            win.style.transition = '';
+            document.body.style.userSelect = '';
+            document.body.style.cursor = '';
+            const rect = win.getBoundingClientRect();
+            saveWindowPosition(rect.left, rect.top);
+        });
     };
 
     // ─── TABLE RENDERER ─────────────────────────────────────────
@@ -619,14 +678,12 @@
             </div>
         `;
 
-        // Attach interactions
-        // Attach interactions
         $$(`[name="idToCRM"]`, content).forEach(cell => {
             const id = cell.dataset.id;
             if (!id) return;
 
             cell.addEventListener('click', () => {
-                window.open(`https://crm2.skyeng.ru/persons/${id}`, '_blank'); // убран пробел
+                window.open(`https://crm2.skyeng.ru/persons/${id}`, '_blank');
             });
 
             cell.addEventListener('contextmenu', (e) => {
@@ -634,10 +691,8 @@
                 if (typeof copyToClipboard === 'function') {
                     copyToClipboard(id).catch(err => {
                         console.log('Не удалось скопировать ID:', err);
-                        // Можно добавить визуальный фидбек, если нужно
                     });
                 } else {
-                    // Fallback на execCommand напрямую, если copyToClipboard недоступна
                     try {
                         const ta = document.createElement('textarea');
                         ta.value = id;
@@ -663,7 +718,7 @@
             <div class="${CONFIG.prefix}__loader">
                 <div class="${CONFIG.prefix}__spinner"></div>
                 <div>Загрузка данных...</div>
-                <div style="font-size: 12px; opacity: 0.6;">Если информация не появится, нажмите повторно</div>
+                <div style="font-size: 12px; opacity: 0.5;">Если информация не появится, нажмите повторно</div>
             </div>
         `;
         state.isLoading = true;
@@ -802,7 +857,6 @@
             $(`#${CONFIG.prefix}-teacher-id`).focus();
         }
 
-        // Hide menu if exists
         const menu = document.getElementById('idmymenu');
         const btn = document.getElementById('MainMenuBtn');
         if (menu) menu.style.display = 'none';
@@ -826,23 +880,25 @@
         if (typeof createWindow === 'function') {
             state.windowRef = createWindow(winId, 'winTopLessonStatus', 'winLeftLessonStatus', html);
         } else {
-            // Fallback creation
             state.windowRef = document.createElement('div');
             state.windowRef.id = winId;
             state.windowRef.innerHTML = html;
             document.body.appendChild(state.windowRef);
         }
 
-        // Apply glass class to window container
+        // Apply glass class
         if (state.windowRef) {
             state.windowRef.classList.add(`${CONFIG.prefix}-window`);
             state.windowRef.style.cssText += `
                 position: fixed;
                 z-index: 999999;
-                border-radius: 24px;
+                border-radius: 16px;
                 overflow: hidden;
             `;
         }
+
+        // Init drag & drop
+        initDrag();
 
         // Double-click hide
         state.windowRef.ondblclick = (e) => {
@@ -858,26 +914,22 @@
         $(`#${CONFIG.prefix}-search`).addEventListener('click', fetchLessons);
 
         // Enter key on inputs
-        [$('teacher-id'), $('student-id')].forEach(el => {
+        [$(`#${CONFIG.prefix}-teacher-id`), $(`#${CONFIG.prefix}-student-id`)].forEach(el => {
             if (!el) return;
             el.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') fetchLessons();
             });
         });
 
-        // 🔥 AUTO-SEARCH ON PASTE (Ctrl+V / ПКМ → Вставить)
+        // Auto-search on paste
         const triggerAfterPaste = (inputEl) => {
-            inputEl.addEventListener('paste', (e) => {
-                // Даём браузеру 0 мс на вставку значения в input
+            inputEl.addEventListener('paste', () => {
                 requestAnimationFrame(() => {
-                    // Ещё один кадр на всякий случай для старых браузеров
                     requestAnimationFrame(() => {
-                        // Если teacher заполнен — сразу гоним поиск
                         const teacherVal = $(`#${CONFIG.prefix}-teacher-id`).value.trim();
                         if (teacherVal) {
                             fetchLessons();
                         } else {
-                            // Если учитель ещё не введён, просто фокусируемся на него
                             $(`#${CONFIG.prefix}-teacher-id`).focus();
                         }
                     });
