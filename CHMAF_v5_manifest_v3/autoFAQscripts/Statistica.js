@@ -198,12 +198,12 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
             `
         });
 
-        tr.onmouseenter = function() {
+        tr.onmouseenter = function () {
             this.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(168, 85, 247, 0.1) 100%)';
             this.style.transform = 'scale(1.02)';
             this.style.boxShadow = '0 4px 20px rgba(56, 189, 248, 0.3)';
         };
-        tr.onmouseleave = function() {
+        tr.onmouseleave = function () {
             this.style.background = '';
             this.style.transform = '';
             this.style.boxShadow = '';
@@ -352,13 +352,13 @@ function renderSummaryStats(operators, chatCountMap) {
             overflow: hidden;
         `;
 
-        statCard.onmouseenter = function() {
+        statCard.onmouseenter = function () {
             this.style.transform = 'translateY(-3px) scale(1.02)';
             this.style.boxShadow = `0 8px 30px rgba(0, 0, 0, 0.5), 0 0 25px ${stat.color}50`;
             this.style.borderColor = stat.color + '80';
         };
 
-        statCard.onmouseleave = function() {
+        statCard.onmouseleave = function () {
             this.style.transform = '';
             this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)';
             this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
@@ -440,13 +440,13 @@ function renderSummaryStats(operators, chatCountMap) {
             overflow: hidden;
         `;
 
-        statCard.onmouseenter = function() {
+        statCard.onmouseenter = function () {
             this.style.transform = 'translateX(5px)';
             this.style.boxShadow = `0 6px 25px rgba(0, 0, 0, 0.5), 0 0 20px ${stat.color}40`;
             this.style.borderColor = stat.color + '80';
         };
 
-        statCard.onmouseleave = function() {
+        statCard.onmouseleave = function () {
             this.style.transform = '';
             this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)';
             this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
@@ -658,7 +658,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
                         const closeEvent = messages.find(msg => msg.eventTpe === 'CloseConversation');
                         const isClosedByThisOperator = closeEvent &&
                             (closeEvent.payload?.oid === operatorIds[i] ||
-                             (closeEvent.payload?.status === 'ClosedByOperator' && closeEvent.payload?.sender === operatorIds[i]));
+                                (closeEvent.payload?.status === 'ClosedByOperator' && closeEvent.payload?.sender === operatorIds[i]));
 
                         // Проверяем, что чат закрыт НЕ на паузу
                         const isClosedNotPause = closeEvent && (!closeEvent.payload?.src || closeEvent.payload.src !== "pause");
@@ -1444,7 +1444,8 @@ function resetRateCounts() { rateCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }; }
 // ============================================================================
 
 function getbuttonGetStatButtonPress() {
-    const win = document.getElementById('AF_StataAF'); if (!win) return;
+    const win = document.getElementById('AF_StataAF');
+    if (!win) return;
     if (win.style.display === 'none') {
         win.style.display = '';
         if (document.getElementById('idmymenu')) document.getElementById('idmymenu').style.display = 'none';
@@ -1637,14 +1638,14 @@ async function checkCSAT() {
 
                             <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 12px;">
                                 ${[
-                                    { rate: 5, count: c5, emoji: '😊', color: '#10b981', label: 'Отлично' },
-                                    { rate: 4, count: c4, emoji: '🙂', color: '#84cc16', label: 'Хорошо' },
-                                    { rate: 3, count: c3, emoji: '😐', color: '#f59e0b', label: 'Средне' },
-                                    { rate: 2, count: c2, emoji: '😞', color: '#f97316', label: 'Плохо' },
-                                    { rate: 1, count: c1, emoji: '😡', color: '#ef4444', label: 'Ужасно' }
-                                ].map(item => {
-                                    const percentage = totalRatings > 0 ? ((item.count / totalRatings) * 100).toFixed(1) : 0;
-                                    return `
+                        { rate: 5, count: c5, emoji: '😊', color: '#10b981', label: 'Отлично' },
+                        { rate: 4, count: c4, emoji: '🙂', color: '#84cc16', label: 'Хорошо' },
+                        { rate: 3, count: c3, emoji: '😐', color: '#f59e0b', label: 'Средне' },
+                        { rate: 2, count: c2, emoji: '😞', color: '#f97316', label: 'Плохо' },
+                        { rate: 1, count: c1, emoji: '😡', color: '#ef4444', label: 'Ужасно' }
+                    ].map(item => {
+                        const percentage = totalRatings > 0 ? ((item.count / totalRatings) * 100).toFixed(1) : 0;
+                        return `
                                         <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%); border-radius: 10px; padding: 12px; border: 1px solid ${item.color}40; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px ${item.color}60';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.3)';">
                                             <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px ${item.color});">${item.emoji}</div>
                                             <div style="font-size: 22px; font-weight: 800; color: ${item.color}; text-shadow: 0 0 12px ${item.color}80; margin-bottom: 4px;">${item.count}</div>
@@ -1655,7 +1656,7 @@ async function checkCSAT() {
                                             <div style="font-size: 9px; color: #64748b; margin-top: 4px;">${percentage}%</div>
                                         </div>
                                     `;
-                                }).join('')}
+                    }).join('')}
                             </div>
 
                             <!-- Списки плохих оценок -->
@@ -1828,8 +1829,8 @@ async function checkload(department, flag) {
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px;">
                         ${ops.map((o, idx) => {
-                            const chatColor = o.chats === 0 ? '#64748b' : o.chats <= 2 ? '#10b981' : o.chats <= 4 ? '#f59e0b' : '#ef4444';
-                            return `
+                const chatColor = o.chats === 0 ? '#64748b' : o.chats <= 2 ? '#10b981' : o.chats <= 4 ? '#f59e0b' : '#ef4444';
+                return `
                                 <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%); border-radius: 10px; padding: 10px; border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: all 0.3s ease; animation: operatorCardSlide 0.4s ease ${idx * 0.03}s backwards;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(56, 189, 248, 0.4)'; this.style.borderColor='rgba(56, 189, 248, 0.5)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.3)'; this.style.borderColor='rgba(56, 189, 248, 0.2)';">
                                     <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                                         <div style="flex: 1; min-width: 0;">
@@ -1848,7 +1849,7 @@ async function checkload(department, flag) {
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+            }).join('')}
                     </div>
                 </div>
             </div>

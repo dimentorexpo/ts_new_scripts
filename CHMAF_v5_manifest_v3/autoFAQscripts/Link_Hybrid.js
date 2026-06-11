@@ -2,8 +2,6 @@
 // HYBRID LINKS - Компактный UI + Управление кнопками
 // ==========================================
 
-console.log('[Link_Hybrid] ===== ФАЙЛ НАЧАЛ ЗАГРУЖАТЬСЯ =====');
-
 // ==========================================
 // 1. CONFIG MANAGER
 // ==========================================
@@ -80,13 +78,10 @@ class LinksConfigHybrid {
     }
 }
 
-console.log('[Link_Hybrid] LinksConfigHybrid класс определен');
-
 // ==========================================
 // 2. HTML TEMPLATES (Компактные из оригинала)
 // ==========================================
 const getLinksHTML = (isTP, customButtons) => {
-    console.log('[Link_Hybrid] getLinksHTML вызвана, isTP:', isTP);
 
     if (!isTP) {
         // KC версия
@@ -232,11 +227,9 @@ const getLinksHTML = (isTP, customButtons) => {
     </div>
 </div>`;
 
-    console.log('[Link_Hybrid] HTML содержит compensNotFairPayments:', html.includes('compensNotFairPayments'));
     return html;
 };
 
-console.log('[Link_Hybrid] getLinksHTML функция определена');
 
 // ==========================================
 // 3. MODAL для добавления/редактирования
@@ -311,8 +304,6 @@ function showCustomButtonModal(config, existingButton = null) {
         };
     }
 }
-
-console.log('[Link_Hybrid] showCustomButtonModal функция определена');
 
 // ==========================================
 // 4. ИНИЦИАЛИЗАЦИЯ
@@ -562,15 +553,14 @@ function bindSimpleLinks(linksMap) {
 // 5. ЗАПУСК
 // ==========================================
 async function initLinksHybrid() {
-    console.log('[Link_Hybrid] Инициализация начата');
+
     linksConfig = new LinksConfigHybrid();
     const isTP = linksConfig.config.isTP;
     const customButtons = linksConfig.getCustomButtons();
-    console.log('[Link_Hybrid] isTP:', isTP, 'customButtons:', customButtons.length);
+
 
     if (typeof createWindow === 'function') {
         createWindow('AF_Links', 'winTopLinks', 'winLeftLinks', getLinksHTML(isTP, customButtons));
-        console.log('[Link_Hybrid] Окно создано');
     } else {
         console.warn('[Link_Hybrid] createWindow не найдена');
     }
@@ -587,7 +577,6 @@ async function initLinksHybrid() {
     if (typeof hideWindowOnClick === 'function') hideWindowOnClick('AF_Links', 'hideMe');
 
     initEventHandlers(isTP ? 'TP' : 'KC');
-    console.log('[Link_Hybrid] Event handlers инициализированы');
 
     const btnL = document.getElementById('links');
     if (btnL) {
@@ -599,19 +588,14 @@ async function initLinksHybrid() {
                 panel.style.display = 'none';
             }
         };
-        console.log('[Link_Hybrid] Кнопка links привязана');
     } else {
         console.warn('[Link_Hybrid] Кнопка links не найдена');
     }
 }
 
-console.log('[Link_Hybrid] initLinksHybrid функция определена');
-
 // Запуск
-console.log('[Link_Hybrid] Скрипт загружен');
 if (typeof createWindow === 'function') {
     initLinksHybrid();
 } else {
-    console.log('[Link_Hybrid] createWindow не готова, ждем 1 секунду');
     setTimeout(initLinksHybrid, 1000);
 }

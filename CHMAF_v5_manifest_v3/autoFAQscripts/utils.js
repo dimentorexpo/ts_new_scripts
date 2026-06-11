@@ -461,7 +461,8 @@ async function move_again_AF() {
         { id: "butLessonInfo", text: "🎓 Lesson Info", fn: window.getbutLessonInfoButtonPress, tp: false },
         { id: "butFrozeChat", text: "❄ Auto Respond", fn: window.getbutFrozeChatButtonPress, tp: false },
         { id: "buttonGetStat", text: "📊 Статистика", fn: window.getbuttonGetStatButtonPress, tp: false },
-        { id: "buttonGetQueue", text: "🚧 Очередь", fn: window.getQueuePress, tp: false }
+        { id: "buttonGetQueue", text: "🚧 Очередь", fn: window.getQueuePress, tp: false },
+        { id: "buttonTimetable", text: "⏱️ Timetable", fn: window.getbutTimetableButtonPress, tp: false }
     ];
 
     let menubar = document.getElementById('idmymenu');

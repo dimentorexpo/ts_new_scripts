@@ -182,18 +182,6 @@ let otherinpth = 'othercalendardark';
 let selecttheme = 'darkopts';
 let menutheme = 'menubarstyledark';
 
-var win_mainmenu = // описание кнопок меню
-    `<div>
-        <div id="JiraOpenForm" class="onlyfortp">🔎Jira Search</div>
-        <div id="crmopersstatuses" class="onlyfortp ">🧮Статусы CRM2</div>
-        <div id="butMarks">🎭 Оценки</div>
-        <div id="smartroomform" class="onlyfortp">🦐Smartroom</div>
-        <div id="butLessonInfo" >🎓 Lesson Info</div>
-		<div id="butFrozeChat" >❄ Auto Respond</div>
-        <div id="buttonGetStat" >📊 Статистика</div>
-		<div id="buttonGetQueue" >🚧 Очередь</div>
-    </div>`;
-
 flag = 0
 str = localStorage.getItem('sound_str');
 if (str !== null && str !== "")
