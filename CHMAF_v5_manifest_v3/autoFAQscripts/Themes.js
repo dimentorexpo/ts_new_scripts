@@ -37,7 +37,6 @@ themesCSS.textContent = `
     font-feature-settings: 'cv11', 'ss01';
     width: 720px !important;
     overflow: hidden !important;
-    transform: translate3d(0,0,0);
   }
 
   #AF_Themes * { box-sizing: border-box; }
@@ -443,86 +442,8 @@ const win_Themes = `
 const wintThemes = createWindow('AF_Themes', 'winTopThemes', 'winLeftThemes', win_Themes);
 hideWindowOnDoubleClick('AF_Themes');
 
-// ===== PREMIUM SMOOTH DRAG (GPU accelerated) =====
-(function setupPremiumDrag() {
-    const win = document.getElementById('AF_Themes');
-    if (!win) return;
-
-    const topKey = 'winTopThemes';
-    const leftKey = 'winLeftThemes';
-
-    let currentX = parseInt(localStorage.getItem(leftKey) || '295');
-    let currentY = parseInt(localStorage.getItem(topKey) || '120');
-
-    win.style.left = '0px';
-    win.style.top = '0px';
-    win.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-
-    let isDragging = false;
-    let startX, startY, initialX, initialY;
-    let rafId = null;
-
-    function updatePosition() {
-        if (!isDragging && rafId) { rafId = null; return; }
-        win.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-        localStorage.setItem(leftKey, String(currentX));
-        localStorage.setItem(topKey, String(currentY));
-        rafId = null;
-    }
-
-    function onMouseMove(e) {
-        if (!isDragging) return;
-        e.preventDefault();
-
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-
-        let newX = initialX + dx;
-        let newY = initialY + dy;
-
-        const rect = win.getBoundingClientRect();
-        const maxX = window.innerWidth - rect.width;
-        const maxY = window.innerHeight - rect.height;
-
-        newX = Math.max(0, Math.min(newX, maxX));
-        newY = Math.max(0, Math.min(newY, maxY));
-
-        currentX = newX;
-        currentY = newY;
-
-        if (!rafId) {
-            rafId = requestAnimationFrame(updatePosition);
-        }
-    }
-
-    function onMouseUp() {
-        isDragging = false;
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-        document.removeEventListener('mouseleave', onMouseUp);
-        if (rafId) cancelAnimationFrame(rafId);
-        updatePosition();
-    }
-
-    const header = win.querySelector('.af-theme-header') || win;
-
-    header.addEventListener('mousedown', function (e) {
-        if (e.target.closest('button, input, select, textarea, .af-btn, .buttonHide')) return;
-        if (typeof checkelementtype === 'function' && !checkelementtype(e)) return;
-
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        initialX = currentX;
-        initialY = currentY;
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-        document.addEventListener('mouseleave', onMouseUp);
-    });
-
-    win.onmousedown = null;
-})();
+// ===== DRAG HANDLED BY utils.js enableDrag =====
+// Кастомный drag удалён — используется universal enableDrag из createWindow
 
 // ===== LOGIC (unchanged) =====
 async function startThemes() {
