@@ -3,90 +3,106 @@ const afgStyles = document.createElement('style');
 afgStyles.textContent = `
     /* Глобальные CSS переменные */
     :root {
-        --afg-dark-bg: linear-gradient(135deg, rgba(22, 25, 35, 0.95) 0%, rgba(15, 18, 28, 0.98) 100%);
-        --afg-dark-border: rgba(255, 255, 255, 0.12);
-        --afg-accent: #00d4ff;
-        --afg-accent-glow: rgba(0, 212, 255, 0.3);
-        --afg-hover: rgba(255, 255, 255, 0.15);
+        --afg-dark-bg: linear-gradient(135deg, rgba(12, 12, 28, 0.96) 0%, rgba(8, 10, 20, 0.98) 100%);
+        --afg-dark-border: rgba(255, 255, 255, 0.06);
+        --afg-accent: #8b5cf6;
+        --afg-accent-soft: rgba(139, 92, 246, 0.12);
+        --afg-accent-glow: rgba(139, 92, 246, 0.3);
+        --afg-hover: rgba(255, 255, 255, 0.06);
+        --afg-cyan: #22d3ee;
+        --afg-green: #34d399;
+        --afg-amber: #fbbf24;
+        --afg-text: #f1f5f9;
+        --afg-text-secondary: #94a3b8;
+        --afg-text-muted: #64748b;
     }
 
     /* Основной контейнер панели */
     .afg-panel {
         position: fixed; top: 0; right: 0; width: 480px; height: 100vh;
         z-index: 1000000; display: flex; flex-direction: column;
-        backdrop-filter: blur(24px) saturate(140%); -webkit-backdrop-filter: blur(24px) saturate(140%);
-        box-shadow: -8px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgba(255,255,255,0.05);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        backdrop-filter: blur(40px) saturate(200%) brightness(1.1); -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.1);
+        box-shadow: -8px 0 50px rgba(0,0,0,0.6), inset 1px 0 0 rgba(255,255,255,0.04);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         font-size: 14px; background: var(--afg-dark-bg);
-        border-left: 1px solid var(--afg-dark-border); color: #f0f0f0;
+        border-left: 1px solid var(--afg-dark-border); color: var(--afg-text);
+    }
+    .afg-panel::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 1px; height: 100%;
+        background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.3), transparent);
+        z-index: 10;
     }
 
     /* Кнопки */
     .afg-btn {
-        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 10px; color: #fff; cursor: pointer; padding: 8px 14px;
+        background: rgba(255,255,255,0.04); border: 1px solid var(--afg-dark-border);
+        border-radius: 8px; color: var(--afg-text-secondary); cursor: pointer; padding: 8px 14px;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         display: inline-flex; align-items: center; justify-content: center;
-        backdrop-filter: blur(8px); font-weight: 500;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px); font-weight: 600; font-size: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
     .afg-btn:hover {
-        background: rgba(255,255,255,0.12); transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.25); border-color: rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.08); transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25); border-color: rgba(255,255,255,0.1);
+        color: var(--afg-text);
     }
-    .afg-btn:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-    .afg-btn-small { padding: 6px 10px; font-size: 16px; }
+    .afg-btn:active { transform: scale(0.97); }
+    .afg-btn-small { padding: 6px 10px; font-size: 14px; }
 
     .afg-btn-accent {
-        background: rgba(0, 212, 255, 0.15);
-        border-color: rgba(0, 212, 255, 0.4);
+        background: var(--afg-accent-soft);
+        border-color: rgba(139, 92, 246, 0.3);
         color: var(--afg-accent);
-        text-shadow: 0 0 8px var(--afg-accent-glow);
     }
     .afg-btn-accent:hover {
-        background: rgba(0, 212, 255, 0.25);
-        border-color: rgba(0, 212, 255, 0.6);
-        box-shadow: 0 6px 20px rgba(0, 212, 255, 0.2);
+        background: rgba(139, 92, 246, 0.2);
+        border-color: rgba(139, 92, 246, 0.5);
+        box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
+        color: #c4b5fd;
     }
 
     /* Инпуты и Селекты */
     .afg-input {
-        background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 10px; color: #f0f0f0; padding: 8px 12px; outline: none;
-        transition: all 0.2s ease; font-size: 13px;
-        box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+        background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 8px; color: var(--afg-text); padding: 8px 12px; outline: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); font-size: 13px;
+        font-family: inherit;
     }
     .afg-input:focus {
         border-color: var(--afg-accent); background: rgba(0,0,0,0.4);
-        box-shadow: 0 0 0 3px var(--afg-accent-glow), inset 0 2px 6px rgba(0,0,0,0.3);
+        box-shadow: 0 0 0 3px var(--afg-accent-soft);
     }
-    .afg-input::placeholder { color: rgba(255,255,255,0.4); }
-    select.afg-input option { background: #1a1d28; color: #fff; }
+    .afg-input::placeholder { color: var(--afg-text-muted); }
+    select.afg-input option { background: #0c0c1c; color: var(--afg-text); }
 
     /* Секции */
     .afg-header, .afg-controls, .afg-footer {
-        padding: 12px; display: flex; align-items: center;
+        padding: 10px 12px; display: flex; align-items: center;
         background: rgba(0,0,0,0.2);
-        border-bottom: 1px solid rgba(255,255,255,0.08); gap: 8px; flex-wrap: wrap;
+        border-bottom: 1px solid var(--afg-dark-border); gap: 8px; flex-wrap: wrap;
     }
     .afg-chat-info {
         padding: 12px; font-size: 13px;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
+        border-bottom: 1px solid var(--afg-dark-border);
         background: rgba(0,0,0,0.15);
     }
 
     /* Область сообщений */
     .afg-chat-area {
-        flex: 1; overflow-y: auto; overflow-x: hidden; padding: 20px 15px;
-        display: flex; flex-direction: column; gap: 16px; scrollbar-width: thin;
+        flex: 1; overflow-y: auto; overflow-x: hidden; padding: 16px 14px;
+        display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin;
+        scrollbar-color: rgba(139, 92, 246, 0.25) transparent;
     }
-    .afg-chat-area::-webkit-scrollbar { width: 8px; }
-    .afg-chat-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+    .afg-chat-area::-webkit-scrollbar { width: 5px; }
+    .afg-chat-area::-webkit-scrollbar-track { background: transparent; }
     .afg-chat-area::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.15); border-radius: 10px;
-        border: 2px solid rgba(15, 18, 28, 0.5);
+        background: rgba(139, 92, 246, 0.25); border-radius: 3px;
     }
-    .afg-chat-area::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+    .afg-chat-area::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.4); }
 
     /* Темы */
     .theme-light {
@@ -97,114 +113,108 @@ afgStyles.textContent = `
 
     /* НОВЫЕ СТИЛИ СООБЩЕНИЙ - Всегда показываем дату/время */
     .afg-msg {
-        padding: 12px 16px; border-radius: 16px; max-width: 85%;
+        padding: 10px 14px; border-radius: 12px; max-width: 88%;
         word-break: break-word; position: relative;
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 6px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
-        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.05);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.2);
         animation: msgFadeIn 0.3s ease;
     }
 
     @keyframes msgFadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(6px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
     /* Заголовок сообщения - ВСЕГДА ВИДИМЫЙ */
     .afg-msg-header {
         display: flex; justify-content: space-between; align-items: center;
-        margin-bottom: 8px; padding-bottom: 6px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        font-size: 12px; font-weight: 600;
+        margin-bottom: 6px; padding-bottom: 5px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        font-size: 11px; font-weight: 600;
     }
 
     .afg-msg-author { color: inherit; opacity: 0.9; }
     .afg-msg-date {
-        font-weight: 400; opacity: 0.6; font-size: 11px;
-        font-family: 'SF Mono', 'Consolas', monospace;
+        font-weight: 500; opacity: 0.5; font-size: 10px;
+        font-family: 'SF Mono', 'Fira Code', monospace;
     }
 
     /* Типы сообщений */
     .afg-msg-user {
-        background: linear-gradient(135deg, rgba(0, 191, 255, 0.12) 0%, rgba(0, 150, 255, 0.08) 100%);
-        border-color: rgba(0, 191, 255, 0.25);
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(109, 40, 217, 0.06));
+        border-color: rgba(139, 92, 246, 0.15);
         border-left: 3px solid var(--afg-accent);
         align-self: flex-start;
     }
     .afg-msg-user .afg-msg-author { color: var(--afg-accent); }
 
     .afg-msg-oper {
-        background: linear-gradient(135deg, rgba(255, 193, 7, 0.12) 0%, rgba(255, 160, 0, 0.08) 100%);
-        border-color: rgba(255, 193, 7, 0.25);
-        border-right: 3px solid #ffc107;
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.06));
+        border-color: rgba(251, 191, 36, 0.15);
+        border-right: 3px solid var(--afg-amber);
         align-self: flex-end;
     }
-    .afg-msg-oper .afg-msg-author { color: #ffc107; }
+    .afg-msg-oper .afg-msg-author { color: var(--afg-amber); }
 
     .afg-msg-bot {
-        background: linear-gradient(135deg, rgba(76, 175, 80, 0.12) 0%, rgba(56, 142, 60, 0.08) 100%);
-        border-color: rgba(76, 175, 80, 0.25);
-        border-right: 3px solid #4caf50;
+        background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(16, 185, 129, 0.06));
+        border-color: rgba(52, 211, 153, 0.15);
+        border-right: 3px solid var(--afg-green);
         align-self: flex-end;
     }
-    .afg-msg-bot .afg-msg-author { color: #4caf50; }
+    .afg-msg-bot .afg-msg-author { color: var(--afg-green); }
 
     .afg-msg-comment {
-        background: linear-gradient(135deg, rgba(158, 158, 158, 0.12) 0%, rgba(117, 117, 117, 0.08) 100%);
-        border-color: rgba(158, 158, 158, 0.25);
+        background: rgba(255,255,255,0.03);
+        border-color: rgba(255,255,255,0.06);
         align-self: center; font-style: italic; width: 85%;
-        border-left: 3px solid #9e9e9e;
+        border-left: 3px solid var(--afg-text-muted);
     }
-    .afg-msg-comment .afg-msg-author { color: #9e9e9e; }
+    .afg-msg-comment .afg-msg-author { color: var(--afg-text-muted); }
 
     .afg-msg-event {
-        text-align: center; font-size: 12px; opacity: 0.7; padding: 8px 16px;
+        text-align: center; font-size: 11px; opacity: 0.6; padding: 6px 14px;
         align-self: center; background: rgba(0,0,0,0.15);
-        border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
-        font-weight: 500; letter-spacing: 0.3px;
+        border-radius: 20px; border: 1px solid rgba(255,255,255,0.04);
+        font-weight: 500; letter-spacing: 0.2px;
     }
 
     /* Светлая тема */
-    .theme-light .afg-msg { color: #1a1d28; border-color: rgba(0,0,0,0.08); }
-    .theme-light .afg-msg-header { border-bottom-color: rgba(0,0,0,0.1); }
+    .theme-light .afg-msg { color: #1a1d28; border-color: rgba(0,0,0,0.06); }
+    .theme-light .afg-msg-header { border-bottom-color: rgba(0,0,0,0.08); }
 
-    /* Улучшенная контрастность для светлой темы */
     .theme-light .afg-msg-user {
-        background: linear-gradient(135deg, rgba(0, 150, 255, 0.15) 0%, rgba(0, 120, 255, 0.1) 100%);
-        border-color: rgba(0, 120, 255, 0.3);
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(109, 40, 217, 0.08) 100%);
+        border-color: rgba(139, 92, 246, 0.25);
     }
     .theme-light .afg-msg-user .afg-msg-author {
-        color: #0066cc; /* Тёмно-синий вместо светло-голубого */
-        font-weight: 600;
+        color: #6d28d9; font-weight: 700;
     }
 
     .theme-light .afg-msg-comment {
-        background: linear-gradient(135deg, rgba(100, 100, 100, 0.2) 0%, rgba(80, 80, 80, 0.15) 100%);
-        border-color: rgba(80, 80, 80, 0.4);
+        background: rgba(0,0,0,0.04);
+        border-color: rgba(0,0,0,0.08);
     }
     .theme-light .afg-msg-comment .afg-msg-author {
-        color: #424242; /* Тёмно-серый вместо светло-серого */
-        font-weight: 600;
+        color: #475569; font-weight: 600;
     }
 
     .theme-light .afg-msg-oper .afg-msg-author {
-        color: #d68000; /* Более тёмный оранжевый */
-        font-weight: 600;
+        color: #b45309; font-weight: 700;
     }
 
     .theme-light .afg-msg-bot .afg-msg-author {
-        color: #2e7d32; /* Более тёмный зелёный */
-        font-weight: 600;
+        color: #15803d; font-weight: 700;
     }
 
     /* Модалка */
     .afg-modal {
         position: absolute; top: 20px; left: -400px; width: 380px; max-height: 80vh; overflow: auto;
-        border-radius: 16px; padding: 20px; display: none; z-index: 100;
-        box-shadow: 0 16px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
-        border: 1px solid rgba(255,255,255,0.12);
-        background: linear-gradient(135deg, rgba(30, 35, 45, 0.98) 0%, rgba(20, 25, 35, 0.98) 100%);
-        backdrop-filter: blur(24px); color: #f0f0f0;
+        border-radius: 14px; padding: 18px; display: none; z-index: 100;
+        box-shadow: 0 16px 60px rgba(0,0,0,0.6);
+        border: 1px solid var(--afg-dark-border);
+        background: linear-gradient(135deg, rgba(18, 20, 32, 0.98) 0%, rgba(12, 14, 24, 0.98) 100%);
+        backdrop-filter: blur(40px); color: var(--afg-text);
     }
 
     /* Ссылки и картинки */
@@ -214,132 +224,100 @@ afgStyles.textContent = `
     }
     .afg-chat-area a:hover {
         text-decoration: underline;
-        text-shadow: 0 0 8px var(--afg-accent-glow);
     }
     .chat-history-image {
-        border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        max-width: 240px; cursor: zoom-in;
-        border: 1px solid rgba(255,255,255,0.1);
+        max-width: 220px; cursor: zoom-in;
+        border: 1px solid rgba(255,255,255,0.06);
     }
     .chat-history-image:hover {
-        transform: scale(1.05);
+        transform: scale(1.03);
         box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     }
 
     .chatlist {
         padding: 10px 12px; border-radius: 10px;
-        transition: all 0.2s ease; display: block; margin-bottom: 6px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.06);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); display: block; margin-bottom: 6px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.04);
         cursor: pointer;
     }
     .chatlist:hover {
-        background: rgba(255,255,255,0.1);
-        transform: translateX(8px);
-        border-color: rgba(255,255,255,0.15);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        background: rgba(255,255,255,0.06);
+        transform: translateX(4px);
+        border-color: rgba(139, 92, 246, 0.15);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.2);
     }
 
     /* --- ГАЛЕРЕЯ OVERLAY --- */
     .afg-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+        position: fixed; inset: 0; background: rgba(0,0,0,0.92);
         display: flex; justify-content: center; align-items: center;
         z-index: 9999999; cursor: zoom-out;
-        backdrop-filter: blur(12px);
-        animation: overlayFadeIn 0.3s ease;
+        backdrop-filter: blur(16px);
+        animation: overlayFadeIn 0.25s ease;
     }
     @keyframes overlayFadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
     }
     .afg-overlay img {
-        max-width: 90vw; max-height: 90vh; border-radius: 16px;
+        max-width: 90vw; max-height: 90vh; border-radius: 12px;
         box-shadow: 0 16px 60px rgba(0,0,0,0.8);
         transition: opacity 0.2s;
     }
 
     .afg-gallery-nav {
         position: absolute; top: 50%; transform: translateY(-50%);
-        background: rgba(255,255,255,0.08); color: white;
-        border: 1px solid rgba(255,255,255,0.15); font-size: 28px;
-        width: 60px; height: 60px; display: flex; justify-content: center; align-items: center;
+        background: rgba(255,255,255,0.06); color: white;
+        border: 1px solid rgba(255,255,255,0.1); font-size: 24px;
+        width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;
         cursor: pointer; border-radius: 50%; z-index: 10000000;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        backdrop-filter: blur(8px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
     }
     .afg-gallery-nav:hover {
-        background: rgba(0,212,255,0.9);
-        transform: translateY(-50%) scale(1.15);
+        background: rgba(139, 92, 246, 0.8);
+        transform: translateY(-50%) scale(1.1);
         border-color: transparent;
-        box-shadow: 0 12px 32px rgba(0,212,255,0.4);
+        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
     }
-    .afg-nav-left { left: 40px; }
-    .afg-nav-right { right: 40px; }
+    .afg-nav-left { left: 30px; }
+    .afg-nav-right { right: 30px; }
 
     .afg-gallery-counter {
-        position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
-        background: rgba(0,0,0,0.7); color: white; padding: 10px 20px;
-        border-radius: 24px; font-size: 16px; font-weight: 600;
+        position: absolute; top: 24px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,0.7); color: white; padding: 8px 18px;
+        border-radius: 20px; font-size: 14px; font-weight: 600;
         backdrop-filter: blur(12px); z-index: 10000000;
-        border: 1px solid rgba(255,255,255,0.15);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.1);
     }
 
     /* Убираем старую логику группировки - теперь каждое сообщение самостоятельное */
-    .afg-msg-continuous { display: none; } /* Больше не используется */
-
-    /* Адаптивность для узких экранов */
-    @media (max-width: 500px) {
-        .afg-panel { width: 100vw; }
-    }
-
-    /* Плавная прокрутка */
-    .afg-chat-area {
-        scroll-behavior: smooth;
-    }
+    .afg-msg-continuous { display: none; }
 
     /* Улучшенная читаемость кода и ссылок */
     .afg-msg code {
         background: rgba(0,0,0,0.3);
-        padding: 2px 6px;
+        padding: 2px 5px;
         border-radius: 4px;
-        font-family: 'SF Mono', 'Consolas', monospace;
+        font-family: 'SF Mono', 'Fira Code', monospace;
         font-size: 12px;
     }
 
     .afg-msg pre {
         background: rgba(0,0,0,0.3);
-        padding: 10px;
+        padding: 8px;
         border-radius: 8px;
         overflow-x: auto;
-        margin: 8px 0;
-        border: 1px solid rgba(255,255,255,0.05);
+        margin: 6px 0;
+        border: 1px solid rgba(255,255,255,0.04);
     }
 
-    /* Анимация для кнопок */
-    .afg-btn {
-        position: relative;
-        overflow: hidden;
-    }
-
-    .afg-btn::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.1);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-
-    .afg-btn:active::before {
-        width: 300px;
-        height: 300px;
+    /* Плавная прокрутка */
+    .afg-chat-area {
+        scroll-behavior: smooth;
     }
 `;
 document.head.appendChild(afgStyles);

@@ -193,6 +193,7 @@ var win_TimetableUI = `
 #tt-viz-search {
     flex: 1;
     height: 40px;
+    margin-bottom: 0 !important;
 }
 #tt-load-btn {
     flex-shrink: 0;
@@ -748,36 +749,43 @@ function renderTimetable(rawData, teacherId) {
     const MSK_OFFSET = 3 * 60 * 60 * 1000;
     const pad = (n) => String(n).padStart(2, '0');
 
-    const toMSK = (iso) => iso ? new Date(new Date(iso).getTime() + MSK_OFFSET) : null;
+    const toMSK = (iso) => {
+        if (!iso) return null;
+        const d = new Date(new Date(iso).getTime() + MSK_OFFSET);
+        return isNaN(d.getTime()) ? null : d;
+    };
     const fmtDate = (iso) => {
         const d = toMSK(iso);
-        return d ? `${pad(d.getUTCDate())}-${pad(d.getUTCMonth() + 1)}-${d.getUTCFullYear()}` : '-';
+        if (!d) return '-';
+        return `${pad(d.getUTCDate())}-${pad(d.getUTCMonth() + 1)}-${d.getUTCFullYear()}`;
     };
     const fmtTime = (iso) => {
         const d = toMSK(iso);
-        return d ? `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} МСК` : '-';
+        if (!d) return '-';
+        return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} МСК`;
     };
     const getDayName = (iso) => {
         const d = toMSK(iso);
-        return d ? d.toLocaleDateString('ru-RU', { weekday: 'long', timeZone: 'UTC' }) : '';
+        if (!d) return '';
+        return d.toLocaleDateString('ru-RU', { weekday: 'long', timeZone: 'UTC' });
     };
-    const getDateKey = (iso) => iso ? toMSK(iso).toISOString().slice(0, 10) : 'unknown';
+    const getDateKey = (iso) => {
+        const d = toMSK(iso);
+        if (!d) return 'unknown';
+        return d.toISOString().slice(0, 10);
+    };
 
+    // Парсит T-формат: T109:00:00+0000 → {dayIndex: 0-6 (Пн-Вс), timeStr: 'Пт 16:00 МСК'}
     const parseT = (t) => {
         const m = t.match(/T(\d+):(\d+):/);
-        if (!m) return { dayIndex: -1, str: t, timeStr: t };
+        if (!m) return { dayIndex: -1, timeStr: t };
         const hours = parseInt(m[1]);
-        const day = Math.floor(hours / 24);
+        const day = Math.floor(hours / 24);      // 0=Пн, 1=Вт...
         const hr = hours % 24;
-        const shortDays = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
-        const fullDays = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
         const mskHr = (hr + 3) % 24;
         const mskDay = (day + Math.floor((hr + 3) / 24)) % 7;
-        return {
-            dayIndex: mskDay,
-            str: `${shortDays[mskDay] || '?'} ${pad(mskHr)}:${m[2]} МСК`,
-            timeStr: `${shortDays[mskDay] || '?'} ${pad(mskHr)}:${m[2]} МСК`
-        };
+        const shortDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+        return { dayIndex: mskDay, timeStr: `${shortDays[mskDay] || '?'} ${pad(mskHr)}:${m[2]} МСК` };
     };
 
     const getStatusInfo = (cls) => {
@@ -801,6 +809,8 @@ function renderTimetable(rawData, teacherId) {
             return { key: 'failed_teacher', label: 'Пропущен учителем', color: 'failed_teacher' };
         if (status === 'failed_by_student')
             return { key: 'failed_student', label: 'Пропущен учеником', color: 'failed_student' };
+        if (status === 'canceled_not_paid')
+            return { key: 'canceled', label: 'Отменен 0 баланс', color: 'failed_student' };
         if (cls.removedAt && !cls.classStatus)
             return { key: 'removed', label: 'Отменён', color: 'removed' };
         if (cls.isSubstituteTeacher || (cls.classProperties || []).some(p => p.propertyId === 'is_substitute_teacher'))
@@ -831,22 +841,18 @@ function renderTimetable(rawData, teacherId) {
 
     const teacherName = data.user?.name || '';
     const teacherSurname = data.user?.surname || '';
-
-    const teachInfoEl = document.getElementById('inputTeachInfo');
-    if (teachInfoEl) {
-        teachInfoEl.textContent = `${teacherName} ${teacherSurname} · ID: ${teacherId}`;
-    }
-
     const allClasses = [...(data.classes || []), ...(data.futureSingleClasses || [])];
 
     let html = `<div class="tt-viz-container">`;
 
+    // Табы
     html += `<div class="tt-viz-tabs">
         <button class="tt-viz-tab active" data-tab="classes">Занятия (${allClasses.length})</button>
         <button class="tt-viz-tab" data-tab="slots">Слоты (${(data.singleSlots || []).length + (data.regularSlots || []).length})</button>
         <button class="tt-viz-tab" data-tab="regular">Регулярное (${(data.classesRegular || []).length})</button>
     </div>`;
 
+    // === Секция Занятия ===
     html += `<div class="tt-viz-section active" id="tt-viz-classes">`;
     if (allClasses.length === 0) {
         html += `<div class="tt-viz-empty">Нет данных о занятиях</div>`;
@@ -855,6 +861,7 @@ function renderTimetable(rawData, teacherId) {
     }
     html += `</div>`;
 
+    // === Секция Слоты ===
     html += `<div class="tt-viz-section" id="tt-viz-slots">`;
     const single = data.singleSlots || [];
     const regular = data.regularSlots || [];
@@ -885,8 +892,8 @@ function renderTimetable(rawData, teacherId) {
         }
 
         if (regular.length) {
-            const dayOrder = [1, 2, 3, 4, 5, 6, 0];
-            const dayNamesFull = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+            const dayOrder = [0, 1, 2, 3, 4, 5, 6];
+            const dayNamesFull = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
             const regByDay = {};
             regular.forEach(s => {
                 const st = parseT(s.startAt);
@@ -902,7 +909,7 @@ function renderTimetable(rawData, teacherId) {
                     const st = parseT(s.startAt);
                     const et = parseT(s.endAt);
                     html += `<div class="tt-viz-slot">
-                        <div class="tt-viz-slot-time">${st.str} – ${et.str}</div>
+                        <div class="tt-viz-slot-time">${st.timeStr} – ${et.timeStr}</div>
                         <div class="tt-viz-slot-types">${(s.types || []).map(t => `<span class="tt-viz-slot-type${t.includes('no_new') ? ' blocked' : ''}">${t}</span>`).join('')}</div>
                     </div>`;
                 });
@@ -913,13 +920,14 @@ function renderTimetable(rawData, teacherId) {
     }
     html += `</div>`;
 
+    // === Секция Регулярное ===
     html += `<div class="tt-viz-section" id="tt-viz-regular">`;
     const regClasses = data.classesRegular || [];
     if (regClasses.length === 0) {
         html += `<div class="tt-viz-empty">Нет регулярных занятий</div>`;
     } else {
-        const dayOrder = [1, 2, 3, 4, 5, 6, 0];
-        const dayNamesFull = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+        const dayOrder = [0, 1, 2, 3, 4, 5, 6];
+        const dayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
         const byDay = {};
         regClasses.forEach(r => {
             const s = parseT(r.startAt);
@@ -929,7 +937,7 @@ function renderTimetable(rawData, teacherId) {
         });
         dayOrder.forEach(dIdx => {
             if (!byDay[dIdx]) return;
-            html += `<div class="tt-viz-day-group"><div class="tt-viz-day-header">${dayNamesFull[dIdx]}</div><div class="tt-viz-grid">`;
+            html += `<div class="tt-viz-day-group"><div class="tt-viz-day-header">${dayNames[dIdx]}</div><div class="tt-viz-grid">`;
             byDay[dIdx].forEach(r => {
                 const s = parseT(r.startAt);
                 const e = parseT(r.endAt);
@@ -941,7 +949,7 @@ function renderTimetable(rawData, teacherId) {
                     <div class="tt-viz-card-meta">
                         ${!r.groupId && r.educationServiceId ? `<span class="tt-viz-badge tt-viz-badge-svc">ID услуги: ${r.educationServiceId}</span>` : ''}
                     </div>
-                    <div class="tt-viz-card-time" style="margin-top:4px">🕐 ${s.timeStr} – ${e.timeStr}</div>
+                    <div class="tt-viz-card-time" style="margin-top:4px">${s.timeStr} – ${e.timeStr}</div>
                     <div style="font-size:10px;color:#64748b;margin-top:3px">С ${fmtDate(r.firstExemplarOn)}</div>
                 </div>`;
             });
@@ -952,6 +960,13 @@ function renderTimetable(rawData, teacherId) {
 
     container.innerHTML = html;
 
+    // Заголовок
+    const teachInfoEl = document.getElementById('inputTeachInfo');
+    if (teachInfoEl) {
+        teachInfoEl.textContent = `${teacherName} ${teacherSurname} · ID: ${teacherId}`;
+    }
+
+    // Табы — обработчики
     container.querySelectorAll('.tt-viz-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             container.querySelectorAll('.tt-viz-tab').forEach(t => t.classList.remove('active'));
@@ -962,6 +977,7 @@ function renderTimetable(rawData, teacherId) {
         });
     });
 
+    // Рендер занятий с поиском
     if (allClasses.length) {
         renderClassesGrid(allClasses, container, fmtDate, fmtTime, getDayName, getDateKey, getStatusInfo, fmtSTK, fmtMode, pad);
     }
@@ -990,7 +1006,7 @@ function renderClassesGrid(allClasses, container, fmtDate, fmtTime, getDayName, 
             groups[key].push(c);
         });
         const sortedKeys = Object.keys(groups).sort();
-        const todayKey = new Date().toISOString().slice(0, 10);
+        const todayKey = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
         if (sortedKeys.length === 0) {
             grid.innerHTML = '<div class="tt-viz-empty">Ничего не найдено</div>';
