@@ -26,9 +26,122 @@ function checkelementtype(a) {
 }
 
 /**
+ * Универсальная функция перетаскивания элементов.
+ * Работает с любым элементом — окном, панелью, карточкой и т.д.
+ *
+ * @param {HTMLElement} element — элемент для перетаскивания
+ * @param {Object} options
+ * @param {string|HTMLElement} options.handle — CSS-селектор или элемент-«ручка» (по умолчанию: ищет .chmaf-drag-handle внутри)
+ * @param {string} options.storageKey — ключ в localStorage для сохранения позиции (формат: { x, y })
+ * @param {boolean} options.savePosition — сохранять позицию (по умолчанию true)
+ * @param {Function} options.onDragStart — колбэк при начале перетаскивания
+ * @param {Function} options.onDragEnd — колбэк при окончании перетаскивания (получает { x, y })
+ * @returns {Function} stop — функция для отключения drag
+ */
+function enableDrag(element, options = {}) {
+    const {
+        handle = null,
+        storageKey = null,
+        savePosition = true,
+        onDragStart = null,
+        onDragEnd = null
+    } = options;
+
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    const handleSelector = handle || '.chmaf-drag-handle';
+
+    const isInteractive = (el, insideHandle) => {
+        if (!el) return false;
+        const interactive = el.closest('input, select, textarea, [contenteditable="true"]');
+        if (interactive) return true;
+        // Кнопки/ссылки блокируют drag ТОЛЬКО если они ВНЕ drag-handle
+        if (!insideHandle) {
+            if (el.closest('button, a')) return true;
+        }
+        return false;
+    };
+
+    const isDragHandle = (target) => {
+        if (!handleSelector) return element.contains(target);
+        if (typeof handleSelector === 'string') {
+            return target.closest(handleSelector) !== null || target.matches(handleSelector);
+        }
+        return handleSelector.contains(target) || target === handleSelector;
+    };
+
+    // Восстановление позиции
+    if (storageKey && savePosition) {
+        try {
+            const raw = localStorage.getItem(storageKey);
+            if (raw) {
+                const pos = JSON.parse(raw);
+                element.style.left = pos.x + 'px';
+                element.style.top = pos.y + 'px';
+                element.style.right = 'auto';
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    const onMouseDown = (e) => {
+        if (e.button !== 0) return;
+        const insideHandle = isDragHandle(e.target);
+        if (!insideHandle) return;
+        if (isInteractive(e.target, true)) return;
+
+        isDragging = true;
+        offsetX = e.clientX - element.getBoundingClientRect().left;
+        offsetY = e.clientY - element.getBoundingClientRect().top;
+        element.style.transition = 'none';
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'grabbing';
+
+        if (onDragStart) onDragStart();
+        e.preventDefault();
+    };
+
+    const onMouseMove = (e) => {
+        if (!isDragging) return;
+        const x = e.clientX - offsetX;
+        const y = e.clientY - offsetY;
+        element.style.left = x + 'px';
+        element.style.top = y + 'px';
+        element.style.right = 'auto';
+    };
+
+    const onMouseUp = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        element.style.transition = '';
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+
+        const rect = element.getBoundingClientRect();
+        const pos = { x: Math.round(rect.left), y: Math.round(rect.top) };
+
+        if (storageKey && savePosition) {
+            try { localStorage.setItem(storageKey, JSON.stringify(pos)); } catch (e) { /* ignore */ }
+        }
+
+        if (onDragEnd) onDragEnd(pos);
+    };
+
+    element.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+
+    return () => {
+        element.removeEventListener('mousedown', onMouseDown);
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    };
+}
+
+/**
  * Создает перетаскиваемое окно с гарантированной защитой инпутов.
- * Теперь используется принцип WHITELIST: перетаскивание работает ТОЛЬКО если
- * кликнули по элементу с классом 'chmaf-drag-handle'.
+ * Использует enableDrag для универсального перетаскивания.
  */
 function createWindow(id, topKey, leftKey, content) {
     const windowElement = document.createElement('div');
@@ -66,47 +179,17 @@ function createWindow(id, topKey, leftKey, content) {
         }
     });
 
-    // === ОСНОВНАЯ ЛОГИКА ПЕРЕТАСКИВАНИЯ — без жёстких границ экрана ===
-    windowElement.onmousedown = function (event) {
-        // WHITELIST: тащим только за drag-handle
-        const dragHandle = event.target.closest('.chmaf-drag-handle');
-        if (!dragHandle) return;
-
-        // Не тащим, если клик по интерактивному элементу
-        if (event.target.closest('button, a, input, select, textarea, [contenteditable="true"]')) return;
-        if (event.button !== 0) return;
-
-        event.preventDefault();
-
-        let startX = event.clientX;
-        let startY = event.clientY;
-        let elemLeft = windowElement.offsetLeft;
-        let elemTop = windowElement.offsetTop;
-
-        function onMouseMove(event) {
-            let deltaX = event.clientX - startX;
-            let deltaY = event.clientY - startY;
-
-            // Никаких ограничений — окно едет вслед за курсором
-            windowElement.style.left = (elemLeft + deltaX) + 'px';
-            windowElement.style.top = (elemTop + deltaY) + 'px';
+    // === Универсальное перетаскивание через enableDrag ===
+    enableDrag(windowElement, {
+        handle: '.chmaf-drag-handle',
+        storageKey: `drag_pos_${id}`,
+        savePosition: true,
+        onDragEnd: (pos) => {
+            // Совместимость со старым форматом хранения
+            localStorage.setItem(topKey, String(pos.y));
+            localStorage.setItem(leftKey, String(pos.x));
         }
-
-        function onMouseUp() {
-            localStorage.setItem(topKey, String(windowElement.offsetTop));
-            localStorage.setItem(leftKey, String(windowElement.offsetLeft));
-
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            document.removeEventListener('mouseleave', onMouseUp);
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-        document.addEventListener('mouseleave', onMouseUp);
-    };
-
-    // Убрана автокоррекция при загрузке, чтобы окно не сбрасывало позицию за экраном
+    });
 
     // Фикс выделения: сбрасываем выделение при одиночном клике
     setTimeout(() => {
@@ -118,7 +201,7 @@ function createWindow(id, topKey, leftKey, content) {
             let lastClickY = 0;
 
             input.addEventListener('mousedown', function (e) {
-                e.stopPropagation(); // Блокируем перетаскивание окна
+                e.stopPropagation();
 
                 lastClickX = e.clientX;
                 lastClickY = e.clientY;
@@ -128,12 +211,9 @@ function createWindow(id, topKey, leftKey, content) {
             });
 
             input.addEventListener('click', function (e) {
-                // Если это одиночный клик (не двойной/тройной) — сбрасываем выделение
                 if (clickCount === 1) {
                     setTimeout(() => {
-                        // Проверяем, есть ли выделение
                         if (this.selectionStart !== this.selectionEnd) {
-                            // Используем нативный API браузера для точного определения позиции
                             let pos = null;
 
                             if (document.caretPositionFromPoint) {
@@ -148,10 +228,9 @@ function createWindow(id, topKey, leftKey, content) {
                                 }
                             }
 
-                            // Если нативный API не сработал, используем фокус
                             if (pos === null) {
                                 this.focus();
-                                return; // Пусть браузер сам разберётся
+                                return;
                             }
 
                             this.setSelectionRange(pos, pos);

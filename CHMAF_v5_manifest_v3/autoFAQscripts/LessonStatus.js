@@ -24,10 +24,7 @@
     const state = {
         isVisible: false,
         isLoading: false,
-        windowRef: null,
-        isDragging: false,
-        dragOffsetX: 0,
-        dragOffsetY: 0
+        windowRef: null
     };
 
     // ─── UNIQUE CSS STYLES ──────────────────────────────────────
@@ -547,65 +544,6 @@
         return `<span class="${CONFIG.prefix}__status ${CONFIG.prefix}__status--unknown">? Неизвестно</span>`;
     };
 
-    // ─── DRAG & DROP WITH PERSISTENCE ───────────────────────────
-
-    const saveWindowPosition = (x, y) => {
-        try {
-            localStorage.setItem(CONFIG.dragStorageKey, JSON.stringify({ x, y }));
-        } catch (e) { /* ignore */ }
-    };
-
-    const loadWindowPosition = () => {
-        try {
-            const raw = localStorage.getItem(CONFIG.dragStorageKey);
-            if (raw) return JSON.parse(raw);
-        } catch (e) { /* ignore */ }
-        return null;
-    };
-
-    const initDrag = () => {
-        const handle = $(`#${CONFIG.prefix}-drag-handle`);
-        const win = state.windowRef;
-        if (!handle || !win) return;
-
-        const saved = loadWindowPosition();
-        if (saved) {
-            win.style.left = saved.x + 'px';
-            win.style.top = saved.y + 'px';
-            win.style.right = 'auto';
-        }
-
-        handle.addEventListener('mousedown', (e) => {
-            if (e.target.closest('button')) return;
-            state.isDragging = true;
-            state.dragOffsetX = e.clientX - win.getBoundingClientRect().left;
-            state.dragOffsetY = e.clientY - win.getBoundingClientRect().top;
-            win.style.transition = 'none';
-            document.body.style.userSelect = 'none';
-            document.body.style.cursor = 'grabbing';
-            e.preventDefault();
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!state.isDragging) return;
-            const x = e.clientX - state.dragOffsetX;
-            const y = e.clientY - state.dragOffsetY;
-            win.style.left = x + 'px';
-            win.style.top = y + 'px';
-            win.style.right = 'auto';
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (!state.isDragging) return;
-            state.isDragging = false;
-            win.style.transition = '';
-            document.body.style.userSelect = '';
-            document.body.style.cursor = '';
-            const rect = win.getBoundingClientRect();
-            saveWindowPosition(rect.left, rect.top);
-        });
-    };
-
     // ─── TABLE RENDERER ─────────────────────────────────────────
 
     const renderTable = (classes, studentFilter) => {
@@ -897,8 +835,14 @@
             `;
         }
 
-        // Init drag & drop
-        initDrag();
+        // Init drag & drop via universal enableDrag
+        if (typeof enableDrag === 'function') {
+            enableDrag(state.windowRef, {
+                handle: `#${CONFIG.prefix}-drag-handle`,
+                storageKey: CONFIG.dragStorageKey,
+                savePosition: true
+            });
+        }
 
         // Double-click hide
         state.windowRef.ondblclick = (e) => {
