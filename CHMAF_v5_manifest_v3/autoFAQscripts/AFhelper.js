@@ -36,7 +36,7 @@ var win_AFhelper = `
         <button class="glass-btn mainButton" id="insertlinktotext">Insert ✅</button>
     </div>
 
-    <div class="flex-row">
+    <div class="flex-row chmaf-drag-handle">
         <button class="glass-btn mainButton" id="msg1" title="Отправить или доработать">Доработать</button>
         <button class="glass-btn mainButton msgtype" id="msg" title="Отправить в заметки или в чат">Чат</button>
         <button class="glass-btn mainButton" id="opandclsbarhyper" title="Прикрепить ссылку">🔗</button>

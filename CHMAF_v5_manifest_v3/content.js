@@ -1,4 +1,4 @@
-﻿if (typeof window.Settings === 'undefined') {
+if (typeof window.Settings === 'undefined') {
     window.Settings = {
         get(key) {
             try { return localStorage.getItem(key); } catch (e) { return null; }
@@ -678,7 +678,7 @@ function refreshTemplates() {
                 countOfStr++;
 
                 currentRow = document.createElement('div');
-                currentRow.className = 'flex-row'; // Применяем Flexbox из Glassmorphism
+                currentRow.className = 'flex-row chmaf-drag-handle'; // Применяем Flexbox из Glassmorphism
                 currentRow.id = `${countOfPages}page_${countOfStr}str`;
                 if (currentPage) currentPage.appendChild(currentRow);
                 break;
