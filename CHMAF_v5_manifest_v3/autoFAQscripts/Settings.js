@@ -742,6 +742,22 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
             .ant-table-row.active:hover [class*="Table_Cell__"] {
                 background-color: rgba(124, 77, 255, 0.32) !important;
             }
+                            /* ═══ Активная строка таблицы (aria-selected) — перебивает Zebra ═══ */
+            [class*="Table_ZebraMode__"] [class*="Table_Row__"][aria-selected="true"],
+            [class*="Table_Row__"][aria-selected="true"] {
+                background-color: rgba(124, 77, 255, 0.22) !important;
+                border: 1px solid rgba(124, 77, 255, 0.45) !important;
+                box-shadow: inset 0 0 0 1px rgba(124, 77, 255, 0.3) !important;
+            }
+            [class*="Table_ZebraMode__"] [class*="Table_Row__"][aria-selected="true"]:hover,
+            [class*="Table_Row__"][aria-selected="true"]:hover {
+                background-color: rgba(124, 77, 255, 0.32) !important;
+            }
+            [class*="Table_ZebraMode__"] [class*="Table_Row__"][aria-selected="true"] [class*="Table_Cell__"],
+            [class*="Table_Row__"][aria-selected="true"] [class*="Table_Cell__"] {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+            }
 
             /* Ячейки */
             [class*="Table_Cell__"] {

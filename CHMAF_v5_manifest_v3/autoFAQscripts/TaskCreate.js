@@ -370,6 +370,19 @@ var win_taskform = `
                 <input class="glass-input-task" id="useriddata" placeholder="ID студента (услуги)">
                 <button class="glass-btn-task search-btn" id="getuserservices">🔍</button>
             </div>
+                        <!-- Чекбокс "Не звонить ученику" -->
+
+            <div id="noCallWrap" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); transition: all 0.3s ease; margin-bottom: 12px;">
+                <div id="noCallIndicator" style="width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--glass-border); display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; background: rgba(0,0,0,0.2);">
+                    <span id="noCallIcon" style="font-size: 13px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">✓</span>
+                </div>
+                <label id="noCallLabel" style="font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: default; user-select: none; transition: all 0.3s ease;">
+                    Не звонить ученику?
+                </label>
+            </div>
+
+
+
             <div id="serviceinf" style="display: flex; flex-direction: column; gap: 10px;"></div>
             <div id="serviceComplinf" style="margin-top: 12px;"></div>
         </div>
@@ -436,6 +449,44 @@ document.getElementById('hideMeSpecComm').onclick = () => {
 function handleSpecCommentClick(text) {
     document.getElementById('speccommtext').innerHTML = text;
     document.getElementById('AF_SpecCommWindow').style.display = '';
+}
+
+// Функция установки состояния
+function setNoCallState(isForbidden) {
+    const wrap = document.getElementById('noCallWrap');
+    const indicator = document.getElementById('noCallIndicator');
+    const icon = document.getElementById('noCallIcon');
+    const label = document.getElementById('noCallLabel');
+
+    if (isForbidden) {
+        // ЗАПРЕТ — красный
+        wrap.style.borderColor = 'rgba(244, 63, 94, 0.5)';
+        wrap.style.background = 'rgba(244, 63, 94, 0.12)';
+        wrap.style.boxShadow = '0 0 20px rgba(244, 63, 94, 0.2), inset 0 1px 0 rgba(255,255,255,0.05)';
+
+        indicator.style.borderColor = 'var(--accent-rose)';
+        indicator.style.background = 'rgba(244, 63, 94, 0.25)';
+
+        icon.innerText = '✓';
+
+        label.innerText = 'Не звонить ученику';
+        label.style.color = 'var(--accent-rose)';
+        label.style.fontWeight = '600';
+    } else {
+        // РАЗРЕШЕНО — зелёный
+        wrap.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+        wrap.style.background = 'rgba(16, 185, 129, 0.12)';
+        wrap.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255,255,255,0.05)';
+
+        indicator.style.borderColor = 'var(--accent-emerald)';
+        indicator.style.background = 'rgba(16, 185, 129, 0.25)';
+
+        icon.innerText = '🟢';
+
+        label.innerText = 'Можно звонить ученику';
+        label.style.color = 'var(--accent-emerald)';
+        label.style.fontWeight = '600';
+    }
 }
 
 // Защита от ввода не-цифр (твоя функция onlyNumber)
@@ -715,6 +766,14 @@ async function gettaskButButtonPress() {
             if (complectationServInfo) complectationServInfo.innerHTML = "";
 
             try {
+                const checkForbiddenCall = await sendBgRequest(`https://backend.skyeng.ru/api/persons/${idshka}`)
+
+                if (checkForbiddenCall.data.isForbiddenToCall) {
+                    setNoCallState(true);
+                } else {
+                    setNoCallState(false);
+                }
+
                 const [otvetEdServ, chechkComplectations] = await Promise.all([
                     sendBgRequest(`https://backend.skyeng.ru/api/persons/${idshka}/education-services/`),
                     sendBgRequest(`https://backend.skyeng.ru/api/v1/students/${idshka}/education-service-kits/`)

@@ -57,10 +57,7 @@ function enableDrag(element, options = {}) {
         if (!el) return false;
         const interactive = el.closest('input, select, textarea, [contenteditable="true"]');
         if (interactive) return true;
-        // Кнопки/ссылки блокируют drag ТОЛЬКО если они ВНЕ drag-handle
-        if (!insideHandle) {
-            if (el.closest('button, a')) return true;
-        }
+        if (el.closest('button, a')) return true;
         return false;
     };
 

@@ -4,7 +4,7 @@ function dosetclasswork(subject) {
             "accept": "application/json",
             "content-type": "application/json",
         },
-        body: JSON.stringify({ status: "classwork"}),
+        body: JSON.stringify({ status: "classwork" }),
         method: "PATCH",
         mode: "cors",
         credentials: "include"
@@ -30,8 +30,35 @@ function setupClassworkButton() {
 
         let classworkbtn = document.createElement('div');
         classworkbtn.id = "clwbtn";
-        classworkbtn.textContent = "Classwork";
-        classworkbtn.style = "position: fixed; right: 10%; cursor: pointer; color: green; text-shadow: rgba(0, 0, 0, 0.2) 1px 2px 5px;";
+        classworkbtn.title = "Эта кнопка создана в расширении ChMAF, преподавателям не нужно за нее говорить, так как без расширения видеть на будут!"
+        classworkbtn.textContent = "🔄️Classwork";
+        classworkbtn.style.cssText = `
+    position: fixed;
+    right: 25%;
+    cursor: pointer;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    letter-spacing: 0.5px;
+    color: #fff;
+    background: #10b981;
+    border: none;
+    border-radius: 8px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+`;
+        classworkbtn.onmouseenter = () => {
+            classworkbtn.style.background = "#059669";
+            classworkbtn.style.boxShadow = "0 4px 20px rgba(16, 185, 129, 0.5), 0 0 0 4px rgba(16, 185, 129, 0.1)";
+            classworkbtn.style.transform = "scale(1.05)";
+        };
+        classworkbtn.onmouseleave = () => {
+            classworkbtn.style.background = "#10b981";
+            classworkbtn.style.boxShadow = "0 2px 8px rgba(16, 185, 129, 0.3)";
+            classworkbtn.style.transform = "scale(1)";
+        };
 
         if (targetButton) {
             targetButton.parentNode.insertBefore(classworkbtn, targetButton);
@@ -42,10 +69,10 @@ function setupClassworkButton() {
 
         classworkbtn.onclick = function () {
             dosetclasswork(subject);
-            setTimeout(function() {
-				location.reload()
-			}, 1000
-			)
+            setTimeout(function () {
+                location.reload()
+            }, 1000
+            )
         };
     }
 }

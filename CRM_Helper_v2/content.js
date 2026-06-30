@@ -389,18 +389,23 @@ function createAndShowButton(text) {
     }, 3500); // Время до скрытия/удаления кнопки в миллисекундах
 }
 
+// === ОБЪЕДИНЁННЫЙ БЛОК: UserBlocker + CallStatus ===
 (function() {
     'use strict';
 
-    if (window.__skyUserBlockerInitialized) return;
-    window.__skyUserBlockerInitialized = true;
-
-    let checkInterval = null;
-    let isLoading = false;
+    // --- Защита от повторной инициализации ---
+    if (window.__skyCRMHelperInitialized) return;
+    window.__skyCRMHelperInitialized = true;
 
     const isPersonPage = () => /^https:\/\/crm2\.skyeng\.ru\/persons\/\d+/.test(location.href);
 
-    function parseStatus(html) {
+    // ============================================================
+    // USER BLOCKER (статус пользователя)
+    // ============================================================
+    let ubCheckInterval = null;
+    let ubIsLoading = false;
+
+    function ubParseStatus(html) {
         const tableMatch = html.match(/<th[^>]*>\s*Статус\s*<\/th>\s*<td>([^<]+)<\/td>/i);
         const divMatch   = html.match(/статус:\s*<strong>([^<]+)<\/strong>/i);
         const looseMatch = html.match(/статус[:\s]*<strong>([^<]+)<\/strong>/i);
@@ -408,14 +413,11 @@ function createAndShowButton(text) {
         return m ? m[1].trim() : null;
     }
 
-    function stopChecker() {
-        if (checkInterval) {
-            clearInterval(checkInterval);
-            checkInterval = null;
-        }
+    function ubStopChecker() {
+        if (ubCheckInterval) { clearInterval(ubCheckInterval); ubCheckInterval = null; }
     }
 
-    function renderBadge(status, sid) {
+    function ubRenderBadge(status, sid) {
         const field = document.querySelector('[data-qa="person-id-field"]');
         if (!field) return;
 
@@ -426,32 +428,20 @@ function createAndShowButton(text) {
             badge = document.createElement('div');
             badge.id = 'isUserBlocked';
             badge.style.cssText = 'color:#fff; padding:2px 6px; margin-top:4px; margin-bottom:4px; border-radius:3px; font-weight:700; display:block; width:fit-content; font-size:12px;';
-
             const badges = container.querySelector('.badges');
-            if (badges) {
-                container.insertBefore(badge, badges);
-            } else {
-                container.appendChild(badge);
-            }
+            badges ? container.insertBefore(badge, badges) : container.appendChild(badge);
         }
 
         badge.textContent = status || 'неизвестно';
         badge.dataset.pid = sid;
 
-        if (status === 'активный') {
-            badge.style.backgroundColor = '#28a745';
-        } else if (status === 'временно отключен') {
-            badge.style.backgroundColor = '#d32b49';
-        } else {
-            badge.style.backgroundColor = '#6c757d';
-        }
+        if (status === 'активный') badge.style.backgroundColor = '#28a745';
+        else if (status === 'временно отключен') badge.style.backgroundColor = '#d32b49';
+        else badge.style.backgroundColor = '#6c757d';
     }
 
-    function tick() {
-        if (!isPersonPage()) {
-            stopChecker();
-            return;
-        }
+    function ubTick() {
+        if (!isPersonPage()) { ubStopChecker(); return; }
 
         const field = document.querySelector('[data-qa="person-id-field"]');
         if (!field) return;
@@ -460,15 +450,11 @@ function createAndShowButton(text) {
         if (!sid) return;
 
         const badge = document.getElementById('isUserBlocked');
-        if (badge && badge.dataset.pid === sid) {
-            stopChecker();
-            return;
-        }
+        if (badge && badge.dataset.pid === sid) { ubStopChecker(); return; }
+        if (ubIsLoading) return;
 
-        if (isLoading) return;
-
-        renderBadge('Загрузка…', sid);
-        isLoading = true;
+        ubRenderBadge('Загрузка…', sid);
+        ubIsLoading = true;
 
         const fetchURL = `https://id.skyeng.ru/admin/users/${encodeURIComponent(sid)}`;
         const requestOptions = {
@@ -494,59 +480,198 @@ function createAndShowButton(text) {
         chrome.runtime.sendMessage(
             { action: 'getFetchRequest', fetchURL, requestOptions },
             (response) => {
-                isLoading = false;
-
+                ubIsLoading = false;
                 if (!response || response.success !== true) {
                     console.error('[UserBlock] Ошибка:', response?.error);
-                    renderBadge('ошибка', sid);
-                    stopChecker();
+                    ubRenderBadge('ошибка', sid);
+                    ubStopChecker();
                     return;
                 }
-
                 const html = response.fetchAnswer || response.fetchansver || '';
-                const status = parseStatus(html);
-
+                const status = ubParseStatus(html);
                 if (status) {
-                    renderBadge(status, sid);
+                    ubRenderBadge(status, sid);
                     console.log(`[UserBlock] ${sid} → ${status}`);
                 } else {
-                    renderBadge('статус не найден', sid);
+                    ubRenderBadge('статус не найден', sid);
                     console.warn('[UserBlock] Статус не спарсился для', sid);
                 }
-
-                stopChecker();
+                ubStopChecker();
             }
         );
     }
 
-    function startCheck() {
-        if (checkInterval) return;
+    function ubStartCheck() {
+        if (ubCheckInterval) return;
         if (!isPersonPage()) return;
-
-        const oldBadge = document.getElementById('isUserBlocked');
-        if (oldBadge) oldBadge.remove();
-
-        isLoading = false;
-        tick();
-        checkInterval = setInterval(tick, 1000);
+        const old = document.getElementById('isUserBlocked');
+        if (old) old.remove();
+        ubIsLoading = false;
+        ubTick();
+        ubCheckInterval = setInterval(ubTick, 1000);
     }
 
+    // ============================================================
+    // CALL STATUS (isForbiddenToCall)
+    // ============================================================
+    let csCheckInterval = null;
+    let csIsLoading = false;
+
+    function csParsePersonId() {
+        const m = location.pathname.match(/\/persons\/(\d+)/);
+        return m ? m[1] : null;
+    }
+
+    function csInsertElement() {
+        const menu = document.getElementById('MenubarCRM');
+        if (!menu) return null;
+        let el = document.getElementById('callStatusIndicator');
+        if (el) return el;
+        el = document.createElement('span');
+        el.id = 'callStatusIndicator';
+        el.style.cssText = `
+            margin-left: 12px; padding: 6px 12px; border-radius: 12px;
+            font-size: 14px; font-weight: 500; display: inline-flex;
+            align-items: center; gap: 6px; font-family: system-ui, sans-serif;
+            vertical-align: middle; cursor: default;
+        `;
+        menu.insertAdjacentElement('afterend', el);
+        return el;
+    }
+
+    function csRender(status, text) {
+        const el = csInsertElement();
+        if (!el) return;
+
+        if (status === 'loading') {
+            el.style.cssText += 'background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb;';
+            el.innerHTML = '⏳ Загрузка статуса…';
+        } else if (status === 'forbidden') {
+            el.style.cssText += 'background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;';
+            el.innerHTML = `<span style="width:16px;height:16px;border:2px solid #dc2626;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;background:#dc2626;flex-shrink:0;color:#fff;font-size:11px;font-weight:bold;">✓</span>Не звонить ученику`;
+        } else if (status === 'allowed') {
+            el.style.cssText += 'background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0;';
+            el.innerHTML = `<span style="width:16px;height:16px;border:2px solid #16a34a;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;background:#16a34a;flex-shrink:0;font-size:10px;">🟢</span>Можно звонить ученику`;
+        } else if (status === 'error') {
+            el.style.cssText += 'background: #fef3c7; color: #d97706; border: 1px solid #fde68a;';
+            el.innerHTML = '⚠️ ' + (text || 'Ошибка загрузки');
+        } else {
+            el.style.cssText += 'background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb;';
+            el.textContent = text || 'Статус неизвестен';
+        }
+    }
+
+    function csLoad() {
+        if (!isPersonPage()) return;
+        if (csIsLoading) return;
+
+        const personId = csParsePersonId();
+        if (!personId) return;
+
+        const existing = document.getElementById('callStatusIndicator');
+        if (existing && existing.dataset.personId === personId) return;
+
+        csIsLoading = true;
+        csRender('loading');
+
+        const fetchURL = `https://backend.skyeng.ru/api/persons/${personId}`;
+        const requestOptions = {
+            method: 'GET',
+            headers: {
+                "accept": "application/json, text/plain, */*",
+                "accept-language": "ru",
+                "priority": "u=1, i",
+                "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"YaBrowser\";v=\"26.3\", \"Yowser\";v=\"2.5\", \"YaBrowserCorp\";v=\"144\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1"
+            },
+            credentials: 'include'
+        };
+
+        chrome.runtime.sendMessage(
+            { action: 'getFetchRequest', fetchURL, requestOptions },
+            (response) => {
+                csIsLoading = false;
+                if (!response || response.success !== true) {
+                    console.error('[CallStatus] Ошибка:', response?.error);
+                    csRender('error', response?.error || 'Ошибка сервера');
+                    return;
+                }
+                let data;
+                try {
+                    const raw = response.fetchAnswer || response.fetchansver || response.data;
+                    data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                } catch (e) {
+                    console.error('[CallStatus] Parse error:', e);
+                    csRender('error', 'Неверный ответ');
+                    return;
+                }
+                const forbidden = data?.data?.isForbiddenToCall;
+                const userTypeCRM = data?.data?.type;
+                const el = document.getElementById('callStatusIndicator');
+
+                if (userTypeCRM === "teacher") {
+                    // Удаляем бейдж и останавливаем проверку
+                    if (el) el.remove();
+                    csStopCheck();
+                    return;
+                }
+
+                if (el) el.dataset.personId = personId;
+
+                if (forbidden === true) csRender('forbidden');
+                else if (forbidden === false) csRender('allowed');
+                else csRender('unknown', 'Статус не определён');
+                
+            }
+        );
+    }
+
+    function csStartCheck() {
+        if (csCheckInterval) return;
+        if (!isPersonPage()) return;
+        csLoad();
+        csCheckInterval = setInterval(csLoad, 2000);
+    }
+
+    function csStopCheck() {
+        if (csCheckInterval) { clearInterval(csCheckInterval); csCheckInterval = null; }
+    }
+
+    // ============================================================
+    // ОБЩАЯ НАВИГАЦИЯ (единый перехват history)
+    // ============================================================
     function onNavigate() {
         setTimeout(() => {
             if (!isPersonPage()) {
-                stopChecker();
+                ubStopChecker();
+                csStopCheck();
+                const el = document.getElementById('callStatusIndicator');
+                if (el) el.remove();
                 return;
             }
 
+            // UserBlocker
             const field = document.querySelector('[data-qa="person-id-field"]');
             const sid = field ? field.textContent.trim().replace(/\D/g, '') : null;
-            const badge = document.getElementById('isUserBlocked');
-
-            if (!badge || (sid && badge.dataset.pid !== sid)) {
-                stopChecker();
-                startCheck();
+            const ubBadge = document.getElementById('isUserBlocked');
+            if (!ubBadge || (sid && ubBadge.dataset.pid !== sid)) {
+                ubStopChecker();
+                ubStartCheck();
             }
-        }, 300);
+
+            // CallStatus
+            const personId = csParsePersonId();
+            const csEl = document.getElementById('callStatusIndicator');
+            if (!csEl || (personId && csEl.dataset.personId !== personId)) {
+                csStopCheck();
+                csStartCheck();
+            }
+        }, 500);
     }
 
     const originalPushState = history.pushState;
@@ -556,13 +681,21 @@ function createAndShowButton(text) {
         originalPushState.apply(this, args);
         onNavigate();
     };
-
     history.replaceState = function(...args) {
         originalReplaceState.apply(this, args);
         onNavigate();
     };
-
     window.addEventListener('popstate', onNavigate);
 
-    startCheck();
+    // Запуск при старте
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            ubStartCheck();
+            csStartCheck();
+        });
+    } else {
+        ubStartCheck();
+        csStartCheck();
+    }
 })();
+// === КОНЕЦ ОБЪЕДИНЁННОГО БЛОКА ===
