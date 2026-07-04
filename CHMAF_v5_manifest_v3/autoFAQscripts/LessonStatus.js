@@ -213,6 +213,33 @@
             border-radius: 10px;
         }
 
+        /* === DATE NAV BUTTONS === */
+        .${CONFIG.prefix}__date-nav {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--gls-border);
+            color: var(--gls-cyan);
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            outline: none;
+        }
+        .${CONFIG.prefix}__date-nav:hover {
+            background: var(--gls-cyan-soft);
+            color: var(--gls-cyan);
+            border-color: rgba(34, 211, 238, 0.3);
+            box-shadow: 0 0 12px rgba(34, 211, 238, 0.15);
+        }
+        .${CONFIG.prefix}__date-nav:active {
+            transform: scale(0.92);
+        }
+
         /* === CONTROLS BAR === */
         .${CONFIG.prefix}__controls {
             display: flex;
@@ -470,6 +497,8 @@
         </div>
 
         <div class="${CONFIG.prefix}__controls">
+            <button class="${CONFIG.prefix}__date-nav" id="${CONFIG.prefix}-prev-day" title="День назад">◀</button>
+
             <div class="${CONFIG.prefix}__field-group">
                 <span class="${CONFIG.prefix}__label">С</span>
                 <input type="date" class="${CONFIG.prefix}__input ${CONFIG.prefix}__input--date" id="${CONFIG.prefix}-date-from">
@@ -478,6 +507,8 @@
                 <span class="${CONFIG.prefix}__label">По</span>
                 <input type="date" class="${CONFIG.prefix}__input ${CONFIG.prefix}__input--date" id="${CONFIG.prefix}-date-to">
             </div>
+
+            <button class="${CONFIG.prefix}__date-nav" id="${CONFIG.prefix}-next-day" title="День вперед">▶</button>
 
             <div class="${CONFIG.prefix}__field-group" style="margin-left: 12px;">
                 <span class="${CONFIG.prefix}__label">Учитель</span>
@@ -523,12 +554,29 @@
         return slice ? formatted.slice(0, 17) : formatted;
     };
 
-    const formatApiDate = (date, hour) => {
-        const d = new Date(date);
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        return `${day}-${month}-${year} ${hour}`;
+    /**
+     * Строгий парсинг дат: 00:00:00 - 23:59:59 по Москве -> UTC
+     */
+    const getApiDateStr = (inputDateStr, isEndOfDay) => {
+        const [y, m, d] = inputDateStr.split('-').map(Number);
+        let hours = isEndOfDay ? 23 : 0;
+        let minutes = isEndOfDay ? 59 : 0;
+        let seconds = isEndOfDay ? 59 : 0;
+
+        // Создаем объект даты в UTC, предполагая что введенные числа — это Москва
+        let mskDate = new Date(Date.UTC(y, m - 1, d, hours, minutes, seconds));
+
+        // Переводим в "чистый" UTC (вычитая 3 часа)
+        mskDate.setUTCHours(mskDate.getUTCHours() - 3);
+
+        const day = String(mskDate.getUTCDate()).padStart(2, '0');
+        const month = String(mskDate.getUTCMonth() + 1).padStart(2, '0');
+        const year = mskDate.getUTCFullYear();
+        const h = String(mskDate.getUTCHours()).padStart(2, '0');
+        const min = String(mskDate.getUTCMinutes()).padStart(2, '0');
+        const sec = String(mskDate.getUTCSeconds()).padStart(2, '0');
+
+        return `${day}-${month}-${year} ${h}:${min}:${sec}`;
     };
 
     const getStatusBadge = (status, isRemoved) => {
@@ -566,16 +614,8 @@
             return;
         }
 
-        const headers = [
-            { key: 'studentId', label: '🆔 Ученик', class: `${CONFIG.prefix}__cell--id` },
-            { key: 'startAt', label: '📆 Дата урока', class: '' },
-            { key: 'status', label: '⚡ Статус', class: '' },
-            { key: 'createdAt', label: '📅 Отмечен', class: '' },
-            { key: 'createdBy', label: '❓ Кем', class: '' },
-            { key: 'type', label: '💦 Тип', class: `${CONFIG.prefix}__cell--type` },
-            { key: 'comment', label: '💬 Комментарий', class: `${CONFIG.prefix}__cell--comment` },
-            { key: 'removedAt', label: '📅 Удалён', class: '' }
-        ];
+        // Оптимизация: убраны неиспользуемые свойства из объекта
+        const headers = ['🆔 Ученик', '📆 Дата урока', '⚡ Статус', '📅 Отмечен', '❓ Кем', '💦 Тип', '💬 Комментарий', '📅 Удалён'];
 
         const rows = filtered.map(cls => {
             const status = cls.classStatus;
@@ -591,17 +631,13 @@
                     <td>${status ? formatDateTime(status.createdAt) : ''}</td>
                     <td>${status?.createdByUserId || ''}</td>
                     <td class="${CONFIG.prefix}__cell--type">${cls.type || ''}</td>
-                    <td class="${CONFIG.prefix}__cell--comment" title="${status?.comment || ''}">
-                        ${status?.comment || ''}
-                    </td>
+                    <td class="${CONFIG.prefix}__cell--comment" title="${status?.comment || ''}">${status?.comment || ''}</td>
                     <td>${isRemoved ? formatDateTime(cls.removedAt) : ''}</td>
                 </tr>
             `;
         }).join('');
 
-        const thead = headers.map(h =>
-            `<th>${h.label}</th>`
-        ).join('');
+        const thead = headers.map(h => `<th>${h}</th>`).join('');
 
         content.innerHTML = `
             <div class="${CONFIG.prefix}__table-wrap">
@@ -612,20 +648,17 @@
             </div>
         `;
 
+        // Делегирование событий для ID
         $$(`[name="idToCRM"]`, content).forEach(cell => {
             const id = cell.dataset.id;
             if (!id) return;
 
-            cell.addEventListener('click', () => {
-                window.open(`https://crm2.skyeng.ru/persons/${id}`, '_blank');
-            });
+            cell.addEventListener('click', () => window.open(`https://crm2.skyeng.ru/persons/${id}`, '_blank'));
 
             cell.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 if (typeof copyToClipboard === 'function') {
-                    copyToClipboard(id).catch(err => {
-                        console.log('Не удалось скопировать ID:', err);
-                    });
+                    copyToClipboard(id).catch(() => console.log('Clipboard API failed'));
                 } else {
                     try {
                         const ta = document.createElement('textarea');
@@ -637,7 +670,7 @@
                         document.execCommand('copy');
                         document.body.removeChild(ta);
                     } catch (err) {
-                        console.log('Fallback копирование не сработал:', err);
+                        console.log('Fallback copy failed:', err);
                     }
                 }
             });
@@ -663,27 +696,19 @@
         const studentId = $(`#${CONFIG.prefix}-student-id`).value;
 
         if (!teacherId) {
-            createAndShowButton('Введите ID учителя', 'error');
+            alert('Введите ID учителя');
             return;
         }
 
         showLoading();
 
-        const startEl = $(`#${CONFIG.prefix}-date-from`);
-        const endEl = $(`#${CONFIG.prefix}-date-to`);
-
-        const startDate = new Date(startEl.value);
-        startDate.setDate(startDate.getDate() - 1);
-
-        const endDate = new Date(endEl.value);
-
-        const from = formatApiDate(startDate, '21') + ':00:00';
-        const to = formatApiDate(endDate, '20') + ':59:59';
+        const apiFrom = getApiDateStr($(`#${CONFIG.prefix}-date-from`).value, false);
+        const apiTo = getApiDateStr($(`#${CONFIG.prefix}-date-to`).value, true);
 
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `from=${from}&to=${to}&offset=0&filters[teacherIds][]=${teacherId}&callback=getJSONP`,
+            body: `from=${apiFrom}&to=${apiTo}&offset=0&filters[teacherIds][]=${teacherId}&callback=getJSONP`,
             credentials: 'include'
         };
 
@@ -693,12 +718,10 @@
                     { action: 'getFetchRequest', fetchURL: CONFIG.apiUrl, requestOptions },
                     (res) => {
                         if (chrome.runtime.lastError) {
-                            reject(new Error(chrome.runtime.lastError.message));
-                            return;
+                            return reject(new Error(chrome.runtime.lastError.message));
                         }
                         if (!res?.success) {
-                            reject(new Error(res?.error || 'Unknown error'));
-                            return;
+                            return reject(new Error(res?.error || 'Unknown error'));
                         }
                         resolve(res);
                     }
@@ -709,7 +732,6 @@
             const classes = data?.[0]?.result?.[0]?.classes;
 
             if (!classes?.length) {
-                createAndShowButton('Уроков нет', 'error');
                 $(`#${CONFIG.prefix}-content`).innerHTML = `
                     <div class="${CONFIG.prefix}__empty">
                         <div class="${CONFIG.prefix}__empty-icon">📭</div>
@@ -723,7 +745,6 @@
 
         } catch (err) {
             console.error('[LessonStatus]', err);
-            alert('Не удалось проверить авторизацию: ' + err.message);
             $(`#${CONFIG.prefix}-content`).innerHTML = `
                 <div class="${CONFIG.prefix}__empty">
                     <div class="${CONFIG.prefix}__empty-icon">⚠️</div>
@@ -737,19 +758,29 @@
 
     // ─── DATE MANAGEMENT ────────────────────────────────────────
 
+    const shiftDates = (days) => {
+        const fromInput = $(`#${CONFIG.prefix}-date-from`);
+        const toInput = $(`#${CONFIG.prefix}-date-to`);
+
+        let dFrom = new Date(fromInput.value + 'T00:00:00');
+        let dTo = new Date(toInput.value + 'T00:00:00');
+
+        dFrom.setDate(dFrom.getDate() + days);
+        dTo.setDate(dTo.getDate() + days);
+
+        const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+        fromInput.value = fmt(dFrom);
+        toInput.value = fmt(dTo);
+    };
+
     const resetDates = () => {
         const now = new Date();
-        const curYear = now.getFullYear();
-        const curMonth = String(now.getMonth() + 1).padStart(2, '0');
-        const curDay = String(now.getDate()).padStart(2, '0');
+        const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-        const prevDate = new Date(now);
-        prevDate.setDate(prevDate.getDate() - 1);
-        const prevYear = prevDate.getFullYear();
-        const prevMonth = String(prevDate.getMonth() + 1).padStart(2, '0');
-
-        $(`#${CONFIG.prefix}-date-from`).value = `${prevYear}-${prevMonth}-${curDay}`;
-        $(`#${CONFIG.prefix}-date-to`).value = `${curYear}-${curMonth}-${curDay}`;
+        // ИСПРАВЛЕНО: Обе даты теперь равны текущему дню
+        $(`#${CONFIG.prefix}-date-from`).value = fmt(now);
+        $(`#${CONFIG.prefix}-date-to`).value = fmt(now);
     };
 
     const clearAll = () => {
@@ -852,6 +883,10 @@
         $(`#${CONFIG.prefix}-hide`).addEventListener('click', toggleWindow);
         $(`#${CONFIG.prefix}-clear`).addEventListener('click', clearAll);
         $(`#${CONFIG.prefix}-search`).addEventListener('click', fetchLessons);
+
+        // Date navigation
+        $(`#${CONFIG.prefix}-prev-day`).addEventListener('click', () => shiftDates(-1));
+        $(`#${CONFIG.prefix}-next-day`).addEventListener('click', () => shiftDates(1));
 
         // Enter key on inputs
         [$(`#${CONFIG.prefix}-teacher-id`), $(`#${CONFIG.prefix}-student-id`)].forEach(el => {
