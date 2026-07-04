@@ -400,16 +400,31 @@
             default: return "❓";
         }
     };
-
     const getFirstAnswerFlag = (stats) => {
         if (!stats) return "🚫";
-        if (stats.participatingOperators.includes("autoFAQ"))
-            return stats.firstOperatorAnswerTime ? "✅" : "❌";
-        if (stats.participatingOperators.length > 0)
+
+        // ✅ Ответ оператора был дан
+        if (stats.firstOperatorAnswerTime && stats.firstOperatorAnswerTime !== null) {
+            return "✅";
+        }
+
+        const usedStatuses = stats.usedStatuses || [];
+        const hasAssignedOnly = usedStatuses.length === 1 && usedStatuses[0] === "AssignedToOperator";
+        const hasOperators = stats.participatingOperators && stats.participatingOperators.length > 0;
+
+        // ⤴️ Исходящий диалог (сразу AssignedToOperator, оператор ещё не писал)
+        if (hasAssignedOnly && !hasOperators) {
             return "⤴️";
+        }
+
+        // ❌ Входящий, есть операторы, но ответа ещё не было
+        if (hasOperators) {
+            return "❌";
+        }
+
+        // 🚫 Нет операторов вообще
         return "🚫";
     };
-
     window.QueueModule = {
         init: () => {
             if (document.getElementById('AF_Queue')) return;
