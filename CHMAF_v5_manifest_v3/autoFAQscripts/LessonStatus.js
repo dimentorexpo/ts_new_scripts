@@ -574,7 +574,6 @@
             { key: 'createdBy', label: '❓ Кем', class: '' },
             { key: 'type', label: '💦 Тип', class: `${CONFIG.prefix}__cell--type` },
             { key: 'comment', label: '💬 Комментарий', class: `${CONFIG.prefix}__cell--comment` },
-            { key: 'removedBy', label: '❌ Удалил', class: `${CONFIG.prefix}__cell--id` },
             { key: 'removedAt', label: '📅 Удалён', class: '' }
         ];
 
@@ -594,9 +593,6 @@
                     <td class="${CONFIG.prefix}__cell--type">${cls.type || ''}</td>
                     <td class="${CONFIG.prefix}__cell--comment" title="${status?.comment || ''}">
                         ${status?.comment || ''}
-                    </td>
-                    <td class="${CONFIG.prefix}__cell--id" data-id="${isRemoved ? cls.studentId : ''}">
-                        ${isRemoved ? cls.studentId : ''}
                     </td>
                     <td>${isRemoved ? formatDateTime(cls.removedAt) : ''}</td>
                 </tr>
