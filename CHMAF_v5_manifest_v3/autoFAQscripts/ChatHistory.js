@@ -3,16 +3,16 @@ const afgStyles = document.createElement('style');
 afgStyles.textContent = `
     /* Глобальные CSS переменные */
     :root {
-        --afg-dark-bg: linear-gradient(135deg, rgba(12, 12, 28, 0.96) 0%, rgba(8, 10, 20, 0.98) 100%);
-        --afg-dark-border: rgba(255, 255, 255, 0.06);
-        --afg-accent: #8b5cf6;
-        --afg-accent-soft: rgba(139, 92, 246, 0.12);
-        --afg-accent-glow: rgba(139, 92, 246, 0.3);
+        --afg-dark-bg: linear-gradient(135deg, rgba(20, 26, 48, 0.95) 0%, rgba(14, 20, 40, 0.97) 100%);
+        --afg-dark-border: rgba(255, 255, 255, 0.08);
+        --afg-accent: #22d3ee;
+        --afg-accent-soft: rgba(34, 211, 238, 0.14);
+        --afg-accent-glow: rgba(34, 211, 238, 0.35);
         --afg-hover: rgba(255, 255, 255, 0.06);
         --afg-cyan: #22d3ee;
         --afg-green: #34d399;
         --afg-amber: #fbbf24;
-        --afg-text: #f1f5f9;
+        --afg-text: #e2e8f0;
         --afg-text-secondary: #94a3b8;
         --afg-text-muted: #64748b;
     }
@@ -32,7 +32,7 @@ afgStyles.textContent = `
         position: absolute;
         top: 0; left: 0;
         width: 1px; height: 100%;
-        background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.3), transparent);
+        background: linear-gradient(180deg, transparent, rgba(34, 211, 238, 0.35), transparent);
         z-index: 10;
     }
 
@@ -55,14 +55,14 @@ afgStyles.textContent = `
 
     .afg-btn-accent {
         background: var(--afg-accent-soft);
-        border-color: rgba(139, 92, 246, 0.3);
+        border-color: rgba(34, 211, 238, 0.3);
         color: var(--afg-accent);
     }
     .afg-btn-accent:hover {
-        background: rgba(139, 92, 246, 0.2);
-        border-color: rgba(139, 92, 246, 0.5);
-        box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
-        color: #c4b5fd;
+        background: rgba(34, 211, 238, 0.22);
+        border-color: rgba(34, 211, 238, 0.55);
+        box-shadow: 0 4px 16px rgba(34, 211, 238, 0.25);
+        color: #a5f3fc;
     }
 
     /* Инпуты и Селекты */
@@ -100,9 +100,9 @@ afgStyles.textContent = `
     .afg-chat-area::-webkit-scrollbar { width: 5px; }
     .afg-chat-area::-webkit-scrollbar-track { background: transparent; }
     .afg-chat-area::-webkit-scrollbar-thumb {
-        background: rgba(139, 92, 246, 0.25); border-radius: 3px;
+        background: rgba(34, 211, 238, 0.25); border-radius: 3px;
     }
-    .afg-chat-area::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.4); }
+    .afg-chat-area::-webkit-scrollbar-thumb:hover { background: rgba(34, 211, 238, 0.45); }
 
     /* Темы */
     .theme-light {
@@ -141,8 +141,8 @@ afgStyles.textContent = `
 
     /* Типы сообщений */
     .afg-msg-user {
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(109, 40, 217, 0.06));
-        border-color: rgba(139, 92, 246, 0.15);
+        background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(6, 182, 212, 0.06));
+        border-color: rgba(34, 211, 238, 0.15);
         border-left: 3px solid var(--afg-accent);
         align-self: flex-start;
     }
@@ -184,11 +184,11 @@ afgStyles.textContent = `
     .theme-light .afg-msg-header { border-bottom-color: rgba(0,0,0,0.08); }
 
     .theme-light .afg-msg-user {
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(109, 40, 217, 0.08) 100%);
-        border-color: rgba(139, 92, 246, 0.25);
+        background: linear-gradient(135deg, rgba(34, 211, 238, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%);
+        border-color: rgba(34, 211, 238, 0.25);
     }
     .theme-light .afg-msg-user .afg-msg-author {
-        color: #6d28d9; font-weight: 700;
+        color: #0891b2; font-weight: 700;
     }
 
     .theme-light .afg-msg-comment {
@@ -213,7 +213,7 @@ afgStyles.textContent = `
         border-radius: 14px; padding: 18px; display: none; z-index: 100;
         box-shadow: 0 16px 60px rgba(0,0,0,0.6);
         border: 1px solid var(--afg-dark-border);
-        background: linear-gradient(135deg, rgba(18, 20, 32, 0.98) 0%, rgba(12, 14, 24, 0.98) 100%);
+        background: linear-gradient(135deg, rgba(24, 30, 52, 0.98) 0%, rgba(16, 22, 42, 0.98) 100%);
         backdrop-filter: blur(40px); color: var(--afg-text);
     }
 
@@ -246,7 +246,7 @@ afgStyles.textContent = `
     .chatlist:hover {
         background: rgba(255,255,255,0.06);
         transform: translateX(4px);
-        border-color: rgba(139, 92, 246, 0.15);
+        border-color: rgba(34, 211, 238, 0.15);
         box-shadow: 0 2px 12px rgba(0,0,0,0.2);
     }
 
@@ -278,10 +278,10 @@ afgStyles.textContent = `
         backdrop-filter: blur(10px);
     }
     .afg-gallery-nav:hover {
-        background: rgba(139, 92, 246, 0.8);
+        background: rgba(34, 211, 238, 0.8);
         transform: translateY(-50%) scale(1.1);
         border-color: transparent;
-        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+        box-shadow: 0 8px 24px rgba(34, 211, 238, 0.4);
     }
     .afg-nav-left { left: 30px; }
     .afg-nav-right { right: 30px; }
@@ -1259,4 +1259,3 @@ document.getElementById('placechatid').onclick = () => {
 // Инициализация при загрузке
 console.log("✅ ChatHistory Premium v2.0 загружен");
 console.log("📋 Особенности: Всегда видимые дата/время, премиальный Glassmorphism дизайн, улучшенная читаемость");
-
