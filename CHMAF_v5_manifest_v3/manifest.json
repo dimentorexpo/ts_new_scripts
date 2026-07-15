@@ -55,6 +55,7 @@
 				"/autoFAQscripts/Nabor.js",
 				"/autoFAQscripts/Vimbot.js",
 				"/autoFAQscripts/CheckTags.js",
+				"/autoFAQscripts/CRMcomments.js",
 				"content.js"
 			],
 			"css": [
