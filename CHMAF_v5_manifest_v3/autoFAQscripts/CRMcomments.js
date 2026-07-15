@@ -283,6 +283,48 @@ var win_CRMcommentsUI = `
     color: #818cf8;
     font-family: 'SF Mono', Monaco, monospace;
     font-size: 11px;
+    vertical-align: top;
+    line-height: 1.4;
+}
+    .gcrm-time-str {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.gcrm-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.gcrm-badge-isx {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.gcrm-badge-2l {
+    background: rgba(168, 85, 247, 0.15);
+    color: #d8b4fe;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* Адаптация под выделения */
+.gcrm-row-urgent .gcrm-badge-isx {
+    background: rgba(239, 68, 68, 0.25);
+    color: #fecaca;
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+.gcrm-row-urgent .gcrm-badge-2l {
+    background: rgba(239, 68, 68, 0.25);
+    color: #fecaca;
+    border-color: rgba(239, 68, 68, 0.5);
 }
 
 .gcrm-td-name {
@@ -307,6 +349,84 @@ var win_CRMcommentsUI = `
     font-size: 11px;
     color: #64748b;
     font-weight: 500;
+}
+
+/* === Выделение строк === */
+.gcrm-row-urgent {
+    background: rgba(239, 68, 68, 0.12) !important;
+    animation: gcrm-pulse-urgent 2s ease-in-out infinite;
+}
+
+.gcrm-row-urgent td {
+    border-bottom: 1px solid rgba(239, 68, 68, 0.3) !important;
+    color: #fecaca !important;
+}
+
+.gcrm-row-urgent .gcrm-td-time {
+    color: #fca5a5 !important;
+    font-weight: 600;
+}
+
+.gcrm-row-urgent .gcrm-td-name {
+    color: #fdb4b4 !important;
+    font-weight: 600;
+}
+
+.gcrm-row-urgent .gcrm-td-msg {
+    color: #fecaca !important;
+}
+
+@keyframes gcrm-pulse-urgent {
+    0%, 100% {
+        background: rgba(239, 68, 68, 0.12);
+        box-shadow: inset 2px 0 0 0 rgba(239, 68, 68, 0.6);
+    }
+    50% {
+        background: rgba(239, 68, 68, 0.22);
+        box-shadow: inset 2px 0 0 0 rgba(239, 68, 68, 1);
+    }
+}
+
+/* Свежие записи (до 24ч) */
+.gcrm-row-recent {
+    background: rgba(34, 197, 94, 0.06);
+}
+
+.gcrm-row-recent td {
+    border-bottom: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.gcrm-row-recent .gcrm-td-time {
+    color: #86efac;
+}
+
+.gcrm-row-recent .gcrm-td-name {
+    color: #bbf7d0;
+}
+
+.gcrm-row-recent .gcrm-td-msg {
+    color: #dcfce7;
+}
+
+/* Ховер должен работать поверх выделений */
+.gcrm-table tr.gcrm-row-urgent:hover td,
+.gcrm-table tr.gcrm-row-recent:hover td {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.gcrm-td-result {
+    color: #e2e8f0;
+    font-weight: 500;
+    max-width: 150px;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+.gcrm-td-msg {
+    color: #94a3b8;
+    max-width: 250px;
+    word-break: break-word;
+    white-space: pre-wrap;
 }
 </style>`;
 
@@ -370,14 +490,27 @@ document.getElementById('gcrm-run-btn').addEventListener('click', async () => {
         const data = JSON.parse(response.fetchansver);
         const records = Array.isArray(data) ? data : (data.data || []);
 
-        const filtered = records.filter(item => item.recordTypeCode === 'customer_support.common.task_complete');
+        const allowedGroups = [
+            'группой «Техподдержка Исход»'
+        ];
+
+        const filtered = records.filter(item => {
+            if (item.recordTypeCode !== 'customer_support.common.task_complete') return false;
+            const dv = item.displayValue || '';
+            return allowedGroups.some(group => dv.includes(group));
+        });
 
         if (filtered.length === 0) {
-            output.innerHTML = '<span style="color:#94a3b8;">Нет записей с типом "Задача сопровождения завершена"</span>';
+            output.innerHTML = '<span style="color:#94a3b8;">Нет записей по Техподдержке Исход</span>';
             return;
         }
 
         filtered.sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt));
+
+        const nowMsk = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Moscow' }));
+        const currentHourStart = new Date(nowMsk.getFullYear(), nowMsk.getMonth(), nowMsk.getDate(), nowMsk.getHours(), 0, 0);
+        const currentHourEnd = new Date(nowMsk.getFullYear(), nowMsk.getMonth(), nowMsk.getDate(), nowMsk.getHours() + 1, 0, 0);
+        const dayAgo = new Date(currentHourStart.getTime() - 24 * 60 * 60 * 1000);
 
         const rows = filtered.map(item => {
             const name = `${item.initiatorName || ''} ${item.initiatorSurname || ''}`.trim() || '—';
@@ -391,13 +524,42 @@ document.getElementById('gcrm-run-btn').addEventListener('click', async () => {
                 second: '2-digit'
             }).replace(',', '');
 
-            const message = item.payload?.message || '—';
+            const dv = (item.displayValue || '').replace(/\\n/g, '\n');
+
+            // Определяем группу
+            let groupBadge = '';
+            if (dv.includes('Техподдержка Исход')) {
+                groupBadge = '<span class="gcrm-badge gcrm-badge-isx">ТП Исход</span>';
+            } else if (dv.includes('Техподдержка 2-я линия')) {
+                groupBadge = '<span class="gcrm-badge gcrm-badge-2l">ТП 2Л</span>';
+            }
+
+            const resultMatch = dv.match(/Результат:\s*([\s\S]*?)(?=\nКомментарий:|\nСсылка на задачу|$)/);
+            const commentMatch = dv.match(/Комментарий:\s*([\s\S]*?)(?=\nСсылка на задачу|$)/);
+
+            const result = resultMatch ? resultMatch[1].trim() || '—' : '—';
+            const comment = commentMatch ? commentMatch[1].trim() || '—' : '—';
+
+            const itemDate = new Date(item.occurredAt);
+            const inCurrentHour = itemDate >= currentHourStart && itemDate < currentHourEnd;
+            const isRecent = itemDate >= dayAgo;
+
+            let rowClass = '';
+            if (inCurrentHour) {
+                rowClass = 'gcrm-row-urgent';
+            } else if (isRecent) {
+                rowClass = 'gcrm-row-recent';
+            }
 
             return `
-                <tr>
-                    <td class="gcrm-td-time">${mskTime}</td>
+                <tr class="${rowClass}">
+                    <td class="gcrm-td-time">
+                        <div class="gcrm-time-str">${mskTime}</div>
+                        ${groupBadge}
+                    </td>
                     <td class="gcrm-td-name">${escapeHtml(name)}</td>
-                    <td class="gcrm-td-msg">${escapeHtml(message)}</td>
+                    <td class="gcrm-td-result">${escapeHtml(result)}</td>
+                    <td class="gcrm-td-msg">${escapeHtml(comment)}</td>
                 </tr>
             `;
         }).join('');
@@ -409,7 +571,8 @@ document.getElementById('gcrm-run-btn').addEventListener('click', async () => {
                         <tr>
                             <th>Время (МСК)</th>
                             <th>Оператор</th>
-                            <th>Сообщение</th>
+                            <th>Результат</th>
+                            <th>Комментарий</th>
                         </tr>
                     </thead>
                     <tbody>${rows}</tbody>
