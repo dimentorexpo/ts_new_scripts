@@ -699,3 +699,75 @@ function createAndShowButton(text) {
     }
 })();
 // === КОНЕЦ ОБЪЕДИНЁННОГО БЛОКА ===
+
+(function() {
+    'use strict';
+    
+    const BTN_TEXT = 'Взять новую задачу';
+    let currentBtn = null;   // ссылка на текущую кнопку в DOM
+    let btnObs = null;       // observer на атрибутах кнопки
+    
+    const isDisabled = (btn) => {
+        return !btn || btn.disabled || 
+               btn.getAttribute('disabled') === 'true' ||
+               btn.classList.contains('mat-mdc-button-disabled');
+    };
+    
+    const handleBtn = (btn) => {
+        // Кнопка стала disabled — сбрасываем флаг, чтобы при следующей активации сработало
+        if (isDisabled(btn)) {
+            if (btn.__autoClicked) {
+                btn.__autoClicked = false;
+                console.log('Кнопка disabled, сбросил флаг');
+            }
+            return;
+        }
+        
+        // Кнопка активна и ещё не была кликнута
+        if (!btn.__autoClicked) {
+            btn.__autoClicked = true;
+            console.log('Кликаю по кнопке...');
+            btn.click();
+        }
+    };
+    
+    const scan = () => {
+        const btn = [...document.querySelectorAll('button')].find(b => 
+            b.textContent.includes(BTN_TEXT)
+        );
+        
+        // Кнопка пропала из DOM (ушли на задачу) — чистим всё
+        if (!btn) {
+            if (btnObs) {
+                btnObs.disconnect();
+                btnObs = null;
+            }
+            currentBtn = null;
+            return;
+        }
+        
+        // Появилась НОВАЯ кнопка (другой DOM-элемент) — переподключаемся
+        if (btn !== currentBtn) {
+            if (btnObs) btnObs.disconnect();
+            
+            currentBtn = btn;
+            btnObs = new MutationObserver(() => handleBtn(btn));
+            btnObs.observe(btn, {
+                attributes: true,
+                attributeFilter: ['disabled', 'class']
+            });
+        }
+        
+        // Проверяем состояние
+        handleBtn(btn);
+    };
+    
+    // Следим за всем DOM, чтобы поймать появление/исчезновение кнопки
+    new MutationObserver(scan).observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+    
+    // Первая проверка сразу
+    scan();
+})();
