@@ -704,70 +704,123 @@ function createAndShowButton(text) {
     'use strict';
     
     const BTN_TEXT = 'Взять новую задачу';
-    let currentBtn = null;   // ссылка на текущую кнопку в DOM
-    let btnObs = null;       // observer на атрибутах кнопки
+    const TARGET_PATH = '/customer-support/start';
+    const COOLDOWN_MS = 20000; // 20 секунд
+    
+    let lastClickedBtn = null;
+    let wasDisabled = true;
+    let lastUrl = location.pathname;
+    let cooldownUntil = 0; // 0 = нет задержки
+    
+    // --- UI: плавающий таймер ---
+    const timerEl = document.createElement('div');
+    timerEl.style.cssText = `
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        z-index: 99999;
+        background: #1a1a2e;
+        color: #00ff88;
+        font-family: monospace;
+        font-size: 14px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+    `;
+    document.body.appendChild(timerEl);
+    
+    const showTimer = (msLeft) => {
+        const sec = Math.ceil(msLeft / 1000);
+        timerEl.textContent = `⏳ Автоклик через ${sec}с`;
+        timerEl.style.opacity = '1';
+    };
+    
+    const hideTimer = () => {
+        timerEl.style.opacity = '0';
+    };
     
     const isDisabled = (btn) => {
-        return !btn || btn.disabled || 
+        if (!btn) return true;
+        return btn.disabled || 
                btn.getAttribute('disabled') === 'true' ||
                btn.classList.contains('mat-mdc-button-disabled');
     };
     
-    const handleBtn = (btn) => {
-        // Кнопка стала disabled — сбрасываем флаг, чтобы при следующей активации сработало
-        if (isDisabled(btn)) {
-            if (btn.__autoClicked) {
-                btn.__autoClicked = false;
-                console.log('Кнопка disabled, сбросил флаг');
+    const tick = () => {
+        const currentUrl = location.pathname;
+        const now = Date.now();
+        
+        // --- Отслеживаем смену URL в SPA ---
+        if (currentUrl !== lastUrl) {
+            lastUrl = currentUrl;
+            
+            if (currentUrl.includes(TARGET_PATH)) {
+                // Вернулись на старт — запускаем 20-секундный кулдаун
+                cooldownUntil = now + COOLDOWN_MS;
+                lastClickedBtn = null;
+                wasDisabled = true;
+                console.log('SkyAuto: Вернулись на старт, кулдаун 20 сек');
+            } else {
+                // Ушли на задачу — прячем таймер
+                hideTimer();
             }
             return;
         }
         
-        // Кнопка активна и ещё не была кликнута
-        if (!btn.__autoClicked) {
-            btn.__autoClicked = true;
-            console.log('Кликаю по кнопке...');
+        // --- Не на стартовой странице — выходим ---
+        if (!currentUrl.includes(TARGET_PATH)) {
+            hideTimer();
+            return;
+        }
+        
+        // --- Обновляем UI таймера ---
+        if (cooldownUntil > now) {
+            showTimer(cooldownUntil - now);
+            return; // пока кулдаун активен — не кликаем
+        } else {
+            hideTimer();
+        }
+        
+        // --- Ищем кнопку ---
+        const btn = [...document.querySelectorAll('button')].find(b => 
+            b.textContent.trim().includes(BTN_TEXT)
+        );
+        
+        if (!btn) {
+            if (lastClickedBtn) {
+                lastClickedBtn = null;
+                wasDisabled = true;
+            }
+            return;
+        }
+        
+        const disabled = isDisabled(btn);
+        
+        if (disabled) {
+            lastClickedBtn = null;
+            wasDisabled = true;
+            return;
+        }
+        
+        // --- Кнопка активна и кулдаун прошёл ---
+        if (btn !== lastClickedBtn || wasDisabled) {
+            lastClickedBtn = btn;
+            wasDisabled = false;
+            
+            console.log('SkyAuto: Кликаю!', new Date().toLocaleTimeString());
             btn.click();
         }
     };
     
-    const scan = () => {
-        const btn = [...document.querySelectorAll('button')].find(b => 
-            b.textContent.includes(BTN_TEXT)
-        );
-        
-        // Кнопка пропала из DOM (ушли на задачу) — чистим всё
-        if (!btn) {
-            if (btnObs) {
-                btnObs.disconnect();
-                btnObs = null;
-            }
-            currentBtn = null;
-            return;
-        }
-        
-        // Появилась НОВАЯ кнопка (другой DOM-элемент) — переподключаемся
-        if (btn !== currentBtn) {
-            if (btnObs) btnObs.disconnect();
-            
-            currentBtn = btn;
-            btnObs = new MutationObserver(() => handleBtn(btn));
-            btnObs.observe(btn, {
-                attributes: true,
-                attributeFilter: ['disabled', 'class']
-            });
-        }
-        
-        // Проверяем состояние
-        handleBtn(btn);
-    };
+    // Запускаем интервал
+    const intervalId = setInterval(tick, 1000);
+    console.log('SkyAuto: Запущен. Проверка каждую секунду, кулдаун 20с');
     
-    // Следим за всем DOM, чтобы поймать появление/исчезновение кнопки
-    new MutationObserver(scan).observe(document.body, {
-        childList: true,
-        subtree: true
+    // Ловим кнопку "Назад"
+    window.addEventListener('popstate', () => {
+        lastUrl = '';
     });
-    
-    // Первая проверка сразу
-    scan();
 })();
