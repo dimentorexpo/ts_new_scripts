@@ -705,41 +705,82 @@ function createAndShowButton(text) {
     
     const BTN_TEXT = 'Взять новую задачу';
     const TARGET_PATH = '/customer-support/start';
-    const COOLDOWN_MS = 20000; // 20 секунд
+    const COOLDOWN_MS = 20000;
+    const LAST_CLICK_KEY = 'skyauto_lastclick';
     
     let lastClickedBtn = null;
     let wasDisabled = true;
     let lastUrl = location.pathname;
-    let cooldownUntil = 0; // 0 = нет задержки
+    let cooldownUntil = 0;
+    let btnWasVisible = false;
+    let isFirstTick = true;
     
-    // --- UI: плавающий таймер ---
-    const timerEl = document.createElement('div');
-    timerEl.style.cssText = `
+    // Восстанавливаем кулдаун после перезагрузки
+    const lastClick = sessionStorage.getItem(LAST_CLICK_KEY);
+    if (lastClick && location.pathname.includes(TARGET_PATH)) {
+        const nextAllowed = parseInt(lastClick) + COOLDOWN_MS;
+        if (nextAllowed > Date.now()) {
+            cooldownUntil = nextAllowed;
+            console.log('SkyAuto: Кулдаун восстановлен после перезагрузки');
+        }
+    }
+    
+    // --- UI ---
+    const ui = document.createElement('div');
+    ui.style.cssText = `
         position: fixed;
         top: 12px;
         right: 12px;
         z-index: 99999;
         background: #1a1a2e;
-        color: #00ff88;
-        font-family: monospace;
-        font-size: 14px;
-        padding: 8px 14px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        color: #a0a0b0;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-size: 12px;
+        line-height: 1.5;
+        padding: 10px 14px;
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.5);
         pointer-events: none;
+        min-width: 200px;
         opacity: 0;
         transition: opacity 0.3s;
     `;
-    document.body.appendChild(timerEl);
+    const attachUI = () => {
+        if (document.body) {
+            document.body.appendChild(ui);
+            ui.style.opacity = '1';
+        } else {
+            setTimeout(attachUI, 100);
+        }
+    };
+    attachUI();
     
-    const showTimer = (msLeft) => {
-        const sec = Math.ceil(msLeft / 1000);
-        timerEl.textContent = `⏳ Автоклик через ${sec}с`;
-        timerEl.style.opacity = '1';
+    const updateStatus = (mainText, color = '#a0a0b0', subText = '') => {
+        ui.innerHTML = `
+            <div style="font-weight:600; color:${color}; margin-bottom:2px;">🤖 ${mainText}</div>
+            ${subText ? `<div style="color:#888; font-size:11px;">${subText}</div>` : ''}
+        `;
     };
     
-    const hideTimer = () => {
-        timerEl.style.opacity = '0';
+    // --- Получаем статус оператора (ИСПРАВЛЕНО) ---
+    const getOperatorStatus = () => {
+        // Ищем span.mdc-button__label, у которого ВНУТРИ есть дочерний span с таймером (06:49:57)
+        // Это гарантирует, что мы берём именно активный статус, а не пункт из dropdown-меню
+        const spans = document.querySelectorAll('span.mdc-button__label');
+        for (const span of spans) {
+            const innerTimer = span.querySelector('span.ng-star-inserted');
+            if (!innerTimer) continue;
+            
+            const timerText = innerTimer.textContent.trim();
+            // Проверяем, что это именно таймер (XX:XX:XX)
+            if (/^\(\d{1,2}:\d{2}:\d{2}\)$/.test(timerText)) {
+                // Берём текст родителя, вырезаем таймер и очищаем
+                const fullText = span.textContent.trim();
+                const status = fullText.replace(/\s*\(\d{1,2}:\d{2}:\d{2}\)/, '').trim();
+                return status;
+            }
+        }
+        return null;
     };
     
     const isDisabled = (btn) => {
@@ -753,35 +794,16 @@ function createAndShowButton(text) {
         const currentUrl = location.pathname;
         const now = Date.now();
         
-        // --- Отслеживаем смену URL в SPA ---
+        // --- URL ---
         if (currentUrl !== lastUrl) {
             lastUrl = currentUrl;
-            
-            if (currentUrl.includes(TARGET_PATH)) {
-                // Вернулись на старт — запускаем 20-секундный кулдаун
-                cooldownUntil = now + COOLDOWN_MS;
-                lastClickedBtn = null;
-                wasDisabled = true;
-                console.log('SkyAuto: Вернулись на старт, кулдаун 20 сек');
-            } else {
-                // Ушли на задачу — прячем таймер
-                hideTimer();
-            }
-            return;
+            console.log('SkyAuto: URL →', currentUrl);
         }
         
-        // --- Не на стартовой странице — выходим ---
         if (!currentUrl.includes(TARGET_PATH)) {
-            hideTimer();
+            updateStatus('Вне зоны', '#666', 'Работаем только на /start');
+            btnWasVisible = false;
             return;
-        }
-        
-        // --- Обновляем UI таймера ---
-        if (cooldownUntil > now) {
-            showTimer(cooldownUntil - now);
-            return; // пока кулдаун активен — не кликаем
-        } else {
-            hideTimer();
         }
         
         // --- Ищем кнопку ---
@@ -794,33 +816,69 @@ function createAndShowButton(text) {
                 lastClickedBtn = null;
                 wasDisabled = true;
             }
+            btnWasVisible = false;
+            updateStatus('Ожидание', '#a0a0b0', 'Кнопка не найдена');
             return;
         }
         
+        // --- Кнопка появилась после отсутствия = вернулись на страницу ---
+        if (!btnWasVisible && !isFirstTick) {
+            cooldownUntil = now + COOLDOWN_MS;
+            lastClickedBtn = null;
+            wasDisabled = true;
+            console.log('SkyAuto: Кнопка появилась, кулдаун 20 сек');
+        }
+        btnWasVisible = true;
+        isFirstTick = false;
+        
+        // --- ПРОВЕРКА СТАТУСА (с отладкой) ---
+        const status = getOperatorStatus();
+        console.log('SkyAuto: Статус оператора =', JSON.stringify(status)); // <-- смотри в консоль!
+        
+        if (status !== 'В работе') {
+            const display = status || 'не определён';
+            updateStatus('ПАУЗА', '#ff5555', `Статус: ${display} (нужен "В работе")`);
+            return;
+        }
+        
+        // --- Кулдаун ---
+        if (cooldownUntil > now) {
+            const sec = Math.ceil((cooldownUntil - now) / 1000);
+            updateStatus('Кулдаун', '#ffd700', `Автоклик через ${sec} сек...`);
+            return;
+        }
+        
+        // --- Кнопка ---
         const disabled = isDisabled(btn);
         
         if (disabled) {
+            updateStatus('Мониторинг', '#00ff88', 'Кнопка недоступна, жду активации...');
             lastClickedBtn = null;
             wasDisabled = true;
             return;
         }
         
-        // --- Кнопка активна и кулдаун прошёл ---
+        // --- Клик ---
         if (btn !== lastClickedBtn || wasDisabled) {
             lastClickedBtn = btn;
             wasDisabled = false;
             
+            updateStatus('КЛИК!', '#00ff88', 'Взял новую задачу');
             console.log('SkyAuto: Кликаю!', new Date().toLocaleTimeString());
             btn.click();
+            
+            sessionStorage.setItem(LAST_CLICK_KEY, Date.now());
+            
+            setTimeout(() => {
+                if (location.pathname.includes(TARGET_PATH)) {
+                    updateStatus('Мониторинг', '#00ff88', 'Задача взята, жду следующей...');
+                }
+            }, 3000);
+        } else {
+            updateStatus('Мониторинг', '#00ff88', 'Кнопка активна, уже кликал');
         }
     };
     
-    // Запускаем интервал
     const intervalId = setInterval(tick, 1000);
-    console.log('SkyAuto: Запущен. Проверка каждую секунду, кулдаун 20с');
-    
-    // Ловим кнопку "Назад"
-    window.addEventListener('popstate', () => {
-        lastUrl = '';
-    });
+    console.log('SkyAuto: Запущен. Интервал', intervalId);
 })();
