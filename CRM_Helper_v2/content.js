@@ -700,6 +700,7 @@ function createAndShowButton(text) {
 })();
 // === КОНЕЦ ОБЪЕДИНЁННОГО БЛОКА ===
 
+//Функция автовзятия задачи с пула в CRM
 (function() {
     'use strict';
     
@@ -707,6 +708,7 @@ function createAndShowButton(text) {
     const TARGET_PATH = '/customer-support/start';
     const COOLDOWN_MS = 20000;
     const LAST_CLICK_KEY = 'skyauto_lastclick';
+    const UI_POS_KEY = 'skyauto_ui_pos';
     
     let lastClickedBtn = null;
     let wasDisabled = true;
@@ -729,8 +731,6 @@ function createAndShowButton(text) {
     const ui = document.createElement('div');
     ui.style.cssText = `
         position: fixed;
-        top: 12px;
-        right: 12px;
         z-index: 99999;
         background: #1a1a2e;
         color: #a0a0b0;
@@ -740,11 +740,83 @@ function createAndShowButton(text) {
         padding: 10px 14px;
         border-radius: 10px;
         box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-        pointer-events: none;
         min-width: 200px;
         opacity: 0;
         transition: opacity 0.3s;
+        cursor: default;
+        user-select: none;
     `;
+    
+    // Заголовок для перетаскивания
+    const header = document.createElement('div');
+    header.style.cssText = `
+        cursor: move;
+        margin: -10px -14px 6px -14px;
+        padding: 6px 14px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 10px 10px 0 0;
+        font-size: 10px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    `;
+    header.innerHTML = '<span>SkyAuto</span><span style="font-size:14px;">⋮⋮</span>';
+    ui.appendChild(header);
+    
+    const contentDiv = document.createElement('div');
+    ui.appendChild(contentDiv);
+    
+    // Восстанавливаем позицию
+    const savedPos = localStorage.getItem(UI_POS_KEY);
+    if (savedPos) {
+        try {
+            const pos = JSON.parse(savedPos);
+            ui.style.top = pos.top + 'px';
+            ui.style.left = pos.left + 'px';
+        } catch (e) {
+            ui.style.top = '12px';
+            ui.style.right = '12px';
+        }
+    } else {
+        ui.style.top = '12px';
+        ui.style.right = '12px';
+    }
+    
+    // Drag logic
+    let isDragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    
+    header.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        const rect = ui.getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        dragOffsetY = e.clientY - rect.top;
+        ui.style.transition = 'none';
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.clientX - dragOffsetX;
+        const y = e.clientY - dragOffsetY;
+        ui.style.left = x + 'px';
+        ui.style.top = y + 'px';
+        ui.style.right = 'auto';
+    });
+    
+    document.addEventListener('mouseup', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        ui.style.transition = 'opacity 0.3s';
+        const rect = ui.getBoundingClientRect();
+        localStorage.setItem(UI_POS_KEY, JSON.stringify({
+            top: rect.top,
+            left: rect.left
+        }));
+    });
+    
     const attachUI = () => {
         if (document.body) {
             document.body.appendChild(ui);
@@ -756,30 +828,65 @@ function createAndShowButton(text) {
     attachUI();
     
     const updateStatus = (mainText, color = '#a0a0b0', subText = '') => {
-        ui.innerHTML = `
+        contentDiv.innerHTML = `
             <div style="font-weight:600; color:${color}; margin-bottom:2px;">🤖 ${mainText}</div>
             ${subText ? `<div style="color:#888; font-size:11px;">${subText}</div>` : ''}
         `;
     };
     
-    // --- Получаем статус оператора (ИСПРАВЛЕНО) ---
+    // --- Все известные статусы ---
+    const ALL_STATUSES = [
+        'В работе', 'Оффлайн', 'Перерыв/обед', 'Тренинг',
+        'Встреча', 'Работа с выгрузкой', 'Работа в другом отделе'
+    ];
+    
+    // --- Получаем статус оператора (ГИБРИДНЫЙ v3) ---
     const getOperatorStatus = () => {
-        // Ищем span.mdc-button__label, у которого ВНУТРИ есть дочерний span с таймером (06:49:57)
-        // Это гарантирует, что мы берём именно активный статус, а не пункт из dropdown-меню
-        const spans = document.querySelectorAll('span.mdc-button__label');
-        for (const span of spans) {
-            const innerTimer = span.querySelector('span.ng-star-inserted');
-            if (!innerTimer) continue;
-            
-            const timerText = innerTimer.textContent.trim();
-            // Проверяем, что это именно таймер (XX:XX:XX)
-            if (/^\(\d{1,2}:\d{2}:\d{2}\)$/.test(timerText)) {
-                // Берём текст родителя, вырезаем таймер и очищаем
-                const fullText = span.textContent.trim();
-                const status = fullText.replace(/\s*\(\d{1,2}:\d{2}:\d{2}\)/, '').trim();
-                return status;
+        // Способ A: через crm-operator-statuses > button (самый точный)
+        const container = document.querySelector('crm-operator-statuses');
+        if (container) {
+            const btn = container.querySelector('button');
+            if (btn) {
+                const text = btn.textContent.replace(/\s*\(\d{1,2}:\d{2}:\d{2}\)/, '').trim();
+                if (text && text.length > 0) {
+                    // Проверяем, что это реальный статус, а не мусор
+                    const matched = ALL_STATUSES.find(s => text.includes(s));
+                    if (matched) return matched;
+                    // Если не нашли в списке, но текст похож на статус — возвращаем как есть
+                    if (text.length < 50) return text;
+                }
             }
         }
+        
+        // Способ B: через aria-label кнопки
+        const statusBtn = document.querySelector('button[aria-haspopup="menu"]');
+        if (statusBtn?.ariaLabel) {
+            const clean = statusBtn.ariaLabel.replace(/\s*\(\d{1,2}:\d{2}:\d{2}\)/, '').trim();
+            const matched = ALL_STATUSES.find(s => clean.includes(s));
+            if (matched) return matched;
+        }
+        
+        // Способ C: ищем span.mdc-button__label с таймером
+        const allSpans = document.querySelectorAll('span.mdc-button__label');
+        for (const span of allSpans) {
+            const text = span.textContent.trim();
+            const timerMatch = text.match(/\(\d{1,2}:\d{2}:\d{2}\)/);
+            if (timerMatch) {
+                const status = text.replace(/\s*\(\d{1,2}:\d{2}:\d{2}\)/, '').trim();
+                const matched = ALL_STATUSES.find(s => status.includes(s));
+                if (matched) return matched;
+                if (status.length < 50) return status;
+            }
+        }
+        
+        // Способ D: глобальный поиск по тексту страницы
+        const bodyText = document.body?.innerText || '';
+        for (const status of ALL_STATUSES) {
+            const escaped = status.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(escaped + '\\s*\\(\\d{1,2}:\\d{2}:\\d{2}\\)');
+            if (regex.test(bodyText)) return status;
+        }
+        
         return null;
     };
     
@@ -831,15 +938,21 @@ function createAndShowButton(text) {
         btnWasVisible = true;
         isFirstTick = false;
         
-        // --- ПРОВЕРКА СТАТУСА (с отладкой) ---
+        // --- ПРОВЕРКА СТАТУСА ---
         const status = getOperatorStatus();
-        console.log('SkyAuto: Статус оператора =', JSON.stringify(status)); // <-- смотри в консоль!
+        console.log('SkyAuto: Статус оператора =', JSON.stringify(status));
         
         if (status !== 'В работе') {
             const display = status || 'не определён';
             updateStatus('ПАУЗА', '#ff5555', `Статус: ${display} (нужен "В работе")`);
             return;
         }
+		
+		// --- ПРОВЕРКА НАСТРОЙКИ АВТОВЗЯТИЯ ---
+if (localStorage.getItem('skyauto_enabled') === '0') {
+    updateStatus('ВЫКЛЮЧЕНО', '#ff5555', 'Автовзятие отключено в настройках');
+    return;
+}
         
         // --- Кулдаун ---
         if (cooldownUntil > now) {

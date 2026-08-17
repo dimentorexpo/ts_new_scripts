@@ -21,6 +21,8 @@ var win_SettingsApp =  // описание элементов главного �
                     <br>
 				<label class="spanCRM" style="color:bisque"><input type="checkbox" id="repeatsoundselectCRM">Повторять звук новой задачи</label>
                     <br>
+				<label class="spanCRM" style="color:bisque"><input type="checkbox" id="skyautoEnabledCRM">Автовзятие задач (SkyAuto)</label>
+				<br>
 				<span class="spanCRM" style="color:bisque">Интервал воспроизведения звука:</span>
 				<input class="inputCRM" title="Ввод интервала в секундах между повторами звука нового чата" id="soundplayintervalCRM" placeholder="N" autocomplete="off" type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px; width: 50px; color: black;">
 				<button class="btnCRM" title="Внести изменения в интервал между повторами звука нового чата" id="setsoundplayintervalCRM" style="margin-top: 5px">SET⌚</button>
@@ -61,6 +63,10 @@ if (localStorage.getItem('audioCRM') == null) { // Задаем переключ
 
 if (localStorage.getItem('repeatsound') == null) { // Задаем переключатель повторять/не повторять звук
     localStorage.setItem('repeatsound', 0);
+}
+
+if (localStorage.getItem('skyauto_enabled') == null) { // Задаем переключатель автовзятия задач (по умолчанию ВКЛ)
+    localStorage.setItem('skyauto_enabled', 1);
 }
 
 const wintSettingsApp = createWindowCRM('winSettingsApp', 'winTopSettingsApp', 'winLeftSettingsApp', win_SettingsApp);
@@ -214,6 +220,23 @@ document.getElementsByClassName('checkbox-audio-switch-CRM')[0].onclick = functi
         }
     }
 }
+
+if (localStorage.getItem('skyauto_enabled') == '0') {
+    document.getElementById('skyautoEnabledCRM').checked = false;
+} else {
+    document.getElementById('skyautoEnabledCRM').checked = true;
+}
+
+function changeskyautoEnabledCRM() {
+    if (localStorage.getItem('skyauto_enabled') == '1') {
+        document.getElementById("skyautoEnabledCRM").checked = false;
+        localStorage.setItem('skyauto_enabled', '0')
+    } else {
+        document.getElementById("skyautoEnabledCRM").checked = true;
+        localStorage.setItem('skyauto_enabled', '1')
+    }
+}
+document.getElementById('skyautoEnabledCRM').addEventListener('change', changeskyautoEnabledCRM);
 
 document.getElementById('sound_testCRM').onclick = function () { // кнопка тест звука
     if (document.getElementById('sound_testCRM').innerHTML == '▶') {
