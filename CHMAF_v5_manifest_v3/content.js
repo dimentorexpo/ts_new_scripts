@@ -920,76 +920,130 @@ if (localStorage.getItem('scriptAdr') == null) {
     localStorage.setItem('scriptAdr', 'https://script.google.com/macros/s/AKfycbzsf72GllYQdCGg-L4Jw1qx9iv9Vz3eyiQ9QO81HEnlr0K2DKqy6zvi7IYu77GB6EMU/exec');
 }
 
-// Кнопка «Вернуть» — восстанавливает скрытое модальное окно чата
+// ==========================================
+// 1. Глобальные переменные и кнопки
+// ==========================================
 let maskBack = document.createElement('button');
-maskBack.id = "maskBack"
-maskBack.innerHTML = "↩️"
-maskBack.title = "Вернуть скрытое окно"
-maskBack.style = 'display: none;'
-maskBack.classList.add('gpanneon-glass-btn')
+maskBack.id = "maskBack";
+maskBack.innerHTML = "↩️";
+maskBack.title = "Вернуть скрытое окно";
+maskBack.style.display = 'none';
+maskBack.classList.add('gpanneon-glass-btn', 'fab-premium');
 
-// Возвращает скрытое окно, но только если открыт тот же чат (сверка по имени/email/телефону)
+let maskBackHide = document.createElement('span');
+maskBackHide.id = "maskBackHide";
+maskBackHide.innerHTML = "❌Скрыть";
+maskBackHide.style.cssText = 'margin-left: auto; margin-right: 10px; cursor: pointer; display: none;';
+
+let isMasked = false; // Флаг: скрыто ли сейчас окно
+
+// ==========================================
+// 2. Логика кнопки ↩️ (Вернуть)
+// ==========================================
 maskBack.onclick = function () {
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-    if (iframe) {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const name = document.getElementById('maskBack').getAttribute('name');
-        const email = document.getElementById('maskBack').getAttribute('email');
-        const phone = document.getElementById('maskBack').getAttribute('phone');
-        const NameInChat = getActiveConvUserName();
-        const EmailInChat = SearchinAFnewUI("email");
-        const PhoneInChat = SearchinAFnewUI("phone");
-        const modalMask = iframeDoc.getElementsByClassName('mantine-Modal-root')[0];
-        const chatHeaderActionsInner = iframeDoc.querySelectorAll('#__next [class^="ConversationActions_Actions"]')[0];
-        const chatNotesButton = iframeDoc.getElementsByClassName('mantine-RichTextEditor-control')[0];
+    if (!iframe) return;
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
-        if (NameInChat === name && EmailInChat === email && PhoneInChat === phone) {
-            modalMask.style.display = '';
-            chatHeaderActionsInner.style.display = ''; // кнопки сверху
-            chatNotesButton.style.display = ''; // кнопка заметок
-            maskBack.style.display = 'none';
-        } else {
-            maskBack.innerHTML = "❌";
-            maskBack.title = "Открыт не тот чат"
-            setTimeout(function () {
-                maskBack.innerHTML = "↩️";
-                maskBack.title = "Вернуть скрытое окно"
-            }, 3000);
-        }
+    const name = maskBack.getAttribute('name');
+    const email = maskBack.getAttribute('email');
+    const phone = maskBack.getAttribute('phone');
+    const NameInChat = getActiveConvUserName();
+    const EmailInChat = SearchinAFnewUI("email");
+    const PhoneInChat = SearchinAFnewUI("phone");
+
+    const modalMask = iframeDoc.querySelector('.mantine-Modal-root');
+    const chatHeaderActionsInner = iframeDoc.querySelector('#__next [class^="ConversationActions_Actions"]');
+    const chatNotesButton = iframeDoc.querySelector('.mantine-RichTextEditor-control');
+
+    if (NameInChat === name && EmailInChat === email && PhoneInChat === phone) {
+        // Возвращаем всё на место (явно указываем display)
+        if (modalMask) modalMask.style.display = 'block'; // или 'flex', в зависимости от вёрстки модалки
+        if (chatHeaderActionsInner) chatHeaderActionsInner.style.display = 'flex';
+        if (chatNotesButton) chatNotesButton.style.display = 'flex';
+
+        isMasked = false; // Снимаем флаг скрытия
+
+        maskBack.style.display = 'none'; // Прячем ↩️
+    } else {
+        maskBack.innerHTML = "❌";
+        maskBack.title = "Открыт не тот чат";
+        setTimeout(function () {
+            maskBack.innerHTML = "↩️";
+            maskBack.title = "Вернуть скрытое окно";
+        }, 3000);
     }
 };
 
-// Кнопка «Скрыть» — прячет модальное окно чата и панель действий
-let maskBackHide = document.createElement('span');
-maskBackHide.id = "maskBackHide"
-maskBackHide.innerHTML = "❌Скрыть"
-maskBackHide.style = 'margin-left: auto;margin-right: 10px;'
-maskBackHide.style.display = "";
-
-// Скрывает модальное окно и запоминает данные чата в атрибутах maskBack для сверки
+// ==========================================
+// 3. Логика кнопки ❌Скрыть
+// ==========================================
 maskBackHide.onclick = function () {
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-    if (iframe) {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const modalMasks = iframeDoc.getElementsByClassName('mantine-Modal-root')[0]; // открытое окно c затемнением
-        const chatHeaderActionsInner = iframeDoc.querySelectorAll('#__next [class^="ConversationActions_Actions"]')[0]; // кнопки действий в чате
-        const chatNotesButton = iframeDoc.getElementsByClassName('mantine-RichTextEditor-control')[0]; // кнопка заметок
-        const NameInChat = getActiveConvUserName();
-        const EmailInChat = SearchinAFnewUI("email");
-        const PhoneInChat = SearchinAFnewUI("phone");
+    if (!iframe) return;
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
-        if (modalMasks) {
-            modalMasks.style.display = 'none';
-            chatHeaderActionsInner.style.display = 'none'; // кнопки сверху
-            chatNotesButton.style.display = 'none'; // кнопка заметок
-            maskBack.style.display = '';
+    const modalMask = iframeDoc.querySelector('.mantine-Modal-root');
+    const chatHeaderActionsInner = iframeDoc.querySelector('#__next [class^="ConversationActions_Actions"]');
+    const chatNotesButton = iframeDoc.querySelector('.mantine-RichTextEditor-control');
 
-            maskBack.setAttribute('name', NameInChat);
-            maskBack.setAttribute('email', EmailInChat);
-            maskBack.setAttribute('phone', PhoneInChat);
-        }
-    }
+    const NameInChat = getActiveConvUserName();
+    const EmailInChat = SearchinAFnewUI("email");
+    const PhoneInChat = SearchinAFnewUI("phone");
+
+    // Скрываем элементы, если найдены
+    if (modalMask) modalMask.style.display = 'none';
+    if (chatHeaderActionsInner) chatHeaderActionsInner.style.display = 'none';
+    if (chatNotesButton) chatNotesButton.style.display = 'none';
+
+    isMasked = true; // Ставим флаг, что мы скрыли окно
+
+    // Прячем "Скрыть" и показываем ↩️
+    maskBackHide.style.display = 'none';
+    maskBack.style.display = 'inline-block'; // Явно показываем кнопку вернуть
+
+    // Запоминаем данные
+    maskBack.setAttribute('name', NameInChat);
+    maskBack.setAttribute('email', EmailInChat);
+    maskBack.setAttribute('phone', PhoneInChat);
 };
+
+// ==========================================
+// 4. Авто-проверка (вставляет ↩️ в панель и "Скрыть" в окна)
+// ==========================================
+setInterval(function () {
+    // 1. Гарантированно добавляем кнопку "Вернуть" в панель, если панель есть, а кнопки в ней нет
+    const rp = document.getElementById('rightPanel');
+    if (rp && !rp.contains(maskBack)) {
+        rp.appendChild(maskBack);
+    }
+
+    // 2. Если мы сейчас скрыли окно (нажали ❌Скрыть), прячем "Скрыть" и выходим
+    if (isMasked) return;
+
+    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+    if (!iframe) return;
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    if (!iframeDoc) return;
+
+    // 3. Ищем открытое модальное окно
+    const modalMask = iframeDoc.querySelector('.mantine-Modal-root');
+    if (modalMask && modalMask.style.display !== 'none') {
+        // Окно открыто! Ищем его шапку
+        const modalHeader = modalMask.querySelector('.mantine-Modal-header');
+        if (modalHeader) {
+            // Если кнопки "Скрыть" еще нет в шапке, добавляем её туда
+            if (!modalHeader.contains(maskBackHide)) {
+                modalHeader.appendChild(maskBackHide);
+            }
+            // Показываем кнопку "Скрыть"
+            maskBackHide.style.display = 'inline-block';
+        }
+    } else {
+        // Если открытого окна нет, прячем кнопку "Скрыть"
+        maskBackHide.style.display = 'none';
+    }
+}, 1000); // Проверка каждую секунду
 
 /**
  * Ищет значение поля (phone, email, id и т.д.) в панели данных пользователя нового UI AutoFAQ.
