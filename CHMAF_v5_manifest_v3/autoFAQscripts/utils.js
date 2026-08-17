@@ -4,6 +4,12 @@ localStorage.removeItem('AF_elka');
 localStorage.removeItem('AF_hat');
 localStorage.removeItem('AF_bag');
 
+/**
+ * Проверяет, можно ли начинать перетаскивание/обрабатывать клик по элементу.
+ * Возвращает false для интерактивных элементов (инпуты, кнопки, ссылки и т.п.).
+ * @param {Event} a — событие мыши
+ * @returns {boolean} — true, если перетаскивание разрешено
+ */
 function checkelementtype(a) {
     let elem = a.target;
     if (!elem) return false;
@@ -137,8 +143,13 @@ function enableDrag(element, options = {}) {
 }
 
 /**
- * Создает перетаскиваемое окно с гарантированной защитой инпутов.
- * Использует enableDrag для универсального перетаскивания.
+ * Создаёт перетаскиваемое окно расширения и добавляет его в body.
+ * Позиция восстанавливается из localStorage и сохраняется после drag.
+ * @param {string} id — ID окна
+ * @param {string} topKey — ключ localStorage для координаты top
+ * @param {string} leftKey — ключ localStorage для координаты left
+ * @param {string} content — HTML-содержимое окна
+ * @returns {HTMLElement} — созданное окно
  */
 function createWindow(id, topKey, leftKey, content) {
     const windowElement = document.createElement('div');
@@ -216,6 +227,10 @@ function createWindow(id, topKey, leftKey, content) {
     return windowElement;
 }
 
+/**
+ * Определяет позицию каретки в текстовом поле по координатам клика.
+ * @returns {number} — индекс позиции каретки
+ */
 function getCaretPositionFromPoint(element, x, y) {
     if (document.caretPositionFromPoint) {
         const pos = document.caretPositionFromPoint(x, y);
@@ -224,6 +239,11 @@ function getCaretPositionFromPoint(element, x, y) {
     return element.selectionStart;
 }
 
+/**
+ * Промис-обёртка над chrome.storage.local.get.
+ * @param {string[]} keys — список ключей
+ * @returns {Promise<Object>} — объект с запрошенными значениями
+ */
 async function getStorageData(keys) {
     return new Promise((resolve) => {
         chrome.storage.local.get(keys, (result) => resolve(result));
@@ -234,6 +254,7 @@ async function getStorageData(keys) {
 // PREMIUM FAB BUTTON SYSTEM — Инжект стилей + создание кнопок
 // ═══════════════════════════════════════════════════════════════
 
+/** Инжектит CSS-стили FAB-кнопок один раз (идемпотентно). */
 function injectFABStyles() {
     if (document.getElementById('fab-premium-styles')) return;
 
@@ -446,6 +467,16 @@ function injectFABStyles() {
     document.head.appendChild(style);
 }
 
+/**
+ * Создаёт плавающую кнопку действия (FAB) с тултипом.
+ * @param {Object} config
+ * @param {string} config.id — ID кнопки
+ * @param {string} config.icon — HTML/эмодзи иконки
+ * @param {string} config.title — текст тултипа
+ * @param {string} [config.theme='cyan'] — цветовая тема
+ * @param {Function} config.onClick — обработчик клика
+ * @returns {HTMLButtonElement}
+ */
 function createFAB(config) {
     const { id, icon, title, theme = 'cyan', onClick } = config;
 
@@ -465,6 +496,10 @@ function createFAB(config) {
     return btn;
 }
 
+/**
+ * Главная инициализация панели расширения: ждёт идентификации оператора,
+ * строит боковую FAB-панель, меню модулей и запускает фоновые интервалы.
+ */
 async function move_again_AF() {
     getText();
     let whoAmISuccess = await whoAmI();
@@ -547,7 +582,7 @@ async function move_again_AF() {
 
     createSideBtn('opennewcat', '☢', 'История чатов', 'emerald', getopennewcatButtonPress);
 
-    if (scriptAdr != data.TP_addr && scriptAdr != data.TP_addrRzrv && localStorage.getItem('hideTaskWindow') == 1) {
+    if (scriptAdr != data.TP_addr && scriptAdr != data.TP_addrRzrv && localStorage.getItem('hideTaskWindow') === '1') {
         localStorage.setItem('hideTaskWindow', '0');
     }
     if (scriptAdr != data.TP_addr && scriptAdr != data.TP_addrRzrv) prepKC();
@@ -569,6 +604,7 @@ else {
     }, 1000);
 }
 
+/** Автоматически принимает всплывающие условия использования на new-teachers.skyeng.ru. */
 function closeTerms() {
     if (document.URL.includes('new-teachers.skyeng.ru')) {
         const btns = document.getElementsByClassName('terms-popup-accept-button');
@@ -576,11 +612,14 @@ function closeTerms() {
     }
 }
 
+/** Загружает таблицу шаблонов из Google Apps Script и перерисовывает кнопки. */
 async function getText() {
     try {
         const r = await fetch(scriptAdr);
         if (r.ok) { table = (await r.json()).result; refreshTemplates(); }
-    } catch (e) { }
+    } catch (e) {
+        console.error('Не удалось загрузить шаблоны:', e);
+    }
 }
 
 (function () {
@@ -593,8 +632,13 @@ async function getText() {
     };
 })();
 
+/** Алиас для showCustomAlert (совместимость со старым кодом). */
 function notify(msg) { showCustomAlert(msg); }
 
+/**
+ * Включает скрытие окна по двойному клику на его drag-зоне
+ * (если в настройках не отключено, dblhidewindow = '0').
+ */
 function hideWindowOnDoubleClick(id) {
     if (localStorage.getItem('dblhidewindow') == '0') {
         const el = document.getElementById(id);
@@ -604,12 +648,14 @@ function hideWindowOnDoubleClick(id) {
     }
 }
 
+/** Привязывает к кнопке bId скрытие окна wId. */
 function hideWindowOnClick(wId, bId) {
     const w = document.getElementById(wId);
     const b = document.getElementById(bId);
     if (b) b.onclick = () => w.style.display = 'none';
 }
 
+/** Добавляет в боковую панель кнопки, доступные только отделу ТП. */
 function prepTp() {
     const p = document.getElementById('rightPanel');
     const create = (id, icon, title, theme, fn) => {
@@ -629,6 +675,7 @@ function prepTp() {
     setInterval(timerHideButtons, 500);
 }
 
+/** Настраивает интерфейс для отдела КЦ: скрывает ТП-элементы, показывает КЦ-элементы. */
 function prepKC() {
     const l = document.querySelector('.user_menu-language_switcher');
     if (l) l.style.display = localStorage.getItem('disablelngpmwindow') === '1' ? 'none' : '';
@@ -636,6 +683,12 @@ function prepKC() {
     document.querySelectorAll('.onlyforkc').forEach(e => e.style.display = '');
 }
 
+/**
+ * Копирует текст в буфер обмена через execCommand (надёжнее navigator.clipboard
+ * в контексте content-скрипта расширения).
+ * @param {string} text
+ * @returns {Promise<void>}
+ */
 function copyToClipboard(text) {
     return new Promise((resolve, reject) => {
         try {
@@ -655,19 +708,26 @@ function copyToClipboard(text) {
     });
 }
 
+/**
+ * Извлекает последнюю login-ссылку из HTML-ответа админки.
+ * @param {string} text — HTML/текст ответа
+ * @returns {string|null} — ссылка без висячих кавычек или null
+ */
 function extractLoginLink(text) {
-    // Используем глобальный поиск для нахождения всех URL
     const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g;
-    let matches = text.match(regex);
-    // Проверяем наличие совпадений
+    const matches = text.match(regex);
     if (matches && matches.length) {
-        // Получаем последний URL и удаляем кавычки в конце, если они есть
-        let lastMatch = matches[matches.length - 1];
-        return lastMatch.replace(/["']+$/, ''); // Удаляем кавычки в конце строки
+        return matches[matches.length - 1].replace(/["']+$/, '');
     }
-    return null; // Возвращаем null, если совпадений нет
+    return null;
 }
 
+/**
+ * Генерирует одноразовую ссылку для входа под пользователем через админку
+ * и копирует её в буфер обмена.
+ * @param {string} userid — ID пользователя
+ * @returns {Promise<boolean>} — true при успехе
+ */
 function getLoginLink(userid) {
     return new Promise((resolve, reject) => {
         if (!userid) {
@@ -715,6 +775,10 @@ function getLoginLink(userid) {
     });
 }
 
+// ⚠️ ЗАГЛУШКА: никакой санитизации не выполняет — возвращает HTML как есть.
+// Не использовать для защиты от XSS; оставлено для совместимости вызовов.
 function sanitizeHTML(h) { return h; }
+
+/** Алиас для showCustomAlert (совместимость со старым кодом). */
 function showToast(m) { showCustomAlert(m); }
 setInterval(closeTerms, 500);

@@ -1,3 +1,8 @@
+/**
+ * Инициализация настроек расширения: дефолтные значения, окно настроек,
+ * применение цветовых тем (основной чат, архив тикетов, premium-бейджи)
+ * и все обработчики UI. Вызывается один раз при загрузке страницы.
+ */
 async function init_settings() {
     // --- Constants & Configuration ---
     const DEFAULTS = {
@@ -47,6 +52,36 @@ async function init_settings() {
 
     Settings.initDefaults();
 
+    // --- Цветовые хелперы (общие для всех тем ниже) ---
+
+    /** Переводит HEX-цвет (#RRGGBB) в rgba-строку с заданной прозрачностью. */
+    const hexToRgba = (hex, alpha) => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
+    /** Яркость HEX-цвета по формуле восприятия (0–255). */
+    const hexBrightness = (hex) => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    };
+
+    /** Инжектит/обновляет <style> с заданным ID в указанном документе. */
+    const injectStyleInto = (targetDoc, styleId, cssText) => {
+        if (!targetDoc || !targetDoc.head) return;
+        let styleEl = targetDoc.getElementById(styleId);
+        if (!styleEl) {
+            styleEl = targetDoc.createElement('style');
+            styleEl.id = styleId;
+            targetDoc.head.appendChild(styleEl);
+        }
+        styleEl.textContent = cssText;
+    };
+
     // ====================================================================================
     // Универсальная функция для цвета с учетом IFRAME и динамических хэшей классов
     // ====================================================================================
@@ -58,20 +93,8 @@ async function init_settings() {
 
         const color = Settings.get('appBgColor') || '#FFFFFF';
         const isWhite = color.toUpperCase() === '#FFFFFF';
-
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-        const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-
-        const textColor = brightness >= 128 ? '#1A1A1A' : '#E0E0E0';
-
-        const getRgba = (hex, alpha) => {
-            const r1 = parseInt(hex.slice(1, 3), 16);
-            const g1 = parseInt(hex.slice(3, 5), 16);
-            const b1 = parseInt(hex.slice(5, 7), 16);
-            return `rgba(${r1}, ${g1}, ${b1}, ${alpha})`;
-        };
+        const textColor = hexBrightness(color) >= 128 ? '#1A1A1A' : '#E0E0E0';
+        const getRgba = hexToRgba;
 
         // ─── Удаление стилей при белом фоне (возврат к дефолту) ───
         const removeStyle = (targetDoc, styleId) => {
@@ -1024,22 +1047,11 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
         `;
         }
 
-        const injectStyle = (targetDoc, styleId) => {
-            if (!targetDoc || !targetDoc.head) return;
-            let styleEl = targetDoc.getElementById(styleId);
-            if (!styleEl) {
-                styleEl = targetDoc.createElement('style');
-                styleEl.id = styleId;
-                targetDoc.head.appendChild(styleEl);
-            }
-            styleEl.innerHTML = cssRules;
-        };
-
-        injectStyle(document, 'chmaf-bg-main');
+        injectStyleInto(document, 'chmaf-bg-main', cssRules);
         const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
         if (iframe) {
             const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-            if (iframeDoc) injectStyle(iframeDoc, 'chmaf-bg-iframe');
+            if (iframeDoc) injectStyleInto(iframeDoc, 'chmaf-bg-iframe', cssRules);
         }
 
         // ─── Помечаем комментарии оператора (OperatorComment) ───
@@ -1147,16 +1159,7 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
         }
     `;
 
-        const inject = (targetDoc) => {
-            if (!targetDoc || !targetDoc.head) return;
-            let el = targetDoc.getElementById('chmaf-premium-light');
-            if (!el) {
-                el = targetDoc.createElement('style');
-                el.id = 'chmaf-premium-light';
-                targetDoc.head.appendChild(el);
-            }
-            el.innerHTML = lightCss;
-        };
+        const inject = (targetDoc) => injectStyleInto(targetDoc, 'chmaf-premium-light', lightCss);
 
         inject(document);
         const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
@@ -1169,14 +1172,13 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
 
 
 
-    // Применяем при запуске.
-    // Ставим setInterval, так как iframe загружается с задержкой или может быть пересоздан SPA-роутером
-    // Применяем при запуске.
+    // Применяем темы при запуске и по интервалу —
+    // iframe нового фронта подгружается с задержкой и может пересоздаваться SPA-роутером.
     applyAppBgColor();
-    applyPremiumBadgeStyles(); // ← ДОБАВИТЬ ЭТО
+    applyPremiumBadgeStyles();
     setInterval(() => {
         applyAppBgColor();
-        applyPremiumBadgeStyles(); // ← И ЭТО
+        applyPremiumBadgeStyles();
     }, 2000);
 
 
@@ -1204,20 +1206,10 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
             return;
         }
 
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-        const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-
+        const brightness = hexBrightness(color);
         const textColor = brightness >= 128 ? '#1A1A1A' : '#E0E0E0';
         const isDarkBg = brightness < 128;
-
-        const getRgba = (hex, alpha) => {
-            const r1 = parseInt(hex.slice(1, 3), 16);
-            const g1 = parseInt(hex.slice(3, 5), 16);
-            const b1 = parseInt(hex.slice(5, 7), 16);
-            return `rgba(${r1}, ${g1}, ${b1}, ${alpha})`;
-        };
+        const getRgba = hexToRgba;
 
         let cssRules = `
     /* ═══ 0. ОСНОВНОЙ КОНТЕЙНЕР — .ant-layout.app-body + .app-body-content-inner ═══ */
@@ -2242,18 +2234,7 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
     `;
         }
 
-        const injectStyle = (targetDoc, styleId) => {
-            if (!targetDoc || !targetDoc.head) return;
-            let styleEl = targetDoc.getElementById(styleId);
-            if (!styleEl) {
-                styleEl = targetDoc.createElement('style');
-                styleEl.id = styleId;
-                targetDoc.head.appendChild(styleEl);
-            }
-            styleEl.innerHTML = cssRules;
-        };
-
-        injectStyle(document, 'chmaf-tickets-archive-dark');
+        injectStyleInto(document, 'chmaf-tickets-archive-dark', cssRules);
 
         // ─── Помечаем комментарии оператора и в архиве ───
         const markOperatorCommentsArchive = () => {
@@ -2293,7 +2274,7 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
         if (document.getElementById('chmaf-settings-styles')) return;
         const style = document.createElement('style');
         style.id = 'chmaf-settings-styles';
-        style.innerHTML = `
+        style.textContent = `
             .set-glass-panel { background: rgba(30, 32, 45, 0.8) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 20px; color: #e0e0e0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5); padding: 0 !important; overflow: hidden; z-index: 1000001; }
             .set-glass-header { background: rgba(255, 255, 255, 0.07); padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: grab; }
             .set-glass-content { padding: 20px; max-height: 80vh; overflow-y: auto; }
@@ -2324,6 +2305,7 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
         `;
         document.head.appendChild(style);
     };
+    // HTML-разметка окна настроек (Glassmorphism)
 
     const win_Settings = `
         <div class="set-glass-panel" style="width: 540px" id="settings_container">
@@ -2542,8 +2524,7 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
             }
         });
 
-        // --- Логика для Цвета Фона ---
-        // --- Логика для Цвета Фона ---
+        // --- Логика выбора цвета фона ---
         const bgPicker = document.getElementById('appBgColorPicker');
 
         const updateActivePreset = (currentColor) => {

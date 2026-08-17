@@ -8,16 +8,10 @@ if (typeof window.Settings === 'undefined') {
         }
     };
 }
-//Импортировал с content.js
-const message = {
-    question: 'get-extension-id'
-}
-chrome.runtime.sendMessage(message, (result) => {
-    if (localStorage.getItem('ext_id') == null)
-        localStorage.setItem('ext_id', result)
-    else localStorage.setItem('ext_id', result)
-})
-//
+// Запрашиваем у background-скрипта ID расширения и кэшируем его в localStorage
+chrome.runtime.sendMessage({ question: 'get-extension-id' }, (result) => {
+    localStorage.setItem('ext_id', result);
+});
 
 
 let aftoken = '';
@@ -27,12 +21,11 @@ let foundarr;
 let flagsearch;
 let operchatsdata;
 let isChatOnOperator = false;
-let audio // переменнай для проигрывания звука при поступлении нового чата
-let soundintervalset; //интервал между проигрыванием звука
+let audio; // звук уведомления о новом чате
+let soundintervalset; // ID интервала повторного проигрывания звука
 let flagusertype;
-let chatneraspcount; // переменная для получения колчества нераспределенных чатов в очереди
-let chattpquecount; // переменная для получения колчества нераспределенных чатов в очереди тематики ТП v1
-idk = 0
+let chatneraspcount; // количество нераспределённых чатов в очереди
+let chattpquecount; // количество нераспределённых чатов в очереди тематики ТП v1
 let tmrs = []
 let timeStart = new Date()
 let template_flag = 0
@@ -87,14 +80,20 @@ async function findOperator(operatorFullTitle) {
     }
 }
 
-let whoAmICompleted = false; // Маркер выполнения
+let whoAmICompleted = false; // Флаг: идентификация оператора уже успешно выполнена
 
+/**
+ * Определяет текущего оператора: читает CSRF-токен из cookie,
+ * извлекает ФИО и отдел из интерфейса (архив/логи или новый фронт в iframe),
+ * применяет сохранённый статус и ищет оператора в общем списке.
+ * @returns {Promise<boolean>} — true, если оператор успешно идентифицирован
+ */
 async function whoAmI() {
     if (whoAmICompleted) {
         return true; // Если уже успешно выполнялось, просто возвращаем true
     }
 
-    if (location.host.includes('autofaq') == true) {
+    if (location.host.includes('autofaq')) {
         countertest++;
         console.log(countertest);
 
@@ -182,8 +181,8 @@ let otherinpth = 'othercalendardark';
 let selecttheme = 'darkopts';
 let menutheme = 'menubarstyledark';
 
-flag = 0
-str = localStorage.getItem('sound_str');
+let flag = 0;
+let str = localStorage.getItem('sound_str');
 if (str !== null && str !== "")
     audio = new Audio(str);
 else
@@ -201,23 +200,21 @@ Object.keys(localStorage).forEach(function (key) { // чистка localstorage 
 
 localStorage.setItem('SMART_TABLE_SORTED_INFO(/tickets/archive)', '{\"columnKey\":\"ts\",\"order\":\"descend\"}')
 
-function setDisplayStyle(element, value) { // функция изменения отображения
+/**
+ * Устанавливает CSS display для элемента.
+ * @param {HTMLElement} element — целевой элемент
+ * @param {string} value — значение display ('none', 'block', 'flex' и т.д.)
+ */
+function setDisplayStyle(element, value) {
     element.style.display = value;
 }
 
-
-/*
-   * Creates a new draggable window element and appends it to the body.
-   * @param {string} id - The ID for the new window element.
-   * @param {string} topKey - The localStorage key for storing the 'top' position.
-   * @param {string} leftKey - The localStorage key for storing the 'left' position.
-   * @param {string} content - The HTML content to be inserted into the window.
-   * @returns {HTMLElement} The created window element.
-*/
-// Блок горячих клавиш
-// Блок горячих клавиш
+/**
+ * Меняет статус оператора в AutoFAQ (Online / Busy / Offline и т.д.).
+ * @param {string} status — новый статус
+ * @param {string} [token=aftoken] — CSRF-токен (по умолчанию глобальный aftoken)
+ */
 function changeStatus(status, token = aftoken) {
-    // ⛔ Убраны пробелы в конце URL!
     const API_ENDPOINT = 'https://skyeng.autofaq.ai/api/reason8/operator/status';
     const fetchOptions = {
         headers: {
@@ -242,10 +239,10 @@ function changeStatus(status, token = aftoken) {
         });
 }
 
-// ─── Авто-статус при входе ───
-// Вызывайте эту функцию один раз после того, как aftoken уже получен
-// (например, в конце инициализации content.js или после события загрузки токена)
-// ─── Авто-статус при входе ───
+/**
+ * Применяет сохранённый в настройках статус оператора сразу после входа.
+ * Вызывается один раз, когда aftoken уже получен (из whoAmI).
+ */
 function applyLoginStatus() {
     // Не трогаем страницу логина
     if (window.location.href === 'https://skyeng.autofaq.ai/login') return;
@@ -258,21 +255,18 @@ function applyLoginStatus() {
     changeStatus(savedStatus, aftoken);
 }
 
-// Вызовите applyLoginStatus() в том месте, где точно есть aftoken.
-// Например:
-// applyLoginStatus();
-
-// Конец блока горячих клавиш
-
-function onlyNumber(object) { // функция для разрешения ввода только цифр и знака -
+/** Оставляет в поле ввода только цифры и знак минус. */
+function onlyNumber(object) {
     object.value = object.value.replace(/[^0-9-]/g, '');
 }
 
-function onlyNumbers(object) { // функция для разрешения ввода только цифр
+/** Оставляет в поле ввода только цифры. */
+function onlyNumbers(object) {
     object.value = object.value.replace(/[^0-9]/g, '');
 }
 
-function timerHideButtons() { // функция прячет кнопку одну
+/** Вставляет кнопку «Скрыть» в шапку модального окна нового фронта, если её ещё нет. */
+function timerHideButtons() {
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
 
     if (iframe) {
@@ -291,13 +285,17 @@ function timerHideButtons() { // функция прячет кнопку одн
 }
 
 
-async function sendComment(txt, activeConvId) { // Функция отправки комментария
-    var values = await getInfo(0);
-    var adr = values[0];
-    var adr1 = activeConvId ? activeConvId : values[1];
-    var uid = values[2];
-    var txt2 = txt.split('\n').join('\\n');
-    txt2 = txt2.split("\"").join("\\\""); // Обратите внимание: переопределение переменной без 'var' для избежания повторного объявления
+/**
+ * Отправляет внутренний комментарий оператора в чат AutoFAQ.
+ * @param {string} txt — текст комментария
+ * @param {string} [activeConvId] — ID чата; если не передан, берётся из getInfo()
+ */
+async function sendComment(txt, activeConvId) {
+    const values = await getInfo(0);
+    const adr1 = activeConvId ? activeConvId : values[1];
+    const uid = values[2];
+    // Экранируем переносы строк и кавычки для вставки в JSON-тело запроса
+    const txt2 = txt.split('\n').join('\\n').split('"').join('\\"');
     resetFlags();
     fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
         "headers": {
@@ -310,12 +308,14 @@ async function sendComment(txt, activeConvId) { // Функция отправк
     });
 }
 
-function resetFlags() { //функция обнуления флагов
-    template_flag = 0
-    template_flag2 = 0
+/** Сбрасывает флаги состояния вставки шаблонов. */
+function resetFlags() {
+    template_flag = 0;
+    template_flag2 = 0;
 }
 
-function newTaggg(tagName) { //функция добавления тега в чат, но надо потом искать где используется
+/** Добавляет тег в активный чат через API AutoFAQ. */
+function newTaggg(tagName) {
     let chatId = getChatId();
 
     if (chatId) {
@@ -870,6 +870,11 @@ async function doOperationsWithHistory(body = "") {  // общая функци�
     }
 }
 
+/**
+ * Получает данные конкретного диалога по ID из API AutoFAQ.
+ * @param {string} id — ID диалога
+ * @returns {Promise<Object>} — распарсенный JSON ответа
+ */
 async function doOperationsWithConversations(id) {
     const response = await fetch(`${CONFIGSTAT.API.BASE_URL}${CONFIGSTAT.API.CONVERSATIONS}/${id}`, {
         headers: { 'x-csrf-token': aftoken },
@@ -879,16 +884,17 @@ async function doOperationsWithConversations(id) {
     return await response.json(); // ← парсим здесь
 }
 
-async function fetchStaticData() { // общая функция проверки статусов операторов
-    const url = "https://skyeng.autofaq.ai/api/operators/statistic/currentState"; // Статичный URL
-    const headers = {
-        "x-csrf-token": aftoken, // Статичный токен
-    };
+/**
+ * Запрашивает текущее состояние всех операторов (онлайн, статусы и т.д.).
+ * @returns {Promise<Object>} — объект с массивом onOperator
+ */
+async function fetchStaticData() {
+    const url = "https://skyeng.autofaq.ai/api/operators/statistic/currentState";
     const options = {
-        method: "GET", // Статичный метод
-        headers: headers,
-        credentials: "include", // Статичная настройка для включения cookies
-        mode: "cors", // Статичный режим
+        method: "GET",
+        headers: { "x-csrf-token": aftoken },
+        credentials: "include",
+        mode: "cors",
     };
 
     try {
@@ -909,19 +915,21 @@ async function fetchStaticData() { // общая функция проверки
     }
 }
 
-//Подключаем скрипт App Script с гугл таблиц, где содержаться шщаблоны, которыми пользуемся
+// Адрес Google Apps Script с шаблонами ответов; задаём дефолт, если не настроен
 if (localStorage.getItem('scriptAdr') == null) {
     localStorage.setItem('scriptAdr', 'https://script.google.com/macros/s/AKfycbzsf72GllYQdCGg-L4Jw1qx9iv9Vz3eyiQ9QO81HEnlr0K2DKqy6zvi7IYu77GB6EMU/exec');
 }
 
-let maskBack = document.createElement('button') // кнопка вернуть
+// Кнопка «Вернуть» — восстанавливает скрытое модальное окно чата
+let maskBack = document.createElement('button');
 maskBack.id = "maskBack"
 maskBack.innerHTML = "↩️"
 maskBack.title = "Вернуть скрытое окно"
 maskBack.style = 'display: none;'
 maskBack.classList.add('gpanneon-glass-btn')
 
-maskBack.onclick = function () { // функция кнопки вернуть
+// Возвращает скрытое окно, но только если открыт тот же чат (сверка по имени/email/телефону)
+maskBack.onclick = function () {
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
     if (iframe) {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -951,13 +959,15 @@ maskBack.onclick = function () { // функция кнопки вернуть
     }
 };
 
-let maskBackHide = document.createElement('span') // кнопка скрыть
+// Кнопка «Скрыть» — прячет модальное окно чата и панель действий
+let maskBackHide = document.createElement('span');
 maskBackHide.id = "maskBackHide"
 maskBackHide.innerHTML = "❌Скрыть"
 maskBackHide.style = 'margin-left: auto;margin-right: 10px;'
 maskBackHide.style.display = "";
 
-maskBackHide.onclick = function () { // функция кнопки скрыть
+// Скрывает модальное окно и запоминает данные чата в атрибутах maskBack для сверки
+maskBackHide.onclick = function () {
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
     if (iframe) {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -981,7 +991,12 @@ maskBackHide.onclick = function () { // функция кнопки скрыть
     }
 };
 
-function SearchinAFnewUI(whatsearch) { //функция поиска нового юзер интерфейса в AF
+/**
+ * Ищет значение поля (phone, email, id и т.д.) в панели данных пользователя нового UI AutoFAQ.
+ * @param {string} whatsearch — имя поля, например 'phone', 'email', 'id'
+ * @returns {string} — найденное значение или пустая строка
+ */
+function SearchinAFnewUI(whatsearch) {
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
     if (iframe) {
         const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
@@ -1022,7 +1037,12 @@ function SearchinAFnewUI(whatsearch) { //функция поиска новог�
     }
 }
 
-function getChatId() { //функция получения активного ID чата, делалась, когда еще в адресную строку не выводился хеш чата
+/**
+ * Возвращает ID активного чата в зависимости от текущего раздела
+ * (логи, назначенные тикеты нового UI или архив).
+ * @returns {string} — ID чата или пустая строка
+ */
+function getChatId() {
     const hrefnow = window.location.href;
     const pathname = document.location.pathname.split('/');
     let chatId = '';
@@ -1055,7 +1075,12 @@ function getChatId() { //функция получения активного ID
     return chatId;
 }
 
-function getActiveConvUserName() { //функция получение имени пользователя в активном чате
+/**
+ * Возвращает имя пользователя из активного чата.
+ * Отсекает служебные префиксы (тьютор, buddy и т.п.).
+ * @returns {string} — имя или пустая строка
+ */
+function getActiveConvUserName() {
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
     if (iframe) {
         const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
@@ -1080,13 +1105,13 @@ function getActiveConvUserName() { //функция получение имен�
                 return namesParts[0];
             }
         }
-
-        return '';
     }
+
+    return '';
 }
 
+// Извлекает последнюю login-ссылку из HTML-ответа. Дубль копии в utils.js — держать синхронно.
 function extractLoginLink(text) {
-    // Используем глобальный поиск для нахождения всех URL
     const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g;
     let matches = text.match(regex);
     // Проверяем наличие совпадений
@@ -1112,6 +1137,10 @@ function getAllChatsList() { //получить список всех чатов
 
 // --- ОБНОВЛЕННЫЕ ФУНКЦИИ ДЛЯ СОВМЕСТИМОСТИ С ТЕМАМИ ---
 
+/**
+ * @deprecated Устаревшая версия подсветки карточек по таймерам.
+ * Актуальная логика — в checkchats(); оставлено для обратной совместимости.
+ */
 function convertToSeconds(TimeToClose, TimeToAnswer, i) {
     const cardElements = getAllChatsList().chatsList;
     if (!cardElements || !cardElements[i]) return 0;
@@ -1134,6 +1163,11 @@ function convertToSeconds(TimeToClose, TimeToAnswer, i) {
     return totalSeconds;
 }
 
+/**
+ * Подсвечивает карточки чатов в новом UI по таймерам:
+ * новый чат / ожидание ответа / меньше 2 минут до закрытия.
+ * Цвета берутся из настроек (localStorage). Вызывается по интервалу.
+ */
 function checkchats() {
     const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
     if (!iframe) return;
@@ -1203,7 +1237,12 @@ function toggleButtonState(buttonId, className) { // Функция для пе�
     button.classList.toggle(className);
 }
 
-function createAndShowButton(text, result = 'message') { //функция создания кнопки с текстовым с ообщением и прогресс баром до исчезновения
+/**
+ * Показывает плавающее уведомление-кнопку с прогресс-баром, автоскрытие через 3.5 сек.
+ * @param {string} text — HTML-текст уведомления
+ * @param {string} [result='message'] — 'message' (успех) или иное значение (ошибка)
+ */
+function createAndShowButton(text, result = 'message') {
     let type = result == 'message' ? 'sucsbtnok' : 'sucsbtnnotok';
     let btnSuccess = document.createElement("button");
     btnSuccess.id = "successButton";
@@ -1283,7 +1322,12 @@ let checkRespondToken = setInterval(async function () {
     }
 }, 4000);
 
-// Функция для замены предмета
+/**
+ * Форматирует системный ключ услуги (например, 'lc_exam_ege_math')
+ * в человекочитаемую строку «Предмет + формат» с HTML-подсветкой формата.
+ * @param {string} serviceTypeKey — ключ услуги из CRM
+ * @returns {{formattedText: string, lessontype: string}}
+ */
 function formatServiceType(serviceTypeKey) {
     let parts = serviceTypeKey.split('_');
     let subjectKey;
