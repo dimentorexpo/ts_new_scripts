@@ -22,6 +22,9 @@
         ]
     };
 
+    /**
+     * Вставляет стили для модуля
+     */
     const injectStyles = () => {
         if (document.getElementById('l2l-styles')) return;
         const style = document.createElement('style');
@@ -94,6 +97,10 @@
         document.head.appendChild(style);
     };
 
+    /**
+     * Шаблон окна для модуля
+     * @type {string}
+     */
     const win_Template = `
         <div class="l2l-panel" id="l2l-container">
             <div class="l2l-header chmaf-drag-handle" id="l2l-drag">
@@ -124,6 +131,9 @@
         </div>
     `;
 
+    /**
+     * Инициализирует модуль
+     */
     window.Link2LessonModule = {
         init: function () {
             if (document.getElementById('AF_link2less')) return;
@@ -133,6 +143,9 @@
             this.attachHandlers();
         },
 
+        /**
+         * Привязывает обработчики событий
+         */
         attachHandlers: function () {
             const self = this;
             const ui = {
