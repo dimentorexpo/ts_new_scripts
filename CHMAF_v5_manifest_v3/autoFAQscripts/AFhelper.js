@@ -55,6 +55,9 @@ var win_AFhelper = `
 const wintAF = createWindow('AF_helper', 'winTopAF', 'winLeftAF', win_AFhelper);
 
 // --- Применение масштаба при загрузке ---
+/**
+ * Применяет масштаб к окну при загрузке
+ */
 (function applyInitialScale() {
     const savedScale = localStorage.getItem('AF_windowScale') || 100;
     const target = document.getElementById('AF_helper') || document.getElementById('addTmpWrapper');
@@ -66,7 +69,12 @@ const wintAF = createWindow('AF_helper', 'winTopAF', 'winLeftAF', win_AFhelper);
 
 // --- Вспомогательные функции ---
 
-// Современная функция замены текста с коллбеком форматирования
+/**
+ * Современная функция замены текста с коллбеком форматирования
+ * @param {HTMLTextAreaElement} elem - Элемент, в котором будет осуществляться замена текста
+ * @param {Function} formatCallback - Функция, которая форматирует заменяемый текст
+ * @returns {boolean} - Возвращает true, если текст был заменен, иначе false
+ */
 function replaceSelectedText(elem, formatCallback) {
     elem.focus();
     if (typeof elem.selectionStart === "number" && elem.selectionStart !== elem.selectionEnd) {
@@ -86,9 +94,13 @@ function replaceSelectedText(elem, formatCallback) {
 }
 
 // --- Инициализация LocalStorage ---
+
 const msgBtn = document.getElementById('msg');
 const msg1Btn = document.getElementById('msg1');
 
+/**
+ * Восстанавливает состояние кнопки Чат/Заметки
+ */
 // Восстанавливаем состояние "Чат/Заметки"
 if (localStorage.getItem('msg')) {
     msgBtn.textContent = localStorage.getItem('msg');
@@ -101,6 +113,9 @@ if (localStorage.getItem('msg')) {
 // Добавляем класс-базу для колбы
 msg1Btn.classList.add('msg1type');
 
+/**
+ * Восстанавливает состояние кнопки Отправить/Доработать
+ */
 // Восстанавливаем состояние "Доработать/Отправить"
 if (localStorage.getItem('msg1')) {
     msg1Btn.textContent = localStorage.getItem('msg1');
@@ -245,6 +260,9 @@ document.getElementById('hideMenuMain').addEventListener('click', function () {
 });
 
 // Обновление данных шаблона
+/**
+ * Обновляет данные шаблона с анимацией и блокировкой от дабл-клика
+ */
 // Обновление данных шаблона с анимацией и блокировкой от дабл-клика
 const refreshBtnAFH = document.getElementById('getnewtmpldata');
 
