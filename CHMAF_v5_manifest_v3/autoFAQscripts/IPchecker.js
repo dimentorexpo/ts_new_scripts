@@ -19,6 +19,10 @@ const $cyber = (sel) => document.querySelector(sel);
 // СТИЛИ (CYBER-DARK UI)
 // =====================
 
+/**
+ * Внедряет стили для интерфейса IP Checker.
+ * @returns {void}
+ */
 const injectStyles = () => {
     if (document.getElementById('cyber-ip-styles')) return;
 
@@ -162,6 +166,10 @@ const injectStyles = () => {
 // СОЗДАНИЕ ИНТЕРФЕЙСА
 // =====================
 
+/**
+ * Создает и отображает окно для проверки IP-адреса.
+ * @returns {void}
+ */
 function createIPCheckerWindow() {
     injectStyles();
 
@@ -211,17 +219,29 @@ function createIPCheckerWindow() {
 // =====================
 
 const IP_MANAGER = {
+    /**
+     * Очищает результаты и поле ввода.
+     * @returns {void}
+     */
     clear() {
         $cyber('#cyber-output-display').innerHTML = '<span style="color: #444">Ready for input...</span>';
         $cyber('#cyber-ip-input-field').value = '';
     },
 
+    /**
+     * Скрывает окно и очищает результаты.
+     * @returns {void}
+     */
     hide() {
         const win = $cyber('#AF_IpCheck');
         if (win) win.style.display = 'none';
         this.clear();
     },
 
+    /**
+     * Получает данные IP-адреса от сервера.
+     * @returns {Promise<void>}
+     */
     async fetchIpData() {
         const ip = $cyber('#cyber-ip-input-field')?.value.trim();
         const display = $cyber('#cyber-output-display');
@@ -257,6 +277,11 @@ const IP_MANAGER = {
         });
     },
 
+    /**
+     * Отображает результаты IP-адреса.
+     * @param {Object} data - Данные IP-адреса.
+     * @returns {void}
+     */
     renderResult(data) {
         const output = [
             `<strong>TARGET IP:</strong> ${data.ip}`,
@@ -271,6 +296,11 @@ const IP_MANAGER = {
         $cyber('#cyber-output-display').innerHTML = output;
     },
 
+    /**
+     * Открывает внешние источники информации по IP-адресу.
+     * @param {string} type - Тип источника.
+     * @returns {void}
+     */
     openExternal(type) {
         const ip = $cyber('#cyber-ip-input-field').value;
         const links = {
@@ -286,6 +316,10 @@ const IP_MANAGER = {
 // ИНИЦИАЛИЗАЦИЯ
 // =====================
 
+/**
+ * Инициализирует интерфейс для проверки IP-адреса.
+ * @returns {void}
+ */
 function initIPCheckerInterface() {
     createIPCheckerWindow();
 
