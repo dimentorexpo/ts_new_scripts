@@ -1,4 +1,6 @@
-const editorExtensionIdNew = localStorage.getItem('ext_id');
+// ============================================================
+// ChMAF — AFhelper.js: главное окно шаблонов (AF_helper)
+// ============================================================
 
 var win_AFhelper = `
 <div class="glass-panel" id="addTmpWrapper">
@@ -11,9 +13,9 @@ var win_AFhelper = `
 
         <div class="flex-right">
             <button class="glass-btn mainButton" id="reminderstatus" title="Статус будильника 🔔 - вкл, 🔕 - выкл"></button>
-<button class="glass-btn mainButton" id="getnewtmpldata" title="Обновляет шаблоны">
-    <span class="btn-icon">🔄</span>
-</button>
+            <button class="glass-btn mainButton" id="getnewtmpldata" title="Обновляет шаблоны">
+                <span class="btn-icon">🔄</span>
+            </button>
             <button class="glass-btn mainButton onlyfortp" id="addsrc" title="Доп меню для работы с сервисами школы">*</button>
             <button class="glass-btn mainButton" id="links" title="Открывает доп.меню со ссылками">L</button>
             <button class="glass-btn mainButton" id="setting" title="Настройки">⚙</button>
@@ -52,12 +54,9 @@ var win_AFhelper = `
     <div id="addTmp" style="display: none;"></div>
 </div>`;
 
-const wintAF = createWindow('AF_helper', 'winTopAF', 'winLeftAF', win_AFhelper);
+createWindow('AF_helper', 'winTopAF', 'winLeftAF', win_AFhelper);
 
-// --- Применение масштаба при загрузке ---
-/**
- * Применяет масштаб к окну при загрузке
- */
+// --- Применение сохранённого масштаба при загрузке ---
 (function applyInitialScale() {
     const savedScale = localStorage.getItem('AF_windowScale') || 100;
     const target = document.getElementById('AF_helper') || document.getElementById('addTmpWrapper');
@@ -67,112 +66,80 @@ const wintAF = createWindow('AF_helper', 'winTopAF', 'winLeftAF', win_AFhelper);
     }
 })();
 
-// --- Вспомогательные функции ---
-
 /**
- * Современная функция замены текста с коллбеком форматирования
- * @param {HTMLTextAreaElement} elem - Элемент, в котором будет осуществляться замена текста
- * @param {Function} formatCallback - Функция, которая форматирует заменяемый текст
- * @returns {boolean} - Возвращает true, если текст был заменен, иначе false
+ * Заменяет выделенный в textarea текст на результат formatCallback.
+ * @param {HTMLTextAreaElement} elem — поле ввода
+ * @param {Function} formatCallback — форматирует выделенный фрагмент
+ * @returns {boolean} — true, если замена выполнена
  */
 function replaceSelectedText(elem, formatCallback) {
     elem.focus();
-    if (typeof elem.selectionStart === "number" && elem.selectionStart !== elem.selectionEnd) {
+
+    if (typeof elem.selectionStart === 'number' && elem.selectionStart !== elem.selectionEnd) {
         const start = elem.selectionStart;
         const end = elem.selectionEnd;
-        const selectedText = elem.value.substring(start, end);
-        const replacedText = formatCallback(selectedText);
+        const replacedText = formatCallback(elem.value.substring(start, end));
 
         elem.value = elem.value.substring(0, start) + replacedText + elem.value.substring(end);
 
-        // Возвращаем курсор в конец вставленного текста
+        // Курсор — в конец вставленного фрагмента
         const newPos = start + replacedText.length;
         elem.setSelectionRange(newPos, newPos);
         return true;
     }
+
     return false;
 }
 
-// --- Инициализация LocalStorage ---
-
+// ============================================================
+// Переключатели режима: «Чат/Заметки» и «Доработать/Отправить»
+// ============================================================
 const msgBtn = document.getElementById('msg');
 const msg1Btn = document.getElementById('msg1');
 
-/**
- * Восстанавливает состояние кнопки Чат/Заметки
- */
-// Восстанавливаем состояние "Чат/Заметки"
-if (localStorage.getItem('msg')) {
-    msgBtn.textContent = localStorage.getItem('msg');
-    // Проверяем по наличию слова "Заметки" (чтобы эмодзи не мешали)
-    msgBtn.classList.toggle('notes', msgBtn.textContent.includes('Заметки'));
-} else {
-    msgBtn.textContent = "Чат"; // Значение по умолчанию
-}
-
-// Добавляем класс-базу для колбы
 msg1Btn.classList.add('msg1type');
 
-/**
- * Восстанавливает состояние кнопки Отправить/Доработать
- */
-// Восстанавливаем состояние "Доработать/Отправить"
-if (localStorage.getItem('msg1')) {
-    msg1Btn.textContent = localStorage.getItem('msg1');
-    // Включаем зеленую колбу, если там "Отправить"
-    msg1Btn.classList.toggle('send-mode', msg1Btn.textContent.includes('Отправить'));
-} else {
-    msg1Btn.textContent = "Доработать"; // Значение по умолчанию
+/** Восстанавливает подпись и подсветку кнопки-режима из localStorage. */
+function restoreModeButton(btn, storageKey, defaultText, markerWord, markerClass) {
+    btn.textContent = localStorage.getItem(storageKey) || defaultText;
+    btn.classList.toggle(markerClass, btn.textContent.includes(markerWord));
 }
 
-// --- Обработчики событий ---
+restoreModeButton(msgBtn, 'msg', 'Чат', 'Заметки', 'notes');
+restoreModeButton(msg1Btn, 'msg1', 'Доработать', 'Отправить', 'send-mode');
 
-// Переключатель: Чат / Заметки
 msgBtn.addEventListener('click', function () {
-    // Используем .includes(), чтобы игнорировать эмодзи при проверке
-    const isChat = this.textContent.includes("Чат");
+    const isChat = this.textContent.includes('Чат');
 
-    // Меняем текст и эмодзи
-    this.textContent = isChat ? "Заметки" : "Чат";
-
-    // Включаем/выключаем класс для подсветки
+    this.textContent = isChat ? 'Заметки' : 'Чат';
     this.classList.toggle('notes', isChat);
-
     localStorage.setItem('msg', this.textContent);
 });
 
-// Переключатель: Отправить / Доработать
 msg1Btn.addEventListener('click', function () {
-    const isSend = this.textContent.includes("Отправить");
+    const isSend = this.textContent.includes('Отправить');
 
-    // Меняем текст (было "Отправить" -> станет "Доработать")
-    this.textContent = isSend ? "Доработать" : "Отправить";
-
-    // Если сейчас НЕ isSend (то есть мы переключили НА "Отправить"), вешаем зеленую колбу
+    this.textContent = isSend ? 'Доработать' : 'Отправить';
     this.classList.toggle('send-mode', !isSend);
-
     localStorage.setItem('msg1', this.textContent);
 });
 
-// Отправка сообщений (Send)
+// ============================================================
+// Отправка (Send): в чат/заметки с учётом состояния шаблонов
+// ============================================================
 document.getElementById('snd').addEventListener('click', function () {
     const inp = document.getElementById('inp');
-    const phoneTr = document.getElementById('phone_tr');
-    const emailTr = document.getElementById('email_tr');
 
     // Блокировка от дабл-клика
     this.disabled = true;
-    setTimeout(() => this.disabled = false, 500);
+    setTimeout(() => { this.disabled = false; }, 500);
 
     const textVal = inp.value;
 
     if (msgBtn.textContent === 'Чат') {
         if (template_flag === 1) {
-            if (template_flag2 === 1) {
-                sendAnswerTemplate2(textVal, 1);
-            } else {
-                sendAnswerTemplate('', '', 1, textVal, 1);
-            }
+            if (template_flag2 === 1) sendAnswerTemplate2(textVal, 1);
+            else sendAnswerTemplate('', '', 1, textVal, 1);
         } else {
             sendAnswer(textVal, 0);
         }
@@ -182,17 +149,21 @@ document.getElementById('snd').addEventListener('click', function () {
 
     // Очистка полей
     inp.value = '';
+    const phoneTr = document.getElementById('phone_tr');
+    const emailTr = document.getElementById('email_tr');
     if (phoneTr) phoneTr.value = '';
     if (emailTr) emailTr.value = '';
 });
 
-// Открытие/закрытие панели ссылок
+// ============================================================
+// Панель гиперссылок
+// ============================================================
 const hyperLnkPanel = document.getElementById('hyperlnk');
+
 document.getElementById('opandclsbarhyper').addEventListener('click', function () {
-    hyperLnkPanel.classList.toggle('active'); // Заменен класс
+    hyperLnkPanel.classList.toggle('active');
 });
 
-// Вставка гиперссылки
 document.getElementById('insertlinktotext').addEventListener('click', function () {
     const linkInput = document.getElementById('bindlinktotext');
     const textArea = document.getElementById('inp');
@@ -200,97 +171,82 @@ document.getElementById('insertlinktotext').addEventListener('click', function (
     const formatLink = (text) => `<a href="${linkInput.value}" target="_blank" rel="noopener">${text}</a>`;
 
     if (replaceSelectedText(textArea, formatLink)) {
-        linkInput.value = ''; // Очищаем поле ссылки только при успешной вставке
-        hyperLnkPanel.classList.remove('active'); // Заменен класс
+        linkInput.value = '';
+        hyperLnkPanel.classList.remove('active');
     }
 });
 
-// Отправка от лица бота (API)
+// ============================================================
+// Отправка от имени бота
+// ============================================================
 document.getElementById('sndbot').addEventListener('click', async function () {
     const inp = document.getElementById('inp');
     const textVal = inp.value;
 
     if (!textVal.trim()) return;
 
-    const [adr, adr1, uid] = await getInfo(flag);
+    const [adr, adr1, uid] = await getInfo(0);
 
     let formattedText = textVal.split('\n')
         .map(line => line.trim() ? `<p>${line}</p>` : '<p><br></p>')
         .join('');
 
-    if (msgBtn.textContent === "Чат") {
-        const payloadJson = JSON.stringify({
+    if (msgBtn.textContent === 'Чат') {
+        const formData = new FormData();
+        formData.append('payload', JSON.stringify({
             sessionId: uid,
             conversationId: adr1,
             text: formattedText,
             suggestedAnswerDocId: 0
-        });
-
-        const formData = new FormData();
-        formData.append("payload", payloadJson);
+        }));
 
         try {
-            await fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-                method: "POST",
-                headers: { "x-csrf-token": aftoken },
-                body: formData,
-                credentials: "include"
+            // Без content-type: при FormData браузер сам ставит multipart с boundary
+            await afApiFetch(`${AF_ORIGIN}/api/reason8/answers`, {
+                method: 'POST',
+                body: formData
             });
             inp.value = '';
         } catch (err) {
-            console.error("Ошибка отправки ботом:", err);
+            console.error('Ошибка отправки ботом:', err);
         }
     }
 });
 
-// Скрытие окон
+// ============================================================
+// Скрытие всех окон расширения
+// ============================================================
 document.getElementById('hideMenuMain').addEventListener('click', function () {
-    const windowsToHide = [
-        'AF_helper', 'AF_CustomTemplates', 'AF_Links',
-        'AF_AlarmClock', 'AF_Linksd', 'AF_Settings'
-    ];
+    ['AF_helper', 'AF_CustomTemplates', 'AF_Links',
+     'AF_AlarmClock', 'AF_Linksd', 'AF_Settings']
+        .forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) setDisplayStyle(el, 'none');
+        });
 
-    windowsToHide.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) setDisplayStyle(el, 'none');
-    });
-
-    const scriptBut = document.getElementById('scriptBut');
-    if (scriptBut) scriptBut.classList.remove('active');
+    document.getElementById('scriptBut')?.classList.remove('active');
 });
 
-// Обновление данных шаблона
-/**
- * Обновляет данные шаблона с анимацией и блокировкой от дабл-клика
- */
-// Обновление данных шаблона с анимацией и блокировкой от дабл-клика
-const refreshBtnAFH = document.getElementById('getnewtmpldata');
-
-refreshBtnAFH.addEventListener('click', async function () {
-    // 1. Ставим статус "Загрузка" (оранжевый)
-    this.classList.add('loading-orange');
+// ============================================================
+// Обновление шаблонов с анимацией и блокировкой от дабл-клика
+// ============================================================
+document.getElementById('getnewtmpldata').addEventListener('click', async function () {
+    this.classList.add('loading-orange'); // статус "Загрузка"
     this.disabled = true;
 
     try {
-        await getText(); // Твой запрос данных
+        await getText();
 
-        // 2. Ставим статус "Успех" (зеленый)
         this.classList.remove('loading-orange');
-        this.classList.add('success-green');
+        this.classList.add('success-green'); // статус "Успех"
 
-        // 3. Через 3 секунды сбрасываем всё в исходный вид
         setTimeout(() => {
             this.classList.remove('success-green');
             this.disabled = false;
         }, 3000);
-
     } catch (err) {
-        console.error("Ошибка обновления:", err);
-        // Если ошибка — можно просто вернуть в обычный вид сразу
+        console.error('Ошибка обновления:', err);
         this.classList.remove('loading-orange');
         this.disabled = false;
     }
 });
-
-// --- Фикс: снятие выделения в textarea при клике внутри ---
-// (Удален старый хак, так как новая система Drag & Drop в utils.js корректно обрабатывает инпуты через checkelementtype)

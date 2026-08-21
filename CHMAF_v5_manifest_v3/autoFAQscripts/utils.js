@@ -59,7 +59,7 @@ function enableDrag(element, options = {}) {
 
     const handleSelector = handle || '.chmaf-drag-handle';
 
-    const isInteractive = (el, insideHandle) => {
+    const isInteractive = (el) => {
         if (!el) return false;
         const interactive = el.closest('input, select, textarea, [contenteditable="true"]');
         if (interactive) return true;
@@ -92,7 +92,7 @@ function enableDrag(element, options = {}) {
         if (e.button !== 0) return;
         const insideHandle = isDragHandle(e.target);
         if (!insideHandle) return;
-        if (isInteractive(e.target, true)) return;
+        if (isInteractive(e.target)) return;
 
         isDragging = true;
         offsetX = e.clientX - element.getBoundingClientRect().left;
@@ -153,7 +153,6 @@ function enableDrag(element, options = {}) {
  */
 function createWindow(id, topKey, leftKey, content) {
     const windowElement = document.createElement('div');
-    document.body.append(windowElement);
 
     const storedTop = localStorage.getItem(topKey) || '120';
     const storedLeft = localStorage.getItem(leftKey) || '295';
@@ -177,6 +176,8 @@ function createWindow(id, topKey, leftKey, content) {
 
     windowElement.id = id;
     windowElement.innerHTML = content;
+
+    document.body.append(windowElement);
 
     // Автокоррекция позиции
     requestAnimationFrame(() => {
@@ -235,6 +236,11 @@ function getCaretPositionFromPoint(element, x, y) {
     if (document.caretPositionFromPoint) {
         const pos = document.caretPositionFromPoint(x, y);
         if (pos && pos.offsetNode === element) return pos.offset;
+    }
+    if (document.caretRangeFromPoint) {
+        // Chrome/Chromium
+        const range = document.caretRangeFromPoint(x, y);
+        if (range && range.startContainer === element) return range.startOffset;
     }
     return element.selectionStart;
 }
@@ -496,6 +502,8 @@ function createFAB(config) {
     return btn;
 }
 
+let checkchatsIntervalId = null; // защита от стакинга интервалов при повторном вызове
+
 /**
  * Главная инициализация панели расширения: ждёт идентификации оператора,
  * строит боковую FAB-панель, меню модулей и запускает фоновые интервалы.
@@ -511,6 +519,9 @@ async function move_again_AF() {
 
     // Инжектим стили
     injectFABStyles();
+
+    // Пересоздаем панель (повторный вход через /login не должен плодить дубли)
+    document.getElementById('rightPanel')?.remove();
 
     // Создаем панель
     let sidePanel = document.createElement('div');
@@ -590,7 +601,9 @@ async function move_again_AF() {
 
     window.onkeydown = (e) => { if (e.key == 'Control') bool = 1; };
     window.onkeyup = (e) => { if (e.key == 'Control') bool = 0; };
-    setInterval(checkchats, 1000);
+
+    if (checkchatsIntervalId) clearInterval(checkchatsIntervalId);
+    checkchatsIntervalId = setInterval(checkchats, 1000);
 }
 
 if (window.location.pathname !== "/login") setTimeout(move_again_AF, 3000);
@@ -602,14 +615,6 @@ else {
             setTimeout(move_again_AF, 3000);
         }
     }, 1000);
-}
-
-/** Автоматически принимает всплывающие условия использования на new-teachers.skyeng.ru. */
-function closeTerms() {
-    if (document.URL.includes('new-teachers.skyeng.ru')) {
-        const btns = document.getElementsByClassName('terms-popup-accept-button');
-        for (let b of btns) b.click();
-    }
 }
 
 /** Загружает таблицу шаблонов из Google Apps Script и перерисовывает кнопки. */
@@ -678,7 +683,7 @@ function prepTp() {
 /** Настраивает интерфейс для отдела КЦ: скрывает ТП-элементы, показывает КЦ-элементы. */
 function prepKC() {
     const l = document.querySelector('.user_menu-language_switcher');
-    if (l) l.style.display = localStorage.getItem('disablelngpmwindow') === '1' ? 'none' : '';
+    if (l) l.style.display = localStorage.getItem('disablelpmwindow') === '1' ? 'none' : '';
     document.querySelectorAll('.onlyfortp').forEach(e => e.style.display = 'none');
     document.querySelectorAll('.onlyforkc').forEach(e => e.style.display = '');
 }
@@ -781,4 +786,3 @@ function sanitizeHTML(h) { return h; }
 
 /** Алиас для showCustomAlert (совместимость со старым кодом). */
 function showToast(m) { showCustomAlert(m); }
-setInterval(closeTerms, 500);

@@ -1,86 +1,177 @@
+// ============================================================
+// ChMAF — content.js (общий слой расширения)
+//
+// ВАЖНО ДЛЯ РАЗРАБОТЧИКОВ:
+// этот файл грузится ПОСЛЕДНИМ (см. manifest.json) и разделяет
+// общую область видимости со всеми autoFAQscripts/*.js.
+// Глобальные объявления из блока «Shared state» используются
+// другими скриптами (utils.js, TemplatesFuncs.js, ChatHistory.js,
+// Calendar.js, Queue.js, Settings.js и др.) — не удалять и не
+// переименовывать без проверки по всему проекту.
+// ============================================================
+
+// ---------- Настройки: fallback, если Settings.js ещё не определил объект ----------
 if (typeof window.Settings === 'undefined') {
     window.Settings = {
         get(key) {
             try { return localStorage.getItem(key); } catch (e) { return null; }
         },
         set(key, value) {
-            try { localStorage.setItem(key, value); } catch (e) { }
+            try { localStorage.setItem(key, value); } catch (e) { /* noop */ }
         }
     };
 }
-// Запрашиваем у background-скрипта ID расширения и кэшируем его в localStorage
+
+// ID расширения кэшируем из background-скрипта
 chrome.runtime.sendMessage({ question: 'get-extension-id' }, (result) => {
-    localStorage.setItem('ext_id', result);
+    if (chrome.runtime.lastError) {
+        console.warn('[ChMAF] get-extension-id:', chrome.runtime.lastError.message);
+        return;
+    }
+    if (result) localStorage.setItem('ext_id', result);
 });
 
+// ============================================================
+// Константы
+// ============================================================
+const AF_ORIGIN = 'https://skyeng.autofaq.ai';
+const DEFAULT_SCRIPT_ADR =
+    'https://script.google.com/macros/s/AKfycbzsf72GllYQdCGg-L4Jw1qx9iv9Vz3eyiQ9QO81HEnlr0K2DKqy6zvi7IYu77GB6EMU/exec';
+const SERVER_THEMES_SCRIPT_URL =
+    'https://script.google.com/macros/s/AKfycbxNjuQ7EbZZkLEfC1_aSoK4ncsF0W0XSkjYttCj2nQ23BBzMEmDq-vqJL3MvwJk9Pnm_g/exec';
 
-let aftoken = '';
-let pldata;
-let afopername; // переменная фамилии, имени оператора при переборе общего списка операторов
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Словарь для перевода предметов и направлений
+const subjectTranslations = {
+    algebra: 'Алгебра',
+    basemath: 'Математика',
+    biology: 'Биология',
+    chemistry: 'Химия',
+    computer: 'Информатика',
+    english: 'Английский',
+    geography: 'География',
+    geometry: 'Геометрия',
+    history: 'История',
+    literature: 'Литература',
+    math: 'Математика',
+    physics: 'Физика',
+    russian: 'Русский язык',
+    social: 'Обществознание'
+};
+
+// Словарь для перевода форматов обучения
+const formatTranslations = {
+    webinar: 'ВЕБИНАР',
+    f2g: 'F2G',
+    coach: 'Практика с коучем',
+    f2f: 'F2F',
+    life: 'Разговорные Клубы',
+    talks: 'Talks'
+};
+
+// Медиа-файлы в сообщениях чата: расширение → подпись + плеер
+const MEDIA_TYPES = [
+    { extensions: /\.(mp4|mov|mkv|webm)$/i, label: 'Видео📺', labelType: 'video-label', tag: 'video', playerType: 'video-player' },
+    { extensions: /\.(mp3|wav|ogg|oga)$/i, label: '🎧 Аудио', labelType: 'audio-label', tag: 'audio', playerType: 'audio-player' }
+];
+const IMAGE_EXTENSIONS = /\.(png|jpg|jpeg|gif|webp)$/i;
+
+// ============================================================
+// Shared state (используется и другими скриптами расширения!)
+// ============================================================
+let aftoken = '';                 // CSRF-токен AutoFAQ
+let opsection = 'ТП';             // отдел оператора
+let operatorFullTitle = '';       // полное имя оператора
+let operatorId = '';              // ID авторизованного оператора
+let operatorsarray = [];          // общий список операторов (onOperator)
+
+let template_flag = 0;            // состояние вставки шаблонов (TemplatesFuncs.js)
+let template_flag2 = 0;
+let word_text = '';
+let template_text = '';
+let flagggg = 0;
+let templatesAF = [];             // кэш загруженных шаблонов (TemplatesFuncs.js)
+let chatsArray = [];              // пары conversationId → sessionId (TemplatesFuncs.js)
+let soundintervalset;             // ID интервала звука уведомлений (TemplatesFuncs.js, Settings.js)
+
+let flagsearch;                   // состояние поиска (ChatHistory.js)
 let foundarr;
-let flagsearch;
 let operchatsdata;
 let isChatOnOperator = false;
-let audio; // звук уведомления о новом чате
-let soundintervalset; // ID интервала повторного проигрывания звука
-let flagusertype;
-let chatneraspcount; // количество нераспределённых чатов в очереди
-let chattpquecount; // количество нераспределённых чатов в очереди тематики ТП v1
-let tmrs = []
-let timeStart = new Date()
-let template_flag = 0
-let template_flag2 = 0
-let word_text = ""
-let template_text = ""
-let flagggg = 0;
-let getidusrteachreq;
-let getidusrstud;
-let getidusrsteach;
-let getservidst;
-let templatesAF = [];
-let bool = 0;
-let table;
-let opsection = 'ТП'; // глобальная переменная отдела оператора
-let operatorFullTitle = ''; //глобальная переменная полного имени оператора
-let operatorId = ""; //глобальная переменная после получения ID operator , который использует расширение и авторизован в свой профиль
-let operatorsarray = []; //массив операторов , который потом пригодится для других функций
-let flagLangBut = 0;
-let modulesarray = [];
-let chatsArray = [];
-let scriptAdr = localStorage.getItem('scriptAdr');
 
-let countertest = 0;
+let bool = 0;                     // трекинг Ctrl (utils.js)
+let flag = 0;                     // общий флаг (AFhelper.js → getInfo(flag))
 
-async function findOperator(operatorFullTitle) {
+let table;                        // таблица шаблонов (заполняет utils.js → getText())
+let scriptAdr;                    // адрес Google Apps Script с шаблонами
+
+// --- локальное для этого файла ---
+let audio;                        // звук уведомления о новом чате (переиспользуется Settings.js)
+let selectedinpth = 'calendarmyinputsdark'; // классы тем (Calendar.js)
+let otherinpth = 'othercalendardark';
+let flagTokenGlobal = '';
+
+// ---------- Инициализация localStorage ----------
+// Дефолтный адрес GAS ставим ДО чтения в переменную,
+// иначе после первой установки scriptAdr навсегда остаётся null.
+if (localStorage.getItem('scriptAdr') == null) {
+    localStorage.setItem('scriptAdr', DEFAULT_SCRIPT_ADR);
+}
+scriptAdr = localStorage.getItem('scriptAdr');
+
+localStorage.setItem('tpflag', localStorage.getItem('tpflag') || 'ТП');
+
+// Чистка мусора, который AutoFAQ пишет в localStorage на каждый лог
+const LS_GARBAGE_RE = /^(SMART_TABLE\.|messageContent\.)/;
+Object.keys(localStorage).forEach((key) => {
+    if (LS_GARBAGE_RE.test(key)) localStorage.removeItem(key);
+});
+
+// Сортировка архива по умолчанию — по времени убыванию
+localStorage.setItem('SMART_TABLE_SORTED_INFO(/tickets/archive)', '{"columnKey":"ts","order":"descend"}');
+
+// Звук уведомления о новом чате
+{
+    const savedSound = localStorage.getItem('sound_str');
+    audio = new Audio(savedSound || 'https://dimentorexpo.github.io/Sounds/msg.mp3');
+}
+
+// ============================================================
+// Идентификация оператора
+// ============================================================
+
+/**
+ * Ищет оператора по полному имени в общем списке onOperator.
+ * Найденный ID пишется в глобальный operatorId.
+ * @param {string} fullName — ФИО оператора
+ * @returns {Promise<Object|null>} — найденный объект или null
+ */
+async function findOperator(fullName) {
     try {
-        // Выполняем асинхронную функцию и получаем данные
-        const searchOperId = await fetchStaticData();
+        const state = await fetchStaticData();
 
-        // Проверяем, существует ли массив onOperator
-        if (!Array.isArray(searchOperId.onOperator)) {
-            throw new Error("onOperator не является массивом или отсутствует.");
+        if (!Array.isArray(state.onOperator)) {
+            throw new Error('onOperator не является массивом или отсутствует.');
         }
 
-        // Используем find для поиска совпадения
-        operatorsarray = searchOperId.onOperator
-        const user = searchOperId.onOperator.find(user => user.operator?.fullName === operatorFullTitle);
+        operatorsarray = state.onOperator;
+        const user = state.onOperator.find((op) => op.operator?.fullName === fullName);
 
-        // Проверяем, найден ли пользователь
         if (user) {
-            console.log("Найденный пользователь:", user);
-            operatorId = user.operator?.id;
-            console.log(operatorId)
-            return user; // Возвращаем найденный объект
-        } else {
-            console.log("Пользователь с именем", operatorFullTitle, "не найден.");
-            return null; // Если не найдено, возвращаем null
+            operatorId = user.operator?.id ?? '';
+            return user;
         }
+
+        console.warn(`[ChMAF] Оператор "${fullName}" не найден в списке.`);
+        return null;
     } catch (error) {
-        console.error("Ошибка выполнения функции:", error);
+        console.error('[ChMAF] findOperator:', error);
+        return null;
     }
 }
 
-let whoAmICompleted = false; // Флаг: идентификация оператора уже успешно выполнена
+let whoAmICompleted = false; // идентификация уже успешно выполнена
 
 /**
  * Определяет текущего оператора: читает CSRF-токен из cookie,
@@ -89,223 +180,144 @@ let whoAmICompleted = false; // Флаг: идентификация опера�
  * @returns {Promise<boolean>} — true, если оператор успешно идентифицирован
  */
 async function whoAmI() {
-    if (whoAmICompleted) {
-        return true; // Если уже успешно выполнялось, просто возвращаем true
+    if (whoAmICompleted) return true;
+    if (!location.host.includes('autofaq')) return false;
+
+    const tokenMatch = document.cookie.match(/csrf_token=([^;]*)/);
+    if (!tokenMatch) return false;
+
+    aftoken = tokenMatch[1];
+    applyLoginStatus();
+
+    const onArchiveOrLogs =
+        location.pathname.includes('/archive') || location.pathname.includes('/logs');
+
+    // Старый UI: имя оператора в дропдауне меню пользователя
+    const menuNameField = document.getElementsByClassName('user_menu-dropdown-user_name')[0];
+
+    if (onArchiveOrLogs && menuNameField) {
+        operatorFullTitle = menuNameField.textContent;
+        opsection = operatorFullTitle.split('-')[0];
+        findOperator(operatorFullTitle);
+        whoAmICompleted = true;
+        return true;
     }
 
-    if (location.host.includes('autofaq')) {
-        countertest++;
-        console.log(countertest);
+    // Новый UI: секция «отдел-имя» в селекторе внутри iframe
+    if (!onArchiveOrLogs) {
+        const sectionKey = getIframeDoc()?.querySelector('span[id^="mantine-"][id$="-target"]');
 
-        const tokenis = document.cookie.match(/csrf_token=([^;]*)/);
-        if (tokenis && tokenis.length > 1) {
-            aftoken = tokenis[1];
-            applyLoginStatus();
+        if (sectionKey) {
+            operatorFullTitle = sectionKey.textContent;
+            const [section] = sectionKey.textContent.split('-');
 
-            let archiveInd;
-            if ((location.pathname.includes('/archive') || location.pathname.includes('/logs')) &&
-                document.getElementsByClassName('user_menu-dropdown-user_name').length > 0) {
-
-                archiveInd = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent.split('-');
-                operatorFullTitle = document.getElementsByClassName('user_menu-dropdown-user_name')[0].textContent;
-                opsection = archiveInd[0];
-                console.log(opsection);
-                console.log(operatorFullTitle);
-                findOperator(operatorFullTitle);
-                whoAmICompleted = true; // Фиксируем успешное выполнение
-                return true;
-            } else if (!location.pathname.includes('/archive') && !location.pathname.includes('/logs')) {
-                const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-                if (iframe && iframe.contentDocument) {
-                    let sectionKey = iframe.contentDocument.querySelector('span[id^="mantine-"][id$="-target"]');
-                    if (sectionKey) {
-                        operatorFullTitle = sectionKey.textContent;
-                        let keys = sectionKey.textContent.split('-');
-                        afopername = keys[1];
-                        if (keys[0] !== "ТП" && keys[0] !== "ТП ОС") {
-                            opsection = keys[0];
-                            console.log(opsection);
-                        }
-                        console.log("OPSECTION", opsection, "AFOPERNAME", afopername);
-                        console.log(operatorFullTitle);
-                        findOperator(operatorFullTitle);
-
-                        whoAmICompleted = true; // Фиксируем успешное выполнение
-                        return true;
-                    } else {
-                        console.error("Элемент 'span[id^=\"mantine-\"][id$=\"-target\"]' не найден");
-                    }
-                } else {
-                    console.error("Iframe '[class^=\"NEW_FRONTEND\"]' не найден или contentDocument недоступен");
-                }
+            if (section !== 'ТП' && section !== 'ТП ОС') {
+                opsection = section;
             }
+
+            findOperator(operatorFullTitle);
+            whoAmICompleted = true;
+            return true;
         }
-        return false;
     }
 
+    return false;
 }
 
-// Словарь для перевода предметов и направлений
-const subjectTranslations = {
-    // homeschooling и lc_exam
-    "algebra": "Алгебра",
-    "basemath": "Математика",
-    "biology": "Биология",
-    "chemistry": "Химия",
-    "computer": "Информатика",
-    "english": "Английский",
-    "geography": "География",
-    "geometry": "Геометрия",
-    "history": "История",
-    "literature": "Литература",
-    "math": "Математика",
-    "physics": "Физика",
-    "russian": "Русский язык",
-    "social": "Обществознание"
-};
+// ============================================================
+// API AutoFAQ
+// ============================================================
 
-// Словарь для перевода форматов обучения
-const formatTranslations = {
-    "webinar": "ВЕБИНАР",
-    "f2g": "F2G",
-    "coach": "Практика с коучем",
-    "f2f": "F2F",
-    "life": "Разговорные Клубы",
-    "talks": "Talks"
-};
+/** Читает CSRF-токен напрямую из cookie. */
+function readCsrfFromCookie() {
+    const match = document.cookie.match(/csrf_token=([^;]*)/);
+    return match ? match[1] : '';
+}
 
-localStorage.setItem('tpflag', localStorage.getItem('tpflag') || 'ТП');
-
-let selectedinpth = 'calendarmyinputsdark';
-let otherinpth = 'othercalendardark';
-let selecttheme = 'darkopts';
-let menutheme = 'menubarstyledark';
-
-let flag = 0;
-let str = localStorage.getItem('sound_str');
-if (str !== null && str !== "")
-    audio = new Audio(str);
-else
-    audio = new Audio("https://dimentorexpo.github.io/Sounds/msg.mp3");
-
-Object.keys(localStorage).forEach(function (key) { // чистка localstorage от мусора , когда АФ на каждый лог добавляет запись вида SMART_TABLE... или при работе с архивом
-    if (/^(SMART_TABLE.)/.test(key)) {
-        localStorage.removeItem(key);
-    }
-
-    if (/^(messageContent.)/.test(key)) {
-        localStorage.removeItem(key);
-    }
-});
-
-localStorage.setItem('SMART_TABLE_SORTED_INFO(/tickets/archive)', '{\"columnKey\":\"ts\",\"order\":\"descend\"}')
+/** Актуальный CSRF-токен: глобальный кэш либо свежее чтение из cookie. */
+function getCsrfToken() {
+    if (!aftoken) aftoken = readCsrfFromCookie();
+    return aftoken;
+}
 
 /**
- * Устанавливает CSS display для элемента.
- * @param {HTMLElement} element — целевой элемент
- * @param {string} value — значение display ('none', 'block', 'flex' и т.д.)
+ * Единая точка запросов к AutoFAQ API: подставляет CSRF-токен и cookies,
+ * при неуспешном ответе печатает в консоль URL, статус и тело ошибки.
+ * При 403 перечитывает токен из cookie и повторяет запрос один раз.
  */
-function setDisplayStyle(element, value) {
-    element.style.display = value;
+async function afApiFetch(url, options = {}) {
+    options.credentials = options.credentials || 'include';
+    options.headers = { 'x-csrf-token': getCsrfToken(), ...(options.headers || {}) };
+
+    let response = await fetch(url, options);
+
+    if (response.status === 403) {
+        const freshToken = readCsrfFromCookie();
+        if (freshToken && freshToken !== aftoken) {
+            console.warn(`[ChMAF API] 403 на ${url} — обновляю CSRF-токен и повторяю запрос`);
+            aftoken = freshToken;
+            options.headers['x-csrf-token'] = freshToken;
+            response = await fetch(url, options);
+        }
+    }
+
+    if (!response.ok) {
+        let details = '';
+        try {
+            details = (await response.text()).slice(0, 300);
+        } catch (e) { /* тело недоступно */ }
+
+        console.error(
+            `[ChMAF API] ${options.method || 'GET'} ${url} → ${response.status} ${response.statusText}`,
+            details
+        );
+    }
+
+    return response;
 }
 
 /**
- * Меняет статус оператора в AutoFAQ (Online / Busy / Offline и т.д.).
+ * Меняет статус оператора (Online / Busy / Offline и т.д.).
  * @param {string} status — новый статус
- * @param {string} [token=aftoken] — CSRF-токен (по умолчанию глобальный aftoken)
+ * @param {string} [token=aftoken] — CSRF-токен
  */
 function changeStatus(status, token = aftoken) {
-    const API_ENDPOINT = 'https://skyeng.autofaq.ai/api/reason8/operator/status';
-    const fetchOptions = {
-        headers: {
-            'content-type': 'application/json',
-            'x-csrf-token': token
-        },
-        referrer: 'https://skyeng.autofaq.ai/tickets/archive',
-        referrerPolicy: 'strict-origin-when-cross-origin',
-        body: '',
+    return afApiFetch(`${AF_ORIGIN}/api/reason8/operator/status`, {
         method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
-    };
-    console.log(fetchOptions.headers['x-csrf-token']);
-    fetchOptions.body = `{ "command": "DO_SET_OPERATOR_STATUS", "status": "${status}", "source": "Operator" }`;
-    fetch(API_ENDPOINT, fetchOptions)
-        .then((res) => {
-            console.log(`Status changed to ${status}`);
+        referrer: `${AF_ORIGIN}/tickets/archive`,
+        referrerPolicy: 'strict-origin-when-cross-origin',
+        headers: Object.assign(
+            { 'content-type': 'application/json' },
+            token ? { 'x-csrf-token': token } : {}
+        ),
+        body: JSON.stringify({
+            command: 'DO_SET_OPERATOR_STATUS',
+            status,
+            source: 'Operator'
         })
-        .catch((err) => {
-            console.log(err);
-        });
+    })
+        .then(() => console.log(`Status changed to ${status}`))
+        .catch((err) => console.error(err));
 }
 
 /**
- * Применяет сохранённый в настройках статус оператора сразу после входа.
- * Вызывается один раз, когда aftoken уже получен (из whoAmI).
+ * Применяет сохранённый статус оператора один раз после входа.
  */
+let loginStatusApplied = false;
+
 function applyLoginStatus() {
-    // Не трогаем страницу логина
-    if (window.location.href === 'https://skyeng.autofaq.ai/login') return;
+    if (loginStatusApplied) return;
+    if (window.location.pathname === '/login') return;
     if (!aftoken) return;
 
-    // Ищем новый ключ, если его нет — старый, если пусто — ставим 'Online' по дефолту
-    const savedStatus = Settings.get('defaultStatusAfterLogin') || Settings.get('afterLoginFunction') || 'Online';
+    const savedStatus =
+        Settings.get('defaultStatusAfterLogin') ||
+        Settings.get('afterLoginFunction') ||
+        'Online';
 
     console.log('[AutoStatus] Applying saved status:', savedStatus);
+    loginStatusApplied = true;
     changeStatus(savedStatus, aftoken);
-}
-
-/** Оставляет в поле ввода только цифры и знак минус. */
-function onlyNumber(object) {
-    object.value = object.value.replace(/[^0-9-]/g, '');
-}
-
-/** Оставляет в поле ввода только цифры. */
-function onlyNumbers(object) {
-    object.value = object.value.replace(/[^0-9]/g, '');
-}
-
-/** Вставляет кнопку «Скрыть» в шапку модального окна нового фронта, если её ещё нет. */
-function timerHideButtons() {
-    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-
-    if (iframe) {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        if (iframeDoc) {
-            const modalMasks = iframeDoc.getElementsByClassName('mantine-Modal-root')[0];
-            const modalContent = iframeDoc.getElementsByClassName('mantine-Modal-header')[0];
-            const modalClose = iframeDoc.getElementsByClassName('mantine-Modal-close')[0];
-            const Hidebtn = iframeDoc.getElementById('maskBackHide');
-
-            if (modalMasks && modalContent && modalClose && !Hidebtn) {
-                modalContent.insertBefore(maskBackHide, modalClose);
-            }
-        }
-    }
-}
-
-
-/**
- * Отправляет внутренний комментарий оператора в чат AutoFAQ.
- * @param {string} txt — текст комментария
- * @param {string} [activeConvId] — ID чата; если не передан, берётся из getInfo()
- */
-async function sendComment(txt, activeConvId) {
-    const values = await getInfo(0);
-    const adr1 = activeConvId ? activeConvId : values[1];
-    const uid = values[2];
-    // Экранируем переносы строк и кавычки для вставки в JSON-тело запроса
-    const txt2 = txt.split('\n').join('\\n').split('"').join('\\"');
-    resetFlags();
-    fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-        "headers": {
-            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW",
-            "x-csrf-token": aftoken
-        },
-        "body": `------WebKitFormBoundaryH2CK1t5M3Dc3ziNW\r\nContent-Disposition: form-data; name="payload"\r\n\r\n{\"sessionId\":\"${uid}\",\"conversationId\":\"${adr1}\",\"text\":\"${txt2}\",\"isComment\":true}\r\n------WebKitFormBoundaryH2CK1t5M3Dc3ziNW--\r\n`,
-        "method": "POST",
-        "credentials": "include"
-    });
 }
 
 /** Сбрасывает флаги состояния вставки шаблонов. */
@@ -314,57 +326,211 @@ function resetFlags() {
     template_flag2 = 0;
 }
 
-/** Добавляет тег в активный чат через API AutoFAQ. */
-function newTaggg(tagName) {
-    let chatId = getChatId();
+/**
+ * Отправляет внутренний комментарий оператора в чат AutoFAQ.
+ * @param {string} txt — текст комментария
+ * @param {string} [activeConvId] — ID чата; если не передан, берётся из getInfo()
+ */
+async function sendComment(txt, activeConvId) {
+    const values = await getInfo(0);
+    const conversationId = activeConvId || values[1];
+    const sessionId = values[2];
 
-    if (chatId) {
-        fetch("https://skyeng.autofaq.ai/api/conversation/" + chatId + "/payload", {
-            "headers": {
-                "content-type": "application/json",
-                "x-csrf-token": aftoken
-            },
-            "body": "{\"conversationId\":\"" + chatId + "\",\"elements\":[{\"name\":\"tags\",\"value\":[\"" + tagName + "\"]}]}",
-            "method": "POST",
-            "credentials": "include"
-        });
-    }
+    resetFlags();
+
+    // Нативный FormData: браузер сам формирует boundary и Content-Type
+    const formData = new FormData();
+    formData.append('payload', JSON.stringify({
+        sessionId,
+        conversationId,
+        text: txt,
+        isComment: true
+    }));
+
+    afApiFetch(`${AF_ORIGIN}/api/reason8/answers`, {
+        method: 'POST',
+        body: formData
+    }).catch((err) => console.error('[ChMAF API] sendComment:', err));
 }
 
-// ===============================
-// 0. ДЕБОУНС ДЛЯ ОБРАБОТКИ
-// ===============================
+/** Добавляет тег в активный чат. */
+function newTaggg(tagName) {
+    const chatId = getChatId();
+    if (!chatId) return;
+
+    afApiFetch(`${AF_ORIGIN}/api/conversation/${chatId}/payload`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+            conversationId: chatId,
+            elements: [{ name: 'tags', value: [tagName] }]
+        })
+    }).catch(() => {});
+}
+
+/**
+ * Общая функция запросов истории диалогов.
+ * @param {string|Object} [body=""]
+ * @returns {Promise<Object>} — распарсенный ответ
+ */
+async function doOperationsWithHistory(body = '') {
+    if (typeof body !== 'string' && typeof body !== 'object') {
+        throw new Error('Аргумент body должен быть строкой или объектом.');
+    }
+
+    const response = await afApiFetch(`${AF_ORIGIN}/api/conversations/history`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: typeof body === 'object' ? JSON.stringify(body) : body
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
+    }
+
+    return await response.json();
+}
+
+/**
+ * Получает данные конкретного диалога по ID.
+ * @param {string} id — ID диалога
+ * @returns {Promise<Object>}
+ */
+async function doOperationsWithConversations(id) {
+    const response = await afApiFetch(`${CONFIGSTAT.API.BASE_URL}${CONFIGSTAT.API.CONVERSATIONS}/${id}`);
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+}
+
+/**
+ * Текущее состояние всех операторов (онлайн, статусы и т.д.).
+ * @returns {Promise<Object>} — объект с массивом onOperator
+ */
+async function fetchStaticData() {
+    const response = await afApiFetch(`${AF_ORIGIN}/api/operators/statistic/currentState`, {
+        method: 'GET'
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
+    }
+
+    return await response.json();
+}
+
+// ============================================================
+// DOM-утилиты
+// ============================================================
+
+/** Устанавливает CSS display для элемента. */
+function setDisplayStyle(element, value) {
+    element.style.display = value;
+}
+
+/** Оставляет в поле ввода только цифры и знак минус. */
+function onlyNumber(object) {
+    sanitizeInput(object, /[^0-9-]/g);
+}
+
+/** Оставляет в поле ввода только цифры. */
+function onlyNumbers(object) {
+    sanitizeInput(object, /[^0-9]/g);
+}
+
+function sanitizeInput(object, garbagePattern) {
+    if (object) object.value = object.value.replace(garbagePattern, '');
+}
+
+/** Переключает CSS-класс кнопки по её id. */
+function toggleButtonState(buttonId, className) {
+    document.getElementById(buttonId)?.classList.toggle(className);
+}
+
+/** Добавляет <option> в список. */
+function addOption(oListbox, text, value) {
+    const oOption = document.createElement('option');
+    oOption.appendChild(document.createTextNode(text));
+    oOption.setAttribute('value', value);
+    oListbox.appendChild(oOption);
+}
+
+/**
+ * Ждёт появления элемента и вызывает callback.
+ * @param {string} selector
+ * @param {Function} callback
+ * @param {number} [timeout=10000]
+ * @param {number} [interval=100]
+ */
+function waitForElement(selector, callback, timeout = 10000, interval = 100) {
+    const startTime = Date.now();
+    const intervalId = setInterval(() => {
+        const element = document.querySelector(selector);
+
+        if (element) {
+            clearInterval(intervalId);
+            callback();
+        } else if (Date.now() - startTime > timeout) {
+            clearInterval(intervalId);
+            console.error(`Элемент ${selector} не найден за ${(timeout / 1000).toFixed(1)} c.`);
+        }
+    }, interval);
+}
+
+/**
+ * Показывает плавающее уведомление с прогресс-баром, автоскрытие 3.5 c.
+ * ВНИМАНИЕ: в TestUsers.js есть одноимённая функция — поскольку content.js
+ * грузится последним, «живёт» именно эта версия.
+ * @param {string} text — HTML-текст уведомления
+ * @param {string} [result='message'] — 'message' (успех) | любой другой (ошибка)
+ */
+// ───. TOAST NOTIFICATION ───
+function createAndShowButton(message, type = 'message') {
+    let toast = document.querySelector('.cyber-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'cyber-toast';
+        document.body.appendChild(toast);
+    }
+
+    toast.textContent = message;
+    toast.className = `cyber-toast ${type}`;
+
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => toast.classList.remove('show'), 5000);
+}
+
+// ============================================================
+// Медиа в сообщениях чата (видео / аудио / картинки)
+// ============================================================
 let processTimer = null;
 
+/** Дебаунс обработки DOM-мутаций. */
 function scheduleProcessAll() {
     clearTimeout(processTimer);
     processTimer = setTimeout(processAll, 150);
 }
 
-// ===============================
-// 1. СТАРТ: OBSERVER + ПЕРВИЧНЫЙ ЗАПУСК
-// ===============================
-initObservers();
-scheduleProcessAll();
-
 function initObservers() {
-    // наблюдаем за основным документом
-    const mainObserver = new MutationObserver(scheduleProcessAll);
-    mainObserver.observe(document.body, { childList: true, subtree: true });
+    if (!document.body) {
+        document.addEventListener('DOMContentLoaded', initObservers, { once: true });
+        return;
+    }
 
-    // пробуем повеситься на iframe, когда он появится
-    waitForIframeDoc(doc => {
-        const iframeObserver = new MutationObserver(scheduleProcessAll);
-        iframeObserver.observe(doc.body, { childList: true, subtree: true });
-        scheduleProcessAll();
-    });
+    new MutationObserver(scheduleProcessAll).observe(document.body, { childList: true, subtree: true });
+
+    // Новый фронт живёт в iframe — актуально только на AutoFAQ
+    if (location.host.includes('autofaq')) {
+        waitForIframeDoc((doc) => {
+            new MutationObserver(scheduleProcessAll).observe(doc.body, { childList: true, subtree: true });
+            scheduleProcessAll();
+        });
+    }
 }
 
-// ===============================
-// 2. ПОИСК iframe НОВОГО ФРОНТА
-// ===============================
+/** Документ iframe нового фронта (или null). */
 function getIframeDoc() {
-    let iframe =
+    const iframe =
         document.querySelector('iframe.NEW_FRONTEND__frame') ||
         document.querySelector('iframe[class^="NEW_FRONTEND"]') ||
         document.querySelector('[class^="NEW_FRONTEND"] iframe');
@@ -381,209 +547,119 @@ function getIframeDoc() {
 function waitForIframeDoc(callback) {
     const tryGet = () => {
         const doc = getIframeDoc();
-        if (doc && doc.body) {
-            callback(doc);
-        } else {
-            setTimeout(tryGet, 200);
-        }
+        if (doc && doc.body) callback(doc);
+        else setTimeout(tryGet, 200);
     };
     tryGet();
 }
 
-// ===============================
-// 3. ГЛАВНАЯ ФУНКЦИЯ: ОБРАБОТАТЬ ВСЁ
-// ===============================
 function processAll() {
-    // 1) лог + архив (старый UI)
-    handleRootDocument(document, true);
+    handleRootDocument(document, true);      // лог + архив (старый UI)
 
-    // 2) живое окно (новый UI в iframe)
-    const iframeDoc = getIframeDoc();
-    if (iframeDoc) {
-        handleRootDocument(iframeDoc, false);
-    }
+    const iframeDoc = getIframeDoc();        // живое окно (новый UI)
+    if (iframeDoc) handleRootDocument(iframeDoc, false);
 }
 
-// ===============================
-// 4. ОБРАБОТКА ОДНОГО КОНТЕКСТА (document или iframeDoc)
-// ===============================
+const MEDIA_LABEL_CSS =
+    'color:#d4092a;font-weight:700;background:darkgrey;border-radius:20px;' +
+    'text-align:center;font-size:17px;text-shadow:1px 2px 0 #0e0d0d4d;margin-top:6px;';
+const MEDIA_PLAYER_CSS = 'max-width:300px;display:block;margin-top:6px;';
+
+/**
+ * Обрабатывает ссылки в сообщениях одного контекста (документ или iframe):
+ * заменяет медиа-ссылки на плееры, картинки — на превью с зумом.
+ * @param {Document} root
+ * @param {boolean} isOldUi
+ */
 function handleRootDocument(root, isOldUi) {
-    let links = [];
+    const selector = isOldUi
+        ? '.chat-messages a[href]'
+        : 'div[class*="ChatMessages_RegularMessageContent"] a[href]';
 
-    if (isOldUi) {
-        // лог + архив
-        links = root.querySelectorAll('.chat-messages a[href]');
-    } else {
-        // живое окно: точный контейнер сообщения
-        links = root.querySelectorAll('div[class*="ChatMessages_RegularMessageContent"] a[href]');
-    }
-
+    const links = root.querySelectorAll(selector);
     if (!links.length) return;
 
-    links.forEach(link => {
+    links.forEach((link) => {
         if (link.dataset.processed === '1') return;
 
-        const href = (link.href || '')
+        const href = link.href || '';
         if (!href) return;
 
-        const parent = link.closest('div, p, span') || link.parentElement;
+        const mediaType = MEDIA_TYPES.find((t) => t.extensions.test(href));
 
-        // ---------- ВИДЕО ----------
-        if (href.match(/\.(mp4|mov|mkv|webm)$/)) {
-            parent.insertAdjacentHTML(
-                'afterend',
-                `<div data-type="video-label" style="
-                    color: #d4092a;
-                    font-weight: 700;
-                    background: darkgrey;
-                    border-radius: 20px;
-                    text-align: center;
-                    font-size: 17px;
-                    text-shadow: 1px 2px 0 #0e0d0d4d;
-                    margin-top: 6px;
-                ">Видео📺</div>`
-            );
-
-            const video = root.createElement('video');
-            video.src = href;
-            video.controls = true;
-            video.style.maxWidth = '300px';
-            video.style.display = 'block';
-            video.style.marginTop = '6px';
-            video.dataset.type = 'video-player';
-
-            parent.nextElementSibling.insertAdjacentElement('afterend', video);
-
+        // ---------- ВИДЕО / АУДИО ----------
+        if (mediaType) {
             link.dataset.processed = '1';
-            return;
-        }
-
-        // ---------- АУДИО ----------
-        if (href.match(/\.(mp3|wav|ogg|oga)$/)) {
-            parent.insertAdjacentHTML(
-                'afterend',
-                `<div data-type="audio-label" style="
-                    color: #d4092a;
-                    font-weight: 700;
-                    background: darkgrey;
-                    border-radius: 20px;
-                    text-align: center;
-                    font-size: 17px;
-                    text-shadow: 1px 2px 0 #0e0d0d4d;
-                    margin-top: 6px;
-                ">🎧 Аудио</div>`
-            );
-
-            const audio = root.createElement('audio');
-            audio.src = href;
-            audio.controls = true;
-            audio.style.maxWidth = '300px';
-            audio.style.display = 'block';
-            audio.style.marginTop = '6px';
-            audio.dataset.type = 'audio-player';
-
-            parent.nextElementSibling.insertAdjacentElement('afterend', audio);
-
-            link.dataset.processed = '1';
+            insertMediaPreview(root, link, href, mediaType);
             return;
         }
 
         // ---------- КАРТИНКИ ----------
-        if (href.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
+        if (IMAGE_EXTENSIONS.test(href)) {
+            link.dataset.processed = '1';
+
             const img = root.createElement('img');
             img.src = href;
             img.style.width = '120px';
             img.style.cursor = 'zoom-in';
             img.dataset.full = href;
-
             img.addEventListener('click', openImageViewer);
 
             link.replaceWith(img);
-
-            link.dataset.processed = '1';
-            return;
         }
     });
 }
 
-// ===============================
-// 5. ПРОСМОТРЩИК ИЗОБРАЖЕНИЙ
-// ===============================
+/** Ставит после контейнера ссылки подпись и плеер. */
+function insertMediaPreview(root, link, href, mediaType) {
+    const parent = link.closest('div, p, span') || link.parentElement;
+    if (!parent) return;
+
+    const label = root.createElement('div');
+    label.dataset.type = mediaType.labelType;
+    label.style.cssText = MEDIA_LABEL_CSS;
+    label.textContent = mediaType.label;
+
+    const player = root.createElement(mediaType.tag);
+    player.src = href;
+    player.controls = true;
+    player.style.cssText = MEDIA_PLAYER_CSS;
+    player.dataset.type = mediaType.playerType;
+
+    parent.insertAdjacentElement('afterend', label);
+    label.insertAdjacentElement('afterend', player);
+}
+
+/** Полноэкранный просмотр изображения; закрытие — кликом. */
 function openImageViewer(e) {
     const src = e.target.dataset.full;
     if (!src) return;
 
     const overlay = document.createElement('div');
     overlay.dataset.type = 'img-viewer';
-    overlay.style = `
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.85);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 999999;
-        cursor: zoom-out;
-    `;
+    overlay.style.cssText = [
+        'position:fixed', 'inset:0',
+        'background:rgba(0,0,0,0.85)',
+        'display:flex', 'justify-content:center', 'align-items:center',
+        'z-index:999999', 'cursor:zoom-out'
+    ].join(';');
 
     const img = document.createElement('img');
     img.src = src;
-    img.style = `
-        max-width: 90%;
-        max-height: 90%;
-        border-radius: 10px;
-        box-shadow: 0 0 25px rgba(0,0,0,0.6);
-    `;
+    img.style.cssText =
+        'max-width:90%;max-height:90%;border-radius:10px;box-shadow:0 0 25px rgba(0,0,0,0.6);';
 
     overlay.appendChild(img);
     document.body.appendChild(overlay);
-
     overlay.addEventListener('click', () => overlay.remove());
 }
 
-function addOption(oListbox, text, value) {  //функция добавления опции в список
-    var oOption = document.createElement("option");
-    oOption.appendChild(document.createTextNode(text));
-    oOption.setAttribute("value", value);
-    oListbox.appendChild(oOption);
-}
+initObservers();
+scheduleProcessAll();
 
-function pageClick(event) {
-    // Получаем ID нажатой кнопки (например, "0_page_button") и вытаскиваем номер ("0")
-    const clickedBtn = event.currentTarget;
-    const pageId = clickedBtn.id;
-    const pageNum = pageId.split('_')[0];
-
-    // 1. Сбрасываем стили у всех кнопок вкладок (в блоке pages)
-    const pagesContainer = document.getElementById('pages');
-    if (pagesContainer) {
-        const buttons = pagesContainer.querySelectorAll('button');
-        buttons.forEach(btn => {
-            // Возвращаем стандартный "стеклянный" стиль
-            btn.style.backgroundColor = 'rgba(36, 62, 229, 0.5)';
-            btn.style.borderTop = '1px solid rgba(255, 255, 255, 0.2)';
-        });
-    }
-
-    // 2. Скрываем все страницы с шаблонами
-    let i = 0;
-    while (document.getElementById(i + "page")) {
-        document.getElementById(i + "page").style.display = 'none';
-        i++;
-    }
-
-    // 3. Выделяем активную (нажатую) кнопку
-    // Делаем ей зеленоватый фон и оранжевую полоску сверху, как было в старом дизайне, но с прозрачностью
-    clickedBtn.style.backgroundColor = 'rgba(34, 139, 34, 0.5)';
-    clickedBtn.style.borderTop = '3px solid orange';
-
-    // 4. Показываем нужную страницу
-    const targetPage = document.getElementById(pageNum + "page");
-    if (targetPage) {
-        targetPage.style.display = 'block';
-    }
-}
-
+// ============================================================
+// Панель шаблонов (AF_helper)
+// ============================================================
 
 function initializeMyLogic() {
     const afHelper = document.getElementById('AF_helper');
@@ -592,114 +668,112 @@ function initializeMyLogic() {
         return;
     }
     console.log('AF_helper успешно найден, визуальная часть загружена.');
-    // Мы удалили жесткий поиск через childNodes, так как теперь обращаемся к элементам напрямую по их ID
 }
 
-function waitForElement(selector, callback, timeout = 10000, interval = 100) {
-    const startTime = Date.now();
-    const intervalId = setInterval(() => {
-        const element = document.querySelector(selector);
-        if (element) {
-            console.log(`Элемент ${selector} найден.`);
-            clearInterval(intervalId);
-            callback();
-        } else if (Date.now() - startTime > timeout) {
-            clearInterval(intervalId);
-            console.error(`Элемент ${selector} не найден в течение ${timeout / 1000} секунд.`);
-        }
-    }, interval);
-}
-
-// Запускаем ожидание AF_helper
-if (location.host == 'skyeng.autofaq.ai') {
+// Ждём построения AF_helper (его создаёт utils.js / AFhelper.js)
+if (location.host === 'skyeng.autofaq.ai') {
     waitForElement('#AF_helper', initializeMyLogic);
 }
 
-// Полностью убираем переменную bimba и функцию инициализации с жесткими индексами.
-// Если логики там больше не было, initializeMyLogic можно оставить пустой или удалить,
-// так как мы привязываемся по ID напрямую.
+/** Переключение страниц панели шаблонов по клику на вкладку. */
+function pageClick(event) {
+    const clickedBtn = event.currentTarget;
+    const pageNum = clickedBtn.id.split('_')[0]; // "0_page_button" → "0"
 
-// Флаг для контроля дублирования интервала
-let isAfIntervalRunning = false;
+    // 1. Сбрасываем выделение у всех вкладок
+    document.querySelectorAll('#pages button').forEach((btn) => {
+        btn.style.backgroundColor = 'rgba(36, 62, 229, 0.5)';
+        btn.style.borderTop = '1px solid rgba(255, 255, 255, 0.2)';
+    });
 
+    // 2. Скрываем все страницы шаблонов
+    for (let i = 0; document.getElementById(i + 'page'); i++) {
+        document.getElementById(i + 'page').style.display = 'none';
+    }
+
+    // 3. Выделяем активную вкладку
+    clickedBtn.style.backgroundColor = 'rgba(34, 139, 34, 0.5)';
+    clickedBtn.style.borderTop = '3px solid orange';
+
+    // 4. Показываем нужную страницу
+    const targetPage = document.getElementById(pageNum + 'page');
+    if (targetPage) targetPage.style.display = 'block';
+}
+
+/**
+ * Перерисовывает кнопки шаблонов из загруженной таблицы (глобальная table).
+ * Вызывается из utils.js после загрузки данных с Google Apps Script.
+ */
 function refreshTemplates() {
     if (location.host !== 'skyeng.autofaq.ai') return;
 
-    // ДОБАВЛЕНА ЗАЩИТА: Если таблица еще не загрузилась или пуста, не пытаемся её рендерить
-    if (typeof table === 'undefined' || !table || !table.length) {
+    if (!table || !table.length) {
         console.warn('Ожидание загрузки данных шаблонов...');
         return;
     }
 
-    if (!isAfIntervalRunning) {
-        setInterval(function () {
-            const phone = SearchinAFnewUI("phone");
-            const email = SearchinAFnewUI("email");
-
-            const phoneInput = document.getElementById('phone_tr');
-            const emailInput = document.getElementById('email_tr');
-
-            if (phoneInput) {
-                phoneInput.placeholder = (phone === "-" || phone === "") ? "Телефон" : phone;
-            }
-            if (emailInput) {
-                emailInput.placeholder = (email === "-" || email === "") ? "Почта" : email;
-            }
-        }, 1000);
-        isAfIntervalRunning = true;
-    }
-
-    // 1. Очистка старых данных перед рендером новых
     const pagesContainer = document.getElementById('pages');
-    if (pagesContainer) pagesContainer.innerHTML = '';
-
-    document.querySelectorAll('[id$="page"]').forEach(el => el.remove());
-
+    const contentArea = document.getElementById('7str');
     const addTmpElement = document.getElementById('addTmp');
+    if (!pagesContainer || !contentArea) return;
+
+    // Очистка старых данных перед рендером новых
+    pagesContainer.innerHTML = '';
+    document.querySelectorAll('[id$="page"]').forEach((el) => el.remove());
     if (addTmpElement) addTmpElement.innerHTML = '';
 
     let countOfStr = 0;
     let countOfPages = 0;
-    let pageType = "";
+    let pageType = '';
     let addTmpFlag = 0;
-
     let currentPage = null;
     let currentRow = null;
-    const contentArea = document.getElementById('7str');
 
-    // 3. Парсинг таблицы (теперь table гарантированно существует благодаря защите сверху)
-    for (let i = 0; i < table.length; i++) {
-        // ... (весь остальной код внутри for остается таким же, каким был в предыдущем ответе)
-        const c = table[i];
+    /** Создаёт строку flex-row внутри текущей страницы. */
+    const makeRow = (extraClass = '') => {
+        currentRow = document.createElement('div');
+        currentRow.className = `flex-row${extraClass ? ' ' + extraClass : ''}`;
+        currentRow.id = `${countOfPages}page_${countOfStr}str`;
+        currentPage.appendChild(currentRow);
+        return currentRow;
+    };
 
-        switch (c[0]) {
+    /** Кнопка-«щётка», очищающая связанное поле. */
+    const makeClearButton = (title, onClear) => {
+        const btn = document.createElement('button');
+        btn.textContent = '🧹';
+        btn.title = title;
+        btn.className = 'glass-btn mainButton';
+        btn.onclick = onClear;
+        return btn;
+    };
+
+    for (const row of table) {
+        switch (row[0]) {
             case '':
                 addTmpFlag = 0;
                 countOfStr++;
-
                 currentRow = document.createElement('div');
-                currentRow.className = 'flex-row chmaf-drag-handle'; // Применяем Flexbox из Glassmorphism
+                currentRow.className = 'flex-row chmaf-drag-handle';
                 currentRow.id = `${countOfPages}page_${countOfStr}str`;
                 if (currentPage) currentPage.appendChild(currentRow);
                 break;
 
             case 'Additional templates':
                 addTmpFlag = 1;
-                // Добавляем класс, чтобы доп. шаблоны тоже красиво выстраивались
                 if (addTmpElement) addTmpElement.className = 'flex-row glass-panel';
                 break;
 
-            case 'Страница':
+            case 'Страница': {
                 // Кнопка переключения страницы
-                const newPageBut = document.createElement('button');
-                newPageBut.textContent = c[1];
-                newPageBut.className = 'glass-btn mainButton'; // Стиль Glassmorphism
-                newPageBut.id = `${countOfPages}_page_button`;
-                newPageBut.background = ""
-                newPageBut.addEventListener('click', pageClick);
-                pagesContainer.appendChild(newPageBut);
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = row[1];
+                pageBtn.className = 'glass-btn mainButton';
+                pageBtn.id = `${countOfPages}_page_button`;
+                pageBtn.addEventListener('click', pageClick);
+                pagesContainer.appendChild(pageBtn);
 
-                pageType = c[2];
+                pageType = row[2];
 
                 // Контейнер самой страницы
                 currentPage = document.createElement('div');
@@ -709,454 +783,304 @@ function refreshTemplates() {
                 countOfPages++;
                 countOfStr = 1;
 
-                // Если это серверные — рисуем инпуты
-                if (pageType === "Серверные") {
-                    // -- Блок ссылки --
-                    currentRow = document.createElement('div');
-                    currentRow.className = 'flex-row';
-                    currentRow.id = `${countOfPages}page_${countOfStr}str`;
-
-                    const newInputAlink = document.createElement('input');
-                    newInputAlink.id = 'avariyalink';
-                    newInputAlink.placeholder = 'Ссылка на трэд или Jira северных';
-                    newInputAlink.autocomplete = 'off';
-                    newInputAlink.className = `glass-input`;
-                    newInputAlink.style.flexGrow = '1'; // Тянется на всю ширину
-
-                    const newbtnclrlink = document.createElement('button');
-                    newbtnclrlink.textContent = "🧹";
-                    newbtnclrlink.title = "Очистить";
-                    newbtnclrlink.className = 'glass-btn mainButton';
-                    newbtnclrlink.onclick = () => document.getElementById('avariyalink').value = "";
-
-                    currentRow.appendChild(newInputAlink);
-                    currentRow.appendChild(newbtnclrlink);
-                    currentPage.appendChild(currentRow);
-
-                    // -- Блок выбора темы --
-                    const themeRow = document.createElement('div');
-                    themeRow.className = 'flex-row';
-
-                    const newSelectAThemes = document.createElement('select');
-                    newSelectAThemes.id = 'avariyatema';
-                    newSelectAThemes.className = `glass-input`;
-                    newSelectAThemes.style.flexGrow = '1';
-
-                    const newthemeoption = document.createElement('option');
-                    newthemeoption.text = "Выбери тематику для серверных";
-                    newthemeoption.selected = true;
-                    newthemeoption.disabled = true;
-                    newthemeoption.value = "thenenotselect";
-                    newthemeoption.style = "background-color:orange; color:white;";
-                    newSelectAThemes.add(newthemeoption);
-
-                    const newbtnclrtheme = document.createElement('button');
-                    newbtnclrtheme.textContent = "🧹";
-                    newbtnclrtheme.title = "Сбросить тему";
-                    newbtnclrtheme.className = 'glass-btn mainButton';
-                    newbtnclrtheme.onclick = () => newSelectAThemes.selectedIndex = 0;
-
-                    themeRow.appendChild(newSelectAThemes);
-                    themeRow.appendChild(newbtnclrtheme);
-                    currentPage.appendChild(themeRow);
-
-                    // Логика подтягивания тем (Async/Await вместо старых цепочек)
-                    let avThemeInterval = setInterval(async () => {
-                        if (newSelectAThemes && newSelectAThemes.children.length === 1) {
-                            try {
-                                const response = await fetch('https://script.google.com/macros/s/AKfycbxNjuQ7EbZZkLEfC1_aSoK4ncsF0W0XSkjYttCj2nQ23BBzMEmDq-vqJL3MvwJk9Pnm_g/exec');
-                                const data = await response.json();
-                                data.result.forEach(item => {
-                                    addOption(newSelectAThemes, item[3], item[4]);
-                                });
-                                clearInterval(avThemeInterval); // Отключаем интервал после успеха
-                            } catch (e) {
-                                console.error('Ошибка загрузки серверных тем:', e);
-                            }
-                        }
-                    }, 4000);
-
-                    countOfStr++;
-                }
-
-                // Добавляем обычную строку под кнопки
-                currentRow = document.createElement('div');
-                currentRow.className = 'flex-row';
-                currentRow.id = `${countOfPages}page_${countOfStr}str`;
-                currentPage.appendChild(currentRow);
+                if (pageType === 'Серверные') buildServerInputsSection();
+                makeRow();
                 break;
+            }
 
-            default:
-                // Добавление самих кнопок с шаблонами
-                const newBut = document.createElement('button');
-                newBut.textContent = c[0];
-                newBut.className = 'glass-btn mainButton';
+            default: {
+                const templateBtn = document.createElement('button');
+                templateBtn.textContent = row[0];
+                templateBtn.className = 'glass-btn mainButton';
 
                 if (pageType === 'Шаблоны') {
-                    if (newBut.textContent === 'Урок NS') newBut.id = "NS";
-                    if (newBut.textContent === 'ус+брауз (У)') newBut.textContent = "ус+брауз";
-                    if (newBut.textContent === 'ус+брауз (П)') continue; // Пропускаем эту кнопку
+                    if (templateBtn.textContent === 'ус+брауз (П)') continue; // пропускаем
 
-                    newBut.addEventListener('click', (event) => buttonsFromDoc(event.target.textContent));
+                    if (templateBtn.textContent === 'Урок NS') templateBtn.id = 'NS';
+                    if (templateBtn.textContent === 'ус+брауз (У)') templateBtn.textContent = 'ус+брауз';
 
-                    if (addTmpFlag === 0) {
-                        if (currentRow) currentRow.appendChild(newBut);
-                    } else {
-                        if (addTmpElement) addTmpElement.appendChild(newBut);
-                    }
+                    templateBtn.addEventListener(
+                        'click',
+                        (event) => buttonsFromDoc(event.target.textContent)
+                    );
+
+                    if (addTmpFlag === 0 && currentRow) currentRow.appendChild(templateBtn);
+                    else if (addTmpElement) addTmpElement.appendChild(templateBtn);
                 } else if (pageType === 'Серверные') {
-                    newBut.addEventListener('click', servFromDoc);
-                    if (currentRow) currentRow.appendChild(newBut);
+                    templateBtn.addEventListener('click', servFromDoc);
+                    if (currentRow) currentRow.appendChild(templateBtn);
                 }
                 break;
+            }
         }
     }
 
-    // Обработка двойного клика для отображения скрытого блока "addTmp"
-    if (addTmpElement && addTmpElement.childElementCount > 0) {
-        const pageZero = document.getElementById('0page');
-        if (pageZero) {
-            pageZero.addEventListener('dblclick', function (event) {
-                if (checkelementtype(event)) {
-                    addTmpElement.style.display = (addTmpElement.style.display === 'none') ? 'flex' : 'none';
-                }
-            });
-        }
+    bindAddTmpToggle(addTmpElement);
+
+    // Открываем первую вкладку по умолчанию
+    document.getElementById('0_page_button')?.click();
+
+    // ---- локальные помощники ----
+
+    function buildServerInputsSection() {
+        // -- Блок ссылки --
+        const linkRow = makeRow();
+
+        const linkInput = document.createElement('input');
+        linkInput.id = 'avariyalink';
+        linkInput.placeholder = 'Ссылка на трэд или Jira северных';
+        linkInput.autocomplete = 'off';
+        linkInput.className = 'glass-input';
+        linkInput.style.flexGrow = '1';
+
+        linkRow.appendChild(linkInput);
+        linkRow.appendChild(makeClearButton('Очистить', () => { linkInput.value = ''; }));
+
+        // -- Блок выбора темы --
+        const themeRow = document.createElement('div');
+        themeRow.className = 'flex-row';
+
+        const themeSelect = document.createElement('select');
+        themeSelect.id = 'avariyatema';
+        themeSelect.className = 'glass-input';
+        themeSelect.style.flexGrow = '1';
+
+        const placeholderOption = document.createElement('option');
+        placeholderOption.text = 'Выбери тематику для серверных';
+        placeholderOption.selected = true;
+        placeholderOption.disabled = true;
+        placeholderOption.value = 'thenenotselect';
+        placeholderOption.style.cssText = 'background-color:orange;color:white;';
+        themeSelect.add(placeholderOption);
+
+        themeRow.appendChild(themeSelect);
+        themeRow.appendChild(makeClearButton('Сбросить тему', () => { themeSelect.selectedIndex = 0; }));
+        currentPage.appendChild(themeRow);
+
+        // Подтягиваем список тем, пока он не загрузится
+        const themesInterval = setInterval(async () => {
+            if (!themeSelect.isConnected || themeSelect.children.length > 1) {
+                clearInterval(themesInterval);
+                return;
+            }
+            try {
+                const response = await fetch(SERVER_THEMES_SCRIPT_URL);
+                const data = await response.json();
+                data.result.forEach((item) => addOption(themeSelect, item[3], item[4]));
+                clearInterval(themesInterval);
+            } catch (e) {
+                console.error('Ошибка загрузки серверных тем:', e);
+            }
+        }, 4000);
+
+        countOfStr++;
     }
 
-    // Имитация клика по первой вкладке, чтобы открыть её по умолчанию
-    const firstPageBtn = document.getElementById('0_page_button');
-    if (firstPageBtn) firstPageBtn.click();
-}
+    /** Двойной клик по первой странице показывает/скрывает блок доп. шаблонов. */
+    function bindAddTmpToggle(target) {
+        if (!target || target.childElementCount === 0) return;
 
-async function doOperationsWithHistory(body = "") {  // общая функция для отправки запросов на историю запросов
-    const url = "https://skyeng.autofaq.ai/api/conversations/history";
-    const headers = {
-        "content-type": "application/json",
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "x-csrf-token": aftoken // Убедитесь, что aftoken определён
-    };
-
-    try {
-        // Проверка тела запроса
-        if (typeof body !== "string" && typeof body !== "object") {
-            throw new Error("Аргумент body должен быть строкой или объектом.");
-        }
-        const requestBody = typeof body === "object" ? JSON.stringify(body) : body;
-
-        // Выполнение запроса
-        const response = await fetch(url, {
-            method: "POST",
-            headers: headers,
-            body: requestBody,
-            mode: "cors",
-            credentials: "include"
+        document.getElementById('0page')?.addEventListener('dblclick', (event) => {
+            if (checkelementtype(event)) {
+                target.style.display = target.style.display === 'none' ? 'flex' : 'none';
+            }
         });
-
-        // Проверка успешности ответа
-        if (!response.ok) {
-            throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
-        }
-
-        // Обработка результата
-        const result = await response.json();
-        console.log("Response:", result?.status, result?.items?.length || 0);
-        return result;
-    } catch (error) {
-        console.error("Ошибка выполнения запроса:", error, "URL:", url, "Body:", body);
-        throw error; // Пробрасываем ошибку
     }
 }
 
-/**
- * Получает данные конкретного диалога по ID из API AutoFAQ.
- * @param {string} id — ID диалога
- * @returns {Promise<Object>} — распарсенный JSON ответа
- */
-async function doOperationsWithConversations(id) {
-    const response = await fetch(`${CONFIGSTAT.API.BASE_URL}${CONFIGSTAT.API.CONVERSATIONS}/${id}`, {
-        headers: { 'x-csrf-token': aftoken },
-        credentials: 'include'
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.json(); // ← парсим здесь
-}
+/** Вставляет кнопку «Скрыть» в шапку модального окна нового фронта. */
+function timerHideButtons() {
+    const iframeDoc = getIframeDoc();
+    if (!iframeDoc) return;
 
-/**
- * Запрашивает текущее состояние всех операторов (онлайн, статусы и т.д.).
- * @returns {Promise<Object>} — объект с массивом onOperator
- */
-async function fetchStaticData() {
-    const url = "https://skyeng.autofaq.ai/api/operators/statistic/currentState";
-    const options = {
-        method: "GET",
-        headers: { "x-csrf-token": aftoken },
-        credentials: "include",
-        mode: "cors",
-    };
+    const modalHeader = iframeDoc.getElementsByClassName('mantine-Modal-header')[0];
+    const modalClose = iframeDoc.getElementsByClassName('mantine-Modal-close')[0];
 
-    try {
-        const response = await fetch(url, options);
-
-        // Проверяем успешность ответа
-        if (!response.ok) {
-            throw new Error(`Ошибка сети: ${response.status} - ${response.statusText}`);
-        }
-
-        // Преобразуем ответ в JSON
-        const result = await response.json();
-        // console.log("Полученные данные:", result);
-        return result;
-    } catch (error) {
-        console.error("Ошибка выполнения запроса:", error);
-        throw error; // Пробрасываем ошибку для обработки
+    if (modalHeader && modalClose && !iframeDoc.getElementById('maskBackHide')) {
+        modalHeader.insertBefore(maskBackHide, modalClose);
     }
 }
 
-// Адрес Google Apps Script с шаблонами ответов; задаём дефолт, если не настроен
-if (localStorage.getItem('scriptAdr') == null) {
-    localStorage.setItem('scriptAdr', 'https://script.google.com/macros/s/AKfycbzsf72GllYQdCGg-L4Jw1qx9iv9Vz3eyiQ9QO81HEnlr0K2DKqy6zvi7IYu77GB6EMU/exec');
-}
-
-// ==========================================
-// 1. Глобальные переменные и кнопки
-// ==========================================
-let maskBack = document.createElement('button');
-maskBack.id = "maskBack";
-maskBack.innerHTML = "↩️";
-maskBack.title = "Вернуть скрытое окно";
+// ============================================================
+// Кнопки «❌Скрыть» / «↩️Вернуть» (маскировка окна данных чата)
+// ============================================================
+const maskBack = document.createElement('button');
+maskBack.id = 'maskBack';
+maskBack.innerHTML = '↩️';
+maskBack.title = 'Вернуть скрытое окно';
 maskBack.style.display = 'none';
 maskBack.classList.add('gpanneon-glass-btn', 'fab-premium');
 
-let maskBackHide = document.createElement('span');
-maskBackHide.id = "maskBackHide";
-maskBackHide.innerHTML = "❌Скрыть";
-maskBackHide.style.cssText = 'margin-left: auto; margin-right: 10px; cursor: pointer; display: none;';
+const maskBackHide = document.createElement('span');
+maskBackHide.id = 'maskBackHide';
+maskBackHide.innerHTML = '❌Скрыть';
+maskBackHide.style.cssText =
+    'margin-left:auto;margin-right:10px;cursor:pointer;display:none;';
 
-let isMasked = false; // Флаг: скрыто ли сейчас окно
+let isMasked = false;
 
-// ==========================================
-// 2. Логика кнопки ↩️ (Вернуть)
-// ==========================================
+/** Элементы нового UI, которые скрываются/возвращаются маскировкой. */
+function getMaskTargets(iframeDoc) {
+    return {
+        modalMask: iframeDoc.querySelector('.mantine-Modal-root'),
+        chatActions: iframeDoc.querySelector('#__next [class^="ConversationActions_Actions"]'),
+        notesButton: iframeDoc.querySelector('.mantine-RichTextEditor-control')
+    };
+}
+
+/** Данные текущего чата (имя/почта/телефон) одним вызовом. */
+function getCurrentChatIdentity() {
+    return {
+        name: getActiveConvUserName(),
+        email: SearchinAFnewUI('email'),
+        phone: SearchinAFnewUI('phone')
+    };
+}
+
 maskBack.onclick = function () {
-    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-    if (!iframe) return;
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const iframeDoc = getIframeDoc();
+    if (!iframeDoc) return;
 
-    const name = maskBack.getAttribute('name');
-    const email = maskBack.getAttribute('email');
-    const phone = maskBack.getAttribute('phone');
-    const NameInChat = getActiveConvUserName();
-    const EmailInChat = SearchinAFnewUI("email");
-    const PhoneInChat = SearchinAFnewUI("phone");
+    const saved = {
+        name: maskBack.getAttribute('name'),
+        email: maskBack.getAttribute('email'),
+        phone: maskBack.getAttribute('phone')
+    };
+    const current = getCurrentChatIdentity();
 
-    const modalMask = iframeDoc.querySelector('.mantine-Modal-root');
-    const chatHeaderActionsInner = iframeDoc.querySelector('#__next [class^="ConversationActions_Actions"]');
-    const chatNotesButton = iframeDoc.querySelector('.mantine-RichTextEditor-control');
+    if (current.name === saved.name && current.email === saved.email && current.phone === saved.phone) {
+        const { modalMask, chatActions, notesButton } = getMaskTargets(iframeDoc);
+        if (modalMask) modalMask.style.display = 'block';
+        if (chatActions) chatActions.style.display = 'flex';
+        if (notesButton) notesButton.style.display = 'flex';
 
-    if (NameInChat === name && EmailInChat === email && PhoneInChat === phone) {
-        // Возвращаем всё на место (явно указываем display)
-        if (modalMask) modalMask.style.display = 'block'; // или 'flex', в зависимости от вёрстки модалки
-        if (chatHeaderActionsInner) chatHeaderActionsInner.style.display = 'flex';
-        if (chatNotesButton) chatNotesButton.style.display = 'flex';
-
-        isMasked = false; // Снимаем флаг скрытия
-
-        maskBack.style.display = 'none'; // Прячем ↩️
+        isMasked = false;
+        maskBack.style.display = 'none';
     } else {
-        maskBack.innerHTML = "❌";
-        maskBack.title = "Открыт не тот чат";
-        setTimeout(function () {
-            maskBack.innerHTML = "↩️";
-            maskBack.title = "Вернуть скрытое окно";
+        maskBack.innerHTML = '❌';
+        maskBack.title = 'Открыт не тот чат';
+        setTimeout(() => {
+            maskBack.innerHTML = '↩️';
+            maskBack.title = 'Вернуть скрытое окно';
         }, 3000);
     }
 };
 
-// ==========================================
-// 3. Логика кнопки ❌Скрыть
-// ==========================================
 maskBackHide.onclick = function () {
-    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-    if (!iframe) return;
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-
-    const modalMask = iframeDoc.querySelector('.mantine-Modal-root');
-    const chatHeaderActionsInner = iframeDoc.querySelector('#__next [class^="ConversationActions_Actions"]');
-    const chatNotesButton = iframeDoc.querySelector('.mantine-RichTextEditor-control');
-
-    const NameInChat = getActiveConvUserName();
-    const EmailInChat = SearchinAFnewUI("email");
-    const PhoneInChat = SearchinAFnewUI("phone");
-
-    // Скрываем элементы, если найдены
-    if (modalMask) modalMask.style.display = 'none';
-    if (chatHeaderActionsInner) chatHeaderActionsInner.style.display = 'none';
-    if (chatNotesButton) chatNotesButton.style.display = 'none';
-
-    isMasked = true; // Ставим флаг, что мы скрыли окно
-
-    // Прячем "Скрыть" и показываем ↩️
-    maskBackHide.style.display = 'none';
-    maskBack.style.display = 'inline-block'; // Явно показываем кнопку вернуть
-
-    // Запоминаем данные
-    maskBack.setAttribute('name', NameInChat);
-    maskBack.setAttribute('email', EmailInChat);
-    maskBack.setAttribute('phone', PhoneInChat);
-};
-
-// ==========================================
-// 4. Авто-проверка (вставляет ↩️ в панель и "Скрыть" в окна)
-// ==========================================
-setInterval(function () {
-    // 1. Гарантированно добавляем кнопку "Вернуть" в панель, если панель есть, а кнопки в ней нет
-    const rp = document.getElementById('rightPanel');
-    if (rp && !rp.contains(maskBack)) {
-        rp.appendChild(maskBack);
-    }
-
-    // 2. Если мы сейчас скрыли окно (нажали ❌Скрыть), прячем "Скрыть" и выходим
-    if (isMasked) return;
-
-    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-    if (!iframe) return;
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const iframeDoc = getIframeDoc();
     if (!iframeDoc) return;
 
-    // 3. Ищем открытое модальное окно
+    const { modalMask, chatActions, notesButton } = getMaskTargets(iframeDoc);
+    if (modalMask) modalMask.style.display = 'none';
+    if (chatActions) chatActions.style.display = 'none';
+    if (notesButton) notesButton.style.display = 'none';
+
+    const current = getCurrentChatIdentity();
+    maskBack.setAttribute('name', current.name);
+    maskBack.setAttribute('email', current.email);
+    maskBack.setAttribute('phone', current.phone);
+
+    isMasked = true;
+    maskBackHide.style.display = 'none';
+    maskBack.style.display = 'inline-block';
+};
+
+// ============================================================
+// Единый секундный тик интерфейса
+// (замена трёх отдельных setInterval: кнопки маскировки,
+// плейсхолдеры телефона/почты, стили карточек чатов)
+// ============================================================
+setInterval(uiTick, 1000);
+
+function uiTick() {
+    ensureMaskButtonsPlacement();
+    updateContactPlaceholders();
+    injectChatCardStyle();
+}
+
+function ensureMaskButtonsPlacement() {
+    // Кнопка «Вернуть» всегда должна быть в правой панели
+    const rightPanel = document.getElementById('rightPanel');
+    if (rightPanel && !rightPanel.contains(maskBack)) {
+        rightPanel.appendChild(maskBack);
+    }
+
+    if (isMasked) return;
+
+    const iframeDoc = getIframeDoc();
+    if (!iframeDoc) return;
+
+    // Кнопка «Скрыть» показывается только в открытой модалке
     const modalMask = iframeDoc.querySelector('.mantine-Modal-root');
+
     if (modalMask && modalMask.style.display !== 'none') {
-        // Окно открыто! Ищем его шапку
         const modalHeader = modalMask.querySelector('.mantine-Modal-header');
         if (modalHeader) {
-            // Если кнопки "Скрыть" еще нет в шапке, добавляем её туда
-            if (!modalHeader.contains(maskBackHide)) {
-                modalHeader.appendChild(maskBackHide);
-            }
-            // Показываем кнопку "Скрыть"
+            if (!modalHeader.contains(maskBackHide)) modalHeader.appendChild(maskBackHide);
             maskBackHide.style.display = 'inline-block';
         }
     } else {
-        // Если открытого окна нет, прячем кнопку "Скрыть"
         maskBackHide.style.display = 'none';
     }
-}, 1000); // Проверка каждую секунду
+}
+
+/** Подставляет телефон/почту чата в подсказки инпутов панели шаблонов. */
+function updateContactPlaceholders() {
+    const phoneInput = document.getElementById('phone_tr');
+    const emailInput = document.getElementById('email_tr');
+    if (!phoneInput && !emailInput) return;
+
+    const phone = SearchinAFnewUI('phone');
+    const email = SearchinAFnewUI('email');
+
+    if (phoneInput) phoneInput.placeholder = phone === '-' || phone === '' ? 'Телефон' : phone;
+    if (emailInput) emailInput.placeholder = email === '-' || email === '' ? 'Почта' : email;
+}
+
+// ============================================================
+// Данные активного чата (новый UI в iframe)
+// ============================================================
 
 /**
- * Ищет значение поля (phone, email, id и т.д.) в панели данных пользователя нового UI AutoFAQ.
+ * Ищет значение поля (phone, email, id и т.д.) в панели данных пользователя.
  * @param {string} whatsearch — имя поля, например 'phone', 'email', 'id'
  * @returns {string} — найденное значение или пустая строка
  */
 function SearchinAFnewUI(whatsearch) {
-    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-    if (iframe) {
-        const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-        const elemwheresearc = iframeDocument.querySelector('#__next ul[class*="Variables_List"]');
-        const Alternativewheresearc = iframeDocument.querySelectorAll('#__next div[class*="List_ListWrapper"]');
+    const doc = getIframeDoc();
+    if (!doc) return '';
 
-        if (elemwheresearc) {
-            const children = elemwheresearc.children;
-            const ElemCount = children.length;
+    const upperName = whatsearch.toUpperCase();
 
-            for (let i = 0; i < ElemCount; i++) {
-                const [key, value] = children[i].textContent.split(':');
+    /** key совпадает с именем точно либо в верхнем регистре. */
+    const keyMatches = (key) => key === whatsearch || key === upperName;
 
-                if (key.trim() === whatsearch || key.trim() === whatsearch.toUpperCase()) {
-                    return value.trim();
-                }
-            }
-        }
+    /** Значение из строки вида "ключ: значение" или null. */
+    const valueFromEntry = (el) => {
+        const [key, value] = el.textContent.split(':');
+        if (value === undefined) return null;
+        const k = key.trim();
+        return keyMatches(k) ? value.trim() : null;
+    };
 
-        if (whatsearch === 'id' && Alternativewheresearc) {
-            for (let i = 0; i < Alternativewheresearc.length; i++) {
-                if (Alternativewheresearc[i].textContent.split(':')[0].trim() === whatsearch || Alternativewheresearc[i].textContent.split(':')[0].trim() === whatsearch.toUpperCase()) {
-                    const children = Alternativewheresearc[i].children;
-                    const ElemCount = children.length;
-
-                    for (let j = 0; j < ElemCount; j++) {
-                        const [key, value] = children[j].textContent.split(':');
-
-                        if (key.trim() === whatsearch || key.trim() === whatsearch.toUpperCase()) {
-                            return value.trim();
-                        }
-                    }
-                }
-            }
-        }
-
-        return '';
-    }
-}
-
-/**
- * Возвращает ID активного чата в зависимости от текущего раздела
- * (логи, назначенные тикеты нового UI или архив).
- * @returns {string} — ID чата или пустая строка
- */
-function getChatId() {
-    const hrefnow = window.location.href;
-    const pathname = document.location.pathname.split('/');
-    let chatId = '';
-
-    if (hrefnow.includes('skyeng.autofaq.ai/logs')) {
-        chatId = pathname[2];
-    } else if (hrefnow.includes('tickets/assigned')) {
-        const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-        if (iframe) {
-            const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-            const ConvArray = iframeDocument.querySelectorAll('#__next [class^="DialogsCard_Card"]');
-
-            for (let i = 0; i < ConvArray.length; i++) {
-                if (ConvArray[i].getAttribute('aria-selected') === 'true') {
-                    chatId = ConvArray[i].getAttribute('data-conv-id');
-                    break;
-                }
-            }
-        }
-    } else if (hrefnow.includes('tickets/archive')) {
-        const fieldsArray = document.querySelectorAll('.ant-spin-container');
-        for (let i = 0; i < fieldsArray.length; i++) {
-            if (fieldsArray[i].textContent.split(':')[0] === "ID") {
-                chatId = fieldsArray[i].children[0].textContent.split(':')[1].trim();
-                break;
-            }
+    // Основной список переменных
+    const variablesList = doc.querySelector('#__next ul[class*="Variables_List"]');
+    if (variablesList) {
+        for (const entry of variablesList.children) {
+            const value = valueFromEntry(entry);
+            if (value !== null) return value;
         }
     }
 
-    return chatId;
-}
+    // Fallback для id: обёртки списков
+    if (whatsearch === 'id') {
+        for (const wrapper of doc.querySelectorAll('#__next div[class*="List_ListWrapper"]')) {
+            const wrapperKey = wrapper.textContent.split(':')[0]?.trim();
+            if (!keyMatches(wrapperKey)) continue;
 
-/**
- * Возвращает имя пользователя из активного чата.
- * Отсекает служебные префиксы (тьютор, buddy и т.п.).
- * @returns {string} — имя или пустая строка
- */
-function getActiveConvUserName() {
-    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-    if (iframe) {
-        const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-        const Usernamefield = iframeDocument.querySelectorAll('[class^="User_Preview"]')[0];
-
-        // массив для исключения
-        const predefinedNames = ["тьютор", "тютор", "тутор", "бадди", "tutor", "buddy"];
-
-        if (Usernamefield) {
-            const namesParts = Usernamefield.textContent.split(/[\s_]+/);
-            const firstPartInLowerCase = namesParts[0].toLowerCase();
-
-            if (predefinedNames.includes(firstPartInLowerCase) && !namesParts[1]) {
-                return '';
-            }
-
-            if (predefinedNames.includes(firstPartInLowerCase) && namesParts[1]) {
-                return namesParts[1];
-            }
-
-            if (firstPartInLowerCase) {
-                return namesParts[0];
+            for (const entry of wrapper.children) {
+                const value = valueFromEntry(entry);
+                if (value !== null) return value;
             }
         }
     }
@@ -1164,77 +1088,119 @@ function getActiveConvUserName() {
     return '';
 }
 
-// Извлекает последнюю login-ссылку из HTML-ответа. Дубль копии в utils.js — держать синхронно.
-function extractLoginLink(text) {
-    const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g;
-    let matches = text.match(regex);
-    // Проверяем наличие совпадений
-    if (matches && matches.length) {
-        // Получаем последний URL и удаляем кавычки в конце, если они есть
-        let lastMatch = matches[matches.length - 1];
-        return lastMatch.replace(/["']+$/, ''); // Удаляем кавычки в конце строки
+/** Первое значение-UUID среди элементов по селектору (или null). */
+function findUuidIn(rootDoc, selector) {
+    for (const el of rootDoc.querySelectorAll(selector)) {
+        const text = el.textContent.trim();
+        if (UUID_RE.test(text)) return text;
     }
-    return null; // Возвращаем null, если совпадений нет
+    return null;
 }
-
-// окрашивание чатов при остатке времени <2 min
-
-function getAllChatsList() { //получить список всех чатов
-    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-    if (iframe) {
-        const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-        const chatsTimerList = iframeDocument.querySelectorAll('[class^="DialogsCard_Timers"]');
-        const chatsList = iframeDocument.querySelectorAll('[class^="DialogsCard_Card"]');
-        return { chatsTimerList, chatsList };
-    }
-}
-
-// --- ОБНОВЛЕННЫЕ ФУНКЦИИ ДЛЯ СОВМЕСТИМОСТИ С ТЕМАМИ ---
 
 /**
- * @deprecated Устаревшая версия подсветки карточек по таймерам.
- * Актуальная логика — в checkchats(); оставлено для обратной совместимости.
+ * ID активного чата в зависимости от раздела
+ * (логи / назначенные тикеты нового UI / архив).
+ * @returns {string}
  */
-function convertToSeconds(TimeToClose, TimeToAnswer, i) {
-    const cardElements = getAllChatsList().chatsList;
-    if (!cardElements || !cardElements[i]) return 0;
+function getChatId() {
+    const hrefnow = window.location.href;
 
-    if (!TimeToClose && !TimeToAnswer) {
-        // Устанавливаем переменную, которую подхватит наша тема
-        cardElements[i].style.setProperty('--chat-card-bg', localStorage.getItem('answchatcolor'));
-        return 0;
-    } else if (!TimeToClose && TimeToAnswer) {
-        cardElements[i].style.setProperty('--chat-card-bg', localStorage.getItem('responschatcolor'));
-        return 0;
+    if (hrefnow.includes('skyeng.autofaq.ai/logs')) {
+        const doc = getIframeDoc();
+
+        // Приоритет: span mantine → любой элемент → aria-controls (в iframe),
+        // затем те же проверки в основном документе
+        const candidates = [];
+
+        if (doc) {
+            candidates.push(
+                findUuidIn(doc, 'span[id^="mantine-"][id$="-target"]'),
+                findUuidIn(doc, 'span, div, p, a'),
+                findUuidIn(doc, '[aria-controls*="mantine-"]')
+            );
+        }
+        candidates.push(
+            findUuidIn(document, 'span[id^="mantine-"][id$="-target"]'),
+            findUuidIn(document, 'span, div, p, a')
+        );
+
+        return candidates.find(Boolean) || '';
     }
 
-    const [h, m, s] = TimeToClose.split(':').map(Number);
-    const totalSeconds = h * 3600 + m * 60 + s;
-
-    if (totalSeconds < 120) {
-        cardElements[i].style.setProperty('--chat-card-bg', localStorage.getItem('defaclschatcolor'));
+    if (hrefnow.includes('tickets/assigned')) {
+        const doc = getIframeDoc();
+        const selectedCard = doc?.querySelector('#__next [class^="DialogsCard_Card"][aria-selected="true"]');
+        return selectedCard?.getAttribute('data-conv-id') || '';
     }
-    return totalSeconds;
+
+    if (hrefnow.includes('tickets/archive')) {
+        for (const field of document.querySelectorAll('.ant-spin-container')) {
+            if (field.textContent.split(':')[0] === 'ID') {
+                return field.children[0].textContent.split(':')[1].trim();
+            }
+        }
+    }
+
+    return '';
+}
+
+// Служебные префиксы, которые не являются именем пользователя
+const SERVICE_NAME_PREFIXES = ['тьютор', 'тютор', 'тутор', 'бадди', 'tutor', 'buddy'];
+
+/**
+ * Имя пользователя из активного чата.
+ * Отсекает служебные префиксы (тьютор, buddy и т.п.).
+ * @returns {string}
+ */
+function getActiveConvUserName() {
+    const nameField = getIframeDoc()?.querySelectorAll('[class^="User_Preview"]')[0];
+    if (!nameField) return '';
+
+    const nameParts = nameField.textContent.split(/[\s_]+/);
+    const firstPart = nameParts[0].toLowerCase();
+
+    if (SERVICE_NAME_PREFIXES.includes(firstPart)) {
+        return nameParts[1] || '';
+    }
+
+    return firstPart ? nameParts[0] : '';
+}
+
+// ============================================================
+// Подсветка карточек чатов по таймерам
+// (интервал запускается в utils.js: setInterval(checkchats, 1000))
+// ============================================================
+
+/** 'HH:MM:SS' → секунды (нечисловые части — в 0). */
+function hmsToSeconds(timeStr) {
+    const [h, m, s] = timeStr.split(':').map(Number);
+    return (h || 0) * 3600 + (m || 0) * 60 + (s || 0);
+}
+
+const CARD_COLOR_KEYS = {
+    newChat: 'answchatcolor',      // новый чат — таймеров нет вообще
+    awaitingAnswer: 'responschatcolor', // есть время ответа, нет времени закрытия
+    closingSoon: 'defaclschatcolor'     // меньше 2 минут до закрытия
+};
+
+function paintCard(card, colorKey) {
+    card.style.setProperty('--chat-card-bg', localStorage.getItem(CARD_COLOR_KEYS[colorKey]));
 }
 
 /**
- * Подсвечивает карточки чатов в новом UI по таймерам:
+ * Подсвечивает карточки чатов в новом UI:
  * новый чат / ожидание ответа / меньше 2 минут до закрытия.
- * Цвета берутся из настроек (localStorage). Вызывается по интервалу.
  */
 function checkchats() {
-    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-    if (!iframe) return;
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    const doc = getIframeDoc();
+    if (!doc) return;
 
     const cards = doc.querySelectorAll('[class*="DialogsCard_Card"]');
     const timers = doc.querySelectorAll('[class*="DialogsCard_Timers"]');
 
-    // 1. Сброс цвета у ВСЕХ карточек
-    cards.forEach(card => card.style.removeProperty('--chat-card-bg'));
+    cards.forEach((card) => card.style.removeProperty('--chat-card-bg'));
 
-    // 2. Проходим по таймерам и ищем родительскую карточку
-    timers.forEach(timer => {
+    timers.forEach((timer) => {
         const card = timer.closest('[class*="DialogsCard_Card"]');
         if (!card) return;
 
@@ -1242,29 +1208,21 @@ function checkchats() {
         const timeAnswer = timer.children[1]?.textContent?.trim();
 
         if (!timeClose && !timeAnswer) {
-            // Новый чат (нет таймеров вообще)
-            card.style.setProperty('--chat-card-bg', localStorage.getItem('answchatcolor'));
+            paintCard(card, 'newChat');
         } else if (!timeClose && timeAnswer) {
-            // Есть время на ответ, но нет времени до закрытия
-            card.style.setProperty('--chat-card-bg', localStorage.getItem('responschatcolor'));
-        } else if (timeClose) {
-            // Парсим время закрытия
-            const [h, m, s] = timeClose.split(':').map(Number);
-            const totalSeconds = (h * 3600) + (m * 60) + (s || 0);
-
-            if (totalSeconds < 120) {
-                card.style.setProperty('--chat-card-bg', localStorage.getItem('defaclschatcolor'));
-            }
+            paintCard(card, 'awaitingAnswer');
+        } else if (timeClose && hmsToSeconds(timeClose) < 120) {
+            paintCard(card, 'closingSoon');
         }
     });
 }
 
-// === ФИКС ЗАКРАСКИ КАРТОЧЕК ===
-// Инжектим стили ПРЯМО В IFRAME, где живут чаты
+/**
+ * Стили карточек нужно инжектить прямо в iframe, где живут чаты.
+ * Вызывается из uiTick (iframe может пересоздаваться).
+ */
 function injectChatCardStyle() {
-    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-    if (!iframe) return;
-    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    const doc = getIframeDoc();
     if (!doc || !doc.head) return;
 
     let style = doc.getElementById('chmaf-card-fix');
@@ -1273,7 +1231,8 @@ function injectChatCardStyle() {
         style.id = 'chmaf-card-fix';
         doc.head.appendChild(style);
     }
-    // ВАЖНО: !important обязателен, чтобы пробить заводские стили
+
+    // !important обязателен, чтобы пробить заводские стили
     style.textContent = `
         [class*="DialogsCard_Card"] {
             background-color: var(--chat-card-bg, transparent) !important;
@@ -1282,99 +1241,46 @@ function injectChatCardStyle() {
     `;
 }
 
-// Запускаем сразу и повторяем (iframe может пересоздаваться)
-injectChatCardStyle();
-setInterval(injectChatCardStyle, 2000);
+// ============================================================
+// Синхронизация токена CRM ↔ AutoFAQ (chrome.storage)
+// ============================================================
 
-function toggleButtonState(buttonId, className) { // Функция для переключения состояния кнопки
-    const button = document.getElementById(buttonId);
-    button.classList.toggle(className);
+async function getToken() {
+    return (await chrome.storage.local.get('token_global')).token_global;
 }
 
-/**
- * Показывает плавающее уведомление-кнопку с прогресс-баром, автоскрытие через 3.5 сек.
- * @param {string} text — HTML-текст уведомления
- * @param {string} [result='message'] — 'message' (успех) или иное значение (ошибка)
- */
-function createAndShowButton(text, result = 'message') {
-    let type = result == 'message' ? 'sucsbtnok' : 'sucsbtnnotok';
-    let btnSuccess = document.createElement("button");
-    btnSuccess.id = "successButton";
-    btnSuccess.className = `sucsbtnAF ${type}`;
-    btnSuccess.innerHTML = text;
-
-    let countdownBar = document.createElement("div");
-    countdownBar.id = "countdownBar";
-    countdownBar.className = "countdown-bar";
-    btnSuccess.appendChild(countdownBar);
-
-    document.body.appendChild(btnSuccess);
-
-    // Установка display в block для отображения кнопки
-    btnSuccess.style.display = 'block';
-
-    // Добавляем логику для скрытия кнопки после некоторого времени, если это необходимо
-    setTimeout(() => {
-        btnSuccess.remove(); // или btnSuccess.style.display = 'none'; если вы хотите скрыть, а не удалять
-    }, 3500); // Время до скрытия/удаления кнопки в миллисекундах
-}
-
-// Функция для получения токена из chrome.storage
-function getToken() {
-    return new Promise((resolve, reject) => {
-        chrome.storage.local.get(["token_global"], function (result) {
-            if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-            } else {
-                resolve(result.token_global);
-            }
-        });
-    });
-}
-
-// Функция для установки токена в chrome.storage
 function setToken(token) {
-    return new Promise((resolve, reject) => {
-        chrome.storage.local.set({ token_global: token }, function () {
-            if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-            } else {
-                resolve();
-            }
-        });
-    });
+    return chrome.storage.local.set({ token_global: token });
 }
 
-// Интервал для получения токена с сайта CRM
-let checkCRMLS = setInterval(async function () {
-    if (location.host == 'crm2.skyeng.ru') {
-        let token = localStorage.getItem('token_global');
-        if (token) {
-            await setToken(token);
-            console.log("Успешно получен токен");
+// CRM → storage: забираем токен со страницы CRM
+if (location.host === 'crm2.skyeng.ru') {
+    const crmTokenInterval = setInterval(async () => {
+        const token = localStorage.getItem('token_global');
+        if (!token) return;
 
-            // Останавливаем интервал после выполнения условия
-            clearInterval(checkCRMLS);
-            console.log("Интервал остановлен");
-        }
-    }
-}, 3000);
+        await setToken(token);
+        clearInterval(crmTokenInterval);
+        console.log('Токен CRM получен, интервал остановлен');
+    }, 3000);
+}
 
-// Интервал для установки токена на другом сайте
-let checkRespondToken = setInterval(async function () {
-    if (location.host == 'skyeng.autofaq.ai') {
-        let token = await getToken();
-        if (token) {
-            flagTokenGlobal = token;
-            localStorage.setItem('token_global', flagTokenGlobal);
-            console.log("Токен успешно установлен на другом сайте");
+// storage → AutoFAQ: кладём токен на страницу AutoFAQ
+if (location.host === 'skyeng.autofaq.ai') {
+    const respondTokenInterval = setInterval(async () => {
+        const token = await getToken();
+        if (!token) return;
 
-            // Останавливаем интервал после выполнения условия
-            clearInterval(checkRespondToken);
-            console.log("Интервал остановлен");
-        }
-    }
-}, 4000);
+        flagTokenGlobal = token;
+        localStorage.setItem('token_global', flagTokenGlobal);
+        clearInterval(respondTokenInterval);
+        console.log('Токен установлен на AutoFAQ, интервал остановлен');
+    }, 4000);
+}
+
+// ============================================================
+// Форматирование услуги из ключа CRM
+// ============================================================
 
 /**
  * Форматирует системный ключ услуги (например, 'lc_exam_ege_math')
@@ -1383,79 +1289,79 @@ let checkRespondToken = setInterval(async function () {
  * @returns {{formattedText: string, lessontype: string}}
  */
 function formatServiceType(serviceTypeKey) {
-    let parts = serviceTypeKey.split('_');
+    const parts = serviceTypeKey.split('_');
     let subjectKey;
-    let lessontype = "group"; // По умолчанию тип "group"
+    let lessontype = 'group'; // по умолчанию
 
-    // Определяем предмет для lc_exam
-    if (parts[0] === "lc" && parts[1] === "exam") {
-        subjectKey = parts[3]; // Предмет идет после "ege"
-    }
-    // Для английских курсов (adult_courses)
-    else if (parts[0] === "english" && parts[1] === "adult" && (parts[2] === "courses" || parts[2] === "minicourses")) {
-        subjectKey = "english"; // Предмет "english" для курсов
-        lessontype = "f2f"; // Тип "f2f" для adult courses
-    }
-    // Стандартный случай
-    else {
+    if (parts[0] === 'lc' && parts[1] === 'exam') {
+        // lc_exam_<ege>_<предмет>
+        subjectKey = parts[3];
+    } else if (
+        parts[0] === 'english' &&
+        parts[1] === 'adult' &&
+        (parts[2] === 'courses' || parts[2] === 'minicourses')
+    ) {
+        subjectKey = 'english';
+        lessontype = 'f2f';
+    } else {
         subjectKey = parts[2];
     }
 
-    // Определяем предмет и формат
-    let subject = subjectTranslations[subjectKey] || subjectKey;
-    let format = formatTranslations[parts[3]] || formatTranslations[parts[4]] || formatTranslations[parts[parts.length - 1]];
+    const subject = subjectTranslations[subjectKey] || subjectKey;
+    let format =
+        formatTranslations[parts[3]] ||
+        formatTranslations[parts[4]] ||
+        formatTranslations[parts[parts.length - 1]];
 
-    // Добавляем стиль только к формату, если он существует
     if (format) {
-        format = `<span style="font-weight: bold; color: #00b8ff; text-transform: uppercase">${format}</span>`;
-    }
-    // Если Talks или РК не пишем предмет
-    if (parts.includes("life") || parts.includes("talks") || parts.includes("coach")) {
-        return {
-            formattedText: format ? `${format}`.trim() : "",
-            lessontype: lessontype
-        };
+        format =
+            `<span style="font-weight:bold;color:#00b8ff;text-transform:uppercase">${format}</span>`;
     }
 
-    // Возвращаем объединенную строку: предмет + формат (если он есть), и тип занятия
-    return {
-        formattedText: format ? `${subject} ${format}`.trim() : subject,
-        lessontype: lessontype
-    };
+    // Для Talks / Разговорных клубов / коуча предмет не пишем
+    if (parts.includes('life') || parts.includes('talks') || parts.includes('coach')) {
+        return { formattedText: format || '', lessontype };
+    }
+
+    return { formattedText: format ? `${subject} ${format}`.trim() : subject, lessontype };
 }
 
-function highlightSearchText(item, searchText) { //Функция подсветки текста
-    const replacePattern = new RegExp(searchText, 'i');
-    const replaceValue = `<span style="color:MediumSpringGreen; font-weight:700; text-shadow:1px 2px 5px rgb(0 0 0 / 55%);">${searchText.toUpperCase()}</span>`;
-    return replaceItem(item).replace(replacePattern, replaceValue);
+/**
+ * Подсветка искомого текста в строке.
+ * @param {string} item
+ * @param {string} searchText — экранируется, спецсимволы regex безопасны
+ */
+function highlightSearchText(item, searchText) {
+    const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(escaped, 'i');
+    const replacement =
+        `<span style="color:MediumSpringGreen;font-weight:700;text-shadow:1px 2px 5px rgb(0 0 0 / 55%);">` +
+        `${searchText.toUpperCase()}</span>`;
+    return replaceItem(item).replace(pattern, replacement);
 }
 
-
-if (window.location.host === "skyeng.autofaq.ai" && window.location.pathname !== "/login") {
+// ============================================================
+// Горячие клавиши (Alt+O — Offline, Alt+I — Busy, Alt+T — тестовый чат)
+// ============================================================
+if (window.location.host === 'skyeng.autofaq.ai' && window.location.pathname !== '/login') {
     document.onkeydown = (event) => {
-        if (event.altKey && event.code === 'KeyO') { // горячие клавиши для смены статуса в Оффлайн
-            changeStatus('Offline');
-        } else if (event.altKey && event.code === 'KeyI') { // горячие клавиши для смены статуса в Занят
-            changeStatus('Busy');
-        } else if (event.altKey && event.code === 'KeyT') { // горячие клавиши тестового чата
-            const currentStatus = localStorage.getItem('trigertestchat');
-            const newStatus = currentStatus === '0' ? '1' : '0';
-            localStorage.setItem('trigertestchat', newStatus);
+        if (!event.altKey) return;
+
+        if (event.code === 'KeyO') changeStatus('Offline');
+        else if (event.code === 'KeyI') changeStatus('Busy');
+        else if (event.code === 'KeyT') {
+            const current = localStorage.getItem('trigertestchat');
+            localStorage.setItem('trigertestchat', current === '0' ? '1' : '0');
         }
     };
 }
 
-// Интервальный скрипт удаления promo-image на Skyeng
-setInterval(() => {
-    // Проверяем, что мы на нужной странице
-    if (location.href.startsWith("https://student.skyeng.ru/home")) {
-
-        // Ищем элемент promo-image
-        const promo = document.querySelector(".tag.promo-image");
-
-        // Если найден — удаляем
-        if (promo) {
-            promo.remove();
-        }
-    }
-}, 500)
+// ============================================================
+// Удаление рекламного баннера на домашней странице Student
+// ============================================================
+if (location.hostname === 'student.skyeng.ru') {
+    setInterval(() => {
+        if (!location.href.startsWith('https://student.skyeng.ru/home')) return;
+        document.querySelector('.tag.promo-image')?.remove();
+    }, 500);
+}

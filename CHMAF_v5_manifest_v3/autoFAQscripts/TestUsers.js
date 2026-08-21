@@ -353,22 +353,6 @@ const TestUsersdiv = createWindow('TestUsers', 'winTopTestUsers', 'winLeftTestUs
     setTimeout(validatePosition, 500);
 })();
 
-// ─── 5. TOAST NOTIFICATION ───
-function createAndShowButton(message, type = 'message') {
-    let toast = document.querySelector('.cyber-toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.className = 'cyber-toast';
-        document.body.appendChild(toast);
-    }
-
-    toast.textContent = message;
-    toast.className = `cyber-toast ${type}`;
-
-    setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
 // ─── 6. EVENT HANDLERS ───
 const UI = {
     input: document.getElementById('iduserinfo'),
