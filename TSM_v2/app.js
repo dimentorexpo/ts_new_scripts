@@ -1,277 +1,284 @@
 /* =========================================================
-   TSM Background Service Worker — NEON GLASS ULTRA Refactored
+   TSM Background Service Worker
    ========================================================= */
 
-const Messanger_API_URL = "https://mm-time.skyeng.tech/api/v4/posts";
-const OperId_API_URL = "https://mm-time.skyeng.tech/api/v4/users/me";
-let MMostOperId = '';
-const taskUrlPattern = "https://crm2.skyeng.ru/customer-support/task/*";
-const personTaskUrlPattern = "https://crm2.skyeng.ru/persons/*/customer-support/task/*";
-const ListTaskUrlPattern = "https://crm2.skyeng.ru/persons/*/customer-support/list";
-const showForPages = ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*", "*://*.skyeng.tech/*"];
-const ChanelDev = "hg8rcub4pfg3dcae8jxkwzkq9h";
-const ChanelSupport = "pspyooisr3rd7qzx9as8uc96xc";
+const MESSENGER_API_URL = "https://mm-time.skyeng.tech/api/v4/posts";
+const MESSENGER_USER_URL = "https://mm-time.skyeng.tech/api/v4/users/me";
+const LASER_EXTENSION_ID = "kggpdmfnfmmkneemhknlojemcjmdlpjb";
+const CHANNEL_DEV = "hg8rcub4pfg3dcae8jxkwzkq9h";
+const CHANNEL_SUPPORT = "pspyooisr3rd7qzx9as8uc96xc";
+
+const TASK_LINK_PATTERNS = [
+    "https://crm2.skyeng.ru/customer-support/task/*",
+    "https://crm2.skyeng.ru/persons/*/customer-support/task/*",
+    "https://crm2.skyeng.ru/persons/*/customer-support/list"
+];
+const SHOW_FOR_PAGES = ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*", "*://*.skyeng.tech/*"];
+
 let lastChatId = null;
 let lastMessage = null;
+let cachedOperatorId = null;
 
-chrome.webRequest.onCompleted.addListener(
-    function(details) {
-        if ((details.statusCode >= 400) && (details.statusCode <= 511)) {
-            chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-                if (tabs[0]) {
-                    chrome.tabs.sendMessage(tabs[0].id, { message: 'logRequest', details: details });
-                }
-            });
-        }
-    },
-    {urls: ["<all_urls>"]}
-);
+/* ---------- Логирование ошибочных сетевых запросов ---------- */
 
-function createContextMenu(id, options) {
-    chrome.contextMenus.remove(id, function () {
-        if (chrome.runtime.lastError) {
-            console.log(`Пункт меню с id=${id} не существует. Создаем новый.`);
-        }
-        chrome.contextMenus.create(options);
+chrome.webRequest.onCompleted.addListener((details) => {
+    if (details.statusCode >= 400 && details.statusCode <= 511) {
+        getActiveTab().then((tab) => {
+            if (tab) chrome.tabs.sendMessage(tab.id, { message: "logRequest", details });
+        });
+    }
+}, { urls: ["<all_urls>"] });
+
+/* ---------- Контекстное меню: конфигурация ---------- */
+
+function upsertContextMenu(id, options) {
+    chrome.contextMenus.remove(id, () => void chrome.runtime.lastError);
+    chrome.contextMenus.create(options);
+}
+
+const PAGE_MENU_ITEMS = [
+    ["searchPaymentId", "💸 Поиск платежа"],
+    ["balanceInfoId", "💰 Начислятор / 📑 Подписки"],
+    ["certAndPromoId", "🧾 Сертификаты / 🎟 Промокоды"],
+    ["opentTTId", "📟 Timetable"],
+    ["openCalendarId", "📆 Календарь (Datsy)"],
+    ["makeCompensId", "💵 Компенсации"],
+    ["openTalksAdminId", "💋 Админка Talks"],
+    ["sendToDisasterId", "🆘 #dev-disaster"]
+];
+
+const SELECTION_MENU_ITEMS = [
+    ["InfoID", "🔎Info ID: %s"],
+    ["LoginerLinkID", "🏡 Ссылка-логинер для ID: %s"],
+    ["openCRMId", "🕵️‍♂️ Открыть CRM для ID: %s"],
+    ["PartialPaymentId", "💳 Список рассрочек для ID: %s"],
+    ["editAdminId", "🆔 Отредактировать в админке ID: %s"],
+    ["serviceSkipId", "💨 ID Услуги Skip АП"],
+    ["skpiOnboaringId", "💨 ID Услуги Skip Onboarding"],
+    ["openTRM2Id", "👨‍🏫 Открыть ТРМ2.0 ID: %s"],
+    ["openGroupAdminId", "👩‍👧‍👧 Открыть админку группы: %s"],
+    ["openByHashId", "♐ Открыть ТШ по хешу: %s"]
+];
+
+const LINK_MENU_ITEMS = [
+    ["cancel1linebaseId", "🚫 Отмена ТП1Л (исход)"],
+    ["cancel1linewithtextId", "💬 Написать ТП1Л (исход) со ссылкой"],
+    ["cancel2linewithtextId", "💬 Написать 2ЛТП со ссылкой"],
+    ["cancel2linebaseId", "🚫 Отмена 2ЛТП"]
+];
+
+const NUMERIC_SELECTION_IDS = SELECTION_MENU_ITEMS.map(([id]) => id).filter((id) => id !== "openByHashId");
+
+upsertContextMenu("mainoption", { id: "mainoption", title: "Technical Support Master", documentUrlPatterns: SHOW_FOR_PAGES });
+for (const [id, title] of PAGE_MENU_ITEMS) {
+    upsertContextMenu(id, { id, title, contexts: ["page"], parentId: "mainoption" });
+}
+
+upsertContextMenu("selMainOption", { id: "selMainOption", title: "Technical Support Master", contexts: ["selection"], documentUrlPatterns: SHOW_FOR_PAGES, visible: false });
+for (const [id, title] of SELECTION_MENU_ITEMS) {
+    upsertContextMenu(id, { id, title, contexts: ["selection"], parentId: "selMainOption", visible: false });
+}
+
+upsertContextMenu("linkOption", { id: "linkOption", title: "Technical Support Master", contexts: ["link"], documentUrlPatterns: SHOW_FOR_PAGES, targetUrlPatterns: TASK_LINK_PATTERNS });
+for (const [id, title] of LINK_MENU_ITEMS) {
+    upsertContextMenu(id, { id, title, contexts: ["link"], parentId: "linkOption", targetUrlPatterns: TASK_LINK_PATTERNS });
+}
+
+function setSelectionVisibility(visibleIds) {
+    chrome.contextMenus.update("selMainOption", { visible: visibleIds.length > 0 });
+    for (const [id] of SELECTION_MENU_ITEMS) {
+        chrome.contextMenus.update(id, { visible: visibleIds.includes(id) });
+    }
+}
+
+chrome.runtime.onMessage.addListener((message) => {
+    switch (message.type) {
+        case "NUMERIC_SELECTION":
+            setSelectionVisibility(NUMERIC_SELECTION_IDS);
+            break;
+        case "HASH_SELECTION":
+            setSelectionVisibility(["openByHashId"]);
+            break;
+        default:
+            setSelectionVisibility([]);
+    }
+});
+
+/* ---------- Общие помощники ---------- */
+
+function getActiveTab() {
+    return new Promise((resolve) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => resolve(tabs && tabs[0]));
     });
 }
 
-createContextMenu("mainoption", { "id": "mainoption", "title": "Technical Support Master", "documentUrlPatterns": showForPages });
-createContextMenu("searchPaymentId", { "id": "searchPaymentId", "title": "💸 Поиск платежа", "contexts": ["page"], "parentId": "mainoption" });
-createContextMenu("balanceInfoId", { "id": "balanceInfoId", "title": "💰 Начислятор / 📑 Подписки", "contexts": ["page"], "parentId": "mainoption" });
-createContextMenu("certAndPromoId", { "id": "certAndPromoId", "title": "🧾 Сертификаты / 🎟 Промокоды", "contexts": ["page"], "parentId": "mainoption" });
-createContextMenu("opentTTId", { "id": "opentTTId", "title": "📟 Timetable", "contexts": ["page"], "parentId": "mainoption" });
-createContextMenu("openCalendarId", { "id": "openCalendarId", "title": "📆 Календарь (Datsy)", "contexts": ["page"], "parentId": "mainoption" });
-createContextMenu("makeCompensId", { "id": "makeCompensId", "title": "💵 Компенсации", "contexts": ["page"], "parentId": "mainoption" });
-createContextMenu("openTalksAdminId", { "id": "openTalksAdminId", "title": "💋 Админка Talks", "contexts": ["page"], "parentId": "mainoption" });
-createContextMenu("sendToDisasterId", { "id": "sendToDisasterId", "title": "🆘 #dev-disaster", "contexts": ["page"], "parentId": "mainoption" });
-
-createContextMenu("selMainOption", { "id": "selMainOption", "title": "Technical Support Master", "contexts": ["selection"], "documentUrlPatterns": showForPages, "visible": false });
-createContextMenu("InfoID", { "id": "InfoID", "title": "🔎Info ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
-createContextMenu("LoginerLinkID", { "id": "LoginerLinkID", "title": "🏡 Ссылка-логинер для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
-createContextMenu("openCRMId", { "id": "openCRMId", "title": "🕵️‍♂️ Открыть CRM для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
-createContextMenu("PartialPaymentId", { "id": "PartialPaymentId", "title": "💳 Список рассрочек для ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
-createContextMenu("editAdminId", { "id": "editAdminId", "title": "🆔 Отредактировать в админке ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
-createContextMenu("serviceSkipId", { "id": "serviceSkipId", "title": "💨 ID Услуги Skip АП", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
-createContextMenu("skpiOnboaringId", { "id": "skpiOnboaringId", "title": "💨 ID Услуги Skip Onboarding", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
-createContextMenu("openTRM2Id", { "id": "openTRM2Id", "title": "👨‍🏫 Открыть ТРМ2.0 ID: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
-createContextMenu("openGroupAdminId", { "id": "openGroupAdminId", "title": "👩‍👧‍👧 Открыть админку группы: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
-
-createContextMenu("openByHashId", { "id": "openByHashId", "title": "♐ Открыть ТШ по хешу: %s", "contexts": ["selection"], "parentId": "selMainOption", "visible": false });
-
-chrome.runtime.onMessage.addListener(function (message) {
-    switch (message.type) {
-        case 'NUMERIC_SELECTION':
-            chrome.contextMenus.update("selMainOption", { visible: true });
-            chrome.contextMenus.update("InfoID", { visible: true });
-            chrome.contextMenus.update("LoginerLinkID", { visible: true });
-            chrome.contextMenus.update("openCRMId", { visible: true });
-            chrome.contextMenus.update("PartialPaymentId", { visible: true });
-            chrome.contextMenus.update("editAdminId", { visible: true });
-            chrome.contextMenus.update("serviceSkipId", { visible: true });
-            chrome.contextMenus.update("skpiOnboaringId", { visible: true });
-            chrome.contextMenus.update("openTRM2Id", { visible: true });
-            chrome.contextMenus.update("openGroupAdminId", { visible: true });
-            chrome.contextMenus.update("openByHashId", { visible: false });
-            break;
-        case 'HASH_SELECTION':
-            chrome.contextMenus.update("selMainOption", { visible: true });
-            chrome.contextMenus.update("openByHashId", { visible: true });
-            chrome.contextMenus.update("InfoID", { visible: false });
-            chrome.contextMenus.update("LoginerLinkID", { visible: false });
-            chrome.contextMenus.update("openCRMId", { visible: false });
-            chrome.contextMenus.update("PartialPaymentId", { visible: false });
-            chrome.contextMenus.update("editAdminId", { visible: false });
-            chrome.contextMenus.update("serviceSkipId", { visible: false });
-            chrome.contextMenus.update("skpiOnboaringId", { visible: false });
-            chrome.contextMenus.update("openTRM2Id", { visible: false });
-            chrome.contextMenus.update("openGroupAdminId", { visible: false });
-            break;
-        default:
-            chrome.contextMenus.update("selMainOption", { visible: false });
-            chrome.contextMenus.update("InfoID", { visible: false });
-            chrome.contextMenus.update("LoginerLinkID", { visible: false });
-            chrome.contextMenus.update("openCRMId", { visible: false });
-            chrome.contextMenus.update("PartialPaymentId", { visible: false });
-            chrome.contextMenus.update("editAdminId", { visible: false });
-            chrome.contextMenus.update("serviceSkipId", { visible: false });
-            chrome.contextMenus.update("skpiOnboaringId", { visible: false });
-            chrome.contextMenus.update("openTRM2Id", { visible: false });
-            chrome.contextMenus.update("openGroupAdminId", { visible: false });
-            chrome.contextMenus.update("openByHashId", { visible: false });
-            break;
-    }
-});
-
-createContextMenu("linkOption", { "id": "linkOption", "title": "Technical Support Master", "contexts": ["link"], "documentUrlPatterns": showForPages, "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] });
-
-createContextMenu("cancel1linebaseId", { "id": "cancel1linebaseId", "title": "🚫 Отмена ТП1Л (исход)", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] });
-createContextMenu("cancel1linewithtextId", { "id": "cancel1linewithtextId", "title": "💬 Написать ТП1Л (исход) со ссылкой", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] });
-createContextMenu("cancel2linewithtextId", { "id": "cancel2linewithtextId", "title": "💬 Написать 2ЛТП со ссылкой", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] });
-createContextMenu("cancel2linebaseId", { "id": "cancel2linebaseId", "title": "🚫 Отмена 2ЛТП", "contexts": ["link"], "parentId": "linkOption", "targetUrlPatterns": [taskUrlPattern, personTaskUrlPattern, ListTaskUrlPattern] });
-
-const menuActions = {
-    "searchPaymentId": searchpayment,
-    "balanceInfoId": balanceinfo,
-    "certAndPromoId": certandpromo,
-    "opentTTId": opentt,
-    "openCalendarId": opencalendar,
-    "makeCompensId": makecompens,
-    "openTalksAdminId": opentalksadm,
-    "sendToDisasterId": sendtodisaster,
-    "InfoID": openinfo,
-    "LoginerLinkID": dologginer,
-    "openCRMId": opencrmid,
-    "PartialPaymentId": creditpayments,
-    "editAdminId": editadmacc,
-    "serviceSkipId": copytoskipap,
-    "skpiOnboaringId": copytoskipob,
-    "openTRM2Id": opentrm,
-    "openGroupAdminId": openlgs,
-    "openByHashId": opntshash,
-    "cancel1linebaseId": cancelishodcall,
-    "cancel1linewithtextId": sendCustomMessage1line,
-    "cancel2linewithtextId": sendCustomMessage2line,
-    "cancel2linebaseId": cancelsecondline
-};
-
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (menuActions[info.menuItemId]) {
-        menuActions[info.menuItemId](info, tab);
-    }
-});
-
-function searchpayment(info, tab) {
-    const createProperties = { url: encodeURI("https://accounting.skyeng.ru/userpayment/search/transaction") };
-    chrome.tabs.create(createProperties);
+function sendMessageToTab(tabId, message) {
+    return new Promise((resolve) => chrome.tabs.sendMessage(tabId, message, resolve));
 }
 
-function balanceinfo(info, tab) {
-    const createProperties = { url: encodeURI("https://billing-api.skyeng.ru/operations") };
-    chrome.tabs.create(createProperties);
-}
-
-function certandpromo(info, tab) {
-    const createProperties = { url: encodeURI("https://billing-marketing.skyeng.ru/certificate/certSearch") };
-    chrome.tabs.create(createProperties);
-}
-
-function opentt(info, tab) {
-    const createProperties = { url: encodeURI("https://timetable.skyeng.ru/") };
-    chrome.tabs.create(createProperties);
-}
-
-function opencalendar(info, tab) {
-    const createProperties = { url: encodeURI("https://datsy.info/") };
-    chrome.tabs.create(createProperties);
-}
-
-function makecompens(info, tab) {
-    const createProperties = { url: encodeURI("https://billing-marketing.skyeng.ru/accrual-operations/create") };
-    chrome.tabs.create(createProperties);
-}
-
-function opentalksadm(info, tab) {
-    const createProperties = { url: encodeURI("https://vimbox.skyeng.ru/talks/admin/statistics") };
-    chrome.tabs.create(createProperties);
-}
-
-async function sendtodisaster(info, tab) {
-    if (!MMostOperId) {
-        MMostOperId = await getMMostOperId();
-    }
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, { action: "showConfirmDialog" }, async function (response) {
-            if (response && response.confirmed) {
-                const textmsg = response.textmsg;
-                if (!textmsg || textmsg.length <= 3) {
-                    console.error("Текст слишком короткий или пустой");
-                    return;
-                }
-                try {
-                    let response = await sendFetchMessage(`:alert: ${textmsg}`, ChanelDev);
-                    let tsresponse = response.id;
-                    console.log(tsresponse);
-                    await sendFetchMessage(`@techsupport-team @techsupport-leads @tech-curators @pk-chats @sos-inform-teachers @teacherscareteam @outbound-team-new @m-vhod @pm-team1 @premium-support @a-players @news`, ChanelDev, tsresponse);
-                } catch (error) {
-                    console.error("Ошибка при отправке сообщения: ", error);
-                }
-            } else {
-                console.log("Отправка сообщения отменена пользователем");
-            }
+function storageGet(key) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.get([key], (result) => {
+            if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
+            else resolve(result[key]);
         });
     });
 }
 
-async function sendFetchMessage(message, channelId, rootId = "") {
-    const headers = {
-        "accept": "*/*",
-        "accept-language": "ru",
-        "content-type": "application/json",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "x-requested-with": "XMLHttpRequest"
-    };
-    const bodyData = {
-        "message": message,
-        "channel_id": channelId,
-        "pending_post_id": `${MMostOperId}:`,
-        "user_id": MMostOperId
-    };
-    if (rootId) bodyData.root_id = rootId;
-    const response = await fetch(Messanger_API_URL, {
-        headers,
-        "referrerPolicy": "no-referrer",
-        "body": JSON.stringify(bodyData),
-        "method": "POST",
-        "mode": "cors",
-        "credentials": "include"
+function storageSet(key, value) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.set({ [key]: value }, () => {
+            if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
+            else resolve();
+        });
     });
-    return await response.json();
 }
 
-function openinfo(info, tab) {
-    let selid = info.selectionText.replace(/\D/g, '');
-    console.log(selid);
-    const laserExtensionId = "kggpdmfnfmmkneemhknlojemcjmdlpjb";
-    let messageValue = {
-        message: 'open-user-info',
-        userId: selid,
+const digitsOnly = (text) => String(text ?? "").replace(/\D/g, "");
+const openTab = (url) => chrome.tabs.create({ url: encodeURI(url) });
+
+async function getOperatorId() {
+    if (cachedOperatorId) return cachedOperatorId;
+    try {
+        const stored = await storageGet("matermost_oid");
+        if (stored) {
+            cachedOperatorId = stored;
+            return cachedOperatorId;
+        }
+        const response = await fetch(MESSENGER_USER_URL);
+        if (!response.ok) throw new Error("Failed to fetch user data.");
+        const data = await response.json();
+        cachedOperatorId = data.id;
+        await storageSet("matermost_oid", data.id);
+        return cachedOperatorId;
+    } catch (error) {
+        console.error("Error:", error);
+        return null;
+    }
+}
+
+/* ---------- Mattermost ---------- */
+
+const MM_HEADERS = {
+    "accept": "*/*",
+    "accept-language": "ru",
+    "content-type": "application/json",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "x-requested-with": "XMLHttpRequest"
+};
+
+async function postToMessenger(message, channelId, rootId = "") {
+    const userId = await getOperatorId();
+    if (!userId) throw new Error("MMostOperId не найден");
+    const bodyData = { message, channel_id: channelId, pending_post_id: `${userId}:`, user_id: userId };
+    if (rootId) bodyData.root_id = rootId;
+    const response = await fetch(MESSENGER_API_URL, {
+        headers: MM_HEADERS,
+        referrerPolicy: "no-referrer",
+        body: JSON.stringify(bodyData),
+        method: "POST",
+        mode: "cors",
+        credentials: "include"
+    });
+    return response.json();
+}
+
+async function sendToSupportChannel(message) {
+    lastMessage = message;
+    try {
+        const post = await postToMessenger(message, CHANNEL_SUPPORT);
+        transferToTSM(post.id);
+    } catch (error) {
+        console.error("Ошибка:", error);
+    }
+}
+
+function transferToTSM(chatId) {
+    if (chatId === lastChatId) {
+        sendToSupportChannel(lastMessage);
+        return;
+    }
+    lastChatId = chatId;
+    getActiveTab().then((tab) => {
+        if (tab) chrome.tabs.sendMessage(tab.id, { action: "CallMMComment", Chatid: chatId });
+    });
+}
+
+/* ---------- Действия контекстного меню ---------- */
+
+const PAGE_ACTIONS = {
+    searchPaymentId: () => openTab("https://accounting.skyeng.ru/userpayment/search/transaction"),
+    balanceInfoId: () => openTab("https://billing-api.skyeng.ru/operations"),
+    certAndPromoId: () => openTab("https://billing-marketing.skyeng.ru/certificate/certSearch"),
+    opentTTId: () => openTab("https://timetable.skyeng.ru/"),
+    openCalendarId: () => openTab("https://datsy.info/"),
+    makeCompensId: () => openTab("https://billing-marketing.skyeng.ru/accrual-operations/create"),
+    openTalksAdminId: () => openTab("https://vimbox.skyeng.ru/talks/admin/statistics"),
+    sendToDisasterId: () => sendToDisasterChannel()
+};
+
+const SELECTION_ACTIONS = {
+    InfoID: openUserInfo,
+    LoginerLinkID: createLoginLink,
+    openCRMId: (info) => openTab(`https://crm2.skyeng.ru/persons/${digitsOnly(info.selectionText)}`),
+    PartialPaymentId: (info) => openTab(`https://accounting.skyeng.ru/credit/list?studentId=${digitsOnly(info.selectionText)}`),
+    editAdminId: (info) => openTab(`https://id.skyeng.ru/admin/users/${digitsOnly(info.selectionText)}/update-contacts`),
+    serviceSkipId: copySkipLink("auto-schedule"),
+    skpiOnboaringId: copySkipLink("onboarding"),
+    openTRM2Id: (info) => openTab(`https://trm.skyeng.ru/teacher/${digitsOnly(info.selectionText)}`),
+    openGroupAdminId: (info) => openTab(`https://learning-groups-storage.skyeng.ru/group/${digitsOnly(info.selectionText)}?cp=(section:participants)`),
+    openByHashId: (info) => openTab(`https://video-trouble-shooter.skyeng.ru/?hash=${encodeURIComponent(info.selectionText)}`)
+};
+
+function copySkipLink(stage) {
+    return (info, tab) => {
+        const url = `https://student.skyeng.ru/product-stage?stage=${stage}&educationServiceId=${digitsOnly(info.selectionText)}`;
+        chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: url });
     };
-    console.log(messageValue);
-    let tabId = tab.id;
-    console.log(tabId);
-    const message = { messageValue, tabId };
-    chrome.runtime.sendMessage(laserExtensionId, message);
+}
+
+const LINK_ACTIONS = {
+    cancel1linebaseId: cancelOutgoingCall,
+    cancel1linewithtextId: (info) => sendCustomMessage(info, "1line-crm2"),
+    cancel2linewithtextId: (info) => sendCustomMessage(info, "2line"),
+    cancel2linebaseId: cancelSecondLine
+};
+
+const MENU_ACTIONS = { ...PAGE_ACTIONS, ...SELECTION_ACTIONS, ...LINK_ACTIONS };
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    MENU_ACTIONS[info.menuItemId]?.(info, tab);
+});
+
+function openUserInfo(info, tab) {
+    chrome.runtime.sendMessage(LASER_EXTENSION_ID, {
+        messageValue: { message: "open-user-info", userId: digitsOnly(info.selectionText) },
+        tabId: tab.id
+    });
 }
 
 function extractLoginLink(text) {
-    const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g;
-    let matches = text.match(regex);
-    if (matches && matches.length) {
-        let lastMatch = matches[matches.length - 1];
-        return lastMatch.replace(/["']+$/, '');
-    }
-    return null;
+    const matches = text.match(/https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g);
+    if (!matches || !matches.length) return null;
+    return matches[matches.length - 1].replace(/["']+$/, "");
 }
 
-function dologginer(info, tab) {
-    let selid = info.selectionText.replace(/\D/g, '');
-    let tokenId = null;
+function createLoginLink(info, tab) {
+    const csrfToken = null;
     fetch("https://id.skyeng.ru/admin/auth/login-links", {
         headers: { "content-type": "application/x-www-form-urlencoded" },
         referrer: "https://id.skyeng.ru/admin/auth/login-links",
         referrerPolicy: "strict-origin-when-cross-origin",
-        body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${selid}&login_link_form%5Btarget%5D=https%3A%2F%2Fvimbox.skyeng.ru&login_link_form%5Bpromocode%5D=&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=&login_link_form%5B_token%5D=${tokenId}`,
+        body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${digitsOnly(info.selectionText)}&login_link_form%5Btarget%5D=https%3A%2F%2Fvimbox.skyeng.ru&login_link_form%5Bpromocode%5D=&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=&login_link_form%5B_token%5D=${csrfToken}`,
         method: "POST",
         mode: "cors",
         credentials: "include"
     })
-        .then(res => res.text())
-        .then(textHtml => {
+        .then((res) => res.text())
+        .then((textHtml) => {
             const loginLink = extractLoginLink(textHtml);
             if (loginLink) {
-                console.log(`Loginner: ${loginLink}`);
                 chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: loginLink });
             } else {
                 console.error('Ссылка для входа не найдена');
@@ -279,81 +286,32 @@ function dologginer(info, tab) {
         });
 }
 
-function opencrmid(info, tab) {
-    let selid = info.selectionText.replace(/\D/g, '');
-    const createProperties = { url: encodeURI("https://crm2.skyeng.ru/persons/" + selid) };
-    chrome.tabs.create(createProperties);
+async function cancelOutgoingCall(info) {
+    const operatorId = await getOperatorId();
+    if (operatorId) await sendToSupportChannel(`@techsupport-1line-crm2 ${info.linkUrl} Охрана - отмена 🚫`);
 }
 
-function creditpayments(info, tab) {
-    let selid = info.selectionText.replace(/\D/g, '');
-    const createProperties = { url: encodeURI("https://accounting.skyeng.ru/credit/list?studentId=" + selid) };
-    chrome.tabs.create(createProperties);
+async function cancelSecondLine(info) {
+    const operatorId = await getOperatorId();
+    if (operatorId) await sendToSupportChannel(`@techsupport-2line ${info.linkUrl} Охрана - отмена 🚫`);
 }
 
-function editadmacc(info, tab) {
-    let selid = info.selectionText.replace(/\D/g, '');
-    const createProperties = { url: encodeURI("https://id.skyeng.ru/admin/users/" + selid + "/update-contacts") };
-    chrome.tabs.create(createProperties);
-}
-
-function copytoskipap(info, tab) {
-    let selid = info.selectionText.replace(/\D/g, '');
-    let textToCopy = "https://student.skyeng.ru/product-stage?stage=auto-schedule&educationServiceId=" + selid;
-    chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: textToCopy });
-}
-
-function copytoskipob(info, tab) {
-    let selid = info.selectionText.replace(/\D/g, '');
-    let textToCopy = "https://student.skyeng.ru/product-stage?stage=onboarding&educationServiceId=" + selid;
-    chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: textToCopy });
-}
-
-function opentrm(info, tab) {
-    let selid = info.selectionText.replace(/\D/g, '');
-    const createProperties = { url: encodeURI("https://trm.skyeng.ru/teacher/" + selid) };
-    chrome.tabs.create(createProperties);
-}
-
-function openlgs(info, tab) {
-    let selid = info.selectionText.replace(/\D/g, '');
-    const createProperties = { url: encodeURI("https://learning-groups-storage.skyeng.ru/group/" + selid + "?cp=(section:participants)") };
-    chrome.tabs.create(createProperties);
-}
-
-function opntshash(info, tab) {
-    const createProperties = { url: encodeURI("https://video-trouble-shooter.skyeng.ru/?hash=" + info.selectionText) };
-    chrome.tabs.create(createProperties);
-}
-
-async function cancelishodcall(info, tab) {
-    MMostOperId = await getMMostOperId();
-    if (MMostOperId) {
-        const message = `@techsupport-1line-crm2 ${info.linkUrl} Охрана - отмена 🚫`;
-        sendMattermostMessage(message);
-    }
-}
-
-async function sendCustomMessage(info, tab, recipient) {
+async function sendCustomMessage(info, recipient) {
     try {
-        const MMostOperId = await getMMostOperId();
-        if (!MMostOperId) {
+        const operatorId = await getOperatorId();
+        if (!operatorId) {
             console.error("MMostOperId не найден");
             return;
         }
-        const activeTab = await getActiveTab();
-        if (!activeTab) {
+        const tab = await getActiveTab();
+        if (!tab) {
             console.error("Активная вкладка не найдена");
             return;
         }
-        const response = await sendMessageToTab(activeTab.id, {
-            action: "showPromptDialog",
-            linkUrl: info.linkUrl,
-        });
+        const response = await sendMessageToTab(tab.id, { action: "showPromptDialog", linkUrl: info.linkUrl });
         if (response && response.textmsg) {
             if (response.textmsg.length > 3) {
-                const message = `@techsupport-${recipient} ${info.linkUrl} ${response.textmsg}`;
-                sendMattermostMessage(message);
+                await sendToSupportChannel(`@techsupport-${recipient} ${info.linkUrl} ${response.textmsg}`);
             } else {
                 console.error("Текст слишком короткий");
             }
@@ -365,59 +323,45 @@ async function sendCustomMessage(info, tab, recipient) {
     }
 }
 
-function sendCustomMessage1line(info, tab) {
-    sendCustomMessage(info, tab, "1line-crm2");
-}
-
-function sendCustomMessage2line(info, tab) {
-    sendCustomMessage(info, tab, "2line");
-}
-
-async function getActiveTab() {
-    return new Promise((resolve) => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            resolve(tabs && tabs[0]);
-        });
-    });
-}
-
-async function sendMessageToTab(tabId, message) {
-    return new Promise((resolve) => {
-        chrome.tabs.sendMessage(tabId, message, (response) => {
-            resolve(response);
-        });
-    });
-}
-
-async function cancelsecondline(info, tab) {
-    MMostOperId = await getMMostOperId();
-    MMostOperId = await getMMostOperId();
-    if (MMostOperId) {
-        const message = `@techsupport-2line ${info.linkUrl} Охрана - отмена 🚫`;
-        sendMattermostMessage(message);
+async function sendToDisasterChannel() {
+    await getOperatorId();
+    const tab = await getActiveTab();
+    if (!tab) return;
+    const response = await sendMessageToTab(tab.id, { action: "showConfirmDialog" });
+    if (!response || !response.confirmed) {
+        console.log("Отправка сообщения отменена пользователем");
+        return;
+    }
+    const textmsg = response.textmsg;
+    if (!textmsg || textmsg.length <= 3) {
+        console.error("Текст слишком короткий или пустой");
+        return;
+    }
+    try {
+        const post = await postToMessenger(`:alert: ${textmsg}`, CHANNEL_DEV);
+        await postToMessenger("@techsupport-team @techsupport-leads @tech-curators @pk-chats @sos-inform-teachers @teacherscareteam @outbound-team-new @m-vhod @pm-team1 @premium-support @a-players @news", CHANNEL_DEV, post.id);
+    } catch (error) {
+        console.error("Ошибка при отправке сообщения: ", error);
     }
 }
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.name === "Ctxt") {
-        if (request.question == 'sendResponse') {
-            fetch(request.addr, request.options)
-                .then(response => response.text())
-                .then(result => { sendResponse({ answer: result, respName: request.respName }) });
-            return true;
-        }
+/* ---------- CORS-прокси для контент-скриптов ---------- */
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.name === "Ctxt" && request.question === "sendResponse") {
+        fetch(request.addr, request.options)
+            .then((response) => response.text())
+            .then((result) => sendResponse({ answer: result, respName: request.respName }));
+        return true;
     }
-    if (request.action === 'getOvercomeCORS') {
-        const url = request.fetchURL;
-        const requestOptions = request.requestOptions;
+    if (request.action === "getOvercomeCORS") {
         (async () => {
             try {
-                const response = await fetch(url, requestOptions);
+                const response = await fetch(request.fetchURL, request.requestOptions);
                 if (!response.ok) {
-                    throw new Error('Network response was not ok (проверь авторизацию в CRM, после чего повтори попытку): ' + response.status + " " + response.statusText);
+                    throw new Error(`Network response was not ok (проверь авторизацию в CRM, после чего повтори попытку): ${response.status} ${response.statusText}`);
                 }
-                const text = await response.text();
-                sendResponse({ success: true, fetchansver: text });
+                sendResponse({ success: true, fetchansver: await response.text() });
             } catch (error) {
                 sendResponse({ success: false, error: error.message });
             }
@@ -425,82 +369,3 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         return true;
     }
 });
-
-async function getMMostOperId() {
-    try {
-        const MMostOperId = await new Promise((resolve, reject) => {
-            chrome.storage.local.get(['matermost_oid'], function (result) {
-                if (chrome.runtime.lastError) {
-                    return reject(chrome.runtime.lastError);
-                }
-                resolve(result.matermost_oid);
-            });
-        });
-        if (MMostOperId) {
-            return MMostOperId;
-        } else {
-            const response = await fetch(OperId_API_URL);
-            if (!response.ok) throw new Error("Failed to fetch user data.");
-            const data = await response.json();
-            const newMMostOperId = data.id;
-            await new Promise((resolve, reject) => {
-                chrome.storage.local.set({ 'matermost_oid': newMMostOperId }, function () {
-                    if (chrome.runtime.lastError) {
-                        return reject(chrome.runtime.lastError);
-                    }
-                    resolve();
-                });
-            });
-            return newMMostOperId;
-        }
-    } catch (error) {
-        console.error("Error:", error);
-        return null;
-    }
-}
-
-function sendMattermostMessage(message) {
-    lastMessage = message;
-    let bodyData = {
-        message: message,
-        channel_id: ChanelSupport,
-        pending_post_id: `${MMostOperId}:`,
-        user_id: MMostOperId
-    };
-    fetch(Messanger_API_URL, {
-        "headers": {
-            "accept": "*/*",
-            "accept-language": "ru",
-            "content-type": "application/json",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "x-requested-with": "XMLHttpRequest"
-        },
-        "referrerPolicy": "no-referrer",
-        "body": JSON.stringify(bodyData),
-        "method": "POST",
-        "mode": "cors",
-        "credentials": "include"
-    })
-        .then(response => response.json())
-        .then(data => {
-            transfertoTSM(data.id);
-        })
-        .catch(error => {
-            console.error("Ошибка:", error);
-        });
-}
-
-function transfertoTSM(Chatid) {
-    if (Chatid === lastChatId) {
-        sendMattermostMessage(lastMessage);
-        return;
-    }
-    lastChatId = Chatid;
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const activeTab = tabs[0];
-        if (activeTab) {
-            chrome.tabs.sendMessage(activeTab.id, { action: "CallMMComment", Chatid: Chatid });
-        }
-    });
-}

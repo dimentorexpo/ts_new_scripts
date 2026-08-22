@@ -3,6 +3,7 @@
    ========================================================= */
 
 let hwroomdata = '';
+let ttcroomdata = '';
 
 var win_kidsExercises = `<div style="display: flex;">
     <span style="cursor: -webkit-grab;">
@@ -97,11 +98,15 @@ async function OpenExercisesSmartroom() {
         document.getElementById('getroomdatakids').onclick = async function () {
             document.getElementById('exercisebarskysmart').innerHTML = '';
             let urlComponents = document.getElementById('roomhashhwkids').value.split('/');
+            if (!urlComponents[4] || !urlComponents[6]) {
+                createNotify('Некорректная ссылка на комнату', 'error');
+                return;
+            }
             let hashroomkids = urlComponents[6].split('?')[0];
             let kidsselector = urlComponents[4];
             const baseURL = `https://api-${kidsselector}.skyeng.ru/api/v2/rooms/`;
             await gethwroominfo(baseURL, hashroomkids);
-            getkidsroominfo(data = hwroomdata, subjecttype = kidsselector);
+            getkidsroominfo(hwroomdata, kidsselector);
         };
     } else {
         wintExercSkysmart.style.display = 'none';
@@ -232,8 +237,8 @@ function getkidsroominfo(data, subjecttype) {
         renderCategory("🎓План урока", data.lessonCards) +
         renderCategory("💼План домашки", data.homeworkCards, true);
 
-    let subjbtnsarr = document.getElementsByClassName('tsm-collapsible');
-    let slidesbar = document.getElementsByClassName('tsm-slide-box');
+    let subjbtnsarr = document.getElementById('exercisebarskysmart').getElementsByClassName('tsm-collapsible');
+    let slidesbar = document.getElementById('exercisebarskysmart').getElementsByClassName('tsm-slide-box');
     for (let i = 0; i < subjbtnsarr.length; i++) {
         subjbtnsarr[i].onclick = function () {
             if (slidesbar[i].style.display == 'none') slidesbar[i].style.display = '';
@@ -241,7 +246,7 @@ function getkidsroominfo(data, subjecttype) {
         };
     }
 
-    let savelinkarr = document.getElementsByClassName('tsm-btn-save');
+    let savelinkarr = document.getElementById('exercisebarskysmart').getElementsByClassName('tsm-btn-save');
     for (let z = 0; z < savelinkarr.length; z++) {
         savelinkarr[z].onclick = function () {
             let subtype = this.getAttribute('data-subtype');
@@ -255,7 +260,7 @@ function getkidsroominfo(data, subjecttype) {
         };
     }
 
-    let rstProgArray = document.getElementsByClassName('tsm-btn-reset');
+    let rstProgArray = document.getElementById('exercisebarskysmart').getElementsByClassName('tsm-btn-reset');
     for (let k = 0; k < rstProgArray.length; k++) {
         rstProgArray[k].onclick = async function () {
             let apiToDoName = location.pathname.split('/')[2].trim();
@@ -300,7 +305,7 @@ async function getTTCData() {
             "credentials": "include"
         }).then(r => r.json()).then(r => ttcroomdata = r);
         console.log(ttcroomdata);
-        let tmparr = [];
+        let tmparr = '';
         for (let i = 0; i < ttcroomdata.participants[0].nodes[0].steps.length; i++) {
             if (ttcroomdata.participants[0].nodes[0].steps[i].score == null) ttcroomdata.participants[0].nodes[0].steps[i].score = 0;
             if (ttcroomdata.participants[0].nodes[0].steps[i].completeness == null) ttcroomdata.participants[0].nodes[0].steps[i].completeness = 0;
@@ -354,7 +359,7 @@ async function OpenExercisesComplect() {
         wintComplect.style.display = '';
         wintExercSkysmart.style.display = 'none';
         wintExercTTC.style.display = 'none';
-        AFMS_addMenu.style.display = 'none';
+        document.getElementById('AFMS_addMenu').style.display = 'none';
         document.getElementById('roomhashhwComplect').value = document.URL;
         setTimeout(function () {
             getroomdataComplect.click();
@@ -423,6 +428,10 @@ async function OpenExercisesComplect() {
         document.getElementById('exercisebarComplect').innerHTML = '';
         const rhash = document.getElementById('roomhashhwComplect').value;
         const urlComponents = rhash.split('/');
+        if (!urlComponents[4] || !urlComponents[6]) {
+            createNotify('Некорректная ссылка на комнату', 'error');
+            return;
+        }
         const isTest = urlComponents[6].split('?')[0] === 'test';
         const kidsselector = urlComponents[4];
         const hashroomkids = isTest ? urlComponents[7] : urlComponents[6].split('?')[0];
@@ -455,15 +464,15 @@ async function OpenExercisesComplect() {
             document.getElementById('exercisebarComplect').innerHTML += buildCollapsibleBlock("Diagnostic", diagnosticInfo, diagnosticTable);
         }
 
-        const subjbtnsarr = document.getElementsByClassName('tsm-collapsible');
-        const slidesbar = document.getElementsByClassName('tsm-slide-box');
+        const subjbtnsarr = document.getElementById('exercisebarComplect').getElementsByClassName('tsm-collapsible');
+        const slidesbar = document.getElementById('exercisebarComplect').getElementsByClassName('tsm-slide-box');
         for (let i = 0; i < subjbtnsarr.length; i++) {
             subjbtnsarr[i].onclick = function () {
                 slidesbar[i].style.display = slidesbar[i].style.display === 'none' ? '' : 'none';
             };
         }
 
-        const savelinkarr = document.getElementsByClassName('tsm-btn-save');
+        const savelinkarr = document.getElementById('exercisebarComplect').getElementsByClassName('tsm-btn-save');
         for (let z = 0; z < savelinkarr.length; z++) {
             savelinkarr[z].onclick = function () {
                 const subtype = this.getAttribute('complectationsData-subtype');

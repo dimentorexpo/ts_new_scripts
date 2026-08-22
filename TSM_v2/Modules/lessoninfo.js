@@ -164,15 +164,17 @@ async function apiRequest(url, options = {}) {
 }
 
 function clearUI() {
-    Object.values(DOM).forEach(fn => {
-        const el = fn();
+    Object.entries(DOM).forEach(([key, get]) => {
+        if (key === "allParticipants") return;
+        const el = get();
         if (!el) return;
-        if ('value' in el) el.value = '';
-        else el.textContent = '';
+        if ("value" in el) el.value = "";
+        else el.textContent = "";
     });
-    DOM.btnClass().style.display = 'none';
-    DOM.btnSuccess().style.display = 'none';
-    DOM.particCounter().textContent = '0';
+    document.getElementById("participantsTbody").innerHTML = "";
+    DOM.btnClass().style.display = "none";
+    DOM.btnSuccess().style.display = "none";
+    DOM.particCounter().textContent = "0";
 }
 
 function filterParticipants(query) {
@@ -189,7 +191,7 @@ function filterParticipants(query) {
 }
 
 function sortParticipants(participants) {
-    return participants.sort((a, b) => {
+    return [...participants].sort((a, b) => {
         if (a.role === "teacher" && b.role !== "teacher") return -1;
         if (b.role === "teacher" && a.role !== "teacher") return 1;
         if (!a.joinedAt && b.joinedAt) return 1;
@@ -214,46 +216,45 @@ async function loadRoomInfo(api, roomHash, subjectName) {
             updateParticipants(data.participants);
         } else {
             updateParticipantsWebinar(data.participants);
-            document.getElementById('searchForParticipant').addEventListener('input', function () {
+            const searchInput = document.getElementById("searchForParticipant");
+            searchInput.oninput = function () {
                 filterParticipants(this.value.trim());
-            });
+            };
         }
-        
-        // Открытие самобытного окна участников
-        DOM.particCounter().onclick = function () {
-            let modal = document.getElementById('allParticipants');
-            if (!modal) return;
 
-            // Вырываем окно из родителя в корень body
-            if (modal.parentNode !== document.body) {
-                document.body.appendChild(modal);
-            }
-
-if (modal.style.display === "none" || modal.style.display === "") {
-    modal.style.display = "block";
-    modal.style.position = "absolute"; // или fixed, как удобнее
-    modal.style.margin   = "0";
-    modal.style.zIndex   = "999999";
-    modal.style.transform = "none";    // сбрасываем старый transform
-
-    let screenCenter = (window.innerWidth / 2) - 350;
-    modal.style.left = screenCenter + "px";
-    modal.style.top  = "10vh";
-
-    // запускаем анимацию появления
-    modal.classList.add('tsm-modal-animate');
-    setTimeout(() => modal.classList.remove('tsm-modal-animate'), 500);
-
-    const dragHandle = document.getElementById('participantsDragHandle');
-    makeDraggable(modal, dragHandle);
-            } else {
-                modal.style.display = "none";
-            }
-        };
+        DOM.particCounter().onclick = toggleParticipantsModal;
 
     } catch (e) {
         console.error('Ошибка загрузки комнаты:', e);
     }
+}
+
+function toggleParticipantsModal() {
+    const modal = document.getElementById('allParticipants');
+    if (!modal) return;
+
+    if (modal.style.display === "block") {
+        modal.style.display = "none";
+        return;
+    }
+
+    if (modal.parentNode !== document.body) {
+        document.body.appendChild(modal);
+    }
+
+    modal.style.display = "block";
+    modal.style.position = "absolute";
+    modal.style.margin = "0";
+    modal.style.zIndex = "999999";
+    modal.style.transform = "none";
+
+    modal.style.left = ((window.innerWidth / 2) - 350) + "px";
+    modal.style.top = "10vh";
+
+    modal.classList.add('tsm-modal-animate');
+    setTimeout(() => modal.classList.remove('tsm-modal-animate'), 500);
+
+    makeDraggable(modal, document.getElementById('participantsDragHandle'));
 }
 
 function updateParticipants(participants) {
@@ -265,13 +266,10 @@ function updateParticipants(participants) {
 }
 
 function updateParticipantsWebinar(participants) {
-    const tbody = document.getElementById("participantsTbody");
-    tbody.innerHTML = "";
     const sorted = sortParticipants(participants);
-    sorted.forEach(p => {
-        const row = `<tr><td>${p.role}</td><td>${p.userId}</td><td>${p.name}</td><td>${toMoscowTime(p.joinedAt)}</td></tr>`;
-        tbody.innerHTML += row;
-    });
+    document.getElementById("participantsTbody").innerHTML = sorted
+        .map((p) => `<tr><td>${p.role}</td><td>${p.userId}</td><td>${p.name}</td><td>${toMoscowTime(p.joinedAt)}</td></tr>`)
+        .join("");
 }
 
 async function changeRoomStatus(status) {
@@ -283,10 +281,11 @@ async function changeRoomStatus(status) {
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ status, name: '' })
         });
-        alert(`Статус изменён на ${status}`);
-        location.reload();
+        createNotify(`Статус изменён на ${status}`);
+        setTimeout(() => location.reload(), 1200);
     } catch (e) {
         console.error('Ошибка изменения статуса:', e);
+        createNotify('Ошибка изменения статуса', 'error');
     }
 }
 
@@ -344,10 +343,10 @@ function setupEventHandlers() {
     DOM.btnClass().onclick = () => changeRoomStatus('classwork');
     DOM.btnSuccess().onclick = () => changeRoomStatus('success');
     
-    DOM.hash().onclick = () => {
+    DOM.hash().onclick = async () => {
         const link = `https://vimbox.skyeng.ru/kids/${DOM.subject().textContent.toLowerCase()}/room/${DOM.hash().textContent}`;
-        copyToClipboardTSM(link);
-        alert('Ссылка скопирована');
+        const copied = await copyToClipboardTSM(link);
+        if (copied) createNotify('🔗 Ссылка скопирована');
     };
     
     document.getElementById('ClearInfo').onclick = clearUI;
@@ -370,11 +369,9 @@ function setupEventHandlers() {
 }
 
 function openMenu(isSearch) {
-    console.log("isSearch is ", isSearch);
     if (isSearch == false && location.origin !== ORIGIN_VIMBOX) return;
     try {
         const { subject, subjectName, roomHash } = isSearch ? parseRoomURL(DOM.hashInput().value) : parseRoomURL();
-        console.log(roomHash);
         const api = getApiEndpoint(subject, 2);
         if (!api) {
             console.error('API endpoint не определён');
@@ -384,16 +381,4 @@ function openMenu(isSearch) {
     } catch (e) {
         console.error('Ошибка при открытии меню:', e);
     }
-}
-
-// Глобальная функция копирования (если её нет в других модулях)
-if (typeof copyToClipboardTSM === 'undefined') {
-    window.copyToClipboardTSM = str => {
-        const el = document.createElement('textarea');
-        el.value = str;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-    };
 }

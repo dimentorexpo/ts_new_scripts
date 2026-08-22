@@ -1354,3 +1354,114 @@ box-shadow: 0 0 12px rgba(57, 255, 20, 0.3);
 .tsm-custom-checkbox input:checked ~ .tsm-checkmark:after {
     display: block;
 }
+/* =========================================================
+   TSM Dialogs
+   ========================================================= */
+.tsm-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+    background: rgba(5, 5, 8, 0.55);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.tsm-dialog-overlay.tsm-dialog-visible {
+    opacity: 1;
+}
+.tsm-dialog {
+    width: 480px;
+    max-width: calc(100vw - 40px);
+    box-sizing: border-box;
+    background: var(--tsm-bg-panel, rgba(10, 14, 24, 0.85));
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--tsm-glass-border, rgba(0, 240, 255, 0.18));
+    border-radius: var(--tsm-radius-lg, 20px);
+    box-shadow: var(--tsm-shadow-panel, 0 16px 40px rgba(0, 0, 0, 0.6));
+    padding: 24px;
+    color: var(--tsm-text-primary, #f0f9ff);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    transform: translateY(-16px) scale(0.97);
+    transition: transform 0.2s ease;
+}
+.tsm-dialog-visible .tsm-dialog {
+    transform: translateY(0) scale(1);
+}
+.tsm-dialog-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--tsm-neon-cyan, #00f0ff);
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.35);
+}
+.tsm-dialog-message {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--tsm-text-secondary, #a1b3d1);
+    white-space: pre-line;
+    word-break: break-word;
+    margin-bottom: 18px;
+}
+.tsm-dialog-input {
+    all: unset;
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid var(--tsm-glass-border, rgba(0, 240, 255, 0.18));
+    border-radius: var(--tsm-radius-sm, 8px);
+    color: var(--tsm-text-primary, #f0f9ff);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 10px 12px;
+    margin-bottom: 18px;
+    resize: vertical;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.tsm-dialog-input:focus {
+    border-color: var(--tsm-glass-border-hover, rgba(0, 240, 255, 0.4));
+    box-shadow: var(--tsm-shadow-cyan);
+}
+.tsm-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+.tsm-dialog-btn {
+    all: unset;
+    cursor: pointer;
+    box-sizing: border-box;
+    padding: 9px 22px;
+    border-radius: var(--tsm-radius-md, 14px);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+.tsm-dialog-btn-cancel {
+    color: var(--tsm-text-secondary, #a1b3d1);
+    border: 1px solid var(--tsm-glass-border, rgba(0, 240, 255, 0.18));
+    background: rgba(0, 0, 0, 0.3);
+}
+.tsm-dialog-btn-cancel:hover {
+    color: var(--tsm-text-primary, #f0f9ff);
+    border-color: var(--tsm-glass-border-hover, rgba(0, 240, 255, 0.4));
+}
+.tsm-dialog-btn-ok {
+    color: #04121a;
+    background: linear-gradient(135deg, var(--tsm-neon-cyan, #00f0ff), #08b6c9);
+    box-shadow: var(--tsm-shadow-cyan);
+}
+.tsm-dialog-btn-ok:hover {
+    filter: brightness(1.12);
+}
+.tsm-dialog-btn-ok.tsm-dialog-btn-danger {
+    color: #fff;
+    background: linear-gradient(135deg, var(--tsm-neon-red, #ff2a6d), #b3124d);
+    box-shadow: 0 0 16px rgba(255, 42, 109, 0.35), 0 0 4px rgba(255, 42, 109, 0.25);
+}

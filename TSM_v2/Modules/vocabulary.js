@@ -1,26 +1,24 @@
 /* =========================================================
-   TSM Vocabulary — NEON GLASS ULTRA Refactored (FIXED 2.0)
+   TSM Vocabulary
    ========================================================= */
 
-let allWordSets =[];
-let checkedarray =[];
+let allWordSets = [];
 let globalWordsCounter = 0;
-
-// Глобальные переменные для управления потоком (Пауза/Отмена)
 let isTaskPaused = false;
 let isTaskCancelled = false;
 
-// Функция задержки (сон)
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const WORDS_API_HEADERS = () => ({
+    "accept": "application/json, text/plain, */*",
+    "authorization": `Bearer ${token.token_global}`
+});
 
-// HTML модального окна (Добавлен id="tsm-progress-container")
 var win_Vocabulary = `<div style="display: flex;">
     <span style="cursor: -webkit-grab;">
         <div style="margin: 5px; width:500px;">
             <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideVocabularyMenu">hide</button>
             <button class="tsm-btn tsm-btn-sm" id="ClearVocabulary" title="Очистить всё и прервать процессы" style="margin: 5px;">🧹</button>
             
-            <!-- Обертка прогресс бара и кнопок управления -->
             <div style="display: flex; align-items: center; gap: 8px; margin: 10px 5px 5px 5px;">
                 <div class="tsm-progress-wrapper" id="tsm-progress-container">
                     <div id="dynamicProgressBar" class="tsm-progress-base" style="width: 0%;">Ожидание...</div>
@@ -61,382 +59,333 @@ var win_Vocabulary = `<div style="display: flex;">
     </span>
 </div>`;
 
-const wintVocabulary = createTSMWindow('AFMS_Vocabulary', 'winTopVocabulary', 'winLeftVocabulary', win_Vocabulary);
-wintVocabulary.className = 'tsm-window tsm-window-vocabulary';
+const wintVocabulary = createTSMWindow("AFMS_Vocabulary", "winTopVocabulary", "winLeftVocabulary", win_Vocabulary);
+wintVocabulary.className = "tsm-window tsm-window-vocabulary";
 
-// Инициализация при клике на меню
-document.getElementById('VocabularyMenu').onclick = function () {
-    if (wintVocabulary.style.display == 'none') {
-        wintVocabulary.style.display = '';
-        document.getElementById('vocabularbar').style.display = '';
-        firstgetvocabulary(document.getElementById('iduserwords'));
-    } else {
-        wintVocabulary.style.display = 'none';
-    }
+document.getElementById("VocabularyMenu").onclick = function () {
+    const willShow = wintVocabulary.style.display === "none";
+    wintVocabulary.style.display = willShow ? "" : "none";
+    document.getElementById("vocabularbar").style.display = willShow ? "" : "none";
+    if (willShow) firstgetvocabulary(document.getElementById("iduserwords"));
 
-    // Привязка кнопок Пауза/Продолжить
-    document.getElementById('btnPause').onclick = function() {
+    document.getElementById("btnPause").onclick = function () {
         isTaskPaused = true;
-        this.style.display = 'none';
-        document.getElementById('btnResume').style.display = 'inline-flex';
+        this.style.display = "none";
+        document.getElementById("btnResume").style.display = "inline-flex";
     };
-    
-    document.getElementById('btnResume').onclick = function() {
+
+    document.getElementById("btnResume").onclick = function () {
         isTaskPaused = false;
-        this.style.display = 'none';
-        document.getElementById('btnPause').style.display = 'inline-flex';
+        this.style.display = "none";
+        document.getElementById("btnPause").style.display = "inline-flex";
     };
 
-    document.getElementById('findwords').onclick = async function () {
-        document.getElementById('searchwordinput').value = '';
+    document.getElementById("findwords").onclick = function () {
+        document.getElementById("searchwordinput").value = "";
         globalWordsCounter = 0;
-        document.getElementById('searchwordinput').style.display = 'none';
-        getwordsets(document.getElementById('iduserwords').value.trim());
+        document.getElementById("searchwordinput").style.display = "none";
+        getwordsets(document.getElementById("iduserwords").value.trim());
     };
 
-    document.getElementById('ClearVocabulary').onclick = function () {
-        // Жестко останавливаем все выполняющиеся фоновые процессы
-        isTaskCancelled = true; 
-        isTaskPaused = false; // Снимаем паузу, чтобы цикл сразу завершился
-        
-        document.getElementById('wordsout').innerHTML = '';
-        document.getElementById('iduserwords').value = '';
-        allWordSets =[];
-        document.getElementById('searchwordinput').value = '';
-        document.getElementById('searchwordinput').style.display = 'none';
-        
-        // Надежный сброс прогресс-бара через родительский контейнер
-        let pbWrapper = document.getElementById("tsm-progress-container");
-        if(pbWrapper) {
-            let pb = pbWrapper.firstElementChild;
-            pb.id = "dynamicProgressBar"; 
-            pb.style.width = "0%";
-            pb.textContent = "Ожидание...";
-        }
-        
-        document.getElementById('btnPause').style.display = 'none';
-        document.getElementById('btnResume').style.display = 'none';
+    document.getElementById("ClearVocabulary").onclick = resetVocabularyState;
+
+    document.getElementById("hideVocabularyMenu").onclick = function () {
+        resetVocabularyState();
+        wintVocabulary.style.display = "none";
     };
 
-    document.getElementById('hideVocabularyMenu').onclick = function () {
-        document.getElementById('ClearVocabulary').click();
-        wintVocabulary.style.display = 'none';
-    };
-
-    document.getElementById('selectallwords').onclick = toggleAllWordSelection;
-    document.getElementById('delunlearnallwords').onclick = deleteLearnedWords;
-    document.getElementById('learncheckedwords').onclick = learnSelectedWords;
-    document.getElementById('unlearnallwords').onclick = resetProgressForSelectedWords;
-    document.getElementById('deleteallwords').onclick = deleteSelectedWords;
+    document.getElementById("selectallwords").onclick = toggleAllWordSelection;
+    document.getElementById("delunlearnallwords").onclick = deleteLearnedWords;
+    document.getElementById("learncheckedwords").onclick = learnSelectedWords;
+    document.getElementById("unlearnallwords").onclick = resetProgressForSelectedWords;
+    document.getElementById("deleteallwords").onclick = deleteSelectedWords;
 };
 
-// Функция управления UI Прогресс Бара
+function resetProgressBars() {
+    const pbWrapper = document.getElementById("tsm-progress-container");
+    if (!pbWrapper) return;
+    const pb = pbWrapper.firstElementChild;
+    pb.id = "dynamicProgressBar";
+    pb.style.width = "0%";
+    pb.textContent = "Ожидание...";
+}
+
+function resetVocabularyState() {
+    isTaskCancelled = true;
+    isTaskPaused = false;
+
+    document.getElementById("wordsout").innerHTML = "";
+    document.getElementById("iduserwords").value = "";
+    allWordSets = [];
+    document.getElementById("searchwordinput").value = "";
+    document.getElementById("searchwordinput").style.display = "none";
+
+    resetProgressBars();
+    document.getElementById("btnPause").style.display = "none";
+    document.getElementById("btnResume").style.display = "none";
+}
+
+/* ---------- Прогресс-бар ---------- */
+
 function setupProgressBar(actionId, startText) {
-    let pbWrapper = document.getElementById("tsm-progress-container");
-    let pb = pbWrapper.firstElementChild; // Находим бар надежно, без оглядки на ID
-    
-    pb.id = actionId; 
+    const pbWrapper = document.getElementById("tsm-progress-container");
+    const pb = pbWrapper.firstElementChild;
+
+    pb.id = actionId;
     pb.style.width = "0%";
     pb.textContent = startText || "0%";
-    
-    document.getElementById('btnPause').style.display = 'inline-flex';
-    document.getElementById('btnResume').style.display = 'none';
+
+    document.getElementById("btnPause").style.display = "inline-flex";
+    document.getElementById("btnResume").style.display = "none";
     isTaskPaused = false;
     isTaskCancelled = false;
     return pb;
 }
 
 function finishProgressBar(pb, endText) {
-    if (isTaskCancelled) return; // Если отменили задачу, не рисуем 100%
+    if (isTaskCancelled) return;
     pb.style.width = "100%";
     pb.textContent = endText || "ГОТОВО!";
-    document.getElementById('btnPause').style.display = 'none';
-    document.getElementById('btnResume').style.display = 'none';
+    document.getElementById("btnPause").style.display = "none";
+    document.getElementById("btnResume").style.display = "none";
 }
 
-// -------------------------------------------------------------
-// Основные функции
-// -------------------------------------------------------------
+/* ---------- Универсальный батч-раннер ---------- */
+
+async function runBatchOperation({ targetIds, studentId, confirmMessage, barId, doneLabel, successMessage, request }) {
+    const confirmed = await tsmConfirm({
+        title: "Подтверждение операции",
+        message: confirmMessage,
+        okText: "Да, выполнить",
+        danger: true
+    });
+    if (!confirmed) return false;
+
+    const progressBar = setupProgressBar(barId, `0 / ${targetIds.length}`);
+
+    for (let i = 0; i < targetIds.length; i++) {
+        while (isTaskPaused && !isTaskCancelled) await sleep(300);
+        if (isTaskCancelled) return false;
+
+        try {
+            await request(targetIds[i], studentId);
+        } catch (err) {
+            console.error(`Ошибка операции над словом ${targetIds[i]}:`, err);
+        }
+
+        if (!isTaskCancelled) {
+            const percent = Math.round(((i + 1) / targetIds.length) * 100);
+            progressBar.style.width = percent + "%";
+            progressBar.textContent = `${percent}% (${i + 1}/${targetIds.length})`;
+        }
+        await sleep(150);
+    }
+
+    if (isTaskCancelled) return false;
+
+    finishProgressBar(progressBar, doneLabel);
+    createNotify(successMessage);
+    await getwordsets(studentId);
+    return true;
+}
+
+const WORD_OPERATIONS = {
+    delete: (wordId, studentId) =>
+        fetch(`https://api-words.skyeng.ru/api/v2/words/${wordId}.json?studentId=${studentId}`, { headers: WORDS_API_HEADERS(), method: "DELETE" }),
+    learn: (wordId, studentId) =>
+        fetch(`https://api-words.skyeng.ru/api/for-vimbox/v1/words/${wordId}/skip.json?studentId=${studentId}`, { headers: WORDS_API_HEADERS(), method: "PUT" }),
+    resetProgress: (wordId, studentId) =>
+        fetch(`https://api-words.skyeng.ru/api/trainings/v1/users/${studentId}/meanings/${wordId}/progress`, { headers: WORDS_API_HEADERS(), method: "DELETE" })
+};
+
+function collectCheckedIds({ fallbackToAll }) {
+    const rows = document.querySelectorAll(".tsm-word-row:not(.tsm-word-row-header)");
+    const checked = [];
+    const all = [];
+
+    rows.forEach((row) => {
+        const wordId = row.querySelector(".tsm-word-id")?.textContent;
+        if (!wordId) return;
+        all.push(wordId);
+        if (row.querySelector('[name="checkfordel"]')?.checked) checked.push(wordId);
+    });
+
+    return checked.length ? checked : (fallbackToAll ? all : []);
+}
+
+/* ---------- Публичные операции ---------- */
+
+async function deleteLearnedWords() {
+    const learnedIds = Array.from(document.querySelectorAll(".tsm-word-row"))
+        .filter((row) => row.querySelector(".tsm-learned-status")?.textContent.includes("✔"))
+        .map((row) => row.querySelector(".tsm-word-id")?.textContent)
+        .filter(Boolean);
+
+    if (!learnedIds.length) {
+        createNotify("Выученных слов в кабинете ученика нет.", "error");
+        return;
+    }
+
+    await runBatchOperation({
+        targetIds: learnedIds,
+        studentId: document.getElementById("iduserwords").value.trim(),
+        confirmMessage: "Вы уверены, что хотите удалить ВСЕ выученные слова?",
+        barId: "progressBarDeleteLearned",
+        doneLabel: "УДАЛЕНО!",
+        successMessage: "Все выученные слова были успешно удалены 😏",
+        request: WORD_OPERATIONS.delete
+    });
+}
+
+async function learnSelectedWords() {
+    const targetIds = collectCheckedIds({ fallbackToAll: false });
+
+    if (!targetIds.length) {
+        createNotify("Нет выбранных слов для изменения статуса. Отметьте их.", "error");
+        return;
+    }
+
+    await runBatchOperation({
+        targetIds,
+        studentId: document.getElementById("iduserwords").value.trim(),
+        confirmMessage: "Вы уверены, хотите отметить выбранные слова как 'выученные'?",
+        barId: "progressBarLearn",
+        doneLabel: "ВЫУЧЕНО!",
+        successMessage: "Выбранные слова были успешно выучены 😏",
+        request: WORD_OPERATIONS.learn
+    });
+}
+
+async function resetProgressForSelectedWords() {
+    const hasSelection = Boolean(document.querySelector('.tsm-word-row:not(.tsm-word-row-header) [name="checkfordel"]:checked'));
+    const targetIds = collectCheckedIds({ fallbackToAll: true });
+
+    await runBatchOperation({
+        targetIds,
+        studentId: document.getElementById("iduserwords").value.trim(),
+        confirmMessage: hasSelection
+            ? "Вы выбрали некоторые пункты для сброса прогресса. Продолжить?"
+            : "Будет автоматически сброшен прогресс для всех слов. Продолжить?",
+        barId: "progressBarReset",
+        doneLabel: "СБРОШЕНО!",
+        successMessage: "Прогресс слов был успешно сброшен! 🤠",
+        request: WORD_OPERATIONS.resetProgress
+    });
+}
+
+async function deleteSelectedWords() {
+    const hasSelection = Boolean(document.querySelector('.tsm-word-row:not(.tsm-word-row-header) [name="checkfordel"]:checked'));
+    const targetIds = collectCheckedIds({ fallbackToAll: true });
+
+    await runBatchOperation({
+        targetIds,
+        studentId: document.getElementById("iduserwords").value.trim(),
+        confirmMessage: hasSelection
+            ? "Вы выбрали некоторые пункты для удаления слов. Продолжить?"
+            : "Будут автоматически удалены все слова из словаря. Продолжить?",
+        barId: "progressBarDelete",
+        doneLabel: "УДАЛЕНО!",
+        successMessage: "Слова были успешно удалены! 🤠",
+        request: WORD_OPERATIONS.delete
+    });
+}
+
+/* ---------- Загрузка словаря ---------- */
 
 async function firstgetvocabulary(idfield) {
     const userId = await getUserId();
     idfield.value = userId;
-    if (idfield.value && idfield.value.trim() !== '') {
-        document.getElementById('findwords').click();
+    if (idfield.value && idfield.value.trim() !== "") {
+        document.getElementById("findwords").click();
     }
 }
 
 function toggleAllWordSelection() {
-    const wordElements = document.getElementsByClassName('tsm-word-id');
-    const checkboxes = document.getElementsByName('checkfordel');
-    const selectAllCheckboxes = document.getElementsByName('selectwordsinonelesson');
-    const areAllChecked = Array.from(checkboxes).every(chk => chk.checked);
-    if (areAllChecked) {
-        Array.from(checkboxes).forEach(chk => chk.checked = false);
-        Array.from(selectAllCheckboxes).forEach(chk => chk.checked = false);
-        checkedarray =[];
-    } else {
-        Array.from(checkboxes).forEach((chk, index) => {
-            chk.checked = true;
-            checkedarray.push(wordElements[index].textContent);
-        });
-        Array.from(selectAllCheckboxes).forEach(chk => chk.checked = true);
-    }
-}
-
-async function deleteLearnedWords() {
-    const learnedWordsElements = document.getElementsByClassName('tsm-learned-status');
-    const userstud = document.getElementById('iduserwords').value.trim();
-    const wordIds = document.getElementsByClassName('tsm-word-id');
-    const learnedIndices =[];
-    
-    for (let i = 0; i < learnedWordsElements.length; i++) {
-        if (learnedWordsElements[i].textContent.includes('✔')) learnedIndices.push(i);
-    }
-    
-    if (learnedIndices.length) {
-        const confirmDelete = confirm("Вы уверены, что хотите удалить ВСЕ выученные слова?");
-        if (confirmDelete) {
-            let pb = setupProgressBar("progressBarDeleteLearned", `0 / ${learnedIndices.length}`);
-            
-            for (let j = 0; j < learnedIndices.length; j++) {
-                // Ожидание паузы и мгновенная реакция на отмену
-                while (isTaskPaused && !isTaskCancelled) await sleep(300);
-                if (isTaskCancelled) break;
-
-                try {
-                    await fetch(`https://api-words.skyeng.ru/api/v2/words/${wordIds[learnedIndices[j]].textContent}.json?studentId=${userstud}`, {
-                        headers: { "accept": "application/json, text/plain, */*", "authorization": `Bearer ${token.token_global}` },
-                        method: "DELETE"
-                    });
-                } catch (err) { console.error("Error deleting learned word: ", err); }
-
-                let percent = Math.round(((j + 1) / learnedIndices.length) * 100);
-                if(!isTaskCancelled) {
-                    pb.style.width = percent + "%";
-                    pb.textContent = `${percent}% (${j + 1}/${learnedIndices.length})`;
-                }
-                await sleep(150);
-            }
-            if(!isTaskCancelled) {
-                finishProgressBar(pb, "УДАЛЕНО!");
-                alert("Все выученные слова были успешно удалены 😏");
-                await getwordsets(userstud);
-            }
-        }
-    } else {
-        alert("Выученных слов в кабинете ученика нет.");
-    }
-}
-
-async function learnSelectedWords() {
-    const checks = document.getElementsByName('checkfordel');
-    const wordIds = document.getElementsByClassName('tsm-word-id');
-    const userstud = document.getElementById('iduserwords').value.trim();
-    let flagselected =[];
-    
-    for (let i = 0; i < checks.length; i++) {
-        if (checks[i].checked == true) flagselected.push(i);
-    }
-    
-    if (flagselected.length) {
-        const confirlearn = confirm("Вы уверены, хотите отметить выбранные слова как 'выученные'?");
-        if (confirlearn) {
-            let pb = setupProgressBar("progressBarLearn", `0 / ${flagselected.length}`);
-            
-            for (let i = 0; i < flagselected.length; i++) {
-                while (isTaskPaused && !isTaskCancelled) await sleep(300);
-                if (isTaskCancelled) break;
-
-                try {
-                    await fetch(`https://api-words.skyeng.ru/api/for-vimbox/v1/words/${wordIds[flagselected[i]].textContent}/skip.json?studentId=${userstud}`, {
-                        headers: { "accept": "application/json, text/plain, */*", "authorization": `Bearer ${token.token_global}` },
-                        method: "PUT"
-                    });
-                } catch (err) { console.error("Error updating word status: ", err); }
-
-                let percent = Math.round(((i + 1) / flagselected.length) * 100);
-                if(!isTaskCancelled) {
-                    pb.style.width = percent + "%";
-                    pb.textContent = `${percent}% (${i + 1}/${flagselected.length})`;
-                }
-                await sleep(150);
-            }
-            if(!isTaskCancelled) {
-                finishProgressBar(pb, "ВЫУЧЕНО!");
-                alert("Выбранные слова были успешно выучены 😏");
-                await getwordsets(userstud);
-            }
-        }
-    } else {
-        alert("Нет выбранных слов для изменения статуса. Отметьте их.");
-    }
-}
-
-async function resetProgressForSelectedWords() {
-    const checks = document.getElementsByName('checkfordel');
-    const wordIds = document.getElementsByClassName('tsm-word-id');
-    const userstud = document.getElementById('iduserwords').value.trim();
-    let flagselected =[];
-    
-    for (let i = 0; i < checks.length; i++) {
-        if (checks[i].checked == true) flagselected.push(i);
-    }
-    
-    let targets = flagselected.length > 0 ? flagselected : Array.from({length: wordIds.length}, (_, i) => i);
-    let msg = flagselected.length > 0 ? "Вы выбрали некоторые пункты для сброса прогресса. Продолжить?" : "Будет автоматически сброшен прогресс для всех слов. Продолжить?";
-    
-    const confirmReset = confirm(msg);
-    if (confirmReset) {
-        let pb = setupProgressBar("progressBarReset", `0 / ${targets.length}`);
-        
-        for (let g = 0; g < targets.length; g++) {
-            while (isTaskPaused && !isTaskCancelled) await sleep(300);
-            if (isTaskCancelled) break;
-
-            try {
-                await fetch(`https://api-words.skyeng.ru/api/trainings/v1/users/${userstud}/meanings/${wordIds[targets[g]].textContent}/progress`, {
-                    headers: { "accept": "application/json, text/plain, */*", "authorization": `Bearer ${token.token_global}` },
-                    method: "DELETE"
-                });
-            } catch (err) { console.error("Error resetting progress: ", err); }
-
-            let percent = Math.round(((g + 1) / targets.length) * 100);
-            if(!isTaskCancelled) {
-                pb.style.width = percent + "%";
-                pb.textContent = `${percent}% (${g + 1}/${targets.length})`;
-            }
-            await sleep(150);
-        }
-        if(!isTaskCancelled) {
-            finishProgressBar(pb, "СБРОШЕНО!");
-            alert("Прогресс слов был успешно сброшен! 🤠");
-            await getwordsets(userstud);
-        }
-    }
-}
-
-async function deleteSelectedWords() {
-    const checks = document.getElementsByName('checkfordel');
-    const idslov = document.getElementsByClassName('tsm-word-id');
-    const userstud = document.getElementById('iduserwords').value.trim();
-    let flagselected =[];
-    
-    for (let i = 0; i < checks.length; i++) {
-        if (checks[i].checked == true) flagselected.push(i);
-    }
-
-    let targets = flagselected.length > 0 ? flagselected : Array.from({length: idslov.length}, (_, i) => i);
-    let msg = flagselected.length > 0 ? "Вы выбрали некоторые пункты для удаления слов. Продолжить?" : "Будут автоматически удалены все слова из словаря. Продолжить?";
-    
-    const confirmDelete = confirm(msg);
-    if (confirmDelete) {
-        let pb = setupProgressBar("progressBarDelete", `0 / ${targets.length}`);
-        
-        for (let g = 0; g < targets.length; g++) {
-            while (isTaskPaused && !isTaskCancelled) await sleep(300);
-            if (isTaskCancelled) break;
-
-            try {
-                await fetch(`https://api-words.skyeng.ru/api/v2/words/${idslov[targets[g]].textContent}.json?studentId=${userstud}`, {
-                    headers: { "accept": "application/json, text/plain, */*", "authorization": `Bearer ${token.token_global}` },
-                    method: "DELETE"
-                });
-            } catch (err) { console.error("Error deleting word: ", err); }
-
-            let percent = Math.round(((g + 1) / targets.length) * 100);
-            if(!isTaskCancelled) {
-                pb.style.width = percent + "%";
-                pb.textContent = `${percent}% (${g + 1}/${targets.length})`;
-            }
-            await sleep(150);
-        }
-        if(!isTaskCancelled) {
-            finishProgressBar(pb, "УДАЛЕНО!");
-            alert("Слова были успешно удалены! 🤠");
-            await getwordsets(userstud);
-        }
-    }
+    const checkboxes = Array.from(document.getElementsByName("checkfordel"));
+    const groupToggles = Array.from(document.getElementsByName("selectwordsinonelesson"));
+    const areAllChecked = checkboxes.every((chk) => chk.checked);
+    checkboxes.forEach((chk) => { chk.checked = !areAllChecked; });
+    groupToggles.forEach((chk) => { chk.checked = !areAllChecked; });
 }
 
 async function getwordsets(studentId) {
-    allWordSets =[];
-    document.getElementById('wordsout').innerHTML = '';
+    allWordSets = [];
+    document.getElementById("wordsout").innerHTML = "";
     globalWordsCounter = 0;
-    
-    let pb = setupProgressBar("progressBarSearch", "Загрузка наборов...");
-    
-    let wordsetsarr = await fetch("https://api-words.skyeng.ru/api/for-vimbox/v1/wordsets.json?studentId=" + studentId + "&pageSize=500", {
-        "headers": { "accept": "application/json, text/plain, */*", "authorization": "Bearer " + token.token_global },
-    }).then(r => r.json());
 
-    if (wordsetsarr.meta.total > 0) {
-        let totalSets = wordsetsarr.data.length;
-        for (let i = 0; i < totalSets; i++) {
-            while (isTaskPaused && !isTaskCancelled) await sleep(300);
-            if (isTaskCancelled) break;
+    const progressBar = setupProgressBar("progressBarSearch", "Загрузка наборов...");
 
-            let wordset = wordsetsarr.data[i];
-            let wordSetData = { title: wordset.title, words:[] };
-            
-            let objectwdsets = await fetch("https://api-words.skyeng.ru/api/v1/wordsets/" + wordset.id + "/words.json?wordsetId=" + wordset.id + "&studentId=" + studentId + "&page=1&pageSize=500", {
-                "headers": { "accept": "application/json, text/plain, */*", "authorization": "Bearer " + token.token_global },
-            }).then(r => r.json());
-            
-            globalWordsCounter += objectwdsets.data.length;
-            let meanings = objectwdsets.data.map(word => word.meaningId).toString();
-            
-            let wordsnames = await fetch("https://dictionary.skyeng.ru/api/for-services/v2/meanings?ids=" + meanings + "&acceptLanguage=ru", {
-                "headers": { "accept": "application/json, text/plain, */*", "authorization": "Bearer " + token.token_global },
-            }).then(r => r.json());
-            
-            for (let j = 0; j < objectwdsets.data.length; j++) {
-                if (wordsnames[j] != undefined) {
-                    wordSetData.words.push({
-                        text: wordsnames[j].text || '',
-                        isLearned: objectwdsets.data[j].isLearned,
-                        progress: objectwdsets.data[j].progress,
-                        meaningId: objectwdsets.data[j].meaningId
-                    });
-                }
-            }
-            
-            allWordSets.push(wordSetData);
-            
-            if(!isTaskCancelled) {
-                renderWordSets(allWordSets, false);
-                document.getElementById('searchwordinput').style.display = '';
+    const wordsetsarr = await fetch("https://api-words.skyeng.ru/api/for-vimbox/v1/wordsets.json?studentId=" + studentId + "&pageSize=500", {
+        headers: WORDS_API_HEADERS()
+    }).then((r) => r.json());
 
-                let percent = Math.round(((i + 1) / totalSets) * 100);
-                pb.style.width = percent + "%";
-                pb.textContent = `Парсинг: ${percent}% (${globalWordsCounter} слов)`;
-            }
-            
-            await sleep(150);
-        }
-        if(!isTaskCancelled) {
-            finishProgressBar(pb, `НАЙДЕНО: ${globalWordsCounter} слов`);
-        }
-    } else {
-        document.getElementById('wordsout').innerHTML = '<span style="margin-left:40%; color:bisque;">' + "Словарь пустой!" + '</span>';
-        if(!isTaskCancelled) finishProgressBar(pb, "СЛОВАРЬ ПУСТ");
+    if (wordsetsarr.meta.total <= 0) {
+        document.getElementById("wordsout").innerHTML = '<span style="margin-left:40%; color:bisque;">Словарь пустой!</span>';
+        if (!isTaskCancelled) finishProgressBar(progressBar, "СЛОВАРЬ ПУСТ");
+        return;
     }
+
+    const totalSets = wordsetsarr.data.length;
+
+    for (let i = 0; i < totalSets; i++) {
+        while (isTaskPaused && !isTaskCancelled) await sleep(300);
+        if (isTaskCancelled) break;
+
+        const wordset = wordsetsarr.data[i];
+        const wordSetData = { title: wordset.title, words: [] };
+
+        const objectwdsets = await fetch(`https://api-words.skyeng.ru/api/v1/wordsets/${wordset.id}/words.json?wordsetId=${wordset.id}&studentId=${studentId}&page=1&pageSize=500`, {
+            headers: WORDS_API_HEADERS()
+        }).then((r) => r.json());
+
+        globalWordsCounter += objectwdsets.data.length;
+        const meanings = objectwdsets.data.map((word) => word.meaningId).toString();
+
+        const wordsnames = await fetch("https://dictionary.skyeng.ru/api/for-services/v2/meanings?ids=" + meanings + "&acceptLanguage=ru", {
+            headers: WORDS_API_HEADERS()
+        }).then((r) => r.json());
+
+        for (let j = 0; j < objectwdsets.data.length; j++) {
+            if (wordsnames[j] != undefined) {
+                wordSetData.words.push({
+                    text: wordsnames[j].text || "",
+                    isLearned: objectwdsets.data[j].isLearned,
+                    progress: objectwdsets.data[j].progress,
+                    meaningId: objectwdsets.data[j].meaningId
+                });
+            }
+        }
+
+        allWordSets.push(wordSetData);
+
+        if (!isTaskCancelled) {
+            renderWordSets(allWordSets, false);
+            document.getElementById("searchwordinput").style.display = "";
+
+            const percent = Math.round(((i + 1) / totalSets) * 100);
+            progressBar.style.width = percent + "%";
+            progressBar.textContent = `Парсинг: ${percent}% (${globalWordsCounter} слов)`;
+        }
+
+        await sleep(150);
+    }
+
+    if (!isTaskCancelled) finishProgressBar(progressBar, `НАЙДЕНО: ${globalWordsCounter} слов`);
 }
 
-// -------------------------------------------------------------
-// Рендер и вспомогательные функции
-// -------------------------------------------------------------
+/* ---------- Рендер ---------- */
 
 function renderWordSets(wordSets, isSearch = false) {
-    let htmlContent = '';
-    for (let wordSet of wordSets) {
-        let wordsHtml = '';
-        let displayBox = 'none';
-        
-        for (let word of wordSet.words) {
-            let learnedIcon = word.isLearned ? 
-                '<span style="color:var(--tsm-neon-lime); text-shadow:0 0 5px var(--tsm-neon-lime);">✔</span>' : 
-                '<span style="color:var(--tsm-text-dim);">❌</span>';
+    let htmlContent = "";
+
+    for (const wordSet of wordSets) {
+        let wordsHtml = "";
+        let displayBox = "none";
+
+        for (const word of wordSet.words) {
+            const learnedIcon = word.isLearned
+                ? '<span style="color:var(--tsm-neon-lime); text-shadow:0 0 5px var(--tsm-neon-lime);">✔</span>'
+                : '<span style="color:var(--tsm-text-dim);">❌</span>';
 
             wordsHtml += `
                 <div class="tsm-word-row">
@@ -452,12 +401,11 @@ function renderWordSets(wordSets, isSearch = false) {
                 </div>`;
         }
 
-        if (isSearch && wordSet.words.length > 0) displayBox = 'block';
+        if (isSearch && wordSet.words.length > 0) displayBox = "block";
 
         htmlContent += `
             <div class="tsm-wordset-title">${wordSet.title} (${wordSet.words.length})</div>
             <div class="tsm-words-box" style="display:${displayBox}; padding: 0;">
-                
                 <div class="tsm-word-row tsm-word-row-header">
                     <label class="tsm-custom-checkbox">
                         <input type="checkbox" name="selectwordsinonelesson" class="tsm-checkbox-all">
@@ -469,64 +417,55 @@ function renderWordSets(wordSets, isSearch = false) {
                     <div style="text-align:right;">%</div>
                     <div style="text-align:center;">Статус</div>
                 </div>
-
-                <div class="tsm-words-grid-body">
-                    ${wordsHtml}
-                </div>
+                <div class="tsm-words-grid-body">${wordsHtml}</div>
             </div>`;
     }
-    
-    document.getElementById('wordsout').innerHTML = htmlContent;
+
+    document.getElementById("wordsout").innerHTML = htmlContent;
     setupWordSetToggle();
     setupSelectAllWordsInSet();
     setupLinkCopyToClipboard();
 }
+
 function setupWordSetToggle() {
-    let wordsetnames = document.getElementsByClassName('tsm-wordset-title');
-    let boxwithwordsbar = document.getElementsByClassName('tsm-words-box');
-    for (let i = 0; i < wordsetnames.length; i++) {
-        wordsetnames[i].onclick = function () {
-            if (boxwithwordsbar[i].style.display === 'none' || boxwithwordsbar[i].style.display === '')
-                boxwithwordsbar[i].style.display = 'block';
-            else
-                boxwithwordsbar[i].style.display = 'none';
+    const titles = Array.from(document.getElementsByClassName("tsm-wordset-title"));
+    const boxes = Array.from(document.getElementsByClassName("tsm-words-box"));
+    titles.forEach((title, i) => {
+        title.onclick = () => {
+            boxes[i].style.display = boxes[i].style.display === "block" ? "none" : "block";
         };
-    }
+    });
 }
 
 function setupSelectAllWordsInSet() {
-    const selectoneles = document.getElementsByName('selectwordsinonelesson');
-    const checkboxesall = document.getElementsByName('checkfordel');
-    for (let selectone of selectoneles) {
-        selectone.addEventListener('click', function () {
-            let parentDiv = selectone.closest('.tsm-words-box');
-            let checkboxesInGroup = parentDiv.querySelectorAll('[name="checkfordel"]');
-            let allCheckedInSection = Array.from(checkboxesInGroup).every(chk => chk.checked);
-            checkboxesInGroup.forEach(chk => { chk.checked = !allCheckedInSection; });
+    document.querySelectorAll(".tsm-checkbox-all").forEach((groupToggle) => {
+        groupToggle.addEventListener("change", function () {
+            const group = this.closest(".tsm-words-box").querySelectorAll('[name="checkfordel"]');
+            group.forEach((chk) => { chk.checked = this.checked; });
         });
-    }
-    for (let checkbox of checkboxesall) {
-        checkbox.addEventListener('change', function () {
-            let parentDiv = checkbox.closest('.tsm-words-box');
-            let selectOneInSection = parentDiv.querySelector('.tsm-checkbox-all');
-            let checkboxesInGroup = parentDiv.querySelectorAll('[name="checkfordel"]');
-            let allCheckedInSection = Array.from(checkboxesInGroup).every(chk => chk.checked);
-            if (selectOneInSection) selectOneInSection.checked = allCheckedInSection;
+    });
+
+    document.querySelectorAll('[name="checkfordel"]').forEach((checkbox) => {
+        checkbox.addEventListener("change", function () {
+            const box = this.closest(".tsm-words-box");
+            const groupToggle = box.querySelector(".tsm-checkbox-all");
+            if (!groupToggle) return;
+            const group = box.querySelectorAll('[name="checkfordel"]');
+            groupToggle.checked = Array.from(group).every((chk) => chk.checked);
         });
-    }
+    });
 }
 
 function setupLinkCopyToClipboard() {
-    let savebtnsarr = document.getElementsByClassName('tsm-btn-save-word');
-    for (let z = 0; z < savebtnsarr.length; z++) {
-        savebtnsarr[z].onclick = function () {
-            let allmeanings = document.getElementsByClassName('tsm-word-id');
-            copyToClipboardTSM("https://dictionary.skyeng.ru/cms/meaning/" + allmeanings[z].textContent);
+    document.querySelectorAll(".tsm-btn-save-word").forEach((btn) => {
+        btn.onclick = () => {
+            const wordId = btn.closest(".tsm-word-row").querySelector(".tsm-word-id").textContent;
+            copyToClipboardTSM("https://dictionary.skyeng.ru/cms/meaning/" + wordId);
         };
-    }
+    });
 }
 
-document.getElementById('searchwordinput').addEventListener('input', function () {
+document.getElementById("searchwordinput").addEventListener("input", function () {
     liveSearch(this.value);
 });
 
@@ -536,8 +475,8 @@ function liveSearch(query) {
         renderWordSets(allWordSets, false);
         return;
     }
-    const filteredWordSets = allWordSets.map(wordSet => {
-        return { title: wordSet.title, words: wordSet.words.filter(word => word.text.toLowerCase().includes(query)) };
-    }).filter(wordSet => wordSet.words.length > 0);
+    const filteredWordSets = allWordSets
+        .map((wordSet) => ({ title: wordSet.title, words: wordSet.words.filter((word) => word.text.toLowerCase().includes(query)) }))
+        .filter((wordSet) => wordSet.words.length > 0);
     renderWordSets(filteredWordSets, true);
 }

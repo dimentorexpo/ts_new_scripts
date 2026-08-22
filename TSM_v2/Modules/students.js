@@ -1,5 +1,5 @@
 /* =========================================================
-   TSM Students — NEON GLASS ULTRA Refactored
+   TSM Students
    ========================================================= */
 
 var win_studentsAdults = `<div style="display: flex;">
@@ -26,28 +26,36 @@ var win_studentsSkysmart = `<div style="display: flex;">
     </span>
 </div>`;
 
-const wintStudAdults = createTSMWindow('AFMS_AdultStudInfo', 'winTopstudentsAdults', 'winLeftstudentsAdults', win_studentsAdults);
-wintStudAdults.className = 'tsm-window tsm-window-students-adult';
+const wintStudAdults = createTSMWindow("AFMS_AdultStudInfo", "winTopstudentsAdults", "winLeftstudentsAdults", win_studentsAdults);
+wintStudAdults.className = "tsm-window tsm-window-students-adult";
 
-const wintStudSkysmart = createTSMWindow('AFMS_SkysmartStudInfo', 'winTopstudentsSkysmart', 'winLeftstudentsSkysmart', win_studentsSkysmart);
-wintStudSkysmart.className = 'tsm-window tsm-window-students-kids';
+const wintStudSkysmart = createTSMWindow("AFMS_SkysmartStudInfo", "winTopstudentsSkysmart", "winLeftstudentsSkysmart", win_studentsSkysmart);
+wintStudSkysmart.className = "tsm-window tsm-window-students-kids";
 
-document.getElementById('hidestudentsSkysmartMenu').onclick = function () { wintStudSkysmart.style.display = 'none'; };
-document.getElementById('hidestudentsAdultstMenu').onclick = function () { wintStudAdults.style.display = 'none'; };
+document.getElementById("hidestudentsSkysmartMenu").onclick = function () { wintStudSkysmart.style.display = "none"; };
+document.getElementById("hidestudentsAdultstMenu").onclick = function () { wintStudAdults.style.display = "none"; };
 
 const SUBJECT_MAP = {
-    math: 'Математика', english: 'Английский язык', russian: 'Русский язык',
-    'social-science': 'Обществознание', preschool: 'Дошколка', chess: 'Шахматы',
-    'computer-science': 'Компьютерные курсы', chemistry: 'Химия', physics: 'Физика',
-    history: 'История', biology: 'Биология', geography: 'География'
+    math: "Математика",
+    english: "Английский язык",
+    russian: "Русский язык",
+    "social-science": "Обществознание",
+    preschool: "Дошколка",
+    chess: "Шахматы",
+    "computer-science": "Компьютерные курсы",
+    chemistry: "Химия",
+    physics: "Физика",
+    history: "История",
+    biology: "Биология",
+    geography: "География"
 };
 
 function buildKidCardHTML(kid, subjectKey) {
-    const statusSymbol = kid.status === 'sleep' ? '💤' : (kid.status === 'vacation' ? '⛱' : '');
-    const statusTitle = kid.status === 'sleep' ? 'ученик уснул' : (kid.status === 'vacation' ? 'ученик в отпуске' : '');
-    const segmentBadge = kid.segmentBadge ? `<div class="tsm-badge">${kid.segmentBadge}</div>` : '';
-    const serviceLocale = kid.serviceLocale || 'Пусто';
-    const statusClass = kid.status || '';
+    const statusSymbol = kid.status === "sleep" ? "💤" : (kid.status === "vacation" ? "⛱" : "");
+    const statusTitle = kid.status === "sleep" ? "ученик уснул" : (kid.status === "vacation" ? "ученик в отпуске" : "");
+    const segmentBadge = kid.segmentBadge ? `<div class="tsm-badge">${kid.segmentBadge}</div>` : "";
+    const serviceLocale = kid.serviceLocale || "Пусто";
+    const statusClass = kid.status || "";
     return `<div class="tsm-kid-card ${statusClass}">
         <div class="tsm-subj-search">${subjectKey}</div>
         <div class="tsm-student-name-kid">
@@ -64,115 +72,114 @@ function buildKidCardHTML(kid, subjectKey) {
     </div>`;
 }
 
+const KID_CARD_LINKS = [
+    ["mvurkidseport", (id) => "https://overbooking.skyeng.ru/html/report?student_id=" + id],
+    ["openkidsprofile", (id) => "https://vimbox.skyeng.ru/profile/" + id],
+    ["openpaymentkidsshistory", (id) => "https://vimbox.skyeng.ru/profile/student/" + id + "/last-classes"]
+];
+
+function getKidId(button) {
+    return button.closest(".tsm-kid-card").querySelector(".tsm-id-badge").textContent.match(/\d+/)[0];
+}
+
 function attachKidActions(container) {
-    let arrmvurepkid = container.getElementsByName('mvurkidseport');
-    for (let j = 0; j < arrmvurepkid.length; j++) {
-        arrmvurepkid[j].onclick = function () {
-            window.open("https://overbooking.skyeng.ru/html/report?student_id=" + container.getElementsByClassName('tsm-id-badge')[j].textContent.match(/\d+/)[0]);
-        };
-    }
-    let kidsprofile = container.getElementsByName('openkidsprofile');
-    for (let l = 0; l < kidsprofile.length; l++) {
-        kidsprofile[l].onclick = function () {
-            window.open("https://vimbox.skyeng.ru/profile/" + container.getElementsByClassName('tsm-id-badge')[l].textContent.match(/\d+/)[0]);
-        };
-    }
-    let kidspaymentshistory = container.getElementsByName('openpaymentkidsshistory');
-    for (let l = 0; l < kidspaymentshistory.length; l++) {
-        kidspaymentshistory[l].onclick = function () {
-            window.open('https://vimbox.skyeng.ru/profile/student/' + container.getElementsByClassName('tsm-id-badge')[l].textContent.match(/\d+/)[0] + '/last-classes');
-        };
+    for (const [name, urlBuilder] of KID_CARD_LINKS) {
+        container.querySelectorAll(`[name="${name}"]`).forEach((btn) => {
+            btn.onclick = () => window.open(urlBuilder(getKidId(btn)));
+        });
     }
 }
 
-document.getElementById('openstudentsmenu').onclick = async function () {
-    if (wintStudSkysmart.style.display == 'none') {
-        wintStudSkysmart.style.display = '';
-        wintStudAdults.style.display = 'none';
-        let commonarr = '';
-        document.getElementById('infobarskysmart').innerHTML = '';
-        let objSel = document.getElementById("listofsubjects");
-        objSel.length = 1;
-        objSel[0].selected = true;
+function renderKidCards(container, html) {
+    container.innerHTML = html;
+    attachKidActions(container);
+}
 
-        await fetch("https://rooms-vimbox.skyeng.ru/users/api/v2/auth/config", { "credentials": "include", "method": "POST" })
-            .then(r => r.json()).then(r => artId = r);
-        console.log(artId);
+document.getElementById("openstudentsmenu").onclick = async function () {
+    const willShow = wintStudSkysmart.style.display === "none";
+    wintStudSkysmart.style.display = willShow ? "" : "none";
+    if (!willShow) return;
 
-        await fetch("https://academic-gateway.skyeng.ru/academic/api/teacher-classroom/get-data/personal", {
-            "headers": { "content-type": "application/json" },
-            "method": "POST",
-            "body": "{\"teacherId\":null}",
-            "credentials": "include"
-        }).then(r => r.json()).then(r => kidsdata = r);
-        console.log(kidsdata);
+    wintStudAdults.style.display = "none";
+    document.getElementById("mainmenu").style.display = "none";
+    document.getElementById("exercisesmenu").style.display = "none";
 
-        for (const [key, label] of Object.entries(SUBJECT_MAP)) {
-            if (kidsdata[key]) {
-                let arraytoshow = '';
-                for (let j = 0; j < kidsdata[key].length; j++) {
-                    arraytoshow += buildKidCardHTML(kidsdata[key][j], label);
-                }
-                const section = `<div class="tsm-subj-title">${label}</div>` + arraytoshow;
-                document.getElementById('infobarskysmart').innerHTML += section;
-                commonarr += section;
-            }
-        }
+    const infobar = document.getElementById("infobarskysmart");
+    infobar.innerHTML = "";
 
-        for (const [key, label] of Object.entries(SUBJECT_MAP)) {
-            if (kidsdata[key]) addOption(objSel, label, key);
-        }
+    const objSel = document.getElementById("listofsubjects");
+    objSel.length = 1;
+    objSel[0].selected = true;
 
-        document.getElementById('usersearchskysmart').oninput = function () {
-            var val2 = this.value.toLowerCase();
-            var s2 = '';
-            for (const [key, label] of Object.entries(SUBJECT_MAP)) {
-                if (!kidsdata[key]) continue;
-                for (let j = 0; j < kidsdata[key].length; j++) {
-                    let kid = kidsdata[key][j];
-                    let kidName = kid.name.toLowerCase();
-                    let kidId = kid.id.toString();
-                    if (kidName.includes(val2) || kidId.includes(val2)) {
-                        s2 += buildKidCardHTML(kid, label);
-                    }
-                }
-            }
-            const container = document.getElementById('infobarskysmart');
-            container.innerHTML = document.getElementById("usersearchskysmart").value != '' ? s2 : commonarr;
-            attachKidActions(container);
-        };
+    const response = await fetch("https://academic-gateway.skyeng.ru/academic/api/teacher-classroom/get-data/personal", {
+        headers: { "content-type": "application/json" },
+        method: "POST",
+        body: '{"teacherId":null}',
+        credentials: "include"
+    });
+    const kidsdata = await response.json();
 
-        function showselectedsubject() {
-            document.getElementById('infobarskysmart').innerHTML = '';
-            let objSelf = document.getElementById("listofsubjects");
-            const selected = objSelf.value;
-            if (selected === 'all') {
-                document.getElementById('infobarskysmart').innerHTML = commonarr;
-            } else if (kidsdata[selected]) {
-                let arraytoshow = '';
-                for (let j = 0; j < kidsdata[selected].length; j++) {
-                    arraytoshow += buildKidCardHTML(kidsdata[selected][j], SUBJECT_MAP[selected]);
-                }
-                document.getElementById('infobarskysmart').innerHTML = `<div class="tsm-subj-title">${SUBJECT_MAP[selected]}</div>` + arraytoshow;
-            }
-            attachKidActions(document.getElementById('infobarskysmart'));
-        }
-
-        document.getElementById('actualizestudreportkids').onclick = function () {
-            let idslist = document.getElementsByClassName('tsm-id-badge');
-            for (let k = 0; k < idslist.length; k++) {
-                fetch("https://api-profile.skyeng.ru/api/v1/students/" + idslist[k].textContent.match(/\d+/)[0] + "/school-report", {
-                    "body": "{\"student_level\":\"--\",\"materials_used\":\"--\",\"endurance\":\"--\",\"distraction\":\"--\",\"difficulties\":\"--\",\"activities\":\"--\",\"skills_to_develop\":\"--\",\"technical_problems\":\"--\",\"homework\":\"--\"}",
-                    "method": "POST",
-                    "credentials": "include"
-                });
-            }
-            alert('Отчеты об учениках были успешно актуализированы с заполнением полей -- !');
-        };
-
-        attachKidActions(document.getElementById('infobarskysmart'));
-        document.getElementById('listofsubjects').onchange = showselectedsubject;
-    } else {
-        wintStudSkysmart.style.display = 'none';
+    const sections = [];
+    for (const [key, label] of Object.entries(SUBJECT_MAP)) {
+        if (!kidsdata[key]) continue;
+        sections.push(`<div class="tsm-subj-title">${label}</div>` + kidsdata[key].map((kid) => buildKidCardHTML(kid, label)).join(""));
     }
+    const commonarr = sections.join("");
+    renderKidCards(infobar, commonarr);
+
+    for (const [key, label] of Object.entries(SUBJECT_MAP)) {
+        if (kidsdata[key]) addOption(objSel, label, key);
+    }
+
+    document.getElementById("usersearchskysmart").oninput = function () {
+        const query = this.value.toLowerCase().trim();
+        if (!query) {
+            renderKidCards(infobar, commonarr);
+            return;
+        }
+        const matches = [];
+        for (const [key, label] of Object.entries(SUBJECT_MAP)) {
+            if (!kidsdata[key]) continue;
+            for (const kid of kidsdata[key]) {
+                if (kid.name.toLowerCase().includes(query) || String(kid.id).includes(query)) {
+                    matches.push(buildKidCardHTML(kid, label));
+                }
+            }
+        }
+        renderKidCards(infobar, matches.join(""));
+    };
+
+    function showselectedsubject() {
+        const selected = document.getElementById("listofsubjects").value;
+        if (selected === "all") {
+            renderKidCards(infobar, commonarr);
+            return;
+        }
+        if (!kidsdata[selected]) {
+            infobar.innerHTML = "";
+            return;
+        }
+        renderKidCards(
+            infobar,
+            `<div class="tsm-subj-title">${SUBJECT_MAP[selected]}</div>` +
+            kidsdata[selected].map((kid) => buildKidCardHTML(kid, SUBJECT_MAP[selected])).join("")
+        );
+    }
+
+    document.getElementById("actualizestudreportkids").onclick = async function () {
+        const studentIds = Array.from(document.getElementsByClassName("tsm-id-badge"))
+            .map((el) => el.textContent.match(/\d+/)[0]);
+
+        await Promise.all(studentIds.map((studentId) =>
+            fetch("https://api-profile.skyeng.ru/api/v1/students/" + studentId + "/school-report", {
+                body: '{"student_level":"--","materials_used":"--","endurance":"--","distraction":"--","difficulties":"--","activities":"--","skills_to_develop":"--","technical_problems":"--","homework":"--"}',
+                method: "POST",
+                credentials: "include"
+            })
+        ));
+
+        createNotify("Отчеты об учениках были успешно актуализированы с заполнением полей --");
+    };
+
+    document.getElementById("listofsubjects").onchange = showselectedsubject;
 };

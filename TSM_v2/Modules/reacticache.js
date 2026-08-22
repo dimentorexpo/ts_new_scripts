@@ -17,11 +17,13 @@ function addbuttonhesh() {
     });
 }
 
-const observer = new MutationObserver(mutations => {
-    mutations.forEach(mutation => {
-        if (mutation.addedNodes.length || mutation.type === 'childList') {
-            addbuttonhesh();
-        }
+let observerScheduled = false;
+const observer = new MutationObserver(() => {
+    if (observerScheduled) return;
+    observerScheduled = true;
+    requestAnimationFrame(() => {
+        observerScheduled = false;
+        addbuttonhesh();
     });
 });
 
@@ -44,7 +46,7 @@ function ClearReactCashe() {
     const urlBase = 'https://academic-gateway.skyeng.ru/academic/api/teacher-classroom/get-data/';
     const urlSegments = document.URL.split('/');
     const urlmatches = ['personal', 'parallel', 'group', 'webinar'];
-    const currentSegment = urlSegments[7].split("?")[0];
+    const currentSegment = (urlSegments[7] || '').split("?")[0];
     if (urlmatches.includes(currentSegment)) {
         let fullUrl = urlBase + currentSegment;
         console.log(fullUrl);
