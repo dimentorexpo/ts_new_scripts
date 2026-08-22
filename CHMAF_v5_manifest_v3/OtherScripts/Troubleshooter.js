@@ -1,4 +1,6 @@
 const processedUserIds = {};
+// Лимит кэша: долгая сессия с сотнями ID не должна расти бесконечно
+const PROCESSED_CACHE_MAX = 500;
 
 function addusersinfo() {
     // Функция для обработки элементов
@@ -75,6 +77,12 @@ function getuserinfocrm(userid, pageelement, elemtype) {
         const nameofuser = `${userInfo.data.name}${userInfo.data.surname ? ` ${userInfo.data.surname}` : ''}`;
         const flagusertype = userInfo.data.type;
 
+        // Cap кэша: удаляем старейшие записи при переполнении
+        const keys = Object.keys(processedUserIds);
+        if (keys.length >= PROCESSED_CACHE_MAX) {
+            delete processedUserIds[keys[0]];
+        }
+
         // Сохраняем данные в объект processedUserIds
         processedUserIds[userid] = {
             nameofuser,
@@ -111,7 +119,6 @@ function addinginfo(pageelement, userid, elemtype) {
         pageelement.style.color = 'blue';
         pageelement.style.textDecoration = 'underline';
         pageelement.style.cursor = 'pointer';
-        pageelement.tagName = 'A';
         pageelement.title = "ЛКМ - открыть пользователя в CRM. ПКМ - скопировать id"
 
         pageelement.addEventListener('click', () => {
@@ -120,8 +127,14 @@ function addinginfo(pageelement, userid, elemtype) {
 
         pageelement.addEventListener('contextmenu', (event) => {
             event.preventDefault();
-            copyToClipboard(userid)
-            createAndShowButton('💾 Скопировано');
+            // Скрипт живёт изолированно — copyToClipboard/createAndShowButton недоступны,
+            // поэтому используем navigator.clipboard напрямую
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(userid).then(() => {
+                    span.textContent = '📋';
+                    setTimeout(() => { span.textContent = text; }, 1200);
+                }).catch(() => { });
+            }
         });
     }
 

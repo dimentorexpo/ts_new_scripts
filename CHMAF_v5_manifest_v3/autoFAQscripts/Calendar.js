@@ -1,11 +1,16 @@
 let flagRemember = '';
-let parsedData;
-let responseslotsdata;
 let arrayOfEvents = [];
 let arrayOfMyEvents = [];
 let uniqueEvents;
 let operNamesAF = [];
 let refreshintervalset = null;
+
+// Экранирование имён из API перед innerHTML
+const calEsc = (s) => String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 
 // === УНИКАЛЬНЫЕ СТИЛИ GLASSMORPHISM ===
 const glassStyles = `
@@ -771,43 +776,38 @@ function startMarquee(inputElement) {
     const originalText = inputElement.value;
     const textLength = originalText.length;
 
-    // Если текст короткий, не запускаем анимацию
-    if (textLength <= 20) return;
+    // Короткий текст не анимируем
+    if (textLength <= 20) { stopMarquee(inputElement); return; }
 
-    let position = 0;
-
-    // Останавливаем предыдущую анимацию, если была
     stopMarquee(inputElement);
 
-    // Запускаем новую анимацию
+    let position = 0;
     const intervalId = setInterval(() => {
         if (document.activeElement === inputElement) {
-            // Если поле в фокусе, показываем оригинальный текст
-            inputElement.value = originalText;
+            inputElement.value = marqueeIntervals.get(inputElement)?.originalText ?? originalText;
             return;
         }
 
         position = (position + 1) % (textLength + 3);
-        const shifted = originalText.substring(position) + '   ' + originalText.substring(0, position);
-        inputElement.value = shifted;
+        inputElement.value = originalText.substring(position) + '   ' + originalText.substring(0, position);
     }, 200);
 
     marqueeIntervals.set(inputElement, { intervalId, originalText });
 
-    // Останавливаем при фокусе
-    inputElement.addEventListener('focus', () => {
-        inputElement.value = originalText;
-        if (marqueeIntervals.has(inputElement)) {
-            clearInterval(marqueeIntervals.get(inputElement).intervalId);
-        }
-    });
-
-    // Возобновляем после потери фокуса
-    inputElement.addEventListener('blur', () => {
-        if (inputElement.value === originalText && textLength > 20) {
-            startMarquee(inputElement);
-        }
-    });
+    // Слушатели focus/blur вешаем ОДИН раз (раньше дублировались на каждом refresh)
+    if (!inputElement.dataset.marqueeBound) {
+        inputElement.dataset.marqueeBound = '1';
+        inputElement.addEventListener('focus', () => {
+            const entry = marqueeIntervals.get(inputElement);
+            if (entry) inputElement.value = entry.originalText;
+        });
+        inputElement.addEventListener('blur', () => {
+            const entry = marqueeIntervals.get(inputElement);
+            if (entry && inputElement.value === entry.originalText && entry.originalText.length > 20) {
+                startMarquee(inputElement);
+            }
+        });
+    }
 }
 
 function stopMarquee(inputElement) {
@@ -819,10 +819,23 @@ function stopMarquee(inputElement) {
     }
 }
 
+// Throttle для алертов: при автобновлении каждые 30 сек и лежащем datsy
+// без троттла оператор получал alert каждые 30 секунд
+let lastCalendErrorAlert = 0;
+
 const sendFetchRequest = (url, options, successCallback) => {
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url, requestOptions: options }, (response) => {
         if (!response.success) {
-            alert(`Ошибка запроса: ${response.error}`);
+            const now = Date.now();
+            if (now - lastCalendErrorAlert > 60_000) {
+                lastCalendErrorAlert = now;
+                if (typeof createAndShowButton === 'function') {
+                    createAndShowButton(`⚠️ Ошибка запроса: ${response.error}`, 'error');
+                } else {
+                    alert(`Ошибка запроса: ${response.error}`);
+                }
+            }
+            console.warn('[Calendar] Request failed:', url, response.error);
             return;
         }
         successCallback(response);

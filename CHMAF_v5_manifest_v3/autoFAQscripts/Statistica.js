@@ -753,7 +753,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
         totalGroupAutoClosed += aclschtscount;
 
         // Суммируем AHT по всем операторам
-        totalGroupHandleTimeSeconds += totalHandleTimeSeconds;
+        // (totalHandleTimeSeconds уже накоплен внутри цикла — НЕ удваиваем!)
         totalGroupClosedChatsForAHT += closedChatsCountForAHT;
 
         currentWidth += step;

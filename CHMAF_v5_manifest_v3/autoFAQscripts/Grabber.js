@@ -141,10 +141,11 @@ var win_Grabber = `
 .cdu-tools-header::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 30%; height: 2px; background: linear-gradient(90deg, #38bdf8, transparent); }
 .cdu-input-text { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #e2e8f0; outline: none; margin-bottom: 10px; transition: all 0.3s ease; box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 10px rgba(56, 189, 248, 0.1); }
 .cdu-input-text:focus { border-color: #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), inset 0 2px 8px rgba(0, 0, 0, 0.6); transform: translateY(-1px); }
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 4px; box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6); }
-::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #334155 0%, #475569 100%); border-radius: 4px; box-shadow: 0 0 6px rgba(56, 189, 248, 0.3); transition: background 0.3s ease; }
-::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); box-shadow: 0 0 12px rgba(56, 189, 248, 0.6); }
+/* Скроллбары только внутри контейнера модуля (раньше перекрашивали всю страницу) */
+.cdu-app-container ::-webkit-scrollbar { width: 8px; height: 8px; }
+.cdu-app-container ::-webkit-scrollbar-track { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 4px; box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6); }
+.cdu-app-container ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #334155 0%, #475569 100%); border-radius: 4px; box-shadow: 0 0 6px rgba(56, 189, 248, 0.3); transition: background 0.3s ease; }
+.cdu-app-container ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); box-shadow: 0 0 12px rgba(56, 189, 248, 0.6); }
 
 /* --- Улучшенная панель расширенных фильтров --- */
 .cdu-adv-panel {
@@ -619,9 +620,8 @@ function collectOtherFilters() {
 }
 
 async function getlistofopers() {
-    await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", { "headers": { "x-csrf-token": aftoken } })
-        .then(r => r.json())
-        .then(r => dataInfo = r);
+    // Через общий слой + локальная переменная вместо неявного глобала dataInfo
+    const dataInfo = await afApiFetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState").then(r => r.json());
 
     let tpopers = dataInfo.onOperator
         .map(el => el.groupId === "c7bbb211-a217-4ed3-8112-98728dc382d8" ? ({ id: el.operator.id, name: el.operator.fullName }) : el.groupId === "8266dbb1-db44-4910-8b5f-a140deeec5c0" ? ({ id: el.operator.id, name: el.operator.fullName }) : null)
@@ -1186,7 +1186,7 @@ function resolveThemeLabel(topicValue) {
 }
 
 async function getChat(id) {
-    return await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, { headers: { "x-csrf-token": aftoken } }).then(r => r.json());
+    return await afApiFetch(`https://skyeng.autofaq.ai/api/conversations/${id}`).then(r => r.json());
 }
 
 function pushPayload({ r, duration, operatorName, csat }) {
@@ -1207,8 +1207,9 @@ function pushPayload({ r, duration, operatorName, csat }) {
 function pushTags(r) { operstagsarray.push({ ChatId: r.id, Tags: r.payload?.tags?.value || '' }); }
 function themeMatches(r, chosen) {
     if (chosen === "parseallthemes") return true;
-    if (chosen === "parsenothemes") return r.payload.topicId?.value === '';
-    return r.payload.topicId?.value === chosen;
+    const tv = r.payload?.topicId?.value;
+    if (chosen === "parsenothemes") return !tv;
+    return tv === chosen;
 }
 
 function filterTableRowsByTags() {
@@ -1219,7 +1220,9 @@ function filterTableRowsByTags() {
             const cellValue = row.children[3].textContent;
             let isMatched = false;
             selectedValues.forEach(val => {
-                const filtered = cleanedarray.filter(item => item.Tags.split(',').map(tag => tag.trim()).includes(val));
+                // operstagsarray наполняется в pushTags() при сборе чатов.
+                // Раньше здесь был cleanedarray[], который нигде не заполнялся → фильтр скрывал ВСЕ строки
+                const filtered = operstagsarray.filter(item => String(item.Tags || '').split(',').map(tag => tag.trim()).includes(val));
                 if (filtered.some(i => i.ChatId === cellValue)) isMatched = true;
             });
             row.style.display = isMatched ? '' : 'none';
@@ -1295,10 +1298,16 @@ async function loadChatsForOperator(operatorId, operatorName, leftDate, rightDat
     let page = 1; let opgrdata; const tmponlyoperhashes = [];
     do {
         const body = { serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json", participatingOperatorsIds: [operatorId], tsFrom: leftDate, tsTo: rightDate, orderBy: "ts", orderDirection: "Asc", page, limit: 100 };
-        opgrdata = await fetch("https://skyeng.autofaq.ai/api/conversations/history", { method: "POST", headers: { "content-type": "application/json", "x-csrf-token": aftoken }, body: JSON.stringify(body), credentials: "include" }).then(r => r.json());
+        opgrdata = await afApiFetch("https://skyeng.autofaq.ai/api/conversations/history", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(body)
+        }).then(r => r.json());
         if (!opgrdata?.items) break;
         for (const el of opgrdata.items) {
-            const rate = el.stats.rate.rate;
+            // Guard: stats.rate может отсутствовать у чатов без оценки —
+            // раньше TypeError здесь убивал весь сбор по оператору
+            const rate = el.stats?.rate?.rate;
             const csatAllowed = filters.csatIncludeUndefined ? (rate === undefined || filters.csatValues.includes(rate)) : (rate !== undefined && filters.csatValues.includes(rate));
             if (csatAllowed) chatswithmarksarray.push({ ConvId: el.conversationId, Rate: rate });
             if (el.operatorId === operatorId) tmponlyoperhashes.push({ HashId: el.conversationId, Duration: el.stats.conversationDuration, operatorName });
@@ -1441,8 +1450,11 @@ function renderCriticalTable(pureArray) {
 }
 
 document.getElementById('stargrab').onclick = async function () {
+    const grabBtn = this;
+    if (grabBtn.disabled) return;
+    grabBtn.disabled = true;
+
     const filters = collectOtherFilters();
-    if (!filters) return;
 
     tableColumnFilters = {};
     document.getElementById('GatherStatByThemes').setAttribute('disabled', '');
@@ -1483,6 +1495,7 @@ document.getElementById('stargrab').onclick = async function () {
     document.getElementById('foundcount').innerHTML = `<span class="cdu-stat-badge cdu-stat-success">Total Records: ${pureArray.length}</span>`;
     calcAvgCsat(); calcAvgSLACompleted();
     document.getElementById('GatherStatByThemes').removeAttribute('disabled');
+    grabBtn.disabled = false;
 };
 
 // ACTIONS HOOKS

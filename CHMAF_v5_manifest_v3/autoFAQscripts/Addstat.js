@@ -1165,9 +1165,10 @@ function attachEventHandlers() {
 
                 while (true) {
                     const bodyArchive = { serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json", tsFrom: datefrom, tsTo: dateto, orderBy: "ts", orderDirection: "Asc", page: page, limit: 100 };
-                    const resp = await fetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
+                    // Через общий слой: диагностика ошибок и CSRF-ретрай
+                    const resp = await afApiFetch("https://skyeng.autofaq.ai/api/conversations/queues/archive", {
                         method: "POST",
-                        headers: { "content-type": "application/json", "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
+                        headers: { "content-type": "application/json" },
                         body: JSON.stringify(bodyArchive)
                     });
                     const data = await resp.json();

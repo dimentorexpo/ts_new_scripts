@@ -1468,19 +1468,9 @@ function getUserStatus() {
         const requestOptions = {
             method: 'GET',
             headers: {
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-                "accept-language": "ru,en;q=0.9",
-                "cache-control": "max-age=0",
-                "priority": "u=0, i",
-                "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"YaBrowser\";v=\"26.3\", \"Yowser\";v=\"2.5\", \"YaBrowserCorp\";v=\"144\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "\"Windows\"",
-                "sec-fetch-dest": "document",
-                "sec-fetch-mode": "navigate",
-                "sec-fetch-site": "none",
-                "sec-fetch-user": "?1",
-                "sec-gpc": "1",
-                "upgrade-insecure-requests": "1"
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+                // sec-ch-*/sec-fetch*/priority/upgrade-insecure-requests — запрещённые
+                // для ручной установки, браузер их игнорирует
             },
             credentials: 'include'
         };
@@ -1604,7 +1594,7 @@ function formatLessonDate(dateString) {
 function createFutureLessonHTML(lesson, type) {
     const { startedAt, lessonType, educationService, teacher } = lesson;
     const translatedType = LESSONS_CONFIG.LESSON_TYPE_MAP[lessonType] || lessonType;
-    const srvTitle = servicecontainer?.data.find(i => i.serviceTypeKey === educationService.serviceTypeKey)?.shortTitle || educationService.serviceTypeKey;
+    const srvTitle = (servicecontainer?.data || []).find(i => i.serviceTypeKey === educationService.serviceTypeKey)?.shortTitle || educationService.serviceTypeKey;
 
     const teacherInfo = teacher ? `<div class="af-gl-text-success">👨‍🏫 ${teacher.general.id} ${teacher.general.name} ${teacher.general.surname}</div>` : '';
     const statusHTML = type === 'past' ? `<div>Статус: <span class="af-gl-text-success">Прошел</span></div>` : '';
@@ -1724,6 +1714,9 @@ async function getusernamecrm() {
             const el = document.getElementById(id);
             if (el) el.style.display = '';
         });
+        // Возвращаем видимость возраста (скрывался после просмотра преподавателя)
+        const ageEl = document.getElementById('usrAge');
+        if (ageEl) ageEl.style.display = '';
     } else {
         ['newTrm', 'butTeacherNabor', 'personalteacherpage'].forEach(id => {
             const el = document.getElementById(id);
