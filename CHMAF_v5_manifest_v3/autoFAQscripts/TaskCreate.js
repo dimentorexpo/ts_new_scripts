@@ -3,7 +3,9 @@ const glassStylesTask = `
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    :root {
+    /* Токены скоупятся на панели модуля: раньше висели на :root
+       и молча переопределяли одноимённые переменные style.css/design-system */
+    .glass-panel-task {
         --glass-bg-primary: rgba(15, 23, 42, 0.85);
         --glass-bg-secondary: rgba(30, 41, 59, 0.75);
         --glass-border: rgba(148, 163, 184, 0.12);
@@ -147,24 +149,25 @@ const glassStylesTask = `
         20%, 40%, 60%, 80% { transform: translateX(4px); }
     }
 
-    ::-webkit-scrollbar {
+    /* Скроллбары только внутри панелей модуля (раньше перекрашивали всю страницу) */
+    .glass-panel-task ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
     }
 
-    ::-webkit-scrollbar-track {
+    .glass-panel-task ::-webkit-scrollbar-track {
         background: rgba(0, 0, 0, 0.2);
         border-radius: 10px;
     }
 
-    ::-webkit-scrollbar-thumb {
+    .glass-panel-task ::-webkit-scrollbar-thumb {
         background: linear-gradient(180deg, rgba(148, 163, 184, 0.4), rgba(148, 163, 184, 0.6));
         border-radius: 10px;
         border: 2px solid transparent;
         background-clip: padding-box;
     }
 
-    ::-webkit-scrollbar-thumb:hover {
+    .glass-panel-task ::-webkit-scrollbar-thumb:hover {
         background: linear-gradient(180deg, rgba(148, 163, 184, 0.6), rgba(148, 163, 184, 0.8));
         background-clip: padding-box;
     }
@@ -429,9 +432,9 @@ var NoteFlag = 0;
 var NoteText = '';
 var srvcont = null;
 
-// Инициализация окон (твоя внешняя функция createWindow)
-const wintCreateTask = createWindow('AF_Createtask', 'winTopTaskCreate', 'winLeftTaskCreate', win_taskform);
-const winSpecCommWindow = createWindow('AF_SpecCommWindow', 'winTopSpecCommWindow', 'winLeftSpecCommWindow', win_speccommwindow);
+// Инициализация окон (внешняя функция createWindow из utils.js)
+createWindow('AF_Createtask', 'winTopTaskCreate', 'winLeftTaskCreate', win_taskform);
+createWindow('AF_SpecCommWindow', 'winTopSpecCommWindow', 'winLeftSpecCommWindow', win_speccommwindow);
 
 // Обработчики двойного клика для скрытия
 document.getElementById('AF_SpecCommWindow').ondblclick = (a) => {
@@ -739,7 +742,6 @@ setInterval(suppressNativeTaskModal, 1000);
 
 // ГЛАВНАЯ ФУНКЦИЯ
 async function gettaskButButtonPress() {
-    let conversid;
     document.getElementById('serviceinf').innerHTML = '';
 
     if (document.getElementById('AF_Createtask').style.display === 'none') {
@@ -762,6 +764,8 @@ async function gettaskButButtonPress() {
 
             document.getElementById('serviceinf').innerHTML = '<div style="text-align:center;">⏳ Загрузка...</div>';
             document.getElementById('serviceComplinf').innerHTML = "";
+            // Контейнер cmplData живёт в окне AF_Complectations (создаёт Userinfo.js) —
+            // таблицы комплектаций рендерятся туда
             const complectationServInfo = document.getElementById('cmplData');
             if (complectationServInfo) complectationServInfo.innerHTML = "";
 
@@ -1059,7 +1063,8 @@ async function gettaskButButtonPress() {
             btn.style.cursor = 'not-allowed';
             btn.innerHTML = '⏳ Отправка...';
 
-            let usluga = tservid.value.trim() === "" ? "null" : tservid.value.trim(); // Если пусто, отправляем пустую строку
+            // Сервер ожидает строку "null" (не пустую строку), когда услуга не указана
+            let usluga = tservid.value.trim() === "" ? "null" : tservid.value.trim();
             let conversid = chathash.value;
 
             let elementsObj = [
@@ -1181,9 +1186,3 @@ async function sendAutofaqAction(conversationId, elements = null, isClickMode = 
         return false;
     }
 }
-
-/* // start test
-//setInterval(doHideForm, 500);
-const observer = new MutationObserver(() => doHideForm());
-observer.observe(document.body, { childList: true, subtree: true });
-// end test */
