@@ -1,4 +1,4 @@
-// --- ПРЕМИАЛЬНЫЕ СТИЛИ GLASSMORPHISM ---
+﻿// --- ПРЕМИАЛЬНЫЕ СТИЛИ GLASSMORPHISM ---
 const afgStyles = document.createElement('style');
 afgStyles.textContent = `
     /* Глобальные CSS переменные */
@@ -324,8 +324,157 @@ document.head.appendChild(afgStyles);
 
 // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
 let data = null;
+let convdata = null; // раньше была неявной глобальной — оформили
 const DATE_OPTIONS = { year: 'numeric', month: 'long', day: 'numeric' }; // Убрали время отсюда
 const TIME_OPTIONS = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+
+// Экранирование внешних данных (имена из API) перед вставкой в innerHTML
+const afgEsc = (s) => String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+// ============================================================
+// ТРЕКИНГ ВРЕМЕНИ ЧАТА НА ОТДЕЛАХ (по префиксам операторов)
+// КЦ-, ТП-, ТП ОС-, Prem-, Teachers Care-
+// ============================================================
+const DEPT_RE = /^(ТП ОС|ТП|КЦ|Prem|Teachers Care)\s*(?=-)/;
+const DEPT_COLORS = {
+    'ТП': '#f87171',
+    'ТП ОС': '#22d3ee',
+    'КЦ': '#34d399',
+    'Prem': '#a78bfa',
+    'Teachers Care': '#60a5fa'
+};
+
+// Сырое имя оператора по id (без экранирования — нужно для парсинга префикса)
+function rawOperatorName(oid) {
+    if (typeof operatorsarray === 'undefined' || !Array.isArray(operatorsarray)) return null;
+    const op = operatorsarray.find(o => o.operator && o.operator.id === oid);
+    return op ? op.operator.fullName : null;
+}
+
+const deptOfName = (name) => {
+    const m = name && String(name).match(DEPT_RE);
+    return m ? m[1] : null;
+};
+
+/**
+ * Разбор хронологии диалога: сегменты «отдел → время».
+ * Сегмент закрывается: передачей на другой отдел, закрытием чата,
+ * либо концом истории (чат всё ещё активен).
+ * @returns {{segments:Array, markers:Map}} markers — инфо-строки,
+ *          привязанные к индексу сообщения-передачи
+ */
+function analyzeDeptTimeline() {
+    const msgs = convdata?.messages || [];
+    const segments = [];
+    const markers = new Map();
+    let cur = null;
+    let dialogStartTs = null;
+
+    for (let i = msgs.length - 1; i >= 0; i--) { // хронологический порядок
+        const msg = msgs[i];
+        const ts = new Date(msg.ts).getTime();
+
+        if (msg.tpe === 'Event') {
+            // Запоминаем самый ранний «Начат новый диалог»
+            if (msg.eventTpe === 'NewConversation') dialogStartTs = ts;
+
+            const p = msg.payload || {};
+
+            // Закрытие чата завершает активный сегмент
+            if (msg.eventTpe === 'CloseConversation' && cur) {
+                cur.endTs = ts;
+                cur.endIndex = i;
+                cur.openChat = false;
+                segments.push(cur);
+                cur = null;
+                continue;
+            }
+
+            if ((msg.eventTpe === 'AssignToOperator' || msg.eventTpe === 'CreatedByOperator') && p.oid) {
+                const dept = deptOfName(rawOperatorName(p.oid));
+                if (dept) {
+                    if (cur && dept !== cur.dept) {
+                        // ПЕРЕДАЧА между отделами: инфо-строка встанет перед этим событием
+                        cur.endTs = ts;
+                        cur.endIndex = i;
+                        markers.set(i, deptTransferHtml(cur, dept, ts));
+                        segments.push(cur);
+                        cur = { dept, startTs: ts, openChat: true };
+                    } else if (!cur) {
+                        cur = { dept, startTs: ts, openChat: true };
+                    }
+                }
+            }
+        } else if ((msg.tpe === 'AnswerOperator' || msg.tpe === 'OperatorComment') && msg.operatorId) {
+            // Ответ оператора подтверждает отдел (или фиксирует редкую смену без события)
+            const dept = deptOfName(rawOperatorName(msg.operatorId));
+            if (dept && cur && dept !== cur.dept) {
+                cur.endTs = ts;
+                cur.endIndex = i;
+                markers.set(i, deptTransferHtml(cur, dept, ts));
+                segments.push(cur);
+                cur = { dept, startTs: ts, openChat: true };
+            }
+        }
+    }
+
+    // Хвост: незакрытый сегмент — действуем до самого свежего сообщения
+    if (cur) {
+        cur.endTs = Math.max(new Date(msgs[0].ts).getTime(), cur.startTs);
+        cur.openChat = true;
+        segments.push(cur);
+    }
+
+    // Единственный отдел: начало отсчёта — от «Начат новый диалог»
+    if (segments.length === 1 && dialogStartTs !== null) {
+        segments[0].startTs = Math.min(segments[0].startTs, dialogStartTs);
+    }
+
+    return { segments, markers };
+}
+
+const fmtClock = (ts) => new Date(ts).toLocaleTimeString('ru-RU', TIME_OPTIONS);
+
+/** Инфо-строка перед событием передачи: сколько чат висел на прошлом отделе */
+function deptTransferHtml(prevSeg, nextDept, ts) {
+    const c1 = DEPT_COLORS[prevSeg.dept] || '#94a3b8';
+    const c2 = DEPT_COLORS[nextDept] || '#94a3b8';
+
+    return `<div class="afg-msg-event" style="border-color:${c1}55; background:rgba(0,0,0,0.28); display:inline-flex; align-items:center; gap:6px;">
+        ⏱ Отдел <b style="color:${c1};">${afgEsc(prevSeg.dept)}</b>
+        — <b style="color:${c1};">${fmtDuration(ts - prevSeg.startTs)}</b>
+        <span style="opacity:0.55;">(${fmtClock(prevSeg.startTs)} → ${fmtClock(ts)})</span>
+        ➜ передан на <b style="color:${c2};">${afgEsc(nextDept)}</b>
+    </div>`;
+}
+
+/** Итоговая строка в конце чата: последний (или единственный) отдел */
+function deptFooterHtml(lastSeg) {
+    const c = DEPT_COLORS[lastSeg.dept] || '#94a3b8';
+    const tail = lastSeg.openChat
+        ? '<span style="color:#7ee787;">· чат активен</span>'
+        : `<span style="opacity:0.6;">· до закрытия (${fmtClock(lastSeg.endTs)})</span>`;
+
+    return `<div class="afg-msg-event" style="margin-top:12px; border-color:${c}55; display:inline-flex; align-items:center; gap:6px;">
+        🏁 Итог — отдел <b style="color:${c};">${afgEsc(lastSeg.dept)}</b>:
+        <b style="color:${c};">${fmtDuration(lastSeg.endTs - lastSeg.startTs)}</b> ${tail}
+    </div>`;
+}
+
+/** «39 сек» / «5 мин 12 сек» / «1 ч 07 мин» */
+function fmtDuration(ms) {
+    const total = Math.max(0, Math.round(ms / 1000));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    if (h > 0) return `${h} ч ${String(m).padStart(2, '0')} мин`;
+    if (m > 0) return `${m} мин ${s} сек`;
+    return `${s} сек`;
+}
 
 if (!localStorage.getItem('winTopChatHis')) {
     localStorage.setItem('winTopChatHis', '0');
@@ -512,16 +661,6 @@ function openImageGallery(imagesArray, startIndex) {
 }
 
 // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
-function extractUrlFromHtml(htmlString) {
-    try {
-        const doc = new DOMParser().parseFromString(htmlString, 'text/html');
-        const link = doc.querySelector('a');
-        if (link && link.href) return link.href;
-    } catch (e) { }
-    const match = htmlString.match(/href="([^"]+)"/);
-    return match ? match[1] : null;
-}
-
 function renderMedia(url) {
     const lower = url.toLowerCase();
     if (lower.match(/\.(png|jpg|jpeg|gif|webp)$/)) {
@@ -543,7 +682,8 @@ function renderMedia(url) {
 }
 function getOperatorNameById(operatorId, defaultName) {
     const operator = typeof operatorsarray !== 'undefined' ? operatorsarray.find(op => op.operator && op.operator.id === operatorId) : null;
-    return (operator && operator.operator.fullName) || defaultName;
+    // Экранируем: имя попадает в innerHTML
+    return afgEsc((operator && operator.operator.fullName) || defaultName);
 }
 
 function extractDate(ts) { return new Date(ts).toLocaleDateString('ru-RU', DATE_OPTIONS); }
@@ -603,6 +743,10 @@ function fillchatbox() {
 
     let htmlBuilder = '';
 
+    // Таймлайн отделов: маркеры передач + итог по последнему сегменту
+    const { segments: deptSegments, markers: deptMarkers } = analyzeDeptTimeline();
+    const lastDeptSeg = deptSegments.length ? deptSegments[deptSegments.length - 1] : null;
+
     // УБРАЛИ ЛОГИКУ ГРУППИРОВКИ - каждое сообщение теперь полностью независимое
     for (let i = convdata.messages.length - 1; i >= 0; i--) {
         const message = convdata.messages[i];
@@ -611,7 +755,7 @@ function fillchatbox() {
 
         switch (message.tpe) {
             case "Question":
-                const name = user.fullName || "Widget";
+                const name = afgEsc(user.fullName || "Widget");
                 let content = message.txt;
 
                 // 1. Обработка медиа-ссылок в тегах <a>
@@ -675,7 +819,9 @@ function fillchatbox() {
                 }
 
                 if (evMsg) {
-                    htmlBuilder += `<div class="afg-msg-event">${evMsg} • ${time}</div>`;
+                    // Инфо-строка «время на предыдущем отделе» перед передачей
+                    const transferMarker = deptMarkers.get(i) || '';
+                    htmlBuilder += `${transferMarker}<div class="afg-msg-event">${evMsg} • ${time}</div>`;
                 }
                 break;
 
@@ -725,6 +871,13 @@ function fillchatbox() {
         }
     }
 
+    // Сводка по отделам + сообщения
+    // Итоговая строка последнего отдела — в самом конце чата
+    // (для единственного отдела это «от Начат новый диалог до закрытия»)
+    if (lastDeptSeg) {
+        htmlBuilder += deptFooterHtml(lastDeptSeg);
+    }
+
     infoField.innerHTML = htmlBuilder;
 }
 
@@ -743,9 +896,9 @@ document.getElementById('operatorstp').addEventListener('change', async function
     for (let i = 1; i < objSel.length; i++) {
         if (objSel[i].selected) {
             try {
-                let r = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                    method: "POST", credentials: "include", mode: "cors",
-                    headers: { "content-type": "application/json", "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
+                let r = await afApiFetch("https://skyeng.autofaq.ai/api/conversations/history", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
                     body: JSON.stringify({
                         serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json",
                         participatingOperatorsIds: [objSel[i].value],
@@ -777,9 +930,9 @@ document.getElementById('operatorstp').addEventListener('change', async function
                     foundarr += `<span class="chatlist" data-id="${item.conversationId}">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="opacity: 0.7; font-size: 12px;">🕐 ${dateStr}</span>
-                            <span ${typeColor}>${userType}</span>
+                            <span ${typeColor}>${afgEsc(userType)}</span>
                         </div>
-                        <div style="margin-top: 4px; color: var(--afg-accent); font-weight: 500;">${name}</div>
+                        <div style="margin-top: 4px; color: var(--afg-accent); font-weight: 500;">${afgEsc(name)}</div>
                     </span>`;
                 });
 
@@ -800,9 +953,7 @@ function bindChatListClicks(items, mode) {
         el.onclick = async () => {
             document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.7;">⏳ Загрузка чата...</div>';
             try {
-                let r = await fetch(`https://skyeng.autofaq.ai/api/conversations/${id}`, {
-                    headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' }
-                });
+                let r = await afApiFetch(`https://skyeng.autofaq.ai/api/conversations/${id}`);
                 convdata = await r.json();
                 isChatOnOperator = convdata.status === 'AssignedToOperator';
                 fillchatbox();
@@ -903,9 +1054,7 @@ document.getElementById('refreshchat').onclick = async () => {
 
 async function updateChatInfo(chatId) {
     try {
-        const response = await fetch(`https://skyeng.autofaq.ai/api/conversations/${chatId}`, {
-            headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' }
-        });
+        const response = await afApiFetch(`https://skyeng.autofaq.ai/api/conversations/${chatId}`);
         if (!response.ok) throw new Error("Ошибка сети");
         convdata = await response.json();
         isChatOnOperator = convdata.status === 'AssignedToOperator';
@@ -928,9 +1077,9 @@ document.getElementById('takechat').onclick = async function () {
     if (!confirm("📥 Забрать чат на себя?")) return;
 
     const assignChat = async (id) => {
-        await fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-            method: "POST", credentials: "include",
-            headers: { "content-type": "application/json", "x-csrf-token": aftoken },
+        await afApiFetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
             body: JSON.stringify({ command: "DO_ASSIGN_CONVERSATION", conversationId: chatId, assignToOperatorId: id })
         });
     };
@@ -953,13 +1102,13 @@ document.getElementById('reassign').onclick = async () => {
     if (!confirm(`🔄 Перевести чат на ${selected.textContent}?`)) return;
 
     try {
-        await fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-            method: "POST", credentials: "include", mode: "cors",
-            headers: { "content-type": "application/json", "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
+        await afApiFetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
             body: JSON.stringify({ command: "DO_ASSIGN_CONVERSATION", conversationId: chatId, assignToOperatorId: selected.value })
         });
         console.log("✅ Успешный перевод");
-        alert("✅ Чат успешно переведён");
+        if (typeof createAndShowButton === 'function') createAndShowButton('✅ Чат успешно переведён', 'message');
     } catch (e) {
         console.error(e);
         alert("❌ Ошибка передачи чата");
@@ -979,24 +1128,19 @@ document.getElementById('sendmsgtochatornotes').onclick = async () => {
     btn.disabled = true;
 
     try {
-        const conv = await fetch(`https://skyeng.autofaq.ai/api/conversations/${chatId}`, {
-            headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' }
-        }).then(r => r.json());
+        const convResponse = await afApiFetch(`https://skyeng.autofaq.ai/api/conversations/${chatId}`);
+        const conv = await convResponse.json();
 
         const payload = { sessionId: conv.sessionId, conversationId: chatId, text: `<p>${msgField.value}</p>` };
         if (mode === "Notes") payload.isComment = true;
 
+        // Через общий слой: FormData вместо ручного multipart,
+        // диагностика неуспешных ответов и CSRF-ретрай.
+        // Текст очищаем только после успеха — при ошибке черновик сохранён
+        const response = await sendAnswersRequest(payload);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
         msgField.value = "";
-
-        const boundary = "----WebKitFormBoundary" + Math.random().toString(16).slice(2);
-        const body = `--${boundary}\r\nContent-Disposition: form-data; name="payload"\r\n\r\n${JSON.stringify(payload)}\r\n--${boundary}--\r\n`;
-
-        await fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-            method: "POST", credentials: "include", mode: "cors",
-            headers: { "content-type": `multipart/form-data; boundary=${boundary}`, "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
-            body
-        });
-
         btn.textContent = '✅ Отправлено';
         setTimeout(() => {
             btn.textContent = originalText;
@@ -1075,9 +1219,7 @@ function getopennewcatButtonPress() {
         btn.disabled = true;
 
         try {
-            let res = await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
-                headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' }, credentials: "include"
-            }).then(r => r.json());
+            let res = await afApiFetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState").then(r => r.json());
 
             const statusMap = { Online: '🟢', Busy: '🟡', Pause: '🔴' };
             res.onOperator.forEach(({ operator, aCnt = 0 }) => {
@@ -1119,28 +1261,28 @@ document.getElementById('getdatafrchat').onclick = () => {
             document.getElementById('datafield').innerHTML = `
                 <div style="font-size:16px; margin-bottom:16px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 10px; border-left: 3px solid var(--afg-accent);">
                     <div style="font-size: 18px; font-weight: 600; color: var(--afg-accent); margin-bottom: 6px;">
-                        ${userData.userFullName || convdata.channelUser.fullName}
+                        ${afgEsc(userData.userFullName || convdata.channelUser.fullName)}
                     </div>
                     <div style="opacity: 0.7; font-size: 13px;">
-                        ${userData.userType || 'Тип не указан'}
+                        ${afgEsc(userData.userType || 'Тип не указан')}
                     </div>
                 </div>
                 <div style="display: grid; gap: 10px;">
                     <div style="padding: 10px; background: rgba(0,0,0,0.15); border-radius: 8px;">
                         <div style="opacity: 0.6; font-size: 11px; margin-bottom: 4px;">USER ID</div>
-                        <div style="font-weight: 500;">${userData.id || 'N/A'}</div>
+                        <div style="font-weight: 500;">${afgEsc(userData.id || 'N/A')}</div>
                     </div>
                     <div style="padding: 10px; background: rgba(0,0,0,0.15); border-radius: 8px;">
                         <div style="opacity: 0.6; font-size: 11px; margin-bottom: 4px;">📧 EMAIL</div>
-                        <div style="font-weight: 500; word-break: break-all;">${userData.email || 'N/A'}</div>
+                        <div style="font-weight: 500; word-break: break-all;">${afgEsc(userData.email || 'N/A')}</div>
                     </div>
                     <div style="padding: 10px; background: rgba(0,0,0,0.15); border-radius: 8px;">
                         <div style="opacity: 0.6; font-size: 11px; margin-bottom: 4px;">📞 PHONE</div>
-                        <div style="font-weight: 500;">${userData.phone || 'N/A'}</div>
+                        <div style="font-weight: 500;">${afgEsc(userData.phone || 'N/A')}</div>
                     </div>
                     <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                         <div style="opacity: 0.6; font-size: 11px; margin-bottom: 6px;">🖥️ TECH SCREENING</div>
-                        <div style="font-size: 13px; line-height: 1.5; white-space: pre-wrap;">${techScreeningData}</div>
+                        <div style="font-size: 13px; line-height: 1.5; white-space: pre-wrap;">${afgEsc(techScreeningData)}</div>
                     </div>
                 </div>
             `;
@@ -1173,9 +1315,9 @@ document.getElementById('btn_search_history').onclick = async () => {
     if (userId && !chatHash) {
         flagsearch = 'searchbyuser';
         try {
-            let res = await fetch("https://skyeng.autofaq.ai/api/conversations/history", {
-                method: "POST", credentials: "include", mode: "cors",
-                headers: { "content-type": "application/json", "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
+            let res = await afApiFetch("https://skyeng.autofaq.ai/api/conversations/history", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
                 body: JSON.stringify({
                     serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json",
                     channelUserFullTextLike: userId,
@@ -1209,8 +1351,8 @@ document.getElementById('btn_search_history').onclick = async () => {
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <span style="color: #4caf50; font-weight: 600; font-size: 12px;">${userType}</span>
-                            <span style="color: var(--afg-accent); font-weight: 500; margin-left: 6px;">${name}</span>
+                            <span style="color: #4caf50; font-weight: 600; font-size: 12px;">${afgEsc(userType)}</span>
+                            <span style="color: var(--afg-accent); font-weight: 500; margin-left: 6px;">${afgEsc(name)}</span>
                         </div>
                     </div>
                 </span>`;
@@ -1256,6 +1398,5 @@ document.getElementById('placechatid').onclick = () => {
         setTimeout(() => { el.style.color = originalColor; }, 300);
     }
 };
-// Инициализация при загрузке
-console.log("✅ ChatHistory Premium v2.0 загружен");
-console.log("📋 Особенности: Всегда видимые дата/время, премиальный Glassmorphism дизайн, улучшенная читаемость");
+// Инициализация завершена
+console.log('✅ ChatHistory v2.0 загружен');

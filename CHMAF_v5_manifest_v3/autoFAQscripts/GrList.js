@@ -1,4 +1,4 @@
-// === 1. ВСТРАИВАЕМЫЕ СТИЛИ (CYBER-DARK UI) ===
+﻿// === 1. ВСТРАИВАЕМЫЕ СТИЛИ (CYBER-DARK UI) ===
 // ==========================================
 // NEON GLASS ULTRA — Premium Cyber-Dark UI
 // ==========================================
@@ -756,7 +756,7 @@ const fetchViaBackground = (payload) => new Promise((resolve) => {
 // === MAIN LOGIC ===
 
 // Экранирование данных API перед вставкой в innerHTML
-const esc = (s) => String(s)
+const nguEsc = (s) => String(s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -795,7 +795,7 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
                 <div class="ngu-status error">
                     <span class="ngu-status-icon">✕</span>
                     <div class="ngu-status-title">Ошибка запроса</div>
-                    <div class="ngu-status-desc">${esc(groupResponse?.error || 'Unknown error')}</div>
+                    <div class="ngu-status-desc">${nguEsc(groupResponse?.error || 'Unknown error')}</div>
                 </div>`;
             return;
         }
@@ -852,7 +852,7 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
                     <div class="ngu-counter-label">Преподавателей</div>
                 </div>
                 <div class="ngu-counter-item">
-                    <div class="ngu-counter-value">${esc(groupId)}</div>
+                    <div class="ngu-counter-value">${nguEsc(groupId)}</div>
                     <div class="ngu-counter-label">Group ID</div>
                 </div>
             </div>`;
@@ -860,7 +860,7 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
         if (teacherCount > 0) {
             const teacherRow = document.createElement('div');
             teacherRow.className = 'ngu-teacher';
-            teacherRow.innerHTML = `<span class="ngu-teacher-icon">●</span> Преподаватель: ${esc(teachers[0].userId)}`;
+            teacherRow.innerHTML = `<span class="ngu-teacher-icon">●</span> Преподаватель: ${nguEsc(teachers[0].userId)}`;
             container.appendChild(teacherRow);
         }
 
@@ -875,13 +875,13 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
 
             card.innerHTML = `
                 <span class="ngu-index">${String(index + 1).padStart(2, '0')}</span>
-                <div class="ngu-avatar">${esc(initials)}</div>
+                <div class="ngu-avatar">${nguEsc(initials)}</div>
                 <div class="ngu-info">
-                    <div class="ngu-name">${esc(name)}</div>
-                    <div class="ngu-meta" data-copy="${esc(student.userId)}">ID: ${esc(student.userId)}</div>
+                    <div class="ngu-name">${nguEsc(name)}</div>
+                    <div class="ngu-meta" data-copy="${nguEsc(student.userId)}">ID: ${nguEsc(student.userId)}</div>
                 </div>
-                <button class="ngu-crm-btn" data-userid="${esc(student.userId)}">CRM</button>
-                <span class="ngu-service-tag">${esc(student.educationServiceId)}</span>
+                <button class="ngu-crm-btn" data-userid="${nguEsc(student.userId)}">CRM</button>
+                <span class="ngu-service-tag">${nguEsc(student.educationServiceId)}</span>
             `;
 
             card.querySelector('.ngu-crm-btn').addEventListener('click', (e) => {
@@ -910,7 +910,7 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
             <div class="ngu-status error">
                 <span class="ngu-status-icon">⚡</span>
                 <div class="ngu-status-title">Системная ошибка</div>
-                <div class="ngu-status-desc">${esc(error.message)}</div>
+                <div class="ngu-status-desc">${nguEsc(error.message)}</div>
             </div>`;
     }
 });
