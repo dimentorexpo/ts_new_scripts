@@ -1,74 +1,142 @@
-// --- CSS стили Glassmorphism внедрены напрямую, чтобы избежать внешних зависимостей ---
+// --- CSS стили Premium Obsidian внедрены напрямую ---
 const glassStylesMarks = `
 <style>
     .af-gl-container {
         display: flex;
         flex-direction: column;
-        width: 330px;
-        background: rgba(30, 30, 40, 0.45); /* Полупрозрачная темная основа */
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 16px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        padding: 15px;
-        color: #fdfdfd;
-        font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
+        width: 340px;
+        background: linear-gradient(165deg, rgba(26, 32, 30, 0.94) 0%, rgba(12, 15, 14, 0.97) 100%);
+        backdrop-filter: blur(24px) saturate(140%);
+        -webkit-backdrop-filter: blur(24px) saturate(140%);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-top-color: rgba(255, 255, 255, 0.16);
+        border-radius: 18px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        padding: 16px;
+        color: #e8f0ec;
+        font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
         box-sizing: border-box;
         gap: 12px;
     }
-    .marks-gl-header { display: flex; justify-content: space-between; align-items: center; }
+    .marks-gl-header { display: flex; justify-content: space-between; align-items: center; cursor: grab; }
+    .marks-titleblock { display: flex; align-items: center; gap: 10px; }
+    .marks-icon-chip {
+        width: 34px; height: 34px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 17px;
+        background: linear-gradient(135deg, rgba(52, 211, 153, 0.22), rgba(5, 150, 105, 0.1));
+        border: 1px solid rgba(52, 211, 153, 0.35);
+        box-shadow: 0 4px 14px rgba(52, 211, 153, 0.18), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .marks-title { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
+    .marks-subtitle {
+        font-size: 9px; text-transform: uppercase;
+        letter-spacing: 1.4px; color: rgba(255, 255, 255, 0.45);
+    }
+
     .af-gl-btn {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: #fff;
-        border-radius: 8px;
-        padding: 6px 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #dfe6f1;
+        border-radius: 10px;
+        padding: 7px 11px;
         cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 13px;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 12px;
+        line-height: 1;
         outline: none;
     }
     .af-gl-btn:hover {
-        background: rgba(255, 255, 255, 0.25);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        background: rgba(255, 255, 255, 0.13);
+        border-color: rgba(52, 211, 153, 0.35);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
     }
-    .af-gl-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .af-gl-btn:active { transform: translateY(0) scale(0.97); }
+
+    #findmarksstat.af-gl-btn:hover {
+        background: rgba(52, 211, 153, 0.18);
+        border-color: rgba(52, 211, 153, 0.5);
+    }
+
+    .af-gl-row { display: flex; align-items: center; justify-content: space-between; gap: 7px; }
+    .af-gl-row > span {
+        font-size: 10px; text-transform: uppercase;
+        letter-spacing: 1px; color: rgba(255, 255, 255, 0.45);
+        font-weight: 600;
+    }
+
     .af-gl-input {
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.09);
         color: #fff;
-        border-radius: 8px;
-        padding: 6px 10px;
+        border-radius: 10px;
+        padding: 8px 11px;
         outline: none;
-        transition: 0.3s;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         font-family: inherit;
+        font-size: 13px;
+        min-width: 0;
     }
-    .af-gl-input:focus { border-color: rgba(255, 255, 255, 0.4); }
-    .af-gl-input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+    .af-gl-input:focus {
+        border-color: rgba(52, 211, 153, 0.6);
+        background: rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.12);
+    }
+    .af-gl-input::-webkit-calendar-picker-indicator { filter: invert(0.8); cursor: pointer; }
+
     .af-gl-stats-box {
-        background: rgba(0, 0, 0, 0.15);
-        border-radius: 12px;
-        padding: 12px;
-        max-height: 350px;
+        background: rgba(0, 0, 0, 0.28);
+        border-radius: 13px;
+        padding: 14px;
+        max-height: 360px;
         overflow-y: auto;
-        font-size: 14px;
-        line-height: 1.6;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 13px;
+        line-height: 1.55;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
     }
-    .af-gl-stats-box::-webkit-scrollbar { width: 6px; }
-    .af-gl-stats-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-    .af-gl-stat-line { display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.1); padding: 2px 0; }
+    .af-gl-stats-box::-webkit-scrollbar { width: 5px; }
+    .af-gl-stats-box::-webkit-scrollbar-track { background: transparent; }
+    .af-gl-stats-box::-webkit-scrollbar-thumb {
+        background: rgba(52, 211, 153, 0.25);
+        border-radius: 10px;
+    }
+    .af-gl-stat-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed rgba(255,255,255,0.08);
+        padding: 6px 8px;
+        margin: 0 -8px;
+        border-radius: 7px;
+        transition: background 0.2s ease;
+    }
+    .af-gl-stat-line:hover { background: rgba(255, 255, 255, 0.05); }
     .af-gl-stat-line:last-child { border-bottom: none; }
+    .af-gl-stat-line strong { color: #fff; font-variant-numeric: tabular-nums; }
+
+    /* Заголовочный блок результата */
+    #markstable > div:first-child strong { letter-spacing: 0.3px; }
 </style>
 `;
 
 // --- Описание элементов окна ---
 var win_Marks = glassStylesMarks + `
 <div class="af-gl-container" id="marks_wrapper">
-    <div class="marks-gl-header chmaf-drag-handle" id="marks_header" style="cursor: move;">
-        <button class="af-gl-btn buttonHide" title="Скрыть меню" id="hideMeMarks">❌</button>
-        <button class="af-gl-btn" id="marksinstr" title="Инструкция по этой форме">❓ Инструкция</button>
+    <div class="marks-gl-header chmaf-drag-handle" id="marks_header">
+        <div class="marks-titleblock">
+            <div class="marks-icon-chip">📊</div>
+            <div>
+                <div class="marks-title">Оценки</div>
+                <div class="marks-subtitle">Score Statistics</div>
+            </div>
+        </div>
+        <div style="display:flex; gap:6px;">
+            <button class="af-gl-btn" id="marksinstr" title="Инструкция по этой форме">❓</button>
+            <button class="af-gl-btn buttonHide" title="Скрыть меню" id="hideMeMarks">✕</button>
+        </div>
     </div>
 
     <div class="af-gl-row">
@@ -128,11 +196,11 @@ async function getUserMarks(option, idfromchat) {
 
     let tempval = option === 'menu' ? searchInput.value.trim() : idfromchat;
     if (!tempval) {
-        marksTable.innerHTML = "<span style='color: #ffdddd;'>Укажите ID пользователя!</span>";
+        marksTable.innerHTML = "<span style='color: #ffb8b8;'>Укажите ID пользователя!</span>";
         return;
     }
 
-    marksTable.innerHTML = `<div style="text-align: center; color: rgba(255,255,255,0.7);">⏳ Загрузка данных...</div>`;
+    marksTable.innerHTML = `<div style="text-align: center; color: rgba(255,255,255,0.65); padding: 10px;">⏳ Загрузка данных...</div>`;
 
     let from = document.getElementById('dateFromMarks').value;
     let to = document.getElementById('dateToMarks').value;
@@ -188,9 +256,9 @@ async function getUserMarks(option, idfromchat) {
         const getPct = (val, tot) => tot > 0 ? ((val / tot) * 100).toFixed(1) : '0.0';
 
         marksTable.innerHTML = `
-            <div style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.2);">
+            <div style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.14);">
                 <div style="font-size: 16px; margin-bottom:4px;">🕵️‍♀️ <strong>${tempval}</strong></div>
-                <div style="color: rgba(255,255,255,0.7); font-size: 13px;">${datamarks.items[0].channelUser?.fullName || 'Имя не найдено'}</div>
+                <div style="color: rgba(255,255,255,0.6); font-size: 12px;">${datamarks.items[0].channelUser?.fullName || 'Имя не найдено'}</div>
             </div>
 
             ${makeLine('Оценка 1 🤬', counts[1], getPct(counts[1], markscount))}
@@ -199,12 +267,12 @@ async function getUserMarks(option, idfromchat) {
             ${makeLine('Оценка 4 🥴', counts[4], getPct(counts[4], markscount))}
             ${makeLine('Оценка 5 😊', counts[5], getPct(counts[5], markscount))}
 
-            <div style="margin: 12px 0; border-top: 1px solid rgba(255,255,255,0.2);"></div>
+            <div style="margin: 12px 0; border-top: 1px solid rgba(255,255,255,0.14);"></div>
 
-            <div class="af-gl-stat-line" style="color: #a8f0c6;"><span>Всего оценок:</span> <strong>${markscount}</strong></div>
-            <div class="af-gl-stat-line" style="color: #a8d5f0;"><span>Обращений с ${from}:</span> <strong>${datamarks.total}</strong></div>
+            <div class="af-gl-stat-line" style="color: #86efac;"><span>Всего оценок:</span> <strong>${markscount}</strong></div>
+            <div class="af-gl-stat-line" style="color: #93c5fd;"><span>Обращений с ${from}:</span> <strong>${datamarks.total}</strong></div>
 
-            <div style="margin: 12px 0; border-top: 1px solid rgba(255,255,255,0.2);"></div>
+            <div style="margin: 12px 0; border-top: 1px solid rgba(255,255,255,0.14);"></div>
 
             ${makeLine('Оценки к обращениям', '', getPct(markscount, total))}
             ${makeLine('Закрыто без оценок', clswoutmark, getPct(clswoutmark, total))}

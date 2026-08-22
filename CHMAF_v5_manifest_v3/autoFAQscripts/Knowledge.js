@@ -1,5 +1,6 @@
 /**
- * Knowledge Center — Glassmorphism Refactor
+ * Knowledge Center — Premium Obsidian Edition
+ * Акцент: violet #a78bfa → deep #7c3aed
  * Unique prefix: .knw-
  */
 
@@ -18,110 +19,208 @@
         style.id = 'knw-styles';
         style.innerHTML = `
             .knw-panel {
-                background: rgba(25, 27, 38, 0.7) !important;
-                backdrop-filter: blur(15px) saturate(150%);
-                -webkit-backdrop-filter: blur(15px);
-                border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                border-radius: 20px;
-                color: #e0e0e0;
-                font-family: 'Segoe UI', system-ui, sans-serif;
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-                padding: 15px !important;
+                background: linear-gradient(165deg, rgba(28, 27, 40, 0.94) 0%, rgba(13, 12, 20, 0.97) 100%) !important;
+                backdrop-filter: blur(24px) saturate(140%);
+                -webkit-backdrop-filter: blur(24px) saturate(140%);
+                border: 1px solid rgba(255, 255, 255, 0.09);
+                border-top-color: rgba(255, 255, 255, 0.16);
+                border-radius: 18px;
+                color: #e8ecf4;
+                font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+                padding: 16px !important;
                 overflow: visible !important;
             }
             .knw-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 15px;
+                margin-bottom: 16px;
                 cursor: grab;
             }
+            .knw-titleblock { display: flex; gap: 10px; align-items: center; }
+            .knw-icon-chip {
+                width: 34px; height: 34px;
+                border-radius: 10px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 17px;
+                background: linear-gradient(135deg, rgba(167, 139, 250, 0.25), rgba(124, 58, 237, 0.12));
+                border: 1px solid rgba(167, 139, 250, 0.35);
+                box-shadow: 0 4px 14px rgba(167, 139, 250, 0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+            }
+            .knw-title { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
+            .knw-subtitle {
+                font-size: 9px; text-transform: uppercase;
+                letter-spacing: 1.4px; color: rgba(255, 255, 255, 0.45);
+            }
+
             .knw-btn {
-                background: rgba(255, 255, 255, 0.1);
+                background: rgba(255, 255, 255, 0.06);
                 border: 1px solid rgba(255, 255, 255, 0.1);
-                color: #fff;
-                padding: 6px 15px;
+                color: #dfe6f1;
+                padding: 8px 13px;
                 border-radius: 10px;
                 cursor: pointer;
-                transition: all 0.3s ease;
-                font-size: 13px;
+                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+                font-size: 12px;
+                line-height: 1;
             }
-            .knw-btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-1px); }
+            .knw-btn:hover {
+                background: rgba(255, 255, 255, 0.13);
+                border-color: rgba(167, 139, 250, 0.4);
+                transform: translateY(-1px);
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+            }
+            .knw-btn:active { transform: translateY(0) scale(0.97); }
 
+            /* Индикатор состояния */
             .knw-loader {
-                width: 30px; height: 30px;
+                width: 26px; height: 26px;
                 display: flex; align-items: center; justify-content: center;
-                border-radius: 50%; background: rgba(0,0,0,0.2);
+                border-radius: 50%;
+                background: rgba(167, 139, 250, 0.08);
+                border: 1px solid rgba(167, 139, 250, 0.25);
+                font-size: 12px;
+                transition: all 0.25s ease;
             }
-            .knw-loader.loading { animation: knw-spin 1.5s linear infinite; }
+            .knw-loader.loading {
+                animation: knw-spin 1.2s linear infinite;
+                border-color: rgba(167, 139, 250, 0.5);
+                box-shadow: 0 0 14px rgba(167, 139, 250, 0.3);
+            }
             @keyframes knw-spin { 100% { transform: rotate(360deg); } }
 
             .knw-input {
                 width: 100%;
-                background: rgba(0, 0, 0, 0.3);
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: rgba(0, 0, 0, 0.35);
+                border: 1px solid rgba(255, 255, 255, 0.09);
                 border-radius: 12px;
                 color: #fff;
-                padding: 10px;
+                padding: 11px 14px;
                 text-align: center;
                 outline: none;
-                margin-bottom: 10px;
-                transition: border 0.3s;
+                margin-bottom: 12px;
+                font-size: 13px;
+                font-family: inherit;
+                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+                box-sizing: border-box;
             }
-            .knw-input:focus { border-color: #4facfe; }
+            .knw-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+            .knw-input:focus {
+                border-color: rgba(167, 139, 250, 0.6);
+                background: rgba(0, 0, 0, 0.5);
+                box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.12), 0 0 18px rgba(167, 139, 250, 0.08);
+            }
 
-            .knw-select-group { display: flex; gap: 10px; margin-bottom: 15px; }
+            .knw-select-group { display: flex; gap: 10px; margin-bottom: 14px; }
             .knw-select {
                 flex: 1;
-                background: rgba(20, 20, 20, 0.6);
+                background: rgba(0, 0, 0, 0.35);
                 color: #fff;
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.09);
                 border-radius: 10px;
-                padding: 5px;
+                padding: 9px 8px;
                 outline: none;
-                text-align:center;
+                text-align: center;
+                font-size: 12px;
+                font-family: inherit;
+                color-scheme: dark;
+                transition: all 0.22s ease;
             }
+            .knw-select:focus {
+                border-color: rgba(167, 139, 250, 0.6);
+                box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.12);
+            }
+            .knw-select option { background: #14121d; color: #e8ecf4; }
 
             .knw-scroll-area {
                 max-height: 400px;
                 overflow-y: auto;
-                padding-right: 5px;
+                padding-right: 6px;
             }
-            .knw-scroll-area::-webkit-scrollbar { width: 4px; }
-            .knw-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+            .knw-scroll-area::-webkit-scrollbar { width: 5px; }
+            .knw-scroll-area::-webkit-scrollbar-track { background: transparent; }
+            .knw-scroll-area::-webkit-scrollbar-thumb {
+                background: rgba(167, 139, 250, 0.25);
+                border-radius: 10px;
+            }
+            .knw-scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(167, 139, 250, 0.45); }
 
             .knw-item {
-                background: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.05);
-                padding: 10px;
-                margin-bottom: 6px;
-                border-radius: 10px;
+                background: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-left: 2px solid transparent;
+                padding: 11px 13px;
+                margin-bottom: 7px;
+                border-radius: 11px;
                 cursor: pointer;
-                transition: all 0.2s;
+                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
                 font-size: 13px;
-                animation: knw-fadeIn 0.3s ease;
+                line-height: 1.45;
+                animation: knw-fadeIn 0.3s ease backwards;
             }
-            .knw-item:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255,255,255,0.2); transform: translateX(5px); }
-            .knw-item.active { background: #4facfe; color: #fff; font-weight: 600; }
+            .knw-item:nth-child(-n+8) { animation-delay: calc(var(--i, 0) * 0ms); }
+            .knw-item:hover {
+                background: rgba(255, 255, 255, 0.08);
+                border-color: rgba(167, 139, 250, 0.3);
+                border-left-color: rgba(167, 139, 250, 0.8);
+                transform: translateX(4px);
+            }
+            .knw-item.active {
+                background: linear-gradient(135deg, rgba(167, 139, 250, 0.85), rgba(124, 58, 237, 0.75));
+                border-color: rgba(167, 139, 250, 0.9);
+                color: #fff;
+                font-weight: 600;
+                box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
+            }
+
+            .knw-empty {
+                text-align: center;
+                padding: 26px 16px;
+                opacity: 0.45;
+                font-size: 12px;
+                letter-spacing: 0.3px;
+            }
 
             .knw-solution {
                 position: absolute;
                 top: 0; left: 565px;
                 width: 500px;
-                background: rgba(25, 27, 38, 0.9) !important;
-                backdrop-filter: blur(20px);
+                background: linear-gradient(165deg, rgba(28, 27, 40, 0.96) 0%, rgba(13, 12, 20, 0.98) 100%) !important;
+                backdrop-filter: blur(24px) saturate(140%);
+                -webkit-backdrop-filter: blur(24px) saturate(140%);
                 border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 20px;
+                border-top: 2px solid rgba(167, 139, 250, 0.55);
+                border-radius: 18px;
                 padding: 20px;
-                color: #f0f0f0;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+                color: #eef0f7;
+                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(124, 58, 237, 0.07);
                 display: none;
                 max-height: 600px;
                 overflow-y: auto;
                 z-index: 100;
+                animation: knw-solutionIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .knw-solution h3 {
+                font-size: 15px;
+                font-weight: 700;
+                letter-spacing: 0.2px;
+            }
+            .knw-solution::-webkit-scrollbar { width: 5px; }
+            .knw-solution::-webkit-scrollbar-track { background: transparent; }
+            .knw-solution::-webkit-scrollbar-thumb {
+                background: rgba(167, 139, 250, 0.25);
+                border-radius: 10px;
             }
 
-            @keyframes knw-fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes knw-fadeIn {
+                from { opacity: 0; transform: translateY(6px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes knw-solutionIn {
+                from { opacity: 0; transform: translateX(14px); }
+                to { opacity: 1; transform: translateX(0); }
+            }
         `;
         document.head.appendChild(style);
     };
@@ -129,11 +228,15 @@
     const win_Knowledge = `
         <div class="knw-panel" style="width: 550px;">
             <div class="knw-header chmaf-drag-handle" id="knw_drag_handle">
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <span style="font-weight: 600; color: #fff;">📚 База Знаний</span>
+                <div class="knw-titleblock">
+                    <div class="knw-icon-chip">📚</div>
+                    <div>
+                        <div class="knw-title">База Знаний</div>
+                        <div class="knw-subtitle">Knowledge Center</div>
+                    </div>
                     <div id="knw-loader" class="knw-loader">🟢</div>
                 </div>
-                <button id="hideMeKnowledge" class="knw-btn buttonHide">❌</button>
+                <button id="hideMeKnowledge" class="knw-btn">✕</button>
             </div>
 
             <div class="knw-body">
@@ -149,7 +252,7 @@
                 </div>
 
                 <div id="knw-list" class="knw-scroll-area">
-                    <div style="text-align: center; opacity: 0.5; padding: 20px;">Загрузка данных...</div>
+                    <div class="knw-empty">Загрузка данных...</div>
                 </div>
             </div>
 
@@ -183,18 +286,19 @@
         dom.solution.style.display = 'none';
 
         if (items.length === 0) {
-            dom.list.innerHTML = '<div style="text-align:center; padding: 20px; opacity: 0.5;">Ничего не найдено</div>';
+            dom.list.innerHTML = '<div class="knw-empty">Ничего не найдено</div>';
             return;
         }
 
-        items.forEach(item => {
+        items.forEach((item, i) => {
             const el = document.createElement('div');
             el.className = 'knw-item';
+            el.style.animationDelay = `${Math.min(i * 30, 300)}ms`;
             el.textContent = item[2];
             el.onclick = () => {
                 document.querySelectorAll('.knw-item').forEach(i => i.classList.remove('active'));
                 el.classList.add('active');
-                dom.solution.innerHTML = `<h3 style="margin-top:0; color:#4facfe;">${item[2]}</h3><hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">${item[3]}`;
+                dom.solution.innerHTML = `<h3 style="margin-top:0; color:#a78bfa;">${item[2]}</h3><hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">${item[3]}`;
                 dom.solution.style.display = 'block';
             };
             dom.list.appendChild(el);
@@ -222,9 +326,9 @@
             dom.type.innerHTML = '<option value="default">--- Тип урока ---</option>';
             types.forEach(t => dom.type.add(new Option(t, t)));
 
-            dom.list.innerHTML = '<div style="text-align:center; padding: 20px; opacity: 0.5;">Выберите категорию или используйте поиск</div>';
+            dom.list.innerHTML = '<div class="knw-empty">Выберите категорию или используйте поиск</div>';
         } catch (e) {
-            dom.list.innerHTML = '<div style="color:#ff4f4f; text-align:center;">Ошибка загрузки данных</div>';
+            dom.list.innerHTML = '<div style="color:#ff6b6b; text-align:center; padding:20px;">Ошибка загрузки данных</div>';
         }
         setLoader(false);
     };

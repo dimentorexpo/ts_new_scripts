@@ -3510,3 +3510,120 @@
             var(--neon) 6px
         );
 }
+
+/* =========================================
+   VIMBOT — PREMIUM EDITION (v2 UI)
+   Акцент: cyan #22d3ee → sky #0ea5e9
+   ========================================= */
+.vimbot-glass {
+    background: linear-gradient(165deg, rgba(28, 34, 44, 0.94) 0%, rgba(12, 15, 21, 0.97) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-top-color: rgba(255, 255, 255, 0.16);
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.55),
+        0 0 40px rgba(34, 211, 238, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Чип-иконка в заголовке */
+.vimbot-icon-chip {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(14, 165, 233, 0.1));
+    border: 1px solid rgba(34, 211, 238, 0.35);
+    box-shadow: 0 4px 14px rgba(34, 211, 238, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.vimbot-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.3px;
+}
+
+.vimbot-subtitle {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.vimbot-version {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    color: #22d3ee;
+    background: rgba(34, 211, 238, 0.08);
+    border: 1px solid rgba(34, 211, 238, 0.25);
+}
+
+/* Кнопки */
+.vimbot-btn {
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.vimbot-btn:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(34, 211, 238, 0.35) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.vimbot-btn:active {
+    transform: translateY(0) scale(0.97);
+}
+
+.vimbot-btn-danger:hover {
+    background: rgba(248, 113, 113, 0.18) !important;
+    border-color: rgba(248, 113, 113, 0.45) !important;
+}
+
+.vimbot-btn.primary {
+    background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%) !important;
+    border: none !important;
+    color: #04141c !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px;
+    box-shadow: 0 6px 20px rgba(34, 211, 238, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+.vimbot-btn.primary:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 26px rgba(34, 211, 238, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+.vimbot-btn.primary:disabled {
+    opacity: 0.65;
+    filter: saturate(0.6);
+    cursor: wait;
+}
+
+/* Инпуты */
+.vimbot-input {
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.vimbot-input:focus {
+    border-color: rgba(34, 211, 238, 0.6) !important;
+    background: rgba(0, 0, 0, 0.55) !important;
+    box-shadow:
+        0 0 0 3px rgba(34, 211, 238, 0.12),
+        0 0 18px rgba(34, 211, 238, 0.08) !important;
+}
+
+/* Статус-пиля */
+#chattype.vimbot-status,
+.vimbot-status {
+    border-radius: 10px !important;
+    font-size: 12px !important;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(8px);
+}

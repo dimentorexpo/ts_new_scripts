@@ -21,10 +21,16 @@
             <div class="vimbot-warning-bar chmaf-drag-handle"></div>
 
             <div class="chmaf-drag-handle" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; margin-top: 5px;">
-                <span style="font-size: 11px; font-weight: bold; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1.5px;">Vimbot Chat Support</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="vimbot-icon-chip">💬</div>
+                    <div>
+                        <div class="vimbot-title">Vimbot</div>
+                        <div class="vimbot-subtitle">Chat Support Integration</div>
+                    </div>
+                </div>
                 <div style="display:flex; gap: 8px;">
                     <button class="vimbot-btn" id="clearVimbotMenu" title="Очистить всё">🧹</button>
-                    <button class="vimbot-btn" id="hideVimbot" style="background: rgba(211, 47, 47, 0.3); border-color: rgba(211, 47, 47, 0.2);">✕</button>
+                    <button class="vimbot-btn vimbot-btn-danger" id="hideVimbot" title="Закрыть">✕</button>
                 </div>
             </div>
 
@@ -43,8 +49,9 @@
                 style="height: 110px; resize: none; line-height: 1.5;"
                 placeholder="Текст сообщения..."></textarea>
 
-            <div style="text-align: right; margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.3);">
-                Vimbot Integration v2.0
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top: 10px;">
+                <div style="font-size: 10px; letter-spacing: 1px; color: rgba(255,255,255,0.35); text-transform: uppercase;">Vimbot Integration</div>
+                <div class="vimbot-version">v2.0</div>
             </div>
         </div>`;
 

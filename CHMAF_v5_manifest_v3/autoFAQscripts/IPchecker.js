@@ -6,9 +6,9 @@ const CYBER_CONFIG = {
     apiKey: "4045fcee63d54caab2e216a75c3b7aa5",
     prefix: "cyber-ip-",
     colors: {
-        accent: "#00f2ff",
+        accent: "#22d3ee",
         bg: "#0d1117",
-        border: "rgba(0, 242, 255, 0.2)",
+        border: "rgba(34, 211, 238, 0.22)",
         text: "#e6edf3"
     }
 };
@@ -16,7 +16,7 @@ const CYBER_CONFIG = {
 const $cyber = (sel) => document.querySelector(sel);
 
 // =====================
-// СТИЛИ (CYBER-DARK UI)
+// СТИЛИ (PREMIUM OBSIDIAN UI)
 // =====================
 
 /**
@@ -30,105 +30,143 @@ const injectStyles = () => {
     style.id = 'cyber-ip-styles';
     style.textContent = `
         .cyber-ip-container {
-            background: rgba(13, 17, 23, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid ${CYBER_CONFIG.colors.border};
-            border-radius: 12px;
-            padding: 20px;
-            width: 350px;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(165deg, rgba(26, 30, 38, 0.94) 0%, rgba(12, 14, 19, 0.97) 100%);
+            backdrop-filter: blur(24px) saturate(140%);
+            -webkit-backdrop-filter: blur(24px) saturate(140%);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-top-color: rgba(255, 255, 255, 0.16);
+            border-radius: 18px;
+            padding: 18px;
+            width: 360px;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
             color: ${CYBER_CONFIG.colors.text};
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(0, 242, 255, 0.05);
+            box-shadow:
+                0 24px 60px rgba(0,0,0,0.55),
+                0 0 40px rgba(34, 211, 238, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
             position: fixed;
             z-index: 9999;
         }
 
         .cyber-ip-header {
             display: flex;
-            justify-content: flex-end;
-            margin-bottom: 15px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            cursor: grab;
+        }
+
+        .cyber-ip-titleblock { display: flex; align-items: center; gap: 10px; }
+        .cyber-ip-icon-chip {
+            width: 34px; height: 34px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(58, 123, 213, 0.12));
+            border: 1px solid rgba(34, 211, 238, 0.35);
+            box-shadow: 0 4px 14px rgba(34, 211, 238, 0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .cyber-ip-title { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
+        .cyber-ip-subtitle {
+            font-size: 9px; text-transform: uppercase;
+            letter-spacing: 1.4px; color: rgba(255, 255, 255, 0.45);
         }
 
         .cyber-ip-btn-close {
-            background: rgba(255, 50, 50, 0.1);
-            color: #ff4d4d;
-            border: 1px solid rgba(255, 50, 50, 0.3);
-            border-radius: 6px;
-            padding: 4px 12px;
+            background: rgba(255, 80, 80, 0.08);
+            color: #ff7b7b;
+            border: 1px solid rgba(255, 80, 80, 0.25);
+            border-radius: 9px;
+            width: 30px; height: 30px;
+            display: flex; align-items: center; justify-content: center;
             cursor: pointer;
-            font-size: 11px;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
+            font-size: 13px;
+            line-height: 1;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .cyber-ip-btn-close:hover {
-            background: #ff4d4d;
-            color: white;
-            box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+            background: rgba(255, 80, 80, 0.22);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(255, 80, 80, 0.2);
         }
+        .cyber-ip-btn-close:active { transform: translateY(0) scale(0.95); }
 
         .cyber-ip-input-group {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .cyber-ip-input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 10px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 10px;
+            padding: 11px 13px;
             color: ${CYBER_CONFIG.colors.accent};
             text-align: center;
-            font-family: 'Courier New', monospace;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 15px;
+            letter-spacing: 1.5px;
             outline: none;
-            transition: border-color 0.3s;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .cyber-ip-input:focus {
-            border-color: ${CYBER_CONFIG.colors.accent};
-            box-shadow: 0 0 8px rgba(0, 242, 255, 0.2);
+            border-color: rgba(34, 211, 238, 0.6);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow:
+                0 0 0 3px rgba(34, 211, 238, 0.12),
+                0 0 18px rgba(34, 211, 238, 0.08);
         }
 
         .cyber-ip-btn-main {
-            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            background: linear-gradient(135deg, #22d3ee 0%, #3a7bd5 100%);
             border: none;
-            border-radius: 8px;
-            color: white;
-            padding: 10px;
-            font-weight: bold;
+            border-radius: 10px;
+            color: #04141c;
+            padding: 11px;
+            font-weight: 700;
+            font-family: inherit;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: transform 0.1s, opacity 0.3s;
+            letter-spacing: 1.2px;
+            font-size: 12px;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(34, 211, 238, 0.28), inset 0 1px 0 rgba(255,255,255,0.35);
         }
 
         .cyber-ip-btn-main:hover {
-            opacity: 0.9;
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 26px rgba(34, 211, 238, 0.42), inset 0 1px 0 rgba(255,255,255,0.35);
         }
 
-        .cyber-ip-btn-main:active { transform: scale(0.98); }
+        .cyber-ip-btn-main:active { transform: translateY(0) scale(0.98); }
 
         .cyber-ip-result {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 12px;
+            background: rgba(0, 0, 0, 0.32);
+            border-radius: 11px;
+            padding: 14px;
             font-size: 13px;
-            line-height: 1.6;
-            margin-bottom: 20px;
+            line-height: 1.7;
+            margin-bottom: 18px;
             max-height: 250px;
             overflow-y: auto;
-            border-left: 3px solid ${CYBER_CONFIG.colors.accent};
+            border-left: 2px solid ${CYBER_CONFIG.colors.accent};
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
         }
 
-        .cyber-ip-result strong { color: ${CYBER_CONFIG.colors.accent}; }
+        .cyber-ip-result strong { color: ${CYBER_CONFIG.colors.accent}; font-weight: 600; }
 
         .cyber-ip-alt-title {
-            color: #8b949e;
-            font-size: 11px;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 9px;
+            font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 1.4px;
             margin-bottom: 8px;
             display: block;
         }
@@ -140,24 +178,37 @@ const injectStyles = () => {
         }
 
         .cyber-ip-btn-alt {
-            background: #21262d;
-            border: 1px solid #30363d;
-            color: #c9d1d9;
-            padding: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: #cdd6e2;
+            padding: 8px 6px;
             font-size: 10px;
-            border-radius: 4px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-radius: 9px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
         }
 
         .cyber-ip-btn-alt:hover {
-            background: #30363d;
-            border-color: #8b949e;
+            background: rgba(255, 255, 255, 0.11);
+            border-color: rgba(34, 211, 238, 0.35);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
         }
+        .cyber-ip-btn-alt:active { transform: translateY(0) scale(0.97); }
 
         /* Scrollbar */
-        .cyber-ip-result::-webkit-scrollbar { width: 4px; }
-        .cyber-ip-result::-webkit-scrollbar-thumb { background: ${CYBER_CONFIG.colors.accent}; border-radius: 10px; }
+        .cyber-ip-result::-webkit-scrollbar { width: 5px; }
+        .cyber-ip-result::-webkit-scrollbar-track { background: transparent; }
+        .cyber-ip-result::-webkit-scrollbar-thumb {
+            background: rgba(34, 211, 238, 0.25);
+            border-radius: 10px;
+        }
+        .cyber-ip-result::-webkit-scrollbar-thumb:hover { background: rgba(34, 211, 238, 0.45); }
     `;
     document.head.appendChild(style);
 };
@@ -176,7 +227,14 @@ function createIPCheckerWindow() {
     const html = `
         <div class="cyber-ip-container" id="AF_IpCheck">
             <div class="cyber-ip-header">
-                <button class="cyber-ip-btn-close" id="cyber-hide-btn">Hide System</button>
+                <div class="cyber-ip-titleblock">
+                    <div class="cyber-ip-icon-chip">🛰️</div>
+                    <div>
+                        <div class="cyber-ip-title">IP Intelligence</div>
+                        <div class="cyber-ip-subtitle">Geo & Network Lookup</div>
+                    </div>
+                </div>
+                <button class="cyber-ip-btn-close" id="cyber-hide-btn" title="Закрыть">✕</button>
             </div>
 
             <div class="cyber-ip-input-group">
@@ -189,7 +247,7 @@ function createIPCheckerWindow() {
             </div>
 
             <div class="cyber-ip-result" id="cyber-output-display">
-                <span style="color: #444">Ready for input...</span>
+                <span style="color: rgba(255,255,255,0.35)">Ready for input...</span>
             </div>
 
             <div>
@@ -224,7 +282,7 @@ const IP_MANAGER = {
      * @returns {void}
      */
     clear() {
-        $cyber('#cyber-output-display').innerHTML = '<span style="color: #444">Ready for input...</span>';
+        $cyber('#cyber-output-display').innerHTML = '<span style="color: rgba(255,255,255,0.35)">Ready for input...</span>';
         $cyber('#cyber-ip-input-field').value = '';
     },
 
@@ -248,7 +306,7 @@ const IP_MANAGER = {
 
         if (!ip) return;
 
-        display.innerHTML = '<span style="color: #8b949e">Requesting data...</span>';
+        display.innerHTML = '<span style="color: rgba(255,255,255,0.45)">Requesting data...</span>';
 
         const url = `https://api.ipgeolocation.io/v3/ipgeo?apiKey=${CYBER_CONFIG.apiKey}&ip=${ip}`;
 
@@ -258,7 +316,7 @@ const IP_MANAGER = {
             requestOptions: { method: "GET" }
         }, (response) => {
             if (!response?.success) {
-                display.innerHTML = `<span style="color:#ff4d4d">Network Error: ${response?.error || 'Unknown'}</span>`;
+                display.innerHTML = `<span style="color:#ff7b7b">Network Error: ${response?.error || 'Unknown'}</span>`;
                 return;
             }
 
@@ -266,13 +324,13 @@ const IP_MANAGER = {
                 const data = JSON.parse(response.fetchansver);
 
                 if (data.message) {
-                    display.innerHTML = `<span style="color:#ff4d4d">Access Denied: Invalid IP Format</span>`;
+                    display.innerHTML = `<span style="color:#ff7b7b">Access Denied: Invalid IP Format</span>`;
                     return;
                 }
 
                 this.renderResult(data);
             } catch (e) {
-                display.innerHTML = `<span style="color:#ff4d4d">Data Corruption Error</span>`;
+                display.innerHTML = `<span style="color:#ff7b7b">Data Corruption Error</span>`;
             }
         });
     },
