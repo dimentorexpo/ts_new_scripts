@@ -4,6 +4,10 @@
  * Filename: refactor-neon-glass-v21.js
  */
 
+// Изолируем область видимости: у файла много «говорящих» глобальных имён,
+// которые не должны пересекаться с остальными скриптами расширения
+(function () {
+
 // === STATE & CACHE ==========================================================
 const statusContainer = document.createElement('div');
 statusContainer.id = 'idforpeopstatus';
@@ -52,10 +56,8 @@ async function operstatusleftbar() {
         }
 
         const cfg = OP_GROUP_CONFIG[key];
-        const response = await fetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState", {
-            headers: { "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : '' },
-            credentials: "include"
-        });
+        // Через общий слой: диагностика ошибок и CSRF-ретрай вместо ручного aftoken
+        const response = await afApiFetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState");
         const result = await response.json();
 
         const tpQueue = getUnassignedCount(result, OP_GROUP_CONFIG['ТП']);
@@ -183,8 +185,12 @@ function filterOperatorsLocal(result, cfg) {
 
 const cleanOperatorName = (fullName) => {
     if (!fullName) return '';
-    if (fullName.startsWith('ТП ОС-')) return fullName;
-    return fullName.replace(/^(ТП|Prem|КЦ|Teachers Care)-/, '');
+    let name = fullName;
+    if (!name.startsWith('ТП ОС-')) {
+        name = name.replace(/^(ТП|Prem|КЦ|Teachers Care)-/, '');
+    }
+    // Имя вставляется в innerHTML — экранируем разметку на всякий случай
+    return name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
 
 const renderOperatorRows = (opstats) => {
@@ -328,24 +334,18 @@ const injectOpStatusStyles = () => {
     const style = document.createElement('style');
     style.id = 'op-status-styles';
     style.innerHTML = `
-        /* === VARIABLES === */
-        :root {
-            --neon-purple: #8b5cf6;
-            --neon-pink: #ec4899;
-            --neon-cyan: #06b6d4;
-            --neon-red: #ef4444;
-            --glass-bg: rgba(10, 10, 25, 0.92);
-            --glass-border: rgba(255, 255, 255, 0.06);
-        }
+        /* ПЕРЕМЕННЫЕ: блок :root удалён намеренно — его --glass-bg/--glass-border
+           перекрывали одноимённые глобальные токены style.css (premium-modal и др.).
+           Значения подставлены литералами в .op-st-main-container ниже */
 
         /* === MAIN CONTAINER === */
         .op-st-main-container {
             width: 200px;
             margin: 12px auto;
             background:
-                linear-gradient(135deg, var(--glass-bg) 0%, rgba(5, 5, 15, 0.96) 100%),
+                linear-gradient(135deg, rgba(10, 10, 25, 0.92) 0%, rgba(5, 5, 15, 0.96) 100%),
                 url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23181830' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            border: 1px solid var(--glass-border);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 20px;
             color: #e2e8f0;
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -1133,3 +1133,5 @@ function initializeStartOperStatus() {
 }
 
 initializeStartOperStatus();
+
+})(); // Конец IIFE
