@@ -254,21 +254,28 @@ cyberStyles.textContent = `
 /* === TOAST === */
 .cyber-toast {
     position: fixed;
-    bottom: 14px;
+    bottom: 22px;
     left: 50%;
-    transform: translateX(-50%) translateY(10px);
-    padding: 6px 14px;
-    border-radius: 8px;
-    font: 10px/1 'Inter', sans-serif;
+    transform: translateX(-50%) translateY(12px);
+    min-width: 260px;
+    max-width: min(560px, 90vw);
+    padding: 14px 26px;
+    border-radius: 14px;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.35;
     font-weight: 600;
+    letter-spacing: 0.2px;
+    text-align: center;
     backdrop-filter: blur(16px) saturate(1.2);
     -webkit-backdrop-filter: blur(16px) saturate(1.2);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(18, 20, 28, 0.92);
+    border: 1px solid rgba(255,255,255,0.1);
     opacity: 0;
     pointer-events: none;
-    z-index: 99999;
+    z-index: 9999999;
     transition: all 0.25s ease;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
 }
 
 .cyber-toast.show {
@@ -277,17 +284,24 @@ cyberStyles.textContent = `
 }
 
 .cyber-toast.message {
-    background: rgba(52, 211, 153, 0.08);
-    border-color: rgba(52, 211, 153, 0.15);
+    background: rgba(52, 211, 153, 0.12);
+    border-color: rgba(52, 211, 153, 0.3);
     color: var(--nu-green);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 15px rgba(52, 211, 153, 0.08);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 20px rgba(52, 211, 153, 0.15);
 }
 
 .cyber-toast.error {
-    background: rgba(248, 113, 113, 0.08);
-    border-color: rgba(248, 113, 113, 0.15);
+    background: rgba(248, 113, 113, 0.12);
+    border-color: rgba(248, 113, 113, 0.3);
     color: var(--nu-red);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 15px rgba(248, 113, 113, 0.08);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 20px rgba(248, 113, 113, 0.15);
+}
+
+.cyber-toast.warning {
+    background: rgba(251, 191, 36, 0.12);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 20px rgba(251, 191, 36, 0.15);
 }
 `;
 document.head.appendChild(cyberStyles);

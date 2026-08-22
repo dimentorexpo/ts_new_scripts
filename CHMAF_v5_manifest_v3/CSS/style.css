@@ -3483,3 +3483,30 @@
     user-select: text !important;
     -webkit-user-select: text !important;
 }
+
+/* =========================================
+   КАСТОМНЫЙ ЗАХВАТ РАСТЯГИВАНИЯ TEXTAREA
+   (вместо стандартного белого квадратика)
+   ========================================= */
+.glass-textarea::-webkit-resizer {
+    background:
+        repeating-linear-gradient(
+            -45deg,
+            transparent 0px,
+            transparent 4px,
+            hsla(var(--neon-h), var(--neon-s), var(--neon-l), 0.55) 4px,
+            hsla(var(--neon-h), var(--neon-s), var(--neon-l), 0.55) 6px
+        );
+    border-bottom-right-radius: 10px;
+}
+
+.glass-textarea:hover::-webkit-resizer {
+    background:
+        repeating-linear-gradient(
+            -45deg,
+            transparent 0px,
+            transparent 4px,
+            var(--neon) 4px,
+            var(--neon) 6px
+        );
+}

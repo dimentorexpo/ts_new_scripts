@@ -478,13 +478,11 @@ function waitForElement(selector, callback, timeout = 10000, interval = 100) {
 }
 
 /**
- * Показывает плавающее уведомление с прогресс-баром, автоскрытие 3.5 c.
- * ВНИМАНИЕ: в TestUsers.js есть одноимённая функция — поскольку content.js
- * грузится последним, «живёт» именно эта версия.
- * @param {string} text — HTML-текст уведомления
- * @param {string} [result='message'] — 'message' (успех) | любой другой (ошибка)
+ * Показывает всплывающее уведомление внизу экрана.
+ * Стили — .cyber-toast (инжектятся в TestUsers.js).
+ * @param {string} message — HTML-текст уведомления (<br> поддерживается)
+ * @param {string} [type='message'] — 'message' | 'error' | 'warning'
  */
-// ───. TOAST NOTIFICATION ───
 function createAndShowButton(message, type = 'message') {
     let toast = document.querySelector('.cyber-toast');
     if (!toast) {
@@ -493,7 +491,7 @@ function createAndShowButton(message, type = 'message') {
         document.body.appendChild(toast);
     }
 
-    toast.textContent = message;
+    toast.innerHTML = message;
     toast.className = `cyber-toast ${type}`;
 
     setTimeout(() => toast.classList.add('show'), 10);
