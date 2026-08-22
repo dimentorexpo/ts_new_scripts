@@ -597,7 +597,7 @@ var win_TimetableUI = `
     </div>
 </div>`;
 
-const wintTimetableUI = createWindow('AF_TimetableUI', 'winTopTimetable', 'winLeftTimetable', win_TimetableUI);
+createWindow('AF_TimetableUI', 'winTopTimetable', 'winLeftTimetable', win_TimetableUI);
 hideWindowOnClick('AF_TimetableUI', 'hideshowtimetable');
 
 let ttCurrentWeekOffset = 0;
@@ -685,16 +685,8 @@ document.getElementById('tt-load-btn').addEventListener('click', () => {
         requestOptions: {
             headers: {
                 'accept': 'application/json, text/plain, */*',
-                'accept-language': 'ru,en;q=0.9',
-                'content-type': 'application/json; charset=UTF-8',
-                'priority': 'u=1, i',
-                'sec-ch-ua': '"Not(A:Brand";v="8", "Chromium";v="144", "YaBrowser";v="26.3", "Yowser";v="2.5", "YaBrowserCorp";v="144"',
-                'sec-ch-ua-mobile': '?0',
-                'sec-ch-ua-platform': '"Windows"',
-                'sec-fetch-dest': 'empty',
-                'sec-fetch-mode': 'cors',
-                'sec-fetch-site': 'same-origin',
-                'sec-gpc': '1'
+                'content-type': 'application/json; charset=UTF-8'
+                // sec-ch-*/sec-fetch*/priority — запрещённые заголовки, браузер их игнорирует
             },
             referrer: 'https://timetable.skyeng.ru/',
             body: JSON.stringify({
@@ -1071,16 +1063,24 @@ function renderClassesGrid(allClasses, container, fmtDate, fmtTime, getDayName, 
 
     render();
 
+    // Поиск: слушатель вешаем ОДИН раз (раньше дублировался при каждой загрузке
+    // расписания — фильтр применялся N раз, где N = число загрузок)
+    if (search && !search.dataset.ttBound) {
+        search.dataset.ttBound = '1';
+        search.addEventListener('input', (e) => {
+            if (typeof window.__ttApplyClassFilter === 'function') {
+                window.__ttApplyClassFilter(e.target.value);
+            }
+        });
+    }
+    window.__ttApplyClassFilter = render;
+
     setTimeout(() => {
         const todayHeader = grid.closest('.tt-viz-container')?.querySelector('.tt-viz-day-header.today');
         if (todayHeader) {
             todayHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }, 100);
-
-    if (search) {
-        search.addEventListener('input', (e) => render(e.target.value));
-    }
 }
 
 updateWeekDisplay();

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ==========================================
  * CRYSTAL GLASS LESSON STATUS MODULE
  * Премиальный интерфейс проверки статусов уроков
@@ -23,8 +23,22 @@
 
     const state = {
         isVisible: false,
-        isLoading: false,
+        lastClasses: null,   // кэш последней загрузки для живого фильтра
         windowRef: null
+    };
+
+    /** Единый премиальный вид для всех пустых/ошибочных состояний */
+    const emptyStateHtml = (icon, title, sub = '', tone = 'accent') => {
+        const chipBg = tone === 'rose'
+            ? 'linear-gradient(135deg, rgba(248,113,113,.18), rgba(220,38,38,.06))'
+            : 'linear-gradient(135deg, rgba(139,92,246,.18), rgba(34,211,238,.07))';
+        const chipBorder = tone === 'rose' ? 'rgba(248,113,113,.32)' : 'rgba(139,92,246,.28)';
+        return `
+            <div class="${CONFIG.prefix}__empty">
+                <div class="${CONFIG.prefix}__empty-icon" style="background:${chipBg}; border-color:${chipBorder};">${icon}</div>
+                <div class="${CONFIG.prefix}__empty-title">${title}</div>
+                ${sub ? `<div class="${CONFIG.prefix}__empty-sub">${sub}</div>` : ''}
+            </div>`;
     };
 
     // ─── UNIQUE CSS STYLES ──────────────────────────────────────
@@ -50,8 +64,9 @@
         }
 
         /* === CORE WINDOW === */
-        #${CONFIG.prefix}-window {
+        .${CONFIG.prefix}-window {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--gls-text);
             position: fixed !important;
             z-index: 999999 !important;
             width: 1120px;
@@ -68,7 +83,7 @@
             transition: opacity ${CONFIG.animDuration}ms ease, transform ${CONFIG.animDuration}ms cubic-bezier(0.34, 1.56, 0.64, 1);
             cursor: default;
         }
-        #${CONFIG.prefix}-window::before {
+        .${CONFIG.prefix}-window::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
@@ -76,7 +91,7 @@
             background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), rgba(34, 211, 238, 0.4), transparent);
             z-index: 10;
         }
-        #${CONFIG.prefix}-window::after {
+        .${CONFIG.prefix}-window::after {
             content: '';
             position: absolute;
             top: -50%; left: -50%;
@@ -87,7 +102,7 @@
             z-index: 0;
         }
 
-        #${CONFIG.prefix}-window.${CONFIG.prefix}--hidden {
+        .${CONFIG.prefix}-window.${CONFIG.prefix}--hidden {
             opacity: 0;
             pointer-events: none;
             transform: scale(0.96) translateY(10px);
@@ -472,14 +487,44 @@
 
         .${CONFIG.prefix}__empty {
             text-align: center;
-            padding: 50px 20px;
-            color: var(--gls-text-muted);
+            padding: 44px 24px;
+            color: var(--gls-text-secondary);
+            background: linear-gradient(160deg,
+                rgba(139, 92, 246, 0.05) 0%,
+                rgba(34, 211, 238, 0.03) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--gls-radius);
         }
 
         .${CONFIG.prefix}__empty-icon {
-            font-size: 44px;
-            margin-bottom: 10px;
-            opacity: 0.3;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            border-radius: 16px;
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.18),
+                rgba(34, 211, 238, 0.07));
+            border: 1px solid rgba(139, 92, 246, 0.28);
+            box-shadow:
+                0 0 26px rgba(139, 92, 246, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .${CONFIG.prefix}__empty-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gls-text);
+            margin-bottom: 6px;
+            letter-spacing: 0.2px;
+        }
+
+        .${CONFIG.prefix}__empty-sub {
+            font-size: 12px;
+            color: var(--gls-text-muted);
         }
     `;
 
@@ -527,10 +572,7 @@
         </div>
 
         <div class="${CONFIG.prefix}__content" id="${CONFIG.prefix}-content">
-            <div class="${CONFIG.prefix}__empty" id="${CONFIG.prefix}-placeholder">
-                <div class="${CONFIG.prefix}__empty-icon">📋</div>
-                <div>Введите ID учителя и нажмите «Получить инфо»</div>
-            </div>
+            ${emptyStateHtml('📋', 'Введите ID учителя', 'и нажмите «Получить инфо» — статусы уроков появятся здесь')}
         </div>
     `;
 
@@ -605,12 +647,12 @@
         });
 
         if (!filtered.length) {
-            content.innerHTML = `
-                <div class="${CONFIG.prefix}__empty">
-                    <div class="${CONFIG.prefix}__empty-icon">🔍</div>
-                    <div>Уроков не найдено</div>
-                </div>
-            `;
+            content.innerHTML = emptyStateHtml(
+                '🔍', 'Ничего не найдено',
+                studentFilter
+                    ? `Нет уроков у ученика ID ${studentFilter}. Очисти поле — вернётся полный список`
+                    : 'Попробуй другой период'
+            );
             return;
         }
 
@@ -657,21 +699,9 @@
 
             cell.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
+                // copyToClipboard из utils.js уже реализует надёжный execCommand-фолбэк
                 if (typeof copyToClipboard === 'function') {
-                    copyToClipboard(id).catch(() => console.log('Clipboard API failed'));
-                } else {
-                    try {
-                        const ta = document.createElement('textarea');
-                        ta.value = id;
-                        ta.style.position = 'fixed';
-                        ta.style.left = '-9999px';
-                        document.body.appendChild(ta);
-                        ta.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(ta);
-                    } catch (err) {
-                        console.log('Fallback copy failed:', err);
-                    }
+                    copyToClipboard(id).catch((err) => console.log('Clipboard failed:', err));
                 }
             });
         });
@@ -688,7 +718,6 @@
                 <div style="font-size: 12px; opacity: 0.5;">Если информация не появится, нажмите повторно</div>
             </div>
         `;
-        state.isLoading = true;
     };
 
     const fetchLessons = async () => {
@@ -732,27 +761,22 @@
             const classes = data?.[0]?.result?.[0]?.classes;
 
             if (!classes?.length) {
-                $(`#${CONFIG.prefix}-content`).innerHTML = `
-                    <div class="${CONFIG.prefix}__empty">
-                        <div class="${CONFIG.prefix}__empty-icon">📭</div>
-                        <div>Уроков за выбранный период не найдено</div>
-                    </div>
-                `;
+                $(`#${CONFIG.prefix}-content`).innerHTML = emptyStateHtml(
+                    '📭', 'Уроков за выбранный период не найдено',
+                    'Попробуй расширить диапазон дат'
+                );
                 return;
             }
 
+            state.lastClasses = classes; // кэш для живого фильтра по ученику
             renderTable(classes, studentId);
 
         } catch (err) {
             console.error('[LessonStatus]', err);
-            $(`#${CONFIG.prefix}-content`).innerHTML = `
-                <div class="${CONFIG.prefix}__empty">
-                    <div class="${CONFIG.prefix}__empty-icon">⚠️</div>
-                    <div>Ошибка загрузки: ${err.message}</div>
-                </div>
-            `;
+            $(`#${CONFIG.prefix}-content`).innerHTML = emptyStateHtml(
+                '⚠️', 'Ошибка загрузки', err.message, 'rose'
+            );
         } finally {
-            state.isLoading = false;
         }
     };
 
@@ -789,12 +813,10 @@
         resetDates();
         $(`#${CONFIG.prefix}-teacher-id`).value = '';
         $(`#${CONFIG.prefix}-student-id`).value = '';
-        $(`#${CONFIG.prefix}-content`).innerHTML = `
-            <div class="${CONFIG.prefix}__empty">
-                <div class="${CONFIG.prefix}__empty-icon">📋</div>
-                <div>Введите ID учителя и нажмите «Получить инфо»</div>
-            </div>
-        `;
+        $(`#${CONFIG.prefix}-content`).innerHTML = emptyStateHtml(
+            '📋', 'Введите ID учителя',
+            'и нажмите «Получить инфо» — статусы уроков появятся здесь'
+        );
     };
 
     // ─── WINDOW MANAGEMENT ──────────────────────────────────────
@@ -809,12 +831,10 @@
 
             const clearFlag = localStorage.getItem(CONFIG.storageKey);
             if (clearFlag === '0') {
-                $(`#${CONFIG.prefix}-content`).innerHTML = `
-                    <div class="${CONFIG.prefix}__empty">
-                        <div class="${CONFIG.prefix}__empty-icon">📋</div>
-                        <div>Введите ID учителя и нажмите «Получить инфо»</div>
-                    </div>
-                `;
+                $(`#${CONFIG.prefix}-content`).innerHTML = emptyStateHtml(
+                    '📋', 'Введите ID учителя',
+                    'и нажмите «Получить инфо» — статусы уроков появятся здесь'
+                );
             }
         } else {
             win.style.display = '';
@@ -888,32 +908,30 @@
         $(`#${CONFIG.prefix}-prev-day`).addEventListener('click', () => shiftDates(-1));
         $(`#${CONFIG.prefix}-next-day`).addEventListener('click', () => shiftDates(1));
 
-        // Enter key on inputs
-        [$(`#${CONFIG.prefix}-teacher-id`), $(`#${CONFIG.prefix}-student-id`)].forEach(el => {
-            if (!el) return;
-            el.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') fetchLessons();
+        // ─── Учитель ID: Enter / вставка → запрос к API ───
+        const teacherEl = $(`#${CONFIG.prefix}-teacher-id`);
+        const studentEl = $(`#${CONFIG.prefix}-student-id`);
+
+        teacherEl?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchLessons();
+        });
+
+        teacherEl?.addEventListener('paste', () => {
+            requestAnimationFrame(() => {
+                if (teacherEl.value.trim()) fetchLessons();
             });
         });
 
-        // Auto-search on paste
-        const triggerAfterPaste = (inputEl) => {
-            inputEl.addEventListener('paste', () => {
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        const teacherVal = $(`#${CONFIG.prefix}-teacher-id`).value.trim();
-                        if (teacherVal) {
-                            fetchLessons();
-                        } else {
-                            $(`#${CONFIG.prefix}-teacher-id`).focus();
-                        }
-                    });
-                });
-            });
+        // ─── Ученик ID: ЖИВОЙ клиентский фильтр без повторного запроса.
+        // Очистка поля возвращает полную таблицу загруженных уроков.
+        const applyStudentFilter = (val) => {
+            if (state.lastClasses) renderTable(state.lastClasses, val);
         };
 
-        [$(`#${CONFIG.prefix}-teacher-id`), $(`#${CONFIG.prefix}-student-id`)].forEach(el => {
-            if (el) triggerAfterPaste(el);
+        studentEl?.addEventListener('input', (e) => applyStudentFilter(e.target.value));
+
+        studentEl?.addEventListener('paste', () => {
+            requestAnimationFrame(() => applyStudentFilter(studentEl.value));
         });
 
         // Initial state
@@ -935,10 +953,5 @@
 
         toggleWindow();
     };
-
-    // Auto-init if window already exists in DOM
-    if (document.getElementById('AF_LessonStatus')) {
-        initWindow();
-    }
 
 })();

@@ -1,7 +1,5 @@
 // Добавляем уникальные CSS-стили для эффекта Glassmorphism
 
-let indexStart;
-let customquery = '';
 let requesttojiratext;
 let favissues = JSON.parse(localStorage.getItem('bugsarray') || '[]');
 
@@ -383,7 +381,7 @@ ${glassStylesJiraS}
     <div id="pagesSwitcher" style="display:flex; justify-content:space-evenly; padding-top:10px;"></div>
 </div>`;
 
-const wintJira = createWindow('AF_Jira', 'winTopJira', 'winLeftJira', win_Jira);
+createWindow('AF_Jira', 'winTopJira', 'winLeftJira', win_Jira);
 hideWindowOnDoubleClick('AF_Jira');
 hideWindowOnClick('AF_Jira', 'hideMej');
 
@@ -391,10 +389,9 @@ const optionsforfetch = (queryName, indexStart) => ({
     headers: {
         "__amdmodulename": "jira/issue/utils/xsrf-token-header",
         "accept": "*/*",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
         "x-atlassian-token": "no-check",
         "x-requested-with": "XMLHttpRequest"
+        // sec-fetch-* — запрещённые для ручной установки заголовки, браузер их игнорирует
     },
     body: `startIndex=${indexStart}&filterId=21266&jql=${queryName}&layoutKey=list-view`,
     method: "POST",
@@ -446,6 +443,86 @@ const replaceItem = (item) => item ? item.replace('">', ' – ') : item;
 // Хелпер для проверки, в избранном ли задача
 const isFavorite = (issueId) => favissues.some(fav => fav.id === issueId);
 
+// ============================================================
+// ИКОНКИ ПРИОРИТЕТОВ JIRA
+// Прямые <img src="jira..."> блокируются Chrome (Private Network Access:
+// публичный autofaq.ai → внутренний адрес jira). Грузим SVG через
+// background-прокси (у расширения host-permission) и подставляем data-URI.
+// ============================================================
+const priorityIconCache = new Map(); // url → dataURI | '' (ошибка)
+
+// Эмодзи-фолбэк на случай, если SVG приоритета не загрузился
+const PRIO_EMOJI = {
+    blocker: '⛔', critical: '🔴', highest: '🔴', major: '🟠',
+    medium: '🟡', minor: '🔵', low: '🟢', lowest: '⬇️', trivial: '⚪'
+};
+
+function applyPriorityIcon(url, uri) {
+    // Фолбэк: цветной эмодзи вместо битой/недоступной иконки
+    const fallbackSpan = () => {
+        const key = (url.match(/priorities\/([a-z0-9_]+)\.svg/i) || [])[1] || '';
+        const span = document.createElement('span');
+        span.textContent = PRIO_EMOJI[key.toLowerCase()] || '🚩';
+        span.title = key || 'priority';
+        span.style.cssText = 'width:20px;height:20px;display:inline-flex;align-items:center;' +
+            'justify-content:center;flex-shrink:0;margin-top:2px;font-size:15px;';
+        return span;
+    };
+
+    document.querySelectorAll(`img.jiras-priority-img[data-src="${url}"]`).forEach(img => {
+        if (uri) {
+            img.src = uri;
+            img.removeAttribute('data-src');
+            // КРИТИЧНО: снимаем display:none, поставленный на время загрузки,
+            // иначе иконка навсегда остаётся скрытой (баг «пустых» строк)
+            img.style.display = '';
+        } else {
+            img.replaceWith(fallbackSpan());
+        }
+    });
+}
+
+function hydratePriorityImages(rootEl) {
+    if (!rootEl) return;
+
+    const imgs = rootEl.querySelectorAll('img.jiras-priority-img[data-src]');
+    const uniqueUrls = [...new Set(Array.from(imgs).map(img => img.dataset.src))];
+
+    uniqueUrls.forEach(url => {
+        // Уже в кэше — применяем и выходим
+        if (priorityIconCache.has(url)) {
+            applyPriorityIcon(url, priorityIconCache.get(url));
+            return;
+        }
+
+        priorityIconCache.set(url, ''); // метка «в процессе» против дублей запросов
+
+        chrome.runtime.sendMessage({
+            action: 'getFetchRequest',
+            fetchURL: url,
+            requestOptions: { method: 'GET' }
+        }, res => {
+            let uri = '';
+            if (res?.success && /<svg/i.test(res.fetchansver)) {
+                uri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(res.fetchansver);
+            }
+            priorityIconCache.set(url, uri);
+            applyPriorityIcon(url, uri);
+        });
+    });
+
+    // Применяем всё, что уже лежит в кэше с прошлых рендеров/страниц
+    imgs.forEach(img => {
+        const uri = priorityIconCache.get(img.dataset.src);
+        if (uri) {
+            img.src = uri;
+            img.removeAttribute('data-src');
+        } else if (uri === '') {
+            img.style.display = 'none';
+        }
+    });
+}
+
 function formatIssue(item, currentNumber, issueKey, searchText, currentpic, currentIds) {
     const processedItem = replaceItem(item);
     const temporarka = (processedItem && processedItem.toLowerCase().includes(searchText.toLowerCase()))
@@ -461,7 +538,7 @@ function formatIssue(item, currentNumber, issueKey, searchText, currentpic, curr
         <div class="jiras-glass-issue-row" data-id="${currentIds}">
             <span style="color: #00FA9A; font-size: 10px; margin-top: 4px;">&#5129;</span>
             <span class="newcount">${currentNumber || 0}</span>
-            <img src="${currentpic}" style="width:20px; height:20px; flex-shrink:0; margin-top: 2px;" title="Приоритеты">
+            <img class="jiras-priority-img" data-src="${currentpic}" style="width:20px; height:20px; flex-shrink:0; margin-top: 2px;" title="Приоритеты">
             <span class="jiraissues jiras-glass-icon-btn" title="Отправить в чат">💬</span>
             <span class="refreshissues jiras-glass-icon-btn" style="color:#ADFF2F;" title="Увеличить Support Tab">+1</span>
             <span name="addtofavourites" class="jiras-glass-icon-btn" title="${heartTitle}">${heartIcon}</span>
@@ -489,22 +566,13 @@ function addJiraIssueOnClickEvent(barray, issueKeys) {
                 if (window.location.href.includes('tickets/assigned')) {
                     sendComment(`https://jira.skyeng.link/browse/${issueKeys[j]}`);
                 }
-                fetch(`https://skyeng.autofaq.ai/api/conversation/${chatId}/payload`, {
-                    headers: {
-                        "accept": "*/*",
-                        "content-type": "application/json",
-                        "sec-fetch-dest": "empty",
-                        "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin",
-                        "x-csrf-token": aftoken
-                    },
+                afApiFetch(`https://skyeng.autofaq.ai/api/conversation/${chatId}/payload`, {
+                    headers: { "content-type": "application/json" },
                     body: JSON.stringify({
                         conversationId: chatId,
                         elements: [{ name: "taskUrl", value: `https://jira.skyeng.link/browse/${issueKeys[j]}` }]
                     }),
-                    method: "POST",
-                    mode: "cors",
-                    credentials: "include"
+                    method: "POST"
                 });
             }
         });
@@ -564,8 +632,8 @@ function renderFavorites() {
 
                 const chatId = typeof getChatId === 'function' ? getChatId() : null;
                 if (chatId) {
-                    fetch(`https://skyeng.autofaq.ai/api/conversation/${chatId}/payload`, {
-                        headers: { "accept": "*/*", "content-type": "application/json", "x-csrf-token": aftoken },
+                    afApiFetch(`https://skyeng.autofaq.ai/api/conversation/${chatId}/payload`, {
+                        headers: { "content-type": "application/json" },
                         body: JSON.stringify({ conversationId: chatId, elements: [{ name: "taskUrl", value: issueUrl }] }),
                         method: "POST"
                     });
@@ -708,6 +776,7 @@ function getJiraTask(requestOptions) {
             }
 
             document.getElementById('issuetable').innerHTML = issues;
+            hydratePriorityImages(document.getElementById('issuetable'));
             const foundIssuesAmount = issueKeys.length;
 
             addPageSwitcher(Math.floor(foundIssuesAmount / 50) + 1);
@@ -763,6 +832,7 @@ function switchJiraPages() {
                         }
 
                         document.getElementById('issuetable').innerHTML = issues;
+                        hydratePriorityImages(document.getElementById('issuetable'));
 
                         addJiraIssueOnClickEvent(document.querySelectorAll('.jiraissues'), issueKeys);
                         addFavouritesOnClickEvent(
@@ -808,6 +878,13 @@ function getJiraOpenFormPress() {
         document.getElementById('idmymenu').style.display = 'none';
         document.getElementById('JQLquery').value = defqueryitem;
 
+        // ═══ ЗАЩИТА ОТ ДУБЛЕЙ СЛУШАТЕЛЕЙ ═══
+        // Функция вызывается при каждом открытии меню; без этого флага каждый
+        // open вешал ещё один комплект addEventListener — фильтры запускали
+        // поиск N раз, а «Обновить статус» показывал N алертов.
+        const isFirstOpen = !mainBox.dataset.jiraBound;
+        mainBox.dataset.jiraBound = '1';
+
         function checkJiraToken() {
             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: "https://jira.skyeng.link", requestOptions: { method: 'GET' } }, response => {
                 if (response.success && response.fetchansver.match(/name="atlassian-token" content="(.*lin)/)) {
@@ -819,12 +896,19 @@ function getJiraOpenFormPress() {
             });
         }
         checkJiraToken();
-        document.getElementById('RefreshJiraStatus').addEventListener('click', checkJiraToken);
 
         if (localStorage.getItem('bugsarray')) {
             favissues = JSON.parse(localStorage.getItem('bugsarray'));
             renderFavorites();
         }
+
+        if (!isFirstOpen) {
+            // Повторное открытие: только обновили токен/избранное — слушатели уже висят
+            document.getElementById('idmymenu').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('RefreshJiraStatus').addEventListener('click', checkJiraToken);
 
         const queryButtons = [
             { id: 'defaultQuery', val: () => defqueryitem, search: false },
