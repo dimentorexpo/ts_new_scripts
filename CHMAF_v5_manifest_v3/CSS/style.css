@@ -3512,6 +3512,84 @@
 }
 
 /* =========================================
+   ЛИЧНЫЕ ШАБЛОНЫ — акцент кнопок (#6str)
+   ========================================= */
+.chmaf-custom-tmp-btn {
+    background: rgba(70, 130, 180, 0.4) !important;
+    border-color: rgba(70, 130, 180, 0.6) !important;
+    margin-bottom: 6px;
+    margin-right: 5px;
+}
+
+/* =========================================
+   РЕЖИМ АНГЛИЙСКОГО — EMERALD GLASS
+   Панель целиком перетекает в зелёное стекло:
+   оператор сразу видит, что шаблоны теперь EN.
+   Весь оттенок задаёт ОДНА переменная --en-h:
+     152 — изумруд (сейчас)
+     130 — весенний зелёный
+     200 — циан
+     265 — фиолетовый
+     330 — розовый (прошлая версия)
+   Контраст сохраняется автоматически — кнопки,
+   инпуты и фокусы потребляют те же токены.
+   ========================================= */
+body.chmaf-en-lang .glass-panel {
+    --en-h: 265;   /* ← ОТТЕНОК РЕЖИМА */
+
+    /* Зелёное обсидианское стекло */
+    --glass-gradient: linear-gradient(140deg,
+        hsla(var(--en-h), 42%, 28%, 0.80) 0%,
+        hsla(var(--en-h), 48%, 15%, 0.90) 100%);
+    --glass-border-top: hsla(var(--en-h), 90%, 82%, 0.36);
+    --glass-border-bottom: hsla(var(--en-h), 60%, 10%, 0.55);
+    --panel-shadow: 0 24px 60px rgba(0, 0, 0, 0.65),
+                    0 0 55px hsla(var(--en-h), 85%, 55%, 0.14);
+
+    /* Неон панели тоже становится зелёным */
+    --neon: hsl(var(--en-h), 85%, 62%);
+    --neon-glow: hsla(var(--en-h), 85%, 56%, 0.35);
+
+    /* Текст и контролы адаптируются */
+    --text-primary: #ffffff;
+    --text-secondary: hsla(var(--en-h), 90%, 88%, 0.7);
+
+    --btn-bg: rgba(255, 255, 255, 0.11);
+    --btn-bg-hover: rgba(255, 255, 255, 0.22);
+    --btn-border: hsla(var(--en-h), 90%, 82%, 0.28);
+    --btn-border-hover: hsla(var(--en-h), 90%, 82%, 0.5);
+
+    --input-bg: hsla(var(--en-h), 55%, 6%, 0.5);
+    --input-focus: hsla(var(--en-h), 55%, 9%, 0.62);
+    --input-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.12);
+    --input-focus-ring: hsla(var(--en-h), 85%, 68%, 0.6);
+
+    --btn-primary-bg: hsla(var(--en-h), 78%, 50%, 0.3);
+    --btn-primary-hover: hsla(var(--en-h), 78%, 50%, 0.45);
+    --btn-primary-border: hsla(var(--en-h), 78%, 58%, 0.65);
+    --btn-primary-text: #eafff4;
+}
+
+/* Кнопка-переключатель языка: яркая изумрудная пилюля */
+body.chmaf-en-lang #languageAF {
+    background: linear-gradient(135deg,
+        hsl(var(--en-h), 78%, 52%) 0%,
+        hsl(calc(var(--en-h) + 8), 85%, 32%) 100%) !important;
+    border-color: hsla(var(--en-h), 90%, 78%, 0.7) !important;
+    text-shadow: 0 1px 3px hsla(var(--en-h), 80%, 10%, 0.6) !important;
+    box-shadow: 0 4px 16px hsla(var(--en-h), 85%, 40%, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Неоновая зелёная кайма окна личных шаблонов */
+body.chmaf-en-lang #custom_templates_window {
+    box-shadow:
+        0 0 0 2px hsla(var(--en-h), 85%, 60%, 0.35),
+        0 24px 60px rgba(0, 0, 0, 0.6),
+        0 0 40px hsla(var(--en-h), 85%, 55%, 0.18);
+}
+
+/* =========================================
    VIMBOT — PREMIUM EDITION (v2 UI)
    Акцент: cyan #22d3ee → sky #0ea5e9
    ========================================= */

@@ -25,7 +25,7 @@ var win_CustomTemplates = `
 `;
 
 // Создаем окно (эти функции у тебя где-то лежат)
-const winCustomTemplates = createWindow('AF_CustomTemplates', 'winTopCustomTemplates', 'winLeftCustomTemplates', win_CustomTemplates);
+createWindow('AF_CustomTemplates', 'winTopCustomTemplates', 'winLeftCustomTemplates', win_CustomTemplates);
 hideWindowOnDoubleClick('AF_CustomTemplates');
 hideWindowOnClick('AF_CustomTemplates', 'hideCustomTemplates');
 
@@ -177,11 +177,8 @@ function refreshHotTmps() {
         newButton.className = 'glass-btn mainButton';
         newButton.textContent = tmpName;
 
-        // Выделим кастомные кнопки легким синим оттенком, чтобы они были заметнее
-        newButton.style.backgroundColor = 'rgba(70, 130, 180, 0.4)';
-        newButton.style.border = '1px solid rgba(70, 130, 180, 0.6)';
-        newButton.style.marginBottom = '6px';
-        newButton.style.marginRight = '5px';
+        // Акцент личных шаблонов (стили в style.css: .chmaf-custom-tmp-btn)
+        newButton.classList.add('chmaf-custom-tmp-btn');
 
         newButton.addEventListener('click', function () {
             const text = localStorage.getItem('template_' + languageTmplt + i);
@@ -228,28 +225,16 @@ document.getElementById('addtocusttmplt').addEventListener('click', function () 
     }
 });
 
-// Кнопка смены языка
+// Кнопка смены языка.
+// Раньше здесь инлайн-перекрашивались ВСЕ .glass-panel (розовый/тёмный фон),
+// что ломало контраст кнопок; теперь — аккуратная подсветка через класс на body.
 languageAFbtn.addEventListener('click', function () {
-    // Находим ВСЕ стеклянные панели, чтобы поменять цвет и у главного окна, и у окна шаблонов
-    const glassPanels = document.querySelectorAll('.glass-panel');
+    const isEnglish = this.textContent === "Русский";
 
-    if (this.textContent === "Русский") {
-        this.textContent = "Английский";
-        languageTmplt = 'en_';
+    this.textContent = isEnglish ? "Английский" : "Русский";
+    languageTmplt = isEnglish ? 'en_' : '';
 
-        glassPanels.forEach(panel => {
-            panel.style.background = "rgba(235, 199, 223, 0.6)"; // Розовый Glass
-            panel.style.color = "#333";
-        });
-    } else {
-        this.textContent = "Русский";
-        languageTmplt = '';
-
-        glassPanels.forEach(panel => {
-            panel.style.background = "rgba(40, 42, 54, 0.6)"; // Темный Glass
-            panel.style.color = "#fff";
-        });
-    }
+    document.body.classList.toggle('chmaf-en-lang', isEnglish);
 
     reloadTemplates();
 });

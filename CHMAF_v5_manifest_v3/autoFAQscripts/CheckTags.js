@@ -289,6 +289,15 @@
                         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
                         transition: background 0.3s;
                     }
+                    /* Пульсация пустых полей тегов/тем
+                       (класс использовался в JS, но стили для него не были определены) */
+                    .skyeng-mod-pulse {
+                        animation: skyeng-mod-empty-pulse 1.6s ease-in-out infinite !important;
+                    }
+                    @keyframes skyeng-mod-empty-pulse {
+                        0%, 100% { box-shadow: none; }
+                        50% { box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.55); }
+                    }
                 `;
                 const target = doc.head || doc.getElementsByTagName('head')[0] || doc.documentElement;
                 if (target) {
@@ -375,12 +384,12 @@
 
                 const wrappers = doc.querySelectorAll('#__next div[class*="List_ListWrapper"]');
 
-                let tagBlock = null;
-                let topicBlock = null;
+                let tagBlock = null, topicBlock = null, tagText = '', topicText = '';
                 wrappers.forEach(wrap => {
+                    // innerText вызывает reflow — читаем один раз и переиспользуем
                     const txt = wrap.innerText;
-                    if (txt.includes("Выбор тегов")) tagBlock = wrap;
-                    if (txt.includes("Выбор темы/подтемы")) topicBlock = wrap;
+                    if (!tagBlock && txt.includes("Выбор тегов")) { tagBlock = wrap; tagText = txt; }
+                    else if (!topicBlock && txt.includes("Выбор темы/подтемы")) { topicBlock = wrap; topicText = txt; }
                 });
 
                 if (!tagBlock && !topicBlock) return;
@@ -395,8 +404,8 @@
                     convElement.append(existing);
                 }
 
-                const tagEmpty = tagBlock ? tagBlock.innerText.trim().includes("Пусто") : false;
-                const topicEmpty = topicBlock ? topicBlock.innerText.trim().includes("Пусто") : false;
+                const tagEmpty = tagText.includes("Пусто");
+                const topicEmpty = topicText.includes("Пусто");
                 const hasEmpty = tagEmpty || topicEmpty;
 
                 // ─── Универсальная стилизация пустого поля ───
@@ -421,9 +430,15 @@
                 styleEmptyBlock(tagBlock, tagEmpty);
                 styleEmptyBlock(topicBlock, topicEmpty);
 
-                if (hasEmpty) {
-                    if (btn) btn.disabled = true;
+                if (btn) btn.disabled = hasEmpty;
 
+                // Пишем в DOM только при смене состояния (тик каждые 1.5 c)
+                const nextState = hasEmpty ? `no:${tagEmpty}:${topicEmpty}` : 'ok';
+                if (existing.dataset.lastState === nextState) return;
+
+                existing.dataset.lastState = nextState;
+
+                if (hasEmpty) {
                     const missing = [];
                     if (tagEmpty) missing.push("тега");
                     if (topicEmpty) missing.push("темы");
@@ -432,7 +447,6 @@
                     existing.style.background = `linear-gradient(135deg, ${missingColor}, ${missingColorDark})`;
                     existing.style.boxShadow = `0 0 12px ${missingRgbaGlow}`;
                 } else {
-                    if (btn) btn.disabled = false;
                     existing.textContent = "☑️ Всё заполнено";
                     existing.style.background = "linear-gradient(135deg, #4caf50, #087f23)";
                     existing.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";

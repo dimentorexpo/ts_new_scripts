@@ -430,7 +430,7 @@ var win_CRMcommentsUI = `
 }
 </style>`;
 
-const winCRMcommentsUI = createWindow('AF_CRMComments', 'winTopTCRMComments', 'winLeftCRMComments', win_CRMcommentsUI);
+createWindow('AF_CRMComments', 'winTopTCRMComments', 'winLeftCRMComments', win_CRMcommentsUI);
 hideWindowOnClick('AF_CRMComments', 'hideshowcrmcomments');
 
 function getbutCRMCommentsButtonPress() {
@@ -472,15 +472,9 @@ document.getElementById('gcrm-run-btn').addEventListener('click', async () => {
                 method: 'GET',
                 headers: {
                     'accept': 'application/json, text/plain, */*',
-                    'accept-language': 'ru',
-                    'priority': 'u=1, i',
-                    'sec-ch-ua': '"Chromium";v="146", "Not-A.Brand";v="24", "YaBrowser";v="26.4", "Yowser";v="2.5", "YaBrowserCorp";v="146"',
-                    'sec-ch-ua-mobile': '?0',
-                    'sec-ch-ua-platform': '"Windows"',
-                    'sec-fetch-dest': 'empty',
-                    'sec-fetch-mode': 'cors',
-                    'sec-fetch-site': 'same-site',
-                    'sec-gpc': '1'
+                    'accept-language': 'ru'
+                    // sec-ch-*/sec-fetch-* — запрещённые для ручной установки заголовки,
+                    // браузер их всё равно игнорирует; cookies уходят через credentials
                 },
                 referrer: 'https://crm2.skyeng.ru/',
                 credentials: 'include'

@@ -178,10 +178,15 @@
         return val.replace(/[^0-9,]/g, '');
     };
 
+    // Единая точка показа уведомлений
+    const notify = (msg, type) => {
+        if (typeof createAndShowButton === 'function') createAndShowButton(msg, type);
+    };
+
     const insertTestId = (key, field, label) => {
         const val = localStorage.getItem(key);
         if (val) field.value = val;
-        else typeof createAndShowButton === 'function' && createAndShowButton(`Не указан ${label}`, 'error');
+        else notify(`Не указан ${label}`, 'error');
     };
 
     // --- Обработчики остальных кнопок ---
@@ -198,7 +203,7 @@
     document.getElementById('userfromchatid').onclick = () => {
         const type = typeof SearchinAFnewUI === 'function' ? SearchinAFnewUI("userType") : null;
         const id = typeof SearchinAFnewUI === 'function' ? SearchinAFnewUI("id") : null;
-        if (!type || !id) return typeof createAndShowButton === 'function' && createAndShowButton('Нет выбранного чата', 'error');
+        if (!type || !id) return notify('Нет выбранного чата', 'error');
         if (type === 'teacher') {
             insertTestId('test_stud', TR.student, 'ID У');
             TR.teacher.value = id;
@@ -221,8 +226,10 @@
         if (!subject) errors.push('Выбери предмет');
         const tId = validate(TR.teacher.value, 'ID преподавателя', errors);
         const sIdRaw = validate(TR.student.value, 'ID ученика', errors);
-        if (errors.length) return typeof createAndShowButton === 'function' && createAndShowButton(errors.join('<br>'), 'error');
-        const sId = sIdRaw.replace(/,/g, '%2C');
+        if (errors.length) return notify(errors.join('<br>'), 'error');
+        // URLSearchParams сам кодирует запятые как %2C;
+        // прежняя ручная замена давала двойное кодирование (%252C) и ломала мульти-ID
+        const sId = sIdRaw;
         const hash = generateHash();
         const url = `https://${subject}.skyeng.ru/admin/tech-support-room/create?uniqid=${hash}`;
         const params = new URLSearchParams({
@@ -238,7 +245,7 @@
             }
         }, response => {
             if (response?.success) {
-                typeof createAndShowButton === 'function' && createAndShowButton('Тестовый урок создан! 🚀', 'message');
+                notify('Тестовый урок создан! 🚀', 'message');
                 setTimeout(() => TR.win.style.display = 'none', 3000);
             } else { alert('Ошибка создания: ' + (response?.error || 'unknown')); }
         });

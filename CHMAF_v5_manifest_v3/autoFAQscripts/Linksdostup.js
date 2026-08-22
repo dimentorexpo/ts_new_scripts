@@ -334,7 +334,7 @@ var win_linksd = `
 // ==========================================
 // 3. Window Init (Original API)
 // ==========================================
-const wintLinksd = createWindow('AF_Linksd', 'winTopLinksd', 'winLeftLinksd', win_linksd);
+createWindow('AF_Linksd', 'winTopLinksd', 'winLeftLinksd', win_linksd);
 hideWindowOnDoubleClick('AF_Linksd');
 hideWindowOnClick('AF_Linksd', 'hideMeLinksd');
 
@@ -370,7 +370,7 @@ Object.entries(AF_LX_GRAFANA).forEach(([id, url]) => {
 // ==========================================
 // 6. Widget Lesson Status Search
 // ==========================================
-document.getElementById('GetWidgetLessonStatus').onclick = function () {
+const openWidgetLessonStatus = () => {
     const input = document.getElementById('WidgetLessonStatus');
     if (!input || input.value.trim() === '') {
         createAndShowButton('Введите id в поле', 'error');
@@ -379,6 +379,13 @@ document.getElementById('GetWidgetLessonStatus').onclick = function () {
     window.open('https://grafana.skyeng.link/d/DZop3WKVz/nextlesson-analytics?orgId=1&var-UserId=' + input.value + '&from=now-24h&to=now');
     input.value = '';
 };
+
+document.getElementById('GetWidgetLessonStatus').onclick = openWidgetLessonStatus;
+
+// Поиск по нажатию Enter
+document.getElementById('WidgetLessonStatus')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') openWidgetLessonStatus();
+});
 
 
 // ==========================================

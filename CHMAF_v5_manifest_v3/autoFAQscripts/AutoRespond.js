@@ -216,6 +216,10 @@ function getbutFrozeChatButtonPress() {
                 return createAndShowButton('Таймер для этого чата уже запущен', 'warning');
             }
 
+            // Резервируем слот синхронно до первого await —
+            // иначе быстрый двойной клик успевал создать два таймера на один хэш
+            state.chats.set(chatHash, { reserved: true });
+
             try {
                 const sessionId = await getsesid(chatHash);
 
@@ -230,9 +234,20 @@ function getbutFrozeChatButtonPress() {
 
                 const timeoutId = setTimeout(async () => {
                     const currentData = state.timeouts.get(chatHash);
-                    if (currentData && !currentData.cancelled) {
-                        await sendMessage(currentData.sessionId, chatHash, currentData.message);
-                        cancelTimer(chatHash);
+                    if (!currentData || currentData.cancelled) return;
+
+                    try {
+                        const response = await sendMessage(currentData.sessionId, chatHash, currentData.message);
+                        // Таймер снимаем только при успешной отправке,
+                        // иначе автоответ терялся молча
+                        if (response && response.ok) {
+                            cancelTimer(chatHash);
+                        } else {
+                            createAndShowButton(`Не удалось отправить автоответ для чата ${chatHash}`, 'error');
+                        }
+                    } catch (e) {
+                        console.error('AutoReply send error:', e);
+                        createAndShowButton(`Не удалось отправить автоответ для чата ${chatHash}`, 'error');
                     }
                 }, duration);
 
@@ -260,6 +275,7 @@ function getbutFrozeChatButtonPress() {
                 document.getElementById('chatfrozemsg').value = '';
 
             } catch (error) {
+                state.chats.delete(chatHash); // снимаем резерв при ошибке
                 console.error('Failed to initialize timer:', error);
                 createAndShowButton('Ошибка при инициализации таймера', 'error');
             }
@@ -327,25 +343,18 @@ function getbutFrozeChatButtonPress() {
     }
 
     async function sendMessage(sessionId, hash, message) {
-        const payload = JSON.stringify({
-            sessionId: sessionId,
+        // Через общий слой: FormData вместо ручного multipart,
+        // диагностика неуспешных ответов и авто-ретрай с обновлённым CSRF
+        const response = await sendAnswersRequest({
+            sessionId,
             conversationId: hash,
             text: message
         });
 
-        await fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
-            headers: {
-                "accept": "*/*",
-                "accept-language": "ru-RU,ru;q=0.9",
-                "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryFeIiMdHaxAteNUHd",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-origin",
-                "x-csrf-token": aftoken
-            },
-            body: `------WebKitFormBoundaryFeIiMdHaxAteNUHd\r\nContent-Disposition: form-data; name="payload"\r\n\r\n${payload}\r\n------WebKitFormBoundaryFeIiMdHaxAteNUHd--\r\n`,
-            method: "POST",
-            mode: "cors",
-            credentials: "include"
-        });
+        if (!response.ok) {
+            throw new Error(`AutoReply send failed: HTTP ${response.status}`);
+        }
+
+        return response;
     }
 }
