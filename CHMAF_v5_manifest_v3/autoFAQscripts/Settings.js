@@ -22,7 +22,8 @@ async function init_settings() {
         defaultStatusAfterLogin: 'Online',
         sound_str: 'https://grumstv.github.io/Sounds/msg.mp3',
         appBgColor: '#FFFFFF', // Дефолтный белый цвет фона
-        missingTagColor: '#ff1744' // Дефолтный цвет окна "Нет темы и тега"
+        missingTagColor: '#ff1744', // Дефолтный цвет окна "Нет темы и тега"
+        enLangHue: 265 // Оттенок EN-режима шаблонов (0–360)
     };
 
     const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']);
@@ -2381,6 +2382,28 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
                         <span id="missingTagColorLabel" style="font-size: 12px; color: #888; font-family: monospace;">#ff1744</span>
                     </div>
 
+                    <!-- Оттенок режима английского языка -->
+                    <div class="set-row" style="margin-top: 12px; flex-direction: column; align-items: stretch; background: rgba(0,0,0,0.15); padding: 12px; border-radius: 10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <span class="set-label">Оттенок EN-режима шаблонов:</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span id="enLangHueSwatch" title="Текущий оттенок" style="width:22px; height:22px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:hsl(265,85%,62%);"></span>
+                                <span id="enLangHueVal" style="font-size:12px; color:#888; font-family:monospace;">265°</span>
+                            </div>
+                        </div>
+                        <input type="range" id="enLangHueSlider" min="0" max="360" step="1" value="265"
+                               title="Перетащи — цвет темы при переключении на Английский меняется вживую"
+                               style="padding:0; height:12px; -webkit-appearance:none; appearance:none; border:none; border-radius:6px; cursor:pointer;
+                                      background: linear-gradient(90deg, hsl(0,80%,60%), hsl(60,80%,55%), hsl(120,75%,50%), hsl(180,80%,52%), hsl(240,82%,64%), hsl(300,80%,60%), hsl(360,80%,60%));">
+                        <div style="display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;">
+                            <button type="button" class="set-btn hue-preset" data-hue="265">🟣 Фиолет</button>
+                            <button type="button" class="set-btn hue-preset" data-hue="152">🟢 Изумруд</button>
+                            <button type="button" class="set-btn hue-preset" data-hue="210">🔵 Циан</button>
+                            <button type="button" class="set-btn hue-preset" data-hue="330">🩷 Розовый</button>
+                            <button type="button" class="set-btn hue-preset" data-hue="30">🟠 Янтарный</button>
+                        </div>
+                    </div>
+
                     <div class="set-row" style="margin-top: 15px;">
                         <div class="set-grid-colors">
                             <div class="set-color-wrap">
@@ -2571,6 +2594,39 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
             Settings.set('missingTagColor', val);
             missingTagLabel.textContent = val;
         };
+
+        // --- Оттенок EN-режима шаблонов ---
+        const enHueSlider = document.getElementById('enLangHueSlider');
+        const enHueValEl = document.getElementById('enLangHueVal');
+        const enHueSwatch = document.getElementById('enLangHueSwatch');
+
+        const applyEnHueUi = (h) => {
+            enHueValEl.textContent = `${h}°`;
+            enHueSwatch.style.background = `hsl(${h}, 85%, 62%)`;
+            enHueSwatch.style.boxShadow = `0 0 10px hsla(${h}, 85%, 55%, 0.45)`;
+        };
+
+        let savedEnHue = parseInt(Settings.get('enLangHue'), 10);
+        if (Number.isNaN(savedEnHue)) { savedEnHue = 265; Settings.set('enLangHue', savedEnHue); }
+
+        enHueSlider.value = savedEnHue;
+        applyEnHueUi(savedEnHue);
+
+        const commitEnHue = (h) => {
+            Settings.set('enLangHue', h);
+            applyEnHueUi(h);
+            // Живой предпросмотр: панель перекрашивается сразу, даже если скрыта
+            if (typeof window.applyEnLangHue === 'function') window.applyEnLangHue(h);
+        };
+
+        enHueSlider.oninput = (e) => commitEnHue(parseInt(e.target.value, 10));
+
+        document.querySelectorAll('.hue-preset').forEach(btn => {
+            btn.onclick = () => {
+                enHueSlider.value = btn.getAttribute('data-hue');
+                commitEnHue(parseInt(enHueSlider.value, 10));
+            };
+        });
 
         // Volume
         const range = document.getElementById('range');

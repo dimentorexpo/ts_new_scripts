@@ -1339,6 +1339,19 @@ function highlightSearchText(item, searchText) {
 }
 
 // ============================================================
+// Оттенок EN-режима шаблонов («цветное стекло при смене языка»).
+// Токен --en-h выставляется на body и наследуется панелями,
+// поэтому Настройки могут менять его на лету.
+// ============================================================
+function applyEnLangHue(hue) {
+    let h = parseInt(hue ?? localStorage.getItem('enLangHue'), 10);
+    if (Number.isNaN(h)) h = 265; // фиолетовый по умолчанию
+    document.body.style.setProperty('--en-h', String(h));
+}
+window.applyEnLangHue = applyEnLangHue;
+applyEnLangHue();
+
+// ============================================================
 // Горячие клавиши (Alt+O — Offline, Alt+I — Busy, Alt+T — тестовый чат)
 // ============================================================
 if (window.location.host === 'skyeng.autofaq.ai' && window.location.pathname !== '/login') {
