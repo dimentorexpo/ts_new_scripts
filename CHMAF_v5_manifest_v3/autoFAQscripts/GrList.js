@@ -692,7 +692,9 @@ var win_GrList = `
 `;
 
 // === WINDOW INIT ===
-const wintGrList = createWindow('AF_GrList', 'winTopGrList', 'winTopGrList', win_GrList);
+// ВАЖНО: ключи позиции должны быть разными. Раньше оба были 'winTopGrList' —
+// drag сохранял X поверх Y в один ключ, и окно «прыгало» при повторном открытии
+createWindow('AF_GrList', 'winTopGrList', 'winLeftGrList', win_GrList);
 hideWindowOnDoubleClick('AF_GrList');
 
 // === SANITIZE POSITION (защита от улёта) ===
@@ -752,6 +754,14 @@ const fetchViaBackground = (payload) => new Promise((resolve) => {
 });
 
 // === MAIN LOGIC ===
+
+// Экранирование данных API перед вставкой в innerHTML
+const esc = (s) => String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
 document.getElementById('ngu-get-btn').addEventListener('click', async function () {
     const container = document.getElementById('ngu-results');
     const groupId = document.getElementById('ngu-input-id').value.trim();
@@ -785,7 +795,7 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
                 <div class="ngu-status error">
                     <span class="ngu-status-icon">✕</span>
                     <div class="ngu-status-title">Ошибка запроса</div>
-                    <div class="ngu-status-desc">${groupResponse?.error || 'Unknown error'}</div>
+                    <div class="ngu-status-desc">${esc(groupResponse?.error || 'Unknown error')}</div>
                 </div>`;
             return;
         }
@@ -842,7 +852,7 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
                     <div class="ngu-counter-label">Преподавателей</div>
                 </div>
                 <div class="ngu-counter-item">
-                    <div class="ngu-counter-value">${groupId}</div>
+                    <div class="ngu-counter-value">${esc(groupId)}</div>
                     <div class="ngu-counter-label">Group ID</div>
                 </div>
             </div>`;
@@ -850,13 +860,14 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
         if (teacherCount > 0) {
             const teacherRow = document.createElement('div');
             teacherRow.className = 'ngu-teacher';
-            teacherRow.innerHTML = `<span class="ngu-teacher-icon">●</span> Преподаватель: ${teachers[0].userId}`;
+            teacherRow.innerHTML = `<span class="ngu-teacher-icon">●</span> Преподаватель: ${esc(teachers[0].userId)}`;
             container.appendChild(teacherRow);
         }
 
         students.forEach((student, index) => {
             const name = namesMap[student.userId] || 'Имя не определено';
-            const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            // filter(Boolean) — защита от двойных пробелов (иначе в аватар попадает «undefined»)
+            const initials = name.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
             const card = document.createElement('div');
             card.className = 'ngu-student-card';
@@ -864,13 +875,13 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
 
             card.innerHTML = `
                 <span class="ngu-index">${String(index + 1).padStart(2, '0')}</span>
-                <div class="ngu-avatar">${initials}</div>
+                <div class="ngu-avatar">${esc(initials)}</div>
                 <div class="ngu-info">
-                    <div class="ngu-name">${name}</div>
-                    <div class="ngu-meta" data-copy="${student.userId}">ID: ${student.userId}</div>
+                    <div class="ngu-name">${esc(name)}</div>
+                    <div class="ngu-meta" data-copy="${esc(student.userId)}">ID: ${esc(student.userId)}</div>
                 </div>
-                <button class="ngu-crm-btn" data-userid="${student.userId}">CRM</button>
-                <span class="ngu-service-tag">${student.educationServiceId}</span>
+                <button class="ngu-crm-btn" data-userid="${esc(student.userId)}">CRM</button>
+                <span class="ngu-service-tag">${esc(student.educationServiceId)}</span>
             `;
 
             card.querySelector('.ngu-crm-btn').addEventListener('click', (e) => {
@@ -899,7 +910,7 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
             <div class="ngu-status error">
                 <span class="ngu-status-icon">⚡</span>
                 <div class="ngu-status-title">Системная ошибка</div>
-                <div class="ngu-status-desc">${error.message}</div>
+                <div class="ngu-status-desc">${esc(error.message)}</div>
             </div>`;
     }
 });

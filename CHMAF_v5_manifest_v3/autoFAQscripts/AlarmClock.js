@@ -456,10 +456,7 @@
         return { h, m, s, diff };
     };
 
-    const formatRemaining = (remaining) => {
-        if (!remaining) return '00 : 00 : 00';
-        return `${format(remaining.h)} : ${format(remaining.m)} : ${format(remaining.s)}`;
-    };
+    // formatRemaining удалён — нигде не использовался
 
     // ═══════════════════════════════════════════════════════════════════════════
     //  SAFE EXTERNAL DEPENDENCIES
@@ -491,19 +488,15 @@
     // ═══════════════════════════════════════════════════════════════════════════
 
     const setOperatorBusy = () => {
-        const token = typeof aftoken !== 'undefined' ? aftoken : '';
-        fetch("https://skyeng.autofaq.ai/api/reason8/operator/status", {
+        // Через общий слой: диагностика ошибок и CSRF-ретрай вместо ручного aftoken
+        afApiFetch("https://skyeng.autofaq.ai/api/reason8/operator/status", {
             method: "POST",
-            headers: {
-                "content-type": "application/json",
-                "x-csrf-token": token
-            },
+            headers: { "content-type": "application/json" },
             body: JSON.stringify({
                 command: "DO_SET_OPERATOR_STATUS",
                 status: "Busy",
                 source: "Operator"
-            }),
-            credentials: "include"
+            })
         }).catch(err => console.warn('Status update failed:', err));
 
         safeShowAlert("⏰ Время ставить занят! Будильник сработал!", 1);
@@ -845,16 +838,13 @@
                 };
             }
 
-            // Menu button toggle
+            // Toggle окна по кнопке-колокольчику в AF_helper
+            // (других обработчиков на этой кнопке нет — wrapper не нужен)
             const menuBtn = document.getElementById('reminderstatus');
             if (menuBtn) {
-                const originalClick = menuBtn.onclick;
-                menuBtn.onclick = (e) => {
+                menuBtn.onclick = () => {
                     const win = document.getElementById('AF_AlarmClock');
-                    if (win) {
-                        win.style.display = win.style.display === 'none' ? 'block' : 'none';
-                    }
-                    if (originalClick) originalClick.call(menuBtn, e);
+                    if (win) win.style.display = win.style.display === 'none' ? 'block' : 'none';
                 };
             }
 

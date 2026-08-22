@@ -536,7 +536,7 @@ const win_OperStatus = `
 // Window Init
 // ==========================================
 
-const wintOperStatus = createWindow('AF_OperStat', 'winTopOpStat', 'winLeftOpStat', win_OperStatus);
+createWindow('AF_OperStat', 'winTopOpStat', 'winLeftOpStat', win_OperStatus);
 hideWindowOnDoubleClick('AF_OperStat');
 
 // ==========================================

@@ -8,6 +8,14 @@
 (function () {
     let dataChts = [];
 
+    // Экранирование внешних данных (имена/страна пользователя из API)
+    // перед вставкой в innerHTML
+    const esc = (s) => String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
     const state = {
         refreshInterval: null,
         countdownInterval: null,
@@ -360,14 +368,13 @@
         let totalAvailable;
         do {
             const bodyContent = { ...initialBodyContent, page, limit: 100 };
-            const resp = await fetch(url, {
-                headers: { "content-type": "application/json", "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : "" },
+            // Через общий слой: диагностика ошибок и CSRF-ретрай вместо ручного aftoken
+            const resp = await afApiFetch(url, {
+                headers: { "content-type": "application/json" },
                 referrer: "https://skyeng.autofaq.ai/logs",
                 referrerPolicy: "strict-origin-when-cross-origin",
                 body: JSON.stringify(bodyContent),
-                method: "POST",
-                mode: "cors",
-                credentials: "include"
+                method: "POST"
             });
             if (!resp.ok) break;
             const data = await resp.json();
@@ -465,45 +472,56 @@
             const btn = document.getElementById('qg5-manual-refresh');
             if (btn) btn.disabled = true;
 
-            const list = document.getElementById('qg5-data-list');
-            const statusToFetch = document.getElementById('qg5-status-type').value;
-            const { tsFrom, tsTo } = getDates();
+            try {
+                const list = document.getElementById('qg5-data-list');
+                const statusToFetch = document.getElementById('qg5-status-type').value;
+                const { tsFrom, tsTo } = getDates();
 
-            let setgroupList = (opsection == "ТП" || opsection == "ТП ОС")
-                ? ["c7bbb211-a217-4ed3-8112-98728dc382d8"]
-                : ["b6f7f34d-2f08-fc19-3661-29ac00842898"];
+                let setgroupList = (opsection == "ТП" || opsection == "ТП ОС")
+                    ? ["c7bbb211-a217-4ed3-8112-98728dc382d8"]
+                    : ["b6f7f34d-2f08-fc19-3661-29ac00842898"];
 
-            const initialBodyContent = {
-                serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
-                mode: "Json",
-                groupList: setgroupList,
-                tsFrom, tsTo,
-                usedStatuses: [statusToFetch],
-                orderBy: "ts",
-                orderDirection: "Desc"
-            };
+                const initialBodyContent = {
+                    serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
+                    mode: "Json",
+                    groupList: setgroupList,
+                    tsFrom, tsTo,
+                    usedStatuses: [statusToFetch],
+                    orderBy: "ts",
+                    orderDirection: "Desc"
+                };
 
-            dataChts = await fetchAllPages("https://skyeng.autofaq.ai/api/conversations/history", initialBodyContent);
-            document.getElementById('qg5-count').textContent = dataChts.length;
+                dataChts = await fetchAllPages("https://skyeng.autofaq.ai/api/conversations/history", initialBodyContent);
+                document.getElementById('qg5-count').textContent = dataChts.length;
 
-            list.innerHTML = dataChts.map((el, index) => {
-                const ts = new Date(el.ts.replace(/\[.*?\]/g, '').trim());
-                const uType = el.channelUser.payload?.userType;
-                return `
+                list.innerHTML = dataChts.map((el, index) => {
+                    const ts = new Date(el.ts.replace(/\[.*?\]/g, '').trim());
+                    const uType = el.channelUser.payload?.userType;
+                    return `
                     <div class="qg5-item" name="prosmChat" data-index="${index}">
                         <span class="qg5-time">${ts.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                        <span class="qg5-badge" title="${uType || ''}">${getUserTypeEmoji(uType)}</span>
-                        <span class="qg5-usr-name">${el.channelUser.fullName || 'User'}</span>
+                        <span class="qg5-badge" title="${esc(uType || '')}">${getUserTypeEmoji(uType)}</span>
+                        <span class="qg5-usr-name">${esc(el.channelUser.fullName || 'User')}</span>
                         <span class="qg5-timer" data-start="${ts.getTime()}">00:00:00</span>
                         <span class="qg5-flag" title="Флаг ответа">${getFirstAnswerFlag(el.stats)}</span>
-                        <span class="qg5-country">${el.channelUser.payload?.country || "➖"}</span>
+                        <span class="qg5-country">${esc(el.channelUser.payload?.country || "➖")}</span>
                         <button class="qg5-btn" name="assignToMe">🫳</button>
                     </div>`;
-            }).join('');
+                }).join('');
 
-            this.QueueModule.attachItemHandlers();
-            state.isRendering = false;
-            if (btn) btn.disabled = false;
+                window.QueueModule.attachItemHandlers();
+            } catch (e) {
+                console.error('[Queue] Ошибка загрузки очереди:', e);
+                const list = document.getElementById('qg5-data-list');
+                if (list) {
+                    list.innerHTML = '<div style="text-align:center; padding:24px; color:#f87171;">❌ Ошибка загрузки очереди. Попробуй «Check Queue» ещё раз.</div>';
+                }
+            } finally {
+                // КРИТИЧНО: раньше при сетевой ошибке isRendering навсегда оставался
+                // true и модуль переставал обновляться до перезагрузки страницы
+                state.isRendering = false;
+                if (btn) btn.disabled = false;
+            }
         },
 
         attachItemHandlers: () => {
@@ -572,11 +590,10 @@
         },
 
         takeChat: (cid) => {
-            const assign = (oid) => fetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+            const assign = (oid) => afApiFetch("https://skyeng.autofaq.ai/api/conversation/assign", {
                 method: "POST",
-                headers: { "content-type": "application/json", "x-csrf-token": typeof aftoken !== 'undefined' ? aftoken : "" },
-                body: JSON.stringify({ command: "DO_ASSIGN_CONVERSATION", conversationId: cid, assignToOperatorId: oid }),
-                credentials: "include"
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ command: "DO_ASSIGN_CONVERSATION", conversationId: cid, assignToOperatorId: oid })
             });
             assign("null").then(() => setTimeout(() => assign(typeof operatorId !== 'undefined' ? operatorId : null), 2000));
         }

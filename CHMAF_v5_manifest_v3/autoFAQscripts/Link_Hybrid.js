@@ -9,6 +9,13 @@ class LinksConfigHybrid {
     constructor() {
         this.storageKey = 'AF_LinksHybrid';
         this.config = this.loadConfig();
+        // isTP всегда актуализируем: сохранённый отдел мог устареть
+        // (оператор перешёл из ТП в КЦ), иначе панель ссылок застревает в старом отделе
+        const actualIsTP = this.checkIsTP();
+        if (this.config.isTP !== actualIsTP) {
+            this.config.isTP = actualIsTP;
+            this.saveConfig();
+        }
     }
 
     loadConfig() {

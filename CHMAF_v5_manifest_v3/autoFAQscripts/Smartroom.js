@@ -581,8 +581,10 @@ window.getsmartroomformButtonPress = function () {
                 document.getElementById('AF_Smartroomform').style.display = 'none';
                 clearForm();
                 sendComment('Отправка в документ "Пожелания Смартрум" прошла успешно');
+                if (typeof createAndShowButton === 'function') createAndShowButton('✅ Отправлено в Смартрум-док', 'message');
             } else {
                 console.error('Ошибка при отправке в документ "Пожелания Смартрум":', response?.error);
+                if (typeof createAndShowButton === 'function') createAndShowButton(`❌ Ошибка отправки: ${response?.error || 'неизвестно'}`, 'error');
             }
         });
     }
