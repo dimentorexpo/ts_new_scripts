@@ -927,6 +927,142 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
             .ant-switch-checked {
                 background-color: #7c4dff !important;
             }
+            /* ═══ 31.1 ФОН СТРАНИЦ (Layout / Content / Header) ═══
+               Селекторы с body + двойными классами — перебивают CSS сайта,
+               который грузится позже и тоже использует !important */
+            body,
+            body .ant-layout,
+            body .ant-layout-content.app-body-content,
+            body .app-body-content,
+            body .app-body-content-header,
+            body .app-body-content-inner {
+                background-color: ${color} !important;
+            }
+            body .ant-layout-header.ant-layout-header {
+                background-color: ${color} !important;
+            }
+            body .app-body-content-header {
+                border-bottom: 1px solid ${getRgba(textColor, 0.1)} !important;
+            }
+            /* Базовый цвет текста — наследуется всеми вложенными элементами
+               (в т.ч. подсказками styled-components вида sc-fznJRM bTIjTR) */
+            body .app-body-content {
+                color: ${textColor} !important;
+            }
+            body .app-body-content h3,
+            body .app-body-content-desc,
+            body .user_menu-dropdown-user_name,
+            body .user_menu-language_switcher .user_menu-status-name {
+                color: ${textColor} !important;
+            }
+
+            /* Кнопки */
+            body .ant-btn.ant-btn {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                color: ${textColor} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+            }
+            body .ant-btn-primary.ant-btn-primary {
+                background-color: #7c4dff !important;
+                border-color: #7c4dff !important;
+                color: #ffffff !important;
+            }
+            body .ant-btn-primary.ant-btn-primary:hover,
+            body .ant-btn-primary.ant-btn-primary:focus {
+                background-color: #9575ff !important;
+                border-color: #9575ff !important;
+                color: #ffffff !important;
+            }
+
+            /* Инпуты */
+            body input.ant-input.ant-input,
+            body textarea.ant-input.ant-input {
+                color: ${textColor} !important;
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+            }
+            body input.ant-input.ant-input::placeholder,
+            body textarea.ant-input.ant-input::placeholder {
+                color: ${getRgba(textColor, 0.4)} !important;
+            }
+            body .ant-input-affix-wrapper.ant-input-affix-wrapper {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+            }
+            body .ant-input-suffix .anticon.anticon,
+            body .ant-input-number-handler-wrap .anticon.anticon {
+                color: ${textColor} !important;
+            }
+
+            /* Числовые инпуты (обёртка) */
+            body .ant-input-number.ant-input-number {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+            }
+            body .ant-input-number-input {
+                background-color: transparent !important;
+            }
+            body .ant-input-number-handler-up-inner,
+            body .ant-input-number-handler-down-inner {
+                color: ${textColor} !important;
+            }
+
+            /* Сайдбар сайта НЕ трогаем — у него свой дизайн.
+               Красим только всплывающие подменю */
+            body .ant-menu-submenu-popup,
+            body .ant-menu-submenu-popup .ant-menu.ant-menu {
+                background-color: ${color} !important;
+            }
+            body .ant-menu-submenu-popup .ant-menu-item,
+            body .ant-menu-submenu-popup .ant-menu-submenu-title {
+                color: ${textColor} !important;
+            }
+            body .ant-menu-submenu-popup .ant-menu-item:hover,
+            body .ant-menu-submenu-popup .ant-menu-submenu-title:hover {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                color: #ffffff !important;
+            }
+
+            /* Коллапс — лёгкая заливка строк (аналог #fafafa на светлом) */
+            body .ant-collapse.ant-collapse,
+            body .ant-collapse .ant-collapse-item {
+                background-color: ${getRgba(textColor, 0.04)} !important;
+            }
+            body .ant-collapse .ant-collapse-content {
+                background-color: transparent !important;
+            }
+            body .ant-collapse.ant-collapse {
+                border-color: ${getRgba(textColor, 0.15)} !important;
+            }
+            body .ant-collapse .ant-collapse-item {
+                border-color: ${getRgba(textColor, 0.12)} !important;
+            }
+            body .ant-collapse .ant-collapse-content {
+                border-top-color: ${getRgba(textColor, 0.1)} !important;
+            }
+
+            /* Свитч в выключенном состоянии */
+            body .ant-switch.ant-switch:not(.ant-switch-checked) {
+                background-color: ${getRgba(textColor, 0.25)} !important;
+            }
+
+            /* Разделитель под табами */
+            body .ant-tabs-nav::before {
+                border-bottom-color: ${getRgba(textColor, 0.15)} !important;
+            }
+
+            /* Заблокированные поля (textarea disabled) */
+            body textarea.ant-input.ant-input[disabled],
+            body .ant-input.ant-input-disabled {
+                background-color: ${getRgba(textColor, 0.06)} !important;
+                color: ${getRgba(textColor, 0.45)} !important;
+                border-color: ${getRgba(textColor, 0.12)} !important;
+            }
+
+            /* Аватар пользователя */
+            body .ant-avatar-string {
+                color: #ffffff !important;
+            }
 
             /* ═══ 32. АРХИВ ТИКЕТОВ (Tickets Archive) ═══ */
             .expert-user_details-dt,
