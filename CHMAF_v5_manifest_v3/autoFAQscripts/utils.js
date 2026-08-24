@@ -179,12 +179,24 @@ function createWindow(id, topKey, leftKey, content) {
 
     document.body.append(windowElement);
 
-    // Автокоррекция позиции
+    // Автокоррекция позиции: мягкий clamp в границы экрана вместо сброса на дефолт
     requestAnimationFrame(() => {
-        const rect = windowElement.getBoundingClientRect();
-        if (rect.top < 0 || rect.left < 0 || rect.top > window.innerHeight - 50) {
-            windowElement.style.top = '120px';
-            windowElement.style.left = '295px';
+        const w = windowElement.offsetWidth;
+        const h = windowElement.offsetHeight;
+        if (!w || !h) return; // окно скрыто — размеры недоступны
+
+        const top = parseFloat(windowElement.style.top) || 0;
+        const left = parseFloat(windowElement.style.left) || 0;
+
+        const maxTop = Math.max(0, window.innerHeight - h);
+        const maxLeft = Math.max(0, window.innerWidth - w);
+
+        const fixedTop = Math.min(Math.max(top, 0), maxTop);
+        const fixedLeft = Math.min(Math.max(left, 0), maxLeft);
+
+        if (fixedTop !== top || fixedLeft !== left) {
+            windowElement.style.top = fixedTop + 'px';
+            windowElement.style.left = fixedLeft + 'px';
         }
     });
 

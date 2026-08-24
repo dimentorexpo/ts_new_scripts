@@ -24,8 +24,8 @@
         if (typeof Settings !== 'undefined' && Settings.get) {
             return Settings.get('missingTagColor') || '#ff1744';
         }
-        // Fallback — читаем напрямую из localStorage
-        try { return localStorage.getItem('chmaf_missingTagColor') || '#ff1744'; }
+        // Fallback — читаем напрямую из localStorage (ключ как в Settings.js)
+        try { return localStorage.getItem('missingTagColor') || '#ff1744'; }
         catch (e) { return '#ff1744'; }
     };
 
@@ -382,17 +382,23 @@
                 const convElement = doc.querySelector(`[data-conv-id="${currentConvId}"]`);
                 if (!convElement) return;
 
-                const wrappers = doc.querySelectorAll('#__next div[class*="List_ListWrapper"]');
+                // Берём только листовые обёртки (одна на поле) внутри списка полей формы.
+                // Общая обёртка всей формы тоже имеет класс List_ListWrapper — её текст
+                // содержит «Пусто» от необязательной «Ссылки на Jira», что ложно блокировало кнопку.
+                const wrappers = Array.from(doc.querySelectorAll('#__next div[class*="List_ListWrapper"]'))
+                    .filter(w => !w.querySelector('div[class*="List_ListWrapper"]'))
+                    .filter(w => w.closest('[class*="conversation-payload-form_fieldsList"]'));
 
-                let tagBlock = null, topicBlock = null, tagText = '', topicText = '';
+                let serviceBlock = null, tagBlock = null, topicBlock = null;
                 wrappers.forEach(wrap => {
                     // innerText вызывает reflow — читаем один раз и переиспользуем
                     const txt = wrap.innerText;
-                    if (!tagBlock && txt.includes("Выбор тегов")) { tagBlock = wrap; tagText = txt; }
-                    else if (!topicBlock && txt.includes("Выбор темы/подтемы")) { topicBlock = wrap; topicText = txt; }
+                    if (!serviceBlock && txt.includes("Выбор услуги")) { serviceBlock = wrap; }
+                    else if (!tagBlock && txt.includes("Выбор тегов")) { tagBlock = wrap; }
+                    else if (!topicBlock && txt.includes("Выбор темы/подтемы")) { topicBlock = wrap; }
                 });
 
-                if (!tagBlock && !topicBlock) return;
+                if (!serviceBlock && !tagBlock && !topicBlock) return;
 
                 const btn = doc.querySelector('button[title="Закрыть"]');
 
@@ -404,14 +410,21 @@
                     convElement.append(existing);
                 }
 
-                const tagEmpty = tagText.includes("Пусто");
-                const topicEmpty = topicText.includes("Пусто");
-                const hasEmpty = tagEmpty || topicEmpty;
+                // Пусто = в поле висит плейсхолдер (data-is-placeholder) либо текст «Пусто»
+                const isFieldEmpty = (block) => {
+                    if (!block) return false;
+                    return !!block.querySelector('[data-is-placeholder="true"]') || block.innerText.includes('Пусто');
+                };
+
+                const serviceEmpty = isFieldEmpty(serviceBlock);
+                const tagEmpty = isFieldEmpty(tagBlock);
+                const topicEmpty = isFieldEmpty(topicBlock);
+                const hasEmpty = serviceEmpty || tagEmpty || topicEmpty;
 
                 // ─── Универсальная стилизация пустого поля ───
                 const styleEmptyBlock = (block, isEmpty) => {
                     if (!block) return;
-                    const target = block.children[0]?.children[0];
+                    const target = block.closest('[class*="List_ScrollArea"]') || block.children[0]?.children[0];
                     if (!target) return;
 
                     if (isEmpty) {
@@ -427,19 +440,21 @@
                     }
                 };
 
+                styleEmptyBlock(serviceBlock, serviceEmpty);
                 styleEmptyBlock(tagBlock, tagEmpty);
                 styleEmptyBlock(topicBlock, topicEmpty);
 
                 if (btn) btn.disabled = hasEmpty;
 
                 // Пишем в DOM только при смене состояния (тик каждые 1.5 c)
-                const nextState = hasEmpty ? `no:${tagEmpty}:${topicEmpty}` : 'ok';
+                const nextState = hasEmpty ? `no:${serviceEmpty}:${tagEmpty}:${topicEmpty}` : 'ok';
                 if (existing.dataset.lastState === nextState) return;
 
                 existing.dataset.lastState = nextState;
 
                 if (hasEmpty) {
                     const missing = [];
+                    if (serviceEmpty) missing.push("услуги");
                     if (tagEmpty) missing.push("тега");
                     if (topicEmpty) missing.push("темы");
 
