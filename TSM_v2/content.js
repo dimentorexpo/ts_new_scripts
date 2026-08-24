@@ -64,6 +64,25 @@ function createNotify(text, result = "message") {
     createToast(text, result === "message" ? "sucsbtnok" : "sucsbtnnotok");
 }
 
+/* ---------- Копируемые по клику значения ---------- */
+
+function markCopyable(element, getText) {
+    if (!element || element.dataset.tsmCopyable) return;
+    element.dataset.tsmCopyable = "1";
+    element.classList.add("tsm-copyable");
+
+    const hint = "Клик — скопировать в буфер обмена";
+    element.title = element.title ? `${element.title}\n${hint}` : hint;
+
+    element.addEventListener("mousedown", (event) => event.stopPropagation());
+    element.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        const text = typeof getText === "function" ? getText() : String(getText);
+        if (!text || text === "undefined" || text === "null") return;
+        if (await copyToClipboardTSM(text)) createNotify(`📋 Скопировано: ${text}`);
+    });
+}
+
 /* ---------- Диалоговые окна ---------- */
 
 function buildTsmDialog({ title, message, okText, cancelText, inputMode }) {

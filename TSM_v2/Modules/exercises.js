@@ -280,18 +280,27 @@ function getkidsroominfo(data, subjecttype) {
     }
 
     if (data.participants[0].role == 'student') {
-        document.getElementById('studname').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + data.participants[0].name;
-        document.getElementById('studserviceid').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 услуги: </span>' + data.participants[0].educationServiceId;
-        document.getElementById('studid').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + data.participants[0].userId;
-        document.getElementById('teachname').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + data.participants[1].name;
-        document.getElementById('teachdid').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + data.participants[1].userId;
+        renderSkysmartIdentity(data.participants[0], data.participants[1]);
     } else if (data.participants[1].role == 'student') {
-        document.getElementById('studname').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + data.participants[1].name;
-        document.getElementById('studserviceid').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔 услуги: </span>' + data.participants[1].educationServiceId;
-        document.getElementById('studid').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + data.participants[1].userId;
-        document.getElementById('teachname').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + data.participants[0].name;
-        document.getElementById('teachdid').innerHTML = '<span style="user-select:none; font-size: 17px;">🆔: </span>' + data.participants[0].userId;
+        renderSkysmartIdentity(data.participants[1], data.participants[0]);
     }
+}
+
+function setIdField(elementId, label, value) {
+    const el = document.getElementById(elementId);
+    el.innerHTML = `<span style="user-select:none; font-size: 17px;">${label}</span>${value}`;
+    if (value != null) {
+        el.style.cursor = "pointer";
+        markCopyable(el, String(value));
+    }
+}
+
+function renderSkysmartIdentity(student, teacher) {
+    document.getElementById('studname').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + student.name;
+    setIdField('studserviceid', '🆔 услуги: ', student.educationServiceId);
+    setIdField('studid', '🆔: ', student.userId);
+    document.getElementById('teachname').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + teacher.name;
+    setIdField('teachdid', '🆔: ', teacher.userId);
 }
 
 async function getTTCData() {
@@ -491,12 +500,16 @@ async function OpenExercisesComplect() {
         const studentData = complectationsData.participants[studentIndex];
         const teacherData = complectationsData.participants[teacherIndex];
 
-        document.getElementById('studnameComplect').innerHTML = `<span style="font-size: 17px;"> 👨‍🎓 </span>${studentData.name}`;
-        document.getElementById('studserviceidComplect').innerHTML = `<span style="user-select:none; font-size: 17px;">🆔 услуги: </span>${studentData.educationServiceId}`;
-        document.getElementById('studidComplect').innerHTML = `<span style="user-select:none; font-size: 17px;">🆔: </span>${studentData.userId}`;
-        document.getElementById('teachnameComplect').innerHTML = `<span style="font-size: 17px;"> 👽 Teacher </span>${teacherData.name}`;
-        document.getElementById('teachdidComplect').innerHTML = `<span style="user-select:none; font-size: 17px;">🆔: </span>${teacherData.userId}`;
-        document.getElementById('groupidComplect').innerHTML = `<span style="user-select:none; font-size: 17px;">🆔 гр: </span>${complectationsData.groupInfo.externalGroupId}`;
-        document.getElementById('RoomStatus').innerHTML = `<span style="user-select:none; font-size: 17px;">Статус комнаты: </span>${complectationsData.status === "success" ? '<span style="color:#00ff5c">success</span>' : `<span style="color:#daf50c">${complectationsData.status}</span>`}`;
+        renderComplectIdentity(studentData, teacherData, complectationsData.groupInfo?.externalGroupId, complectationsData.status);
     };
+}
+
+function renderComplectIdentity(studentData, teacherData, externalGroupId, status) {
+    document.getElementById('studnameComplect').innerHTML = `<span style="font-size: 17px;"> 👨‍🎓 </span>${studentData.name}`;
+    setIdField('studserviceidComplect', '🆔 услуги: ', studentData.educationServiceId);
+    setIdField('studidComplect', '🆔: ', studentData.userId);
+    setIdField('groupidComplect', '🆔 гр: ', externalGroupId);
+    document.getElementById('teachnameComplect').innerHTML = `<span style="font-size: 17px;"> 👽 Teacher </span>${teacherData.name}`;
+    setIdField('teachdidComplect', '🆔: ', teacherData.userId);
+    document.getElementById('RoomStatus').innerHTML = `<span style="user-select:none; font-size: 17px;">Статус комнаты: </span>${status === "success" ? '<span style="color:#00ff5c">success</span>' : `<span style="color:#daf50c">${status}</span>`}`;
 }

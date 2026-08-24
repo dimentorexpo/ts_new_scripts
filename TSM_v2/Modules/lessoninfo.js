@@ -262,6 +262,7 @@ function updateParticipants(participants) {
         const target = p.role === 'teacher' ? DOM.teacher() : DOM.student();
         target.textContent = p.userId;
         target.title = `Имя: ${p.name}\nСоздание: ${toMoscowTime(p.startAt)}\nПодключение: ${toMoscowTime(p.joinedAt)}`;
+        markCopyable(target, String(p.userId));
     });
 }
 
