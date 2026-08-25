@@ -179,6 +179,75 @@ afgStyles.textContent = `
         font-weight: 500; letter-spacing: 0.2px;
     }
 
+    /* --- Таймлайн отделов: маркер передачи + итоговая строка --- */
+    .afg-dept-line {
+        align-self: center;
+        display: inline-flex; align-items: center; justify-content: center;
+        flex-wrap: wrap; gap: 5px 10px;
+        max-width: 96%;
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-size: 12.5px; font-weight: 600; letter-spacing: 0.2px; line-height: 1.4;
+        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.28) 100%);
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .afg-dept-final { margin-top: 12px; }
+
+    .afg-dept-chip {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 3px 10px; border-radius: 20px;
+        font-weight: 700; font-size: 12px; letter-spacing: 0.3px;
+        white-space: nowrap;
+        color: var(--dc, #94a3b8);
+        background: var(--dcA, rgba(148,163,184,0.13));
+        border: 1px solid var(--dcB, rgba(148,163,184,0.27));
+    }
+    .afg-dept-duration {
+        font-size: 16px; font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        color: var(--dc, #94a3b8);
+        text-shadow: 0 0 14px var(--dcA, transparent);
+    }
+    .afg-dept-time {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 11px; opacity: 0.7; white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+    .afg-dept-label {
+        font-size: 10px; font-weight: 700; opacity: 0.5;
+        text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    .afg-dept-arrow { font-size: 15px; opacity: 0.85; }
+    .afg-dept-active {
+        color: #34d399 !important;
+        background: rgba(52,211,153,0.13) !important;
+        border-color: rgba(52,211,153,0.35) !important;
+    }
+
+    /* Светлая тема для таймлайна отделов */
+    .theme-light .afg-dept-line {
+        background: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(241,245,249,0.92) 100%);
+        border-color: rgba(15,23,42,0.12);
+        box-shadow: 0 4px 14px rgba(15,23,42,0.1), inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    .theme-light .afg-dept-chip {
+        color: var(--dcl, #64748b);
+        background: var(--dclA, rgba(100,116,139,0.1));
+        border-color: var(--dclB, rgba(100,116,139,0.24));
+    }
+    .theme-light .afg-dept-duration {
+        color: var(--dcl, #64748b);
+        text-shadow: none;
+    }
+    .theme-light .afg-dept-time { opacity: 0.8; }
+    .theme-light .afg-dept-active {
+        color: #059669 !important;
+        background: rgba(5,150,105,0.1) !important;
+        border-color: rgba(5,150,105,0.3) !important;
+    }
+
     /* Светлая тема */
     .theme-light .afg-msg { color: #1a1d28; border-color: rgba(0,0,0,0.06); }
     .theme-light .afg-msg-header { border-bottom-color: rgba(0,0,0,0.08); }
@@ -348,6 +417,22 @@ const DEPT_COLORS = {
     'Teachers Care': '#60a5fa'
 };
 
+// Приглушённые «тёмные» оттенки для светлой темы — читабельны на белом фоне
+const DEPT_COLORS_LIGHT = {
+    'ТП': '#dc2626',
+    'ТП ОС': '#0891b2',
+    'КЦ': '#059669',
+    'Prem': '#7c3aed',
+    'Teachers Care': '#2563eb'
+};
+
+/** CSS-переменные отдела: пара цветов сразу для тёмной и светлой темы */
+function deptVars(name) {
+    const d = DEPT_COLORS[name] || '#94a3b8';
+    const l = DEPT_COLORS_LIGHT[name] || '#64748b';
+    return `--dc:${d};--dcl:${l};--dcA:${d}22;--dclA:${l}14;--dcB:${d}44;--dclB:${l}3d;`;
+}
+
 // Сырое имя оператора по id (без экранирования — нужно для парсинга префикса)
 function rawOperatorName(oid) {
     if (typeof operatorsarray === 'undefined' || !Array.isArray(operatorsarray)) return null;
@@ -441,27 +526,27 @@ const fmtClock = (ts) => new Date(ts).toLocaleTimeString('ru-RU', TIME_OPTIONS);
 
 /** Инфо-строка перед событием передачи: сколько чат висел на прошлом отделе */
 function deptTransferHtml(prevSeg, nextDept, ts) {
-    const c1 = DEPT_COLORS[prevSeg.dept] || '#94a3b8';
-    const c2 = DEPT_COLORS[nextDept] || '#94a3b8';
-
-    return `<div class="afg-msg-event" style="border-color:${c1}55; background:rgba(0,0,0,0.28); display:inline-flex; align-items:center; gap:6px;">
-        ⏱ Отдел <b style="color:${c1};">${afgEsc(prevSeg.dept)}</b>
-        — <b style="color:${c1};">${fmtDuration(ts - prevSeg.startTs)}</b>
-        <span style="opacity:0.55;">(${fmtClock(prevSeg.startTs)} → ${fmtClock(ts)})</span>
-        ➜ передан на <b style="color:${c2};">${afgEsc(nextDept)}</b>
+    return `<div class="afg-dept-line" style="${deptVars(prevSeg.dept)}">
+        <span class="afg-dept-label">⏱ на отделе</span>
+        <span class="afg-dept-chip"> ${afgEsc(prevSeg.dept)}</span>
+        <span class="afg-dept-duration">${fmtDuration(ts - prevSeg.startTs)}</span>
+        <span class="afg-dept-time">${fmtClock(prevSeg.startTs)} → ${fmtClock(ts)}</span>
+        <span class="afg-dept-arrow">➜</span>
+        <span class="afg-dept-chip" style="${deptVars(nextDept)}">передан на ${afgEsc(nextDept)}</span>
     </div>`;
 }
 
 /** Итоговая строка в конце чата: последний (или единственный) отдел */
 function deptFooterHtml(lastSeg) {
-    const c = DEPT_COLORS[lastSeg.dept] || '#94a3b8';
     const tail = lastSeg.openChat
-        ? '<span style="color:#7ee787;">· чат активен</span>'
-        : `<span style="opacity:0.6;">· до закрытия (${fmtClock(lastSeg.endTs)})</span>`;
+        ? '<span class="afg-dept-chip afg-dept-active">● чат активен</span>'
+        : `<span class="afg-dept-time">до закрытия · ${fmtClock(lastSeg.endTs)}</span>`;
 
-    return `<div class="afg-msg-event" style="margin-top:12px; border-color:${c}55; display:inline-flex; align-items:center; gap:6px;">
-        🏁 Итог — отдел <b style="color:${c};">${afgEsc(lastSeg.dept)}</b>:
-        <b style="color:${c};">${fmtDuration(lastSeg.endTs - lastSeg.startTs)}</b> ${tail}
+    return `<div class="afg-dept-line afg-dept-final" style="${deptVars(lastSeg.dept)}">
+        <span class="afg-dept-label">🏁 итог</span>
+        <span class="afg-dept-chip"> ${afgEsc(lastSeg.dept)}</span>
+        <span class="afg-dept-duration">${fmtDuration(lastSeg.endTs - lastSeg.startTs)}</span>
+        ${tail}
     </div>`;
 }
 
@@ -686,6 +771,24 @@ function getOperatorNameById(operatorId, defaultName) {
     return afgEsc((operator && operator.operator.fullName) || defaultName);
 }
 
+// --- ФИЛЬТР ТЕХНИЧЕСКИХ КОММЕНТАРИЕВ AUTOFAQ ---
+// Роутинг сценариев (Routing1/Routing2/Routing3, Final: <guid> и т.п.) — мусор в истории
+const AUTOFAQ_TECH_COMMENT_RE = new RegExp(
+    '^\\s*(?:' + [
+        'routing[\\s\\d.:#-]*',             // Routing1. ..., Routing2: ... (после слова идёт цифра — \b там не работает)
+        'final\\s*:',                       // Final: c7bbb211-...
+        'итого на данном этапе',            // итого на данном этапе выбран кейс: ...
+        'route(?:s)?\\b[^\\n]*(?:\\bhdi\\b|чатбота|кейс)', // route из hdi в идентификации...
+        'route\\s+из\\s+hdi'
+    ].join('|') + ')',
+    'i'
+);
+
+function isAutoFaqTechComment(message) {
+    const cleanTxt = String((message && message.txt) || '').replace(/<[^>]+>/g, ' ');
+    return message.operatorId === 'autoFAQ' && AUTOFAQ_TECH_COMMENT_RE.test(cleanTxt.trim());
+}
+
 function extractDate(ts) { return new Date(ts).toLocaleDateString('ru-RU', DATE_OPTIONS); }
 function extractTime(ts) { return new Date(ts).toLocaleTimeString('ru-RU', TIME_OPTIONS); }
 
@@ -854,6 +957,9 @@ function fillchatbox() {
                 break;
 
             case "OperatorComment":
+                // Скрываем технический роутинг автоFAQ (Routing..., Final: <guid> и т.п.)
+                if (isAutoFaqTechComment(message)) break;
+
                 const commentAuthor = message.operatorId === "autoFAQ"
                     ? "autoFAQ"
                     : getOperatorNameById(message.operatorId, "Оператор");

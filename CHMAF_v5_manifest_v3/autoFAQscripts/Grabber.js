@@ -302,7 +302,7 @@ zoom: 0.9;
             <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
                 <div id="opscontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Operators 🦸‍♂️</div>
                 <div id="markscontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Marks 🔢</div>
-                <div id="tagscontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Tags 🏷</div>
+                <div id="tagscontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Tags </div>
                 <div id="othercontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Advanced Filters</div>
             </div>
 

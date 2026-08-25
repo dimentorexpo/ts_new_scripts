@@ -364,6 +364,7 @@ var win_taskform = `
                     <button class="glass-btn-task" id="nrteacher" title="Критический П Н.О">👽 Н.О</button>
                     <button class="glass-btn-task" id="nrstudent" title="Критический У Н.О">👨‍🎓 Н.О</button>
                 </div>
+                <div id="taskSubmitStatus" style="display: none; margin-top: 8px; padding: 10px 12px; border-radius: 12px; font-size: 12.5px; line-height: 1.5; background: linear-gradient(135deg, rgba(244, 63, 94, 0.15), rgba(220, 38, 38, 0.12)); border: 1px solid rgba(244, 63, 94, 0.35); color: #fda4af;"></div>
                 <button class="glass-btn-task submit-btn" id="createtask">🚀 Отправить задачу</button>
             </div>
         </div>
@@ -505,6 +506,144 @@ const sendBgRequest = (url, options = { method: 'GET' }) => {
         });
     });
 };
+
+// ============================================================
+// ЗАЩИТА ДАННЫХ ФОРМЫ ЗАДАЧИ
+// Черновики в localStorage (по хешу чата) + санитизация полей.
+// Цель: при любом сбое отправки оператор ничего не набирает заново.
+// ============================================================
+const TASK_DRAFT_KEY = 'AF_taskDrafts';
+const TASK_SUBMIT_TIMEOUT_MS = 30000;
+
+// Экранирование для вставки в innerHTML (тексты ошибок от сервера)
+const taskEsc = (s) => String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+/**
+ * Чистит текст от символов, которые невидимы оператору, но ломают
+ * JSON-парсеры/бэкенды: CR/CRLF, zero-width (U+200B–D), BOM (U+FEFF),
+ * Line/Paragraph Separator (U+2028/U+2029).
+ * Кавычки, бэкслеши, эмодзи и переносы строк безопасны — их экранирует JSON.stringify.
+ */
+function sanitizeTaskText(str) {
+    return String(str ?? '')
+        .replace(/\r\n?/g, '\n')
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        .replace(/\u2028|\u2029/g, '\n');
+}
+
+function loadTaskDrafts() {
+    try {
+        return JSON.parse(localStorage.getItem(TASK_DRAFT_KEY)) || {};
+    } catch (_) {
+        return {};
+    }
+}
+
+/** Сохраняет текущее состояние формы в черновик, привязанный к хешу чата */
+function saveTaskDraft() {
+    const conversid = (document.getElementById('chathashlnk')?.value || '').trim();
+    if (!conversid) return;
+
+    const val = (id) => (document.getElementById(id)?.value || '');
+    const draft = {
+        priority: val('priority'),
+        cs: val('customerservice'),
+        serviceId: val('taskserviceid'),
+        userId: val('taskuserid'),
+        comment: val('taskcomment'),
+        userSearchId: val('useriddata'),
+        noteFlag: NoteFlag,
+        noteText: NoteText,
+        ts: Date.now()
+    };
+
+    const drafts = loadTaskDrafts();
+    const isEmpty = !draft.priority && !draft.cs && !draft.serviceId && !draft.userId
+        && !draft.comment.trim() && !draft.userSearchId && draft.noteFlag !== 1;
+    if (isEmpty) delete drafts[conversid];
+    else drafts[conversid] = draft;
+
+    // Храним не более 10 самых свежих черновиков
+    const keys = Object.keys(drafts).sort((a, b) => (drafts[b]?.ts || 0) - (drafts[a]?.ts || 0));
+    while (keys.length > 10) delete drafts[keys.pop()];
+
+    try {
+        localStorage.setItem(TASK_DRAFT_KEY, JSON.stringify(drafts));
+    } catch (_) { /* переполнение квоты localStorage — не критично */ }
+}
+
+function clearTaskDraft(conversid) {
+    if (!conversid) return;
+    const drafts = loadTaskDrafts();
+    if (!drafts[conversid]) return;
+    delete drafts[conversid];
+    try {
+        localStorage.setItem(TASK_DRAFT_KEY, JSON.stringify(drafts));
+    } catch (_) { }
+}
+
+/** Восстанавливает поля формы из черновика этого же чата. true — если восстановлено */
+function restoreTaskDraft(conversid) {
+    if (!conversid) return false;
+    const draft = loadTaskDrafts()[conversid];
+    if (!draft) return false;
+
+    const setVal = (id, v) => {
+        const el = document.getElementById(id);
+        if (el && v != null && v !== '') el.value = v;
+    };
+    setVal('priority', draft.priority);
+    const prioEl = document.getElementById('priority');
+    if (draft.priority && prioEl) prioEl.style.color = prioEl.options[prioEl.selectedIndex]?.style.color || '#fff';
+    setVal('customerservice', draft.cs);
+    setVal('taskserviceid', draft.serviceId);
+    setVal('taskuserid', draft.userId);
+    setVal('taskcomment', draft.comment);
+    setVal('useriddata', draft.userSearchId);
+
+    if (draft.noteFlag === 1 && draft.noteText) {
+        NoteFlag = 1;
+        NoteText = draft.noteText;
+        document.getElementById('NoteNoticeText').innerText = NoteText;
+        document.getElementById('NoteNoticeWrap').style.display = 'block';
+    }
+    return true;
+}
+
+/** Достаёт человекочитаемый текст ошибки из тела ответа AutoFAQ (если есть) */
+function extractServerError(body) {
+    if (!body || typeof body !== 'object') return null;
+    let msg = null;
+    if (typeof body.errorMessage === 'string' && body.errorMessage) msg = body.errorMessage;
+    else if (typeof body.error === 'string' && body.error) msg = body.error;
+    else if (body.error && typeof body.error === 'object') msg = JSON.stringify(body.error);
+    else if (body.status === 'error' && body.message) msg = String(body.message);
+    else if (body.success === false && body.message) msg = String(body.message);
+    else if (body.errors) {
+        if (typeof body.errors === 'string' && body.errors) msg = body.errors;
+        else if (typeof body.errors === 'object') {
+            const first = Object.values(body.errors)[0];
+            if (first) msg = Array.isArray(first) ? String(first[0]) : String(first);
+        }
+    }
+    return msg ? String(msg).slice(0, 160) : null;
+}
+
+/** Понятное оператору описание того, почему задача не ушла */
+function describeSubmitError(result) {
+    if (result.error === 'csrf') return 'CSRF-токен не найден — обнови страницу (F5), поля сохранены';
+    if (result.error === 'timeout') return `Таймаут отправки (${TASK_SUBMIT_TIMEOUT_MS / 1000} сек) — черновик сохранён, попробуй ещё раз`;
+    if (result.error === 'no-conversation') return 'Не указан хеш чата — обнови хеш кнопкой ↻';
+    if (result.status === 401 || result.status === 403) return `Сессия устарела (${result.status}) — обнови страницу (F5), поля сохранены`;
+    if (result.status === 429) return 'Слишком много запросов (429) — подожди немного и повтори, черновик сохранён';
+    if (result.status >= 500) return `AutoFAQ недоступен (${result.status}) — черновик сохранён, повтори попытку позже`;
+    if (result.status) return `Сервер отклонил форму (${result.status})${result.serverError ? ': ' + result.serverError : ''} — поля сохранены, исправь и повтори`;
+    return 'Ошибка сети при отправке — черновик сохранён, попробуй ещё раз';
+}
 
 // === НАБЛЮДАТЕЛЬ: полностью скрываем нативное окно "Создать задачу" внутри iframe ===
 
@@ -864,6 +1003,7 @@ async function gettaskButButtonPress() {
                         const targetId = e.target.closest('[data-id]').getAttribute('data-id');
                         if (document.getElementById('taskserviceid')) document.getElementById('taskserviceid').value = targetId;
                         validateField(document.getElementById('taskserviceid'), true); // Снимаем подсветку ошибки
+                        saveTaskDraft();
                     };
                 });
 
@@ -922,7 +1062,7 @@ async function gettaskButButtonPress() {
                 });
 
             } catch (e) {
-                document.getElementById('serviceinf').innerHTML = `<div style="color:red; text-align:center;">Ошибка: ${e.message}</div>`;
+                document.getElementById('serviceinf').innerHTML = `<div style="color:red; text-align:center;">Ошибка: ${taskEsc(e.message)}</div>`;
             }
         };
 
@@ -931,6 +1071,7 @@ async function gettaskButButtonPress() {
             let val = document.getElementById('taskuserid').value.replace(/\D/g, '');
             if (val.length > 4) {
                 document.getElementById('useriddata').value = val;
+                saveTaskDraft();
                 document.getElementById('getuserservices').click();
             }
         };
@@ -959,6 +1100,20 @@ async function gettaskButButtonPress() {
         };
         document.getElementById('refreshhashcreateform').click();
 
+        // Автосохранение черновика при любом изменении полей (защита от дублей обработчиков)
+        ['priority', 'customerservice', 'taskserviceid', 'taskuserid', 'taskcomment', 'useriddata'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el || el.dataset.afDraftBound) return;
+            el.dataset.afDraftBound = '1';
+            el.addEventListener('input', saveTaskDraft);
+            el.addEventListener('change', saveTaskDraft);
+        });
+
+        // Восстанавливаем черновик, если он сохранён для этого же чата
+        if (activeConvId && restoreTaskDraft(activeConvId)) {
+            typeof createAndShowButton === 'function' && createAndShowButton('♻️ Черновик формы восстановлен', 'message');
+        }
+
         document.getElementById('hideMeCreateForm').onclick = () => {
             document.getElementById('AF_Createtask').style.display = 'none';
             if (typeof taskBut !== 'undefined') taskBut.classList.remove('active');
@@ -971,7 +1126,7 @@ async function gettaskButButtonPress() {
         document.getElementById('priority').onchange = (e) => {
             const el = e.target;
             el.style.color = el.options[el.selectedIndex].style.color || '#fff';
-            el.classList.remove('err-shake');
+            el.classList.remove('err-shake-task');
         };
 
         // Универсальная функция применения пресетов
@@ -994,6 +1149,7 @@ async function gettaskButButtonPress() {
             if (commentPrefix) {
                 comEl.value = comEl.value ? comEl.value + "\n" + commentPrefix : commentPrefix;
             }
+            saveTaskDraft();
         };
 
         // ИСПРАВЛЕНИЕ: Кнопки пресетов теперь направляют в Техподдержку 1Л Исход.
@@ -1019,14 +1175,25 @@ async function gettaskButButtonPress() {
             return true;
         };
 
-        // Отправка формы Autofaq
+        // Отправка формы Autofaq.
+        // ЗАЩИТА: при любой ошибке НИЧЕГО не очищается — поля, заметка и черновик
+        // остаются на месте, оператор правит и жмёт «Повторить».
         document.getElementById('createtask').onclick = async function () {
+            const statusBox = document.getElementById('taskSubmitStatus');
             let chathash = document.getElementById('chathashlnk');
             let priority = document.getElementById('priority');
             let cs = document.getElementById('customerservice');
             let tservid = document.getElementById('taskserviceid');
             let tuserid = document.getElementById('taskuserid');
             let comment = document.getElementById('taskcomment');
+
+            // --- САНИТИЗАЦИЯ: в поля возвращается ровно то, что уйдёт на сервер.
+            // Невидимые символы убираем, в ID оставляем только цифры —
+            // оператор видит в форме актуальное содержимое запроса.
+            comment.value = sanitizeTaskText(comment.value);
+            tuserid.value = tuserid.value.trim().replace(/\D/g, '');
+            tservid.value = tservid.value.trim().replace(/\D/g, '');
+            chathash.value = chathash.value.trim();
 
             // Сбрасываем старые ошибки перед новой проверкой
             [chathash, priority, cs, tservid, tuserid, comment].forEach(el => el.classList.remove('err-shake-task'));
@@ -1052,6 +1219,7 @@ async function gettaskButButtonPress() {
             }
 
             if (!isValid) {
+                statusBox.style.display = 'none';
                 createAndShowButton('Проверьте правильность заполнения выделенных полей', 'error');
                 return;
             }
@@ -1062,42 +1230,74 @@ async function gettaskButButtonPress() {
             btn.style.opacity = '0.6';
             btn.style.cursor = 'not-allowed';
             btn.innerHTML = '⏳ Отправка...';
+            statusBox.style.display = 'none';
 
-            // Сервер ожидает строку "null" (не пустую строку), когда услуга не указана
-            let usluga = tservid.value.trim() === "" ? "null" : tservid.value.trim();
-            let conversid = chathash.value;
+            try {
+                // Сервер ожидает строку "null" (не пустую строку), когда услуга не указана
+                let usluga = tservid.value.trim() === "" ? "null" : tservid.value.trim();
+                let conversid = chathash.value;
 
-            let elementsObj = [
-                { name: "priority", isFile: false, value: priority.value },
-                { name: "category", isFile: false, value: cs.value },
-                { name: "educationServiceIdInput", isFile: false, value: usluga },
-                { name: "userId", isFile: false, value: tuserid.value.trim() },
-                { name: "comment", isFile: false, value: comment.value }
-            ];
+                let elementsObj = [
+                    { name: "priority", isFile: false, value: priority.value },
+                    { name: "category", isFile: false, value: cs.value },
+                    { name: "educationServiceIdInput", isFile: false, value: usluga },
+                    { name: "userId", isFile: false, value: tuserid.value.trim() },
+                    { name: "comment", isFile: false, value: comment.value }
+                ];
 
-            if (!SearchinAFnewUI("userType")) {
-                let initId = tuserid.value.trim();
-                elementsObj.push({ name: "initiatorId", isFile: false, value: initId ? parseInt(initId) : 0 });
+                if (!SearchinAFnewUI("userType")) {
+                    let initId = tuserid.value.trim();
+                    elementsObj.push({ name: "initiatorId", isFile: false, value: initId ? parseInt(initId) : 0 });
+                }
+
+                const result = await sendAutofaqActionDetailed(conversid, elementsObj);
+
+                if (result.ok) {
+                    // Заметку отправляем только после подтверждения задачи;
+                    // если она не ушла — не мешаем, оператор пришлёт вручную
+                    let noteFailed = false;
+                    if (NoteFlag === 1) {
+                        try {
+                            sendComment(NoteText);
+                            NoteNoticeClear();
+                        } catch (e) {
+                            console.error('Note send error:', e);
+                            noteFailed = true;
+                        }
+                    }
+
+                    // Форму скрываем и чистим ТОЛЬКО после подтверждения сервера
+                    document.getElementById('AF_Createtask').style.display = 'none';
+                    if (typeof taskBut !== 'undefined') taskBut.classList.remove('active');
+
+                    clearFormFields();
+                    clearTaskDraft(conversid);
+
+                    typeof createAndShowButton === 'function' && createAndShowButton(
+                        noteFailed ? '✅ Задача создана, но заметка не отправилась — пришли её вручную' : '✅ Задача успешно создана',
+                        noteFailed ? 'error' : 'message'
+                    );
+                } else {
+                    // ❗ НИЧЕГО НЕ ОЧИЩАЕМ: поля, заметка и черновик сохранены.
+                    // Черновик переживёт даже перезагрузку страницы (localStorage).
+                    const msg = describeSubmitError(result);
+                    statusBox.innerHTML = `⚠️ ${taskEsc(msg)}<br><span style="opacity: 0.75;">Поля и черновик сохранены — исправь и нажми «Повторить».</span>`;
+                    statusBox.style.display = 'block';
+                    btn.innerHTML = '🔁 Повторить отправку';
+                    createAndShowButton(msg, 'error');
+                }
+            } catch (e) {
+                // Страховка: любая ошибка в коде обработки не должна потерять данные
+                console.error('Task submit fatal:', e);
+                statusBox.innerHTML = '⚠️ Непредвиденная ошибка отправки — поля и черновик сохранены, попробуй ещё раз';
+                statusBox.style.display = 'block';
+                btn.innerHTML = '🔁 Повторить отправку';
+            } finally {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                if (!btn.innerHTML.includes('Повторить')) btn.innerHTML = '🚀 Отправить задачу';
             }
-
-            const success = await sendAutofaqAction(conversid, elementsObj);
-
-            if (success) {
-                if (NoteFlag === 1) { sendComment(NoteText); NoteNoticeClear(); }
-
-                // Просто скрываем форму напрямую, не вызывая событие клика по кнопке "Hide"
-                document.getElementById('AF_Createtask').style.display = 'none';
-                if (typeof taskBut !== 'undefined') taskBut.classList.remove('active');
-
-                document.getElementById('clearcreateform').click();
-            } else {
-                createAndShowButton('Ошибка сети при отправке задачи', 'error');
-            }
-
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.style.cursor = 'pointer';
-            btn.innerHTML = '🚀 Отправить задачу';
         };
 
         const setupFastNote = (id, text) => {
@@ -1108,7 +1308,8 @@ async function gettaskButButtonPress() {
         setupFastNote('nrstudent', '🔴 Крит Н.О. 👨‍🎓 У');
         setupFastNote('nrteacher', '🔴 Крит Н.О. 👽 П');
 
-        document.getElementById('clearcreateform').onclick = () => {
+        // Полная очистка полей (+ удаление черновика снаружи). Вызывается и после успешной отправки
+        const clearFormFields = () => {
             document.getElementById('chathashlnk').value = '';
             document.getElementById('taskcomment').value = '';
             document.getElementById('taskserviceid').value = '';
@@ -1117,7 +1318,41 @@ async function gettaskButButtonPress() {
             document.getElementById('priority').value = '';
             document.getElementById('customerservice').value = '';
             document.getElementById('priority').style.color = '#fff';
+            document.getElementById('taskSubmitStatus').style.display = 'none';
             NoteNoticeClear();
+        };
+
+        // ⌫ с защитой от случайного клика: первый клик — предупреждение, второй в течение 3 сек — очистка
+        const clearBtn = document.getElementById('clearcreateform');
+        const disarmClearBtn = () => {
+            clearTimeout(clearBtn._armTimer);
+            delete clearBtn.dataset.armed;
+            clearBtn.textContent = '⌫';
+            clearBtn.title = 'Очистить форму';
+            clearBtn.style.borderColor = '';
+            clearBtn.style.color = '';
+        };
+        clearBtn.onclick = function () {
+            const hasContent = ['taskcomment', 'taskserviceid', 'taskuserid', 'useriddata']
+                .some(id => document.getElementById(id).value.trim())
+                || document.getElementById('priority').value
+                || document.getElementById('customerservice').value;
+
+            if (hasContent && !this.dataset.armed) {
+                this.dataset.armed = '1';
+                this.textContent = '❓';
+                this.title = 'Точно очистить? Нажми ещё раз';
+                this.style.borderColor = 'rgba(244, 63, 94, 0.6)';
+                this.style.color = 'var(--accent-rose)';
+                clearTimeout(this._armTimer);
+                this._armTimer = setTimeout(disarmClearBtn, 3000);
+                return;
+            }
+
+            const conversid = document.getElementById('chathashlnk').value.trim();
+            disarmClearBtn();
+            clearFormFields();
+            clearTaskDraft(conversid);
         };
 
     } else {
@@ -1130,21 +1365,30 @@ async function gettaskButButtonPress() {
     function NoteNoticeSet() {
         document.getElementById('NoteNoticeText').innerText = NoteText;
         document.getElementById('NoteNoticeWrap').style.display = 'block';
+        saveTaskDraft();
     }
     function NoteNoticeClear() {
         document.getElementById('NoteNoticeWrap').style.display = 'none';
         document.getElementById('NoteNoticeText').innerText = '';
         NoteText = '';
         NoteFlag = 0;
+        saveTaskDraft();
     }
     document.getElementById('NoteNoticeText').onclick = NoteNoticeClear;
 }
 
-// ИСПРАВЛЕНИЕ: Формируем правильный application/json запрос для сервера Autofaq.
-// Нативный JSON.stringify() сам идеально экранирует любые переносы строк и кавычки.
-// Финальная и самая надежная версия функции отправки!
-async function sendAutofaqAction(conversationId, elements = null, isClickMode = false) {
-    if (!conversationId) return false;
+// Отправка запросов на AutoFAQ с детальным результатом.
+// Транспорт безопасен для любых спецсимволов: FormData + JSON.stringify — браузер сам
+// ставит multipart-заголовок с boundary, а stringify экранирует кавычки, бэкслеши,
+// переносы строк и эмодзи. Сверху добавлены: таймаут (AbortController), чтение тела
+// ответа и распознавание ошибок, которые сервер возвращает с кодом 200.
+async function sendAutofaqActionDetailed(conversationId, elements = null, isClickMode = false) {
+    if (!conversationId) return { ok: false, error: 'no-conversation' };
+    if (typeof aftoken === 'undefined' || !aftoken) return { ok: false, error: 'csrf' };
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), TASK_SUBMIT_TIMEOUT_MS);
+
     try {
         let endpoint = isClickMode ? "click" : "form";
         // Базовые заголовки. ВАЖНО: Мы НЕ прописываем здесь content-type!
@@ -1176,13 +1420,37 @@ async function sendAutofaqAction(conversationId, elements = null, isClickMode = 
         }
 
         config.headers = headers;
+        config.signal = controller.signal;
 
         const response = await fetch(`https://skyeng.autofaq.ai/api/reason8/operator/customButtons/${endpoint}`, config);
 
-        // Возвращаем успешность запроса (true если статус 200-299)
-        return response.ok;
+        // Читаем тело как текст — даже при ошибке парсинга это не уронит отправку
+        const rawText = await response.text();
+        let body = null;
+        try { body = rawText ? JSON.parse(rawText) : null; } catch (_) { body = null; }
+
+        if (!response.ok) {
+            return { ok: false, status: response.status, body, serverError: extractServerError(body) };
+        }
+
+        // 2xx ещё не гарантия: сервер может вернуть ошибку в теле — проверяем
+        const serverError = extractServerError(body);
+        if (serverError) {
+            return { ok: false, status: response.status, body, serverError };
+        }
+
+        return { ok: true, status: response.status, body };
     } catch (err) {
+        if (err?.name === 'AbortError') return { ok: false, error: 'timeout' };
         console.error("Autofaq submit error:", err);
-        return false;
+        return { ok: false, error: err?.message || 'network' };
+    } finally {
+        clearTimeout(timeoutId);
     }
+}
+
+// Обратная совместимость: старый вызов возвращает просто true/false
+async function sendAutofaqAction(conversationId, elements = null, isClickMode = false) {
+    const result = await sendAutofaqActionDetailed(conversationId, elements, isClickMode);
+    return result.ok;
 }
