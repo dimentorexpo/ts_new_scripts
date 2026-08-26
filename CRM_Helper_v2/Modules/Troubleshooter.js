@@ -111,7 +111,7 @@ function addinginfo(pageelement, userid, elemtype) {
         pageelement.style.color = 'blue';
         pageelement.style.textDecoration = 'underline';
         pageelement.style.cursor = 'pointer';
-        pageelement.tagName = 'A';
+        // FIX: присваивание pageelement.tagName='A' удалено — tagName только для чтения.
         pageelement.title = "ЛКМ - открыть пользователя в CRM. ПКМ - скопировать id"
 
         pageelement.addEventListener('click', () => {
@@ -128,11 +128,12 @@ function addinginfo(pageelement, userid, elemtype) {
     pageelement.appendChild(span);
 }
 
-const observer = new MutationObserver(mutations => {
-    const addedNodes = mutations.flatMap(mutation => Array.from(mutation.addedNodes));
-    if (addedNodes.length > 0) {
-        addusersinfo();
-    }
+// Наблюдатель за DOM. FIX: раньше addusersinfo() выполнялся на КАЖДУЮ мутацию,
+// что сильно грузило страницу — теперь запуск отложен на 200 мс после последней мутации.
+let observerDebounce = null;
+const observer = new MutationObserver(() => {
+    clearTimeout(observerDebounce);
+    observerDebounce = setTimeout(addusersinfo, 200);
 });
 
 observer.observe(document.body, { childList: true, subtree: true });

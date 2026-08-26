@@ -260,7 +260,16 @@ function getApiDateStr(inputDateStr, isEndOfDay) {
     return `${day}-${month}-${year} ${h}:${min}:${sec}`;
 }
 
-document.getElementById('startlookstatus').onclick = function () { 
+/** Экранирует HTML — данные из API вставляются через innerHTML, поэтому их нужно обезопасить. */
+function escapeLSHtml(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+document.getElementById('startlookstatus').onclick = function () {
     const teacherId = document.getElementById('idteacherforsearch').value.trim();
     if (!teacherId) {
         alert("Введите ID учителя в поле");
@@ -288,7 +297,14 @@ document.getElementById('startlookstatus').onclick = function () {
 
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (lessonsresponse) {
         if (lessonsresponse.success) {
-            const lessonsarray = JSON.parse(lessonsresponse.fetchansver);
+            let lessonsarray;
+            try {
+                lessonsarray = JSON.parse(lessonsresponse.fetchansver);
+            } catch (e) {
+                console.error('Не удалось разобрать ответ:', e);
+                statustable.innerHTML = "<div style='text-align:center; padding:20px; color:#ff5555;'>❌ Неверный ответ сервера</div>";
+                return;
+            }
             const classes = lessonsarray?.[0]?.result?.[0]?.classes;
 
             if (classes && classes.length > 0) {
@@ -313,14 +329,14 @@ document.getElementById('startlookstatus').onclick = function () {
                     const formatDateShort = (dateStr) => dateStr ? new Date(dateStr).toLocaleString("ru-RU", { timeZone: 'Europe/Moscow' }).slice(0, 17) : "—";
 
                     row.innerHTML = `
-                        <td class="clickable-id" data-id="${studentId}">${studentId}</td>
-                        <td>${formatDateShort(lesson.startAt)}</td>
-                        <td class="${statusClass}">${status || "—"}</td>
-                        <td>${formatDate(lesson.classStatus?.createdAt)}</td>
-                        <td>${lesson.classStatus?.createdByUserId || "—"}</td>
-                        <td style="font-size:10px;">${lesson.type || "—"}</td>
-                        <td style="font-size:10px; max-width:150px; word-wrap:break-word;">${lesson.classStatus?.comment || "—"}</td>
-                        <td>${formatDate(lesson.removedAt)}</td>
+                        <td class="clickable-id" data-id="${escapeLSHtml(studentId)}">${escapeLSHtml(studentId)}</td>
+                        <td>${escapeLSHtml(formatDateShort(lesson.startAt))}</td>
+                        <td class="${statusClass}">${escapeLSHtml(status || "—")}</td>
+                        <td>${escapeLSHtml(formatDate(lesson.classStatus?.createdAt))}</td>
+                        <td>${escapeLSHtml(lesson.classStatus?.createdByUserId || "—")}</td>
+                        <td style="font-size:10px;">${escapeLSHtml(lesson.type || "—")}</td>
+                        <td style="font-size:10px; max-width:150px; word-wrap:break-word;">${escapeLSHtml(lesson.classStatus?.comment || "—")}</td>
+                        <td>${escapeLSHtml(formatDate(lesson.removedAt))}</td>
                     `;
                     table.appendChild(row);
                 });

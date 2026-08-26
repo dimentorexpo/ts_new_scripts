@@ -63,7 +63,7 @@ hideWindowOnDoubleClick('testroomsCRMhead');
 hideWindowOnClick('testroomsCRM', 'hideMetestroomsCRM');
 
 const messagefield = document.getElementById('testroomsCRMmessage');
-messagefield.display = 'none';
+messagefield.style.display = 'none'; // FIX: было messagefield.display — свойство ни на что не влияло
 
 document.getElementById('btnCreateTestRoom').onclick = function () { // открытие окна создания тестовых комнат
   if (document.getElementById('testroomsCRM').style.display == 'none') {
@@ -101,7 +101,14 @@ function teststudenttofield() { // подставить тестового У
 }
 
 document.getElementById('userfromchatid').onclick = function () { // добавить id пользователя из активного чата и добавить id тестовго У или П
-  let userIDfromCRM = document.getElementsByClassName('id')[0].innerText;
+  // FIX: раньше при отсутствии элемента .id на странице падал TypeError.
+  const userIdElement = document.getElementsByClassName('id')[0];
+  if (!userIdElement) {
+    testroomsCRMshowmessage('error', 'Нет открытой задачи');
+    return;
+  }
+
+  const userIDfromCRM = userIdElement.innerText;
   if (userIDfromCRM) {
     let flagwhouser = 0;
     let insertionfield = document.getElementById('studforroom');
@@ -110,7 +117,6 @@ document.getElementById('userfromchatid').onclick = function () { // добав�
     UserTypeBages.forEach(div => {
       let bagetype = div.getAttribute('data-qa');
       if (bagetype == 'is-teacher-badge') {
-
         insertionfield = document.getElementById('teachforroom')
         flagwhouser = 1;
       }
@@ -231,12 +237,12 @@ function testroomsCRMshowmessage(type, text) { // вывод уведомлен�
   }
 
   messagefield.innerText = text;
-  messagefield.display = '';
+  messagefield.style.display = ''; // FIX: было messagefield.display
   setTimeout(testroomsCRMhidemessage, 7000)
 }
 
 function testroomsCRMhidemessage() { //скрытие уведомлений
-  messagefield.display = 'none';
+  messagefield.style.display = 'none'; // FIX: было messagefield.display
   messagefield.innerText = '';
   messagefield.style.background = 'rgb(70, 68, 81)';
 }

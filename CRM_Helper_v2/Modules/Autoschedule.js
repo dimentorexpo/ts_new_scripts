@@ -1,4 +1,4 @@
-let configsObj;
+let configsObj = null; // FIX: инициализируем null, чтобы можно было безопасно проверять перед использованием
 var win_Autoschedule =  // описание элементов окна статуса уроков
     `<div class="maindivst" style="display: flex; width: 700px;">
         <span style="width: 1060px">
@@ -46,16 +46,16 @@ document.getElementById('butAutoschedule').onclick = function () {
             method: 'GET'
         };
 
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
             if (!response.success) {
                 alert('Не удалось выполнить запрос: ' + response.error);
                 return;
             } else {
                 const otvetConfigs = JSON.parse(response.fetchansver);
-				configsObj = new Map(otvetConfigs.data.map(d => [d.serviceTypeKey, d.shortTitle]));
-				console.log(configsObj)
+                configsObj = new Map(otvetConfigs.data.map(d => [d.serviceTypeKey, d.shortTitle]));
+                console.log(configsObj)
             }
-        })	
+        })
     }
 }
 
@@ -113,14 +113,13 @@ function checkAPAvailability(items) {
     if (items) {
         items.forEach(item => {
             if (item.serviceTypeKey !== 'english_adult_self_study' && item.serviceTypeKey !== 'english_adult_not_native_speaker_talks_15min' && item.serviceTypeKey !==  'life_adult') {
-                // Здесь ваш код для обработки элемента, который не соответствует условию
 
                 const fetchURL = `https://teachers-schedule.skyeng.ru/api/education-services/${item.id}/auto-schedule/is-available/`;
                 const requestOptions = {
                     method: 'GET'
                 };
 
-                chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
+                chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
                     if (!response.success) {
                         alert('Не удалось выполнить запрос: ' + response.error);
                         return;
@@ -129,12 +128,12 @@ function checkAPAvailability(items) {
                         console.log(otvetAPstatus)
 
                         let serviceId = item.id;
-						 let STKname
-						if (configsObj.has(item.serviceTypeKey)) {
-                            STKname = configsObj.get(item.serviceTypeKey);
-                        }
-						
-                      //  let STKname = item.serviceTypeKey
+
+                        // FIX: раньше при незагруженном configsObj падал TypeError,
+                        // теперь просто показываем системный ключ услуги.
+                        let STKname = (configsObj && configsObj.has(item.serviceTypeKey))
+                            ? configsObj.get(item.serviceTypeKey)
+                            : item.serviceTypeKey;
                         let row = document.createElement('tr');
                         row.classList = "rowOfLessonStatus"
                         let cell;
@@ -155,7 +154,8 @@ function checkAPAvailability(items) {
                         cell.style = "border: 1px solid black; font-size:12px;"
                         row.appendChild(cell);
 
-                        let reasonNedostupen = otvetAPstatus.data.reasons;
+                        // FIX: reasons может быть undefined — раньше .length падал.
+                        let reasonNedostupen = otvetAPstatus.data?.reasons ?? [];
                         cell = document.createElement('td');
                         cell.textContent = reasonNedostupen.length == 0 ? "➖" : reasonNedostupen
                         cell.style = "border: 1px solid black; font-size:12px;"

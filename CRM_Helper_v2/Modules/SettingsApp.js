@@ -40,8 +40,7 @@ var win_SettingsApp =  // описание элементов главного �
 		</div>
     </div>`;
 
-let audioCRM
-let soundsfromdocCRM;
+let audioCRM // аудиоплеер уведомлений (используется также в content.js)
 let soundflagCRM = 0
 
 if (localStorage.getItem('sound_strCRM') !== null && localStorage.getItem('sound_strCRM') !== "")
@@ -99,15 +98,17 @@ document.getElementById('btnSettingsApp').onclick = function () { // откры�
         document.getElementById('winSettingsApp').style.display = ''
         document.getElementById('idmymenucrm').style.display = 'none'
 
-        if (localStorage.getItem('test_studCRM') != "" || localStorage.getItem('test_studCRM') != null) { // если в localStorage записан тестовый У отобразить
+        // FIX: раньше условие было (a != "" || a != null) — всегда истинно,
+        // из-за чего ветка else была недостижима.
+        if (localStorage.getItem('test_studCRM') != null && localStorage.getItem('test_studCRM') != "") { // если в localStorage записан тестовый У отобразить
             document.getElementById('test_stdCRM').value = localStorage.getItem('test_studCRM');
         } else document.getElementById('test_stdCRM').value = "";
 
-        if (localStorage.getItem('test_teachCRM') != "" || localStorage.getItem('test_teachCRM') != null) { // если в localStorage записан тестовый У отобразить
+        if (localStorage.getItem('test_teachCRM') != null && localStorage.getItem('test_teachCRM') != "") { // если в localStorage записан тестовый П отобразить
             document.getElementById('test_teachCRM').value = localStorage.getItem('test_teachCRM');
         } else document.getElementById('test_teachCRM').value = "";
 
-        if (localStorage.getItem('splinterCRM') != null || localStorage.getItem('splinterCRM') != "") { //Загружаем интервал между воспроизведением звука
+        if (localStorage.getItem('splinterCRM') != null) { //Загружаем интервал между воспроизведением звука
             document.getElementById('soundplayintervalCRM').value = localStorage.getItem('splinterCRM');
         } else {
             localStorage.setItem('splinterCRM', 3);
@@ -133,11 +134,23 @@ document.getElementById('btnSettingsApp').onclick = function () { // откры�
 }
 
 async function getsoundsfromdocCRM() { // загрузка списка звуков из файла
-    soundsfromdocCRM = 'https://script.google.com/macros/s/AKfycbyD1l-oLcE-BBmyN1QmcHKoi0rwVfCwWjE6cfTqw6Y9QQGAju-9inKbwSOfHCI6qBEjtg/exec'
-    await fetch(soundsfromdocCRM).then(r => r.json()).then(r => soundsdata = r)
+    const soundsDocURL = 'https://script.google.com/macros/s/AKfycbyD1l-oLcE-BBmyN1QmcHKoi0rwVfCwWjE6cfTqw6Y9QQGAju-9inKbwSOfHCI6qBEjtg/exec';
+
+    // FIX: раньше soundsdata создавалась как неявная глобальная переменная,
+    // а счётчик j утекал в window; ошибки сети не обрабатывались.
+    let soundsdata;
+    try {
+        const r = await fetch(soundsDocURL);
+        soundsdata = await r.json();
+    } catch (err) {
+        console.error('Не удалось загрузить список звуков:', err);
+        return;
+    }
+
     soundsconteinerCRM = soundsdata.result;
-    console.log(soundsdata.result) //получим список звуков
-    for (j = 0; j < soundsconteinerCRM.length; j++) {
+    if (!soundsconteinerCRM) return;
+
+    for (let j = 0; j < soundsconteinerCRM.length; j++) {
         if (soundsconteinerCRM[j][0] != '') {
             addOptionCRM(objSoundListCRM, `${soundsconteinerCRM[j][0]}`, `${soundsconteinerCRM[j][1]}`)
         }
@@ -243,10 +256,14 @@ document.getElementById('sound_testCRM').onclick = function () { // кнопка
         document.getElementById('sound_testCRM').innerHTML = '⏹'
         document.getElementById('sound_testCRM').title = 'Остановить воспроизведение'
         audioCRM.play()
+
+        // FIX: раньше при NaN в duration получался таймаут "NaN".
+        // Если длительность неизвестна — возвращаем кнопку через 30 сек.
+        const playMs = isFinite(audioCRM.duration) ? Math.ceil(audioCRM.duration * 1000) + 1 : 30000;
         setTimeout(() => {
             document.getElementById('sound_testCRM').innerHTML = '▶'
             document.getElementById('sound_testCRM').title = 'Проверка звука при добавленной ссылке'
-        }, Number(audioCRM.duration * 1000 + 1).toFixed(0));
+        }, playMs);
     } else {
         document.getElementById('sound_testCRM').innerHTML = '▶'
         document.getElementById('sound_testCRM').title = 'Проверка звука при добавленной ссылке'
@@ -304,34 +321,37 @@ document.getElementById('savesettingstofileCRM').onclick = function () {
     getLocalstorageToFileCRM('settings-CRMhelp')
 }
 
-document.getElementById('fileinputCRM').onclick = function () { // по клику на кнопку Загрузить настройки предлагает выбрать файл настроек, добавлять при этом ранее сохраненный в формате .json
-    let fileinputCRM = document.getElementById('fileinputCRM');
-    let jsonparsed;
+// FIX: раньше слушатель 'change' добавлялся внутри onclick — при каждом клике
+// на «Загрузить настройки» вешалась ещё одна копия обработчика, и файл
+// импортировался в localStorage многократно. Слушатель регистрируется один раз.
+document.getElementById('fileinputCRM').addEventListener('change', function (e) {
+    const fileinputCRM = document.getElementById('fileinputCRM');
+    const file = fileinputCRM.files[0];
+    const textType = /.json/;
 
-    fileinputCRM.addEventListener('change', function (e) {
-        let file = fileinputCRM.files[0];
-        let textType = /.json/;
+    if (!file || !file.type.match(textType)) {
+        console.log("File not supported!")
+        return;
+    }
 
-        if (file.type.match(textType)) {
-            let reader = new FileReader();
+    const reader = new FileReader();
 
-            reader.onload = function (e) {
-                console.log(reader.result)
-                jsonparsed = JSON.parse(reader.result)
-                console.log(jsonparsed)
-                console.log(Object.keys(jsonparsed).length)
-                for (let i = 0; i < Object.keys(jsonparsed).length; i++) {
-                    localStorage.setItem(Object.keys(jsonparsed)[i], Object.values(jsonparsed)[i])
-                }
-                alert("Настройки расширения в localstorage загружены успешно!")
+    reader.onload = function () {
+        try {
+            const jsonparsed = JSON.parse(reader.result);
+            // Переносим все ключи из файла настроек в localStorage.
+            for (const [key, value] of Object.entries(jsonparsed)) {
+                localStorage.setItem(key, value);
             }
-
-            reader.readAsText(file);
-        } else {
-            console.log("File not supported!")
+            alert("Настройки расширения в localstorage загружены успешно!");
+        } catch (err) {
+            console.error('Не удалось разобрать файл настроек:', err);
+            alert("Файл настроек повреждён или имеет неверный формат!");
         }
-    });
-}
+    };
+
+    reader.readAsText(file);
+});
 
 
 

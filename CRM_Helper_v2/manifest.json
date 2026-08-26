@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CRMHelper",
-    "version": "2.0.28",
+    "version": "2.0.30",
     "description": "Твой мультитул в работе с обращениями",
     "background": {
         "service_worker": "bg.js"
@@ -24,9 +24,7 @@
         },
         {
             "js": [
-                "/Extras/jquery-3.7.1.js",
                 "/Modules/AlarmClock.js",
-                "/Modules/BinBankInfo.js",
                 "/Modules/GrList.js",
                 "/Modules/JiraSearch.js",
                 "/Modules/LessonStatus.js",
@@ -37,11 +35,10 @@
                 "/Modules/Smartroom.js",
                 "/Modules/TestRooms.js",
 				"/Modules/Autoschedule.js",
-                "/Lightbox/dist/js/lightbox.min.js"
+                "/Modules/ImageViewer.js"
             ],
             "css": [
-                "/CSS/styles.css",
-                "/Lightbox/dist/css/lightbox.min.css"
+                "/CSS/styles.css"
             ],
             "matches": ["*://crm2.skyeng.ru/*"],
             "run_at": "document_idle"

@@ -76,7 +76,10 @@ const JQLTemplates = { // шаблоны JQL запросов
     PSqueryitem: 'project = PS AND text ~ "${testJira.value}" ORDER BY Created'
 };
 
-for (const [key, template] of Object.entries(JQLTemplates)) { // передача запросов в форму
+// Каждый шаблон становится глобальной константой с геттером:
+// при обращении (например defqueryitem) плейсхолдер заменяется текущим текстом из поля поиска.
+// Так выражения вида 'text ~ "${testJira.value}"' подставляют живое значение.
+for (const [key, template] of Object.entries(JQLTemplates)) {
     Object.defineProperty(window, key, {
         get: function () {
             return template.replace('${testJira.value}', testJira.value);
@@ -180,6 +183,19 @@ function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputT
                 }
             }
         }
+    }
+}
+
+/**
+ * Удаляет задачу из массива избранного по её issueId.
+ * FIX: раньше удалялся последний элемент (indexOf(this.value) на span
+ * всегда давал -1, а splice(-1, 1) отрезал конец массива).
+ */
+function removeIssueFromFavourites(issueId) {
+    const idx = favissues.findIndex(html => html.includes(issueId));
+    if (idx !== -1) {
+        favissues.splice(idx, 1);
+        localStorage.setItem('bugsarray', JSON.stringify(favissues));
     }
 }
 
@@ -305,8 +321,6 @@ function getJiraTask(requestOptions) { // поиск задач в jira
             const refreshissuesarr = document.querySelectorAll('.refreshissues');
             addRefreshIssueOnClickEvent(refreshissuesarr, issueIds);
 
-            setTimeout(() => { issues = []; }, 5000);
-
             switchJiraPages();
         } else {
             alert('Не удалось получить задачи: ' + tasksresponse.error);
@@ -407,7 +421,8 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
         document.getElementById('AF_Jira').style.display = ''
         document.getElementById('idmymenucrm').style.display = 'none'
 
-        document.getElementById('JQLquery').innerText = defqueryitem;
+        // FIX: было .innerText — для textarea корректно задавать значение через .value
+        document.getElementById('JQLquery').value = defqueryitem;
 
         function checkJiraToken() { // Функция проверки авторизации в Jira
             const fetchURL = 'https://jira.skyeng.link/';
@@ -417,12 +432,10 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (responseAuth) {
                 const regexMatch = responseAuth.fetchansver.match(/name="atlassian-token" content="(.*lin)/);
                 if (regexMatch) {
-                    // Set the 'jiratkn' variable to the first capturing group of the regex match
-                    const jiratkn = regexMatch[1];
-                    // Set the inner text of the 'searchjiratknstatus' element to a green checkmark
+                    // Токен найден — пользователь авторизован в Jira.
                     document.getElementById('searchjiratknstatus').innerText = "🟢";
                 } else {
-                    // If the regex pattern is not found, show an alert and set the inner text of the 'searchjiratknstatus' element to a red circle
+                    // Если токен не найден, предупреждаем и показываем красный индикатор.
                     alert("Авторизуйтесь в системе Jira, чтобы при поиске запрос был отправлен");
                     document.getElementById('searchjiratknstatus').innerText = "🔴";
                 }
@@ -496,10 +509,12 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                 for (let i = 0; i < document.getElementsByName('removefromfavourites').length; i++) {
                     document.getElementsByName('removefromfavourites')[i].onclick = function () {
                         let parent = this.parentNode.parentNode;
-                        favissues.splice(favissues.indexOf(this.value), 1);
-                        localStorage.setItem('bugsarray', JSON.stringify(favissues));
+                        // FIX: раньше splice(-1, 1) удалял последнюю задачу в избранном,
+                        // т.к. indexOf(this.value) на span всегда возвращал -1.
+                        const issueId = this.parentNode.querySelector('[name="favissuemassive"]').innerText;
+                        removeIssueFromFavourites(issueId);
                         parent.removeChild(this.parentNode);
-                        plusonecount() // test
+                        plusonecount() // перепривязываем обработчики увеличения счётчика
                     }
                 }
 
@@ -536,19 +551,21 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                                         console.log("count=" + count + " increasedcount " + increasedcount);
 
                                         const fetchURL2 = 'https://jira.skyeng.link/secure/AjaxIssueAction.jspa?decorator=none';
-                                        const requestOptions2 = `{
-                                            "headers": {
+                                        // FIX: раньше options формировались как JSON-строка — fetch
+                                        // молча игнорировал её и слал GET вместо POST с телом,
+                                        // поэтому Support Tab фактически не увеличивался.
+                                        const requestOptions2 = {
+                                            headers: {
                                                 "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                                "sec-fetch-mode": "cors",
-                                                "sec-fetch-site": "same-origin",
                                                 "x-requested-with": "XMLHttpRequest",
                                                 "x-sitemesh-off": "true"
-                                                        },
-                                                "body": "customfield_15410=${increasedcount}&issueId=${itarrs[c].innerText}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410",
-                                              "method": "POST",
-                                              "mode": "cors",
-                                              "credentials": "include"
-                                                }`;
+                                                // sec-fetch-* браузер проставит сам
+                                            },
+                                            body: `customfield_15410=${increasedcount}&issueId=${itarrs[c].innerText}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410`,
+                                            method: "POST",
+                                            mode: "cors",
+                                            credentials: "include"
+                                        };
 
                                         chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL2, requestOptions: requestOptions2 }, function (refissplusresponse) {
                                             if (refissplusresponse.success) {
@@ -559,7 +576,8 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                                         });
                                     }
                                 } else {
-                                    alert('Не удалось добавить SupportTab: ' + refissresponse.error);
+                                    // FIX: было обращение к несуществующей переменной refissresponse — падал ReferenceError.
+                                    alert('Не удалось добавить SupportTab: ' + authresponse2.error);
                                 }
                             });
                         }
@@ -596,6 +614,13 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                 }
             }
 
+            // FIX: если ни одна вкладка запроса не выбрана, раньше в fetch уходил
+            // undefined вместо options — теперь подставляем дефолтный запрос.
+            if (!requestOptions) {
+                requesttojiratext = encodeURIComponent(defqueryitem);
+                requestOptions = optionsforfetch(requesttojiratext, 0);
+            }
+
             getJiraTask(requestOptions);
         }
 
@@ -621,13 +646,15 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                         let issues = [];
                         issues = '<span style="color: #00FA9A">&#5129;</span>' + '<a href="' + rezissuetable[0].items[0].url + '" onclick="" target="_blank" style="color: #ffe4c4">' + rezissuetable[0].items[0].subtitle + " - " + rezissuetable[0].items[0].title + '</a>';
                         document.getElementById('issuetable').innerHTML = issues;
-                        setTimeout(function () { issues = []; testJira.value = ""; }, 5000)
+                        // Через 5 секунд очищаем поле поиска (сброс локальной переменной issues убран как бесполезный).
+                        setTimeout(function () { testJira.value = ""; }, 5000)
                     }
                 } else {
-                    alert('Не удалось найти задачу: ' + refissresponse.error);
+                    // FIX: было обращение к несуществующей переменной refissresponse — падал ReferenceError.
+                    alert('Не удалось найти задачу: ' + searchissresponse.error);
                 }
             });
-        });           
+        });
 
         const searchJiraByEnter = document.querySelector('#testJira');
         const searchJiraByEnterInput = document.querySelector('#JQLquery');
@@ -644,7 +671,9 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
 
     } else if (document.getElementById('AF_Jira').style.display == '') {
         document.getElementById('AF_Jira').style.display = 'none'
-        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn')
+        // FIX: элемента MainMenuBtn не существует (кнопка меню называется MenubarCRM) —
+        // раньше здесь падал TypeError при закрытии окна через меню.
+        document.getElementById('MenubarCRM')?.classList.remove('activeScriptBtn')
     }
 
     document.getElementById('idmymenucrm').style.display = 'none'

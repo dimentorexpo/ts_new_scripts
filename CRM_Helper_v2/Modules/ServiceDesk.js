@@ -239,28 +239,35 @@ function getprsuplasttask() { //функция для получения ссы�
     })
 }
 
-function getmmlink(lasttsk) {
-    if (lasttsk) {
-        const fetchURL = `https://jira.skyeng.tech/browse/${lasttsk}`;
-        const requestOptions = { method: 'GET' };
+function getmmlink(lasttsk, attempt = 0) {
+    if (!lasttsk) return;
 
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
-            if (!response.success) {
-                alert('Не удалось выполнить запрос: ' + response.error);
-                return;
-            } else {
-                const otvetTimeLink = response.fetchansver;
-                const matchResult = otvetTimeLink.match(messregexPattern);
-                if (matchResult === null) {
-                    setTimeout(function () { getmmlink(lasttsk); }, 2000);
-                    return;
-                } else {
-                    const mmlink = matchResult[1];
-                    document.getElementById('custom_ar').value = "Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk + "\n" + messanger_name + " link: " + mmlink;
-                }
-            }
-        });
+    // Ограничиваем количество попыток, чтобы не поллить Jira вечно,
+    // если ссылка на TiMe так и не появится в задаче.
+    if (attempt >= 30) {
+        console.warn('[ServiceDesk] Ссылка ' + messanger_name + ' не найдена за 30 попыток');
+        return;
     }
+
+    const fetchURL = `https://jira.skyeng.tech/browse/${lasttsk}`;
+    const requestOptions = { method: 'GET' };
+
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
+        if (!response.success) {
+            alert('Не удалось выполнить запрос: ' + response.error);
+            return;
+        }
+
+        const otvetTimeLink = response.fetchansver;
+        const matchResult = otvetTimeLink.match(messregexPattern);
+        if (matchResult === null) {
+            // Ссылка ещё не появилась — пробуем снова через 2 секунды.
+            setTimeout(function () { getmmlink(lasttsk, attempt + 1); }, 2000);
+        } else {
+            const mmlink = matchResult[1];
+            document.getElementById('custom_ar').value = "Jira PS link:" + ' ' + "https://jira.skyeng.tech/browse/" + lasttsk + "\n" + messanger_name + " link: " + mmlink;
+        }
+    });
 }
 
 function MakeFetch(bodyrequst) {
@@ -281,7 +288,7 @@ function MakeFetch(bodyrequst) {
             const otvetCreateIssue = JSON.parse(response.fetchansver);
 
             const lasttsk = otvetCreateIssue.jiraIssueKey;
-            newtask.innerText = lasttsk;
+            document.getElementById('newtask').innerText = lasttsk;
             getmmlink(lasttsk);
             const removefields = document.getElementsByClassName('removefield');
             for (let i = 0; i < removefields.length; i++) {
@@ -291,65 +298,95 @@ function MakeFetch(bodyrequst) {
     })
 }
 
-function sendRequest(idstdserv, dscr, str, erx, ary, code) {
-    let formData = new URLSearchParams();
-    formData.append('requestTypeId', code);
+/**
+ * Единый конструктор тела запроса к Infra.
+ * FIX: раньше было 7 почти идентичных функций (sendRequest, sendRequestmrktbill,
+ * sendRequestVimVid, ...), отличавшихся только набором полей data[...].
+ *
+ * @param {Object} fields
+ * @param {string} fields.code - requestTypeId.
+ * @param {Object} fields.data - поля data[...], значения декодируются и <br> -> \n.
+ * @param {Object} [fields.raw]- поля data[...], которые добавляются «как есть».
+ */
+function buildAndSendRequest(fields) {
+    const formData = new URLSearchParams();
+    formData.append('requestTypeId', fields.code);
     formData.append('reporterId', varinfraOID);
     formData.append('initiatorId', varinfraOID);
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
 
-    let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst);
+    // Обычные поля: decodeURIComponent + замена <br> на перевод строки (как в оригинале).
+    for (const [key, value] of Object.entries(fields.data ?? {})) {
+        formData.append(`data[${key}]`, decodeURIComponent(value).replaceAll('<br>', '\n'));
+    }
+
+    // Сырые поля (например hashLesson) — без преобразований.
+    for (const [key, value] of Object.entries(fields.raw ?? {})) {
+        formData.append(`data[${key}]`, value);
+    }
+
+    MakeFetch(formData.toString());
+}
+
+function sendRequest(idstdserv, dscr, str, erx, ary, code) {
+    buildAndSendRequest({
+        code,
+        data: { description: dscr, reproduceSteps: str, expectedResult: erx, actualResult: ary, userIds: idstdserv }
+    });
 }
 
 function sendRequestmrktbill(idstdserv, service, dscr, str, erx, ary, code) {
-    let formData = new URLSearchParams();
-    formData.append('requestTypeId', code);
-    formData.append('reporterId', varinfraOID);
-    formData.append('initiatorId', varinfraOID);
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
-    formData.append('data[serviceId]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
-
-    let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst);
+    buildAndSendRequest({
+        code,
+        data: { description: dscr, reproduceSteps: str, expectedResult: erx, actualResult: ary, userIds: idstdserv, serviceId: idstdserv }
+    });
 }
 
 function sendRequestVimVid(idstdserv, hesh, dscr, str, erx, ary, code) {
-    let formData = new URLSearchParams();
-    formData.append('requestTypeId', code);
-    formData.append('reporterId', varinfraOID);
-    formData.append('initiatorId', varinfraOID);
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
-    formData.append('data[reproduceSteps]', decodeURIComponent(str).replaceAll('<br>', '\n'))
-    formData.append('data[expectedResult]', decodeURIComponent(erx).replaceAll('<br>', '\n'))
-    formData.append('data[actualResult]', decodeURIComponent(ary).replaceAll('<br>', '\n'))
-    formData.append('data[userIds]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
-    formData.append('data[hashLesson]', hesh)
-
-    let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst);
+    buildAndSendRequest({
+        code,
+        data: { description: dscr, reproduceSteps: str, expectedResult: erx, actualResult: ary, userIds: idstdserv },
+        raw: { hashLesson: hesh }
+    });
 }
 
 function sendRequestCommprob(categoryvalue, usermail, idstdserv, dscr, code) {
-    let formData = new URLSearchParams();
-    formData.append('requestTypeId', code);
-    formData.append('reporterId', varinfraOID);
-    formData.append('initiatorId', varinfraOID);
-    formData.append('data[category]', decodeURIComponent(categoryvalue).replaceAll('<br>', '\n'))
-    formData.append('data[description]', decodeURIComponent(dscr).replaceAll('<br>', '\n'))
-    formData.append('data[user_id]', decodeURIComponent(idstdserv).replaceAll('<br>', '\n'))
-    formData.append('data[user_email]', decodeURIComponent(usermail).replaceAll('<br>', '\n'))
+    buildAndSendRequest({
+        code,
+        data: { category: categoryvalue, description: dscr, user_id: idstdserv, user_email: usermail }
+    });
+}
 
-    let bodyrequst = formData.toString();
-    MakeFetch(bodyrequst);
+function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, appinfo, code) {
+    buildAndSendRequest({
+        code,
+        data: {
+            appInfo: appinfo, userDeviceInfo: deviceinfo, description: dscr,
+            reproduceSteps: str, expectedResult: erx, actualResult: ary, userIds: idstdserv
+        }
+    });
+}
+
+function sendRequestMobWithPriority(priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code) {
+    buildAndSendRequest({
+        code,
+        data: {
+            appInfo: appinfo, userDeviceInfo: deviceinfo, description: dscr,
+            reproduceSteps: str, expectedResult: erx, actualResult: ary,
+            userIds: idstdserv, priority: priorvalue
+        }
+    });
+}
+
+function sendRequestAcademMob(CMSvalue, priorvalue, appinfo, deviceinfo, dscr, str, erx, ary, idstdserv, code) {
+    buildAndSendRequest({
+        code,
+        data: {
+            priority: priorvalue, appInfo: appinfo, userDeviceInfo: deviceinfo,
+            description: dscr, reproduceSteps: str, expectedResult: erx,
+            actualResult: ary, userIds: idstdserv
+        },
+        raw: { cms_link: CMSvalue }
+    });
 }
 function sendRequestMobNoPriority(idstdserv, ary, erx, str, dscr, deviceinfo, appinfo, code) {
 
@@ -428,14 +465,12 @@ function getthemesfrominfra(categoryId, index) {
             for (let i = 0; i < otvetListOfTypes.length; i++) {
                 checkingId.push({ id: otvetListOfTypes[i].id, summary: otvetListOfTypes[i].summary });
             }
-            buttonsfromtest.innerHTML = ''
+            document.getElementById('buttonsfromtest').innerHTML = ''
             for (let j = 0; j < checkingId.length; j++) {
                 buttonsfromtest.innerHTML += `<button class="${buttons[index].replace('.', '')} widthofsd" value=${checkingId[j].id}>${checkingId[j].summary}</button>`
             }
-            buttons.forEach(button => {
-                $(button).click(function () {
-                    remres(this);
-                });
+            bindSDButtons(function () { // vanilla JS вместо jQuery
+                remres(this);
             });
         }
     })
@@ -489,12 +524,24 @@ function getcommproboptions() {
 }
 //main
 
+/**
+ * Вешает обработчик на все кнопки категорий Service Desk.
+ * Замена jQuery $(button).click(...): используем onclick (перезапись, а не
+ * накопление обработчиков — раньше при каждом открытии окна обработчики
+ * дублировались и remres срабатывал несколько раз).
+ */
+function bindSDButtons(handler) {
+    document.querySelectorAll(buttons.join(', ')).forEach(btn => {
+        btn.onclick = handler;
+    });
+}
+
 document.getElementById('SrvDskCRMbtn').onclick = function () { // функция открытия главного окна SD +
     if (document.getElementById('CRMServDsk').style.display == '') {
         document.getElementById('CRMServDsk').style.display = 'none'
         document.getElementById('idmymenucrm').style.display = 'none'
         document.getElementById('newtask').textContent = ''
-        lasttsk = '';
+        // FIX: раньше здесь было присваивание несуществующей переменной lasttsk=''
     } else {
         document.getElementById('CRMServDsk').style.display = ''
         document.getElementById('idmymenucrm').style.display = 'none'
@@ -530,14 +577,10 @@ document.getElementById('SrvDskCRMbtn').onclick = function () { // функци�
         }
     }
 
-    buttons.forEach(button => {
-        $(button).click(function () {
-            inputsFieldsSD.style.display = 'none';
-            remres(this);
-        });
-    });
-
-    // Определение функций setDisplayStyleSD и updateDisplay на уровне всей функции getservDskPress
+    bindSDButtons(function () { // vanilla JS вместо jQuery
+        inputsFieldsSD.style.display = 'none';
+        remres(this);
+    });    // Определение функций setDisplayStyleSD и updateDisplay на уровне всей функции getservDskPress
     function setDisplayStyleSD(elementIds, style) {
         elementIds.forEach(id => {
             const element = document.getElementById(id);
@@ -614,10 +657,8 @@ document.getElementById('infratasklist').onclick = function () { // открыв
 document.getElementById('hideMeSrvDsk').onclick = function () { //форма hide
     if (document.getElementById('CRMServDsk').style.display == '') {
 
-        buttons.forEach(button => {
-            $(button).click(function () {
-                remres(this);
-            });
+        bindSDButtons(function () { // vanilla JS вместо jQuery
+            remres(this);
         });
 
         document.getElementById('newtask').textContent = ''
@@ -628,58 +669,66 @@ document.getElementById('hideMeSrvDsk').onclick = function () { //форма hid
 
 document.getElementById('refreshjiraauth').onclick = getInfraOId; //функция обновления статуса авторизации
 
-function remres(a) { // функция переключения класса по нажатию на кнопку
-    let isActive = $(a).hasClass('activebtn');
-    let isThemeBtn = $(a).hasClass('sdbtn');
+/**
+ * Переключение состояния кнопок выбора темы (замена jQuery-версии).
+ * Логика: клик по категории/активной теме — сброс выделения и скрытие полей;
+ * клик по конкретной теме — скрываем все категории, показываем только выбранную.
+ */
+function remres(el) {
+    const isActive = el.classList.contains('activebtn');
+    const isThemeBtn = el.classList.contains('sdbtn');
+
+    const allButtons = document.querySelectorAll(buttons.join(', '));
 
     if (isActive || isThemeBtn) {
-        buttons.forEach(button => {
-            $(button).show().removeClass('activebtn');
+        // Показать все кнопки категорий и снять выделение.
+        allButtons.forEach(btn => {
+            btn.style.display = '';
+            btn.classList.remove('activebtn');
         });
         inputsFieldsSD.style.display = 'none';
     } else {
-        buttons.forEach(button => {
-            if (button !== a) {
-                $(button).hide().removeClass('activebtn');
-            }
+        // Скрыть все кнопки, оставить видимой только выбранную тему.
+        allButtons.forEach(btn => {
+            btn.style.display = 'none';
+            btn.classList.remove('activebtn');
         });
-        $(a).addClass('activebtn').show();
+        el.classList.add('activebtn');
+        el.style.display = '';
         inputsFieldsSD.style.display = 'block';
     }
 }
 
 document.getElementById('createsd').addEventListener('click', function () { //функция создания задачи на сервис деск
 
-    let priorityMobile = document.getElementById('prioritymbugs')
-    let catcommprob = document.getElementById('categoryCommproblems')
-    let usermail = document.getElementById('custom_email')
-    let idUser = document.getElementById('custom_id')
-    let appInfo = document.getElementById('custom_appinfo')
-    let deviceInfo = document.getElementById('custom_deviceinfo')
-    let CMSlink = document.getElementById('custom_CMS')
-    let lessonHesh = document.getElementById('custom_hesh')
-    let userservice = document.getElementById('custom_service')
-    let descriptionField = encodeURIComponent(document.getElementById('custom_descr').value.replace(/[\n\t\"]/g, function (match) {
-        if (match === '\n') return '<br>';
-        if (match === '\t') return '&emsp;';
-        if (match === '\"') return '&quot;';
-    }))
-    let stepsToReproduce = encodeURIComponent(document.getElementById('custom_str').value.replace(/[\n\t\"]/g, function (match) {
-        if (match === '\n') return '<br>';
-        if (match === '\t') return '&emsp;';
-        if (match === '\"') return '&quot;';
-    }))
-    let expectedResult = encodeURIComponent(document.getElementById('custom_er').value.replace(/[\n\t\"]/g, function (match) {
-        if (match === '\n') return '<br>';
-        if (match === '\t') return '&emsp;';
-        if (match === '\"') return '&quot;';
-    }))
-    let actualResult = encodeURIComponent(document.getElementById('custom_ar').value.replace(/[\n\t\"]/g, function (match) {
-        if (match === '\n') return '<br>';
-        if (match === '\t') return '&emsp;';
-        if (match === '\"') return '&quot;';
-    }))
-    let activeButtons = document.querySelectorAll('.activebtn');
+    const priorityMobile = document.getElementById('prioritymbugs')
+    const catcommprob = document.getElementById('categoryCommproblems')
+    const usermail = document.getElementById('custom_email')
+    const idUser = document.getElementById('custom_id')
+    const appInfo = document.getElementById('custom_appinfo')
+    const deviceInfo = document.getElementById('custom_deviceinfo')
+    const CMSlink = document.getElementById('custom_CMS')
+    const lessonHesh = document.getElementById('custom_hesh')
+    const userservice = document.getElementById('custom_service')
+
+    /**
+     * Кодирует значение поля формы: переносы строк -> <br>, табы -> &emsp;,
+     * кавычки -> &quot;, затем encodeURIComponent.
+     * FIX: раньше эта логика была скопирована 4 раза подряд.
+     */
+    const encodeField = (elementId) => encodeURIComponent(
+        document.getElementById(elementId).value.replace(/[\n\t\"]/g, function (match) {
+            if (match === '\n') return '<br>';
+            if (match === '\t') return '&emsp;';
+            return '&quot;';
+        })
+    );
+
+    const descriptionField = encodeField('custom_descr');
+    const stepsToReproduce = encodeField('custom_str');
+    const expectedResult = encodeField('custom_er');
+    const actualResult = encodeField('custom_ar');
+    const activeButtons = document.querySelectorAll('.activebtn');
 
     if (catcommprob.style.display == '') {
         for (const button of activeButtons) {
@@ -720,7 +769,9 @@ document.getElementById('createsd').addEventListener('click', function () { //ф
 
 });
 
-document.getElementById('clearfieldsServiceDesk').addEventListener('click', function () { // очистка полей в форме
-    $("#CRMServDsk input, #CRMServDsk textarea").val('');
+document.getElementById('clearfieldsServiceDesk').addEventListener('click', function () { // очистка полей в форме (vanilla JS вместо jQuery)
+    document.querySelectorAll('#CRMServDsk input, #CRMServDsk textarea').forEach(field => {
+        field.value = '';
+    });
 });
 //End of script

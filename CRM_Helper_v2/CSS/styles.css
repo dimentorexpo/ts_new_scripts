@@ -27,7 +27,7 @@
     box-shadow: 0px 0px 10px #000;
 }
 
-#MenubarCRM:hover:hover {
+#MenubarCRM:hover {
     background: #102357;
 }
 .maindivst{
@@ -291,12 +291,9 @@
 .testroomsCRMcreate.active{
     background: coral;
 }
-#control_jira_search, #dostupbnts{
+#control_jira_search {
     display: flex;
     justify-content: space-between;
-}
-#dostupbnts button{
-   flex: 1;
 }
 
 span[name=changeList].active {
@@ -332,3 +329,261 @@ span[name=changeList]:hover {
     color: #ffcc99;
     font-weight: 400;
 }
+
+/* Всплывающая кнопка-уведомление (например «Скопировано», создаётся в content.js) */
+#successButton.sucsbtn {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2147483647;
+    background: #2e9e5b;
+    color: #ffffff;
+    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica Neue, Arial;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    cursor: default;
+    overflow: hidden;
+}
+
+/* Полоса обратного отсчёта внизу кнопки (3.5 сек — как setTimeout в content.js) */
+.countdown-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    animation: countdown-bar-shrink 3.5s linear forwards;
+}
+
+@keyframes countdown-bar-shrink {
+    from { width: 100%; }
+    to   { width: 0; }
+}
+
+/* ============================================================
+   Link.js — панель ссылок (новый UI, перенос из Link_Hybrid)
+   ============================================================ */
+
+#AF_Links {
+    box-sizing: border-box;
+    width: 640px;
+    padding: 10px;
+    color: bisque;
+}
+
+/* Шапка с градиентом — за неё перетаскивается окно */
+.lk-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin: -10px -10px 8px -10px;
+    cursor: move;
+    user-select: none;
+}
+.lk-title {
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    text-shadow: 0 1px 2px rgba(0,0,0,.4);
+}
+.lk-close {
+    background: #ff4757;
+    border: none;
+    color: #fff;
+    border-radius: 5px;
+    min-height: 24px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+}
+.lk-close:hover {
+    background: #e8413f;
+}
+
+/* Подписи секций */
+.lk-sub {
+    font-size: 12px;
+    color: #b8b3d0;
+    margin: 6px 0 4px;
+    font-weight: 600;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+}
+
+/* Сетка кнопок-ссылок */
+.lk-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+}
+#AF_Links .lk-btn {
+    background: linear-gradient(180deg, #4a4761, #3a3750);
+    border: 1px solid #56537a;
+    color: #eceafb;
+    border-radius: 8px;
+    min-height: 30px;
+    padding: 4px 6px;
+    font-size: 12.5px;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all .15s ease;
+}
+#AF_Links .lk-btn:hover {
+    background: linear-gradient(180deg, #5a5680, #46426b);
+    border-color: #8a86c9;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,.35);
+}
+/* Кастомные кнопки пользователя выделяем пунктиром */
+#AF_Links .lk-btn.custom-btn {
+    border-style: dashed;
+    border-color: #2ed573;
+}
+
+/* Поля быстрого поиска */
+.lk-fields {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 10px;
+    margin-top: 4px;
+}
+.lk-field {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.lk-field .inputCRM {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid #666;
+    border-radius: 6px;
+    padding: 4px 6px;
+    text-align: center;
+    color: black;
+}
+.lk-field .btnCRMsmall {
+    flex-shrink: 0;
+}
+
+/* Нижняя панель действий */
+.lk-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,.15);
+}
+.lk-footer .lk-btn,
+#AF_Links .lk-mini {
+    font-size: 11.5px;
+    min-height: 26px;
+    padding: 3px 8px;
+}
+.lk-footer-right {
+    display: flex;
+    gap: 4px;
+}
+
+/* ============================================================
+   Модальное окно добавления/редактирования кастомной кнопки
+   ============================================================ */
+
+.lkovl {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 2147483000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;
+}
+.lkmodal {
+    background: #fff;
+    border-radius: 12px;
+    width: 340px;
+    max-width: 92vw;
+    box-shadow: 0 12px 40px rgba(0,0,0,.45);
+    overflow: hidden;
+}
+.lkmodal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+.lkmodal-x {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+}
+.lkmodal-body {
+    padding: 6px 14px 14px;
+}
+.lkmodal-label {
+    display: block;
+    font-size: 13px;
+    color: #333;
+    margin: 10px 0 4px;
+    font-weight: 600;
+}
+.lkmodal-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+.lkmodal-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+.lkmodal-hint {
+    font-size: 11.5px;
+    color: #999;
+    margin-top: 8px;
+}
+.lkmodal-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    padding: 12px 14px;
+    border-top: 1px solid #eee;
+}
+.lkmodal-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.lkmb-primary { background: #667eea; color: #fff; }
+.lkmb-primary:hover { background: #5a6fd6; }
+.lkmb-secondary { background: #eee; color: #333; }
+.lkmb-secondary:hover { background: #ddd; }
+.lkmb-danger { background: #ff4757; color: #fff; margin-right: auto; }
+.lkmb-danger:hover { background: #e8413f; }

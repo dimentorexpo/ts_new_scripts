@@ -1,394 +1,484 @@
-var win_Links =  // описание элементов окна ссылок
-    `<div style="display: flex; width: 600px;">
-        <span style="width: 600px">
-			<span style="cursor: -webkit-grab;">
-				<div style="margin: 5px; width: 550;" id="links_1str">
-					<button title="Скрытие меню" id="hideMe" class="buttonHide">hide</button>
-					<button title="Открывает раздел для формирования заявки на удаленине персональных данных" id="deleteaclnk" class="btnCRM uplinksbar">🗑</button>
-					<button title="Открывает Базу знаний в Confluence" id="knoweledgebase" class="btnCRM uplinksbar">📚</button>
-					<button title="Открывает админку с эссе для перезакрепления за П" id="essayadmin" class="btnCRM uplinksbar">📝</button>
-					<button title="Открывает Infra для запроса сброса пароля в Mattermost Teacher" id="resetMMPassword" class="btnCRM uplinksbar">🔐</button>
-					<button title="Открывает менюшку для просмотра информации по BIN банка, чтобы узнать тип карты, страну происхождения, название банка" id="bankCheck" class="btnCRM uplinksbar">💳</button>
-					<button title="Открывает просмотр список группы" id="GrListData" class="btnCRM uplinksbar">👩‍👩‍👧‍👦</button>
-                    <button title="Открывает известные баги на платформе" id="confbugs" style="width: 50px; float: right; margin-right: 5px" class="btnCRM uplinksbar">🐞</button>
-				</div>
-				<div style="margin: 5px; width: 600px;" id="links_but">
-					<button class="btnCRM" title="Открывает Timetable" id="timetable" style="width:115px">TimeTable</button>
-					<button class="btnCRM" title="Открывает админку Talks для поиска по ID П ID У , с которым идет урок" id="talksadm" style="width:115px">Talks</button>
-					<button class="btnCRM" title="Открывает начислятор билинга для просмотра реального баланса у ученика и зависших уроков не на той STK" id="billingadm" style="width:115px">Начислятор</button>
-					<button class="btnCRM" title="Открывает раздел для создания операции компенсации ученику" id="compens" style="width:115px">Компенсация</button>
-					<button class="btnCRM" title="Открывает CMS хранилище материалов уроков" id="CMS" style="width:115px">CMS</button>
-					<button class="btnCRM" title="Открывает админку пользователей" id="useradm" style="width:115px; margin-top: 3px">Админка</button>
-					<button class="btnCRM" title="Открывает поиск платежа по данным карте, сумме, дате платежа" id="transactions" style="width:115px; margin-top: 3px">Поиск $</button>
-					<button class="btnCRM" title="Открывает форму передачи предложений от пользователей" id="suggestions" style="width:115px; margin-top: 3px">Предложения</button>
-					<button class="btnCRM" title="Открывает раздел с проверкой фичей(кругов), подключенных пользователю и добавление/удаление их" id="userfeatures" style="width:115px; margin-top: 3px">User Фичи</button>
-					<button class="btnCRM" title="Открывает  CMS детских предметов" id="kidscms" style="width:115px; margin-top: 3px">Kids CMS</button>
-					<button class="btnCRM" title="Открывает раздел в Confluence по созданию тестовых комнат" id="testroom" style="width:115px; margin-top: 3px">TestRooms</button>
-					<button class="btnCRM" title="Открывает билинг для просмотра и редактирования подписок" id="subscribebilling" style="width:115px; margin-top: 3px">$Подписки</button>
-					<button class="btnCRM" title="Открывает форму по аппеляциям аудита" id="apelation" style="width:115px; margin-top: 3px">Апелляции</button>
-					<button class="btnCRM" title="Открывает сайт BrowserStack" id="browserstack" style="width:115px; margin-top: 3px">BrowserStaсk</button>
-					<button class="btnCRM" title="Открывает сайт для поиска записей уроков" id="lesrecords" style="width:115px; margin-top: 3px">LessonRecords</button>
-					<button class="btnCRM" title="Открывает раздел для проверки сертификата" id="certificates" style="width:115px; margin-top: 3px">Сертификаты</button>
-					<button class="btnCRM" title="Открывает раздел для проверки промокодов" id="promocodes" style="width:115px; margin-top: 3px">Промокоды</button>
-					<button class="btnCRM" title="Открывает Help Centr для учеников" id="helpocentrstud" style="width:115px; margin-top: 3px">Help Center У</button>
-					<button class="btnCRM" title="Открывает Help Centr для преподавателей" id="helpocentrteach" style="width:115px; margin-top: 3px">Help Center П</button>	
-					<button class="btnCRM" title="Открывает сайт для просмотра ошибок и логов в комнате" id="trshoothing" style="width:115px; margin-top: 3px">Troubleshooting</button>
-				</div>
-				<div style="margin: 5px; width: 600px" id="links_box">
-					<input class="inputCRM" id="cpuname" placeholder="CPU name" title="вводим название процессора, чтобы сразу перейти на сайт с проверкой рейтинга CPU" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="benchmark">🔎</button>
-					<input class="inputCRM" id="creditstatus" placeholder="ID У рассрочка" title="вводим ID У, чтобы получить прямую ссылку для проверки рассрочек ученика" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="credits">🔎</button>
-					<input class="inputCRM" id="iplookup" placeholder="IP У/П/Vimbox" title="вводим IP У/П/Платформы, чтобы получить информацию о месторасположении географического адреса и получения информации о хостинге" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="gotolookip">🔎</button>
-					<input class="inputCRM" id="lgssearch" placeholder="ID Группы LGS" title="Введите ID LGS или обычной группы KGL для просмотра информации" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="getlgsinfo">🔎</button>
-					<input class="inputCRM" id="cmsstepid" placeholder="CMS stepUUID" title="вводим stepUUID, чтобы сразу попасть в ЦМС на нужный урок и найти на нем наш слайд и проверить" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="cmsid">🔎</button>
-					<input class="inputCRM" id="schemesteacher" placeholder="ID П схем возн" title="Вводим ID П, чтобы открытть ресурс с подключенными схемами вознаграждения П" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="getschemes">🔎</button>	
-					<input class="inputCRM" id="pushes" placeholder="ID У пуши" title="Вводим ID У, чтобы увидеть были отправлены пуши ученику или нет" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="getpushes">🔎</button>
-					<input class="inputCRM" id="setidformobpass" placeholder="ID У/П МП" title="введите ID У/П для генерации разового пароля он будет отображен в поле ввода ID и скопирован в  буфер обмена" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="getmobpasscode" >🚀</button>
-					<input class="inputCRM" id="trshooterhash" placeholder="hash trshooter" title="Вводим хеш комнаты чтобы посмотреть сразу инфу в трабл шутере" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="gettrshinfo" >🚀</button>
-					<input class="inputCRM" id="enablerAP" placeholder="ID услуги(АП)" title="копируем услуги, где нужно активировать АП и сохраняем в буфер, в ЛКУ переходим по ссылке для активации" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="getenablerAP" >💾</button>
-					<input class="inputCRM" id="skipAP" placeholder="ID ус(skipАП)" title="копируем услуги, где нужно пропустить АП и сохраняем в буфер, в ЛКУ переходим по ссылке для деактивации" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="getskipAP" >💾</button>
-					<input class="inputCRM" id="skiponboarding" placeholder="ID ус(skip Onbo)" title="копируем услуги, где нужно отключить онбоардинг в ЛКУ" autocomplete="off" type="text" style="text-align: center; width: 103px; color: black; margin-top: 5px">
-					<button class="btnCRM btnCRMsmall" id="doskiponboard" >💾</button>
-				</div>
-				<div style="margin: 5px; width: 600px" id="links_butd">
-					<button class="btnCRM" title="копирует в буфер обмена команду setstatus('classwork') для перезапуска уроков" id="restartlesson" style="width:145px">Lesson restart💾</button>
-					<button class="btnCRM" title="отображает актуальную версию iOS приложения" id="curVeriOSCRM" style="float: right; margin-right: 10px;"></button>
-			  	    <button class="btnCRM" title="Отображает актуальную версию Android приложения" id="curVerAndroidCRM" style="float: right; margin-right: 5px;"></button>
-				</div>
-                <div id="dostupbnts" style="margin: 5px; width: 590px">
-                    <button class="btnCRM" title="Открывает Графану с состоянием видеосерверов, при наплыве обращений проверяйте его" id="grafanalnk">Видео сервера в Grafana</button>
-                    <button class="btnCRM" title="Открывает Datalens для просмотра информации по KPI teachers" id="kpiteachersdashboard">KPI Teachers Dashboard</button>
-                </div>
-			</span>
-	</span>
-</div>`;
+// ==========================================
+// LINKS — панель ссылок (новый UI, перенос из CHMAF Link_Hybrid)
+// Кастомные кнопки пользователя + быстрый поиск
+// ==========================================
 
-let versionsfromdoc;
-let versionscontainer;
+// ==========================================
+// 1. CONFIG MANAGER (кастомные кнопки)
+// ==========================================
+class LinksConfigCRM {
+    constructor() {
+        this.storageKey = 'CRM_LinksCustom';
+        this.config = this.loadConfig();
+    }
 
-const wintLinks = createWindowCRM('AF_Links', 'winTopLinks', 'winLeftLinks', win_Links);
-hideWindowOnDoubleClick('AF_Links');
-hideWindowOnClick('AF_Links', 'hideMe');
+    loadConfig() {
+        try {
+            const stored = localStorage.getItem(this.storageKey);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed && Array.isArray(parsed.customButtons)) return parsed;
+            }
+        } catch (e) { /* битый JSON — откатываемся на дефолт */ }
+        return this.getDefaultConfig();
+    }
 
-async function getversionsapp() { // получаем из файла список версий моб. приложений
+    saveConfig() {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.config));
+    }
 
-    versionsfromdoc = 'https://script.google.com/macros/s/AKfycbwgym7WoXavCcMa7mpzlA4GHGncpWixKwyxhSJT1TU8tZg4KmRemyZqyQ3c5G2cKTxDrQ/exec'
-    await fetch(versionsfromdoc).then(r => r.json()).then(r => versionsdata = r)
-    versionscontainer = versionsdata.result;
-    document.getElementById('curVeriOSCRM').textContent = versionscontainer[1][0] + ' : ' + versionscontainer[1][1]
-    document.getElementById('curVerAndroidCRM').innerText = versionscontainer[0][0] + ' : ' + versionscontainer[0][1]
-}
+    getDefaultConfig() {
+        return { version: '1.0', customButtons: [] };
+    }
 
-document.getElementById('butdiagtoolsCRM').onclick = function () { //открывает окно доступов
-    if (document.getElementById('AF_Links').style.display == '') {
-        document.getElementById('AF_Links').style.display = 'none'
-        document.getElementById('idmymenucrm').style.display = 'none'
-    } else {
-        document.getElementById('AF_Links').style.display = ''
-        document.getElementById('idmymenucrm').style.display = 'none'
+    addCustomButton(button) {
+        button.id = `custom-${Date.now()}`;
+        this.config.customButtons.push(button);
+        this.saveConfig();
+        return button.id;
+    }
 
-        getversionsapp()
+    updateCustomButton(id, updates) {
+        const btn = this.config.customButtons.find(b => b.id === id);
+        if (btn) {
+            Object.assign(btn, updates);
+            this.saveConfig();
+            return true;
+        }
+        return false;
+    }
+
+    deleteCustomButton(id) {
+        const index = this.config.customButtons.findIndex(b => b.id === id);
+        if (index !== -1) {
+            this.config.customButtons.splice(index, 1);
+            this.saveConfig();
+            return true;
+        }
+        return false;
+    }
+
+    getCustomButtons() {
+        return this.config.customButtons;
     }
 }
 
-document.getElementById('knoweledgebase').onclick = function () { // открытие Confluence БЗ 2.0
-    window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=25407293")
+const linksCfg = new LinksConfigCRM();
+
+// ==========================================
+// 2. СПРАВОЧНИК КНОПОК-ССЫЛОК (ТП)
+// ==========================================
+
+const TP_LINK_BUTTONS = [
+    { id: 'deleteaclnk', icon: '🗑', label: 'ПД', title: 'Заявка на удаление персональных данных', url: 'https://infra.skyeng.ru/request/create/166' },
+    { id: 'knoweledgebase', icon: '📚', label: 'БЗ', title: 'База знаний в Confluence', url: 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=25407293' },
+    { id: 'essayadmin', icon: '📝', label: 'Эссе', title: 'Админка эссе для перезакрепления за П', url: 'https://api-english.skyeng.ru/admin/platform/openanswer/list' },
+    { id: 'resetMMPassword', icon: '🔐', label: 'MM пароль', title: 'Infra: сброс пароля Mattermost Teacher', url: 'https://infra.skyeng.ru/request/create/233' },
+    { id: 'confbugs', icon: '🐞', label: 'Баги', title: 'Известные баги на платформе', url: 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=96042583' },
+    { id: 'GrListData', icon: '👥', label: 'Список гр.', title: 'Список группы', url: null }, // обработчик — getGrListDataButtonPress из GrList.js
+    { id: 'minecraftAccs', icon: '⛏️', label: 'Minecraft', title: 'УЗ Minecraft', url: 'https://disk.yandex.ru/edit/d/ARTwOEreBvxL1L4cDRCvEyPegnqahzm72s0qoIz-cKg6al9hdmhpLVFTZw' },
+    { id: 'timetable', icon: '📅', label: 'TimeTable', title: 'Timetable', url: 'https://timetable.skyeng.ru/' },
+    { id: 'talksadm', icon: '💋', label: 'Talks', title: 'Talks Admin — поиск по ID П / ID У урока', url: 'https://vimbox.skyeng.ru/talks/admin/statistics' },
+    { id: 'compensNotFairPayments', icon: '🚫', label: 'Честн.Оплат', title: 'Форма: нет честных оплат', url: 'https://forms.yandex.ru/cloud/6876066349363940156734b8/?page=1' },
+    { id: 'compens', icon: '💸', label: 'Компенсац.', title: 'Создание операции компенсации ученику', url: 'https://billing-marketing.skyeng.ru/accrual-operations/create' },
+    { id: 'CMS', icon: '🌀', label: 'CMS', title: 'CMS хранилище материалов уроков', url: 'https://cms-vimbox.skyeng.ru/vim' },
+    { id: 'kidscms', icon: '🌀', label: 'Kids CMS', title: 'CMS детских предметов', url: 'https://vimbox.skyeng.ru/kids/math/cms/lessons/1' },
+    { id: 'useradm', icon: '🛠️', label: 'Админка', title: 'Админка пользователей', url: 'https://id.skyeng.ru/admin/users' },
+    { id: 'transactions', icon: '💰', label: 'Поиск $', title: 'Поиск платежа по карте, сумме, дате', url: 'https://accounting.skyeng.ru/userpayment/search/transaction' },
+    { id: 'billingadm', icon: '🧮', label: 'Начислятор', title: 'Начислятор билинга: реальный баланс и зависшие уроки', url: 'https://billing-api.skyeng.ru/operations' },
+    { id: 'subscribebilling', icon: '💰', label: '$Подписки', title: 'Биллинг подписок: просмотр и редактирование', url: 'https://billing-api.skyeng.ru/subscriptions' },
+    { id: 'userfeatures', icon: '🏡', label: 'Фичи', title: 'Проверка фичей (кругов) пользователя', url: 'https://vimbox.skyeng.ru/circles/editor' },
+    { id: 'testroom', icon: 'ℹ️', label: 'TestRooms', title: 'Инструкция по созданию тестовых комнат', url: 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=82244638' },
+    { id: 'apelation', icon: '💫', label: 'Апелляции', title: 'Форма апелляций аудита', url: 'https://docs.google.com/forms/d/e/1FAIpQLSdgsb6pte1H1dz15Eb5NjDe0gj3kEnh0hTe6Cgy8d81mT7NUA/viewform' },
+    { id: 'browserstack', icon: '🌐', label: 'B-Stack', title: 'BrowserStack', url: 'https://www.browserstack.com/users/sign_in' },
+    { id: 'certificates', icon: '📜', label: 'Сертиф.', title: 'Проверка сертификатов', url: 'https://billing-marketing.skyeng.ru/certificate/certSearch' },
+    { id: 'promocodes', icon: '*️⃣', label: 'Промо', title: 'Проверка промокодов', url: 'https://billing-marketing.skyeng.ru/promocode/list' },
+    { id: 'helpocentrstud', icon: '📔', label: 'БЗ У', title: 'Help Center для учеников', url: 'https://helpcenter.skyeng.ru/students' },
+    { id: 'helpocentrteach', icon: '📗', label: 'БЗ П', title: 'Help Center для преподавателей', url: 'https://helpcenter.skyeng.ru/teachers' },
+    { id: 'trshoothing', icon: '🔨', label: 'ТраблШут', title: 'Траблшутер: ошибки и логи комнаты', url: 'https://video-trouble-shooter.skyeng.ru/' },
+    { id: 'Synchronizer', icon: '♻️', label: 'Синхрон', title: 'Синхронизация ДЗ (upsert-history)', url: 'https://learning.skyeng.ru/upsert-history' },
+    { id: 'AddRemoveChat', icon: '➕➖', label: 'Чат', title: 'Добавить/удалить чат', url: 'https://communications.skyeng.ru/gateway/support/chat-management' },
+    { id: 'CheckPrices', icon: '🤑', label: 'Prices', title: 'Check Price — наборы цен', url: 'https://billing-marketing.skyeng.ru/priceSet/list' },
+    { id: 'CheckVidConnection', icon: '📹', label: 'Video', title: 'Проверка видеосервера', url: 'https://video-check.skyeng.ru/' },
+    { id: 'goProcash', icon: '💳', label: 'BIN', title: 'Check BIN банка', url: 'https://procash.app/tools/bin-lookup' },
+    { id: 'suggestions', icon: '✉️', label: 'Предложения', title: 'Форма передачи предложений от пользователей', url: 'https://docs.google.com/forms/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/viewform' },
+    { id: 'faqext', icon: '❓', label: 'Инструкции', title: 'Инструкция ChMAF', url: 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971' },
+    { id: 'rkKidsTP', icon: '🧒', label: 'РК Kids', title: 'Админка Kids РК (встречи клубов)', url: 'https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubKidMeetingCrudController&entityFqcn=App%5CEntity%5CClubMeeting' },
+    { id: 'rkAdultsTP', icon: '👥', label: 'РК Adults', title: 'Админка Adults РК (расписание клубов)', url: 'https://skyeng.ru/clubs/admin/schedule' },
+    { id: 'flexAdminTP', icon: '🎓', label: 'Flex', title: 'Админка Flex (публичные семинары)', url: 'https://public-seminars-admin.skyeng.ru/english?dateFrom=1787605200&dateTo=1787691599' },
+    { id: 'grafanalnk', icon: '📊', label: 'Grafana', title: 'Grafana: состояние видеосерверов', url: 'https://grafana.skyeng.link/d/NZkMHsVMk/video-servers-health-check?orgId=1&refresh=1m' },
+    { id: 'kpiteachersdashboard', icon: '📈', label: 'KPI Teachers', title: 'Datalens: KPI teachers', url: 'https://datalens.yandex.ru/lupggqkv0uewa-kpi-p-dlya-tp?tab=GrW&state=684e0be1371' }
+];
+
+// Поля быстрого поиска: [кнопка, поле, placeholder, иконка кнопки, подсказка]
+const LK_INPUT_GROUPS = [
+    { btn: 'benchmark', input: 'cpuname', ph: 'CPU name', icon: '🔎', title: 'Название процессора → поиск рейтинга на cpubenchmark' },
+    { btn: 'credits', input: 'creditstatus', ph: 'ID У рассрочка', icon: '🔎', title: 'ID У → прямая ссылка на рассрочки ученика' },
+    { btn: 'gotolookip', input: 'iplookup', ph: 'IP У/П/Vimbox', icon: '🔎', title: 'IP У/П/Платформы → гео и хостинг' },
+    { btn: 'getlgsinfo', input: 'lgssearch', ph: 'ID Группы LGS/KGL', icon: '🔎', title: 'ID группы → админка LGS' },
+    { btn: 'cmsid', input: 'cmsstepid', ph: 'CMS stepUUID', icon: '🔎', title: 'stepUUID → нужный шаг в CMS' },
+    { btn: 'getschemes', input: 'schemesteacher', ph: 'ID П схемы', icon: '🔎', title: 'ID П → схемы вознаграждения П' },
+    { btn: 'getpushes', input: 'pushes', ph: 'ID У пуши', icon: '🔎', title: 'ID У → отправлялись ли пуши' },
+    { btn: 'getmobpasscode', input: 'setidformobpass', ph: 'ID У/П МП', icon: '🚀', title: 'ID У/П → разовый пароль для МП появится в поле ввода' },
+    { btn: 'gettrshinfo', input: 'trshooterhash', ph: 'Hash комнаты', icon: '🚀', title: 'Хеш комнаты → инфо в траблшутере' },
+    { btn: 'getenablerAP', input: 'enablerAP', ph: 'ID услуги (АП)', icon: '💾', title: 'Копирует ссылку для активации АП в ЛКУ' },
+    { btn: 'getskipAP', input: 'skipAP', ph: 'ID ус (skip АП)', icon: '💾', title: 'Копирует ссылку для пропуска АП в ЛКУ' },
+    { btn: 'doskiponboard', input: 'skiponboarding', ph: 'ID ус (skip Onbo)', icon: '💾', title: 'Копирует ссылку отключения онбоардинга в ЛКУ' }
+];
+
+// Кнопки «скопировать ссылку»: [кнопка, поле, шаблон ссылки, сообщение]
+const LK_COPY_ACTIONS = [
+    { btn: 'getenablerAP', input: 'enablerAP', build: v => `https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=${v}`, msg: '💾 Ссылка АП скопирована' },
+    { btn: 'getskipAP', input: 'skipAP', build: v => `https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=${v}&skipAutoSelection=1`, msg: '💾 Ссылка Skip AP скопирована' },
+    { btn: 'doskiponboard', input: 'skiponboarding', build: v => `https://learning.skyeng.ru/api/v1/education-service/${v}/skip-onboarding`, msg: '💾 Ссылка Skip Onbo скопирована' }
+];
+
+// Поля, открывающие ссылку: [кнопка, поле, url, suffix, текст ошибки]
+const LK_INPUT_ACTIONS = [
+    { btn: 'benchmark', input: 'cpuname', url: 'https://www.cpubenchmark.net/cpu_lookup.php?cpu=', error: 'Введите CPU в поле' },
+    { btn: 'getschemes', input: 'schemesteacher', url: 'https://teacher-incentive.skyeng.ru/incentive/teacher/', error: 'Введите ID П в поле' },
+    { btn: 'gotolookip', input: 'iplookup', url: 'https://check-host.net/ip-info?host=', error: 'Введите IP в поле' },
+    { btn: 'cmsid', input: 'cmsstepid', url: 'https://content.vimbox.skyeng.ru/cms/step-store/update/id/', error: 'Введите STEPUUID в поле' },
+    { btn: 'credits', input: 'creditstatus', url: 'https://billing-api.skyeng.ru/installments?perPage=10&ownerId=', error: 'Введите ID У в поле' },
+    { btn: 'getlgsinfo', input: 'lgssearch', url: 'https://learning-groups-storage.skyeng.ru/group/', error: 'Введите ID группы в поле', suffix: '?cp=(section:participants)' },
+    { btn: 'getpushes', input: 'pushes', url: 'https://push-notifications.skyeng.ru/cms/logs?page=1&paginateBy=100&userId=', error: 'Введите ID У в поле' },
+    { btn: 'gettrshinfo', input: 'trshooterhash', url: 'https://video-trouble-shooter.skyeng.ru/?hash=', error: 'Введите hash комнаты в поле' }
+];
+
+// ==========================================
+// 3. HTML ШАБЛОН
+// ==========================================
+
+/** Экранирование пользовательских строк при вставке в разметку. */
+function lkEsc(text) {
+    return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 }
 
-document.getElementById('essayadmin').onclick = function () { // открытие админки эссе
-    window.open("https://api-english.skyeng.ru/admin/platform/openanswer/list")
+function lkRenderLinkButtons(buttons) {
+    return `<div class="lk-grid">
+                ${buttons.map(b =>
+                    `<button class="lk-btn" id="${lkEsc(b.id)}" title="${lkEsc(b.title)}">${b.icon} ${lkEsc(b.label)}</button>`
+                ).join('\n')}
+                ${linksCfg.getCustomButtons().map(b =>
+                    `<button class="lk-btn custom-btn" data-custom-id="${lkEsc(b.id)}" title="${lkEsc(b.title)} (ПКМ — редактировать)">${lkEsc(b.icon)} ${lkEsc(b.title)}</button>`
+                ).join('\n')}
+            </div>`;
 }
 
-document.getElementById('timetable').addEventListener('click', function () { // копируем в буфер ссылку на Timetable
-    window.open("https://timetable.skyeng.ru/")
-})
+function lkRenderFields() {
+    return `<div class="lk-fields">
+                ${LK_INPUT_GROUPS.map(g =>
+                    `<div class="lk-field">
+                        <input class="inputCRM" id="${g.input}" placeholder="${g.ph}" title="${g.title}" autocomplete="off" type="text">
+                        <button class="btnCRM btnCRMsmall" id="${g.btn}" title="${g.title}">${g.icon}</button>
+                    </div>`
+                ).join('\n')}
+            </div>`;
+}
 
-document.getElementById('curVeriOSCRM').addEventListener('click', function () { // открываем актуальную версию приложения iOS
-    window.open("https://apps.apple.com/ru/app/skyeng-%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%8F%D0%B7%D1%8B%D0%BA-%D0%BE%D0%BD%D0%BB%D0%B0%D0%B9%D0%BD/id1065290732")
-})
+function getLinksHTML() {
+    return `
+    <div class="lk-head">
+        <span class="lk-title">🔗 CRM Helper — Ссылки</span>
+        <button title="Скрытие меню" id="hideMe" class="lk-close">❌</button>
+    </div>
 
-document.getElementById('curVerAndroidCRM').addEventListener('click', function () { // открываем актуальную версию приложения Android
-    window.open("https://play.google.com/store/apps/details?id=skyeng.words.prod")
-})
+    <div class="lk-sub">Ссылки</div>
+    ${lkRenderLinkButtons(TP_LINK_BUTTONS)}
 
-document.getElementById('talksadm').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Talks админку
-    window.open("https://vimbox.skyeng.ru/talks/admin/statistics")
-})
+    <div class="lk-sub">🔍 Быстрый поиск</div>
+    ${lkRenderFields()}
 
-document.getElementById('billingadm').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Начислятор
-    window.open("https://billing-api.skyeng.ru/operations")
-})
+    <div class="lk-footer">
+        <button class="lk-btn custom-btn" id="add-custom-btn" title="Добавить свою кнопку со ссылкой">➕ Кнопка</button>
+        <button class="btnCRM" id="restartlesson" title="Копирует команду setStatus('classwork') для перезапуска уроков" style="min-height:26px;">Classwork 💾</button>
+        <span class="lk-footer-right">
+            <button class="btnCRM lk-mini" id="curVeriOSCRM" title="Актуальная версия iOS приложения (клик — магазин)">iOS: ⏳</button>
+            <button class="btnCRM lk-mini" id="curVerAndroidCRM" title="Актуальная версия Android приложения (клик — магазин)">Android: ⏳</button>
+        </span>
+    </div>`;
+}
 
-document.getElementById('compens').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Компенсации
-    window.open("https://billing-marketing.skyeng.ru/accrual-operations/create")
-})
+// ==========================================
+// 4. МОДАЛКА ДОБАВЛЕНИЯ / РЕДАКТИРОВАНИЯ КНОПКИ
+// ==========================================
+function showLinkButtonModal(existingButton = null) {
+    const isEdit = !!existingButton;
 
-document.getElementById('useradm').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Пользовательская админка
-    window.open("https://id.skyeng.ru/admin/users")
-})
+    const overlay = document.createElement('div');
+    overlay.className = 'lkovl';
+    overlay.innerHTML = `
+    <div class="lkmodal">
+        <div class="lkmodal-header">
+            <span>${isEdit ? '✏️ Редактировать кнопку' : '➕ Новая кнопка'}</span>
+            <button class="lkmodal-x" title="Закрыть">❌</button>
+        </div>
+        <div class="lkmodal-body">
+            <label class="lkmodal-label">Название</label>
+            <input type="text" class="lkmodal-input" id="lk-btn-title" value="${isEdit ? lkEsc(existingButton.title) : ''}" placeholder="Моя ссылка">
+            <label class="lkmodal-label">Иконка (эмодзи)</label>
+            <input type="text" class="lkmodal-input" id="lk-btn-icon" value="${isEdit ? lkEsc(existingButton.icon) : ''}" placeholder="🔗" maxlength="4">
+            <label class="lkmodal-label">URL</label>
+            <input type="text" class="lkmodal-input" id="lk-btn-url" value="${isEdit ? lkEsc(existingButton.url) : ''}" placeholder="https://example.com">
+            <div class="lkmodal-hint">Кнопка появится в панели ссылок. Левый клик — открыть, правый клик — редактировать.</div>
+        </div>
+        <div class="lkmodal-footer">
+            ${isEdit ? '<button class="lkmodal-btn lkmb-danger" id="lk-btn-delete">🗑️ Удалить</button>' : ''}
+            <button class="lkmodal-btn lkmb-secondary" id="lk-btn-cancel">Отмена</button>
+            <button class="lkmodal-btn lkmb-primary" id="lk-btn-save">💾 Сохранить</button>
+        </div>
+    </div>`;
 
-document.getElementById('suggestions').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Предложения/пожелания
-    window.open("https://docs.google.com/forms/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/viewform")
-})
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
 
-document.getElementById('transactions').addEventListener('click', function () { // открываем ссылку в новой вкладке на  Поиск транзакций
-    window.open("https://accounting.skyeng.ru/userpayment/search/transaction")
-})
+    overlay.querySelector('.lkmodal-x').onclick = close;
+    overlay.querySelector('#lk-btn-cancel').onclick = close;
+    overlay.onclick = e => { if (e.target === overlay) close(); };
 
-document.getElementById('CMS').addEventListener('click', function () { // открываем ссылку в новой вкладке на CMS
-    window.open("https://cms-vimbox.skyeng.ru/vim")
-})
+    overlay.querySelector('#lk-btn-save').onclick = () => {
+        const title = overlay.querySelector('#lk-btn-title').value.trim();
+        const icon = overlay.querySelector('#lk-btn-icon').value.trim() || '🔗';
+        const url = overlay.querySelector('#lk-btn-url').value.trim();
 
-document.getElementById('subscribebilling').addEventListener('click', function () { // открываем ссылку в новой вкладке на Необоснованные оценки ТП АФ
-    window.open("https://billing-api.skyeng.ru/subscriptions")
-})
+        if (!title || !url) {
+            alert('Заполните название и URL');
+            return;
+        }
 
-document.getElementById('apelation').addEventListener('click', function () { // открываем ссылку в новой вкладке на Форма для апелляций чатов ТП АФ
-    window.open("https://docs.google.com/forms/d/e/1FAIpQLSdgsb6pte1H1dz15Eb5NjDe0gj3kEnh0hTe6Cgy8d81mT7NUA/viewform")
-})
+        if (isEdit) linksCfg.updateCustomButton(existingButton.id, { title, icon, url });
+        else linksCfg.addCustomButton({ title, icon, url });
 
-document.getElementById('confbugs').addEventListener('click', function () { // открываем ссылку список багов в confluence
-    window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=96042583")
-})
-
-document.getElementById('restartlesson').addEventListener('click', function () { // копируем ссылку в буфер для перезапуска урока
-    copyToClipboard("setStatus('classwork')")
-    document.getElementById('restartlesson').innerHTML = "Copied!";
-    setTimeout(function () { document.getElementById('restartlesson').innerHTML = "Lesson restart💾" }, 2000);
-})
-
-document.getElementById('browserstack').addEventListener('click', function () { // открываем ссылку в новой вкладке на Browserstak
-    window.open("https://www.browserstack.com/users/sign_in")
-})
-
-document.getElementById('trshoothing').addEventListener('click', function () { // открываем ссылку в новой вкладке на TRM 2.0
-    window.open("https://video-trouble-shooter.skyeng.ru/")
-})
-
-document.getElementById('lesrecords').addEventListener('click', function () { // открываем ссылку в новой вкладке на Tramway Lesson Records
-    window.open("https://tramway.skyeng.ru/record")
-})
-
-document.getElementById('testroom').addEventListener('click', function () { // открываем ссылку в админку тестовых комнат
-    window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=82244638")
-})
-
-document.getElementById('certificates').addEventListener('click', function () { // открываем ссылку в новой вкладке на Подарочные сертификаты
-    window.open("https://billing-marketing.skyeng.ru/certificate/certSearch")
-})
-
-document.getElementById('promocodes').addEventListener('click', function () { // открываем ссылку в новой вкладке на Промокоды
-    window.open("https://billing-marketing.skyeng.ru/promocode/list")
-})
-
-document.getElementById('helpocentrteach').addEventListener('click', function () { // открываем ссылку в новой вкладке на Help Centr для П
-    window.open("https://helpcenter.skyeng.ru/teachers")
-})
-
-document.getElementById('helpocentrstud').addEventListener('click', function () { // открываем ссылку в новой вкладке на Help Centr для У
-    window.open("https://helpcenter.skyeng.ru/students")
-})
-
-document.getElementById('kidscms').addEventListener('click', function () { // открываем ссылку в новой вкладке Kids CMS
-    window.open("https://vimbox.skyeng.ru/kids/math/cms/lessons/1")
-})
-
-document.getElementById('userfeatures').addEventListener('click', function () { // открываем ссылку в новой вкладке на проверку фичей пользователя
-    window.open("https://vimbox.skyeng.ru/circles/editor")
-})
-
-document.getElementById('benchmark').onclick = function () {                  //поиск по имени процессора на сайте cpubenchmark
-    let lnkgr = 'https://www.cpubenchmark.net/cpu_lookup.php?cpu=';
-    if (cpuname.value == "")
-        alert('Введите CPU в поле')
-    else {
-        window.open(lnkgr + cpuname.value);
+        close();
+        renderLinksPanel();
     };
-    cpuname.value = "";
-}
 
-document.getElementById('getschemes').onclick = function () { // переход на просмотра подключенных схем вознаграждения преподавателей
-    if (schemesteacher.value == "")
-        alert('Введите ID П в поле')
-    else {
-        window.open('https://teacher-incentive.skyeng.ru/incentive/teacher/' + schemesteacher.value);
-    };
-    schemesteacher.value = "";
-}
-
-document.getElementById('getpushes').onclick = function () { // переход на просмотр статусов пушей ученику в МП
-    if (pushes.value == "")
-        alert('Введите ID У в поле')
-    else {
-        window.open('https://push-notifications.skyeng.ru/cms/logs?page=1&paginateBy=100&id=&userId=' + pushes.value + '&status=&useCase=&notificationSource=&createdAtFrom=&createdAtTo=');
-    };
-    pushes.value = "";
-}
-
-document.getElementById('credits').onclick = function () {                  // проверка рассрочки у ученика она же поэтапная оплата (ПО)
-    let useid;
-    if (creditstatus.value == "")
-        alert('Введите id  ученика в поле')
-    else { 
-        useid = creditstatus.value
-        
-    };
-    let lnkscredits = `https://billing-api.skyeng.ru/installments?ownerId=${useid}&state=&perPage=10`;
-    window.open(lnkscredits);
-    creditstatus.value = "";
-}
-
-document.getElementById('gettrshinfo').onclick = function () {               // сохранение в буфере айди ученика для просмотра всего списка ДЗ по нему
-    let trshootlnk = 'https://video-trouble-shooter.skyeng.ru/?hash=';
-    if (trshooterhash.value == "")
-        alert('Введите id  ученика в поле')
-    else {
-        window.open(trshootlnk + trshooterhash.value);
-    };
-    trshooterhash.value = "";
-}
-
-document.getElementById('getenablerAP').onclick = function () {               // сохранение в буфере ссылки для активации АП
-    let enableAPlnk = 'https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=';
-    if (enablerAP.value == "")
-        alert('Введите hash комнаты в поле')
-    else {
-        copyToClipboard(enableAPlnk + enablerAP.value);
-    };
-    document.getElementById('getenablerAP').innerHTML = "✅";
-    setTimeout(function () { document.getElementById('getenablerAP').innerHTML = "💾" }, 2000);
-    enablerAP.value = "";
-}
-
-document.getElementById('getskipAP').onclick = function () {               // сохранение в буфере ссылки для активации АП
-    let skipAPlnk = 'https://student.skyeng.ru/product-stage?stage=auto-schedule&educationServiceId=';
-    if (skipAP.value == "")
-        alert('Введите hash комнаты в поле')
-    else {
-        copyToClipboard(skipAPlnk + skipAP.value);
-    };
-    document.getElementById('getskipAP').innerHTML = "✅";
-    setTimeout(function () { document.getElementById('getskipAP').innerHTML = "💾" }, 2000);
-    skipAP.value = "";
-}
-
-
-document.getElementById('doskiponboard').onclick = function () {               // сохранение в буфере ссылки для активации АП
-    let skiponblnk = 'https://student.skyeng.ru/product-stage?stage=onboarding&educationServiceId=';
-    if (skiponboarding.value == "")
-        alert('Введите ID услуги в поле')
-    else {
-        copyToClipboard(skiponblnk + skiponboarding.value);
-    };
-    document.getElementById('doskiponboard').innerHTML = "✅";
-    setTimeout(function () { document.getElementById('doskiponboard').innerHTML = "💾" }, 2000);
-    skiponboarding.value = "";
-}
-
-document.getElementById('deleteaclnk').addEventListener('click', function () { // открываем ссылку в новой вкладке для создания задачи на удаление аккаунта
-    window.open("https://infra.skyeng.ru/request/create/166")
-})
-
-document.getElementById('resetMMPassword').addEventListener('click', function () { // 
-    window.open("https://infra.skyeng.ru/request/create/233")
-})
-
-document.getElementById('bankCheck').addEventListener('click', function () { // открывает окно просмотра информации о групповых уроков
-    if (document.getElementById('AF_BankCheck').style.display == '')
-        document.getElementById('AF_BankCheck').style.display = 'none'
-    else
-        document.getElementById('AF_BankCheck').style.display = ''
-})
-
-document.getElementById('gotolookip').onclick = function () { // проверка информации по айпишнику ученика/препода/ хостинга
-    let iplink = 'https://check-host.net/ip-info?host=';
-    if (iplookup.value == "")
-        alert('Введите ip в поле')
-    else {
-        window.open(iplink + iplookup.value);
-    };
-    iplookup.value = "";
-}
-
-document.getElementById('getlgsinfo').onclick = function () { // открытие админки LGS по ID группы
-    let lgslink = 'https://learning-groups-storage.skyeng.ru/group/';
-    if (lgssearch.value == "")
-        alert('Введите текст в поле')
-    else {
-        window.open(lgslink + lgssearch.value + '?cp=(section:participants)');
-    };
-    lgssearch.value = "";
-}
-
-document.getElementById('cmsid').onclick = function () {                     // переход на степID в CMSке
-    if (cmsstepid.value == "")
-        alert('Введите STEPUUID в поле')
-    else {
-        window.open('https://content.vimbox.skyeng.ru/cms/stepStore/update/stepId/' + cmsstepid.value);
-    };
-    cmsstepid.value = "";
-}
-
-getmobpasscode.onclick = function () {
-    const getmobpasscode = document.querySelector('#getmobpasscode');
-    const setidformobpass = document.querySelector('#setidformobpass');
-    const cleanedId = setidformobpass.value.replace(/\D/g, '').trim();
-
-    if (cleanedId === "") {
-        alert('Введите id в поле');
-    } else {
-        getmobpasscode.innerHTML = '✅';
-        setTimeout(() => getmobpasscode.innerHTML = '🚀', 2000);
-        const url = "https://id.skyeng.ru/admin/auth/one-time-password";
-        const requestOptions = {
-            "headers": {
-                "content-type": "application/x-www-form-urlencoded",
-                "sec-fetch-site": "same-origin",
-                "sec-fetch-user": "?1",
-                "upgrade-insecure-requests": "1"
-            },
-            "body": `user_id_or_identity_for_one_time_password_form%5BuserIdOrIdentity%5D=${cleanedId}&user_id_or_identity_for_one_time_password_form%5Bgenerate%5D=&user_id_or_identity_for_one_time_password_form%5B_token%5D=null`,
-            "method": "POST",
-            "mode": "cors",
-            "credentials": "include"
+    if (isEdit) {
+        overlay.querySelector('#lk-btn-delete').onclick = () => {
+            if (confirm(`Удалить кнопку "${existingButton.title}"?`)) {
+                linksCfg.deleteCustomButton(existingButton.id);
+                close();
+                renderLinksPanel();
+            }
         };
+    }
+}
 
-        // Отправка сообщения
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url, requestOptions: requestOptions }, function (response) {
-            if (response && response.success) {
-                var convertres11 = response.fetchansver.match(/div class="alert alert-success" role="alert".*?([0-9]{5}).*/);
-                if (convertres11 && convertres11.length > 1) {
-                    setidformobpass.value = convertres11[1];
-                    getmobpasscode.innerHTML = '✅';
-                    setTimeout(() => getmobpasscode.innerHTML = '🚀', 2000);
-                    setTimeout(() => setidformobpass.value = "", 15000);
+// ==========================================
+// 5. ОБРАБОТЧИКИ
+// ==========================================
+
+function bindSimpleLinks(linksMap) {
+    Object.entries(linksMap).forEach(([id, url]) => {
+        const el = document.getElementById(id);
+        if (el && url) el.onclick = () => window.open(url, '_blank');
+    });
+}
+
+function initLinksHandlers() {
+    // --- Кнопки-ссылки ---
+    bindSimpleLinks(Object.fromEntries(TP_LINK_BUTTONS.map(b => [b.id, b.url])));
+
+    // Список группы — функция из GrList.js
+    const grListBtn = document.getElementById('GrListData');
+    if (grListBtn) {
+        if (typeof getGrListDataButtonPress === 'function') grListBtn.onclick = getGrListDataButtonPress;
+        else grListBtn.style.display = 'none';
+    }
+
+    // --- Кастомные кнопки: клик — открыть, ПКМ — редактировать ---
+    document.querySelectorAll('#AF_Links .custom-btn[data-custom-id]').forEach(btnEl => {
+        const id = btnEl.dataset.customId;
+        const button = linksCfg.getCustomButtons().find(b => b.id === id);
+        if (!button) return;
+
+        btnEl.onclick = () => { if (button.url) window.open(button.url, '_blank'); };
+        btnEl.oncontextmenu = e => {
+            e.preventDefault();
+            showLinkButtonModal(button);
+        };
+    });
+
+    // --- Добавление кастомной кнопки ---
+    const addBtn = document.getElementById('add-custom-btn');
+    if (addBtn) addBtn.onclick = () => showLinkButtonModal(null);
+
+    // --- Быстрый поиск (открытие ссылки по значению поля) ---
+    LK_INPUT_ACTIONS.forEach(({ btn, input, url, error, suffix }) => {
+        const buttonEl = document.getElementById(btn);
+        const inputEl = document.getElementById(input);
+        if (!buttonEl || !inputEl) return;
+
+        const action = () => {
+            const val = inputEl.value.trim();
+            if (!val) {
+                alert(error);
+                return;
+            }
+            window.open(suffix ? `${url}${val}${suffix}` : `${url}${val}`, '_blank');
+            inputEl.value = '';
+        };
+        buttonEl.onclick = action;
+        inputEl.onkeypress = e => { if (e.key === 'Enter') action(); };
+    });
+
+    // --- Кнопки, копирующие готовую ссылку в буфер (АП / skip AP / skip onboarding) ---
+    LK_COPY_ACTIONS.forEach(({ btn, input, build, msg }) => {
+        const buttonEl = document.getElementById(btn);
+        const inputEl = document.getElementById(input);
+        if (!buttonEl || !inputEl) return;
+
+        const originalIcon = buttonEl.textContent;
+        const action = () => {
+            const val = inputEl.value.trim();
+            if (!val) {
+                alert('Введите ID услуги в поле');
+                return;
+            }
+            copyToClipboard(build(val));
+            if (typeof createAndShowButton === 'function') createAndShowButton(msg);
+            buttonEl.textContent = '✅';
+            setTimeout(() => { buttonEl.textContent = originalIcon; }, 2000);
+            inputEl.value = '';
+        };
+        buttonEl.onclick = action;
+        inputEl.onkeypress = e => { if (e.key === 'Enter') action(); };
+    });
+
+    // --- Разовый пароль для МП (через bg.js, обход CORS) ---
+    const mobPassBtn = document.getElementById('getmobpasscode');
+    const mobPassInput = document.getElementById('setidformobpass');
+    if (mobPassBtn && mobPassInput) {
+        mobPassBtn.onclick = function () {
+            const cleanedId = mobPassInput.value.replace(/\D/g, '').trim();
+            if (!cleanedId) {
+                alert('Введите ID У/П в поле');
+                return;
+            }
+
+            mobPassBtn.textContent = '✅';
+            setTimeout(() => mobPassBtn.textContent = '🚀', 2000);
+
+            const url = 'https://id.skyeng.ru/admin/auth/one-time-password';
+            const requestOptions = {
+                headers: { 'content-type': 'application/x-www-form-urlencoded' },
+                body: `user_id_or_identity_for_one_time_password_form%5BuserIdOrIdentity%5D=${cleanedId}&user_id_or_identity_for_one_time_password_form%5Bgenerate%5D=&user_id_or_identity_for_one_time_password_form%5B_token%5D=null`,
+                method: 'POST',
+                mode: 'cors',
+                credentials: 'include'
+            };
+
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url, requestOptions }, function (response) {
+                if (!response || !response.success) {
+                    console.error('Ответ от background script пуст или не определен', response?.error);
+                    return;
+                }
+                const otp = response.fetchansver.match(/div class="alert alert-success" role="alert".*?([0-9]{5}).*/);
+                if (otp && otp.length > 1) {
+                    mobPassInput.value = otp[1];
+                    setTimeout(() => mobPassInput.value = '', 15000); // пароль живёт в поле 15 секунд
                 } else {
                     console.error('OTP не найден в ответе');
                 }
-            } else {
-                console.error('Ответ от background script пуст или не определен', response.error);
-            }
-        });
+            });
+        };
+        mobPassInput.onkeypress = e => { if (e.key === 'Enter') mobPassBtn.click(); };
+    }
+
+    // --- Classwork: копирование команды перезапуска урока ---
+    const restartBtn = document.getElementById('restartlesson');
+    if (restartBtn) {
+        restartBtn.onclick = function () {
+            copyToClipboard("setStatus('classwork')");
+            restartBtn.textContent = 'Copied!';
+            setTimeout(() => restartBtn.textContent = 'Classwork 💾', 2000);
+        };
+    }
+
+    // --- Кнопки версий приложения: клик — страница в магазине ---
+    const iosBtn = document.getElementById('curVeriOSCRM');
+    const andBtn = document.getElementById('curVerAndroidCRM');
+    if (iosBtn) iosBtn.onclick = () => window.open('https://apps.apple.com/ru/app/skyeng-%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%8F%D0%B7%D1%8B%D0%BA-%D0%BE%D0%BD%D0%BB%D0%B0%D0%B9%D0%BD/id1065290732', '_blank');
+    if (andBtn) andBtn.onclick = () => window.open('https://play.google.com/store/apps/details?id=skyeng.words.prod', '_blank');
+
+    lkApplyVersionsText();
+}
+
+// ==========================================
+// 6. ВЕРСИИ МОБ. ПРИЛОЖЕНИЙ
+// ==========================================
+let versionscontainer;
+let linksVersionsCache = null;
+
+async function getversionsapp() {
+    const versionsDocURL = 'https://script.google.com/macros/s/AKfycbwgym7WoXavCcMa7mpzlA4GHGncpWixKwyxhSJT1TU8tZg4KmRemyZqyQ3c5G2cKTxDrQ/exec';
+
+    let versionsdata;
+    try {
+        const r = await fetch(versionsDocURL);
+        versionsdata = await r.json();
+    } catch (err) {
+        console.error('Не удалось загрузить версии приложений:', err);
+        const iosEl = document.getElementById('curVeriOSCRM');
+        const andEl = document.getElementById('curVerAndroidCRM');
+        if (iosEl) iosEl.textContent = 'iOS: ❌';
+        if (andEl) andEl.textContent = 'Android: ❌';
+        return;
+    }
+
+    versionscontainer = versionsdata.result;
+    if (!versionscontainer) return;
+
+    linksVersionsCache = {
+        ios: `${versionscontainer[1][0]} (${versionscontainer[1][1]})`,
+        android: `${versionscontainer[0][0]} (${versionscontainer[0][1]})`
     };
+    lkApplyVersionsText();
+}
+
+/** Восстанавливает текст версий после перерисовки панели. */
+function lkApplyVersionsText() {
+    if (!linksVersionsCache) return;
+    const iosEl = document.getElementById('curVeriOSCRM');
+    const andEl = document.getElementById('curVerAndroidCRM');
+    if (iosEl) iosEl.textContent = linksVersionsCache.ios;
+    if (andEl) andEl.textContent = linksVersionsCache.android;
+}
+
+// ==========================================
+// 7. ИНИЦИАЛИЗАЦИЯ ОКНА
+// ==========================================
+
+/** Перерисовывает панель (изменение кастомных кнопок). */
+function renderLinksPanel() {
+    const panel = document.getElementById('AF_Links');
+    if (!panel) return;
+
+    panel.innerHTML = getLinksHTML();
+    hideWindowOnClick('AF_Links', 'hideMe');
+    initLinksHandlers();
+}
+
+const wintLinks = createWindowCRM('AF_Links', 'winTopLinks', 'winLeftLinks', getLinksHTML());
+hideWindowOnDoubleClick('AF_Links');
+hideWindowOnClick('AF_Links', 'hideMe');
+initLinksHandlers();
+
+document.getElementById('butdiagtoolsCRM').onclick = function () { // открывает окно ссылок
+    const panel = document.getElementById('AF_Links');
+    const menu = document.getElementById('idmymenucrm');
+
+    if (panel.style.display == '') {
+        panel.style.display = 'none';
+        if (menu) menu.style.display = 'none';
+    } else {
+        panel.style.display = '';
+        if (menu) menu.style.display = 'none';
+
+        getversionsapp();
+    }
 };
-
-
-document.getElementById('GrListData').onclick = getGrListDataButtonPress;
-
-document.getElementById('grafanalnk').addEventListener('click', function () {
-    window.open("https://grafana.skyeng.link/d/NZkMHsVMk/video-servers-health-check?orgId=1&refresh=1m")    // открываем Grafana
-})
-
-document.getElementById('kpiteachersdashboard').addEventListener('click', function () {
-    window.open("https://datalens.yandex.ru/lupggqkv0uewa-kpi-p-dlya-tp?tab=GrW&state=684e0be1371")    // копируем открываем дашборд КПИ тичерсов
-})
