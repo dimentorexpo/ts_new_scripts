@@ -1,7 +1,9 @@
 // Global Variables
 
 chrome.runtime.onInstalled.addListener((details) => {
-    if (details.reason === 'install') {
+    // Пишем адреса не только при установке, но и при обновлении —
+    // иначе у сотрудников навсегда остаются URL старых деплоев
+    if (details.reason === 'install' || details.reason === 'update') {
         chrome.storage.local.set({
             KC_addr: 'https://script.google.com/macros/s/AKfycbzV8BHtyD3XUcPjZmb9pwwY-2cwAKx8hTRZKVENpKhdCJYe-hF0rpyDVdUIXBUin326Lw/exec',
             TP_addr: 'https://script.google.com/macros/s/AKfycbzsf72GllYQdCGg-L4Jw1qx9iv9Vz3eyiQ9QO81HEnlr0K2DKqy6zvi7IYu77GB6EMU/exec',

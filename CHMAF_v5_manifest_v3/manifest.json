@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "ChMAF",
-	"version": "5.0.148",
+	"version": "5.0.150",
 	"description": "Твой мультитул в работе с чатами",
 	"background": {
 		"service_worker": "bg.js"
@@ -140,6 +140,8 @@
 	"host_permissions": [
 		"https://*.skyeng.ru/*",
 		"https://skyeng.autofaq.ai/*",
+		"https://script.google.com/*",
+		"https://script.googleusercontent.com/*",
 		"https://jira.skyeng.tech/*",
 		"https://jira.skyeng.link/*",
 		"https://mm-time.skyeng.tech/*",

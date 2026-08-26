@@ -1504,5 +1504,4 @@ document.getElementById('placechatid').onclick = () => {
         setTimeout(() => { el.style.color = originalColor; }, 300);
     }
 };
-// Инициализация завершена
-console.log('✅ ChatHistory v2.0 загружен');
+

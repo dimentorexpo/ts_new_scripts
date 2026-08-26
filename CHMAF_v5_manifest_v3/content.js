@@ -365,7 +365,7 @@ function newTaggg(tagName) {
             conversationId: chatId,
             elements: [{ name: 'tags', value: [tagName] }]
         })
-    }).catch(() => {});
+    }).catch(() => { });
 }
 
 /**
@@ -665,7 +665,6 @@ function initializeMyLogic() {
         console.error('AF_helper все еще не найден!');
         return;
     }
-    console.log('AF_helper успешно найден, визуальная часть загружена.');
 }
 
 // Ждём построения AF_helper (его создаёт utils.js / AFhelper.js)

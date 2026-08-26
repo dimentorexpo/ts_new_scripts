@@ -854,7 +854,6 @@
             updateUI();
 
             refreshGlobalReminderIcon();
-            console.log('[AlarmClock] Premium Edition v2.0 initialized ✨');
         };
 
         setup();

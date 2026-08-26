@@ -71,7 +71,9 @@ async function init_settings() {
         return ((r * 299) + (g * 587) + (b * 114)) / 1000;
     };
 
-    /** Инжектит/обновляет <style> с заданным ID в указанном документе. */
+    /** Инжектит/обновляет <style> с заданным ID в указанном документе.
+     *  Повторная запись того же CSS не выполняется — иначе каждый тик
+     *  вызывает полный пересчёт стилей всего документа. */
     const injectStyleInto = (targetDoc, styleId, cssText) => {
         if (!targetDoc || !targetDoc.head) return;
         let styleEl = targetDoc.getElementById(styleId);
@@ -80,6 +82,8 @@ async function init_settings() {
             styleEl.id = styleId;
             targetDoc.head.appendChild(styleEl);
         }
+        if (styleEl.__chmafCss === cssText) return;
+        styleEl.__chmafCss = cssText;
         styleEl.textContent = cssText;
     };
 
@@ -1190,47 +1194,39 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
             const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
             if (iframeDoc) injectStyleInto(iframeDoc, 'chmaf-bg-iframe', cssRules);
         }
+    };
 
-        // ─── Помечаем комментарии оператора (OperatorComment) ───
-        const markOperatorComments = () => {
-            document.querySelectorAll(
-                '[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-comment-checked])'
-            ).forEach(msg => {
-                const hasActionButtons = msg.querySelector('[class*="Buttons_SharedButton"]');
-                const hasForwarded = msg.querySelector('[class*="ChatMessages_RegularMessageForwardedMessagesContainer__"] > *');
-                // Если нет кнопок действий и нет пересланных сообщений — это внутренний комментарий
-                if (!hasActionButtons && !hasForwarded) {
-                    msg.setAttribute('data-operator-comment', 'true');
+    // ─── Помечаем комментарии оператора (OperatorComment) ───
+    const markOperatorComments = () => {
+        document.querySelectorAll(
+            '[class*="ChatMessages_RegularMessage__"][data-orientation="sender"][data-author-type="user"]:not([data-comment-checked])'
+        ).forEach(msg => {
+            const hasActionButtons = msg.querySelector('[class*="Buttons_SharedButton"]');
+            const hasForwarded = msg.querySelector('[class*="ChatMessages_RegularMessageForwardedMessagesContainer__"] > *');
+            if (!hasActionButtons && !hasForwarded) {
+                msg.setAttribute('data-operator-comment', 'true');
+            }
+            msg.setAttribute('data-comment-checked', 'true');
+        });
+    };
+
+    // ─── Подсветка PREMIUM-элементов ───
+    const highlightPremiumBadges = () => {
+        const processDoc = (doc) => {
+            if (!doc || !doc.body) return;
+            const spans = doc.querySelectorAll('span[class*="Typography_Type_body"], span[class*="Typography_Ellipsis"]');
+            spans.forEach(span => {
+                if (span.textContent.match(/premium/i) && !span.hasAttribute('data-premium-badge')) {
+                    span.setAttribute('data-premium-badge', 'true');
                 }
-                msg.setAttribute('data-comment-checked', 'true');
             });
         };
-        markOperatorComments();
-
-        // ─── Подсветка PREMIUM-элементов ───
-        const highlightPremiumBadges = () => {
-            const processDoc = (doc) => {
-                if (!doc || !doc.body) return;
-                // Ищем span'ы с текстом premium
-                const spans = doc.querySelectorAll('span[class*="Typography_Type_body"], span[class*="Typography_Ellipsis"]');
-                spans.forEach(span => {
-                    if (span.textContent.match(/premium/i) && !span.hasAttribute('data-premium-badge')) {
-                        span.setAttribute('data-premium-badge', 'true');
-                        // ⛔ Убрали все span.style.* — всё делается через CSS !
-                    }
-                });
-            };
-            processDoc(document);
-            const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-            if (iframe) {
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-                if (iframeDoc) processDoc(iframeDoc);
-            }
-        };
-
-        setTimeout(highlightPremiumBadges, 2000);
-        setInterval(highlightPremiumBadges, 2000);
-
+        processDoc(document);
+        const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+        if (iframe) {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+            if (iframeDoc) processDoc(iframeDoc);
+        }
     };
 
     // ═══════════════════════════════════════════════════════
@@ -1313,6 +1309,23 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
     // iframe нового фронта подгружается с задержкой и может пересоздаваться SPA-роутером.
     applyAppBgColor();
     applyPremiumBadgeStyles();
+    markOperatorComments();
+    highlightPremiumBadges();
+
+    // Пометки сообщений/бейджей гоняем не по таймеру, а по факту изменений DOM
+    let marksTimer = null;
+    const scheduleDynamicMarks = () => {
+        if (marksTimer) return;
+        marksTimer = setTimeout(() => {
+            marksTimer = null;
+            markOperatorComments();
+            highlightPremiumBadges();
+        }, 500);
+    };
+
+    // Страховочный тик темы: поздняя загрузка/пересоздание iframe нового фронта,
+    // SPA-редиректы через /login и т.п. Дедуп в injectStyleInto делает повторный
+    // прогон того же CSS практически бесплатным, поэтому держим прежние 2 сек.
     setInterval(() => {
         applyAppBgColor();
         applyPremiumBadgeStyles();
@@ -2395,12 +2408,17 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
     // И наблюдаем за изменениями URL (SPA-навигация)
     let lastUrl = location.href;
     new MutationObserver(() => {
+        scheduleDynamicMarks();
         const url = location.href;
         if (url !== lastUrl) {
             lastUrl = url;
-            if (url.includes('/tickets/archive') || url.includes('/logs')) {
-                setTimeout(applyTicketsArchiveDarkTheme, 300);
-            }
+            // При любом SPA-переходе заново применяем темы —
+            // важно для возврата с /login и переходов между разделами
+            setTimeout(() => {
+                applyAppBgColor();
+                applyPremiumBadgeStyles();
+                applyTicketsArchiveDarkTheme();
+            }, 300);
         }
     }).observe(document, { subtree: true, childList: true });
     // ====================================================================================

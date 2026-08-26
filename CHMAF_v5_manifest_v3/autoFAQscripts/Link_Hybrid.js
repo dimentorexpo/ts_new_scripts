@@ -112,6 +112,9 @@ const getLinksHTML = (isTP, customButtons) => {
         <button class="sky-btn" id="pondpisKC">💰 Подписки</button>
         <button class="sky-btn" id="omniKC">📩 Omni</button>
         <button class="sky-btn" id="RKKC">👥 РК</button>
+        <button class="sky-btn" id="rkKidsKC" title="Админка Kids РК (встречи клубов)">🧒 РК Kids</button>
+        <button class="sky-btn" id="rkAdultsKC" title="Админка Adults РК (расписание клубов)">👥 РК Adults</button>
+        <button class="sky-btn" id="flexAdminKC" title="Админка Flex (публичные семинары)">🎓 Flex</button>
         <button class="sky-btn" id="shablKC">📝 Шаблоны</button>
         <button class="sky-btn" id="narushKC">⚠️ Нарушение БП</button>
         <button class="sky-btn" id="grafKC">📅 График</button>
@@ -169,6 +172,9 @@ const getLinksHTML = (isTP, customButtons) => {
         <button class="sky-btn" id="CheckVidConnection" title="Видеосервер">📹 Video</button>
         <button class="sky-btn" id="goProcash" title="Check BIN">💳 BIN</button>
         <button class="sky-btn" id="faqext" title="Инструкция">❓ ChMAF</button>
+        <button class="sky-btn" id="rkKidsTP" title="Админка Kids РК (встречи клубов)">🧒 РК Kids</button>
+        <button class="sky-btn" id="rkAdultsTP" title="Админка Adults РК (расписание клубов)">👥 РК Adults</button>
+        <button class="sky-btn" id="flexAdminTP" title="Админка Flex (публичные семинары)">🎓 Flex</button>
         ${customButtons.map(btn => `<button class="sky-btn custom-btn" data-custom-id="${btn.id}" title="${btn.title}">${btn.icon} ${btn.title}</button>`).join('')}
     </div>
 
@@ -362,6 +368,9 @@ function initEventHandlers(section) {
             'pondpisKC': "https://billing-api.skyeng.ru/subscriptions",
             'omniKC': "https://skyeng.omnidesk.ru/",
             'RKKC': "https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubMemberCrudController&signature=V8w5PW8LT3GcoYMoSYzprG1lCW8F5sb5y7Bdrxh08pc",
+            'rkKidsKC': "https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubKidMeetingCrudController&entityFqcn=App%5CEntity%5CClubMeeting",
+            'rkAdultsKC': "https://skyeng.ru/clubs/admin/schedule",
+            'flexAdminKC': "https://public-seminars-admin.skyeng.ru/english?dateFrom=1787605200&dateTo=1787691599",
             'shablKC': "https://docs.google.com/spreadsheets/d/14paTabjaJcRIvlpTQzdGePltiN0bsPaFjFEbn4DD3Ho/edit#gid=410124091",
             'narushKC': "https://docs.google.com/forms/d/e/1FAIpQLSeAxtdad9yc5iLo-7v4rqMj5M2wdaJKOpzy5X_eWkHqHWY9sg/viewform",
             'grafKC': "https://docs.google.com/spreadsheets/d/1SiD1yfpzIEF8ZafVXnq0Z-hyF0b45aAQ8s6BWgy-s0c/edit#gid=1933422994"
@@ -402,7 +411,10 @@ function initEventHandlers(section) {
         'minecraftAccs': "https://disk.yandex.ru/edit/d/ARTwOEreBvxL1L4cDRCvEyPegnqahzm72s0qoIz-cKg6al9hdmhpLVFTZw",
         'deleteaclnk': "https://infra.skyeng.ru/request/create/166",
         'resetMMPassword': "https://infra.skyeng.ru/request/create/233",
-        'faqext': "https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971"
+        'faqext': "https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971",
+        'rkKidsTP': "https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubKidMeetingCrudController&entityFqcn=App%5CEntity%5CClubMeeting",
+        'rkAdultsTP': "https://skyeng.ru/clubs/admin/schedule",
+        'flexAdminTP': "https://public-seminars-admin.skyeng.ru/english?dateFrom=1787605200&dateTo=1787691599"
     };
 
     bindSimpleLinks(linksTP);

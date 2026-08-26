@@ -521,13 +521,23 @@ let checkchatsIntervalId = null; // защита от стакинга инте�
  * строит боковую FAB-панель, меню модулей и запускает фоновые интервалы.
  */
 async function move_again_AF() {
-    getText();
     let whoAmISuccess = await whoAmI();
     while (!whoAmISuccess) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         whoAmISuccess = await whoAmI();
     }
     const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']);
+
+    // Миграция устаревших адресов: если в localStorage лежит URL, которого
+    // нет в текущем chrome.storage — сбрасываем на актуальный деплой
+    const knownAddrs = [data.KC_addr, data.TP_addr, data.KC_addrRzrv, data.TP_addrRzrv].filter(Boolean);
+    if (!knownAddrs.includes(scriptAdr)) {
+        scriptAdr = (localStorage.getItem('tpflag') === 'ТП' ? data.TP_addr : data.KC_addr) || DEFAULT_SCRIPT_ADR;
+        localStorage.setItem('scriptAdr', scriptAdr);
+        console.warn('[ChMAF] Адрес шаблонов устарел — сброшен на актуальный:', scriptAdr);
+    }
+
+    getText();
 
     // Инжектим стили
     injectFABStyles();
@@ -629,13 +639,39 @@ else {
     }, 1000);
 }
 
+/**
+ * Грузит JSON с Google Apps Script: сначала обычный fetch со страницы,
+ * при неудаче — через background-воркер (обходит любые CORS-сюрпризы).
+ * @param {string} url — адрес /exec деплоя
+ * @returns {Promise<Object>} — распарсенный JSON
+ */
+async function fetchGasJson(url) {
+    try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return await r.json();
+    } catch (e) {
+        const ans = await new Promise((resolve) => {
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url }, (resp) => {
+                if (chrome.runtime.lastError || !resp || !resp.success) resolve(null);
+                else resolve(resp.fetchansver);
+            });
+        });
+        if (!ans) throw e;
+        return JSON.parse(ans);
+    }
+}
+
 /** Загружает таблицу шаблонов из Google Apps Script и перерисовывает кнопки. */
 async function getText() {
     try {
-        const r = await fetch(scriptAdr);
-        if (r.ok) { table = (await r.json()).result; refreshTemplates(); }
+        const json = await fetchGasJson(scriptAdr);
+        if (!json || !Array.isArray(json.result)) throw new Error('В ответе GAS нет массива result — проверь адрес деплоя: ' + scriptAdr);
+        table = json.result;
+        console.log(`[ChMAF] Шаблоны загружены: ${table.length} строк`);
+        refreshTemplates();
     } catch (e) {
-        console.error('Не удалось загрузить шаблоны:', e);
+        console.error('[ChMAF] Не удалось загрузить шаблоны:', e);
     }
 }
 

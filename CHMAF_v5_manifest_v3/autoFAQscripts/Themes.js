@@ -449,15 +449,15 @@ hideWindowOnDoubleClick('AF_Themes');
 async function startThemes() {
     const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv', 'TP_addrth', 'KC_addrth']);
 
-    let scriptAdrTH = localStorage.getItem('scriptAdrTH');
-    let scriptAdrChek = localStorage.getItem('scriptAdr');
+    // Адрес тем всегда выводим из ТЕКУЩЕГО chrome.storage по активному отделу —
+    // сохранённый в localStorage scriptAdrTH мог остаться от старого деплоя
+    const scriptAdrChek = localStorage.getItem('scriptAdr');
+    let scriptAdrTH;
 
-    if (scriptAdrChek === data.TP_addr || scriptAdrChek === data.TP_addrRzrv) {
-        scriptAdrTH = data.TP_addrth;
-    } else if (scriptAdrChek === data.KC_addr || scriptAdrChek === data.KC_addrRzrv) {
+    if (scriptAdrChek === data.KC_addr || scriptAdrChek === data.KC_addrRzrv) {
         scriptAdrTH = data.KC_addrth;
         KCThemesFlag = 1;
-    } else if (!scriptAdrTH) {
+    } else {
         scriptAdrTH = data.TP_addrth;
     }
 
@@ -526,20 +526,14 @@ document.getElementById('backtomenu').addEventListener('click', e => {
 
 async function getTextThemes(appThemes) {
     try {
-        const response = await fetch(appThemes);
-        if (!response.ok) throw new Error('Ошибка сети');
-        const rth = await response.json();
-
-        if (rth && rth.result) {
-            tableth = rth.result;
-            console.log('Updated themes successfully');
-            refreshThemesBtns();
-            return true;
-        } else {
-            throw new Error('Некорректный формат данных');
-        }
+        const rth = await fetchGasJson(appThemes);
+        if (!rth || !Array.isArray(rth.result)) throw new Error('В ответе GAS нет массива result — проверь адрес деплоя: ' + appThemes);
+        tableth = rth.result;
+        console.log(`[ChMAF] Темы загружены: ${tableth.length} строк`);
+        refreshThemesBtns();
+        return true;
     } catch (e) {
-        console.error('Failed to fetch themes:', e);
+        console.error('[ChMAF] Failed to fetch themes:', e);
         return false;
     }
 }

@@ -543,10 +543,12 @@ function loadTaskDrafts() {
     }
 }
 
-/** Сохраняет текущее состояние формы в черновик, привязанный к хешу чата */
+/** Сохраняет текущее состояние формы в черновик, привязанный к хешу чата.
+ *  Если хеш ещё не подхватился (форму открыли раньше чата) — сохраняем
+ *  под служебным ключом __nochat__, чтобы текст не терялся в любом случае. */
 function saveTaskDraft() {
     const conversid = (document.getElementById('chathashlnk')?.value || '').trim();
-    if (!conversid) return;
+    const draftKey = conversid || '__nochat__';
 
     const val = (id) => (document.getElementById(id)?.value || '');
     const draft = {
@@ -564,8 +566,8 @@ function saveTaskDraft() {
     const drafts = loadTaskDrafts();
     const isEmpty = !draft.priority && !draft.cs && !draft.serviceId && !draft.userId
         && !draft.comment.trim() && !draft.userSearchId && draft.noteFlag !== 1;
-    if (isEmpty) delete drafts[conversid];
-    else drafts[conversid] = draft;
+    if (isEmpty) delete drafts[draftKey];
+    else drafts[draftKey] = draft;
 
     // Храним не более 10 самых свежих черновиков
     const keys = Object.keys(drafts).sort((a, b) => (drafts[b]?.ts || 0) - (drafts[a]?.ts || 0));
@@ -613,6 +615,48 @@ function restoreTaskDraft(conversid) {
     }
     return true;
 }
+
+/** Ручное восстановление черновика из консоли (F12):
+ *  afRestoreDraft()            — показать таблицу всех черновиков;
+ *  afRestoreDraft('<хеш чата>')— залить черновик в открытую форму задачи;
+ *  afRestoreDraft('__nochat__')— залить последний черновик, набранный без хеша. */
+window.afRestoreDraft = (hash) => {
+    const drafts = loadTaskDrafts();
+    if (!hash) {
+        console.table(Object.entries(drafts).map(([k, v]) => ({
+            key: k, приоритет: v.priority, отдел: v.cs,
+            услуга: v.serviceId, юзер: v.userId,
+            обновлён: v.ts ? new Date(v.ts).toLocaleTimeString('ru-RU') : '?',
+            коммент: (v.comment || '').slice(0, 60)
+        })));
+        return;
+    }
+    const d = drafts[hash];
+    if (!d) { console.warn('[ChMAF] Черновик не найден:', hash); return; }
+
+    const setVal = (id, v) => {
+        const el = document.getElementById(id);
+        if (el && v != null && v !== '') el.value = v;
+    };
+    setVal('priority', d.priority);
+    setVal('customerservice', d.cs);
+    setVal('taskserviceid', d.serviceId);
+    setVal('taskuserid', d.userId);
+    setVal('taskcomment', d.comment);
+    setVal('useriddata', d.userSearchId);
+    setVal('chathashlnk', hash !== '__nochat__' ? hash : null);
+
+    if (d.noteFlag === 1 && d.noteText) {
+        NoteFlag = 1;
+        NoteText = d.noteText;
+        const noteEl = document.getElementById('NoteNoticeText');
+        if (noteEl) noteEl.innerText = NoteText;
+        const wrapEl = document.getElementById('NoteNoticeWrap');
+        if (wrapEl) wrapEl.style.display = 'block';
+    }
+    saveTaskDraft();
+    console.log('[ChMAF] Черновик восстановлен в форму задачи');
+};
 
 /** Достаёт человекочитаемый текст ошибки из тела ответа AutoFAQ (если есть) */
 function extractServerError(body) {
