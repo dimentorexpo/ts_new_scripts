@@ -252,7 +252,8 @@ function toggleParticipantsModal() {
     modal.style.top = "10vh";
 
     modal.classList.add('tsm-modal-animate');
-    setTimeout(() => modal.classList.remove('tsm-modal-animate'), 500);
+    clearTimeout(modal._tsmAnimTimer);
+    modal._tsmAnimTimer = setTimeout(() => modal.classList.remove('tsm-modal-animate'), 500);
 
     makeDraggable(modal, document.getElementById('participantsDragHandle'));
 }

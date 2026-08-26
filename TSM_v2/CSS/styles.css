@@ -936,6 +936,9 @@
     color: var(--tsm-text-primary) !important;
     font-family: var(--tsm-font-ui) !important;
     /* top/left/transform убраны — задаются через JS при открытии и drag */
+    /* ФИКС двойного появления: без этого после удаления .tsm-modal-animate
+       анимация "проваливается" на tsm-fade-in из .tsm-window и перезапускается */
+    animation: none;
 }
 
 /* Анимация открытия (без !important, чтобы не блокировать drag) */
