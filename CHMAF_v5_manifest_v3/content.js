@@ -81,7 +81,7 @@ const IMAGE_EXTENSIONS = /\.(png|jpg|jpeg|gif|webp)$/i;
 // Shared state (используется и другими скриптами расширения!)
 // ============================================================
 let aftoken = '';                 // CSRF-токен AutoFAQ
-let opsection = 'ТП';             // отдел оператора
+let opsection = '';             // отдел оператора
 let operatorFullTitle = '';       // полное имя оператора
 let operatorId = '';              // ID авторизованного оператора
 let operatorsarray = [];          // общий список операторов (onOperator)

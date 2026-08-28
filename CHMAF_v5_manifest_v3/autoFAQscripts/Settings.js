@@ -3,6 +3,9 @@
  * применение цветовых тем (основной чат, архив тикетов, premium-бейджи)
  * и все обработчики UI. Вызывается один раз при загрузке страницы.
  */
+
+const isTP = () => whoAmICompleted && (opsection === "ТП" || opsection === "ТП ОС");
+
 async function init_settings() {
     // --- Constants & Configuration ---
     const DEFAULTS = {
@@ -52,6 +55,9 @@ async function init_settings() {
     };
 
     Settings.initDefaults();
+
+    // Helper: проверяем, что оператор из ТП
+    const isTP = () => opsection === "ТП" || opsection === "ТП ОС";
 
     // --- Цветовые хелперы (общие для всех тем ниже) ---
 
@@ -135,52 +141,6 @@ async function init_settings() {
 
         if (!isWhite) {
             cssRules += `
-/* ═══ PREMIUM BADGE ═══ */
-/* Один селектор максимальной специфичности — перебивает ВСЁ */
-span[data-premium-badge="true"][class*="Typography"],
-span[data-premium-badge="true"][id*="mantine-"] {
-    background-color: rgba(30, 58, 138, 0.95) !important;
-    color: #e3f2fd !important;
-    border: 1px solid rgba(66, 133, 244, 0.8) !important;
-    border-radius: 4px !important;
-    padding: 1px 6px !important;
-    font-weight: 700 !important;
-    font-size: 0.85em !important;
-    letter-spacing: 0.02em !important;
-    box-shadow: 0 0 8px rgba(66, 133, 244, 0.5), inset 0 0 3px rgba(100, 181, 246, 0.3) !important;
-    /* ⬇️ КЛЮЧЕВОЕ: inline-flex вместо inline-block — flex-контейнер никогда не разрывается */
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 2px !important;
-    white-space: nowrap !important;
-    text-transform: uppercase !important;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
-    vertical-align: middle !important;
-    /* ⬇️ Запрещаем любые разрывы */
-    word-break: keep-all !important;
-    overflow-wrap: normal !important;
-    line-break: strict !important;
-}
-
-/* Звезда как часть flex-контейнера — не убежит */
-span[data-premium-badge="true"][class*="Typography"]::after,
-span[data-premium-badge="true"][id*="mantine-"]::after {
-    content: "★";
-    color: #ffd700 !important;
-    font-size: 0.9em !important;
-    text-shadow: 0 0 3px rgba(255, 215, 0, 0.8) !important;
-    /* ⬇️ Запрещаем перенос самой звезды */
-    white-space: nowrap !important;
-    word-break: keep-all !important;
-}
-
-/* Hover-эффект */
-span[data-premium-badge="true"][class*="Typography"]:hover,
-span[data-premium-badge="true"][id*="mantine-"]:hover {
-    box-shadow: 0 0 12px rgba(66, 133, 244, 0.7), inset 0 0 5px rgba(100, 181, 246, 0.4) !important;
-    border-color: rgba(100, 181, 246, 1) !important;
-}
-
             /* ═══ 1. КАРТОЧКИ ДИАЛОГОВ ═══ */
             [class*="DialogsCard_Card"] {
                 background-color: var(--chat-card-bg, ${getRgba(textColor, 0.05)}) !important;
@@ -1188,6 +1148,49 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
         `;
         }
 
+        // PREMIUM BADGE — только для ТП
+        if (isTP()) {
+            cssRules += `
+            /* ═══ PREMIUM BADGE ═══ */
+            span[data-premium-badge="true"][class*="Typography"],
+            span[data-premium-badge="true"][id*="mantine-"] {
+                background-color: rgba(30, 58, 138, 0.95) !important;
+                color: #e3f2fd !important;
+                border: 1px solid rgba(66, 133, 244, 0.8) !important;
+                border-radius: 4px !important;
+                padding: 1px 6px !important;
+                font-weight: 700 !important;
+                font-size: 0.85em !important;
+                letter-spacing: 0.02em !important;
+                box-shadow: 0 0 8px rgba(66, 133, 244, 0.5), inset 0 0 3px rgba(100, 181, 246, 0.3) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 2px !important;
+                white-space: nowrap !important;
+                text-transform: uppercase !important;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+                vertical-align: middle !important;
+                word-break: keep-all !important;
+                overflow-wrap: normal !important;
+                line-break: strict !important;
+            }
+            span[data-premium-badge="true"][class*="Typography"]::after,
+            span[data-premium-badge="true"][id*="mantine-"]::after {
+                content: "★";
+                color: #ffd700 !important;
+                font-size: 0.9em !important;
+                text-shadow: 0 0 3px rgba(255, 215, 0, 0.8) !important;
+                white-space: nowrap !important;
+                word-break: keep-all !important;
+            }
+            span[data-premium-badge="true"][class*="Typography"]:hover,
+            span[data-premium-badge="true"][id*="mantine-"]:hover {
+                box-shadow: 0 0 12px rgba(66, 133, 244, 0.7), inset 0 0 5px rgba(100, 181, 246, 0.4) !important;
+                border-color: rgba(100, 181, 246, 1) !important;
+            }
+            `;
+        }
+
         injectStyleInto(document, 'chmaf-bg-main', cssRules);
         const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
         if (iframe) {
@@ -1308,13 +1311,16 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
     // Применяем темы при запуске и по интервалу —
     // iframe нового фронта подгружается с задержкой и может пересоздаваться SPA-роутером.
     applyAppBgColor();
-    applyPremiumBadgeStyles();
-    markOperatorComments();
-    highlightPremiumBadges();
+    if (isTP()) {
+        applyPremiumBadgeStyles();
+        markOperatorComments();
+        highlightPremiumBadges();
+    }
 
     // Пометки сообщений/бейджей гоняем не по таймеру, а по факту изменений DOM
     let marksTimer = null;
     const scheduleDynamicMarks = () => {
+        if (!isTP()) return;
         if (marksTimer) return;
         marksTimer = setTimeout(() => {
             marksTimer = null;
@@ -1328,7 +1334,7 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
     // прогон того же CSS практически бесплатным, поэтому держим прежние 2 сек.
     setInterval(() => {
         applyAppBgColor();
-        applyPremiumBadgeStyles();
+        if (isTP()) applyPremiumBadgeStyles();
     }, 2000);
 
 
@@ -2416,7 +2422,7 @@ span[data-premium-badge="true"][id*="mantine-"]:hover {
             // важно для возврата с /login и переходов между разделами
             setTimeout(() => {
                 applyAppBgColor();
-                applyPremiumBadgeStyles();
+                if (isTP()) applyPremiumBadgeStyles();
                 applyTicketsArchiveDarkTheme();
             }, 300);
         }
