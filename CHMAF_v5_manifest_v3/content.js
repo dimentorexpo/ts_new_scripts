@@ -197,7 +197,7 @@ async function whoAmI() {
 
     if (onArchiveOrLogs && menuNameField) {
         operatorFullTitle = menuNameField.textContent;
-        opsection = operatorFullTitle.split('-')[0];
+        opsection = operatorFullTitle.split('-')[0];  // ← ВСЕГДА
         findOperator(operatorFullTitle);
         whoAmICompleted = true;
         return true;
@@ -210,11 +210,8 @@ async function whoAmI() {
         if (sectionKey) {
             operatorFullTitle = sectionKey.textContent;
             const [section] = sectionKey.textContent.split('-');
-
-            if (section !== 'ТП' && section !== 'ТП ОС') {
-                opsection = section;
-            }
-
+            console.log('[whoAmI] section found:', section, '| textContent:', sectionKey.textContent);
+            opsection = section;  // ← фикс
             findOperator(operatorFullTitle);
             whoAmICompleted = true;
             return true;
