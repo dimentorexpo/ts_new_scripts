@@ -639,12 +639,6 @@ async function init_settings() {
                 color: #ffffff !important;
             }
 
-            /* ═══ 24. SANITIZED HTML ═══ */
-            [class*="SanitizedHtml_SanitizedHtml__"] {
-                color: ${textColor} !important;
-                background: transparent !important;
-            }
-
             /* ═══ 25. ACCORDION / SUGGESTIONS ═══ */
             [class*="mantine-Accordion-control"],
             [class*="Suggestions_SuggestionPreviewWrapper__"] {
@@ -659,12 +653,7 @@ async function init_settings() {
             [class*="Suggestions_SuggestionPreviewWrapper__"][data-active="true"] {
                 background-color: ${getRgba(textColor, 0.12)} !important;
             }
-            [class*="Suggestions_SuggestionPreview__"] [class*="Typography_Type_body-description__"],
-            [class*="Suggestions_SuggestionPreview__"] [class*="Typography_Type_body__"],
-            [class*="Suggestions_SuggestionPreview__"] [class*="SanitizedHtml_SanitizedHtml__"] {
-                color: ${textColor} !important;
-                background: transparent !important;
-            }
+
             [class*="mantine-Accordion-chevron"] svg {
                 color: ${textColor} !important;
             }
@@ -1152,7 +1141,7 @@ async function init_settings() {
         if (isTP()) {
             cssRules += `
             /* ═══ PREMIUM BADGE ═══ */
-            span[data-premium-badge="true"][class*="Typography"],
+            span[data-premium-badge="true"],
             span[data-premium-badge="true"][id*="mantine-"] {
                 background-color: rgba(30, 58, 138, 0.95) !important;
                 color: #e3f2fd !important;
@@ -1174,7 +1163,7 @@ async function init_settings() {
                 overflow-wrap: normal !important;
                 line-break: strict !important;
             }
-            span[data-premium-badge="true"][class*="Typography"]::after,
+            span[data-premium-badge="true"]::after,
             span[data-premium-badge="true"][id*="mantine-"]::after {
                 content: "★";
                 color: #ffd700 !important;
@@ -1183,7 +1172,7 @@ async function init_settings() {
                 white-space: nowrap !important;
                 word-break: keep-all !important;
             }
-            span[data-premium-badge="true"][class*="Typography"]:hover,
+            span[data-premium-badge="true"]:hover,
             span[data-premium-badge="true"][id*="mantine-"]:hover {
                 box-shadow: 0 0 12px rgba(66, 133, 244, 0.7), inset 0 0 5px rgba(100, 181, 246, 0.4) !important;
                 border-color: rgba(100, 181, 246, 1) !important;
@@ -1217,7 +1206,8 @@ async function init_settings() {
     const highlightPremiumBadges = () => {
         const processDoc = (doc) => {
             if (!doc || !doc.body) return;
-            const spans = doc.querySelectorAll('span[class*="Typography_Type_body"], span[class*="Typography_Ellipsis"]');
+            // Только span'ы с id вида mantine-*-target и содержащие "Premium"
+            const spans = doc.querySelectorAll('span[id*="mantine-"][id*="-target"]');
             spans.forEach(span => {
                 if (span.textContent.match(/premium/i) && !span.hasAttribute('data-premium-badge')) {
                     span.setAttribute('data-premium-badge', 'true');
@@ -1254,9 +1244,9 @@ async function init_settings() {
         const lightCss = `
         span[data-premium-badge="true"][class*="Typography"],
         span[data-premium-badge="true"][id*="mantine-"] {
-            background: linear-gradient(135deg, #ff6f00 0%, #ff3d00 100%) !important;
+            background: linear-gradient(135deg, #2e1699 0%, #ff3d00 100%) !important;
             color: #ffffff !important;
-            border: 2px solid #ff9100 !important;
+            border: 2px solid #1215bb !important;
             border-radius: 6px !important;
             padding: 2px 8px !important;
             font-weight: 800 !important;
@@ -1288,7 +1278,7 @@ async function init_settings() {
 
         span[data-premium-badge="true"][class*="Typography"]:hover,
         span[data-premium-badge="true"][id*="mantine-"]:hover {
-            background: linear-gradient(135deg, #ff8f00 0%, #ff5722 100%) !important;
+            background: linear-gradient(135deg, #1706b8 0%, #ff5722 100%) !important;
             box-shadow: 0 4px 14px rgba(255, 109, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.25) !important;
             border-color: #ffc107 !important;
             transform: translateY(-1px) !important;
