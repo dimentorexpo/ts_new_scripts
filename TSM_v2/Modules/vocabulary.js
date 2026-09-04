@@ -13,50 +13,47 @@ const WORDS_API_HEADERS = () => ({
     "authorization": `Bearer ${token.token_global}`
 });
 
-var win_Vocabulary = `<div style="display: flex;">
-    <span style="cursor: -webkit-grab;">
-        <div style="margin: 5px; width:500px;">
-            <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideVocabularyMenu">hide</button>
-            <button class="tsm-btn tsm-btn-sm" id="ClearVocabulary" title="Очистить всё и прервать процессы" style="margin: 5px;">🧹</button>
-            
-            <div style="display: flex; align-items: center; gap: 8px; margin: 10px 5px 5px 5px;">
-                <div class="tsm-progress-wrapper" id="tsm-progress-container">
-                    <div id="dynamicProgressBar" class="tsm-progress-base" style="width: 0%;">Ожидание...</div>
-                </div>
-                <button class="tsm-btn-sm tsm-btn-pause" id="btnPause" title="Пауза" style="display:none; font-size:12px;">⏸</button>
-                <button class="tsm-btn-sm tsm-btn-resume" id="btnResume" title="Продолжить" style="display:none; font-size:12px;">▶</button>
-            </div>
-
+const win_Vocabulary = `
+<div class="tsm-window-grab">
+    <div class="tsm-toolbar">
+        <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideVocabularyMenu">Скрыть</button>
+        <button class="tsm-btn tsm-btn-sm" id="ClearVocabulary" title="Очистить всё и прервать процессы">🧹</button>
+    </div>
+    <div class="tsm-flex-row tsm-mb-8">
+        <div class="tsm-progress-wrapper" id="tsm-progress-container">
+            <div id="dynamicProgressBar" class="tsm-progress-base" style="width: 0%;">Ожидание...</div>
         </div>
-        <div id="vocabularbar" class="tsm-vocab-bar">
-            <div id="searchtoolswords" style="margin: 5px; width:500px;">
-                <input id="iduserwords" class="tsm-input" style="width: 450px;text-align: center; height: 30px; border-radius:14px;" placeholder="Enter student ID to get vocabulary info">
-                <button id="findwords" class="tsm-btn tsm-btn-sm">🔎</button>
-            </div>
-            <div class="tsm-vocab-tools">
-                <button class="tsm-btn-vertical" id="deleteallwords" title="Удаляет все выделенные слова, если ничего не выделено удалит все">
-                    <div class="emoji">❌</div><hr><div class="label">Удалить</div>
-                </button>
-                <button class="tsm-btn-vertical" id="unlearnallwords" title="Сбрасывает прогресс выученных слов">
-                    <div class="emoji">⭕</div><hr><div class="label">Сброс прогресса</div>
-                </button>
-                <button class="tsm-btn-vertical" id="delunlearnallwords" title="Удаляет все выученные слова">
-                    <div class="emoji">⛔</div><hr><div class="label">Удалить выученные</div>
-                </button>
-                <button class="tsm-btn-vertical" id="learncheckedwords" title="Делает слово выученным">
-                    <div class="emoji">✅</div><hr><div class="label">Выучить</div>
-                </button>
-                <button class="tsm-btn-vertical" id="selectallwords" title="Выделяет все слова">
-                    <div class="emoji">☑</div><hr><div class="label">Выбрать все</div>
-                </button>
-            </div>
-            <div class="tsm-vocab-tools">
-                <input id="searchwordinput" class="tsm-input" style="width: 470px; text-align: center; height: 30px; display: none; margin-top: 7px;" placeholder="Введите слово или его часть для живого поиска">
-            </div>
+        <button class="tsm-btn-sm tsm-btn-pause" id="btnPause" title="Пауза" style="display:none; font-size:12px;">⏸</button>
+        <button class="tsm-btn-sm tsm-btn-resume" id="btnResume" title="Продолжить" style="display:none; font-size:12px;">▶</button>
+    </div>
+    <div id="vocabularbar" class="tsm-vocab-bar">
+        <div id="searchtoolswords" class="tsm-input-group">
+            <input id="iduserwords" class="tsm-input tsm-input-centered" placeholder="Enter student ID to get vocabulary info">
+            <button id="findwords" class="tsm-btn tsm-btn-sm">🔎</button>
         </div>
-        <div id="wordsout" class="tsm-words-out"></div>
-        <div id="totalWords"></div>
-    </span>
+        <div class="tsm-vocab-tools">
+            <button class="tsm-btn-vertical" id="deleteallwords" title="Удаляет все выделенные слова, если ничего не выделено удалит все">
+                <div class="emoji">❌</div><hr><div class="label">Удалить</div>
+            </button>
+            <button class="tsm-btn-vertical" id="unlearnallwords" title="Сбрасывает прогресс выученных слов">
+                <div class="emoji">⭕</div><hr><div class="label">Сброс прогресса</div>
+            </button>
+            <button class="tsm-btn-vertical" id="delunlearnallwords" title="Удаляет все выученные слова">
+                <div class="emoji">⛔</div><hr><div class="label">Удалить выученные</div>
+            </button>
+            <button class="tsm-btn-vertical" id="learncheckedwords" title="Делает слово выученным">
+                <div class="emoji">✅</div><hr><div class="label">Выучить</div>
+            </button>
+            <button class="tsm-btn-vertical" id="selectallwords" title="Выделяет все слова">
+                <div class="emoji">☑</div><hr><div class="label">Выбрать все</div>
+            </button>
+        </div>
+        <div class="tsm-vocab-tools">
+            <input id="searchwordinput" class="tsm-input tsm-input-centered" style="display:none; margin-top:7px;" placeholder="Введите слово или его часть для живого поиска">
+        </div>
+    </div>
+    <div id="wordsout" class="tsm-words-out"></div>
+    <div id="totalWords"></div>
 </div>`;
 
 const wintVocabulary = createTSMWindow("AFMS_Vocabulary", "winTopVocabulary", "winLeftVocabulary", win_Vocabulary);
@@ -320,7 +317,7 @@ async function getwordsets(studentId) {
     }).then((r) => r.json());
 
     if (wordsetsarr.meta.total <= 0) {
-        document.getElementById("wordsout").innerHTML = '<span style="margin-left:40%; color:bisque;">Словарь пустой!</span>';
+        document.getElementById("wordsout").innerHTML = '<div class="tsm-text-center tsm-text-bisque tsm-text-sm tsm-mt-12" style="opacity:0.7;">Словарь пустой!</div>';
         if (!isTaskCancelled) finishProgressBar(progressBar, "СЛОВАРЬ ПУСТ");
         return;
     }

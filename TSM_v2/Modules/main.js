@@ -4,9 +4,9 @@
 
 const win_addMenu = `
 <div class="tsm-menu-container">
-    <span style="cursor: -webkit-grab;">
-        <div>
-            <button class="tsm-btn tsm-btn-hide" id="hidemainmenu">С к р ы т ь</button>
+    <div class="tsm-window-grab">
+        <div class="tsm-toolbar">
+            <button class="tsm-btn tsm-btn-hide" id="hidemainmenu">Скрыть</button>
         </div>
         <div id="mainmenu" class="tsm-menu" style="display:block;">
             <button id="openchataddmenu" class="tsm-menu-item">
@@ -45,10 +45,10 @@ const win_addMenu = `
             </button>
             <button id="backmainmenufromexercises" class="tsm-menu-item">
                 <span class="tsm-menu-icon">🔙</span>
-                <span class="tsm-menu-text">Back</span>
+                <span class="tsm-menu-text">Назад</span>
             </button>
         </div>
-    </span>
+    </div>
 </div>`;
 
 const wintAddMenu = createTSMWindow("AFMS_addMenu", "winTopAddMenu", "winLeftAddMenu", win_addMenu);

@@ -2,28 +2,26 @@
    TSM Students
    ========================================================= */
 
-var win_studentsAdults = `<div style="display: flex;">
-    <span style="cursor: -webkit-grab;">
-        <div style="margin: 5px;" id="studentsAdultsHeader">
-            <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hidestudentsAdultstMenu">hide</button>
-            <button class="tsm-btn" id="addallchatswithadult" style="margin:5px" title="Добавляет чаты со всеми учениками из раздела Уроки">➕💬</button>
-            <button class="tsm-btn tsm-btn-sm" id="actualizestudreportadult" style="margin:5px" title="Актуализирует отчеты по всем ученикам заполняя поля символами --">📝</button>
-        </div>
-        <input id="usersearch" class="tsm-input" style="margin-left: 8px;width: 628px; text-align:center;" placeholder="Enter user ID or name for search">
-        <div id="infobaradult" class="tsm-info-bar-adult"></div>
-    </span>
+const win_studentsAdults = `
+<div class="tsm-window-grab">
+    <div class="tsm-toolbar" id="studentsAdultsHeader">
+        <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hidestudentsAdultstMenu">Скрыть</button>
+        <button class="tsm-btn" id="addallchatswithadult" title="Добавляет чаты со всеми учениками из раздела Уроки">➕💬</button>
+        <button class="tsm-btn tsm-btn-sm" id="actualizestudreportadult" title="Актуализирует отчеты по всем ученикам заполняя поля символами --">📝</button>
+    </div>
+    <input id="usersearch" class="tsm-input tsm-input-centered tsm-ml-8" style="width:100%;" placeholder="Enter user ID or name for search">
+    <div id="infobaradult" class="tsm-info-bar-adult"></div>
 </div>`;
 
-var win_studentsSkysmart = `<div style="display: flex;">
-    <span style="cursor: -webkit-grab;">
-        <div style="margin: 5px;" id="studentsSkysmartHeader">
-            <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hidestudentsSkysmartMenu">hide</button>
-            <select id="listofsubjects"><option value="all">Все</option></select>
-            <button class="tsm-btn" id="actualizestudreportkids" style="margin:5px" title="Актуализирует отчеты по всем ученикам в выбранном разделе все или отдельно каждом заполняя поля символами --">📝</button>
-        </div>
-        <input id="usersearchskysmart" class="tsm-input" style="margin-left: 8px;width: 628px; text-align:center;" placeholder="Enter user ID for search">
-        <div id="infobarskysmart" class="tsm-info-bar-kids"></div>
-    </span>
+const win_studentsSkysmart = `
+<div class="tsm-window-grab">
+    <div class="tsm-toolbar" id="studentsSkysmartHeader">
+        <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hidestudentsSkysmartMenu">Скрыть</button>
+        <select id="listofsubjects"><option value="all">Все</option></select>
+        <button class="tsm-btn" id="actualizestudreportkids" title="Актуализирует отчеты по всем ученикам в выбранном разделе все или отдельно каждом заполняя поля символами --">📝</button>
+    </div>
+    <input id="usersearchskysmart" class="tsm-input tsm-input-centered tsm-ml-8" style="width:100%;" placeholder="Enter user ID for search">
+    <div id="infobarskysmart" class="tsm-info-bar-kids"></div>
 </div>`;
 
 const wintStudAdults = createTSMWindow("AFMS_AdultStudInfo", "winTopstudentsAdults", "winLeftstudentsAdults", win_studentsAdults);

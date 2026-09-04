@@ -9,7 +9,8 @@ function addbuttonhesh() {
             let reactcachebtn = document.createElement('span');
             reactcachebtn.id = "reactcachebtn";
             reactcachebtn.textContent = "👨‍👩‍👧‍👦";
-            reactcachebtn.style = 'cursor: pointer; right: 15px; position: absolute;';
+            reactcachebtn.classList.add('tsm-cursor-pointer');
+            reactcachebtn.style.cssText = 'right:15px; position:absolute; font-size:18px; filter:drop-shadow(0 0 6px rgba(0,240,255,0.5)); transition: transform 0.3s ease;';
             reactcachebtn.title = "Очистить реактивный кэш, для обновления отображаемого списка учеников выбранного типа уроков";
             headarea.appendChild(reactcachebtn);
             reactcachebtn.onclick = ClearReactCashe;

@@ -135,9 +135,19 @@
 }
 
 .tsm-btn-hide {
-    composes: tsm-btn;
+    font-family: var(--tsm-font-ui);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: var(--tsm-bounce);
+    position: relative;
+    overflow: hidden;
     background: linear-gradient(145deg, rgba(255,42,109,0.15), rgba(255,42,109,0.04));
-    border-color: rgba(255, 42, 109, 0.4);
+    border: 1px solid rgba(255, 42, 109, 0.4);
+    border-radius: var(--tsm-radius-sm);
     color: #ffb3c6;
     text-shadow: 0 0 6px rgba(255, 42, 109, 0.5);
     box-shadow: inset 0 0 10px rgba(255, 42, 109, 0.05);
@@ -150,19 +160,36 @@
 }
 
 .tsm-btn-sm {
-    composes: tsm-btn;
-    padding: 0;
+    font-family: var(--tsm-font-ui);
     font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--tsm-text-primary);
+    padding: 0;
     border-radius: 50%;
     width: 34px !important;
     height: 34px !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: var(--tsm-bounce);
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(145deg, rgba(0,240,255,0.1), rgba(0,240,255,0.03));
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    text-shadow: 0 0 6px rgba(0, 240, 255, 0.4);
+    box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.05);
 }
 
 .tsm-btn-vertical {
-    composes: tsm-btn;
+    font-family: var(--tsm-font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--tsm-text-primary);
     display: inline-flex;
     flex-direction: column;
     align-items: center;
@@ -171,8 +198,15 @@
     padding: 10px;
     min-width: 72px;
     border-radius: var(--tsm-radius-md);
-    font-size: 11px;
     line-height: 1.2;
+    cursor: pointer;
+    transition: var(--tsm-bounce);
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(145deg, rgba(0,240,255,0.1), rgba(0,240,255,0.03));
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    text-shadow: 0 0 6px rgba(0, 240, 255, 0.4);
+    box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.05);
 }
 
 .tsm-btn-vertical .emoji {
@@ -1008,45 +1042,7 @@
     box-shadow: 0 0 10px var(--tsm-neon-cyan);
 }
 
-#allParticipants {
-    position: fixed !important;
-    z-index: 10000000 !important;
-    /* УБРАНЫ top: 50% !important и left: 50% !important, чтобы JS скрипт мог его двигать */
-    background: rgba(10, 14, 24, 0.92) !important;
-    backdrop-filter: blur(32px) saturate(1.5) !important;
-    -webkit-backdrop-filter: blur(32px) saturate(1.5) !important;
-    border: 1px solid rgba(0, 240, 255, 0.3) !important;
-    border-radius: var(--tsm-radius-xl) !important;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(0, 240, 255, 0.15) !important;
-    padding: 20px !important;
-    min-width: 320px !important;
-    max-width: 90vw !important;
-    max-height: 80vh !important;
-    overflow-y: auto !important;
-    color: var(--tsm-text-primary) !important;
-    font-family: var(--tsm-font-ui) !important;
-}
-
-.tsm-close-modal {
-position: absolute !important;
-top: 12px !important;
-right: 12px !important;
-background: transparent !important;
-border: none !important;
-color: var(--tsm-text-secondary) !important;
-font-size: 16px !important;
-font-weight: bold !important;
-cursor: pointer !important;
-transition: var(--tsm-transition) !important;
-padding: 4px 8px !important;
-border-radius: var(--tsm-radius-sm) !important;
-}
-.tsm-close-modal:hover {
-color: var(--tsm-neon-red) !important;
-background: rgba(255, 42, 109, 0.1) !important;
-text-shadow: 0 0 8px rgba(255, 42, 109, 0.5) !important;
-transform: scale(1.1) !important;
-}
+/* Duplicate removed — keep the first #allParticipants block above */
 
 /* Темная капсула-подложка */
 .tsm-progress-wrapper {
@@ -1114,26 +1110,58 @@ box-shadow: 0 0 12px rgba(57, 255, 20, 0.5);
 Кнопка Паузы / Продолжения
 ========================================================= */
 .tsm-btn-pause {
-background: linear-gradient(145deg, rgba(255,215,0,0.1), rgba(255,215,0,0.03));
-border: 1px solid rgba(255, 215, 0, 0.3);
-color: var(--tsm-neon-gold);
-text-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+    background: linear-gradient(145deg, rgba(255,215,0,0.1), rgba(255,215,0,0.03));
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    color: var(--tsm-neon-gold);
+    text-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+    font-family: var(--tsm-font-ui);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--tsm-bounce);
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 .tsm-btn-pause:hover {
-background: linear-gradient(145deg, rgba(255,215,0,0.2), rgba(255,215,0,0.08));
-border-color: var(--tsm-neon-gold);
-box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+    background: linear-gradient(145deg, rgba(255,215,0,0.2), rgba(255,215,0,0.08));
+    border-color: var(--tsm-neon-gold);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
 }
 .tsm-btn-resume {
-background: linear-gradient(145deg, rgba(57,255,20,0.1), rgba(57,255,20,0.03));
-border: 1px solid rgba(57, 255, 20, 0.3);
-color: var(--tsm-neon-lime);
-text-shadow: 0 0 6px rgba(57, 255, 20, 0.4);
+    background: linear-gradient(145deg, rgba(57,255,20,0.1), rgba(57,255,20,0.03));
+    border: 1px solid rgba(57, 255, 20, 0.3);
+    color: var(--tsm-neon-lime);
+    text-shadow: 0 0 6px rgba(57, 255, 20, 0.4);
+    font-family: var(--tsm-font-ui);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--tsm-bounce);
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 .tsm-btn-resume:hover {
-background: linear-gradient(145deg, rgba(57,255,20,0.2), rgba(57,255,20,0.08));
-border-color: var(--tsm-neon-lime);
-box-shadow: 0 0 12px rgba(57, 255, 20, 0.3);
+    background: linear-gradient(145deg, rgba(57,255,20,0.2), rgba(57,255,20,0.08));
+    border-color: var(--tsm-neon-lime);
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.3);
 }
 
 /* =========================================================
@@ -1483,3 +1511,325 @@ box-shadow: 0 0 12px rgba(57, 255, 20, 0.3);
     text-underline-offset: 4px;
     text-decoration-color: var(--tsm-neon-cyan, #00f0ff);
 }
+
+/* =========================================================
+   TSM 4.0 — Premium Layout & Utility Classes
+   Replaces inline styles from JS templates
+   ========================================================= */
+
+/* ─── Window Layout ─── */
+.tsm-window-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.tsm-window-header .tsm-btn {
+    flex-shrink: 0;
+}
+
+.tsm-window-grab {
+    cursor: -webkit-grab;
+}
+
+.tsm-window-grab:active {
+    cursor: -webkit-grabbing;
+}
+
+/* ─── Toolbar ─── */
+.tsm-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 5px 0;
+}
+
+.tsm-toolbar-spacer {
+    flex: 1;
+}
+
+/* ─── Input Variants ─── */
+.tsm-input-centered {
+    text-align: center;
+    height: 30px;
+}
+
+.tsm-input-pill {
+    border-radius: 20px;
+}
+
+.tsm-input-inline {
+    margin: 0 5px;
+}
+
+/* ─── Status Badge ─── */
+.tsm-status {
+    display: none;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-family: var(--tsm-font-mono);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 8px currentColor;
+}
+
+/* ─── Identity / Info Display ─── */
+.tsm-identity {
+    color: var(--tsm-text-bisque);
+    text-shadow: 0 0 6px rgba(255, 228, 196, 0.25);
+    cursor: default;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.tsm-identity-emoji {
+    font-size: 17px;
+    user-select: none;
+}
+
+.tsm-identity-name {
+    color: var(--tsm-neon-cyan);
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+    font-weight: 600;
+}
+
+/* ─── Table Cell Borders (Dark Theme) ─── */
+.tsm-table-cell {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tsm-table-cell-center {
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ─── Theme Row (Exercise themes) ─── */
+.tsm-theme-title {
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tsm-theme-title:hover {
+    text-shadow: 0 0 10px rgba(191, 0, 255, 0.5);
+}
+
+/* ─── TTC Step Info ─── */
+.tsm-ttc-step-id {
+    font-family: var(--tsm-font-mono);
+    font-size: 11px;
+    color: var(--tsm-text-dim);
+    margin-left: 8px;
+}
+
+/* ─── TTC Summary Bar ─── */
+.tsm-ttc-summary {
+    text-align: center;
+    color: var(--tsm-text-bisque);
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(255, 140, 0, 0.05));
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ─── TTC Slide Table Header ─── */
+.tsm-ttc-header-row {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tsm-neon-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 6px rgba(0, 240, 255, 0.4);
+}
+
+.tsm-ttc-header-row span {
+    padding: 6px 0;
+}
+
+/* ─── TTC Slide Item ─── */
+.tsm-ttc-slide-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--tsm-bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--tsm-radius-sm);
+    margin: 4px 0;
+    transition: var(--tsm-transition);
+}
+
+.tsm-ttc-slide-item:hover {
+    background: rgba(0, 240, 255, 0.08);
+    border-color: rgba(0, 240, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* ─── Checkbox Label (Exercises) ─── */
+.tsm-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--tsm-radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tsm-text-primary);
+    background: rgba(57, 255, 20, 0.1);
+    border: 1px solid rgba(57, 255, 20, 0.25);
+    text-shadow: 0 0 6px rgba(57, 255, 20, 0.3);
+    cursor: pointer;
+    transition: var(--tsm-transition);
+    margin: 5px;
+    user-select: none;
+}
+
+.tsm-checkbox-label:hover {
+    background: rgba(57, 255, 20, 0.15);
+    border-color: rgba(57, 255, 20, 0.4);
+    box-shadow: var(--tsm-shadow-lime);
+}
+
+.tsm-checkbox-label input[type="checkbox"] {
+    accent-color: var(--tsm-neon-lime);
+    cursor: pointer;
+    width: 14px;
+    height: 14px;
+}
+
+/* ─── Category Info Block ─── */
+.tsm-category-info {
+    background: var(--tsm-bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--tsm-radius-sm);
+    padding: 10px 14px;
+    margin: 8px 0;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.tsm-category-info b {
+    color: var(--tsm-neon-cyan);
+}
+
+/* ─── Search Input Pair ─── */
+.tsm-search-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 5px 0;
+}
+
+.tsm-search-row .tsm-input {
+    flex: 1;
+}
+
+/* ─── Verbosity badge ─── */
+.tsm-verbosity-badge {
+    font-family: var(--tsm-font-mono);
+    font-size: 11px;
+    color: var(--tsm-neon-cyan);
+    background: rgba(0, 240, 255, 0.08);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* ─── Flex Row Utilities ─── */
+.tsm-flex-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tsm-flex-row-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ─── Spacing Utilities ─── */
+.tsm-mt-4  { margin-top: 4px; }
+.tsm-mt-8  { margin-top: 8px; }
+.tsm-mt-12 { margin-top: 12px; }
+.tsm-mb-4  { margin-bottom: 4px; }
+.tsm-mb-8  { margin-bottom: 8px; }
+.tsm-mb-12 { margin-bottom: 12px; }
+.tsm-ml-4  { margin-left: 4px; }
+.tsm-ml-8  { margin-left: 8px; }
+.tsm-ml-10 { margin-left: 10px; }
+.tsm-ml-15 { margin-left: 15px; }
+.tsm-mr-4  { margin-right: 4px; }
+.tsm-mr-5  { margin-right: 5px; }
+.tsm-m-5   { margin: 5px; }
+
+/* ─── Text Color Utilities ─── */
+.tsm-text-cyan    { color: var(--tsm-neon-cyan); }
+.tsm-text-lime    { color: var(--tsm-neon-lime); }
+.tsm-text-orange  { color: var(--tsm-neon-orange); }
+.tsm-text-gold    { color: var(--tsm-neon-gold); }
+.tsm-text-magenta { color: var(--tsm-neon-magenta); }
+.tsm-text-red     { color: var(--tsm-neon-red); }
+.tsm-text-bisque  { color: var(--tsm-text-bisque); }
+.tsm-text-dim     { color: var(--tsm-text-dim); }
+
+/* ─── Text Shadow Utilities ─── */
+.tsm-glow-cyan    { text-shadow: 0 0 8px rgba(0, 240, 255, 0.5); }
+.tsm-glow-lime    { text-shadow: 0 0 8px rgba(57, 255, 20, 0.5); }
+.tsm-glow-orange  { text-shadow: 0 0 8px rgba(255, 140, 0, 0.5); }
+.tsm-glow-bisque  { text-shadow: 0 0 8px rgba(255, 228, 196, 0.3); }
+
+/* ─── Text Utilities ─── */
+.tsm-text-center   { text-align: center; }
+.tsm-text-right    { text-align: right; }
+.tsm-text-mono     { font-family: var(--tsm-font-mono); }
+.tsm-text-sm       { font-size: 12px; }
+.tsm-text-xs       { font-size: 11px; }
+.tsm-text-bold     { font-weight: 700; }
+.tsm-text-nowrap   { white-space: nowrap; }
+.tsm-cursor-pointer { cursor: pointer; }
+.tsm-user-select-none { user-select: none; }
+
+/* ─── Width Utilities ─── */
+.tsm-w-full       { width: 100%; }
+.tsm-w-500        { width: 500px; }
+.tsm-w-550        { width: 550px; }
+.tsm-max-w-500    { max-width: 500px; }
+
+/* ─── Inline Flex Row with Input + Button ─── */
+.tsm-input-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 5px 0;
+}
+
+.tsm-input-group .tsm-input {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ─── Default action buttons row ─── */
+.tsm-action-row {
+    display: flex;
+    gap: 8px;
+}
+
+.tsm-action-row .tsm-btn {
+    flex: 1;
+}
+
+/* ─── Hidden utility ─── */
+.tsm-hidden { display: none !important; }

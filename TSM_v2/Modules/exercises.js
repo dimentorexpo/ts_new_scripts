@@ -5,71 +5,64 @@
 let hwroomdata = '';
 let ttcroomdata = '';
 
-var win_kidsExercises = `<div style="display: flex;">
-    <span style="cursor: -webkit-grab;">
-        <div style="margin: 5px; width:550px;" id="exercisesSkysmartHeader">
-            <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideExercisesSkysmartMenu">hide</button>
-            <button class="tsm-btn tsm-btn-sm" id="RefreshInfoExerciseKids" title="Обновляет информацию по открытой комнате" style="margin: 5px;">♻</button>
-            <span id="studname" style="color:#d5f4ff; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
-            <span id="studserviceid" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
-            <span id="studid" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
-        </div>
-        <div style="margin: 5px; width:550px;" id="exercisesSkysmartTeacher">
-            <label style="color: black; margin-left: 5px; background: mediumseagreen; font-weight: 700; box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 3px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);">
-                <input type="checkbox" id="hideNullCards">Скрыть Темы с 0 карточек
-            </label>
-            <span id="teachname" style="color:#d5f4ff; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
-            <span id="teachdid" style="color:bisque; cursor:text; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%)"></span>
-        </div>
-        <div style="margin: 5px; width:551px;">
-            <input id="roomhashhwkids" placeholder="homework link" class="tsm-input" style="width: 490px; margin-left: 10px; text-align: center; height: 30px; border-radius:20px;">
-            <button class="tsm-btn tsm-btn-sm" style="border-radius: 20px; width: 34px !important; height: 34px !important; vertical-align: middle;" id="getroomdatakids">🔎</button>
-        </div>
-        <div id="exercisebarskysmart" class="tsm-exercise-bar"></div>
-    </span>
+const win_kidsExercises = `
+<div class="tsm-window-grab">
+    <div class="tsm-toolbar" id="exercisesSkysmartHeader">
+        <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideExercisesSkysmartMenu">Скрыть</button>
+        <button class="tsm-btn tsm-btn-sm" id="RefreshInfoExerciseKids" title="Обновляет информацию по открытой комнате">♻</button>
+        <span id="studname" class="tsm-identity tsm-text-cyan tsm-glow-cyan"></span>
+        <span id="studserviceid" class="tsm-identity tsm-cursor-pointer"></span>
+        <span id="studid" class="tsm-identity tsm-cursor-pointer"></span>
+    </div>
+    <div class="tsm-toolbar" id="exercisesSkysmartTeacher">
+        <label class="tsm-checkbox-label">
+            <input type="checkbox" id="hideNullCards">Скрыть Темы с 0 карточек
+        </label>
+        <span id="teachname" class="tsm-identity tsm-text-cyan tsm-glow-cyan"></span>
+        <span id="teachdid" class="tsm-identity tsm-cursor-pointer"></span>
+    </div>
+    <div class="tsm-input-group">
+        <input id="roomhashhwkids" placeholder="homework link" class="tsm-input tsm-input-centered tsm-input-pill">
+        <button class="tsm-btn tsm-btn-sm" id="getroomdatakids">🔎</button>
+    </div>
+    <div id="exercisebarskysmart" class="tsm-exercise-bar"></div>
 </div>`;
 
-var win_TTCExercises = `<div style="display: flex;">
-    <span style="cursor: -webkit-grab;">
-        <div style="margin: 5px; width:500px;" id="exercisesTTCHeader">
-            <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideExercisesTTCMenu">hide</button>
-            <button class="tsm-btn tsm-btn-sm" id="RefreshInfoExerciseTTC" title="Обновляет информацию по открытой комнате" style="margin: 5px;">♻</button>
-        </div>
-        <div style="margin:5px;">
-            <input id="roomhashttc" placeholder="Room link" class="tsm-input" style="width: 500px; margin-left: 10px; text-align: center; height: 30px;">
-            <button class="tsm-btn tsm-btn-sm" id="getroomdatattc">🔎</button>
-        </div>
-        <div id="exercisebarttc" class="tsm-exercise-bar"></div>
-    </span>
+const win_TTCExercises = `
+<div class="tsm-window-grab">
+    <div class="tsm-toolbar" id="exercisesTTCHeader">
+        <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideExercisesTTCMenu">Скрыть</button>
+        <button class="tsm-btn tsm-btn-sm" id="RefreshInfoExerciseTTC" title="Обновляет информацию по открытой комнате">♻</button>
+    </div>
+    <div class="tsm-input-group">
+        <input id="roomhashttc" placeholder="Room link" class="tsm-input tsm-input-centered">
+        <button class="tsm-btn tsm-btn-sm" id="getroomdatattc">🔎</button>
+    </div>
+    <div id="exercisebarttc" class="tsm-exercise-bar"></div>
 </div>`;
 
-var win_complectationExercises = `<div style="display: flex;">
-    <span style="cursor: -webkit-grab;">
-<div class="tsm-info-panel" id="exercisesComplectHeaderWrapper">
-    <!-- Строка Ученика и кнопок -->
-    <div class="tsm-info-row" id="exercisesComplectHeader">
-        <button class="tsm-btn tsm-btn-hide" id="hideExercisesComplectMenu" title="скрыть меню">hide</button>
-        <button class="tsm-btn tsm-btn-sm" id="RefreshInfoExerciseComplect" title="Обновляет информацию по открытой комнате">♻</button>
-        
-        <div class="tsm-chip tsm-chip-blue"><span id="studnameComplect"></span></div>
-        <div class="tsm-chip" title="ID услуги"><span id="studserviceidComplect"></span></div>
-        <div class="tsm-chip" title="ID ученика"><span id="studidComplect"></span></div>
-        <div class="tsm-chip" title="ID группы"><span id="groupidComplect"></span></div>
-    </div>
-
-    <!-- Строка Учителя -->
-    <div class="tsm-info-row" id="exercisesComplectTeacher">
-        <div class="tsm-chip tsm-chip-purple"><span id="teachnameComplect"></span></div>
-        <div class="tsm-chip" title="ID учителя"><span id="teachdidComplect"></span></div>
-        <div class="tsm-chip tsm-chip-green"><span id="RoomStatus"></span></div>
-    </div>
-</div>
-        <div style="margin: 5px; width:550px;">
-            <input id="roomhashhwComplect" placeholder="Room link" class="tsm-input" style="width: 490px; margin-left: 15px; text-align: center; height: 30px; border-radius:20px;">
-            <button class="tsm-btn tsm-btn-sm" style="border-radius: 20px; width: 34px !important; height: 34px !important; vertical-align: middle;" id="getroomdataComplect">🔎</button>
+const win_complectationExercises = `
+<div class="tsm-window-grab">
+    <div class="tsm-info-panel" id="exercisesComplectHeaderWrapper">
+        <div class="tsm-info-row" id="exercisesComplectHeader">
+            <button class="tsm-btn tsm-btn-hide" id="hideExercisesComplectMenu" title="скрыть меню">Скрыть</button>
+            <button class="tsm-btn tsm-btn-sm" id="RefreshInfoExerciseComplect" title="Обновляет информацию по открытой комнате">♻</button>
+            <div class="tsm-chip tsm-chip-blue"><span id="studnameComplect"></span></div>
+            <div class="tsm-chip" title="ID услуги"><span id="studserviceidComplect"></span></div>
+            <div class="tsm-chip" title="ID ученика"><span id="studidComplect"></span></div>
+            <div class="tsm-chip" title="ID группы"><span id="groupidComplect"></span></div>
         </div>
-        <div id="exercisebarComplect" class="tsm-exercise-bar"></div>
-    </span>
+        <div class="tsm-info-row" id="exercisesComplectTeacher">
+            <div class="tsm-chip tsm-chip-purple"><span id="teachnameComplect"></span></div>
+            <div class="tsm-chip" title="ID учителя"><span id="teachdidComplect"></span></div>
+            <div class="tsm-chip tsm-chip-green"><span id="RoomStatus"></span></div>
+        </div>
+    </div>
+    <div class="tsm-input-group">
+        <input id="roomhashhwComplect" placeholder="Room link" class="tsm-input tsm-input-centered tsm-input-pill">
+        <button class="tsm-btn tsm-btn-sm" id="getroomdataComplect">🔎</button>
+    </div>
+    <div id="exercisebarComplect" class="tsm-exercise-bar"></div>
 </div>`;
 
 const wintExercSkysmart = createTSMWindow('AFMS_SkysmartExercInfo', 'winTopexercisesSkysmart', 'winLeftexercisesSkysmart', win_kidsExercises);
@@ -194,17 +187,17 @@ function getkidsroominfo(data, subjecttype) {
                 const icon = isHomework ? (emphasisIcons[card.emphasis] || "") : "";
                 const cardName = card.name + icon;
                 const completenessCell = completeness == 100
-                    ? `<td style="text-align:center; border: 1px solid black; background: green">${completeness}</td>`
-                    : `<td style="text-align:center; border: 1px solid black; background: #bb6904">${completeness}</td>`;
+                    ? `<td class="tsm-table-cell-center" style="background:rgba(57,255,20,0.15); color:var(--tsm-neon-lime);">${completeness}</td>`
+                    : `<td class="tsm-table-cell-center" style="background:rgba(255,140,0,0.12); color:var(--tsm-neon-orange);">${completeness}</td>`;
                 rows += `<tr class="tsm-card-row">
-                    <td style="border: 1px solid black;">${idx + 1}</td>
-                    <td style="border: 1px solid black;">${cardName}</td>
-                    <td style="text-align:center; border: 1px solid black;">${score}</td>
+                    <td class="tsm-table-cell-center">${idx + 1}</td>
+                    <td class="tsm-table-cell">${cardName}</td>
+                    <td class="tsm-table-cell-center">${score}</td>
                     ${completenessCell}
-                    <td class="tsm-btn-save" style="width:80px; text-align:center; border: 1px solid black; cursor:pointer" title="Копирует в буфер обмена ссылку на CMS для этого слайда" data-subtype="${subjecttype}" data-lessonid="${theme.meta.contentLessonId}" data-stepid="${card.id}">💾</td>
-                    <td style="border: 1px solid black; font-size: 12px; text-align:center;">${toMoscowTime(card.sentAt)}</td>
-                    <td style="border: 1px solid black; font-size: 12px; text-align:center;">${toMoscowTime(card.scoreUpdatedAt)}</td>
-                    ${isHomework ? `<td class="tsm-btn-reset" style="cursor:pointer; border:1px solid black;" data-stepUUID="${card.stepUuid}">🔄️</td>` : ""}
+                    <td class="tsm-btn-save tsm-table-cell-center" title="Копирует в буфер обмена ссылку на CMS для этого слайда" data-subtype="${subjecttype}" data-lessonid="${theme.meta.contentLessonId}" data-stepid="${card.id}">💾</td>
+                    <td class="tsm-table-cell-center tsm-text-xs">${toMoscowTime(card.sentAt)}</td>
+                    <td class="tsm-table-cell-center tsm-text-xs">${toMoscowTime(card.scoreUpdatedAt)}</td>
+                    ${isHomework ? `<td class="tsm-btn-reset tsm-table-cell-center" data-stepUUID="${card.stepUuid}">🔄️</td>` : ""}
                 </tr>`;
             });
         });
@@ -219,14 +212,14 @@ function getkidsroominfo(data, subjecttype) {
             </div>
             <table class="tsm-slide-table" style="width:100%; border-collapse:collapse; margin-top:10px;">
                 <thead><tr class="tsm-table-header">
-                    <th style="padding:6px; border: 1px solid black;">#</th>
-                    <th style="padding:6px; border: 1px solid black;">Название слайда</th>
-                    <th style="padding:6px; border: 1px solid black;">Балл</th>
-                    <th style="padding:6px; border: 1px solid black;">%</th>
-                    <th style="padding:6px; border: 1px solid black;">Ссылка</th>
-                    <th style="padding:6px; border: 1px solid black;">Задано</th>
-                    <th style="padding:6px; border: 1px solid black;">Обновлен скор</th>
-                    ${isHomework ? `<th style="padding:6px; border: 1px solid black;">Сброс</th>` : ""}
+                    <th class="tsm-table-cell-center">#</th>
+                    <th class="tsm-table-cell-center">Название слайда</th>
+                    <th class="tsm-table-cell-center">Балл</th>
+                    <th class="tsm-table-cell-center">%</th>
+                    <th class="tsm-table-cell-center">Ссылка</th>
+                    <th class="tsm-table-cell-center">Задано</th>
+                    <th class="tsm-table-cell-center">Обновлен скор</th>
+                    ${isHomework ? `<th class="tsm-table-cell-center">Сброс</th>` : ""}
                 </tr></thead>
                 <tbody>${rows}</tbody>
             </table>
@@ -288,7 +281,7 @@ function getkidsroominfo(data, subjecttype) {
 
 function setIdField(elementId, label, value) {
     const el = document.getElementById(elementId);
-    el.innerHTML = `<span style="user-select:none; font-size: 17px;">${label}</span>${value}`;
+    el.innerHTML = `<span class="tsm-user-select-none tsm-identity-emoji">${label}</span>${value}`;
     if (value != null) {
         el.style.cursor = "pointer";
         markCopyable(el, String(value));
@@ -296,10 +289,10 @@ function setIdField(elementId, label, value) {
 }
 
 function renderSkysmartIdentity(student, teacher) {
-    document.getElementById('studname').innerHTML = '<span style="font-size: 17px;"> 👨‍🎓 </span>' + student.name;
+    document.getElementById('studname').innerHTML = '<span class="tsm-identity-emoji"> 👨‍🎓 </span>' + student.name;
     setIdField('studserviceid', '🆔 услуги: ', student.educationServiceId);
     setIdField('studid', '🆔: ', student.userId);
-    document.getElementById('teachname').innerHTML = '<span style="font-size: 17px;"> 👽 Teacher </span>' + teacher.name;
+    document.getElementById('teachname').innerHTML = '<span class="tsm-identity-emoji"> 👽 Teacher </span>' + teacher.name;
     setIdField('teachdid', '🆔: ', teacher.userId);
 }
 
@@ -318,15 +311,25 @@ async function getTTCData() {
         for (let i = 0; i < ttcroomdata.participants[0].nodes[0].steps.length; i++) {
             if (ttcroomdata.participants[0].nodes[0].steps[i].score == null) ttcroomdata.participants[0].nodes[0].steps[i].score = 0;
             if (ttcroomdata.participants[0].nodes[0].steps[i].completeness == null) ttcroomdata.participants[0].nodes[0].steps[i].completeness = 0;
-            tmparr += '<div class="tsm-exercise-item">' + [i + 1] + '.' + '<span>' + ttcroomdata.participants[0].nodes[0].steps[i].title + '</span>' + '<span class="tsm-ttc-step-id">' + ttcroomdata.participants[0].nodes[0].steps[i].stepId + '</span>' + '<span class="tsm-btn-save-ttc" title="Копирует в буфер обмена ссылку на CMS для этого слайда"> 💾 </span>' + '<span style="float:right;margin-right:20%">' + ttcroomdata.participants[0].nodes[0].steps[i].completeness + '%' + '</span>' + '<span style="float:right;margin-right:11%">' + ttcroomdata.participants[0].nodes[0].steps[i].score / 10 + '</span>' + '<br>' + '</div>';
+            const step = ttcroomdata.participants[0].nodes[0].steps[i];
+            tmparr += `<div class="tsm-exercise-item" style="display:grid; grid-template-columns: auto 1fr auto auto auto; align-items:center; gap:8px; padding:8px 12px;">
+                <span>${i + 1}.</span>
+                <span>${step.title}</span>
+                <span class="tsm-ttc-step-id">${step.stepId}</span>
+                <span class="tsm-btn-save-ttc" title="Копирует в буфер обмена ссылку на CMS для этого слайда"> 💾 </span>
+                <span class="tsm-text-bisque tsm-text-sm tsm-text-right" style="min-width:40px;">${step.completeness}%</span>
+                <span class="tsm-text-bisque tsm-text-sm tsm-text-right" style="min-width:30px;">${step.score / 10}</span>
+            </div>`;
         }
-        document.getElementById('exercisebarttc').innerHTML = `<div style="width:90%; margin-left:5%; text-align:center; color:bisque; background: #bb531a; border-radius: 20px;">"${ttcroomdata.participants[0].nodes[0].title}" • Выполнено на: ${ttcroomdata.participants[0].nodes[0].completeness}% • Оценка: ${ttcroomdata.participants[0].nodes[0].score / 10}</div>` + '<br>' +
-            '<div class="tsm-table-header">' +
-            '<span style="margin-left: 60px;">Название слайда</span>' +
-            '<span style="margin-left: 140px;">Балл</span>' +
-            '<span style="margin-left: 60px;">%</span>' +
-            '<span style="margin-left: 50px;">Ссылка</span>' +
-            '</div>' + tmparr;
+        const ttcSummary = ttcroomdata.participants[0].nodes[0];
+        document.getElementById('exercisebarttc').innerHTML =
+            `<div class="tsm-ttc-summary">"${ttcSummary.title}" • Выполнено на: ${ttcSummary.completeness}% • Оценка: ${ttcSummary.score / 10}</div>` +
+            `<div class="tsm-ttc-header-row">
+                <span style="flex:1">Название слайда</span>
+                <span style="min-width:50px; text-align:center;">Балл</span>
+                <span style="min-width:40px; text-align:center;">%</span>
+                <span style="min-width:50px; text-align:center;">Ссылка</span>
+            </div>` + tmparr;
         let savelinkarr = document.getElementsByClassName('tsm-btn-save-ttc');
         for (let z = 0; z < savelinkarr.length; z++) {
             savelinkarr[z].onclick = function () {
@@ -382,16 +385,16 @@ async function OpenExercisesComplect() {
 
     function buildCardsTable(themes, kidsselector) {
         let html = `<table class="tsm-exercise-table"><thead><tr class="tsm-table-header">
-            <th style="padding:6px; border: 1px solid black;">#</th>
-            <th style="padding:6px; border: 1px solid black;">Название</th>
-            <th style="padding:6px; border: 1px solid black;">Балл</th>
-            <th style="padding:6px; border: 1px solid black;">%</th>
-            <th style="padding:6px; border: 1px solid black;">Ссылка</th>
+            <th class="tsm-table-cell-center">#</th>
+            <th class="tsm-table-cell-center">Название</th>
+            <th class="tsm-table-cell-center">Балл</th>
+            <th class="tsm-table-cell-center">%</th>
+            <th class="tsm-table-cell-center">Ссылка</th>
         </tr></thead><tbody>`;
         for (let i = 0; i < themes.length; i++) {
             const theme = themes[i];
             const contentLessonId = theme.meta.contentLessonId;
-            html += `<tr class="tsm-theme-row"><td colspan="5" class="theme-title">
+            html += `<tr class="tsm-theme-row"><td colspan="5" class="tsm-theme-title">
                 <span class="tsm-btn-save" complectationsData-subtype="${kidsselector}" complectationsData-lessonid="${contentLessonId}" title="Скопировать ссылку на урок">💾</span>
                 ${theme.name}
             </td></tr>`;
@@ -404,11 +407,11 @@ async function OpenExercisesComplect() {
                 if (card.emphasis === "pronunciation") name += " 🎧";
                 if (card.emphasis === "speaking") name += " 🎙";
                 html += `<tr class="tsm-card-row">
-                    <td style="text-align:center; border: 1px solid black;">${j + 1}</td>
-                    <td style="text-align:center; border: 1px solid black;">${name}</td>
-                    <td style="text-align:center; border: 1px solid black;">${score}</td>
-                    <td style="text-align:center; border: 1px solid black;">${completeness}</td>
-                    <td class="tsm-btn-save" style="text-align:center; border: 1px solid black;" complectationsData-subtype="${kidsselector}" complectationsData-lessonid="${contentLessonId}" complectationsData-stepid="${card.id}" title="Скопировать ссылку на слайд">💾</td>
+                    <td class="tsm-table-cell-center">${j + 1}</td>
+                    <td class="tsm-table-cell-center">${name}</td>
+                    <td class="tsm-table-cell-center">${score}</td>
+                    <td class="tsm-table-cell-center">${completeness}</td>
+                    <td class="tsm-btn-save tsm-table-cell-center" complectationsData-subtype="${kidsselector}" complectationsData-lessonid="${contentLessonId}" complectationsData-stepid="${card.id}" title="Скопировать ссылку на слайд">💾</td>
                 </tr>`;
             }
         }
@@ -505,11 +508,12 @@ async function OpenExercisesComplect() {
 }
 
 function renderComplectIdentity(studentData, teacherData, externalGroupId, status) {
-    document.getElementById('studnameComplect').innerHTML = `<span style="font-size: 17px;"> 👨‍🎓 </span>${studentData.name}`;
+    document.getElementById('studnameComplect').innerHTML = `<span class="tsm-identity-emoji"> 👨‍🎓 </span>${studentData.name}`;
     setIdField('studserviceidComplect', '🆔 услуги: ', studentData.educationServiceId);
     setIdField('studidComplect', '🆔: ', studentData.userId);
     setIdField('groupidComplect', '🆔 гр: ', externalGroupId);
-    document.getElementById('teachnameComplect').innerHTML = `<span style="font-size: 17px;"> 👽 Teacher </span>${teacherData.name}`;
+    document.getElementById('teachnameComplect').innerHTML = `<span class="tsm-identity-emoji"> 👽 Teacher </span>${teacherData.name}`;
     setIdField('teachdidComplect', '🆔: ', teacherData.userId);
-    document.getElementById('RoomStatus').innerHTML = `<span style="user-select:none; font-size: 17px;">Статус комнаты: </span>${status === "success" ? '<span style="color:#00ff5c">success</span>' : `<span style="color:#daf50c">${status}</span>`}`;
+    const statusColor = status === 'success' ? 'var(--tsm-neon-lime)' : 'var(--tsm-neon-gold)';
+    document.getElementById('RoomStatus').innerHTML = `<span class="tsm-user-select-none tsm-identity-emoji">Статус комнаты: </span><span style="color:${statusColor}; text-shadow:0 0 8px ${statusColor};">${status}</span>`;
 }

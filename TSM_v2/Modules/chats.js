@@ -2,17 +2,18 @@
    TSM Chat Menu
    ========================================================= */
 
-var win_addChatMenu = `<div style="display: flex;">
-    <span style="cursor: -webkit-grab;">
-        <div style="margin: 5px;" id="addChatMenuHeader">
-            <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideMeAddChatMenu">hide</button>
-            <span id="outputstatus" style="display:none; background:#537068; text-shadow: 1px 2px 5px rgb(0 0 0 / 55%); border-radius: 20px; box-shadow: 0px 3px 1px rgb(0 0 0 / 35%); border: 1px solid black; font-weight:700;padding: 5px;"></span>
-        </div>
-        <input id="userid1" style="margin-left: 5px; width:100px; text-align:center;" class="tsm-input" placeholder="teacherId">
-        <input id="userid2" style="width:100px; text-align:center;" class="tsm-input" placeholder="userId #2">
-        <button class="tsm-btn" id="addChat" style="margin:5px">➕💬</button>
-        <button class="tsm-btn" id="RemoveChat" style="margin:5px">❌💬</button>
-    </span>
+const win_addChatMenu = `
+<div class="tsm-window-grab">
+    <div class="tsm-window-header" id="addChatMenuHeader">
+        <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideMeAddChatMenu">Скрыть</button>
+        <span id="outputstatus" class="tsm-status"></span>
+    </div>
+    <div class="tsm-search-row">
+        <input id="userid1" class="tsm-input tsm-input-centered" style="width:100px;" placeholder="teacherId">
+        <input id="userid2" class="tsm-input tsm-input-centered" style="width:100px;" placeholder="userId #2">
+        <button class="tsm-btn" id="addChat">➕💬</button>
+        <button class="tsm-btn" id="RemoveChat">❌💬</button>
+    </div>
 </div>`;
 
 const CHAT_MANAGEMENT_URL = "https://communications.skyeng.ru/gateway/support/chat-management";
@@ -52,8 +53,13 @@ function buildChatManagementOptions(firstUserId, secondUserId, action) {
 function showChatStatus(text, color) {
     const status = document.getElementById("outputstatus");
     status.innerText = text;
+    status.style.display = "inline-block";
+    status.style.background = `linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4))`;
     status.style.color = color;
-    status.style.display = "";
+    status.style.borderColor = color;
+    status.style.borderRadius = "20px";
+    status.style.border = `1px solid ${color}`;
+    status.style.boxShadow = `0 0 12px ${color}40`;
     setTimeout(() => {
         status.innerText = "";
         status.style.display = "none";
