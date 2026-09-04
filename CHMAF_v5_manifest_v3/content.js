@@ -556,9 +556,11 @@ function processAll() {
 }
 
 const MEDIA_LABEL_CSS =
-    'color:#d4092a;font-weight:700;background:darkgrey;border-radius:20px;' +
-    'text-align:center;font-size:17px;text-shadow:1px 2px 0 #0e0d0d4d;margin-top:6px;';
-const MEDIA_PLAYER_CSS = 'max-width:300px;display:block;margin-top:6px;';
+    'color:#e2e8f0;font-weight:600;background:linear-gradient(135deg, rgba(239, 68, 68, 0.85), rgba(185, 28, 28, 0.9));' +
+    'border:1px solid rgba(255,255,255,0.15);border-radius:10px;' +
+    'text-align:center;font-size:14px;letter-spacing:0.3px;padding:6px 12px;margin-top:8px;' +
+    'box-shadow:0 4px 14px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.1);';
+const MEDIA_PLAYER_CSS = 'max-width:300px;display:block;margin-top:8px;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
 
 /**
  * Обрабатывает ссылки в сообщениях одного контекста (документ или iframe):
@@ -634,15 +636,17 @@ function openImageViewer(e) {
     overlay.dataset.type = 'img-viewer';
     overlay.style.cssText = [
         'position:fixed', 'inset:0',
-        'background:rgba(0,0,0,0.85)',
+        'background:rgba(0,0,0,0.88)',
+        'backdrop-filter:blur(12px)',
         'display:flex', 'justify-content:center', 'align-items:center',
-        'z-index:999999', 'cursor:zoom-out'
+        'z-index:999999', 'cursor:zoom-out',
+        'animation:fadeIn 0.2s ease'
     ].join(';');
 
     const img = document.createElement('img');
     img.src = src;
     img.style.cssText =
-        'max-width:90%;max-height:90%;border-radius:10px;box-shadow:0 0 25px rgba(0,0,0,0.6);';
+        'max-width:90%;max-height:90%;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.08);';
 
     overlay.appendChild(img);
     document.body.appendChild(overlay);
@@ -907,9 +911,13 @@ maskBack.classList.add('gpanneon-glass-btn', 'fab-premium');
 
 const maskBackHide = document.createElement('span');
 maskBackHide.id = 'maskBackHide';
-maskBackHide.innerHTML = '❌Скрыть';
+maskBackHide.innerHTML = '❌ Скрыть';
 maskBackHide.style.cssText =
-    'margin-left:auto;margin-right:10px;cursor:pointer;display:none;';
+    'margin-left:auto;margin-right:10px;cursor:pointer;display:none;' +
+    'padding:4px 12px;border-radius:8px;font-size:12px;font-weight:600;' +
+    'background:linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.08));' +
+    'border:1px solid rgba(239,68,68,0.3);color:#fca5a5;' +
+    'transition:all 0.22s cubic-bezier(0.4,0,0.2,1);';
 
 let isMasked = false;
 

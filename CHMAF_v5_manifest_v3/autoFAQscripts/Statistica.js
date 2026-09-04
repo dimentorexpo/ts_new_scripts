@@ -11,6 +11,7 @@ const CONFIGSTAT = {
         QUEUES_ARCHIVE: '/conversations/queues/archive'
     },
     SERVICE_ID: '361c681b-340a-4e47-9342-c7309e27e7b5',
+    TARGET_GROUP_ID: 'c7bbb211-a217-4ed3-8112-98728dc382d8',
     PRIORITY_KBS: [120181, 121381],
     SLA_THRESHOLD_MINUTES: 25,
     ART_THRESHOLD_SECONDS: 120,
@@ -164,21 +165,27 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
         box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
     `;
 
-    columns.forEach(text => {
-        const th = Object.assign(document.createElement('th'), {
-            textContent: text,
-            style: `
-                padding: 14px 12px;
-                border: none;
-                font-weight: 700;
-                color: #0f172a;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                font-size: 12px;
-                text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
-                position: relative;
-            `
-        });
+    columns.forEach((text, colIdx) => {
+        const th = document.createElement('th');
+        th.style.cssText = `
+            padding: 14px 12px;
+            border: none;
+            font-weight: 700;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+            position: relative;
+        `;
+
+        if (text === '⏱AHT') {
+            th.innerHTML = `<span style="cursor:pointer;border-bottom:2px dashed #0f172a;padding-bottom:2px;" class="aht-sort-btn" data-sort="asc" title="Сортировать по AHT">⏱AHT ▲</span>`;
+            th.style.cursor = 'pointer';
+        } else {
+            th.textContent = text;
+        }
+
         headerRow.appendChild(th);
     });
     thead.appendChild(headerRow);
@@ -558,6 +565,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
     window.filteredarray = [];
 
     window.operatorAutoClosedDetails = {};
+    window.operatorAHTDetails = {};
 
     const step = 100 / operatorIds.length;
     let currentWidth = 0;
@@ -574,6 +582,9 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
         let closedChatsCountForAHT = 0;
 
         window.operatorAutoClosedDetails[i] = { inactivity: [], pause: [], totalClosed: 0 };
+
+        // Хранилище деталей AHT для этого оператора
+        let ahtChatDetails = [];
 
         do {
             const bodyStr = JSON.stringify({
@@ -632,14 +643,13 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
                         }
                     }
 
-                    // 🎯 СТРОГАЯ ПРОВЕРКА ПО ОПЕРАТОРУ
+                    // 🎯 СТРОГАЯ ПРОВЕРКА ПО ОПЕРАТОРУ (для %АЗ, CSAT, SLA)
                     if (fres.operatorId === operatorIds[i]) {
                         operclschatcount++;
                         totalChatsClosed[i] = operclschatcount;
-                        window.operatorAutoClosedDetails[i].totalClosed = operclschatcount; // Сохраняем всего закрыто
+                        window.operatorAutoClosedDetails[i].totalClosed = operclschatcount;
 
                         // Вычисляем автозакрытия ТОЛЬКО для чатов этого оператора
-                        const messages = fres.messages || [];
                         const autoClosedMsg = messages.find(msg => msg.eventTpe === 'CloseConversation' && msg.payload?.src && ["inactivity_timer", "pause"].includes(msg.payload.src));
 
                         if (autoClosedMsg) {
@@ -651,36 +661,6 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
                                 window.operatorAutoClosedDetails[i].inactivity.push(item.conversationId);
                             } else if (srcReason === 'pause') {
                                 window.operatorAutoClosedDetails[i].pause.push(item.conversationId);
-                            }
-                        }
-
-                        // 🕒 РАСЧЕТ AHT - только для чатов, закрытых этим оператором
-                        const closeEvent = messages.find(msg => msg.eventTpe === 'CloseConversation');
-                        const isClosedByThisOperator = closeEvent &&
-                            (closeEvent.payload?.oid === operatorIds[i] ||
-                                (closeEvent.payload?.status === 'ClosedByOperator' && closeEvent.payload?.sender === operatorIds[i]));
-
-                        // Проверяем, что чат закрыт НЕ на паузу
-                        const isClosedNotPause = closeEvent && (!closeEvent.payload?.src || closeEvent.payload.src !== "pause");
-
-                        if (isClosedByThisOperator && isClosedNotPause) {
-                            // Ищем последнее событие AssignToOperator для этого оператора
-                            const assignEvents = messages.filter(msg =>
-                                msg.eventTpe === 'AssignToOperator' &&
-                                msg.payload?.oid === operatorIds[i]
-                            );
-
-                            if (assignEvents.length > 0) {
-                                // Берем последнее назначение на этого оператора
-                                const lastAssign = assignEvents[assignEvents.length - 1];
-                                const startTime = new Date(lastAssign.ts);
-                                const endTime = new Date(closeEvent.ts);
-
-                                const durationSeconds = (endTime - startTime) / 1000;
-                                if (durationSeconds > 0) {
-                                    totalHandleTimeSeconds += durationSeconds;
-                                    closedChatsCountForAHT++;
-                                }
                             }
                         }
 
@@ -699,6 +679,53 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
 
                         if ((item.stats?.conversationDuration / 60000) > CONFIGSTAT.SLA_THRESHOLD_MINUTES) {
                             overduecount++; operatorOverdueChats[i] = overduecount;
+                        }
+                    }
+
+                    // 🕒 РАСЧЁТ AHT — по аналогии с %АЗ
+                    // Время от последнего назначения оператора до закрытия (или выхода из группы)
+                    const closeEventAHT = fres.messages?.find(msg => msg.eventTpe === 'CloseConversation');
+                    const isClosedNotPauseAHT = closeEventAHT && (!closeEventAHT.payload?.src || closeEventAHT.payload.src !== 'pause');
+
+                    // Все назначения этого оператора (без фильтра по group — AssignToOperator может не содержать group)
+                    const assignEventsAHT = (fres.messages || []).filter(msg =>
+                        msg.eventTpe === 'AssignToOperator' && msg.payload?.oid === operatorIds[i]
+                    );
+
+                    // Определяем: был ли чат когда-либо в нашей целевой группе?
+                    // fres.groupId — финальная группа; ChangeGroup с payload.group === TARGET — вход в нашу группу
+                    const wasInOurGroup = fres.groupId === CONFIGSTAT.TARGET_GROUP_ID ||
+                        (fres.messages || []).some(msg =>
+                            msg.eventTpe === 'ChangeGroup' && msg.payload?.group === CONFIGSTAT.TARGET_GROUP_ID
+                        );
+
+                    // Ищем момент, когда чат покинул нашу группу (ChangeGroup → другая группа)
+                    const groupLeaveEvents = (fres.messages || []).filter(msg =>
+                        msg.eventTpe === 'ChangeGroup' &&
+                        msg.payload?.group && msg.payload.group !== CONFIGSTAT.TARGET_GROUP_ID
+                    );
+                    const groupTransferTime = groupLeaveEvents.length > 0
+                        ? new Date(groupLeaveEvents[0].ts)
+                        : null;
+
+                    if (assignEventsAHT.length > 0 && isClosedNotPauseAHT && wasInOurGroup) {
+                        const lastAssignAHT = assignEventsAHT[assignEventsAHT.length - 1];
+                        const startTimeAHT = new Date(lastAssignAHT.ts);
+                        // Конец = минимум из (время закрытия, время выхода из группы)
+                        const endTimeAHT = groupTransferTime && groupTransferTime > startTimeAHT
+                            ? groupTransferTime
+                            : new Date(closeEventAHT.ts);
+                        const durationSecondsAHT = (endTimeAHT - startTimeAHT) / 1000;
+
+                        if (durationSecondsAHT > 0) {
+                            totalHandleTimeSeconds += durationSecondsAHT;
+                            closedChatsCountForAHT++;
+                            ahtChatDetails.push({
+                                chatId: item.conversationId,
+                                ahtSeconds: Math.round(durationSecondsAHT),
+                                closedAt: closeEventAHT.ts,
+                                assignedAt: lastAssignAHT.ts
+                            });
                         }
                     }
                 }
@@ -735,9 +762,15 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
         if (ahtDataCells[i]) {
             if (closedChatsCountForAHT > 0) {
                 const ahtValue = Math.round(totalHandleTimeSeconds / closedChatsCountForAHT);
-                ahtDataCells[i].textContent = ahtValue + 's';
-                ahtDataCells[i].style.color = '#f59e0b';
-                ahtDataCells[i].style.fontWeight = '700';
+                const opName = document.getElementById('tableStats')?.rows[i + 1]?.cells[0]?.textContent || `Оператор`;
+                ahtChatDetails.sort((a, b) => a.ahtSeconds - b.ahtSeconds);
+                window.operatorAHTDetails[i] = { chats: ahtChatDetails, avgAHT: ahtValue, totalClosed: closedChatsCountForAHT };
+                ahtDataCells[i].innerHTML = `
+                    <span class="aht-popup-btn" data-opidx="${i}" data-opname="${opName}"
+                          style="color:#f59e0b; cursor:pointer; border-bottom:1px dashed #f59e0b; font-weight:700;"
+                          title="Посмотреть чаты с AHT оператора">
+                        ${ahtValue}s
+                    </span>`;
             } else {
                 ahtDataCells[i].textContent = '-';
             }
@@ -753,7 +786,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
         totalGroupAutoClosed += aclschtscount;
 
         // Суммируем AHT по всем операторам
-        // (totalHandleTimeSeconds уже накоплен внутри цикла — НЕ удваиваем!)
+        totalGroupHandleTimeSeconds += totalHandleTimeSeconds;
         totalGroupClosedChatsForAHT += closedChatsCountForAHT;
 
         currentWidth += step;
@@ -811,7 +844,9 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
 
     // Добавляем вычисление Среднего AHT по всему отделу
     const avgAHTValue = totalGroupClosedChatsForAHT > 0 ? Math.round(totalGroupHandleTimeSeconds / totalGroupClosedChatsForAHT) : 0;
-    set('avgAHTGroup', avgAHTValue > 0 ? avgAHTValue + 's' : 'N/A');
+    setHTML('avgAHTGroup', avgAHTValue > 0
+        ? `<span style="color:#f59e0b; font-weight:bold; font-size:16px;">${avgAHTValue}s</span> <span style="font-size:11px; color:#aaa;">(${totalGroupClosedChatsForAHT} чатов)</span>`
+        : '<span style="color:#64748b;">N/A</span>');
 
     const slaPercent = alloperChatsclsed > 0 ? ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' : '100%';
     const slaCalcColor = Number(calcChatsClsContainer) < 0 ? 'coral' : 'rgb(83, 219, 75)';
@@ -981,6 +1016,163 @@ function renderAclsModal(idx, opName) {
         document.removeEventListener('mouseup', window._aclsMouseUp);
         if (overlay.parentNode) overlay.remove();
         window._aclsModalCleanup = null;
+    };
+}
+
+// ============================================================================
+// 📊 МОДАЛКА AHT — чаты оператора, отсортированные по времени обработки
+// ============================================================================
+
+function renderAHTModal(idx, opName) {
+    const data = window.operatorAHTDetails ? window.operatorAHTDetails[idx] : null;
+    if (!data || !data.chats || data.chats.length === 0) {
+        alert(`⚠️ Нет данных AHT для оператора ${opName}.`);
+        return;
+    }
+
+    // Удаляем старое окно
+    const oldContainer = document.getElementById('aht-modal-container');
+    if (oldContainer) oldContainer.remove();
+    if (window._ahtModalCleanup) {
+        document.removeEventListener('mousemove', window._ahtMouseMove);
+        document.removeEventListener('mouseup', window._ahtMouseUp);
+        window._ahtModalCleanup = null;
+    }
+
+    let sortAsc = true;
+
+    const formatTime = (sec) => {
+        if (sec < 60) return sec + 'с';
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return m + 'м ' + s + 'с';
+    };
+
+    const getAHTColor = (sec) => {
+        if (sec <= 60) return '#53db4b';
+        if (sec <= 120) return '#f59e0b';
+        if (sec <= 300) return '#f97316';
+        return '#ef4444';
+    };
+
+    const renderChatList = (chats) => {
+        if (!chats || chats.length === 0) return '<div style="color:gray;font-size:12px;text-align:center;padding-top:10px;">Нет чатов</div>';
+        return chats.map(c => {
+            const color = getAHTColor(c.ahtSeconds);
+            return `
+                <div class="modal-lookchat aht-chat-item" data-hash="${c.chatId}" title="Нажмите, чтобы открыть чат"
+                     style="margin-bottom:6px; background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px; cursor:pointer; border:1px solid transparent; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:#cbd5e1; font-family:monospace; font-size:12px; pointer-events:none;">${c.chatId.substring(0, 8)}…</span>
+                    <span style="color:${color}; font-weight:700; font-size:13px; pointer-events:none;">${formatTime(c.ahtSeconds)}</span>
+                </div>`;
+        }).join('');
+    };
+
+    const overlay = document.createElement('div');
+    overlay.id = 'aht-modal-container';
+    Object.assign(overlay.style, {
+        position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
+        zIndex: '9999999', pointerEvents: 'none'
+    });
+
+    let startLeft = Math.max(0, (window.innerWidth - 500) / 2);
+    let startTop = Math.max(0, (window.innerHeight - 500) / 2);
+
+    if (window.lastModalPos && typeof window.lastModalPos.left === 'number') {
+        startLeft = Math.max(0, Math.min(window.lastModalPos.left + 30, window.innerWidth - 500));
+        startTop = Math.max(0, Math.min(window.lastModalPos.top + 30, window.innerHeight - 200));
+    }
+
+    const modal = document.createElement('div');
+    Object.assign(modal.style, {
+        position: 'absolute', pointerEvents: 'auto',
+        backgroundColor: '#2e3b3a', border: '1px solid #5f7875', borderRadius: '12px',
+        width: '500px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.8), 0 0 30px rgba(245,158,11,0.15)', color: 'bisque',
+        left: startLeft + 'px', top: startTop + 'px'
+    });
+
+    // Временно рендерим чтобы посчитать высоту
+    const sortedChatsAsc = [...data.chats].sort((a, b) => a.ahtSeconds - b.ahtSeconds);
+
+    modal.innerHTML = `
+        <div class="aht-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background:linear-gradient(135deg, rgba(55,52,71,1) 0%, rgba(40,38,50,1) 100%); cursor:grab; border-top-left-radius:12px; border-top-right-radius:12px; user-select:none;">
+            <div>
+                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">⏱ Детали AHT: <span style="color:#f59e0b">${opName}</span></h3>
+                <div style="font-size:13px; color:#aaa; margin-top:6px;">
+                    Средний AHT: <b style="color:#f59e0b">${formatTime(data.avgAHT)}</b> |
+                    Чатов в расчёте: <b style="color:bisque">${data.totalClosed}</b>
+                </div>
+                <div style="font-size:11px; color:#888; margin-top:4px;">💡 Клик по чату открывает его в истории</div>
+            </div>
+            <button id="close-aht-modal" class="af-win-btn buttonHide" style="cursor:pointer; background:transparent; border:none; color:bisque; font-size:16px;">✖</button>
+        </div>
+        <div style="display:flex; flex-direction:column; overflow:hidden; background:#464451; border-bottom-left-radius:12px; border-bottom-right-radius:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.08);">
+                <span style="font-size:12px; color:#aaa;">Отсортировано: <span id="aht-sort-label" style="color:#f59e0b;">↑ по возрастанию</span></span>
+                <button id="aht-sort-toggle" style="background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; transition:all 0.2s;">↕ Сменить порядок</button>
+            </div>
+            <div id="aht-chats-list" style="overflow-y:auto; flex:1; padding:12px; max-height:60vh;">
+                ${renderChatList(sortedChatsAsc)}
+            </div>
+        </div>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Обработчик сортировки
+    const sortToggle = modal.querySelector('#aht-sort-toggle');
+    const chatsListEl = modal.querySelector('#aht-chats-list');
+    const sortLabel = modal.querySelector('#aht-sort-label');
+
+    sortToggle.addEventListener('click', () => {
+        sortAsc = !sortAsc;
+        const sorted = sortAsc
+            ? [...data.chats].sort((a, b) => a.ahtSeconds - b.ahtSeconds)
+            : [...data.chats].sort((a, b) => b.ahtSeconds - a.ahtSeconds);
+        chatsListEl.innerHTML = renderChatList(sorted);
+        sortLabel.textContent = sortAsc ? '↑ по возрастанию' : '↓ по убыванию';
+    });
+
+    // Drag & Drop
+    const header = modal.querySelector('.aht-modal-header');
+    let isDragging = false, startX, startY;
+
+    window._ahtMouseMove = (e) => {
+        if (!isDragging) return;
+        let newX = e.clientX - startX;
+        let newY = e.clientY - startY;
+        const maxX = window.innerWidth - modal.offsetWidth;
+        const maxY = window.innerHeight - modal.offsetHeight;
+        modal.style.left = Math.max(0, Math.min(newX, maxX)) + 'px';
+        modal.style.top = Math.max(0, Math.min(newY, maxY)) + 'px';
+    };
+
+    window._ahtMouseUp = () => {
+        if (isDragging) {
+            isDragging = false;
+            header.style.cursor = 'grab';
+            window.lastModalPos = { left: parseInt(modal.style.left, 10), top: parseInt(modal.style.top, 10) };
+        }
+    };
+
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.id === 'close-aht-modal') return;
+        isDragging = true;
+        header.style.cursor = 'grabbing';
+        startX = e.clientX - modal.offsetLeft;
+        startY = e.clientY - modal.offsetTop;
+    });
+
+    document.addEventListener('mousemove', window._ahtMouseMove);
+    document.addEventListener('mouseup', window._ahtMouseUp);
+
+    window._ahtModalCleanup = () => {
+        document.removeEventListener('mousemove', window._ahtMouseMove);
+        document.removeEventListener('mouseup', window._ahtMouseUp);
+        if (overlay.parentNode) overlay.remove();
+        window._ahtModalCleanup = null;
     };
 }
 
@@ -1887,6 +2079,41 @@ document.addEventListener('click', (e) => {
         return;
     }
 
+    // 1.5. Открытие модалки по AHT оператора
+    const ahtBtn = e.target.closest('.aht-popup-btn');
+    if (ahtBtn) {
+        const idx = ahtBtn.getAttribute('data-opidx');
+        const opName = ahtBtn.getAttribute('data-opname');
+        renderAHTModal(idx, opName);
+        return;
+    }
+
+    // 1.6. Сортировка AHT в таблице
+    const ahtSortBtn = e.target.closest('.aht-sort-btn');
+    if (ahtSortBtn) {
+        const currentSort = ahtSortBtn.getAttribute('data-sort');
+        const newSort = currentSort === 'asc' ? 'desc' : 'asc';
+        ahtSortBtn.setAttribute('data-sort', newSort);
+        ahtSortBtn.textContent = newSort === 'asc' ? '⏱AHT ▲' : '⏱AHT ▼';
+
+        const table = document.getElementById('tableStats');
+        if (!table) return;
+
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        rows.sort((a, b) => {
+            const ahtA = a.querySelector('[name="ahtdata"]')?.textContent || '-';
+            const ahtB = b.querySelector('[name="ahtdata"]')?.textContent || '-';
+            const valA = ahtA === '-' ? -1 : parseInt(ahtA);
+            const valB = ahtB === '-' ? -1 : parseInt(ahtB);
+            return newSort === 'asc' ? valA - valB : valB - valA;
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+        return;
+    }
+
     // 2. Обработчик клика по иконке 👁‍🗨 (открывает панель истории чата)
     const lookChatBtn = e.target.closest('.modal-lookchat');
     if (lookChatBtn) {
@@ -1904,6 +2131,19 @@ document.addEventListener('click', (e) => {
             lookChatBtn.style.background = 'rgba(83,219,75,0.3)';
             lookChatBtn.style.borderColor = '#53db4b';
             lookChatBtn.style.color = '#fff';
+        }
+
+        // Логика подсветки внутри модалки AHT
+        if (lookChatBtn.closest('#aht-modal-container')) {
+            document.querySelectorAll('#aht-modal-container .modal-lookchat').forEach(el => {
+                el.classList.remove('active-chat');
+                el.style.background = 'rgba(255,255,255,0.04)';
+                el.style.borderColor = 'transparent';
+            });
+
+            lookChatBtn.classList.add('active-chat');
+            lookChatBtn.style.background = 'rgba(245,158,11,0.2)';
+            lookChatBtn.style.borderColor = '#f59e0b';
         }
 
         const val = lookChatBtn.getAttribute('data-hash');
@@ -1925,6 +2165,12 @@ document.addEventListener('click', (e) => {
     // 3. Закрытие модалки по кнопке крестика
     if (e.target.closest('#close-acls-modal')) {
         if (window._aclsModalCleanup) window._aclsModalCleanup();
+        return;
+    }
+
+    // 3.1. Закрытие модалки AHT
+    if (e.target.closest('#close-aht-modal')) {
+        if (window._ahtModalCleanup) window._ahtModalCleanup();
         return;
     }
 

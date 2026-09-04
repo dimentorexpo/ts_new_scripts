@@ -3,47 +3,72 @@
 	}
 
 	.mainButton {
-		background: #768d87;
-		border-radius: 5px;
-		border: 1px solid #566963;
-		color: #ffffff !important;
-		padding: 2px 2px;
-		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-		font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
+		background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-top-color: rgba(255, 255, 255, 0.15);
+		color: #e2e8f0 !important;
+		padding: 4px 8px;
+		box-shadow:
+			0 2px 8px rgba(0, 0, 0, 0.3),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-size: 13px;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		user-select: none;
 	}
 
 	.mainButton:hover {
-		background: #6A5ACD;
+		background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.08) 100%);
+		border-color: rgba(255, 255, 255, 0.2);
+		transform: translateY(-1px);
+		box-shadow:
+			0 4px 14px rgba(0, 0, 0, 0.4),
+			inset 0 1px 0 rgba(255, 255, 255, 0.1);
 	}
 
 	.mainButton:active {
-		background: #231d4b;
+		background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+		transform: translateY(0);
+		box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
 	}
 
 	.smallbtn {
 		width: 28px;
 		height: 28px;
 		font-size: 14px;
+		border-radius: 8px;
 	}
 
 	.sdbtn {
 		width: 95px;
 		margin-top: 2px;
 		margin-left: 2px;
-		font-size: 14px;
+		font-size: 13px;
 		min-height: 30px;
+		border-radius: 8px;
 	}
 
 	.extwindows {
 		min-height: 25px;
 		min-width: 65px;
-		background: #464451;
+		background: linear-gradient(160deg, rgba(30, 30, 42, 0.94) 0%, rgba(18, 18, 28, 0.97) 100%);
+		backdrop-filter: blur(24px) saturate(160%);
+		-webkit-backdrop-filter: blur(24px) saturate(160%);
 		font-size: 14px;
 		z-index: 1000000;
 		position: fixed;
-		border: 1px solid rgb(56, 56, 56);
-		color: black;
-		box-shadow: 0px 0px 10px #000;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-top-color: rgba(255, 255, 255, 0.14);
+		color: #e2e8f0;
+		box-shadow:
+			0 24px 60px rgba(0, 0, 0, 0.6),
+			0 0 0 1px rgba(0, 0, 0, 0.5),
+			inset 0 1px 0 rgba(255, 255, 255, 0.05);
+		border-radius: 14px;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 	}
 
 	.extwindows.alert-container {
@@ -52,31 +77,39 @@
 		transform: translate(-50%, -50%);
 		width: 300px;
 		padding: 20px;
-		border-radius: 5px;
-		border: 2px solid black;
+		border-radius: 16px;
+		border: 1px solid rgba(239, 68, 68, 0.35);
 		font-weight: 600;
-		font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 		text-align: center;
 		z-index: 1100000;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		background-color: #464451;
-		animation: colorChange 3s ease-in-out infinite;
+		background: linear-gradient(135deg, rgba(239, 68, 68, 0.92) 0%, rgba(185, 28, 28, 0.95) 100%);
+		backdrop-filter: blur(24px);
+		-webkit-backdrop-filter: blur(24px);
+		box-shadow:
+			0 8px 32px rgba(0, 0, 0, 0.5),
+			0 0 40px rgba(239, 68, 68, 0.2),
+			inset 0 1px 0 rgba(255, 255, 255, 0.1);
+		color: #ffffff;
+		animation: alertPulseGlow 2s ease-in-out infinite;
 	}
 
-	/* Анимация для плавного перехода между цветами */
-	@keyframes colorChange {
-
-		0%,
-		100% {
-			background-color: #464451;
-			/* Начальный цвет */
+	/* Анимация пульсирующего свечения для alert-container */
+	@keyframes alertPulseGlow {
+		0%, 100% {
+			box-shadow:
+				0 8px 32px rgba(0, 0, 0, 0.5),
+				0 0 20px rgba(239, 68, 68, 0.15),
+				inset 0 1px 0 rgba(255, 255, 255, 0.1);
 		}
-
 		50% {
-			background-color: darkred;
-			/* Цвет при мигании */
+			box-shadow:
+				0 8px 32px rgba(0, 0, 0, 0.5),
+				0 0 50px rgba(239, 68, 68, 0.35),
+				inset 0 1px 0 rgba(255, 255, 255, 0.15);
 		}
 	}
 
@@ -87,18 +120,29 @@
 		font-size: 14px;
 		z-index: 20;
 		position: fixed;
-		border: 1px solid rgb(56, 56, 56);
-		background: rgb(70, 68, 81);
-		color: white;
-		font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-top-color: rgba(255, 255, 255, 0.14);
+		background: linear-gradient(160deg, rgba(30, 30, 42, 0.94) 0%, rgba(18, 18, 28, 0.97) 100%);
+		backdrop-filter: blur(24px) saturate(160%);
+		-webkit-backdrop-filter: blur(24px) saturate(160%);
+		color: #e2e8f0;
+		box-shadow:
+			0 24px 60px rgba(0, 0, 0, 0.6),
+			inset 0 1px 0 rgba(255, 255, 255, 0.05);
+		border-radius: 14px;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 	}
 
 	.activebtn {
-		background-color: #1e90ff;
+		background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+		border-color: rgba(59, 130, 246, 0.5) !important;
+		box-shadow: 0 0 16px rgba(59, 130, 246, 0.3) !important;
 	}
 
 	.activebtnsd {
-		background-color: #ff6347;
+		background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+		border-color: rgba(239, 68, 68, 0.5) !important;
+		box-shadow: 0 0 16px rgba(239, 68, 68, 0.3) !important;
 	}
 
 	.usinfoops {
@@ -512,55 +556,43 @@
 
 	.switch-btn {
 		display: inline-block;
-		width: 62px;
-		/* ширина переключателя */
-		height: 24px;
-		/* высота переключателя */
-		border-radius: 12px;
-		/* радиус скругления */
-		background: #bfbfbf;
-		/* цвет фона */
+		width: 48px;
+		height: 26px;
+		border-radius: 13px;
+		background: rgba(255, 255, 255, 0.12);
+		border: 1px solid rgba(255, 255, 255, 0.15);
 		z-index: 0;
 		margin: 0;
 		padding: 0;
-		border: none;
 		cursor: pointer;
 		position: relative;
-		transition-duration: 300ms;
-		/* анимация */
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
 	.switch-btn::after {
 		content: "";
-		height: 36px;
-		/* высота кнопки */
-		width: 36px;
-		/* ширина кнопки */
-		border-radius: 18px;
-		/* радиус кнопки */
-		background: #fff;
-		/* цвет кнопки */
-		top: -6px;
-		/* положение кнопки по вертикали относительно основы */
-		left: -6px;
-		/* положение кнопки по горизонтали относительно основы */
-		transition-duration: 300ms;
-		/* анимация */
-		box-shadow: 0 0 10px 0 #999999;
-		/* тень */
+		height: 20px;
+		width: 20px;
+		border-radius: 10px;
+		background: #e2e8f0;
+		top: 2px;
+		left: 2px;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 		position: absolute;
 		z-index: 1;
 	}
 
 	.switch-on {
-		background: #fff;
-		box-shadow: inset 0 0 10px 0 #999999;
-		/* тень */
+		background: linear-gradient(135deg, #10b981, #059669);
+		border-color: rgba(16, 185, 129, 0.4);
+		box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
 	}
 
 	.switch-on::after {
-		left: 30px;
-		background: #118c4e;
+		left: 24px;
+		background: #ffffff;
+		box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
 	}
 
 	.inithide {
@@ -588,37 +620,52 @@
 	}
 
 	.darkinputs {
-		color: bisque;
-		background-color: black;
+		color: #e2e8f0;
+		background-color: rgba(15, 17, 21, 0.5);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 8px;
+		padding: 6px 10px;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.darkinputs:focus {
+		border-color: rgba(99, 102, 241, 0.5);
+		box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 	}
 
 	.darkinputs::placeholder {
-		color: bisque;
+		color: #64748b;
 		font-weight: 500;
-		opacity: 0.7;
 	}
 
 	.darkinputs:disabled {
-		color: gray;
-		background-color: #3d3d3d;
+		color: #475569;
+		background-color: rgba(15, 17, 21, 0.3);
 		opacity: 0.6;
 	}
 
 	.lightinputs {
-		color: black;
-		background-color: white;
+		color: #1e293b;
+		background-color: rgba(255, 255, 255, 0.9);
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-radius: 8px;
+		padding: 6px 10px;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.lightinputs:focus {
+		border-color: rgba(99, 102, 241, 0.5);
+		box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 	}
 
 	.lightinputs::placeholder {
-		color: black;
+		color: #94a3b8;
 		font-weight: 500;
-		opacity: 0.7;
 	}
 
 	.lightinputs:disabled {
-		color: gray;
-		background-color: #cac1b1;
-		/* Более светлый оттенок для отключенного состояния */
+		color: #94a3b8;
+		background-color: rgba(0, 0, 0, 0.04);
 		opacity: 0.6;
 	}
 
@@ -660,73 +707,99 @@
 	}
 
 	.teststudteach {
-		background: #3c82b3 !important;
+		background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.9)) !important;
 		cursor: pointer;
 		border-radius: 20px;
 		width: 30px;
-		text-shadow: 1px 2px 5px rgb(0 0 0 / 50%);
+		color: white;
 		font-size: 15px;
+		border: 1px solid rgba(59, 130, 246, 0.3);
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 	}
 
 	.teststudteach:hover {
-		background: #235274 !important;
+		background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1)) !important;
+		transform: translateY(-1px);
 	}
 
 	.teststudteach.active,
 	#pushToTalk.active {
-		background: coral !important;
+		background: linear-gradient(135deg, #f97316, #ea580c) !important;
+		border-color: rgba(249, 115, 22, 0.5);
+		box-shadow: 0 0 16px rgba(249, 115, 22, 0.3);
 	}
 
 	.testroomsbtn {
-		background: #3c82b3;
+		background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.9));
 		margin-left: 2px;
 		margin: 2px;
 		cursor: pointer;
 		border-radius: 20px;
 		width: 80px;
-		text-shadow: 1px 2px 5px rgb(0 0 0 / 50%);
+		color: white;
 		font-size: 15px;
+		font-weight: 600;
+		border: 1px solid rgba(59, 130, 246, 0.3);
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	}
+
+	.testroomsbtn:hover {
+		transform: translateY(-1px);
 	}
 
 	.testroomsbtn.active {
-		background: coral;
+		background: linear-gradient(135deg, #f97316, #ea580c);
+		border-color: rgba(249, 115, 22, 0.5);
 	}
 
 	.testroomscreate {
-		background: #228B22;
+		background: linear-gradient(135deg, rgba(34, 139, 34, 0.9), rgba(16, 100, 16, 0.95));
 		margin-left: 5px;
 		margin: 5px;
 		cursor: pointer;
 		border-radius: 20px;
 		width: 260px;
-		text-shadow: 1px 2px 5px rgb(0 0 0 / 50%);
+		color: white;
 		font-size: 15px;
+		font-weight: 600;
+		border: 1px solid rgba(34, 139, 34, 0.3);
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 	}
 
 	.testroomscreate:hover {
-		background: #0d3f0d;
+		background: linear-gradient(135deg, rgba(34, 139, 34, 1), rgba(16, 100, 16, 1));
+		transform: translateY(-1px);
 	}
 
 	.testroomscreate.active {
-		background: coral;
+		background: linear-gradient(135deg, #f97316, #ea580c);
+		border-color: rgba(249, 115, 22, 0.5);
 	}
 
-	/* Кнопка "Hide" - сделаем её в виде аккуратной пилюли */
+	/* Кнопка "Hide" — аккуратная пилюля */
 	.buttonHide {
 		padding: 5px 15px !important;
 		border-radius: 20px !important;
-		font-size: 12px !important;
+		font-size: 11px !important;
 		text-transform: uppercase;
 		letter-spacing: 1px;
-		background: rgba(255, 99, 71, 0.15) !important;
-		/* Красноватый оттенок */
-		border-color: rgba(255, 99, 71, 0.3) !important;
+		font-weight: 600;
+		background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.08)) !important;
+		border: 1px solid rgba(239, 68, 68, 0.3) !important;
+		color: #fca5a5 !important;
 		aspect-ratio: auto !important;
-		height: 32px !important;
+		height: 30px !important;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
 	.buttonHide:hover {
-		background: rgba(255, 99, 71, 0.3) !important;
+		background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.15)) !important;
+		border-color: rgba(239, 68, 68, 0.5) !important;
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 	}
 
 /* =========================================
@@ -792,19 +865,21 @@
 		font-size: 22px;
 		cursor: pointer;
 		border-radius: 50%;
-		opacity: 0.6;
-		background: #faad14;
-		transition: all 0.5s ease;
+		background: linear-gradient(135deg, rgba(250, 173, 20, 0.8), rgba(219, 149, 11, 0.9));
+		border: 1px solid rgba(250, 173, 20, 0.3);
+		color: white;
+		transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.statMMactive:hover {
-		opacity: 1 !important;
-		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-		text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-		width: 45px !important;
-		height: 45px !important;
-		font-size: 23px !important;
-		background: #db950b;
+		transform: scale(1.1);
+		box-shadow: 0 4px 16px rgba(250, 173, 20, 0.4),
+			inset 0 1px 0 rgba(255, 255, 255, 0.2);
+		background: linear-gradient(135deg, rgba(250, 173, 20, 1), rgba(219, 149, 11, 1));
 	}
 
 	.leftbaropers {
@@ -829,12 +904,16 @@
 
 	.mainplayer {
 		width: 625px;
-		border: 1px solid black;
-		padding: 5px;
-		background: #464451;
-		color: bisque;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		padding: 10px;
+		background: linear-gradient(160deg, rgba(30, 30, 42, 0.94) 0%, rgba(18, 18, 28, 0.97) 100%);
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
+		color: #e2e8f0;
 		max-height: 510px;
 		overflow-y: auto;
+		border-radius: 14px;
+		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
 	}
 
 	li.active {
@@ -864,105 +943,155 @@
 	}
 
 	#pauseAudio {
-		font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-		background: #bd4b37;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		background: linear-gradient(135deg, #e74c3c, #c0392b);
 		color: #fff;
-		padding: 5px;
-		border-radius: 5px;
+		padding: 6px 10px;
+		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.15);
 		text-transform: uppercase;
-		letter-spacing: 1px;
-		font-weight: bold;
-		font-size: 16px;
-		transition: background 0.2s ease-in-out;
+		letter-spacing: 0.8px;
+		font-weight: 600;
+		font-size: 14px;
+		cursor: pointer;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 	}
 
 	#playAudio {
-		font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-		background: #3cbb56;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		background: linear-gradient(135deg, #27ae60, #219a52);
 		color: #fff;
-		padding: 5px;
-		border-radius: 5px;
+		padding: 6px 10px;
+		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.15);
 		text-transform: uppercase;
-		letter-spacing: 1px;
-		font-weight: bold;
-		font-size: 16px;
-		transition: background 0.2s ease-in-out;
+		letter-spacing: 0.8px;
+		font-weight: 600;
+		font-size: 14px;
+		cursor: pointer;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 	}
 
 	#addAudio {
-		font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-		background: #ffbb00;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		background: linear-gradient(135deg, #f39c12, #e67e22);
 		color: #fff;
-		padding: 5px;
-		border-radius: 5px;
+		padding: 6px 10px;
+		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.15);
 		text-transform: uppercase;
-		letter-spacing: 1px;
-		font-weight: bold;
-		font-size: 16px;
-		transition: background 0.2s ease-in-out;
+		letter-spacing: 0.8px;
+		font-weight: 600;
+		font-size: 14px;
+		cursor: pointer;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 	}
 
 	#volumeUp,
 	#volumeDown {
-		font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-		background: #85ac8c;
-		color: #fff;
-		padding: 5px;
-		border-radius: 5px;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+		color: #e2e8f0;
+		padding: 6px 10px;
+		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
 		text-transform: uppercase;
-		letter-spacing: 1px;
-		font-weight: bold;
-		font-size: 16px;
+		letter-spacing: 0.8px;
+		font-weight: 600;
+		font-size: 14px;
 		width: 50px;
-		transition: background 0.2s ease-in-out;
+		cursor: pointer;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 	}
 
 	#muteAudio {
-		font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Helvetica Neue, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, NotoEmoji, Twemoji;
-		background: #85ac8c;
-		color: #fff;
-		padding: 5px;
-		border-radius: 5px;
-		letter-spacing: 1px;
-		transition: background 0.2s ease-in-out;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+		color: #e2e8f0;
+		padding: 6px 10px;
+		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		letter-spacing: 0.8px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 	}
 
 	#playAudio:hover,
 	#volumeUp:hover,
 	#muteAudio:hover {
-		background: #4ecc6e;
-		cursor: pointer;
+		background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08));
+		transform: translateY(-1px);
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 	}
 
 	#addAudio:hover {
-		background: #e6c772;
-		cursor: pointer;
+		background: linear-gradient(135deg, #f5b041, #f39c12);
+		transform: translateY(-1px);
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 	}
 
 	#pauseAudio:hover,
 	#volumeDown:hover {
-		background: #b66253;
-		cursor: pointer;
+		background: linear-gradient(135deg, #e74c3c, #c0392b);
+		transform: translateY(-1px);
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 	}
 
 	button[name="saveToCalend"] {
 		width: 50px;
-		background: #3389a3;
-		transition: all 0.5s ease;
+		background: linear-gradient(135deg, #0ea5e9, #0284c7);
+		border-color: rgba(14, 165, 233, 0.4);
+		color: white;
+		font-weight: 600;
+		border-radius: 8px;
+		cursor: pointer;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	}
+
+	button[name="saveToCalend"]:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
 	}
 
 	button[name="deleteFromCalend"] {
 		width: 50px;
-		background: #a55a58;
-		text-shadow: rgb(0 0 0) 1px 0px 1px, rgb(0 0 0) 0px 1px 1px, rgb(0 0 0) -1px 0px 1px, rgb(0 0 0) 0px -1px 1px;
-		transition: all 0.5s ease;
+		background: linear-gradient(135deg, #ef4444, #dc2626);
+		border-color: rgba(239, 68, 68, 0.4);
+		color: white;
+		font-weight: 600;
+		border-radius: 8px;
+		cursor: pointer;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	}
+
+	button[name="deleteFromCalend"]:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
 	}
 
 	button[name="deleMySlot"] {
 		width: 80px;
-		background: #a55a58;
-		text-shadow: rgb(0 0 0) 1px 0px 1px, rgb(0 0 0) 0px 1px 1px, rgb(0 0 0) -1px 0px 1px, rgb(0 0 0) 0px -1px 1px;
-		transition: all 0.5s ease;
+		background: linear-gradient(135deg, #ef4444, #dc2626);
+		border-color: rgba(239, 68, 68, 0.4);
+		color: white;
+		font-weight: 600;
+		border-radius: 8px;
+		cursor: pointer;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	}
+
+	button[name="deleMySlot"]:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
 	}
 
 	button[name="saveToCalend"]:hover,
@@ -1072,16 +1201,20 @@
 		display: flex;
 		align-items: center;
 		justify-content: start;
-		/* Изменено с space-between на start */
-		margin-bottom: 10px;
-		padding-left: 5px;
-		padding-right: 5px;
+		margin-bottom: 6px;
+		padding: 6px 8px;
+		border-radius: 10px;
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
 	.queue-item:hover {
-		background: grey;
-		font-weight: 800;
+		background: rgba(255, 255, 255, 0.07);
+		border-color: rgba(255, 255, 255, 0.12);
+		font-weight: 600;
 		cursor: pointer;
+		transform: translateX(2px);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 	}
 
 	.queue-item span,
@@ -1116,12 +1249,23 @@
 	}
 
 	.syncBtn {
-		border: 1px solid black;
-		padding: 5px;
-		background: #4f4c4c;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		padding: 6px 10px;
+		background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+		border-radius: 8px;
 		cursor: pointer;
 		position: relative;
 		overflow: hidden;
+		color: #e2e8f0;
+		font-weight: 500;
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	}
+
+	.syncBtn:hover {
+		background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.06) 100%);
+		border-color: rgba(255, 255, 255, 0.18);
+		transform: translateY(-1px);
 	}
 
 	.syncBtn:hover .emoji {
@@ -1169,18 +1313,18 @@
 	/* Основной контейнер меню где Сервис Деск, Джира серч и тп */
 	.m-menu-panel {
 		background:
-			linear-gradient(135deg, rgba(22, 22, 38, 0.92) 0%, rgba(14, 14, 28, 0.95) 100%),
-			url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23202040' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") !important;
-		backdrop-filter: blur(20px) saturate(1.4) !important;
-		-webkit-backdrop-filter: blur(20px) saturate(1.4) !important;
-		border: 1px solid rgba(255, 255, 255, 0.1) !important;
-		border-radius: 16px;
+			linear-gradient(160deg, rgba(26, 26, 42, 0.96) 0%, rgba(14, 14, 26, 0.98) 100%) !important;
+		backdrop-filter: blur(30px) saturate(160%) !important;
+		-webkit-backdrop-filter: blur(30px) saturate(160%) !important;
+		border: 1px solid rgba(255, 255, 255, 0.08) !important;
+		border-top-color: rgba(255, 255, 255, 0.14) !important;
+		border-radius: 18px;
 		box-shadow:
 			0 0 0 1px rgba(0, 0, 0, 0.5),
-			0 16px 40px rgba(0, 0, 0, 0.6),
-			0 0 30px rgba(139, 92, 246, 0.06),
-			inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-		padding: 10px;
+			0 24px 60px rgba(0, 0, 0, 0.65),
+			0 0 40px rgba(139, 92, 246, 0.05),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+		padding: 8px;
 		width: 180px;
 		z-index: 1000000;
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1188,7 +1332,7 @@
 		overflow: hidden;
 		animation: menuFadeInUltra 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
-		/* ← ВОТ ЭТО главное — сдвигаем влево от кнопки */
+		/* Сдвигаем влево от кнопки */
 		left: auto !important;
 		right: calc(100% + 6px) !important;
 		top: 0 !important;
@@ -1211,13 +1355,14 @@
 		height: 2px;
 		background: linear-gradient(90deg,
 				transparent 0%,
-				#8b5cf6 25%,
+				#8b5cf6 20%,
+				#c084fc 35%,
 				#ec4899 50%,
-				#06b6d4 75%,
+				#06b6d4 65%,
 				transparent 100%);
 		background-size: 200% 100%;
 		animation: neonBorderFlow 3s linear infinite;
-		opacity: 0.7;
+		opacity: 0.85;
 		pointer-events: none;
 	}
 
@@ -1229,7 +1374,7 @@
 		left: -50%;
 		width: 200%;
 		height: 200%;
-		background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+		background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.06) 0%, transparent 45%);
 		pointer-events: none;
 		z-index: 0;
 	}
@@ -1260,39 +1405,40 @@
 	.m-menu-btn {
 		display: flex;
 		align-items: center;
-		padding: 10px 14px;
-		margin: 4px 0;
+		padding: 9px 12px;
+		margin: 3px 0;
 		cursor: pointer;
 		font-size: 13px;
 		font-weight: 500;
-		color: #e2e8f0;
+		color: #cbd5e1;
 		border-radius: 10px;
-		transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+		transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 		border: 1px solid transparent;
 		user-select: none;
 	}
 
 	.m-menu-btn:hover {
-		background: rgba(255, 255, 255, 0.08);
-		border-color: rgba(255, 255, 255, 0.15);
-		color: #fff;
-		transform: translateX(5px);
+		background: rgba(255, 255, 255, 0.07);
+		border-color: rgba(255, 255, 255, 0.12);
+		color: #f1f5f9;
+		transform: translateX(4px);
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 	}
 
 	/* Акценты для светлой темы */
 	.light .m-menu-btn {
-		color: #2d3748;
+		color: #334155;
 	}
 
 	.light .m-menu-btn:hover {
-		background: rgba(0, 191, 255, 0.15);
-		color: #008ecc;
-		border-color: rgba(0, 191, 255, 0.2);
+		background: rgba(99, 102, 241, 0.1);
+		color: #4f46e5;
+		border-color: rgba(99, 102, 241, 0.2);
 	}
 
 	/* Специфические цвета для иконок/текста при наведении */
 	.m-menu-btn:active {
-		transform: scale(0.96) translateX(5px);
+		transform: scale(0.97) translateX(4px);
 	}
 
 	/* Анимация появления */
@@ -1361,18 +1507,21 @@
 		z-index: 999999;
 		position: fixed;
 		bottom: 15px;
-		font-size: 18px;
+		font-size: 14px;
 		left: 50%;
 		transform: translateX(-50%);
-		background-color: green;
+		background: linear-gradient(135deg, #10b981, #059669);
 		color: white;
 		padding: 10px 20px;
-		border: none;
-		border-radius: 5px;
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		border-radius: 12px;
 		cursor: pointer;
 		display: none;
-		box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-		text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+		box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35),
+			inset 0 1px 0 rgba(255, 255, 255, 0.15);
+		font-weight: 600;
+		letter-spacing: 0.3px;
+		transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
 	.sucsbtnok {

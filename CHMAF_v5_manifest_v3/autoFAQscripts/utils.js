@@ -675,13 +675,31 @@ async function getText() {
     }
 }
 
+/**
+ * Единая точка вызова уведомлений для всего расширения.
+ * Если NotificationSystem.js уже загружен — использует премиальные toast
+ * с прогресс-баром и обратным отсчётом.
+ * Иначе — fallback с базовым стилем (редкий кейс ранней загрузки).
+ */
 (function () {
-    window.showCustomAlert = (msg) => {
-        const t = document.createElement('div');
-        t.style = 'position:fixed; top:20px; right:20px; background:#1e293b; color:#fff; padding:15px; border-radius:10px; z-index:9999999; box-shadow: 0 10px 30px rgba(0,0,0,0.5);';
-        t.innerHTML = msg;
-        document.body.appendChild(t);
-        setTimeout(() => t.remove(), 4000);
+    window.showCustomAlert = (msg, type = 'message') => {
+        if (typeof showNotification === 'function') {
+            showNotification(msg, type);
+        } else if (typeof window.NotificationSystem?.showNotification === 'function') {
+            window.NotificationSystem.showNotification(msg, type);
+        } else {
+            // Fallback: кратковременный toast пока NotificationSystem не загружен
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(20,20,35,0.95);color:#f1f5f9;padding:12px 18px;border-radius:12px;z-index:9999999;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.45);font-size:13px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;opacity:0;transform:translateY(10px);transition:all 0.3s cubic-bezier(0.16,1,0.3,1);';
+            t.innerHTML = msg;
+            document.body.appendChild(t);
+            requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
+            setTimeout(() => {
+                t.style.opacity = '0';
+                t.style.transform = 'translateY(10px)';
+                setTimeout(() => t.remove(), 300);
+            }, 4000);
+        }
     };
 })();
 
@@ -833,4 +851,4 @@ function getLoginLink(userid) {
 function sanitizeHTML(h) { return h; }
 
 /** Алиас для showCustomAlert (совместимость со старым кодом). */
-function showToast(m) { showCustomAlert(m); }
+function showToast(m, type) { showCustomAlert(m, type); }
