@@ -793,13 +793,13 @@ function getJiraTask(requestOptions) {
 
             switchJiraPages();
         } else {
-            alert('Не удалось получить задачи: ' + tasksresponse.error);
+            createAndShowButton('Не удалось получить задачи: ' + (tasksresponse.error || 'неизвестная ошибка'), 'error');
         }
     });
 }
 
 function switchJiraPages() {
-    if (!requesttojiratext) { alert("Выполни поиск заново"); return; }
+    if (!requesttojiratext) { createAndShowButton("Выполни поиск заново", 'warning'); return; }
 
     const pageSwArr = document.getElementsByName('changeList');
     const fetchURL = 'https://jira.skyeng.link/rest/issueNav/1/issueTable';
@@ -890,7 +890,7 @@ function getJiraOpenFormPress() {
                 if (response.success && response.fetchansver.match(/name="atlassian-token" content="(.*lin)/)) {
                     document.getElementById('searchjiratknstatus').innerText = "🟢";
                 } else {
-                    alert("Авторизуйтесь в системе Jira, чтобы при поиске запрос был отправлен");
+                    createAndShowButton("Авторизуйтесь в системе Jira — иначе поиск вернёт пустоту", 'warning');
                     document.getElementById('searchjiratknstatus').innerText = "🔴";
                 }
             });
@@ -898,7 +898,14 @@ function getJiraOpenFormPress() {
         checkJiraToken();
 
         if (localStorage.getItem('bugsarray')) {
-            favissues = JSON.parse(localStorage.getItem('bugsarray'));
+            try {
+                const parsedFavs = JSON.parse(localStorage.getItem('bugsarray'));
+                favissues = Array.isArray(parsedFavs) ? parsedFavs : [];
+            } catch (e) {
+                // Повреждённый кэш (например, строка "null") больше не роняет панель Jira
+                favissues = [];
+                localStorage.removeItem('bugsarray');
+            }
             renderFavorites();
         }
 

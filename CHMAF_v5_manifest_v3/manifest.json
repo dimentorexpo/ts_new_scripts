@@ -36,6 +36,7 @@
 				"/autoFAQscripts/CustomTemplates.js",
 				"/autoFAQscripts/ChatHistory.js",
 				"/autoFAQscripts/JiraSearch.js",
+				"/autoFAQscripts/MattermostSearch.js",
 				"/autoFAQscripts/Knowledge.js",
 				"/autoFAQscripts/LessonStatus.js",
 				"/autoFAQscripts/IPchecker.js",
@@ -140,7 +141,8 @@
 	],
 	"permissions": [
 		"storage",
-		"clipboardWrite"
+		"clipboardWrite",
+		"scripting"
 	],
 	"host_permissions": [
 		"https://*.skyeng.ru/*",

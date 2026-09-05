@@ -1289,7 +1289,7 @@ const wintComplectations = createWindow('AF_Complectations', 'winTopComplectatio
 const getStudentId = () => {
     const userId = document.getElementById('idstudent')?.value.trim();
     if (!userId) {
-        alert('Пожалуйста, введите ID студента.');
+        createAndShowButton('Пожалуйста, введите ID студента.', 'warning');
         return null;
     }
     return userId;
@@ -1395,7 +1395,7 @@ document.getElementById('getonetimepass')?.addEventListener('click', async funct
         }
 
     } catch (e) {
-        alert(`Ошибка: ${e.message}`);
+        createAndShowButton(`Ошибка: ${e.message}`, 'error');
         timerContainer.style.display = 'none';
     } finally {
         this.disabled = false;
@@ -1879,7 +1879,7 @@ async function getservices(stidNew) {
                         this.innerText = "✅";
                         setTimeout(() => this.innerText = "♻️", 3000);
                     } catch (response) {
-                        alert('Не удалось выполнить запрос: ' + (response?.error || response.message));
+                        createAndShowButton('Не удалось выполнить запрос: ' + (response?.error || response.message), 'error');
                         this.innerText = "❌";
                         localStorage.removeItem('token_global');
                     }
@@ -2100,7 +2100,7 @@ document.getElementById('getloginer')?.addEventListener('click', async function 
         createAndShowButton('💾 Ссылка-логинер cкопирована', 'message');
     } catch (e) {
         this.style.background = "rgba(255, 0, 0, 0.5)";
-        alert('Не удалось получить логиннер: ' + e.message);
+        createAndShowButton('Не удалось получить логиннер: ' + e.message, 'error');
     } finally {
         setTimeout(() => this.style.background = "transparent", 2000);
     }

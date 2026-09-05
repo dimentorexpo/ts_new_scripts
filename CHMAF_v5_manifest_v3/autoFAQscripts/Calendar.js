@@ -847,7 +847,7 @@ function checkAuth() {
     sendFetchRequest('https://datsy.ru/api/auth/check.php', { method: 'GET' }, (response) => {
         const data = JSON.parse(response.fetchansver);
         if (data['value-status'] === "Не авторизован") {
-            alert("Вы не авторизованы на datsy.ru. Пожалуйста, авторизуйтесь.");
+            createAndShowButton("Вы не авторизованы на datsy.ru — пожалуйста, авторизуйтесь", 'warning');
             window.open("https://datsy.ru/");
         } else {
             console.log("Вы авторизованы, загружаю календарь...");

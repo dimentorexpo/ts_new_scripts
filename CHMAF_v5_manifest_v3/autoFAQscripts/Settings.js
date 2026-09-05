@@ -2908,7 +2908,7 @@ async function init_settings() {
                 Object.entries(json).forEach(([k, v]) => localStorage.setItem(k, v));
                 createAndShowButton?.('Настройки загружены! Перезагрузка...', 'message');
                 setTimeout(() => location.reload(), 1500);
-            } catch (err) { alert('Ошибка формата файла'); }
+            } catch (err) { createAndShowButton('Ошибка формата файла', 'error'); }
         };
         reader.readAsText(file);
     };

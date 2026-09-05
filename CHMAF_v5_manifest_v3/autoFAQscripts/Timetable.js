@@ -672,7 +672,7 @@ document.getElementById('tt-load-btn').addEventListener('click', () => {
     const dates = getWeekDates(ttCurrentWeekOffset);
 
     if (!teacherIdRaw || isNaN(teacherIdRaw)) {
-        alert('Введите корректный ID преподавателя (число)');
+        createAndShowButton('Введите корректный ID преподавателя (число)', 'warning');
         return;
     }
 

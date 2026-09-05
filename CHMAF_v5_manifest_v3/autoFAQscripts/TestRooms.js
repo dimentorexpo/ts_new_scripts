@@ -247,7 +247,7 @@
             if (response?.success) {
                 notify('Тестовый урок создан! 🚀', 'message');
                 setTimeout(() => TR.win.style.display = 'none', 3000);
-            } else { alert('Ошибка создания: ' + (response?.error || 'unknown')); }
+            } else { createAndShowButton('Ошибка создания: ' + (response?.error || 'unknown'), 'error'); }
         });
     };
 

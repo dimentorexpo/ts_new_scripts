@@ -725,7 +725,7 @@
         const studentId = $(`#${CONFIG.prefix}-student-id`).value;
 
         if (!teacherId) {
-            alert('Введите ID учителя');
+            createAndShowButton('Введите ID учителя', 'warning');
             return;
         }
 

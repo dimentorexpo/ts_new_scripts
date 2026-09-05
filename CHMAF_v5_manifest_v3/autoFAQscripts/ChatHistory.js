@@ -1016,7 +1016,7 @@ document.getElementById('operatorstp').addEventListener('change', async function
                 operchatsdata = await r.json();
 
                 if (operchatsdata.total === 0) {
-                    alert(`У ${objSel[i].innerText} нет активных чатов в выбранном диапазоне`);
+                    createAndShowButton(`У ${objSel[i].innerText} нет активных чатов в выбранном диапазоне`, 'warning');
                     document.getElementById('infofield').innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.5;">📭 Нет активных чатов</div>';
                     return;
                 }
@@ -1174,11 +1174,11 @@ async function updateChatInfo(chatId) {
 document.getElementById('takechat').onclick = async function () {
     const timeStart = document.getElementById('infofield').getAttribute('openhistorytime');
     if (!timeStart || (new Date() - new Date(timeStart)) / 1000 > 60) {
-        return alert("⚠️ История чата открыта слишком долго. Пожалуйста, обновите чат.");
+        return createAndShowButton("⚠️ История чата открыта слишком долго — обновите чат", 'warning');
     }
 
     const chatId = document.getElementById('placechatid').innerText.trim();
-    if (!chatId || typeof operatorId === 'undefined' || !operatorId) return alert("❌ Чат не выбран или ID оператора не найден");
+    if (!chatId || typeof operatorId === 'undefined' || !operatorId) return createAndShowButton("❌ Чат не выбран или ID оператора не найден", 'error');
 
     if (!confirm("📥 Забрать чат на себя?")) return;
 
@@ -1195,7 +1195,7 @@ document.getElementById('takechat').onclick = async function () {
         setTimeout(() => assignChat(operatorId), 2000);
     } catch (e) {
         console.error(e);
-        alert("❌ Ошибка при попытке забрать чат");
+        createAndShowButton("❌ Ошибка при попытке забрать чат", 'error');
     }
 };
 
@@ -1203,7 +1203,7 @@ document.getElementById('reassign').onclick = async () => {
     const selected = document.querySelector('#operatorstp option:checked');
     const chatId = document.getElementById('placechatid').innerText.trim();
 
-    if (!chatId || !selected || !selected.value) return alert("❌ Не выбран чат или оператор");
+    if (!chatId || !selected || !selected.value) return createAndShowButton("❌ Не выбран чат или оператор", 'error');
 
     if (!confirm(`🔄 Перевести чат на ${selected.textContent}?`)) return;
 
@@ -1217,7 +1217,7 @@ document.getElementById('reassign').onclick = async () => {
         if (typeof createAndShowButton === 'function') createAndShowButton('✅ Чат успешно переведён', 'message');
     } catch (e) {
         console.error(e);
-        alert("❌ Ошибка передачи чата");
+        createAndShowButton("❌ Ошибка передачи чата", 'error');
     }
 };
 
@@ -1226,7 +1226,7 @@ document.getElementById('sendmsgtochatornotes').onclick = async () => {
     const chatId = document.getElementById('placechatid').innerText.trim();
     const msgField = document.getElementById('msgftochatornotes');
 
-    if (!mode || !chatId || !msgField.value.trim()) return alert("❌ Не заполнены все поля");
+    if (!mode || !chatId || !msgField.value.trim()) return createAndShowButton("❌ Не заполнены все поля", 'error');
 
     const btn = document.getElementById('sendmsgtochatornotes');
     const originalText = btn.textContent;
@@ -1274,10 +1274,10 @@ document.getElementById('gotocrmhis').onclick = () => {
         if (userId) {
             window.open(`https://crm2.skyeng.ru/persons/${userId}`);
         } else {
-            alert('❌ ID пользователя не найден в данных чата');
+            createAndShowButton('❌ ID пользователя не найден в данных чата', 'error');
         }
     } else {
-        alert('❌ Не выбран активный чат');
+        createAndShowButton('❌ Не выбран активный чат', 'error');
     }
 };
 
@@ -1394,7 +1394,7 @@ document.getElementById('getdatafrchat').onclick = () => {
             `;
         }
     } else {
-        alert("❌ Не выбран активный чат");
+        createAndShowButton("❌ Не выбран активный чат", 'error');
     }
 };
 

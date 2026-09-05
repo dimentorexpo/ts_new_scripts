@@ -558,9 +558,10 @@ async function move_again_AF() {
 
     createSideBtn('scriptBut', '🧩', 'Шаблоны', 'cyan', () => {
         const el = document.getElementById('AF_helper');
+        if (!el) return createAndShowButton('Панель шаблонов ещё не построена — обновите страницу', 'warning');
         const isHidden = el.style.display === 'none';
         el.style.display = isHidden ? 'flex' : 'none';
-        document.getElementById('scriptBut').classList.toggle('active', isHidden);
+        document.getElementById('scriptBut')?.classList.toggle('active', isHidden);
     });
 
     createSideBtn('themes', '📚', 'Темы', 'violet', getThemesButtonPress);
@@ -582,7 +583,70 @@ async function move_again_AF() {
         { id: "buttonGetStat", text: "📊 Статистика", fn: window.getbuttonGetStatButtonPress, tp: false },
         { id: "buttonTimetable", text: "⏱️ Timetable", fn: window.getbutTimetableButtonPress, tp: false },
         { id: "buttonCheckCRMComments", text: "🛄 CRM Task", fn: window.getbutCRMCommentsButtonPress, tp: true },
-        { id: "buttonGetQueue", text: "🚧 Очередь", fn: window.getQueuePress, tp: false }
+        { id: "buttonGetQueue", text: "🚧 Очередь", fn: window.getQueuePress, tp: false },
+        { id: "butMattermost", text: "🔍 Mattermost", fn: function () {
+            // Ленивое разрешение: модуль мог ещё не загрузиться (например,
+            // расширение работает со старой версией manifest.json).
+            if (typeof window.getMattermostSearchPress === 'function') {
+                window.getMattermostSearchPress();
+                return;
+            }
+            // Самовосстановление, два пути (оба необязательные):
+            //  1) bg.js инжектит модуль в isolated world (нужен scripting);
+            //  2) <script>-тег в main world (без permissions, работает всегда,
+            //     если файл есть в пакете). Модуль умеет работать в обоих мирах.
+            createAndShowButton('⏳ Загружаю модуль Mattermost...', 'message');
+            let lastError = '';
+            const fail = (detail) => {
+                const why = detail ? ' (' + detail + ')' : '';
+                console.error('[ChMAF] MattermostSearch не загрузился' + why);
+                createAndShowButton(
+                    '⚠️ Модуль Mattermost не загрузился' + why +
+                    '. Проверьте, что autoFAQscripts/MattermostSearch.js есть в папке расширения, и перезагрузите РАСШИРЕНИЕ (chrome://extensions → Reload)',
+                    'warning'
+                );
+            };
+            const tryOpen = () => {
+                if (typeof window.getMattermostSearchPress === 'function') {
+                    window.getMattermostSearchPress();
+                    return true;
+                }
+                // main world: окно создал инжектированный модуль — открываем мостом
+                if (document.getElementById('AF_Mattermost')) {
+                    window.postMessage({ source: 'chmaf-mms', action: 'toggle' }, '*');
+                    return true;
+                }
+                return false;
+            };
+            const poll = (triesLeft) => {
+                if (tryOpen()) return;
+                if (triesLeft <= 0) { fail(lastError); return; }
+                setTimeout(() => poll(triesLeft - 1), 200);
+            };
+
+            // Путь 1: isolated world через bg (MV3-воркер просыпается не сразу)
+            try {
+                chrome.runtime.sendMessage({ action: 'injectMattermostSearch' }, (resp) => {
+                    if (chrome.runtime.lastError) lastError = chrome.runtime.lastError.message;
+                    if (resp && !resp.success) lastError = resp.error || lastError;
+                });
+            } catch (e) {
+                lastError = (e && e.message) || String(e);
+            }
+
+            // Путь 2: main world через <script> — без permissions
+            try {
+                const s = document.createElement('script');
+                s.src = chrome.runtime.getURL('autoFAQscripts/MattermostSearch.js');
+                s.onload = () => s.remove();
+                s.onerror = () => { if (!lastError) lastError = 'файл не найден в расширении (404)'; };
+                (document.head || document.documentElement).appendChild(s);
+            } catch (e2) {
+                if (!lastError) lastError = 'script-tag: ' + ((e2 && e2.message) || e2);
+            }
+
+            poll(12); // ~2.4с: хватает на пробуждение bg и загрузку <script>
+        }, tp: false }
 
     ];
 
@@ -707,6 +771,25 @@ async function getText() {
         }
     };
 })();
+
+/**
+ * Реле для main-world инжекта MattermostSearch: модуль в main world не имеет
+ * доступа к chrome.runtime, поэтому fetch через bg выполняем здесь (isolated).
+ * Отвечаем тем же постом, что и запрос (chmaf-mms → fetchResult).
+ */
+window.addEventListener('message', (e) => {
+    const d = e.data;
+    if (!d || d.source !== 'chmaf-mms' || d.action !== 'fetch') return;
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: d.fetchURL, requestOptions: d.requestOptions }, (resp) => {
+        let ok = false, body = null, error = 'bg недоступен';
+        if (chrome.runtime.lastError) error = chrome.runtime.lastError.message;
+        else if (resp && resp.success) { ok = true; body = resp.fetchansver; }
+        else if (resp && resp.error) error = resp.error;
+        try {
+            window.postMessage({ source: 'chmaf-mms', action: 'fetchResult', id: d.id, ok, body, error }, '*');
+        } catch (e) { /* страница ушла */ }
+    });
+});
 
 /** Алиас для showCustomAlert (совместимость со старым кодом). */
 function notify(msg) { showCustomAlert(msg); }

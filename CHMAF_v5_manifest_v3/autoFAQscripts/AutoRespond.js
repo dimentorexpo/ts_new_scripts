@@ -298,6 +298,10 @@ function getbutFrozeChatButtonPress() {
         container.innerHTML = '';
 
         for (const [hash, data] of state.chats) {
+            // Резерв «{reserved: true}» ставится до получения sessionId —
+            // не рендерим его как таймер с NaN (грязные цифры в списке)
+            if (!data || typeof data.endTime !== 'number') continue;
+
             const remaining = data.endTime - Date.now();
             const minutes = Math.max(0, Math.floor(remaining / 60000));
             const seconds = Math.max(0, Math.floor((remaining % 60000) / 1000));

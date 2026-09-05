@@ -882,7 +882,7 @@ function renderAclsModal(idx, opName) {
     // 1. Проверяем, есть ли данные
     const data = window.operatorAutoClosedDetails ? window.operatorAutoClosedDetails[idx] : null;
     if (!data) {
-        alert(`⚠️ Данные для оператора ${opName} не найдены. Попробуйте нажать кнопку "Статистика" еще раз.`);
+        createAndShowButton(`⚠️ Данные для оператора ${opName} не найдены — нажмите кнопку «Статистика» ещё раз`, 'warning');
         console.error("❌ Нет данных %A3 по индексу:", idx, window.operatorAutoClosedDetails);
         return;
     }
@@ -1026,7 +1026,7 @@ function renderAclsModal(idx, opName) {
 function renderAHTModal(idx, opName) {
     const data = window.operatorAHTDetails ? window.operatorAHTDetails[idx] : null;
     if (!data || !data.chats || data.chats.length === 0) {
-        alert(`⚠️ Нет данных AHT для оператора ${opName}.`);
+        createAndShowButton(`⚠️ Нет данных AHT для оператора ${opName}`, 'warning');
         return;
     }
 

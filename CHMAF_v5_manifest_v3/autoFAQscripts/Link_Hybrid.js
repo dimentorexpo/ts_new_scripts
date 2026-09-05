@@ -293,7 +293,8 @@ function showCustomButtonModal(config, existingButton = null) {
         const url = document.getElementById('btn-url').value.trim();
 
         if (!title || !icon || !url) {
-            alert('Заполните все поля');
+            if (typeof showCustomAlert === 'function') showCustomAlert('Заполните все поля', 'warning');
+            else alert('Заполните все поля');
             return;
         }
 

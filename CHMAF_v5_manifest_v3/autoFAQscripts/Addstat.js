@@ -1129,7 +1129,7 @@ function attachEventHandlers() {
             const dateFromEl = document.getElementById('dateFrom');
             const dateToEl = document.getElementById('dateTo');
             if (!dateFromEl || !dateToEl || !dateFromEl.value || !dateToEl.value) {
-                alert('Укажите даты');
+                createAndShowButton('Укажите даты', 'warning');
                 return;
             }
 
