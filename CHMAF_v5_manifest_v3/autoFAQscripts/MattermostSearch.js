@@ -180,11 +180,11 @@
         return Array.isArray(teams) ? teams : [];
     };
 
-    const searchPosts = async (teamId, terms) => {
+    const searchPosts = async (teamId, terms, page = 0) => {
         return await mmRequest(`/api/v4/teams/${teamId}/posts/search`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ terms, is_or_search: true, page: 0, per_page: SEARCH_LIMIT })
+            body: JSON.stringify({ terms, is_or_search: true, page, per_page: SEARCH_LIMIT })
         });
     };
 
@@ -377,7 +377,10 @@
     const dom = {};
     let teamId = '';
     let teamName = '';
-    let currentResults = [];
+    let currentResults = [];   // накопленные посты (все загруженные страницы)
+    let searchTerms = '';      // текущий запрос (для догрузки)
+    let searchPage = 0;        // номер текущей страницы
+    let hasMore = false;       // есть ли ещё страницы
     let teamsLoaded = false;
 
     const escapeHtml = (s) => String(s)
@@ -478,11 +481,22 @@
                 opt.dataset.name = t.name; // slug для корректного пермалинка
                 dom.team.add(opt);
             });
-            dom.team.value = teams[0].id;
-            teamId = teams[0].id;
-            teamName = teams[0].name;
+
+            // Дефолт: сохранённый выбор пользователя → команда Skyeng → первая
+            let preferred = null;
+            let savedId = null;
+            try { savedId = localStorage.getItem('mms_team_id'); } catch (e) { /* ignore */ }
+            if (savedId && teams.some(t => t.id === savedId)) {
+                preferred = teams.find(t => t.id === savedId);
+            }
+            if (!preferred) preferred = teams.find(t => /skyeng/i.test((t.display_name || '') + ' ' + (t.name || '')));
+            if (!preferred) preferred = teams[0];
+
+            dom.team.value = preferred.id;
+            teamId = preferred.id;
+            teamName = preferred.name;
             teamsLoaded = true;
-            setStatus(`Команда: ${teams[0].display_name || teams[0].name}`, '#a5b4fc');
+            setStatus(`Команда: ${preferred.display_name || preferred.name}`, '#a5b4fc');
         } catch (e) {
             dom.team.innerHTML = '<option value="">Не удалось загрузить команды</option>';
             const msg = e.message === AUTH_ERR
@@ -498,23 +512,29 @@
     // ═══════════════════════════════════════════════════════
     // Рендер результатов
     // ═══════════════════════════════════════════════════════
-    const renderResults = async (res, terms) => {
+    // Догрузка: добавляет посты очередной страницы, не дублируя уже показанные,
+    // и подтягивает имена каналов/авторов для свежих постов.
+    const mergeResults = async (res, terms) => {
         const posts = (res && res.posts) || {};
         const order = Array.isArray(res.order) ? res.order : Object.keys(posts);
         const rawPosts = order.map(id => posts[id]).filter(Boolean);
 
-        currentResults = rawPosts;
+        const existingIds = new Set(currentResults.map(p => p.id));
+        const fresh = rawPosts.filter(p => !existingIds.has(p.id));
+        currentResults.push(...fresh);
 
-        // Уникальные каналы и авторы — тянем имена асинхронно (с кэшем)
-        const channelIds = [...new Set(rawPosts.map(p => p.channel_id).filter(Boolean))];
-        const userIds = [...new Set(rawPosts.map(p => p.user_id).filter(Boolean))];
+        // «Есть ещё»: сервер прислал курсор следующей страницы, либо страница
+        // заполнена целиком. На старых серверах, игнорирующих page/per_page,
+        // следующая страница вернёт те же посты — кнопка сама скроется.
+        hasMore = !!((res && res.next_post_id) || fresh.length === SEARCH_LIMIT);
+
+        const channelIds = [...new Set(fresh.map(p => p.channel_id).filter(Boolean))];
+        const userIds = [...new Set(fresh.map(p => p.user_id).filter(Boolean))];
 
         await Promise.all([
             Promise.all(channelIds.map(getChannel)),
             Promise.all(userIds.map(id => getUsers([id])))
         ]);
-
-        drawResults(terms);
     };
 
     const drawResults = (terms) => {
@@ -572,7 +592,20 @@
             dom.results.appendChild(item);
         });
 
-        setStatus(`Найдено: ${list.length}`, '#86efac');
+        // Кнопка догрузки — если сервер поддерживает пагинацию
+        if (hasMore && currentResults.length) {
+            const moreBtn = document.createElement('button');
+            moreBtn.id = 'mms-more';
+            moreBtn.className = 'mms-btn mms-btn-primary';
+            moreBtn.style.cssText = 'width:100%;margin-top:10px;';
+            moreBtn.textContent = '📥 Показать ещё';
+            moreBtn.onclick = loadMore;
+            dom.results.appendChild(moreBtn);
+        }
+
+        setStatus(filter
+            ? `Найдено: ${list.length} (из ${currentResults.length})`
+            : `Найдено: ${currentResults.length}`, '#86efac');
     };
 
     // ═══════════════════════════════════════════════════════
@@ -590,12 +623,19 @@
             return;
         }
 
+        // Новый поиск — сбрасываем накопленные страницы
+        currentResults = [];
+        searchTerms = terms;
+        searchPage = 0;
+        hasMore = false;
+
         dom.searchBtn.disabled = true;
         dom.results.innerHTML = '<div class="mms-loading"><div class="mms-spinner"></div>Поиск по Mattermost...</div>';
 
         try {
-            const res = await searchPosts(teamId, terms);
-            await renderResults(res, terms);
+            const res = await searchPosts(teamId, terms, searchPage);
+            await mergeResults(res, terms);
+            drawResults(terms);
         } catch (e) {
             if (e.message === AUTH_ERR) {
                 setStatus('Нужна авторизация в Mattermost', '#f87171');
@@ -607,6 +647,24 @@
             dom.results.innerHTML = '<div class="mms-empty">Поиск не удался. Проверьте консоль (F12) для деталей.</div>';
         } finally {
             dom.searchBtn.disabled = false;
+        }
+    };
+
+    // Догрузка следующей страницы результатов (кнопка «Показать ещё»)
+    const loadMore = async () => {
+        if (!teamId || !searchTerms) return;
+        const btn = document.getElementById('mms-more');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Загрузка...';
+        }
+        try {
+            searchPage += 1;
+            const res = await searchPosts(teamId, searchTerms, searchPage);
+            await mergeResults(res, searchTerms);
+            drawResults(searchTerms);
+        } catch (e) {
+            notify(e.message === AUTH_ERR ? 'Нужна авторизация в Mattermost' : 'Ошибка догрузки: ' + e.message, 'error');
         }
     };
 
@@ -677,6 +735,10 @@
         document.getElementById('mms-clear').onclick = () => {
             dom.query.value = '';
             dom.channelFilter.value = '';
+            currentResults = [];
+            searchTerms = '';
+            searchPage = 0;
+            hasMore = false;
             dom.results.innerHTML = '<div class="mms-empty">Введите запрос и нажмите «Найти».<br>Результаты появятся здесь.</div>';
             setStatus('');
         };
@@ -690,6 +752,7 @@
             teamId = opt.value;
             teamName = opt.dataset.name || teamName; // slug команды, не display-name
             setStatus(`Команда: ${opt.textContent.trim()}`, '#a5b4fc');
+            try { localStorage.setItem('mms_team_id', opt.value); } catch (e) { /* ignore */ }
         });
 
         // Публичная кнопка: вызывается из меню расширения (utils.js → menuConfig)
