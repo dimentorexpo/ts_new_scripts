@@ -1,6 +1,6 @@
-	body {
-		overflow: hidden;
-	}
+body {
+	overflow: hidden;
+}
 
 	.mainButton {
 		background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
@@ -1175,7 +1175,7 @@
 
 	div[name="foundToSolution"].active,
 	div[name="exploreSolution"].active {
-		background: #4fca82 !important
+		background: #4fca82 !important;
 	}
 
 	#control_jira_search {
@@ -1939,10 +1939,6 @@
 		}
 
 		40% {
-			transform: scale(1.1);
-		}
-
-		40% {
 			transform: scale(1.2);
 		}
 
@@ -2283,69 +2279,7 @@
   100% { transform: translateX(-50%); }
 }
 
-/* --- Поля ввода (вдавленные, премиальные) --- */
-.glass-input, .glass-textarea {
-  background: var(--input-bg);
-  border: 1px solid var(--glass-border);
-  color: var(--text-primary);
-  border-radius: 8px;
-  padding: 8px 12px;
-  outline: none;
-  font-size: 13px;
-  font-family: inherit;
-  transition: all 0.2s ease;
-  box-shadow: inset 0 1px 3px var(--glass-shadow);
-}
 
-.glass-input::placeholder, .glass-textarea::placeholder {
-  color: var(--text-secondary);
-}
-
-.glass-input:focus, .glass-textarea:focus {
-  background: var(--input-focus);
-  border-color: var(--input-focus-ring);
-  box-shadow: 0 0 0 3px var(--input-focus-ring);
-}
-
-.glass-textarea {
-  width: 100%;
-  min-height: 100px;
-  max-height: 350px;
-  resize: vertical;
-  margin-bottom: 12px;
-  box-sizing: border-box;
-  line-height: 1.5;
-}
-
-/* --- Панель гиперссылок --- */
-.hyper-bar {
-  display: none;
-  margin-bottom: 12px;
-  flex-wrap: nowrap;
-  gap: 8px;
-  background: var(--input-bg);
-  padding: 8px;
-  border-radius: 10px;
-  border: 1px solid var(--glass-border);
-}
-
-.hyper-bar.active {
-  display: flex;
-}
-
-/* --- Скроллбар --- */
-.glass-textarea::-webkit-scrollbar { width: 6px; }
-.glass-textarea::-webkit-scrollbar-track { background: transparent; }
-.glass-textarea::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
-.glass-textarea::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
-
-/* --- Disabled состояние --- */
-.glass-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
-}
 /* --- КНОПКИ ВКЛАДОК (Шаб, Win, Mac и т.д.) --- */
 /* =========================================
    1. ПАНЕЛЬ ВЕРХНИХ ВКЛАДОК (#pages) - СЛИТЫЙ ДИЗАЙН (Tab Bar)

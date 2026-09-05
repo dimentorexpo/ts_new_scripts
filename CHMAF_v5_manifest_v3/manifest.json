@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "ChMAF",
-	"version": "5.0.153",
+	"version": "5.0.154",
 	"description": "Твой мультитул в работе с чатами",
 	"background": {
 		"service_worker": "bg.js"
@@ -21,6 +21,7 @@
 	"content_scripts": [
 		{
 			"js": [
+				"/autoFAQscripts/NotificationSystem.js",
 				"/autoFAQscripts/utils.js",
 				"/autoFAQscripts/Settings.js",
 				"/autoFAQscripts/AutoRespond.js",
@@ -127,10 +128,14 @@
 				"OtherScripts/*",
 				"autoFAQscripts/*",
 				"Images/*"
-			],
-			"matches": [
-				"<all_urls>"
-			]
+			],				"matches": [
+					"*://skyeng.autofaq.ai/*",
+					"*://*.skyeng.ru/*",
+					"*://*.skyeng.tech/*",
+					"*://*.skyeng.link/*",
+					"*://script.google.com/*",
+					"*://script.googleusercontent.com/*"
+				]
 		}
 	],
 	"permissions": [

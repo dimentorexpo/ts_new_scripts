@@ -621,8 +621,13 @@ async function move_again_AF() {
     if (scriptAdr != data.TP_addr && scriptAdr != data.TP_addrRzrv) prepKC();
     else prepTp();
 
-    window.onkeydown = (e) => { if (e.key == 'Control') bool = 1; };
-    window.onkeyup = (e) => { if (e.key == 'Control') bool = 0; };
+    // addEventListener + флаг-гард: не плодим дубли при повторной инициализации
+    // и не затираем другие обработчики (присвоение через '=' перекрывало бы их)
+    if (!window.__chmafCtrlKeysBound) {
+        window.__chmafCtrlKeysBound = true;
+        window.addEventListener('keydown', (e) => { if (e.key === 'Control') bool = 1; });
+        window.addEventListener('keyup', (e) => { if (e.key === 'Control') bool = 0; });
+    }
 
     if (checkchatsIntervalId) clearInterval(checkchatsIntervalId);
     checkchatsIntervalId = setInterval(checkchats, 1000);
@@ -726,6 +731,8 @@ function hideWindowOnClick(wId, bId) {
     if (b) b.onclick = () => w.style.display = 'none';
 }
 
+let timerHideButtonsIntervalId = null; // защита от стакинга интервалов при повторной инициализации
+
 /** Добавляет в боковую панель кнопки, доступные только отделу ТП. */
 function prepTp() {
     const p = document.getElementById('rightPanel');
@@ -743,7 +750,9 @@ function prepTp() {
     });
     create('knowledgeCenter', '💡', 'БЗ', 'orange', getknowledgeCenterButtonPress);
     create('taskBut', '🛠', 'Задачи', 'emerald', gettaskButButtonPress);
-    setInterval(timerHideButtons, 500);
+    if (!timerHideButtonsIntervalId) {
+        timerHideButtonsIntervalId = setInterval(timerHideButtons, 500);
+    }
 }
 
 /** Настраивает интерфейс для отдела КЦ: скрывает ТП-элементы, показывает КЦ-элементы. */
@@ -846,9 +855,36 @@ function getLoginLink(userid) {
     });
 }
 
-// ⚠️ ЗАГЛУШКА: никакой санитизации не выполняет — возвращает HTML как есть.
-// Не использовать для защиты от XSS; оставлено для совместимости вызовов.
-function sanitizeHTML(h) { return h; }
+/**
+ * Базовая санитизация HTML: удаляет теги <script>, <iframe>, <object>,
+ * <embed>, <form>, <input>, <textarea>, <select> и inline-обработчики
+ * событий (onclick, onerror и т.д.) для защиты от XSS.
+ * Для полноценной защиты рекомендуется DOMPurify.
+ * @param {string} html — входной HTML
+ * @returns {string} — санитизированный HTML
+ */
+function sanitizeHTML(html) {
+    if (typeof html !== 'string') return '';
+    let sanitized = html;
+
+    // Удаляем потенциально опасные теги вместе с содержимым
+    const dangerousTags = /<\s*\/?\s*(script|iframe|object|embed|form|input|textarea|select|meta|link|base|applet|style)\b[^>]*>/gi;
+    sanitized = sanitized.replace(dangerousTags, '');
+
+    // Удаляем inline-обработчики событий (onclick=, onerror=, onload= и т.д.)
+    const eventHandlers = /\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|\S+)/gi;
+    sanitized = sanitized.replace(eventHandlers, '');
+
+    // Удаляем javascript: URI
+    const jsUri = /href\s*=\s*(?:"\s*javascript:[^"]*"|'\s*javascript:[^']*'|javascript:[^'"\s>]*)/gi;
+    sanitized = sanitized.replace(jsUri, 'href="#"');
+
+    // Удаляем data: URI в src атрибутах (может содержать executable content)
+    const dataUri = /src\s*=\s*(?:"\s*data:[^"]*"|'\s*data:[^']*')/gi;
+    sanitized = sanitized.replace(dataUri, 'src=""');
+
+    return sanitized;
+}
 
 /** Алиас для showCustomAlert (совместимость со старым кодом). */
 function showToast(m, type) { showCustomAlert(m, type); }

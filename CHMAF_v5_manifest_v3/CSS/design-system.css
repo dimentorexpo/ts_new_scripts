@@ -815,3 +815,44 @@
     display: none !important;
   }
 }
+
+/* ============================================================================
+   ACCESSIBILITY & MOTION PREFERENCES
+   ============================================================================ */
+
+/* Тёмная color-scheme только для панелей расширения, чтобы не менять
+   нативные контролы (скроллбары, select) хост-страницы AutoFAQ */
+.glass-panel,
+.glass-modal,
+.glass-card,
+.glass-input,
+.glass-textarea,
+.glass-select,
+.extwindows,
+.m-menu-panel,
+.fab-premium {
+  color-scheme: dark;
+}
+
+/* Видимый фокус для клавиатурной навигации (доступность) */
+.glass-btn:focus-visible,
+.glass-input:focus-visible,
+.glass-textarea:focus-visible,
+.glass-select:focus-visible,
+.glass-modal-close:focus-visible {
+  outline: 2px solid var(--primary-400);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-glow);
+}
+
+/* Уважение к системной настройке «Уменьшить движение» */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

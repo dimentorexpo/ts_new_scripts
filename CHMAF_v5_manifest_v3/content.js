@@ -394,6 +394,10 @@ async function doOperationsWithHistory(body = '') {
  * @returns {Promise<Object>}
  */
 async function doOperationsWithConversations(id) {
+    if (typeof CONFIGSTAT === 'undefined') {
+        console.error('[ChMAF] CONFIGSTAT не определён — Statistica.js ещё не загружен или недоступен.');
+        throw new Error('CONFIGSTAT is not defined');
+    }
     const response = await afApiFetch(`${CONFIGSTAT.API.BASE_URL}${CONFIGSTAT.API.CONVERSATIONS}/${id}`);
 
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -475,12 +479,21 @@ function waitForElement(selector, callback, timeout = 10000, interval = 100) {
 }
 
 /**
- * Показывает всплывающее уведомление внизу экрана.
- * Стили — .cyber-toast (инжектятся в TestUsers.js).
+ * Показывает всплывающее уведомление.
+ * Предпочитает премиум-систему NotificationSystem.js (прогресс-бар,
+ * обратный отсчёт, очередь, пауза при наведении), если она загружена;
+ * иначе — базовый toast (.cyber-toast, стили инжектятся в TestUsers.js).
  * @param {string} message — HTML-текст уведомления (<br> поддерживается)
  * @param {string} [type='message'] — 'message' | 'error' | 'warning'
  */
 function createAndShowButton(message, type = 'message') {
+    if (typeof window.showNotification === 'function') {
+        // Премиум-путь: NotificationSystem.js умеет показывать HTML-сообщения
+        showNotification(message, type, { html: true });
+        return;
+    }
+
+    // Fallback (страницы без NotificationSystem.js, например CRM): базовый toast
     let toast = document.querySelector('.cyber-toast');
     if (!toast) {
         toast = document.createElement('div');
@@ -620,8 +633,12 @@ function insertMediaPreview(root, link, href, mediaType) {
     const player = root.createElement(mediaType.tag);
     player.src = href;
     player.controls = true;
-    player.style.cssText = MEDIA_PLAYER_CSS;
+    player.preload = 'metadata';
+    player.style.cssText = MEDIA_PLAYER_CSS + 'opacity:0;transition:opacity 0.3s ease;';
     player.dataset.type = mediaType.playerType;
+    player.addEventListener('loadedmetadata', () => { player.style.opacity = '1'; }, { once: true });
+    // Fallback: если loadedmetadata не сработает (напр. CORS), показываем через 1с
+    setTimeout(() => { if (player.style.opacity === '0') player.style.opacity = '1'; }, 1000);
 
     parent.insertAdjacentElement('afterend', label);
     label.insertAdjacentElement('afterend', player);
@@ -684,9 +701,11 @@ function pageClick(event) {
         btn.style.borderTop = '1px solid rgba(255, 255, 255, 0.2)';
     });
 
-    // 2. Скрываем все страницы шаблонов
-    for (let i = 0; document.getElementById(i + 'page'); i++) {
-        document.getElementById(i + 'page').style.display = 'none';
+    // 2. Скрываем все страницы шаблонов (безопасный перебор)
+    for (let i = 0; i < 100; i++) {
+        const page = document.getElementById(i + 'page');
+        if (!page) break;
+        page.style.display = 'none';
     }
 
     // 3. Выделяем активную вкладку
@@ -1138,7 +1157,9 @@ function getChatId() {
     if (hrefnow.includes('tickets/archive')) {
         for (const field of document.querySelectorAll('.ant-spin-container')) {
             if (field.textContent.split(':')[0] === 'ID') {
-                return field.children[0].textContent.split(':')[1].trim();
+                const firstChild = field.children[0];
+                const value = firstChild?.textContent?.split(':')[1]?.trim();
+                if (value) return value;
             }
         }
     }
@@ -1222,6 +1243,8 @@ function checkchats() {
 /**
  * Стили карточек нужно инжектить прямо в iframe, где живут чаты.
  * Вызывается из uiTick (iframe может пересоздаваться).
+ * CSS записывается только при изменении — иначе каждый тик (раз в секунду)
+ * вызывает полный пересчёт стилей документа.
  */
 function injectChatCardStyle() {
     const doc = getIframeDoc();
@@ -1235,12 +1258,16 @@ function injectChatCardStyle() {
     }
 
     // !important обязателен, чтобы пробить заводские стили
-    style.textContent = `
+    const cssText = `
         [class*="DialogsCard_Card"] {
             background-color: var(--chat-card-bg, transparent) !important;
             transition: background-color 0.3s ease;
         }
     `;
+
+    if (style.__chmafCss === cssText) return;
+    style.__chmafCss = cssText;
+    style.textContent = cssText;
 }
 
 // ============================================================
@@ -1334,12 +1361,20 @@ function formatServiceType(serviceTypeKey) {
  * @param {string} searchText — экранируется, спецсимволы regex безопасны
  */
 function highlightSearchText(item, searchText) {
+    if (typeof item !== 'string') return item;
+    if (!searchText) return item;
+
     const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const pattern = new RegExp(escaped, 'i');
     const replacement =
         `<span style="color:MediumSpringGreen;font-weight:700;text-shadow:1px 2px 5px rgb(0 0 0 / 55%);">` +
         `${searchText.toUpperCase()}</span>`;
-    return replaceItem(item).replace(pattern, replacement);
+
+    // Очищаем остатки JSON-кавычек только если строка realmente содержит JSON-артефакт
+    let cleaned = item.replace(/"\s*:\s*/g, ' – ');
+    // Если замена ничего не изменила (не было JSON-артефакта) — используем оригинал
+    if (cleaned === item) cleaned = item;
+    return cleaned.replace(pattern, replacement);
 }
 
 // ============================================================
@@ -1359,7 +1394,9 @@ applyEnLangHue();
 // Горячие клавиши (Alt+O — Offline, Alt+I — Busy, Alt+T — тестовый чат)
 // ============================================================
 if (window.location.host === 'skyeng.autofaq.ai' && window.location.pathname !== '/login') {
-    document.onkeydown = (event) => {
+    // addEventListener вместо присвоения: document — общий с хост-страницей,
+    // и присвоение через '=' затирало бы обработчик горячих клавиш AutoFAQ
+    document.addEventListener('keydown', (event) => {
         if (!event.altKey) return;
 
         if (event.code === 'KeyO') changeStatus('Offline');
@@ -1368,7 +1405,7 @@ if (window.location.host === 'skyeng.autofaq.ai' && window.location.pathname !==
             const current = localStorage.getItem('trigertestchat');
             localStorage.setItem('trigertestchat', current === '0' ? '1' : '0');
         }
-    };
+    });
 }
 
 // ============================================================

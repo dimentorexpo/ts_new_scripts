@@ -3,7 +3,16 @@
  * ======================================================
  * Единая система уведомлений (toast) и глобальная обработка ошибок.
  * Используется всеми скриптами расширения для согласованного UI.
+ *
+ * ВАЖНО ДЛЯ РАЗРАБОТЧИКОВ: весь модуль обёрнут в IIFE — имена вроде
+ * injectStyles / showError не должны конфликтовать с top-level объявлениями
+ * других скриптов расширения (IPchecker.js, Statistica.js и т.д.), иначе
+ * SyntaxError «Identifier has already been declared» уронит весь content script.
+ * Наружу экспортируются только window.* API.
  */
+
+(function () {
+    'use strict';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Конфигурация
@@ -384,6 +393,17 @@ function injectStyles() {
 function showNotification(message, type = 'message', options = {}) {
     initNotifications();
 
+    // Ошибки приходят как Error-объекты — берём их текст, а не объект целиком.
+    // instanceof + проверка stack покрывает и кросс-реалм ошибки (свойства
+    // Error недоступны через instanceof, но message/stack — обычные строки).
+    if (message instanceof Error || (
+        message && typeof message === 'object' &&
+        typeof message.message === 'string' &&
+        typeof message.stack === 'string'
+    )) {
+        message = message.message;
+    }
+
     // Поддержка объекта вместо отдельных параметров
     if (typeof message === 'object' && !Array.isArray(message)) {
         options = Object.assign({}, message, { type: type || message.type });
@@ -410,7 +430,7 @@ function showNotification(message, type = 'message', options = {}) {
         <div class="chmaf-toast-icon">${config.icon}</div>
         <div class="chmaf-toast-content">
             ${options.title ? `<div class="chmaf-toast-title">${escapeHtml(options.title)}</div>` : ''}
-            <div class="chmaf-toast-message">${escapeHtml(String(message))}</div>
+            <div class="chmaf-toast-message">${options.html ? String(message) : escapeHtml(String(message))}</div>
         </div>
         <button class="chmaf-toast-close" title="Закрыть">✕</button>
         <div class="chmaf-toast-timer" data-total="${durationSec}">${durationSec}c</div>
@@ -629,7 +649,7 @@ function setupGlobalErrorHandler() {
     // Unhandled Promise Rejections
     window.addEventListener('unhandledrejection', (event) => {
         const error = event.reason;
-        const message = error?.message || typeof error === 'string' ? error : 'Неизвестная ошибка';
+        const message = error?.message || (typeof error === 'string' ? error : 'Неизвестная ошибка');
 
         console.error('[GlobalError] Unhandled Promise Rejection:', message);
 
@@ -732,7 +752,7 @@ function withErrorHandling(handler, context = 'Unknown') {
  * Логирует ошибку в консоль с контекстом.
  */
 function logError(context, error, level = 'error') {
-    const message = error?.message || typeof error === 'string' ? error : 'Неизвестная ошибка';
+    const message = error?.message || (typeof error === 'string' ? error : 'Неизвестная ошибка');
     const stack = error?.stack;
 
     if (level === 'error') {
@@ -763,7 +783,9 @@ function createAndShowButton(message, type = 'message') {
     };
 
     const newType = typeMap[type] || 'message';
-    showNotification(message, newType);
+    // { html: true } сохраняет совместимость: старый API позволял HTML в сообщениях
+    // (например, Link2Lesson передаёт errors.join('<br>'))
+    showNotification(message, newType, { html: true });
 }
 
 // Делаем createAndShowButton глобальным, если его ещё нет
@@ -810,3 +832,4 @@ if (typeof window !== 'undefined') {
     window.showWarning = showWarning;
     window.showInfo = showInfo;
 }
+})();

@@ -4,8 +4,6 @@
  * и все обработчики UI. Вызывается один раз при загрузке страницы.
  */
 
-const isTP = () => whoAmICompleted && (opsection === "ТП" || opsection === "ТП ОС");
-
 async function init_settings() {
     // --- Constants & Configuration ---
     const DEFAULTS = {
