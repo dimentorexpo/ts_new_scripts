@@ -848,7 +848,12 @@ function checkAuth() {
         const data = JSON.parse(response.fetchansver);
         if (data['value-status'] === "Не авторизован") {
             createAndShowButton("Вы не авторизованы на datsy.ru — пожалуйста, авторизуйтесь", 'warning');
-            window.open("https://datsy.ru/");
+
+            // Оборачиваем в стрелочную функцию!
+            setTimeout(() => {
+                window.open("https://datsy.ru/", "_blank");
+            }, 2000);
+
         } else {
             console.log("Вы авторизованы, загружаю календарь...");
             getTimeSlots();
