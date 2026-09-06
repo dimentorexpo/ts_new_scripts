@@ -4,69 +4,67 @@ localStorage.removeItem('AF_elka');
 localStorage.removeItem('AF_hat');
 localStorage.removeItem('AF_bag');
 
-/**
- * Проверяет, можно ли начинать перетаскивание/обрабатывать клик по элементу.
- * Возвращает false для интерактивных элементов (инпуты, кнопки, ссылки и т.п.).
- * @param {Event} a — событие мыши
- * @returns {boolean} — true, если перетаскивание разрешено
- */
+// ═══════════════════════════════════════════════════════════════
+// КОНФИГУРАЦИЯ МЕНЮ МОДУЛЕЙ
+// ═══════════════════════════════════════════════════════════════
+const MODULE_MENU_CONFIG = [
+    { id: 'JiraOpenForm',           text: '🔎 Jira Search',   fn: () => window.getJiraOpenFormPress?.(),         tp: true },
+    { id: 'crmopersstatuses',       text: '🧮 Статусы CRM2',  fn: () => window.getcrmopersstatusesButtonPress?.(), tp: true },
+    { id: 'butMarks',               text: '🎭 Оценки',        fn: () => window.getbutMarksButtonPress?.(),       tp: false },
+    { id: 'smartroomform',          text: '🦐 Smartroom',     fn: () => window.getsmartroomformButtonPress?.(),  tp: true },
+    { id: 'butLessonInfo',          text: '🎓 Lesson Info',   fn: () => window.getbutLessonInfoButtonPress?.(),  tp: false },
+    { id: 'butFrozeChat',           text: '❄ Auto Respond',   fn: () => window.getbutFrozeChatButtonPress?.(),   tp: false },
+    { id: 'buttonGetStat',          text: '📊 Статистика',    fn: () => window.getbuttonGetStatButtonPress?.(),  tp: false },
+    { id: 'buttonTimetable',        text: '⏱️ Timetable',     fn: () => window.getbutTimetableButtonPress?.(),   tp: false },
+    { id: 'buttonCheckCRMComments', text: '🛄 CRM Task',      fn: () => window.getbutCRMCommentsButtonPress?.(), tp: true },
+    { id: 'butMattermost',          text: '🔍 Mattermost',    fn: () => {
+        if (typeof window.getMattermostSearchPress === 'function') {
+            window.getMattermostSearchPress();
+        } else {
+            createAndShowButton('⚠️ Модуль Mattermost не загружен. Перезагрузите расширение.', 'warning');
+        }
+    }, tp: false },
+	    { id: 'buttonGetQueue',         text: '🚧 Очередь',       fn: () => window.getQueuePress?.(), tp: false }
+];
+
+// ═══════════════════════════════════════════════════════════════
+// УТИЛИТЫ ДЛЯ DOM И ПЕРЕТАСКИВАНИЯ
+// ═══════════════════════════════════════════════════════════════
+
 function checkelementtype(a) {
     let elem = a.target;
     if (!elem) return false;
-
-    // Проверка по тегам - если это интерактивный элемент, возвращаем false (не разрешаем перетаскивание)
     const interactive = elem.closest('input, textarea, select, button, a, [onclick], [contenteditable="true"]');
     if (interactive) return false;
-
-    // Проверка по классам
     if (elem.closest('[class*="btn"], [class*="Button"], [class*="clickable"]')) return false;
-
-    // Глубокая проверка на наличие обработчиков
     let current = elem;
     while (current && current !== a.currentTarget) {
         if (current.onclick || current.onmousedown) return false;
         current = current.parentElement;
     }
-
-    return true; // Разрешаем перетаскивание
+    return true;
 }
 
-/**
- * Универсальная функция перетаскивания элементов.
- * Работает с любым элементом — окном, панелью, карточкой и т.д.
- *
- * @param {HTMLElement} element — элемент для перетаскивания
- * @param {Object} options
- * @param {string|HTMLElement} options.handle — CSS-селектор или элемент-«ручка» (по умолчанию: ищет .chmaf-drag-handle внутри)
- * @param {string} options.storageKey — ключ в localStorage для сохранения позиции (формат: { x, y })
- * @param {boolean} options.savePosition — сохранять позицию (по умолчанию true)
- * @param {Function} options.onDragStart — колбэк при начале перетаскивания
- * @param {Function} options.onDragEnd — колбэк при окончании перетаскивания (получает { x, y })
- * @returns {Function} stop — функция для отключения drag
- */
 function enableDrag(element, options = {}) {
     const {
         handle = null,
         storageKey = null,
         savePosition = true,
+        snapToEdges = true,
+        snapGrid = 0,
+        snapThreshold = 18,
         onDragStart = null,
         onDragEnd = null
     } = options;
 
     let isDragging = false;
-    let offsetX = 0;
-    let offsetY = 0;
-
+    let offsetX = 0, offsetY = 0;
     const handleSelector = handle || '.chmaf-drag-handle';
 
     const isInteractive = (el) => {
         if (!el) return false;
-        const interactive = el.closest('input, select, textarea, [contenteditable="true"]');
-        if (interactive) return true;
-        if (el.closest('button, a')) return true;
-        return false;
+        return !!el.closest('input, select, textarea, [contenteditable="true"], button, a');
     };
-
     const isDragHandle = (target) => {
         if (!handleSelector) return element.contains(target);
         if (typeof handleSelector === 'string') {
@@ -75,7 +73,6 @@ function enableDrag(element, options = {}) {
         return handleSelector.contains(target) || target === handleSelector;
     };
 
-    // Восстановление позиции
     if (storageKey && savePosition) {
         try {
             const raw = localStorage.getItem(storageKey);
@@ -88,29 +85,47 @@ function enableDrag(element, options = {}) {
         } catch (e) { /* ignore */ }
     }
 
+    function applySnap(x, y, isFinal) {
+        let nx = x, ny = y;
+        if (snapToEdges) {
+            const vw = window.innerWidth, vh = window.innerHeight;
+            const rect = element.getBoundingClientRect();
+            const w = rect.width, h = rect.height;
+            if (Math.abs(nx) < snapThreshold) nx = 0;
+            else if (Math.abs(nx + w - vw) < snapThreshold) nx = vw - w;
+            if (Math.abs(ny) < snapThreshold) ny = 0;
+            else if (Math.abs(ny + h - vh) < snapThreshold) ny = vh - h;
+            if (Math.abs(ny + h / 2 - vh / 2) < snapThreshold / 2) ny = vh / 2 - h / 2;
+        }
+        if (snapGrid > 0 && isFinal) {
+            nx = Math.round(nx / snapGrid) * snapGrid;
+            ny = Math.round(ny / snapGrid) * snapGrid;
+        }
+        return { x: nx, y: ny };
+    }
+
     const onMouseDown = (e) => {
         if (e.button !== 0) return;
-        const insideHandle = isDragHandle(e.target);
-        if (!insideHandle) return;
+        if (!isDragHandle(e.target)) return;
         if (isInteractive(e.target)) return;
-
         isDragging = true;
-        offsetX = e.clientX - element.getBoundingClientRect().left;
-        offsetY = e.clientY - element.getBoundingClientRect().top;
+        const rect = element.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
         element.style.transition = 'none';
         document.body.style.userSelect = 'none';
         document.body.style.cursor = 'grabbing';
-
-        if (onDragStart) onDragStart();
+        onDragStart?.();
         e.preventDefault();
     };
 
     const onMouseMove = (e) => {
         if (!isDragging) return;
-        const x = e.clientX - offsetX;
-        const y = e.clientY - offsetY;
-        element.style.left = x + 'px';
-        element.style.top = y + 'px';
+        let x = e.clientX - offsetX;
+        let y = e.clientY - offsetY;
+        const snapped = applySnap(x, y, false);
+        element.style.left = snapped.x + 'px';
+        element.style.top = snapped.y + 'px';
         element.style.right = 'auto';
     };
 
@@ -120,15 +135,14 @@ function enableDrag(element, options = {}) {
         element.style.transition = '';
         document.body.style.userSelect = '';
         document.body.style.cursor = '';
-
         const rect = element.getBoundingClientRect();
-        const pos = { x: Math.round(rect.left), y: Math.round(rect.top) };
-
+        const final = applySnap(rect.left, rect.top, true);
+        element.style.left = final.x + 'px';
+        element.style.top = final.y + 'px';
         if (storageKey && savePosition) {
-            try { localStorage.setItem(storageKey, JSON.stringify(pos)); } catch (e) { /* ignore */ }
+            try { localStorage.setItem(storageKey, JSON.stringify(final)); } catch (e) {}
         }
-
-        if (onDragEnd) onDragEnd(pos);
+        onDragEnd?.(final);
     };
 
     element.addEventListener('mousedown', onMouseDown);
@@ -142,18 +156,8 @@ function enableDrag(element, options = {}) {
     };
 }
 
-/**
- * Создаёт перетаскиваемое окно расширения и добавляет его в body.
- * Позиция восстанавливается из localStorage и сохраняется после drag.
- * @param {string} id — ID окна
- * @param {string} topKey — ключ localStorage для координаты top
- * @param {string} leftKey — ключ localStorage для координаты left
- * @param {string} content — HTML-содержимое окна
- * @returns {HTMLElement} — созданное окно
- */
 function createWindow(id, topKey, leftKey, content) {
     const windowElement = document.createElement('div');
-
     const storedTop = localStorage.getItem(topKey) || '120';
     const storedLeft = localStorage.getItem(leftKey) || '295';
 
@@ -176,59 +180,47 @@ function createWindow(id, topKey, leftKey, content) {
 
     windowElement.id = id;
     windowElement.innerHTML = content;
-
     document.body.append(windowElement);
 
-    // Автокоррекция позиции: мягкий clamp в границы экрана вместо сброса на дефолт
     requestAnimationFrame(() => {
         const w = windowElement.offsetWidth;
         const h = windowElement.offsetHeight;
-        if (!w || !h) return; // окно скрыто — размеры недоступны
-
+        if (!w || !h) return;
         const top = parseFloat(windowElement.style.top) || 0;
         const left = parseFloat(windowElement.style.left) || 0;
-
         const maxTop = Math.max(0, window.innerHeight - h);
         const maxLeft = Math.max(0, window.innerWidth - w);
-
         const fixedTop = Math.min(Math.max(top, 0), maxTop);
         const fixedLeft = Math.min(Math.max(left, 0), maxLeft);
-
         if (fixedTop !== top || fixedLeft !== left) {
             windowElement.style.top = fixedTop + 'px';
             windowElement.style.left = fixedLeft + 'px';
         }
     });
 
-    // === Универсальное перетаскивание через enableDrag ===
     enableDrag(windowElement, {
         handle: '.chmaf-drag-handle',
         storageKey: `drag_pos_${id}`,
         savePosition: true,
+        snapToEdges: true,
+        snapGrid: 8,
         onDragEnd: (pos) => {
-            // Совместимость со старым форматом хранения
             localStorage.setItem(topKey, String(pos.y));
             localStorage.setItem(leftKey, String(pos.x));
         }
     });
 
-    // Фикс выделения: сбрасываем выделение при одиночном клике
     setTimeout(() => {
         const inputs = windowElement.querySelectorAll('input:not([type="button"]):not([type="submit"]), textarea');
         inputs.forEach(input => {
             let lastClickTime = 0;
-
             input.addEventListener('mousedown', function (e) {
                 e.stopPropagation();
-
                 const now = Date.now();
                 const isDoubleClick = (now - lastClickTime) < 400;
                 lastClickTime = now;
-
                 if (isDoubleClick) return;
-
                 const hasSelection = this.selectionStart !== this.selectionEnd;
-
                 if (hasSelection && e.detail === 1) {
                     const pos = getCaretPositionFromPoint(this, e.clientX, e.clientY);
                     this.setSelectionRange(pos, pos);
@@ -240,28 +232,18 @@ function createWindow(id, topKey, leftKey, content) {
     return windowElement;
 }
 
-/**
- * Определяет позицию каретки в текстовом поле по координатам клика.
- * @returns {number} — индекс позиции каретки
- */
 function getCaretPositionFromPoint(element, x, y) {
     if (document.caretPositionFromPoint) {
         const pos = document.caretPositionFromPoint(x, y);
         if (pos && pos.offsetNode === element) return pos.offset;
     }
     if (document.caretRangeFromPoint) {
-        // Chrome/Chromium
         const range = document.caretRangeFromPoint(x, y);
         if (range && range.startContainer === element) return range.startOffset;
     }
     return element.selectionStart;
 }
 
-/**
- * Промис-обёртка над chrome.storage.local.get.
- * @param {string[]} keys — список ключей
- * @returns {Promise<Object>} — объект с запрошенными значениями
- */
 async function getStorageData(keys) {
     return new Promise((resolve) => {
         chrome.storage.local.get(keys, (result) => resolve(result));
@@ -269,17 +251,14 @@ async function getStorageData(keys) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PREMIUM FAB BUTTON SYSTEM — Инжект стилей + создание кнопок
+// FAB-СИСТЕМА (стили + создание кнопок)
 // ═══════════════════════════════════════════════════════════════
 
-/** Инжектит CSS-стили FAB-кнопок один раз (идемпотентно). */
 function injectFABStyles() {
     if (document.getElementById('fab-premium-styles')) return;
-
     const style = document.createElement('style');
     style.id = 'fab-premium-styles';
     style.textContent = `
-        /* FAB Container */
         #rightPanel {
             position: fixed;
             top: 50%;
@@ -291,47 +270,32 @@ function injectFABStyles() {
             gap: 12px;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        /* Premium FAB Button */
         .fab-premium {
             --fab-size: 45px;
             --fab-color: 190;
             --fab-sat: 90%;
             --fab-light: 60%;
-
             position: relative;
             width: var(--fab-size);
             height: var(--fab-size);
             border-radius: 50%;
             border: none;
             cursor: pointer;
-
-            background:
-                linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%),
-                rgba(18, 18, 28, 0.85);
+            background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%), rgba(18, 18, 28, 0.85);
             backdrop-filter: blur(20px) saturate(150%);
             -webkit-backdrop-filter: blur(20px) saturate(150%);
-
-            box-shadow:
-                0 8px 32px rgba(0, 0, 0, 0.4),
-                0 0 0 1px rgba(255, 255, 255, 0.1),
-                inset 0 1px 1px rgba(255, 255, 255, 0.15);
-
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.15);
             font-size: 19px;
             color: hsl(var(--fab-color), var(--fab-sat), var(--fab-light));
-
             display: flex;
             align-items: center;
             justify-content: center;
-
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             overflow: hidden;
             outline: none;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-
-        /* Верхний блик */
         .fab-premium::before {
             content: '';
             position: absolute;
@@ -341,8 +305,6 @@ function injectFABStyles() {
             pointer-events: none;
             opacity: 0.6;
         }
-
-        /* Ripple эффект */
         .fab-premium::after {
             content: '';
             position: absolute;
@@ -353,75 +315,49 @@ function injectFABStyles() {
             opacity: 0;
             pointer-events: none;
         }
-
-        /* Hover состояние */
         .fab-premium:hover {
             transform: scale(1.1) translateY(-2px);
-            box-shadow:
-                0 12px 48px rgba(0, 0, 0, 0.5),
-                0 0 24px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.3),
-                0 0 0 1px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.5),
-                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), 0 0 24px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.3), 0 0 0 1px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2);
             color: #fff;
             text-shadow: 0 0 12px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.8);
         }
-
-        /* Active состояние */
         .fab-premium:active {
             transform: scale(0.95);
-            box-shadow:
-                0 4px 16px rgba(0, 0, 0, 0.4),
-                inset 0 2px 8px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 2px 8px rgba(0, 0, 0, 0.6);
             transition: all 0.1s ease;
         }
-
         .fab-premium:active::after {
             animation: fab-ripple 0.6s ease-out;
         }
-
         @keyframes fab-ripple {
             0% { transform: scale(0); opacity: 1; }
             100% { transform: scale(2.5); opacity: 0; }
         }
-
-        /* Активная кнопка */
         .fab-premium.active {
-            background:
-                linear-gradient(145deg, hsla(var(--fab-color), var(--fab-sat), 50%, 0.2) 0%, hsla(var(--fab-color), var(--fab-sat), 30%, 0.1) 100%),
-                rgba(18, 18, 28, 0.95);
-            box-shadow:
-                0 8px 32px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.3),
-                0 0 0 2px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.6),
-                inset 0 0 20px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.1);
+            background: linear-gradient(145deg, hsla(var(--fab-color), var(--fab-sat), 50%, 0.2) 0%, hsla(var(--fab-color), var(--fab-sat), 30%, 0.1) 100%), rgba(18, 18, 28, 0.95);
+            box-shadow: 0 8px 32px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.3), 0 0 0 2px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.6), inset 0 0 20px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.1);
         }
-
-        /* Tooltip */
         .fab-premium .fab-tooltip {
             position: absolute;
             right: calc(100% + 12px);
             top: 50%;
             transform: translateY(-50%) translateX(10px);
-
             background: rgba(18, 18, 28, 0.95);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-
             color: #fff;
             padding: 8px 14px;
             border-radius: 8px;
             font-size: 13px;
             font-weight: 500;
             white-space: nowrap;
-
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-
             opacity: 0;
             pointer-events: none;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 10;
         }
-
         .fab-premium .fab-tooltip::after {
             content: '';
             position: absolute;
@@ -431,48 +367,23 @@ function injectFABStyles() {
             border: 6px solid transparent;
             border-left-color: rgba(18, 18, 28, 0.95);
         }
-
         .fab-premium:hover .fab-tooltip {
             opacity: 1;
             transform: translateY(-50%) translateX(0);
         }
-
-        /* Цветовые темы */
         .fab-premium[data-theme="cyan"] { --fab-color: 190; --fab-sat: 90%; --fab-light: 60%; }
         .fab-premium[data-theme="amber"] { --fab-color: 35; --fab-sat: 95%; --fab-light: 58%; }
         .fab-premium[data-theme="emerald"] { --fab-color: 150; --fab-sat: 80%; --fab-light: 55%; }
         .fab-premium[data-theme="rose"] { --fab-color: 340; --fab-sat: 90%; --fab-light: 65%; }
         .fab-premium[data-theme="violet"] { --fab-color: 265; --fab-sat: 90%; --fab-light: 68%; }
         .fab-premium[data-theme="orange"] { --fab-color: 25; --fab-sat: 95%; --fab-light: 60%; }
-
-        /* Адаптив */
-        @media (max-width: 768px) {
-            .fab-premium {
-                --fab-size: 38px;
-                font-size: 16px;
-            }
-            #rightPanel {
-                right: 12px;
-                gap: 10px;
-            }
-        }
-
-        /* Анимация появления */
         @keyframes fab-slide-in {
-            from {
-                opacity: 0;
-                transform: translateX(100px) scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
+            from { opacity: 0; transform: translateX(100px) scale(0.8); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
         }
-
         .fab-premium {
             animation: fab-slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
         }
-
         .fab-premium:nth-child(1) { animation-delay: 0.05s; }
         .fab-premium:nth-child(2) { animation-delay: 0.1s; }
         .fab-premium:nth-child(3) { animation-delay: 0.15s; }
@@ -485,78 +396,118 @@ function injectFABStyles() {
     document.head.appendChild(style);
 }
 
-/**
- * Создаёт плавающую кнопку действия (FAB) с тултипом.
- * @param {Object} config
- * @param {string} config.id — ID кнопки
- * @param {string} config.icon — HTML/эмодзи иконки
- * @param {string} config.title — текст тултипа
- * @param {string} [config.theme='cyan'] — цветовая тема
- * @param {Function} config.onClick — обработчик клика
- * @returns {HTMLButtonElement}
- */
 function createFAB(config) {
     const { id, icon, title, theme = 'cyan', onClick } = config;
-
     const btn = document.createElement('button');
     btn.id = id;
     btn.className = 'fab-premium';
     btn.setAttribute('data-theme', theme);
     btn.setAttribute('aria-label', title);
-
-    btn.innerHTML = `
-        ${icon}
-        <span class="fab-tooltip">${title}</span>
-    `;
-
+    btn.innerHTML = `${icon}<span class="fab-tooltip">${title}</span>`;
     btn.onclick = onClick;
-
     return btn;
 }
 
-let checkchatsIntervalId = null; // защита от стакинга интервалов при повторном вызове
+// ═══════════════════════════════════════════════════════════════
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ИНИЦИАЛИЗАЦИИ
+// ═══════════════════════════════════════════════════════════════
 
-/**
- * Главная инициализация панели расширения: ждёт идентификации оператора,
- * строит боковую FAB-панель, меню модулей и запускает фоновые интервалы.
- */
-async function move_again_AF() {
-    let whoAmISuccess = await whoAmI();
-    while (!whoAmISuccess) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        whoAmISuccess = await whoAmI();
+let checkchatsIntervalId = null;
+let timerHideButtonsIntervalId = null;
+
+async function waitForOperator(maxMs = 60_000) {
+    const start = Date.now();
+    let ok = await whoAmI();
+    while (!ok && Date.now() - start < maxMs) {
+        await new Promise(r => setTimeout(r, 1000));
+        ok = await whoAmI();
     }
-    const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']);
+    if (!ok) console.error('[ChMAF] Не удалось идентифицировать оператора за', maxMs, 'мс');
+    return ok;
+}
 
-    // Миграция устаревших адресов: если в localStorage лежит URL, которого
-    // нет в текущем chrome.storage — сбрасываем на актуальный деплой
-    const knownAddrs = [data.KC_addr, data.TP_addr, data.KC_addrRzrv, data.TP_addrRzrv].filter(Boolean);
-    if (!knownAddrs.includes(scriptAdr)) {
+async function migrateScriptAddresses() {
+    const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']);
+    const known = [data.KC_addr, data.TP_addr, data.KC_addrRzrv, data.TP_addrRzrv].filter(Boolean);
+    if (!known.includes(scriptAdr)) {
         scriptAdr = (localStorage.getItem('tpflag') === 'ТП' ? data.TP_addr : data.KC_addr) || DEFAULT_SCRIPT_ADR;
         localStorage.setItem('scriptAdr', scriptAdr);
         console.warn('[ChMAF] Адрес шаблонов устарел — сброшен на актуальный:', scriptAdr);
     }
+    return data;
+}
 
+function buildSidePanel() {
+    document.getElementById('rightPanel')?.remove();
+    injectFABStyles();
+    const panel = document.createElement('div');
+    panel.id = 'rightPanel';
+    document.body.append(panel);
+    return panel;
+}
+
+function addFabButton(panel, id, icon, title, theme, onClick) {
+    const btn = createFAB({ id, icon, title, theme, onClick });
+    panel.appendChild(btn);
+    return btn;
+}
+
+function buildModuleMenu(panel, isTP) {
+    let menubar = document.getElementById('idmymenu');
+    if (!menubar) {
+        menubar = document.createElement('div');
+        menubar.id = 'idmymenu';
+        panel.appendChild(menubar);
+    }
+    menubar.className = 'm-menu-panel menubarstyle';
+    menubar.style.display = 'none';
+
+    menubar.innerHTML = MODULE_MENU_CONFIG
+        .filter(item => !item.tp || isTP)
+        .map(item => `<div id="${item.id}" class="m-menu-btn">${item.text}</div>`)
+        .join('');
+
+    menubar.onclick = (e) => {
+        const btn = e.target.closest('.m-menu-btn');
+        if (!btn) return;
+        MODULE_MENU_CONFIG.find(c => c.id === btn.id)?.fn?.();
+        menubar.style.display = 'none';
+        document.getElementById('MainMenuBtn')?.classList.remove('active');
+    };
+}
+
+function setupDepartment(data) {
+    const isKC = scriptAdr !== data.TP_addr && scriptAdr !== data.TP_addrRzrv;
+    if (isKC && localStorage.getItem('hideTaskWindow') === '1') {
+        localStorage.setItem('hideTaskWindow', '0');
+    }
+    isKC ? prepKC() : prepTp();
+}
+
+function startBackgroundTasks() {
+    if (!window.__chmafCtrlKeysBound) {
+        window.__chmafCtrlKeysBound = true;
+        window.addEventListener('keydown', (e) => { if (e.key === 'Control') bool = 1; });
+        window.addEventListener('keyup', (e) => { if (e.key === 'Control') bool = 0; });
+    }
+    if (checkchatsIntervalId) clearInterval(checkchatsIntervalId);
+    checkchatsIntervalId = setInterval(checkchats, 1000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ГЛАВНЫЙ ОРКЕСТРАТОР
+// ═══════════════════════════════════════════════════════════════
+
+async function move_again_AF() {
+    if (!(await waitForOperator())) return;
+
+    const data = await migrateScriptAddresses();
     getText();
 
-    // Инжектим стили
-    injectFABStyles();
+    const isTP = (opsection || '').toString().trim().startsWith('ТП');
+    const panel = buildSidePanel();
 
-    // Пересоздаем панель (повторный вход через /login не должен плодить дубли)
-    document.getElementById('rightPanel')?.remove();
-
-    // Создаем панель
-    let sidePanel = document.createElement('div');
-    sidePanel.id = "rightPanel";
-    document.body.append(sidePanel);
-
-    const createSideBtn = (id, icon, title, theme, onClick) => {
-        const btn = createFAB({ id, icon, title, theme, onClick });
-        sidePanel.appendChild(btn);
-        return btn;
-    };
-
-    createSideBtn('scriptBut', '🧩', 'Шаблоны', 'cyan', () => {
+    addFabButton(panel, 'scriptBut', '🧩', 'Шаблоны', 'cyan', () => {
         const el = document.getElementById('AF_helper');
         if (!el) return createAndShowButton('Панель шаблонов ещё не построена — обновите страницу', 'warning');
         const isHidden = el.style.display === 'none';
@@ -564,259 +515,41 @@ async function move_again_AF() {
         document.getElementById('scriptBut')?.classList.toggle('active', isHidden);
     });
 
-    createSideBtn('themes', '📚', 'Темы', 'violet', getThemesButtonPress);
+    addFabButton(panel, 'themes', '📚', 'Темы', 'violet', getThemesButtonPress);
 
-    createSideBtn('MainMenuBtn', '👺', 'Меню', 'rose', () => {
+    addFabButton(panel, 'MainMenuBtn', '👺', 'Меню', 'rose', () => {
         const el = document.getElementById('idmymenu');
+        if (!el) return;
         const isHidden = el.style.display === 'none';
         el.style.display = isHidden ? '' : 'none';
         document.getElementById('MainMenuBtn').classList.toggle('active', isHidden);
     });
 
-    const menuConfig = [
-        { id: "JiraOpenForm", text: "🔎 Jira Search", fn: window.getJiraOpenFormPress, tp: true },
-        { id: "crmopersstatuses", text: "🧮 Статусы CRM2", fn: window.getcrmopersstatusesButtonPress, tp: true },
-        { id: "butMarks", text: "🎭 Оценки", fn: window.getbutMarksButtonPress, tp: false },
-        { id: "smartroomform", text: "🦐 Smartroom", fn: window.getsmartroomformButtonPress, tp: true },
-        { id: "butLessonInfo", text: "🎓 Lesson Info", fn: window.getbutLessonInfoButtonPress, tp: false },
-        { id: "butFrozeChat", text: "❄ Auto Respond", fn: window.getbutFrozeChatButtonPress, tp: false },
-        { id: "buttonGetStat", text: "📊 Статистика", fn: window.getbuttonGetStatButtonPress, tp: false },
-        { id: "buttonTimetable", text: "⏱️ Timetable", fn: window.getbutTimetableButtonPress, tp: false },
-        { id: "buttonCheckCRMComments", text: "🛄 CRM Task", fn: window.getbutCRMCommentsButtonPress, tp: true },
-        { id: "buttonGetQueue", text: "🚧 Очередь", fn: window.getQueuePress, tp: false },
-        { id: "butMattermost", text: "🔍 Mattermost", fn: function () {
-            // Ленивое разрешение: модуль мог ещё не загрузиться (например,
-            // расширение работает со старой версией manifest.json).
-            if (typeof window.getMattermostSearchPress === 'function') {
-                window.getMattermostSearchPress();
-                return;
-            }
-            // Самовосстановление, два пути (оба необязательные):
-            //  1) bg.js инжектит модуль в isolated world (нужен scripting);
-            //  2) <script>-тег в main world (без permissions, работает всегда,
-            //     если файл есть в пакете). Модуль умеет работать в обоих мирах.
-            createAndShowButton('⏳ Загружаю модуль Mattermost...', 'message');
-            let lastError = '';
-            const fail = (detail) => {
-                const why = detail ? ' (' + detail + ')' : '';
-                console.error('[ChMAF] MattermostSearch не загрузился' + why);
-                createAndShowButton(
-                    '⚠️ Модуль Mattermost не загрузился' + why +
-                    '. Проверьте, что autoFAQscripts/MattermostSearch.js есть в папке расширения, и перезагрузите РАСШИРЕНИЕ (chrome://extensions → Reload)',
-                    'warning'
-                );
-            };
-            const tryOpen = () => {
-                if (typeof window.getMattermostSearchPress === 'function') {
-                    window.getMattermostSearchPress();
-                    return true;
-                }
-                // main world: окно создал инжектированный модуль — открываем мостом
-                if (document.getElementById('AF_Mattermost')) {
-                    window.postMessage({ source: 'chmaf-mms', action: 'toggle' }, '*');
-                    return true;
-                }
-                return false;
-            };
-            const poll = (triesLeft) => {
-                if (tryOpen()) return;
-                if (triesLeft <= 0) { fail(lastError); return; }
-                setTimeout(() => poll(triesLeft - 1), 200);
-            };
+    buildModuleMenu(panel, isTP);
 
-            // Путь 1: isolated world через bg (MV3-воркер просыпается не сразу)
-            try {
-                chrome.runtime.sendMessage({ action: 'injectMattermostSearch' }, (resp) => {
-                    if (chrome.runtime.lastError) lastError = chrome.runtime.lastError.message;
-                    if (resp && !resp.success) lastError = resp.error || lastError;
-                });
-            } catch (e) {
-                lastError = (e && e.message) || String(e);
-            }
+    addFabButton(panel, 'opennewcat', '☢', 'История чатов', 'emerald', getopennewcatButtonPress);
 
-            // Путь 2: main world через <script> — без permissions
-            try {
-                const s = document.createElement('script');
-                s.src = chrome.runtime.getURL('autoFAQscripts/MattermostSearch.js');
-                s.onload = () => s.remove();
-                s.onerror = () => { if (!lastError) lastError = 'файл не найден в расширении (404)'; };
-                (document.head || document.documentElement).appendChild(s);
-            } catch (e2) {
-                if (!lastError) lastError = 'script-tag: ' + ((e2 && e2.message) || e2);
-            }
-
-            poll(12); // ~2.4с: хватает на пробуждение bg и загрузку <script>
-        }, tp: false }
-
-    ];
-
-    let menubar = document.getElementById('idmymenu');
-    if (!menubar) {
-        menubar = document.createElement('div');
-        menubar.id = 'idmymenu';
-        sidePanel.appendChild(menubar);
-    }
-    menubar.className = `m-menu-panel menubarstyle`;
-    menubar.style.display = 'none';
-
-    const currentSection = (typeof opsection !== 'undefined' ? opsection : "").toString().trim();
-    const isTP = currentSection.startsWith("ТП");
-
-    menubar.innerHTML = menuConfig
-        .filter(item => !item.tp || isTP)
-        .map(item => `<div id="${item.id}" class="m-menu-btn">${item.text}</div>`)
-        .join('');
-
-    menubar.onclick = (e) => {
-        const btn = e.target.closest('.m-menu-btn');
-        if (btn) {
-            const config = menuConfig.find(c => c.id === btn.id);
-            if (config?.fn) config.fn();
-            menubar.style.display = 'none';
-            document.getElementById('MainMenuBtn').classList.remove('active');
-        }
-    };
-
-    createSideBtn('opennewcat', '☢', 'История чатов', 'emerald', getopennewcatButtonPress);
-
-    if (scriptAdr != data.TP_addr && scriptAdr != data.TP_addrRzrv && localStorage.getItem('hideTaskWindow') === '1') {
-        localStorage.setItem('hideTaskWindow', '0');
-    }
-    if (scriptAdr != data.TP_addr && scriptAdr != data.TP_addrRzrv) prepKC();
-    else prepTp();
-
-    // addEventListener + флаг-гард: не плодим дубли при повторной инициализации
-    // и не затираем другие обработчики (присвоение через '=' перекрывало бы их)
-    if (!window.__chmafCtrlKeysBound) {
-        window.__chmafCtrlKeysBound = true;
-        window.addEventListener('keydown', (e) => { if (e.key === 'Control') bool = 1; });
-        window.addEventListener('keyup', (e) => { if (e.key === 'Control') bool = 0; });
-    }
-
-    if (checkchatsIntervalId) clearInterval(checkchatsIntervalId);
-    checkchatsIntervalId = setInterval(checkchats, 1000);
+    setupDepartment(data);
+    startBackgroundTasks();
 }
 
-if (window.location.pathname !== "/login") setTimeout(move_again_AF, 3000);
-else {
-    let lastP = window.location.pathname;
+// ── Точка входа (ОДИН РАЗ) ──
+if (window.location.pathname !== '/login') {
+    setTimeout(move_again_AF, 3000);
+} else {
+    let lastPath = window.location.pathname;
     setInterval(() => {
-        if (lastP === "/login" && window.location.pathname !== "/login") {
-            lastP = window.location.pathname;
+        if (lastPath === '/login' && window.location.pathname !== '/login') {
+            lastPath = window.location.pathname;
             setTimeout(move_again_AF, 3000);
         }
     }, 1000);
 }
 
-/**
- * Грузит JSON с Google Apps Script: сначала обычный fetch со страницы,
- * при неудаче — через background-воркер (обходит любые CORS-сюрпризы).
- * @param {string} url — адрес /exec деплоя
- * @returns {Promise<Object>} — распарсенный JSON
- */
-async function fetchGasJson(url) {
-    try {
-        const r = await fetch(url);
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return await r.json();
-    } catch (e) {
-        const ans = await new Promise((resolve) => {
-            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url }, (resp) => {
-                if (chrome.runtime.lastError || !resp || !resp.success) resolve(null);
-                else resolve(resp.fetchansver);
-            });
-        });
-        if (!ans) throw e;
-        return JSON.parse(ans);
-    }
-}
+// ═══════════════════════════════════════════════════════════════
+// ОТДЕЛ-СПЕЦИФИЧНЫЕ ФУНКЦИИ
+// ═══════════════════════════════════════════════════════════════
 
-/** Загружает таблицу шаблонов из Google Apps Script и перерисовывает кнопки. */
-async function getText() {
-    try {
-        const json = await fetchGasJson(scriptAdr);
-        if (!json || !Array.isArray(json.result)) throw new Error('В ответе GAS нет массива result — проверь адрес деплоя: ' + scriptAdr);
-        table = json.result;
-        console.log(`[ChMAF] Шаблоны загружены: ${table.length} строк`);
-        refreshTemplates();
-    } catch (e) {
-        console.error('[ChMAF] Не удалось загрузить шаблоны:', e);
-    }
-}
-
-/**
- * Единая точка вызова уведомлений для всего расширения.
- * Если NotificationSystem.js уже загружен — использует премиальные toast
- * с прогресс-баром и обратным отсчётом.
- * Иначе — fallback с базовым стилем (редкий кейс ранней загрузки).
- */
-(function () {
-    window.showCustomAlert = (msg, type = 'message') => {
-        if (typeof showNotification === 'function') {
-            showNotification(msg, type);
-        } else if (typeof window.NotificationSystem?.showNotification === 'function') {
-            window.NotificationSystem.showNotification(msg, type);
-        } else {
-            // Fallback: кратковременный toast пока NotificationSystem не загружен
-            const t = document.createElement('div');
-            t.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(20,20,35,0.95);color:#f1f5f9;padding:12px 18px;border-radius:12px;z-index:9999999;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.45);font-size:13px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;opacity:0;transform:translateY(10px);transition:all 0.3s cubic-bezier(0.16,1,0.3,1);';
-            t.innerHTML = msg;
-            document.body.appendChild(t);
-            requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
-            setTimeout(() => {
-                t.style.opacity = '0';
-                t.style.transform = 'translateY(10px)';
-                setTimeout(() => t.remove(), 300);
-            }, 4000);
-        }
-    };
-})();
-
-/**
- * Реле для main-world инжекта MattermostSearch: модуль в main world не имеет
- * доступа к chrome.runtime, поэтому fetch через bg выполняем здесь (isolated).
- * Отвечаем тем же постом, что и запрос (chmaf-mms → fetchResult).
- */
-window.addEventListener('message', (e) => {
-    const d = e.data;
-    if (!d || d.source !== 'chmaf-mms' || d.action !== 'fetch') return;
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: d.fetchURL, requestOptions: d.requestOptions }, (resp) => {
-        let ok = false, body = null, error = 'bg недоступен';
-        if (chrome.runtime.lastError) error = chrome.runtime.lastError.message;
-        else if (resp && resp.success) { ok = true; body = resp.fetchansver; }
-        else if (resp && resp.error) error = resp.error;
-        try {
-            window.postMessage({ source: 'chmaf-mms', action: 'fetchResult', id: d.id, ok, body, error }, '*');
-        } catch (e) { /* страница ушла */ }
-    });
-});
-
-/** Алиас для showCustomAlert (совместимость со старым кодом). */
-function notify(msg) { showCustomAlert(msg); }
-
-/**
- * Включает скрытие окна по двойному клику на его drag-зоне
- * (если в настройках не отключено, dblhidewindow = '0').
- */
-function hideWindowOnDoubleClick(id) {
-    if (localStorage.getItem('dblhidewindow') == '0') {
-        const el = document.getElementById(id);
-        el.ondblclick = (a) => {
-            if (a.target.closest('.chmaf-drag-handle')) el.style.display = 'none';
-        };
-    }
-}
-
-/** Привязывает к кнопке bId скрытие окна wId. */
-function hideWindowOnClick(wId, bId) {
-    const w = document.getElementById(wId);
-    const b = document.getElementById(bId);
-    if (b) b.onclick = () => w.style.display = 'none';
-}
-
-let timerHideButtonsIntervalId = null; // защита от стакинга интервалов при повторной инициализации
-
-/** Добавляет в боковую панель кнопки, доступные только отделу ТП. */
 function prepTp() {
     const p = document.getElementById('rightPanel');
     const create = (id, icon, title, theme, fn) => {
@@ -838,7 +571,6 @@ function prepTp() {
     }
 }
 
-/** Настраивает интерфейс для отдела КЦ: скрывает ТП-элементы, показывает КЦ-элементы. */
 function prepKC() {
     const l = document.querySelector('.user_menu-language_switcher');
     if (l) l.style.display = localStorage.getItem('disablelpmwindow') === '1' ? 'none' : '';
@@ -846,18 +578,100 @@ function prepKC() {
     document.querySelectorAll('.onlyforkc').forEach(e => e.style.display = '');
 }
 
-/**
- * Копирует текст в буфер обмена через execCommand (надёжнее navigator.clipboard
- * в контексте content-скрипта расширения).
- * @param {string} text
- * @returns {Promise<void>}
- */
+// ═══════════════════════════════════════════════════════════════
+// API И УТИЛИТЫ
+// ═══════════════════════════════════════════════════════════════
+
+async function fetchGasJson(url) {
+    try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return await r.json();
+    } catch (e) {
+        const ans = await new Promise((resolve) => {
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url }, (resp) => {
+                if (chrome.runtime.lastError || !resp || !resp.success) resolve(null);
+                else resolve(resp.fetchansver);
+            });
+        });
+        if (!ans) throw e;
+        return JSON.parse(ans);
+    }
+}
+
+async function getText() {
+    try {
+        const json = await fetchGasJson(scriptAdr);
+        if (!json || !Array.isArray(json.result)) throw new Error('В ответе GAS нет массива result — проверь адрес деплоя: ' + scriptAdr);
+        table = json.result;
+        console.log(`[ChMAF] Шаблоны загружены: ${table.length} строк`);
+        refreshTemplates();
+    } catch (e) {
+        console.error('[ChMAF] Не удалось загрузить шаблоны:', e);
+    }
+}
+
+(function () {
+    window.showCustomAlert = (msg, type = 'message') => {
+        if (typeof showNotification === 'function') {
+            showNotification(msg, type);
+        } else if (typeof window.NotificationSystem?.showNotification === 'function') {
+            window.NotificationSystem.showNotification(msg, type);
+        } else {
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(20,20,35,0.95);color:#f1f5f9;padding:12px 18px;border-radius:12px;z-index:9999999;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.45);font-size:13px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;opacity:0;transform:translateY(10px);transition:all 0.3s cubic-bezier(0.16,1,0.3,1);';
+            t.innerHTML = msg;
+            document.body.appendChild(t);
+            requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
+            setTimeout(() => {
+                t.style.opacity = '0';
+                t.style.transform = 'translateY(10px)';
+                setTimeout(() => t.remove(), 300);
+            }, 4000);
+        }
+    };
+})();
+
+window.addEventListener('message', (e) => {
+    const d = e.data;
+    if (!d || d.source !== 'chmaf-mms' || d.action !== 'fetch') return;
+    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: d.fetchURL, requestOptions: d.requestOptions }, (resp) => {
+        let ok = false, body = null, error = 'bg недоступен';
+        if (chrome.runtime.lastError) error = chrome.runtime.lastError.message;
+        else if (resp && resp.success) { ok = true; body = resp.fetchansver; }
+        else if (resp && resp.error) error = resp.error;
+        try {
+            window.postMessage({ source: 'chmaf-mms', action: 'fetchResult', id: d.id, ok, body, error }, '*');
+        } catch (e) { /* страница ушла */ }
+    });
+});
+
+function notify(msg) { showCustomAlert(msg); }
+
+function hideWindowOnDoubleClick(id) {
+    if (localStorage.getItem('dblhidewindow') == '0') {
+        const el = document.getElementById(id);
+        el.ondblclick = (a) => {
+            if (a.target.closest('.chmaf-drag-handle')) el.style.display = 'none';
+        };
+    }
+}
+
+function hideWindowOnClick(wId, bId) {
+    const w = document.getElementById(wId);
+    const b = document.getElementById(bId);
+    if (b) b.onclick = () => w.style.display = 'none';
+}
+
 function copyToClipboard(text) {
     return new Promise((resolve, reject) => {
         try {
             const t = document.createElement('textarea');
-            t.value = text; t.style.position = 'fixed'; t.style.left = '-9999px';
-            document.body.appendChild(t); t.select();
+            t.value = text;
+            t.style.position = 'fixed';
+            t.style.left = '-9999px';
+            document.body.appendChild(t);
+            t.select();
             const success = document.execCommand('copy');
             document.body.removeChild(t);
             if (success) {
@@ -871,11 +685,6 @@ function copyToClipboard(text) {
     });
 }
 
-/**
- * Извлекает последнюю login-ссылку из HTML-ответа админки.
- * @param {string} text — HTML/текст ответа
- * @returns {string|null} — ссылка без висячих кавычек или null
- */
 function extractLoginLink(text) {
     const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g;
     const matches = text.match(regex);
@@ -885,33 +694,23 @@ function extractLoginLink(text) {
     return null;
 }
 
-/**
- * Генерирует одноразовую ссылку для входа под пользователем через админку
- * и копирует её в буфер обмена.
- * @param {string} userid — ID пользователя
- * @returns {Promise<boolean>} — true при успехе
- */
 function getLoginLink(userid) {
     return new Promise((resolve, reject) => {
         if (!userid) {
             return reject(new Error("Пустой userId"));
         }
-
         const fetchURL = 'https://id.skyeng.ru/admin/auth/login-links';
-
         const body =
             `login_link_form%5Bid%5D=${encodeURIComponent(userid)}` +
             `&login_link_form%5Btarget%5D=https%3A%2F%2Fvimbox.skyeng.ru` +
             `&login_link_form%5Blifetime%5D=3600` +
             `&login_link_form%5Bcreate%5D=`;
-
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body,
             credentials: 'include'
         };
-
         chrome.runtime.sendMessage(
             { action: 'getFetchRequest', fetchURL, requestOptions },
             (response) => {
@@ -919,14 +718,11 @@ function getLoginLink(userid) {
                     console.log('Ошибка при получении логинера: ', response?.error);
                     return reject(new Error(response?.error || "Неизвестная ошибка"));
                 }
-
                 const link = extractLoginLink(response.fetchAnswer || response.fetchansver);
                 if (!link) {
                     console.log('Ссылка логинера не найдена');
                     return reject(new Error('Ссылка логинера не найдена'));
                 }
-
-                // ЗАМЕНА: вместо navigator.clipboard используем надёжный execCommand
                 copyToClipboard(link)
                     .then(() => resolve(true))
                     .catch(err => {
@@ -938,36 +734,18 @@ function getLoginLink(userid) {
     });
 }
 
-/**
- * Базовая санитизация HTML: удаляет теги <script>, <iframe>, <object>,
- * <embed>, <form>, <input>, <textarea>, <select> и inline-обработчики
- * событий (onclick, onerror и т.д.) для защиты от XSS.
- * Для полноценной защиты рекомендуется DOMPurify.
- * @param {string} html — входной HTML
- * @returns {string} — санитизированный HTML
- */
 function sanitizeHTML(html) {
     if (typeof html !== 'string') return '';
     let sanitized = html;
-
-    // Удаляем потенциально опасные теги вместе с содержимым
     const dangerousTags = /<\s*\/?\s*(script|iframe|object|embed|form|input|textarea|select|meta|link|base|applet|style)\b[^>]*>/gi;
     sanitized = sanitized.replace(dangerousTags, '');
-
-    // Удаляем inline-обработчики событий (onclick=, onerror=, onload= и т.д.)
     const eventHandlers = /\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|\S+)/gi;
     sanitized = sanitized.replace(eventHandlers, '');
-
-    // Удаляем javascript: URI
     const jsUri = /href\s*=\s*(?:"\s*javascript:[^"]*"|'\s*javascript:[^']*'|javascript:[^'"\s>]*)/gi;
     sanitized = sanitized.replace(jsUri, 'href="#"');
-
-    // Удаляем data: URI в src атрибутах (может содержать executable content)
     const dataUri = /src\s*=\s*(?:"\s*data:[^"]*"|'\s*data:[^']*')/gi;
     sanitized = sanitized.replace(dataUri, 'src=""');
-
     return sanitized;
 }
 
-/** Алиас для showCustomAlert (совместимость со старым кодом). */
 function showToast(m, type) { showCustomAlert(m, type); }
