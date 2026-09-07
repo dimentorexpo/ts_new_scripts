@@ -4,8 +4,8 @@ var win_Autoschedule =  // описание элементов окна стат
         <span style="width: 1060px">
                 <span style="cursor: -webkit-grab;">
                         <div style="margin: 5px; width: 700px;">
-                                <button class="buttonHide" id="hideMeAutoSchedule">hide</button>
-                                <button class="btnCRM btnCRMsmall" id="clearAutoSchedule" title="Очищает поля с результатами и полем для ввода">🧹</button>
+                                <button class="buttonHide" id="hideMeAutoSchedule"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> hide</button>
+                                <button class="btnCRM btnCRMsmall" id="clearAutoSchedule" title="Очищает поля" style="display:flex; align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l3-3h12l3 3"/><path d="M5 6v12a2 2 0 002 2h10a2 2 0 002-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
                         </div>
                         <div style="margin: 5px; width: 700px">
                             <input class="inputCRM" id="studentAPSearch" placeholder="Student ID" title="Введите ID ученика, чтобы отфильтровать поиск" autocomplete="off" type="text" style="position:relative; text-align:center; width:200px; color:black; margin-left:30%;">

@@ -4,23 +4,26 @@
  * Клик по ID ученика открывает его профиль в CRM2.
  */
 
+const _gr_close = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+const _gr_search = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+const _gr_users = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>';
+
 var win_GrList = `<!-- описание элементов окна Списка группы -->
 <div style="display: flex; width: 450px;">
     <span style="width: 450px">
         <span style="cursor: -webkit-grab;">
-            <div style="margin: 5px; width: 400;" id="grlistdata">
-                <button class="buttonHide" id="hideList">hide</button>
-            </div>
-            <div>
-                <input class="inputCRM" id="idgrouptolist" placeholder="ID группы" title="Введите ID группы для получения списка учеников"
-                       autocomplete="off" type="text" style="text-align: center; width: 80px; color: black;margin-left:5px; position:relative; left:30%;">
-                <button class="btnCRM" title="Запуск получения списка учеников группы" id="getidgrouptolist" style="position:relative; left:30%;">Get info</button>
+            <div style="margin: 5px; width: 400; display:flex; align-items:center; gap:4px;" id="grlistdata">
+                <button class="buttonHide" id="hideList">${_gr_close} hide</button>
+                <span style="margin-left:auto; display:flex; align-items:center; gap:4px;">
+                    <span style="color:#c9a84c; font-size:13px;">${_gr_users}</span>
+                    <input class="inputCRM" id="idgrouptolist" placeholder="ID группы" title="Введите ID группы"
+                           autocomplete="off" type="text" style="text-align: center; width: 100px; color: black; border-radius:6px;">
+                    <button class="btnCRM" title="Получить список учеников" id="getidgrouptolist" style="display:flex; align-items:center; gap:4px;">${_gr_search} Get</button>
+                </span>
             </div>
         </span>
         <div id="grlstdiv">
-            <br>
             <p id="grlistinfo" style="margin-left: 5px; color:bisque; max-height: 600px; overflow-y: auto;"></p>
-            <br>
         </div>
     </span>
 </div>`;

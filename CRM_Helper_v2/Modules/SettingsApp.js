@@ -1,20 +1,26 @@
+const _sa_close = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+const _sa_save = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+const _sa_dl = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+const _sa_play = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+
 var win_SettingsApp =  // описание элементов главного окна
     `<div style="border: 2px double black; background-color: #464451" id="SettingsApp_bar">
-        <div style="margin: 5px; width: 350px;" id="SettingsApp_1str">
-            <button class="buttonHide" title="скрывает меню" id="hideSettingsApp">hide</button>
+        <div style="margin: 5px; width: 350px; display:flex; align-items:center; gap:4px;" id="SettingsApp_1str">
+            <button class="buttonHide" title="скрывает меню" id="hideSettingsApp">${_sa_close} hide</button>
+            <span style="margin-left:auto; color:#c9a84c; font-size:13px;">⚙ Settings</span>
         </div>
 		<div style="margin: 5px; width: 350px">
                 <select class="inputCRM" style="height:28px; width:242px; text-align:center" id="soundlistaddrCRM">
                     <option selected="" disabled="">Звук нового сообщения</option>
                     <option value="othersound">Выбрать свой звук</option>
                     </select>
-				<button class="btnCRM btnCRMsmall" title="Проверка звука при добавленной ссылке" id="sound_testCRM">▶</button>
+				<button class="btnCRM btnCRMsmall" title="Проверка звука" id="sound_testCRM" style="display:flex; align-items:center; justify-content:center;">${_sa_play}</button>
 				<label title="Включение и отключение звука входящих запросов" class="checkbox-audio">
 					<input id="audioCRMswitcher" type="checkbox" checked="">
 						<span class="checkbox-audio-switch-CRM"></span>
 				</label>
                 <input class="inputCRM" id="sound_adrCRM" placeholder="Введи адрес звука" autocomplete="off" type="text" style="display: none; text-align: center; width: 235px; color: black; margin-top: 5px;">
-				<button class="btnCRM btnCRMsmall" title="Сохраняет ссылки на новый источник звука для входящего запроса" id="sound_saveCRM" style="display: none;">💾</button>
+				<button class="btnCRM btnCRMsmall" title="Сохранить звук" id="sound_saveCRM" style="display: none; display:flex; align-items:center;">${_sa_save}</button>
 				<br>
 				<span class="spanCRM" style="color:bisque; margin-top: 5px;">Громкость звука</span>
 				<input id="rangeCRM" min="0" max="1" value="1.0" step="0.1" type="range">
@@ -33,9 +39,9 @@ var win_SettingsApp =  // описание элементов главного �
                     <input class="inputCRM" id="test_teachCRM" placeholder="ID тест П" autocomplete="off" title = "ID личного тестового преподавателя" type="text" style="text-align: center; width: 130px; color: black;">
                     <button class="btnCRM btnCRMsmall" id="settestteachCRM" title="Добавить в localstorage ID тестового П" style="margin-top: 5px">💾</button>
                 </div>
-				<button class="btnCRM" id="savesettingstofileCRM" title="Сохраняет все настройки из localstorage в отдельный .json файл" style="color: #e5ece6; margin-top: 5px">💾 Сохранить настройки</button>
+				<button class="btnCRM" id="savesettingstofileCRM" title="Сохранить настройки в .json" style="color: #e5ece6; margin-top: 5px; display:flex; align-items:center; gap:4px;">${_sa_save} Сохранить настройки</button>
 				<input class="btnCRM" type="file" id="fileinputCRM" title="Загружает все настройки в localstorage из ранее сохраненного файла настроек в формте .json" style="display:none;">
-				<label class="btnCRM" style="color: #e5ece6; background: #768d87; padding: 5px; border-radius: 5px; border: 1px solid #566963;" for="fileinputCRM">⤵ Загрузить настройки</label>
+				<label class="btnCRM" style="color: #e5ece6; background: #768d87; padding: 5px; border-radius: 5px; border: 1px solid #566963; display:flex; align-items:center; gap:4px;" for="fileinputCRM">${_sa_dl} Загрузить настройки</label>
 			</div>
 		</div>
     </div>`;

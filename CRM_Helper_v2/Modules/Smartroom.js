@@ -3,11 +3,11 @@ var win_smartroomform =  // описание элементов окна Мул�
 		<div>
         <span style="width: 414px">
                 <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 410px;" id="smartroomsug_form_header">
-                            <button class="buttonHide" title="скрывает меню" id="hideMeSmartRoomForm">hide</button>
-                            <button class="btnCRM btnCRMsmall" title="По нажатию обновляет хеш чата в соответствующем поле, на случай, если при открытии формы вы открыли не тот чат, в котором обратился пользователь" id="refreshhashsmartform" style="width:30px;">♻</button>
-                            <button class="btnCRM btnCRMsmall" title="По нажатию очищает поля и сбрасывает в дефолтное состояние формы" id="clearsmartroomform" style="width:30px;">🧹</button>
-							<button class="btnCRM btnCRMsmall" title="Инструкция по этой форме" id="smartroomforminstr" style="float:right">❓</button>
+                        <div style="margin: 5px; width: 410px; display:flex; align-items:center; gap:4px;" id="smartroomsug_form_header">
+                            <button class="buttonHide" title="скрывает меню" id="hideMeSmartRoomForm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> hide</button>
+                            <button class="btnCRM btnCRMsmall" title="Обновить хеш чата" id="refreshhashsmartform" style="display:flex; align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+                            <button class="btnCRM btnCRMsmall" title="Очистить форму" id="clearsmartroomform" style="display:flex; align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l3-3h12l3 3"/><path d="M5 6v12a2 2 0 002 2h10a2 2 0 002-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+							<button class="btnCRM btnCRMsmall" title="Инструкция" id="smartroomforminstr" style="margin-left:auto;">❓</button>
                         </div>
 
                         <div style="margin: 5px; margin-top: 0px; width: 410px" id="smartroom_form_menu">

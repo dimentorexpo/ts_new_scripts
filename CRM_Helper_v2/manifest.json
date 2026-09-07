@@ -30,7 +30,6 @@
                 "/Modules/LessonStatus.js",
                 "/Modules/Link.js",
                 "/Modules/OperatorStatuse.js",
-                "/Modules/ServiceDesk.js",
                 "/Modules/SettingsApp.js",
                 "/Modules/Smartroom.js",
                 "/Modules/TestRooms.js",
@@ -71,7 +70,7 @@
         "https://jira.skyeng.tech/*",
         "https://jira.skyeng.link/*",
         "https://mm-time.skyeng.tech/*",
-        "https://*.datsy.info/*",
+        "https://*.datsy.ru/*",
         "https://docs.google.com/forms/*"
     ]
 }

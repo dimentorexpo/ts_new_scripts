@@ -1,12 +1,16 @@
+const _tr_close = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+const _tr_broom = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l3-3h12l3 3"/><path d="M5 6v12a2 2 0 002 2h10a2 2 0 002-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+const _tr_doc = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+
 var win_testroomsCRM =  // описание элементов окна создания тестовых комнат
   `<div style="display: flex; width: 310px;">
       <span style="width: 310px">
           <span style="cursor: -webkit-grab;">
-              <div style="width: 310px; margin: 5px;" id="testroomsCRMhead">
-                  <button class="buttonHide" title="скрывает меню" id="hideMetestroomsCRM">hide</button>
-                  <button class="btnCRM btnCRMsmall" id="clrTestRooms" title="По нажатию очищает поля" style="width:30px;">🧹</button>
-                  <button class="btnCRM btnCRMsmall" id="aboutTestRooms" style="width:30px; float: right; margin-right: 10px;" title="Инструкция по этой форме">❓</button>
-                  <button class="btnCRM btnCRMsmall" id="confluenceTestRooms" title="Открывает раздел в Confluence по созданию тестовых комнат" style="width:30px; float: right; margin-right: 5px;">📋</button>
+              <div style="width: 310px; margin: 5px; display:flex; align-items:center; gap:4px;" id="testroomsCRMhead">
+                  <button class="buttonHide" title="скрывает меню" id="hideMetestroomsCRM">${_tr_close} hide</button>
+                  <button class="btnCRM btnCRMsmall" id="clrTestRooms" title="Очищает поля" style="display:flex; align-items:center;">${_tr_broom}</button>
+                  <button class="btnCRM btnCRMsmall" id="aboutTestRooms" style="margin-left:auto; margin-right:5px;" title="Инструкция">❓</button>
+                  <button class="btnCRM btnCRMsmall" id="confluenceTestRooms" title="Confluence" style="display:flex; align-items:center;">${_tr_doc}</button>
               </div>
 
               <div style="width: 310px; margin:5px; display:flex; justify-content:left;">

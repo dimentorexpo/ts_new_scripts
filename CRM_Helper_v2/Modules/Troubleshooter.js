@@ -92,7 +92,7 @@ function addinginfo(pageelement, userid, elemtype) {
     const nameofuser = processedUserIds[userid].nameofuser;
     const userTypeStyles = {
         student: { text: '(У)', color: '#DC143C' },
-        teacher: { text: '(П)', color: '#1E90FF' }
+        teacher: { text: '(П)', color: '#c9a84c' }
     };
 
     const { text, color } = userTypeStyles[flagusertype] || { text: '', color: '' };
@@ -108,7 +108,7 @@ function addinginfo(pageelement, userid, elemtype) {
     if (elemtype === 'topline') {
         span.title = nameofuser;
         pageelement.style.width = '110px';
-        pageelement.style.color = 'blue';
+        pageelement.style.color = '#c9a84c';
         pageelement.style.textDecoration = 'underline';
         pageelement.style.cursor = 'pointer';
         // FIX: присваивание pageelement.tagName='A' удалено — tagName только для чтения.

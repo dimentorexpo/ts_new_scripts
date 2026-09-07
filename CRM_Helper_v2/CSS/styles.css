@@ -1,34 +1,55 @@
+:root {
+    --crm-font: sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', NotoEmoji, Twemoji;
+    --crm-bg: #464451;
+    --crm-border: rgb(56, 56, 56);
+    --crm-gold: #c9a84c;
+    --crm-gold-dark: #8b6f2e;
+    --crm-text: #f0ece4;
+}
+
 .inputCRM {
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
-    font-size:14px;
+    font-family: var(--crm-font);
+    font-size: 14px;
     min-height: 25px;
-}	
+}
 .textareaCRM {
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
-    font-size:14px;
+    font-family: var(--crm-font);
+    font-size: 14px;
     min-height: 55px;
     resize: vertical;
     max-height: 200px;
 }
 .spanCRM {
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
-    font-size:14px;
+    font-family: var(--crm-font);
+    font-size: 14px;
 }
 
 .showedwindows {
     min-height: 25px;
     min-width: 65px;
-    background: #464451;
+    background: var(--crm-bg);
     font-size: 14px;
     z-index: 50;
     position: fixed;
-    border: 1px solid rgb(56, 56, 56);
-    color: black;
-    box-shadow: 0px 0px 10px #000;
+    border: 1px solid var(--crm-border);
+    border-radius: 12px;
+    color: #e0d8c8;
+    box-shadow: 0 8px 32px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.04);
+    animation: crm-window-in .22s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes crm-window-in {
+    from { opacity: 0; transform: scale(.96) translateY(-4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+#MenubarCRM {
+    transition: background .2s ease, transform .15s ease;
+}
+#MenubarCRM:active {
+    transform: scale(.96);
+}
 #MenubarCRM:hover {
-    background: #102357;
+    background: #3d3425;
 }
 .maindivst{
     border: 2px double black;
@@ -40,16 +61,25 @@
     border:1px solid #566963;
     color:#ffffff;
     padding:5px 5px;
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-family: var(--crm-font);
     font-size:14px;
     min-height: 30px;
+    transition: background .2s ease, box-shadow .2s ease, transform .12s ease;
+}
+.btnCRM:hover {
+    background: #5a4a32;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    transform: translateY(-1px);
+}
+.btnCRM:active {
+    transform: translateY(0) scale(.97);
 }
 #ahttimercrm {
     background-color:#768d87;
     border-radius:5px;
-    border: 1px solid rgb(56, 56, 56);
+    border: 1px solid var(--crm-border);
     color:lightgreen;
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-family: var(--crm-font);
     font-size:15px;
     height: 30px;
     width: 50px;
@@ -61,7 +91,7 @@
     align-items: center;
 }
 .btnCRM:hover, .widthofsd:hover, #testuchenik:hover, #testprepod:hover  {
-    background: #6A5ACD;
+    background: #5a4a32;
 }
 .btnCRMsmall {
     width:30px !important;
@@ -72,8 +102,9 @@
     border:1px solid #566963;
     color:#ffffff;
     padding:5px 5px;
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-family: var(--crm-font);
     font-size:14px;
+    transition: background .2s ease;
     min-height: 30px;
     width:50px;
 }
@@ -86,7 +117,7 @@
     border:1px solid #566963;
     color:#ffffff;
     padding:5px 5px;
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-family: var(--crm-font);
     font-size:14px;
     min-height: 30px;
     box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
@@ -100,20 +131,24 @@
     color: greenyellow;
     transition: all 1s ease;
 }
+#idmymenucrm {
+    transition: opacity .15s ease;
+}
 .menubtnsCRM{
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji;
+    font-family: var(--crm-font);
     cursor: pointer;
     font-size: 14px;
     padding: 6px;
     border-bottom: 1px solid black;
     border-left: 1px solid black;
     border-right: 1px solid black;
+    transition: background .15s ease, color .15s ease, font-size .15s ease, box-shadow .15s ease;
 }
 .menubtnsCRM:hover {
-    background:DeepSkyBlue;
+    background: #3a3228;
     color:#ffffffe6;
     font-weight:600;
-    font-size:16px;
+    font-size:15px;
     box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
     text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
 }
@@ -125,10 +160,10 @@
     width:15px;
     height:15px;
     font-size:14px;
-    transition: all 0.5s ease;
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1);
 }
 .radio:hover {
-    transform: scale(1.5);
+    transform: scale(1.4);
     font-weight: 600;
 }
 .sdcustfieldformlines {
@@ -144,7 +179,7 @@
     width: 90%;
 }
 .activebtn {
-    background-color: #1e90ff;
+    background-color: #b8860b;
 }
 .activebtnsd {
     background-color: #ff6347;
@@ -157,7 +192,7 @@
 }
 .sugops:hover {
     font-size:18px;
-    color: SteelBlue;
+    color: #c9a84c;
     font-weight: 600;
 }
 .checkbox-audio {
@@ -230,7 +265,10 @@
     text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
     user-select: none;
     cursor: pointer;
+    transition: background .3s ease, transform .15s ease;
 }
+#testuchenik:hover, #testprepod:hover { background: #5a4a32; transform: scale(1.03); }
+#testuchenik:active, #testprepod:active { transform: scale(.97); }
 
 #testuchenik.active, #testprepod.active  {
     background: coral;
@@ -261,9 +299,10 @@
     text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
     user-select: none;
     cursor: pointer;
+    transition: background .3s ease, transform .15s ease;
 }
 .testroomsCRMbtn {
-    background: #3c82b3;
+    background: #5a4a32;
     margin-left: 2px;
     margin:2px;
     cursor: pointer;
@@ -309,7 +348,7 @@ span[name=changeList]:hover {
 }
 
 #grlistinfo *{
-    font-family:sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,NotoEmoji,Twemoji !important;
+    font-family: var(--crm-font) !important;
     font-size:14px !important;
     color:bisque !important;  
 }
@@ -339,7 +378,7 @@ span[name=changeList]:hover {
     z-index: 2147483647;
     background: #2e9e5b;
     color: #ffffff;
-    font-family: sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica Neue, Arial;
+    font-family: var(--crm-font);
     font-size: 15px;
     font-weight: 600;
     padding: 12px 28px;
@@ -348,6 +387,11 @@ span[name=changeList]:hover {
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
     cursor: default;
     overflow: hidden;
+    animation: crm-notify-in .3s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes crm-notify-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(.9); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
 /* Полоса обратного отсчёта внизу кнопки (3.5 сек — как setTimeout в content.js) */
@@ -382,7 +426,7 @@ span[name=changeList]:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #8b6f2e 0%, #5c4a1e 100%);
     padding: 8px 12px;
     border-radius: 8px;
     margin: -10px -10px 8px -10px;
@@ -405,15 +449,17 @@ span[name=changeList]:hover {
     cursor: pointer;
     font-size: 12px;
     line-height: 1;
+    transition: background .15s ease, transform .12s ease;
 }
 .lk-close:hover {
     background: #e8413f;
+    transform: scale(1.08);
 }
 
 /* Подписи секций */
 .lk-sub {
     font-size: 12px;
-    color: #b8b3d0;
+    color: #c9a84c;
     margin: 6px 0 4px;
     font-weight: 600;
     letter-spacing: .4px;
@@ -428,9 +474,9 @@ span[name=changeList]:hover {
     margin-bottom: 4px;
 }
 #AF_Links .lk-btn {
-    background: linear-gradient(180deg, #4a4761, #3a3750);
-    border: 1px solid #56537a;
-    color: #eceafb;
+    background: linear-gradient(180deg, #3a3228, #2d2820);
+    border: 1px solid #4a3f2e;
+    color: #f0ece4;
     border-radius: 8px;
     min-height: 30px;
     padding: 4px 6px;
@@ -443,10 +489,13 @@ span[name=changeList]:hover {
     transition: all .15s ease;
 }
 #AF_Links .lk-btn:hover {
-    background: linear-gradient(180deg, #5a5680, #46426b);
-    border-color: #8a86c9;
+    background: linear-gradient(180deg, #4a4030, #3a3228);
+    border-color: #c9a84c;
     transform: translateY(-1px);
     box-shadow: 0 3px 8px rgba(0,0,0,.35);
+}
+#AF_Links .lk-btn:active {
+    transform: translateY(0) scale(.97);
 }
 /* Кастомные кнопки пользователя выделяем пунктиром */
 #AF_Links .lk-btn.custom-btn {
@@ -474,6 +523,11 @@ span[name=changeList]:hover {
     padding: 4px 6px;
     text-align: center;
     color: black;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.lk-field .inputCRM:focus {
+    border-color: var(--crm-gold);
+    box-shadow: 0 0 0 2px rgba(201,168,76,.15);
 }
 .lk-field .btnCRMsmall {
     flex-shrink: 0;
@@ -521,9 +575,14 @@ span[name=changeList]:hover {
     max-width: 92vw;
     box-shadow: 0 12px 40px rgba(0,0,0,.45);
     overflow: hidden;
+    animation: crm-modal-in .25s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes crm-modal-in {
+    from { opacity: 0; transform: scale(.92) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
 }
 .lkmodal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #8b6f2e 0%, #5c4a1e 100%);
     color: #fff;
     padding: 10px 14px;
     display: flex;
@@ -556,10 +615,12 @@ span[name=changeList]:hover {
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 14px;
+    transition: border-color .2s ease, box-shadow .2s ease;
 }
 .lkmodal-input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--crm-gold);
+    box-shadow: 0 0 0 3px rgba(201,168,76,.12);
 }
 .lkmodal-hint {
     font-size: 11.5px;
@@ -580,9 +641,13 @@ span[name=changeList]:hover {
     font-size: 13px;
     cursor: pointer;
     font-family: inherit;
+    transition: background .15s ease, transform .12s ease;
 }
-.lkmb-primary { background: #667eea; color: #fff; }
-.lkmb-primary:hover { background: #5a6fd6; }
+.lkmodal-btn:active {
+    transform: scale(.96);
+}
+.lkmb-primary { background: #8b6f2e; color: #fff; }
+.lkmb-primary:hover { background: #a07e35; }
 .lkmb-secondary { background: #eee; color: #333; }
 .lkmb-secondary:hover { background: #ddd; }
 .lkmb-danger { background: #ff4757; color: #fff; margin-right: auto; }

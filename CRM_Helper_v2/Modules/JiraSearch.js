@@ -3,48 +3,61 @@ let customquery = '';
 let requesttojiratext;
 let favissues = [];
 
-var win_Jira =  // описание элементов окна Поиска по Jira
-    `<div class="maindivst" style="display: flex; width: 550px;">
-        <span style="width: 550px">
-                <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 550;" id="jira_1str">
-                                <button class="buttonHide" title="скрывает меню" id="hideMej">hide</button>
-								<button class="btnCRM btnCRMsmall" id="RefreshJiraStatus" title="Обновляет статус Токена Jira, чтобы проверить авторизованы вы или нет">🔄</button>
-								<button class="btnCRM btnCRMsmall" id="ClearJiraData" title="Очищает поля с результатами и полем для ввода">🧹</button>
-								<span class="spanCRM" style="color:bisque">Token Status: </span>
-								<span class="spanCRM" id="searchjiratknstatus"></span>
-								<button class="btnCRM btnCRMsmall" id="jirainstr" style="float:right;" title="Инструкция по этой форме">❓</button>
-                        </div>
+// SVG-иконки для модуля
+const _jira_close = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+const _jira_refresh = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+const _jira_broom = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l3-3h12l3 3"/><path d="M5 6v12a2 2 0 002 2h10a2 2 0 002-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
 
-						<div id="control_jira_search" style="margin-left: 5px; margin-right: 5px;">
-							<button class="btnCRM active-query" id="defaultQuery" title="Страница для поиска по умолчанию с заранее записанным JQL запросом">📇Default</button>
-							<button class="btnCRM" id="ZBPQuery" title="Страница для поиска Zero Bug Policy">🙅‍♂️ZeroBug</button>
-                            <button class="btnCRM" id="freshQuery" title="Страница при поиске по ключевому слову, выводящая свежесозданные баги в порядке убывания и с 0 Support Tab с заранее записанным JQL запросом">🍀Fresh</button>
-							<button class="btnCRM" id="customQuery" title="Страница для ручного составления JQL запроса. Поле для ввода поиска не используется, только лишь верхняя часть от выбора отдела до ввода искомого текста в двойных кавычках после надписи text~">📝Custom</button>
-                            <button class="btnCRM" id="PSquery" title="Страница для поиска по ID или тексту срези запросов в Project Support, потому как в Mattermost может не найти">😵PS</button>
-							<button class="btnCRM" id="getiosbugs" title="По клику сразу ищет баги по iOS как если бы выискали стандартно с вводом текста поиска iOS">🍏iOS</button>
-							<button class="btnCRM" id="getandroidbugs" title="По клику сразу ищет баги по iOS как если бы выискали стандартно с вводом текста поиска Android">🤖Android</button>
-							<button class="btnCRM" id="favouriteBugs" title="Страница с сохраненными багами для быстрого доступа">❤</button>
-                        </div>
+var win_Jira =
+    `<div style="width:560px; background:linear-gradient(165deg,#1e1c26 0%,#151320 100%);border:1px solid rgba(201,168,76,.15);border-radius:14px;color:#e0d8c8;font-family:Inter,Segoe UI,system-ui,sans-serif;padding:0;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.03);">
 
-                        <div id="fields_jira_search">
-							<textarea class="textareaCRM" id="JQLquery" placeholder="JQL запрос" title="Введите сюда JQL запрос" autocomplete="off" type="text" style="text-align: center; width: 533px; color: black; margin-top: 5px; margin-left: 5px;"></textarea>
-							<input class="inputCRM" id="testJira" placeholder="Введите слово или фразу для поиска" title="введите слово или фразу для поиска по Jira при одном клике будет искать по багам, если ввести в поле номер задачи например VIM-7288 и дабл кликнуть на рокету будет поиск по номеру" autocomplete="off" type="text" style="text-align: center; width: 500px; color: black; margin-top: 5px; margin-left: 5px;">
-							<button class="btnCRM btnCRMsmall" id="getJiraTasks">🚀</button>
-						</div>
+        <!-- Шапка -->
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(139,111,46,.06));border-bottom:1px solid rgba(255,255,255,.06);cursor:grab;" id="jira_1str">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span style="font-size:14px;font-weight:700;color:#fff;letter-spacing:.3px;">Jira Search</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.35);font-family:monospace;">v2.0</span>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:4px;">
+                <span style="font-size:11px;color:rgba(255,255,255,.4);">Token:</span>
+                <span id="searchjiratknstatus" style="font-size:11px;"></span>
+            </span>
+            <button class="btnCRM btnCRMsmall" id="RefreshJiraStatus" title="Обновить статус токена" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#c4b896;display:flex;align-items:center;padding:4px 8px;border-radius:8px;transition:all .15s ease;">${_jira_refresh}</button>
+            <button class="btnCRM btnCRMsmall" id="ClearJiraData" title="Очистить результаты" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#c4b896;display:flex;align-items:center;padding:4px 8px;border-radius:8px;transition:all .15s ease;">${_jira_broom}</button>
+            <button class="btnCRM btnCRMsmall" id="jirainstr" title="Инструкция" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#c4b896;padding:4px 8px;border-radius:8px;">❓</button>
+            <button class="buttonHide" title="Скрыть" id="hideMej" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5;display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:11px;transition:all .15s ease;">${_jira_close} hide</button>
+        </div>
 
-                        <div style="margin: 5px; width: 550px" id="jira_tasks_box">
-                                <p id="issuetable" style="max-height:400px; margin-left:5px; overflow:auto"></p>
-                                <p id="favouriteissuetable" style="max-height:400px; margin-left:5px; overflow:auto; display:none"></p>
-                                <span style="color:bisque" id="foundIssuesAmount"></span>
-                        </div>
+        <!-- Пресеты запросов -->
+        <div id="control_jira_search" style="display:flex;flex-wrap:wrap;gap:5px;padding:10px 14px;">
+            <button class="btnCRM active-query" id="defaultQuery" title="По умолчанию" style="background:linear-gradient(135deg,rgba(201,168,76,.85),rgba(139,111,46,.75));border:none;color:#fff;font-weight:700;padding:5px 10px;border-radius:8px;font-size:11px;display:flex;align-items:center;gap:4px;">📇 Default</button>
+            <button class="btnCRM" id="ZBPQuery" title="Zero Bug Policy" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#c4b896;padding:5px 10px;border-radius:8px;font-size:11px;display:flex;align-items:center;gap:4px;transition:all .15s ease;">🙅‍♂️ ZeroBug</button>
+            <button class="btnCRM" id="freshQuery" title="Свежие баги" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#c4b896;padding:5px 10px;border-radius:8px;font-size:11px;display:flex;align-items:center;gap:4px;transition:all .15s ease;">🍀 Fresh</button>
+            <button class="btnCRM" id="customQuery" title="Свой JQL" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#c4b896;padding:5px 10px;border-radius:8px;font-size:11px;display:flex;align-items:center;gap:4px;transition:all .15s ease;">📝 Custom</button>
+            <button class="btnCRM" id="PSquery" title="Project Support" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#c4b896;padding:5px 10px;border-radius:8px;font-size:11px;display:flex;align-items:center;gap:4px;transition:all .15s ease;">😵 PS</button>
+            <button class="btnCRM" id="getiosbugs" title="iOS баги" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#c4b896;padding:5px 10px;border-radius:8px;font-size:11px;display:flex;align-items:center;gap:4px;transition:all .15s ease;">🍏 iOS</button>
+            <button class="btnCRM" id="getandroidbugs" title="Android баги" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#c4b896;padding:5px 10px;border-radius:8px;font-size:11px;display:flex;align-items:center;gap:4px;transition:all .15s ease;">🤖 Android</button>
+            <button class="btnCRM" id="favouriteBugs" title="Избранное" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fca5a5;padding:5px 10px;border-radius:8px;font-size:11px;display:flex;align-items:center;gap:4px;transition:all .15s ease;">❤️</button>
+        </div>
 
-                        <div>
-                            <div id="pagesSwitcher" style="display:flex; color:bisque; cursor:pointer; justify-content:space-evenly; padding:5px;"></div>
-                        </div>
-                </span>
-        </span>
-</div>`;
+        <!-- Поля ввода -->
+        <div id="fields_jira_search" style="padding:0 14px 10px 14px;">
+            <textarea class="textareaCRM" id="JQLquery" placeholder="JQL запрос" title="Введите JQL запрос" autocomplete="off" type="text" style="text-align:left;width:100%;box-sizing:border-box;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:10px;color:#e8e0d0;padding:10px 12px;font-size:12px;font-family:SF Mono,monospace,monospace;resize:vertical;min-height:55px;max-height:200px;outline:none;transition:border-color .2s ease,box-shadow .2s ease;"></textarea>
+            <div style="display:flex;gap:6px;margin-top:8px;align-items:center;">
+                <input class="inputCRM" id="testJira" placeholder="Поиск по слову или номеру задачи (Enter)" title="Введите слово или номер задачи" autocomplete="off" type="text" style="flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:10px;color:#fff;padding:9px 12px;font-size:13px;outline:none;transition:border-color .2s ease,box-shadow .2s ease;">
+                <button class="btnCRM" id="getJiraTasks" title="Найти" style="background:linear-gradient(135deg,rgba(201,168,76,.85),rgba(139,111,46,.75));border:none;color:#fff;font-weight:700;padding:8px 14px;border-radius:10px;display:flex;align-items:center;gap:4px;box-shadow:0 4px 14px rgba(201,168,76,.2);transition:all .15s ease;">🚀 Найти</button>
+            </div>
+        </div>
+
+        <!-- Результаты -->
+        <div id="jira_tasks_box" style="padding:0 14px 10px 14px;">
+            <p id="issuetable" style="max-height:400px;overflow-y:auto;margin:0;padding-right:4px;"></p>
+            <p id="favouriteissuetable" style="max-height:400px;overflow-y:auto;margin:0;display:none;"></p>
+            <span id="foundIssuesAmount" style="font-size:12px;color:rgba(255,255,255,.45);"></span>
+        </div>
+
+        <!-- Переключатель страниц -->
+        <div id="pagesSwitcher" style="display:flex;gap:4px;padding:6px 14px 10px 14px;justify-content:center;"></div>
+
+    </div>`;
 
 const wintJira = createWindowCRM('AF_Jira', 'winTopJira', 'winLeftJira', win_Jira);
 hideWindowOnDoubleClick('AF_Jira');
@@ -121,23 +134,70 @@ function replaceItem(item) { // Функция заменяет '">', на ' –
     return item;
 }
 
+// Кэш приоритетов: URL → data URI (загружаем через bg.js один раз)
+const priorityCache = {};
+function fetchPriorityIcon(url) {
+    if (!url) return Promise.resolve('');
+    if (priorityCache[url] !== undefined) return Promise.resolve(priorityCache[url]);
+    return new Promise(resolve => {
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url, requestOptions: { method: 'GET', credentials: 'include' } }, resp => {
+            if (resp && resp.success) {
+                // Ответ — SVG текст, кодируем в data URI
+                const svg = resp.fetchansver;
+                const dataUri = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+                priorityCache[url] = dataUri;
+                resolve(dataUri);
+            } else {
+                priorityCache[url] = '';
+                resolve('');
+            }
+        });
+    });
+}
+
+function getPriorityColor(picUrl) {
+    if (!picUrl) return '#666';
+    const name = picUrl.split('/').pop().replace('.svg', '').toLowerCase();
+    const map = { blocker: '#ef4444', critical: '#f97316', major: '#eab308', minor: '#3b82f6', trivial: '#6b7280' };
+    return map[name] || '#c9a84c';
+}
+// Загружает все SVG иконки приоритетов через bg.js и вставляет как data URI
+function loadAllPriorityIcons() {
+    document.querySelectorAll('.jira-issue-row img[id^="pri_"]').forEach(img => {
+        const issueKey = img.id.replace('pri_', '').replace(/_/g, '-');
+        // Ищем URL приоритета из data-атрибута или кэша
+        const picUrl = img.dataset.src || '';
+        if (!picUrl) return;
+        fetchPriorityIcon(picUrl).then(dataUri => {
+            if (dataUri) img.src = dataUri;
+        });
+    });
+}
+
 function formatIssue(item, currentNumber, issueKey, searchText, currentpic, currentIds) {
     const temporarka = isSearchTextMatched(item, searchText)
         ? highlightSearchText(item, searchText)
         : replaceItem(item);
 
+    const isAlreadyFav = favissues.some(html => html.includes(currentIds));
+    const heartIcon = isAlreadyFav ? '❤️' : '🤍';
+    const heartColor = isAlreadyFav ? '#ef4444' : '#888';
+    const heartTitle = isAlreadyFav ? 'Удалить из избранного' : 'В избранное';
+    const priColor = getPriorityColor(currentpic);
+    const priName = currentpic ? currentpic.split('/').pop().replace('.svg','') : '';
+    // Уникальный ID для img чтобы обновить src после загрузки
+    const imgId = 'pri_' + issueKey.replace(/[^a-zA-Z0-9]/g, '_');
+
     return `
-        <span style="color: #00FA9A">&#5129;</span>
-        <img src="${currentpic}" style="width:20px; height:25px;" title="Приоритеты: ⛔ - Blocker, полностью залитая красная стрелка вверх - Critical, три красные стрелки вверх - Major, три синие вниз - Minor, ⭕ - Trivial">
-        ${currentNumber ? `<span class="newcount" style="width:20px; margin-left: 5px; background:#3CB371; padding:2px; padding-left:6px; font-weight:700; border-radius:10px;">${currentNumber} </span>` : ""}
-        <a name="buglinks" href="https://jira.skyeng.link/browse/${issueKey}" target="_blank" style="margin-left:5px; color: #ffe4c4">${temporarka}</a>
-        <span name="issueIds" style="display:none">${currentIds}</span>
-        ${currentNumber ? `
-			<span class="addIssueToJiralnk" style="cursor: pointer; font-size: 16px;" title="Добавить задачу в Ссылка на Jira">💬</span>
-            <span class="refreshissues" style="color:#ADFF2F; margin-left: 1px; cursor: pointer">&#69717;&#120783;</span>
-            <span name="addtofavourites" style="margin-left: 4px; cursor:pointer;" title="Добавить задачу в Избранное">🤍</span>
-        ` : ""}
-        </br>
+        <div class="jira-issue-row" style="display:flex;align-items:center;gap:6px;padding:6px 8px;margin-bottom:4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:8px;transition:background .15s ease;border-left:3px solid ${priColor};" onmouseover="this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.background='rgba(255,255,255,.03)'">
+            <img id="${imgId}" data-src="${currentpic || ''}" src="" style="width:18px;height:18px;flex-shrink:0;" title="${priName}">
+            <span class="newcount" style="background:linear-gradient(135deg,rgba(201,168,76,.8),rgba(139,111,46,.8));box-shadow:inset 0 1px 1px rgba(255,255,255,.15),0 2px 4px rgba(0,0,0,.2);min-width:24px;height:22px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;font-weight:700;border-radius:7px;font-size:11px;color:#fff;flex-shrink:0;">${currentNumber || 0}</span>
+            <span class="addIssueToJiralnk" style="cursor:pointer;font-size:13px;opacity:.45;transition:opacity .15s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.45'" title="Вставить ссылку в чат">💬</span>
+            <span class="refreshissues" style="cursor:pointer;opacity:.45;transition:opacity .15s ease;font-size:11px;font-weight:700;color:#c9a84c;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.45'" title="Увеличить Support Tab">+1</span>
+            <span name="addtofavourites" data-id="${currentIds}" style="cursor:pointer;font-size:13px;color:${heartColor};transition:all .2s ease;transform:scale(1);" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" title="${heartTitle}">${heartIcon}</span>
+            <a name="buglinks" href="https://jira.skyeng.link/browse/${issueKey}" target="_blank" style="color:#e8d5a0;text-decoration:none;font-size:12.5px;line-height:1.4;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${temporarka}</a>
+            <span name="issueIds" style="display:none">${currentIds}</span>
+        </div>
     `;
 }
 
@@ -148,7 +208,7 @@ function isSearchTextMatched(item, searchText) {
 
 function highlightSearchText(item, searchText) {
     const replacePattern = new RegExp(searchText, 'i');
-    const replaceValue = `<span style="color:MediumSpringGreen; font-weight:700; text-shadow:1px 2px 5px rgb(0 0 0 / 55%);">${searchText.toUpperCase()}</span>`;
+    const replaceValue = `<span style="color:#fde68a;background:rgba(250,204,21,.2);border-radius:3px;padding:0 2px;font-weight:700;">${searchText.toUpperCase()}</span>`;
     return replaceItem(item).replace(replacePattern, replaceValue);
 }
 
@@ -158,31 +218,49 @@ function addPageSwitcher(spanCount) { // добавляем страницы д�
     let spanElements = "";
     for (let i = 0; i < spanCount; i++) {
         const isActive = i === 0 ? "active" : "";
-        spanElements += `<span style="Flex: 1; background: darkslateblue; text-align: center; border: 1px solid steelblue;" class="${isActive}" name="changeList" value="${i * 50}">${i + 1}</span>`;
+        spanElements += `<span style="flex:1;text-align:center;padding:4px 8px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;background:${isActive ? 'linear-gradient(135deg,rgba(201,168,76,.85),rgba(139,111,46,.75))' : 'rgba(255,255,255,.05)'};border:1px solid ${isActive ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.08)'};color:${isActive ? '#fff' : '#c4b896'};transition:all .15s ease;" class="${isActive}" name="changeList" value="${i * 50}">${i + 1}</span>`;
     }
     document.getElementById('pagesSwitcher').innerHTML = spanElements;
 }
 
 
-function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputTable) { // добавление в избранное
+function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids, outputTable) {
     for (let v = 0; v < addtofarr.length; v++) {
         addtofarr[v].onclick = function () {
-            addtofarr[v].innerText = "❤";
-            for (let x = 0; x < tagsarray.length; x++) {
-                if (x == v) {
-                    let testvar = document.createElement('div');
-                    testvar.innerHTML = '<p style="margin-bottom:0">' + '<span style="color: #00FA9A">&#5129;</span>' +
-                        `<a name="favbugs" href="${tagsarray[x].href}" target="_blank" style="color:bisque;">` +
-                        tagsarray[x].innerHTML + '</a>' +
-                        `<span name="favissuemassive" style="display:none">${massivissueids[x].innerText}</span>` +
-                        '<span name="removefromfavourites" style="cursor:pointer;" title="Удалить задачу из Избранного">❌</span>' +
-                        '<span name = "increasecount" style="color:#ADFF2F; margin-left: 5px; cursor: pointer">&#69717;&#120783;</span>' + '</p>';
-                    outputTable.appendChild(testvar);
-                    favissues.push(testvar.innerHTML);
-                    localStorage.setItem('bugsarray', JSON.stringify(favissues));
+            const issueId = massivissueids[v] ? massivissueids[v].innerText : '';
+            const isFav = favissues.some(html => html.includes(issueId));
+
+            if (isFav) {
+                // Уже в избранном — убираем
+                removeIssueFromFavourites(issueId);
+                addtofarr[v].innerText = '🤍';
+                addtofarr[v].style.color = '#888';
+                addtofarr[v].style.transform = 'scale(1)';
+                if (typeof createAndShowButton === 'function') createAndShowButton('Удалено из избранного');
+            } else {
+                // Добавляем в избранное
+                for (let x = 0; x < tagsarray.length; x++) {
+                    if (x == v) {
+                        let testvar = document.createElement('div');
+                        testvar.innerHTML = '<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;margin-bottom:3px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:8px;border-left:3px solid rgba(251,191,36,.6);">' + '<span style="color:#fbbf24;font-size:12px;">★</span>' +
+                            `<a name="favbugs" href="${tagsarray[x].href}" target="_blank" style="color:#e8d5a0;text-decoration:none;">` +
+                            tagsarray[x].innerHTML + '</a>' +
+                            `<span name="favissuemassive" style="display:none">${massivissueids[x].innerText}</span>` +
+                            '<span name="removefromfavourites" style="cursor:pointer;opacity:.5;transition:opacity .15s ease;font-size:13px;" onmouseover="this.style.opacity=\'1\'" onmouseout="this.style.opacity=\'.5\'" title="Удалить из Избранного">✕</span>' +
+                            '<span name="increasecount" style="cursor:pointer;opacity:.5;transition:opacity .15s ease;font-size:12px;" onmouseover="this.style.opacity=\'1\'" onmouseout="this.style.opacity=\'.5\'" title="Увеличить Support Tab">🔄</span>' + '</div>';
+                        outputTable.appendChild(testvar);
+                        favissues.push(testvar.innerHTML);
+                        localStorage.setItem('bugsarray', JSON.stringify(favissues));
+                    }
                 }
+                // Анимация сердца
+                addtofarr[v].innerText = '❤️';
+                addtofarr[v].style.color = '#ef4444';
+                addtofarr[v].style.transform = 'scale(1.4)';
+                setTimeout(() => { addtofarr[v].style.transform = 'scale(1)'; }, 200);
+                if (typeof createAndShowButton === 'function') createAndShowButton('Добавлено в избранное ❤️');
             }
-        }
+        };
     }
 }
 
@@ -279,7 +357,7 @@ function getJiraTask(requestOptions) { // поиск задач в jira
             console.log(tasksresponse)
             const { issueKeys, table, issueIds } = rezissuetable.issueTable;
             if (!table) {
-                document.getElementById('issuetable').innerHTML = '<a style="margin-left:5px; color: #ffe4c4">Задач не найдено</a>'
+                document.getElementById('issuetable').innerHTML = '<div style="text-align:center;padding:20px;opacity:.45;font-size:13px;">Задач не найдено</div>'
                 return;
             }
             const matchedItems = table.match(/(\w+-\d+">.*?).<\/a>/gmi).filter(filterItems);
@@ -302,6 +380,7 @@ function getJiraTask(requestOptions) { // поиск задач в jira
             }
 
             document.getElementById('issuetable').innerHTML = issues;
+            loadAllPriorityIcons();
 
             const foundIssuesAmount = issueKeys.length;
             addPageSwitcher(Math.floor(foundIssuesAmount / 50) + 1);
@@ -339,7 +418,7 @@ function switchJiraPages() {
     pageSwArr.forEach((page, d) => {
         page.onclick = async function () {
             if (!this.classList.contains('active')) {
-                document.getElementById('issuetable').innerHTML = '<span style="color:bisque">Загрузка...</span>';
+                document.getElementById('issuetable').innerHTML = '<div style="text-align:center;padding:20px;opacity:.6;font-size:13px;">🔍 Загрузка...</div>';
 
                 pageSwArr.forEach(p => p.classList.remove('active'));
                 this.classList.add('active');
@@ -376,6 +455,7 @@ function switchJiraPages() {
                         }
 
                         document.getElementById('issuetable').innerHTML = issues;
+            loadAllPriorityIcons();
 
                         addFavouritesOnClickEvent(
                             document.getElementsByName('addtofavourites'),
@@ -644,8 +724,9 @@ document.getElementById('jirafinder').onclick = function () { // открыва�
                     const rezissuetable = JSON.parse(searchissresponse.fetchansver);
                     if (rezissuetable) {
                         let issues = [];
-                        issues = '<span style="color: #00FA9A">&#5129;</span>' + '<a href="' + rezissuetable[0].items[0].url + '" onclick="" target="_blank" style="color: #ffe4c4">' + rezissuetable[0].items[0].subtitle + " - " + rezissuetable[0].items[0].title + '</a>';
+                        issues = '<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:8px;border-left:3px solid rgba(201,168,76,.5);">' + '<a href="' + rezissuetable[0].items[0].url + '" onclick="" target="_blank" style="color:#e8d5a0;text-decoration:none;font-size:12.5px;">' + rezissuetable[0].items[0].subtitle + " - " + rezissuetable[0].items[0].title + '</a></div>';
                         document.getElementById('issuetable').innerHTML = issues;
+            loadAllPriorityIcons();
                         // Через 5 секунд очищаем поле поиска (сброс локальной переменной issues убран как бесполезный).
                         setTimeout(function () { testJira.value = ""; }, 5000)
                     }

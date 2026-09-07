@@ -8,28 +8,39 @@
  *  - восстановление таймеров после перезагрузки страницы.
  */
 
+// SVG-иконки для будильника
+const _ac_close = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+const _ac_bell = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>';
+const _ac_clock = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+
 var win_Alarmclock = `<!-- описание элементов окна будильника -->
 <div class="maindivst" id="AlarmclockCRM">
-    <div style="margin: 5px; width: 291px;" id="Alarmclock_1str">
-        <button class="buttonHide" title="скрывает меню" id="hideAlarmclock">hide</button>
-        <button class="btnCRM" title="Отображение текущего времени" id="clock_jsCRM" style="color: white; float: right;"></button>
+    <div style="margin: 5px; width: 291px; display:flex; align-items:center; gap:4px;" id="Alarmclock_1str">
+        <button class="buttonHide" title="скрывает меню" id="hideAlarmclock">${_ac_close} hide</button>
+        <button class="btnCRM" title="Отображение текущего времени" id="clock_jsCRM" style="color: white; margin-left:auto; display:flex; align-items:center; gap:4px;">${_ac_clock} <span id="clock_jsCRM_text"></span></button>
     </div>
     <div style="margin: 5px; width: 291px">
         <!-- Напоминание №1 -->
-        <label class="spanCRM" style="display: block; margin-left: auto; margin-right: auto; text-align: center; color:bisque;">Напоминание №1</label>
-        <input class="inputCRM" title="Ввод текста напоминания" id="remindertextCRM" placeholder="Текст напоминания" autocomplete="off" style="text-align: center; margin-top: 5px; width: 284px; color: black;">
-        <input class="inputCRM" title="Ввод часа от 0 до 23 для напоминания" id="setchasCRM" placeholder="HH" autocomplete="off" type="number" maxlength="2" min="0" max="23" style="text-align: center; margin-top: 5px; width: 50px; color: black;"> <span class="spanCRM" style="color: white; margin-top: 5px;">:</span>
-        <input class="inputCRM" title="Ввод минут от 0 до 59 для напоминания" id="setminutaCRM" placeholder="MM" autocomplete="off" type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px; width: 50px; color: black;">
-        <button class="btnCRM" title="Запуск напоминания при установленном времени" id="setreminderCRM" style="margin-top: 5px">SET🔔</button>
-        <button class="btnCRM" id="clock_reminCRM" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: lightgreen; margin-top: 5px; float: right;">00 : 00 : 00</button>
-        <br>
+        <label class="spanCRM" style="display: block; margin-left: auto; margin-right: auto; text-align: center; color:#c9a84c; font-weight:600; font-size:13px;">⏰ Напоминание №1</label>
+        <input class="inputCRM" title="Ввод текста напоминания" id="remindertextCRM" placeholder="Текст напоминания" autocomplete="off" style="text-align: center; margin-top: 5px; width: 284px; color: black; border-radius:6px;">
+        <div style="display:flex; align-items:center; gap:4px; margin-top:5px;">
+            <input class="inputCRM" title="Часы (0-23)" id="setchasCRM" placeholder="HH" autocomplete="off" type="number" maxlength="2" min="0" max="23" style="text-align: center; width: 50px; color: black; border-radius:6px;">
+            <span class="spanCRM" style="color: #c9a84c; font-weight:700;">:</span>
+            <input class="inputCRM" title="Минуты (0-59)" id="setminutaCRM" placeholder="MM" autocomplete="off" type="number" maxlength="2" min="0" max="59" style="text-align: center; width: 50px; color: black; border-radius:6px;">
+            <button class="btnCRM" title="Запуск напоминания" id="setreminderCRM" style="display:flex; align-items:center; gap:4px;">${_ac_bell} SET</button>
+            <button class="btnCRM" id="clock_reminCRM" title="Двойной клик = удаление таймера" style="color: lightgreen; margin-left:auto; display:flex; align-items:center; gap:4px;">${_ac_clock} 00:00:00</button>
+        </div>
+        <div style="height:1px; background:rgba(255,255,255,.1); margin:10px 0;"></div>
         <!-- Напоминание №2 -->
-        <label class="spanCRM" style="display: block; margin-left: auto; margin-right: auto; margin-top:5px; text-align: center; color:bisque;">Напоминание №2</label>
-        <input class="inputCRM" title="Ввод текста напоминания" id="remindertextCRM1" placeholder="Текст напоминания" autocomplete="off" style="text-align: center; margin-top: 5px; width: 284px; color: black;">
-        <input class="inputCRM" title="Ввод часа от 0 до 23 для напоминания" id="setchasCRM1" placeholder="HH" autocomplete="off" type="number" maxlength="2" min="0" max="23" style="text-align: center; margin-top: 5px; width: 50px; color: black;"> <span class="spanCRM" style="color: white; margin-top: 5px;">:</span>
-        <input class="inputCRM" title="Ввод минут от 0 до 59 для напоминания" id="setminutaCRM1" placeholder="MM" autocomplete="off" type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px; width: 50px; color: black;">
-        <button class="btnCRM" title="Запуск напоминания при установленном времени" id="setreminderCRM1" style="margin-top: 5px">SET🔔</button>
-        <button class="btnCRM" id="clock_reminCRM1" title="Двойной клик = удаление таймера. Кнопка отображения оставшегося времени" style="color: lightgreen; margin-top: 5px; float: right;">00 : 00 : 00</button>
+        <label class="spanCRM" style="display: block; margin-left: auto; margin-right: auto; text-align: center; color:#c9a84c; font-weight:600; font-size:13px;">⏰ Напоминание №2</label>
+        <input class="inputCRM" title="Ввод текста напоминания" id="remindertextCRM1" placeholder="Текст напоминания" autocomplete="off" style="text-align: center; margin-top: 5px; width: 284px; color: black; border-radius:6px;">
+        <div style="display:flex; align-items:center; gap:4px; margin-top:5px;">
+            <input class="inputCRM" title="Часы (0-23)" id="setchasCRM1" placeholder="HH" autocomplete="off" type="number" maxlength="2" min="0" max="23" style="text-align: center; width: 50px; color: black; border-radius:6px;">
+            <span class="spanCRM" style="color: #c9a84c; font-weight:700;">:</span>
+            <input class="inputCRM" title="Минуты (0-59)" id="setminutaCRM1" placeholder="MM" autocomplete="off" type="number" maxlength="2" min="0" max="59" style="text-align: center; width: 50px; color: black; border-radius:6px;">
+            <button class="btnCRM" title="Запуск напоминания" id="setreminderCRM1" style="display:flex; align-items:center; gap:4px;">${_ac_bell} SET</button>
+            <button class="btnCRM" id="clock_reminCRM1" title="Двойной клик = удаление таймера" style="color: lightgreen; margin-left:auto; display:flex; align-items:center; gap:4px;">${_ac_clock} 00:00:00</button>
+        </div>
     </div>
 </div>`;
 

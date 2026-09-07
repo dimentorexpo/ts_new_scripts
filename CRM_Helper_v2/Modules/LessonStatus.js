@@ -6,7 +6,7 @@ const premiumStyles = `
             background: linear-gradient(145deg, #1e1e2e, #2a2a3d);
             border: 1px solid #444460;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(100, 100, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(184, 134, 11, 0.1);
             padding: 15px;
             color: #e0e0e0;
             width: 1060px;

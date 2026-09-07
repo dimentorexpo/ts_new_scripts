@@ -285,7 +285,7 @@ console.log('[MMS] === MattermostSearch.js загружен ===');
                 teamName       = preferred.name;
                 teamsLoaded    = true;
 
-                setStatus('Команда: ' + (preferred.display_name || preferred.name), '#a5b4fc');
+                setStatus('Команда: ' + (preferred.display_name || preferred.name), '#d4a843');
             })
             .catch(function (e) {
                 dom.team.innerHTML = '<option value="">Ошибка</option>';
@@ -589,7 +589,7 @@ console.log('[MMS] === MattermostSearch.js загружен ===');
             var o    = dom.team.options[dom.team.selectedIndex];
             teamId   = o.value;
             teamName = o.dataset.name || teamName;
-            setStatus('Команда: ' + o.textContent.trim(), '#a5b4fc');
+            setStatus('Команда: ' + o.textContent.trim(), '#d4a843');
             try {
                 localStorage.setItem('mms_team_id', o.value);
             } catch (e) {}
