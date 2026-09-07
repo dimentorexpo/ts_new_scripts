@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CRMHelper",
-    "version": "2.0.30",
+    "version": "2.0.31",
     "description": "Твой мультитул в работе с обращениями",
     "background": {
         "service_worker": "bg.js"
@@ -35,7 +35,8 @@
                 "/Modules/Smartroom.js",
                 "/Modules/TestRooms.js",
 				"/Modules/Autoschedule.js",
-                "/Modules/ImageViewer.js"
+                "/Modules/ImageViewer.js",
+                "/Modules/MattermostSearch.js"
             ],
             "css": [
                 "/CSS/styles.css"
