@@ -129,20 +129,20 @@
 				"OtherScripts/*",
 				"autoFAQscripts/*",
 				"Images/*"
-			],				"matches": [
-					"*://skyeng.autofaq.ai/*",
-					"*://*.skyeng.ru/*",
-					"*://*.skyeng.tech/*",
-					"*://*.skyeng.link/*",
-					"*://script.google.com/*",
-					"*://script.googleusercontent.com/*"
-				]
+			],
+			"matches": [
+				"*://skyeng.autofaq.ai/*",
+				"*://*.skyeng.ru/*",
+				"*://*.skyeng.tech/*",
+				"*://*.skyeng.link/*",
+				"*://script.google.com/*",
+				"*://script.googleusercontent.com/*"
+			]
 		}
 	],
 	"permissions": [
 		"storage",
-		"clipboardWrite",
-		"scripting"
+		"clipboardWrite"
 	],
 	"host_permissions": [
 		"https://*.skyeng.ru/*",

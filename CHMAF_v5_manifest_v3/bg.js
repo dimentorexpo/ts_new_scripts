@@ -38,30 +38,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         return true; // Возвращаем true для асинхронной отправки ответа
     }
 
-    if (request.action === 'injectMattermostSearch') {
-        // Самовосстановление модуля Mattermost: инжектим файл в тот же isolated
-        // world и фрейм, откуда пришёл запрос. Нужно, когда расширение работает
-        // со старой версией manifest.json (без записи в content_scripts).
-        (async () => {
-            try {
-                if (sender.tab?.id == null || sender.frameId == null) {
-                    throw new Error('Нет данных о фрейме-отправителе');
-                }
-                const results = await chrome.scripting.executeScript({
-                    target: { tabId: sender.tab.id, frameIds: [sender.frameId] },
-                    files: ['autoFAQscripts/MattermostSearch.js']
-                });
-                console.log('[ChMAF] MattermostSearch инжектирован:', results && results.length);
-                sendResponse({ success: true, results });
-            } catch (error) {
-                console.error('[ChMAF] injectMattermostSearch failed:', error.message);
-                sendResponse({ success: false, error: error.message });
-            }
-        })();
-
-        return true; // Возвращаем true для асинхронной отправки ответа
-    }
-
     const extensionId = chrome.runtime.id
     if (request.question === "get-extension-id") {
         sendResponse(extensionId)
