@@ -145,8 +145,8 @@ localStorage.setItem('SMART_TABLE_SORTED_INFO(/tickets/archive)', '{"columnKey":
  * Ищет оператора по полному имени в общем списке onOperator.
  * Найденный ID пишется в глобальный operatorId.
  * @param {string} fullName — ФИО оператора
- * @returns {Promise<Object|null>} — найденный объект или null
- */
+        * @returns {Promise < Object | null >} — найденный объект или null
+        */
 async function findOperator(fullName) {
     try {
         const state = await fetchStaticData();
@@ -177,8 +177,8 @@ let whoAmICompleted = false; // идентификация уже успешно
  * Определяет текущего оператора: читает CSRF-токен из cookie,
  * извлекает ФИО и отдел из интерфейса (архив/логи или новый фронт в iframe),
  * применяет сохранённый статус и ищет оператора в общем списке.
- * @returns {Promise<boolean>} — true, если оператор успешно идентифицирован
- */
+ * @returns {Promise < boolean >} — true, если оператор успешно идентифицирован
+        */
 async function whoAmI() {
     if (whoAmICompleted) return true;
     if (!location.host.includes('autofaq')) return false;
@@ -276,8 +276,8 @@ async function afApiFetch(url, options = {}) {
 /**
  * Меняет статус оператора (Online / Busy / Offline и т.д.).
  * @param {string} status — новый статус
- * @param {string} [token=aftoken] — CSRF-токен
- */
+        * @param {string} [token=aftoken] — CSRF-токен
+        */
 function changeStatus(status, token = aftoken) {
     return afApiFetch(`${AF_ORIGIN}/api/reason8/operator/status`, {
         method: 'POST',
@@ -326,8 +326,8 @@ function resetFlags() {
 /**
  * Отправляет внутренний комментарий оператора в чат AutoFAQ.
  * @param {string} txt — текст комментария
- * @param {string} [activeConvId] — ID чата; если не передан, берётся из getInfo()
- */
+        * @param {string} [activeConvId] — ID чата; если не передан, берётся из getInfo()
+        */
 async function sendComment(txt, activeConvId) {
     const values = await getInfo(0);
     const conversationId = activeConvId || values[1];
@@ -367,9 +367,9 @@ function newTaggg(tagName) {
 
 /**
  * Общая функция запросов истории диалогов.
- * @param {string|Object} [body=""]
- * @returns {Promise<Object>} — распарсенный ответ
- */
+ * @param {string | Object} [body=""]
+        * @returns {Promise < Object >} — распарсенный ответ
+        */
 async function doOperationsWithHistory(body = '') {
     if (typeof body !== 'string' && typeof body !== 'object') {
         throw new Error('Аргумент body должен быть строкой или объектом.');
@@ -391,8 +391,8 @@ async function doOperationsWithHistory(body = '') {
 /**
  * Получает данные конкретного диалога по ID.
  * @param {string} id — ID диалога
- * @returns {Promise<Object>}
- */
+        * @returns {Promise < Object >}
+        */
 async function doOperationsWithConversations(id) {
     if (typeof CONFIGSTAT === 'undefined') {
         console.error('[ChMAF] CONFIGSTAT не определён — Statistica.js ещё не загружен или недоступен.');
@@ -406,8 +406,8 @@ async function doOperationsWithConversations(id) {
 
 /**
  * Текущее состояние всех операторов (онлайн, статусы и т.д.).
- * @returns {Promise<Object>} — объект с массивом onOperator
- */
+ * @returns {Promise < Object >} — объект с массивом onOperator
+        */
 async function fetchStaticData() {
     const response = await afApiFetch(`${AF_ORIGIN}/api/operators/statistic/currentState`, {
         method: 'GET'
@@ -459,10 +459,10 @@ function addOption(oListbox, text, value) {
 /**
  * Ждёт появления элемента и вызывает callback.
  * @param {string} selector
- * @param {Function} callback
- * @param {number} [timeout=10000]
- * @param {number} [interval=100]
- */
+            * @param {Function} callback
+            * @param {number} [timeout=10000]
+            * @param {number} [interval=100]
+            */
 function waitForElement(selector, callback, timeout = 10000, interval = 100) {
     const startTime = Date.now();
     const intervalId = setInterval(() => {
@@ -484,8 +484,8 @@ function waitForElement(selector, callback, timeout = 10000, interval = 100) {
  * обратный отсчёт, очередь, пауза при наведении), если она загружена;
  * иначе — базовый toast (.cyber-toast, стили инжектятся в TestUsers.js).
  * @param {string} message — HTML-текст уведомления (<br> поддерживается)
- * @param {string} [type='message'] — 'message' | 'error' | 'warning'
- */
+                * @param {string} [type='message'] — 'message' | 'error' | 'warning'
+                */
 function createAndShowButton(message, type = 'message') {
     if (typeof window.showNotification === 'function') {
         // Премиум-путь: NotificationSystem.js умеет показывать HTML-сообщения
@@ -579,8 +579,8 @@ const MEDIA_PLAYER_CSS = 'max-width:300px;display:block;margin-top:8px;border-ra
  * Обрабатывает ссылки в сообщениях одного контекста (документ или iframe):
  * заменяет медиа-ссылки на плееры, картинки — на превью с зумом.
  * @param {Document} root
- * @param {boolean} isOldUi
- */
+                * @param {boolean} isOldUi
+                */
 function handleRootDocument(root, isOldUi) {
     const selector = isOldUi
         ? '.chat-messages a[href]'
@@ -1065,8 +1065,8 @@ function updateContactPlaceholders() {
 /**
  * Ищет значение поля (phone, email, id и т.д.) в панели данных пользователя.
  * @param {string} whatsearch — имя поля, например 'phone', 'email', 'id'
- * @returns {string} — найденное значение или пустая строка
- */
+                * @returns {string} — найденное значение или пустая строка
+                */
 function SearchinAFnewUI(whatsearch) {
     const doc = getIframeDoc();
     if (!doc) return '';
@@ -1122,7 +1122,7 @@ function findUuidIn(rootDoc, selector) {
  * ID активного чата в зависимости от раздела
  * (логи / назначенные тикеты нового UI / архив).
  * @returns {string}
- */
+                */
 function getChatId() {
     const hrefnow = window.location.href;
 
@@ -1174,7 +1174,7 @@ const SERVICE_NAME_PREFIXES = ['тьютор', 'тютор', 'тутор', 'ба
  * Имя пользователя из активного чата.
  * Отсекает служебные префиксы (тьютор, buddy и т.п.).
  * @returns {string}
- */
+                */
 function getActiveConvUserName() {
     const nameField = getIframeDoc()?.querySelectorAll('[class^="User_Preview"]')[0];
     if (!nameField) return '';
@@ -1259,11 +1259,11 @@ function injectChatCardStyle() {
 
     // !important обязателен, чтобы пробить заводские стили
     const cssText = `
-        [class*="DialogsCard_Card"] {
-            background-color: var(--chat-card-bg, transparent) !important;
-            transition: background-color 0.3s ease;
+                [class*="DialogsCard_Card"] {
+                    background - color: var(--chat-card-bg, transparent) !important;
+                transition: background-color 0.3s ease;
         }
-    `;
+                `;
 
     if (style.__chmafCss === cssText) return;
     style.__chmafCss = cssText;
@@ -1315,8 +1315,8 @@ if (location.host === 'skyeng.autofaq.ai') {
  * Форматирует системный ключ услуги (например, 'lc_exam_ege_math')
  * в человекочитаемую строку «Предмет + формат» с HTML-подсветкой формата.
  * @param {string} serviceTypeKey — ключ услуги из CRM
- * @returns {{formattedText: string, lessontype: string}}
- */
+                * @returns {{ formattedText: string, lessontype: string }}
+                */
 function formatServiceType(serviceTypeKey) {
     const parts = serviceTypeKey.split('_');
     let subjectKey;
@@ -1358,13 +1358,13 @@ function formatServiceType(serviceTypeKey) {
 /**
  * Подсветка искомого текста в строке.
  * @param {string} item
- * @param {string} searchText — экранируется, спецсимволы regex безопасны
- */
+                * @param {string} searchText — экранируется, спецсимволы regex безопасны
+                */
 function highlightSearchText(item, searchText) {
     if (typeof item !== 'string') return item;
     if (!searchText) return item;
 
-    const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escaped = searchText.replace(/[.*+?^${ }()|[\]\\]/g, '\\$&');
     const pattern = new RegExp(escaped, 'i');
     const replacement =
         `<span style="color:MediumSpringGreen;font-weight:700;text-shadow:1px 2px 5px rgb(0 0 0 / 55%);">` +
