@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    TSM Exercises — NEON GLASS ULTRA Refactored
    ========================================================= */
 
@@ -386,19 +386,20 @@ async function OpenExercisesComplect() {
         wintComplect.style.display = 'none';
     };
 
-        function buildCardsTable(themes, kidsselector) {
+    function buildCardsTable(themes, kidsselector, variantId) {
         let html = `<table class="tsm-exercise-table"><thead><tr class="tsm-table-header">
             <th class="tsm-table-cell-center">#</th>
             <th class="tsm-table-cell-center">Название</th>
             <th class="tsm-table-cell-center">Балл</th>
             <th class="tsm-table-cell-center">%</th>
-            <th class="tsm-table-cell-center">Ссылка</th>
+            <th class="tsm-table-cell-center">ССЫЛКА</th>
             <th class="tsm-table-cell-center">СТЕП</th>
+            <th class="tsm-table-cell-center">СБРОС</th>
         </tr></thead><tbody>`;
         for (let i = 0; i < themes.length; i++) {
             const theme = themes[i];
             const contentLessonId = theme.meta.contentLessonId;
-            html += `<tr class="tsm-theme-row"><td colspan="6" class="tsm-theme-title">
+            html += `<tr class="tsm-theme-row"><td colspan="7" class="tsm-theme-title">
                 <span class="tsm-btn-save" complectationsData-subtype="${kidsselector}" complectationsData-lessonid="${contentLessonId}" title="Скопировать ссылку на урок">💾</span>
                 ${theme.name}
             </td></tr>`;
@@ -410,7 +411,7 @@ async function OpenExercisesComplect() {
                 if (card.emphasis === "writing") name += " ✏";
                 if (card.emphasis === "pronunciation") name += " 🎧";
                 if (card.emphasis === "speaking") name += " 🎙";
-                html += `<tr class="tsm-card-row">
+               html += `<tr class="tsm-card-row">
                     <td class="tsm-table-cell-center">${j + 1}</td>
                     <td class="tsm-table-cell-center">${name}</td>
                     <td class="tsm-table-cell-center">${score}</td>
@@ -418,6 +419,9 @@ async function OpenExercisesComplect() {
                     <td class="tsm-btn-save tsm-table-cell-center" complectationsData-subtype="${kidsselector}" complectationsData-lessonid="${contentLessonId}" complectationsData-stepid="${card.id}" title="Скопировать ссылку на слайд">💾</td>
                     <td class="tsm-table-cell-center">
                         <span class="tsm-btn-step" data-stepuuid="${card.stepUuid || ''}" title="Копировать stepUuid">📋</span>
+                    </td>
+                    <td class="tsm-table-cell-center">
+                        <span class="tsm-btn-save-revision" data-stepuuid="${card.stepUuid || ''}" data-variantid="${variantId || ''}" title="Сбросить ревизию">↺</span>
                     </td>
                 </tr>`;
             }
@@ -467,19 +471,27 @@ async function OpenExercisesComplect() {
         const student = complectationsData.participants.find(p => p.role === "student");
         const indexOfSlides = complectationsData.lessonCards.findIndex(c => c.userId === student.userId);
 
+        // variantId для домашки и урока — берём из themes[0] каждого блока
+        const homeworkVariantId = complectationsData.homeworkCards[indexOfSlides]?.themes?.[0]?.variantId
+            || complectationsData.homeworkCards[indexOfSlides]?.variantId
+            || '';
+        const lessonVariantId = complectationsData.lessonCards[indexOfSlides]?.themes?.[0]?.variantId
+            || complectationsData.lessonCards[indexOfSlides]?.variantId
+            || '';
+
         const lessonInfo = buildCategoryInfoBlock(complectationsData.lessonCards[indexOfSlides], "План урока");
-        const lessonTable = buildCardsTable(complectationsData.lessonCards[indexOfSlides].themes, kidsselector);
+        const lessonTable = buildCardsTable(complectationsData.lessonCards[indexOfSlides].themes, kidsselector, lessonVariantId);
         document.getElementById('exercisebarComplect').innerHTML += buildCollapsibleBlock("🎓План урока", lessonInfo, lessonTable);
 
         const homeworkInfo = buildCategoryInfoBlock(complectationsData.homeworkCards[indexOfSlides], "План домашки");
-        const homeworkTable = buildCardsTable(complectationsData.homeworkCards[indexOfSlides].themes, kidsselector);
+        const homeworkTable = buildCardsTable(complectationsData.homeworkCards[indexOfSlides].themes, kidsselector, homeworkVariantId);
         document.getElementById('exercisebarComplect').innerHTML += buildCollapsibleBlock("💼План домашки", homeworkInfo, homeworkTable);
 
         const diagnosticBlock = complectationsData.diagnosticsCards?.[indexOfSlides];
         const hasDiagnosticCards = diagnosticBlock && Array.isArray(diagnosticBlock.themes) && diagnosticBlock.themes.some(theme => theme.cards.length > 0);
         if (hasDiagnosticCards) {
             const diagnosticInfo = buildCategoryInfoBlock(diagnosticBlock, "Diagnostic");
-            const diagnosticTable = buildCardsTable(diagnosticBlock.themes, kidsselector);
+            const diagnosticTable = buildCardsTable(diagnosticBlock.themes, kidsselector, '');
             document.getElementById('exercisebarComplect').innerHTML += buildCollapsibleBlock("Diagnostic", diagnosticInfo, diagnosticTable);
         }
 
@@ -518,6 +530,40 @@ async function OpenExercisesComplect() {
             };
         }
 
+        const resetBtnArr = document.getElementById('exercisebarComplect').getElementsByClassName('tsm-btn-save-revision');
+        for (let r = 0; r < resetBtnArr.length; r++) {
+            resetBtnArr[r].onclick = async function () {
+                const stepuuid = this.getAttribute('data-stepuuid');
+                const theVariantId = this.getAttribute('data-variantid');
+                const kidsselector = urlComponents[4];
+                if (!stepuuid) {
+                    createNotify('stepUuid не найден', 'error');
+                    return;
+                }
+                this.textContent = "🔄";
+                try {
+                    const res = await fetch(`https://api-${kidsselector}.skyeng.ru/api/student-cabinet/v1/step-store/load-step`, {
+                        method: "POST",
+                        credentials: "include",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({ stepUuid: stepuuid, variantId: theVariantId, last: true }),
+                    });
+                    const body = await res.json().catch(() => null);
+                    if (res.status === 200 && body?.id) {
+                        setTimeout(() => { this.textContent = "✅"; }, 400);
+                        setTimeout(() => { this.textContent = "↺"; }, 2000);
+                        createNotify("✅ Ревизия успешно обновлена", 'message');
+                    } else {
+                        this.textContent = "↺";
+                        createNotify(`❌ Ошибка ревизии: HTTP ${res.status}`, 'error');
+                    }
+                } catch (err) {
+                    this.textContent = "↺";
+                    createNotify('❌ Ошибка сети', 'error');
+                }
+            };
+        }
+
         const studentIndex = complectationsData.participants.findIndex(p => p.role === 'student');
         const teacherIndex = 1 - studentIndex;
         const studentData = complectationsData.participants[studentIndex];
@@ -548,3 +594,4 @@ function renderComplectIdentity(studentData, teacherData, externalGroupId, statu
         markCopyable(variantValue, variantId);
     }
 }
+

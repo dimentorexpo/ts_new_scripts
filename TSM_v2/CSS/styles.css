@@ -1307,6 +1307,61 @@ box-shadow: 0 0 12px rgba(57, 255, 20, 0.5);
     font-family: var(--tsm-font-ui);
 }
 
+/* ─── tsm-btn-save-revision (кнопка сброса ревизии) ─── */
+.tsm-btn-save-revision {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: var(--tsm-bounce);
+    color: var(--tsm-neon-gold);
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: rgba(255, 140, 0, 0.1);
+    border: 1px solid rgba(255, 140, 0, 0.2);
+}
+.tsm-btn-save-revision:hover {
+    background: rgba(255, 140, 0, 0.25);
+    border-color: var(--tsm-neon-orange);
+    box-shadow: 0 0 12px var(--tsm-neon-orange);
+    transform: scale(1.1);
+}
+.tsm-btn-save-revision:active {
+    background: rgba(255, 140, 0, 0.4);
+}
+
+/* ─── tsm-btn-step (кнопка копирования stepUuid) ─── */
+.tsm-btn-step {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: var(--tsm-bounce);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px;
+    border-radius: 6px;
+}
+.tsm-btn-step:hover {
+    background: rgba(0, 240, 255, 0.15);
+    border-color: rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    transform: translateY(-2px) scale(1.1);
+}
+
+/* ─── tsm-btn-save внутри tsm-table-cell-center ─── */
+.tsm-table-cell-center .tsm-btn-save,
+.tsm-table-cell-center span.tsm-btn-save {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+
+
 /* 3. Центрирование заголовков План Урока (tsm-collapsible) */
 .tsm-collapsible {
     display: flex;
