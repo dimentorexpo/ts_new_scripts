@@ -550,6 +550,41 @@ async function OpenExercisesComplect() {
                     });
                     const body = await res.json().catch(() => null);
                     if (res.status === 200 && body?.id) {
+                        // === ВТОРОЙ ЗАПРОС: store-blocks/delete для комплектаций ===
+                        try {
+                            const userIdSpan = document.getElementById('studidComplect');
+                            const userIdText = userIdSpan ? userIdSpan.textContent.trim() : '';
+                            const userId = userIdText.replace(/\D/g, '');
+                            const roomHash = location.pathname.split('/')[4] || '';
+                            const contentGroupId = `${body.id}_${theVariantId}`;
+
+                            const delRes = await fetch('https://api-social-science.skyeng.ru/api/v1/store-blocks/delete', {
+                                method: 'POST',
+                                mode: 'cors',
+                                credentials: 'include',
+                                headers: {
+                                    'accept': 'application/json',
+                                    'content-type': 'application/json',
+                                },
+                                referrer: 'https://vimbox.skyeng.ru/',
+                                body: JSON.stringify({
+                                    userId: userId,
+                                    contentGroupId: contentGroupId,
+                                    roomHash: roomHash,
+                                }),
+                            });
+
+                            if (delRes.ok) {
+                                createNotify('✅ Ревизия удалена на сервере', 'message');
+                            } else {
+                                createNotify(`⚠️ Сервер вернул ошибку: ${delRes.status}`, 'error');
+                            }
+                        } catch (delErr) {
+                            // Второй запрос не критичен — сообщаем, но не ломаем поток
+                            createNotify('⚠️ Ошибка удаления на сервере', 'error');
+                        }
+
+                        // Обновление UI после load-step
                         setTimeout(() => { this.textContent = "✅"; }, 400);
                         setTimeout(() => { this.textContent = "↺"; }, 2000);
                         createNotify("✅ Ревизия успешно обновлена", 'message');
