@@ -30,8 +30,18 @@ wintStudAdults.className = "tsm-window tsm-window-students-adult";
 const wintStudSkysmart = createTSMWindow("AFMS_SkysmartStudInfo", "winTopstudentsSkysmart", "winLeftstudentsSkysmart", win_studentsSkysmart);
 wintStudSkysmart.className = "tsm-window tsm-window-students-kids";
 
-document.getElementById("hidestudentsSkysmartMenu").onclick = function () { wintStudSkysmart.style.display = "none"; };
+document.getElementById("hidestudentsSkysmartMenu").onclick = function () {
+    wintStudSkysmart.style.display = "none";
+    restoreMainMenu();
+};
 document.getElementById("hidestudentsAdultstMenu").onclick = function () { wintStudAdults.style.display = "none"; };
+
+function restoreMainMenu() {
+    const mainMenu = document.getElementById("mainmenu");
+    const exercisesMenu = document.getElementById("exercisesmenu");
+    if (mainMenu) mainMenu.style.display = "block";
+    if (exercisesMenu) exercisesMenu.style.display = "none";
+}
 
 const SUBJECT_MAP = {
     math: "Математика",
@@ -96,7 +106,11 @@ function renderKidCards(container, html) {
 document.getElementById("openstudentsmenu").onclick = async function () {
     const willShow = wintStudSkysmart.style.display === "none";
     wintStudSkysmart.style.display = willShow ? "" : "none";
-    if (!willShow) return;
+    if (!willShow) {
+        // Students window is being closed — restore the main menu items
+        restoreMainMenu();
+        return;
+    }
 
     wintStudAdults.style.display = "none";
     document.getElementById("mainmenu").style.display = "none";

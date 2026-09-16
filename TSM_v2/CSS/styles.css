@@ -608,6 +608,23 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 6px;
+    width: 100%;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+/* Увеличенная ширина окон «Ученики»: карточки, таблица и поиск легче читаются,
+   окно перестаёт выглядеть «квадратно» (≈240px). Макрос ширины адаптирован
+   под ноутбуки через min(): не шире 95vw экрана. */
+.tsm-window-students-adult,
+.tsm-window-students-kids {
+    width: 680px !important;
+    min-width: 680px !important;
+    max-width: min(720px, 95vw) !important;
+    max-height: 85vh !important;
+    overflow: hidden !important;
 }
 
 .tsm-kid-card {
@@ -615,7 +632,7 @@
     border: 1px solid rgba(0, 240, 255, 0.12);
     border-radius: var(--tsm-radius-md);
     padding: 14px;
-    margin: 10px 0;
+    margin: 0;
     transition: var(--tsm-transition);
     position: relative;
     overflow: hidden;
@@ -725,6 +742,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    grid-column: 1 / -1;
 }
 
 .tsm-subj-title::before {
