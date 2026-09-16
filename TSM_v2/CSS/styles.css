@@ -258,6 +258,26 @@
     transform: translateY(-2px) scale(1.1);
 }
 
+.tsm-btn-step {
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 6px;
+    transition: var(--tsm-bounce);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+}
+.tsm-btn-step:hover {
+    background: rgba(0, 240, 255, 0.15);
+    border-color: rgba(0, 240, 255, 0.4);
+    box-shadow: var(--tsm-shadow-cyan);
+    transform: translateY(-2px) scale(1.1);
+}
+
 /* ─── Inputs ─── */
 .tsm-input,
 .tsm-input-hash {
@@ -1263,10 +1283,18 @@ box-shadow: 0 0 12px rgba(57, 255, 20, 0.5);
     text-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
 }
 .tsm-chip-purple {
-    border-color: rgba(191, 0, 255, 0.3);
-    background: rgba(191, 0, 255, 0.05);
-    color: var(--tsm-neon-violet);
-    text-shadow: 0 0 8px rgba(191, 0, 255, 0.3);
+    border-color: rgba(191, 0, 255, 0.5);
+    background: rgba(191, 0, 255, 0.12);
+    color: #ff66ff;
+    text-shadow: 0 0 14px rgba(255, 102, 255, 0.7);
+    box-shadow: 0 0 18px rgba(191, 0, 255, 0.15), inset 0 0 10px rgba(191, 0, 255, 0.05);
+}
+.tsm-chip-violet {
+    border-color: rgba(138, 43, 226, 0.55);
+    background: rgba(138, 43, 226, 0.15);
+    color: #b066ff;
+    text-shadow: 0 0 14px rgba(176, 102, 255, 0.7);
+    box-shadow: 0 0 18px rgba(138, 43, 226, 0.15), inset 0 0 10px rgba(138, 43, 226, 0.05);
 }
 .tsm-chip-green {
     border-color: rgba(57, 255, 20, 0.3);

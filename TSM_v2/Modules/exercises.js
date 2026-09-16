@@ -56,6 +56,9 @@ const win_complectationExercises = `
             <div class="tsm-chip tsm-chip-purple"><span id="teachnameComplect"></span></div>
             <div class="tsm-chip" title="ID учителя"><span id="teachdidComplect"></span></div>
             <div class="tsm-chip tsm-chip-green"><span id="RoomStatus"></span></div>
+            <div class="tsm-chip tsm-chip-violet" id="variantIdComplectChip" style="display:none;">
+                <span class="tsm-user-select-none">variantId: </span><span id="variantIdValue"></span>
+            </div>
         </div>
     </div>
     <div class="tsm-input-group">
@@ -383,18 +386,19 @@ async function OpenExercisesComplect() {
         wintComplect.style.display = 'none';
     };
 
-    function buildCardsTable(themes, kidsselector) {
+        function buildCardsTable(themes, kidsselector) {
         let html = `<table class="tsm-exercise-table"><thead><tr class="tsm-table-header">
             <th class="tsm-table-cell-center">#</th>
             <th class="tsm-table-cell-center">Название</th>
             <th class="tsm-table-cell-center">Балл</th>
             <th class="tsm-table-cell-center">%</th>
             <th class="tsm-table-cell-center">Ссылка</th>
+            <th class="tsm-table-cell-center">СТЕП</th>
         </tr></thead><tbody>`;
         for (let i = 0; i < themes.length; i++) {
             const theme = themes[i];
             const contentLessonId = theme.meta.contentLessonId;
-            html += `<tr class="tsm-theme-row"><td colspan="5" class="tsm-theme-title">
+            html += `<tr class="tsm-theme-row"><td colspan="6" class="tsm-theme-title">
                 <span class="tsm-btn-save" complectationsData-subtype="${kidsselector}" complectationsData-lessonid="${contentLessonId}" title="Скопировать ссылку на урок">💾</span>
                 ${theme.name}
             </td></tr>`;
@@ -412,6 +416,9 @@ async function OpenExercisesComplect() {
                     <td class="tsm-table-cell-center">${score}</td>
                     <td class="tsm-table-cell-center">${completeness}</td>
                     <td class="tsm-btn-save tsm-table-cell-center" complectationsData-subtype="${kidsselector}" complectationsData-lessonid="${contentLessonId}" complectationsData-stepid="${card.id}" title="Скопировать ссылку на слайд">💾</td>
+                    <td class="tsm-table-cell-center">
+                        <span class="tsm-btn-step" data-stepuuid="${card.stepUuid || ''}" title="Копировать stepUuid">📋</span>
+                    </td>
                 </tr>`;
             }
         }
@@ -498,16 +505,32 @@ async function OpenExercisesComplect() {
             };
         }
 
+        const stepbtnarr = document.getElementById('exercisebarComplect').getElementsByClassName('tsm-btn-step');
+        for (let s = 0; s < stepbtnarr.length; s++) {
+            stepbtnarr[s].onclick = function () {
+                const stepUuid = this.getAttribute('data-stepuuid');
+                if (!stepUuid) {
+                    createNotify('stepUuid не найден', 'error');
+                    return;
+                }
+                copyToClipboardTSM(stepUuid);
+                createNotify('📋 stepUuid скопирован в буфер обмена', 'message');
+            };
+        }
+
         const studentIndex = complectationsData.participants.findIndex(p => p.role === 'student');
         const teacherIndex = 1 - studentIndex;
         const studentData = complectationsData.participants[studentIndex];
         const teacherData = complectationsData.participants[teacherIndex];
 
-        renderComplectIdentity(studentData, teacherData, complectationsData.groupInfo?.externalGroupId, complectationsData.status);
+        const variantId = complectationsData.homeworkCards[indexOfSlides]?.themes[0]?.variantId
+            || complectationsData.homeworkCards[indexOfSlides]?.variantId
+            || '';
+        renderComplectIdentity(studentData, teacherData, complectationsData.groupInfo?.externalGroupId, complectationsData.status, variantId);
     };
 }
 
-function renderComplectIdentity(studentData, teacherData, externalGroupId, status) {
+function renderComplectIdentity(studentData, teacherData, externalGroupId, status, variantId) {
     document.getElementById('studnameComplect').innerHTML = `<span class="tsm-identity-emoji"> 👨‍🎓 </span>${studentData.name}`;
     setIdField('studserviceidComplect', '🆔 услуги: ', studentData.educationServiceId);
     setIdField('studidComplect', '🆔: ', studentData.userId);
@@ -516,4 +539,12 @@ function renderComplectIdentity(studentData, teacherData, externalGroupId, statu
     setIdField('teachdidComplect', '🆔: ', teacherData.userId);
     const statusColor = status === 'success' ? 'var(--tsm-neon-lime)' : 'var(--tsm-neon-gold)';
     document.getElementById('RoomStatus').innerHTML = `<span class="tsm-user-select-none tsm-identity-emoji">Статус комнаты: </span><span style="color:${statusColor}; text-shadow:0 0 8px ${statusColor};">${status}</span>`;
+    if (variantId) {
+        const variantChip = document.getElementById('variantIdComplectChip');
+        const variantValue = document.getElementById('variantIdValue');
+        variantValue.textContent = variantId;
+        variantChip.style.display = '';
+        variantValue.style.cursor = 'pointer';
+        markCopyable(variantValue, variantId);
+    }
 }
