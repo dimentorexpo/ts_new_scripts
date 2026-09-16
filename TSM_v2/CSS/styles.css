@@ -1833,3 +1833,117 @@ box-shadow: 0 0 12px rgba(57, 255, 20, 0.5);
 
 /* ─── Hidden utility ─── */
 .tsm-hidden { display: none !important; }
+
+/* =========================================================
+   TSM ReactiCache — Кнопка сброса реактивного кэша
+   ========================================================= */
+
+/* 1. Неоновая «капсула»: сразу видно, что элемент добавлен расширением TSM,
+      а не является частью родного интерфейса ЛК */
+#reactcachebtn {
+    position: absolute !important;
+    right: 15px !important;
+    z-index: 10 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 14px !important;
+    font-family: var(--tsm-font-ui) !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.6px !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    line-height: 1.1 !important;
+    color: #eafcff !important;
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.30), rgba(191, 0, 255, 0.32)) !important;
+    border: 1px solid var(--tsm-neon-cyan) !important;
+    border-radius: 999px !important;
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.65) !important;
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.55), 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 0 12px rgba(0, 240, 255, 0.15) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(1.4) !important;
+    backdrop-filter: blur(10px) saturate(1.4) !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    overflow: hidden !important;
+    animation: tsm-reactcache-pulse 2.8s ease-in-out infinite !important;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s ease !important;
+}
+
+#reactcachebtn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transform: translateX(-150%) skewX(-25deg);
+    animation: tsm-reactcache-sheen 3.4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+#reactcachebtn .tsm-reactcache-icon {
+    font-size: 15px !important;
+    line-height: 1 !important;
+    filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.7));
+}
+
+#reactcachebtn .tsm-reactcache-label {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.6px !important;
+}
+
+#reactcachebtn:hover {
+    transform: translateY(-2px) scale(1.04) !important;
+    border-color: #7cfaff !important;
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.5), rgba(191, 0, 255, 0.5)) !important;
+}
+
+#reactcachebtn:active {
+    transform: translateY(0) scale(0.96) !important;
+}
+
+/* Пока идёт запрос — кнопка «гаснет» и не реагирует на клики */
+#reactcachebtn.tsm-reactcache-busy {
+    pointer-events: none !important;
+    cursor: progress !important;
+    opacity: 0.6 !important;
+    animation: none !important;
+    transform: none !important;
+}
+
+@keyframes tsm-reactcache-pulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(0, 240, 255, 0.45), 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 0 10px rgba(0, 240, 255, 0.12); }
+    50%      { box-shadow: 0 0 26px rgba(0, 240, 255, 0.9), 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 0 18px rgba(0, 240, 255, 0.28); }
+}
+
+@keyframes tsm-reactcache-sheen {
+    0%        { transform: translateX(-150%) skewX(-25deg); }
+    55%, 100% { transform: translateX(150%) skewX(-25deg); }
+}
+
+/* 2. Уведомление по центру нижней части экрана */
+.tsm-toast.tsm-toast-center {
+    right: auto;
+    left: 50%;
+    bottom: 40px;
+    transform: translateX(-50%);
+    max-width: min(560px, 90vw);
+    padding: 16px 28px;
+    text-align: center;
+    line-height: 1.45;
+    animation: tsm-toast-in-center 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.tsm-toast.tsm-toast-center .tsm-countdown-bar {
+    background: linear-gradient(90deg, var(--tsm-neon-lime), var(--tsm-neon-cyan));
+}
+
+.tsm-toast.tsm-toast-center.sucsbtnnotok .tsm-countdown-bar {
+    background: linear-gradient(90deg, var(--tsm-neon-red), var(--tsm-neon-orange));
+}
+
+@keyframes tsm-toast-in-center {
+    from { opacity: 0; transform: translateX(-50%) translateY(30px) scale(0.94); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
