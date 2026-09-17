@@ -1,8 +1,6 @@
-// Global Variables
+'use strict';
 
 chrome.runtime.onInstalled.addListener((details) => {
-    // Пишем адреса не только при установке, но и при обновлении —
-    // иначе у сотрудников навсегда остаются URL старых деплоев
     if (details.reason === 'install' || details.reason === 'update') {
         chrome.storage.local.set({
             KC_addr: 'https://script.google.com/macros/s/AKfycbzV8BHtyD3XUcPjZmb9pwwY-2cwAKx8hTRZKVENpKhdCJYe-hF0rpyDVdUIXBUin326Lw/exec',
@@ -15,32 +13,42 @@ chrome.runtime.onInstalled.addListener((details) => {
     }
 });
 
-//Block of requests
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-
     if (request.action === 'getFetchRequest') {
         const url = request.fetchURL;
         const requestOptions = request.requestOptions;
-
         (async () => {
             try {
-                const response = await fetch(url, requestOptions);
+                // ⚡ ТАЙМАУТ для fetch (было: мог висеть вечно)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20_000);
+                const response = await fetch(url, {
+                    ...requestOptions,
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
                 if (!response.ok) {
-                    throw new Error('Network response was not ok (проверь авторизацию в CRM, после чего повтори попытку): ' + response.status + " " + response.statusText);
+                    throw new Error(`HTTP ${response.status} ${response.statusText}`);
                 }
-                const text = await response.text(); // Или response.json(), если ожидается JSON
-                sendResponse({ success: true, fetchansver: text });
+                const text = await response.text();
+                // ⚡ Проверяем, что порт ещё жив (content script мог отвалиться)
+                try { sendResponse({ success: true, fetchansver: text }); } catch { }
             } catch (error) {
-                sendResponse({ success: false, error: error.message });
+                try { sendResponse({ success: false, error: error.message }); } catch { }
             }
         })();
-
-        return true; // Возвращаем true для асинхронной отправки ответа
+        return true;
     }
-
-    const extensionId = chrome.runtime.id
-    if (request.question === "get-extension-id") {
-        sendResponse(extensionId)
+    if (request.question === 'get-extension-id') {
+        sendResponse(chrome.runtime.id);
+        return false;
     }
+    return false;
+});
 
+// ⚡ Обработка отвалившихся content scripts
+chrome.runtime.onConnect.addListener((port) => {
+    port.onDisconnect.addListener(() => {
+        console.log('[bg] content script disconnected:', port.name);
+    });
 });
