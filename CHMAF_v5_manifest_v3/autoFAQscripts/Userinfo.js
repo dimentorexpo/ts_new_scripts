@@ -1,44 +1,51 @@
-// --- ВНЕДРЕНИЕ ИЗОЛИРОВАННЫХ СТИЛЕЙ (PREMIUM GLASSMORPHISM v3) ---
+// --- ВНЕДРЕНИЕ ИЗОЛИРОВАННЫХ СТИЛЕЙ (CLEAN & READABLE v7) ---
 let otpTimerInterval = null;
 const injectGlassStyles = () => {
     if (document.getElementById('af-glass-styles')) return;
     const style = document.createElement('style');
     style.id = 'af-glass-styles';
     style.innerHTML = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
-.af-gl-wrapper {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: #f8fafc;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.7);
-    font-size: 12px;
-    box-sizing: border-box;
-    width: 500px;
-    line-height: 1.5;
-    letter-spacing: 0.02em;
-}
+        :root {
+            --af-gold: 255, 215, 0;
+            --af-gold-dim: rgba(var(--af-gold), 0.15);
+            --af-gold-glow: rgba(var(--af-gold), 0.4);
+            --af-bg-dark: rgba(10, 14, 24, 0.92);
+            --af-success: 34, 197, 94;
+            --af-error: 239, 68, 68;
+        }
 
-/* Новый класс для рядов кнопок — разрешаем перенос если не влезают */
-.af-gl-row-wrap {
-    flex-wrap: wrap;
-    gap: 6px;
-}
+        .af-gl-wrapper {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            color: #f8fafc;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            font-size: 15px;
+            box-sizing: border-box;
+            width: 520px;
+            line-height: 1.5;
+            letter-spacing: 0.01em;
+        }
+
+        .af-gl-row-wrap {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
 
         .af-gl-panel {
-            background: linear-gradient(145deg,
-                rgba(15, 20, 35, 0.95),
-                rgba(20, 25, 40, 0.97));
-            backdrop-filter: blur(32px) saturate(200%);
-            -webkit-backdrop-filter: blur(32px) saturate(200%);
-            border: 2px solid rgba(255, 215, 0, 0.25);
-            border-radius: 20px;
-            box-shadow:
-                0 20px 40px -10px rgba(0, 0, 0, 0.7),
-                0 0 0 1px rgba(255, 215, 0, 0.1) inset;
-            padding: 20px;
+            background: linear-gradient(165deg, rgba(15, 20, 35, 0.95), rgba(8, 11, 20, 0.98));
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(var(--af-gold), 0.2);
+            border-top: 1px solid rgba(var(--af-gold), 0.35);
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(var(--af-gold), 0.08) inset, 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+            padding: 18px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
             position: relative;
             overflow: hidden;
         }
@@ -46,25 +53,22 @@ const injectGlassStyles = () => {
         .af-gl-panel::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 215, 0, 0.02);
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(var(--af-gold), 0.03) 0%, transparent 60%);
             pointer-events: none;
             z-index: 0;
         }
 
-        .af-gl-panel > * {
-            position: relative;
-            z-index: 1;
-        }
+        .af-gl-panel > * { position: relative; z-index: 1; }
 
         .af-gl-header {
             display: flex;
             gap: 8px;
             align-items: center;
-            border-bottom: 1.5px solid rgba(255, 215, 0, 0.2);
+            border-bottom: 1px solid rgba(var(--af-gold), 0.15);
             padding-bottom: 12px;
             position: relative;
         }
@@ -72,43 +76,35 @@ const injectGlassStyles = () => {
         .af-gl-header::after {
             content: '';
             position: absolute;
-            bottom: -1.5px;
+            bottom: -1px;
             left: 0;
-            width: 50%;
-            height: 1.5px;
-            background: rgba(255, 215, 0, 0.6);
+            width: 40%;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(var(--af-gold), 0.6), transparent);
         }
 
-        .af-gl-row {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 6px;
+        .af-gl-row { display: flex; flex-wrap: nowrap; gap: 8px; align-items: center; }
+
+        .af-gl-btn {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+            border: 1px solid rgba(var(--af-gold), 0.2);
+            border-radius: 8px;
+            color: #fefefe;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: inline-flex;
             align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 0 14px;
+            height: 34px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+            white-space: nowrap;
         }
-
-.af-gl-btn {
-    background: linear-gradient(145deg,
-        rgba(255, 255, 255, 0.12),
-        rgba(255, 255, 255, 0.06));
-    border: 1.5px solid rgba(255, 215, 0, 0.25);
-    border-radius: 10px;
-    color: #fefefe;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 12px;
-    height: 30px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    flex-shrink: 0;
-    white-space: nowrap;
-    letter-spacing: 0.02em;
-}
 
         .af-gl-btn::before {
             content: '';
@@ -117,958 +113,250 @@ const injectGlassStyles = () => {
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg,
-                transparent,
-                rgba(255, 215, 0, 0.15),
-                transparent);
-            transition: left 0.6s;
+            background: linear-gradient(90deg, transparent, rgba(var(--af-gold), 0.15), transparent);
+            transition: left 0.5s ease;
         }
 
-        .af-gl-btn:hover::before {
-            left: 100%;
-        }
-
-.af-gl-btn-icon {
-    width: 30px;
-    padding: 0;
-    font-size: 14px;
-    flex-shrink: 0;
-    min-width: 30px;
-}
-
+        .af-gl-btn:hover:not(:disabled)::before { left: 100%; }
         .af-gl-btn:hover:not(:disabled) {
-            background: linear-gradient(145deg,
-                rgba(255, 215, 0, 0.2),
-                rgba(255, 255, 255, 0.12));
+            background: linear-gradient(145deg, rgba(var(--af-gold), 0.15), rgba(255, 255, 255, 0.08));
             transform: translateY(-1px);
-            box-shadow:
-                0 8px 20px rgba(0,0,0,0.4),
-                0 0 20px rgba(255, 215, 0, 0.2);
-            border-color: rgba(255, 215, 0, 0.5);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3), 0 0 12px rgba(var(--af-gold), 0.15);
+            border-color: rgba(var(--af-gold), 0.5);
         }
+        .af-gl-btn:active:not(:disabled) { transform: translateY(0) scale(0.96); }
+        .af-gl-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
 
-        .af-gl-btn:active:not(:disabled) {
-            transform: translateY(0) scale(0.98);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        .af-gl-btn-icon { width: 34px; padding: 0; font-size: 16px !important; flex-shrink: 0; min-width: 34px; }
+
+        .af-gl-key-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: rgba(var(--af-gold), 0.08);
+            border: 1px solid rgba(var(--af-gold), 0.25);
+            color: #ffd700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
         }
-
-        .af-gl-btn:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-            filter: grayscale(0.7);
+        .af-gl-key-btn:hover {
+            background: rgba(var(--af-gold), 0.2);
+            border-color: rgba(var(--af-gold), 0.6);
+            box-shadow: 0 0 12px rgba(var(--af-gold), 0.3);
+            transform: scale(1.1) rotate(-8deg);
         }
+        .af-gl-key-btn:active { transform: scale(0.9); }
+        .af-gl-key-btn.is-loading { animation: keyPulse 1s ease-in-out infinite; color: #fbbf24; border-color: #fbbf24; }
+        .af-gl-key-btn.is-success { background: rgba(var(--af-success), 0.2); border-color: rgba(var(--af-success), 0.6); color: #4ade80; box-shadow: 0 0 12px rgba(var(--af-success), 0.3); transform: scale(1.1); }
+        .af-gl-key-btn.is-error { background: rgba(var(--af-error), 0.2); border-color: rgba(var(--af-error), 0.6); color: #f87171; box-shadow: 0 0 12px rgba(var(--af-error), 0.3); animation: shake 0.4s ease-in-out; }
 
-.af-gl-input {
-    background: linear-gradient(145deg,
-        rgba(0, 0, 0, 0.5),
-        rgba(10, 15, 30, 0.6));
-    border: 1.5px solid rgba(255, 215, 0, 0.2);
-    border-radius: 10px;
-    color: #fefefe;
-    padding: 0 12px;
-    height: 30px;
-    outline: none;
-    text-align: center;
-    transition: all 0.3s ease;
-    flex: 1;
-    min-width: 70px;
-    font-weight: 600;
-    font-size: 12px;
-    letter-spacing: 0.02em;
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
-}
+        @keyframes keyPulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--af-gold), 0.4); } 50% { transform: scale(1.05); box-shadow: 0 0 8px 2px rgba(var(--af-gold), 0.2); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 
+        .af-gl-input {
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.4), rgba(10, 15, 30, 0.5));
+            border: 1px solid rgba(var(--af-gold), 0.2);
+            border-radius: 8px;
+            color: #fefefe;
+            padding: 0 14px;
+            height: 34px;
+            outline: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 80px;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.02em;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
         .af-gl-input:focus {
-            border-color: rgba(255, 215, 0, 0.6);
-            box-shadow:
-                0 0 0 3px rgba(255, 215, 0, 0.12),
-                0 0 20px rgba(255, 215, 0, 0.2),
-                inset 0 2px 6px rgba(0,0,0,0.3);
-            background: linear-gradient(145deg,
-                rgba(0, 0, 0, 0.6),
-                rgba(10, 15, 30, 0.7));
+            border-color: rgba(var(--af-gold), 0.6);
+            box-shadow: 0 0 0 2px rgba(var(--af-gold), 0.1), inset 0 2px 4px rgba(0,0,0,0.2);
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.5), rgba(10, 15, 30, 0.6));
         }
-
-        .af-gl-input::placeholder {
-            color: rgba(148, 163, 184, 0.5);
-            font-weight: 500;
-        }
+        .af-gl-input::placeholder { color: rgba(148, 163, 184, 0.5); font-weight: 500; }
 
         .af-gl-badge {
-            padding: 5px 12px;
-            border-radius: 8px;
-            border: 1.5px solid rgba(255, 215, 0, 0.3);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(var(--af-gold), 0.3);
             font-weight: 700;
             display: inline-flex;
             align-items: center;
-            height: 30px;
+            height: 28px;
             box-sizing: border-box;
-            background: linear-gradient(135deg,
-                rgba(255, 215, 0, 0.12),
-                rgba(255, 255, 255, 0.06));
-            backdrop-filter: blur(12px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            background: linear-gradient(135deg, rgba(var(--af-gold), 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(8px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             letter-spacing: 0.02em;
-            font-size: 11px;
-        }
-
-        /* Стили блока информации пользователя */
-        .af-gl-info-container {
-            background: linear-gradient(145deg,
-                rgba(255, 255, 255, 0.05),
-                rgba(255, 255, 255, 0.02));
-            border: 1.5px solid rgba(255, 215, 0, 0.15);
-            border-radius: 16px;
-            padding: 16px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            box-shadow:
-                0 4px 16px rgba(0,0,0,0.3),
-                inset 0 1px 0 rgba(255, 215, 0, 0.08);
-        }
-
-        .af-gl-info-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        /* Стили аватара */
-        .af-gl-avatar-wrapper {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 6px;
-        }
-
-        .af-gl-avatar {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            border: 2.5px solid rgba(255, 215, 0, 0.5);
-            box-shadow:
-                0 4px 20px rgba(0,0,0,0.5),
-                0 0 0 4px rgba(255, 215, 0, 0.12);
-            object-fit: cover;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .af-gl-avatar:hover {
-            transform: scale(2);
-            z-index: 100;
-            border-color: rgba(255, 215, 0, 1);
-            box-shadow:
-                0 8px 40px rgba(0,0,0,0.7),
-                0 0 0 6px rgba(255, 215, 0, 0.25);
-        }
-
-        .af-gl-scrollable {
-            max-height: 336px;
-            overflow-y: auto;
-            padding-right: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .af-gl-scrollable::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        .af-gl-scrollable::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-        }
-
-        .af-gl-scrollable::-webkit-scrollbar-thumb {
-            background: rgba(255, 215, 0, 0.4);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 215, 0, 0.2);
-        }
-
-        .af-gl-scrollable::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 215, 0, 0.6);
-        }
-
-        .af-gl-card {
-            background: linear-gradient(145deg,
-                rgba(255, 255, 255, 0.06),
-                rgba(255, 255, 255, 0.03));
-            border: 1.5px solid rgba(255, 215, 0, 0.2);
-            border-radius: 12px;
-            padding: 12px;
-            text-align: left;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .af-gl-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: rgba(255, 215, 0, 0.3);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .af-gl-card:hover {
-            background: linear-gradient(145deg,
-                rgba(255, 255, 255, 0.09),
-                rgba(255, 255, 255, 0.05));
-            transform: translateY(-2px);
-            box-shadow:
-                0 8px 24px rgba(0,0,0,0.35),
-                0 0 0 1px rgba(255, 215, 0, 0.25);
-            border-color: rgba(255, 215, 0, 0.35);
-        }
-
-        .af-gl-card:hover::before {
-            opacity: 1;
-        }
-
-        .af-gl-card-header {
-            font-weight: 700;
-            padding: 8px 12px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            text-align: center;
-            border: 1.5px solid rgba(255, 215, 0, 0.2);
             font-size: 12px;
-            letter-spacing: 0.02em;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        .af-gl-bg-info {
-            background: rgba(30, 144, 255, 0.3);
-            border-color: rgba(30, 144, 255, 0.4);
+        .af-gl-info-compact {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+            border: 1px solid rgba(var(--af-gold), 0.15);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
-        .af-gl-bg-danger {
-            background: rgba(220, 20, 60, 0.3);
-            border-color: rgba(220, 20, 60, 0.4);
+        .af-gl-info-main { display: flex; align-items: center; gap: 12px; }
+        .af-gl-avatar-wrapper-compact, .af-gl-wrapper, .af-gl-panel, .af-gl-info-compact, .af-gl-info-main { overflow: visible !important; }
+
+        .af-gl-avatar-compact {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            border: 2px solid rgba(var(--af-gold), 0.5);
+            object-fit: cover;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: zoom-in;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4), 0 0 12px rgba(var(--af-gold), 0.1);
+        }
+        .af-gl-avatar-compact:hover {
+            transform: scale(3.2);
+            z-index: 999999;
+            border-radius: 12px;
+            border-color: rgba(var(--af-gold), 1);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.8), 0 0 0 3px rgba(var(--af-gold), 0.2);
+            margin-right: -60px;
+            margin-left: 15px;
         }
 
-        .af-gl-bg-success {
-            background: rgba(46, 139, 87, 0.3);
-            border-color: rgba(46, 139, 87, 0.4);
-        }
+        .af-gl-info-core { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+        .af-gl-user-type { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.6); }
+        .af-gl-user-name-row { display: flex; align-items: center; gap: 8px; }
+        .af-gl-user-name { font-weight: 700; font-size: 17px; color: #fefefe; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .af-gl-bg-vu {
-            background: rgba(245, 131, 32, 0.5);
-            border-color: rgba(245, 131, 32, 0.5);
-        }
-
-        .af-gl-bg-regular {
-            background: rgba(69, 199, 52, 0.25);
-            border-color: rgba(69, 199, 52, 0.4);
-        }
-
-        .af-gl-bg-lost {
-            background: rgba(138, 28, 129, 0.45);
-            border-color: rgba(138, 28, 129, 0.5);
-        }
-
-        .af-gl-text-accent { color: #7dd3fc; font-weight: 600; }
-        .af-gl-text-success { color: #86efac; font-weight: 600; }
-        .af-gl-text-warning { color: #fde047; font-weight: 600; }
-        .af-gl-text-muted { color: #94a3b8; }
-
-        .cursor-pointer {
-            cursor: pointer;
+        .af-gl-contacts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .af-gl-contact-cell {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(var(--af-gold), 0.1);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
             transition: all 0.25s ease;
         }
+        .af-gl-contact-cell:hover { background: rgba(0, 0, 0, 0.35); border-color: rgba(var(--af-gold), 0.25); }
+        .af-gl-contact-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; display: flex; align-items: center; gap: 4px; }
 
-        .cursor-pointer:hover {
-            opacity: 0.85;
-            transform: scale(1.05);
+        .af-gl-contact-value-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .af-gl-contact-value { font-size: 15px; color: #f1f5f9; font-weight: 600; word-break: break-all; flex: 1; }
+        .af-gl-identity-status { font-size: 16px; flex-shrink: 0; line-height: 1; }
+
+        .af-gl-icon-btn { cursor: pointer; opacity: 0.6; transition: all 0.25s ease; font-size: 14px; line-height: 1; flex-shrink: 0; }
+        .af-gl-icon-btn:hover { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 4px rgba(var(--af-gold), 0.6)); }
+
+        .af-gl-info-single-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .af-gl-info-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid rgba(var(--af-gold), 0.1); }
+        .af-gl-info-item-label { color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+        .af-gl-info-item-value { color: #f1f5f9; font-weight: 600; font-size: 14px; }
+
+        .af-gl-time-group { display: flex; gap: 6px; align-items: center; }
+        .af-gl-time-chip { display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; border: 1px solid rgba(var(--af-gold), 0.15); }
+        .af-gl-time-label { color: #94a3b8; font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+        .af-gl-time-value { color: #ffd700; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+
+        .af-gl-section-title { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 12px; color: #fefefe; margin-top: 4px; letter-spacing: 0.06em; text-transform: uppercase; }
+        .af-gl-section-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(var(--af-gold), 0.4), transparent); }
+
+        .af-gl-services-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .af-gl-service-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+            border: 1px solid rgba(var(--af-gold), 0.15);
+            border-radius: 12px;
+            padding: 14px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
+        .af-gl-service-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(var(--af-gold), 0.6), transparent); opacity: 0; transition: opacity 0.3s; }
+        .af-gl-service-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.4), 0 0 16px rgba(var(--af-gold), 0.1); border-color: rgba(var(--af-gold), 0.35); }
+        .af-gl-service-card:hover::before { opacity: 1; }
 
-        /* Анимация появления */
-        @keyframes afFadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .af-gl-service-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+        .af-gl-service-status { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+        .af-gl-status-vu { background: rgba(245, 131, 32, 0.2); border: 1px solid rgba(245, 131, 32, 0.4); color: #fdba74; }
+        .af-gl-status-regular { background: rgba(69, 199, 52, 0.15); border: 1px solid rgba(69, 199, 52, 0.4); color: #86efac; }
+        .af-gl-status-lost { background: rgba(138, 28, 129, 0.25); border: 1px solid rgba(138, 28, 129, 0.5); color: #d8b4fe; }
+
+        .af-gl-service-id { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #cbd5e1; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(var(--af-gold), 0.15); display: inline-flex; align-items: center; gap: 6px; }
+        .af-gl-service-balance { display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 800; color: #fde047; font-family: 'JetBrains Mono', monospace; }
+        .af-gl-service-type { font-size: 14px; color: #7dd3fc; font-weight: 600; line-height: 1.3; word-break: break-word; }
+        .af-gl-service-teacher { font-size: 12px; color: #86efac; display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(69, 199, 52, 0.08); border-radius: 8px; border: 1px solid rgba(69, 199, 52, 0.2); word-wrap: break-word; }
+        .af-gl-service-teacher.missing { color: #fca5a5; background: rgba(220, 20, 60, 0.08); border-color: rgba(220, 20, 60, 0.2); }
+
+        .af-gl-scrollable { max-height: 380px; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 12px; }
+        .af-gl-scrollable::-webkit-scrollbar { width: 4px; }
+        .af-gl-scrollable::-webkit-scrollbar-track { background: transparent; }
+        .af-gl-scrollable::-webkit-scrollbar-thumb { background: rgba(var(--af-gold), 0.3); border-radius: 8px; }
+        .af-gl-scrollable::-webkit-scrollbar-thumb:hover { background: rgba(var(--af-gold), 0.6); }
+
+        .af-gl-empty-state { grid-column: 1 / -1; text-align: center; padding: 20px; color: #94a3b8; font-size: 14px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(var(--af-gold), 0.2); }
+
+        .af-gl-complect-card { background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); border: 1px solid rgba(var(--af-gold), 0.15); border-radius: 10px; padding: 12px; transition: all 0.3s ease; }
+        .af-gl-complect-card:hover { background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); transform: translateX(2px); border-color: rgba(var(--af-gold), 0.3); }
+        .af-gl-complect-header { font-weight: 700; font-size: 12px; margin-bottom: 8px; padding: 8px 10px; border-radius: 8px; text-align: center; letter-spacing: 0.02em; }
+
+        .af-gl-bg-regular { background: rgba(69, 199, 52, 0.15); border: 1px solid rgba(69, 199, 52, 0.3); color: #86efac; }
+        .af-gl-bg-lost { background: rgba(138, 28, 129, 0.25); border: 1px solid rgba(138, 28, 129, 0.4); color: #d8b4fe; }
+        .af-gl-bg-success { background: rgba(69, 199, 52, 0.15); border: 1px solid rgba(69, 199, 52, 0.3); color: #86efac; }
+        .af-gl-bg-info { background: rgba(30, 144, 255, 0.15); border: 1px solid rgba(30, 144, 255, 0.3); color: #7dd3fc; }
+        .af-gl-bg-danger { background: rgba(220, 20, 60, 0.15); border: 1px solid rgba(220, 20, 60, 0.3); color: #fca5a5; }
+
+        .af-gl-complect-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; font-size: 12px; }
+        .af-gl-complect-table td { padding: 6px 8px; background: rgba(0,0,0,0.25); }
+        .af-gl-complect-table td:first-child { border-radius: 8px 0 0 8px; font-family: 'JetBrains Mono', monospace; color: #7dd3fc; font-weight: 600; }
+        .af-gl-complect-table td:last-child { border-radius: 0 8px 8px 0; text-align: right; width: 32px; }
+
+        .af-gl-sync-btn { cursor: pointer; transition: all 0.3s; display: inline-block; font-size: 14px; }
+        .af-gl-sync-btn:hover { transform: rotate(180deg); filter: drop-shadow(0 0 4px rgba(var(--af-gold), 0.6)); }
+
+        .af-gl-otp-group { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+        .af-gl-input-otp { min-width: 80px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; letter-spacing: 3px; }
+
+        .af-gl-otp-timer { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .af-gl-otp-timer-ring { position: relative; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
+        .af-gl-otp-timer-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+        .af-gl-otp-timer-bg { fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 2.5; }
+        .af-gl-otp-timer-progress { fill: none; stroke: #ffd700; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 62.83; stroke-dashoffset: 0; transition: stroke-dashoffset 0.1s linear; filter: drop-shadow(0 0 4px rgba(var(--af-gold), 0.5)); }
+        .af-gl-otp-timer-text { font-size: 11px; font-weight: 800; color: #ffd700; z-index: 1; font-family: 'JetBrains Mono', monospace; }
+
+        @keyframes otpUrgent { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+        .af-gl-otp-timer.urgent .af-gl-otp-timer-ring { animation: otpUrgent 0.7s ease-in-out infinite; }
+        .af-gl-otp-timer.urgent .af-gl-otp-timer-progress { stroke: #f87171; filter: drop-shadow(0 0 5px rgba(248, 113, 113, 0.6)); }
+        .af-gl-otp-timer.urgent .af-gl-otp-timer-text { color: #f87171; }
+
+        .cursor-pointer { cursor: pointer; transition: all 0.25s ease; }
+        .cursor-pointer:hover { opacity: 0.9; transform: scale(1.02); }
+
+        @keyframes afFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .af-gl-panel { animation: afFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        @media (max-width: 540px) {
+            .af-gl-wrapper { width: 100%; max-width: 420px; }
+            .af-gl-services-grid { grid-template-columns: 1fr; }
+            .af-gl-info-single-row { flex-direction: column; align-items: stretch; }
+            .af-gl-time-group { justify-content: space-between; }
         }
-
-        .af-gl-panel {
-            animation: afFadeIn 0.4s ease-out;
-        }
-
-        /* Glow эффект для активных элементов */
-        .af-gl-btn-primary {
-            background: linear-gradient(135deg,
-                rgba(255, 215, 0, 0.3),
-                rgba(56, 189, 248, 0.25));
-            border-color: rgba(255, 215, 0, 0.4);
-        }
-
-        .af-gl-btn-primary:hover:not(:disabled) {
-            background: linear-gradient(135deg,
-                rgba(255, 215, 0, 0.45),
-                rgba(56, 189, 248, 0.35));
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-        }
-
-        /* Заголовки секций */
-.af-gl-section-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    font-size: 12px;
-    color: #fefefe;
-    margin-bottom: 6px;
-    padding: 0 4px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.af-gl-section-icon {
-    font-size: 13px;
-    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4));
-}
-
-.af-gl-section-line {
-    flex: 1;
-    height: 1.5px;
-    background: linear-gradient(90deg,
-        rgba(255, 215, 0, 0.4),
-        transparent);
-    margin-left: 4px;
-}
-
-/* Сетка услуг — 2 колонки */
-.af-gl-services-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-/* Карточка услуги премиум */
-.af-gl-service-card {
-    background: linear-gradient(145deg,
-        rgba(255,255,255,0.08),
-        rgba(255,255,255,0.03));
-    border: 1.5px solid rgba(255, 215, 0, 0.2);
-    border-radius: 14px;
-    padding: 12px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 0;
-}
-
-.af-gl-service-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: rgba(255, 215, 0, 0.6);
-    opacity: 0.8;
-}
-
-@keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-}
-
-.af-gl-service-card:hover {
-    transform: translateY(-2px);
-    box-shadow:
-        0 8px 24px rgba(0,0,0,0.4),
-        0 0 20px rgba(255, 215, 0, 0.1);
-    border-color: rgba(255, 215, 0, 0.35);
-}
-
-/* Статус-бейдж на карточке */
-.af-gl-service-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    width: fit-content;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-}
-
-.af-gl-status-vu {
-    background: rgba(245, 131, 32, 0.3);
-    border: 1.5px solid rgba(245, 131, 32, 0.5);
-    color: #fdba74;
-}
-
-.af-gl-status-regular {
-    background: rgba(69, 199, 52, 0.25);
-    border: 1.5px solid rgba(69, 199, 52, 0.45);
-    color: #86efac;
-}
-
-.af-gl-status-lost {
-    background: rgba(138, 28, 129, 0.3);
-    border: 1.5px solid rgba(138, 28, 129, 0.5);
-    color: #d8b4fe;
-}
-
-/* Заголовок карточки */
-.af-gl-service-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 6px;
-}
-
-.af-gl-service-id {
-    font-family: 'SF Mono', 'Consolas', monospace;
-    font-size: 10px;
-    color: #cbd5e1;
-    background: rgba(0,0,0,0.4);
-    padding: 3px 8px;
-    border-radius: 8px;
-    border: 1.5px solid rgba(255, 215, 0, 0.15);
-    white-space: nowrap;
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-.af-gl-service-id .af-gl-icon-btn {
-    font-size: 11px;
-    opacity: 0.6;
-    line-height: 1;
-}
-
-.af-gl-service-id:hover .af-gl-icon-btn {
-    opacity: 1;
-}
-
-.af-gl-copy-sid {
-    cursor: pointer;
-    transition: all 0.25s;
-    display: inline-block;
-}
-
-.af-gl-copy-sid:hover {
-    transform: scale(1.2);
-    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
-}
-
-/* Баланс */
-.af-gl-service-balance {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #fde047;
-}
-
-.af-gl-service-balance::before {
-    content: '💰Баланс';
-    font-size: 10px;
-    font-weight: 600;
-}
-
-/* Тип услуги — перенос длинных строк */
-.af-gl-service-type {
-    font-size: 12px;
-    color: #7dd3fc;
-    font-weight: 600;
-    line-height: 1.4;
-    padding: 4px 0;
-    word-break: break-word;
-    hyphens: auto;
-}
-
-/* Преподаватель — компактнее но читаемо */
-.af-gl-service-teacher {
-    font-size: 11px;
-    color: #86efac;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 5px 10px;
-    background: rgba(69, 199, 52, 0.12);
-    border-radius: 10px;
-    border: 1.5px solid rgba(69, 199, 52, 0.25);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    word-wrap: break-word;
-    white-space: normal;
-    line-height: 1.4;
-}
-
-.af-gl-service-teacher.missing {
-    color: #fca5a5;
-    background: rgba(220, 20, 60, 0.12);
-    border-color: rgba(220, 20, 60, 0.25);
-}
-
-/* Кнопка копирования ID */
-.af-gl-copy-btn {
-    cursor: pointer;
-    transition: all 0.25s;
-    opacity: 0.7;
-    font-size: 12px;
-}
-
-.af-gl-copy-btn:hover {
-    opacity: 1;
-    transform: scale(1.2);
-    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
-}
-
-/* Адаптив — на узких экранах одна колонка */
-@media (max-width: 480px) {
-    .af-gl-wrapper {
-        width: 100%;
-        max-width: 420px;
-    }
-    .af-gl-services-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Пустое состояние */
-.af-gl-empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 24px;
-    color: #cbd5e1;
-    font-size: 12px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 14px;
-    border: 2px dashed rgba(255, 215, 0, 0.2);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-}
-
-/* Комплектации — компактные карточки */
-.af-gl-complect-card {
-    background: linear-gradient(145deg,
-        rgba(255,255,255,0.06),
-        rgba(255,255,255,0.02));
-    border: 1.5px solid rgba(255, 215, 0, 0.2);
-    border-radius: 12px;
-    padding: 10px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-}
-
-.af-gl-complect-card:hover {
-    background: linear-gradient(145deg,
-        rgba(255,255,255,0.09),
-        rgba(255,255,255,0.04));
-    transform: translateX(3px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
-    border-color: rgba(255, 215, 0, 0.3);
-}
-
-.af-gl-complect-header {
-    font-weight: 700;
-    font-size: 11px;
-    margin-bottom: 8px;
-    padding: 6px 10px;
-    border-radius: 10px;
-    text-align: center;
-    letter-spacing: 0.02em;
-}
-
-.af-gl-complect-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 4px;
-    font-size: 11px;
-}
-
-.af-gl-complect-table td {
-    padding: 5px 8px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 6px;
-}
-
-.af-gl-complect-table td:first-child {
-    border-radius: 6px 0 0 6px;
-    font-family: monospace;
-    color: #7dd3fc;
-    font-weight: 600;
-}
-
-.af-gl-complect-table td:last-child {
-    border-radius: 0 6px 6px 0;
-    text-align: right;
-    width: 30px;
-}
-
-/* Синхронизация кнопка */
-.af-gl-sync-btn {
-    cursor: pointer;
-    transition: all 0.3s;
-    display: inline-block;
-}
-
-.af-gl-sync-btn:hover {
-    transform: rotate(180deg);
-    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
-}
-
-/* Группа OTP — инпут + таймер */
-.af-gl-otp-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    min-width: 0;
-}
-
-.af-gl-input-otp {
-    min-width: 70px;
-    text-align: center;
-    font-family: 'SF Mono', 'Consolas', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 2px;
-}
-
-/* Таймер обратного отсчёта */
-.af-gl-otp-timer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.af-gl-otp-timer-ring {
-    position: relative;
-    width: 26px;
-    height: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.af-gl-otp-timer-svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    transform: rotate(-90deg);
-}
-
-.af-gl-otp-timer-bg {
-    fill: none;
-    stroke: rgba(255, 255, 255, 0.15);
-    stroke-width: 2.5;
-}
-
-.af-gl-otp-timer-progress {
-    fill: none;
-    stroke: #ffd700;
-    stroke-width: 2.5;
-    stroke-linecap: round;
-    stroke-dasharray: 62.83;
-    stroke-dashoffset: 0;
-    transition: stroke-dashoffset 0.1s linear;
-    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.5));
-}
-
-.af-gl-otp-timer-text {
-    font-size: 10px;
-    font-weight: 800;
-    color: #ffd700;
-    z-index: 1;
-    font-family: 'SF Mono', monospace;
-}
-
-/* Анимация пульсации когда мало времени */
-@keyframes otpUrgent {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
-}
-
-.af-gl-otp-timer.urgent .af-gl-otp-timer-ring {
-    animation: otpUrgent 0.7s ease-in-out infinite;
-}
-
-.af-gl-otp-timer.urgent .af-gl-otp-timer-progress {
-    stroke: #f87171;
-    filter: drop-shadow(0 0 5px rgba(248, 113, 113, 0.6));
-}
-
-.af-gl-otp-timer.urgent .af-gl-otp-timer-text {
-    color: #f87171;
-}
-
-/* Компактный инфо-контейнер */
-.af-gl-info-compact {
-    background: linear-gradient(145deg,
-        rgba(255, 255, 255, 0.05),
-        rgba(255, 255, 255, 0.02));
-    border: 1.5px solid rgba(255, 215, 0, 0.15);
-    border-radius: 16px;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    box-shadow:
-        0 4px 16px rgba(0,0,0,0.3),
-        inset 0 1px 0 rgba(255, 215, 0, 0.08);
-}
-
-/* Верхняя строка: аватар + имя */
-.af-gl-info-main {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.af-gl-avatar-wrapper-compact {
-    display: flex;
-    flex-shrink: 0;
-}
-
-/* Убираем overflow у ВСЕХ родителей аватарки */
-.af-gl-wrapper,
-.af-gl-panel,
-.af-gl-info-compact,
-.af-gl-info-main,
-.af-gl-avatar-wrapper-compact {
-    overflow: visible !important;
-}
-
-/* Аватарка при ховере */
-.af-gl-avatar-compact {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    border: 2px solid rgba(255, 215, 0, 0.5);
-    object-fit: cover;
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    cursor: zoom-in;
-    position: relative;
-    z-index: 1;
-    box-shadow:
-        0 2px 12px rgba(0,0,0,0.4),
-        0 0 15px rgba(255, 215, 0, 0.12);
-}
-
-.af-gl-avatar-compact:hover {
-    transform: scale(3.2);
-    z-index: 999999;
-    position: relative;
-    border-radius: 14px;
-    border-color: rgba(255, 215, 0, 1);
-    box-shadow:
-        0 20px 60px rgba(0,0,0,0.8),
-        0 0 0 6px rgba(255, 215, 0, 0.3);
-    margin-right: -80px;
-    margin-left: 20px;
-}
-
-.af-gl-info-core {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-    min-width: 0;
-}
-
-.af-gl-user-type {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-}
-
-.af-gl-user-name-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.af-gl-age-badge {
-    font-size: 13px;
-    line-height: 1;
-}
-
-.af-gl-user-name {
-    font-weight: 700;
-    font-size: 14px;
-    color: #fefefe;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.af-gl-icon-btn {
-    cursor: pointer;
-    opacity: 0.7;
-    transition: all 0.25s;
-    font-size: 12px;
-    line-height: 1;
-    flex-shrink: 0;
-}
-
-.af-gl-icon-btn:hover {
-    opacity: 1;
-    transform: scale(1.2);
-    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.5));
-}
-
-/* Сетка контактов 2×2 */
-.af-gl-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-}
-
-.af-gl-info-cell {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1.5px solid rgba(255, 215, 0, 0.12);
-    border-radius: 10px;
-    padding: 8px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    transition: all 0.25s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-.af-gl-info-cell:hover {
-    background: rgba(0, 0, 0, 0.4);
-    border-color: rgba(255, 215, 0, 0.2);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-}
-
-.af-gl-info-label {
-    font-size: 9px;
-    color: #cbd5e1;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-}
-
-.af-gl-info-value-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 4px;
-}
-
-.af-gl-info-value {
-    font-size: 11px;
-    color: #f1f5f9;
-    font-weight: 600;
-}
-
-/* Identity строка */
-.af-gl-info-identity {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    padding: 6px 10px;
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: 8px;
-    border: 1.5px solid rgba(255, 215, 0, 0.1);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-/* Время — чипсы */
-.af-gl-info-time {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 11px;
-}
-
-.af-gl-time-chip {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 10px;
-    background: rgba(0, 0, 0, 0.35);
-    border-radius: 20px;
-    border: 1.5px solid rgba(255, 215, 0, 0.15);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-.af-gl-time-label {
-    color: #cbd5e1;
-    font-size: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 700;
-}
-
-.af-gl-time-value {
-    color: #ffd700;
-    font-weight: 800;
-    font-family: 'SF Mono', monospace;
-    font-size: 10px;
-}
-
-.af-gl-time-divider {
-    color: rgba(148, 163, 184, 0.5);
-    font-size: 10px;
-}
-
-.af-gl-service-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1.5px solid rgba(255, 215, 0, 0.1);
-}
-
-.af-gl-service-meta {
-    font-size: 10px;
-    color: #94a3b8;
-    font-family: 'SF Mono', monospace;
-}
-
-.af-gl-service-meta strong {
-    color: #cbd5e1;
-    font-weight: 700;
-}
-
-.af-gl-copy-inline {
-    background: transparent;
-    border: none;
-    color: #ffd700;
-    font-size: 11px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: all 0.25s;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-weight: 600;
-}
-
-.af-gl-copy-inline:hover {
-    background: rgba(255, 215, 0, 0.12);
-    transform: scale(1.05);
-}
     `;
     document.head.appendChild(style);
 };
@@ -1107,29 +395,28 @@ const LESSONS_CONFIG = {
     LESSON_TYPE_MAP: PAST_LESSONS_CONFIG.LESSON_TYPE_MAP
 };
 
-// --- HTML ШАБЛОНЫ (С ПРИМЕНЕНИЕМ GLASSMORPHISM) ---
+// --- HTML ШАБЛОНЫ ---
 const win_serviceinfo = `
 <div class="af-gl-wrapper">
     <div class="af-gl-panel">
-
-        <div class="af-gl-header chmaf-drag-handle" id="servicehead" style="cursor: -webkit-grab;">
-            <button title="Скрыть меню" id="hideMeservice" class="af-gl-btn af-gl-btn-icon buttonHide" style="color: #ef4444; min-width: 32px;">❌</button>
+        <div class="af-gl-header chmaf-drag-handle" id="servicehead" style="cursor: grab;">
+            <button title="Скрыть меню" id="hideMeservice" class="af-gl-btn af-gl-btn-icon" style="color: #ef4444; min-width: 34px;">❌</button>
             <button title="CRM" id="GotoCRM" class="af-gl-btn" style="min-width: 50px;">CRM</button>
-            <button title="Показать контакты" id="dounhidemailandphone" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">👁‍🗨</button>
-            <button title="Статус CRM" id="CrmStatus" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 32px;"></button>
+            <button title="Показать контакты" id="dounhidemailandphone" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">👁️</button>
+            <button title="Статус CRM" id="CrmStatus" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">⭕</button>
             <span id="getcurrentstatus" class="af-gl-badge af-gl-bg-info" style="display:none;"></span>
         </div>
 
         <div class="af-gl-row af-gl-row-wrap">
             <input id="idstudent" class="af-gl-input" placeholder="ID У/П" autocomplete="off" style="min-width: 90px;">
-            <button title="Поиск" id="getidstudent" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">🚀</button>
-            <button title="Все задачи" id="crmactivetasks" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">📋</button>
-            <button title="TRM 2.0" id="newTrm" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 32px;">🗿</button>
-            <button title="Стран. учителя" id="personalteacherpage" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 32px;">🎭</button>
-            <button title="Язык: RU" id="changeLocaleLng" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">🌍</button>
-            <button title="Баланс" id="checkBalance" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">💰</button>
-            <button title="Уроки" id="getPastAndFutureLessons" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">📆</button>
-            <button title="Очистить" id="clearservinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">🧹</button>
+            <button title="Поиск" id="getidstudent" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">🚀</button>
+            <button title="Все задачи" id="crmactivetasks" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">📋</button>
+            <button title="TRM 2.0" id="newTrm" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">🗿</button>
+            <button title="Стран. учителя" id="personalteacherpage" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">🎭</button>
+            <button title="Язык: RU" id="changeLocaleLng" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">🌍</button>
+            <button title="Баланс" id="checkBalance" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">💰</button>
+            <button title="Уроки" id="getPastAndFutureLessons" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">📆</button>
+            <button title="Очистить" id="clearservinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">🧹</button>
         </div>
 
         <div class="af-gl-row af-gl-row-wrap">
@@ -1145,105 +432,89 @@ const win_serviceinfo = `
                     </span>
                 </div>
             </div>
-            <button title="Сген. код (МП)" id="getonetimepass" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">📱</button>
-            <button title="Админка" id="editadmbtn" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">✏️</button>
-            <button title="История чатов" id="catchathistory" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">🗄</button>
-            <button title="Набор" id="butTeacherNabor" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 32px;">🚷</button>
-            <button title="Рассрочка" id="partialPaymentinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">💸</button>
-            <button title="Подписка" id="subscriptioninfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">💵</button>
-            <button title="Vimbot" id="openVimbotWindowsUserinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 32px;">▶️</button>
+            <button title="Сген. код (МП)" id="getonetimepass" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">📱</button>
+            <button title="Админка" id="editadmbtn" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">✏️</button>
+            <button title="История чатов" id="catchathistory" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">🗄️</button>
+            <button title="Набор" id="butTeacherNabor" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">🚷</button>
+            <button title="Рассрочка" id="partialPaymentinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">💸</button>
+            <button title="Подписка" id="subscriptioninfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">💵</button>
+            <button title="Vimbot" id="openVimbotWindowsUserinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">▶️</button>
         </div>
 
-        <!-- НОВЫЙ КОМПАКТНЫЙ ИНФО-БЛОК -->
         <div id="basicInfo" class="af-gl-info-container af-gl-info-compact">
-
-            <!-- Верхняя строка: аватар + основная инфа -->
             <div class="af-gl-info-main">
                 <div id="avatarWrapper" class="af-gl-avatar-wrapper-compact" style="display:none;">
-                    <img id="useravatar" class="af-gl-avatar-compact" src="">
+                    <img id="useravatar" class="af-gl-avatar-compact" src="" alt="Avatar">
                 </div>
-
                 <div class="af-gl-info-core">
                     <div id="usrType" class="af-gl-user-type"></div>
                     <div class="af-gl-user-name-row">
                         <span id="usrAge" class="af-gl-age-badge"></span>
                         <span id="usrName" class="af-gl-user-name"></span>
-                        <span id="getloginer" class="af-gl-icon-btn" title="Ссылка-логгинер">🔑</span>
+                        <span id="getloginer" class="af-gl-key-btn" title="Ссылка-логинер">🔑</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Сетка контактов -->
-            <div class="af-gl-info-grid">
-                <div class="af-gl-info-cell">
-                    <span class="af-gl-info-label">📧 Почта</span>
-                    <div class="af-gl-info-value-row">
-                        <span id="mailunhidden" class="af-gl-text-accent">hidden</span>
+            <!-- Контакты с интегрированным статусом Identity -->
+            <div class="af-gl-contacts-row">
+                <div class="af-gl-contact-cell">
+                    <span class="af-gl-contact-label">📧 Почта</span>
+                    <div class="af-gl-contact-value-row">
+                        <span id="mailunhidden" class="af-gl-contact-value">hidden</span>
+                        <span id="mailIdentityStatus" class="af-gl-identity-status"></span>
                         <span class="af-gl-icon-btn" id="getusremail" title="Скопировать">📋</span>
                     </div>
                 </div>
-
-                <div class="af-gl-info-cell">
-                    <span class="af-gl-info-label">☎️ Телефон</span>
-                    <div class="af-gl-info-value-row">
-                        <span id="phoneunhidden" class="af-gl-text-accent">hidden</span>
+                <div class="af-gl-contact-cell">
+                    <span class="af-gl-contact-label">☎️ Телефон</span>
+                    <div class="af-gl-contact-value-row">
+                        <span id="phoneunhidden" class="af-gl-contact-value">hidden</span>
+                        <span id="phoneIdentityStatus" class="af-gl-identity-status"></span>
                         <span class="af-gl-icon-btn" id="getusrphone" title="Скопировать">📋</span>
                     </div>
                 </div>
-
-                <div class="af-gl-info-cell">
-                    <span class="af-gl-info-label">🌍 Страна</span>
-                    <span id="usrCountry" class="af-gl-info-value">—</span>
-                </div>
-
-                <div class="af-gl-info-cell">
-                    <span class="af-gl-info-label">🌐 Язык</span>
-                    <span id="usrServLang" class="af-gl-info-value">—</span>
-                </div>
             </div>
 
-            <!-- Identity статус -->
-            <div class="af-gl-info-identity" name="studentosFields">
-                <span class="af-gl-info-label">Identity:</span>
-                <span id="pochtaIdentity"></span>
-                <span id="telefonIdentity"></span>
-            </div>
-
-            <!-- Время -->
-            <div class="af-gl-info-time">
-                <span class="af-gl-time-chip">
-                    <span class="af-gl-time-label">UTC</span>
-                    <span id="utcOffset" class="af-gl-time-value">—</span>
-                </span>
-                <span class="af-gl-time-divider">|</span>
-                <span class="af-gl-time-chip">
-                    <span class="af-gl-time-label">MSK</span>
-                    <span id="UTCtoMSK" class="af-gl-time-value">—</span>
-                </span>
-                <span class="af-gl-time-divider">|</span>
-                <span class="af-gl-time-chip">
-                    <span class="af-gl-time-label">Местное время: </span>
-                    <span id="localTime" class="af-gl-time-value">—</span>
-                </span>
+            <!-- Страна | Язык | Время (без Identity, так как он теперь в контактах) -->
+            <div class="af-gl-info-single-row">
+                <div class="af-gl-info-item">
+                    <span class="af-gl-info-item-label">🌍</span>
+                    <span id="usrCountry" class="af-gl-info-item-value">—</span>
+                </div>
+                <div class="af-gl-info-item">
+                    <span class="af-gl-info-item-label">Язык об🌐</span>
+                    <span id="usrServLang" class="af-gl-info-item-value">—</span>
+                </div>
+                <div class="af-gl-time-group">
+                    <div class="af-gl-time-chip">
+                        <span class="af-gl-time-label">UTC</span>
+                        <span id="utcOffset" class="af-gl-time-value">—</span>
+                    </div>
+                    <div class="af-gl-time-chip">
+                        <span class="af-gl-time-label">MSK</span>
+                        <span id="UTCtoMSK" class="af-gl-time-value">—</span>
+                    </div>
+                    <div class="af-gl-time-chip">
+                        <span class="af-gl-time-label">Местное</span>
+                        <span id="localTime" class="af-gl-time-value">—</span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="serviceSectionTitle" class="af-gl-section-title">
-            <span class="af-gl-section-icon">✨</span>
-            <span>Информация об услугах</span>
+            <span>✨ Услуги</span>
             <div class="af-gl-section-line"></div>
         </div>
-
         <div id="serviceList" class="af-gl-scrollable">
             <div id="servicetable" class="af-gl-services-grid"></div>
         </div>
 
-        <div id="complektSectionTitle" class="af-gl-section-title" style="margin-top: 8px;">
-            <span class="af-gl-section-icon">📦</span>
-            <span>Комплектации</span>
+        <div id="complektSectionTitle" class="af-gl-section-title" style="margin-top: 4px;">
+            <span>📦 Комплектации</span>
             <div class="af-gl-section-line"></div>
         </div>
-
         <div id="complektList" class="af-gl-scrollable">
             <div id="complekttable"></div>
         </div>
@@ -1251,15 +522,15 @@ const win_serviceinfo = `
 </div>`;
 
 const win_Timetable = `
-<div class="af-gl-wrapper" style="width: 450px;">
+<div class="af-gl-wrapper" style="width: 440px;">
     <div class="af-gl-panel">
-        <div class="af-gl-header chmaf-drag-handle" id="HeadTimetable" style="cursor: -webkit-grab; justify-content: space-between;">
-            <span style="font-weight: bold; font-size: 14px;">📅 Расписание</span>
-            <button class="af-gl-btn" id="hideMeTT" style="color: #ef4444;">❌</button>
+        <div class="af-gl-header chmaf-drag-handle" id="HeadTimetable" style="cursor: grab; justify-content: space-between;">
+            <span style="font-weight: 700; font-size: 15px;">📅 Расписание</span>
+            <button class="af-gl-btn af-gl-btn-icon" id="hideMeTT" style="color: #ef4444; min-width: 34px;">❌</button>
         </div>
-        <div class="af-gl-row" style="justify-content: center;">
-            <button class="af-gl-btn" id="getlessonpast">Прошедшие</button>
-            <button class="af-gl-btn" id="getlessonfuture">Предстоящие</button>
+        <div class="af-gl-row" style="justify-content: center; gap: 10px;">
+            <button class="af-gl-btn" id="getlessonpast" style="flex:1;">Прошедшие</button>
+            <button class="af-gl-btn" id="getlessonfuture" style="flex:1;">Предстоящие</button>
         </div>
         <div id="timetableinfo" class="af-gl-scrollable" style="margin-top: 10px;">
             <div id="timetabledata" style="text-align: center;"></div>
@@ -1268,11 +539,11 @@ const win_Timetable = `
 </div>`;
 
 const win_Complectations = `
-<div class="af-gl-wrapper" style="width: 500px;">
+<div class="af-gl-wrapper" style="width: 480px;">
     <div class="af-gl-panel">
-        <div class="af-gl-header chmaf-drag-handle" id="headComplectations" style="cursor: -webkit-grab; justify-content: space-between;">
-            <span style="font-weight: bold; font-size: 14px;">📦 Комплектации</span>
-            <button class="af-gl-btn" id="hideComplecations" style="color: #ef4444;">❌</button>
+        <div class="af-gl-header chmaf-drag-handle" id="headComplectations" style="cursor: grab; justify-content: space-between;">
+            <span style="font-weight: 700; font-size: 15px;">📦 Комплектации</span>
+            <button class="af-gl-btn af-gl-btn-icon" id="hideComplecations" style="color: #ef4444; min-width: 34px;">❌</button>
         </div>
         <div id="cmplInfo" class="af-gl-scrollable">
             <div id="cmplData"></div>
@@ -1280,16 +551,16 @@ const win_Complectations = `
     </div>
 </div>`;
 
-// --- ИНИЦИАЛИЗАЦИЯ ОКОН (функции createWindow ожидаются извне) ---
-const wintServices = createWindow('AF_Service', 'winTopService', 'winLeftService', win_serviceinfo);
-const wintTimetable = createWindow('AF_Timetable', 'winTopTimetable', 'winLeftTimetable', win_Timetable);
-const wintComplectations = createWindow('AF_Complectations', 'winTopComplectations', 'winLeftComplectations', win_Complectations);
+// --- ИНИЦИАЛИЗАЦИЯ ОКОН ---
+const wintServices = typeof createWindow === 'function' ? createWindow('AF_Service', 'winTopService', 'winLeftService', win_serviceinfo) : null;
+const wintTimetable = typeof createWindow === 'function' ? createWindow('AF_Timetable', 'winTopTimetable', 'winLeftTimetable', win_Timetable) : null;
+const wintComplectations = typeof createWindow === 'function' ? createWindow('AF_Complectations', 'winTopComplectations', 'winLeftComplectations', win_Complectations) : null;
 
 // --- УТИЛИТЫ И ХЕЛПЕРЫ ---
 const getStudentId = () => {
     const userId = document.getElementById('idstudent')?.value.trim();
     if (!userId) {
-        createAndShowButton('Пожалуйста, введите ID студента.', 'warning');
+        if (typeof createAndShowButton === 'function') createAndShowButton('Пожалуйста, введите ID студента.', 'warning');
         return null;
     }
     return userId;
@@ -1310,11 +581,29 @@ const sendMessageAsync = (message) => {
     });
 };
 
-// --- ОСНОВНЫЕ ОБРАБОТЧИКИ СОБЫТИЙ ---
+// --- ИНИЦИАЛИЗАЦИЯ ОБРАБОТЧИКОВ КНОПОК КОПИРОВАНИЯ (ОДИН РАЗ!) ---
+const initCopyButtons = () => {
+    document.getElementById('getusremail')?.addEventListener('click', () => {
+        const email = document.getElementById('mailunhidden')?.textContent;
+        if (email && email !== 'hidden' && typeof copyToClipboard === 'function') {
+            copyToClipboard(email);
+            if (typeof createAndShowButton === 'function') createAndShowButton('📧 Почта скопирована', 'message');
+        }
+    });
 
-// Скрытие окон
+    document.getElementById('getusrphone')?.addEventListener('click', () => {
+        const phone = document.getElementById('phoneunhidden')?.textContent;
+        if (phone && phone !== 'hidden' && typeof copyToClipboard === 'function') {
+            copyToClipboard(phone);
+            if (typeof createAndShowButton === 'function') createAndShowButton('☎️ Телефон скопирован', 'message');
+        }
+    });
+};
+setTimeout(initCopyButtons, 100);
+
+// --- ОСНОВНЫЕ ОБРАБОТЧИКИ СОБЫТИЙ ---
 document.getElementById('servicehead')?.addEventListener('dblclick', (a) => {
-    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') {
+    if (typeof checkelementtype === 'function' && checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') {
         document.getElementById('AF_Service').style.display = 'none';
         document.getElementById('butServ')?.classList.remove('active');
     }
@@ -1324,27 +613,25 @@ document.getElementById('hideMeservice')?.addEventListener('click', () => {
     document.getElementById('butServ')?.classList.remove('active');
 });
 
-// Кнопка Identity (раскрыть почту/телефон)
 document.getElementById('dounhidemailandphone')?.addEventListener('click', async function () {
     this.disabled = true;
     const originalText = this.textContent;
     this.textContent = '⏳';
     try {
-        await Promise.all([getUnhideEmail(), getUnhidePhone()]);
-        await checkEmailAndPhoneIdentity();
+        await Promise.all([typeof getUnhideEmail === 'function' && getUnhideEmail(), typeof getUnhidePhone === 'function' && getUnhidePhone()]);
+        if (typeof checkEmailAndPhoneIdentity === 'function') await checkEmailAndPhoneIdentity();
     } catch (error) {
         console.error('Ошибка:', error);
         document.getElementById('mailunhidden').textContent = '';
         document.getElementById('phoneunhidden').textContent = '';
-        document.getElementById('pochtaIdentity').textContent = '';
-        document.getElementById('telefonIdentity').textContent = '';
+        document.getElementById('mailIdentityStatus').textContent = '';
+        document.getElementById('phoneIdentityStatus').textContent = '';
     } finally {
         this.disabled = false;
         this.textContent = originalText;
     }
 });
 
-// Настройка линков из конфига
 const idstudentField = document.getElementById('idstudent');
 if (idstudentField) {
     for (const buttonId in LINK_CONFIG) {
@@ -1355,7 +642,6 @@ if (idstudentField) {
     }
 }
 
-// Генерация OTP
 document.getElementById('getonetimepass')?.addEventListener('click', async function () {
     const userId = getStudentId();
     if (!userId) return;
@@ -1364,7 +650,6 @@ document.getElementById('getonetimepass')?.addEventListener('click', async funct
     const timerText = document.getElementById('otpTimerText');
     const timerCircle = document.getElementById('otpTimerCircle');
 
-    // Сбрасываем предыдущий таймер если есть
     if (otpTimerInterval) {
         clearInterval(otpTimerInterval);
         otpTimerInterval = null;
@@ -1386,16 +671,13 @@ document.getElementById('getonetimepass')?.addEventListener('click', async funct
         });
         const otpMatch = response.fetchansver.match(/Одноразовый пароль: (\d+)\./);
         const otpCode = otpMatch ? otpMatch[1] : 'Не найден';
-
         outputField.value = otpCode;
 
-        // Запускаем таймер на 15 секунд
-        if (otpMatch) {
+        if (otpMatch && typeof startOtpTimer === 'function') {
             startOtpTimer(15, timerContainer, timerText, timerCircle, outputField);
         }
-
     } catch (e) {
-        createAndShowButton(`Ошибка: ${e.message}`, 'error');
+        if (typeof createAndShowButton === 'function') createAndShowButton(`Ошибка: ${e.message}`, 'error');
         timerContainer.style.display = 'none';
     } finally {
         this.disabled = false;
@@ -1403,11 +685,10 @@ document.getElementById('getonetimepass')?.addEventListener('click', async funct
     }
 });
 
-// Функция таймера
 function startOtpTimer(duration, container, textEl, circleEl, inputEl) {
     const totalDuration = duration;
     let remaining = duration;
-    const circumference = 62.83; // 2 * PI * 10
+    const circumference = 62.83;
 
     container.style.display = 'flex';
     container.classList.remove('urgent');
@@ -1417,15 +698,10 @@ function startOtpTimer(duration, container, textEl, circleEl, inputEl) {
     otpTimerInterval = setInterval(() => {
         remaining--;
         textEl.textContent = remaining;
-
-        // Обновляем кольцо
         const offset = circumference - (remaining / totalDuration) * circumference;
         circleEl.style.strokeDashoffset = offset;
 
-        // Краснеем когда мало времени (последние 5 сек)
-        if (remaining <= 5) {
-            container.classList.add('urgent');
-        }
+        if (remaining <= 5) container.classList.add('urgent');
 
         if (remaining <= 0) {
             clearInterval(otpTimerInterval);
@@ -1436,9 +712,8 @@ function startOtpTimer(duration, container, textEl, circleEl, inputEl) {
     }, 1000);
 }
 
-// Управление окнами Timetable / Complectations
 document.getElementById('AF_Timetable')?.addEventListener('dblclick', (a) => {
-    if (checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') {
+    if (typeof checkelementtype === 'function' && checkelementtype(a) && localStorage.getItem('dblhidewindow') == '0') {
         document.getElementById('AF_Timetable').style.display = 'none';
         document.getElementById('timetabledata').innerHTML = "";
     }
@@ -1455,103 +730,69 @@ document.getElementById('hideComplecations')?.addEventListener('click', () => {
 });
 
 // --- ЛОГИКА ДАННЫХ ПОЛЬЗОВАТЕЛЯ ---
-
 function getUserStatus() {
     return new Promise((resolve, reject) => {
         const sid = idstudentField?.value.trim();
-        if (!sid) {
-            return reject(new Error("Пустой userId"));
-        }
+        if (!sid) return reject(new Error("Пустой userId"));
 
         const fetchURL = `https://id.skyeng.ru/admin/users/${encodeURIComponent(sid)}`;
+        const requestOptions = { method: 'GET', headers: { "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" }, credentials: 'include' };
 
-        const requestOptions = {
-            method: 'GET',
-            headers: {
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-                // sec-ch-*/sec-fetch*/priority/upgrade-insecure-requests — запрещённые
-                // для ручной установки, браузер их игнорирует
-            },
-            credentials: 'include'
-        };
-
-        chrome.runtime.sendMessage(
-            { action: 'getFetchRequest', fetchURL, requestOptions },
-            (response) => {
-                if (!response || response.success !== true) {
-                    console.log('Ошибка при получении статуса: ', response?.error);
-                    return reject(new Error(response?.error || "Неизвестная ошибка"));
-                }
-
-                const html = response.fetchAnswer || response.fetchansver || '';
-
-                // Исправлено: убраны лишние < в регулярках
-                const tableMatch = html.match(/<th[^>]*>\s*Статус\s*<\/th>\s*<td>([^<<]+)<\/td>/i);
-                const divMatch = html.match(/статус:\s*<strong>([^<<]+)<\/strong>/i);
-                const looseMatch = html.match(/статус[:\s]*<strong>([^<<]+)<\/strong>/i);
-
-                const match = tableMatch || divMatch || looseMatch;
-
-                if (match && match[1]) {
-                    const status = match[1].trim();
-                    console.log(`Статус пользователя ${sid}:`, status);
-
-                    let lnkToAddStatus = document.getElementById('usrType');
-                    if (!lnkToAddStatus) {
-                        console.warn('Элемент #usrType не найден в DOM');
-                        return reject(new Error('Элемент #usrType не найден'));
-                    }
-
-                    let lnkForStatus = document.getElementById('userStatusBadge');
-
-                    if (!lnkForStatus) {
-                        lnkForStatus = document.createElement('span');
-                        lnkForStatus.id = 'userStatusBadge';
-                        lnkForStatus.style.cssText = "font-weight: 700; padding: 2px 6px; margin-left: 5px; border-radius: 3px; color: #fff; display: inline-block;";
-                        lnkToAddStatus.appendChild(lnkForStatus);
-                    }
-
-                    // Цвета по статусу
-                    if (status === 'активный') {
-                        lnkForStatus.style.backgroundColor = '#28a745'; // зелёный
-                    } else if (status === 'временно отключен') {
-                        lnkForStatus.style.backgroundColor = '#d32b49'; // красный
-                    } else {
-                        lnkForStatus.style.backgroundColor = '#6c757d'; // серый для остальных
-                    }
-
-                    lnkForStatus.textContent = status;
-
-                    // Защита: если внешний код/React перерисовывает DOM и элемент пропадает — вернуть через 500мс
-                    setTimeout(() => {
-                        const container = document.getElementById('usrType');
-                        if (!document.getElementById('userStatusBadge') && container) {
-                            container.appendChild(lnkForStatus);
-                        }
-                    }, 500);
-
-                    resolve(status);
-                } else {
-                    console.log('Статус не найден в ответе');
-                    reject(new Error('Статус не найден в ответе'));
-                }
+        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions }, (response) => {
+            if (!response || response.success !== true) {
+                return reject(new Error(response?.error || "Неизвестная ошибка"));
             }
-        );
+            const html = response.fetchAnswer || response.fetchansver || '';
+            const tableMatch = html.match(/<th[^>]*>\s*Статус\s*<\/th>\s*<td>([^<]+)<\/td>/i);
+            const divMatch = html.match(/статус:\s*<strong>([^<]+)<\/strong>/i);
+            const looseMatch = html.match(/статус[:\s]*<strong>([^<]+)<\/strong>/i);
+            const match = tableMatch || divMatch || looseMatch;
+
+            if (match && match[1]) {
+                const status = match[1].trim();
+                let lnkToAddStatus = document.getElementById('usrType');
+                if (!lnkToAddStatus) return reject(new Error('Элемент #usrType не найден'));
+
+                let lnkForStatus = document.getElementById('userStatusBadge');
+                if (!lnkForStatus) {
+                    lnkForStatus = document.createElement('span');
+                    lnkForStatus.id = 'userStatusBadge';
+                    lnkForStatus.style.cssText = "font-weight: 700; padding: 2px 8px; margin-left: 8px; border-radius: 6px; color: #fff; display: inline-block; font-size: 11px; letter-spacing: 0.05em;";
+                    lnkToAddStatus.appendChild(lnkForStatus);
+                }
+
+                if (status === 'активный') lnkForStatus.style.backgroundColor = '#22c55e';
+                else if (status === 'временно отключен') lnkForStatus.style.backgroundColor = '#ef4444';
+                else lnkForStatus.style.backgroundColor = '#64748b';
+
+                lnkForStatus.textContent = status;
+                setTimeout(() => {
+                    const container = document.getElementById('usrType');
+                    if (!document.getElementById('userStatusBadge') && container) container.appendChild(lnkForStatus);
+                }, 500);
+                resolve(status);
+            } else {
+                reject(new Error('Статус не найден в ответе'));
+            }
+        });
     });
 }
 
 async function checkEmailAndPhoneIdentity() {
     const userId = idstudentField?.value.trim();
     if (!userId || window.flagusertype !== "student") return;
-
     try {
         const response = await sendMessageAsync({ action: 'getFetchRequest', fetchURL: `https://id.skyeng.ru/admin/users/${userId}/update-contacts`, requestOptions: { method: 'GET' } });
         const html = response.fetchansver;
         const hasEmail = !html.includes('"identityEmail" disabled data-value=""');
         const hasPhone = !html.includes('"identityPhone" disabled data-value=""');
 
-        document.getElementById('pochtaIdentity').textContent = `${STATUS_ICONS.EMAIL}${hasEmail ? STATUS_ICONS.VALID : STATUS_ICONS.INVALID}`;
-        document.getElementById('telefonIdentity').textContent = `${STATUS_ICONS.PHONE}${hasPhone ? STATUS_ICONS.VALID : STATUS_ICONS.INVALID}`;
+        // Обновляем статусы прямо в блоках контактов
+        const mailStatusEl = document.getElementById('mailIdentityStatus');
+        const phoneStatusEl = document.getElementById('phoneIdentityStatus');
+
+        if (mailStatusEl) mailStatusEl.textContent = hasEmail ? STATUS_ICONS.VALID : STATUS_ICONS.INVALID;
+        if (phoneStatusEl) phoneStatusEl.textContent = hasPhone ? STATUS_ICONS.VALID : STATUS_ICONS.INVALID;
     } catch (error) {
         console.error("Не удалось проверить статус identity:", error);
     }
@@ -1561,7 +802,6 @@ async function _fetchAndDisplayPersonalData(pdType, targetElementId) {
     const userId = getStudentId();
     const targetEl = document.getElementById(targetElementId);
     if (!userId || !targetEl) return;
-
     try {
         const response = await sendMessageAsync({ action: 'getFetchRequest', fetchURL: `${API_BASE_URL}/${userId}/personal-data/?pdType=${pdType}&source=persons.profile`, requestOptions: { method: 'GET' } });
         const data = JSON.parse(response.fetchansver);
@@ -1574,7 +814,6 @@ async function _fetchAndDisplayPersonalData(pdType, targetElementId) {
 const getUnhideEmail = () => _fetchAndDisplayPersonalData('email', 'mailunhidden');
 const getUnhidePhone = () => _fetchAndDisplayPersonalData('phone', 'phoneunhidden');
 
-// Получение конфигурации услуг
 async function fetchServiceConfiguration() {
     try {
         const response = await sendMessageAsync({ action: 'getFetchRequest', fetchURL: 'https://backend.skyeng.ru/api/products/configurations/', requestOptions: { method: 'GET' } });
@@ -1585,7 +824,6 @@ async function fetchServiceConfiguration() {
 }
 fetchServiceConfiguration();
 
-// Форматирование дат и уроков
 function formatLessonDate(dateString) {
     const date = new Date(dateString);
     return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
@@ -1595,15 +833,14 @@ function createFutureLessonHTML(lesson, type) {
     const { startedAt, lessonType, educationService, teacher } = lesson;
     const translatedType = LESSONS_CONFIG.LESSON_TYPE_MAP[lessonType] || lessonType;
     const srvTitle = (servicecontainer?.data || []).find(i => i.serviceTypeKey === educationService.serviceTypeKey)?.shortTitle || educationService.serviceTypeKey;
-
-    const teacherInfo = teacher ? `<div class="af-gl-text-success">👨‍🏫 ${teacher.general.id} ${teacher.general.name} ${teacher.general.surname}</div>` : '';
-    const statusHTML = type === 'past' ? `<div>Статус: <span class="af-gl-text-success">Прошел</span></div>` : '';
+    const teacherInfo = teacher ? `<div style="font-size:12px; color:#86efac; margin-top:6px;">👨‍🏫 ${teacher.general.id} ${teacher.general.name} ${teacher.general.surname}</div>` : '';
+    const statusHTML = type === 'past' ? `<div style="font-size:12px; margin-top:6px;">Статус: <span style="color:#86efac; font-weight:600;">Прошел</span></div>` : '';
 
     return `
-        <div class="af-gl-card">
-            <div><span class="af-gl-text-warning">📅 Дата:</span> ${formatLessonDate(startedAt)}</div>
-            <div><span class="af-gl-text-warning">🎓 Урок:</span> ${translatedType}</div>
-            <div><span class="af-gl-text-accent">📚 Услуга:</span> ${educationService.id} ${srvTitle}</div>
+        <div style="background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border: 1px solid rgba(255,215,0,0.15); border-radius: 12px; padding: 12px; margin-bottom: 8px;">
+            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#fde047;">📅</span> ${formatLessonDate(startedAt)}</div>
+            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#7dd3fc;">🎓</span> ${translatedType}</div>
+            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#94a3b8;">📚</span> ${educationService.id} ${srvTitle}</div>
             ${statusHTML}
             ${teacherInfo}
         </div>`;
@@ -1616,17 +853,17 @@ async function fetchAndDisplayLessons(type) {
     if (!userId || !btn || !out) return;
 
     btn.disabled = true;
-    out.innerHTML = 'Загрузка...';
+    out.innerHTML = '<div style="padding:20px; color:#94a3b8;">Загрузка...</div>';
     try {
         const response = await sendMessageAsync({ action: 'getFetchRequest', fetchURL: LESSONS_CONFIG.apiUrls[type](userId), requestOptions: { method: 'GET' } });
         const data = JSON.parse(response.fetchansver);
         if (!data?.data?.length) {
-            out.innerHTML = type === 'future' ? 'Уроки не запланированы' : 'Уроков еще не было';
+            out.innerHTML = `<div class="af-gl-empty-state">${type === 'future' ? 'Уроки не запланированы' : 'Уроков еще не было'}</div>`;
             return;
         }
         out.innerHTML = data.data.map(l => createFutureLessonHTML(l, type)).join('');
     } catch (e) {
-        out.innerHTML = 'Ошибка загрузки';
+        out.innerHTML = `<div class="af-gl-empty-state" style="color:#fca5a5;">Ошибка загрузки</div>`;
     } finally {
         btn.disabled = false;
     }
@@ -1635,7 +872,6 @@ async function fetchAndDisplayLessons(type) {
 document.getElementById('getlessonfuture')?.addEventListener('click', () => fetchAndDisplayLessons('future'));
 document.getElementById('getlessonpast')?.addEventListener('click', () => fetchAndDisplayLessons('past'));
 
-// Управление Locale
 document.getElementById('changeLocaleLng')?.addEventListener('click', async function () {
     const userId = getStudentId();
     if (!userId) return;
@@ -1646,7 +882,7 @@ document.getElementById('changeLocaleLng')?.addEventListener('click', async func
             fetchURL: `https://backend.skyeng.ru/api/persons/general/${userId}`,
             requestOptions: { method: 'PUT', body: JSON.stringify({ serviceLocale: 'ru' }), headers: { 'Content-Type': 'application/json' } }
         });
-        createAndShowButton('Язык обновлен', 'message');
+        if (typeof createAndShowButton === 'function') createAndShowButton('Язык обновлен', 'message');
         this.innerHTML = '✅';
     } catch (e) {
         this.innerHTML = '❌';
@@ -1670,19 +906,12 @@ async function getusernamecrm() {
     window.flagusertype = data.type;
     const isStudent = data.type === "student";
 
-    // Имя и тип
-    document.getElementById('usrName').textContent = `${data.name} ${data.surname || ''}`;
+    document.getElementById('usrName').textContent = `${data.name} ${data.surname || ''}`.trim();
     const typeEl = document.getElementById('usrType');
-    if (isStudent) {
-        typeEl.innerHTML = `<span class="af-gl-text-success">🎓 Ученик</span>`;
-    } else {
-        typeEl.innerHTML = `<span class="af-gl-text-accent">👨‍🏫 Преподаватель</span>`;
-    }
+    typeEl.innerHTML = isStudent ? `<span style="color:#86efac;">🎓 Ученик</span>` : `<span style="color:#7dd3fc;">👨‍🏫 Преподаватель</span>`;
 
-    // Страна
     document.getElementById('usrCountry').textContent = data.country || '—';
 
-    // Аватар
     const avatarWrapper = document.getElementById('avatarWrapper');
     const avatarEl = document.getElementById('useravatar');
     if (data.avatarUrl) {
@@ -1697,7 +926,6 @@ async function getusernamecrm() {
         avatarWrapper.style.display = 'none';
     }
 
-    // Возраст
     let ageIco = "❓";
     if (data.birthday) {
         const age = new Date().getFullYear() - Number(data.birthday.split('-')[0]);
@@ -1705,18 +933,15 @@ async function getusernamecrm() {
     }
     document.getElementById('usrAge').textContent = ageIco;
 
-    // Скрываем/показываем студентские поля
-    const elsToHide = ['pochtaIdentity', 'telefonIdentity', 'checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'complekttable', 'newTrm', 'butTeacherNabor', 'personalteacherpage', 'serviceList', 'complektList', 'serviceSectionTitle', 'complektSectionTitle'];
+    const elsToHide = ['checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'complekttable', 'newTrm', 'butTeacherNabor', 'personalteacherpage', 'serviceList', 'complektList', 'serviceSectionTitle', 'complektSectionTitle'];
     elsToHide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     if (isStudent) {
-        ['checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'pochtaIdentity', 'telefonIdentity', 'complekttable', 'serviceList', 'complektList', 'serviceSectionTitle', 'complektSectionTitle'].forEach(id => {
+        ['checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'complekttable', 'serviceList', 'complektList', 'serviceSectionTitle', 'complektSectionTitle'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.style.display = '';
         });
-        // Возвращаем видимость возраста (скрывался после просмотра преподавателя)
-        const ageEl = document.getElementById('usrAge');
-        if (ageEl) ageEl.style.display = '';
+        document.getElementById('usrAge').style.display = '';
     } else {
         ['newTrm', 'butTeacherNabor', 'personalteacherpage'].forEach(id => {
             const el = document.getElementById(id);
@@ -1726,12 +951,10 @@ async function getusernamecrm() {
         document.getElementById('servicetable').innerHTML = '';
     }
 
-    // Язык
     const locale = data.serviceLocale || "⭕";
     document.getElementById('usrServLang').textContent = locale;
     document.getElementById('changeLocaleLng').style.display = locale === "ru" ? "none" : "";
 
-    // Время
     document.getElementById('utcOffset').textContent = data.utcOffset;
     document.getElementById('UTCtoMSK').textContent = data.utcOffset - 3;
     document.getElementById('localTime').textContent = new Date(Date.now() + data.utcOffset * 3600000).toISOString().substr(11, 5);
@@ -1742,7 +965,6 @@ async function getusernamecrm() {
 async function crmstatus() {
     const userId = idstudentField?.value.trim();
     if (!userId) return;
-
     const statusEl = document.getElementById('getcurrentstatus');
     const crmEl = document.getElementById('CrmStatus');
     statusEl.style.display = 'none';
@@ -1754,7 +976,6 @@ async function crmstatus() {
             fetchURL: `https://customer-support.skyeng.ru/task/user/${userId}`,
             requestOptions: { method: 'GET' }
         });
-
         const tasks = JSON.parse(res.fetchansver).data;
         let flags = { tpOut: false, tp: false, notTp: false, wait: false, processing: false, operator: '' };
 
@@ -1802,25 +1023,14 @@ async function getservices(stidNew) {
     linkTable.innerHTML = "";
 
     try {
-        // Параллельно грузим комплектации и услуги — в 2 раза быстрее
         const [complectRes, servicesRes] = await Promise.all([
-            sendMessageAsync({
-                action: 'getFetchRequest',
-                fetchURL: `https://backend.skyeng.ru/api/v1/students/${stidNew}/education-service-kits/`,
-                requestOptions: { method: 'GET' }
-            }),
-            sendMessageAsync({
-                action: 'getFetchRequest',
-                fetchURL: `https://backend.skyeng.ru/api/persons/${stidNew}/education-services/`,
-                requestOptions: { method: 'GET' }
-            })
+            sendMessageAsync({ action: 'getFetchRequest', fetchURL: `https://backend.skyeng.ru/api/v1/students/${stidNew}/education-service-kits/`, requestOptions: { method: 'GET' } }),
+            sendMessageAsync({ action: 'getFetchRequest', fetchURL: `https://backend.skyeng.ru/api/persons/${stidNew}/education-services/`, requestOptions: { method: 'GET' } })
         ]);
 
-        // --- ОБРАБОТКА КОМПЛЕКТАЦИЙ ---
         const complectData = JSON.parse(complectRes.fetchansver);
-
         if (complectData.data.length > 0) {
-            linkTable.innerHTML += `<div id="openOneComplectation" class="af-gl-card cursor-pointer af-gl-bg-success" style="text-align:center; margin-bottom: 8px;">✅ Есть комплектации <span style="font-size: 11px; opacity: 0.8;">(кликни)</span></div>`;
+            linkTable.innerHTML += `<div id="openOneComplectation" class="af-gl-card cursor-pointer af-gl-bg-success" style="text-align:center; margin-bottom: 8px; padding: 10px; border-radius:10px;">✅ Есть комплектации <span style="font-size: 11px; opacity: 0.8;">(кликни)</span></div>`;
             document.getElementById('openOneComplectation')?.addEventListener('click', () => {
                 const w = document.getElementById('AF_Complectations');
                 w.style.display = w.style.display === "none" ? "" : "none";
@@ -1830,11 +1040,11 @@ async function getservices(stidNew) {
                 if (service.incorrectnessReason == null) {
                     let sHtml = `<table class="af-gl-complect-table">`;
                     service.educationServices.forEach(el => {
-                        let { formattedText } = typeof formatServiceType === 'function' ? formatServiceType(el.serviceTypeKey) : { formattedText: el.serviceTypeKey };
+                        let formattedText = typeof formatServiceType === 'function' ? formatServiceType(el.serviceTypeKey).formattedText : el.serviceTypeKey;
                         sHtml += `<tr>
                             <td><a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:inherit; text-decoration:none;">${el.id}</a></td>
                             <td>${formattedText}</td>
-                            <td style="color: #fde047; font-weight: 600;">${el.balance}</td>
+                            <td style="color: #fde047; font-weight: 700;">${el.balance}</td>
                             <td><span class="af-gl-sync-btn" data-srvid="${el.id}" title="Синхронизировать">♻️</span></td>
                         </tr>`;
                     });
@@ -1846,61 +1056,49 @@ async function getservices(stidNew) {
                     compTable.innerHTML += `<div class="af-gl-complect-card" style="margin-bottom:10px;">
                         <div class="af-gl-complect-header ${stageClass}" ${opNote}>
                             📦 [${service.id}] ${service.productKit.title}
-                            <span style="font-size: 10px; opacity: 0.8; display: block; margin-top: 2px; font-weight: 500;">
+                            <div style="font-size: 11px; opacity: 0.8; margin-top: 4px; font-weight: 500;">
                                 ${service.stage === "regular_lessons" ? "Регулярные занятия" : service.stage === "lost" ? "Потерянная" : service.stage}
-                            </span>
+                            </div>
                         </div>
                         ${sHtml}
                     </div>`;
                 } else {
                     compTable.innerHTML += `<div class="af-gl-complect-card" style="margin-bottom:10px; text-align:center; border: 1px solid rgba(220, 20, 60, 0.3); background: linear-gradient(145deg, rgba(220, 20, 60, 0.1), rgba(220, 20, 60, 0.05));">
-                        <div style="color: #fca5a5; font-weight: 600; font-size: 12px;">⚠️ [${service.id}] '${service.productKit.title}' — некорректна</div>
+                        <div style="color: #fca5a5; font-weight: 600; font-size: 13px;">⚠️ [${service.id}] '${service.productKit.title}' — некорректна</div>
                     </div>`;
                 }
             });
 
-            // Синхронизация
             document.querySelectorAll('.af-gl-sync-btn').forEach(btn => {
                 btn.onclick = async function () {
                     const srvId = this.getAttribute('data-srvid');
                     this.innerText = "⏳";
                     const gToken = localStorage.getItem('token_global');
-
                     try {
                         await sendMessageAsync({
                             action: 'getFetchRequest',
                             fetchURL: `https://skysmart-core.skyeng.ru/api/v1/academic-activity/upsert-education-service-history/${srvId}`,
-                            requestOptions: {
-                                headers: { "accept": "application/json, text/plain, */*", "authorization": `Bearer ${gToken}` },
-                                method: "POST",
-                                mode: "cors"
-                            }
+                            requestOptions: { headers: { "accept": "application/json, text/plain, */*", "authorization": `Bearer ${gToken}` }, method: "POST", mode: "cors" }
                         });
                         this.innerText = "✅";
                         setTimeout(() => this.innerText = "♻️", 3000);
                     } catch (response) {
-                        createAndShowButton('Не удалось выполнить запрос: ' + (response?.error || response.message), 'error');
+                        if (typeof createAndShowButton === 'function') createAndShowButton('Не удалось выполнить запрос: ' + (response?.error || response.message), 'error');
                         this.innerText = "❌";
                         localStorage.removeItem('token_global');
                     }
                 };
             });
-
         } else {
-            linkTable.innerHTML += `<div class="af-gl-card" style="text-align:center; background: linear-gradient(145deg, rgba(220, 20, 60, 0.15), rgba(220, 20, 60, 0.05)); border: 1px solid rgba(220, 20, 60, 0.2);">
-                <span style="color: #fca5a5; font-size: 13px;">❌ Нет комплектаций</span>
-            </div>`;
+            linkTable.innerHTML += `<div class="af-gl-empty-state" style="border-color: rgba(220, 20, 60, 0.3); color: #fca5a5;">❌ Нет комплектаций</div>`;
         }
 
-        // --- ОБРАБОТКА ОБЫЧНЫХ УСЛУГ ---
         const data = JSON.parse(servicesRes.fetchansver);
-
         if (data.data.length > 0) {
             let htmlStr = '';
-            let arrservice = [];
             let srvKeyMap = new Map((servicecontainer?.data || []).map(d => [d.serviceTypeKey, d.shortTitle]));
 
-            data.data.forEach((service, i) => {
+            data.data.forEach((service) => {
                 if (srvKeyMap.has(service.serviceTypeKey)) service.serviceTypeKey = srvKeyMap.get(service.serviceTypeKey);
                 if (service.student.general.id != stidNew || service.incorrectnessReason != null) return;
 
@@ -1908,69 +1106,38 @@ async function getservices(stidNew) {
                 const ignoreTypes = ["Англ Talks 15 min", "Skyeng Space", "Групповые онлайн-мероприятия Life", "Скрининг", "Англ adult АЯ Даунсейл"];
                 if (ignoreTypes.includes(sType)) return;
 
-                arrservice.push(service.id);
-
                 let statusClass, statusText, statusIcon;
-                let balanceHtml = `<div class="af-gl-service-balance">${service.balance}</div>`;
+                const balanceHtml = `<div class="af-gl-service-balance">💰 ${service.balance}</div>`;
 
                 if (service.stage === "after_trial" || service.stage === "before_call") {
-                    statusClass = 'af-gl-status-vu';
-                    statusText = 'Этап ВУ';
-                    statusIcon = '⚡';
-
-                    htmlStr += `
-                    <div class="af-gl-service-card">
+                    statusClass = 'af-gl-status-vu'; statusText = 'Этап ВУ'; statusIcon = '⚡';
+                    htmlStr += `<div class="af-gl-service-card">
                         <div class="af-gl-service-header">
                             <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
-                            <span class="af-gl-service-id">
-                                #${service.id}
-                                <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID услуги">📋</span>
-                            </span>
+                            <span class="af-gl-service-id">#${service.id} <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID">📋</span></span>
                         </div>
                         ${balanceHtml}
                         <div class="af-gl-service-type">💡 ${sType}</div>
                     </div>`;
-
                 } else if (service.stage === "regular_lessons") {
-                    statusClass = 'af-gl-status-regular';
-                    statusText = 'Регулярные';
-                    statusIcon = '';
-
-                    const t = service.teacher
-                        ? `<div class="af-gl-service-teacher">👨‍🏫 ${service.teacher.general.id}, ${service.teacher.general.name} ${service.teacher.general.surname}</div>`
-                        : `<div class="af-gl-service-teacher missing">👨‍🏫 Не закреплен!</div>`;
-                    const tmp = service.temporaryTeacher
-                        ? `<div class="af-gl-service-teacher" style="margin-top:4px; background: rgba(253, 224, 71, 0.08); border-color: rgba(253, 224, 71, 0.2); color: #fde047;">⏳ ${service.temporaryTeacher.general.id}, ${service.temporaryTeacher.general.name}</div>`
-                        : '';
-
-                    htmlStr += `
-                    <div class="af-gl-service-card">
+                    statusClass = 'af-gl-status-regular'; statusText = 'Регулярные'; statusIcon = '';
+                    const t = service.teacher ? `<div class="af-gl-service-teacher">👨‍🏫 ${service.teacher.general.id}, ${service.teacher.general.name} ${service.teacher.general.surname}</div>` : `<div class="af-gl-service-teacher missing">👨‍🏫 Не закреплен!</div>`;
+                    const tmp = service.temporaryTeacher ? `<div class="af-gl-service-teacher" style="margin-top:6px; background: rgba(253, 224, 71, 0.08); border-color: rgba(253, 224, 71, 0.2); color: #fde047;">⏳ ${service.temporaryTeacher.general.id}, ${service.temporaryTeacher.general.name}</div>` : '';
+                    htmlStr += `<div class="af-gl-service-card">
                         <div class="af-gl-service-header">
                             <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
-                            <span class="af-gl-service-id">
-                                #${service.id}
-                                <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID услуги">📋</span>
-                            </span>
+                            <span class="af-gl-service-id">#${service.id} <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID">📋</span></span>
                         </div>
                         ${balanceHtml}
                         <div class="af-gl-service-type">💡 ${sType}</div>
-                        ${t}
-                        ${tmp}
+                        ${t}${tmp}
                     </div>`;
-
                 } else if (service.stage === "lost") {
-                    statusClass = 'af-gl-status-lost';
-                    statusText = 'Потерянная';
-                    statusIcon = '💀';
-
-                    htmlStr += `
-                    <div class="af-gl-service-card">
+                    statusClass = 'af-gl-status-lost'; statusText = 'Потерянная'; statusIcon = '💀';
+                    htmlStr += `<div class="af-gl-service-card">
                         <div class="af-gl-service-header">
                             <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
-                            <span class="af-gl-service-id">
-                                #${service.id}
-                                <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID услуги">📋</span>
-                            </span>
+                            <span class="af-gl-service-id">#${service.id} <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID">📋</span></span>
                         </div>
                         <div class="af-gl-service-type">💡 ${sType}</div>
                     </div>`;
@@ -1983,26 +1150,14 @@ async function getservices(stidNew) {
                 btn.onclick = function (e) {
                     e.stopPropagation();
                     const sid = this.dataset.sid;
-                    copyToClipboard(sid);
-                    createAndShowButton(`ID услуги ${sid} скопирован`, 'message');
+                    if (typeof copyToClipboard === 'function') copyToClipboard(sid);
+                    if (typeof createAndShowButton === 'function') createAndShowButton(`ID услуги ${sid} скопирован`, 'message');
                     this.textContent = '✅';
                     setTimeout(() => this.textContent = '📋', 1200);
                 };
             });
-
-            document.getElementById('getusremail').onclick = () => {
-                copyToClipboard(document.getElementById('mailunhidden').textContent);
-                createAndShowButton(`Почта скопирована`, 'message');
-            };
-            document.getElementById('getusrphone').onclick = () => {
-                copyToClipboard(document.getElementById('phoneunhidden').textContent);
-                createAndShowButton(`Телефон скопирован`, 'message');
-            };
         } else {
-            servTable.innerHTML = `<div class="af-gl-empty-state" style="border-color: rgba(220, 20, 60, 0.3);">
-                <div style="font-size: 24px; margin-bottom: 8px;">📭</div>
-                <div style="color: #fca5a5; font-weight: 600;">Услуг не найдено</div>
-            </div>`;
+            servTable.innerHTML = `<div class="af-gl-empty-state" style="border-color: rgba(220, 20, 60, 0.3);"><div style="font-size: 24px; margin-bottom: 8px;">📭</div><div style="color: #fca5a5; font-weight: 600;">Услуг не найдено</div></div>`;
         }
     } catch (e) {
         console.error('getservices error:', e);
@@ -2011,18 +1166,16 @@ async function getservices(stidNew) {
 }
 
 async function getuserinfo() {
-    // Очистка
-    ['pochtaIdentity', 'telefonIdentity', 'mailunhidden', 'phoneunhidden', 'usrType', 'usrAge', 'usrName', 'usrCountry', 'getcurrentstatus']
+    ['mailunhidden', 'phoneunhidden', 'usrType', 'usrAge', 'usrName', 'usrCountry', 'getcurrentstatus', 'mailIdentityStatus', 'phoneIdentityStatus']
         .forEach(id => {
             const el = document.getElementById(id);
             if (el) el.textContent = id.includes('hidden') ? 'hidden' : '';
         });
-    document.getElementById('servicetable').innerHTML = "Загрузка...";
+    document.getElementById('servicetable').innerHTML = '<div class="af-gl-empty-state">Загрузка...</div>';
 
     const avaWrapper = document.getElementById('avatarWrapper');
     if (avaWrapper) avaWrapper.style.display = "none";
 
-    // Удаляем старый бейдж статуса, если был
     const oldBadge = document.getElementById('userStatusBadge');
     if (oldBadge) oldBadge.remove();
 
@@ -2030,13 +1183,9 @@ async function getuserinfo() {
     if (!stid) return;
 
     try {
-        // 1. Сначала базовые данные (это установит window.flagusertype)
         await getusernamecrm();
+        await Promise.all([getUserStatus(), typeof crmstatus === 'function' && crmstatus()]);
 
-        // 2. Параллельно грузим статус пользователя и CRM-задачи
-        await Promise.all([getUserStatus(), crmstatus()]);
-
-        // 3. Услуги (зависят от flagusertype, установленного в п.1)
         if (window.flagusertype === "teacher") {
             document.getElementById('servicetable').innerHTML = '';
         } else {
@@ -2048,9 +1197,7 @@ async function getuserinfo() {
     }
 }
 
-document.getElementById('getidstudent')?.addEventListener('click', () => {
-    getuserinfo();
-});
+document.getElementById('getidstudent')?.addEventListener('click', () => getuserinfo());
 
 idstudentField?.addEventListener('paste', (e) => {
     idstudentField.value = '';
@@ -2065,10 +1212,9 @@ idstudentField?.addEventListener('paste', (e) => {
 idstudentField?.addEventListener('input', () => { if (typeof onlyNumber === 'function') onlyNumber(idstudentField); });
 
 document.getElementById('clearservinfo')?.addEventListener('click', () => {
-    ['idstudent', 'timetabledata'].forEach(id => { const el = document.getElementById(id); if (el) el.value = el.innerText = ""; });['servicetable', 'usrType', 'usrAge', 'usrName', 'telefonIdentity', 'pochtaIdentity', 'usrCountry', 'mailunhidden', 'phoneunhidden']
-        .forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ""; });
+    ['idstudent', 'timetabledata'].forEach(id => { const el = document.getElementById(id); if (el) el.value = el.innerText = ""; });
+    ['servicetable', 'usrType', 'usrAge', 'usrName', 'usrCountry', 'mailunhidden', 'phoneunhidden', 'mailIdentityStatus', 'phoneIdentityStatus'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ""; });
     ['CrmStatus', 'getcurrentstatus', 'AF_Timetable'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
-
     const avaWrapper = document.getElementById('avatarWrapper');
     if (avaWrapper) avaWrapper.style.display = "none";
 });
@@ -2090,18 +1236,41 @@ document.getElementById('getPastAndFutureLessons')?.addEventListener('click', ()
     document.getElementById('getlessonfuture')?.click();
 });
 
+// =====================================================================
+// 🔑 ОБРАБОТЧИК КНОПКИ "ССЫЛКА-ЛОГИНЕР"
+// =====================================================================
 document.getElementById('getloginer')?.addEventListener('click', async function () {
     const id = idstudentField?.value.trim();
-    if (!id) return;
-    this.style.background = "rgba(255, 165, 0, 0.4)";
+    if (!id) {
+        if (typeof createAndShowButton === 'function') createAndShowButton('Введите ID для получения ссылки', 'warning');
+        return;
+    }
+
+    const btn = this;
+    btn.classList.remove('is-success', 'is-error');
+    btn.classList.add('is-loading');
+    btn.innerHTML = '⏳';
+
     try {
-        if (typeof getLoginLink === 'function') await getLoginLink(id);
-        this.style.background = "rgba(0, 128, 0, 0.5)";
-        createAndShowButton('💾 Ссылка-логинер cкопирована', 'message');
+        if (typeof getLoginLink === 'function') {
+            await getLoginLink(id);
+        }
+
+        btn.classList.remove('is-loading');
+        btn.classList.add('is-success');
+        btn.innerHTML = '✅';
+        if (typeof createAndShowButton === 'function') createAndShowButton('💾 Ссылка-логинер скопирована', 'message');
+
     } catch (e) {
-        this.style.background = "rgba(255, 0, 0, 0.5)";
-        createAndShowButton('Не удалось получить логиннер: ' + e.message, 'error');
+        btn.classList.remove('is-loading');
+        btn.classList.add('is-error');
+        btn.innerHTML = '❌';
+        if (typeof createAndShowButton === 'function') createAndShowButton('Не удалось получить логинер: ' + (e.message || 'Ошибка'), 'error');
+
     } finally {
-        setTimeout(() => this.style.background = "transparent", 2000);
+        setTimeout(() => {
+            btn.classList.remove('is-success', 'is-error', 'is-loading');
+            btn.innerHTML = '🔑';
+        }, 2000);
     }
 });
