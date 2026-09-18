@@ -16,7 +16,9 @@ if (!localStorage.getItem('scriptAdr')) {
     try { localStorage.setItem('scriptAdr', DEFAULT_SCRIPT_ADR); } catch { }
 }
 
+/** @type {number|null} */
 let checkchatsIntervalId = null;
+/** @type {number|null} */
 let timerHideButtonsIntervalId = null;
 
 // ⚡ Очистка legacy-мусора батчем
@@ -50,9 +52,13 @@ const MODULE_MENU_MAP = new Map(MODULE_MENU_CONFIG.map(item => [item.id, item]))
 // ⚡ CLEANUP REGISTRY — единая точка teardown
 // ═══════════════════════════════════════════════════════════════
 const cleanupRegistry = {
+    /** @type {Array<() => void>} */
     _fns: [],
+    /** @type {Set<number>} */
     _intervals: new Set(),
+    /** @type {Set<number>} */
     _timeouts: new Set(),
+    /** @type {AbortController|null} */
     _globalAbort: null,
     init() {
         if (this._globalAbort) return;
@@ -458,6 +464,23 @@ function injectFABStyles() {
     transform: translateX(-4px);
 }
 .menubarstyle { min-width: 200px; }
+/* ⚡ ФИКС растянутого меню:
+   1) height: max-content — панель строго по контенту (не тянется);
+   2) transform: none — базовый translateY(-50%) конфликтовал с
+      позиционированием style.css (top:0 !important);
+   3) декоративные ::before/::after (glow высотой 200%) создают
+      скроллируемый overflow при overflow-y:auto → гигантская пустая
+      зона и скроллбар. Отключаем их — menu без пустоты. */
+#idmymenu {
+    height: max-content !important;
+    transform: none !important;
+    overflow: hidden auto;
+    overscroll-behavior: contain;
+}
+#idmymenu::before,
+#idmymenu::after {
+    display: none !important;
+}
     `;
     document.head.appendChild(style);
 }
@@ -607,41 +630,46 @@ function startBackgroundTasks() {
 // ═══════════════════════════════════════════════════════════════
 async function move_again_AF() {
     console.log('[ChMAF] 🚀 move_again_AF started, path:', location.pathname);
-    if (location.pathname === '/login') return;
+    if (location.pathname === '/login') {
+        console.log('[ChMAF] ⏸ На /login, выходим');
+        return;
+    }
+
+    // ⚡ Идемпотентность: панель строится ОДИН РАЗ за загрузку страницы.
+    // Смена пути (SPA-навигация) не требует пересоздания FAB — иначе
+    // каждый переход между /tickets/* вызывает повторную анимацию отрисовки.
+    if (document.getElementById('rightPanel')?.children.length) {
+        console.log('[ChMAF] ⏭ Панель уже построена — переход без переинициализации:', location.pathname);
+        return;
+    }
 
     try {
-        const operatorReady = await waitForOperator();
-        console.log('[ChMAF] whoAmI result:', operatorReady);
-
-        // ⚡ ГЛАВНЫЙ ФИКС: единственная привязка `data` в этом scope.
-        // Было: `const data` внутри внутреннего try затенял внешний `let data = null`,
-        //       и в setupDepartment улетал null → TypeError.
-        // Стало: одна const-привязка + catch-фолбэк в пустой объект — null невозможен.
-        const data = await migrateScriptAddresses().catch((e) => {
+        // ⚡ ГЛАВНЫЙ ФИКС: запускаем идентификацию параллельно, НЕ блокируя создание FAB
+        const operatorPromise = waitForOperator();
+        const dataPromise = migrateScriptAddresses().catch((e) => {
             console.error('[ChMAF] migrateScriptAddresses failed:', e);
             return {};
         });
-        console.log('[ChMAF] addresses migrated:', data);
 
-        getText(); // fire-and-forget: ошибки обрабатываются внутри getText
+        // fire-and-forget загрузка шаблонов
+        getText();
 
-        const isTP = (opsection || '').toString().trim().startsWith('ТП');
-        console.log('[ChMAF] isTP:', isTP, 'opsection:', opsection);
-
+        // ⚡ Базовый FAB создаётся СРАЗУ (не ждём whoAmI)
         const panel = buildSidePanel();
-        console.log('[ChMAF] ✅ panel created:', panel);
+        window.__chmafPanel = panel; // ⚡ доступ из retry-блока для перестроения меню
+        lastInitializedPath = location.pathname; // ⚡ фиксируем успешную инициализацию пути
+        console.log('[ChMAF] ✅ базовый panel создан');
 
         addFabButton(panel, 'scriptBut', '🧩', 'Шаблоны', 'cyan', () => {
             const el = document.getElementById('AF_helper');
-            if (!el) {
-                createAndShowButton('Панель шаблонов ещё не построена — обновите страницу', 'warning');
-                return;
-            }
+            if (!el) return createAndShowButton('Панель шаблонов ещё не построена — обновите страницу', 'warning');
             const isHidden = el.style.display === 'none';
             el.style.display = isHidden ? 'flex' : 'none';
             document.getElementById('scriptBut')?.classList.toggle('active', isHidden);
         });
+
         addFabButton(panel, 'themes', '📚', 'Темы', 'violet', getThemesButtonPress);
+
         addFabButton(panel, 'MainMenuBtn', '👺', 'Меню', 'rose', () => {
             const el = document.getElementById('idmymenu');
             if (!el) return;
@@ -649,37 +677,118 @@ async function move_again_AF() {
             el.style.display = isHidden ? '' : 'none';
             document.getElementById('MainMenuBtn')?.classList.toggle('active', isHidden);
         });
-        buildModuleMenu(panel, isTP);
+
         addFabButton(panel, 'opennewcat', '☢', 'История чатов', 'emerald', getopennewcatButtonPress);
 
-        setupDepartment(data);   // ⚡ здесь data гарантированно объект
-        startBackgroundTasks();  // ⚡ теперь запускается всегда → checkchats живой
+        // ⚡ Ждём результат идентификации и адресов
+        const [operatorReady, data] = await Promise.all([operatorPromise, dataPromise]);
+        console.log('[ChMAF] whoAmI:', operatorReady, '| isTP:', (opsection || '').toString().trim().startsWith('ТП'));
 
+        // Модульное меню зависитает от отдела
+        const isTP = (opsection || '').toString().trim().startsWith('ТП');
+        buildModuleMenu(panel, isTP);
+
+        // ⚡ Отдел-специфичные кнопки добавляются ПОСЛЕ успешной идентификации
+        if (operatorReady) {
+            setupDepartment(data);
+            console.log('[ChMAF] ✅ отдел-кнопки добавлены');
+        } else {
+            console.warn('[ChMAF] ⚠️ Оператор не идентифицирован — retry через 15 сек');
+            // Retry: через 15 секунд пробуем ещё раз добавить отдел-кнопки
+            setTimeout(async () => {
+                const retry = await waitForOperator(30_000);
+                if (!retry) {
+                    console.error('[ChMAF] ❌ Оператор так и не идентифицирован за retry-таймаут');
+                    return;
+                }
+                const retryData = await migrateScriptAddresses();
+                // ⚡ ФИКС пропадающих пунктов меню: меню могло быть построено
+                // ДО определения отдела (isTP=false по умолчанию) — перестраиваем
+                // с корректным isTP. buildModuleMenu сам удаляет старое меню.
+                const isTP = (opsection || '').toString().trim().startsWith('ТП');
+                const rp = window.__chmafPanel || document.getElementById('rightPanel');
+                if (rp) buildModuleMenu(rp, isTP);
+                setupDepartment(retryData);
+                console.log('[ChMAF] ✅ отдел-кнопки и меню добавлены после retry, isTP:', isTP);
+            }, 15_000);
+        }
+
+        startBackgroundTasks();
         console.log('[ChMAF] ✅ init complete, FAB count:', panel.children.length);
     } catch (err) {
         console.error('[ChMAF] ❌ Критическая ошибка инициализации:', err);
-        showCustomAlert('⚠️ Ошибка инициализации расширения. Перезагрузите страницу.', 'error');
+        showCustomAlert('⚠️ Ошибка инициализации. Перезагрузите страницу.', 'error');
     }
 }
 
-// ⚡ SPA-НАВИГАЦИЯ: patch history API вместо MutationObserver на весь DOM
-if (window.location.pathname !== '/login') {
-    cleanupRegistry.registerTimeout(setTimeout(move_again_AF, 3000));
-} else {
-    let lastPath = window.location.pathname;
-    const check = () => {
-        if (window.location.pathname !== lastPath) {
-            lastPath = window.location.pathname;
-            if (lastPath !== '/login') cleanupRegistry.registerTimeout(setTimeout(move_again_AF, 3000));
-        }
-    };
-    // ⚡ Патчим history.pushState/replaceState — лёгкий способ ловить SPA-навигацию
-    const origPush = history.pushState, origReplace = history.replaceState;
-    history.pushState = function (...args) { const r = origPush.apply(this, args); check(); return r; };
-    history.replaceState = function (...args) { const r = origReplace.apply(this, args); check(); return r; };
-    window.addEventListener('popstate', check, { signal: cleanupRegistry.signal });
-    window.addEventListener('hashchange', check, { signal: cleanupRegistry.signal });
+// ⚡ ТОЧКА ВХОДА — устойчива к любому способу навигации:
+// 1) полный reload → сработает startInit ниже;
+// 2) pushState/replaceState ПОСЛЕ загрузки → ловит патч History API;
+// 3) pushState ДО установки патча (роутер сайта кэширует ссылку на
+//    history.pushState при инициализации бандла, а мы инжектимся в
+//    document_idle — позже) → ловит watchdog по опросу location.pathname.
+let lastPath = window.location.pathname;
+let lastInitializedPath = '';
+let moveAgainScheduled = false;
+
+function scheduleMoveAgain(delay = 1500) {
+    if (moveAgainScheduled) return;
+    moveAgainScheduled = true;
+    cleanupRegistry.registerTimeout(setTimeout(() => {
+        moveAgainScheduled = false;
+        move_again_AF();
+    }, delay));
 }
+
+function checkPathChange() {
+    const currentPath = window.location.pathname;
+    if (currentPath === lastPath) return;
+    lastPath = currentPath;
+    console.log('[ChMAF] 🔄 Path changed:', currentPath);
+    if (currentPath !== '/login') scheduleMoveAgain(1500);
+}
+
+// 1) Стартовая инициализация: если мы уже не на /login
+if (lastPath !== '/login') {
+    scheduleMoveAgain(3000);
+}
+
+// 2) Патч History API — ставим ВСЕГДА (быстрая реакция на SPA-навигацию)
+{
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+
+    history.pushState = function (...args) {
+        const result = originalPushState.apply(this, args);
+        checkPathChange();
+        return result;
+    };
+
+    history.replaceState = function (...args) {
+        const result = originalReplaceState.apply(this, args);
+        checkPathChange();
+        return result;
+    };
+
+    // popstate — для навигации кнопками "назад/вперёд"
+    window.addEventListener('popstate', checkPathChange, { signal: cleanupRegistry.signal });
+
+    // hashchange — для якорных ссылок
+    window.addEventListener('hashchange', checkPathChange, { signal: cleanupRegistry.signal });
+
+    cleanupRegistry.register(() => {
+        history.pushState = originalPushState;
+        history.replaceState = originalReplaceState;
+    });
+}
+
+// 3) ⚡ Watchdog-страховка: дешёвый опрос pathname (строковое сравнение раз в 700 мс).
+// Ловит ЛЮБУЮ смену URL, включая pushState, сделанный роутером сайта по
+// закэшированной до нашего патча ссылке на history.pushState.
+// Именно этот случай не ловился раньше: после логина сайт менял layout без
+// полной перезагрузки, патч не срабатывал — и FAB-кнопки не появлялись до F5.
+cleanupRegistry.registerInterval(setInterval(checkPathChange, 700));
+
 
 // ═══════════════════════════════════════════════════════════════
 // ОТДЕЛ-СПЕЦИФИЧНЫЕ
@@ -687,6 +796,7 @@ if (window.location.pathname !== '/login') {
 function prepTp() {
     const p = document.getElementById('rightPanel');
     if (!p) return;
+    if (p.querySelector('.onlyfortp')) return; // ⚡ уже добавлены — не дублируем
     const create = (id, icon, title, theme, fn) => {
         if (typeof fn !== 'function') {
             console.warn(`[ChMAF] Модуль кнопки "${id}" не загружен — пропуск`);
@@ -694,9 +804,8 @@ function prepTp() {
         }
         const btn = createFAB({ id, icon, title, theme, onClick: fn });
         btn.classList.add('onlyfortp');
-        // ⚡ было: видимость зависела от каскада style.css (правило .onlyfortp могло победить)
-        // стало: inline-стиль побеждает любой stylesheet без !important
-        btn.style.display = 'flex';
+        // ⚡ inline !important — пробивает любое CSS-правило .onlyfortp { display: none }
+        btn.style.setProperty('display', 'flex', 'important');
         p.appendChild(btn);
     };
     create('datsyCalendar', '📅', 'Datsy', 'amber', getdatsyCalendarButtonPress);
@@ -718,9 +827,8 @@ function prepTp() {
 function prepKC() {
     const l = document.querySelector('.user_menu-language_switcher');
     if (l) l.style.display = localStorage.getItem('disablelpmwindow') === '1' ? 'none' : '';
-    // ⚡ inline-скрытие для KC-режима (симметрично prepTp)
-    document.querySelectorAll('.onlyfortp').forEach(e => { e.style.display = 'none'; });
-    document.querySelectorAll('.onlyforkc').forEach(e => { e.style.display = ''; });
+    document.querySelectorAll('.onlyfortp').forEach(e => e.style.setProperty('display', 'none', 'important'));
+    document.querySelectorAll('.onlyforkc').forEach(e => e.style.removeProperty('display'));
 }
 // Экспортируем в window для cross-script доступа
 window.prepTp = prepTp;
@@ -797,6 +905,51 @@ window.getText = getText;
         cleanupRegistry.registerTimeout(removeTimer);
     };
 })();
+// ═══════════════════════════════════════════════════════════════
+// ⚡ "Extension context invalidated" — дружелюбная подсказка юзеру
+// Возникает, когда расширение обновилось/перезагрузилось, а страница
+// всё ещё работает со старым контент-скриптом (chrome.* API мёртв).
+// Ловим ошибку в трёх каналах: необработанные promise-rejection,
+// необработанные синхронные ошибки и вывод через console.error.
+// ═══════════════════════════════════════════════════════════════
+(function () {
+    if (window.__chmafCtxHandler) return;
+    window.__chmafCtxHandler = true;
+
+    const HINT = '⚠️ Расширение обновилось и временно недоступно. ' +
+        'Сделайте Ctrl+Shift+R (жёсткая перезагрузка страницы), ' +
+        'а если не поможет — перезапустите браузер, чтобы подтянулась актуальная версия расширения.';
+    let lastHintAt = 0;
+
+    function handleContextError(raw) {
+        const msg = raw instanceof Error ? raw.message : String(raw ?? '');
+        if (!/Extension context invalidated/i.test(msg)) return false;
+        const now = Date.now();
+        if (now - lastHintAt > 60_000) { // не спамим тостами
+            lastHintAt = now;
+            try { window.showCustomAlert?.(HINT, 'error'); } catch { }
+        }
+        console.warn('[ChMAF] Extension context invalidated — страница работает со старым контент-скриптом. Помогут Ctrl+Shift+R или перезапуск браузера.');
+        return true;
+    }
+
+    window.addEventListener('unhandledrejection', (e) => {
+        if (handleContextError(e.reason)) e.preventDefault();
+    });
+
+    window.addEventListener('error', (e) => {
+        handleContextError(e.error || e.message);
+    });
+
+    // Большинство вызовов chrome.* в расширении обёрнуты try/catch и
+    // логируют ошибку через console.error — перехватываем и этот путь.
+    const origConsoleError = console.error;
+    console.error = function (...args) {
+        try { handleContextError(args[0]); } catch { }
+        origConsoleError.apply(console, args);
+    };
+})();
+
 
 window.addEventListener('message', (e) => {
     if (e.origin !== window.location.origin) return;
