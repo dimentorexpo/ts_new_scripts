@@ -483,7 +483,7 @@ const win_serviceinfo = `
                     <span id="usrCountry" class="af-gl-info-item-value">—</span>
                 </div>
                 <div class="af-gl-info-item">
-                    <span class="af-gl-info-item-label">Язык об🌐</span>
+                    <span class="af-gl-info-item-label">Язык🌐</span>
                     <span id="usrServLang" class="af-gl-info-item-value">—</span>
                 </div>
                 <div class="af-gl-time-group">
