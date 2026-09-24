@@ -233,8 +233,15 @@ async function doOperationsWithHistory(body = '') {
 }
 
 async function doOperationsWithConversations(id) {
-    if (typeof window.CONFIGSTAT === 'undefined') throw new Error('CONFIGSTAT not defined');
-    const response = await afApiFetch(`${window.CONFIGSTAT.API.BASE_URL}${window.CONFIGSTAT.API.CONVERSATIONS}/${id}`);
+    // ⚡ CONFIGSTAT объявлен top-level const в Statistica.js — это лексический
+    // глобал, а НЕ свойство window (старое обращение window.CONFIGSTAT всегда
+    // падало с 'CONFIGSTAT not defined'). Порядок: лексический глобал →
+    // window-экспорт → жёсткий фолбэк для страниц *.skyeng.ru, где
+    // Statistica.js вообще не загружается.
+    const CFG = (typeof CONFIGSTAT !== 'undefined' ? CONFIGSTAT : window.CONFIGSTAT) || {
+        API: { BASE_URL: 'https://skyeng.autofaq.ai/api', CONVERSATIONS: '/conversations' }
+    };
+    const response = await afApiFetch(`${CFG.API.BASE_URL}${CFG.API.CONVERSATIONS}/${id}`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return await response.json();
 }

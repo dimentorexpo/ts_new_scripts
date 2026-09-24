@@ -2244,4 +2244,7 @@ document.addEventListener('click', (e) => {
 
 
 // Экспорт
+// ⚡ window.CONFIGSTAT — обязателен: top-level const НЕ создаёт свойство window,
+// а content.js (doOperationsWithConversations) и др. читают конфиг через window.
+window.CONFIGSTAT = CONFIGSTAT;
 window.getStats = getStats; window.checkCSAT = checkCSAT; window.checkload = checkload; window.resetRateCounts = resetRateCounts; window.getDateRangeStata = getDateRangeStata; window.getbuttonGetStatButtonPress = getbuttonGetStatButtonPress;
