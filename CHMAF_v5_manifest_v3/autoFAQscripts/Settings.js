@@ -91,6 +91,99 @@ async function init_settings() {
         styleEl.textContent = cssText;
     };
 
+    /** Рекурсивно обходит главный документ и все same-origin iframe'ы
+     *  (включая вложенные: страницы настроек вроде «Группы» живут во фрейме
+     *  внутри фрейма NEW_FRONTEND). */
+    const forEachSameOriginDoc = (cb) => {
+        const walk = (doc) => {
+            try { cb(doc); } catch (e) { /* ignore */ }
+            let frames;
+            try { frames = doc.querySelectorAll('iframe'); } catch (e) { return; }
+            frames.forEach(fr => {
+                try {
+                    const d = fr.contentDocument || (fr.contentWindow && fr.contentWindow.document);
+                    if (d) walk(d);
+                } catch (e) { /* cross-origin — пропускаем */ }
+            });
+        };
+        walk(document);
+    };
+
+    /** Перебивает фон кастомных панелей Collapse ИНЛАЙНОМ с !important.
+     *  Сайт задаёт фон .site-collapse-custom-panel так, что CSS из <style>
+     *  его не перебивает (инлайн/важность у сайта выше), поэтому красим
+     *  напрямую через style.setProperty(..., 'important').
+     *  ВНИМАНИЕ: внутри панелей лежит Ant Table — непрозрачный белый фон
+     *  на самих ячейках (.ant-table-cell / sc-*), поэтому патчим и их.
+     *  Контент рендерится лениво при раскрытии, поэтому метка о патче
+     *  ставится на КАЖДЫЙ внутренний элемент отдельно.
+     *  panelBg === null → снять наши инлайн-стили (возврат к дефолту сайта). */
+    const patchCustomCollapsePanels = (targetDoc, panelBg, borderCol, textCol) => {
+        if (!targetDoc || !targetDoc.querySelectorAll) return;
+        const PANEL_MARK = 'data-chmaf-panel-patched';
+        const INNER_MARK = 'data-chmaf-inner-patched';
+        const TABLE_MARK = 'data-chmaf-table-patched';
+        const innerSel = '.ant-collapse-header, .ant-collapse-content, .ant-collapse-content-box, ' +
+            '.ant-table, .ant-table-container, .ant-table-content, .ant-table-thead, .ant-table-tbody, .ant-table-row, .ant-table-cell, ' +
+            '[draggable="true"]';
+        try {
+            targetDoc.querySelectorAll('.ant-collapse-item.site-collapse-custom-panel').forEach(panel => {
+                if (panelBg) {
+                    const patchKey = `${panelBg}|${borderCol}|${textCol}`;
+                    if (panel.getAttribute(PANEL_MARK) !== patchKey) {
+                        panel.style.setProperty('background', panelBg, 'important');
+                        panel.style.setProperty('border-color', borderCol, 'important');
+                        panel.setAttribute(PANEL_MARK, patchKey);
+                    }
+                    // внутренности (в т.ч. ячейки таблицы с белым фоном) —
+                    // патчим каждый элемент с собственной меткой, т.к. контент
+                    // панели дорендеривается при раскрытии
+                    panel.querySelectorAll(innerSel).forEach(el => {
+                        if (el.getAttribute(INNER_MARK) === patchKey) return;
+                        el.style.setProperty('background-color', 'transparent', 'important');
+                        el.style.setProperty('color', textCol, 'important');
+                        el.setAttribute(INNER_MARK, patchKey);
+                    });
+                    // кнопки внутри панелей (напр. "Удалить") — дефолтно белые
+                    panel.querySelectorAll('.ant-btn').forEach(el => {
+                        if (el.getAttribute(INNER_MARK) === patchKey) return;
+                        el.style.setProperty('background-color', 'transparent', 'important');
+                        el.style.setProperty('color', textCol, 'important');
+                        el.style.setProperty('border-color', borderCol, 'important');
+                        el.setAttribute(INNER_MARK, patchKey);
+                    });
+                    // КЛЮЧЕВОЕ: на странице «Группы» collapse лежит ВНУТРИ .ant-table,
+                    // а у самой таблицы дефолтный белый фон — он и «светит» из-под
+                    // полупрозрачной заливки панели. Патчим и этого предка.
+                    const table = panel.closest('.ant-table');
+                    if (table && table.getAttribute(TABLE_MARK) !== patchKey) {
+                        table.style.setProperty('background-color', 'transparent', 'important');
+                        table.style.setProperty('color', textCol, 'important');
+                        table.setAttribute(TABLE_MARK, patchKey);
+                    }
+                } else {
+                    if (panel.hasAttribute(PANEL_MARK)) {
+                        panel.style.removeProperty('background');
+                        panel.style.removeProperty('border-color');
+                        panel.removeAttribute(PANEL_MARK);
+                    }
+                    panel.querySelectorAll(`[${INNER_MARK}]`).forEach(el => {
+                        el.style.removeProperty('background-color');
+                        el.style.removeProperty('color');
+                        el.style.removeProperty('border-color');
+                        el.removeAttribute(INNER_MARK);
+                    });
+                    const table = panel.closest('.ant-table');
+                    if (table && table.hasAttribute(TABLE_MARK)) {
+                        table.style.removeProperty('background-color');
+                        table.style.removeProperty('color');
+                        table.removeAttribute(TABLE_MARK);
+                    }
+                }
+            });
+        } catch (e) { /* cross-origin iframe и т.п. — игнорируем */ }
+    };
+
     // ====================================================================================
     // Универсальная функция для цвета с учетом IFRAME и динамических хэшей классов
     // ====================================================================================
@@ -114,11 +207,10 @@ async function init_settings() {
 
         if (isWhite) {
             removeStyle(document, 'chmaf-bg-main');
-            const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-            if (iframe) {
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-                if (iframeDoc) removeStyle(iframeDoc, 'chmaf-bg-iframe');
-            }
+            // снимаем наши инлайн-стили с кастомных панелей Collapse (возврат к дефолту сайта)
+            forEachSameOriginDoc(doc => patchCustomCollapsePanels(doc, null, null, null));
+            // снимаем <style> из всех same-origin iframe'ов
+            forEachSameOriginDoc(doc => { if (doc !== document) removeStyle(doc, 'chmaf-bg-iframe'); });
             return; // дефолт — не инжектим кастом
         }
 
@@ -992,6 +1084,36 @@ async function init_settings() {
                 border-top-color: ${getRgba(textColor, 0.1)} !important;
             }
 
+            /* ═══ КАСТОМНЫЕ ПАНЕЛИ COLLAPSE (site-collapse-custom-panel) ═══ */
+            /* Сайт красит такие панели в светлый #f7f7f7. CSS ниже — базовая страховка;
+               гарантированно фон перебивает инлайн-патч patchCustomCollapsePanels()
+               (style.setProperty с !important) в конце applyAppBgColor, т.к. у сайта
+               фон задан с приоритетом, который CSS из <style> не побеждает. */
+            body .ant-collapse-item.site-collapse-custom-panel {
+                background: ${getRgba(textColor, 0.06)} !important;
+                border-color: ${getRgba(textColor, 0.12)} !important;
+            }
+            body .ant-collapse .ant-collapse-header,
+            body .ant-collapse-item.site-collapse-custom-panel > .ant-collapse-header {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+            }
+            body .ant-collapse .ant-collapse-header:hover {
+                background-color: ${getRgba(textColor, 0.06)} !important;
+            }
+            body .ant-collapse-content.ant-collapse-content,
+            body .ant-collapse-content.ant-collapse-content-active,
+            body .ant-collapse-content.ant-collapse-content-inactive,
+            body .ant-collapse-item.site-collapse-custom-panel > .ant-collapse-content {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+            }
+            body .ant-collapse .ant-collapse-expand-icon,
+            body .ant-collapse .ant-collapse-expand-icon .anticon {
+                color: ${textColor} !important;
+                fill: currentColor !important;
+            }
+
             /* Свитч в выключенном состоянии */
             body .ant-switch.ant-switch:not(.ant-switch-checked) {
                 background-color: ${getRgba(textColor, 0.25)} !important;
@@ -1179,11 +1301,14 @@ async function init_settings() {
         }
 
         injectStyleInto(document, 'chmaf-bg-main', cssRules);
-        const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-        if (iframe) {
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-            if (iframeDoc) injectStyleInto(iframeDoc, 'chmaf-bg-iframe', cssRules);
-        }
+        // инжектим во ВСЕ same-origin iframe'ы (в т.ч. вложенные): страницы
+        // настроек вроде «Группы» живут в отдельных фреймах, не только NEW_FRONTEND
+        forEachSameOriginDoc(doc => {
+            if (doc !== document) injectStyleInto(doc, 'chmaf-bg-iframe', cssRules);
+        });
+
+        // ─── Инлайн-патч кастомных панелей Collapse (их фон CSS не перебивается) ───
+        forEachSameOriginDoc(doc => patchCustomCollapsePanels(doc, getRgba(textColor, 0.06), getRgba(textColor, 0.12), textColor));
     };
 
     // ─── Помечаем комментарии оператора (OperatorComment) ───
