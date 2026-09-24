@@ -1137,6 +1137,52 @@ async function init_settings() {
                 color: #ffffff !important;
             }
 
+            /* ═══ 31b. ТАБЛИЦЫ НА СТРАНИЦАХ НАСТРОЕК (напр. «Оценки») ═══ */
+            /* У .ant-table дефолтный белый фон, у th — #fafafa */
+            body .ant-table,
+            body .ant-table-container,
+            body .ant-table-content,
+            body .ant-table-content table {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+            }
+            body .ant-table-thead > tr > th.ant-table-cell,
+            body .ant-table-tbody > tr > td.ant-table-cell {
+                background-color: transparent !important;
+                color: ${textColor} !important;
+                border-bottom-color: ${getRgba(textColor, 0.12)} !important;
+            }
+            body .ant-table-tbody > tr.ant-table-row:hover > td.ant-table-cell {
+                background-color: ${getRgba(textColor, 0.06)} !important;
+            }
+
+            /* Описания полей форм (у сайта чёрный текст → не виден на тёмном) */
+            body .field-text-label {
+                color: ${textColor} !important;
+            }
+            body .field-text-description {
+                color: ${getRgba(textColor, 0.65)} !important;
+            }
+
+            /* Селекты на страницах настроек (дефолтно белые) */
+            body .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+                color: ${textColor} !important;
+            }
+            body .ant-select-selection-item,
+            body .ant-select-selection-placeholder,
+            body .ant-select-arrow {
+                color: ${textColor} !important;
+            }
+
+            /* Обычные/иконочные кнопки внутри таблиц (дефолтно белые) */
+            body .ant-table .ant-btn:not(.ant-btn-primary):not(.ant-btn-link) {
+                background-color: ${getRgba(textColor, 0.08)} !important;
+                border-color: ${getRgba(textColor, 0.2)} !important;
+                color: ${textColor} !important;
+            }
+
             /* ═══ 32. АРХИВ ТИКЕТОВ (Tickets Archive) ═══ */
             .expert-user_details-dt,
             .expert-user_details-dd {
