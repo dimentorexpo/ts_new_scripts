@@ -315,6 +315,22 @@ async function init_settings() {
                 opacity: 1 !important;
             }
 
+            /* ═══ 8b. КАРТОЧКА ПОЛЬЗОВАТЕЛЯ (детали: ID, почта, телефон) ═══ */
+            /* Повышенная специфичность (body + класс), т.к. CSS-in-JS сайта
+               вставляется в <head> позже нашего <style> и перебивает
+               простые правила при равной специфичности. */
+            body [class*="user-card-details_detailsItemKey"],
+            body [class*="user-card-details_detailsItemKey"] span,
+            body [class*="user-card-details_detailsItemKey"] svg {
+                color: ${getRgba(textColor, 0.65)} !important;
+                fill: currentColor !important;
+            }
+            body [class*="user-card-details_detailsItemValue"],
+            body [class*="user-card-details_detailsItemValue"] span,
+            body [class*="user-card-details-id_userId"] {
+                color: ${textColor} !important;
+            }
+
                        /* ═══ 9. ОБЩИЙ ФОН ДЛЯ ОБЫЧНЫХ СООБЩЕНИЙ (серый) ═══ */
             [class*="ChatMessages_RegularMessage__"]:not([data-author-type="bot"]):not([data-author-type="user"]):not([data-author-type="user-with-bot"]):not([data-operator-comment="true"]) {
                 background-color: rgba(255, 255, 255, 0.05) !important;
