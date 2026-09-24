@@ -2800,8 +2800,14 @@ async function init_settings() {
         };
         ui.statusList.dispatchEvent(new Event('change'));
 
-        const isTP = (opsection === 'ТП' || opsection === 'ТП ОС');
-        document.querySelectorAll('.onlyfortp').forEach(el => el.style.display = isTP ? '' : 'none');
+        // ⚡ нормализованное сравнение: покрывает 'ТП ОС' и лишний whitespace в opsection
+        const isTP = (opsection || '').trim().startsWith('ТП');
+        document.querySelectorAll('.onlyfortp').forEach(el => {
+            // Не трогаем окна (TestUsers) — у них display:none это штатное состояние
+            if (el.id === 'TestUsers' || el.closest('#TestUsers')) return;
+            if (isTP) el.style.removeProperty('display');
+            else el.style.setProperty('display', 'none', 'important');
+        });
 
         const activeAddr = localStorage.getItem('scriptAdr');
         const deptMap = { [ADDR.TP]: 'set_TP', [ADDR.TP_Rzrv]: 'set_TPrezerv', [ADDR.KC]: 'set_KC', [ADDR.KC_Rzrv]: 'set_KCrezerv' };

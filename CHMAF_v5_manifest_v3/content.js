@@ -101,6 +101,23 @@ async function findOperator(fullName) {
 }
 
 let whoAmICompleted = false;
+
+// ⚡ Валидация заголовка оператора формата "ОТДЕЛ-Фамилия Имя".
+// Mantine рендерит множество span[id$="-target"] (фильтры, селекты статусов и т.п.),
+// и ПЕРВЫЙ попавшийся — не всегда селектор отдела. Без валидации whoAmI
+// "защёлкивал" чужой текст в opsection навсегда (whoAmICompleted=true),
+// из-за чего isTP считался false и элементы .onlyfortp не появлялись до F5.
+function parseOperatorTitle(raw) {
+    const title = (raw || '').replace(/\s+/g, ' ').trim();
+    const dash = title.indexOf('-');
+    if (dash < 1) return null;
+    const section = title.slice(0, dash).trim();
+    const name = title.slice(dash + 1).trim();
+    // Префикс отдела короткий и без цифр (ТП, ТП ОС, КЦ, Prem, ТПPrem...), имя не пустое
+    if (section.length < 2 || section.length > 15 || /\d/.test(section) || name.length < 2) return null;
+    return { title, section };
+}
+
 async function whoAmI() {
     if (whoAmICompleted) return true;
     if (!location.host.includes('autofaq')) return false;
@@ -108,25 +125,27 @@ async function whoAmI() {
     if (!tokenMatch) return false;
     aftoken = tokenMatch[1];
     applyLoginStatus();
-    const onArchiveOrLogs = location.pathname.includes('/archive') || location.pathname.includes('/logs');
+
+    // ⚡ Кандидаты: имя в шапке сайта + ВСЕ mantine-селекторы в iframe.
+    // Берём первый текст, прошедший валидацию "ОТДЕЛ-Имя"; мусорные селекторы
+    // пропускаем — return false, и waitForOperator повторит попытку позже.
+    const candidates = [];
     const menuNameField = document.getElementsByClassName('user_menu-dropdown-user_name')[0];
-    if (onArchiveOrLogs && menuNameField) {
-        operatorFullTitle = menuNameField.textContent;
-        opsection = operatorFullTitle.split('-')[0];
+    if (menuNameField) candidates.push(menuNameField.textContent);
+    const iframeDoc = getIframeDoc();
+    if (iframeDoc) {
+        iframeDoc.querySelectorAll('span[id^="mantine-"][id$="-target"]')
+            .forEach(el => candidates.push(el.textContent));
+    }
+
+    for (const raw of candidates) {
+        const parsed = parseOperatorTitle(raw);
+        if (!parsed) continue;
+        operatorFullTitle = parsed.title;
+        opsection = parsed.section; // ⚡ уже trim → строгие сравнения 'ТП' везде работают
         findOperator(operatorFullTitle);
         whoAmICompleted = true;
         return true;
-    }
-    if (!onArchiveOrLogs) {
-        const sectionKey = getIframeDoc()?.querySelector('span[id^="mantine-"][id$="-target"]');
-        if (sectionKey) {
-            operatorFullTitle = sectionKey.textContent;
-            const [section] = sectionKey.textContent.split('-');
-            opsection = section;
-            findOperator(operatorFullTitle);
-            whoAmICompleted = true;
-            return true;
-        }
     }
     return false;
 }

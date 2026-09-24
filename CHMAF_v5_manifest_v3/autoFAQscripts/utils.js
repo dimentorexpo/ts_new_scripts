@@ -8,6 +8,10 @@
 let bool = 0;
 let table = [];
 let opsection = '';
+// ⚡ Нормализованный доступ к отделу — ЕДИНЫЙ источник истины для isTP.
+// opsection может прийти с whitespace — всегда читаем через getOpSection().
+function getOpSection() { return (opsection || '').toString().trim(); }
+function isTpOperator() { return getOpSection().startsWith('ТП'); }
 // ⚡ было: DEFAULT_SCRIPT_ADR в content.js (позже utils.js)
 // стало: правильный дефолт здесь, до первого использования
 const DEFAULT_SCRIPT_ADR = 'https://script.google.com/macros/s/AKfycbzsf72GllYQdCGg-L4Jw1qx9iv9Vz3eyiQ9QO81HEnlr0K2DKqy6zvi7IYu77GB6EMU/exec';
@@ -593,13 +597,18 @@ function buildModuleMenu(panel, isTP) {
 }
 
 function setupDepartment(data) {
-    // ⚡ было: data.TP_addr напрямую → TypeError на null убивал всю инициализацию
-    // стало: optional chaining + фолбэк по tpflag, если адресов нет
+    // ⚡ Единый источник истины — opsection (кто РЕАЛЬНО залогинен).
+    // Определение по scriptAdr/tpflag — только фолбэк, пока отдел неизвестен:
+    // расхождение этих источников приводило к тому, что ТП-оператору
+    // вызывался prepKC() и все .onlyfortp скрывались с !important до F5.
+    const section = getOpSection();
     const tpAddr = data?.TP_addr ?? '';
     const tpAddrRzrv = data?.TP_addrRzrv ?? '';
-    const isKC = tpAddr
-        ? (scriptAdr !== tpAddr && scriptAdr !== tpAddrRzrv)
-        : localStorage.getItem('tpflag') !== 'ТП'; // фолбэк по сохранённому флагу отдела
+    const isKC = section
+        ? !isTpOperator()
+        : (tpAddr
+            ? (scriptAdr !== tpAddr && scriptAdr !== tpAddrRzrv)
+            : localStorage.getItem('tpflag') !== 'ТП'); // фолбэк по сохранённому флагу отдела
 
     if (isKC && localStorage.getItem('hideTaskWindow') === '1') {
         try { localStorage.setItem('hideTaskWindow', '0'); } catch (e) { }
@@ -682,10 +691,10 @@ async function move_again_AF() {
 
         // ⚡ Ждём результат идентификации и адресов
         const [operatorReady, data] = await Promise.all([operatorPromise, dataPromise]);
-        console.log('[ChMAF] whoAmI:', operatorReady, '| isTP:', (opsection || '').toString().trim().startsWith('ТП'));
+        console.log('[ChMAF] whoAmI:', operatorReady, '| opsection:', getOpSection(), '| isTP:', isTpOperator());
 
         // Модульное меню зависитает от отдела
-        const isTP = (opsection || '').toString().trim().startsWith('ТП');
+        const isTP = isTpOperator();
         buildModuleMenu(panel, isTP);
 
         // ⚡ Отдел-специфичные кнопки добавляются ПОСЛЕ успешной идентификации
@@ -705,7 +714,7 @@ async function move_again_AF() {
                 // ⚡ ФИКС пропадающих пунктов меню: меню могло быть построено
                 // ДО определения отдела (isTP=false по умолчанию) — перестраиваем
                 // с корректным isTP. buildModuleMenu сам удаляет старое меню.
-                const isTP = (opsection || '').toString().trim().startsWith('ТП');
+                const isTP = isTpOperator();
                 const rp = window.__chmafPanel || document.getElementById('rightPanel');
                 if (rp) buildModuleMenu(rp, isTP);
                 setupDepartment(retryData);
@@ -796,6 +805,16 @@ cleanupRegistry.registerInterval(setInterval(checkPathChange, 700));
 function prepTp() {
     const p = document.getElementById('rightPanel');
     if (!p) return;
+    // ⚡ Снимаем скрытие с onlyfortp-элементов ВНЕ панели (AF_helper, настройки):
+    // prepKC()/Settings могли скрыть их inline с !important, а prepTp раньше
+    // показывал только свои FAB-кнопки → элементы оставались невидимыми до F5.
+    // FAB-кнопки не трогаем (их создаём ниже с flex !important), окна
+    // (#TestUsers и т.п.) — тоже: у них display:none это штатное состояние.
+    document.querySelectorAll('.onlyfortp:not(.fab-premium)').forEach(el => {
+        if (el.id === 'TestUsers' || el.closest('#TestUsers') ||
+            el.classList.contains('extwindows') || el.classList.contains('testuserwindow')) return;
+        el.style.removeProperty('display'); // снимает и inline !important
+    });
     if (p.querySelector('.onlyfortp')) return; // ⚡ уже добавлены — не дублируем
     const create = (id, icon, title, theme, fn) => {
         if (typeof fn !== 'function') {
