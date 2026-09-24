@@ -432,6 +432,35 @@
         // 🚫 Нет операторов вообще
         return "🚫";
     };
+
+    // 🗂 Очереди по группам (ID синхронизированы с AFOperatorStatus.OP_GROUP_CONFIG).
+    // Ручной выбор нужен и когда отдел оператора не определён (например, в имени
+    // нет префикса «ТП-») — автовыбор по opsection в таком случае не срабатывает.
+    const QUEUE_GROUPS = {
+        TP: { label: '🛡️ ТП', ids: ['c7bbb211-a217-4ed3-8112-98728dc382d8'] },
+        TPOS: { label: '🖥️ ТП ОС', ids: ['8266dbb1-db44-4910-8b5f-a140deeec5c0'] },
+        KC: { label: '📞 КЦ', ids: ['b6f7f34d-2f08-fc19-3661-29ac00842898'] },
+        Prem: { label: '💎 Prem', ids: ['c1262bdf-444a-41e1-974e-03d754dcff25'] }
+    };
+
+    // Автовыбор группы по отделу оператора (поведение как в старой логике)
+    const getDefaultGroupKey = () => {
+        const sec = typeof getOpSection === 'function'
+            ? getOpSection()
+            : (typeof opsection !== 'undefined' ? String(opsection).trim() : '');
+        if (sec === 'ТП ОС') return 'TPOS';
+        if (sec.startsWith('ТП')) return 'TP';
+        if (sec === 'Prem') return 'Prem';
+        if (sec === 'КЦ') return 'KC';
+        return 'KC'; // ⚡ фолбэк как раньше: не-ТП (или отдел неизвестен) → очередь КЦ
+    };
+
+    // Приоритет: текущее значение селекта → сохранённый выбор → автовыбор по отделу
+    const getSelectedGroupKey = () =>
+        document.getElementById('qg5-group-type')?.value
+        || localStorage.getItem('qg5_group')
+        || getDefaultGroupKey();
+
     window.QueueModule = {
         init: () => {
             if (document.getElementById('AF_Queue')) return;
@@ -448,6 +477,12 @@
                         <button class="qg5-btn" id="qg5-manual-refresh">🔎 Check Queue</button>
                     </div>
                     <div class="qg5-controls">
+                        <select class="qg5-input" id="qg5-group-type" style="flex:1;" title="Группа очереди">
+                            <option value="TP">🛡️ ТП</option>
+                            <option value="TPOS">🖥️ ТП ОС</option>
+                            <option value="KC">📞 КЦ</option>
+                            <option value="Prem">💎 Prem</option>
+                        </select>
                         <select class="qg5-input" id="qg5-status-type" style="flex:1;">
                             <option value="OnOperator">⌛ В очереди</option>
                             <option value="AssignedToOperator">🛠️ В работе у оператора</option>
@@ -477,9 +512,10 @@
                 const statusToFetch = document.getElementById('qg5-status-type').value;
                 const { tsFrom, tsTo } = getDates();
 
-                let setgroupList = (opsection == "ТП" || opsection == "ТП ОС")
-                    ? ["c7bbb211-a217-4ed3-8112-98728dc382d8"]
-                    : ["b6f7f34d-2f08-fc19-3661-29ac00842898"];
+                // ⚡ Группа очереди — из выпадающего списка (выбор сохраняется в
+                // localStorage), а не жёстко от opsection: работает и когда отдел
+                // оператора не определён (нет префикса «ТП-» в имени).
+                const setgroupList = QUEUE_GROUPS[getSelectedGroupKey()]?.ids || QUEUE_GROUPS.KC.ids;
 
                 const initialBodyContent = {
                     serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
@@ -573,6 +609,14 @@
                 this.QueueModule.startAutoRefresh();
             };
             document.getElementById('qg5-status-type').onchange = () => this.QueueModule.render();
+            const groupSel = document.getElementById('qg5-group-type');
+            if (groupSel) {
+                groupSel.value = localStorage.getItem('qg5_group') || getDefaultGroupKey();
+                groupSel.onchange = () => {
+                    localStorage.setItem('qg5_group', groupSel.value);
+                    this.QueueModule.render();
+                };
+            }
         },
 
         startAutoRefresh: () => {

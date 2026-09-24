@@ -507,11 +507,18 @@ function createFAB(config) {
 async function waitForOperator(maxMs = 60_000) {
     const start = Date.now();
     let delay = 500;
-    let ok = await window.whoAmI?.();
+    // ⚡ whoAmI может кидать исключение (iframe, DOM-гонки) — гасим per-attempt,
+    // иначе rejected operatorPromise валил Promise.all в move_again_AF,
+    // и весь init (включая построение меню) улетал в catch.
+    const tryIdentify = async () => {
+        try { return !!(await window.whoAmI?.()); }
+        catch (e) { console.warn('[ChMAF] whoAmI attempt error:', e); return false; }
+    };
+    let ok = await tryIdentify();
     while (!ok && Date.now() - start < maxMs) {
         await new Promise(r => setTimeout(r, delay));
         delay = Math.min(delay * 2, 5000);
-        ok = await window.whoAmI?.();
+        ok = await tryIdentify();
     }
     if (!ok) console.error('[ChMAF] Не удалось идентифицировать оператора за', maxMs, 'мс');
     return ok;
@@ -680,12 +687,25 @@ async function move_again_AF() {
         addFabButton(panel, 'themes', '📚', 'Темы', 'violet', getThemesButtonPress);
 
         addFabButton(panel, 'MainMenuBtn', '👺', 'Меню', 'rose', () => {
-            const el = document.getElementById('idmymenu');
-            if (!el) return;
+            let el = document.getElementById('idmymenu');
+            if (!el) {
+                // ⚡ Ленивое построение: если меню почему-то нет (идентификация
+                // не завершилась/упала) — строим по текущему известному отделу.
+                buildModuleMenu(panel, isTpOperator());
+                el = document.getElementById('idmymenu');
+                if (!el) return;
+            }
             const isHidden = el.style.display === 'none';
             el.style.display = isHidden ? '' : 'none';
             document.getElementById('MainMenuBtn')?.classList.toggle('active', isHidden);
         });
+
+        // ⚡ Меню строим СРАЗУ, не дожидаясь идентификации оператора:
+        // если префикса отдела нет/не распознан (waitForOperator ждёт до 60 сек),
+        // всё это время клик по 👺 молчал — idmymenu ещё не существовал.
+        // После идентификации меню перестраивается с корректным isTP ниже
+        // (buildModuleMenu сам удаляет предыдущее меню).
+        buildModuleMenu(panel, isTpOperator());
 
         addFabButton(panel, 'opennewcat', '☢', 'История чатов', 'emerald', getopennewcatButtonPress);
 
