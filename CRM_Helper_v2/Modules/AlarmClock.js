@@ -337,11 +337,13 @@ function removeAlarm(clockElem, timeoutVar, chronostampKey, chronostamp2Key, Mes
 }
 
 /* ============================================================
- *  ЗАПУСК ТАЙМЕРОВ
+ *  ЗАПУСК ТАЙМЕРОВ (объединены в единый секундный цикл)
  * ============================================================ */
 
-setInterval(CRM_clock_on_javascript_1, 1000);                       // текущее время
-setInterval(() => renderReminderCountdown(''), 1000);               // отсчёт №1
-setInterval(() => renderReminderCountdown('1'), 1000);              // отсчёт №2
+setInterval(() => {
+    CRM_clock_on_javascript_1();
+    renderReminderCountdown('');
+    renderReminderCountdown('1');
+}, 1000);
 
 CRMrefreshTimerReminder(); // восстанавливаем активные будильники после загрузки страницы

@@ -1,199 +1,290 @@
 :root {
-    --crm-font: sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', NotoEmoji, Twemoji;
-    --crm-bg: #464451;
-    --crm-border: rgb(56, 56, 56);
+    --crm-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    --crm-bg: #1e1e28;
+    --crm-bg-panel: rgba(28, 29, 39, 0.94);
+    --crm-border: rgba(255, 255, 255, 0.1);
+    --crm-border-hover: rgba(201, 168, 76, 0.4);
     --crm-gold: #c9a84c;
+    --crm-gold-light: #dfc26f;
     --crm-gold-dark: #8b6f2e;
-    --crm-text: #f0ece4;
+    --crm-gold-glow: rgba(201, 168, 76, 0.25);
+    --crm-text: #f3f4f6;
+    --crm-text-muted: #9ca3af;
+    --crm-text-dim: #6b7280;
+    --crm-success: #10b981;
+    --crm-danger: #ef4444;
+    --crm-radius-sm: 6px;
+    --crm-radius-md: 10px;
+    --crm-radius-lg: 14px;
+    --crm-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+    --crm-shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    --crm-shadow-lg: 0 20px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px var(--crm-gold-glow);
 }
 
 .inputCRM {
     font-family: var(--crm-font);
-    font-size: 14px;
-    min-height: 25px;
+    font-size: 13px;
+    min-height: 28px;
+    background: #15161e;
+    color: var(--crm-text) !important;
+    border: 1px solid var(--crm-border);
+    border-radius: var(--crm-radius-sm);
+    padding: 4px 10px;
+    box-sizing: border-box;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
 }
+.inputCRM:focus {
+    border-color: var(--crm-gold);
+    box-shadow: 0 0 0 2px var(--crm-gold-glow);
+}
+.inputCRM::placeholder {
+    color: var(--crm-text-dim);
+}
+
 .textareaCRM {
     font-family: var(--crm-font);
-    font-size: 14px;
-    min-height: 55px;
+    font-size: 13px;
+    min-height: 60px;
+    background: #15161e;
+    color: var(--crm-text) !important;
+    border: 1px solid var(--crm-border);
+    border-radius: var(--crm-radius-sm);
+    padding: 8px 10px;
     resize: vertical;
     max-height: 200px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    outline: none;
 }
+.textareaCRM:focus {
+    border-color: var(--crm-gold);
+    box-shadow: 0 0 0 2px var(--crm-gold-glow);
+}
+
 .spanCRM {
     font-family: var(--crm-font);
-    font-size: 14px;
+    font-size: 13px;
+    color: var(--crm-text);
 }
 
 .showedwindows {
     min-height: 25px;
     min-width: 65px;
-    background: var(--crm-bg);
-    font-size: 14px;
-    z-index: 50;
+    background: var(--crm-bg-panel);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    font-size: 13px;
+    z-index: 9950;
     position: fixed;
     border: 1px solid var(--crm-border);
-    border-radius: 12px;
-    color: #e0d8c8;
-    box-shadow: 0 8px 32px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.04);
-    animation: crm-window-in .22s cubic-bezier(.34,1.56,.64,1) forwards;
+    border-top: 2px solid var(--crm-gold);
+    border-radius: var(--crm-radius-lg);
+    color: var(--crm-text);
+    box-shadow: var(--crm-shadow-lg);
+    animation: crm-window-in .22s cubic-bezier(.34, 1.56, .64, 1) forwards;
 }
 @keyframes crm-window-in {
-    from { opacity: 0; transform: scale(.96) translateY(-4px); }
+    from { opacity: 0; transform: scale(.97) translateY(-6px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 #MenubarCRM {
-    transition: background .2s ease, transform .15s ease;
-}
-#MenubarCRM:active {
-    transform: scale(.96);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 10px rgba(80, 131, 255, 0.3);
 }
 #MenubarCRM:hover {
-    background: #3d3425;
+    background: #3b6bd6 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(80, 131, 255, 0.45);
 }
-.maindivst{
-    border: 2px double black;
-    background-color: #464451;
+#MenubarCRM:active {
+    transform: translateY(0) scale(0.96);
 }
+
+.maindivst {
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: var(--crm-radius-lg);
+}
+
 .btnCRM {
-    background-color:#768d87;
-    border-radius:5px;
-    border:1px solid #566963;
-    color:#ffffff;
-    padding:5px 5px;
+    background: linear-gradient(135deg, #374151 0%, #28303e 100%);
+    border-radius: var(--crm-radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    padding: 5px 10px;
     font-family: var(--crm-font);
-    font-size:14px;
+    font-size: 13px;
+    font-weight: 500;
     min-height: 30px;
-    transition: background .2s ease, box-shadow .2s ease, transform .12s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .btnCRM:hover {
-    background: #5a4a32;
-    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+    border-color: var(--crm-gold);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
     transform: translateY(-1px);
 }
 .btnCRM:active {
-    transform: translateY(0) scale(.97);
+    transform: translateY(0) scale(0.97);
 }
+
 #ahttimercrm {
-    background-color:#768d87;
-    border-radius:5px;
+    background: #1f2937;
+    border-radius: var(--crm-radius-sm);
     border: 1px solid var(--crm-border);
-    color:lightgreen;
+    color: #34d399;
     font-family: var(--crm-font);
-    font-size:15px;
+    font-size: 14px;
+    font-weight: 600;
     height: 30px;
-    width: 50px;
+    width: 54px;
     z-index: 9050; 
     position: fixed;
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
+    box-shadow: var(--crm-shadow-sm);
 }
-.btnCRM:hover, .widthofsd:hover, #testuchenik:hover, #testprepod:hover  {
-    background: #5a4a32;
-}
+
 .btnCRMsmall {
-    width:30px !important;
+    width: 32px !important;
+    height: 30px !important;
+    padding: 0 !important;
+    justify-content: center !important;
 }
+
 .buttonHide {
-    background:#228B22;
-    border-radius:5px;
-    border:1px solid #566963;
-    color:#ffffff;
-    padding:5px 5px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(185, 28, 28, 0.2));
+    border-radius: var(--crm-radius-sm);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+    padding: 4px 8px;
     font-family: var(--crm-font);
-    font-size:14px;
-    transition: background .2s ease;
-    min-height: 30px;
-    width:50px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
 }
 .buttonHide:hover {
-    background: #0d3f0d;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(185, 28, 28, 0.4));
+    border-color: #ef4444;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
+.buttonHide:active {
+    transform: translateY(0) scale(0.96);
+}
+
 .widthofsd {
-    background:#768d87;
-    border-radius:5px;
-    border:1px solid #566963;
-    color:#ffffff;
-    padding:5px 5px;
+    background: #252836;
+    border-radius: var(--crm-radius-sm);
+    border: 1px solid var(--crm-border);
+    color: #ffffff;
+    padding: 6px 10px;
     font-family: var(--crm-font);
-    font-size:14px;
+    font-size: 13px;
     min-height: 30px;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    width:490px;
+    box-shadow: var(--crm-shadow-sm);
+    width: 490px;
 }
 .active-query {
-    border-left:6px solid #1ff400;
-    box-shadow: 0px 5px 5px rgb(0 0 0 / 55%);
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    font-weight: 700;
-    color: greenyellow;
-    transition: all 1s ease;
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.25) 0%, rgba(139, 111, 46, 0.3) 100%) !important;
+    border: 1px solid var(--crm-gold) !important;
+    border-left: 4px solid var(--crm-gold) !important;
+    box-shadow: 0 4px 14px rgba(201, 168, 76, 0.2) !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    transition: all 0.25s ease;
 }
 #idmymenucrm {
-    transition: opacity .15s ease;
+    background: #1c1d27 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: var(--crm-radius-md) !important;
+    overflow: hidden !important;
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.6) !important;
+    animation: crm-window-in .18s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.menubtnsCRM{
+.menubtnsCRM {
     font-family: var(--crm-font);
     cursor: pointer;
-    font-size: 14px;
-    padding: 6px;
-    border-bottom: 1px solid black;
-    border-left: 1px solid black;
-    border-right: 1px solid black;
-    transition: background .15s ease, color .15s ease, font-size .15s ease, box-shadow .15s ease;
+    font-size: 13px;
+    font-weight: 500;
+    color: #e5e7eb !important;
+    padding: 8px 14px;
+    border: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.menubtnsCRM:last-child {
+    border-bottom: none !important;
 }
 .menubtnsCRM:hover {
-    background: #3a3228;
-    color:#ffffffe6;
-    font-weight:600;
-    font-size:15px;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
+    background: rgba(201, 168, 76, 0.15) !important;
+    color: var(--crm-gold-light) !important;
+    padding-left: 18px;
+}
+.menubtnsCRM:active {
+    background: rgba(201, 168, 76, 0.25) !important;
 }
 #jirafinder {
-    border-top: 1px solid black;
+    border-top: none !important;
 }
 
 .radio {
-    width:15px;
-    height:15px;
-    font-size:14px;
-    transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: var(--crm-gold);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .radio:hover {
-    transform: scale(1.4);
-    font-weight: 600;
+    transform: scale(1.25);
 }
 .sdcustfieldformlines {
     width: 90%;
 }
-.sdbtn{
-    font-size: 13px !important;
+.sdbtn {
+    font-size: 12px !important;
     width: 95px;
-    margin-top:2px;
-    margin-left:2px;
+    margin-top: 2px;
+    margin-left: 2px;
 }
 .sdexpecactual {
     width: 90%;
 }
 .activebtn {
-    background-color: #b8860b;
+    background-color: var(--crm-gold-dark) !important;
+    border-color: var(--crm-gold) !important;
 }
 .activebtnsd {
-    background-color: #ff6347;
+    background-color: #e11d48 !important;
 }
 .sugops {
-    margin-left:5px;
-    color:bisque;
-    font-size: 16px;
-    transition: all 0.5s ease;
+    margin-left: 5px;
+    color: #e5e7eb;
+    font-size: 15px;
+    transition: all 0.25s ease;
+    cursor: pointer;
 }
 .sugops:hover {
-    font-size:18px;
-    color: #c9a84c;
+    color: var(--crm-gold);
     font-weight: 600;
+    transform: translateX(3px);
 }
 .checkbox-audio {
     display: inline-block;
@@ -201,33 +292,37 @@
     line-height: 28px;
     position: relative;
     vertical-align: middle;
-    font-size: 14px;
+    font-size: 13px;
     user-select: none;
 }
 .checkbox-audio .checkbox-audio-switch-CRM {
     position: relative;
     display: inline-block;
     box-sizing: border-box;
-    width: 56px;
-    height: 28px;
-    border: 1px solid rgba(0, 0, 0, .1);
-    border-radius: 25%/50%;
-    vertical-align: top;
-    background: #eee;
-    transition: .2s;
+    width: 52px;
+    height: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 13px;
+    vertical-align: middle;
+    background: #2a2d3d;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
 }
 .checkbox-audio .checkbox-audio-switch-CRM:before {
     content: '🔈';
     position: absolute;
-    top: 1px;
-    left: 1px;
-    display: inline-block;
-    width: 24px;
-    height: 24px;
+    top: 2px;
+    left: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: white;
-    box-shadow: 0 3px 5px rgba(0, 0, 0, .3);
-    transition: .15s;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-size: 11px;
 }
 .checkbox-audio input[type=checkbox] {
     display: block;
@@ -237,98 +332,99 @@
     z-index: -1;
     opacity: 0;
 }
-.checkbox-audio input[type=checkbox]:not(:disabled):active + .checkbox-audio-switch-CRM:before {
-    box-shadow: inset 0 0 2px rgba(0, 0, 0, .3);
-}
 .checkbox-audio input[type=checkbox]:checked + .checkbox-audio-switch-CRM {
-    background: limegreen;
+    background: #10b981;
+    border-color: #059669;
 }
 .checkbox-audio input[type=checkbox]:checked + .checkbox-audio-switch-CRM:before {
     content: '🔊';
-    transform:translateX(28px);
+    transform: translateX(26px);
 }
 
+#testuchenik, #testprepod {
+    writing-mode: vertical-lr;
+    text-orientation: upright;
+    position: absolute;
+    top: 0;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 8px 4px;
+    color: #f3f4f6;
+    background: #2d3748;
+    min-height: 60px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: var(--crm-shadow-sm);
+    user-select: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
 #testuchenik {
-    writing-mode: vertical-lr;
-    text-orientation: upright;
-    position: absolute;
-    top: 0;
-    Left: -34px;
-    font-size: 20px;
-    padding: 5px;
-    color: bisque;
-    background: #547354;
-    min-height: 60px;
-    text-align: center;
-    border: 1px solid black;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    user-select: none;
-    cursor: pointer;
-    transition: background .3s ease, transform .15s ease;
+    left: -32px;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
 }
-#testuchenik:hover, #testprepod:hover { background: #5a4a32; transform: scale(1.03); }
-#testuchenik:active, #testprepod:active { transform: scale(.97); }
-
-#testuchenik.active, #testprepod.active  {
-    background: coral;
-}
-
-#testuchenik.successbtn, #testprepod.successbtn  {
-    background: rgb(29, 235, 10);
-}
-
-#testuchenik.errorbtn, #testprepod.errorbtn  {
-    background: rgb(201, 17, 17);
-}
-
 #testprepod {
-    writing-mode: vertical-lr;
-    text-orientation: upright;
-    position: absolute;
-    top: 0;
-    right: -34px;
-    font-size: 20px;
-    padding: 5px;
-    color: bisque;
-    background: #547354;
-    min-height: 60px;
-    text-align: center;
-    border: 1px solid black;
-    box-shadow: 0px 3px 1px rgb(0 0 0 / 35%);
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 55%);
-    user-select: none;
-    cursor: pointer;
-    transition: background .3s ease, transform .15s ease;
+    right: -32px;
+    border-radius: 0 8px 8px 0;
+    border-left: none;
+}
+#testuchenik:hover, #testprepod:hover {
+    background: var(--crm-gold-dark);
+    color: #ffffff;
+}
+#testuchenik:active, #testprepod:active {
+    transform: scale(0.97);
+}
+#testuchenik.active, #testprepod.active {
+    background: #d97706 !important;
+}
+#testuchenik.successbtn, #testprepod.successbtn {
+    background: #10b981 !important;
+}
+#testuchenik.errorbtn, #testprepod.errorbtn {
+    background: #ef4444 !important;
 }
 .testroomsCRMbtn {
-    background: #5a4a32;
-    margin-left: 2px;
-    margin:2px;
+    background: #374151;
+    margin: 3px;
     cursor: pointer;
-    border-radius: 20px;
+    border-radius: 16px;
     width: 95px;
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 50%);
-    font-size: 15px;
+    font-size: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+    transition: all 0.2s ease;
 }
-.testroomsCRMbtn.active{
-    background: coral;
+.testroomsCRMbtn:hover {
+    background: #4b5563;
+    border-color: var(--crm-gold);
+}
+.testroomsCRMbtn.active {
+    background: var(--crm-gold) !important;
+    color: #000;
 }
 .testroomsCRMcreate {
-    background: #228B22;
-    margin-left: 5px;
-    margin:5px;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    margin: 5px;
     cursor: pointer;
-    border-radius: 20px;
+    border-radius: 16px;
     width: 290px;
-    text-shadow: 1px 2px 5px rgb(0 0 0 / 50%);
-    font-size: 15px;
+    border: 1px solid #10b981;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    transition: all 0.2s ease;
 }
 .testroomsCRMcreate:hover {
-    background: #0d3f0d;
-} 
-.testroomsCRMcreate.active{
-    background: coral;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 6px 16px rgba(5, 150, 105, 0.45);
+    transform: translateY(-1px);
+}
+.testroomsCRMcreate.active {
+    background: #d97706;
 }
 #control_jira_search {
     display: flex;
@@ -336,222 +432,588 @@
 }
 
 span[name=changeList].active {
-    background:SeaGreen !important;
+    background: #059669 !important;
 }
-
 span[name=changeList]:hover {
-    background:#af622c !important;
+    background: var(--crm-gold-dark) !important;
 }
 
 .uplinksbar {
     width: 50px;
 }
 
-#grlistinfo *{
+#grlistinfo * {
     font-family: var(--crm-font) !important;
-    font-size:14px !important;
-    color:bisque !important;  
+    font-size: 13px !important;
+    color: #e5e7eb !important;
 }
 
 .smartroom-radio {
     width: 15px;
     height: 15px;
+    accent-color: var(--crm-gold);
+    cursor: pointer;
 }
-
 .smartroom-label {
-    color: bisque;
-    font-weight: normal;
+    color: #d1d5db;
+    cursor: pointer;
+    transition: color 0.15s ease;
 }
-
 .smartroom-radio:hover + .smartroom-label,
 .smartroom-label:hover {
-    color: #ffcc99;
-    font-weight: 400;
+    color: var(--crm-gold);
 }
 
-/* Всплывающая кнопка-уведомление (например «Скопировано», создаётся в content.js) */
+/* ============================================================
+   CRM Modern Toasts System
+   ============================================================ */
+#crm-toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 2147483647;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+    max-width: 420px;
+    width: calc(100vw - 48px);
+}
+
+.crm-toast {
+    pointer-events: auto;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-family: var(--crm-font);
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: #f1f5f9;
+    background: linear-gradient(145deg, rgba(26, 28, 38, 0.96) 0%, rgba(15, 17, 24, 0.98) 100%);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    border-left: 4px solid var(--crm-gold);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: crm-toast-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.crm-toast:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.crm-toast.closing {
+    animation: crm-toast-fade-out 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.crm-toast-icon {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border-radius: 8px;
+}
+
+.crm-toast-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.crm-toast-title {
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.crm-toast-msg {
+    font-size: 13px;
+    color: #cbd5e1;
+    word-break: break-word;
+}
+
+.crm-toast-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 0 0 4px;
+    transition: color 0.15s ease;
+}
+.crm-toast-close:hover {
+    color: #fff;
+}
+
+.crm-toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    transform-origin: left;
+}
+
+/* Модификаторы типов */
+.crm-toast.success {
+    border-left-color: #10b981;
+}
+.crm-toast.success .crm-toast-icon {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+.crm-toast.success .crm-toast-title {
+    color: #34d399;
+}
+.crm-toast.success .crm-toast-progress {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.crm-toast.error {
+    border-left-color: #ef4444;
+}
+.crm-toast.error .crm-toast-icon {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+.crm-toast.error .crm-toast-title {
+    color: #f87171;
+}
+.crm-toast.error .crm-toast-progress {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.crm-toast.warning {
+    border-left-color: #f59e0b;
+}
+.crm-toast.warning .crm-toast-icon {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+.crm-toast.warning .crm-toast-title {
+    color: #fbbf24;
+}
+.crm-toast.warning .crm-toast-progress {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.crm-toast.info {
+    border-left-color: #3b82f6;
+}
+.crm-toast.info .crm-toast-icon {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+.crm-toast.info .crm-toast-title {
+    color: #60a5fa;
+}
+.crm-toast.info .crm-toast-progress {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+@keyframes crm-toast-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(40px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes crm-toast-fade-out {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(50px) scale(0.9);
+    }
+}
+
 #successButton.sucsbtn {
     position: fixed;
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 2147483647;
-    background: #2e9e5b;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: #ffffff;
     font-family: var(--crm-font);
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     padding: 12px 28px;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--crm-radius-md);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
     cursor: default;
     overflow: hidden;
-    animation: crm-notify-in .3s cubic-bezier(.34,1.56,.64,1) forwards;
+    animation: crm-notify-in .3s cubic-bezier(.34, 1.56, .64, 1) forwards;
 }
 @keyframes crm-notify-in {
-    from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(.9); }
+    from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(.92); }
     to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
-/* Полоса обратного отсчёта внизу кнопки (3.5 сек — как setTimeout в content.js) */
 .countdown-bar {
     position: absolute;
     bottom: 0;
     left: 0;
     height: 3px;
     width: 100%;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.9);
     animation: countdown-bar-shrink 3.5s linear forwards;
 }
-
 @keyframes countdown-bar-shrink {
     from { width: 100%; }
-    to   { width: 0; }
+    to { width: 0; }
 }
 
 /* ============================================================
-   Link.js — панель ссылок (новый UI, перенос из Link_Hybrid)
+   Jira Search — крупные кнопки пресетов и шапки
    ============================================================ */
+#control_jira_search {
+    gap: 8px !important;
+    padding: 12px 14px !important;
+}
 
+#control_jira_search .btnCRM {
+    padding: 9px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    letter-spacing: .2px;
+    border-radius: 10px !important;
+    min-height: 36px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+    user-select: none;
+}
+
+#control_jira_search .btnCRM:active {
+    transform: translateY(1px) scale(.98);
+}
+
+#control_jira_search .btnCRM.active-query {
+    box-shadow: 0 4px 16px rgba(201, 168, 76, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    outline: 1px solid rgba(201, 168, 76, 0.6);
+}
+
+/* Кнопки шапки Jira (обновить/очистить/спросить) — тоже крупнее */
+#jira_1str .btnCRM,
+#jira_1str .buttonHide {
+    padding: 7px 12px !important;
+    font-size: 12px;
+    min-height: 32px;
+    border-radius: 9px !important;
+}
+
+#control_jira_search .btnCRM:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    transition: all .15s ease;
+}
+
+/* ============================================================
+   Smartroom — форма пожеланий/багов (glass)
+   ============================================================ */
+#AF_Smartroomform .maindivst,
+#AF_Smartroomform > div {
+    box-sizing: border-box;
+    width: 424px;
+    color: #e2e8f0;
+    background: linear-gradient(165deg, #1e1c26 0%, #151320 100%);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 16px;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55);
+    font-family: var(--crm-font);
+    overflow: hidden;
+    padding-bottom: 8px;
+}
+
+#smartroomsug_form_header {
+    box-sizing: border-box;
+    width: auto;
+    margin: 6px !important;
+    padding: 8px 10px;
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.14), rgba(139, 111, 46, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    cursor: grab;
+    user-select: none;
+}
+#smartroomsug_form_header:active { cursor: grabbing; }
+
+#smartroom_form_menu {
+    box-sizing: border-box;
+    width: auto;
+    margin: 0 6px !important;
+    padding: 4px 10px 8px 10px;
+}
+
+/* Заголовки групп (не чипсы вариантов) */
+#smartroom_form_menu > label,
+#smartroom_form_menu > div > label:not(.smartroom-label),
+#smartroomquestion,
+#smartroomecosysrem {
+    color: #c9a84c !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    display: block;
+    margin-top: 10px !important;
+    padding: 0 !important;
+}
+
+/* Радиокнопки → чипсы */
+.smartroom-radio {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+}
+.smartroom-label {
+    display: inline-block;
+    box-sizing: border-box;
+    margin: 3px 4px 0 0 !important;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1 !important;
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+    text-transform: none !important;
+    letter-spacing: normal;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    user-select: none;
+}
+.smartroom-label:hover {
+    border-color: rgba(201, 168, 76, 0.55);
+    color: var(--crm-gold) !important;
+    transform: translateY(-1px);
+}
+.smartroom-radio:checked + .smartroom-label {
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.9), rgba(139, 111, 46, 0.8));
+    border-color: rgba(201, 168, 76, 0.9);
+    color: #101014 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 14px rgba(201, 168, 76, 0.3);
+}
+
+/* Поля ввода и селекты */
+#AF_Smartroomform .inputCRM,
+#AF_Smartroomform .textareaCRM,
+#clientid,
+#fullcomentsmartroom,
+#cattwosmatrtoom,
+#catthreesmatrtoom {
+    box-sizing: border-box;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.35) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    color: #fff !important;
+    padding: 8px 10px !important;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+#AF_Smartroomform select.inputCRM option {
+    background: #1e1c26;
+    color: #e2e8f0;
+}
+#AF_Smartroomform .inputCRM:focus,
+#AF_Smartroomform .textareaCRM:focus {
+    border-color: rgba(201, 168, 76, 0.6) !important;
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+}
+
+/* Кнопка отправки */
+#send2smartroom {
+    width: 100% !important;
+    position: static !important;
+    transform: none !important;
+    margin-top: 12px !important;
+    padding: 10px;
+    border-radius: 12px !important;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #fff !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px;
+    box-shadow: 0 8px 22px rgba(5, 150, 105, 0.4);
+    transition: all 0.2s ease;
+}
+#send2smartroom:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px) !important;
+    box-shadow: 0 12px 28px rgba(5, 150, 105, 0.5);
+}
+#send2smartroom:active { transform: translateY(0) !important; }
+
+/* Анимация ошибки валидации вместо грубого Coral */
+@keyframes sr-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+#AF_Smartroomform .sr-invalid {
+    background: rgba(239, 68, 68, 0.16) !important;
+    border-color: rgba(239, 68, 68, 0.7) !important;
+    animation: sr-shake 0.3s ease;
+}
+
+/* ============================================================
+   Link.js — панель ссылок
+   ============================================================ */
 #AF_Links {
     box-sizing: border-box;
     width: 640px;
-    padding: 10px;
-    color: bisque;
+    padding: 14px;
+    color: var(--crm-text);
 }
 
-/* Шапка с градиентом — за неё перетаскивается окно */
 .lk-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(135deg, #8b6f2e 0%, #5c4a1e 100%);
-    padding: 8px 12px;
-    border-radius: 8px;
-    margin: -10px -10px 8px -10px;
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.25) 0%, rgba(139, 111, 46, 0.15) 100%);
+    border-bottom: 1px solid var(--crm-border);
+    padding: 10px 14px;
+    border-radius: 10px 10px 0 0;
+    margin: -14px -14px 12px -14px;
     cursor: move;
     user-select: none;
 }
 .lk-title {
-    color: #fff;
-    font-weight: 600;
+    color: #ffffff;
+    font-weight: 700;
     font-size: 14px;
-    text-shadow: 0 1px 2px rgba(0,0,0,.4);
+    letter-spacing: 0.3px;
 }
 .lk-close {
-    background: #ff4757;
-    border: none;
-    color: #fff;
-    border-radius: 5px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    border-radius: var(--crm-radius-sm);
     min-height: 24px;
-    padding: 2px 8px;
+    padding: 3px 10px;
     cursor: pointer;
-    font-size: 12px;
-    line-height: 1;
-    transition: background .15s ease, transform .12s ease;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.18s ease;
 }
 .lk-close:hover {
-    background: #e8413f;
-    transform: scale(1.08);
+    background: #ef4444;
+    color: #ffffff;
+    transform: scale(1.05);
 }
 
-/* Подписи секций */
 .lk-sub {
-    font-size: 12px;
-    color: #c9a84c;
-    margin: 6px 0 4px;
-    font-weight: 600;
-    letter-spacing: .4px;
+    font-size: 11px;
+    color: var(--crm-gold);
+    margin: 8px 0 6px;
+    font-weight: 700;
+    letter-spacing: .6px;
     text-transform: uppercase;
 }
 
-/* Сетка кнопок-ссылок */
 .lk-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-    margin-bottom: 4px;
+    gap: 6px;
+    margin-bottom: 8px;
 }
 #AF_Links .lk-btn {
-    background: linear-gradient(180deg, #3a3228, #2d2820);
-    border: 1px solid #4a3f2e;
-    color: #f0ece4;
-    border-radius: 8px;
-    min-height: 30px;
-    padding: 4px 6px;
-    font-size: 12.5px;
+    background: #252836;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #e5e7eb;
+    border-radius: var(--crm-radius-sm);
+    min-height: 32px;
+    padding: 5px 8px;
+    font-size: 12px;
     font-family: inherit;
+    font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: all .15s ease;
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
 }
 #AF_Links .lk-btn:hover {
-    background: linear-gradient(180deg, #4a4030, #3a3228);
-    border-color: #c9a84c;
+    background: #32364a;
+    border-color: var(--crm-gold);
+    color: #ffffff;
     transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0,0,0,.35);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 #AF_Links .lk-btn:active {
-    transform: translateY(0) scale(.97);
+    transform: translateY(0) scale(0.97);
 }
-/* Кастомные кнопки пользователя выделяем пунктиром */
 #AF_Links .lk-btn.custom-btn {
     border-style: dashed;
-    border-color: #2ed573;
+    border-color: #10b981;
 }
 
-/* Поля быстрого поиска */
 .lk-fields {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 6px 10px;
-    margin-top: 4px;
+    gap: 8px 12px;
+    margin-top: 6px;
 }
 .lk-field {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     align-items: center;
 }
 .lk-field .inputCRM {
     flex: 1;
     min-width: 0;
-    border: 1px solid #666;
-    border-radius: 6px;
-    padding: 4px 6px;
     text-align: center;
-    color: black;
-    transition: border-color .2s ease, box-shadow .2s ease;
-}
-.lk-field .inputCRM:focus {
-    border-color: var(--crm-gold);
-    box-shadow: 0 0 0 2px rgba(201,168,76,.15);
 }
 .lk-field .btnCRMsmall {
     flex-shrink: 0;
 }
 
-/* Нижняя панель действий */
 .lk-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 6px;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255,255,255,.15);
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 .lk-footer .lk-btn,
 #AF_Links .lk-mini {
-    font-size: 11.5px;
-    min-height: 26px;
-    padding: 3px 8px;
+    font-size: 12px;
+    min-height: 28px;
+    padding: 4px 10px;
 }
 .lk-footer-right {
     display: flex;
-    gap: 4px;
+    gap: 6px;
 }
 
 /* ============================================================
@@ -561,94 +1023,123 @@ span[name=changeList]:hover {
 .lkovl {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.55);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
     z-index: 2147483000;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;
+    font-family: var(--crm-font);
 }
 .lkmodal {
-    background: #fff;
-    border-radius: 12px;
-    width: 340px;
+    background: #1e1e28;
+    border: 1px solid var(--crm-border);
+    border-radius: var(--crm-radius-lg);
+    width: 360px;
     max-width: 92vw;
-    box-shadow: 0 12px 40px rgba(0,0,0,.45);
+    box-shadow: var(--crm-shadow-lg);
     overflow: hidden;
-    animation: crm-modal-in .25s cubic-bezier(.34,1.56,.64,1) forwards;
+    animation: crm-modal-in .25s cubic-bezier(.34, 1.56, .64, 1) forwards;
 }
 @keyframes crm-modal-in {
-    from { opacity: 0; transform: scale(.92) translateY(8px); }
+    from { opacity: 0; transform: scale(.94) translateY(10px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
 .lkmodal-header {
-    background: linear-gradient(135deg, #8b6f2e 0%, #5c4a1e 100%);
-    color: #fff;
-    padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.25) 0%, rgba(139, 111, 46, 0.15) 100%);
+    color: #ffffff;
+    padding: 12px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 14px;
+    border-bottom: 1px solid var(--crm-border);
 }
 .lkmodal-x {
     background: transparent;
     border: none;
-    color: #fff;
-    font-size: 14px;
+    color: var(--crm-text-muted);
+    font-size: 16px;
     cursor: pointer;
+    transition: color 0.15s ease;
+}
+.lkmodal-x:hover {
+    color: #ffffff;
 }
 .lkmodal-body {
-    padding: 6px 14px 14px;
+    padding: 12px 16px 16px;
 }
 .lkmodal-label {
     display: block;
-    font-size: 13px;
-    color: #333;
+    font-size: 12px;
+    color: var(--crm-text-muted);
     margin: 10px 0 4px;
     font-weight: 600;
 }
 .lkmodal-input {
     width: 100%;
     box-sizing: border-box;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: border-color .2s ease, box-shadow .2s ease;
+    padding: 8px 12px;
+    background: #15161e;
+    color: var(--crm-text);
+    border: 1px solid var(--crm-border);
+    border-radius: var(--crm-radius-sm);
+    font-size: 13px;
+    transition: all 0.2s ease;
 }
 .lkmodal-input:focus {
     outline: none;
     border-color: var(--crm-gold);
-    box-shadow: 0 0 0 3px rgba(201,168,76,.12);
+    box-shadow: 0 0 0 2px var(--crm-gold-glow);
 }
 .lkmodal-hint {
-    font-size: 11.5px;
-    color: #999;
+    font-size: 11px;
+    color: var(--crm-text-dim);
     margin-top: 8px;
 }
 .lkmodal-footer {
     display: flex;
     gap: 8px;
     justify-content: flex-end;
-    padding: 12px 14px;
-    border-top: 1px solid #eee;
+    padding: 12px 16px;
+    border-top: 1px solid var(--crm-border);
+    background: rgba(0, 0, 0, 0.15);
 }
 .lkmodal-btn {
     border: none;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 13px;
+    border-radius: var(--crm-radius-sm);
+    padding: 7px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
     cursor: pointer;
     font-family: inherit;
-    transition: background .15s ease, transform .12s ease;
+    transition: all 0.15s ease;
 }
 .lkmodal-btn:active {
     transform: scale(.96);
 }
-.lkmb-primary { background: #8b6f2e; color: #fff; }
-.lkmb-primary:hover { background: #a07e35; }
-.lkmb-secondary { background: #eee; color: #333; }
-.lkmb-secondary:hover { background: #ddd; }
-.lkmb-danger { background: #ff4757; color: #fff; margin-right: auto; }
-.lkmb-danger:hover { background: #e8413f; }
+.lkmb-primary {
+    background: linear-gradient(135deg, var(--crm-gold) 0%, var(--crm-gold-dark) 100%);
+    color: #ffffff;
+}
+.lkmb-primary:hover {
+    filter: brightness(1.1);
+}
+.lkmb-secondary {
+    background: #374151;
+    color: #e5e7eb;
+}
+.lkmb-secondary:hover {
+    background: #4b5563;
+}
+.lkmb-danger {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    margin-right: auto;
+}
+.lkmb-danger:hover {
+    background: #ef4444;
+    color: #ffffff;
+}

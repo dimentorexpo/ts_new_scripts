@@ -112,14 +112,18 @@ console.log('[MMS] === MattermostSearch.js загружен ===');
     }
 
     function previewOf(m) {
-        return String(m || '')
-            .replace(/```[\s\S]*?```/g, ' ')
-            .replace(/`([^`]*)`/g, '$1')
-            .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-            .replace(/^#{1,6}\s*/gm, '')
-            .replace(/[*_~>]/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
+        var text = String(m || '');
+        // Блоки кода и инлайн-код убираем, ссылки оставляем текстом.
+        text = text.replace(/```[\s\S]*?```/g, ' ');
+        text = text.replace(/`([^`]*)`/g, '$1');
+        text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+        // Заголовки и декор markdown — без символов, но переносы строк сохраняем
+        // (иначе многострочное сообщение схлопывается в одну скудную строку).
+        text = text.replace(/^#{1,6}\s*/gm, '');
+        text = text.replace(/[*_~]/g, '');
+        text = text.replace(/^>\s?/gm, '');
+        text = text.replace(/\n{3,}/g, '\n\n').trim();
+        return text;
     }
 
     function highlight(et, terms) {
@@ -198,11 +202,30 @@ console.log('[MMS] === MattermostSearch.js загружен ===');
                 ? '<div class="mms-att-text">' + highlight(escapeHtml(String(a.text)).slice(0, 1200), terms) + '</div>'
                 : '';
 
-            if (!title && !text) return '';
+            // Поля интеграционных постов (webhook-и): { title, value, short }.
+            var fields = (a && Array.isArray(a.fields) && a.fields.length)
+                ? '<div class="mms-att-fields">' + a.fields.map(function (f) {
+                      var ft = (f && f.title)
+                          ? '<span class="mms-att-f-title">' + escapeHtml(String(f.title)) + '</span>'
+                          : '';
+                      var fv = '';
+                      if (f && f.value !== undefined && f.value !== null) {
+                          fv = '<span class="mms-att-f-value">' +
+                               highlight(escapeHtml(String(f.value)).slice(0, 600), terms) +
+                               '</span>';
+                      }
+                      if (!ft && !fv) return '';
+                      return '<div class="mms-att-field' + (f && f.short ? ' mms-att-field-short' : '') + '">' +
+                             ft + fv + '</div>';
+                  }).join('') + '</div>'
+                : '';
+
+            if (!title && !text && !fields) return '';
 
             return '<div class="mms-att"' + (bc ? ' style="border-left-color:' + bc + ';"' : '') + '>'
                  + title
                  + text
+                 + fields
                  + '</div>';
         }).join('');
     }
@@ -216,11 +239,20 @@ console.log('[MMS] === MattermostSearch.js загружен ===');
         var preview   = highlight(escapeHtml(previewOf(post.message)), terms).slice(0, 900);
         var permalink = MM_ORIGIN + '/' + teamName + '/pl/' + post.id;
 
+        // Тред: ответ (есть root_id) или корневой пост с ответами (reply_count).
+        var inThread    = !!post.root_id;
+        var hasReplies  = (post.reply_count || 0) > 0;
+        var showThread  = opts.showThreadButton !== false && (inThread || hasReplies);
+        var threadLabel = hasReplies && !inThread
+            ? '🧵 Тред (' + post.reply_count + ')'
+            : '🧵 Тред';
+
         var item = document.createElement('div');
         item.className = 'mms-item' + (opts.isThreadRoot ? ' mms-item-root' : '');
 
         item.innerHTML =
             '<div class="mms-item-head">'
+          +   (opts.isThreadRoot ? '<span class="mms-root-badge">НАЧАЛО ТРЕДА</span>' : '')
           +   '<span class="mms-channel"># ' + escapeHtml(ch.displayName) + '</span>'
           +   '<span class="mms-author">' + escapeHtml(author) + '</span>'
           +   '<span class="mms-time">' + escapeHtml(date) + '</span>'
@@ -231,6 +263,7 @@ console.log('[MMS] === MattermostSearch.js загружен ===');
           + '<div class="mms-actions">'
           +   '<button class="mms-act-btn" data-action="open">🔗 Открыть</button>'
           +   '<button class="mms-act-btn" data-action="copy">📋 Копировать</button>'
+          +   (showThread ? '<button class="mms-act-btn" data-action="thread" title="Показать весь тред">' + threadLabel + '</button>' : '')
           + '</div>';
 
         item.querySelector('[data-action="open"]').onclick = function () {
@@ -243,7 +276,101 @@ console.log('[MMS] === MattermostSearch.js загружен ===');
             });
         };
 
+        var threadBtn = item.querySelector('[data-action="thread"]');
+        if (threadBtn) {
+            threadBtn.onclick = function () {
+                openThread(post);
+            };
+        }
+
         return item;
+    }
+
+    // ─── Threads ─────────────────────────────────────────────────────────────────
+
+    /** Загрузка всего треда по корневому посту. */
+    function getThread(rootId) {
+        return mmRequest('/api/v4/posts/' + rootId + '/thread', { method: 'GET' });
+    }
+
+    /** Подтягивает имена каналов/авторов для списка постов. */
+    function hydratePosts(posts) {
+        var cids = [...new Set(posts.map(function (p) { return p.channel_id; }).filter(Boolean))];
+        var uids = [...new Set(posts.map(function (p) { return p.user_id; }).filter(Boolean))];
+
+        return Promise.all([
+            Promise.all(cids.map(function (id) {
+                return mmRequest('/api/v4/channels/' + id, { method: 'GET' })
+                    .then(function (ch) {
+                        cache.channels[id] = {
+                            name: ch.name,
+                            displayName: ch.display_name || ch.name
+                        };
+                        persistCache();
+                    })
+                    .catch(function () {});
+            })),
+            mmRequest('/api/v4/users/ids', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(uids)
+            }).then(function (u) {
+                (Array.isArray(u) ? u : []).forEach(function (x) {
+                    cache.users[x.id] = x.username || x.id;
+                });
+                persistCache();
+            }).catch(function () {})
+        ]);
+    }
+
+    /** Открывает тред: шапка с возвратом + все сообщения цепочки. */
+    function openThread(post) {
+        var rootId = post.root_id || post.id;
+
+        dom.channelBar.style.display = 'none';
+        dom.results.innerHTML = '<div class="mms-loading"><div class="mms-spinner"></div>Загрузка треда...</div>';
+
+        getThread(rootId)
+            .then(function (res) {
+                var posts  = (res && res.posts) || {};
+                var order  = Array.isArray(res.order) ? res.order : Object.keys(posts);
+                var threadPosts = order.map(function (id) { return posts[id]; }).filter(Boolean)
+                    .sort(function (a, b) { return (a.create_at || 0) - (b.create_at || 0); });
+
+                return hydratePosts(threadPosts).then(function () {
+                    return threadPosts;
+                });
+            })
+            .then(function (threadPosts) {
+                dom.results.innerHTML = '';
+
+                var bar = document.createElement('div');
+                bar.className = 'mms-thread-bar';
+                bar.innerHTML =
+                    '<button class="mms-btn" id="mms-thread-back">← К результатам</button>'
+                  + '<span class="mms-thread-info">🧵 Тред · ' + threadPosts.length + ' сообщ.</span>';
+                dom.results.appendChild(bar);
+                bar.querySelector('#mms-thread-back').onclick = closeThread;
+
+                threadPosts.forEach(function (p) {
+                    dom.results.appendChild(renderPostItem(p, searchTerms, {
+                        isThreadRoot: p.id === rootId,
+                        showThreadButton: false // из треда в тред не уходим
+                    }));
+                });
+            })
+            .catch(function (e) {
+                dom.results.innerHTML = '<div class="mms-empty">Не удалось загрузить тред.</div>';
+                notify(e.message === AUTH_ERR ? 'Нужна авторизация' : 'Ошибка треда: ' + e.message);
+                drawChannelBar();
+                drawResults(searchTerms);
+            });
+    }
+
+    /** Возврат из треда к результатам поиска. */
+    function closeThread() {
+        drawChannelBar();
+        drawResults(searchTerms);
     }
 
     // ─── Teams ───────────────────────────────────────────────────────────────────

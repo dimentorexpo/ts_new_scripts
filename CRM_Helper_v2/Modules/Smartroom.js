@@ -163,53 +163,49 @@ document.getElementById('smartroomformCRM').onclick = function () {
         let flagemptysmart = 0;
 
         if (!document.getElementsByName('typetoform')[0].checked && !document.getElementsByName('typetoform')[1].checked && !document.getElementsByName('typetoform')[2].checked && !document.getElementsByName('typetoform')[3].checked) {
-            document.getElementById('smartroomuser').style.backgroundColor = 'Coral';
-            document.getElementById('smartroomuser').style.color = 'black';
+            document.getElementById('smartroomuser').classList.add('sr-invalid');
             flagemptysmart = 1;
         } else {
-            document.getElementById('smartroomuser').style.backgroundColor = '';
-            document.getElementById('smartroomuser').style.color = '#c4ffd3';
+            document.getElementById('smartroomuser').classList.remove('sr-invalid');
         }
         
         if (!document.getElementsByName('formattoform')[0].checked && !document.getElementsByName('formattoform')[1].checked && !document.getElementsByName('formattoform')[2].checked && !document.getElementsByName('formattoform')[3].checked) {
-            document.getElementById('smartroomformat').style.backgroundColor = 'Coral';
-            document.getElementById('smartroomformat').style.color = 'black';
+            document.getElementById('smartroomformat').classList.add('sr-invalid');
             flagemptysmart = 1;
         } else {
-            document.getElementById('smartroomformat').style.backgroundColor = '';
-            document.getElementById('smartroomformat').style.color = '#c4ffd3';
+            document.getElementById('smartroomformat').classList.remove('sr-invalid');
         }
 
         if (document.getElementById('clientid').value.length < 3) {
-            document.getElementById('clientid').style.backgroundColor = 'Coral';
+            document.getElementById('clientid').classList.add('sr-invalid');
             flagemptysmart = 1;
         } else {
-            document.getElementById('clientid').style.backgroundColor = '';
+            document.getElementById('clientid').classList.remove('sr-invalid');
         }
 
         if (!document.getElementsByName('whatobratform')[0].checked && !document.getElementsByName('whatobratform')[1].checked) {
-            document.getElementById('smartroomquestion').style.backgroundColor = 'Coral';
-            document.getElementById('smartroomquestion').style.color = 'black';
+            document.getElementById('smartroomquestion').classList.add('sr-invalid');
             flagemptysmart = 1;
         } else {
-            document.getElementById('smartroomquestion').style.backgroundColor = '';
-            document.getElementById('smartroomquestion').style.color = '#c4ffd3';
+            document.getElementById('smartroomquestion').classList.remove('sr-invalid');
         }
 
         if (!document.getElementsByName('smartroomecos')[0].checked && !document.getElementsByName('smartroomecos')[1].checked && !document.getElementsByName('smartroomecos')[2].checked) {
-            document.getElementById('smartroomecosysrem').style.backgroundColor = 'Coral';
-            document.getElementById('smartroomecosysrem').style.color = 'black';
+            document.getElementById('smartroomecosysrem').classList.add('sr-invalid');
             flagemptysmart = 1;
         } else {
-            document.getElementById('smartroomecosysrem').style.backgroundColor = '';
-            document.getElementById('smartroomecosysrem').style.color = '#c4ffd3';
+            document.getElementById('smartroomecosysrem').classList.remove('sr-invalid');
         }
 
         if (document.getElementById('fullcomentsmartroom').value.length < 3) {
-            document.getElementById('fullcomentsmartroom').style.backgroundColor = 'Coral';
+            document.getElementById('fullcomentsmartroom').classList.add('sr-invalid');
             flagemptysmart = 1;
         } else {
-            document.getElementById('fullcomentsmartroom').style.backgroundColor = '';
+            document.getElementById('fullcomentsmartroom').classList.remove('sr-invalid');
+        }
+
+        if (flagemptysmart == 1 && typeof window.crmToast === 'function') {
+            window.crmToast('Заполните выделенные поля формы', 'warning', { title: 'Smartroom' });
         }
 
         if (flagemptysmart == 0) {
@@ -257,6 +253,9 @@ document.getElementById('smartroomformCRM').onclick = function () {
 			chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: requestAdr, requestOptions: requestOptions }, function (offerresponse) {
 				if (offerresponse.success) {
 					document.getElementById('send2smartroom').innerText = "Отправлено✅"
+					if (typeof window.crmToast === 'function') {
+						window.crmToast('Пожелание отправлено в документ Smartroom', 'success', { title: 'Smartroom' });
+					}
 					setTimeout(() => {
 						document.getElementById('send2smartroom').innerText = "Отправить"
 						document.getElementById('AF_Smartroomform').style.display = 'none'
@@ -265,7 +264,11 @@ document.getElementById('smartroomformCRM').onclick = function () {
 						clearradio()
 					}, 3000)
 				} else {
-					alert('Не удалось отправить пожелания ' + offerresponse.error);
+					if (typeof window.crmToast === 'function') {
+						window.crmToast('Не удалось отправить пожелания: ' + (offerresponse.error || 'неизвестная ошибка'), 'error', { title: 'Smartroom' });
+					} else {
+						alert('Не удалось отправить пожелания ' + offerresponse.error);
+					}
 				}
 			});
 		}

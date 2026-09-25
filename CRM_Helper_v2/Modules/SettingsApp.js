@@ -4,47 +4,131 @@ const _sa_dl = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stro
 const _sa_play = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
 
 var win_SettingsApp =  // описание элементов главного окна
-    `<div style="border: 2px double black; background-color: #464451" id="SettingsApp_bar">
-        <div style="margin: 5px; width: 350px; display:flex; align-items:center; gap:4px;" id="SettingsApp_1str">
+    `<style>
+        #SettingsApp_bar { width: 372px; padding: 0 0 10px 0; border: 1px solid rgba(255,255,255,.09);
+            border-radius: 16px; overflow: hidden; color: #e2e8f0;
+            background: linear-gradient(165deg, #1e1c26 0%, #151320 100%);
+            box-shadow: 0 16px 44px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.03);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+        #SettingsApp_1str { display: flex; align-items: center; gap: 6px; margin: 0; padding: 10px 12px;
+            background: linear-gradient(135deg, rgba(201,168,76,.14), rgba(139,111,46,.05));
+            border-bottom: 1px solid rgba(255,255,255,.07); cursor: grab; user-select: none; }
+        #SettingsApp_1str:active { cursor: grabbing; }
+        #SettingsApp_1str > span:last-child { margin-left: auto; display: flex; align-items: center; gap: 6px;
+            color: #c9a84c; font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
+        .set-sec { margin: 10px 12px 0 12px; padding: 10px 12px 12px 12px; border-radius: 12px;
+            background: linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+            border: 1px solid rgba(255,255,255,.07); }
+        .set-sec-title { display: flex; align-items: center; gap: 7px; margin-bottom: 9px;
+            font-size: 11px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; color: #c9a84c; }
+        .set-sec-title::after { content: ''; flex: 1; height: 1px;
+            background: linear-gradient(90deg, rgba(201,168,76,.35), transparent); }
+        .set-row { display: flex; align-items: center; gap: 8px; margin-top: 7px; flex-wrap: wrap; }
+        .set-label { color: #b6c2d2; font-size: 12.5px; }
+        #SettingsApp_bar .inputCRM { background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.1);
+            color: #fff; border-radius: 9px; padding: 6px 9px; font-size: 12.5px; outline: none;
+            transition: border-color .2s ease, box-shadow .2s ease; }
+        #SettingsApp_bar .inputCRM:focus { border-color: rgba(201,168,76,.6);
+            box-shadow: 0 0 0 3px rgba(201,168,76,.15); }
+        #SettingsApp_bar select.inputCRM { color: #e2e8f0; text-align: center; }
+        #SettingsApp_bar select.inputCRM option { background: #1e1c26; color: #e2e8f0; }
+        #soundlistaddrCRM { flex: 1; min-width: 210px; text-align: center; }
+        #rangeCRM { flex: 1; min-width: 110px; accent-color: #c9a84c; }
+        .set-chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 10px;
+            background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.09);
+            color: #cbd5e1; font-size: 12.5px; cursor: pointer; transition: all .18s ease; }
+        .set-chip:hover { border-color: rgba(201,168,76,.5); transform: translateY(-1px); }
+        .set-chip input[type="checkbox"] { accent-color: #c9a84c; margin: 0; }
+        #SettingsApp_bar .btnCRM { border-radius: 9px; }
+        #test_stdCRM, #test_teachCRM { width: 120px; text-align: center; }
+        #soundplayintervalCRM { width: 56px; text-align: center; }
+        .set-fs-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .set-fs-row .btnCRM { flex: 1; justify-content: center; white-space: nowrap; }
+        /* Переключатель звука */
+        .checkbox-audio { display: inline-flex; margin-left: auto; }
+        .checkbox-audio-switch-CRM { position: relative; display: inline-block; width: 40px; height: 22px;
+            background: rgba(255,255,255,.12); border-radius: 22px; transition: background .2s ease; cursor: pointer; }
+        .checkbox-audio-switch-CRM::after { content: ''; position: absolute; top: 3px; left: 3px;
+            width: 16px; height: 16px; border-radius: 50%; background: #94a3b8;
+            transition: transform .2s ease, background .2s ease; }
+        #audioCRMswitcher { display: none; }
+        #audioCRMswitcher:checked + .checkbox-audio-switch-CRM { background: rgba(201,168,76,.55); }
+        #audioCRMswitcher:checked + .checkbox-audio-switch-CRM::after {
+            transform: translateX(18px); background: #fde68a; box-shadow: 0 0 8px rgba(201,168,76,.8); }
+    </style>
+    <div id="SettingsApp_bar">
+        <div id="SettingsApp_1str">
             <button class="buttonHide" title="скрывает меню" id="hideSettingsApp">${_sa_close} hide</button>
-            <span style="margin-left:auto; color:#c9a84c; font-size:13px;">⚙ Settings</span>
+            <span>⚙ Settings</span>
         </div>
-		<div style="margin: 5px; width: 350px">
-                <select class="inputCRM" style="height:28px; width:242px; text-align:center" id="soundlistaddrCRM">
+
+        <!-- ЗВУК -->
+        <div class="set-sec">
+            <div class="set-sec-title">🔔 Звуковые оповещения</div>
+            <div class="set-row">
+                <select class="inputCRM" id="soundlistaddrCRM">
                     <option selected="" disabled="">Звук нового сообщения</option>
                     <option value="othersound">Выбрать свой звук</option>
-                    </select>
-				<button class="btnCRM btnCRMsmall" title="Проверка звука" id="sound_testCRM" style="display:flex; align-items:center; justify-content:center;">${_sa_play}</button>
-				<label title="Включение и отключение звука входящих запросов" class="checkbox-audio">
-					<input id="audioCRMswitcher" type="checkbox" checked="">
-						<span class="checkbox-audio-switch-CRM"></span>
-				</label>
-                <input class="inputCRM" id="sound_adrCRM" placeholder="Введи адрес звука" autocomplete="off" type="text" style="display: none; text-align: center; width: 235px; color: black; margin-top: 5px;">
-				<button class="btnCRM btnCRMsmall" title="Сохранить звук" id="sound_saveCRM" style="display: none; display:flex; align-items:center;">${_sa_save}</button>
-				<br>
-				<span class="spanCRM" style="color:bisque; margin-top: 5px;">Громкость звука</span>
-				<input id="rangeCRM" min="0" max="1" value="1.0" step="0.1" type="range">
-                    <br>
-				<label class="spanCRM" style="color:bisque"><input type="checkbox" id="repeatsoundselectCRM">Повторять звук новой задачи</label>
-                    <br>
-				<label class="spanCRM" style="color:bisque"><input type="checkbox" id="skyautoEnabledCRM">Автовзятие задач (SkyAuto)</label>
-				<br>
-				<span class="spanCRM" style="color:bisque">Интервал воспроизведения звука:</span>
-				<input class="inputCRM" title="Ввод интервала в секундах между повторами звука нового чата" id="soundplayintervalCRM" placeholder="N" autocomplete="off" type="number" maxlength="2" min="0" max="59" style="text-align: center; margin-top: 5px; width: 50px; color: black;">
-				<button class="btnCRM" title="Внести изменения в интервал между повторами звука нового чата" id="setsoundplayintervalCRM" style="margin-top: 5px">SET⌚</button>
-					<br>
-				<div style="margin-top: 5px; width: 350px">
-                    <input class="inputCRM" id="test_stdCRM" placeholder="ID тест У" autocomplete="off" title = "ID личного тестового ученика" type="text" style="text-align: center; width: 130px; color: black;">
-                    <button class="btnCRM btnCRMsmall" id="setteststdCRM" title="Добавить в localstorage ID тестового У" style="margin-top: 5px">💾</button>
-                    <input class="inputCRM" id="test_teachCRM" placeholder="ID тест П" autocomplete="off" title = "ID личного тестового преподавателя" type="text" style="text-align: center; width: 130px; color: black;">
-                    <button class="btnCRM btnCRMsmall" id="settestteachCRM" title="Добавить в localstorage ID тестового П" style="margin-top: 5px">💾</button>
-                </div>
-				<button class="btnCRM" id="savesettingstofileCRM" title="Сохранить настройки в .json" style="color: #e5ece6; margin-top: 5px; display:flex; align-items:center; gap:4px;">${_sa_save} Сохранить настройки</button>
-				<input class="btnCRM" type="file" id="fileinputCRM" title="Загружает все настройки в localstorage из ранее сохраненного файла настроек в формте .json" style="display:none;">
-				<label class="btnCRM" style="color: #e5ece6; background: #768d87; padding: 5px; border-radius: 5px; border: 1px solid #566963; display:flex; align-items:center; gap:4px;" for="fileinputCRM">${_sa_dl} Загрузить настройки</label>
-			</div>
-		</div>
-    </div>`;
+                </select>
+                <button class="btnCRM btnCRMsmall" title="Проверка звука" id="sound_testCRM" style="display:flex; align-items:center; justify-content:center;">${_sa_play}</button>
+                <label title="Включение и отключение звука входящих запросов" class="checkbox-audio">
+                    <input id="audioCRMswitcher" type="checkbox" checked="">
+                        <span class="checkbox-audio-switch-CRM"></span>
+                </label>
+            </div>
+            <div class="set-row">
+                <input class="inputCRM" id="sound_adrCRM" placeholder="Введи адрес звука" autocomplete="off" type="text" style="display: none; flex: 1; min-width: 180px;">
+                <button class="btnCRM btnCRMsmall" title="Сохранить звук" id="sound_saveCRM" style="display: none; align-items:center;">${_sa_save}</button>
+            </div>
+            <div class="set-row">
+                <span class="set-label">Громкость</span>
+                <input id="rangeCRM" min="0" max="1" value="1.0" step="0.1" type="range">
+            </div>
+            <div class="set-row">
+                <label class="set-chip" title="Повторять звук новой задачи">
+                    <input type="checkbox" id="repeatsoundselectCRM"> 🔁 Повторять звук
+                </label>
+            </div>
+            <div class="set-row">
+                <span class="set-label">Интервал повтора:</span>
+                <input class="inputCRM" title="Ввод интервала в секундах между повторами звука нового чата" id="soundplayintervalCRM" placeholder="N" autocomplete="off" type="number" maxlength="2" min="0" max="59">
+                <span class="set-label">сек</span>
+                <button class="btnCRM btnCRMsmall" title="Внести изменения в интервал между повторами звука нового чата" id="setsoundplayintervalCRM">SET ✓</button>
+            </div>
+        </div>
+
+        <!-- АВТОМАТИКА -->
+        <div class="set-sec">
+            <div class="set-sec-title">⚡ Автоматизация</div>
+            <div class="set-row">
+                <label class="set-chip" title="Автоматическое взятие задач в работу" style="flex:1; justify-content:flex-start;">
+                    <input type="checkbox" id="skyautoEnabledCRM"> 🤖 Автовзятие задач (SkyAuto)
+                </label>
+            </div>
+        </div>
+
+        <!-- ТЕСТОВЫЕ АККАУНТЫ -->
+        <div class="set-sec">
+            <div class="set-sec-title">👤 Тестовые аккаунты</div>
+            <div class="set-row">
+                <input class="inputCRM" id="test_stdCRM" placeholder="ID тест У" autocomplete="off" title="ID личного тестового ученика" type="text">
+                <button class="btnCRM btnCRMsmall" id="setteststdCRM" title="Добавить в localstorage ID тестового У">💾</button>
+                <input class="inputCRM" id="test_teachCRM" placeholder="ID тест П" autocomplete="off" title="ID личного тестового преподавателя" type="text">
+                <button class="btnCRM btnCRMsmall" id="settestteachCRM" title="Добавить в localstorage ID тестового П">💾</button>
+            </div>
+        </div>
+
+        <!-- РЕЗЕРВНАЯ КОПИЯ -->
+        <div class="set-sec">
+            <div class="set-sec-title">💾 Резервная копия</div>
+            <div class="set-fs-row">
+                <button class="btnCRM" id="savesettingstofileCRM" title="Сохранить настройки в .json" style="color: #e5ece6; display:flex; align-items:center; gap:4px;">${_sa_save} Экспорт</button>
+                <input class="btnCRM" type="file" id="fileinputCRM" title="Загружает все настройки в localstorage из ранее сохраненного файла настроек в формте .json" style="display:none;">
+                <label class="btnCRM" style="color: #e5ece6; background: linear-gradient(135deg,#0e7490,#155e75); padding: 6px 10px; border: 1px solid rgba(255,255,255,.12); display:flex; align-items:center; gap:4px; cursor:pointer;" for="fileinputCRM">${_sa_dl} Импорт</label>
+            </div>
+        </div>
+    </div>
+    `;
 
 let audioCRM // аудиоплеер уведомлений (используется также в content.js)
 let soundflagCRM = 0

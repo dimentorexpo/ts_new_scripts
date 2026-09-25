@@ -209,7 +209,11 @@ document.getElementById('starttestroom').onclick = function () { // добавл
         testroomsCRMshowmessage('message', 'Тестовый урок создан, приглашение на него отображаются в личных кабинетах У и П');
         cleartestroomsCRMfields()
       } else {
-        alert('Не удалось создать урок ' + roomresponse.error);
+        if (typeof window.crmToast === 'function') {
+          window.crmToast('Не удалось создать урок: ' + (roomresponse.error || 'неизвестная ошибка'), 'error', { title: 'Тестовый урок' });
+        } else {
+          alert('Не удалось создать урок ' + roomresponse.error);
+        }
       }
     });
 
@@ -231,6 +235,21 @@ function GenerateHash(length) { // генерируем случайный хэ�
 }
 
 function testroomsCRMshowmessage(type, text) { // вывод уведомлений
+  let toastType = 'info';
+  if (type == 'error') {
+    toastType = 'error';
+  } else if (type == 'message') {
+    toastType = 'success';
+  }
+
+  // Современный тост (создаётся в content.js). Держим старую плашку
+  // как дублирующий индикатор внутри окна для обратной совместимости.
+  if (typeof window.crmToast === 'function') {
+    window.crmToast(text, toastType, {
+      title: toastType === 'success' ? 'Тестовый урок' : toastType === 'error' ? 'Не получилось' : 'Подсказка'
+    });
+  }
+
   if (type == 'error') {
     messagefield.style.background = '#d5484f';
   } else if (type == 'message') {

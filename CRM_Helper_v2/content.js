@@ -419,8 +419,12 @@ function screenshotsCRM() { // просмотр и трансформация с
 }
 
 screenshotsCRM();
-// MutationObserver вместо setInterval(5000) — реагирует на изменение DOM
-const screenshotsMO = new MutationObserver(() => screenshotsCRM());
+// MutationObserver с debounce вместо частого синхронного обхода тяжелого DOM дерева CRM
+let screenshotsDebounce = null;
+const screenshotsMO = new MutationObserver(() => {
+    if (screenshotsDebounce) clearTimeout(screenshotsDebounce);
+    screenshotsDebounce = setTimeout(screenshotsCRM, 200);
+});
 screenshotsMO.observe(document.body || document.documentElement, { childList: true, subtree: true });
 
 /* ============================================================
@@ -484,29 +488,126 @@ function checkforsoundplay() {
 setInterval(checkforsoundplay, 1000);
 
 /* ============================================================
- *  ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ-КНОПКА (например «Скопировано»)
+ *  СОВРЕМЕННАЯ СИСТЕМА УВЕДОМЛЕНИЙ (TOASTS)
  * ============================================================ */
 
-function createAndShowButton(text) {
-    const btnSuccess = document.createElement("button");
-    btnSuccess.id = "successButton";
-    btnSuccess.className = "sucsbtn";
-    btnSuccess.textContent = text;
+function crmToast(message, type = 'info', opts = {}) {
+    let container = document.getElementById('crm-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'crm-toast-container';
+        document.body.appendChild(container);
+    }
 
-    // Полоса обратного отсчёта внизу кнопки (анимация описана в styles.css).
-    const countdownBar = document.createElement("div");
-    countdownBar.id = "countdownBar";
-    countdownBar.className = "countdown-bar";
-    btnSuccess.appendChild(countdownBar);
+    const duration = opts.duration || (type === 'error' ? 6000 : 4000);
+    const title = opts.title || (type === 'success' ? 'Успешно' : type === 'error' ? 'Ошибка' : type === 'warning' ? 'Внимание' : 'Инфо');
 
-    document.body.appendChild(btnSuccess);
-    btnSuccess.style.display = 'block';
+    const icons = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠',
+        info: 'ℹ'
+    };
 
-    // Самоудаляемся через 3.5 секунды (время синхронизировано с CSS-анимацией).
-    setTimeout(() => {
-        btnSuccess.remove();
-    }, 3500);
+    const toast = document.createElement('div');
+    toast.className = `crm-toast ${type}`;
+
+    const iconEl = document.createElement('div');
+    iconEl.className = 'crm-toast-icon';
+    iconEl.textContent = icons[type] || 'ℹ';
+
+    const contentEl = document.createElement('div');
+    contentEl.className = 'crm-toast-content';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'crm-toast-title';
+    titleEl.textContent = title;
+
+    const msgEl = document.createElement('div');
+    msgEl.className = 'crm-toast-msg';
+    msgEl.innerHTML = typeof message === 'string' ? message : String(message);
+
+    contentEl.appendChild(titleEl);
+    contentEl.appendChild(msgEl);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'crm-toast-close';
+    closeBtn.innerHTML = '×';
+    closeBtn.title = 'Закрыть';
+
+    const progressEl = document.createElement('div');
+    progressEl.className = 'crm-toast-progress';
+    progressEl.style.transition = `transform ${duration}ms linear`;
+    progressEl.style.transform = 'scaleX(1)';
+
+    toast.appendChild(iconEl);
+    toast.appendChild(contentEl);
+    toast.appendChild(closeBtn);
+    toast.appendChild(progressEl);
+
+    container.appendChild(toast);
+
+    // Запуск полоски прогресса
+    requestAnimationFrame(() => {
+        progressEl.style.transform = 'scaleX(0)';
+    });
+
+    let isClosed = false;
+    const closeToast = () => {
+        if (isClosed) return;
+        isClosed = true;
+        toast.classList.add('closing');
+        setTimeout(() => {
+            if (toast.parentNode) toast.remove();
+        }, 260);
+    };
+
+    closeBtn.onclick = (e) => {
+        e.stopPropagation();
+        closeToast();
+    };
+
+    toast.onclick = () => {
+        closeToast();
+    };
+
+    let remaining = duration;
+    let startedAt = Date.now();
+    let timer = setTimeout(closeToast, duration);
+
+    // Наведение — «замораживает» таймер, уход курсора — продолжает с остатка.
+    toast.onmouseenter = function () {
+        clearTimeout(timer);
+        remaining -= (Date.now() - startedAt);
+        if (remaining < 500) remaining = 500;
+        progressEl.style.transition = 'none';
+    };
+    toast.onmouseleave = function () {
+        startedAt = Date.now();
+        progressEl.style.transition = `transform ${remaining}ms linear`;
+        progressEl.style.transform = 'scaleX(0)';
+        timer = setTimeout(closeToast, remaining);
+    };
+
+    return toast;
 }
+
+// Экспортируем в window для всех модулей CRM
+window.crmToast = crmToast;
+
+/* Обратная совместимость для createAndShowButton: перенаправляем на crmToast */
+function createAndShowButton(text, type = 'success') {
+    let normalizedType = 'success';
+    if (type === 'error' || /не удалось|ошибка|error|запрет/i.test(text)) {
+        normalizedType = 'error';
+    } else if (type === 'warning' || /внимание|не указан/i.test(text)) {
+        normalizedType = 'warning';
+    } else if (type === 'info') {
+        normalizedType = 'info';
+    }
+    return crmToast(text, normalizedType);
+}
+window.createAndShowButton = createAndShowButton;
 
 /* ============================================================
  *  БЛОК: UserBlocker (статус пользователя) + CallStatus (isForbiddenToCall)
@@ -1135,238 +1236,3 @@ function createAndShowButton(text) {
     console.log('SkyAuto: Запущен.');
 })();
 
-/* ============================================================
- *  MATTERMOST SEARCH — полный функционал (из other/MattermostSearch.js)
- *  Работает через bg.js для обхода CORS.
- * ============================================================ */
-(function () {
-    'use strict';
-    var MM_ORIGIN = 'https://mm-time.skyeng.tech';
-    var WINDOW_ID = 'AF_Mattermost';
-    var STORAGE_KEY = 'mms_cache_v1';
-    var SEARCH_LIMIT = 20;
-    var AUTH_ERR = 'AUTH';
-
-    // Кэш
-    var mmsCache = { channels: {}, users: {} };
-    try { var cs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); if (cs && cs.channels && cs.users) mmsCache = cs; } catch (e) {}
-    var persistCache = function() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(mmsCache)); } catch (e) {} };
-
-    // API через bg.js (CORS bypass)
-    function mmsRequest(path, opts) {
-        opts = opts || {};
-        var url = MM_ORIGIN + path;
-        var ro = Object.assign({}, opts, { credentials: 'include', headers: Object.assign({ 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, opts.headers || {}) });
-        return new Promise(function(resolve, reject) {
-            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url, requestOptions: ro }, function(resp) {
-                if (chrome.runtime.lastError) { reject(new Error(chrome.runtime.lastError.message)); return; }
-                if (!resp || !resp.success) { var e = (resp && resp.error) || 'no response'; if (/(401|403)/.test(e)) reject(new Error(AUTH_ERR)); else reject(new Error(e)); return; }
-                try { resolve(JSON.parse(resp.fetchansver)); } catch (e) { reject(new Error('JSON error')); }
-            });
-        });
-    }
-
-    // Состояние
-    var mmsDom = {};
-    var mmsTeamId = '', mmsTeamName = '', mmsResults = [], mmsTerms = '', mmsPage = 0, mmsHasMore = false, mmsTeamsLoaded = false, mmsHidden = new Set();
-    function mmsSetStatus(t, c) { if (!mmsDom.status) return; mmsDom.status.textContent = t || ''; if (c) mmsDom.status.style.color = c; }
-    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-    function prevOf(m) { return String(m || '').replace(/```[\s\S]*?```/g, ' ').replace(/`([^`]*)`/g, '$1').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/^#{1,6}\s*/gm, '').replace(/[*_~>]/g, '').replace(/\s+/g, ' ').trim(); }
-    function hl(et, terms) { if (!terms) return et; String(terms).split(/\s+/).filter(function(w){return w.length>2}).forEach(function(w) { et = et.replace(new RegExp(esc(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), function(m){return '<span class="mms-hit">' + m + '</span>'}); }); return et; }
-
-    // Вложения
-    function getAtts(post) { return (!post) ? [] : (post.attachments || (post.props && post.props.attachments) || (post.metadata && post.metadata.attachments) || []); }
-    function renderFiles(post) {
-        var files = (post.metadata && Array.isArray(post.metadata.files)) ? post.metadata.files : [];
-        if (!files.length && Array.isArray(post.file_ids) && post.file_ids.length) files = post.file_ids.map(function(id){return {id:id,name:'file',extension:''}});
-        if (!files.length) return '';
-        return '<div class="mms-files">' + files.map(function(f) {
-            var url = MM_ORIGIN + '/api/v4/files/' + f.id;
-            var ext = String(f.extension || '').toLowerCase();
-            if (/^(png|jpe?g|gif|webp|svg|bmp|ico)$/.test(ext)) return '<a class="mms-file-img" href="' + url + '" target="_blank"><img src="' + url + '" loading="lazy" onerror="this.closest(\'.mms-file-img\').classList.add(\'mms-file-broken\');"><span class="mms-file-name">' + esc(f.name || '') + '</span></a>';
-            return '<a class="mms-file-link" href="' + url + '" target="_blank">📎 ' + esc(f.name || f.id) + '</a>';
-        }).join('') + '</div>';
-    }
-    function renderAtts(post, terms) {
-        var atts = getAtts(post);
-        if (!atts.length) return '';
-        return atts.map(function(a) {
-            var bc = (a && a.color) ? esc(String(a.color)) : '';
-            var title = (a && a.title) ? '<div class="mms-att-title">' + esc(String(a.title)).slice(0, 400) + '</div>' : '';
-            var text = (a && a.text) ? '<div class="mms-att-text">' + hl(esc(String(a.text)).slice(0, 1200), terms) + '</div>' : '';
-            var fields = (a && Array.isArray(a.fields) && a.fields.length) ? '<div class="mms-att-fields">' + a.fields.map(function(f) {
-                var ft = (f && f.title) ? '<span class="mms-att-f-title">' + esc(String(f.title)) + '</span>' : '';
-                var fv = (f && f.value != null) ? '<span class="mms-att-f-value">' + hl(esc(String(f.value)).slice(0, 600), terms) + '</span>' : '';
-                if (!ft && !fv) return '';
-                return '<div class="mms-att-field' + (f && f.short ? ' mms-att-field-short' : '') + '">' + ft + fv + '</div>';
-            }).join('') + '</div>' : '';
-            if (!title && !text && !fields) return '';
-            return '<div class="mms-att"' + (bc ? ' style="border-left-color:' + bc + ';"' : '') + '>' + title + text + fields + '</div>';
-        }).join('');
-    }
-    function renderPost(post, terms, opts) {
-        opts = opts || {};
-        var ch = mmsCache.channels[post.channel_id] || { displayName: post.channel_id };
-        var author = mmsCache.users[post.user_id] || post.user_id || '';
-        var date = new Date(post.create_at).toLocaleString('ru-RU');
-        var preview = hl(esc(prevOf(post.message)), terms).slice(0, 900);
-        var permalink = MM_ORIGIN + '/' + mmsTeamName + '/pl/' + post.id;
-        var inThread = !!post.root_id, hasReplies = (post.reply_count || 0) > 0;
-        var threadBtn = (opts.showThread !== false && (inThread || hasReplies)) ? '<button class="mms-act-btn" data-action="thread">🧵 Тред' + (hasReplies && !inThread ? ' (' + post.reply_count + ')' : '') + '</button>' : '';
-        var item = document.createElement('div');
-        item.className = 'mms-item' + (opts.isRoot ? ' mms-item-root' : '');
-        item.innerHTML = '<div class="mms-item-head">' + (opts.isRoot ? '<span class="mms-root-badge">НАЧАЛО ТРЕДА</span>' : '') + '<span class="mms-channel"># ' + esc(ch.displayName) + '</span><span class="mms-author">' + esc(author) + '</span><span class="mms-time">' + esc(date) + '</span></div><div class="mms-msg">' + (preview || ((renderAtts(post, terms) || renderFiles(post)) ? '' : '<i>пустое сообщение</i>')) + '</div>' + renderFiles(post) + renderAtts(post, terms) + '<div class="mms-actions"><button class="mms-act-btn" data-action="open">🔗 Открыть</button><button class="mms-act-btn" data-action="copy">📋 Копировать</button>' + threadBtn + '</div>';
-        item.querySelector('[data-action="open"]').onclick = function() { window.open(permalink, '_blank'); };
-        item.querySelector('[data-action="copy"]').onclick = function() { navigator.clipboard.writeText(permalink).then(function(){ if (typeof createAndShowButton === 'function') createAndShowButton('Скопировано'); }); };
-        var tb = item.querySelector('[data-action="thread"]');
-        if (tb) tb.onclick = function() { mmsOpenThread(post); };
-        return item;
-    }
-
-    // Команды
-    function mmsInitTeams() {
-        return mmsRequest('/api/v4/teams', { method: 'GET' }).then(function(teams) {
-            mmsDom.team.innerHTML = '';
-            teams = Array.isArray(teams) ? teams : [];
-            if (!teams.length) { mmsDom.team.add(new Option('Нет команд', '')); return; }
-            teams.forEach(function(t) { var o = new Option(t.display_name || t.name, t.id); o.dataset.name = t.name; mmsDom.team.add(o); });
-            var preferred = null;
-            try { var sid = localStorage.getItem('mms_team_id'); if (sid && teams.some(function(t){return t.id===sid})) preferred = teams.find(function(t){return t.id===sid}); } catch (e) {}
-            if (!preferred) preferred = teams.find(function(t){return /skyeng/i.test((t.display_name || '') + ' ' + (t.name || ''))}) || teams[0];
-            mmsDom.team.value = preferred.id; mmsTeamId = preferred.id; mmsTeamName = preferred.name; mmsTeamsLoaded = true;
-            mmsSetStatus('Команда: ' + (preferred.display_name || preferred.name), '#d4a843');
-        }).catch(function(e) { mmsDom.team.innerHTML = '<option value="">Ошибка</option>'; mmsSetStatus(e.message === AUTH_ERR ? 'Нужна авторизация' : 'Ошибка', '#f87171'); });
-    }
-
-    // Объединение результатов
-    function mmsMerge(res) {
-        var posts = (res && res.posts) || {};
-        var order = Array.isArray(res.order) ? res.order : Object.keys(posts);
-        var raw = order.map(function(id){return posts[id]}).filter(Boolean);
-        var existing = new Set(mmsResults.map(function(p){return p.id}));
-        var fresh = raw.filter(function(p){return !existing.has(p.id)});
-        mmsResults.push.apply(mmsResults, fresh);
-        mmsHasMore = !!((res && res.next_post_id) || fresh.length === SEARCH_LIMIT);
-        var cids = [...new Set(fresh.map(function(p){return p.channel_id}).filter(Boolean))];
-        var uids = [...new Set(fresh.map(function(p){return p.user_id}).filter(Boolean))];
-        return Promise.all([
-            Promise.all(cids.map(function(id){ return mmsRequest('/api/v4/channels/' + id, {method:'GET'}).then(function(ch){ mmsCache.channels[id]={name:ch.name,displayName:ch.display_name||ch.name}; persistCache(); }).catch(function(){ mmsCache.channels[id]={name:id,displayName:id}; }); })),
-            mmsRequest('/api/v4/users/ids', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(uids)}).then(function(u){ (Array.isArray(u)?u:[]).forEach(function(x){ mmsCache.users[x.id]=x.username||x.nickname||x.first_name||x.id; }); persistCache(); }).catch(function(){})
-        ]);
-    }
-
-    // Отрисовка результатов с группировкой по каналам
-    function mmsDrawResults(terms) {
-        var list = mmsResults.filter(function(p){return !mmsHidden.has(p.channel_id)});
-        mmsDom.results.innerHTML = '';
-        if (!mmsResults.length) { mmsDom.results.innerHTML = '<div class="mms-empty">Ничего не найдено.</div>'; mmsSetStatus('0', '#f87171'); return; }
-        if (!list.length) { mmsDom.results.innerHTML = '<div class="mms-empty">Все каналы скрыты.</div>'; return; }
-        var groups = new Map();
-        list.forEach(function(p) { var id = p.channel_id || '_'; if (!groups.has(id)) groups.set(id, []); groups.get(id).push(p); });
-        [...groups.entries()].sort(function(a,b){return b[1].length-a[1].length}).forEach(function(entry) {
-            var chId = entry[0], posts = entry[1];
-            var ch = mmsCache.channels[chId] || { displayName: chId };
-            var g = document.createElement('div'); g.className = 'mms-group';
-            var h = document.createElement('div'); h.className = 'mms-group-head';
-            h.innerHTML = '<span class="mms-group-arrow">▾</span><span class="mms-channel"># ' + esc(ch.displayName) + '</span><span class="mms-group-cnt">' + posts.length + '</span>';
-            h.onclick = function() { g.classList.toggle('mms-collapsed'); };
-            var b = document.createElement('div'); b.className = 'mms-group-body';
-            posts.forEach(function(p) { b.appendChild(renderPost(p, terms)); });
-            g.appendChild(h); g.appendChild(b); mmsDom.results.appendChild(g);
-        });
-        if (mmsHasMore) { var mb = document.createElement('button'); mb.id = 'mms-more'; mb.className = 'mms-btn mms-btn-primary'; mb.style.cssText = 'width:100%;margin-top:10px;'; mb.textContent = '📥 Показать ещё'; mb.onclick = mmsLoadMore; mmsDom.results.appendChild(mb); }
-        mmsSetStatus('Найдено: ' + mmsResults.length, '#86efac');
-    }
-
-    // Панель каналов-чипсов
-    function mmsDrawChips() {
-        var counts = new Map(); mmsResults.forEach(function(p) { if (p.channel_id) counts.set(p.channel_id, (counts.get(p.channel_id) || 0) + 1); });
-        if (counts.size <= 1) { mmsDom.chips.style.display = 'none'; mmsDom.chips.innerHTML = ''; return; }
-        mmsDom.chips.style.display = 'flex';
-        mmsDom.chips.innerHTML = [...counts.entries()].sort(function(a,b){return b[1]-a[1]}).map(function(entry) {
-            var id = entry[0], cnt = entry[1];
-            var ch = mmsCache.channels[id] || { displayName: id };
-            var off = mmsHidden.has(id);
-            return '<span class="mms-chip' + (off ? ' mms-chip-off' : '') + '" data-ch="' + id + '"><span class="mms-chip-name"># ' + esc(ch.displayName) + '</span><span class="mms-chip-cnt">' + cnt + '</span></span>';
-        }).join('') + (mmsHidden.size ? '<button class="mms-chip-reset" id="mms-chip-reset">показать все</button>' : '');
-        mmsDom.chips.querySelectorAll('.mms-chip').forEach(function(c) { c.onclick = function() { var id = c.dataset.ch; if (mmsHidden.has(id)) mmsHidden.delete(id); else mmsHidden.add(id); mmsDrawChips(); mmsDrawResults(mmsTerms); }; });
-        var r = mmsDom.chips.querySelector('#mms-chip-reset');
-        if (r) r.onclick = function() { mmsHidden.clear(); mmsDrawChips(); mmsDrawResults(mmsTerms); };
-    }
-
-    // Тред
-    function mmsOpenThread(post) {
-        var rootId = post.root_id || post.id;
-        mmsDom.chips.style.display = 'none';
-        mmsDom.results.innerHTML = '<div class="mms-loading"><div class="mms-spinner"></div>Загрузка треда...</div>';
-        mmsRequest('/api/v4/posts/' + rootId + '/thread', { method: 'GET' }).then(function(res) {
-            var posts = (res && res.posts) || {};
-            var order = Array.isArray(res.order) ? res.order : Object.keys(posts);
-            var tp = order.map(function(id){return posts[id]}).filter(Boolean).sort(function(a,b){return (a.create_at||0)-(b.create_at||0)});
-            var uids = [...new Set(tp.map(function(p){return p.user_id}).filter(Boolean))];
-            var cids = [...new Set(tp.map(function(p){return p.channel_id}).filter(Boolean))];
-            return Promise.all([Promise.all(cids.map(function(id){ return mmsRequest('/api/v4/channels/' + id, {method:'GET'}).then(function(ch){ mmsCache.channels[id]={name:ch.name,displayName:ch.display_name||ch.name}; persistCache(); }).catch(function(){ mmsCache.channels[id]={name:id,displayName:id}; }); })), mmsRequest('/api/v4/users/ids', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(uids)}).then(function(u){ (Array.isArray(u)?u:[]).forEach(function(x){ mmsCache.users[x.id]=x.username||x.nickname||x.first_name||x.id; }); persistCache(); }).catch(function(){})]).then(function() {
-                mmsDom.results.innerHTML = '';
-                var bar = document.createElement('div'); bar.className = 'mms-thread-bar';
-                bar.innerHTML = '<button class="mms-btn" id="mms-thread-back">← Назад</button><span class="mms-thread-info">🧵 ' + tp.length + ' сообщ.</span>';
-                mmsDom.results.appendChild(bar);
-                bar.querySelector('#mms-thread-back').onclick = function() { mmsDrawChips(); mmsDrawResults(mmsTerms); };
-                tp.forEach(function(p) { mmsDom.results.appendChild(renderPost(p, mmsTerms, { isRoot: p.id === rootId, showThread: false })); });
-            });
-        }).catch(function(e) { mmsDom.results.innerHTML = '<div class="mms-empty">Ошибка треда</div>'; mmsDrawChips(); mmsDrawResults(mmsTerms); });
-    }
-
-    // Поиск
-    function mmsRunSearch() {
-        var terms = mmsDom.query.value.trim();
-        if (!terms) { mmsSetStatus('Введите запрос', '#fbbf24'); return Promise.resolve(); }
-        if (!mmsTeamId) { mmsSetStatus('Команда не выбрана', '#f87171'); return Promise.resolve(); }
-        mmsResults = []; mmsTerms = terms; mmsPage = 0; mmsHasMore = false; mmsHidden.clear();
-        mmsDom.searchBtn.disabled = true;
-        mmsDom.results.innerHTML = '<div class="mms-loading"><div class="mms-spinner"></div>Поиск...</div>';
-        return mmsRequest('/api/v4/teams/' + mmsTeamId + '/posts/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ terms: terms, is_or_search: true, page: 0, per_page: SEARCH_LIMIT }) })
-        .then(function(res) { return mmsMerge(res); })
-        .then(function() { mmsDrawChips(); mmsDrawResults(terms); })
-        .catch(function(e) { mmsSetStatus(e.message === AUTH_ERR ? 'Нужна авторизация' : 'Ошибка', '#f87171'); mmsDom.results.innerHTML = '<div class="mms-empty">Ошибка</div>'; })
-        .finally(function() { mmsDom.searchBtn.disabled = false; });
-    }
-
-    function mmsLoadMore() {
-        if (!mmsTeamId || !mmsTerms) return;
-        var btn = document.getElementById('mms-more');
-        if (btn) { btn.disabled = true; btn.textContent = 'Загрузка...'; }
-        mmsPage++;
-        mmsRequest('/api/v4/teams/' + mmsTeamId + '/posts/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ terms: mmsTerms, is_or_search: true, page: mmsPage, per_page: SEARCH_LIMIT }) })
-        .then(function(res) { return mmsMerge(res); })
-        .then(function() { mmsDrawChips(); mmsDrawResults(mmsTerms); })
-        .catch(function(e) { if (typeof createAndShowButton === 'function') createAndShowButton('Ошибка: ' + e.message); });
-    }
-
-    // Привязка к окну
-    function mmsBind() {
-        mmsDom.win = document.getElementById(WINDOW_ID);
-        if (!mmsDom.win) return false;
-        mmsDom.team = document.getElementById('mms-team');
-        mmsDom.query = document.getElementById('mms-query');
-        mmsDom.status = document.getElementById('mms-status');
-        mmsDom.results = document.getElementById('mms-results');
-        mmsDom.chips = document.getElementById('mms-channel-bar');
-        mmsDom.searchBtn = document.getElementById('mms-search');
-        document.getElementById('mms-clear').onclick = function() { mmsDom.query.value = ''; mmsHidden.clear(); mmsResults = []; mmsTerms = ''; mmsPage = 0; mmsHasMore = false; mmsDom.results.innerHTML = '<div class="mms-empty">Введите запрос и нажмите «Найти».</div>'; mmsSetStatus(''); };
-        mmsDom.searchBtn.onclick = mmsRunSearch;
-        mmsDom.query.addEventListener('keydown', function(e) { if (e.key === 'Enter') mmsRunSearch(); });
-        mmsDom.team.addEventListener('change', function() { var o = mmsDom.team.options[mmsDom.team.selectedIndex]; mmsTeamId = o.value; mmsTeamName = o.dataset.name || mmsTeamName; mmsSetStatus('Команда: ' + o.textContent.trim(), '#d4a843'); try { localStorage.setItem('mms_team_id', o.value); } catch (e) {} });
-        return true;
-    }
-
-    // Публичное API
-    window.mmsToggle = function() {
-        mmsBind();
-        if (!mmsDom.win) return;
-        var hidden = mmsDom.win.style.display === 'none';
-        mmsDom.win.style.display = hidden ? '' : 'none';
-        if (hidden && !mmsTeamsLoaded) mmsInitTeams();
-    };
-
-    console.log('[MMS] Полный функционал загружен');
-})();
