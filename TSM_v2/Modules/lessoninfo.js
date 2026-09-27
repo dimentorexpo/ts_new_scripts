@@ -270,7 +270,7 @@ function updateParticipants(participants) {
 function updateParticipantsWebinar(participants) {
     const sorted = sortParticipants(participants);
     document.getElementById("participantsTbody").innerHTML = sorted
-        .map((p) => `<tr><td>${p.role}</td><td>${p.userId}</td><td>${p.name}</td><td>${toMoscowTime(p.joinedAt)}</td></tr>`)
+        .map((p) => `<tr><td>${escapeHTML(p.role)}</td><td>${escapeHTML(p.userId)}</td><td>${escapeHTML(p.name)}</td><td>${toMoscowTime(p.joinedAt)}</td></tr>`)
         .join("");
 }
 

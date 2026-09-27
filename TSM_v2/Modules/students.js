@@ -37,8 +37,13 @@ document.getElementById("hidestudentsSkysmartMenu").onclick = function () {
 document.getElementById("hidestudentsAdultstMenu").onclick = function () { wintStudAdults.style.display = "none"; };
 
 function restoreMainMenu() {
+    // Возвращаем всё окно меню (AFMS_addMenu), а не только список пунктов:
+    // при открытии «Учеников» окно скрывается целиком, иначе остаётся
+    // «шляпка» с кнопкой Скрыть.
+    const mainWin = document.getElementById("AFMS_addMenu");
     const mainMenu = document.getElementById("mainmenu");
     const exercisesMenu = document.getElementById("exercisesmenu");
+    if (mainWin) mainWin.style.display = "block";
     if (mainMenu) mainMenu.style.display = "block";
     if (exercisesMenu) exercisesMenu.style.display = "none";
 }
@@ -58,18 +63,50 @@ const SUBJECT_MAP = {
     geography: "География"
 };
 
+// API может завернуть данные в обёртку ({data: {...}} / {result: {...}}).
+// Возвращаем тот объект, в котором реально лежат ключи разделов из SUBJECT_MAP.
+function pickKidData(raw) {
+    if (!raw || typeof raw !== "object") return {};
+    // «Есть разделы» = есть хотя бы один массив (ключи разделов динамические).
+    const hasSections = (obj) => Object.values(obj).some(Array.isArray);
+    if (hasSections(raw)) return raw;
+    for (const wrapKey of ["data", "result", "payload"]) {
+        const inner = raw[wrapKey];
+        if (inner && typeof inner === "object" && !Array.isArray(inner) && hasSections(inner)) {
+            return inner;
+        }
+    }
+    return raw;
+}
+
+// Подпись раздела: SUBJECT_MAP — только словарь подписей,
+// ключи ответа API могут быть любыми (например, italian).
+function labelForSubject(key) {
+    if (SUBJECT_MAP[key]) return SUBJECT_MAP[key];
+    return key.charAt(0).toUpperCase() + key.slice(1);
+}
+
+// Реальные разделы из ответа: пары [key, list], где list — массив.
+function kidSections(data) {
+    return Object.entries(data || {}).filter(([, list]) => Array.isArray(list));
+}
+
 function buildKidCardHTML(kid, subjectKey) {
     const statusSymbol = kid.status === "sleep" ? "💤" : (kid.status === "vacation" ? "⛱" : "");
     const statusTitle = kid.status === "sleep" ? "ученик уснул" : (kid.status === "vacation" ? "ученик в отпуске" : "");
-    const segmentBadge = kid.segmentBadge ? `<div class="tsm-badge">${kid.segmentBadge}</div>` : "";
-    const serviceLocale = kid.serviceLocale || "Пусто";
-    const statusClass = kid.status || "";
+    const segmentBadge = kid.segmentBadge ? `<div class="tsm-badge">${escapeHTML(kid.segmentBadge)}</div>` : "";
+    const serviceLocale = kid.serviceLocale ? escapeHTML(kid.serviceLocale) : "Пусто";
+    const statusClass = kid.status ? escapeHTML(kid.status) : "";
+    const safeName = escapeHTML(kid.name);
+    const safeId = escapeHTML(kid.id);
+    const safeSubj = escapeHTML(subjectKey);
+
     return `<div class="tsm-kid-card ${statusClass}">
-        <div class="tsm-subj-search">${subjectKey}</div>
+        <div class="tsm-subj-search">${safeSubj}</div>
         <div class="tsm-student-name-kid">
-            <span title="${statusTitle}">${statusSymbol}</span> ${kid.name}
+            <span title="${escapeHTML(statusTitle)}">${statusSymbol}</span> ${safeName}
         </div>
-        <div class="tsm-id-badge">🆔: ${kid.id}</div>
+        <div class="tsm-id-badge">🆔: ${safeId}</div>
         ${segmentBadge}
         <div class="tsm-lang-badge">Яз.обслуж: ${serviceLocale}</div>
         <div style="text-align:center;">
@@ -113,82 +150,126 @@ document.getElementById("openstudentsmenu").onclick = async function () {
     }
 
     wintStudAdults.style.display = "none";
+    // Скрываем главное меню ЦЕЛИКОМ (окно AFMS_addMenu), иначе остаётся
+    // «шляпка» с кнопкой Скрыть без пунктов меню.
+    const mainWin = document.getElementById("AFMS_addMenu");
+    if (mainWin) mainWin.style.display = "none";
     document.getElementById("mainmenu").style.display = "none";
     document.getElementById("exercisesmenu").style.display = "none";
 
     const infobar = document.getElementById("infobarskysmart");
-    infobar.innerHTML = "";
+    infobar.innerHTML = '<div class="tsm-empty tsm-text-secondary">Загрузка учеников…</div>';
 
     const objSel = document.getElementById("listofsubjects");
     objSel.length = 1;
     objSel[0].selected = true;
 
-    const response = await fetch("https://academic-gateway.skyeng.ru/academic/api/teacher-classroom/get-data/personal", {
-        headers: { "content-type": "application/json" },
-        method: "POST",
-        body: '{"teacherId":null}',
-        credentials: "include"
-    });
-    const kidsdata = await response.json();
+    let kidsdata = {};
+    let commonarr = "";
 
-    const sections = [];
-    for (const [key, label] of Object.entries(SUBJECT_MAP)) {
-        if (!kidsdata[key]) continue;
-        sections.push(`<div class="tsm-subj-title">${label}</div>` + kidsdata[key].map((kid) => buildKidCardHTML(kid, label)).join(""));
-    }
-    const commonarr = sections.join("");
-    renderKidCards(infobar, commonarr);
+    try {
+        const response = await fetch("https://academic-gateway.skyeng.ru/academic/api/teacher-classroom/get-data/personal", {
+            headers: { "content-type": "application/json" },
+            method: "POST",
+            body: '{"teacherId":null}',
+            credentials: "include"
+        });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const raw = await response.json();
+        kidsdata = pickKidData(raw);
+        console.log("[TSM Ученики] ответ API:", raw);
 
-    for (const [key, label] of Object.entries(SUBJECT_MAP)) {
-        if (kidsdata[key]) addOption(objSel, label, key);
+        const sections = [];
+        for (const [key, list] of kidSections(kidsdata)) {
+            if (list.length === 0) continue;
+            const label = labelForSubject(key);
+            const cards = list
+                .filter((kid) => kid && typeof kid === "object")
+                .map((kid) => buildKidCardHTML(kid, label))
+                .join("");
+            if (cards) sections.push(`<div class="tsm-subj-title">${escapeHTML(label)}</div>` + cards);
+        }
+        commonarr = sections.join("");
+        if (commonarr) {
+            renderKidCards(infobar, commonarr);
+        } else {
+            const keys = raw && typeof raw === "object" ? Object.keys(raw).join(", ") : typeof raw;
+            renderKidCards(infobar, `<div class="tsm-empty">Ученики не найдены.<br>Ключи ответа API: <b>${escapeHTML(keys)}</b><br><span class="tsm-text-xs">Подробности — в консоли (F12)</span></div>`);
+        }
+
+        for (const [key, list] of kidSections(kidsdata)) {
+            if (list.length > 0) addOption(objSel, labelForSubject(key), key);
+        }
+    } catch (err) {
+        console.error("[TSM Ученики] ошибка загрузки:", err);
+        createNotify("Ошибка загрузки учеников: " + err.message, "error");
+        renderKidCards(infobar, `<div class="tsm-empty">Не удалось загрузить учеников: ${escapeHTML(err.message)}<br><span class="tsm-text-xs">Проверьте, что вы вошли в ЛКП (F12 → Console)</span></div>`);
     }
 
     document.getElementById("usersearchskysmart").oninput = function () {
         const query = this.value.toLowerCase().trim();
         if (!query) {
-            renderKidCards(infobar, commonarr);
+            renderKidCards(infobar, commonarr || "");
             return;
         }
         const matches = [];
-        for (const [key, label] of Object.entries(SUBJECT_MAP)) {
-            if (!kidsdata[key]) continue;
-            for (const kid of kidsdata[key]) {
-                if (kid.name.toLowerCase().includes(query) || String(kid.id).includes(query)) {
+        for (const [key, list] of kidSections(kidsdata)) {
+            const label = labelForSubject(key);
+            for (const kid of list) {
+                if (!kid) continue;
+                const name = String(kid.name || "").toLowerCase();
+                if (name.includes(query) || String(kid.id ?? "").includes(query)) {
                     matches.push(buildKidCardHTML(kid, label));
                 }
             }
         }
-        renderKidCards(infobar, matches.join(""));
+        renderKidCards(infobar, matches.join("") ||
+            `<div class="tsm-empty">Ничего не найдено по запросу «${escapeHTML(this.value.trim())}»</div>`);
     };
 
     function showselectedsubject() {
         const selected = document.getElementById("listofsubjects").value;
         if (selected === "all") {
-            renderKidCards(infobar, commonarr);
+            renderKidCards(infobar, commonarr || "");
             return;
         }
-        if (!kidsdata[selected]) {
-            infobar.innerHTML = "";
+        if (!Array.isArray(kidsdata[selected]) || kidsdata[selected].length === 0) {
+            renderKidCards(infobar, `<div class="tsm-empty">В разделе «${escapeHTML(labelForSubject(selected))}» учеников нет</div>`);
             return;
         }
         renderKidCards(
             infobar,
-            `<div class="tsm-subj-title">${SUBJECT_MAP[selected]}</div>` +
-            kidsdata[selected].map((kid) => buildKidCardHTML(kid, SUBJECT_MAP[selected])).join("")
+            `<div class="tsm-subj-title">${escapeHTML(labelForSubject(selected))}</div>` +
+            kidsdata[selected].filter((kid) => kid && typeof kid === "object")
+                .map((kid) => buildKidCardHTML(kid, labelForSubject(selected))).join("")
         );
     }
 
     document.getElementById("actualizestudreportkids").onclick = async function () {
         const studentIds = Array.from(document.getElementsByClassName("tsm-id-badge"))
-            .map((el) => el.textContent.match(/\d+/)[0]);
+            .map((el) => el.textContent.match(/\d+/)?.[0])
+            .filter(Boolean);
 
-        await Promise.all(studentIds.map((studentId) =>
-            fetch("https://api-profile.skyeng.ru/api/v1/students/" + studentId + "/school-report", {
-                body: '{"student_level":"--","materials_used":"--","endurance":"--","distraction":"--","difficulties":"--","activities":"--","skills_to_develop":"--","technical_problems":"--","homework":"--"}',
-                method: "POST",
-                credentials: "include"
-            })
-        ));
+        if (studentIds.length === 0) {
+            createNotify("Нет учеников для актуализации отчётов", "error");
+            return;
+        }
+
+        const BATCH_SIZE = 5;
+        for (let i = 0; i < studentIds.length; i += BATCH_SIZE) {
+            const batch = studentIds.slice(i, i + BATCH_SIZE);
+            await Promise.all(batch.map((studentId) =>
+                fetch("https://api-profile.skyeng.ru/api/v1/students/" + studentId + "/school-report", {
+                    body: '{"student_level":"--","materials_used":"--","endurance":"--","distraction":"--","difficulties":"--","activities":"--","skills_to_develop":"--","technical_problems":"--","homework":"--"}',
+                    headers: { "Content-Type": "application/json" },
+                    method: "POST",
+                    credentials: "include"
+                }).catch((err) => console.error("Report actualization error for student " + studentId, err))
+            ));
+            if (i + BATCH_SIZE < studentIds.length) {
+                await new Promise((r) => setTimeout(r, 150));
+            }
+        }
 
         createNotify("Отчеты об учениках были успешно актуализированы с заполнением полей --");
     };

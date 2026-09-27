@@ -13,6 +13,21 @@ const MAX_ATTEMPTS = 60;
 
 /* ---------- Общие утилиты ---------- */
 
+function escapeHTML(str) {
+    if (str == null) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function getGlobalToken() {
+    const cookies = parsePageCookies();
+    return cookies.token_global || "";
+}
+
 function toMoscowTime(isoString) {
     if (!isoString) return "--";
     return new Date(isoString).toLocaleString("ru-RU", {
@@ -47,10 +62,19 @@ async function copyToClipboardTSM(str) {
     }
 }
 
-function createToast(text, type = "sucsbtnok") {
-    const toast = document.createElement("button");
+function createToast(content, type = "sucsbtnok", isHTML = false) {
+    const existingToasts = document.querySelectorAll(".tsm-toast");
+    if (existingToasts.length >= 4) {
+        existingToasts[0].remove();
+    }
+
+    const toast = document.createElement("div");
     toast.className = `tsm-toast ${type}`;
-    toast.innerHTML = text;
+    if (isHTML) {
+        toast.innerHTML = content;
+    } else {
+        toast.textContent = content;
+    }
 
     const countdownBar = document.createElement("div");
     countdownBar.className = "tsm-countdown-bar";
@@ -61,7 +85,7 @@ function createToast(text, type = "sucsbtnok") {
 }
 
 function createNotify(text, result = "message") {
-    createToast(text, result === "message" ? "sucsbtnok" : "sucsbtnnotok");
+    createToast(text, result === "message" ? "sucsbtnok" : "sucsbtnnotok", false);
 }
 
 /* ---------- Копируемые по клику значения ---------- */
@@ -88,8 +112,10 @@ function markCopyable(element, getText) {
 function buildTsmDialog({ title, message, okText, cancelText, inputMode }) {
     const overlay = document.createElement("div");
     overlay.className = "tsm-dialog-overlay";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
 
-    const titleHtml = title ? `<div class="tsm-dialog-title">${title}</div>` : "";
+    const titleHtml = title ? `<div class="tsm-dialog-title">${escapeHTML(title)}</div>` : "";
     const inputHtml = inputMode === "text"
         ? '<input class="tsm-dialog-input" type="text">'
         : inputMode === "multiline"
@@ -99,11 +125,11 @@ function buildTsmDialog({ title, message, okText, cancelText, inputMode }) {
     overlay.innerHTML = `
         <div class="tsm-dialog">
             ${titleHtml}
-            <div class="tsm-dialog-message">${message}</div>
+            <div class="tsm-dialog-message">${escapeHTML(message)}</div>
             ${inputHtml}
             <div class="tsm-dialog-actions">
-                <button class="tsm-dialog-btn tsm-dialog-btn-cancel">${cancelText}</button>
-                <button class="tsm-dialog-btn tsm-dialog-btn-ok">${okText}</button>
+                <button class="tsm-dialog-btn tsm-dialog-btn-cancel">${escapeHTML(cancelText)}</button>
+                <button class="tsm-dialog-btn tsm-dialog-btn-ok">${escapeHTML(okText)}</button>
             </div>
         </div>`;
 
@@ -206,6 +232,8 @@ function createTSMWindow(id, topKey, leftKey, content) {
     windowElement.setAttribute("id", id);
     windowElement.innerHTML = content;
 
+    const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
+
     windowElement.onmousedown = (event) => {
         if (!isInteractiveElement(event)) return;
         event.preventDefault();
@@ -216,8 +244,10 @@ function createTSMWindow(id, topKey, leftKey, content) {
         const elemTop = windowElement.offsetTop;
 
         const onMouseMove = (e) => {
-            windowElement.style.left = `${elemLeft + e.clientX - startX}px`;
-            windowElement.style.top = `${elemTop + e.clientY - startY}px`;
+            const maxLeft = Math.max(0, window.innerWidth - windowElement.offsetWidth - 10);
+            const maxTop = Math.max(0, window.innerHeight - windowElement.offsetHeight - 10);
+            windowElement.style.left = `${clamp(elemLeft + e.clientX - startX, 10, maxLeft)}px`;
+            windowElement.style.top = `${clamp(elemTop + e.clientY - startY, 10, maxTop)}px`;
         };
         const onMouseUp = () => {
             document.removeEventListener("mousemove", onMouseMove);
@@ -311,12 +341,12 @@ async function handleMMComment(chatId) {
     }
     lastChatIdF = chatId;
 
-    const messlink = MESSENGER_WEB_LINK + chatId;
+    const messlink = MESSENGER_WEB_LINK + encodeURIComponent(chatId);
 
     if (location.href.includes("crm2.skyeng.ru")) {
         const copied = await copyToClipboardTSM(messlink);
         const suffix = copied ? " и ссылка скопирована в буфер обмена" : "";
-        createToast(`Передано в канал #techsupport${suffix}: <a href="${messlink}" target="_blank" rel="noopener">${messlink}</a>`);
+        createToast(`Передано в канал #techsupport${suffix}: <a href="${messlink}" target="_blank" rel="noopener">${escapeHTML(messlink)}</a>`, "sucsbtnok", true);
     } else if (location.href.includes("skyeng.autofaq.ai/tickets/assigned")) {
         sendCommentTSM(`Передано в канал #techsupport: <a href="${messlink}" target="_blank" rel="noopener">ссылка</a>`);
     }
@@ -380,7 +410,6 @@ function setSelectionListener(doc) {
 
 function checkIframeLoaded() {
     if (attemptCount >= MAX_ATTEMPTS) {
-        console.log("Попытка поиска iframe завершилась неудачей после", MAX_ATTEMPTS, "попыток.");
         return;
     }
     const iframeElement = document.querySelector('[class^="NEW_FRONTEND"]');
@@ -389,7 +418,7 @@ function checkIframeLoaded() {
         setTimeout(checkIframeLoaded, 1000);
         return;
     }
-    const iframeDocument = iframeElement.contentDocument || iframeElement.contentWindow.document;
+    const iframeDocument = iframeElement.contentDocument || iframeElement.contentWindow?.document;
     if (iframeDocument && iframeDocument.readyState === "complete") {
         setSelectionListener(iframeDocument);
         isIframeListenerSet = true;
@@ -407,12 +436,19 @@ function checkIframeLoaded() {
 setSelectionListener(document);
 
 if (window.location.href === "https://skyeng.autofaq.ai/tickets/assigned") {
-    const observer = new MutationObserver((mutations) => {
+    let checkInterval = null;
+
+    const observer = new MutationObserver((mutations, obs) => {
         for (const mutation of mutations) {
             for (const node of mutation.addedNodes || []) {
-                if (node.nodeType === Node.ELEMENT_NODE && node.matches('[class^="NEW_FRONTEND"]')) {
+                if (node.nodeType === Node.ELEMENT_NODE && (node.matches?.('[class^="NEW_FRONTEND"]') || node.querySelector?.('[class^="NEW_FRONTEND"]'))) {
                     isIframeListenerSet = false;
+                    attemptCount = 0;
                     checkIframeLoaded();
+                    if (isIframeListenerSet) {
+                        obs.disconnect();
+                        if (checkInterval) clearInterval(checkInterval);
+                    }
                 }
             }
         }
@@ -420,7 +456,12 @@ if (window.location.href === "https://skyeng.autofaq.ai/tickets/assigned") {
     observer.observe(document.body, { childList: true, subtree: true });
 
     if (!isIframeListenerSet) checkIframeLoaded();
-    setInterval(() => {
-        if (!isIframeListenerSet) checkIframeLoaded();
+
+    checkInterval = setInterval(() => {
+        if (!isIframeListenerSet) {
+            checkIframeLoaded();
+        } else {
+            clearInterval(checkInterval);
+        }
     }, 60000);
 }

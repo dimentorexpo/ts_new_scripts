@@ -1,3 +1,5 @@
+// src/app.js
+
 /* =========================================================
    TSM Background Service Worker
    ========================================================= */
@@ -15,32 +17,89 @@ const TASK_LINK_PATTERNS = [
 ];
 const SHOW_FOR_PAGES = ["*://skyeng.autofaq.ai/*", "*://*.skyeng.ru/*", "*://*.skyeng.tech/*"];
 
-let lastChatId = null;
-let lastMessage = null;
-let cachedOperatorId = null;
+const ALLOWED_FETCH_ORIGINS = new Set([
+    "https://crm2.skyeng.ru",
+    "https://id.skyeng.ru",
+    "https://api-words.skyeng.ru",
+    "https://api-profile.skyeng.ru",
+    "https://billing-api.skyeng.ru",
+    "https://billing-marketing.skyeng.ru",
+    "https://dictionary.skyeng.ru",
+    "https://video-trouble-shooter.skyeng.ru",
+    "https://timetable.skyeng.ru",
+    "https://vimbox.skyeng.ru",
+    "https://student.skyeng.ru",
+    "https://trm.skyeng.ru",
+    "https://learning-groups-storage.skyeng.ru",
+    "https://skyeng.autofaq.ai",
+    "https://mm-time.skyeng.tech"
+]);
+
+const MAX_PAYLOAD_BYTES = 5 * 1024 * 1024;
+
+function isAllowedUrl(urlString) {
+    try {
+        const parsed = new URL(urlString);
+        return parsed.protocol === "https:" && ALLOWED_FETCH_ORIGINS.has(parsed.origin);
+    } catch {
+        return false;
+    }
+}
+
+function isValidSender(sender) {
+    if (!sender?.tab?.url) return false;
+    try {
+        const senderUrl = new URL(sender.tab.url);
+        return (
+            senderUrl.protocol === "https:" &&
+            (senderUrl.hostname.endsWith(".skyeng.ru") ||
+             senderUrl.hostname.endsWith(".skyeng.tech") ||
+             senderUrl.hostname === "skyeng.autofaq.ai")
+        );
+    } catch {
+        return false;
+    }
+}
+
+function isSupportedTabUrl(url) {
+    if (!url) return false;
+    try {
+        const parsed = new URL(url);
+        return (
+            parsed.protocol === "https:" &&
+            (parsed.hostname.endsWith(".skyeng.ru") ||
+             parsed.hostname.endsWith(".skyeng.tech") ||
+             parsed.hostname === "skyeng.autofaq.ai")
+        );
+    } catch {
+        return false;
+    }
+}
 
 /* ---------- Логирование ошибочных сетевых запросов ---------- */
 
 chrome.webRequest.onCompleted.addListener((details) => {
     if (details.statusCode >= 400 && details.statusCode <= 511) {
         getActiveTab().then((tab) => {
-            if (tab) chrome.tabs.sendMessage(tab.id, { message: "logRequest", details });
+            if (tab?.id && isSupportedTabUrl(tab.url)) {
+                sendMessageToTab(tab.id, { message: "logRequest", details }).catch(() => {});
+            }
         });
     }
-}, { urls: ["<all_urls>"] });
+}, {
+    urls: [
+        "*://*.skyeng.ru/*",
+        "*://*.skyeng.tech/*",
+        "*://skyeng.autofaq.ai/*"
+    ]
+});
 
 /* ---------- Контекстное меню: конфигурация ---------- */
-
-function upsertContextMenu(id, options) {
-    chrome.contextMenus.remove(id, () => void chrome.runtime.lastError);
-    chrome.contextMenus.create(options);
-}
-
 const PAGE_MENU_ITEMS = [
     ["searchPaymentId", "💸 Поиск платежа"],
     ["balanceInfoId", "💰 Начислятор / 📑 Подписки"],
     ["certAndPromoId", "🧾 Сертификаты / 🎟 Промокоды"],
-    ["opentTTId", "📟 Timetable"],
+    ["openTTId", "📟 Timetable"],
     ["openCalendarId", "📆 Календарь (Datsy)"],
     ["makeCompensId", "💵 Компенсации"],
     ["openTalksAdminId", "💋 Админка Talks"],
@@ -54,7 +113,7 @@ const SELECTION_MENU_ITEMS = [
     ["PartialPaymentId", "💳 Список рассрочек для ID: %s"],
     ["editAdminId", "🆔 Отредактировать в админке ID: %s"],
     ["serviceSkipId", "💨 ID Услуги Skip АП"],
-    ["skpiOnboaringId", "💨 ID Услуги Skip Onboarding"],
+    ["skipOnboardingId", "💨 ID Услуги Skip Onboarding"],
     ["openTRM2Id", "👨‍🏫 Открыть ТРМ2.0 ID: %s"],
     ["openGroupAdminId", "👩‍👧‍👧 Открыть админку группы: %s"],
     ["openByHashId", "♐ Открыть ТШ по хешу: %s"]
@@ -69,29 +128,63 @@ const LINK_MENU_ITEMS = [
 
 const NUMERIC_SELECTION_IDS = SELECTION_MENU_ITEMS.map(([id]) => id).filter((id) => id !== "openByHashId");
 
-upsertContextMenu("mainoption", { id: "mainoption", title: "Technical Support Master", documentUrlPatterns: SHOW_FOR_PAGES });
-for (const [id, title] of PAGE_MENU_ITEMS) {
-    upsertContextMenu(id, { id, title, contexts: ["page"], parentId: "mainoption" });
+
+function initContextMenus() {
+    chrome.contextMenus.removeAll(() => {
+        if (chrome.runtime.lastError) {
+            console.warn("ContextMenus clear error:", chrome.runtime.lastError.message);
+        }
+
+        chrome.contextMenus.create({
+            id: "mainoption",
+            title: "Technical Support Master",
+            documentUrlPatterns: SHOW_FOR_PAGES
+        });
+
+        for (const [id, title] of PAGE_MENU_ITEMS) {
+            chrome.contextMenus.create({ id, title, contexts: ["page"], parentId: "mainoption" });
+        }
+
+        chrome.contextMenus.create({
+            id: "selMainOption",
+            title: "Technical Support Master",
+            contexts: ["selection"],
+            documentUrlPatterns: SHOW_FOR_PAGES,
+            visible: false
+        });
+
+        for (const [id, title] of SELECTION_MENU_ITEMS) {
+            chrome.contextMenus.create({ id, title, contexts: ["selection"], parentId: "selMainOption", visible: false });
+        }
+
+        chrome.contextMenus.create({
+            id: "linkOption",
+            title: "Technical Support Master",
+            contexts: ["link"],
+            documentUrlPatterns: SHOW_FOR_PAGES,
+            targetUrlPatterns: TASK_LINK_PATTERNS
+        });
+
+        for (const [id, title] of LINK_MENU_ITEMS) {
+            chrome.contextMenus.create({ id, title, contexts: ["link"], parentId: "linkOption", targetUrlPatterns: TASK_LINK_PATTERNS });
+        }
+    });
 }
 
-upsertContextMenu("selMainOption", { id: "selMainOption", title: "Technical Support Master", contexts: ["selection"], documentUrlPatterns: SHOW_FOR_PAGES, visible: false });
-for (const [id, title] of SELECTION_MENU_ITEMS) {
-    upsertContextMenu(id, { id, title, contexts: ["selection"], parentId: "selMainOption", visible: false });
-}
-
-upsertContextMenu("linkOption", { id: "linkOption", title: "Technical Support Master", contexts: ["link"], documentUrlPatterns: SHOW_FOR_PAGES, targetUrlPatterns: TASK_LINK_PATTERNS });
-for (const [id, title] of LINK_MENU_ITEMS) {
-    upsertContextMenu(id, { id, title, contexts: ["link"], parentId: "linkOption", targetUrlPatterns: TASK_LINK_PATTERNS });
-}
+chrome.runtime.onInstalled.addListener(() => {
+    initContextMenus();
+});
 
 function setSelectionVisibility(visibleIds) {
-    chrome.contextMenus.update("selMainOption", { visible: visibleIds.length > 0 });
+    chrome.contextMenus.update("selMainOption", { visible: visibleIds.length > 0 }, () => void chrome.runtime.lastError);
     for (const [id] of SELECTION_MENU_ITEMS) {
-        chrome.contextMenus.update(id, { visible: visibleIds.includes(id) });
+        chrome.contextMenus.update(id, { visible: visibleIds.includes(id) }, () => void chrome.runtime.lastError);
     }
 }
 
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener((message, sender) => {
+    if (!isValidSender(sender)) return;
+
     switch (message.type) {
         case "NUMERIC_SELECTION":
             setSelectionVisibility(NUMERIC_SELECTION_IDS);
@@ -108,12 +201,20 @@ chrome.runtime.onMessage.addListener((message) => {
 
 function getActiveTab() {
     return new Promise((resolve) => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => resolve(tabs && tabs[0]));
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => resolve(tabs?.[0] ?? null));
     });
 }
 
 function sendMessageToTab(tabId, message) {
-    return new Promise((resolve) => chrome.tabs.sendMessage(tabId, message, resolve));
+    return new Promise((resolve) => {
+        chrome.tabs.sendMessage(tabId, message, (response) => {
+            if (chrome.runtime.lastError) {
+                resolve(null);
+            } else {
+                resolve(response);
+            }
+        });
+    });
 }
 
 function storageGet(key) {
@@ -134,25 +235,48 @@ function storageSet(key, value) {
     });
 }
 
+async function sessionGet(key) {
+    if (!chrome.storage.session) return storageGet(key);
+    return new Promise((resolve) => {
+        chrome.storage.session.get([key], (result) => {
+            if (chrome.runtime.lastError) resolve(null);
+            else resolve(result[key] ?? null);
+        });
+    });
+}
+
+async function sessionSet(key, value) {
+    if (!chrome.storage.session) return storageSet(key, value);
+    return new Promise((resolve) => {
+        chrome.storage.session.set({ [key]: value }, () => {
+            if (chrome.runtime.lastError) console.warn(chrome.runtime.lastError.message);
+            resolve();
+        });
+    });
+}
+
 const digitsOnly = (text) => String(text ?? "").replace(/\D/g, "");
-const openTab = (url) => chrome.tabs.create({ url: encodeURI(url) });
+const openTab = (url) => chrome.tabs.create({ url });
 
 async function getOperatorId() {
-    if (cachedOperatorId) return cachedOperatorId;
+    const cached = await sessionGet("cachedOperatorId");
+    if (cached) return cached;
+
     try {
         const stored = await storageGet("matermost_oid");
         if (stored) {
-            cachedOperatorId = stored;
-            return cachedOperatorId;
+            await sessionSet("cachedOperatorId", stored);
+            return stored;
         }
         const response = await fetch(MESSENGER_USER_URL);
         if (!response.ok) throw new Error("Failed to fetch user data.");
         const data = await response.json();
-        cachedOperatorId = data.id;
-        await storageSet("matermost_oid", data.id);
-        return cachedOperatorId;
+        const opId = data.id;
+        await storageSet("matermost_oid", opId);
+        await sessionSet("cachedOperatorId", opId);
+        return opId;
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error getting operator ID:", error);
         return null;
     }
 }
@@ -185,24 +309,27 @@ async function postToMessenger(message, channelId, rootId = "") {
 }
 
 async function sendToSupportChannel(message) {
-    lastMessage = message;
+    await sessionSet("lastMessage", message);
     try {
         const post = await postToMessenger(message, CHANNEL_SUPPORT);
-        transferToTSM(post.id);
+        if (post?.id) {
+            await transferToTSM(post.id);
+        }
     } catch (error) {
-        console.error("Ошибка:", error);
+        console.error("Ошибка при отправке в саппорт канал:", error);
     }
 }
 
-function transferToTSM(chatId) {
+async function transferToTSM(chatId) {
+    const lastChatId = await sessionGet("lastChatId");
     if (chatId === lastChatId) {
-        sendToSupportChannel(lastMessage);
         return;
     }
-    lastChatId = chatId;
-    getActiveTab().then((tab) => {
-        if (tab) chrome.tabs.sendMessage(tab.id, { action: "CallMMComment", Chatid: chatId });
-    });
+    await sessionSet("lastChatId", chatId);
+    const tab = await getActiveTab();
+    if (tab?.id && isSupportedTabUrl(tab.url)) {
+        await sendMessageToTab(tab.id, { action: "CallMMComment", Chatid: chatId });
+    }
 }
 
 /* ---------- Действия контекстного меню ---------- */
@@ -211,7 +338,7 @@ const PAGE_ACTIONS = {
     searchPaymentId: () => openTab("https://accounting.skyeng.ru/userpayment/search/transaction"),
     balanceInfoId: () => openTab("https://billing-api.skyeng.ru/operations"),
     certAndPromoId: () => openTab("https://billing-marketing.skyeng.ru/certificate/certSearch"),
-    opentTTId: () => openTab("https://timetable.skyeng.ru/"),
+    openTTId: () => openTab("https://timetable.skyeng.ru/"),
     openCalendarId: () => openTab("https://datsy.info/"),
     makeCompensId: () => openTab("https://billing-marketing.skyeng.ru/accrual-operations/create"),
     openTalksAdminId: () => openTab("https://vimbox.skyeng.ru/talks/admin/statistics"),
@@ -225,7 +352,7 @@ const SELECTION_ACTIONS = {
     PartialPaymentId: (info) => openTab(`https://accounting.skyeng.ru/credit/list?studentId=${digitsOnly(info.selectionText)}`),
     editAdminId: (info) => openTab(`https://id.skyeng.ru/admin/users/${digitsOnly(info.selectionText)}/update-contacts`),
     serviceSkipId: copySkipLink("auto-schedule"),
-    skpiOnboaringId: copySkipLink("onboarding"),
+    skipOnboardingId: copySkipLink("onboarding"),
     openTRM2Id: (info) => openTab(`https://trm.skyeng.ru/teacher/${digitsOnly(info.selectionText)}`),
     openGroupAdminId: (info) => openTab(`https://learning-groups-storage.skyeng.ru/group/${digitsOnly(info.selectionText)}?cp=(section:participants)`),
     openByHashId: (info) => openTab(`https://video-trouble-shooter.skyeng.ru/?hash=${encodeURIComponent(info.selectionText)}`)
@@ -233,8 +360,9 @@ const SELECTION_ACTIONS = {
 
 function copySkipLink(stage) {
     return (info, tab) => {
+        if (!tab?.id) return;
         const url = `https://student.skyeng.ru/product-stage?stage=${stage}&educationServiceId=${digitsOnly(info.selectionText)}`;
-        chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: url });
+        sendMessageToTab(tab.id, { action: "copyToClipboard", text: url }).catch(() => {});
     };
 }
 
@@ -252,38 +380,71 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 function openUserInfo(info, tab) {
+    if (!tab?.id) return;
     chrome.runtime.sendMessage(LASER_EXTENSION_ID, {
         messageValue: { message: "open-user-info", userId: digitsOnly(info.selectionText) },
         tabId: tab.id
-    });
+    }, () => void chrome.runtime.lastError);
+}
+
+async function fetchCsrfToken(url) {
+    try {
+        const response = await fetch(url, { credentials: "include" });
+        if (!response.ok) return null;
+        const html = await response.text();
+        const tokenMatch = html.match(/name="login_link_form\[_token\]"\s+value="([^"]+)"/i)
+            || html.match(/id="login_link_form__token"\s+value="([^"]+)"/i);
+        return tokenMatch?.[1] ?? null;
+    } catch {
+        return null;
+    }
 }
 
 function extractLoginLink(text) {
-    const matches = text.match(/https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g);
+    const matches = text.match(/https:\/\/id\.skyeng\.ru\/auth\/login-link\/[A-Za-z0-9_-]+/g);
     if (!matches || !matches.length) return null;
-    return matches[matches.length - 1].replace(/["']+$/, "");
+    return matches[matches.length - 1];
 }
 
-function createLoginLink(info, tab) {
-    const csrfToken = null;
-    fetch("https://id.skyeng.ru/admin/auth/login-links", {
-        headers: { "content-type": "application/x-www-form-urlencoded" },
-        referrer: "https://id.skyeng.ru/admin/auth/login-links",
-        referrerPolicy: "strict-origin-when-cross-origin",
-        body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${digitsOnly(info.selectionText)}&login_link_form%5Btarget%5D=https%3A%2F%2Fvimbox.skyeng.ru&login_link_form%5Bpromocode%5D=&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=&login_link_form%5B_token%5D=${csrfToken}`,
-        method: "POST",
-        mode: "cors",
-        credentials: "include"
-    })
-        .then((res) => res.text())
-        .then((textHtml) => {
-            const loginLink = extractLoginLink(textHtml);
-            if (loginLink) {
-                chrome.tabs.sendMessage(tab.id, { action: "copyToClipboard", text: loginLink });
-            } else {
-                console.error('Ссылка для входа не найдена');
-            }
+async function createLoginLink(info, tab) {
+    if (!tab?.id) return;
+    const targetUserId = digitsOnly(info.selectionText);
+    if (!targetUserId) return;
+
+    try {
+        const formUrl = "https://id.skyeng.ru/admin/auth/login-links";
+        const csrfToken = (await fetchCsrfToken(formUrl)) ?? "";
+
+        const formBody = new URLSearchParams({
+            "login_link_form[identity]": "",
+            "login_link_form[id]": targetUserId,
+            "login_link_form[target]": "https://vimbox.skyeng.ru",
+            "login_link_form[promocode]": "",
+            "login_link_form[lifetime]": "3600",
+            "login_link_form[create]": "",
+            "login_link_form[_token]": csrfToken
         });
+
+        const res = await fetch(formUrl, {
+            headers: { "content-type": "application/x-www-form-urlencoded" },
+            referrer: formUrl,
+            referrerPolicy: "strict-origin-when-cross-origin",
+            body: formBody.toString(),
+            method: "POST",
+            mode: "cors",
+            credentials: "include"
+        });
+
+        const textHtml = await res.text();
+        const loginLink = extractLoginLink(textHtml);
+        if (loginLink) {
+            await sendMessageToTab(tab.id, { action: "copyToClipboard", text: loginLink });
+        } else {
+            console.error("Ссылка для входа не найдена");
+        }
+    } catch (err) {
+        console.error("Ошибка запроса login-links:", err);
+    }
 }
 
 async function cancelOutgoingCall(info) {
@@ -304,34 +465,30 @@ async function sendCustomMessage(info, recipient) {
             return;
         }
         const tab = await getActiveTab();
-        if (!tab) {
-            console.error("Активная вкладка не найдена");
+        if (!tab?.id || !isSupportedTabUrl(tab.url)) {
+            console.error("Активная поддерживаемая вкладка не найдена");
             return;
         }
         const response = await sendMessageToTab(tab.id, { action: "showPromptDialog", linkUrl: info.linkUrl });
-        if (response && response.textmsg) {
+        if (response?.textmsg) {
             if (response.textmsg.length > 3) {
                 await sendToSupportChannel(`@techsupport-${recipient} ${info.linkUrl} ${response.textmsg}`);
             } else {
                 console.error("Текст слишком короткий");
             }
-        } else {
-            console.log("Нажата кнопка Отмена или текст пустой");
         }
     } catch (error) {
-        console.error(error);
+        console.error("sendCustomMessage error:", error);
     }
 }
 
 async function sendToDisasterChannel() {
     await getOperatorId();
     const tab = await getActiveTab();
-    if (!tab) return;
+    if (!tab?.id || !isSupportedTabUrl(tab.url)) return;
     const response = await sendMessageToTab(tab.id, { action: "showConfirmDialog" });
-    if (!response || !response.confirmed) {
-        console.log("Отправка сообщения отменена пользователем");
-        return;
-    }
+    if (!response?.confirmed) return;
+
     const textmsg = response.textmsg;
     if (!textmsg || textmsg.length <= 3) {
         console.error("Текст слишком короткий или пустой");
@@ -341,27 +498,61 @@ async function sendToDisasterChannel() {
         const post = await postToMessenger(`:alert: ${textmsg}`, CHANNEL_DEV);
         await postToMessenger("@techsupport-team @techsupport-leads @tech-curators @pk-chats @sos-inform-teachers @teacherscareteam @outbound-team-new @m-vhod @pm-team1 @premium-support @a-players @news", CHANNEL_DEV, post.id);
     } catch (error) {
-        console.error("Ошибка при отправке сообщения: ", error);
+        console.error("Ошибка при отправке сообщения:", error);
     }
 }
 
 /* ---------- CORS-прокси для контент-скриптов ---------- */
 
+async function readResponseTextBounded(response) {
+    const contentLength = response.headers.get("content-length");
+    if (contentLength && parseInt(contentLength, 10) > MAX_PAYLOAD_BYTES) {
+        throw new Error("Payload exceeds allowed 5MB limit");
+    }
+    const text = await response.text();
+    if (text.length > MAX_PAYLOAD_BYTES) {
+        throw new Error("Payload exceeds allowed 5MB limit");
+    }
+    return text;
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (!isValidSender(sender)) {
+        return false;
+    }
+
     if (request.name === "Ctxt" && request.question === "sendResponse") {
-        fetch(request.addr, request.options)
-            .then((response) => response.text())
-            .then((result) => sendResponse({ answer: result, respName: request.respName }));
+        if (!isAllowedUrl(request.addr)) {
+            sendResponse({ error: "Disallowed destination URL" });
+            return false;
+        }
+
+        (async () => {
+            try {
+                const response = await fetch(request.addr, request.options);
+                const result = await readResponseTextBounded(response);
+                sendResponse({ answer: result, respName: request.respName });
+            } catch (err) {
+                sendResponse({ error: err.message });
+            }
+        })();
         return true;
     }
+
     if (request.action === "getOvercomeCORS") {
+        if (!isAllowedUrl(request.fetchURL)) {
+            sendResponse({ success: false, error: "Disallowed destination URL" });
+            return false;
+        }
+
         (async () => {
             try {
                 const response = await fetch(request.fetchURL, request.requestOptions);
                 if (!response.ok) {
                     throw new Error(`Network response was not ok (проверь авторизацию в CRM, после чего повтори попытку): ${response.status} ${response.statusText}`);
                 }
-                sendResponse({ success: true, fetchansver: await response.text() });
+                const fetchAnswer = await readResponseTextBounded(response);
+                sendResponse({ success: true, fetchAnswer, fetchansver: fetchAnswer });
             } catch (error) {
                 sendResponse({ success: false, error: error.message });
             }

@@ -92,17 +92,28 @@ async function OpenExercisesSmartroom() {
             getroomdatakids.click();
         }, 1000);
         document.getElementById('getroomdatakids').onclick = async function () {
-            document.getElementById('exercisebarskysmart').innerHTML = '';
-            let urlComponents = document.getElementById('roomhashhwkids').value.split('/');
-            if (!urlComponents[4] || !urlComponents[6]) {
-                createNotify('Некорректная ссылка на комнату', 'error');
-                return;
+            const container = document.getElementById('exercisebarskysmart');
+            container.innerHTML = '<div class="tsm-empty tsm-text-secondary">Загрузка данных комнаты…</div>';
+            this.classList.add('is-loading');
+            try {
+                let urlComponents = document.getElementById('roomhashhwkids').value.split('/');
+                if (!urlComponents[4] || !urlComponents[6]) {
+                    createNotify('Некорректная ссылка на комнату', 'error');
+                    container.innerHTML = '<div class="tsm-empty">Укажите корректную ссылку на комнату и нажмите 🔎</div>';
+                    return;
+                }
+                let hashroomkids = urlComponents[6].split('?')[0];
+                let kidsselector = urlComponents[4];
+                const baseURL = `https://api-${kidsselector}.skyeng.ru/api/v2/rooms/`;
+                await gethwroominfo(baseURL, hashroomkids);
+                container.innerHTML = '';
+                getkidsroominfo(hwroomdata, kidsselector);
+            } catch (err) {
+                container.innerHTML = '<div class="tsm-empty">Не удалось загрузить данные. Проверьте ссылку.</div>';
+                console.error(err);
+            } finally {
+                this.classList.remove('is-loading');
             }
-            let hashroomkids = urlComponents[6].split('?')[0];
-            let kidsselector = urlComponents[4];
-            const baseURL = `https://api-${kidsselector}.skyeng.ru/api/v2/rooms/`;
-            await gethwroominfo(baseURL, hashroomkids);
-            getkidsroominfo(hwroomdata, kidsselector);
         };
     } else {
         wintExercSkysmart.style.display = 'none';
@@ -179,36 +190,43 @@ function getkidsroominfo(data, subjecttype) {
         let rows = "";
         themes.forEach(theme => {
             if (!nullCards || theme.cards.length > 0) {
+                const safeThemeName = escapeHTML(theme.name);
+                const safeSubtype = escapeHTML(subjecttype);
+                const safeLessonId = escapeHTML(theme.meta?.contentLessonId);
                 rows += `<tr class="tsm-theme-row"><td colspan="8">
-                    <span class="tsm-btn-save" title="Копирует в буфер обмена ссылку на CMS для этого урока" data-subtype="${subjecttype}" data-lessonid="${theme.meta.contentLessonId}">💾</span>
-                    ${theme.name}
+                    <span class="tsm-btn-save" title="Копирует в буфер обмена ссылку на CMS для этого урока" data-subtype="${safeSubtype}" data-lessonid="${safeLessonId}">💾</span>
+                    ${safeThemeName}
                 </td></tr>`;
             }
             theme.cards.forEach((card, idx) => {
                 const { completeness, score } = normalizeCard(card);
                 const emphasisIcons = { writing: "✏", pronunciation: "🎧", speaking: "🎙" };
                 const icon = isHomework ? (emphasisIcons[card.emphasis] || "") : "";
-                const cardName = card.name + icon;
+                const cardName = escapeHTML(card.name) + icon;
+                const safeSubtype = escapeHTML(subjecttype);
+                const safeLessonId = escapeHTML(theme.meta?.contentLessonId);
+                const safeCardId = escapeHTML(card.id);
+                const safeStepUuid = escapeHTML(card.stepUuid);
                 const completenessCell = completeness == 100
-                    ? `<td class="tsm-table-cell-center" style="background:rgba(57,255,20,0.15); color:var(--tsm-neon-lime);">${completeness}</td>`
-                    : `<td class="tsm-table-cell-center" style="background:rgba(255,140,0,0.12); color:var(--tsm-neon-orange);">${completeness}</td>`;
+                    ? `<td class="tsm-table-cell-center" style="background:rgba(57,255,20,0.15); color:var(--tsm-neon-lime);">${escapeHTML(completeness)}</td>`
+                    : `<td class="tsm-table-cell-center" style="background:rgba(255,140,0,0.12); color:var(--tsm-neon-orange);">${escapeHTML(completeness)}</td>`;
                 rows += `<tr class="tsm-card-row">
                     <td class="tsm-table-cell-center">${idx + 1}</td>
                     <td class="tsm-table-cell">${cardName}</td>
-                    <td class="tsm-table-cell-center">${score}</td>
+                    <td class="tsm-table-cell-center">${escapeHTML(score)}</td>
                     ${completenessCell}
-                    <td class="tsm-btn-save tsm-table-cell-center" title="Копирует в буфер обмена ссылку на CMS для этого слайда" data-subtype="${subjecttype}" data-lessonid="${theme.meta.contentLessonId}" data-stepid="${card.id}">💾</td>
+                    <td class="tsm-btn-save tsm-table-cell-center" title="Копирует в буфер обмена ссылку на CMS для этого слайда" data-subtype="${safeSubtype}" data-lessonid="${safeLessonId}" data-stepid="${safeCardId}">💾</td>
                     <td class="tsm-table-cell-center tsm-text-xs">${toMoscowTime(card.sentAt)}</td>
                     <td class="tsm-table-cell-center tsm-text-xs">${toMoscowTime(card.scoreUpdatedAt)}</td>
-                    ${isHomework ? `<td class="tsm-btn-reset tsm-table-cell-center" data-stepUUID="${card.stepUuid}">🔄️</td>` : ""}
+                    ${isHomework ? `<td class="tsm-btn-reset tsm-table-cell-center" data-stepUUID="${safeStepUuid}">🔄️</td>` : ""}
                 </tr>`;
             });
         });
 
-        return `<div class="tsm-collapsible">${title}</div>
+        return `<div class="tsm-collapsible">${escapeHTML(title)}</div>
         <div class="tsm-slide-box" style="display:none">
             <div class="tsm-exercise-item">
-                <div style="text-align:center;">Информация по категории: ${title}</div>
+                <div style="text-align:center;">Информация по категории: ${escapeHTML(title)}</div>
                 Количество завершенных карточек: ${cardBlock[indexOfSlides].completedCardsCount} из ${cardBlock[indexOfSlides].cardsCount}
                 <br>Общий % завершения слайдов: ${cardBlock[indexOfSlides].completeness}%
                 <br>Итоговый результат: ${cardBlock[indexOfSlides].score} баллов из 100
@@ -284,7 +302,7 @@ function getkidsroominfo(data, subjecttype) {
 
 function setIdField(elementId, label, value) {
     const el = document.getElementById(elementId);
-    el.innerHTML = `<span class="tsm-user-select-none tsm-identity-emoji">${label}</span>${value}`;
+    el.innerHTML = `<span class="tsm-user-select-none tsm-identity-emoji">${escapeHTML(label)}</span>${escapeHTML(value)}`;
     if (value != null) {
         el.style.cursor = "pointer";
         markCopyable(el, String(value));
@@ -292,10 +310,10 @@ function setIdField(elementId, label, value) {
 }
 
 function renderSkysmartIdentity(student, teacher) {
-    document.getElementById('studname').innerHTML = '<span class="tsm-identity-emoji"> 👨‍🎓 </span>' + student.name;
+    document.getElementById('studname').innerHTML = '<span class="tsm-identity-emoji"> 👨‍🎓 </span>' + escapeHTML(student.name);
     setIdField('studserviceid', '🆔 услуги: ', student.educationServiceId);
     setIdField('studid', '🆔: ', student.userId);
-    document.getElementById('teachname').innerHTML = '<span class="tsm-identity-emoji"> 👽 Teacher </span>' + teacher.name;
+    document.getElementById('teachname').innerHTML = '<span class="tsm-identity-emoji"> 👽 Teacher </span>' + escapeHTML(teacher.name);
     setIdField('teachdid', '🆔: ', teacher.userId);
 }
 
@@ -448,13 +466,17 @@ async function OpenExercisesComplect() {
     }
 
     document.getElementById('getroomdataComplect').onclick = async function () {
-        document.getElementById('exercisebarComplect').innerHTML = '';
-        const rhash = document.getElementById('roomhashhwComplect').value;
-        const urlComponents = rhash.split('/');
-        if (!urlComponents[4] || !urlComponents[6]) {
-            createNotify('Некорректная ссылка на комнату', 'error');
-            return;
-        }
+        const container = document.getElementById('exercisebarComplect');
+        container.innerHTML = '<div class="tsm-empty tsm-text-secondary">Загрузка комплектаций…</div>';
+        this.classList.add('is-loading');
+        try {
+            const rhash = document.getElementById('roomhashhwComplect').value;
+            const urlComponents = rhash.split('/');
+            if (!urlComponents[4] || !urlComponents[6]) {
+                createNotify('Некорректная ссылка на комнату', 'error');
+                container.innerHTML = '<div class="tsm-empty">Укажите корректную ссылку на комнату и нажмите 🔎</div>';
+                return;
+            }
         const isTest = urlComponents[6].split('?')[0] === 'test';
         const kidsselector = urlComponents[4];
         const hashroomkids = isTest ? urlComponents[7] : urlComponents[6].split('?')[0];
@@ -467,6 +489,8 @@ async function OpenExercisesComplect() {
             headers: { "content-type": "application/json" },
             body: isTest ? null : `{\"roomHash\":\"${rhash}\"}`
         }).then(r => r.json());
+
+        container.innerHTML = '';
 
         const student = complectationsData.participants.find(p => p.role === "student");
         const indexOfSlides = complectationsData.lessonCards.findIndex(c => c.userId === student.userId);
@@ -608,18 +632,24 @@ async function OpenExercisesComplect() {
             || complectationsData.homeworkCards[indexOfSlides]?.variantId
             || '';
         renderComplectIdentity(studentData, teacherData, complectationsData.groupInfo?.externalGroupId, complectationsData.status, variantId);
+        } catch (err) {
+            container.innerHTML = '<div class="tsm-empty">Не удалось загрузить данные. Проверьте ссылку.</div>';
+            console.error(err);
+        } finally {
+            this.classList.remove('is-loading');
+        }
     };
 }
 
 function renderComplectIdentity(studentData, teacherData, externalGroupId, status, variantId) {
-    document.getElementById('studnameComplect').innerHTML = `<span class="tsm-identity-emoji"> 👨‍🎓 </span>${studentData.name}`;
+    document.getElementById('studnameComplect').innerHTML = `<span class="tsm-identity-emoji"> 👨‍🎓 </span>${escapeHTML(studentData.name)}`;
     setIdField('studserviceidComplect', '🆔 услуги: ', studentData.educationServiceId);
     setIdField('studidComplect', '🆔: ', studentData.userId);
     setIdField('groupidComplect', '🆔 гр: ', externalGroupId);
-    document.getElementById('teachnameComplect').innerHTML = `<span class="tsm-identity-emoji"> 👽 Teacher </span>${teacherData.name}`;
+    document.getElementById('teachnameComplect').innerHTML = `<span class="tsm-identity-emoji"> 👽 Teacher </span>${escapeHTML(teacherData.name)}`;
     setIdField('teachdidComplect', '🆔: ', teacherData.userId);
     const statusColor = status === 'success' ? 'var(--tsm-neon-lime)' : 'var(--tsm-neon-gold)';
-    document.getElementById('RoomStatus').innerHTML = `<span class="tsm-user-select-none tsm-identity-emoji">Статус комнаты: </span><span style="color:${statusColor}; text-shadow:0 0 8px ${statusColor};">${status}</span>`;
+    document.getElementById('RoomStatus').innerHTML = `<span class="tsm-user-select-none tsm-identity-emoji">Статус комнаты: </span><span style="color:${statusColor}; text-shadow:0 0 8px ${statusColor};">${escapeHTML(status)}</span>`;
     if (variantId) {
         const variantChip = document.getElementById('variantIdComplectChip');
         const variantValue = document.getElementById('variantIdValue');

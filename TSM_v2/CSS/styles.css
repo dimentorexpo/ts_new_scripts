@@ -18,7 +18,7 @@ Technical Support Master Refactored & Polished
   --tsm-neon-red: #ff2a6d;
   --tsm-text-primary: #f0f9ff;
   --tsm-text-secondary: #a1b3d1;
-  --tsm-text-dim: #5c7094;
+  --tsm-text-dim: #8fa3c4;
   --tsm-text-bisque: #ffe4c4;
   --tsm-radius-sm: 8px;
   --tsm-radius-md: 14px;
@@ -1054,7 +1054,6 @@ SCORE CELLS — ячейки баллов / процентов
   font-size: 13px !important;
   padding: 12px 16px !important;
   border-radius: var(--tsm-radius-md) !important;
-  outline: none !important;
   transition: var(--tsm-transition) !important;
   box-shadow: inset 0 2px 5px rgba(0,0,0,0.5) !important;
 }
@@ -1627,4 +1626,124 @@ FIX: Ширина окон упражнений (баг прилипания / �
    (colspan и так растягивает строку на всю таблицу) */
 .tsm-theme-row td {
   width: auto;
+}
+
+/* ═══════════════ MICRO-POLISH: focus-visible (V2) ═══════════════
+   Клавиатурная навигация: 2px циан-ринг, offset 2px.
+   Специфичность выше базовых `outline: none` на инпутах. */
+.tsm-btn:focus-visible,
+.tsm-btn-hide:focus-visible,
+.tsm-btn-sm:focus-visible,
+.tsm-menu-item:focus-visible,
+.tsm-btn-save:focus-visible,
+.tsm-btn-save-ttc:focus-visible,
+.tsm-btn-save-word:focus-visible,
+.tsm-btn-step:focus-visible,
+.tsm-btn-save-revision:focus-visible,
+.tsm-btn-reset:focus-visible,
+.tsm-close-modal:focus-visible,
+.tsm-input:focus-visible,
+.tsm-input-hash:focus-visible,
+#listofsubjects:focus-visible,
+#searchForParticipant:focus-visible,
+.tsm-dialog-input:focus-visible,
+.tsm-wordset-title:focus-visible,
+.tsm-collapsible:focus-visible {
+  outline: 2px solid var(--tsm-neon-cyan);
+  outline-offset: 2px;
+}
+
+
+/* ═══════════════ MICRO-POLISH: reduced-motion (V3) ═══════════════
+   Гасим трансформы (lift/bounce/scale), сохраняем opacity и цвет состояний. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+  .tsm-btn:hover,
+  .tsm-menu-item:hover,
+  .tsm-card:hover,
+  .tsm-kid-card:hover,
+  #reactcachebtn:hover,
+  .tsm-word-row:hover,
+  .tsm-collapsible:hover {
+    transform: none !important;
+  }
+}
+
+/* ═══════════════ MICRO-POLISH: scrollbar (V5) ═══════════════
+   thumb для .tsm-toast (аппендится в body, вне .tsm-window) + standard-свойства. */
+.tsm-toast ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--tsm-neon-cyan), var(--tsm-neon-violet));
+  border-radius: 10px;
+}
+.tsm-window,
+#allParticipants,
+.tsm-toast {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tsm-neon-violet) rgba(0, 0, 0, 0.3);
+}
+
+/* ═══════════════ MICRO-POLISH: empty-state (V6) ═══════════════ */
+.tsm-empty {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding: 48px 16px;
+  color: var(--tsm-text-secondary);
+  opacity: 0.85;
+  text-align: center;
+}
+.tsm-empty::before {
+  content: "◌";
+  font-size: 24px;
+  color: var(--tsm-neon-cyan);
+  opacity: 0.6;
+}
+
+/* ═══════════════ MICRO-POLISH: async loading (V7) ═══════════════
+   Пульсирующий sheen поверх кнопки во время fetch. */
+@keyframes tsm-sheen {
+  to { background-position: 200% 0; }
+}
+.tsm-btn.is-loading,
+.tsm-btn-sm.is-loading {
+  color: transparent !important;
+  pointer-events: none;
+  background-image: linear-gradient(90deg,
+    rgba(0, 240, 255, 0.06) 25%,
+    rgba(0, 240, 255, 0.16) 37%,
+    rgba(0, 240, 255, 0.06) 63%);
+  background-size: 200% 100%;
+  background-color: transparent;
+  animation: tsm-sheen 1.2s linear infinite;
+}
+.tsm-btn.is-loading:hover {
+  transform: none;
+  box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.05);
+}
+
+/* ═══════════════ MICRO-POLISH: disabled (V8) ═══════════════ */
+.tsm-btn:disabled,
+.tsm-btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  filter: saturate(0.4);
+}
+.tsm-btn:disabled:hover {
+  transform: none;
+  box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.05);
+  border-color: rgba(0, 240, 255, 0.25);
+}
+
+/* ═══════════════ MICRO-POLISH: ::selection (V4) ═══════════════ */
+.tsm-window ::selection,
+#allParticipants ::selection,
+.tsm-toast ::selection {
+  background: rgba(0, 240, 255, 0.35);
+  color: var(--tsm-text-primary);
 }

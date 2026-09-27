@@ -8,10 +8,13 @@ let isTaskPaused = false;
 let isTaskCancelled = false;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const WORDS_API_HEADERS = () => ({
-    "accept": "application/json, text/plain, */*",
-    "authorization": `Bearer ${token.token_global}`
-});
+const WORDS_API_HEADERS = () => {
+    const currentToken = (typeof getGlobalToken === "function" ? getGlobalToken() : null) || token?.token_global || "";
+    return {
+        "accept": "application/json, text/plain, */*",
+        "authorization": `Bearer ${currentToken}`
+    };
+};
 
 const win_Vocabulary = `
 <div class="tsm-window-grab">
@@ -317,7 +320,7 @@ async function getwordsets(studentId) {
     }).then((r) => r.json());
 
     if (wordsetsarr.meta.total <= 0) {
-        document.getElementById("wordsout").innerHTML = '<div class="tsm-text-center tsm-text-bisque tsm-text-sm tsm-mt-12" style="opacity:0.7;">Словарь пустой!</div>';
+        document.getElementById("wordsout").innerHTML = '<div class="tsm-empty tsm-text-bisque">Словарь пустой!</div>';
         if (!isTaskCancelled) finishProgressBar(progressBar, "СЛОВАРЬ ПУСТ");
         return;
     }
@@ -390,7 +393,7 @@ function renderWordSets(wordSets, isSearch = false) {
                         <input type="checkbox" name="checkfordel" class="tsm-checkbox">
                         <span class="tsm-checkmark"></span>
                     </label>
-                    <div class="tsm-word-text" title="${word.text}">${word.text}</div>
+                    <div class="tsm-word-text" title="${escapeHTML(word.text)}">${escapeHTML(word.text)}</div>
                     <div class="tsm-btn-save-word" title="Скопировать ссылку CMS" style="cursor:pointer; text-align:center;">💾</div>
                     <div class="tsm-word-id tsm-word-stat">${word.meaningId}</div>
                     <div class="tsm-word-stat">${word.progress}%</div>
@@ -401,7 +404,7 @@ function renderWordSets(wordSets, isSearch = false) {
         if (isSearch && wordSet.words.length > 0) displayBox = "block";
 
         htmlContent += `
-            <div class="tsm-wordset-title">${wordSet.title} (${wordSet.words.length})</div>
+            <div class="tsm-wordset-title">${escapeHTML(wordSet.title)} (${wordSet.words.length})</div>
             <div class="tsm-words-box" style="display:${displayBox}; padding: 0;">
                 <div class="tsm-word-row tsm-word-row-header">
                     <label class="tsm-custom-checkbox">
