@@ -6,10 +6,20 @@
 // Адреса ТП-скриптов (загружаются асинхронно из chrome.storage)
 let TP_addres = '';
 let TP_addresRzrv = '';
-chrome.storage.local.get({ TP_addr: '', TP_addrRzrv: '' }, function (result) {
-    TP_addres = result.TP_addr;
-    TP_addresRzrv = result.TP_addrRzrv;
-});
+try {
+    chrome.storage.local.get({ TP_addr: '', TP_addrRzrv: '' }, function (result) {
+        if (chrome.runtime.lastError) {
+            tplErr('chrome.storage.local: не удалось прочитать TP_addr —', chrome.runtime.lastError.message);
+        }
+        TP_addres = result?.TP_addr || '';
+        TP_addresRzrv = result?.TP_addrRzrv || '';
+        tplLog('TP-адреса из chrome.storage:', { TP_addres, TP_addresRzrv });
+    });
+} catch (e) {
+    // Extension context invalidated (расширение обновили, а страница открыта) —
+    // без этого catch весь файл падал бы и шаблоны перестали бы работать целиком.
+    tplErr('chrome.storage.local.get недоступен (context invalidated?) —', e?.message || e);
+}
 
 const editorExtensionId = localStorage.getItem('ext_id');
 
@@ -20,6 +30,80 @@ let currentVertical = '';   // vertical активного чата
 const AF_API_ORIGIN = 'https://skyeng.autofaq.ai';
 const AUTOFAQ_TOP_BATCH_URL = `${AF_API_ORIGIN}/api/reason8/autofaq/top/batch`;
 const ANSWERS_URL = `${AF_API_ORIGIN}/api/reason8/answers`;
+
+// ============================================================
+// Логирование / диагностика
+// ============================================================
+// Подробные (отладочные) логи включаются флагом: localStorage.setItem('chmafDebug', '1')
+// Ошибки и предупреждения пишутся ВСЕГДА — ищи в консоли префикс [ChMAF:Tpl].
+const TPL_DEBUG = (() => {
+    try { return localStorage.getItem('chmafDebug') === '1'; } catch (e) { return false; }
+})();
+
+function tplLog(...args) { if (TPL_DEBUG) console.log('[ChMAF:Tpl]', ...args); }
+function tplWarn(...args) { console.warn('[ChMAF:Tpl]', ...args); }
+function tplErr(...args) { console.error('[ChMAF:Tpl]', ...args); }
+
+/** Ошибка + тост: оператор видит, что шаблон не отправился, причина — в консоли. */
+function tplFail(message) {
+    tplErr(message);
+    window.showCustomAlert?.(message, 'error');
+}
+
+/** Не спамим в консоль одинаковым предупреждением (раз в 60 с на ключ). */
+const _tplWarnedAt = new Map();
+function tplWarnOnce(key, message, data) {
+    const now = Date.now();
+    if (now - (_tplWarnedAt.get(key) || 0) < 60000) return;
+    _tplWarnedAt.set(key, now);
+    if (data === undefined) tplWarn(message);
+    else tplWarn(message, data);
+}
+
+/** Запускает async-отправку с единым логом ошибки (иначе unhandled rejection молчит). */
+function tplRun(promise, label) {
+    Promise.resolve(promise).catch((error) => {
+        tplErr(`${label}: исключение`, { error: error?.message || error, stack: error?.stack });
+        tplFail(`⚠️ ${label}: ошибка отправки — подробности в консоли (ChMAF:Tpl)`);
+    });
+}
+
+/** URL картинок расширения. chrome.runtime.getURL надёжнее localStorage 'ext_id'
+ *  (ext_id пишется асинхронно из content.js и на свежих профилях может быть пуст). */
+function tplAssetUrl(path) {
+    try {
+        if (chrome.runtime && chrome.runtime.getURL) return chrome.runtime.getURL(path);
+    } catch (e) { /* extension context invalidated — запасной вариант ниже */ }
+    return `chrome-extension://${editorExtensionId || ''}/${path}`;
+}
+
+/**
+ * Сводка состояния для поддержки: попроси коллегу выполнить в консоли (F12)
+ * chmafTemplatesDiag() и прислать вывод.
+ */
+window.chmafTemplatesDiag = function chmafTemplatesDiag() {
+    const diag = {
+        version: (() => { try { return chrome.runtime.getManifest().version; } catch (e) { return '?'; } })(),
+        href: location.href,
+        scriptAdr: typeof scriptAdr !== 'undefined' ? scriptAdr : '(не определён)',
+        tpflag: (() => { try { return localStorage.getItem('tpflag'); } catch (e) { return null; } })(),
+        opsection: typeof getOpSection === 'function'
+            ? getOpSection()
+            : (typeof opsection !== 'undefined' ? opsection : '?'),
+        TP_addres: TP_addres,
+        TP_addresRzrv: TP_addresRzrv,
+        tableRows: (typeof table !== 'undefined' && Array.isArray(table)) ? table.length : '(не массив)',
+        langButton: document.getElementById('languageAF')?.textContent || null,
+        modeButton: document.getElementById('msg1')?.textContent || null,
+        chatId: typeof getChatId === 'function' ? getChatId() : '?',
+        csrfTokenInCookie: (() => { try { return /csrf_token=([^;]*)/.test(document.cookie); } catch (e) { return false; } })(),
+        currentUserType: currentUserType,
+        currentVertical: currentVertical,
+        debug: TPL_DEBUG
+    };
+    console.log('[ChMAF:Tpl] diag:', diag);
+    return diag;
+};
 
 // ============================================================
 // Панель кнопок текущего/следующего пользователя (win_UsersInfo)
@@ -35,7 +119,7 @@ const usersConfig = [
             { id: 'CurUsLoginer', title: 'Логинер', content: '🔑', label: 'Логинер' },
             { id: 'CurUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'Troubleshooter' },
             { id: 'CurUsChatHis', title: 'История чатов', content: '☢️', label: 'История' },
-            { id: 'CurUsChatHisWA', title: 'WA', isImage: true, src: `chrome-extension://${editorExtensionId}/Images/WA.png`, alt: 'WA', label: 'WhatsApp' },
+            { id: 'CurUsChatHisWA', title: 'WA', isImage: true, src: tplAssetUrl('Images/WA.png'), alt: 'WA', label: 'WhatsApp' },
             { id: 'CurUsUserInf', title: 'UserInf', content: '⚜️', label: 'Инфо' },
             { id: 'CurUsAdminka', title: 'Админка', content: '✏️', label: 'Админка' }
         ]
@@ -219,7 +303,10 @@ function requestsRed(taketaskElement) {
 /** Добавляет несколько тегов в чат (строкой «тег1,тег2»). */
 function newTags(tagName) {
     const chatId = getChatId();
-    if (!chatId) return;
+    if (!chatId) {
+        tplLog('newTags: chatId пуст — тег не добавлен', tagName);
+        return;
+    }
 
     const tags = String(tagName).split(',').map((t) => t.trim()).filter(Boolean);
     if (!tags.length) return;
@@ -231,11 +318,15 @@ function newTags(tagName) {
             conversationId: chatId,
             elements: [{ name: 'tags', value: tags }]
         })
-    }).catch(() => { });
+    }).then((resp) => {
+        if (!resp.ok) tplErr(`newTags: HTTP ${resp.status}`, { chatId, tags });
+        else tplLog('newTags: OK', tags);
+    }).catch((e) => tplErr('newTags: ошибка сети', e));
 }
 
 /** Красная плашка «идёт урок» на активной карточке чата. */
 function Lessonisnow(iframeDoc) {
+    if (!iframeDoc) return;
     const convList = iframeDoc.querySelectorAll('#__next [class^="DialogsCard_Card"]');
     if (!convList.length) return;
 
@@ -246,13 +337,18 @@ function Lessonisnow(iframeDoc) {
         Array.from(convList).find((card) => card.getAttribute('aria-selected') === 'true');
 
     if (activeConvElem && activeConvElem.getElementsByClassName('LessonIndicator').length === 0) {
+        const host = activeConvElem.children[0]?.children[0];
+        if (!host) {
+            tplLog('Lessonisnow: вёрстка карточки чата изменилась — индикатор урока не вставлен');
+            return;
+        }
         const indicator = iframeDoc.createElement('span');
         indicator.style.cssText =
             'background:rgb(187,5,5);padding:5px;color:#fff;font-weight:400;border:1px solid black;';
         indicator.className = 'LessonIndicator';
         indicator.textContent = lessonStatus;
 
-        activeConvElem.children[0].children[0].append(indicator);
+        host.append(indicator);
     }
 }
 
@@ -304,6 +400,14 @@ const statusCheckInt = setInterval(autoStatusSwitch, 500);
 
 /** Обновляет строку «вертикаль + тип» в окне тестовых пользователей. */
 function updateUserBadgeInTestUsers(iframeDoc) {
+    // ⚡ Сначала обновляем userType/vertical (нужны buttonsFromDoc для «ус+брауз»),
+    // потом уже UI. Раньше при отсутствии панели TestUsers/чата значения
+    // оставались от предыдущего чата и у коллег уходил неверный шаблон.
+    currentUserType = SearchinAFnewUI('userType');
+    currentVertical = currentUserType === 'teacher'
+        ? SearchinAFnewUI('teacherVertical')
+        : SearchinAFnewUI('supportVertical');
+
     if (!document.getElementById('TestUsers')) return;
 
     const infoUserEl = document.getElementById('addInfoUser');
@@ -315,10 +419,9 @@ function updateUserBadgeInTestUsers(iframeDoc) {
         return;
     }
 
-    currentUserType = SearchinAFnewUI('userType');
-    currentVertical = currentUserType === 'teacher'
-        ? SearchinAFnewUI('teacherVertical')
-        : SearchinAFnewUI('supportVertical');
+    if (currentUserType === '' || currentVertical === '') {
+        tplLog('updateUserBadgeInTestUsers: пустые userType/vertical', { currentUserType, currentVertical });
+    }
 
     infoUserEl.innerHTML = (currentUserType === '' || currentVertical === '')
         ? ''
@@ -352,6 +455,11 @@ function rebuildUsersPanelIfNeeded(iframeDoc, usernameField) {
 
 function buildUsersPanel(iframeDoc, usernameField) {
     const nameRow = usernameField.children[0];
+    if (!nameRow) {
+        tplWarnOnce('noNameRow',
+            'buildUsersPanel: строка имени пользователя пуста (usernameField.children[0]) — панель UsersInfo не построена. Вёрстка AutoFAQ изменилась?');
+        return;
+    }
 
     const userTypeName = iframeDoc.createElement('span');
     userTypeName.id = 'userTypeId';
@@ -410,7 +518,16 @@ function setUserIcon(iframeDoc, buttonId, icon, label) {
 /** Бейдж типа пользователя и пары «текущий → следующий». */
 function paintUserTypeBadge(iframeDoc, usertypeis) {
     const badge = iframeDoc.getElementById('userTypeId');
-    if (!badge) return;
+    if (!badge) {
+        tplWarnOnce('noUserTypeBadge', 'paintUserTypeBadge: элемент #userTypeId не найден — панель UsersInfo не построена');
+        return;
+    }
+
+    const showNextRow = () => {
+        const nextRow = iframeDoc.getElementById('nextUsersp');
+        if (nextRow) nextRow.style.display = 'flex';
+        else tplWarnOnce('noNextUsersp', 'paintUserTypeBadge: блок #nextUsersp не найден в панели UsersInfo');
+    };
 
     const ICON_TEACHER = '👽';
     const LABEL_TEACHER = 'CRM П';
@@ -425,7 +542,7 @@ function paintUserTypeBadge(iframeDoc, usertypeis) {
 
         if (SearchinAFnewUI('nextClass-studentId') !== '') {
             setUserIcon(iframeDoc, 'NextUser', ICON_STUDENT, LABEL_STUDENT);
-            iframeDoc.getElementById('nextUsersp').style.display = 'flex';
+            showNextRow();
         }
     } else if (usertypeis === 'student' || usertypeis === 'parent') {
         badge.textContent = usertypeis === 'parent' ? ' (РУ)' : ' (У)';
@@ -435,7 +552,7 @@ function paintUserTypeBadge(iframeDoc, usertypeis) {
 
         if (SearchinAFnewUI('nextClass-teacherId') !== '') {
             setUserIcon(iframeDoc, 'NextUser', ICON_TEACHER, LABEL_TEACHER);
-            iframeDoc.getElementById('nextUsersp').style.display = 'flex';
+            showNextRow();
         }
     } else {
         setUserIcon(iframeDoc, 'CurrUser', '❓', null);
@@ -468,7 +585,19 @@ function startTimer() {
             Lessonisnow(iframeDoc);
             requestsRed(taketaskElement);
 
-            if (scriptAdr === TP_addres || scriptAdr === TP_addresRzrv) { // блок только для ТП
+            const isTpBranch = scriptAdr === TP_addres || scriptAdr === TP_addresRzrv;
+            const expectsTpBranch =
+                localStorage.getItem('tpflag') === 'ТП' ||
+                (typeof isTpOperator === 'function' && isTpOperator());
+            if (!isTpBranch && expectsTpBranch) {
+                // Раз в минуту: коллега считается ТП-оператором, а ТП-блок (панель,
+                // теги, бейдж) не активен — scriptAdr не совпал с TP_addr из storage.
+                tplWarnOnce('tpBranch',
+                    'ТП-блок отключён: scriptAdr не совпадает с TP_addr из chrome.storage',
+                    { scriptAdr, TP_addres, TP_addresRzrv, tpflag: localStorage.getItem('tpflag') });
+            }
+
+            if (isTpBranch) { // блок только для ТП
                 updateUserBadgeInTestUsers(iframeDoc);
                 toggleQuickTags(iframeDoc, usernameField, tagsShowFlag);
 
@@ -580,10 +709,16 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
 
     /** Простая кнопка: вспышка + действие при наличии ID. */
     function bindSimple(btnId, getIdNode, action) {
-        iframeDoc.getElementById(btnId).onclick = function () {
+        const btn = iframeDoc.getElementById(btnId);
+        if (!btn) {
+            tplErr(`buttonsfunctionsinfo: кнопка #${btnId} не найдена в панели UsersInfo — обработчик не навешан`);
+            return;
+        }
+        btn.onclick = function () {
             flashGreen(this);
             const idNode = getIdNode();
             if (idNode) action(idNode);
+            else tplLog(`buttonsfunctionsinfo: #${btnId} — пустой ID пользователя, действие пропущено`);
         };
     }
 
@@ -593,10 +728,16 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
      * независимо от её результата.
      */
     function bindLoginer(btnId, getIdNode) {
-        iframeDoc.getElementById(btnId).onclick = async function () {
+        const btn = iframeDoc.getElementById(btnId);
+        if (!btn) {
+            tplErr(`buttonsfunctionsinfo: кнопка #${btnId} не найдена в панели UsersInfo — обработчик не навешан`);
+            return;
+        }
+        btn.onclick = async function () {
             const idNode = getIdNode();
             if (!idNode) {
                 flashImportant(this, 'rgba(255, 71, 87, 0.9)');
+                tplLog(`bindLoginer: #${btnId} — пустой ID пользователя`);
                 return;
             }
 
@@ -664,11 +805,22 @@ function showTaggs(iframeDoc) {
     if (iframeDoc.getElementById('quickTagsdiv')) return;
 
     const fieldToTags = iframeDoc.querySelectorAll('[class^="conversation-payload-form"]')[0];
-    if (!fieldToTags) return;
+    if (!fieldToTags) {
+        // Обычное состояние, когда чат/панель не открыта — галка в режиме отладки
+        tplLog('showTaggs: блок conversation-payload-form не найден — быстрые теги не отрисованы');
+        return;
+    }
+
+    const host = fieldToTags.children[0]?.children[0]?.children[0];
+    if (!host) {
+        tplWarnOnce('noTagHost',
+            'showTaggs: изменилась вложенность conversation-payload-form — быстрые теги не отрисованы');
+        return;
+    }
 
     const quickTagsDiv = iframeDoc.createElement('div');
     quickTagsDiv.id = 'quickTagsdiv';
-    fieldToTags.children[0].children[0].children[0].append(quickTagsDiv);
+    host.append(quickTagsDiv);
 
     for (const cfg of QUICK_TAG_BUTTONS) {
         const btn = iframeDoc.createElement('span');
@@ -726,13 +878,21 @@ function maskEmail(email) {
 
 /** Подставляет телефон/почту/имя в шаблон вместо маркеров (phone)/(email)/(name). */
 function transfPageButtons(textFromTable) {
+    if (textFromTable == null) return textFromTable;
+    const langEl = document.getElementById('languageAF');
+    if (!langEl) tplWarnOnce('noLangEl', 'transfPageButtons: кнопка #languageAF не найдена — проверка языка имени пропущена');
+
     if (textFromTable.includes('(phone)')) {
         const phoneInput = document.getElementById('phone_tr');
+        if (!phoneInput) {
+            tplWarnOnce('noPhoneTr', 'transfPageButtons: поле #phone_tr не найдено — маркер (phone) оставлен как есть');
+            return textFromTable;
+        }
         let phone = phoneInput.value || phoneInput.placeholder;
 
         const phonePattern = /^(\+?[0-9]{7,20})$/;
         if (!phonePattern.test(phone) || phone === 'Телефон') {
-            document.getElementById('inp').value = 'Введите номер телефона';
+            setInputMessage('Введите номер телефона');
             return;
         }
 
@@ -741,11 +901,15 @@ function transfPageButtons(textFromTable) {
 
     if (textFromTable.includes('(email)')) {
         const emailInput = document.getElementById('email_tr');
+        if (!emailInput) {
+            tplWarnOnce('noEmailTr', 'transfPageButtons: поле #email_tr не найдено — маркер (email) оставлен как есть');
+            return textFromTable;
+        }
         let email = emailInput.value || emailInput.placeholder;
 
         const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (!emailPattern.test(email) || email === 'Почта') {
-            document.getElementById('inp').value = 'Введите почту';
+            setInputMessage('Введите почту');
             return;
         }
 
@@ -755,7 +919,7 @@ function transfPageButtons(textFromTable) {
     if (textFromTable.includes('(name)')) {
         const tempname = getActiveConvUserName();
         const cyrillicPattern = /^[\u0400-\u04FF]+$/;
-        const languageAF = document.getElementById('languageAF').innerHTML;
+        const languageAF = langEl ? langEl.innerHTML : 'Русский';
 
         let name = '';
         if (tempname !== 'Неизвестный') {
@@ -776,20 +940,28 @@ function transfPageButtons(textFromTable) {
 // ============================================================
 
 function setInputMessage(message) {
-    document.getElementById('inp').value = message;
+    const inp = document.getElementById('inp');
+    if (!inp) {
+        tplWarnOnce('noInp', 'setInputMessage: поле #inp не найдено — панель шаблонов (AF_helper) не построена');
+        return;
+    }
+    inp.value = message;
 }
 
 /** Приветствие с учётом языка интерфейса и языка имени пользователя. */
 function buildGreeting() {
     const tempname = getActiveConvUserName();
     const cyrillicPattern = /^[\u0400-\u04FF]+$/;
-    const isRussian = document.getElementById('languageAF').innerHTML === 'Русский';
+    const langEl = document.getElementById('languageAF');
+    const isRussian = langEl ? langEl.innerHTML === 'Русский' : true;
+    const msg1El = document.getElementById('msg1');
+    if (!msg1El) tplWarnOnce('noMsg1', 'buildGreeting: кнопка #msg1 не найдена — режим «Доработать» не определён');
 
     const canUseName =
         (isRussian ? cyrillicPattern.test(tempname) : !cyrillicPattern.test(tempname)) &&
         tempname !== 'Неизвестный' &&
         tempname !== '' &&
-        document.getElementById('msg1').innerHTML === 'Доработать';
+        !!msg1El && msg1El.innerHTML === 'Доработать';
 
     const hello = isRussian ? 'Здравствуйте' : 'Hello';
     const tail = isRussian
@@ -811,15 +983,26 @@ const SMARTROOM_TEMPLATE_NAMES = [
 ];
 
 async function buttonsFromDoc(butName) {
+    tplLog('buttonsFromDoc:', JSON.stringify(butName), { currentUserType });
+    try {
+        await buttonsFromDocInner(butName);
+    } catch (error) {
+        tplErr('buttonsFromDoc: исключение', { butName, error: error?.message || error, stack: error?.stack });
+        tplFail('⚠️ Ошибка при отправке шаблона — подробности в консоли (ChMAF:Tpl)');
+    }
+}
+
+async function buttonsFromDocInner(butName) {
     // «ус+брауз» разворачивается в вариант для ученика/учителя
     if (butName === 'ус+брауз') {
         butName = (!currentUserType || currentUserType === 'student')
             ? 'ус+брауз (У)'
             : 'ус+брауз (П)';
+        tplLog('buttonsFromDoc: «ус+брауз» развёрнут в', JSON.stringify(butName), { currentUserType });
     }
 
     if (butName === 'Привет') {
-        sendAnswerTemplate2(buildGreeting());
+        tplRun(sendAnswerTemplate2(buildGreeting()), 'Привет');
         return;
     }
 
@@ -861,46 +1044,51 @@ async function addJiraURL(URLvalue) {
 async function servFromDoc(eventOrName) {
     let btnName = '';
 
-    // 1. Если передали строку напрямую
-    if (typeof eventOrName === 'string') {
-        btnName = eventOrName;
-    }
-    // 2. Если передали нативное событие клика
-    else if (eventOrName && eventOrName.target) {
-        btnName = eventOrName.target.textContent;
-    }
-    // 3. Фолбэк: ищем кнопку в DOM, если событие потерялось при вызове
-    // Это решает проблему вызова servFromDoc() без аргументов из content.js
-    else {
-        // Ищем среди всех кнопок шаблонов ту, которая сейчас в фокусе или была нажата последней
-        // Так как content.js вызывает функцию синхронно по клику, :active может сработать,
-        // но надежнее проверить document.activeElement
-        const activeBtn = document.activeElement;
-        if (activeBtn && activeBtn.classList.contains('mainButton')) {
-            btnName = activeBtn.textContent;
-        } else {
-            // Последний шанс: ищем кнопку по координатам или другим признакам,
-            // но если ничего не нашли — выходим
-            console.error('[servFromDoc] Не удалось определить имя шаблона. Убедитесь, что кнопка имеет класс "mainButton"');
-            return;
+    try {
+        // 1. Если передали строку напрямую (надёжный путь — textContent кнопки из content.js)
+        if (typeof eventOrName === 'string') {
+            btnName = eventOrName;
         }
-    }
+        // 2. Если передали нативное событие клика
+        else if (eventOrName && eventOrName.target && eventOrName.target.textContent) {
+            btnName = eventOrName.target.textContent;
+        }
+        // 3. Фолбэк: ищем кнопку в DOM, если событие потерялось при вызове
+        // (важно: на macOS Chrome клик по <button> НЕ ставит focus — activeElement
+        // остаётся body, поэтому этот путь вторичен, а primary — передача строки из content.js)
+        else {
+            const activeBtn = document.activeElement;
+            if (activeBtn && activeBtn.classList && activeBtn.classList.contains('mainButton')) {
+                btnName = activeBtn.textContent;
+                tplLog('servFromDoc: имя взято из activeElement:', JSON.stringify(btnName));
+            } else {
+                tplErr('[servFromDoc] Не удалось определить имя шаблона. Активный элемент:', activeBtn && activeBtn.tagName,
+                    '— content.js должен вызывать servFromDoc(textContent)');
+                return;
+            }
+        }
 
-    if (!btnName) return;
+        if (!btnName) return;
 
-    // Остальная логика функции без изменений
-    msgFromTable(btnName);
+        tplLog('servFromDoc:', JSON.stringify(btnName));
 
-    const linkInput = document.getElementById('avariyalink');
-    if (linkInput && linkInput.value.trim() !== '') {
-        const linkToSend = linkInput.value.trim();
-        sendComment(linkToSend);
-        await addJiraURL(linkToSend);
-    }
+        // Остальная логика функции без изменений
+        msgFromTable(btnName);
 
-    const themeSelect = document.getElementById('avariyatema');
-    if (themeSelect && themeSelect.selectedIndex > 0) {
-        setTheme(encodeURIComponent(themeSelect.value));
+        const linkInput = document.getElementById('avariyalink');
+        if (linkInput && linkInput.value.trim() !== '') {
+            const linkToSend = linkInput.value.trim();
+            sendComment(linkToSend);
+            await addJiraURL(linkToSend);
+        }
+
+        const themeSelect = document.getElementById('avariyatema');
+        if (themeSelect && themeSelect.selectedIndex > 0) {
+            setTheme(encodeURIComponent(themeSelect.value));
+        }
+    } catch (error) {
+        tplErr('servFromDoc: исключение', { btnName, error: error?.message || error, stack: error?.stack });
+        tplFail('⚠️ Ошибка при отправке серверного шаблона — подробности в консоли (ChMAF:Tpl)');
     }
 }
 
@@ -916,13 +1104,20 @@ async function getInfo(flag1 = 1) {
     const cached = chatsArray.find((chat) => chat.id === activeConvId);
     if (cached) return [url, activeConvId, cached.sessionId];
 
-    if (document.getElementById('msg1').innerHTML !== 'Доработать' || flag1 === 0) {
+    if (!activeConvId) tplWarnOnce('noChatId', 'getInfo: chatId пуст — выбери чат, иначе ответ не уйдёт');
+
+    const msg1El = document.getElementById('msg1');
+    const needBackgroundFetch = (msg1El ? msg1El.innerHTML !== 'Доработать' : true) || flag1 === 0;
+    if (needBackgroundFetch && activeConvId) {
         doOperationsWithConversations(activeConvId)
             .then((result) => {
                 chatsArray.push(result);
                 localStorage.setItem('serviceIdGlob', result.serviceId);
+                tplLog('getInfo: данные чата закэшированы', { id: result.id, sessionId: result.sessionId });
             })
-            .catch((error) => console.error('Ошибка при получении данных:', error));
+            .catch((error) => {
+                tplErr('getInfo: ошибка при получении данных чата', { activeConvId, error: error?.message || error });
+            });
     }
 
     return [url, activeConvId, ''];
@@ -930,7 +1125,10 @@ async function getInfo(flag1 = 1) {
 
 function setTheme(valueId) {
     const chatId = getChatId();
-    if (!chatId) return;
+    if (!chatId) {
+        tplLog('setTheme: chatId пуст — тема не установлена', valueId);
+        return;
+    }
 
     afApiFetch(`${AF_API_ORIGIN}/api/conversation/${chatId}/payload`, {
         method: 'POST',
@@ -939,7 +1137,10 @@ function setTheme(valueId) {
             conversationId: chatId,
             elements: [{ name: 'topicId', value: String(valueId) }]
         })
-    }).catch(() => { });
+    }).then((resp) => {
+        if (!resp.ok) tplErr(`setTheme: HTTP ${resp.status}`, { chatId, valueId });
+        else tplLog('setTheme: OK', valueId);
+    }).catch((e) => tplErr('setTheme: ошибка сети', e));
 }
 
 /** Пустая ли ячейка таблицы шаблонов. */
@@ -949,47 +1150,75 @@ function isEmptyCell(value) {
 
 /** Тематика (сразу) и теги (через 1 с) для строки шаблонов. */
 function applyRowThemeAndTags(row) {
-    if (isEmptyCell(row[8])) console.log('Не значения тематики');
+    if (isEmptyCell(row[8])) tplLog('applyRowThemeAndTags: нет значения тематики (колонка 8)');
     else setTheme(row[8]);
 
     setTimeout(() => {
-        if (isEmptyCell(row[9])) console.log('Нет значения тегов');
+        if (isEmptyCell(row[9])) tplLog('applyRowThemeAndTags: нет значения тегов (колонка 9)');
         else newTags(row[9]);
     }, 1000);
 }
 
 /** Шаблоны, тематики и теги из таблицы по имени кнопки. */
 function msgFromTable(btnName) {
+    if (!Array.isArray(table) || table.length === 0) {
+        tplWarnOnce('emptyTable',
+            'msgFromTable: таблица шаблонов пуста — кнопки нажимаются вхолостую. Проверь загрузку (getText) и scriptAdr.',
+            { scriptAdr: typeof scriptAdr !== 'undefined' ? scriptAdr : '?' });
+        return;
+    }
+
+    let matched = false;
     for (let l = 0; l < table.length; l++) {
         if (btnName !== table[l][0]) continue;
 
+        matched = true;
         const row = table[l];
+        const ruKind = String(row[1] ?? '');
+        const enKind = String(row[5] ?? '');
+        tplLog('msgFromTable: совпадение', { btnName, row: l, ruKind, enKind });
+
         applyRowThemeAndTags(row);
 
-        if (document.getElementById('languageAF').innerHTML === 'Русский') {
-            if (row[1] === 'Быстрый шаблон') {
-                sendAnswerTemplate2(row[2]);
-            } else if (row[1] === 'Текст') {
-                sendAnswer(transfPageButtons(row[2]));
-            } else if (row[1] === 'Шаблон') {
-                sendAnswerTemplate(row[2], row[3]);
-            } else if (row[1].indexOf('Рандом') !== -1) {
-                // Формат типа: "РандомN" — N вариантов в колонках 2..2+N
-                const variantsCount = Number(row[1][7]);
-                const variantIndex = Math.floor(Math.random() * variantsCount);
-                const [kind, value] = row[2 + variantIndex].split('$');
+        const langBtn = document.getElementById('languageAF');
+        const isRussian = langBtn ? langBtn.innerHTML === 'Русский' : true;
+        if (!langBtn) tplWarnOnce('noLangBtn', 'msgFromTable: кнопка #languageAF не найдена — считаю язык русским');
 
-                if (kind === 'Текст') sendAnswer(transfPageButtons(value));
-                else if (kind === 'Шаблон') sendAnswerTemplate(value, value);
-                else setInputMessage('Шаблон  указан не верно, повторите попытку еще раз!');
+        if (isRussian) {
+            if (ruKind === 'Быстрый шаблон') {
+                tplRun(sendAnswerTemplate2(row[2]), `Быстрый шаблон «${btnName}»`);
+            } else if (ruKind === 'Текст') {
+                tplRun(sendAnswer(transfPageButtons(row[2])), `Текст «${btnName}»`);
+            } else if (ruKind === 'Шаблон') {
+                tplRun(sendAnswerTemplate(row[2], row[3]), `Шаблон «${btnName}»`);
+            } else if (ruKind.indexOf('Рандом') !== -1) {
+                // Формат типа: "РандомN" — N вариантов в колонках 2..2+N
+                const variantsCount = Number(ruKind[7]);
+                if (!Number.isInteger(variantsCount) || variantsCount < 1) {
+                    tplErr(`msgFromTable: не удалось разобрать «${ruKind}» (нужен формат РандомN) для «${btnName}»`);
+                    setInputMessage('Шаблон  указан не верно, повторите попытку еще раз!');
+                } else {
+                    const variantIndex = Math.floor(Math.random() * variantsCount);
+                    const cell = String(row[2 + variantIndex] ?? '');
+                    const [kind, value] = cell.split('$');
+
+                    if (kind === 'Текст') tplRun(sendAnswer(transfPageButtons(value)), `Рандом «${btnName}»`);
+                    else if (kind === 'Шаблон') tplRun(sendAnswerTemplate(value, value), `Рандом «${btnName}»`);
+                    else {
+                        tplErr(`msgFromTable: пустой/неверный вариант ${2 + variantIndex} в «${ruKind}» для «${btnName}»:`, JSON.stringify(cell));
+                        setInputMessage('Шаблон  указан не верно, повторите попытку еще раз!');
+                    }
+                }
+            } else {
+                tplWarn(`msgFromTable: неизвестный тип шаблона (RU) у «${btnName}»: «${ruKind}»`);
             }
             break;
         }
 
-        if (row[1].indexOf('Рандом') !== -1) {
+        if (ruKind.indexOf('Рандом') !== -1) {
             // Формат типа: "РандомN/M" — сначала N русских, затем M английских
-            const ruCount = parseInt(row[1][7], 10);
-            const enCount = row[1][9];
+            const ruCount = parseInt(ruKind[7], 10);
+            const enCount = Number(ruKind[9]);
 
             if (!(enCount > 0)) {
                 setInputMessage('Нет английского варианта шаблонов');
@@ -997,24 +1226,37 @@ function msgFromTable(btnName) {
                 setInputMessage('Шаблон  указан не верно, повторите попытку еще раз!');
             } else {
                 const variantIndex = Math.floor(Math.random() * enCount);
-                const [kind, value] = row[2 + ruCount + variantIndex].split('$');
+                const cell = String(row[2 + ruCount + variantIndex] ?? '');
+                const [kind, value] = cell.split('$');
 
-                if (kind === 'Текст') sendAnswer(transfPageButtons(value));
-                else if (kind === 'Шаблон') sendAnswerTemplate(value, value);
-                else setInputMessage('Шаблон  указан не верно, повторите попытку еще раз!');
+                if (kind === 'Текст') tplRun(sendAnswer(transfPageButtons(value)), `Рандом EN «${btnName}»`);
+                else if (kind === 'Шаблон') tplRun(sendAnswerTemplate(value, value), `Рандом EN «${btnName}»`);
+                else {
+                    tplErr(`msgFromTable: пустой/неверный EN-вариант в «${ruKind}» для «${btnName}»:`, JSON.stringify(cell));
+                    setInputMessage('Шаблон  указан не верно, повторите попытку еще раз!');
+                }
             }
-        } else if (row[4] === '') {
+            break;
+        } else if (isEmptyCell(row[4])) {
+            tplLog('msgFromTable: нет английского варианта у', btnName);
             setInputMessage('Нет английского варианта шаблона');
+            break;
         } else {
-            if (row[5] === 'Быстрый шаблон') {
-                sendAnswerTemplate2(row[6]);
-            } else if (row[5] === 'Текст') {
-                sendAnswer(transfPageButtons(row[6]));
-            } else if (row[5] === 'Шаблон') {
-                sendAnswerTemplate(row[6], row[7]);
+            if (enKind === 'Быстрый шаблон') {
+                tplRun(sendAnswerTemplate2(row[6]), `Быстрый шаблон EN «${btnName}»`);
+            } else if (enKind === 'Текст') {
+                tplRun(sendAnswer(transfPageButtons(row[6])), `Текст EN «${btnName}»`);
+            } else if (enKind === 'Шаблон') {
+                tplRun(sendAnswerTemplate(row[6], row[7]), `Шаблон EN «${btnName}»`);
+            } else {
+                tplWarn(`msgFromTable: неизвестный тип шаблона (EN) у «${btnName}»: «${enKind}»`);
             }
             break;
         }
+    }
+
+    if (!matched) {
+        tplWarn(`msgFromTable: кнопка «${btnName}» не найдена в таблице (${table.length} строк). Возможно, устаревшая таблица — нажми 🔄.`, { scriptAdr: typeof scriptAdr !== 'undefined' ? scriptAdr : '?' });
     }
 }
 
@@ -1066,22 +1308,76 @@ function stripAutoFaqHtmlLight(html) {
         .split('TMPENDaTMEPEND').join('</a');
 }
 
+/**
+ * Список autoFaqServiceIds для поиска шаблонов.
+ * Порядок: tpflag → реальный отдел оператора → адрес ТП-скрипта.
+ * Раньше при отсутствии tpflag (свежий профиль, чистка localStorage)
+ * функция молча ничего не возвращала и шаблоны типа «Шаблон» не работали.
+ */
+function resolveAutoFaqServiceIds() {
+    const tpflag = (() => { try { return localStorage.getItem('tpflag'); } catch (e) { return null; } })();
+
+    if (tpflag === 'ТП') return { ids: AUTOFAQ_SERVICE_IDS.tp, via: 'tpflag=ТП' };
+    if (tpflag === 'ТПPrem') return { ids: AUTOFAQ_SERVICE_IDS.tpPrem, via: 'tpflag=ТПPrem' };
+
+    // Фолбэк 1: отдел реально ТП (opsection из профиля оператора)
+    if (typeof isTpOperator === 'function' && isTpOperator()) {
+        const section = typeof getOpSection === 'function' ? getOpSection() : '';
+        if (!/Prem/i.test(section)) {
+            tplWarnOnce('svcViaOpsection', `resolveAutoFaqServiceIds: tpflag пуст, взял список ТП по отделу «${section}»`);
+            return { ids: AUTOFAQ_SERVICE_IDS.tp, via: `opsection=${section}` };
+        }
+    }
+
+    // Фолбэк 2: активный скрипт — ТП-адрес из chrome.storage
+    if (scriptAdr && (scriptAdr === TP_addres || scriptAdr === TP_addresRzrv)) {
+        tplWarnOnce('svcViaAdr', 'resolveAutoFaqServiceIds: tpflag пуст, взял список ТП по scriptAdr');
+        return { ids: AUTOFAQ_SERVICE_IDS.tp, via: 'scriptAdr=TP' };
+    }
+
+    return { ids: null, via: `tpflag=${JSON.stringify(tpflag)}, scriptAdr=${scriptAdr}` };
+}
+
 async function loadTemplates(template, word) {
-    const tpflag = localStorage.getItem('tpflag');
-    const serviceIds =
-        tpflag === 'ТП' ? AUTOFAQ_SERVICE_IDS.tp :
-            tpflag === 'ТПPrem' ? AUTOFAQ_SERVICE_IDS.tpPrem : null;
+    const { ids: serviceIds, via } = resolveAutoFaqServiceIds();
 
-    if (!serviceIds) return;
+    if (!serviceIds) {
+        // Тихий отказ в оригинале: шаблон просто «не нажимается» без единого сообщения.
+        tplFail(`⚠️ Шаблон «${template}» не загружен: не удалось определить отдел AutoFAQ (${via}). Выполни chmafTemplatesDiag() в консоли.`);
+        return null;
+    }
+    tplLog('loadTemplates: поиск', { template, word, via });
 
-    const result = await afApiFetch(AUTOFAQ_TOP_BATCH_URL, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ query: word, answersLimit: 10, autoFaqServiceIds: serviceIds })
-    }).then((response) => response.json());
+    let result;
+    try {
+        const response = await afApiFetch(AUTOFAQ_TOP_BATCH_URL, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ query: word, answersLimit: 10, autoFaqServiceIds: serviceIds })
+        });
+        if (!response.ok) {
+            tplErr(`loadTemplates: HTTP ${response.status} при поиске «${template}» (query: ${JSON.stringify(word)})`);
+            return null;
+        }
+        result = await response.json();
+    } catch (error) {
+        tplErr('loadTemplates: ошибка сети/парсинга', { template, word, error: error?.message || error });
+        return null;
+    }
+
+    if (!Array.isArray(result)) {
+        tplErr('loadTemplates: ответ AutoFAQ не массив', { template, sample: JSON.stringify(result)?.slice(0, 200) });
+        return null;
+    }
 
     const match = result.find((item) => item.title === template);
-    if (!match) return;
+    if (!match) {
+        tplWarnOnce('tplNotFound:' + template,
+            `loadTemplates: «${template}» не найден среди ${result.length} ответов AutoFAQ (query: ${JSON.stringify(word)}, via: ${via})`,
+            result.slice(0, 5).map((i) => i.title));
+        return null;
+    }
+    tplLog('loadTemplates: найден', { template, serviceId: match.serviceId, accuracy: match.accuracy });
 
     const entry = [
         template,
@@ -1113,14 +1409,28 @@ function toParagraphHtml(text) {
 }
 
 /** POST в /answers с payload через нативный FormData (boundary генерирует браузер). */
-function sendAnswersRequest(payloadObj) {
+async function sendAnswersRequest(payloadObj) {
     const formData = new FormData();
     formData.append('payload', JSON.stringify(payloadObj));
 
-    return afApiFetch(ANSWERS_URL, {
+    const response = await afApiFetch(ANSWERS_URL, {
         method: 'POST',
         body: formData
     });
+
+    if (!response.ok) {
+        let details = '';
+        try { details = (await response.text()).slice(0, 300); } catch (e) { /* ignore */ }
+        tplErr(`sendAnswersRequest: HTTP ${response.status}`, {
+            conversationId: payloadObj.conversationId,
+            sessionId: payloadObj.sessionId || '(пусто)',
+            details
+        });
+        tplFail(`❌ Ответ не отправлен (HTTP ${response.status}) — подробности в консоли (ChMAF:Tpl)`);
+    } else {
+        tplLog('sendAnswersRequest: OK', { conversationId: payloadObj.conversationId, sessionId: payloadObj.sessionId || '(пусто)' });
+    }
+    return response;
 }
 
 /** Быстрый шаблон: короткий текст ищется в AutoFAQ, иначе отправляется как есть. */
@@ -1129,23 +1439,30 @@ async function sendAnswerTemplate2(word, flag = 0) {
 
     if (word.length < 50) {
         try {
-            const result = await afApiFetch(AUTOFAQ_TOP_BATCH_URL, {
+            const response = await afApiFetch(AUTOFAQ_TOP_BATCH_URL, {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({ query: word, answersLimit: 25, autoFaqServiceIds: [121384] })
-            }).then((response) => response.json());
+            });
+            const result = await response.json();
 
-            const match = result.find((k) => k.title === word);
-            if (match) tmpTxt = stripAutoFaqHtmlLight(match.text);
+            if (Array.isArray(result)) {
+                const match = result.find((k) => k.title === word);
+                if (match) tmpTxt = stripAutoFaqHtmlLight(match.text);
+                else tplLog('sendAnswerTemplate2: в AutoFAQ не найдено, отправляю исходный текст', JSON.stringify(word));
+            } else {
+                tplWarn('sendAnswerTemplate2: ответ AutoFAQ не массив', JSON.stringify(result)?.slice(0, 200));
+            }
         } catch (e) {
             // Как в оригинале: ошибка поиска не ломает отправку
+            tplLog('sendAnswerTemplate2: ошибка поиска (не критично):', e?.message || e);
         }
     }
 
     if (!tmpTxt) tmpTxt = word;
 
-    if (document.getElementById('msg1').innerHTML === 'Доработать' && flag === 0) {
-        document.getElementById('inp').value = tmpTxt;
+    if (isEditMode() && flag === 0) {
+        if (!setInpValue(tmpTxt)) return;
         template_flag = 1;
         template_flag2 = 1;
         return;
@@ -1172,13 +1489,16 @@ async function sendAnswerTemplate(template, word, flag = 0, newText = '', flag2 
 
     let curTemplate = templatesAF.find((entry) => entry[0] === template);
     if (!curTemplate) curTemplate = await loadTemplates(template, word);
-    if (!curTemplate) return;
+    if (!curTemplate) {
+        // Причина уже залогирована/показана в loadTemplates
+        tplLog('sendAnswerTemplate: шаблон не получен, отправка отменена', { template, word });
+        return;
+    }
 
     const textAfterSubstitution = transfPageButtons(curTemplate[5]);
 
-    if (document.getElementById('msg1').innerHTML === 'Доработать' && flag2 === 0) {
-        document.getElementById('inp').value = String(textAfterSubstitution ?? '')
-            .replace(/\\n/g, '\n');
+    if (isEditMode() && flag2 === 0) {
+        setInpValue(String(textAfterSubstitution ?? '').replace(/\\n/g, '\n'));
         template_text = template;
         word_text = word;
         template_flag = 1;
@@ -1186,7 +1506,7 @@ async function sendAnswerTemplate(template, word, flag = 0, newText = '', flag2 
     }
 
     if (!textAfterSubstitution) {
-        console.log('Шаблон не найден');
+        tplWarn(`sendAnswerTemplate: пустой текст шаблона «${template}»`);
         return;
     }
 
@@ -1213,15 +1533,44 @@ async function sendAnswerTemplate(template, word, flag = 0, newText = '', flag2 
     resetFlags();
 }
 
+// ============================================================
+// Режим «Доработать» (кнопка #msg1) — безопасный доступ
+// ============================================================
+/** true, если режим редактирования «Доработать» (или кнопка не найдена — считаем отправку). */
+function isEditMode() {
+    const msg1El = document.getElementById('msg1');
+    if (!msg1El) {
+        tplWarnOnce('noMsg1', 'isEditMode: кнопка #msg1 не найдена — панель AF_helper не построена, считаю режим «Отправить»');
+        return false;
+    }
+    return msg1El.innerHTML === 'Доработать';
+}
+
+/** Запись в поле ввода с защитой от отсутствия #inp. */
+function setInpValue(value) {
+    const inp = document.getElementById('inp');
+    if (!inp) {
+        tplWarnOnce('noInp', 'setInpValue: поле #inp не найдено — панель AF_helper не построена');
+        return false;
+    }
+    inp.value = value;
+    return true;
+}
+
 /** Обычный текстовый ответ в чат. */
 async function sendAnswer(txt, flag = 1) {
+    if (txt == null) {
+        tplLog('sendAnswer: пустой текст (проверка телефона/почты не прошла?) — отправка отменена');
+        return;
+    }
+
     const values = await getInfo(flag);
     const adr1 = values[1];
     const uid = values[2];
 
-    if (document.getElementById('msg1').innerHTML === 'Доработать' && flag) {
+    if (isEditMode() && flag) {
         resetFlags();
-        document.getElementById('inp').value = txt;
+        setInpValue(txt);
         return;
     }
 
@@ -1240,4 +1589,15 @@ async function sendAnswer(txt, flag = 1) {
 window.addEventListener('callNewTaggg', (event) => newTaggg(event.detail.tagName));
 window.addEventListener('CallNewComment', (event) => sendComment(event.detail.comment));
 
+// Явные экспорты в window (content.js вызывает их через window.*)
+window.buttonsFromDoc = buttonsFromDoc;
+window.servFromDoc = servFromDoc;
+window.getInfo = getInfo;
+window.msgFromTable = msgFromTable;
+window.setTheme = setTheme;
+window.newTags = newTags;
+
 setInterval(startTimer, 500);
+
+// Разовый лог загрузки модуля — видно в консоли, что шаблоны-модуль жив
+console.log('[ChMAF:Tpl] TemplatesFuncs.js загружен. Отладка: localStorage.setItem("chmafDebug","1"); диагностика: chmafTemplatesDiag()');

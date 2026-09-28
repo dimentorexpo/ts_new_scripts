@@ -1,5 +1,15 @@
 'use strict';
 
+// Глобальный перехватчик ошибок для диагностики
+window.addEventListener('error', (event) => {
+    console.error('%c[ChMAF Global Error]', 'color: #ef4444; font-weight: bold;', event.error);
+    // Не блокируем стандартное поведение, но логируем
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('%c[ChMAF Unhandled Promise]', 'color: #f59e0b; font-weight: bold;', event.reason);
+});
+
 // ═══════════════════════════════════════════════════════════════
 // ⚡ SHARED STATE — единственное место объявления!
 // content.js ИСПОЛЬЗУЕТ эти переменные, но НЕ объявляет повторно.
@@ -880,22 +890,64 @@ async function fetchGasJson(url, timeoutMs = 15_000) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     cleanupRegistry.signal?.addEventListener('abort', () => controller.abort(), { once: true });
+
     try {
         const r = await fetch(url, { signal: controller.signal });
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return await r.json();
+
+        // ⚡ ФИКС: Проверяем статус ответа
+        if (!r.ok) {
+            throw new Error(`[ChMAF] HTTP ${r.status} при запросе к ${url}`);
+        }
+
+        // ⚡ ФИКС: Читаем как текст сначала, чтобы проверить на HTML-ошибку
+        const text = await r.text();
+
+        // Если ответ начинается с <!DOCTYPE или <html, это точно не JSON
+        if (text.trim().startsWith('<')) {
+            console.error('[ChMAF] Сервер вернул HTML вместо JSON:', text.slice(0, 200));
+            throw new Error('Сервер вернул HTML-страницу ошибки (возможно, 404 или требуется вход)');
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error('[ChMAF] Ошибка парсинга JSON:', text.slice(0, 200));
+            throw new Error('Невалидный JSON ответ от сервера');
+        }
+
     } catch (e) {
+        // Фолбэк через background script (если прямой fetch заблокирован CORS)
         if (e.name === 'AbortError') throw new Error(`[ChMAF] Fetch timeout: ${url}`);
+
+        console.warn('[ChMAF] Прямой fetch не удался, пробуем через background:', e.message);
+
         const ans = await new Promise((resolve) => {
             const t = setTimeout(() => resolve(null), timeoutMs);
             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url }, (resp) => {
                 clearTimeout(t);
-                if (chrome.runtime.lastError || !resp?.success) resolve(null);
-                else resolve(resp.fetchansver);
+                if (chrome.runtime.lastError) {
+                    console.warn('[ChMAF] Background error:', chrome.runtime.lastError.message);
+                    resolve(null);
+                } else if (!resp?.success) {
+                    resolve(null);
+                } else {
+                    resolve(resp.fetchansver);
+                }
             });
         });
+
         if (!ans) throw e;
-        return JSON.parse(ans);
+
+        // Повторная проверка для ответа из background
+        if (typeof ans === 'string' && ans.trim().startsWith('<')) {
+            throw new Error('Background вернул HTML вместо JSON');
+        }
+
+        try {
+            return typeof ans === 'string' ? JSON.parse(ans) : ans;
+        } catch (err) {
+            throw new Error('Невалидный JSON из background');
+        }
     } finally {
         clearTimeout(timeoutId);
     }
@@ -963,12 +1015,6 @@ window.getText = getText;
 
 // ═══════════════════════════════════════════════════════════════
 // УВЕДОМЛЕНИЯ
-// ═══════════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════════
-// MODERN TOAST NOTIFICATION SYSTEM
-// ═══════════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════════
-// MODERN TOAST SYSTEM (CRM-Style)
 // ═══════════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════
 // MODERN TOAST SYSTEM (Force Override for ChMAF)

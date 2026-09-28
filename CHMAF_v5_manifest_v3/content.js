@@ -441,13 +441,25 @@ function pageClick(event) {
 function refreshTemplates() {
     if (location.host !== 'skyeng.autofaq.ai') return;
     if (!table || !table.length) {
-        console.warn('Ожидание загрузки шаблонов...');
+        console.warn('[ChMAF:Tpl] refreshTemplates: таблица шаблонов пуста — ожидание загрузки (scriptAdr:',
+            typeof scriptAdr !== 'undefined' ? scriptAdr : '?', ')');
         return;
     }
     const pagesContainer = document.getElementById('pages');
     const contentArea = document.getElementById('7str');
     const addTmpElement = document.getElementById('addTmp');
-    if (!pagesContainer || !contentArea) return;
+    if (!pagesContainer || !contentArea) {
+        console.warn('[ChMAF:Tpl] refreshTemplates: контейнеры #pages/#7str не найдены — кнопки не отрисованы (панель AF_helper не построена)');
+        return;
+    }
+
+    // Статистика отрисовки — помогает понять, «часть шаблонов» куда делась
+    const tplPageStats = {
+        rows: table.length,
+        pages: 0,
+        buttons: 0,
+        unknownType: new Set()
+    };
 
     pagesContainer.innerHTML = '';
     document.querySelectorAll('[id$="page"]').forEach((el) => el.remove());
@@ -491,6 +503,7 @@ function refreshTemplates() {
                 pageBtn.addEventListener('click', pageClick);
                 pagesContainer.appendChild(pageBtn);
                 pageType = row[2];
+                tplPageStats.pages++;
                 currentPage = document.createElement('div');
                 currentPage.id = `${countOfPages}page`;
                 contentArea.appendChild(currentPage);
@@ -510,9 +523,16 @@ function refreshTemplates() {
                     templateBtn.addEventListener('click', (event) => window.buttonsFromDoc?.(event.target.textContent));
                     if (addTmpFlag === 0 && currentRow) currentRow.appendChild(templateBtn);
                     else if (addTmpElement) addTmpElement.appendChild(templateBtn);
+                    tplPageStats.buttons++;
                 } else if (pageType === 'Серверные') {
-                    templateBtn.addEventListener('click', () => window.servFromDoc?.());
+                    // ⚡ Передаём имя кнопки явно: раньше вызов был без аргументов,
+                    // и на macOS (клик не ставит focus) servFromDoc не мог определить
+                    // имя и шаблон молча не отправлялся.
+                    templateBtn.addEventListener('click', () => window.servFromDoc?.(row[0]));
                     if (currentRow) currentRow.appendChild(templateBtn);
+                    tplPageStats.buttons++;
+                } else {
+                    tplPageStats.unknownType.add(`${String(pageType)} (${row[0]})`);
                 }
                 break;
             }
@@ -520,6 +540,19 @@ function refreshTemplates() {
     }
     bindAddTmpToggle(addTmpElement);
     document.getElementById('0_page_button')?.click();
+
+    // Итоговый лог отрисовки: если у коллеги «часть шаблонов не грузится» —
+    // здесь видно, сколько строк/страниц/кнопок реально дошло до DOM.
+    console.log('[ChMAF:Tpl] refreshTemplates отрисован:', {
+        rows: tplPageStats.rows,
+        pages: tplPageStats.pages,
+        buttons: tplPageStats.buttons,
+        unknownPageTypes: tplPageStats.unknownType.size ? Array.from(tplPageStats.unknownType) : []
+    });
+    if (tplPageStats.unknownType.size) {
+        console.warn('[ChMAF:Tpl] строки с неизвестным типом страницы (кнопки НЕ отрисованы):',
+            Array.from(tplPageStats.unknownType));
+    }
 
     function buildServerInputsSection() {
         const linkRow = makeRow();
@@ -553,10 +586,24 @@ function refreshTemplates() {
             }
             try {
                 const response = await fetch(SERVER_THEMES_SCRIPT_URL);
-                const data = await response.json();
-                data.result?.forEach((item) => addOption(themeSelect, item[3], item[4]));
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const text = await response.text();
+                if (text.trim().startsWith('<')) {
+                    throw new Error('Сервер вернул HTML (404?)');
+                }
+
+                const data = JSON.parse(text);
+                if (data.result) {
+                    data.result.forEach((item) => addOption(themeSelect, item[3], item[4]));
+                }
                 clearInterval(themesInterval);
-            } catch (e) { console.error('Ошибка загрузки серверных тем:', e); }
+            } catch (e) {
+                console.error('[ChMAF] Ошибка загрузки серверных тем:', e);
+                // Не показываем тост каждый раз, чтобы не спамить, только в консоль
+                // window.showCustomAlert?.('⚠️ Не удалось загрузить темы серверных', 'warning');
+                clearInterval(themesInterval); // Останавливаем попытки, чтобы не спамить в консоль
+            }
         }, 4000);
         window.cleanupRegistry?.register(() => clearInterval(themesInterval));
         countOfStr++;
