@@ -1,1553 +1,3536 @@
-// --- VARIABLES & STATE ---
-let chosentheme;
-let pureArray = [];
-let filteredArrayTags = [];
-let cleanedarray = [];
-let themesarray = [];
-let avgCsatCountVar;
-let countsArray = [];
-let countsCountryArray = [];
-let countsArrayInterval = [];
-let testarray = [];
-let chekopersarr = [];
-let newarray = [];
-let arrofthemes = [];
-let payloadarray = [];
-let chatswithmarksarray = [];
-let checkmarksarr = [];
-let operstagsarray = [];
-let otherfilters = "off";
-let keyMatch = "Высокий";
-let currentTableData = [];
-let isDescending = true; // Сортировка по умолчанию DESC
-let lastTableParams = null;
-let criticalChats = new Map();
-let dataToRender = [];
+/* ============================================================
+   AF Grabber — compact edition
+   Зависимости проекта: createWindow(), afApiFetch()
+   Публичная функция открытия: getopenGrabberButtonPress()
+   ============================================================ */
 
-// STATE ДЛЯ УНИВЕРСАЛЬНЫХ ФИЛЬТРОВ И ГРАФИКОВ
-let tableColumnFilters = {};
-let currentFilterColIndex = -1;
-let currentChartState = null;
+(() => {
+    'use strict';
 
-const timeOptions = {
-    timeZone: 'Europe/Moscow',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric'
-};
+    const API = 'https://skyeng.autofaq.ai/api';
+    const SERVICE_ID = '361c681b-340a-4e47-9342-c7309e27e7b5';
 
-const categoryMap = [
-    { key: "Категория: Техподдержка 2-я линия crm2", label: "2ЛТП" },
-    { key: "Категория: Техподдержка исход crm2", label: "ТП исход" },
-    { key: "Категория: Teachers Care crm2", label: "Teachers Care" },
-    { key: "Категория: Исходящие звонки (crm2)", label: "Исходящие звонки (crm2)" },
-    { key: "Категория: Кризис менеджеры", label: "Кризис менеджеры" }
-];
+    const OPERATOR_GROUPS = new Set([
+        'c7bbb211-a217-4ed3-8112-98728dc382d8',
+        '8266dbb1-db44-4910-8b5f-a140deeec5c0'
+    ]);
 
-// --- THEMES ---
-const themes = [
-    { value: "parseallthemes", label: "ALL", style: "background-color:#0d9488; color:white; font-weight:700;" },
-    { value: "parsenothemes", label: "Without themes", style: "background-color:#e11d48; color:white; font-weight:700;" },
-    { group: "skmob", label: "Skyeng👨‍🎓Mob" },
-    { value: "1804", label: "📱‍👨‍🎓Авторизация" }, { value: "1805", label: "📱‍👨‍🎓Домашка" }, { value: "1806", label: "📱‍👨‍🎓Оплата" }, { value: "1807", label: "📱‍👨‍🎓Профиль" }, { value: "1808", label: "📱‍👨‍🎓Тренажер слов" }, { value: "1809", label: "📱‍👨‍🎓Уроки" }, { value: "1810", label: "📱‍👨‍🎓Чат" },
-    { group: "tmob", label: "Teachers👽Mob" },
-    { value: "1833", label: "📱👽Авторизация" }, { value: "1836", label: "📱👽Виджет расписания" }, { value: "1839", label: "📱👽Чат" }, { value: "1835", label: "📱👽Виджет финансов" }, { value: "1838", label: "📱👽Профиль" }, { value: "1840", label: "📱👽3Сторис" }, { value: "1837", label: "📱👽Страница расписания" }, { value: "1834", label: "📱👽Страница финансов" },
-    { group: "sksmpartapp", label: "Skysmart👪родит" },
-    { value: "1884", label: "📱👪Другое" }, { value: "1883", label: "📱👪Материалы" }, { value: "1880", label: "📱👪Предметы и баланс" }, { value: "1881", label: "📱👪Профиль родителя" }, { value: "1879", label: "📱👪Расписание" }, { value: "1882", label: "📱👪Чат" },
-    { group: "skyproapp", label: "Приложение Skypro" },
-    { value: "1904", label: "Skypro App - Виджет входа на урок" },
-    { group: "solanka", label: "Different" },
-    { value: "2034", label: "🚫Прочее" }, { value: "2030", label: "ⓂSlack-проблемы со входом" }, { value: "69", label: "☎Проблемы с телефонией" },
-    { group: "payf", label: "Проблемы с оплатой" },
-    { value: "1077", label: "💳Вина школы" }, { value: "1658", label: "💳Консультация" }, { value: "1661", label: "💳Карта У" }, { value: "1662", label: "💳Сбой оплаты" }, { value: "1660", label: "💳Подписки" },
-    { group: "hwtr", label: "Проблемы с ДЗ" },
-    { value: "1744", label: "💼Контент" }, { value: "1745", label: "💼Оценка" }, { value: "1746", label: "💼Словарь" }, { value: "1747", label: "💼Упражнение" },
-    { group: "svyaz", label: "Проблемы связь" },
-    { value: "1581", label: "💻ОС/брауз ниж мин" }, { value: "1589", label: "💻Консультация работы связи" }, { value: "1582", label: "💻Корп сеть/ус-во" }, { value: "1583", label: "💻ОС/браузер" }, { value: "1586", label: "💻ПК" }, { value: "1584", label: "💻Гарнитура" }, { value: "1585", label: "💻Камера" }, { value: "1580", label: "💻Блокировалось ПО" }, { value: "1594", label: "💻Не подерж браузер" }, { value: "1595", label: "💻Не подерж камера гарнитура пк" }, { value: "1593", label: "💻Сбой платф" }, { value: "1592", label: "💻Сб задерж кам" }, { value: "1587", label: "💻Инет ниж мин" }, { value: "1590", label: "💻Сб плат блок прерыв связь" }, { value: "1588", label: "💻Хар ниж мин" }, { value: "1591", label: "💻Сб задерж звука" },
-    { group: "lkp", label: "Проблемы ЛКП" },
-    { value: "1721", label: "👽ЛКП - Группа" }, { value: "1714", label: "👽ЛКП - Чат" }, { value: "1719", label: "👽ЛКП - Финансы" }, { value: "1717", label: "👽ЛКП - Упражнения" }, { value: "1712", label: "👽ЛКП - Карта роста" }, { value: "1716", label: "👽ЛКП - Настройки" }, { value: "1718", label: "👽ЛКП - Перерыв" }, { value: "1715", label: "👽ЛКП - Профиль" }, { value: "1720", label: "👽ЛКП - Работы на проверку" }, { value: "1713", label: "👽ЛКП - Расписание" },
-    { group: "lku", label: "Проблемы ЛКУ" },
-    { value: "1708", label: "👨‍🎓ЛКУ - Чат" }, { value: "1710", label: "👨‍🎓ЛКУ - Профиль" }, { value: "1706", label: "👨‍🎓ЛКУ - Виджет прогресса" }, { value: "1707", label: "👨‍🎓ЛКУ - История занятий/портфолио" }, { value: "1709", label: "👨‍🎓ЛКУ - Семья" }, { value: "1711", label: "👨‍🎓ЛКУ - Настройки" }, { value: "1705", label: "👨‍🎓ЛКУ - Навыки" }, { value: "1704", label: "👨‍🎓ЛКУ - Грамматика" },
-    { group: "problvh", label: "Проблемы вход" },
-    { value: "1632", label: "🔐Не привяз почт/тел" }, { value: "1635", label: "🔐Данные для входа" }, { value: "1634", label: "🔐Сброс пароля" }, { value: "1631", label: "🔐Консультация авторизации" }, { value: "1633", label: "🔐Сбой авторизации" },
-    { group: "problpodk", label: "Проблемы подкл" },
-    { value: "1624", label: "🔌Истекла подписка" }, { value: "1627", label: "🔌Консультациия по входу на урок" }, { value: "1629", label: "🔌Нет кнопки входа" }, { value: "1628", label: "🔌У не в ГУ" }, { value: "1625", label: "🔌Ур в др вр" }, { value: "1626", label: "🔌У отпуск" }, { value: "1630", label: "🔌Неактивна кнопка входа" },
-    { group: "lesfunc", label: "Функционал урок" },
-    { value: "1772", label: "👨‍🎓STT" }, { value: "1773", label: "👽TTT" }, { value: "1767", label: "📎Вложения" }, { value: "1771", label: "🖥Демонстрация экр" }, { value: "1768", label: "⌨Доска" }, { value: "2037", label: "📝Заметки" }, { value: "1775", label: "💨Отправка ДЗ на уроке" }, { value: "1770", label: "🔀Перекл материалов" }, { value: "1776", label: "🎵/📽Ауд/вид плеер" }, { value: "1769", label: "📙Словарь на уроке" }, { value: "1774", label: "🎯Упражнения на уроке" },
-    { group: "feedbk", label: "Отзывы и пожел" },
-    { value: "1970", label: "💭Vim-контент" }, { value: "1971", label: "💭Vim-оценка" }, { value: "1972", label: "💭Vim-словарь" }, { value: "1973", label: "💭Vim-упражнения" }, { value: "1966", label: "💭ЛК-ОС род" }, { value: "1965", label: "💭ЛК-перенос отмена ур" }, { value: "1967", label: "💭ЛК-профиль" }, { value: "1968", label: "💭ЛК-семья" }, { value: "1969", label: "💭ЛК чат" }, { value: "1974", label: "💭App Skyeng" }, { value: "1975", label: "💭App Teachers" }, { value: "1979", label: "💭App Skypro" }, { value: "1976", label: "💭App класс" }, { value: "1977", label: "💭App решения" }, { value: "1978", label: "💭App Skysmart род" }, { value: "1980", label: "💭Прочее" },
-    { group: "difCCthemes", label: "Разные тематики с КЦ" },
-    { value: "479", label: "💰КЦ-Проблемы с оплатой" }, { value: "63", label: "💻КЦ-Нет видео или звука" }, { value: "68", label: "📍КЦ-Другие тех проблемы" }, { value: "66", label: "💼КЦ-ДЗ и вирт класс" }, { value: "109", label: "💼КЦ-Сброс" }, { value: "73", label: "🏝КЦ-Отпуск У" }, { value: "107", label: "📱КЦ-Проч обр по Skyeng App" }, { value: "1249", label: "💋КЦ-Talks" }, { value: "2426", label: "Запланирована связь с пользователем" }
-];
+    const DEPARTMENTS = [
+        ['Техподдержка 2-я линия crm2', '2ЛТП'],
+        ['Техподдержка исход crm2', 'ТП исход'],
+        ['Teachers Care crm2', 'Teachers Care'],
+        ['Исходящие звонки (crm2)', 'Исходящие звонки'],
+        ['Кризис менеджеры', 'Кризис менеджеры']
+    ];
 
-// --- CYBER-DARK UI & HTML TEMPLATE ---
-var win_Grabber = `
+    const TAGS = [
+        ['server_issues', 'Сервер'],
+        ['untargeted', 'Нецелевой'],
+        ['request_forwarded_to_tc', 'Передано TC'],
+        ['request_forwarded_to_channel_qa', 'Передано QA'],
+        ['request_forwarded_to_development', 'Передано разработке'],
+        ['refusal_of_help', 'Отказ от помощи'],
+        ['request_forwarded_to_outgoing_tp_crm2', 'Передано ТП исход'],
+        ['queue', 'Очередь'],
+        ['oo', 'Ошибка КЦ']
+    ];
+
+    /*
+     * Полный каталог тем. Строка: ID|Название.
+     * Группы используются только как заголовки списка.
+     */
+    const THEME_GROUPS = [
+        {
+            name: 'Skyeng · мобильное приложение',
+            data: `
+1804|Авторизация
+1805|Домашка
+1806|Оплата
+1807|Профиль
+1808|Тренажёр слов
+1809|Уроки
+1810|Чат`
+        },
+        {
+            name: 'Teachers · мобильное приложение',
+            data: `
+1833|Авторизация
+1836|Виджет расписания
+1839|Чат
+1835|Виджет финансов
+1838|Профиль
+1840|Сторис
+1837|Страница расписания
+1834|Страница финансов`
+        },
+        {
+            name: 'Skysmart · приложение родителя',
+            data: `
+1884|Другое
+1883|Материалы
+1880|Предметы и баланс
+1881|Профиль родителя
+1879|Расписание
+1882|Чат`
+        },
+        {
+            name: 'Skypro',
+            data: `
+1904|Skypro App — виджет входа на урок`
+        },
+        {
+            name: 'Разное',
+            data: `
+2034|Прочее
+2030|Slack — проблемы со входом
+69|Проблемы с телефонией`
+        },
+        {
+            name: 'Проблемы с оплатой',
+            data: `
+1077|Вина школы
+1658|Консультация
+1661|Карта У
+1662|Сбой оплаты
+1660|Подписки`
+        },
+        {
+            name: 'Проблемы с ДЗ',
+            data: `
+1744|Контент
+1745|Оценка
+1746|Словарь
+1747|Упражнение`
+        },
+        {
+            name: 'Проблемы со связью',
+            data: `
+1581|ОС/браузер ниже минимальных требований
+1589|Консультация по работе связи
+1582|Корпоративная сеть/устройство
+1583|ОС/браузер
+1586|ПК
+1584|Гарнитура
+1585|Камера
+1580|Блокировка ПО
+1594|Неподдерживаемый браузер
+1595|Неподдерживаемое оборудование
+1593|Сбой платформы
+1592|Задержка камеры
+1587|Интернет ниже минимума
+1590|Блокировка/прерывание связи
+1588|Характеристики ниже минимума
+1591|Задержка звука`
+        },
+        {
+            name: 'Проблемы ЛКП',
+            data: `
+1721|Группа
+1714|Чат
+1719|Финансы
+1717|Упражнения
+1712|Карта роста
+1716|Настройки
+1718|Перерыв
+1715|Профиль
+1720|Работы на проверку
+1713|Расписание`
+        },
+        {
+            name: 'Проблемы ЛКУ',
+            data: `
+1708|Чат
+1710|Профиль
+1706|Виджет прогресса
+1707|История занятий/портфолио
+1709|Семья
+1711|Настройки
+1705|Навыки
+1704|Грамматика`
+        },
+        {
+            name: 'Проблемы со входом',
+            data: `
+1632|Не привязаны почта/телефон
+1635|Данные для входа
+1634|Сброс пароля
+1631|Консультация по авторизации
+1633|Сбой авторизации`
+        },
+        {
+            name: 'Проблемы с подключением',
+            data: `
+1624|Истекла подписка
+1627|Консультация по входу на урок
+1629|Нет кнопки входа
+1628|Ученик не в ГУ
+1625|Урок в другое время
+1626|Ученик в отпуске
+1630|Неактивна кнопка входа`
+        },
+        {
+            name: 'Функционал урока',
+            data: `
+1772|STT
+1773|TTT
+1767|Вложения
+1771|Демонстрация экрана
+1768|Доска
+2037|Заметки
+1775|Отправка ДЗ на уроке
+1770|Переключение материалов
+1776|Аудио/видеоплеер
+1769|Словарь на уроке
+1774|Упражнения на уроке`
+        },
+        {
+            name: 'Отзывы и пожелания',
+            data: `
+1970|Vim — контент
+1971|Vim — оценка
+1972|Vim — словарь
+1973|Vim — упражнения
+1966|ЛК — ОС родителя
+1965|ЛК — перенос/отмена урока
+1967|ЛК — профиль
+1968|ЛК — семья
+1969|ЛК — чат
+1974|Skyeng App
+1975|Teachers App
+1979|Skypro App
+1976|Приложение «Класс»
+1977|Приложение «Решения»
+1978|Skysmart для родителей
+1980|Прочее`
+        },
+        {
+            name: 'Тематики КЦ',
+            data: `
+479|Проблемы с оплатой
+63|Нет видео или звука
+68|Другие технические проблемы
+66|ДЗ и виртуальный класс
+109|Сброс
+73|Отпуск ученика
+107|Skyeng App — прочее
+1249|Talks
+2426|Запланирована связь с пользователем`
+        }
+    ];
+
+    const themeNames = new Map();
+
+    for (const group of THEME_GROUPS) {
+        group.items = group.data.trim().split('\n').map(line => {
+            const separator = line.indexOf('|');
+            const id = line.slice(0, separator);
+            const name = line.slice(separator + 1);
+
+            themeNames.set(id, `${group.name} · ${name}`);
+
+            return { id, name };
+        });
+
+        delete group.data;
+    }
+
+    const state = {
+        operators: [],
+        records: [],
+        columnFilters: new Map(),
+        busy: false,
+
+        analytics: {
+            group: 'theme',
+            mode: 'timeline',
+            view: 'chart',
+            selected: new Set(),
+            initializedFor: ''
+        }
+    };
+
+    const template = `
 <style>
-.cdu-app-wrapper { display: flex; align-items: flex-start; gap: 15px; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
-.cdu-app-container { display: flex; width: 960px; color: #cbd5e1; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #38bdf8; border-radius: 12px; box-shadow: 0 20px 60px rgba(56, 189, 248, 0.3), 0 0 40px rgba(168, 85, 247, 0.2); overflow: hidden; flex-shrink: 0; position: relative; }
-.cdu-app-container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #38bdf8, #a855f7, transparent); animation: shimmer 3s infinite; }
-@keyframes shimmer { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-.cdu-sidebar { display: none; flex-direction: column; gap: 15px; width: 260px; flex-shrink: 0; }
-.cdu-main-col { width: 100%; display: flex; flex-direction: column; padding: 15px; }
-.cdu-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%); border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3); cursor: move; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1); transition: all 0.3s ease; }
-.cdu-topbar:hover { border-color: rgba(56, 189, 248, 0.6); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15); }
-.cdu-btn { background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(56, 189, 248, 0.05) 100%); border: 1px solid #38bdf8; color: #38bdf8; padding: 6px 14px; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 11px; letter-spacing: 1px; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1); display: inline-flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
-.cdu-btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(56, 189, 248, 0.3); transition: width 0.4s, height 0.4s, top 0.4s, left 0.4s; }
-.cdu-btn:hover:not(:disabled)::before { width: 300px; height: 300px; top: -150px; left: -150px; }
-.cdu-btn:hover:not(:disabled) { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); color: #0f172a; box-shadow: 0 0 20px rgba(56, 189, 248, 0.6), 0 0 40px rgba(56, 189, 248, 0.3); text-shadow: none; transform: translateY(-2px); }
-.cdu-btn:disabled { border-color: #334155; color: #475569; box-shadow: none; cursor: not-allowed; background: rgba(51, 65, 85, 0.2); }
-.cdu-btn-hide { border-color: #f43f5e; color: #f43f5e; box-shadow: 0 0 10px rgba(244, 63, 94, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1); background: linear-gradient(135deg, rgba(244, 63, 94, 0.1) 0%, rgba(244, 63, 94, 0.05) 100%); }
-.cdu-btn-hide:hover:not(:disabled) { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); color: #fff; box-shadow: 0 0 20px rgba(244, 63, 94, 0.6), 0 0 40px rgba(244, 63, 94, 0.3); transform: translateY(-2px); }
-.cdu-btn-accent { border-color: #a855f7; color: #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1); background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%); }
-.cdu-btn-accent:hover:not(:disabled) { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); color: #fff; box-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.3); transform: translateY(-2px); }
-.cdu-progress-container { flex-grow: 1; max-width: 450px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); height: 18px; border-radius: 9px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.3); margin-left: 20px; box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 15px rgba(56, 189, 248, 0.1); }
-.cdu-progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #a855f7, #f43f5e); background-size: 200% 100%; animation: progressGlow 2s ease infinite; color: #fff; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: width 0.3s ease; text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); box-shadow: 0 0 20px rgba(56, 189, 248, 0.5); }
-@keyframes progressGlow { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-.cdu-panel { background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%); border: 1px solid #38bdf8; border-radius: 12px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1); overflow: hidden; display: flex; flex-direction: column; position: relative; }
-.cdu-panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, #38bdf8, #a855f7, transparent); }
-.cdu-date-picker { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #38bdf8; color: #e2e8f0; padding: 4px 8px; border-radius: 4px; outline: none; transition: all 0.3s ease; font-family: monospace; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
-.cdu-date-picker:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1); transform: translateY(-1px); }
-.cdu-filter-box { background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; cursor: move; text-align: center; padding: 8px; font-size: 14px; flex: 1; margin: 0 5px; transition: all 0.3s ease; user-select: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1); position: relative; overflow: hidden; }
-.cdu-filter-box::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.2), transparent); transition: left 0.5s; }
-.cdu-filter-box:hover { border-color: #38bdf8; color: #38bdf8; box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
-.cdu-filter-box:hover::before { left: 100%; }
-.glowing-border-animation { border-color: #a855f7 !important; box-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important; color: #a855f7 !important; text-shadow: 0 0 10px rgba(168, 85, 247, 0.5); animation: pulseGlow 2s ease-in-out infinite; }
-@keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.3); } 50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.8), 0 0 60px rgba(168, 85, 247, 0.5); } }
-.cdu-options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(56, 189, 248, 0.3); padding: 10px; border-radius: 8px; margin: 5px; max-height: 200px; overflow-y: auto; box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 15px rgba(56, 189, 248, 0.1); }
-.cdu-checkbox-label { display: flex; align-items: center; font-size: 13px; color: #cbd5e1; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.3s ease; position: relative; }
-.cdu-checkbox-label::before { content: ''; position: absolute; left: 0; top: 0; width: 0; height: 100%; background: linear-gradient(90deg, rgba(56, 189, 248, 0.1), transparent); transition: width 0.3s ease; border-radius: 4px; z-index: -1; }
-.cdu-checkbox-label:hover { background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(168, 85, 247, 0.1) 100%); color: #38bdf8; transform: translateX(3px); }
-.cdu-checkbox-label:hover::before { width: 100%; }
-.cdu-checkbox-label input[type="checkbox"] { accent-color: #38bdf8; margin-right: 8px; width: 14px; height: 14px; cursor: pointer; transition: transform 0.2s ease; }
-.cdu-checkbox-label input[type="checkbox"]:hover { transform: scale(1.1); }
-.cdu-select { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #38bdf8; color: #e2e8f0; padding: 6px; border-radius: 4px; outline: none; margin: 0 15px; max-width: 300px; font-size: 13px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05); transition: all 0.3s ease; cursor: pointer; }
-.cdu-select:hover { border-color: #a855f7; box-shadow: 0 6px 20px rgba(168, 85, 247, 0.3); transform: translateY(-1px); }
-.cdu-select:focus { border-color: #a855f7; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
-.cdu-table-wrapper { flex-grow: 1; overflow-y: auto; margin-top: 15px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3); position: relative; background: linear-gradient(135deg, #0b0f19 0%, #0f172a 100%); max-height: 400px; box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.1); }
-.cdu-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.cdu-table th { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #38bdf8; padding: 10px 5px; position: sticky; top: 0; text-transform: uppercase; border-bottom: 2px solid #38bdf8; z-index: 10; font-weight: 600; user-select: none; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
-.cdu-table th:hover { background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(56, 189, 248, 0.1) 100%); cursor: pointer; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); transform: translateY(-1px); }
-.cdu-table td { padding: 8px 5px; border-bottom: 1px solid rgba(30, 41, 59, 0.5); color: #e2e8f0; transition: all 0.2s ease; }
-.cdu-table tr.rowOfChatGrabbed:hover td { background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(168, 85, 247, 0.1) 100%); color: #fff; cursor: pointer; box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.1); }
-.cdu-stat-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; margin-top: 10px; margin-right: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2); position: relative; overflow: hidden; }
-.cdu-stat-badge::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); transition: left 0.6s; }
-.cdu-stat-badge:hover::before { left: 100%; }
-.cdu-stat-primary { background: linear-gradient(135deg, rgba(56, 189, 248, 0.3) 0%, rgba(56, 189, 248, 0.2) 100%); border: 1px solid #38bdf8; color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
-.cdu-stat-accent { background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0.2) 100%); border: 1px solid #a855f7; color: #a855f7; text-shadow: 0 0 10px rgba(168, 85, 247, 0.5); }
-.cdu-stat-success { background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%); border: 1px solid #10b981; color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
-.cdu-tools-header { font-size: 12px; color: #94a3b8; text-transform: uppercase; margin: 10px 0 5px; letter-spacing: 1px; border-bottom: 1px solid rgba(56, 189, 248, 0.3); padding-bottom: 3px; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); position: relative; }
-.cdu-tools-header::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 30%; height: 2px; background: linear-gradient(90deg, #38bdf8, transparent); }
-.cdu-input-text { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #e2e8f0; outline: none; margin-bottom: 10px; transition: all 0.3s ease; box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 10px rgba(56, 189, 248, 0.1); }
-.cdu-input-text:focus { border-color: #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), inset 0 2px 8px rgba(0, 0, 0, 0.6); transform: translateY(-1px); }
-/* Скроллбары только внутри контейнера модуля (раньше перекрашивали всю страницу) */
-.cdu-app-container ::-webkit-scrollbar { width: 8px; height: 8px; }
-.cdu-app-container ::-webkit-scrollbar-track { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 4px; box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6); }
-.cdu-app-container ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #334155 0%, #475569 100%); border-radius: 4px; box-shadow: 0 0 6px rgba(56, 189, 248, 0.3); transition: background 0.3s ease; }
-.cdu-app-container ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); box-shadow: 0 0 12px rgba(56, 189, 248, 0.6); }
+#AF_Grabber .ag,
+#ag-analytics,
+#ag-column-popover {
+    --ag-bg: #11151d;
+    --ag-panel: #1a202a;
+    --ag-panel-2: #232b37;
+    --ag-border: #353e4b;
+    --ag-text: #f2f2ef;
+    --ag-muted: #a8afba;
+    --ag-accent: #e1b875;
+    --ag-accent-2: #f1d6a9;
+    --ag-error: #f1a5a5;
 
-/* --- Улучшенная панель расширенных фильтров --- */
-.cdu-adv-panel {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
-    border: 1px solid #38bdf8;
-    border-radius: 12px;
-    width: 100%;
-    padding: 20px;
     box-sizing: border-box;
-    margin-bottom: 15px;
-    box-shadow: 0 0 40px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    position: relative;
-}
-.cdu-adv-panel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #38bdf8, #a855f7, transparent);
-    animation: shimmer 3s infinite;
-}
-.cdu-filter-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-}
-.cdu-filter-card {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    border-radius: 10px;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    position: relative;
-    overflow: hidden;
-}
-.cdu-filter-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.5s;
-}
-.cdu-filter-card:hover {
-    border-color: #38bdf8;
-    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-}
-.cdu-filter-card:hover::before {
-    opacity: 1;
-}
-.cdu-filter-card-title {
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    text-align: center;
-    padding-bottom: 8px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid rgba(56, 189, 248, 0.3);
-    text-shadow: 0 0 10px currentColor;
-    position: relative;
-}
-.cdu-filter-card-title::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 2px;
-    background: currentColor;
-    transition: width 0.3s ease;
-}
-.cdu-filter-card:hover .cdu-filter-card-title::after {
-    width: 100%;
-}
-.cdu-filter-card .cdu-checkbox-label {
-    font-size: 12px;
-    padding: 5px 8px;
-    border-radius: 6px;
-}
-.cdu-filter-card .cdu-checkbox-label:hover {
-    background: rgba(56, 189, 248, 0.08);
-}
-.cdu-search-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 18px;
-    padding-top: 18px;
-    border-top: 1px solid #334155;
-}
-.cdu-search-row .cdu-input-text {
-    margin-bottom: 0;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    border-color: rgba(56, 189, 248, 0.4);
-    font-size: 13px;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px rgba(56, 189, 248, 0.1);
-}
-.cdu-search-row .cdu-input-text:focus {
-    border-color: #a855f7;
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5), inset 0 2px 8px rgba(0, 0, 0, 0.6);
-    transform: translateY(-2px);
-}
-@media (max-width: 900px) {
-    .cdu-filter-grid { grid-template-columns: 1fr; }
-    .cdu-search-row { grid-template-columns: 1fr; }
+    color: var(--ag-text);
+    font: 12px/1.45 Inter, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+    color-scheme: dark;
 }
 
-.cdu-app-wrapper {
-zoom: 0.9;
+#AF_Grabber .ag *,
+#ag-analytics *,
+#ag-column-popover * {
+    box-sizing: border-box;
 }
-.cdu-app-container {
-    width: 768px; /* было 960px → ужали под scale(0.8) */
+
+#AF_Grabber .ag {
+    width: min(760px, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+    padding: 16px;
+    border: 1px solid #52505a;
+    border-radius: 16px;
+    background: var(--ag-bg);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .5);
+}
+
+#AF_Grabber .ag button,
+#AF_Grabber .ag input,
+#AF_Grabber .ag select,
+#ag-analytics button,
+#ag-column-popover button {
+    font: inherit;
+}
+
+#AF_Grabber .ag button,
+#ag-analytics button,
+#ag-column-popover button {
+    min-height: 30px;
+    padding: 5px 10px;
+    border: 1px solid var(--ag-border);
+    border-radius: 7px;
+    background: var(--ag-panel-2);
+    color: var(--ag-text);
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+}
+
+#AF_Grabber .ag button:hover:not(:disabled),
+#ag-analytics button:hover:not(:disabled),
+#ag-column-popover button:hover:not(:disabled) {
+    border-color: var(--ag-accent);
+    background: #303a47;
+}
+
+#AF_Grabber .ag button:disabled,
+#ag-analytics button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+#AF_Grabber .ag .ag-primary {
+    border-color: var(--ag-accent);
+    background: var(--ag-accent);
+    color: #171714;
+    font-weight: 750;
+}
+
+#AF_Grabber .ag .ag-primary:hover:not(:disabled) {
+    background: var(--ag-accent-2);
+}
+
+#AF_Grabber .ag input[type="date"],
+#AF_Grabber .ag input[type="search"],
+#AF_Grabber .ag select,
+#ag-analytics input[type="search"] {
+    min-height: 31px;
+    padding: 5px 8px;
+    border: 1px solid var(--ag-border);
+    border-radius: 7px;
+    outline: none;
+    background: #171d26;
+    color: var(--ag-text);
+}
+
+#AF_Grabber .ag input:focus,
+#AF_Grabber .ag select:focus,
+#ag-analytics input:focus {
+    border-color: var(--ag-accent);
+}
+
+#AF_Grabber .ag :focus-visible,
+#ag-analytics :focus-visible,
+#ag-column-popover :focus-visible {
+    outline: 2px solid var(--ag-accent);
+    outline-offset: 2px;
+}
+
+#AF_Grabber .ag-head,
+#AF_Grabber .ag-row,
+#AF_Grabber .ag-period,
+#AF_Grabber .ag-result-head,
+#ag-analytics .ag-analytics-head,
+#ag-analytics .ag-analytics-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#AF_Grabber .ag-head {
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+#AF_Grabber .ag-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+#AF_Grabber .ag-mark {
+    display: grid;
+    place-items: center;
+    width: 31px;
+    height: 31px;
+    flex: 0 0 31px;
+    border: 1px solid #806b4c;
+    border-radius: 8px;
+    color: var(--ag-accent);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+#AF_Grabber .ag-head h2 {
+    margin: 0;
+    font-size: 15px;
+    letter-spacing: -.02em;
+}
+
+#AF_Grabber .ag-caption {
+    color: var(--ag-muted);
+    font-size: 11px;
+}
+
+#AF_Grabber .ag-controls {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 9px;
+}
+
+#AF_Grabber .ag-period {
+    flex-wrap: wrap;
+}
+
+#AF_Grabber .ag-period input[type="date"] {
+    width: 125px;
+}
+
+#AF_Grabber .ag-period .ag-caption {
+    white-space: nowrap;
+}
+
+#AF_Grabber .ag-theme-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 8px;
+    margin-top: 9px;
+}
+
+#AF_Grabber .ag-theme-row .ag-theme-dropdown {
+    width: 100%;
+    min-width: 0;
+}
+
+#AF_Grabber .ag-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin: 13px 0;
+}
+
+#AF_Grabber .ag details {
+    border: 1px solid var(--ag-border);
+    border-radius: 8px;
+    background: var(--ag-panel);
+}
+
+#AF_Grabber .ag details[open] {
+    flex: 1 1 100%;
+    order: 1;
+}
+
+#AF_Grabber .ag summary {
+    padding: 7px 10px;
+    color: var(--ag-accent-2);
+    cursor: pointer;
+    user-select: none;
+}
+
+#AF_Grabber .ag-detail-body {
+    padding: 9px;
+    border-top: 1px solid var(--ag-border);
+}
+
+#AF_Grabber .ag-checkgrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3px;
+    max-height: 160px;
+    overflow: auto;
+}
+
+#AF_Grabber .ag-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+    padding: 4px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#AF_Grabber .ag-check:hover {
+    background: #303a47;
+}
+
+#AF_Grabber .ag-check input {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    accent-color: var(--ag-accent);
+}
+
+#AF_Grabber .ag-check span {
+    overflow-wrap: anywhere;
+}
+
+#AF_Grabber .ag-filter-columns,
+#AF_Grabber .ag-search-columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+#AF_Grabber .ag-search-columns {
+    grid-template-columns: 1fr 1fr;
+    margin-top: 9px;
+}
+
+#AF_Grabber .ag-search-columns input {
+    width: 100%;
+}
+
+#AF_Grabber .ag-filter-section {
+    padding: 8px;
+    border: 1px solid var(--ag-border);
+    border-radius: 7px;
+}
+
+#AF_Grabber .ag-filter-section strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--ag-accent-2);
+}
+
+#AF_Grabber .ag-status {
+    min-height: 18px;
+    margin: 5px 0;
+    color: var(--ag-muted);
+}
+
+#AF_Grabber .ag-status[data-error="true"] {
+    color: var(--ag-error);
+}
+
+#AF_Grabber .ag-progress {
+    height: 4px;
+    overflow: hidden;
+    border-radius: 5px;
+    background: #333b47;
+}
+
+#AF_Grabber .ag-progress > span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--ag-accent);
+    transition: width .2s;
+}
+
+#AF_Grabber .ag-result-head {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: 13px 0 8px;
+}
+
+#AF_Grabber .ag-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+#AF_Grabber .ag-metric {
+    padding: 5px 8px;
+    border: 1px solid var(--ag-border);
+    border-radius: 6px;
+    background: var(--ag-panel);
+    color: var(--ag-muted);
+}
+
+#AF_Grabber .ag-metric b {
+    color: var(--ag-text);
+}
+
+#AF_Grabber .ag-table-wrap,
+#ag-analytics .ag-analytics-table {
+    max-height: min(46vh, 420px);
+    overflow: auto;
+    border: 1px solid var(--ag-border);
+    border-radius: 8px;
+}
+
+#AF_Grabber .ag table,
+#ag-analytics table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+#AF_Grabber .ag th,
+#ag-analytics th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 8px;
+    border-bottom: 1px solid var(--ag-border);
+    background: #252e3a;
+    color: var(--ag-accent-2);
+    text-align: left;
+    white-space: nowrap;
+}
+
+#AF_Grabber .ag td,
+#ag-analytics td {
+    max-width: 230px;
+    padding: 7px 8px;
+    border-bottom: 1px solid #303844;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#AF_Grabber .ag tbody tr {
+    cursor: pointer;
+}
+
+#AF_Grabber .ag tbody tr:hover td {
+    background: #29333f;
+}
+
+#AF_Grabber .ag-empty {
+    padding: 23px;
+    color: var(--ag-muted);
+    text-align: center;
+}
+
+#ag-column-popover {
+    position: fixed;
+    z-index: 2147483002;
+    width: min(290px, calc(100vw - 20px));
+    max-height: 360px;
+    overflow: auto;
+    padding: 10px;
+    border: 1px solid #6c655b;
+    border-radius: 9px;
+    background: #1c242e;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, .55);
+}
+
+#ag-column-popover[hidden],
+#ag-analytics[hidden],
+#ag-tooltip[hidden] {
+    display: none !important;
+}
+
+#ag-column-popover .ag-popover-list {
+    max-height: 235px;
+    overflow: auto;
+    margin-top: 7px;
+}
+
+#ag-column-popover label {
+    display: flex;
+    gap: 6px;
+    padding: 4px;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+
+#ag-column-popover input {
+    accent-color: #e1b875;
+}
+
+#ag-analytics {
+    position: fixed;
+    top: 45px;
+    left: max(12px, calc((100vw - 980px) / 2));
+    z-index: 2147483000;
+    width: min(980px, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    overflow: hidden;
+    border: 1px solid #58515a;
+    border-radius: 14px;
+    background: #11151d;
+    box-shadow: 0 24px 75px rgba(0, 0, 0, .7);
+}
+
+#ag-analytics .ag-analytics-head {
+    justify-content: space-between;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--ag-border);
+    cursor: grab;
+    touch-action: none;
+}
+
+#ag-analytics .ag-analytics-head strong {
+    font-size: 14px;
+}
+
+#ag-analytics .ag-analytics-body {
+    max-height: calc(100vh - 90px);
+    overflow: auto;
+    padding: 13px;
+}
+
+#ag-analytics .ag-analytics-controls {
+    flex-wrap: wrap;
+    margin-bottom: 11px;
+}
+
+#ag-analytics button[aria-pressed="true"] {
+    border-color: var(--ag-accent);
+    color: var(--ag-accent-2);
+}
+
+#ag-analytics .ag-series-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    margin: 10px 0;
+}
+
+#ag-analytics .ag-series-toolbar input {
+    flex: 1 1 160px;
+    max-width: 240px;
+}
+
+#ag-analytics .ag-series-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-height: 105px;
+    overflow: auto;
+    padding: 2px 0 7px;
+}
+
+#ag-analytics .ag-series {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 300px;
+    padding: 4px 6px;
+    border: 1px solid #404956;
+    border-radius: 6px;
+    background: #1a202a;
+    color: var(--ag-text);
+}
+
+#ag-analytics .ag-series input {
+    margin: 0;
+    accent-color: var(--ag-accent);
+}
+
+#ag-analytics .ag-series-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+#ag-analytics .ag-series .ag-only {
+    min-height: 0;
+    padding: 1px 4px;
+    border: 0;
+    background: transparent;
+    color: var(--ag-muted);
+    font-size: 10px;
+}
+
+#ag-analytics .ag-graph-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--ag-border);
+    border-radius: 8px;
+    background: #171d26;
+}
+
+#ag-analytics svg {
+    display: block;
+}
+
+#ag-analytics .ag-bars {
+    display: grid;
+    gap: 7px;
+    padding: 12px;
+}
+
+#ag-analytics .ag-bar {
+    display: grid;
+    grid-template-columns: minmax(100px, 230px) 1fr 40px;
+    align-items: center;
+    gap: 9px;
+}
+
+#ag-analytics .ag-bar-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#ag-analytics .ag-bar-track {
+    height: 11px;
+    border-radius: 9px;
+    background: #303b49;
+}
+
+#ag-analytics .ag-bar-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: #e1b875;
+}
+
+#ag-analytics .ag-hint {
+    margin: 8px 0 0;
+    color: var(--ag-muted);
+    font-size: 11px;
+}
+
+#ag-tooltip {
+    position: fixed;
+    z-index: 2147483001;
+    max-width: min(330px, calc(100vw - 20px));
+    padding: 8px 10px;
+    border: 1px solid #736753;
+    border-radius: 7px;
+    background: #252e39;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+    color: #f2f2ef;
+    font: 11px/1.5 Inter, sans-serif;
+    pointer-events: none;
+    white-space: pre-line;
+}
+
+@media (max-width: 690px) {
+    #AF_Grabber .ag-controls {
+        grid-template-columns: 1fr;
+    }
+
+    #AF_Grabber .ag-checkgrid,
+    #AF_Grabber .ag-filter-columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #ag-analytics {
+        left: 12px;
+        top: 12px;
+    }
+}
+
+@media (max-width: 440px) {
+    #AF_Grabber .ag-theme-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    #AF_Grabber .ag-theme-row .ag-theme-dropdown {
+        grid-column: 1 / -1;
+    }
+
+    #AF_Grabber .ag-checkgrid,
+    #AF_Grabber .ag-filter-columns,
+    #AF_Grabber .ag-search-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #AF_Grabber .ag *,
+    #ag-analytics * {
+        transition: none !important;
+    }
+}
+
+#AF_Grabber .ag .ag-theme-row .ag-theme-dropdown {
+    position: relative;
+    min-width: 0;
+    width: 100%;
+}
+
+#AF_Grabber .ag .ag-theme-row .ag-theme-dropdown[open] {
+    flex: none;
+    order: 0;
+}
+
+#AF_Grabber .ag .ag-theme-row .ag-theme-dropdown > summary {
+    min-height: 31px;
+    padding: 5px 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ag-text);
+}
+
+#AF_Grabber .ag .ag-theme-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    z-index: 30;
+    width: min(410px, calc(100vw - 45px));
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid #6c655b;
+    border-radius: 9px;
+    background: #202832;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .5);
+}
+
+#AF_Grabber .ag .ag-theme-group {
+    padding: 8px 5px 4px;
+    color: var(--ag-accent);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+#AF_Grabber .ag .ag-theme-group:not(:first-child) {
+    margin-top: 5px;
+    border-top: 1px solid var(--ag-border);
+}
+
+#AF_Grabber .ag .ag-theme-menu .ag-check {
+    padding: 5px 7px;
 }
 </style>
 
-<div class="cdu-app-wrapper">
-    <div class="cdu-app-container">
-        <div class="cdu-main-col">
-            <div class="cdu-topbar chmaf-drag-handle" id="grabdata">
-                <button class="cdu-btn cdu-btn-hide" id="hideMeGrabber">Hide App</button>
-                <button class="cdu-btn cdu-btn-accent" id="GatherStatByThemes" disabled style="margin-left:10px;">🧮 Stats</button>
-                <div class="cdu-progress-container">
-                    <div id="progressBarGrabber" class="cdu-progress-bar">0%</div>
-                </div>
+<div class="ag">
+    <div class="ag-head chmaf-drag-handle">
+        <div class="ag-title">
+            <div class="ag-mark">AF</div>
+            <div>
+                <h2>Аналитика обращений</h2>
+                <div class="ag-caption">Чаты · фильтры · динамика</div>
             </div>
-
-            <div class="cdu-topbar chmaf-drag-handle" id="grabbox" style="justify-content: flex-start; gap: 15px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:12px; font-weight:bold; color:#94a3b8;">Start:</span>
-                    <input class="cdu-date-picker" type="date" name="FirstData" id="dateFromGrab">
-                </div>
-                <div>
-                    <button class="cdu-btn" id="dayminus">◀ -1 Day</button>
-                    <button class="cdu-btn" id="dayplus">+1 Day ▶</button>
-                </div>
-                <div style="display:flex; align-items:center; gap:10px; margin-left:auto;">
-                    <span style="font-size:12px; font-weight:bold; color:#94a3b8;">End:</span>
-                    <input class="cdu-date-picker" type="date" name="LastData" id="dateToGrab">
-                </div>
-            </div>
-
-            <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
-                <div id="opscontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Operators 🦸‍♂️</div>
-                <div id="markscontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Marks 🔢</div>
-                <div id="tagscontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Tags </div>
-                <div id="othercontainer" class="cdu-filter-box chmaf-drag-handle">🔱 Advanced Filters</div>
-            </div>
-
-            <div id="activeoperatorsgroup" class="cdu-options-grid" style="display:none;"></div>
-            <label id="hideselecall" class="cdu-checkbox-label" style="display:none; color:#10b981; margin-left:10px; font-weight:bold;"><input type="checkbox" id="checkthemall"> Select All Operators</label>
-
-            <div id="listofthemarks" class="cdu-options-grid" style="display:none; grid-template-columns: repeat(6, 1fr);">
-                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="5"> 5 🤩</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="4"> 4 🙂</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="3"> 3 😑</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="2"> 2 😠</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="1"> 1 🤬</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="marks" value="undefined"> No marks ⭕</label>
-            </div>
-            <label id="hideselecallmarks" class="cdu-checkbox-label" style="display:none; color:#10b981; margin-left:10px; font-weight:bold;"><input type="checkbox" id="checkthemallmarks"> Select All Marks</label>
-<div id="listofotheroptions" class="cdu-adv-panel" style="display:none;">
-    <div class="cdu-filter-grid">
-        <div class="cdu-filter-card">
-            <div class="cdu-filter-card-title" style="color:#f43f5e;">🔥 Priority</div>
-            <label class="cdu-checkbox-label"><input type="checkbox" checked name="priorityfilter" value="Any"> Any</label>
-            <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Низкий"> Low</label>
-            <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Высокий"> High</label>
-            <label class="cdu-checkbox-label"><input type="checkbox" name="priorityfilter" value="Критический"> Critical</label>
         </div>
-        <div class="cdu-filter-card">
-            <div class="cdu-filter-card-title" style="color:#38bdf8;">🏢 Department</div>
-            <label class="cdu-checkbox-label"><input type="checkbox" checked name="deptfilter" value="Any"> Any</label>
-            <label class="cdu-checkbox-label" title="Техподдержка 1Л CRM (исход)"><input type="checkbox" name="deptfilter" value="Техподдержка исход crm2"> TP Outbound</label>
-            <label class="cdu-checkbox-label" title="Техподдержка 2Л CRM"><input type="checkbox" name="deptfilter" value="Техподдержка 2-я линия crm2"> TP 2L</label>
-            <label class="cdu-checkbox-label" title="Teachers Care"><input type="checkbox" name="deptfilter" value="Teachers Care crm2"> Teachers Care</label>
-            <label class="cdu-checkbox-label" title="Кризис менеджмент"><input type="checkbox" name="deptfilter" value="Кризис менеджеры"> Crisis Management</label>
-            <label class="cdu-checkbox-label" title="Исходящие звонки crm2"><input type="checkbox" name="deptfilter" value="Исходящие звонки (crm2)"> CC Outbound</label>
-        </div>
-        <div class="cdu-filter-card">
-            <div class="cdu-filter-card-title" style="color:#10b981;">👤 User Type</div>
-            <label class="cdu-checkbox-label"><input type="checkbox" checked name="usrtypefilter" value="Any"> Any</label>
-            <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="student"> Student</label>
-            <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="parent"> Parent</label>
-            <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="teacher"> Teacher</label>
-            <label class="cdu-checkbox-label"><input type="checkbox" name="usrtypefilter" value="null"> Unknown</label>
-        </div>
+        <button type="button" data-action="close">Закрыть</button>
     </div>
-<div class="cdu-search-row">
-    <input class="cdu-input-text" id="searchComment" placeholder="🔍 Search in Comment..." style="text-align:center;">
-    <input class="cdu-input-text" id="searchMessage" placeholder="🔍 Search in Message..." style="text-align:center;">
-</div>
-</div>
 
-            <div id="listofthetags" class="cdu-options-grid" style="display:none; margin-bottom:10px;">
-                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="server_issues"> Server</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="untargeted"> Untargeted</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_tc"> ➔ TC</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_channel_qa"> ➔ QA</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_development"> ➔ Dev</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="refusal_of_help"> Refusal</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="request_forwarded_to_outgoing_tp_crm2"> ➔ TP Out</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="queue"> Queue</label>
-                <label class="cdu-checkbox-label"><input type="checkbox" name="tagsforfilter" value="oo"> CC Error</label>
-                <div style="grid-column: span 3; display:flex; gap:10px; margin-top:10px;">
-                    <button class="cdu-btn" id="hideselecalltags" style="flex:1;">🚀 Apply Tag Filter</button>
-                    <button class="cdu-btn cdu-btn-accent" id="SaveToCSVFilteredByTags" style="flex:1;">💾 Export Tag CSV</button>
-                </div>
-            </div>
+    <div class="ag-controls">
+        <div class="ag-period">
+            <span class="ag-caption">Период</span>
+            <input type="date" data-id="from" aria-label="Начало периода">
+            <span class="ag-caption">—</span>
+            <input type="date" data-id="to" aria-label="Конец периода">
+        </div>
 
-            <div style="display:flex; justify-content: center; align-items:center; margin-bottom: 15px; gap: 15px;">
-                <select id="ThemesToSearch" class="cdu-select"></select>
-                <button class="cdu-btn" id="stargrab" title="Search chats by selected theme">🔍 Search</button>
-                <button class="cdu-btn cdu-btn-accent" id="webtoCSV">💾 Download Main CSV</button>
-            </div>
-
-            <div id="grabbedchats" style="display:flex; flex-direction:column; flex-grow:1; min-height:0;">
-                <div id="themesgrabbeddata" class="cdu-table-wrapper"></div>
-                <div style="display:flex; flex-wrap:wrap; margin-top:10px;">
-                    <div id="foundcount"></div>
-                    <div id="avgCsatCount"></div>
-                    <div id="avgSLAClosedData"></div>
-                </div>
-            </div>
+        <div class="ag-row">
+            <button type="button" data-action="previous"
+                    title="Сдвинуть обе даты на день назад">← День</button>
+            <button type="button" data-action="next"
+                    title="Сдвинуть обе даты на день вперёд">День →</button>
         </div>
     </div>
 
-    <div class="cdu-sidebar" id="SideBarContainer">
-        <div id="UniversalFilterPanel" class="cdu-panel" style="display:none; flex-grow:0;">
-            <div class="chmaf-drag-handle" style="background: linear-gradient(135deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%); border-bottom: 1px solid #38bdf8; padding: 10px; display: flex; justify-content: space-between; align-items: center; cursor: move; box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);">
-                <span id="FilterTitle" style="color:#38bdf8; font-weight:bold; font-size:12px; text-transform:uppercase; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);">Filter</span>
-                <span id="CloseFilterBtn" style="cursor:pointer; color:#f43f5e; font-weight:bold; font-size: 16px; transition: all 0.3s ease;" title="Close">✖</span>
+    <div class="ag-theme-row">
+        <details class="ag-theme-dropdown">
+            <summary data-id="theme-label">Все тематики</summary>
+            <div class="ag-theme-menu">
+                <div data-id="theme-list"></div>
             </div>
-            <div style="padding: 15px;">
-                <div id="FilterCheckboxList" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px; display:flex; flex-direction:column; gap:5px;">
+        </details>
+        <button type="button" class="ag-primary"
+                data-action="search">Найти</button>
+        <button type="button" data-action="analytics"
+                disabled>Графики</button>
+    </div>
+
+    <div class="ag-filters">
+        <details>
+            <summary>Операторы</summary>
+            <div class="ag-detail-body">
+                <button type="button" data-action="toggle-operators">
+                    Выбрать всех / снять выбор
+                </button>
+                <div class="ag-checkgrid" data-id="operators"
+                     style="margin-top:7px"></div>
+            </div>
+        </details>
+
+        <details>
+            <summary>Оценки и теги</summary>
+            <div class="ag-detail-body">
+                <strong>Оценки</strong>
+                <div class="ag-checkgrid" data-id="marks"></div>
+
+                <strong style="display:block;margin-top:9px">Теги</strong>
+                <div class="ag-checkgrid" data-id="tags"></div>
+            </div>
+        </details>
+
+        <details>
+            <summary>Дополнительные фильтры</summary>
+            <div class="ag-detail-body">
+                <div class="ag-filter-columns">
+                    <div class="ag-filter-section">
+                        <strong>Приоритет</strong>
+                        <div data-id="priorities"></div>
                     </div>
-                <div style="display: flex; gap: 5px;">
-                   <button class="cdu-btn" id="FilterSelectAll" style="flex:1;">Select All</button>
-                   <button class="cdu-btn" id="FilterClearAll" style="flex:1;">Clear All</button>
+                    <div class="ag-filter-section">
+                        <strong>Отдел</strong>
+                        <div data-id="departments"></div>
+                    </div>
+                    <div class="ag-filter-section">
+                        <strong>Тип пользователя</strong>
+                        <div data-id="user-types"></div>
+                    </div>
                 </div>
-                <button class="cdu-btn cdu-btn-accent" id="DownloadFilteredCSV" style="width:100%; margin-top:10px;">💾 Save Visible to CSV</button>
+                <div class="ag-search-columns">
+                    <input type="search" data-id="comment"
+                           placeholder="Поиск в комментариях">
+                    <input type="search" data-id="message"
+                           placeholder="Поиск в сообщениях">
+                </div>
             </div>
-        </div>
+        </details>
     </div>
-</div>
 
-<div id="AgregatedDataThemes" class="cdu-panel" style="display:none; position:fixed; top:80px; left:60px; z-index:9999; flex-direction: column; transition: width 0.3s ease;">
-    <div id="StatsDragHandle" class="chmaf-drag-handle" style="cursor:move; background: linear-gradient(135deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%); border-bottom: 1px solid #a855f7; padding: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(168, 85, 247, 0.3);">
-        <span style="color:#a855f7; font-weight:bold; font-size:12px; text-transform:uppercase; text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);">📊 Analytics Board</span>
-        <span id="HideToolsPanel" style="cursor:pointer; color:#f43f5e; font-weight:bold; font-size: 16px; transition: all 0.3s ease;" title="Close">✖</span>
+    <div class="ag-status" data-id="status"
+         role="status" aria-live="polite"></div>
+
+    <div class="ag-progress"><span data-id="progress"></span></div>
+
+    <div class="ag-result-head">
+        <div class="ag-metrics" data-id="metrics"></div>
+        <button type="button" data-action="export" disabled>
+            Скачать видимые CSV
+        </button>
     </div>
-    <div style="padding:15px; max-height:80vh; overflow-y:auto; flex-grow: 1;">
-        <div class="cdu-tools-header">By Theme (Chart/Table)</div>
-        <div style="display:flex; gap:5px; margin-bottom:5px;">
-            <button class="cdu-btn" id="SwitchToGraph" style="flex:1;">📊 Base</button>
-            <button class="cdu-btn" id="SwitchToTable" style="flex:1;">🧮 Base</button>
-        </div>
-        <div style="display:flex; gap:5px; margin-bottom:5px;">
-            <button class="cdu-btn" id="SwitchToIntervalGraph" style="flex:1;">📊 Timeline</button>
-            <button class="cdu-btn" id="SwitchToIntervalTable" style="flex:1;">🧮 Timeline</button>
-        </div>
-        <button class="cdu-btn cdu-btn-accent" id="SaveIntervalCSV" disabled style="width:100%; margin-bottom:15px;">💾 Export Theme Timeline CSV</button>
 
-        <div class="cdu-tools-header">By Country (Chart/Table)</div>
-        <div style="display:flex; gap:5px; margin-bottom:5px;">
-            <button class="cdu-btn" id="SwitchToGraphCountry" style="flex:1;">📊 Base</button>
-            <button class="cdu-btn" id="SwitchToTableCountry" style="flex:1;">🧮 Base</button>
-        </div>
-        <button class="cdu-btn cdu-btn-accent" id="SaveСountryTableCSV" style="width:100%; margin-bottom:5px;">💾 Export Country Base CSV</button>
-        <div style="display:flex; gap:5px; margin-bottom:5px;">
-            <button class="cdu-btn" id="SwitchToIntervalGraphCountry" style="flex:1;">📊 Timeline</button>
-            <button class="cdu-btn" id="SwitchToIntervalTableCountry" style="flex:1;">🧮 Timeline</button>
-        </div>
-        <button class="cdu-btn cdu-btn-accent" id="SaveIntervalСountryCSV" disabled style="width:100%;">💾 Export Country Timeline CSV</button>
-
-        <div id="AgregatedDataOut" style="margin-top: 15px; max-width: 100%; overflow-x: auto;"></div>
+    <div class="ag-table-wrap" data-id="table">
+        <div class="ag-empty">Выберите период и запустите поиск.</div>
     </div>
 </div>
 `;
 
-// INITIALIZATION CALLS
-const wintGrabber = createWindow('AF_Grabber', 'winTopGrabber', 'winLeftGrabber', win_Grabber);
-hideWindowOnDoubleClick('AF_Grabber');
-hideWindowOnClick('AF_Grabber', 'hideMeGrabber');
-
-// --- ROBUST DRAGGABLE LOGIC FOR STATS PANEL ---
-function makeDraggable(elementId, handleId) {
-    const element = document.getElementById(elementId);
-    const handle = document.getElementById(handleId);
-    if (!element || !handle) return;
-    if (element.dataset.draggableAttached) return;
-
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    handle.onmousedown = function (e) {
-        e.preventDefault();
-        e.stopPropagation(); // БЛОКИРОВКА ВСПЛЫТИЯ (фикст таскание родительского окна)
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        document.onmousemove = elementDrag;
-    };
-    function elementDrag(e) {
-        e.preventDefault();
-        e.stopPropagation(); // БЛОКИРОВКА ВСПЛЫТИЯ
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        element.style.top = (element.offsetTop - pos2) + "px";
-        element.style.left = (element.offsetLeft - pos1) + "px";
-        element.style.right = 'auto';
-        element.style.bottom = 'auto';
-    }
-    function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-    }
-    element.dataset.draggableAttached = "true";
-}
-
-document.getElementById('HideToolsPanel').onclick = () => document.getElementById('AgregatedDataThemes').style.display = 'none';
-document.getElementById('GatherStatByThemes').onclick = () => {
-    const pnl = document.getElementById('AgregatedDataThemes');
-    pnl.style.display = pnl.style.display === 'none' ? 'flex' : 'none';
-    makeDraggable('AgregatedDataThemes', 'StatsDragHandle');
-}
-
-// --- SIDEBAR TOGGLE LOGIC (Filters ONLY) ---
-function toggleFilterSidebar(forceOpen = false) {
-    const sidebar = document.getElementById('SideBarContainer');
-    const panel = document.getElementById('UniversalFilterPanel');
-
-    if (forceOpen || panel.style.display === 'none') {
-        sidebar.style.display = 'flex';
-        panel.style.display = 'flex';
-    } else {
-        panel.style.display = 'none';
-        sidebar.style.display = 'none';
-    }
-}
-document.getElementById('CloseFilterBtn').onclick = () => toggleFilterSidebar(false);
-
-
-// --- UNIVERSAL COLUMN FILTERING LOGIC ---
-function openColumnFilter(colIndex, colName) {
-    currentFilterColIndex = colIndex;
-    document.getElementById('FilterTitle').textContent = `Filter: ${colName}`;
-    const rows = document.querySelectorAll('.rowOfChatGrabbed');
-    const uniqueValues = new Set();
-
-    rows.forEach(row => uniqueValues.add(row.cells[colIndex].textContent.trim()));
-
-    if (!tableColumnFilters[colIndex]) tableColumnFilters[colIndex] = new Set(uniqueValues);
-    const activeSet = tableColumnFilters[colIndex];
-    const listContainer = document.getElementById('FilterCheckboxList');
-    listContainer.innerHTML = '';
-
-    const sortedValues = Array.from(uniqueValues).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-
-    sortedValues.forEach(val => {
-        const isChecked = activeSet.has(val) ? 'checked' : '';
-        const label = document.createElement('label');
-        label.className = 'cdu-checkbox-label';
-
-        const safeVal = val.replace(/"/g, '&quot;');
-        label.innerHTML = `<input type="checkbox" value="${safeVal}" ${isChecked}> <span style="word-break: break-all;">${val === '' ? '(Empty)' : val}</span>`;
-
-        const input = label.querySelector('input');
-        input.addEventListener('change', (e) => {
-            if (e.target.checked) activeSet.add(val);
-            else activeSet.delete(val);
-            applyTableFilters();
-        });
-        listContainer.appendChild(label);
-    });
-
-    toggleFilterSidebar(true);
-}
-
-function applyTableFilters() {
-    const rows = document.querySelectorAll('.rowOfChatGrabbed');
-    rows.forEach(row => {
-        let isVisible = true;
-        for (const colIdx in tableColumnFilters) {
-            const cellVal = row.cells[colIdx].textContent.trim();
-            if (!tableColumnFilters[colIdx].has(cellVal)) {
-                isVisible = false;
-                break;
-            }
-        }
-        row.style.display = isVisible ? '' : 'none';
-    });
-    calcAvgCsat();
-    calcAvgSLACompleted();
-}
-
-document.getElementById('FilterSelectAll').onclick = () => {
-    document.querySelectorAll('#FilterCheckboxList input[type="checkbox"]').forEach(input => {
-        input.checked = true;
-        tableColumnFilters[currentFilterColIndex].add(input.value.replace(/&quot;/g, '"'));
-    });
-    applyTableFilters();
-};
-
-document.getElementById('FilterClearAll').onclick = () => {
-    document.querySelectorAll('#FilterCheckboxList input[type="checkbox"]').forEach(input => {
-        input.checked = false;
-        tableColumnFilters[currentFilterColIndex].delete(input.value.replace(/&quot;/g, '"'));
-    });
-    applyTableFilters();
-};
-
-document.getElementById('DownloadFilteredCSV').onclick = saveFilteredTableCSV;
-
-// --- ANY LOGIC SETUP ---
-function setupAnyLogic(groupName) {
-    const checkboxes = document.querySelectorAll(`input[name="${groupName}"]`);
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', () => {
-            if (cb.value === "Any" && cb.checked) {
-                checkboxes.forEach(other => { if (other.value !== "Any") other.checked = false; });
-            } else if (cb.value !== "Any" && cb.checked) {
-                checkboxes.forEach(other => { if (other.value === "Any") other.checked = false; });
-            }
-        });
-    });
-}
-setupAnyLogic("priorityfilter");
-setupAnyLogic("deptfilter");
-setupAnyLogic("usrtypefilter");
-
-const commentInputEl = document.getElementById('searchComment');
-const messageInputEl = document.getElementById('searchMessage');
-
-commentInputEl.addEventListener("input", () => { if (commentInputEl.value.trim() !== "") messageInputEl.value = ""; });
-messageInputEl.addEventListener("input", () => { if (messageInputEl.value.trim() !== "") commentInputEl.value = ""; });
-
-function getCheckedValues(name) {
-    const arr = [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(cb => cb.value);
-    return arr.length ? arr : ["Any"];
-}
-
-function collectOtherFilters() {
-    const priority = getCheckedValues("priorityfilter");
-    const dept = getCheckedValues("deptfilter");
-    const usertype = getCheckedValues("usrtypefilter");
-    const commentInput = commentInputEl.value.trim();
-    const messageInput = messageInputEl.value.trim();
-    const markscheklist = document.getElementsByName('marks');
-    const csatValues = [];
-    for (let i = 0; i < markscheklist.length - 1; i++) {
-        if (markscheklist[i].checked) csatValues.push(Number(markscheklist[i].value));
-    }
-    const csatIncludeUndefined = markscheklist[5]?.checked === true;
-    let theme = '';
-    const selTheme = document.getElementById('ThemesToSearch').options;
-    for (let i = 0; i < selTheme.length; i++) {
-        if (selTheme[i].selected) theme = selTheme[i].value;
-    }
-    return { priority, dept, usertype, commentInput, messageInput, csatValues, csatIncludeUndefined, theme };
-}
-
-async function getlistofopers() {
-    // Через общий слой + локальная переменная вместо неявного глобала dataInfo
-    const dataInfo = await afApiFetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState").then(r => r.json());
-
-    let tpopers = dataInfo.onOperator
-        .map(el => el.groupId === "c7bbb211-a217-4ed3-8112-98728dc382d8" ? ({ id: el.operator.id, name: el.operator.fullName }) : el.groupId === "8266dbb1-db44-4910-8b5f-a140deeec5c0" ? ({ id: el.operator.id, name: el.operator.fullName }) : null)
-        .filter(el => el !== null)
-        .filter(el => /ТП[^0-9]/.test(el.name));
-
-    const activeOperatorsGroup = document.getElementById('activeoperatorsgroup');
-    activeOperatorsGroup.innerHTML = '';
-    for (let i = 0; i < tpopers.length; i++) {
-        if (tpopers[i].name !== 'ТП/ОКК-Березкин Александр' && tpopers[i].name !== 'ТП-Борисов Евгений(СRM2)') {
-            activeOperatorsGroup.innerHTML += `<label class="cdu-checkbox-label"><input type="checkbox" name="chekforsearch" checked><span name="listofops" value='${tpopers[i].id}'>${tpopers[i].name}</span></label>`;
-        }
-    }
-    document.getElementById('checkthemall').checked = true;
-
-    let listofchkbxmarks = document.getElementsByName('marks');
-    for (let i = 0; i < listofchkbxmarks.length; i++) { listofchkbxmarks[i].checked = true; }
-    document.getElementById('checkthemallmarks').checked = true;
-}
-
-function calcAvgCsat() {
-    const csatCells = document.getElementsByName('CSATvalue');
-    const marks = [];
-
-    for (let i = 0; i < csatCells.length; i++) {
-        const row = csatCells[i].parentElement;
-        if (row && window.getComputedStyle(row).display === "none") continue;
-
-        const cellValue = csatCells[i].textContent;
-        if (cellValue === '-' || cellValue.trim() === '') continue;
-
-        const numeric = Number(cellValue);
-        if (!isNaN(numeric)) marks.push(numeric);
-    }
-
-    let sum = 0;
-    for (const m of marks) sum += m;
-    const avg = marks.length > 0 ? (sum / marks.length) : 0;
-    const safeAvg = Number.isFinite(avg) ? avg : 0;
-
-    document.getElementById('avgCsatCount').innerHTML = `<span class="cdu-stat-badge cdu-stat-primary">Avg CSAT: ${safeAvg.toFixed(2)}</span>`;
-}
-
-function calcAvgSLACompleted() {
-    const SLACompContainer = document.getElementsByName('SLACompletedValue');
-    let outtimedCount = 0;
-    let totalVisible = 0;
-
-    for (let i = 0; i < SLACompContainer.length; i++) {
-        const row = SLACompContainer[i].parentElement;
-        if (row && window.getComputedStyle(row).display === "none") continue;
-        totalVisible++;
-        if (SLACompContainer[i].textContent === "0") outtimedCount++;
-    }
-
-    const percent = totalVisible > 0 ? ((totalVisible - outtimedCount) / totalVisible) * 100 : 0;
-    document.getElementById('avgSLAClosedData').innerHTML = `<span class="cdu-stat-badge cdu-stat-accent">SLA Closing: ${percent.toFixed(1)}%</span>`;
-}
-
-function saveFilteredTableCSV() {
-    let nwtable = document.getElementById("TableGrabbed");
-    if (!nwtable) return;
-    let csvData = [];
-    for (let i = 0; i < nwtable.rows.length; i++) {
-        if (window.getComputedStyle(nwtable.rows[i]).display !== "none") {
-            let rowData = [];
-            for (let j = 0; j < nwtable.rows[i].cells.length; j++) {
-                rowData.push(`"${nwtable.rows[i].cells[j].textContent.trim().replace(/"/g, '""')}"`);
-            }
-            csvData.push(rowData.join(","));
-        }
-    }
-    let csvContent = "\uFEFF" + csvData.join("\n");
-    let downloadLink = document.createElement("a");
-    downloadLink.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
-    downloadLink.download = "filtered_table.csv";
-    downloadLink.click();
-}
-
-function getopenGrabberButtonPress() {
-    const select = document.getElementById("ThemesToSearch");
-    select.innerHTML = "";
-    themes.forEach(t => {
-        const opt = document.createElement("option");
-        opt.value = t.value || t.group;
-        opt.textContent = t.label;
-        if (t.group) opt.style.fontWeight = 'bold';
-        select.appendChild(opt);
-    });
-
-    themesarray = [];
-    const parseThemesAndVals = document.getElementById('ThemesToSearch');
-    for (let i = 0; i < parseThemesAndVals.length; i++) {
-        themesarray.push({ value: parseThemesAndVals[i].value, ThemeName: parseThemesAndVals[i].textContent });
-    }
-
-    const modal = document.getElementById('AF_Grabber');
-    modal.style.display = modal.style.display === '' ? 'none' : '';
-
-    let getcurdate = new Date();
-    let year = getcurdate.getFullYear();
-    let day = String(getcurdate.getDate()).padStart(2, "0");
-    let lastDayOfPrevMonth = new Date(year, getcurdate.getMonth(), 0).getDate();
-    let toDate = new Date(year, getcurdate.getMonth(), day);
-
-    if (day === "01") {
-        dateFromGrab = new Date(year, getcurdate.getMonth() - 1, lastDayOfPrevMonth);
-        dateToGrab = new Date(year, getcurdate.getMonth(), 1);
-    }
-
-    document.getElementById("dateFromGrab").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
-    document.getElementById("dateToGrab").value = `${toDate.getFullYear()}-${String(toDate.getMonth() + 1).padStart(2, "0")}-${String(toDate.getDate()).padStart(2, "0")}`;
-
-    getlistofopers();
-}
-
-document.getElementById('checkthemall').onclick = function () {
-    const c = !this.checked;
-    this.checked = !c;
-    document.getElementsByName('chekforsearch').forEach(cb => cb.checked = !c);
-};
-
-document.getElementById('checkthemallmarks').onclick = function () {
-    const c = !this.checked;
-    this.checked = !c;
-    document.getElementsByName('marks').forEach(cb => cb.checked = !c);
-};
-
-function getSelectedCheckboxTagsValues() { return [...document.querySelectorAll('input[name="tagsforfilter"]:checked')].map(cb => cb.value); }
-
-function buildUniversalTable({ mode, groupField, columnTitle, saveButtonId }) {
-    document.getElementById('AgregatedDataThemes').style.width = "450px";
-    const tableContainer = document.getElementById('AgregatedDataOut');
-    tableContainer.innerHTML = '';
-
-    isDescending = true; // Сбрасываем сортировку на DESC при каждом новом построении
-    let data = mode === "interval" ? buildIntervalData(groupField) : buildSimpleData(groupField);
-    currentTableData = data;
-
-    const table = buildHTMLTable(data, columnTitle, mode, groupField);
-    tableContainer.appendChild(table);
-
-    if (saveButtonId) document.getElementById(saveButtonId).removeAttribute('disabled');
-    lastTableParams = { mode, groupField, columnTitle, saveButtonId };
-}
-
-function isTimeInInterval(time, start, end) {
-    if (end === "00:00") end = "24:00";
-    return time >= start && time < end;
-}
-
-function buildIntervalData(groupField) {
-    const intervals = [
-        '07:00 - 07:30', '07:30 - 08:00', '08:00 - 08:30', '08:30 - 09:00', '09:00 - 09:30', '09:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00',
-        '11:00 - 11:30', '11:30 - 12:00', '12:00 - 12:30', '12:30 - 13:00', '13:00 - 13:30', '13:30 - 14:00', '14:00 - 14:30', '14:30 - 15:00',
-        '15:00 - 15:30', '15:30 - 16:00', '16:00 - 16:30', '16:30 - 17:00', '17:00 - 17:30', '17:30 - 18:00', '18:00 - 18:30', '18:30 - 19:00',
-        '19:00 - 19:30', '19:30 - 20:00', '20:00 - 20:30', '20:30 - 21:00', '21:00 - 21:30', '21:30 - 22:00', '22:00 - 22:30', '22:30 - 23:00',
-        '23:00 - 23:30', '23:30 - 00:00'
-    ];
-
-    const result = payloadarray.reduce((acc, obj) => {
-        const value = obj[groupField];
-        const timeMatch = obj.timeStamp.match(/\b(\d{1,2}:\d{2})\b/);
-        const timeKey = timeMatch ? timeMatch[1].padStart(5, '0') : "00:00";
-
-        const interval = intervals.find(inv => {
-            const [s, e] = inv.split(' - ');
-            return isTimeInInterval(timeKey, s, e);
-        });
-
-        if (interval) {
-            acc.counts[interval] = acc.counts[interval] || {};
-            acc.counts[interval][value] = (acc.counts[interval][value] || 0) + 1;
-        }
-        return acc;
-    }, { counts: {} });
-
-    const data = Object.entries(result.counts).flatMap(([interval, counts]) =>
-        Object.entries(counts).map(([value, count]) => ({
-            [groupField]: value,
-            TimeStamp: interval,
-            Count: count
-        }))
+    createWindow(
+        'AF_Grabber',
+        'winTopGrabber',
+        'winLeftGrabber',
+        template
     );
 
-    data.sort((a, b) => a.TimeStamp.localeCompare(b.TimeStamp));
-    countsArrayInterval = data;
-    return data;
-}
+    const windowElement = document.getElementById('AF_Grabber');
+    const app = windowElement?.querySelector('.ag');
 
-function buildSimpleData(groupField) {
-    const targetArray = groupField === "Country" ? pureArray : payloadarray;
-    const counts = targetArray.reduce((acc, obj) => {
-        const value = obj[groupField];
-        acc[value] = (acc[value] || 0) + 1;
-        return acc;
-    }, {});
+    if (!windowElement || !app) {
+        throw new Error('Не удалось создать окно AF_Grabber.');
+    }
 
-    let result = Object.entries(counts).map(([value, count]) => ({ [groupField]: value, Count: count }));
-    // Сортировка по умолчанию (от большего к меньшему)
-    result.sort((a, b) => b.Count - a.Count);
-    return result;
-}
+    const $ = id => app.querySelector(`[data-id="${id}"]`);
+    const action = name => app.querySelector(`[data-action="${name}"]`);
 
-function buildHTMLTable(data, columnTitle, mode, groupField) {
-    const table = document.createElement('table');
-    table.className = 'cdu-table';
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
+    const analytics = document.createElement('section');
+    analytics.id = 'ag-analytics';
+    analytics.hidden = true;
 
-    // Добавляем индикатор сортировки для красоты и понимания
-    const countTitle = `Count ${isDescending ? '▼' : '▲'}`;
-    const headers = mode === "interval" ? ['№', columnTitle, 'Interval', countTitle] : ['№', columnTitle, countTitle];
+    analytics.innerHTML = `
+        <div class="ag-analytics-head">
+            <div>
+                <strong>Аналитика</strong>
+                <div style="color:#a8afba;font-size:11px">
+                    Выбирайте одну или несколько линий
+                </div>
+            </div>
+            <button type="button" data-a-action="close">Закрыть</button>
+        </div>
 
-    headers.forEach((text) => {
-        const th = document.createElement('th');
-        th.textContent = text;
-        if (text.includes("Count")) {
-            th.style.cursor = "pointer";
-            th.title = "Click to sort";
-            th.addEventListener('click', sortUniversalTableByCount);
+        <div class="ag-analytics-body">
+            <div class="ag-analytics-controls">
+                <button type="button" data-group="theme">Тематики</button>
+                <button type="button" data-group="country">Страны</button>
+                <button type="button" data-mode="timeline">Динамика</button>
+                <button type="button" data-mode="summary">Сводка</button>
+                <button type="button" data-view="chart">График</button>
+                <button type="button" data-view="table">Таблица</button>
+                <button type="button" data-a-action="export">
+                    CSV
+                </button>
+            </div>
+
+            <div class="ag-series-toolbar">
+                <input type="search" data-a-id="series-search"
+                       placeholder="Найти тематику или страну">
+                <button type="button" data-a-action="select-all">
+                    Выбрать всё
+                </button>
+                <button type="button" data-a-action="clear">
+                    Снять всё
+                </button>
+                <span data-a-id="selected-count"
+                      style="color:#a8afba"></span>
+            </div>
+
+            <div class="ag-series-list" data-a-id="series"></div>
+            <div data-a-id="content"></div>
+        </div>
+    `;
+
+    document.body.appendChild(analytics);
+
+    const popover = document.createElement('div');
+    popover.id = 'ag-column-popover';
+    popover.hidden = true;
+    document.body.appendChild(popover);
+
+    const tooltip = document.createElement('div');
+    tooltip.id = 'ag-tooltip';
+    tooltip.hidden = true;
+    document.body.appendChild(tooltip);
+
+    const a$ = id => analytics.querySelector(`[data-a-id="${id}"]`);
+
+    const COLUMNS = [
+        ['date', 'Дата'],
+        ['operator', 'Оператор'],
+        ['id', 'Chat ID'],
+        ['csat', 'CSAT'],
+        ['theme', 'Тематика'],
+        ['sla', 'SLA'],
+        ['country', 'Страна'],
+        ['department', 'Отдел'],
+        ['text', 'Комментарий / сообщение']
+    ];
+
+    const CHART_COLORS = [
+        '#e1b875',
+        '#75c3db',
+        '#b49ae7',
+        '#8ccf9e',
+        '#e8999b',
+        '#e2ba79',
+        '#80a2ee',
+        '#d696cf',
+        '#98c4be',
+        '#d3a982'
+    ];
+
+    function checkbox(value, label, name, checked = false) {
+        const wrapper = document.createElement('label');
+        wrapper.className = 'ag-check';
+
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = name;
+        input.value = String(value);
+        input.checked = checked;
+
+        const text = document.createElement('span');
+        text.textContent = label;
+
+        wrapper.append(input, text);
+        return wrapper;
+    }
+
+    function setOptions(container, name, entries) {
+        container.replaceChildren(
+            ...entries.map(([value, label]) =>
+                checkbox(value, label, name, value === 'Any')
+            )
+        );
+    }
+
+    function selected(container) {
+        return [
+            ...container.querySelectorAll('input:checked')
+        ].map(input => input.value);
+    }
+
+    function selectedOrAny(container) {
+        const values = selected(container);
+        return values.length ? values : ['Any'];
+    }
+
+    function setStatus(text, error = false) {
+        $('status').textContent = text;
+        $('status').dataset.error = String(error);
+    }
+
+    function setProgress(percent) {
+        $('progress').style.width =
+            `${Math.max(0, Math.min(100, percent))}%`;
+    }
+
+    function formatMoscowDate(date = new Date()) {
+        const parts = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Europe/Moscow',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).formatToParts(date);
+
+        const part = type =>
+            parts.find(item => item.type === type)?.value;
+
+        return `${part('year')}-${part('month')}-${part('day')}`;
+    }
+
+    function shiftDate(value, amount) {
+        const date = new Date(`${value}T12:00:00Z`);
+
+        if (!Number.isFinite(date.getTime())) {
+            return value;
         }
-        headerRow.appendChild(th);
-    });
 
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-    const tbody = document.createElement('tbody');
+        date.setUTCDate(date.getUTCDate() + amount);
+        return date.toISOString().slice(0, 10);
+    }
 
-    data.forEach((item, index) => {
-        const row = document.createElement('tr');
-        if (mode === "interval") {
-            row.innerHTML = `<td>${index + 1}</td><td>${item[groupField]}</td><td>${item.TimeStamp}</td><td>${item.Count}</td>`;
-        } else {
-            row.innerHTML = `<td>${index + 1}</td><td>${item[groupField]}</td><td>${item.Count}</td>`;
+    function dateRange() {
+        const from = $('from').value;
+        const to = $('to').value;
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(from) ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(to) ||
+            from > to) {
+            throw new Error('Проверьте даты начала и конца периода.');
         }
-        tbody.appendChild(row);
-    });
-    table.appendChild(tbody);
-    return table;
-}
 
-function rebuildLastTable() { if (lastTableParams) buildUniversalTable(lastTableParams); }
-function sortUniversalTableByCount() {
-    isDescending = !isDescending; // Меняем флаг ДО сортировки, чтобы таблица перестроилась
-    currentTableData.sort((a, b) => isDescending ? b.Count - a.Count : a.Count - b.Count);
+        const start = new Date(`${from}T00:00:00+03:00`);
+        const end = new Date(`${to}T00:00:00+03:00`);
 
-    const tableContainer = document.getElementById('AgregatedDataOut');
-    tableContainer.innerHTML = '';
-    const table = buildHTMLTable(currentTableData, lastTableParams.columnTitle, lastTableParams.mode, lastTableParams.groupField);
-    tableContainer.appendChild(table);
-}
-
-// --- NEW INTERACTIVE CHART LOGIC ---
-function drawUniversalGraph({ mode, groupField, chartType, title }) {
-    // Вычисляем оптимальную ширину на основе экрана (максимум 90% или 1400px)
-    const maxWidth = Math.min(window.innerWidth * 0.9, 1400);
-    const panelWidth = mode === "interval" ? maxWidth : 940; // Base график может быть 940, Timeline - шире
-
-    document.getElementById('AgregatedDataThemes').style.width = panelWidth + "px";
-
-    const graphContainer = document.getElementById('AgregatedDataOut');
-    graphContainer.innerHTML = '';
-    const canvas = document.createElement('canvas');
-    canvas.width = panelWidth - 40;
-    canvas.height = 450;
-    canvas.style.width = "100%";
-    canvas.style.height = "auto";
-    graphContainer.appendChild(canvas);
-
-    let labels = [];
-    let datasets = [];
-
-    if (mode === "simple") {
-        let source = buildSimpleData(groupField); // Он уже отсортирован по убыванию
-        labels = source.map(item => item[groupField]);
-        const colors = ['#38bdf8', '#a855f7', '#f43f5e', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316'];
-        datasets = [{
-            label: "Count",
-            data: source.map(item => item.Count),
-            colors: labels.map((_, i) => colors[i % colors.length])
-        }];
-    } else if (mode === "interval") {
-        const intervals = [
-            '07:00 - 07:30', '07:30 - 08:00', '08:00 - 08:30', '08:30 - 09:00', '09:00 - 09:30', '09:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00',
-            '11:00 - 11:30', '11:30 - 12:00', '12:00 - 12:30', '12:30 - 13:00', '13:00 - 13:30', '13:30 - 14:00', '14:00 - 14:30', '14:30 - 15:00',
-            '15:00 - 15:30', '15:30 - 16:00', '16:00 - 16:30', '16:30 - 17:00', '17:00 - 17:30', '17:30 - 18:00', '18:00 - 18:30', '18:30 - 19:00',
-            '19:00 - 19:30', '19:30 - 20:00', '20:00 - 20:30', '20:30 - 21:00', '21:00 - 21:30', '21:30 - 22:00', '22:00 - 22:30', '22:30 - 23:00',
-            '23:00 - 23:30', '23:30 - 00:00'
-        ];
-        labels = intervals;
-
-        const result = payloadarray.reduce((acc, obj) => {
-            const value = obj[groupField];
-            const timeMatch = obj.timeStamp.match(/\b(\d{1,2}:\d{2})\b/);
-            const timeKey = timeMatch ? timeMatch[1].padStart(5, '0') : "00:00";
-
-            const interval = intervals.find(inv => {
-                const [s, e] = inv.split(' - ');
-                return isTimeInInterval(timeKey, s, e);
-            });
-
-            if (interval) {
-                acc.counts[interval] = acc.counts[interval] || {};
-                acc.counts[interval][value] = (acc.counts[interval][value] || 0) + 1;
-            }
-            acc.unique.add(value);
-            return acc;
-        }, { counts: {}, unique: new Set() });
-
-        const colors = ['#38bdf8', '#a855f7', '#f43f5e', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316'];
-        datasets = Array.from(result.unique).map((value, idx) => ({
-            label: value,
-            data: intervals.map(inv => (result.counts[inv] && result.counts[inv][value]) ? result.counts[inv][value] : 0),
-            color: colors[idx % colors.length]
-        }));
-    }
-
-    currentChartState = { canvas, mode, chartType, labels, datasets, hiddenItems: new Set() };
-    canvas.addEventListener('click', handleChartClick);
-
-    renderCyberChartInteractive();
-}
-
-function handleChartClick(e) {
-    if (!currentChartState || !currentChartState.canvas.__legendBoxes) return;
-
-    const canvas = currentChartState.canvas;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const clickX = (e.clientX - rect.left) * scaleX;
-    const clickY = (e.clientY - rect.top) * scaleY;
-
-    // Сначала проверяем клик по легенде
-    let clickedItemLabel = null;
-    const clickedLegend = canvas.__legendBoxes.find(b => clickX >= b.x && clickX <= b.x + b.w && clickY >= b.y && clickY <= b.y + b.h);
-
-    if (clickedLegend) {
-        clickedItemLabel = clickedLegend.label;
-    } else if (canvas.__dataShapes) {
-        // Если не легенда, проверяем элементы графика (хитбоксы столбцов или увеличенные хитбоксы точек)
-        const clickedShape = canvas.__dataShapes.find(s => {
-            if (s.type === 'rect') {
-                return clickX >= s.x && clickX <= s.x + s.w && clickY >= s.y && clickY <= s.y + s.h;
-            }
-            if (s.type === 'circle') {
-                return Math.hypot(clickX - s.cx, clickY - s.cy) <= s.r;
-            }
-            return false;
-        });
-        if (clickedShape) clickedItemLabel = clickedShape.label;
-    }
-
-    // Если кликнули по чему-то осмысленному
-    if (clickedItemLabel) {
-        const hidden = currentChartState.hiddenItems;
-        const allItems = currentChartState.mode === "simple" ? currentChartState.labels : currentChartState.datasets.map(d => d.label);
-
-        if (e.ctrlKey || e.metaKey) {
-            if (hidden.has(clickedItemLabel)) hidden.delete(clickedItemLabel);
-            else hidden.add(clickedItemLabel);
-        } else {
-            const isOnlyVisible = !hidden.has(clickedItemLabel) && hidden.size === allItems.length - 1;
-            if (isOnlyVisible) {
-                hidden.clear();
-            } else {
-                hidden.clear();
-                allItems.forEach(i => { if (i !== clickedItemLabel) hidden.add(i); });
-            }
+        if (!Number.isFinite(start.getTime()) ||
+            !Number.isFinite(end.getTime())) {
+            throw new Error('Не удалось прочитать выбранные даты.');
         }
-        renderCyberChartInteractive();
-    }
-}
 
-function renderCyberChartInteractive() {
-    const { canvas, mode, chartType, labels, datasets, hiddenItems } = currentChartState;
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    let h = canvas.height;
+        end.setUTCDate(end.getUTCDate() + 1);
+        end.setUTCMilliseconds(end.getUTCMilliseconds() - 1);
 
-    let activeLabels = [];
-    let activeDatasets = [];
-
-    if (mode === "simple") {
-        activeLabels = labels.filter(l => !hiddenItems.has(l));
-        const filteredData = datasets[0].data.filter((_, i) => !hiddenItems.has(labels[i]));
-        const filteredColors = datasets[0].colors.filter((_, i) => !hiddenItems.has(labels[i]));
-        activeDatasets = [{ ...datasets[0], data: filteredData, colors: filteredColors }];
-    } else {
-        activeLabels = labels;
-        activeDatasets = datasets.filter(ds => !hiddenItems.has(ds.label));
-    }
-
-    const padL = 35, padR = 15, padB = 80;
-    canvas.__legendBoxes = [];
-    canvas.__dataShapes = []; // Хранилище хитбоксов для кликов по графику
-
-    let legX = 10;
-    let legY = 10;
-    const legendItems = mode === "simple" ? labels : datasets.map(ds => ds.label);
-    const legendColors = mode === "simple" ? datasets[0].colors : datasets.map(ds => ds.color);
-
-    ctx.font = '12px sans-serif';
-    legendItems.forEach((itemLabel, i) => {
-        const textWidth = ctx.measureText(itemLabel).width;
-        const itemWidth = 18 + textWidth + 15;
-
-        if (legX + itemWidth > w - 10) {
-            legX = 10;
-            legY += 20;
-        }
-        canvas.__legendBoxes.push({ label: itemLabel, x: legX, y: legY, w: itemWidth, h: 15, color: legendColors[i] });
-        legX += itemWidth;
-    });
-
-    const padT = legY + 30;
-    if (h < padT + 200) {
-        canvas.height = padT + 300;
-        h = canvas.height;
-    }
-
-    ctx.clearRect(0, 0, w, h);
-    const chartW = w - padL - padR;
-    const chartH = h - padT - padB;
-
-    // Отрисовка легенды
-    canvas.__legendBoxes.forEach(box => {
-        const isHidden = hiddenItems.has(box.label);
-        ctx.fillStyle = isHidden ? '#334155' : box.color;
-        ctx.fillRect(box.x, box.y, 12, 12);
-        ctx.fillStyle = isHidden ? '#64748b' : '#e2e8f0';
-        ctx.textAlign = 'left';
-        ctx.fillText(box.label, box.x + 18, box.y + 10);
-    });
-
-    if (activeDatasets.length === 0 || (mode === "simple" && activeLabels.length === 0)) return;
-
-    let maxVal = Math.max(...activeDatasets.flatMap(ds => ds.data.length ? ds.data : [0]));
-    maxVal = maxVal === 0 ? 10 : Math.ceil(maxVal * 1.2);
-
-    // Сетка
-    ctx.beginPath();
-    ctx.strokeStyle = 'rgba(51, 65, 85, 0.3)';
-    ctx.lineWidth = 1;
-    const ySteps = 5;
-    for (let i = 0; i <= ySteps; i++) {
-        const y = padT + (chartH * (ySteps - i) / ySteps);
-        ctx.moveTo(padL, y); ctx.lineTo(w - padR, y);
-        ctx.fillStyle = '#94a3b8';
-        ctx.textAlign = 'right';
-        ctx.fillText(Math.round(maxVal * i / ySteps), padL - 5, y + 4);
-    }
-    ctx.stroke();
-
-    // Подписи X
-    const xStep = chartW / Math.max(activeLabels.length, 1);
-    ctx.fillStyle = '#cbd5e1';
-    activeLabels.forEach((lbl, i) => {
-        const x = padL + (i * xStep) + (xStep / 2);
-        ctx.save();
-        ctx.translate(x, h - padB + 20);
-        ctx.rotate(-Math.PI / 6);
-        ctx.textAlign = 'right';
-
-        let displayLbl = lbl;
-        if (displayLbl.length > 15) displayLbl = displayLbl.substring(0, 15) + '...';
-        ctx.fillText(displayLbl, 0, 0);
-        ctx.restore();
-    });
-
-    // Данные
-    if (chartType === 'bar' && mode === "simple") {
-        const ds = activeDatasets[0];
-        const barW = (xStep * 0.7);
-        activeLabels.forEach((labelName, i) => {
-            const val = ds.data[i] || 0;
-            const barColor = ds.colors[i] || '#38bdf8';
-            const barH = (val / maxVal) * chartH;
-            const x = padL + (i * xStep) + (xStep * 0.15);
-            const y = padT + chartH - barH;
-
-            ctx.fillStyle = barColor;
-            ctx.shadowBlur = 3;
-            ctx.shadowColor = barColor;
-            ctx.fillRect(x, y, barW, barH);
-            ctx.shadowBlur = 0;
-
-            // Записываем хитбокс для клика
-            canvas.__dataShapes.push({ label: labelName, type: 'rect', x, y, w: barW, h: barH });
-        });
-    } else if (chartType === 'line' && mode === "interval") {
-        activeDatasets.forEach(ds => {
-            const lineColor = ds.color || '#a855f7';
-            ctx.strokeStyle = lineColor;
-            ctx.lineWidth = 3;
-            ctx.shadowBlur = 3;
-            ctx.shadowColor = lineColor;
-
-            ctx.beginPath();
-            activeLabels.forEach((_, i) => {
-                const val = ds.data[i] || 0;
-                const x = padL + (i * xStep) + (xStep / 2);
-                const y = padT + chartH - ((val / maxVal) * chartH);
-                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-            });
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-
-            ctx.fillStyle = '#0f172a';
-            activeLabels.forEach((_, i) => {
-                const val = ds.data[i] || 0;
-                const x = padL + (i * xStep) + (xStep / 2);
-                const y = padT + chartH - ((val / maxVal) * chartH);
-
-                ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-
-                // Хитбокс для точки: даем комфортный радиус в 12px, чтобы было легко попасть мышкой
-                canvas.__dataShapes.push({ label: ds.label, type: 'circle', cx: x, cy: y, r: 12 });
-            });
-        });
-    }
-}
-
-// --- CSV SAVING ---
-function triggerDownload(csvContent, filename) {
-    const downloadLink = document.createElement("a");
-    downloadLink.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
-    downloadLink.setAttribute("download", filename);
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-}
-
-function saveToCSVInterval() {
-    let csvContent = "\uFEFFTimeStamp,ThemeValue,Count\n";
-    countsArrayInterval.forEach(({ TimeStamp, ThemeValue, Count }) => csvContent += `${TimeStamp},${ThemeValue},${Count}\n`);
-    triggerDownload(csvContent, "data.csv");
-}
-
-function SaveIntervalСountryCSV() {
-    let csvContent = "\uFEFFTimeStamp,Country,Count\n";
-    countsArrayInterval.forEach(({ TimeStamp, Country, Count }) => csvContent += `${TimeStamp},${Country},${Count}\n`);
-    triggerDownload(csvContent, "data.csv");
-}
-
-function SaveСountryCSV(filename) {
-    const csvRows = [];
-    const headers = Array.from(document.querySelectorAll('#AgregatedDataOut thead th')).map(h => h.innerText);
-    csvRows.push(headers.join(','));
-    const rows = document.querySelectorAll('#AgregatedDataOut tbody tr');
-    for (const row of rows) {
-        csvRows.push(Array.from(row.querySelectorAll('td')).map(cell => cell.innerText).join(','));
-    }
-    triggerDownload("\uFEFF" + csvRows.join('\n'), filename);
-}
-
-function resolveThemeLabel(topicValue) {
-    if (!topicValue) return '⁉No theme';
-    const theme = themes.find(t => t.value === String(topicValue));
-    return theme ? theme.label : '⁉Unknown theme';
-}
-
-async function getChat(id) {
-    return await afApiFetch(`https://skyeng.autofaq.ai/api/conversations/${id}`).then(r => r.json());
-}
-
-function pushPayload({ r, duration, operatorName, csat }) {
-    const topicValue = r.payload?.topicId?.value;
-    const themeLabel = resolveThemeLabel(topicValue);
-    const isActive = duration == null;
-    payloadarray.push({
-        ChatId: r.id,
-        OperatorName: operatorName,
-        timeStamp: isActive ? "Active chat, ⏳" : new Date(r.tsCreate + duration).toLocaleString('ru-RU', timeOptions),
-        CSAT: csat,
-        ThemeValue: themeLabel,
-        SLACompleted: isActive ? null : ((duration / 1000 / 60) > 25 ? 0 : 1),
-        Country: r.channelUser?.payload?.country ?? "-"
-    });
-}
-
-function pushTags(r) { operstagsarray.push({ ChatId: r.id, Tags: r.payload?.tags?.value || '' }); }
-function themeMatches(r, chosen) {
-    if (chosen === "parseallthemes") return true;
-    const tv = r.payload?.topicId?.value;
-    if (chosen === "parsenothemes") return !tv;
-    return tv === chosen;
-}
-
-function filterTableRowsByTags() {
-    const selectedValues = getSelectedCheckboxTagsValues();
-    const rows = document.querySelectorAll('.rowOfChatGrabbed');
-    if (selectedValues.length > 0) {
-        rows.forEach(row => {
-            const cellValue = row.children[3].textContent;
-            let isMatched = false;
-            selectedValues.forEach(val => {
-                // operstagsarray наполняется в pushTags() при сборе чатов.
-                // Раньше здесь был cleanedarray[], который нигде не заполнялся → фильтр скрывал ВСЕ строки
-                const filtered = operstagsarray.filter(item => String(item.Tags || '').split(',').map(tag => tag.trim()).includes(val));
-                if (filtered.some(i => i.ChatId === cellValue)) isMatched = true;
-            });
-            row.style.display = isMatched ? '' : 'none';
-        });
-    } else rows.forEach(row => row.style.display = '');
-    calcAvgCsat(); calcAvgSLACompleted();
-}
-
-function toggleBlock({ containerId, blockId, extraId }) {
-    const block = document.getElementById(blockId);
-    const extra = extraId ? document.getElementById(extraId) : null;
-    const container = document.getElementById(containerId);
-    const isHidden = window.getComputedStyle(block).display === "none";
-
-    if (isHidden) {
-        block.style.display = blockId === "activeoperatorsgroup" ? "grid" : "block";
-        if (extra) extra.style.display = "flex";
-        container.classList.add("glowing-border-animation");
-        if (containerId === "othercontainer") otherfilters = "on";
-    } else {
-        block.style.display = "none";
-        if (extra) extra.style.display = "none";
-        container.classList.remove("glowing-border-animation");
-        if (containerId === "othercontainer") otherfilters = "off";
-    }
-}
-
-function aggregateCounts(array, field) {
-    return array.reduce((acc, obj) => { acc[obj[field]] = (acc[obj[field]] || 0) + 1; return acc; }, {});
-}
-
-function addCell(row, value, attrs = {}) {
-    const cell = document.createElement('td');
-    cell.textContent = value;
-    for (const [key, val] of Object.entries(attrs)) cell.setAttribute(key, val);
-    row.appendChild(cell);
-}
-
-function initRowClickHandlers() {
-    document.querySelectorAll('.rowOfChatGrabbed').forEach(row => {
-        row.onclick = () => {
-            document.getElementById('hashchathis').value = row.children[3].textContent;
-            if (document.getElementById('AF_ChatHis').style.display === 'none') document.getElementById('opennewcat').click();
-            btn_search_history.click();
+        return {
+            from: start.toISOString(),
+            to: end.toISOString()
         };
-    });
-}
-
-function getDateRange() {
-    const formatDate = (date, time) => {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}T${time}`;
-    };
-    const selectedDate = new Date(document.getElementById("dateFromGrab").value);
-    selectedDate.setDate(selectedDate.getDate() - 1);
-    const selectedEndDate = new Date(document.getElementById("dateToGrab").value);
-    return { leftDateFromGrab: formatDate(selectedDate, "21:00:00.000z"), rightDateToGrab: formatDate(selectedEndDate, "20:59:59.059z") };
-}
-
-function getSelectedOperators() {
-    const ops = document.getElementsByName('listofops');
-    const checks = document.getElementsByName('chekforsearch');
-    const ids = [], names = [];
-    for (let i = 0; i < checks.length; i++) {
-        if (checks[i].checked) { ids.push(ops[i].getAttribute('value')); names.push(ops[i].textContent); }
     }
-    return { ids, names };
-}
 
-async function loadChatsForOperator(operatorId, operatorName, leftDate, rightDate, filters) {
-    let page = 1; let opgrdata; const tmponlyoperhashes = [];
-    do {
-        const body = { serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5", mode: "Json", participatingOperatorsIds: [operatorId], tsFrom: leftDate, tsTo: rightDate, orderBy: "ts", orderDirection: "Asc", page, limit: 100 };
-        opgrdata = await afApiFetch("https://skyeng.autofaq.ai/api/conversations/history", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(body)
-        }).then(r => r.json());
-        if (!opgrdata?.items) break;
-        for (const el of opgrdata.items) {
-            // Guard: stats.rate может отсутствовать у чатов без оценки —
-            // раньше TypeError здесь убивал весь сбор по оператору
-            const rate = el.stats?.rate?.rate;
-            const csatAllowed = filters.csatIncludeUndefined ? (rate === undefined || filters.csatValues.includes(rate)) : (rate !== undefined && filters.csatValues.includes(rate));
-            if (csatAllowed) chatswithmarksarray.push({ ConvId: el.conversationId, Rate: rate });
-            if (el.operatorId === operatorId) tmponlyoperhashes.push({ HashId: el.conversationId, Duration: el.stats.conversationDuration, operatorName });
+    function formatMoscow(timestamp) {
+        return new Intl.DateTimeFormat('ru-RU', {
+            timeZone: 'Europe/Moscow',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23'
+        }).format(timestamp);
+    }
+
+    function timeSlot(timestamp) {
+        const parts = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Europe/Moscow',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23'
+        }).formatToParts(timestamp);
+
+        const value = type =>
+            Number(parts.find(item => item.type === type)?.value);
+
+        const hour = value('hour');
+        const minute = value('minute');
+
+        return Number.isFinite(hour) && Number.isFinite(minute)
+            ? hour * 2 + (minute >= 30 ? 1 : 0)
+            : null;
+    }
+
+    async function apiJson(url, options) {
+        const response = await afApiFetch(url, options);
+
+        if (!response?.ok) {
+            throw new Error(
+                `API вернул HTTP ${response?.status ?? 'unknown'}`
+            );
         }
-        page++;
-    } while ((page - 1) < (opgrdata.total / 100));
-    return tmponlyoperhashes;
-}
 
-function extractCommentLine(txt) {
-    const lowerTxt = txt.toLowerCase();
-    const idx = lowerTxt.indexOf("комментарий:");
-    if (idx === -1) return "";
-
-    // Берём всё после "Комментарий:" (12 символов)
-    let commentPart = txt.substring(idx + 12);
-
-    // Заменяем все варианты <br> на \n, чтобы многострочность сохранилась
-    commentPart = commentPart.replace(/<br\s*\/?>/gi, '\n').trim();
-
-    // На всякий случай чистим остаточные HTML-теги
-    commentPart = commentPart.replace(/<[^>]+>/g, '');
-
-    return commentPart;
-}
-
-async function processChat(chat, filters, criticalChats) {
-    const matched = chatswithmarksarray.find(x => x.ConvId === chat.HashId);
-    if (!matched) return;
-    const r = await getChat(chat.HashId);
-    if (!themeMatches(r, filters.theme)) return;
-    pushTags(r);
-
-    const priorityFilters = filters.priority ?? ["Any"];
-    const deptFilters = filters.dept ?? ["Any"];
-    const userTypeFilters = filters.usertype ?? ["Any"];
-    const commentSearch = (filters.commentInput ?? "").toLowerCase();
-    const messageSearch = (filters.messageInput ?? "").toLowerCase();
-
-    const actualUserType = r.channelUser.payload?.userType ?? null;
-    const operatorComments = r.messages.filter(m => m.tpe === "OperatorComment");
-    const allOpText = operatorComments.map(m => m.txt.toLowerCase()).join("\n");
-
-    if (!priorityFilters.includes("Any") && !priorityFilters.some(p => allOpText.includes(`критичность: ${p.toLowerCase()}`))) return;
-    if (!deptFilters.includes("Any") && !deptFilters.some(d => allOpText.includes(`категория: ${d.toLowerCase()}`))) return;
-
-    const found = categoryMap.find(c => allOpText.includes(c.key.toLowerCase()));
-    const label = found ? found.label : "";
-
-    if (!userTypeFilters.includes("Any")) {
-        if (userTypeFilters.includes("null") && actualUserType !== null) return;
-        if (!userTypeFilters.includes("null") && !userTypeFilters.includes(actualUserType)) return;
+        return response.json();
     }
 
-    let matchedCommentMsg = null;
-    if (commentSearch !== "") {
-        matchedCommentMsg = operatorComments.find(m => m.txt.toLowerCase().includes(commentSearch));
-        if (!matchedCommentMsg) return;
-    }
+    function initialize() {
+        const themeList = $('theme-list');
 
-    let matchedUserMsg = null;
-    if (messageSearch !== "") {
-        matchedUserMsg = r.messages.find(m => ["Question", "AnswerOperator", "AnswerOperatorWithBot"].includes(m.tpe) && (m.txt ?? "").toLowerCase().includes(messageSearch));
-        if (!matchedUserMsg) return;
-    }
+        themeList.append(
+            checkbox('parseallthemes', 'Все тематики', 'theme', true),
+            checkbox('parsenothemes', 'Без тематики', 'theme')
+        );
 
-    const blockComment = operatorComments.find(m => { const t = m.txt.toLowerCase(); return t.includes("критичность:") || t.includes("категория:"); });
-    let finalText = blockComment ? extractCommentLine(blockComment.txt) : "";
-    if (matchedUserMsg) finalText += "\n\n" + matchedUserMsg.txt;
+        for (const group of THEME_GROUPS) {
+            const heading = document.createElement('div');
+            heading.className = 'ag-theme-group';
+            heading.textContent = group.name;
+            themeList.appendChild(heading);
 
-    criticalChats.set(r.id, {
-        ChatId: r.id, timeStamp: new Date(r.tsCreate).toLocaleString('ru-RU', timeOptions), OperatorName: chat.operatorName, CSAT: matched.Rate, Department: label, text: finalText.trim(), Country: r.channelUser?.payload?.country ?? "-"
-    });
-    pushPayload({
-        r, duration: r.tsMod ? r.tsMod - r.tsCreate : undefined, operatorName: chat.operatorName, csat: matched.Rate
-    });
-}
-
-function renderMainTable(pureArray, chatswithmarksarray) {
-    const table = document.createElement('table');
-    table.className = 'cdu-table srvhhelpnomove'; table.id = "TableGrabbed";
-    const headerRow = document.createElement('tr');['№', 'Date', 'Operator', 'ChatId', '🏁 CSAT', 'Тема', 'SLACompl', 'Country'].forEach((name, index) => {
-        const th = document.createElement('th');
-        th.textContent = name;
-        th.setAttribute('name', 'btnNameFilter');
-        th.title = index > 0 ? `Click to filter by ${name}` : "";
-        if (index > 0) {
-            th.onclick = () => openColumnFilter(index, name);
+            for (const item of group.items) {
+                themeList.appendChild(
+                    checkbox(item.id, item.name, 'theme')
+                );
+            }
         }
-        headerRow.appendChild(th);
-    });
-    table.appendChild(headerRow);
 
-    pureArray.forEach((el, index) => {
-        const row = document.createElement('tr'); row.className = "rowOfChatGrabbed";
-        addCell(row, index + 1);
-        addCell(row, el.timeStamp);
-        addCell(row, el.OperatorName);
-        addCell(row, el.ChatId, { style: "font-family:monospace; color:#38bdf8;" });
-        const matched = chatswithmarksarray.find(x => x.ConvId === el.ChatId);
-        addCell(row, matched ? (matched.Rate ?? '-') : '-', { name: "CSATvalue", style: "text-align:center; font-weight:bold;" });
-        addCell(row, el.ThemeValue);
-        addCell(row, el.SLACompleted, { name: "SLACompletedValue", style: "text-align:center;" });
-        addCell(row, el.Country, { style: "text-align:center;" });
-        table.appendChild(row);
-    });
-    return table;
-}
+        $('marks').replaceChildren(
+            ...[
+                ['5', '5 · Отлично'],
+                ['4', '4 · Хорошо'],
+                ['3', '3 · Нейтрально'],
+                ['2', '2 · Плохо'],
+                ['1', '1 · Очень плохо'],
+                ['none', 'Без оценки']
+            ].map(([value, label]) =>
+                checkbox(value, label, 'mark', true)
+            )
+        );
 
-function renderCriticalTable(pureArray) {
-    const table = document.createElement('table');
-    table.className = 'cdu-table srvhhelpnomove'; table.id = "TableGrabbed";
-    const headerRow = document.createElement('tr');['№', 'Date', 'Operator', 'ChatId', '🏁 CSAT', 'Отдел', "Text"].forEach((name, index) => {
-        const th = document.createElement('th');
-        th.textContent = name;
-        th.setAttribute('name', 'btnNameFilter');
-        th.title = index > 0 ? `Click to filter by ${name}` : "";
-        if (index > 0) {
-            th.onclick = () => openColumnFilter(index, name);
+        $('tags').replaceChildren(
+            ...TAGS.map(([value, label]) =>
+                checkbox(value, label, 'tag')
+            )
+        );
+
+        setOptions($('priorities'), 'priority', [
+            ['Any', 'Любой'],
+            ['Низкий', 'Низкий'],
+            ['Высокий', 'Высокий'],
+            ['Критический', 'Критический']
+        ]);
+
+        setOptions($('departments'), 'department', [
+            ['Any', 'Любой'],
+            ...DEPARTMENTS
+        ]);
+
+        setOptions($('user-types'), 'user-type', [
+            ['Any', 'Любой'],
+            ['student', 'Ученик'],
+            ['parent', 'Родитель'],
+            ['teacher', 'Преподаватель'],
+            ['null', 'Не указан']
+        ]);
+
+        const today = formatMoscowDate();
+        $('from').value = today;
+        $('to').value = today;
+    }
+
+    async function loadOperators() {
+        $('operators').textContent = 'Загрузка…';
+        action('search').disabled = true;
+
+        try {
+            const data = await apiJson(
+                `${API}/operators/statistic/currentState`
+            );
+
+            const unique = new Map();
+
+            for (const entry of data?.onOperator ?? []) {
+                const operator = entry.operator;
+
+                if (!OPERATOR_GROUPS.has(entry.groupId) ||
+                    !operator?.id ||
+                    !operator?.fullName) {
+                    continue;
+                }
+
+                const id = String(operator.id);
+
+                unique.set(id, {
+                    id,
+                    name: String(operator.fullName)
+                });
+            }
+
+            state.operators = [...unique.values()].sort(
+                (a, b) => a.name.localeCompare(b.name, 'ru')
+            );
+
+            $('operators').replaceChildren(
+                ...state.operators.map(operator =>
+                    checkbox(
+                        operator.id,
+                        operator.name,
+                        'operator',
+                        true
+                    )
+                )
+            );
+
+            if (!state.operators.length) {
+                $('operators').textContent =
+                    'Операторы в выбранных группах не найдены.';
+                setStatus('Операторы не найдены.', true);
+                return;
+            }
+
+            action('search').disabled = false;
+            setStatus(
+                `Доступно операторов: ${state.operators.length}.`
+            );
+        } catch (error) {
+            console.error('Загрузка операторов:', error);
+            $('operators').textContent =
+                'Не удалось загрузить операторов.';
+            setStatus(
+                'Не удалось загрузить операторов. Повторно откройте окно.',
+                true
+            );
         }
-        headerRow.appendChild(th);
+    }
+
+    function readFilters() {
+        return {
+            themes: new Set(selected($('theme-list'))),
+            marks: new Set(selected($('marks'))),
+            tags: new Set(selected($('tags'))),
+            priorities: selectedOrAny($('priorities')),
+            departments: selectedOrAny($('departments')),
+            userTypes: selectedOrAny($('user-types')),
+            comment: $('comment').value
+                .trim()
+                .toLocaleLowerCase('ru'),
+            message: $('message').value
+                .trim()
+                .toLocaleLowerCase('ru')
+        };
+    }
+
+    function parseRate(item) {
+        const raw = item?.stats?.rate?.rate;
+
+        if (raw === null || raw === undefined || raw === '') {
+            return null;
+        }
+
+        const value = Number(raw);
+        return Number.isFinite(value) ? value : null;
+    }
+
+    async function loadHistory(operator, range, filters) {
+        const chats = [];
+        const limit = 100;
+        const maxPages = 500;
+
+        for (let page = 1; page <= maxPages; page++) {
+            const body = {
+                serviceId: SERVICE_ID,
+                mode: 'Json',
+                participatingOperatorsIds: [operator.id],
+                tsFrom: range.from,
+                tsTo: range.to,
+                orderBy: 'ts',
+                orderDirection: 'Asc',
+                page,
+                limit
+            };
+
+            const data = await apiJson(
+                `${API}/conversations/history`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                }
+            );
+
+            const items = Array.isArray(data?.items)
+                ? data.items
+                : [];
+
+            for (const item of items) {
+                if (String(item.operatorId) !== operator.id ||
+                    !item.conversationId) {
+                    continue;
+                }
+
+                const rate = parseRate(item);
+                const rateKey = rate === null
+                    ? 'none'
+                    : String(rate);
+
+                if (filters.marks.has(rateKey)) {
+                    chats.push({
+                        id: String(item.conversationId),
+                        operator: operator.name,
+                        rate
+                    });
+                }
+            }
+
+            const total = Number(data?.total);
+
+            if (items.length < limit ||
+                (Number.isFinite(total) &&
+                 page * limit >= total)) {
+                break;
+            }
+
+            if (page === maxPages) {
+                console.warn(
+                    `Достигнут лимит страниц истории: ${operator.name}`
+                );
+            }
+        }
+
+        return chats;
+    }
+
+    function parseTags(raw) {
+        if (Array.isArray(raw)) {
+            return raw.map(String);
+        }
+
+        if (typeof raw !== 'string' || !raw.trim()) {
+            return [];
+        }
+
+        try {
+            const parsed = JSON.parse(raw);
+
+            if (Array.isArray(parsed)) {
+                return parsed.map(String);
+            }
+        } catch {
+            // Обычный список тегов через запятую.
+        }
+
+        return raw
+            .split(',')
+            .map(tag => tag.trim())
+            .filter(Boolean);
+    }
+
+    function themeMatches(topicId, selectedThemes) {
+        if (selectedThemes.has('parseallthemes')) {
+            return true;
+        }
+
+        if (!topicId && selectedThemes.has('parsenothemes')) {
+            return true;
+        }
+
+        return topicId != null &&
+            selectedThemes.has(String(topicId));
+    }
+
+    function commentHasAny(text, values, prefix) {
+        return values.includes('Any') ||
+            values.some(value =>
+                text.includes(
+                    `${prefix}${value.toLocaleLowerCase('ru')}`
+                )
+            );
+    }
+
+    function extractComment(text) {
+        const match = String(text ?? '').match(
+            /комментарий:\s*([\s\S]*)/i
+        );
+
+        if (!match) return '';
+
+        return match[1]
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<[^>]*>/g, '')
+            .trim();
+    }
+
+    async function loadChat(chat, filters) {
+        const data = await apiJson(
+            `${API}/conversations/${encodeURIComponent(chat.id)}`
+        );
+
+        const topicId = data.payload?.topicId?.value;
+
+        if (!themeMatches(topicId, filters.themes)) {
+            return null;
+        }
+
+        const messages = Array.isArray(data.messages)
+            ? data.messages
+            : [];
+
+        const comments = messages.filter(
+            message => message.tpe === 'OperatorComment'
+        );
+
+        const allCommentText = comments
+            .map(message => String(message.txt ?? ''))
+            .join('\n')
+            .toLocaleLowerCase('ru');
+
+        if (!commentHasAny(
+            allCommentText,
+            filters.priorities,
+            'критичность: '
+        )) {
+            return null;
+        }
+
+        if (!commentHasAny(
+            allCommentText,
+            filters.departments,
+            'категория: '
+        )) {
+            return null;
+        }
+
+        const rawUserType =
+            data.channelUser?.payload?.userType;
+
+        const userType =
+            rawUserType === null ||
+            rawUserType === undefined ||
+            rawUserType === ''
+                ? 'null'
+                : String(rawUserType);
+
+        if (!filters.userTypes.includes('Any') &&
+            !filters.userTypes.includes(userType)) {
+            return null;
+        }
+
+        const matchedComment = filters.comment
+            ? comments.find(message =>
+                String(message.txt ?? '')
+                    .toLocaleLowerCase('ru')
+                    .includes(filters.comment)
+            )
+            : null;
+
+        if (filters.comment && !matchedComment) {
+            return null;
+        }
+
+        const userMessages = messages.filter(message =>
+            [
+                'Question',
+                'AnswerOperator',
+                'AnswerOperatorWithBot'
+            ].includes(message.tpe)
+        );
+
+        const matchedMessage = filters.message
+            ? userMessages.find(message =>
+                String(message.txt ?? '')
+                    .toLocaleLowerCase('ru')
+                    .includes(filters.message)
+            )
+            : null;
+
+        if (filters.message && !matchedMessage) {
+            return null;
+        }
+
+        const tags = parseTags(data.payload?.tags?.value);
+
+        if (filters.tags.size &&
+            !tags.some(tag => filters.tags.has(tag))) {
+            return null;
+        }
+
+        const department = DEPARTMENTS.find(
+            ([fullName]) =>
+                allCommentText.includes(
+                    `категория: ${fullName.toLocaleLowerCase('ru')}`
+                )
+        )?.[1] ?? '—';
+
+        const commentBlock = comments.find(message =>
+            /критичность:|категория:/i.test(
+                String(message.txt ?? '')
+            )
+        );
+
+        const text = [
+            extractComment(
+                commentBlock?.txt ??
+                matchedComment?.txt ??
+                ''
+            ),
+            matchedMessage
+                ? String(matchedMessage.txt ?? '')
+                : ''
+        ].filter(Boolean).join('\n\n');
+
+        const timestamp = new Date(data.tsCreate).getTime();
+        const modified = new Date(data.tsMod).getTime();
+
+        const duration =
+            data.tsMod != null &&
+            Number.isFinite(timestamp) &&
+            Number.isFinite(modified) &&
+            modified >= timestamp
+                ? modified - timestamp
+                : null;
+
+        return {
+            id: String(data.id ?? chat.id),
+            timestamp: Number.isFinite(timestamp)
+                ? timestamp
+                : null,
+            slot: Number.isFinite(timestamp)
+                ? timeSlot(timestamp)
+                : null,
+            date: Number.isFinite(timestamp)
+                ? formatMoscow(timestamp)
+                : '—',
+            operator: chat.operator,
+            csat: chat.rate,
+            theme: topicId
+                ? themeNames.get(String(topicId)) ??
+                  'Неизвестная тематика'
+                : 'Без тематики',
+            sla: duration === null
+                ? null
+                : duration <= 25 * 60 * 1000,
+            country: String(
+                data.channelUser?.payload?.country ?? '—'
+            ),
+            department,
+            userType,
+            tags,
+            text
+        };
+    }
+
+    async function parallel(items, concurrency, handler, onProgress) {
+        let cursor = 0;
+        let completed = 0;
+
+        async function worker() {
+            while (cursor < items.length) {
+                const item = items[cursor++];
+
+                try {
+                    await handler(item);
+                } finally {
+                    completed++;
+                    onProgress(completed, items.length);
+                }
+            }
+        }
+
+        await Promise.all(
+            Array.from(
+                {
+                    length: Math.min(concurrency, items.length)
+                },
+                () => worker()
+            )
+        );
+    }
+
+    function cellValue(record, field) {
+        if (field === 'csat') {
+            return record.csat ?? '—';
+        }
+
+        if (field === 'sla') {
+            return record.sla === null
+                ? '—'
+                : record.sla
+                    ? 'Да'
+                    : 'Нет';
+        }
+
+        return record[field] ?? '—';
+    }
+
+    function visibleRecords() {
+        return state.records.filter(record => {
+            for (const [field, accepted] of state.columnFilters) {
+                if (!accepted.has(
+                    String(cellValue(record, field))
+                )) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
+
+    function renderMetrics(records) {
+        const rated = records.filter(
+            record => record.csat !== null
+        );
+
+        const knownSla = records.filter(
+            record => record.sla !== null
+        );
+
+        const average = rated.length
+            ? rated.reduce(
+                (sum, record) => sum + record.csat,
+                0
+            ) / rated.length
+            : null;
+
+        const slaPercent = knownSla.length
+            ? knownSla.filter(record => record.sla).length /
+              knownSla.length * 100
+            : null;
+
+        const metrics = [
+            ['Чаты', `${records.length} / ${state.records.length}`],
+            [
+                'CSAT',
+                average === null ? '—' : average.toFixed(2)
+            ],
+            [
+                'SLA',
+                slaPercent === null
+                    ? '—'
+                    : `${slaPercent.toFixed(1)}%`
+            ]
+        ];
+
+        $('metrics').replaceChildren(
+            ...metrics.map(([label, value]) => {
+                const item = document.createElement('span');
+                item.className = 'ag-metric';
+
+                const bold = document.createElement('b');
+                bold.textContent = value;
+
+                item.append(
+                    document.createTextNode(`${label} `),
+                    bold
+                );
+
+                return item;
+            })
+        );
+    }
+
+    function renderTable() {
+        const container = $('table');
+        const records = visibleRecords();
+
+        renderMetrics(records);
+        container.replaceChildren();
+
+        if (!records.length) {
+            const empty = document.createElement('div');
+            empty.className = 'ag-empty';
+            empty.textContent = state.records.length
+                ? 'Нет строк для выбранных фильтров столбцов.'
+                : 'Чаты не найдены.';
+            container.appendChild(empty);
+            return;
+        }
+
+        const table = document.createElement('table');
+        const header = table.createTHead().insertRow();
+
+        for (const [field, title] of COLUMNS) {
+            const th = document.createElement('th');
+            const filter = document.createElement('button');
+
+            filter.type = 'button';
+            filter.textContent = `${title} ▾`;
+            filter.title = `Фильтр столбца «${title}»`;
+            filter.style.cssText =
+                'min-height:0;padding:0;border:0;' +
+                'background:transparent;color:inherit;' +
+                'font-weight:700';
+
+            filter.addEventListener('click', event =>
+                openColumnFilter(
+                    field,
+                    title,
+                    event.currentTarget
+                )
+            );
+
+            th.appendChild(filter);
+            header.appendChild(th);
+        }
+
+        const body = table.createTBody();
+
+        for (const record of records) {
+            const row = body.insertRow();
+            row.title = 'Открыть историю чата';
+
+            for (const [field] of COLUMNS) {
+                const td = row.insertCell();
+                const value = String(cellValue(record, field));
+
+                td.textContent = value;
+                td.title = value;
+            }
+
+            row.addEventListener(
+                'click',
+                () => openHistory(record.id)
+            );
+        }
+
+        container.appendChild(table);
+    }
+
+    function openHistory(id) {
+        const input = document.getElementById('hashchathis');
+
+        const searchButton =
+            document.getElementById('btn_search_history') ??
+            window.btn_search_history;
+
+        if (!input || !searchButton) {
+            setStatus(
+                `Chat ID: ${id}. Окно истории недоступно.`,
+                true
+            );
+            return;
+        }
+
+        input.value = id;
+
+        const historyWindow =
+            document.getElementById('AF_ChatHis');
+
+        if (historyWindow &&
+            getComputedStyle(historyWindow).display === 'none') {
+            document.getElementById('opennewcat')?.click();
+        }
+
+        searchButton.click();
+    }
+
+    function openColumnFilter(field, title, anchor) {
+        const values = [...new Set(
+            state.records.map(record =>
+                String(cellValue(record, field))
+            )
+        )].sort((a, b) =>
+            a.localeCompare(b, 'ru', { numeric: true })
+        );
+
+        if (!state.columnFilters.has(field)) {
+            state.columnFilters.set(field, new Set(values));
+        }
+
+        const accepted = state.columnFilters.get(field);
+
+        popover.replaceChildren();
+
+        const heading = document.createElement('strong');
+        heading.textContent = title;
+
+        const controls = document.createElement('div');
+        controls.style.cssText =
+            'display:flex;gap:5px;margin-top:8px';
+
+        const all = document.createElement('button');
+        all.textContent = 'Все';
+
+        const none = document.createElement('button');
+        none.textContent = 'Ничего';
+
+        const close = document.createElement('button');
+        close.textContent = 'Закрыть';
+
+        controls.append(all, none, close);
+
+        const list = document.createElement('div');
+        list.className = 'ag-popover-list';
+
+        for (const value of values) {
+            const label = document.createElement('label');
+
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.value = value;
+            input.checked = accepted.has(value);
+
+            const text = document.createElement('span');
+            text.textContent = value || '(Пусто)';
+
+            input.addEventListener('change', () => {
+                if (input.checked) accepted.add(value);
+                else accepted.delete(value);
+
+                renderTable();
+
+                if (!analytics.hidden) {
+                    renderAnalytics();
+                }
+            });
+
+            label.append(input, text);
+            list.appendChild(label);
+        }
+
+        all.addEventListener('click', () => {
+            accepted.clear();
+            values.forEach(value => accepted.add(value));
+
+            list.querySelectorAll('input').forEach(input => {
+                input.checked = true;
+            });
+
+            renderTable();
+
+            if (!analytics.hidden) renderAnalytics();
+        });
+
+        none.addEventListener('click', () => {
+            accepted.clear();
+
+            list.querySelectorAll('input').forEach(input => {
+                input.checked = false;
+            });
+
+            renderTable();
+
+            if (!analytics.hidden) renderAnalytics();
+        });
+
+        close.addEventListener(
+            'click',
+            () => popover.hidden = true
+        );
+
+        popover.append(heading, controls, list);
+        popover.hidden = false;
+
+        const rect = anchor.getBoundingClientRect();
+
+        popover.style.left = `${Math.max(
+            10,
+            Math.min(rect.left, window.innerWidth - 300)
+        )}px`;
+
+        popover.style.top = `${Math.max(
+            10,
+            Math.min(rect.bottom + 5, window.innerHeight - 250)
+        )}px`;
+    }
+
+    async function runSearch() {
+        if (state.busy) return;
+
+        try {
+            const range = dateRange();
+            const filters = readFilters();
+            const selectedIds = new Set(
+                selected($('operators'))
+            );
+
+            const operators = state.operators.filter(
+                operator => selectedIds.has(operator.id)
+            );
+
+            if (!operators.length) {
+                throw new Error(
+                    'Выберите хотя бы одного оператора.'
+                );
+            }
+
+            if (!filters.marks.size) {
+                throw new Error(
+                    'Выберите хотя бы одну оценку.'
+                );
+            }
+
+            state.busy = true;
+            state.records = [];
+            state.columnFilters.clear();
+
+            action('search').disabled = true;
+            action('analytics').disabled = true;
+            action('export').disabled = true;
+
+            analytics.hidden = true;
+            tooltip.hidden = true;
+            popover.hidden = true;
+
+            $('table').innerHTML =
+                '<div class="ag-empty">Загружаем чаты…</div>';
+
+            $('metrics').replaceChildren();
+            setProgress(0);
+
+            const uniqueChats = new Map();
+            let failedOperators = 0;
+            let failedChats = 0;
+
+            for (let i = 0; i < operators.length; i++) {
+                const operator = operators[i];
+
+                try {
+                    const chats = await loadHistory(
+                        operator,
+                        range,
+                        filters
+                    );
+
+                    for (const chat of chats) {
+                        if (!uniqueChats.has(chat.id)) {
+                            uniqueChats.set(chat.id, chat);
+                        }
+                    }
+                } catch (error) {
+                    failedOperators++;
+                    console.error(
+                        `История оператора ${operator.name}:`,
+                        error
+                    );
+                }
+
+                setProgress(
+                    (i + 1) / operators.length * 35
+                );
+
+                setStatus(
+                    `История: ${i + 1} / ${operators.length}`
+                );
+            }
+
+            const chats = [...uniqueChats.values()];
+
+            await parallel(
+                chats,
+                5,
+                async chat => {
+                    try {
+                        const record = await loadChat(
+                            chat,
+                            filters
+                        );
+
+                        if (record) {
+                            state.records.push(record);
+                        }
+                    } catch (error) {
+                        failedChats++;
+                        console.error(
+                            `Чат ${chat.id}:`,
+                            error
+                        );
+                    }
+                },
+                (done, total) => {
+                    setProgress(
+                        35 + done / Math.max(total, 1) * 65
+                    );
+
+                    setStatus(
+                        `Чаты: ${done} / ${total}`
+                    );
+                }
+            );
+
+            state.records.sort(
+                (a, b) =>
+                    (b.timestamp ?? 0) -
+                    (a.timestamp ?? 0)
+            );
+
+            state.analytics.selected.clear();
+            state.analytics.initializedFor = '';
+
+            renderTable();
+            setProgress(100);
+
+            action('analytics').disabled =
+                !state.records.length;
+
+            action('export').disabled =
+                !state.records.length;
+
+            const errorCount =
+                failedOperators + failedChats;
+
+            setStatus(
+                `Готово: ${state.records.length} чатов.` +
+                (errorCount
+                    ? ` Ошибок: ${errorCount}; выборка может быть неполной.`
+                    : ''),
+                errorCount > 0
+            );
+        } catch (error) {
+            console.error('Поиск:', error);
+
+            setStatus(
+                error.message ??
+                    'Не удалось выполнить поиск.',
+                true
+            );
+        } finally {
+            state.busy = false;
+            action('search').disabled =
+                !state.operators.length;
+        }
+    }
+
+    /* ==================== Аналитика ==================== */
+
+    function groupName(record) {
+        return state.analytics.group === 'theme'
+            ? record.theme
+            : record.country;
+    }
+
+    function availableGroups() {
+        const counts = new Map();
+
+        for (const record of visibleRecords()) {
+            const name = groupName(record);
+
+            counts.set(
+                name,
+                (counts.get(name) ?? 0) + 1
+            );
+        }
+
+        return [...counts]
+            .map(([name, count]) => ({
+                name,
+                count
+            }))
+            .sort(
+                (a, b) =>
+                    b.count - a.count ||
+                    a.name.localeCompare(b.name, 'ru')
+            );
+    }
+
+    function synchronizeSelection(groups) {
+        const key = state.analytics.group;
+        const available = new Set(
+            groups.map(group => group.name)
+        );
+
+        if (state.analytics.initializedFor !== key) {
+            state.analytics.selected =
+                new Set(available);
+
+            state.analytics.initializedFor = key;
+        } else {
+            for (const name of state.analytics.selected) {
+                if (!available.has(name)) {
+                    state.analytics.selected.delete(name);
+                }
+            }
+        }
+    }
+
+    function intervalLabel(slot) {
+        const clock = index =>
+            `${String(
+                Math.floor(index / 2) % 24
+            ).padStart(2, '0')}:` +
+            `${index % 2 ? '30' : '00'}`;
+
+        return `${clock(slot)}–${clock(slot + 1)}`;
+    }
+
+    function analyticsData() {
+        const groups = availableGroups();
+
+        synchronizeSelection(groups);
+
+        const names = groups
+            .map(group => group.name)
+            .filter(name =>
+                state.analytics.selected.has(name)
+            );
+
+        const selectedNames = new Set(names);
+        const records = visibleRecords().filter(
+            record =>
+                selectedNames.has(groupName(record))
+        );
+
+        if (state.analytics.mode === 'summary') {
+            const counts = new Map(
+                names.map(name => [name, 0])
+            );
+
+            for (const record of records) {
+                const name = groupName(record);
+
+                counts.set(
+                    name,
+                    counts.get(name) + 1
+                );
+            }
+
+            return {
+                groups,
+                names,
+                rows: [...counts]
+                    .map(([name, count]) => ({
+                        name,
+                        count
+                    }))
+                    .sort(
+                        (a, b) =>
+                            b.count - a.count
+                    )
+            };
+        }
+
+        const series = new Map(
+            names.map(name => [
+                name,
+                Array(48).fill(0)
+            ])
+        );
+
+        for (const record of records) {
+            if (record.slot !== null &&
+                record.slot >= 0 &&
+                record.slot < 48) {
+                series.get(groupName(record))[
+                    record.slot
+                ]++;
+            }
+        }
+
+        const rows = [];
+
+        for (let slot = 0; slot < 48; slot++) {
+            for (const name of names) {
+                const count = series.get(name)[slot];
+
+                if (count) {
+                    rows.push({
+                        slot,
+                        interval: intervalLabel(slot),
+                        name,
+                        count
+                    });
+                }
+            }
+        }
+
+        return {
+            groups,
+            names,
+            series,
+            rows
+        };
+    }
+
+    function renderSeriesControls(groups) {
+        const search = a$('series-search')
+            .value
+            .trim()
+            .toLocaleLowerCase('ru');
+
+        const filtered = groups.filter(group =>
+            group.name
+                .toLocaleLowerCase('ru')
+                .includes(search)
+        );
+
+        const container = a$('series');
+        container.replaceChildren();
+
+        for (const group of filtered) {
+            const item = document.createElement('span');
+            item.className = 'ag-series';
+
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.checked =
+                state.analytics.selected.has(group.name);
+
+            input.title =
+                `Показать «${group.name}»`;
+
+            input.addEventListener('change', () => {
+                if (input.checked) {
+                    state.analytics.selected.add(
+                        group.name
+                    );
+                } else {
+                    state.analytics.selected.delete(
+                        group.name
+                    );
+                }
+
+                renderAnalytics();
+            });
+
+            const label = document.createElement('span');
+            label.className = 'ag-series-name';
+            label.textContent =
+                `${group.name} · ${group.count}`;
+
+            label.title = group.name;
+
+            label.addEventListener('click', () => {
+                state.analytics.selected =
+                    new Set([group.name]);
+
+                renderAnalytics();
+            });
+
+            const only = document.createElement('button');
+            only.type = 'button';
+            only.className = 'ag-only';
+            only.textContent = 'Только';
+            only.title =
+                `Оставить только «${group.name}»`;
+
+            only.addEventListener('click', () => {
+                state.analytics.selected =
+                    new Set([group.name]);
+
+                renderAnalytics();
+            });
+
+            item.append(input, label, only);
+            container.appendChild(item);
+        }
+
+        a$('selected-count').textContent =
+            `${state.analytics.selected.size} / ${groups.length}`;
+
+        if (!filtered.length) {
+            container.textContent =
+                'Ничего не найдено.';
+        }
+    }
+
+    function createSvg(tag, attributes = {}) {
+        const node = document.createElementNS(
+            'http://www.w3.org/2000/svg',
+            tag
+        );
+
+        for (const [key, value] of
+            Object.entries(attributes)) {
+            node.setAttribute(
+                key,
+                String(value)
+            );
+        }
+
+        return node;
+    }
+
+    function showTooltip(event, text) {
+        tooltip.textContent = text;
+        tooltip.hidden = false;
+
+        const width = tooltip.offsetWidth;
+        const height = tooltip.offsetHeight;
+
+        tooltip.style.left =
+            `${Math.min(
+                event.clientX + 13,
+                window.innerWidth - width - 10
+            )}px`;
+
+        tooltip.style.top =
+            `${Math.max(
+                10,
+                Math.min(
+                    event.clientY + 13,
+                    window.innerHeight -
+                        height -
+                        10
+                )
+            )}px`;
+    }
+
+    function renderTimelineChart(data) {
+        const { names, series } = data;
+
+        const scroll =
+            document.createElement('div');
+
+        scroll.className = 'ag-graph-scroll';
+
+        const width = 1120;
+        const height = 350;
+
+        const left = 43;
+        const top = 20;
+        const right = 16;
+        const bottom = 43;
+
+        const chartWidth =
+            width - left - right;
+
+        const chartHeight =
+            height - top - bottom;
+
+        const svg = createSvg('svg', {
+            width,
+            height,
+            viewBox: `0 0 ${width} ${height}`,
+            role: 'img',
+            'aria-label':
+                'Динамика обращений по получасовым интервалам'
+        });
+
+        const maximum = Math.max(
+            1,
+            ...names.flatMap(name =>
+                series.get(name)
+            )
+        );
+
+        for (let step = 0; step <= 4; step++) {
+            const y =
+                top +
+                chartHeight * step / 4;
+
+            svg.appendChild(
+                createSvg('line', {
+                    x1: left,
+                    y1: y,
+                    x2: width - right,
+                    y2: y,
+                    stroke: '#384250',
+                    'stroke-width': 1
+                })
+            );
+
+            const label = createSvg('text', {
+                x: left - 7,
+                y: y + 4,
+                fill: '#a8afba',
+                'text-anchor': 'end',
+                'font-size': 11
+            });
+
+            label.textContent = String(
+                Math.round(
+                    maximum * (4 - step) / 4
+                )
+            );
+
+            svg.appendChild(label);
+        }
+
+        for (let slot = 0; slot < 48; slot += 4) {
+            const label = createSvg('text', {
+                x:
+                    left +
+                    slot / 47 * chartWidth,
+                y: height - 12,
+                fill: '#a8afba',
+                'text-anchor': 'middle',
+                'font-size': 11
+            });
+
+            label.textContent =
+                `${String(slot / 2)
+                    .padStart(2, '0')}:00`;
+
+            svg.appendChild(label);
+        }
+
+        names.forEach((name, index) => {
+            const values = series.get(name);
+
+            const color =
+                CHART_COLORS[
+                    index % CHART_COLORS.length
+                ];
+
+            const points = values.map(
+                (count, slot) => {
+                    const x =
+                        left +
+                        slot / 47 *
+                            chartWidth;
+
+                    const y =
+                        top +
+                        chartHeight -
+                        count /
+                            maximum *
+                            chartHeight;
+
+                    return `${x},${y}`;
+                }
+            ).join(' ');
+
+            const path = createSvg(
+                'polyline',
+                {
+                    points,
+                    fill: 'none',
+                    stroke: color,
+                    'stroke-width': 2.5,
+                    'stroke-linecap':
+                        'round',
+                    'stroke-linejoin':
+                        'round'
+                }
+            );
+
+            svg.appendChild(path);
+        });
+
+        const hoverLine = createSvg('line', {
+            y1: top,
+            y2: top + chartHeight,
+            stroke: '#e1b875',
+            'stroke-width': 1,
+            'stroke-dasharray': '4 4',
+            visibility: 'hidden'
+        });
+
+        svg.appendChild(hoverLine);
+
+        const hoverArea = createSvg('rect', {
+            x: left,
+            y: top,
+            width: chartWidth,
+            height: chartHeight,
+            fill: 'transparent'
+        });
+
+        hoverArea.addEventListener(
+            'pointermove',
+            event => {
+                const rect =
+                    svg.getBoundingClientRect();
+
+                const svgX =
+                    (event.clientX -
+                        rect.left) *
+                    width /
+                    rect.width;
+
+                const slot = Math.max(
+                    0,
+                    Math.min(
+                        47,
+                        Math.round(
+                            (svgX - left) /
+                            chartWidth *
+                            47
+                        )
+                    )
+                );
+
+                const x =
+                    left +
+                    slot / 47 *
+                        chartWidth;
+
+                hoverLine.setAttribute(
+                    'x1',
+                    String(x)
+                );
+
+                hoverLine.setAttribute(
+                    'x2',
+                    String(x)
+                );
+
+                hoverLine.setAttribute(
+                    'visibility',
+                    'visible'
+                );
+
+                const values = names
+                    .map(name => ({
+                        name,
+                        value:
+                            series.get(name)[slot]
+                    }))
+                    .filter(item =>
+                        item.value > 0
+                    )
+                    .sort(
+                        (a, b) =>
+                            b.value - a.value
+                    );
+
+                const total = names
+                    .reduce(
+                        (sum, name) =>
+                            sum +
+                            series.get(name)[slot],
+                        0
+                    );
+
+                const lines = [
+                    intervalLabel(slot),
+                    `Всего: ${total}`,
+                    ...values
+                        .slice(0, 12)
+                        .map(item =>
+                            `${item.name}: ${item.value}`
+                        )
+                ];
+
+                if (values.length > 12) {
+                    lines.push(
+                        `И ещё: ${values.length - 12}`
+                    );
+                }
+
+                showTooltip(
+                    event,
+                    lines.join('\n')
+                );
+            }
+        );
+
+        hoverArea.addEventListener(
+            'pointerleave',
+            () => {
+                tooltip.hidden = true;
+                hoverLine.setAttribute(
+                    'visibility',
+                    'hidden'
+                );
+            }
+        );
+
+        svg.appendChild(hoverArea);
+        scroll.appendChild(svg);
+
+        const hint =
+            document.createElement('p');
+
+        hint.className = 'ag-hint';
+        hint.textContent =
+            'Наведите на график для значений. ' +
+            'Тематики можно переключать выше.';
+
+        a$('content').replaceChildren(
+            scroll,
+            hint
+        );
+    }
+
+    function renderSummaryChart(data) {
+        const container =
+            document.createElement('div');
+
+        container.className = 'ag-bars';
+
+        const rows =
+            data.rows.slice(0, 35);
+
+        const maximum =
+            rows[0]?.count || 1;
+
+        for (const item of rows) {
+            const row =
+                document.createElement('div');
+
+            row.className = 'ag-bar';
+
+            const name =
+                document.createElement('span');
+
+            name.className =
+                'ag-bar-name';
+
+            name.textContent =
+                item.name;
+
+            name.title =
+                item.name;
+
+            const track =
+                document.createElement('div');
+
+            track.className =
+                'ag-bar-track';
+
+            const fill =
+                document.createElement('div');
+
+            fill.className =
+                'ag-bar-fill';
+
+            fill.style.width =
+                `${item.count /
+                    maximum *
+                    100}%`;
+
+            track.appendChild(fill);
+
+            const count =
+                document.createElement('b');
+
+            count.textContent =
+                String(item.count);
+
+            row.append(
+                name,
+                track,
+                count
+            );
+
+            container.appendChild(row);
+        }
+
+        if (data.rows.length > rows.length) {
+            const note =
+                document.createElement('p');
+
+            note.className = 'ag-hint';
+            note.textContent =
+                'Показаны первые 35 категорий. ' +
+                'Полный список доступен в таблице и CSV.';
+
+            container.appendChild(note);
+        }
+
+        a$('content').replaceChildren(
+            container
+        );
+    }
+
+    function renderAnalyticsTable(data) {
+        const wrap =
+            document.createElement('div');
+
+        wrap.className =
+            'ag-analytics-table';
+
+        const table =
+            document.createElement('table');
+
+        const header =
+            table.createTHead().insertRow();
+
+        const timeline =
+            state.analytics.mode ===
+            'timeline';
+
+        const headings = timeline
+            ? [
+                'Интервал',
+                'Категория',
+                'Чатов'
+            ]
+            : [
+                'Категория',
+                'Чатов'
+            ];
+
+        for (const heading of headings) {
+            const th =
+                document.createElement('th');
+
+            th.textContent = heading;
+            header.appendChild(th);
+        }
+
+        const body =
+            table.createTBody();
+
+        for (const item of data.rows) {
+            const row =
+                body.insertRow();
+
+            const values = timeline
+                ? [
+                    item.interval,
+                    item.name,
+                    item.count
+                ]
+                : [
+                    item.name,
+                    item.count
+                ];
+
+            for (const value of values) {
+                row.insertCell()
+                    .textContent =
+                    String(value);
+            }
+        }
+
+        wrap.appendChild(table);
+
+        a$('content').replaceChildren(
+            wrap
+        );
+    }
+
+    function renderAnalytics() {
+        const current =
+            state.analytics;
+
+        for (const button of
+            analytics.querySelectorAll(
+                '[data-group]'
+            )) {
+            button.setAttribute(
+                'aria-pressed',
+                String(
+                    button.dataset.group ===
+                    current.group
+                )
+            );
+        }
+
+        for (const button of
+            analytics.querySelectorAll(
+                '[data-mode]'
+            )) {
+            button.setAttribute(
+                'aria-pressed',
+                String(
+                    button.dataset.mode ===
+                    current.mode
+                )
+            );
+        }
+
+        for (const button of
+            analytics.querySelectorAll(
+                '[data-view]'
+            )) {
+            button.setAttribute(
+                'aria-pressed',
+                String(
+                    button.dataset.view ===
+                    current.view
+                )
+            );
+        }
+
+        const data =
+            analyticsData();
+
+        renderSeriesControls(
+            data.groups
+        );
+
+        if (!data.names.length) {
+            const empty =
+                document.createElement('div');
+
+            empty.className =
+                'ag-empty';
+
+            empty.textContent =
+                'Выберите хотя бы одну категорию для отображения.';
+
+            a$('content')
+                .replaceChildren(empty);
+
+            return;
+        }
+
+        if (current.view === 'table') {
+            renderAnalyticsTable(
+                data
+            );
+        } else if (
+            current.mode === 'timeline'
+        ) {
+            renderTimelineChart(
+                data
+            );
+        } else {
+            renderSummaryChart(
+                data
+            );
+        }
+    }
+
+    function csvCell(value) {
+        return `"${String(
+            value ?? ''
+        ).replace(/"/g, '""')}"`;
+    }
+
+    function downloadCsv(
+        filename,
+        headers,
+        rows
+    ) {
+        if (!rows.length) {
+            setStatus(
+                'Нет данных для экспорта.',
+                true
+            );
+
+            return;
+        }
+
+        const content =
+            '\uFEFF' +
+            [
+                headers
+                    .map(csvCell)
+                    .join(','),
+
+                ...rows.map(row =>
+                    row
+                        .map(csvCell)
+                        .join(',')
+                )
+            ].join('\r\n');
+
+        const url =
+            URL.createObjectURL(
+                new Blob(
+                    [content],
+                    {
+                        type:
+                            'text/csv;charset=utf-8'
+                    }
+                )
+            );
+
+        const link =
+            document.createElement('a');
+
+        link.href = url;
+        link.download = filename;
+
+        document.body.appendChild(
+            link
+        );
+
+        link.click();
+        link.remove();
+
+        setTimeout(
+            () =>
+                URL.revokeObjectURL(
+                    url
+                ),
+            60_000
+        );
+    }
+
+    function exportVisible() {
+        const records =
+            visibleRecords();
+
+        downloadCsv(
+            'autofaq_chats.csv',
+
+            [
+                ...COLUMNS.map(
+                    ([, title]) => title
+                ),
+                'Тип пользователя',
+                'Теги'
+            ],
+
+            records.map(record => [
+                ...COLUMNS.map(
+                    ([field]) =>
+                        cellValue(
+                            record,
+                            field
+                        )
+                ),
+                record.userType,
+                record.tags.join('; ')
+            ])
+        );
+    }
+
+    function exportAnalytics() {
+        const data =
+            analyticsData();
+
+        if (
+            state.analytics.mode ===
+            'timeline'
+        ) {
+            downloadCsv(
+                `autofaq_${state.analytics.group}_timeline.csv`,
+
+                [
+                    'Интервал',
+                    'Категория',
+                    'Чатов'
+                ],
+
+                data.rows.map(
+                    item => [
+                        item.interval,
+                        item.name,
+                        item.count
+                    ]
+                )
+            );
+        } else {
+            downloadCsv(
+                `autofaq_${state.analytics.group}_summary.csv`,
+
+                [
+                    'Категория',
+                    'Чатов'
+                ],
+
+                data.rows.map(
+                    item => [
+                        item.name,
+                        item.count
+                    ]
+                )
+            );
+        }
+    }
+
+    /* ==================== События ==================== */
+
+    app.addEventListener(
+        'change',
+        event => {
+            const input =
+                event.target;
+
+            if (!input.matches(
+                'input[name="priority"],' +
+                'input[name="department"],' +
+                'input[name="user-type"]'
+            )) {
+                return;
+            }
+
+            const group = [
+                ...app.querySelectorAll(
+                    `input[name="${input.name}"]`
+                )
+            ];
+
+            const any =
+                group.find(item =>
+                    item.value === 'Any'
+                );
+
+            if (
+                input.checked &&
+                input.value === 'Any'
+            ) {
+                group.forEach(item => {
+                    if (item !== input) {
+                        item.checked = false;
+                    }
+                });
+            } else if (
+                input.checked
+            ) {
+                any.checked = false;
+            }
+
+            if (!group.some(
+                item => item.checked
+            )) {
+                any.checked = true;
+            }
+        }
+    );
+
+    action('close').addEventListener(
+        'click',
+        () => {
+            windowElement.style.display =
+                'none';
+
+            analytics.hidden = true;
+            popover.hidden = true;
+            tooltip.hidden = true;
+        }
+    );
+
+    action('previous').addEventListener(
+        'click',
+        () => {
+            $('from').value = shiftDate(
+                $('from').value,
+                -1
+            );
+
+            $('to').value = shiftDate(
+                $('to').value,
+                -1
+            );
+        }
+    );
+
+    action('next').addEventListener(
+        'click',
+        () => {
+            $('from').value = shiftDate(
+                $('from').value,
+                1
+            );
+
+            $('to').value = shiftDate(
+                $('to').value,
+                1
+            );
+        }
+    );
+
+    action('toggle-operators')
+        .addEventListener(
+            'click',
+            () => {
+                const inputs = [
+                    ...$('operators')
+                        .querySelectorAll(
+                            'input'
+                        )
+                ];
+
+                const choose =
+                    inputs.some(
+                        input =>
+                            !input.checked
+                    );
+
+                inputs.forEach(
+                    input =>
+                        input.checked =
+                            choose
+                );
+            }
+        );
+
+    action('search')
+        .addEventListener(
+            'click',
+            runSearch
+        );
+
+    action('export')
+        .addEventListener(
+            'click',
+            exportVisible
+        );
+
+    action('analytics')
+        .addEventListener(
+            'click',
+            () => {
+                analytics.hidden =
+                    !analytics.hidden;
+
+                if (!analytics.hidden) {
+                    renderAnalytics();
+                }
+            }
+        );
+
+    analytics.addEventListener(
+        'click',
+        event => {
+            const control =
+                event.target.closest(
+                    'button'
+                );
+
+            if (!control) return;
+
+            const special =
+                control.dataset.aAction;
+
+            if (special === 'close') {
+                analytics.hidden = true;
+                tooltip.hidden = true;
+                return;
+            }
+
+            if (special === 'export') {
+                exportAnalytics();
+                return;
+            }
+
+            if (
+                special ===
+                'select-all'
+            ) {
+                state.analytics.selected =
+                    new Set(
+                        availableGroups()
+                            .map(group =>
+                                group.name
+                            )
+                    );
+
+                renderAnalytics();
+                return;
+            }
+
+            if (special === 'clear') {
+                state.analytics.selected
+                    .clear();
+
+                renderAnalytics();
+                return;
+            }
+
+            if (
+                control.dataset.group
+            ) {
+                state.analytics.group =
+                    control.dataset.group;
+
+                state.analytics.initializedFor =
+                    '';
+            }
+
+            if (
+                control.dataset.mode
+            ) {
+                state.analytics.mode =
+                    control.dataset.mode;
+            }
+
+            if (
+                control.dataset.view
+            ) {
+                state.analytics.view =
+                    control.dataset.view;
+            }
+
+            renderAnalytics();
+        }
+    );
+
+    a$('series-search')
+        .addEventListener(
+            'input',
+            () => {
+                renderSeriesControls(
+                    availableGroups()
+                );
+            }
+        );
+
+    document.addEventListener(
+        'pointerdown',
+        event => {
+            if (
+                !popover.hidden &&
+                !popover.contains(
+                    event.target
+                ) &&
+                !event.target.closest(
+                    '#AF_Grabber th'
+                )
+            ) {
+                popover.hidden = true;
+            }
+        }
+    );
+
+    document.addEventListener(
+        'keydown',
+        event => {
+            if (
+                event.key ===
+                'Escape'
+            ) {
+                popover.hidden = true;
+                tooltip.hidden = true;
+            }
+        }
+    );
+
+    /* Перетаскивается только окно аналитики. */
+    const handle =
+        analytics.querySelector(
+            '.ag-analytics-head'
+        );
+
+    let drag = null;
+
+    handle.addEventListener(
+        'pointerdown',
+        event => {
+            if (
+                event.target.closest(
+                    'button'
+                )
+            ) {
+                return;
+            }
+
+            const rect =
+                analytics
+                    .getBoundingClientRect();
+
+            drag = {
+                id: event.pointerId,
+                x:
+                    event.clientX -
+                    rect.left,
+                y:
+                    event.clientY -
+                    rect.top
+            };
+
+            handle.setPointerCapture(
+                event.pointerId
+            );
+
+            event.stopPropagation();
+        }
+    );
+
+    handle.addEventListener(
+        'pointermove',
+        event => {
+            if (
+                !drag ||
+                drag.id !==
+                    event.pointerId
+            ) {
+                return;
+            }
+
+            const x = Math.max(
+                0,
+                Math.min(
+                    event.clientX -
+                        drag.x,
+                    window.innerWidth -
+                        analytics.offsetWidth
+                )
+            );
+
+            const y = Math.max(
+                0,
+                Math.min(
+                    event.clientY -
+                        drag.y,
+                    window.innerHeight -
+                        55
+                )
+            );
+
+            analytics.style.left =
+                `${x}px`;
+
+            analytics.style.top =
+                `${y}px`;
+
+            event.stopPropagation();
+        }
+    );
+
+    handle.addEventListener(
+        'pointerup',
+        () => drag = null
+    );
+
+    handle.addEventListener(
+        'pointercancel',
+        () => drag = null
+    );
+
+    initialize();
+
+    function updateThemeLabel() {
+        const values = selected($('theme-list'));
+
+        if (values.includes('parseallthemes')) {
+            $('theme-label').textContent = 'Все тематики';
+            return;
+        }
+
+        if (values.length === 1) {
+            $('theme-label').textContent =
+                values[0] === 'parsenothemes'
+                    ? 'Без тематики'
+                    : themeNames.get(values[0]) ?? 'Выбрана тематика';
+            return;
+        }
+
+        $('theme-label').textContent =
+            `Выбрано тематик: ${values.length}`;
+    }
+
+    $('theme-list').addEventListener('change', event => {
+        const changed = event.target;
+
+        if (!changed.matches('input[name="theme"]')) {
+            return;
+        }
+
+        const all = $('theme-list').querySelector(
+            'input[value="parseallthemes"]'
+        );
+
+        if (changed.value === 'parseallthemes' && changed.checked) {
+            $('theme-list')
+                .querySelectorAll('input[name="theme"]')
+                .forEach(input => {
+                    if (input !== all) input.checked = false;
+                });
+        } else if (changed.checked) {
+            all.checked = false;
+        }
+
+        // Если пользователь снял все галочки — возвращаем «Все тематики».
+        if (!selected($('theme-list')).length) {
+            all.checked = true;
+        }
+
+        updateThemeLabel();
     });
-    table.appendChild(headerRow);
 
-    pureArray.forEach((el, index) => {
-        const row = document.createElement('tr'); row.className = "rowOfChatGrabbed";
-        addCell(row, index + 1);
-        addCell(row, el.timeStamp);
-        addCell(row, el.OperatorName);
-        addCell(row, el.ChatId, { style: "font-family:monospace; color:#38bdf8;" });
-        const matched = chatswithmarksarray.find(x => x.ConvId === el.ChatId);
-        addCell(row, matched ? (matched.Rate ?? '-') : '-', { name: "CSATvalue", style: "text-align:center; font-weight:bold;" });
-        addCell(row, el.Department);
-        addCell(row, el.text, {
-            style: "min-width: 320px; max-width: 480px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.5; font-size: 11px; color: #e2e8f0;"
-        });
-        table.appendChild(row);
-    });
-    return table;
-}
+    updateThemeLabel();
 
-document.getElementById('stargrab').onclick = async function () {
-    const grabBtn = this;
-    if (grabBtn.disabled) return;
-    grabBtn.disabled = true;
+    /*
+     * Существующая внешняя кнопка может продолжать
+     * вызывать getopenGrabberButtonPress().
+     */
+    window.getopenGrabberButtonPress =
+        function () {
+            const isVisible =
+                getComputedStyle(
+                    windowElement
+                ).display !== 'none';
 
-    const filters = collectOtherFilters();
+            windowElement.style.display =
+                isVisible
+                    ? 'none'
+                    : '';
 
-    tableColumnFilters = {};
-    document.getElementById('GatherStatByThemes').setAttribute('disabled', '');
-    document.getElementById('themesgrabbeddata').innerHTML = '<div style="padding:20px; text-align:center; color:#38bdf8;">⏳ System Processing Data...</div>';
+            if (isVisible) {
+                analytics.hidden = true;
+                popover.hidden = true;
+                tooltip.hidden = true;
+                return;
+            }
 
-    payloadarray = []; chatswithmarksarray = []; operstagsarray = []; arrofthemes = []; dataToRender = []; criticalChats = new Map();
-    const { leftDateFromGrab, rightDateToGrab } = getDateRange();
-    const { ids: operatorIds, names: operatorNames } = getSelectedOperators();
-
-    let progress = 0; const step = 100 / Math.max(operatorIds.length, 1);
-    const progressBar = document.getElementById("progressBarGrabber");
-
-    for (let i = 0; i < operatorIds.length; i++) {
-        const chats = await loadChatsForOperator(operatorIds[i], operatorNames[i], leftDateFromGrab, rightDateToGrab, filters);
-        for (const chat of chats) await processChat(chat, filters, criticalChats);
-        progress += step;
-        progressBar.style.width = `${progress}%`; progressBar.textContent = `${Math.round(progress)}%`;
-    }
-
-    let table;
-    if (otherfilters == "on") {
-        dataToRender = [...criticalChats.values()];
-        table = renderCriticalTable(dataToRender);
-    } else {
-        dataToRender = [...new Map(payloadarray.map(x => [x.ChatId, x])).values()];
-        table = renderMainTable(dataToRender, chatswithmarksarray);
-    }
-
-    pureArray = dataToRender;
-
-    const container = document.getElementById('themesgrabbeddata');
-    container.innerHTML = ''; container.appendChild(table);
-
-    initRowClickHandlers();
-    countsArray = Object.entries(aggregateCounts(payloadarray, "ThemeValue")).map(([ThemeValue, Count]) => ({ ThemeValue, Count }));
-    countsCountryArray = Object.entries(aggregateCounts(pureArray, "Country")).map(([Country, Count]) => ({ Country, Count }));
-
-    document.getElementById('foundcount').innerHTML = `<span class="cdu-stat-badge cdu-stat-success">Total Records: ${pureArray.length}</span>`;
-    calcAvgCsat(); calcAvgSLACompleted();
-    document.getElementById('GatherStatByThemes').removeAttribute('disabled');
-    grabBtn.disabled = false;
-};
-
-// ACTIONS HOOKS
-document.getElementById('SwitchToTable').onclick = () => buildUniversalTable({ mode: "simple", groupField: "ThemeValue", columnTitle: "Тематика" });
-document.getElementById('SwitchToGraph').onclick = () => drawUniversalGraph({ mode: "simple", groupField: "ThemeValue", chartType: "bar", title: "Тематика" });
-document.getElementById('SwitchToTableCountry').onclick = () => buildUniversalTable({ mode: "simple", groupField: "Country", columnTitle: "Страна", saveButtonId: null });
-document.getElementById('SwitchToGraphCountry').onclick = () => drawUniversalGraph({ mode: "simple", groupField: "Country", chartType: "bar", title: "Страна" });
-document.getElementById('SwitchToIntervalTable').onclick = () => buildUniversalTable({ mode: "interval", groupField: "ThemeValue", columnTitle: "Тематика", saveButtonId: "SaveIntervalCSV" });
-document.getElementById('SwitchToIntervalGraph').onclick = () => drawUniversalGraph({ mode: "interval", groupField: "ThemeValue", chartType: "line", title: "Тематика" });
-document.getElementById('SaveIntervalCSV').onclick = saveToCSVInterval;
-document.getElementById('SwitchToIntervalTableCountry').onclick = () => buildUniversalTable({ mode: "interval", groupField: "Country", columnTitle: "Страна", saveButtonId: "SaveIntervalCountryCSV" });
-document.getElementById('SwitchToIntervalGraphCountry').onclick = () => drawUniversalGraph({ mode: "interval", groupField: "Country", chartType: "line", title: "Страна" });
-document.getElementById('SaveIntervalСountryCSV').onclick = SaveIntervalСountryCSV;
-document.getElementById('SaveСountryTableCSV').onclick = () => SaveСountryCSV('Country_Aggregated.csv');
-document.getElementById('hideselecalltags').onclick = filterTableRowsByTags;
-
-document.getElementById('SaveToCSVFilteredByTags').onclick = () => {
-    const allUnchecked = [...document.querySelectorAll('input[name="tagsforfilter"]')].every(cb => !cb.checked);
-    allUnchecked ? (function () {
-        let csvContent = "ChatId,Tag1,Tag2,Tag3,Tag4,Tag5,Tag6\r\n";
-        operstagsarray.forEach(item => {
-            let tags = [];
-            if (item.Tags) { try { tags = JSON.parse(item.Tags); } catch (e) { } }
-            csvContent += [item.ChatId, ...tags].join(",") + "\r\n";
-        });
-        triggerDownload("\uFEFF" + csvContent, "export.csv");
-    })() : saveFilteredTableCSV();
-};
-
-document.getElementById('opscontainer').onclick = () => toggleBlock({ containerId: 'opscontainer', blockId: 'activeoperatorsgroup', extraId: 'hideselecall' });
-document.getElementById('markscontainer').onclick = () => toggleBlock({ containerId: 'markscontainer', blockId: 'listofthemarks', extraId: 'hideselecallmarks' });
-document.getElementById('tagscontainer').onclick = () => toggleBlock({ containerId: 'tagscontainer', blockId: 'listofthetags', extraId: 'hideselecalltags' });
-document.getElementById('othercontainer').onclick = () => toggleBlock({ containerId: 'othercontainer', blockId: 'listofotheroptions', extraId: null });
-
-document.getElementById('webtoCSV').onclick = function () {
-    if (otherfilters == "off") {
-        const csvRows = [Object.keys(dataToRender[0]).join(",")];
-        dataToRender.forEach(row => csvRows.push(Object.keys(dataToRender[0]).map(h => `"${String(row[h]).replace(/"/g, '""')}"`).join(",")));
-        triggerDownload("\uFEFF" + csvRows.join("\n"), "data.csv");
-    } else {
-        let csvContent = "\uFEFFChatId,Department,timeStamp,OperatorName,CSAT,text\r\n";[...criticalChats.values()].forEach(item => {
-            const safe = str => `"${String(str ?? "").replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
-            csvContent += [safe(item.ChatId), safe(item.Department), safe(item.timeStamp), safe(item.OperatorName), safe(item.CSAT), safe(item.text)].join(",") + "\r\n";
-        });
-        triggerDownload(csvContent, "critical_chats.csv");
-    }
-};
-
-const adjustDateGrabber = (dateId, offset) => {
-    let date = new Date(document.getElementById(dateId).value);
-    date.setDate(date.getDate() + offset);
-    return date.toISOString().split('T')[0];
-};
-document.getElementById('dayplus').onclick = () => { document.getElementById('dateFromGrab').value = adjustDateGrabber('dateFromGrab', 1); document.getElementById('dateToGrab').value = adjustDateGrabber('dateToGrab', 1); };
-document.getElementById('dayminus').onclick = () => { document.getElementById('dateFromGrab').value = adjustDateGrabber('dateFromGrab', -1); document.getElementById('dateToGrab').value = adjustDateGrabber('dateToGrab', -1); };
+            if (
+                !state.operators.length
+            ) {
+                loadOperators();
+            }
+        };
+})();
