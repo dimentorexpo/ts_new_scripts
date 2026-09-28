@@ -1,9 +1,29 @@
 // ═══════════════════════════════════════════════════════════════
-//  NEON GLASS ULTRA — TestUsers Module (176px Premium Compact)
+//  NEON GLASS ULTRA — TestUsers Module
+//  Исходный дизайн + исправленная логика
 // ═══════════════════════════════════════════════════════════════
 
-const cyberStyles = document.createElement('style');
-cyberStyles.textContent = `
+(() => {
+    if (window.__testUsersModuleInitialized) return;
+    window.__testUsersModuleInitialized = true;
+
+    // Старые сохранённые координаты могли содержать "px".
+    // Исправляем их ДО вызова createWindow.
+    for (const key of ['winTopTestUsers', 'winLeftTestUsers']) {
+        const value = localStorage.getItem(key);
+
+        if (value && /^-?\d+(?:\.\d+)?px$/.test(value.trim())) {
+            localStorage.setItem(key, String(parseFloat(value)));
+        }
+    }
+
+    const styleId = 'neon-glass-testusers-styles';
+
+    if (!document.getElementById(styleId)) {
+        const cyberStyles = document.createElement('style');
+        cyberStyles.id = styleId;
+
+        cyberStyles.textContent = `
 :root {
     --nu-bg: rgba(18, 18, 32, 0.85);
     --nu-border: rgba(255, 255, 255, 0.1);
@@ -46,6 +66,7 @@ cyberStyles.textContent = `
         0 0 30px rgba(139, 92, 246, 0.1),
         inset 0 1px 0 rgba(255,255,255,0.06);
 }
+
 /* Inner radial glow */
 .glass-panel-testuser::after {
     content: '';
@@ -81,6 +102,7 @@ cyberStyles.textContent = `
 /* === INPUT === */
 .glass-input-testuser {
     flex: 1;
+    min-width: 0;
     height: 28px;
     padding: 0 8px;
     background: rgba(255,255,255,0.04);
@@ -134,7 +156,6 @@ cyberStyles.textContent = `
     z-index: 1;
 }
 
-/* Glass shine on buttons */
 .glass-btn-testuser::before {
     content: '';
     position: absolute;
@@ -157,12 +178,18 @@ cyberStyles.textContent = `
     transform: translateY(0) scale(0.97);
 }
 
+.glass-btn-testuser:disabled {
+    cursor: wait;
+}
+
 /* Search button */
 #openuserinfo {
     width: 28px;
+    flex: 0 0 28px;
     padding: 0;
     font-size: 12px;
 }
+
 #openuserinfo:hover {
     color: var(--nu-cyan);
     border-color: rgba(34, 211, 238, 0.4);
@@ -177,21 +204,24 @@ cyberStyles.textContent = `
     height: 30px;
 }
 
-#sidcode:hover   {
+#sidcode:hover {
     color: var(--nu-green);
     border-color: rgba(52, 211, 153, 0.4);
     box-shadow: 0 0 12px rgba(52, 211, 153, 0.15), inset 0 0 8px rgba(52, 211, 153, 0.05);
 }
-#tidcode:hover   {
+
+#tidcode:hover {
     color: var(--nu-purple);
     border-color: rgba(167, 139, 250, 0.4);
     box-shadow: 0 0 12px rgba(167, 139, 250, 0.15), inset 0 0 8px rgba(167, 139, 250, 0.05);
 }
+
 #TestRooms:hover {
     color: var(--nu-orange);
     border-color: rgba(251, 146, 60, 0.4);
     box-shadow: 0 0 12px rgba(251, 146, 60, 0.15), inset 0 0 8px rgba(251, 146, 60, 0.05);
 }
+
 #link2lessbtn:hover {
     color: var(--nu-cyan);
     border-color: rgba(34, 211, 238, 0.4);
@@ -303,175 +333,403 @@ cyberStyles.textContent = `
     color: #fbbf24;
     box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 20px rgba(251, 191, 36, 0.15);
 }
+
+/* Без изменения внешнего вида для остальных пользователей */
+@media (prefers-reduced-motion: reduce) {
+    .glass-panel-testuser,
+    .glass-btn-testuser,
+    .glass-input-testuser,
+    .cyber-toast {
+        animation: none;
+        transition: none;
+    }
+}
 `;
-document.head.appendChild(cyberStyles);
 
+        document.head.appendChild(cyberStyles);
+    }
 
-// ─── HTML TEMPLATE ───
-const win_TestUsers = `
+    // Исходная разметка и класс перетаскивания на прежнем месте.
+    const win_TestUsers = `
 <div class="glass-panel-testuser chmaf-drag-handle">
     <div class="glass-row-testuser">
-        <input id="iduserinfo" placeholder="ID У/П" title="Введите ID У/П" class="teststudteachinp glass-input-testuser" autocomplete="off" type="text">
-        <button id="openuserinfo" title="Поиск" class="glass-btn-testuser">🔍</button>
+        <input
+            id="iduserinfo"
+            placeholder="ID У/П"
+            title="Введите ID У/П"
+            class="teststudteachinp glass-input-testuser"
+            autocomplete="off"
+            inputmode="numeric"
+            type="text"
+        >
+        <button
+            id="openuserinfo"
+            type="button"
+            title="Поиск"
+            aria-label="Поиск пользователя"
+            class="glass-btn-testuser"
+        >🔍</button>
     </div>
 
     <div class="glass-divider-horizontal-testuser"></div>
 
     <div class="glass-row-testuser">
-        <button id="sidcode" title="Ученик (ЛКМ: логин, ПКМ: ID)" class="glass-btn-testuser">👨‍🎓</button>
-        <button id="tidcode" title="Преподаватель (ЛКМ: логин, ПКМ: ID)" class="glass-btn-testuser">👽</button>
-        <button id="TestRooms" title="Тестовые комнаты" class="glass-btn-testuser">🎲</button>
-        <button id="link2lessbtn" title="Ссылка на урок" class="glass-btn-testuser">📟</button>
+        <button
+            id="sidcode"
+            type="button"
+            title="Ученик (ЛКМ: логин, ПКМ: ID)"
+            aria-label="Ученик: получить ссылку; правый клик — копировать ID"
+            class="glass-btn-testuser"
+        >👨‍🎓</button>
+        <button
+            id="tidcode"
+            type="button"
+            title="Преподаватель (ЛКМ: логин, ПКМ: ID)"
+            aria-label="Преподаватель: получить ссылку; правый клик — копировать ID"
+            class="glass-btn-testuser"
+        >👽</button>
+        <button
+            id="TestRooms"
+            type="button"
+            title="Тестовые комнаты"
+            aria-label="Тестовые комнаты"
+            class="glass-btn-testuser"
+        >🎲</button>
+        <button
+            id="link2lessbtn"
+            type="button"
+            title="Ссылка на урок"
+            aria-label="Ссылка на урок"
+            class="glass-btn-testuser"
+        >📟</button>
     </div>
+
     <div id="addInfoUser" style="display: none;"></div>
 </div>
 `;
-// ─── 3. INIT WINDOW ───
-const TestUsersdiv = createWindow('TestUsers', 'winTopTestUsers', 'winLeftTestUsers', win_TestUsers);
 
-// ─── 4. POSITION & DRAG FIX ───
-(function initTestUsers() {
-    if (!TestUsersdiv) return;
-
-    // Очистка старых значений с "px"
-    ['winTopTestUsers', 'winLeftTestUsers'].forEach(key => {
-        const val = localStorage.getItem(key);
-        if (val?.includes('px')) {
-            localStorage.setItem(key, val.replace('px', ''));
-        }
-    });
-
-    // Валидация позиции окна
-    const validatePosition = () => {
-        const rect = TestUsersdiv.getBoundingClientRect();
-        let top = parseFloat(TestUsersdiv.style.top) || 0;
-        let left = parseFloat(TestUsersdiv.style.left) || 0;
-        let changed = false;
-
-        const margin = 20;
-        if (left + rect.width > window.innerWidth) { left = window.innerWidth - rect.width - margin; changed = true; }
-        if (top + rect.height > window.innerHeight) { top = window.innerHeight - rect.height - margin; changed = true; }
-        if (left < 0) { left = margin; changed = true; }
-        if (top < 0) { top = margin; changed = true; }
-
-        if (changed) {
-            TestUsersdiv.style.left = `${left}px`;
-            TestUsersdiv.style.top = `${top}px`;
-            localStorage.setItem('winLeftTestUsers', String(left));
-            localStorage.setItem('winTopTestUsers', String(top));
-        }
-    };
-
-    window.addEventListener('load', validatePosition);
-    window.addEventListener('resize', validatePosition);
-    setTimeout(validatePosition, 500);
-})();
-
-// ─── 6. EVENT HANDLERS ───
-const UI = {
-    input: document.getElementById('iduserinfo'),
-    searchBtn: document.getElementById('openuserinfo'),
-    studentBtn: document.getElementById('sidcode'),
-    teacherBtn: document.getElementById('tidcode'),
-    testRoomsBtn: document.getElementById('TestRooms'),
-    linkToLessonBtn: document.getElementById('link2lessbtn')
-};
-
-// Обработчик кликов по кнопкам
-async function handleButtonClick(buttonId, storageKey) {
-    const userId = localStorage.getItem(storageKey);
-    if (!userId) {
-        createAndShowButton('ID не найден в настройках', 'error');
+    if (typeof createWindow !== 'function') {
+        console.error('[TestUsers] Функция createWindow не найдена');
+        window.__testUsersModuleInitialized = false;
         return;
     }
 
-    const btn = document.getElementById(buttonId);
-    btn.classList.add('active');
+    const TestUsersdiv = createWindow(
+        'TestUsers',
+        'winTopTestUsers',
+        'winLeftTestUsers',
+        win_TestUsers
+    );
 
-    try {
-        await getLoginLink(userId);
-        btn.classList.add('successbtn');
-        createAndShowButton('💾 Ссылка скопирована', 'message');
-    } catch (e) {
-        btn.classList.add('errorbtn');
-        createAndShowButton('Ошибка получения ссылки', 'error');
-    } finally {
-        btn.classList.remove('active');
-        setTimeout(() => btn.classList.remove('successbtn', 'errorbtn'), 1000);
-    }
-}
-
-// Обработчик контекстного меню (ПКМ)
-function handleContextMenu(e, storageKey, buttonId) {
-    e.preventDefault();
-    const userId = localStorage.getItem(storageKey);
-
-    if (userId) {
-        copyToClipboard(userId)
-            .then(() => {
-                createAndShowButton(`ID скопирован: ${userId}`, 'message');
-                const btn = document.getElementById(buttonId);
-                btn.classList.add('successbtn');
-                setTimeout(() => btn.classList.remove('successbtn'), 1000);
-            })
-            .catch(() => {
-                createAndShowButton('Ошибка копирования ID', 'error');
-            });
-    }
-}
-
-// Обработчик вставки текста
-function handlePaste(e) {
-    const data = (e.clipboardData || window.clipboardData).getData('text').trim();
-    if (/^\d+$/.test(data)) {
-        e.preventDefault();
-        UI.input.value = data;
-        UI.searchBtn.click();
-    }
-}
-
-// Обработчик поиска
-function handleSearch() {
-    const val = UI.input.value.trim();
-    if (!val) return;
-
-    const serviceWindow = document.getElementById('AF_Service');
-    if (serviceWindow && serviceWindow.style.display === 'none') {
-        serviceWindow.style.display = '';
-        const btn = document.getElementById('butServ');
-        if (btn) btn.classList.add('activeScriptBtn');
+    if (!TestUsersdiv) {
+        window.__testUsersModuleInitialized = false;
+        return;
     }
 
-    const studentInput = document.getElementById('idstudent');
-    const studentBtn = document.getElementById('getidstudent');
+    const root = TestUsersdiv.querySelector?.('.glass-panel-testuser')
+        ?? TestUsersdiv;
 
-    if (studentInput && studentBtn) {
-        studentInput.value = val;
+    const UI = {
+        input: root.querySelector('#iduserinfo'),
+        searchBtn: root.querySelector('#openuserinfo'),
+        studentBtn: root.querySelector('#sidcode'),
+        teacherBtn: root.querySelector('#tidcode'),
+        testRoomsBtn: root.querySelector('#TestRooms'),
+        linkToLessonBtn: root.querySelector('#link2lessbtn')
+    };
+
+    if (Object.values(UI).some(element => !element)) {
+        console.error('[TestUsers] Не найдены элементы интерфейса');
+        window.__testUsersModuleInitialized = false;
+        return;
+    }
+
+    // Уведомления: сначала существующая функция проекта,
+    // при её отсутствии — toast в оригинальном стиле.
+    function notify(message, type = 'message') {
+        if (typeof createAndShowButton === 'function') {
+            createAndShowButton(message, type);
+            return;
+        }
+
+        let toast = document.getElementById('testusers-cyber-toast');
+
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'testusers-cyber-toast';
+            toast.setAttribute('role', 'status');
+            toast.setAttribute('aria-live', 'polite');
+            document.body.appendChild(toast);
+        }
+
+        clearTimeout(toast._hideTimer);
+
+        toast.className = `cyber-toast ${type}`;
+        toast.textContent = message;
+
+        // Перезапускаем появление для повторных уведомлений.
+        void toast.offsetWidth;
+        toast.classList.add('show');
+
+        toast._hideTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2800);
+    }
+
+    // Отдельный таймер на каждую кнопку: быстрые клики больше
+    // не сбивают визуальное состояние другой операции.
+    const feedbackTimers = new WeakMap();
+
+    function showButtonState(button, state, duration = 1000) {
+        clearTimeout(feedbackTimers.get(button));
+
+        button.classList.remove('successbtn', 'errorbtn');
+
+        if (!state) return;
+
+        button.classList.add(state);
+
+        feedbackTimers.set(button, setTimeout(() => {
+            button.classList.remove(state);
+        }, duration));
+    }
+
+    async function handleButtonClick(button, storageKey) {
+        if (button.disabled) return;
+
+        const userId = localStorage.getItem(storageKey)?.trim();
+
+        if (!userId) {
+            notify('ID не найден в настройках', 'error');
+            showButtonState(button, 'errorbtn');
+            return;
+        }
+
+        if (typeof getLoginLink !== 'function') {
+            notify('Функция получения ссылки недоступна', 'error');
+            showButtonState(button, 'errorbtn');
+            return;
+        }
+
+        button.disabled = true;
+        button.classList.remove('successbtn', 'errorbtn');
+        button.classList.add('active');
+
+        try {
+            await getLoginLink(userId);
+            showButtonState(button, 'successbtn');
+            notify('💾 Ссылка подготовлена', 'message');
+        } catch (error) {
+            console.error('[TestUsers] Ошибка получения ссылки:', error);
+            showButtonState(button, 'errorbtn');
+            notify('Ошибка получения ссылки', 'error');
+        } finally {
+            button.classList.remove('active');
+            button.disabled = false;
+        }
+    }
+
+    async function copyUserId(userId) {
+        if (typeof copyToClipboard === 'function') {
+            await copyToClipboard(userId);
+            return;
+        }
+
+        if (!navigator.clipboard?.writeText) {
+            throw new Error('Буфер обмена недоступен');
+        }
+
+        await navigator.clipboard.writeText(userId);
+    }
+
+    async function handleContextMenu(event, storageKey, button) {
+        event.preventDefault();
+
+        const userId = localStorage.getItem(storageKey)?.trim();
+
+        if (!userId) {
+            notify('ID не найден в настройках', 'error');
+            showButtonState(button, 'errorbtn');
+            return;
+        }
+
+        try {
+            await copyUserId(userId);
+            showButtonState(button, 'successbtn');
+            notify(`ID скопирован: ${userId}`, 'message');
+        } catch (error) {
+            console.error('[TestUsers] Ошибка копирования ID:', error);
+            showButtonState(button, 'errorbtn');
+            notify('Ошибка копирования ID', 'error');
+        }
+    }
+
+    function handleSearch() {
+        const value = UI.input.value.trim();
+
+        if (!/^\d+$/.test(value)) {
+            notify('Введите числовой ID', 'error');
+            UI.input.focus();
+            return;
+        }
+
+        const studentInput = document.getElementById('idstudent');
+        const studentBtn = document.getElementById('getidstudent');
+
+        if (!studentInput || !studentBtn) {
+            notify('Сервис поиска недоступен', 'error');
+            return;
+        }
+
+        const serviceWindow = document.getElementById('AF_Service');
+
+        if (
+            serviceWindow &&
+            getComputedStyle(serviceWindow).display === 'none'
+        ) {
+            serviceWindow.style.display = 'block';
+            document.getElementById('butServ')
+                ?.classList.add('activeScriptBtn');
+        }
+
+        studentInput.value = value;
+        studentInput.dispatchEvent(
+            new Event('input', { bubbles: true })
+        );
+
         studentBtn.click();
         UI.input.value = '';
     }
-}
 
-// Привязка событий
-UI.studentBtn.onclick = () => handleButtonClick('sidcode', 'test_stud');
-UI.studentBtn.oncontextmenu = (e) => handleContextMenu(e, 'test_stud', 'sidcode');
-UI.teacherBtn.onclick = () => handleButtonClick('tidcode', 'test_teach');
-UI.teacherBtn.oncontextmenu = (e) => handleContextMenu(e, 'test_teach', 'tidcode');
-UI.testRoomsBtn.onclick = getTestRoomsButtonPress;
-UI.linkToLessonBtn.onclick = getlink2lessButtonPress;
-UI.input.addEventListener('paste', handlePaste);
-UI.input.addEventListener('input', () => { if (window.onlyNumber) onlyNumber(UI.input); });
-UI.input.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSearch(); });
-UI.searchBtn.onclick = handleSearch;
+    UI.studentBtn.addEventListener('click', () => {
+        void handleButtonClick(UI.studentBtn, 'test_stud');
+    });
 
-// ─── 7. VISIBILITY CONTROL ───
-function updateVisibility() {
-    const isAutofaqPage = window.location.host === "skyeng.autofaq.ai";
-    const isNotLoginPage = window.location.pathname !== "/login";
-    const isEnabled = localStorage.getItem('disablelpmwindow') !== '1';
+    UI.studentBtn.addEventListener('contextmenu', event => {
+        void handleContextMenu(event, 'test_stud', UI.studentBtn);
+    });
 
-    TestUsersdiv.style.display = (isAutofaqPage && isNotLoginPage && isEnabled) ? 'block' : 'none';
-}
+    UI.teacherBtn.addEventListener('click', () => {
+        void handleButtonClick(UI.teacherBtn, 'test_teach');
+    });
 
-setInterval(updateVisibility, 1000);
-updateVisibility();
+    UI.teacherBtn.addEventListener('contextmenu', event => {
+        void handleContextMenu(event, 'test_teach', UI.teacherBtn);
+    });
+
+    UI.testRoomsBtn.addEventListener('click', () => {
+        if (typeof getTestRoomsButtonPress === 'function') {
+            getTestRoomsButtonPress();
+        } else {
+            notify('Тестовые комнаты недоступны', 'error');
+        }
+    });
+
+    UI.linkToLessonBtn.addEventListener('click', () => {
+        if (typeof getlink2lessButtonPress === 'function') {
+            getlink2lessButtonPress();
+        } else {
+            notify('Функция ссылки на урок недоступна', 'error');
+        }
+    });
+
+    UI.searchBtn.addEventListener('click', handleSearch);
+
+    UI.input.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+            handleSearch();
+        }
+    });
+
+    // Вставку не перехватываем: работает обычный Ctrl+V.
+    // Если в проекте есть onlyNumber, сохраняем его поведение.
+    UI.input.addEventListener('input', () => {
+        if (typeof onlyNumber === 'function') {
+            onlyNumber(UI.input);
+        }
+    });
+
+    function validatePosition() {
+        if (getComputedStyle(TestUsersdiv).display === 'none') return;
+
+        const rect = TestUsersdiv.getBoundingClientRect();
+
+        if (!rect.width || !rect.height) return;
+
+        const margin = 8;
+
+        const maxLeft = Math.max(
+            margin,
+            window.innerWidth - rect.width - margin
+        );
+
+        const maxTop = Math.max(
+            margin,
+            window.innerHeight - rect.height - margin
+        );
+
+        const nextLeft = Math.min(
+            Math.max(rect.left, margin),
+            maxLeft
+        );
+
+        const nextTop = Math.min(
+            Math.max(rect.top, margin),
+            maxTop
+        );
+
+        if (
+            Math.abs(nextLeft - rect.left) < 1 &&
+            Math.abs(nextTop - rect.top) < 1
+        ) {
+            return;
+        }
+
+        TestUsersdiv.style.left = `${nextLeft}px`;
+        TestUsersdiv.style.top = `${nextTop}px`;
+
+        localStorage.setItem(
+            'winLeftTestUsers',
+            String(nextLeft)
+        );
+
+        localStorage.setItem(
+            'winTopTestUsers',
+            String(nextTop)
+        );
+    }
+
+    function updateVisibility() {
+        const shouldShow =
+            window.location.host === 'skyeng.autofaq.ai' &&
+            window.location.pathname !== '/login' &&
+            localStorage.getItem('disablelpmwindow') !== '1';
+
+        TestUsersdiv.style.display = shouldShow ? 'block' : 'none';
+
+        if (shouldShow) {
+            requestAnimationFrame(validatePosition);
+        }
+    }
+
+    window.addEventListener('resize', validatePosition);
+
+    if (document.readyState === 'complete') {
+        requestAnimationFrame(validatePosition);
+    } else {
+        window.addEventListener(
+            'load',
+            validatePosition,
+            { once: true }
+        );
+    }
+
+    if ('ResizeObserver' in window) {
+        new ResizeObserver(validatePosition).observe(TestUsersdiv);
+    }
+
+    // Сохраняем проверку для страниц, где URL меняется без перезагрузки.
+    setInterval(updateVisibility, 1200);
+
+    updateVisibility();
+})();
