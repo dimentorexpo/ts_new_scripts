@@ -2796,10 +2796,11 @@ async function init_settings() {
                 </div>
 
                 <!-- Backup -->
-                <div class="set-row" style="justify-content: center; gap: 20px; margin-top: 10px; margin-bottom: 0;">
+                <div class="set-row" style="justify-content: center; gap: 12px; margin-top: 10px; margin-bottom: 0; flex-wrap: wrap;">
                     <button class="set-btn" id="savesettingstofile" style="background: rgba(124, 77, 255, 0.15); border-color: rgba(124, 77, 255, 0.3);">💾 Экспорт</button>
                     <label class="set-btn" for="fileinput" style="background: rgba(255, 255, 255, 0.05);">⤵ Импорт</label>
                     <input type="file" id="fileinput" style="display:none;">
+                    <button class="set-btn" id="chmaf_copy_diag_btn" style="background: rgba(0, 200, 83, 0.15); border-color: rgba(0, 200, 83, 0.35);" title="Скопировать диагностический отчёт для поддержки">🩺 Диагностика</button>
                 </div>
             </div>
         </div>
@@ -3105,6 +3106,21 @@ async function init_settings() {
         };
         reader.readAsText(file);
     };
+
+    // --- Диагностика для поддержки ---
+    const diagBtn = document.getElementById('chmaf_copy_diag_btn');
+    if (diagBtn) {
+        diagBtn.onclick = async () => {
+            if (typeof window.chmafCopyDiagnostics === 'function') {
+                await window.chmafCopyDiagnostics();
+            } else if (typeof copyToClipboard === 'function' && typeof window.chmafTemplatesDiag === 'function') {
+                await copyToClipboard(JSON.stringify(window.chmafTemplatesDiag(), null, 2));
+                createAndShowButton?.('🩺 Диагностика скопирована в буфер обмена!', 'message');
+            } else {
+                createAndShowButton?.('Диагностика пока не инициализирована', 'warning');
+            }
+        };
+    }
 
     // --- Status Painting ---
     const paintStatus = () => {

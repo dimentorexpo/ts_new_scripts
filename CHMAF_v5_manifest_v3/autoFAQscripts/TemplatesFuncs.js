@@ -105,6 +105,33 @@ window.chmafTemplatesDiag = function chmafTemplatesDiag() {
     return diag;
 };
 
+/**
+ * Копирует текущий диагностический отчёт в буфер обмена и выводит тост.
+ */
+window.chmafCopyDiagnostics = async function chmafCopyDiagnostics() {
+    try {
+        const diag = typeof window.chmafTemplatesDiag === 'function'
+            ? window.chmafTemplatesDiag()
+            : { error: 'chmafTemplatesDiag is not defined' };
+        const text = JSON.stringify(diag, null, 2);
+        if (typeof copyToClipboard === 'function') {
+            await copyToClipboard(text);
+        } else if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+        }
+        if (typeof createAndShowButton === 'function') {
+            createAndShowButton('🩺 Диагностика скопирована в буфер обмена!', 'message');
+        }
+        return true;
+    } catch (e) {
+        console.error('[ChMAF] chmafCopyDiagnostics error:', e);
+        if (typeof createAndShowButton === 'function') {
+            createAndShowButton('⚠️ Не удалось скопировать диагностику', 'error');
+        }
+        return false;
+    }
+};
+
 // ============================================================
 // Панель кнопок текущего/следующего пользователя (win_UsersInfo)
 // ============================================================

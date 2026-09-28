@@ -975,3 +975,106 @@ if (location.hostname === 'student.skyeng.ru') {
 
 // Запускаем uiTick только если мы на нужном домене
 if (location.host === 'skyeng.autofaq.ai') startUiTick();
+
+// ============================================================
+// ⚡ Обнаружение обновления расширения / инвалидации контекста
+// ============================================================
+(function initContextInvalidationWatcher() {
+    // Запускаем только на целевом портале AutoFAQ
+    if (location.host !== 'skyeng.autofaq.ai') return;
+
+    let bannerShown = false;
+
+    function showContextInvalidatedBanner() {
+        if (bannerShown || document.getElementById('chmaf-context-inval-banner')) return;
+        bannerShown = true;
+
+        const banner = document.createElement('div');
+        banner.id = 'chmaf-context-inval-banner';
+        banner.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2147483647;
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.95), rgba(15, 23, 42, 0.95));
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            border-radius: 12px;
+            padding: 14px 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(139, 92, 246, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #f8fafc;
+            animation: chmafSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        `;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes chmafSlideIn {
+                from { opacity: 0; transform: translateY(20px) scale(0.95); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        banner.innerHTML = `
+            <div style="font-size: 24px; line-height: 1;">🚀</div>
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+                <div style="font-size: 13px; font-weight: 700; color: #fff;">ChMAF обновлён</div>
+                <div style="font-size: 12px; color: #94a3b8;">Перезагрузите страницу для активации новых функций</div>
+            </div>
+            <button id="chmaf-reload-page-btn" style="
+                background: linear-gradient(135deg, #7c3aed, #6d28d9);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: #ffffff;
+                font-weight: 600;
+                font-size: 12px;
+                padding: 7px 14px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+                white-space: nowrap;
+            ">Обновить сейчас</button>
+            <button id="chmaf-close-inval-banner" style="
+                background: transparent;
+                border: none;
+                color: #94a3b8;
+                font-size: 16px;
+                cursor: pointer;
+                padding: 4px;
+                line-height: 1;
+            " title="Закрыть">✕</button>
+        `;
+
+        document.body.appendChild(banner);
+
+        const reloadBtn = banner.querySelector('#chmaf-reload-page-btn');
+        if (reloadBtn) {
+            reloadBtn.onmouseover = () => { reloadBtn.style.transform = 'translateY(-1px)'; reloadBtn.style.filter = 'brightness(1.1)'; };
+            reloadBtn.onmouseout = () => { reloadBtn.style.transform = 'none'; reloadBtn.style.filter = 'none'; };
+            reloadBtn.onclick = () => location.reload();
+        }
+
+        const closeBtn = banner.querySelector('#chmaf-close-inval-banner');
+        if (closeBtn) {
+            closeBtn.onclick = () => banner.remove();
+        }
+    }
+
+    const checkInterval = setInterval(() => {
+        try {
+            if (!chrome?.runtime?.id) {
+                clearInterval(checkInterval);
+                showContextInvalidatedBanner();
+            }
+        } catch {
+            clearInterval(checkInterval);
+            showContextInvalidatedBanner();
+        }
+    }, 10000);
+
+    window.cleanupRegistry?.register(() => clearInterval(checkInterval));
+})();
