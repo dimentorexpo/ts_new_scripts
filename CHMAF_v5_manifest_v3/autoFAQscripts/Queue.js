@@ -461,6 +461,47 @@
         || localStorage.getItem('qg5_group')
         || getDefaultGroupKey();
 
+    /*
+     * Окно истории чатов (ChatHistory.js) скрыто CSS-классом .afg-panel,
+     * а не inline-стилем, поэтому до первого ручного открытия
+     * element.style.display === ''. Проверка «style.display === 'none'»
+     * на свежей странице не срабатывала: панель не открывалась, а чат
+     * искался внутри неё же, оставаясь невидимым для оператора.
+     * Теперь (как в Grabber.js) смотрим вычисленный стиль.
+     */
+    const isHistoryWindowOpen = () => {
+        const historyWindow = document.getElementById('AF_ChatHis');
+        return !!historyWindow &&
+            getComputedStyle(historyWindow).display !== 'none';
+    };
+
+    const openHistoryWindow = () => {
+        if (isHistoryWindowOpen()) return;
+
+        // Публичная функция ChatHistory надёжнее клика по кнопке ☢:
+        // обработчик FAB вешается в utils.js по ссылке, захваченной
+        // в момент построения панели кнопок.
+        if (typeof getopennewcatButtonPress === 'function') {
+            getopennewcatButtonPress();
+            return;
+        }
+
+        document.getElementById('opennewcat')?.click();
+    };
+
+    // Открыть окно истории (если закрыто) и найти в нём конкретный чат
+    const openChatInHistory = (conversationId) => {
+        if (!conversationId) return;
+
+        openHistoryWindow();
+
+        const hashInput = document.getElementById('hashchathis');
+        if (!hashInput) return;
+
+        hashInput.value = conversationId;
+        document.getElementById('btn_search_history')?.click();
+    };
+
     window.QueueModule = {
         init: () => {
             if (document.getElementById('AF_Queue')) return;
@@ -564,13 +605,7 @@
             const allConvs = document.getElementsByName('prosmChat');
             for (let i = 0; i < allConvs.length; i++) {
                 allConvs[i].onclick = () => {
-                    const chatHis = document.getElementById('AF_ChatHis');
-                    if (chatHis && chatHis.style.display === 'none') document.getElementById('opennewcat')?.click();
-                    const hashInput = document.getElementById('hashchathis');
-                    if (hashInput) {
-                        hashInput.value = dataChts[i].conversationId;
-                        document.getElementById('btn_search_history')?.click();
-                    }
+                    openChatInHistory(dataChts[i]?.conversationId);
                 };
             }
             const allAssignBtns = document.getElementsByName('assignToMe');
