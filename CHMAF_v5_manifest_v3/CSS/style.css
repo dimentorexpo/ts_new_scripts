@@ -3852,3 +3852,139 @@ body.chmaf-en-lang #custom_templates_window {
   backdrop-filter: blur(16px) saturate(150%);
   -webkit-backdrop-filter: blur(16px) saturate(150%);
 }
+
+/* ============================================================
+   CHMAF MODERN TOASTS (CRM Style)
+   ============================================================ */
+#chmaf-toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 2147483647;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+    max-width: 400px;
+    width: calc(100vw - 48px);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.chmaf-toast {
+    pointer-events: auto;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #e2e8f0;
+    background: linear-gradient(145deg, rgba(30, 32, 44, 0.95) 0%, rgba(20, 22, 30, 0.98) 100%);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    border-left: 4px solid #6366f1; /* Default Info Purple/Blue */
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: chmaf-toast-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.chmaf-toast:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.chmaf-toast.closing {
+    animation: chmaf-toast-out 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.chmaf-toast-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.chmaf-toast-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.chmaf-toast-title {
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+}
+
+.chmaf-toast-msg {
+    font-size: 13px;
+    color: #cbd5e1;
+    word-break: break-word;
+}
+
+.chmaf-toast-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 0 0 8px;
+    transition: color 0.2s;
+}
+.chmaf-toast-close:hover { color: #fff; }
+
+.chmaf-toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background: #6366f1;
+    transform-origin: left;
+}
+
+/* --- Type Modifiers --- */
+.chmaf-toast.success { border-left-color: #10b981; }
+.chmaf-toast.success .chmaf-toast-icon { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.chmaf-toast.success .chmaf-toast-title { color: #34d399; }
+.chmaf-toast.success .chmaf-toast-progress { background: linear-gradient(90deg, #10b981, #34d399); }
+
+.chmaf-toast.error { border-left-color: #ef4444; }
+.chmaf-toast.error .chmaf-toast-icon { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.chmaf-toast.error .chmaf-toast-title { color: #f87171; }
+.chmaf-toast.error .chmaf-toast-progress { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+.chmaf-toast.warning { border-left-color: #f59e0b; }
+.chmaf-toast.warning .chmaf-toast-icon { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.chmaf-toast.warning .chmaf-toast-title { color: #fbbf24; }
+.chmaf-toast.warning .chmaf-toast-progress { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+.chmaf-toast.info { border-left-color: #6366f1; }
+.chmaf-toast.info .chmaf-toast-icon { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+.chmaf-toast.info .chmaf-toast-title { color: #818cf8; }
+.chmaf-toast.info .chmaf-toast-progress { background: linear-gradient(90deg, #6366f1, #818cf8); }
+
+@keyframes chmaf-toast-in {
+    from { opacity: 0; transform: translateX(40px) scale(0.95); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes chmaf-toast-out {
+    from { opacity: 1; transform: translateX(0) scale(1); }
+    to { opacity: 0; transform: translateX(20px) scale(0.9); }
+}

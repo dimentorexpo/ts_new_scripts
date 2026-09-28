@@ -231,7 +231,7 @@ function newTags(tagName) {
             conversationId: chatId,
             elements: [{ name: 'tags', value: tags }]
         })
-    }).catch(() => {});
+    }).catch(() => { });
 }
 
 /** Красная плашка «идёт урок» на активной карточке чата. */
@@ -627,11 +627,11 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
 // ============================================================
 function ConvAudio(triger) {
     if (!soundintervalset && triger === 'on') {
-        audio.play().catch(() => {});
+        audio.play().catch(() => { });
 
         const repeatSeconds = parseInt(localStorage.getItem('splinter'), 10) || 3;
         soundintervalset = setInterval(() => {
-            audio.play().catch(() => {});
+            audio.play().catch(() => { });
         }, repeatSeconds * 1000);
     } else if (soundintervalset && triger === 'off') {
         clearInterval(soundintervalset);
@@ -858,8 +858,38 @@ async function addJiraURL(URLvalue) {
     }
 }
 
-async function servFromDoc(event) {
-    msgFromTable(event.target.textContent);
+async function servFromDoc(eventOrName) {
+    let btnName = '';
+
+    // 1. Если передали строку напрямую
+    if (typeof eventOrName === 'string') {
+        btnName = eventOrName;
+    }
+    // 2. Если передали нативное событие клика
+    else if (eventOrName && eventOrName.target) {
+        btnName = eventOrName.target.textContent;
+    }
+    // 3. Фолбэк: ищем кнопку в DOM, если событие потерялось при вызове
+    // Это решает проблему вызова servFromDoc() без аргументов из content.js
+    else {
+        // Ищем среди всех кнопок шаблонов ту, которая сейчас в фокусе или была нажата последней
+        // Так как content.js вызывает функцию синхронно по клику, :active может сработать,
+        // но надежнее проверить document.activeElement
+        const activeBtn = document.activeElement;
+        if (activeBtn && activeBtn.classList.contains('mainButton')) {
+            btnName = activeBtn.textContent;
+        } else {
+            // Последний шанс: ищем кнопку по координатам или другим признакам,
+            // но если ничего не нашли — выходим
+            console.error('[servFromDoc] Не удалось определить имя шаблона. Убедитесь, что кнопка имеет класс "mainButton"');
+            return;
+        }
+    }
+
+    if (!btnName) return;
+
+    // Остальная логика функции без изменений
+    msgFromTable(btnName);
 
     const linkInput = document.getElementById('avariyalink');
     if (linkInput && linkInput.value.trim() !== '') {
@@ -909,7 +939,7 @@ function setTheme(valueId) {
             conversationId: chatId,
             elements: [{ name: 'topicId', value: String(valueId) }]
         })
-    }).catch(() => {});
+    }).catch(() => { });
 }
 
 /** Пустая ли ячейка таблицы шаблонов. */
@@ -993,7 +1023,7 @@ function msgFromTable(btnName) {
 // ============================================================
 const AUTOFAQ_SERVICE_IDS = {
     tp: [121286, 119638, 121385, 119843, 118980, 121692, 121386, 119636, 119649,
-         121381, 119841, 120181, 119646, 121384, 121387, 119844, 119025],
+        121381, 119841, 120181, 119646, 121384, 121387, 119844, 119025],
     tpPrem: [121533, 121775, 121527, 121531, 121831]
 };
 
@@ -1040,7 +1070,7 @@ async function loadTemplates(template, word) {
     const tpflag = localStorage.getItem('tpflag');
     const serviceIds =
         tpflag === 'ТП' ? AUTOFAQ_SERVICE_IDS.tp :
-        tpflag === 'ТПPrem' ? AUTOFAQ_SERVICE_IDS.tpPrem : null;
+            tpflag === 'ТПPrem' ? AUTOFAQ_SERVICE_IDS.tpPrem : null;
 
     if (!serviceIds) return;
 

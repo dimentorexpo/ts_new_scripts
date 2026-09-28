@@ -245,7 +245,7 @@
             }
         }, response => {
             if (response?.success) {
-                notify('Тестовый урок создан! 🚀', 'message');
+                notify('Тестовый урок создан! 🚀 Приглашение на него доступно в ЛКУ и ЛКП', 'info');
                 setTimeout(() => TR.win.style.display = 'none', 3000);
             } else { createAndShowButton('Ошибка создания: ' + (response?.error || 'unknown'), 'error'); }
         });

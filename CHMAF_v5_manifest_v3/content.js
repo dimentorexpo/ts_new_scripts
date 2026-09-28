@@ -284,10 +284,13 @@ function waitForElement(selector, callback, timeout = 10000, interval = 100) {
 }
 
 function createAndShowButton(message, type = 'message') {
-    if (typeof window.showNotification === 'function') {
-        window.showNotification(message, type, { html: true });
+    // Перенаправляем всё на новую современную систему из utils.js
+    if (typeof window.showCustomAlert === 'function') {
+        window.showCustomAlert(message, type);
         return;
     }
+
+    // Фолбэк (если utils.js еще не загрузился)
     let toast = document.querySelector('.cyber-toast');
     if (!toast) {
         toast = document.createElement('div');

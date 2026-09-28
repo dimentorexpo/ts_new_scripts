@@ -901,48 +901,189 @@ async function fetchGasJson(url, timeoutMs = 15_000) {
     }
 }
 
+/**
+ * Загружает шаблоны с автоматическим повтором при ошибке.
+ * Максимум 5 попыток с экспоненциальной задержкой.
+ */
 async function getText() {
-    try {
-        const json = await fetchGasJson(scriptAdr);
-        if (!json || !Array.isArray(json.result)) throw new Error('Нет массива result: ' + scriptAdr);
-        table = json.result;
-        console.log(`[ChMAF] Шаблоны загружены: ${table.length} строк`);
-        window.refreshTemplates?.();
-    } catch (e) {
-        console.error('[ChMAF] Не удалось загрузить шаблоны:', e);
+    const MAX_RETRIES = 5;
+    let attempt = 0;
+    let lastError = null;
+
+    while (attempt < MAX_RETRIES) {
+        attempt++;
+        try {
+            // Показываем уведомление только при повторных попытках, чтобы не спамить при первом успехе
+            if (attempt > 1) {
+                window.showCustomAlert?.(`🔄 Повторная загрузка шаблонов (попытка ${attempt} из ${MAX_RETRIES})...`, 'message');
+            }
+
+            const json = await fetchGasJson(scriptAdr);
+
+            if (!json || !Array.isArray(json.result)) {
+                throw new Error('Некорректный формат данных: отсутствует массив result');
+            }
+
+            table = json.result;
+            console.log(`[ChMAF] ✅ Шаблоны успешно загружены (${table.length} строк) с ${attempt}-й попытки`);
+
+            // Уведомляем об успехе только если были ошибки ранее
+            if (attempt > 1) {
+                window.showCustomAlert?.(`✅ Шаблоны загружены успешно!`, 'success');
+            }
+
+            window.refreshTemplates?.();
+            return; // Успех — выходим из цикла
+
+        } catch (e) {
+            lastError = e;
+            console.warn(`[ChMAF] ⚠️ Ошибка загрузки шаблонов (попытка ${attempt}/${MAX_RETRIES}):`, e.message);
+
+            if (attempt < MAX_RETRIES) {
+                // Экспоненциальная задержка: 2с, 4с, 8с, 16с
+                const delay = Math.pow(2, attempt) * 1000;
+                window.showCustomAlert?.(
+                    `⚠️ Не удалось загрузить шаблоны.\nПовтор через ${delay / 1000} сек...`,
+                    'warning'
+                );
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
     }
+
+    // Если все попытки исчерпаны
+    console.error('[ChMAF] ❌ Не удалось загрузить шаблоны после 5 попыток:', lastError);
+    window.showCustomAlert?.(
+        '❌ Критическая ошибка: не удалось загрузить шаблоны после 5 попыток.\nПроверьте интернет или перезагрузите страницу.',
+        'error'
+    );
 }
 window.getText = getText;
+
 
 // ═══════════════════════════════════════════════════════════════
 // УВЕДОМЛЕНИЯ
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// MODERN TOAST NOTIFICATION SYSTEM
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// MODERN TOAST SYSTEM (CRM-Style)
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// MODERN TOAST SYSTEM (Force Override for ChMAF)
+// ═══════════════════════════════════════════════════════════════
 (function () {
-    if (window.showCustomAlert) return;
+    // Принудительно перезаписываем, даже если старая версия была в кэше
     const MAX_TOASTS = 5;
     const activeToasts = [];
-    window.showCustomAlert = (msg, type = 'message') => {
-        if (typeof window.showNotification === 'function') return window.showNotification(msg, type);
-        if (typeof window.NotificationSystem?.showNotification === 'function') return window.NotificationSystem.showNotification(msg, type);
 
-        if (activeToasts.length >= MAX_TOASTS) activeToasts.shift()?.remove();
-        const t = document.createElement('div');
-        t.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(20,20,35,0.95);color:#f1f5f9;padding:12px 18px;border-radius:12px;z-index:9999999;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.45);font-size:13px;opacity:0;transform:translateY(10px);transition:all 0.3s cubic-bezier(0.16,1,0.3,1);';
-        t.textContent = msg;
-        document.body.appendChild(t);
-        activeToasts.push(t);
-        requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
-        const removeTimer = setTimeout(() => {
-            t.style.opacity = '0';
-            t.style.transform = 'translateY(10px)';
+    window.showCustomAlert = (message, type = 'info', opts = {}) => {
+        // Нормализация типов (совместимость со старым кодом)
+        let normalizedType = type;
+        if (type === 'message') {
+            if (/error|ошибка|fail/i.test(message)) normalizedType = 'error';
+            else if (/warning|внимание/i.test(message)) normalizedType = 'warning';
+            else if (/success|успешно|скопирован|создан/i.test(message)) normalizedType = 'success';
+            else normalizedType = 'info';
+        }
+
+        let container = document.getElementById('chmaf-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'chmaf-toast-container';
+            document.body.appendChild(container);
+        }
+
+        if (activeToasts.length >= MAX_TOASTS) {
+            const oldest = activeToasts.shift();
+            if (oldest) oldest.remove();
+        }
+
+        const duration = opts.duration || (normalizedType === 'error' ? 6000 : 4000);
+        const title = opts.title || (
+            normalizedType === 'success' ? 'Успешно' :
+                normalizedType === 'error' ? 'Ошибка' :
+                    normalizedType === 'warning' ? 'Внимание' : 'Информация'
+        );
+
+        const icons = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+
+        const toast = document.createElement('div');
+        toast.className = `chmaf-toast ${normalizedType}`;
+
+        const iconEl = document.createElement('div');
+        iconEl.className = 'chmaf-toast-icon';
+        iconEl.textContent = icons[normalizedType] || 'ℹ';
+
+        const contentEl = document.createElement('div');
+        contentEl.className = 'chmaf-toast-content';
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'chmaf-toast-title';
+        titleEl.textContent = title;
+
+        const msgEl = document.createElement('div');
+        msgEl.className = 'chmaf-toast-msg';
+        msgEl.innerHTML = message;
+
+        contentEl.appendChild(titleEl);
+        contentEl.appendChild(msgEl);
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'chmaf-toast-close';
+        closeBtn.innerHTML = '×';
+
+        const progressEl = document.createElement('div');
+        progressEl.className = 'chmaf-toast-progress';
+        progressEl.style.transition = `transform ${duration}ms linear`;
+        progressEl.style.transform = 'scaleX(1)';
+
+        toast.append(iconEl, contentEl, closeBtn, progressEl);
+        container.appendChild(toast);
+        activeToasts.push(toast);
+
+        requestAnimationFrame(() => {
+            progressEl.style.transform = 'scaleX(0)';
+        });
+
+        let isClosed = false;
+        const closeToast = () => {
+            if (isClosed) return;
+            isClosed = true;
+            toast.classList.add('closing');
             setTimeout(() => {
-                t.remove();
-                const idx = activeToasts.indexOf(t);
-                if (idx !== -1) activeToasts.splice(idx, 1);
+                if (toast.parentNode) toast.remove();
+                const idx = activeToasts.indexOf(toast);
+                if (idx > -1) activeToasts.splice(idx, 1);
             }, 300);
-        }, 4000);
-        cleanupRegistry.registerTimeout(removeTimer);
+        };
+
+        closeBtn.onclick = (e) => { e.stopPropagation(); closeToast(); };
+        toast.onclick = closeToast;
+
+        let remaining = duration;
+        let startedAt = Date.now();
+        let timer = setTimeout(closeToast, duration);
+
+        toast.onmouseenter = () => {
+            clearTimeout(timer);
+            remaining -= (Date.now() - startedAt);
+            if (remaining < 500) remaining = 500;
+            progressEl.style.transition = 'none';
+        };
+
+        toast.onmouseleave = () => {
+            startedAt = Date.now();
+            progressEl.style.transition = `transform ${remaining}ms linear`;
+            progressEl.style.transform = 'scaleX(0)';
+            timer = setTimeout(closeToast, remaining);
+        };
+
+        if (window.cleanupRegistry) window.cleanupRegistry.registerTimeout(timer);
     };
+
+    window.notify = window.showCustomAlert;
 })();
 // ═══════════════════════════════════════════════════════════════
 // ⚡ "Extension context invalidated" — дружелюбная подсказка юзеру
