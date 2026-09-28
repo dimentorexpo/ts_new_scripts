@@ -1,659 +1,991 @@
 // ============================================
-// SmartRoom Form - Refactored & Optimized
-// Glassmorphism Premium UI
+// SmartRoom Form — Premium Edition (compact)
+// Требует существующую функцию createWindow()
 // ============================================
-
-// Глобальная функция для кнопки меню (должна быть доступна снаружи)
-window.getsmartroomformButtonPress = function () {
-    const form = document.getElementById('AF_Smartroomform');
-    const menu = document.getElementById('idmymenu');
-    const menuBtn = document.getElementById('MainMenuBtn');
-
-    if (!form) return;
-
-    if (form.style.display === '') {
-        form.style.display = 'none';
-        if (menu) menu.style.display = 'none';
-        if (menuBtn) menuBtn.classList.remove('activeScriptBtn');
-    } else {
-        form.style.display = '';
-        if (menu) menu.style.display = 'none';
-        if (menuBtn) menuBtn.classList.remove('activeScriptBtn');
-
-        // Авто-заполнение при открытии
-        const userId = SearchinAFnewUI('id');
-        const userType = SearchinAFnewUI('userType');
-
-        if (userId) {
-            const clientIdInput = document.getElementById('clientid');
-            if (clientIdInput) clientIdInput.value = userId;
-
-            if (userType === 'teacher') {
-                const radio = document.getElementById('typeteach');
-                if (radio) radio.checked = true;
-            } else if (userType === 'parent') {
-                const radio = document.getElementById('typestudkids');
-                if (radio) radio.checked = true;
-            } else if (userType === 'student') {
-                const vertical = SearchinAFnewUI('supportVertical');
-                if (vertical === 'Adult' || vertical === 'Adults') {
-                    const radio = document.getElementById('typestudadults');
-                    if (radio) radio.checked = true;
-                } else if (vertical === 'Kids' || vertical === 'Kid') {
-                    const radio = document.getElementById('typestudkids');
-                    if (radio) radio.checked = true;
-                }
-            }
-        }
-    }
-};
 
 (function () {
     'use strict';
 
-    // --- Configuration ---
+    const WINDOW_ID = 'AF_Smartroomform';
+    const PREFIX = 'sr-form';
+
+    // Защита от повторного запуска скрипта
+    if (document.getElementById(WINDOW_ID)) return;
+
+    if (typeof createWindow !== 'function') {
+        console.error('[SmartRoom] Не найдена функция createWindow');
+        return;
+    }
+
     const CONFIG = {
-        prefix: 'sr-form',
-        googleFormUrl: 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse',
-        confluenceUrl: 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-smartroom%F0%9F%A6%90Smartroom',
-        fields: {
-            clientId: 'clientid',
-            comment: 'fullcomentsmartroom',
-            category2: 'cattwosmatrtoom',
-            category3: 'catthreesmatrtoom',
-            datalist2: 'cattwosmatrtoom-options-list',
-            datalist3: 'catthreesmatrtoom-options-list'
-        }
+        googleFormUrl:
+            'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse',
+
+        confluenceUrl:
+            'https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-smartroom%F0%9F%A6%90Smartroom',
+
+        requestTimeout: 20000
     };
 
-    // --- CSS Styles (Glassmorphism) ---
+    const categories = [
+        'Домашние задания',
+        'Интерфейс платформы',
+        'Функционал урока П',
+        'Функционал урока У',
+        'Вернуть старую платформу',
+        'Мобильное приложение Skyeng'
+    ];
+
+    const subcategories = [
+        'Интерфейс раздела домашки',
+        'Нет',
+        'Перемешаны слайды в уроке',
+        'План урока',
+        'План урока\\домашки',
+        'Вложения',
+        'Домашка',
+        'Информирование',
+        'Навигация в домашке',
+        'Не видно какие уроки уже пройдены У',
+        'П не может изменить оценку',
+        'Предложения по улучшению',
+        'Сброс ответов',
+        'Вход в урок',
+        'Заметки',
+        'Масштабирование видео',
+        'Не находит словарь',
+        'Нет отображения кол-ва символов',
+        'Нумерация степов в уроке',
+        'ОС',
+        'Плохой шрифт',
+        'Словарь',
+        'Урок',
+        'Ширина доски',
+        'Баллы и картинки',
+        'Нет прохождения тестов',
+        'Повтор пройденного материала',
+        'Связь У с П',
+        'Звуки',
+        'Перевод слов на стороне У'
+    ];
+
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, char => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[char]));
+    }
+
+    function optionsHtml(items) {
+        return items
+            .map(item => `<option value="${escapeHtml(item)}"></option>`)
+            .join('');
+    }
+
+    // ------------------------------------------------------------
+    // Стили
+    // ------------------------------------------------------------
     const styles = `
-        .${CONFIG.prefix} {
-            --sr-glass-bg: rgba(20, 20, 35, 0.65);
-            --sr-glass-border: rgba(255, 255, 255, 0.08);
-            --sr-glass-highlight: rgba(255, 255, 255, 0.15);
-            --sr-accent: #6366f1;
-            --sr-accent-hover: #818cf8;
-            --sr-text-primary: #f1f5f9;
-            --sr-text-secondary: #94a3b8;
-            --sr-success: #10b981;
-            --sr-error: #ef4444;
-            --sr-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            --sr-blur: blur(20px) saturate(180%);
+        .${PREFIX} {
+            --sr-bg: #10151c;
+            --sr-field: #0c1117;
+            --sr-line: rgba(232, 221, 198, .12);
+            --sr-line-strong: rgba(232, 221, 198, .24);
+            --sr-gold: #e5c995;
+            --sr-gold-light: #f7dfb2;
+            --sr-text: #f4f1ea;
+            --sr-muted: #a6adb7;
+            --sr-error: #ff998f;
+            --sr-success: #a7dfbc;
 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            width: 440px;
-            background: var(--sr-glass-bg);
-            backdrop-filter: var(--sr-blur);
-            -webkit-backdrop-filter: var(--sr-blur);
-            border: 1px solid var(--sr-glass-border);
-            border-radius: 20px;
-            box-shadow: var(--sr-shadow), inset 0 1px 0 var(--sr-glass-highlight);
-            overflow: hidden;
-            color: var(--sr-text-primary);
-        }
-
-        .${CONFIG.prefix}__header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 16px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%);
-            border-bottom: 1px solid var(--sr-glass-border);
-            cursor: -webkit-grab;
-        }
-
-        .${CONFIG.prefix}__header-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--sr-glass-border);
-            color: var(--sr-text-primary);
-            border-radius: 10px;
-            padding: 8px 12px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .${CONFIG.prefix}__header-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .${CONFIG.prefix}__header-btn--icon {
-            width: 32px;
-            height: 32px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .${CONFIG.prefix}__header-btn--right {
-            margin-left: auto;
-        }
-
-        .${CONFIG.prefix}__body {
-            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
+            width: min(430px, calc(100vw - 16px));
+            max-height: calc(100vh - 16px);
+            overflow: hidden;
 
-        .${CONFIG.prefix}__body::-webkit-scrollbar {
-            width: 6px;
-        }
+            color: var(--sr-text);
+            background:
+                radial-gradient(circle at 100% 0%, rgba(229, 201, 149, .10), transparent 38%),
+                var(--sr-bg);
+            border: 1px solid var(--sr-line-strong);
+            border-radius: 18px;
+            box-shadow:
+                0 24px 64px rgba(0, 0, 0, .40),
+                0 3px 12px rgba(0, 0, 0, .18),
+                inset 0 1px rgba(255, 255, 255, .06);
 
-        .${CONFIG.prefix}__body::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .${CONFIG.prefix}__body::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
-
-        .${CONFIG.prefix}__section {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--sr-glass-border);
-            border-radius: 16px;
-            padding: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .${CONFIG.prefix}__section:focus-within {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(99, 102, 241, 0.3);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
-        }
-
-        .${CONFIG.prefix}__section--error {
-            background: rgba(239, 68, 68, 0.1) !important;
-            border-color: rgba(239, 68, 68, 0.4) !important;
-            animation: srShake 0.4s ease;
-        }
-
-        @keyframes srShake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-4px); }
-            75% { transform: translateX(4px); }
-        }
-
-        .${CONFIG.prefix}__label {
-            display: block;
-            color: #c4ffd3;
-            font-weight: 600;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
             font-size: 13px;
-            margin-bottom: 12px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+            line-height: 1.4;
         }
 
-        .${CONFIG.prefix}__radio-group {
+        .${PREFIX},
+        .${PREFIX} * {
+            box-sizing: border-box;
+        }
+
+        .${PREFIX} button,
+        .${PREFIX} input,
+        .${PREFIX} textarea {
+            font: inherit;
+        }
+
+        /* ---------- Шапка ---------- */
+        .${PREFIX}__header {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .${CONFIG.prefix}__radio {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .${CONFIG.prefix}__radio-label {
-            display: inline-flex;
             align-items: center;
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--sr-glass-border);
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 13px;
-            color: var(--sr-text-secondary);
-            transition: all 0.2s ease;
+            gap: 10px;
+            flex: none;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--sr-line);
+            cursor: grab;
             user-select: none;
         }
 
-        .${CONFIG.prefix}__radio-label:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--sr-text-primary);
+        .${PREFIX}__header:active { cursor: grabbing; }
+
+        .${PREFIX}__mark {
+            display: grid;
+            place-items: center;
+            flex: none;
+            width: 32px;
+            height: 32px;
+            color: #171a1d;
+            background: linear-gradient(145deg, #f7e6be, #cda76c);
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 800;
         }
 
-        .${CONFIG.prefix}__radio:checked + .${CONFIG.prefix}__radio-label {
-            background: linear-gradient(135deg, var(--sr-accent) 0%, #8b5cf6 100%);
-            border-color: transparent;
-            color: white;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        .${PREFIX}__heading {
+            flex: 1;
+            min-width: 0;
         }
 
-        .${CONFIG.prefix}__input {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--sr-glass-border);
-            border-radius: 12px;
-            color: var(--sr-text-primary);
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
+        .${PREFIX}__eyebrow {
+            color: var(--sr-gold);
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: .14em;
+            text-transform: uppercase;
         }
 
-        .${CONFIG.prefix}__input::placeholder {
-            color: var(--sr-text-secondary);
-        }
-
-        .${CONFIG.prefix}__input:focus {
-            border-color: var(--sr-accent);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-        }
-
-        .${CONFIG.prefix}__input--error {
-            border-color: var(--sr-error) !important;
-            background: rgba(239, 68, 68, 0.1) !important;
-        }
-
-        .${CONFIG.prefix}__textarea {
-            width: 100%;
-            min-height: 100px;
-            padding: 12px 16px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--sr-glass-border);
-            border-radius: 12px;
-            color: var(--sr-text-primary);
-            font-size: 14px;
-            outline: none;
-            resize: vertical;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-
-        .${CONFIG.prefix}__textarea:focus {
-            border-color: var(--sr-accent);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-        }
-
-        .${CONFIG.prefix}__submit {
-            width: 100%;
-            padding: 14px 24px;
-            background: linear-gradient(135deg, var(--sr-accent) 0%, #8b5cf6 100%);
-            border: none;
-            border-radius: 14px;
-            color: white;
+        .${PREFIX}__title {
+            margin: 1px 0 0;
             font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
+            font-weight: 650;
+            letter-spacing: -.02em;
+            line-height: 1.2;
+            white-space: nowrap;
             overflow: hidden;
-            margin-top: 8px;
+            text-overflow: ellipsis;
         }
 
-        .${CONFIG.prefix}__submit::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
+        .${PREFIX}__actions {
+            display: flex;
+            gap: 2px;
+        }
+
+        .${PREFIX}__icon-button {
+            display: grid;
+            place-items: center;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            color: var(--sr-muted);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: color .18s, background .18s, border-color .18s;
+        }
+
+        .${PREFIX}__icon-button:hover {
+            color: var(--sr-text);
+            background: rgba(255, 255, 255, .07);
+            border-color: var(--sr-line);
+        }
+
+        .${PREFIX}__icon-button--close:hover { color: var(--sr-error); }
+
+        /* ---------- Форма: flex-колонка (это и чинит обрезание) ---------- */
+        .${PREFIX}__form {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
+            margin: 0;
+        }
+
+        .${PREFIX}__body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding: 14px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(229, 201, 149, .28) transparent;
+        }
+
+        .${PREFIX}__body::-webkit-scrollbar { width: 6px; }
+        .${PREFIX}__body::-webkit-scrollbar-thumb {
+            background: rgba(229, 201, 149, .28);
+            border-radius: 3px;
+        }
+
+        /* ---------- Группы ---------- */
+        .${PREFIX}__group {
+            min-width: 0;
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        .${PREFIX}__row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .${PREFIX}__legend,
+        .${PREFIX}__label {
+            display: block;
             width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s ease;
+            margin: 0 0 6px;
+            padding: 0;
+            color: var(--sr-muted);
+            font-size: 10.5px;
+            font-weight: 650;
+            letter-spacing: .08em;
+            text-transform: uppercase;
         }
 
-        .${CONFIG.prefix}__submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+        .${PREFIX}__group.is-invalid > .${PREFIX}__legend,
+        .${PREFIX}__group.is-invalid > .${PREFIX}__label {
+            color: var(--sr-error);
         }
 
-        .${CONFIG.prefix}__submit:hover::before {
-            left: 100%;
+        .${PREFIX}__group.is-invalid .${PREFIX}__choice {
+            border-color: rgba(255, 153, 143, .55);
         }
 
-        .${CONFIG.prefix}__submit:active {
-            transform: translateY(0);
+        /* ---------- Чипы ---------- */
+        .${PREFIX}__choices {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .${PREFIX}__radio {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .${PREFIX}__choice {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 5px 11px;
+            color: var(--sr-muted);
+            background: rgba(255, 255, 255, .035);
+            border: 1px solid var(--sr-line);
+            border-radius: 8px;
+            font-size: 12.5px;
+            cursor: pointer;
+            user-select: none;
+            transition: color .18s, background .18s, border-color .18s;
+        }
+
+        .${PREFIX}__choice:hover {
+            color: var(--sr-text);
+            background: rgba(255, 255, 255, .075);
+        }
+
+        .${PREFIX}__radio:checked + .${PREFIX}__choice {
+            color: var(--sr-gold-light);
+            background: rgba(229, 201, 149, .13);
+            border-color: rgba(229, 201, 149, .55);
+        }
+
+        .${PREFIX}__radio:focus-visible + .${PREFIX}__choice {
+            outline: 2px solid var(--sr-gold);
+            outline-offset: 2px;
+        }
+
+        /* ---------- Поля ---------- */
+        .${PREFIX}__input,
+        .${PREFIX}__textarea {
+            display: block;
+            width: 100%;
+            padding: 8px 11px;
+            color: var(--sr-text);
+            background: var(--sr-field);
+            border: 1px solid var(--sr-line-strong);
+            border-radius: 9px;
+            outline: none;
+            transition: border-color .18s, box-shadow .18s;
+        }
+
+        .${PREFIX}__input::placeholder,
+        .${PREFIX}__textarea::placeholder { color: #7d8793; }
+
+        .${PREFIX}__input:focus,
+        .${PREFIX}__textarea:focus {
+            border-color: var(--sr-gold);
+            box-shadow: 0 0 0 3px rgba(229, 201, 149, .12);
+        }
+
+        .${PREFIX}__input.is-invalid,
+        .${PREFIX}__textarea.is-invalid {
+            border-color: var(--sr-error);
+        }
+
+        .${PREFIX}__textarea {
+            min-height: 88px;
+            max-height: 220px;
+            resize: vertical;
+        }
+
+        /* ---------- Подвал (всегда виден) ---------- */
+        .${PREFIX}__footer {
+            flex: none;
+            padding: 10px 14px 14px;
+            background: rgba(10, 14, 19, .85);
+            border-top: 1px solid var(--sr-line);
+        }
+
+        .${PREFIX}__status {
+            margin: 0 0 8px;
+            color: var(--sr-muted);
+            font-size: 12px;
+        }
+
+        .${PREFIX}__status:empty { display: none; }
+        .${PREFIX}__status[data-tone="error"] { color: var(--sr-error); }
+        .${PREFIX}__status[data-tone="success"] { color: var(--sr-success); }
+
+        .${PREFIX}__submit {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            min-height: 42px;
+            padding: 10px 16px;
+            color: #1a1a18;
+            background: linear-gradient(110deg, #f5e1b7, #d5af76);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 11px;
+            box-shadow: 0 6px 20px rgba(195, 150, 86, .16);
+            font-weight: 700;
+            cursor: pointer;
+            transition: filter .18s, transform .18s, box-shadow .18s;
+        }
+
+        .${PREFIX}__submit:hover:not(:disabled) {
+            filter: brightness(1.07);
+            transform: translateY(-1px);
+            box-shadow: 0 9px 24px rgba(195, 150, 86, .24);
+        }
+
+        .${PREFIX}__submit:active:not(:disabled) { transform: translateY(0); }
+
+        .${PREFIX}__submit:disabled {
+            opacity: .65;
+            cursor: wait;
+        }
+
+        .${PREFIX} button:focus-visible {
+            outline: 2px solid var(--sr-gold);
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 440px) {
+            .${PREFIX}__row { grid-template-columns: 1fr; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .${PREFIX} *,
+            .${PREFIX} *::before,
+            .${PREFIX} *::after {
+                animation-duration: .01ms !important;
+                transition-duration: .01ms !important;
+            }
         }
     `;
 
-    // --- HTML Template ---
-    const win_smartroomform = `
+    // ------------------------------------------------------------
+    // Разметка
+    // ------------------------------------------------------------
+    const html = `
         <style>${styles}</style>
-        <div class="${CONFIG.prefix}">
-            <div class="${CONFIG.prefix}__header chmaf-drag-handle" id="smartroomsug_form_header">
-                <button class="${CONFIG.prefix}__header-btn ${CONFIG.prefix}__header-btn--icon buttonHide" title="скрывает меню" id="hideMeSmartRoomForm">✕</button>
-                <button class="${CONFIG.prefix}__header-btn ${CONFIG.prefix}__header-btn--icon" title="Обновляет хеш чата" id="refreshhashsmartform">↻</button>
-                <button class="${CONFIG.prefix}__header-btn ${CONFIG.prefix}__header-btn--icon" title="Очищает поля формы" id="clearsmartroomform">🧹</button>
-                <button class="${CONFIG.prefix}__header-btn ${CONFIG.prefix}__header-btn--right" title="Инструкция по форме" id="smartroomforminstr">❓</button>
-            </div>
 
-            <div class="${CONFIG.prefix}__body" id="smartroom_form_menu">
-                <!-- Client Type -->
-                <div class="${CONFIG.prefix}__section" id="smartroomuser">
-                    <label class="${CONFIG.prefix}__label">Тип клиента</label>
-                    <div class="${CONFIG.prefix}__radio-group">
-                        <input class="${CONFIG.prefix}__radio" type="radio" id="typestudadults" name="typetoform" value="Ученик Adults">
-                        <label class="${CONFIG.prefix}__radio-label" for="typestudadults">Ученик Adults</label>
+        <div class="${PREFIX}">
+            <div class="${PREFIX}__header chmaf-drag-handle" id="smartroomsug_form_header">
+                <div class="${PREFIX}__mark" aria-hidden="true">S</div>
 
-                        <input class="${CONFIG.prefix}__radio" type="radio" id="typestudkids" name="typetoform" value="Ученик Kids">
-                        <label class="${CONFIG.prefix}__radio-label" for="typestudkids">Ученик Kids</label>
-
-                        <input class="${CONFIG.prefix}__radio" type="radio" id="typestudprem" name="typetoform" value="Ученик Premium">
-                        <label class="${CONFIG.prefix}__radio-label" for="typestudprem">Ученик Premium</label>
-
-                        <input class="${CONFIG.prefix}__radio" type="radio" id="typeteach" name="typetoform" value="Преподаватель">
-                        <label class="${CONFIG.prefix}__radio-label" for="typeteach">Преподаватель</label>
-                    </div>
+                <div class="${PREFIX}__heading">
+                    <div class="${PREFIX}__eyebrow">SmartRoom · Feedback</div>
+                    <h2 class="${PREFIX}__title">Пожелание по улучшению</h2>
                 </div>
 
-                <!-- Format -->
-                <div class="${CONFIG.prefix}__section" id="smartroomformat">
-                    <label class="${CONFIG.prefix}__label">Формат обучения</label>
-                    <div class="${CONFIG.prefix}__radio-group">
-                        <input class="${CONFIG.prefix}__radio" type="radio" id="formatF2F" name="formattoform" value="F2F">
-                        <label class="${CONFIG.prefix}__radio-label" for="formatF2F">F2F</label>
-
-                        <input class="${CONFIG.prefix}__radio" type="radio" id="formatF2G" name="formattoform" value="F2G">
-                        <label class="${CONFIG.prefix}__radio-label" for="formatF2G">F2G</label>
-
-                        <input class="${CONFIG.prefix}__radio" type="radio" id="formatvebinar" name="formattoform" value="Вебинар">
-                        <label class="${CONFIG.prefix}__radio-label" for="formatvebinar">Вебинар</label>
-
-                        <input class="${CONFIG.prefix}__radio" type="radio" id="formatPU" name="formattoform" value="ПУ">
-                        <label class="${CONFIG.prefix}__radio-label" for="formatPU">ПУ</label>
-                    </div>
-                </div>
-
-                <!-- Client ID -->
-                <input class="${CONFIG.prefix}__input" id="clientid" placeholder="ID пользователя" autocomplete="off" type="text">
-
-                <!-- Question Type -->
-                <div class="${CONFIG.prefix}__section" id="smartroomquestion">
-                    <label class="${CONFIG.prefix}__label">С чем обратились?</label>
-                    <div class="${CONFIG.prefix}__radio-group">
-                        <input class="${CONFIG.prefix}__radio" type="radio" checked id="whatobratsugest" name="whatobratform" value="Пожелание по улучшению">
-                        <label class="${CONFIG.prefix}__radio-label" for="whatobratsugest">Пожелания</label>
-                    </div>
-                </div>
-
-                <!-- Ecosystem -->
-                <div class="${CONFIG.prefix}__section" id="smartroomecosysrem">
-                    <label class="${CONFIG.prefix}__label">Экосистема</label>
-                    <div class="${CONFIG.prefix}__radio-group">
-                        <input class="${CONFIG.prefix}__radio" type="radio" id="ecosystemplat" name="smartroomecos" value="Функционал платформы">
-                        <label class="${CONFIG.prefix}__radio-label" for="ecosystemplat">Функционал платформы</label>
-
-                        <input class="${CONFIG.prefix}__radio" type="radio" id="ecosystemios" name="smartroomecos" value="Мобильное приложение IOS">
-                        <label class="${CONFIG.prefix}__radio-label" for="ecosystemios">МП IOS</label>
-
-                        <input class="${CONFIG.prefix}__radio" type="radio" id="ecosystemandr" name="smartroomecos" value="Мобильное приложение Android">
-                        <label class="${CONFIG.prefix}__radio-label" for="ecosystemandr">МП Android</label>
-                    </div>
-                </div>
-
-                <!-- Category 2 -->
-                <div class="${CONFIG.prefix}__section">
-                    <input class="${CONFIG.prefix}__input" type="text" id="cattwosmatrtoom" list="cattwosmatrtoom-options-list" placeholder="Выбрать тему">
-                    <datalist id="cattwosmatrtoom-options-list">
-                        <option value="Домашние задания">
-                        <option value="Интерфейс платформы">
-                        <option value="Функционал урока П">
-                        <option value="Функционал урока У">
-                        <option value="Вернуть старую платформу">
-                        <option value="Мобильное приложение Skyeng">
-                    </datalist>
-                </div>
-
-                <!-- Category 3 -->
-                <div class="${CONFIG.prefix}__section">
-                    <input class="${CONFIG.prefix}__input" type="text" id="catthreesmatrtoom" list="catthreesmatrtoom-options-list" placeholder="Выбрать подтему">
-                    <datalist id="catthreesmatrtoom-options-list">
-                        <option value="Интерфейс раздела домашки">
-                        <option value="Нет">
-                        <option value="Перемешаны слайды в уроке">
-                        <option value="План урока">
-                        <option value="План урока\\домашки">
-                        <option value="Вложения">
-                        <option value="Домашка">
-                        <option value="Информирование">
-                        <option value="Навигация в домашке">
-                        <option value="Не видно какие уроки уже пройдены У">
-                        <option value="П не может изменить оценку">
-                        <option value="Предложения по улучшению">
-                        <option value="Сброс ответов">
-                        <option value="Вход в урок">
-                        <option value="Заметки">
-                        <option value="Масштабирование видео">
-                        <option value="Не находит словарь">
-                        <option value="Нет отображения кол-ва символов">
-                        <option value="Нумерация степов в уроке">
-                        <option value="ОС">
-                        <option value="Плохой шрифт">
-                        <option value="Словарь">
-                        <option value="Урок">
-                        <option value="Ширина доски">
-                        <option value="Баллы и картинки">
-                        <option value="Нет прохождения тестов">
-                        <option value="Повтор пройденного материала">
-                        <option value="Связь У с П">
-                        <option value="Звуки">
-                        <option value="Перевод слов на стороне У">
-                    </datalist>
-                </div>
-
-                <!-- Comment & Submit -->
-                <div>
-                    <textarea class="${CONFIG.prefix}__textarea" id="fullcomentsmartroom" placeholder="Полный комментарий предложения по улучшению" autocomplete="off" data-gramm="false" wt-ignore-input="true"></textarea>
-                    <button class="${CONFIG.prefix}__submit" title="Отправляет заполненные поля формы в док" id="send2smartroom">Отправить</button>
+                <div class="${PREFIX}__actions">
+                    <button type="button" class="${PREFIX}__icon-button"
+                            id="refreshhashsmartform"
+                            title="Обновить данные клиента из чата"
+                            aria-label="Обновить данные клиента">↻</button>
+                    <button type="button" class="${PREFIX}__icon-button"
+                            id="clearsmartroomform"
+                            title="Очистить форму"
+                            aria-label="Очистить форму">⌫</button>
+                    <button type="button" class="${PREFIX}__icon-button"
+                            id="smartroomforminstr"
+                            title="Открыть инструкцию"
+                            aria-label="Открыть инструкцию">?</button>
+                    <button type="button"
+                            class="${PREFIX}__icon-button ${PREFIX}__icon-button--close"
+                            id="hideMeSmartRoomForm"
+                            title="Закрыть окно"
+                            aria-label="Закрыть окно">✕</button>
                 </div>
             </div>
+
+            <form class="${PREFIX}__form" id="smartroom_form_menu" novalidate>
+                <div class="${PREFIX}__body">
+
+                    <!-- Тип обращения: единственное значение, скрыто, но отправляется -->
+                    <input type="radio" hidden checked
+                           id="whatobratsugest" name="whatobratform"
+                           value="Пожелание по улучшению">
+
+                    <fieldset class="${PREFIX}__group" id="smartroomuser">
+                        <legend class="${PREFIX}__legend">Клиент</legend>
+                        <div class="${PREFIX}__choices">
+                            <input class="${PREFIX}__radio" type="radio" id="typestudadults"
+                                   name="typetoform" value="Ученик Adults">
+                            <label class="${PREFIX}__choice" for="typestudadults"
+                                   title="Ученик Adults">Adults</label>
+
+                            <input class="${PREFIX}__radio" type="radio" id="typestudkids"
+                                   name="typetoform" value="Ученик Kids">
+                            <label class="${PREFIX}__choice" for="typestudkids"
+                                   title="Ученик Kids">Kids</label>
+
+                            <input class="${PREFIX}__radio" type="radio" id="typestudprem"
+                                   name="typetoform" value="Ученик Premium">
+                            <label class="${PREFIX}__choice" for="typestudprem"
+                                   title="Ученик Premium">Premium</label>
+
+                            <input class="${PREFIX}__radio" type="radio" id="typeteach"
+                                   name="typetoform" value="Преподаватель">
+                            <label class="${PREFIX}__choice" for="typeteach">Преподаватель</label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="${PREFIX}__group" id="smartroomformat">
+                        <legend class="${PREFIX}__legend">Формат обучения</legend>
+                        <div class="${PREFIX}__choices">
+                            <input class="${PREFIX}__radio" type="radio" id="formatF2F"
+                                   name="formattoform" value="F2F">
+                            <label class="${PREFIX}__choice" for="formatF2F">F2F</label>
+
+                            <input class="${PREFIX}__radio" type="radio" id="formatF2G"
+                                   name="formattoform" value="F2G">
+                            <label class="${PREFIX}__choice" for="formatF2G">F2G</label>
+
+                            <input class="${PREFIX}__radio" type="radio" id="formatvebinar"
+                                   name="formattoform" value="Вебинар">
+                            <label class="${PREFIX}__choice" for="formatvebinar">Вебинар</label>
+
+                            <input class="${PREFIX}__radio" type="radio" id="formatPU"
+                                   name="formattoform" value="ПУ">
+                            <label class="${PREFIX}__choice" for="formatPU">ПУ</label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="${PREFIX}__group" id="smartroomecosysrem">
+                        <legend class="${PREFIX}__legend">Экосистема</legend>
+                        <div class="${PREFIX}__choices">
+                            <input class="${PREFIX}__radio" type="radio" id="ecosystemplat"
+                                   name="smartroomecos" value="Функционал платформы">
+                            <label class="${PREFIX}__choice" for="ecosystemplat">Платформа</label>
+
+                            <input class="${PREFIX}__radio" type="radio" id="ecosystemios"
+                                   name="smartroomecos" value="Мобильное приложение IOS">
+                            <label class="${PREFIX}__choice" for="ecosystemios">iOS</label>
+
+                            <input class="${PREFIX}__radio" type="radio" id="ecosystemandr"
+                                   name="smartroomecos" value="Мобильное приложение Android">
+                            <label class="${PREFIX}__choice" for="ecosystemandr">Android</label>
+                        </div>
+                    </fieldset>
+
+                    <div class="${PREFIX}__group">
+                        <label class="${PREFIX}__label" for="clientid">ID пользователя</label>
+                        <input class="${PREFIX}__input" id="clientid" type="text"
+                               inputmode="numeric" autocomplete="off"
+                               placeholder="Например, 123456">
+                    </div>
+
+                    <div class="${PREFIX}__row">
+                        <div class="${PREFIX}__group">
+                            <label class="${PREFIX}__label" for="cattwosmatrtoom">Тема</label>
+                            <input class="${PREFIX}__input" type="text" id="cattwosmatrtoom"
+                                   list="cattwosmatrtoom-options-list" autocomplete="off"
+                                   placeholder="Выберите тему">
+                            <datalist id="cattwosmatrtoom-options-list">
+                                ${optionsHtml(categories)}
+                            </datalist>
+                        </div>
+
+                        <div class="${PREFIX}__group">
+                            <label class="${PREFIX}__label" for="catthreesmatrtoom">Подтема</label>
+                            <input class="${PREFIX}__input" type="text" id="catthreesmatrtoom"
+                                   list="catthreesmatrtoom-options-list" autocomplete="off"
+                                   placeholder="Выберите подтему">
+                            <datalist id="catthreesmatrtoom-options-list">
+                                ${optionsHtml(subcategories)}
+                            </datalist>
+                        </div>
+                    </div>
+
+                    <div class="${PREFIX}__group">
+                        <label class="${PREFIX}__label" for="fullcomentsmartroom">Комментарий</label>
+                        <textarea class="${PREFIX}__textarea" id="fullcomentsmartroom"
+                                  autocomplete="off" data-gramm="false" wt-ignore-input="true"
+                                  placeholder="Что стоит изменить и почему?"></textarea>
+                    </div>
+                </div>
+
+                <div class="${PREFIX}__footer">
+                    <p class="${PREFIX}__status" id="smartroomformstatus"
+                       role="status" aria-live="polite"></p>
+
+                    <button class="${PREFIX}__submit" id="send2smartroom" type="submit">
+                        Отправить <span aria-hidden="true">↗</span>
+                    </button>
+                </div>
+            </form>
         </div>
     `;
 
-    // --- Window Initialization ---
-    const wintSmartroom = createWindow('AF_Smartroomform', 'winTopSmartroom', 'winLeftSmartroom', win_smartroomform);
-    hideWindowOnDoubleClick('AF_Smartroomform');
-    hideWindowOnClick('AF_Smartroomform', 'hideMeSmartRoomForm');
-
-    // --- Utility Functions ---
-
-    function validateDatalistInput(e) {
-        const input = e.target;
-        const listId = input.getAttribute('list');
-        const datalist = document.getElementById(listId);
-
-        if (!datalist) return;
-
-        const validValues = Array.from(datalist.options).map(opt => opt.value);
-        const isValid = validValues.includes(input.value);
-
-        input.setCustomValidity(isValid ? '' : 'Пожалуйста, выберите одно из доступных значений.');
-        input.toggleAttribute('data-valid', isValid);
-        input.classList.toggle(`${CONFIG.prefix}__input--error`, !isValid && input.value !== '');
+    // ------------------------------------------------------------
+    // Создание окна
+    // ------------------------------------------------------------
+    try {
+        createWindow(WINDOW_ID, 'winTopSmartroom', 'winLeftSmartroom', html);
+    } catch (error) {
+        console.error('[SmartRoom] Не удалось создать окно:', error);
+        return;
     }
 
-    function getCheckedRadioValue(name) {
-        const checked = document.querySelector(`input[name="${name}"]:checked`);
-        return checked ? checked.value : null;
+    const windowEl = document.getElementById(WINDOW_ID);
+    const form = windowEl?.querySelector('#smartroom_form_menu');
+
+    if (!windowEl || !form) {
+        console.error('[SmartRoom] Окно создано без содержимого формы');
+        return;
     }
 
-    function validateRadioSection(name, sectionId) {
-        const section = document.getElementById(sectionId);
-        const isValid = !!getCheckedRadioValue(name);
-        section.classList.toggle(`${CONFIG.prefix}__section--error`, !isValid);
-        return isValid;
+    const $ = selector => form.querySelector(selector);
+    const submitButton = $('#send2smartroom');
+    const clearButton = windowEl.querySelector('#clearsmartroomform');
+    const statusEl = $('#smartroomformstatus');
+    const SUBMIT_LABEL = 'Отправить <span aria-hidden="true">↗</span>';
+
+    let isSending = false;
+
+    // ------------------------------------------------------------
+    // Хелперы
+    // ------------------------------------------------------------
+    function setStatus(message = '', tone = '') {
+        statusEl.textContent = message;
+        if (tone) statusEl.dataset.tone = tone;
+        else statusEl.removeAttribute('data-tone');
     }
 
-    function validateTextInput(elementId, minLength = 3) {
-        const element = document.getElementById(elementId);
-        const isValid = element.value.trim().length >= minLength;
-        element.classList.toggle(`${CONFIG.prefix}__input--error`, !isValid);
-        return isValid;
+    function notify(message, type) {
+        if (typeof createAndShowButton === 'function') {
+            createAndShowButton(message, type);
+        }
     }
 
-    function validateDatalist(elementId) {
-        const element = document.getElementById(elementId);
-        const isValid = element.hasAttribute('data-valid');
-        element.classList.toggle(`${CONFIG.prefix}__input--error`, !isValid);
-        return isValid;
+    function closeWindow() {
+        windowEl.style.display = 'none';
     }
 
-    function getDatalistValue(elementId) {
-        const element = document.getElementById(elementId);
-        const datalist = document.getElementById(element.getAttribute('list'));
-        if (!datalist || !element.hasAttribute('data-valid')) return null;
+    // Возвращает окно в видимую область экрана, если оно выехало за границы
+    function keepInViewport() {
+        const position = getComputedStyle(windowEl).position;
+        if (position !== 'fixed' && position !== 'absolute') return;
 
-        const option = Array.from(datalist.options).find(opt => opt.value === element.value);
-        return option ? option.value : null;
+        const rect = windowEl.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        const maxLeft = Math.max(8, window.innerWidth - rect.width - 8);
+        const maxTop = Math.max(8, window.innerHeight - rect.height - 8);
+
+        if (rect.top < 8 || rect.top > maxTop) {
+            windowEl.style.top = `${Math.min(Math.max(rect.top, 8), maxTop)}px`;
+        }
+        if (rect.left < 8 || rect.left > maxLeft) {
+            windowEl.style.left = `${Math.min(Math.max(rect.left, 8), maxLeft)}px`;
+        }
+    }
+
+    function checked(name) {
+        return form.querySelector(`input[name="${name}"]:checked`)?.value ?? null;
+    }
+
+    function markInvalid(element, invalid) {
+        element.classList.toggle('is-invalid', invalid);
+        element.setAttribute('aria-invalid', String(invalid));
+        element.closest(`.${PREFIX}__group`)?.classList.toggle('is-invalid', invalid);
+    }
+
+    // ------------------------------------------------------------
+    // Валидация
+    // ------------------------------------------------------------
+    function validateRadio(name, groupId) {
+        const group = windowEl.querySelector(`#${groupId}`);
+        const valid = Boolean(checked(name));
+
+        group.classList.toggle('is-invalid', !valid);
+
+        return {
+            valid,
+            focusTarget: group.querySelector(`input[name="${name}"]`)
+        };
+    }
+
+    function validateText(id) {
+        const element = $(`#${id}`);
+        const valid = element.value.trim().length >= 3;
+
+        markInvalid(element, !valid);
+        return { valid, focusTarget: element };
+    }
+
+    function matchedOption(element) {
+        const list = windowEl.querySelector(`#${element.getAttribute('list')}`);
+        if (!list) return null;
+
+        const value = element.value.trim();
+        return Array.from(list.options).find(o => o.value === value)?.value ?? null;
+    }
+
+    function validateList(id) {
+        const element = $(`#${id}`);
+        const valid = matchedOption(element) !== null;
+
+        markInvalid(element, !valid);
+        return { valid, focusTarget: element };
+    }
+
+    function validateForm() {
+        const checks = [
+            validateRadio('typetoform', 'smartroomuser'),
+            validateRadio('formattoform', 'smartroomformat'),
+            validateRadio('smartroomecos', 'smartroomecosysrem'),
+            validateText('clientid'),
+            validateList('cattwosmatrtoom'),
+            validateList('catthreesmatrtoom'),
+            validateText('fullcomentsmartroom')
+        ];
+
+        const firstInvalid = checks.find(c => !c.valid);
+
+        if (firstInvalid) {
+            setStatus(
+                'Проверьте выделенные поля. Тему и подтему нужно выбрать из списка.',
+                'error'
+            );
+            firstInvalid.focusTarget?.focus();
+            firstInvalid.focusTarget?.scrollIntoView?.({ block: 'nearest' });
+            return false;
+        }
+
+        setStatus();
+        return true;
     }
 
     function clearForm() {
-        const elementsToClear = [
-            CONFIG.fields.clientId,
-            CONFIG.fields.comment,
-            CONFIG.fields.category2,
-            CONFIG.fields.category3
-        ];
+        if (isSending) return;
 
-        elementsToClear.forEach(id => {
-            const element = document.getElementById(id);
-            if (!element) return;
+        form.reset();
 
-            if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-                element.value = '';
-            }
-            element.classList.remove(`${CONFIG.prefix}__section--error`, `${CONFIG.prefix}__input--error`);
-            element.removeAttribute('data-valid');
-        });
+        form.querySelectorAll('.is-invalid')
+            .forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('[aria-invalid]')
+            .forEach(el => el.removeAttribute('aria-invalid'));
 
-        document.querySelectorAll(`.${CONFIG.prefix}__radio`).forEach(radio => {
-            radio.checked = false;
-        });
-
-        const defaultQuestion = document.getElementById('whatobratsugest');
-        if (defaultQuestion) defaultQuestion.checked = true;
-
-        ['smartroomuser', 'smartroomformat', 'smartroomecosysrem'].forEach(id => {
-            const section = document.getElementById(id);
-            if (section) section.classList.remove(`${CONFIG.prefix}__section--error`);
-        });
+        setStatus();
     }
 
-    function submitForm() {
-        const validations = [
-            validateRadioSection('typetoform', 'smartroomuser'),
-            validateRadioSection('formattoform', 'smartroomformat'),
-            validateTextInput(CONFIG.fields.clientId),
-            validateRadioSection('smartroomecos', 'smartroomecosysrem'),
-            validateTextInput(CONFIG.fields.comment),
-            validateDatalist(CONFIG.fields.category2),
-            validateDatalist(CONFIG.fields.category3)
-        ];
-
-        if (validations.some(v => !v)) return;
-
-        const formData = new URLSearchParams({
-            'entry.505070950': document.getElementById(CONFIG.fields.clientId).value,
-            'entry.1879097323': document.getElementById(CONFIG.fields.comment).value,
-            'entry.1625340245': getDatalistValue(CONFIG.fields.category2),
-            'entry.478427702': getDatalistValue(CONFIG.fields.category3),
-            'entry.466256037': getCheckedRadioValue('typetoform'),
-            'entry.685236831': getCheckedRadioValue('formattoform'),
-            'entry.876256156': getCheckedRadioValue('whatobratform'),
-            'entry.156405977': getCheckedRadioValue('smartroomecos')
-        });
-
-        chrome.runtime.sendMessage({
-            action: 'getFetchRequest',
-            fetchURL: CONFIG.googleFormUrl,
-            requestOptions: {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData.toString()
-            }
-        }, (response) => {
-            if (response?.success) {
-                document.getElementById('AF_Smartroomform').style.display = 'none';
-                clearForm();
-                sendComment('Отправка в документ "Пожелания Смартрум" прошла успешно');
-                if (typeof createAndShowButton === 'function') createAndShowButton('✅ Отправлено в Смартрум-док', 'message');
-            } else {
-                console.error('Ошибка при отправке в документ "Пожелания Смартрум":', response?.error);
-                if (typeof createAndShowButton === 'function') createAndShowButton(`❌ Ошибка отправки: ${response?.error || 'неизвестно'}`, 'error');
-            }
-        });
-    }
-
-    function refreshFromChat() {
-        const detailsList = document.getElementsByClassName('expert-user_details-list')[1];
-        if (!detailsList) return;
-
-        Array.from(detailsList.childNodes).forEach(node => {
-            if (!node.firstChild || !node.childNodes[1]) return;
-
-            const label = node.firstChild.innerText;
-            const value = node.childNodes[1].innerText.split(' ')[0];
-
-            if (label === 'id') {
-                const input = document.getElementById(CONFIG.fields.clientId);
-                if (input) input.value = value;
-            } else if (label === 'userType') {
-                document.querySelectorAll('input[name="typetoform"]').forEach(r => r.checked = false);
-
-                if (value === 'student' || value === 'parent') {
-                    const target = document.getElementById('typestudadults');
-                    if (target) target.checked = true;
-                } else if (value === 'teacher') {
-                    const target = document.getElementById('typeteach');
-                    if (target) target.checked = true;
+    // ------------------------------------------------------------
+    // Данные из чата
+    // ------------------------------------------------------------
+    function readChatValue(key) {
+        if (typeof SearchinAFnewUI === 'function') {
+            try {
+                const value = SearchinAFnewUI(key);
+                if (value !== null && value !== undefined && value !== '') {
+                    return String(value).trim();
                 }
+            } catch (error) {
+                console.warn(`[SmartRoom] Не удалось прочитать ${key} из чата:`, error);
+            }
+        }
+
+        // Резервный вариант для старой разметки
+        const detailsList = document.getElementsByClassName('expert-user_details-list')[1];
+        if (!detailsList) return '';
+
+        for (const row of detailsList.children) {
+            const cells = row.children;
+            if (cells.length >= 2 && cells[0].textContent.trim() === key) {
+                return cells[1].textContent.trim().split(/\s+/)[0];
+            }
+        }
+        return '';
+    }
+
+    function clientTypeRadio(userType, vertical) {
+        const type = userType.toLowerCase();
+        const v = vertical.toLowerCase();
+
+        if (type === 'teacher') return 'typeteach';
+        if (type === 'parent') return 'typestudkids';
+
+        if (type === 'student') {
+            if (v.includes('premium')) return 'typestudprem';
+            if (v.includes('kid')) return 'typestudkids';
+            if (v.includes('adult')) return 'typestudadults';
+        }
+        return null;
+    }
+
+    function fillFromChat(force = false) {
+        const clientId = readChatValue('id');
+        const userType = readChatValue('userType');
+        const vertical = readChatValue('supportVertical');
+        const idInput = $('#clientid');
+
+        let updated = false;
+
+        // При обычном открытии не затираем уже введённое
+        if (clientId && (force || !idInput.value.trim())) {
+            idInput.value = clientId;
+            markInvalid(idInput, false);
+            updated = true;
+        }
+
+        const radioId = clientTypeRadio(userType, vertical);
+
+        if (radioId && (force || !checked('typetoform'))) {
+            const radio = $(`#${radioId}`);
+            radio.checked = true;
+            radio.closest(`.${PREFIX}__group`)?.classList.remove('is-invalid');
+            updated = true;
+        }
+
+        return updated;
+    }
+
+    // ------------------------------------------------------------
+    // Показ / скрытие (имя функции сохранено для меню)
+    // ------------------------------------------------------------
+    function closeMainMenu() {
+        const menu = document.getElementById('idmymenu');
+        const mainMenuButton = document.getElementById('MainMenuBtn');
+
+        if (menu) menu.style.display = 'none';
+        mainMenuButton?.classList.remove('activeScriptBtn');
+    }
+
+    function showWindow() {
+        windowEl.style.display = '';
+        fillFromChat();
+        requestAnimationFrame(keepInViewport);
+    }
+
+    function toggleWindow() {
+        const hidden = getComputedStyle(windowEl).display === 'none';
+
+        if (hidden) showWindow();
+        else closeWindow();
+
+        closeMainMenu();
+    }
+
+    window.getsmartroomformButtonPress = toggleWindow;
+
+    // ------------------------------------------------------------
+    // Отправка
+    // ------------------------------------------------------------
+    function sendViaExtension(body) {
+        return new Promise((resolve, reject) => {
+            if (!globalThis.chrome?.runtime?.sendMessage) {
+                reject(new Error('Недоступно расширение браузера'));
+                return;
+            }
+
+            let settled = false;
+
+            const timeoutId = setTimeout(() => {
+                if (settled) return;
+                settled = true;
+                reject(new Error('Время ожидания ответа истекло'));
+            }, CONFIG.requestTimeout);
+
+            try {
+                chrome.runtime.sendMessage(
+                    {
+                        action: 'getFetchRequest',
+                        fetchURL: CONFIG.googleFormUrl,
+                        requestOptions: {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type':
+                                    'application/x-www-form-urlencoded;charset=UTF-8'
+                            },
+                            body
+                        }
+                    },
+                    response => {
+                        if (settled) return;
+                        settled = true;
+                        clearTimeout(timeoutId);
+
+                        const runtimeError = chrome.runtime.lastError;
+                        if (runtimeError) {
+                            reject(new Error(runtimeError.message));
+                            return;
+                        }
+
+                        if (response?.success) resolve(response);
+                        else reject(new Error(response?.error || 'Сервер не подтвердил отправку'));
+                    }
+                );
+            } catch (error) {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timeoutId);
+                reject(error);
             }
         });
     }
 
-    // --- Event Listeners (bind once) ---
+    async function submitForm(event) {
+        event.preventDefault();
 
-    [CONFIG.fields.category2, CONFIG.fields.category3].forEach(id => {
-        const element = document.getElementById(id);
-        if (!element) return;
-        ['input', 'drop', 'paste'].forEach(event => {
-            element.addEventListener(event, validateDatalistInput);
-        });
-    });
+        if (isSending || !validateForm()) return;
 
-    document.querySelectorAll(`.${CONFIG.prefix}__input, .${CONFIG.prefix}__textarea`).forEach(input => {
-        input.addEventListener('input', function () {
-            this.classList.remove(`${CONFIG.prefix}__input--error`);
-            const section = this.closest(`.${CONFIG.prefix}__section`);
-            if (section) section.classList.remove(`${CONFIG.prefix}__section--error`);
-        });
-    });
+        const body = new URLSearchParams({
+            'entry.505070950': $('#clientid').value.trim(),
+            'entry.1879097323': $('#fullcomentsmartroom').value.trim(),
+            'entry.1625340245': matchedOption($('#cattwosmatrtoom')),
+            'entry.478427702': matchedOption($('#catthreesmatrtoom')),
+            'entry.466256037': checked('typetoform'),
+            'entry.685236831': checked('formattoform'),
+            'entry.876256156': checked('whatobratform'),
+            'entry.156405977': checked('smartroomecos')
+        }).toString();
 
-    document.querySelectorAll(`.${CONFIG.prefix}__radio`).forEach(radio => {
-        radio.addEventListener('change', function () {
-            const section = this.closest(`.${CONFIG.prefix}__section`);
-            if (section) section.classList.remove(`${CONFIG.prefix}__section--error`);
-        });
-    });
+        isSending = true;
+        submitButton.disabled = true;
+        clearButton.disabled = true;
+        submitButton.textContent = 'Отправляем…';
+        setStatus('Отправляем предложение…');
 
-    document.getElementById('send2smartroom').onclick = submitForm;
-    document.getElementById('clearsmartroomform').onclick = clearForm;
+        let ok = false;
 
-    document.getElementById('smartroomforminstr').onclick = () => {
-        window.open(CONFIG.confluenceUrl, '_blank');
-    };
+        try {
+            await sendViaExtension(body);
+            ok = true;
+        } catch (error) {
+            console.error('[SmartRoom] Ошибка отправки:', error);
+            // Введённые данные при ошибке остаются
+            setStatus(`Не удалось отправить: ${error.message}`, 'error');
+            notify('❌ Не удалось отправить форму', 'error');
+        } finally {
+            isSending = false;
+            submitButton.disabled = false;
+            clearButton.disabled = false;
+            submitButton.innerHTML = SUBMIT_LABEL;
+        }
 
-    document.getElementById('refreshhashsmartform').onclick = refreshFromChat;
+        if (ok) {
+            clearForm();
+            closeWindow();
 
-    // --- Bind external menu button ---
-    const menuBtn = document.getElementById('smartroomform');
-    if (menuBtn) {
-        menuBtn.onclick = window.getsmartroomformButtonPress;
+            if (typeof sendComment === 'function') {
+                sendComment('Отправка в документ "Пожелания Смартрум" прошла успешно');
+            }
+            notify('✅ Отправлено в Смартрум-док', 'message');
+        }
     }
 
+    // ------------------------------------------------------------
+    // Обработчики (навешиваются один раз)
+    // ------------------------------------------------------------
+    form.addEventListener('submit', submitForm);
+
+    form.addEventListener('input', event => {
+        const target = event.target;
+        if (!target.matches('input, textarea')) return;
+
+        target.classList.remove('is-invalid');
+        target.removeAttribute('aria-invalid');
+        target.closest(`.${PREFIX}__group`)?.classList.remove('is-invalid');
+
+        if (statusEl.dataset.tone === 'error') setStatus();
+    });
+
+    form.addEventListener('change', event => {
+        if (!event.target.matches('input[type="radio"]')) return;
+
+        event.target.closest(`.${PREFIX}__group`)?.classList.remove('is-invalid');
+
+        if (statusEl.dataset.tone === 'error') setStatus();
+    });
+
+    clearButton.addEventListener('click', clearForm);
+
+    windowEl.querySelector('#hideMeSmartRoomForm')
+        .addEventListener('click', closeWindow);
+
+    windowEl.querySelector('#refreshhashsmartform')
+        .addEventListener('click', () => {
+            const updated = fillFromChat(true);
+            setStatus(
+                updated
+                    ? 'Данные клиента обновлены из чата.'
+                    : 'Не удалось найти данные клиента в чате.',
+                updated ? 'success' : 'error'
+            );
+        });
+
+    windowEl.querySelector('#smartroomforminstr')
+        .addEventListener('click', () => {
+            window.open(CONFIG.confluenceUrl, '_blank', 'noopener,noreferrer');
+        });
+
+    const menuButton = document.getElementById('smartroomform');
+    if (menuButton) {
+        menuButton.addEventListener('click', window.getsmartroomformButtonPress);
+    }
+
+    // На случай, если окно уже открыто при создании
+    requestAnimationFrame(keepInViewport);
 })();
