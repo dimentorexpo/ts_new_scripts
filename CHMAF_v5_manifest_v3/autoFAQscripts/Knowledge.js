@@ -1,385 +1,1099 @@
 /**
- * Knowledge Center — Premium Obsidian Edition
- * Акцент: violet #a78bfa → deep #7c3aed
- * Unique prefix: .knw-
+ * Knowledge Center — Graphite / Electric Blue
+ * Совместим с существующими createWindow(...) и кнопкой #knowledgeCenter.
  */
-
 (function () {
-    // Состояние модуля
+    'use strict';
+
+    if (document.getElementById('AF_Knowledge')) return;
+
+    const DATA_URL =
+        'https://script.google.com/macros/s/AKfycbySlhuMPHSKHiI6Rhoyg797id3lbPg_zdeG_iBoEvYxwqlxkD4QizWm8OJDEucma7tGyg/exec';
+
+    const MAX_VISIBLE_ITEMS = 200;
+
     const state = {
         data: [],
-        index: new Map(),
-        currentSection: null
+        loaded: false,
+        loading: false,
+        selectedId: null,
+        searchTimer: null,
+        positionTimer: null,
+        requestController: null
     };
 
-    // Стили
-    const injectStyles = () => {
-        if (document.getElementById('knw-styles')) return;
+    const styles = `
+        .knw-panel,
+        .knw-panel *,
+        .knw-solution,
+        .knw-solution * {
+            box-sizing: border-box;
+        }
+
+        .knw-panel {
+            width: min(540px, calc(100vw - 24px));
+            padding: 0 !important;
+            overflow: hidden !important;
+            color: #eaf0fa;
+            font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
+                "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at 8% 0%, rgba(92, 135, 255, .12), transparent 42%),
+                linear-gradient(155deg, #1a202e 0%, #10151f 65%, #0d121b 100%) !important;
+            border: 1px solid rgba(178, 197, 231, .18);
+            border-radius: 20px;
+            box-shadow:
+                0 28px 75px rgba(0, 0, 0, .55),
+                0 1px 0 rgba(255, 255, 255, .07) inset;
+        }
+
+        .knw-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-height: 78px;
+            padding: 16px 18px;
+            border-bottom: 1px solid rgba(178, 197, 231, .11);
+            cursor: grab;
+            user-select: none;
+        }
+
+        .knw-header:active { cursor: grabbing; }
+
+        .knw-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .knw-mark {
+            display: grid;
+            place-items: center;
+            flex: 0 0 40px;
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(125, 163, 255, .45);
+            border-radius: 12px;
+            color: #b7cdff;
+            background: linear-gradient(145deg, #263c67, #19253d);
+            box-shadow: 0 6px 18px rgba(54, 105, 236, .18);
+            font-size: 23px;
+            line-height: 1;
+        }
+
+        .knw-eyebrow {
+            margin-bottom: 3px;
+            color: #8fa2c1;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+        }
+
+        .knw-title {
+            color: #f5f8ff;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -.025em;
+        }
+
+        .knw-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .knw-status {
+            width: 7px;
+            height: 7px;
+            flex: 0 0 7px;
+            border-radius: 50%;
+            background: #74829a;
+            box-shadow: 0 0 0 4px rgba(116, 130, 154, .12);
+        }
+
+        .knw-status[data-state="ready"] {
+            background: #72d6e9;
+            box-shadow: 0 0 0 4px rgba(114, 214, 233, .12);
+        }
+
+        .knw-status[data-state="loading"] {
+            background: #85aaff;
+            box-shadow: 0 0 0 4px rgba(133, 170, 255, .13);
+            animation: knw-pulse 1.2s ease-in-out infinite;
+        }
+
+        .knw-status[data-state="error"] {
+            background: #ff8295;
+            box-shadow: 0 0 0 4px rgba(255, 130, 149, .12);
+        }
+
+        .knw-icon-button {
+            display: grid;
+            place-items: center;
+            flex: 0 0 32px;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid rgba(178, 197, 231, .15);
+            border-radius: 9px;
+            color: #b9c7dd;
+            background: rgba(255, 255, 255, .035);
+            font: inherit;
+            font-size: 19px;
+            line-height: 1;
+            cursor: pointer;
+            transition: background .18s, color .18s, border-color .18s;
+        }
+
+        .knw-icon-button:hover {
+            color: #fff;
+            background: rgba(118, 158, 255, .13);
+            border-color: rgba(118, 158, 255, .4);
+        }
+
+        .knw-body { padding: 17px 18px 18px; }
+
+        .knw-search-wrap {
+            position: relative;
+            margin-bottom: 11px;
+        }
+
+        .knw-search-icon {
+            position: absolute;
+            top: 50%;
+            left: 14px;
+            transform: translateY(-50%);
+            color: #8799b6;
+            font-size: 18px;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .knw-input,
+        .knw-select {
+            min-width: 0;
+            border: 1px solid rgba(178, 197, 231, .15);
+            border-radius: 11px;
+            outline: none;
+            color: #edf3ff;
+            background: rgba(6, 11, 20, .46);
+            font: inherit;
+            font-size: 12px;
+            transition: border-color .18s, box-shadow .18s, background .18s;
+        }
+
+        .knw-input {
+            display: block;
+            width: 100%;
+            height: 43px;
+            padding: 0 14px 0 41px;
+        }
+
+        .knw-input::placeholder { color: #8291a9; }
+
+        .knw-input:focus,
+        .knw-select:focus {
+            border-color: #789fff;
+            background: rgba(8, 15, 28, .8);
+            box-shadow: 0 0 0 3px rgba(102, 147, 255, .15);
+        }
+
+        .knw-filters {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .knw-select {
+            width: 100%;
+            height: 39px;
+            padding: 0 11px;
+            color-scheme: dark;
+            cursor: pointer;
+        }
+
+        .knw-select:disabled {
+            opacity: .48;
+            cursor: not-allowed;
+        }
+
+        .knw-select option {
+            color: #edf3ff;
+            background: #17202e;
+        }
+
+        .knw-list-heading {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 18px 1px 9px;
+            color: #8fa2c1;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        .knw-count {
+            color: #a9c3ff;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .knw-scroll-area {
+            min-height: 110px;
+            max-height: min(390px, 48vh);
+            overflow: auto;
+            padding: 1px 4px 1px 1px;
+            scrollbar-width: thin;
+            scrollbar-color: #405474 transparent;
+        }
+
+        .knw-scroll-area::-webkit-scrollbar,
+        .knw-solution::-webkit-scrollbar { width: 6px; }
+
+        .knw-scroll-area::-webkit-scrollbar-thumb,
+        .knw-solution::-webkit-scrollbar-thumb {
+            border-radius: 8px;
+            background: #405474;
+        }
+
+        .knw-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            width: 100%;
+            margin: 0 0 7px;
+            padding: 12px 13px;
+            border: 1px solid rgba(178, 197, 231, .1);
+            border-radius: 11px;
+            color: #e4ebf7;
+            background: rgba(255, 255, 255, .035);
+            text-align: left;
+            font: inherit;
+            cursor: pointer;
+            transition:
+                border-color .18s,
+                background .18s,
+                transform .18s,
+                box-shadow .18s;
+        }
+
+        .knw-item:hover {
+            transform: translateY(-1px);
+            border-color: rgba(126, 166, 255, .45);
+            background: rgba(105, 148, 255, .09);
+        }
+
+        .knw-item.active {
+            border-color: rgba(126, 166, 255, .65);
+            background: linear-gradient(
+                110deg,
+                rgba(83, 130, 245, .2),
+                rgba(83, 130, 245, .07)
+            );
+            box-shadow: inset 3px 0 0 #82aaff;
+        }
+
+        .knw-item-main { min-width: 0; }
+
+        .knw-item-title {
+            display: block;
+            overflow-wrap: anywhere;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.45;
+        }
+
+        .knw-item-meta {
+            display: block;
+            margin-top: 4px;
+            color: #91a3be;
+            font-size: 10px;
+            line-height: 1.35;
+        }
+
+        .knw-item-arrow {
+            flex: 0 0 auto;
+            color: #89aafb;
+            font-size: 18px;
+        }
+
+        .knw-empty {
+            display: grid;
+            place-items: center;
+            min-height: 110px;
+            padding: 20px;
+            border: 1px dashed rgba(178, 197, 231, .16);
+            border-radius: 11px;
+            color: #a0afc6;
+            text-align: center;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .knw-retry {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border: 1px solid rgba(126, 166, 255, .45);
+            border-radius: 8px;
+            color: #c5d6ff;
+            background: rgba(105, 148, 255, .1);
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .knw-retry:hover { background: rgba(105, 148, 255, .19); }
+
+        .knw-solution {
+            position: fixed;
+            z-index: 2147483000;
+            width: min(480px, calc(100vw - 24px));
+            max-height: calc(100vh - 24px);
+            max-height: calc(100dvh - 24px);
+            overflow: auto;
+            padding: 20px;
+            border: 1px solid rgba(151, 180, 239, .26);
+            border-top: 2px solid #83aaff;
+            border-radius: 18px;
+            color: #e8eef8;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(103, 151, 255, .13), transparent 45%),
+                #151c29;
+            box-shadow: 0 28px 80px rgba(0, 0, 0, .65);
+            scrollbar-width: thin;
+            scrollbar-color: #405474 transparent;
+        }
+
+        .knw-solution[hidden] { display: none !important; }
+
+        .knw-solution-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(178, 197, 231, .14);
+        }
+
+        .knw-solution-label {
+            margin-bottom: 7px;
+            color: #98b5ff;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+        }
+
+        .knw-solution-title {
+            margin: 0;
+            color: #f6f8ff;
+            font-size: 17px;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+
+        .knw-article {
+            padding-top: 7px;
+            color: #d6dfec;
+            font-size: 13px;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        .knw-article h1,
+        .knw-article h2,
+        .knw-article h3,
+        .knw-article h4 {
+            margin: 20px 0 8px;
+            color: #f1f5ff;
+            line-height: 1.35;
+        }
+
+        .knw-article p { margin: 12px 0; }
+        .knw-article ul,
+        .knw-article ol { padding-left: 22px; }
+
+        .knw-article a {
+            color: #a9c5ff;
+            text-underline-offset: 3px;
+        }
+
+        .knw-article a:hover { color: #d1e0ff; }
+
+        .knw-article img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 14px 0;
+            border-radius: 9px;
+        }
+
+        .knw-article pre,
+        .knw-article code {
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: .92em;
+        }
+
+        .knw-article pre {
+            overflow: auto;
+            padding: 13px;
+            border: 1px solid rgba(178, 197, 231, .12);
+            border-radius: 9px;
+            background: #0d1420;
+        }
+
+        .knw-article blockquote {
+            margin: 14px 0;
+            padding: 3px 14px;
+            border-left: 2px solid #83aaff;
+            color: #b9c9e4;
+            background: rgba(105, 148, 255, .06);
+        }
+
+        .knw-article table {
+            display: block;
+            max-width: 100%;
+            overflow-x: auto;
+            border-collapse: collapse;
+        }
+
+        .knw-article th,
+        .knw-article td {
+            padding: 7px 9px;
+            border: 1px solid rgba(178, 197, 231, .2);
+            text-align: left;
+        }
+
+        .knw-panel :focus-visible,
+        .knw-solution :focus-visible {
+            outline: 2px solid #9dbbff;
+            outline-offset: 2px;
+        }
+
+        @keyframes knw-pulse {
+            50% { opacity: .45; }
+        }
+
+        @media (max-width: 420px) {
+            .knw-header { padding: 13px 14px; }
+            .knw-body { padding: 14px; }
+            .knw-solution { padding: 16px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .knw-panel *,
+            .knw-solution * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+		
+		/* Более комфортный размер текста */
+.knw-title {
+    font-size: 17px;
+}
+
+.knw-eyebrow,
+.knw-list-heading,
+.knw-solution-label {
+    font-size: 11px;
+}
+
+.knw-input,
+.knw-select {
+    font-size: 14px;
+}
+
+.knw-item-title {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.knw-item-meta {
+    font-size: 12px;
+}
+
+.knw-empty {
+    font-size: 14px;
+}
+
+.knw-solution-title {
+    font-size: 19px;
+}
+
+.knw-article {
+    font-size: 15px;
+    line-height: 1.75;
+}
+    `;
+
+    if (!document.getElementById('knw-styles')) {
         const style = document.createElement('style');
         style.id = 'knw-styles';
-        style.innerHTML = `
-            .knw-panel {
-                background: linear-gradient(165deg, rgba(28, 27, 40, 0.94) 0%, rgba(13, 12, 20, 0.97) 100%) !important;
-                backdrop-filter: blur(24px) saturate(140%);
-                -webkit-backdrop-filter: blur(24px) saturate(140%);
-                border: 1px solid rgba(255, 255, 255, 0.09);
-                border-top-color: rgba(255, 255, 255, 0.16);
-                border-radius: 18px;
-                color: #e8ecf4;
-                font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-                padding: 16px !important;
-                overflow: visible !important;
-            }
-            .knw-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 16px;
-                cursor: grab;
-            }
-            .knw-titleblock { display: flex; gap: 10px; align-items: center; }
-            .knw-icon-chip {
-                width: 34px; height: 34px;
-                border-radius: 10px;
-                display: flex; align-items: center; justify-content: center;
-                font-size: 17px;
-                background: linear-gradient(135deg, rgba(167, 139, 250, 0.25), rgba(124, 58, 237, 0.12));
-                border: 1px solid rgba(167, 139, 250, 0.35);
-                box-shadow: 0 4px 14px rgba(167, 139, 250, 0.2), inset 0 1px 0 rgba(255,255,255,0.15);
-            }
-            .knw-title { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
-            .knw-subtitle {
-                font-size: 9px; text-transform: uppercase;
-                letter-spacing: 1.4px; color: rgba(255, 255, 255, 0.45);
-            }
-
-            .knw-btn {
-                background: rgba(255, 255, 255, 0.06);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                color: #dfe6f1;
-                padding: 8px 13px;
-                border-radius: 10px;
-                cursor: pointer;
-                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-                font-size: 12px;
-                line-height: 1;
-            }
-            .knw-btn:hover {
-                background: rgba(255, 255, 255, 0.13);
-                border-color: rgba(167, 139, 250, 0.4);
-                transform: translateY(-1px);
-                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-            }
-            .knw-btn:active { transform: translateY(0) scale(0.97); }
-
-            /* Индикатор состояния */
-            .knw-loader {
-                width: 26px; height: 26px;
-                display: flex; align-items: center; justify-content: center;
-                border-radius: 50%;
-                background: rgba(167, 139, 250, 0.08);
-                border: 1px solid rgba(167, 139, 250, 0.25);
-                font-size: 12px;
-                transition: all 0.25s ease;
-            }
-            .knw-loader.loading {
-                animation: knw-spin 1.2s linear infinite;
-                border-color: rgba(167, 139, 250, 0.5);
-                box-shadow: 0 0 14px rgba(167, 139, 250, 0.3);
-            }
-            @keyframes knw-spin { 100% { transform: rotate(360deg); } }
-
-            .knw-input {
-                width: 100%;
-                background: rgba(0, 0, 0, 0.35);
-                border: 1px solid rgba(255, 255, 255, 0.09);
-                border-radius: 12px;
-                color: #fff;
-                padding: 11px 14px;
-                text-align: center;
-                outline: none;
-                margin-bottom: 12px;
-                font-size: 13px;
-                font-family: inherit;
-                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-                box-sizing: border-box;
-            }
-            .knw-input::placeholder { color: rgba(255, 255, 255, 0.35); }
-            .knw-input:focus {
-                border-color: rgba(167, 139, 250, 0.6);
-                background: rgba(0, 0, 0, 0.5);
-                box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.12), 0 0 18px rgba(167, 139, 250, 0.08);
-            }
-
-            .knw-select-group { display: flex; gap: 10px; margin-bottom: 14px; }
-            .knw-select {
-                flex: 1;
-                background: rgba(0, 0, 0, 0.35);
-                color: #fff;
-                border: 1px solid rgba(255, 255, 255, 0.09);
-                border-radius: 10px;
-                padding: 9px 8px;
-                outline: none;
-                text-align: center;
-                font-size: 12px;
-                font-family: inherit;
-                color-scheme: dark;
-                transition: all 0.22s ease;
-            }
-            .knw-select:focus {
-                border-color: rgba(167, 139, 250, 0.6);
-                box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.12);
-            }
-            .knw-select option { background: #14121d; color: #e8ecf4; }
-
-            .knw-scroll-area {
-                max-height: 400px;
-                overflow-y: auto;
-                padding-right: 6px;
-            }
-            .knw-scroll-area::-webkit-scrollbar { width: 5px; }
-            .knw-scroll-area::-webkit-scrollbar-track { background: transparent; }
-            .knw-scroll-area::-webkit-scrollbar-thumb {
-                background: rgba(167, 139, 250, 0.25);
-                border-radius: 10px;
-            }
-            .knw-scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(167, 139, 250, 0.45); }
-
-            .knw-item {
-                background: rgba(255, 255, 255, 0.04);
-                border: 1px solid rgba(255, 255, 255, 0.06);
-                border-left: 2px solid transparent;
-                padding: 11px 13px;
-                margin-bottom: 7px;
-                border-radius: 11px;
-                cursor: pointer;
-                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-                font-size: 13px;
-                line-height: 1.45;
-                animation: knw-fadeIn 0.3s ease backwards;
-            }
-            .knw-item:nth-child(-n+8) { animation-delay: calc(var(--i, 0) * 0ms); }
-            .knw-item:hover {
-                background: rgba(255, 255, 255, 0.08);
-                border-color: rgba(167, 139, 250, 0.3);
-                border-left-color: rgba(167, 139, 250, 0.8);
-                transform: translateX(4px);
-            }
-            .knw-item.active {
-                background: linear-gradient(135deg, rgba(167, 139, 250, 0.85), rgba(124, 58, 237, 0.75));
-                border-color: rgba(167, 139, 250, 0.9);
-                color: #fff;
-                font-weight: 600;
-                box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
-            }
-
-            .knw-empty {
-                text-align: center;
-                padding: 26px 16px;
-                opacity: 0.45;
-                font-size: 12px;
-                letter-spacing: 0.3px;
-            }
-
-            .knw-solution {
-                position: absolute;
-                top: 0; left: 565px;
-                width: 500px;
-                background: linear-gradient(165deg, rgba(28, 27, 40, 0.96) 0%, rgba(13, 12, 20, 0.98) 100%) !important;
-                backdrop-filter: blur(24px) saturate(140%);
-                -webkit-backdrop-filter: blur(24px) saturate(140%);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-top: 2px solid rgba(167, 139, 250, 0.55);
-                border-radius: 18px;
-                padding: 20px;
-                color: #eef0f7;
-                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(124, 58, 237, 0.07);
-                display: none;
-                max-height: 600px;
-                overflow-y: auto;
-                z-index: 100;
-                animation: knw-solutionIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-            }
-            .knw-solution h3 {
-                font-size: 15px;
-                font-weight: 700;
-                letter-spacing: 0.2px;
-            }
-            .knw-solution::-webkit-scrollbar { width: 5px; }
-            .knw-solution::-webkit-scrollbar-track { background: transparent; }
-            .knw-solution::-webkit-scrollbar-thumb {
-                background: rgba(167, 139, 250, 0.25);
-                border-radius: 10px;
-            }
-
-            @keyframes knw-fadeIn {
-                from { opacity: 0; transform: translateY(6px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            @keyframes knw-solutionIn {
-                from { opacity: 0; transform: translateX(14px); }
-                to { opacity: 1; transform: translateX(0); }
-            }
-        `;
+        style.textContent = styles;
         document.head.appendChild(style);
-    };
+    }
 
-    const win_Knowledge = `
-        <div class="knw-panel" style="width: 550px;">
+    const windowMarkup = `
+        <div class="knw-panel">
             <div class="knw-header chmaf-drag-handle" id="knw_drag_handle">
-                <div class="knw-titleblock">
-                    <div class="knw-icon-chip">📚</div>
+                <div class="knw-brand">
+                    <div class="knw-mark" aria-hidden="true">◇</div>
                     <div>
-                        <div class="knw-title">База Знаний</div>
-                        <div class="knw-subtitle">Knowledge Center</div>
+                        <div class="knw-eyebrow">Knowledge Center</div>
+                        <div class="knw-title">База знаний</div>
                     </div>
-                    <div id="knw-loader" class="knw-loader">🟢</div>
                 </div>
-                <button id="hideMeKnowledge" class="knw-btn">✕</button>
+
+                <div class="knw-header-actions">
+                    <span
+                        id="knw-status"
+                        class="knw-status"
+                        data-state="idle"
+                        role="status"
+                        aria-label="Данные не загружены"
+                        title="Данные не загружены"
+                    ></span>
+                    <button
+                        id="hideMeKnowledge"
+                        class="knw-icon-button"
+                        type="button"
+                        aria-label="Закрыть базу знаний"
+                        title="Закрыть"
+                    >×</button>
+                </div>
             </div>
 
             <div class="knw-body">
-                <input class="knw-input" placeholder="🔍 Быстрый поиск решения..." id="knw-search">
+                <div class="knw-search-wrap">
+                    <span class="knw-search-icon" aria-hidden="true">⌕</span>
+                    <input
+                        id="knw-search"
+                        class="knw-input"
+                        type="search"
+                        autocomplete="off"
+                        aria-label="Поиск по базе знаний"
+                        placeholder="Поиск по базе знаний"
+                    >
+                </div>
 
-                <div class="knw-select-group">
-                    <select class="knw-select" id="knw-type">
-                        <option value="default">--- Тип урока ---</option>
+                <div class="knw-filters">
+                    <select id="knw-type" class="knw-select" aria-label="Тип урока">
+                        <option value="">Все типы уроков</option>
                     </select>
-                    <select class="knw-select" id="knw-cat">
-                        <option value="default">--- Категория ---</option>
+                    <select
+                        id="knw-cat"
+                        class="knw-select"
+                        aria-label="Категория"
+                        disabled
+                    >
+                        <option value="">Все категории</option>
                     </select>
+                </div>
+
+                <div class="knw-list-heading">
+                    <span>Материалы</span>
+                    <span id="knw-count" class="knw-count"></span>
                 </div>
 
                 <div id="knw-list" class="knw-scroll-area">
-                    <div class="knw-empty">Загрузка данных...</div>
+                    <div class="knw-empty">Откройте базу знаний для загрузки материалов.</div>
                 </div>
             </div>
-
-            <div id="knw-solution" class="knw-solution"></div>
         </div>
     `;
 
-    // Инициализация окна
-    createWindow('AF_Knowledge', 'winTopKnwoledge', 'winLeftKnwoledge', win_Knowledge);
-    injectStyles();
+    createWindow(
+        'AF_Knowledge',
+        'winTopKnwoledge',
+        'winLeftKnwoledge',
+        windowMarkup
+    );
 
-    // DOM Кэш
     const dom = {
         win: document.getElementById('AF_Knowledge'),
+        panel: document.querySelector('#AF_Knowledge .knw-panel'),
         search: document.getElementById('knw-search'),
         type: document.getElementById('knw-type'),
-        cat: document.getElementById('knw-cat'),
+        category: document.getElementById('knw-cat'),
         list: document.getElementById('knw-list'),
-        solution: document.getElementById('knw-solution'),
-        loader: document.getElementById('knw-loader'),
-        toggleBtn: null
+        count: document.getElementById('knw-count'),
+        status: document.getElementById('knw-status'),
+        closeWindow: document.getElementById('hideMeKnowledge')
     };
 
-    const setLoader = (isLoading) => {
-        dom.loader.innerHTML = isLoading ? '⏳' : '🟢';
-        dom.loader.classList.toggle('loading', isLoading);
-    };
+    if (!dom.win || !dom.panel || !dom.list) return;
 
-    const renderItems = (items) => {
-        dom.list.innerHTML = '';
-        dom.solution.style.display = 'none';
+    // Окно ответа вынесено в body: родительское окно не обрезает его
+    // своим overflow и не меняет систему координат.
+    const solution = document.createElement('section');
+    solution.id = 'knw-solution';
+    solution.className = 'knw-solution';
+    solution.hidden = true;
+    solution.setAttribute('aria-label', 'Содержание материала');
+    solution.innerHTML = `
+        <div class="knw-solution-head">
+            <div>
+                <div class="knw-solution-label">Материал базы знаний</div>
+                <h2 class="knw-solution-title" id="knw-solution-title"></h2>
+            </div>
+            <button
+                class="knw-icon-button"
+                id="knw-close-solution"
+                type="button"
+                aria-label="Закрыть материал"
+                title="Закрыть материал"
+            >×</button>
+        </div>
+        <div class="knw-article" id="knw-article"></div>
+    `;
+    document.body.appendChild(solution);
 
-        if (items.length === 0) {
-            dom.list.innerHTML = '<div class="knw-empty">Ничего не найдено</div>';
+    const solutionTitle = solution.querySelector('#knw-solution-title');
+    const article = solution.querySelector('#knw-article');
+
+    function setStatus(value, label) {
+        dom.status.dataset.state = value;
+        dom.status.setAttribute('aria-label', label);
+        dom.status.title = label;
+    }
+
+    function showMessage(message, withRetry = false) {
+        dom.list.replaceChildren();
+
+        const box = document.createElement('div');
+        box.className = 'knw-empty';
+
+        const content = document.createElement('div');
+        content.textContent = message;
+        box.appendChild(content);
+
+        if (withRetry) {
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.className = 'knw-retry';
+            retry.dataset.action = 'retry';
+            retry.textContent = 'Повторить загрузку';
+            box.appendChild(retry);
+        }
+
+        dom.list.appendChild(box);
+        dom.count.textContent = '';
+    }
+
+    function fillSelect(select, values, placeholder) {
+        select.replaceChildren(new Option(placeholder, ''));
+
+        [...new Set(values)]
+            .filter(Boolean)
+            .sort((a, b) => a.localeCompare(b, 'ru'))
+            .forEach(value => select.add(new Option(value, value)));
+    }
+
+    function updateCategories() {
+        const type = dom.type.value;
+        const previous = dom.category.value;
+
+        const categories = state.data
+            .filter(item => !type || item.type === type)
+            .map(item => item.category);
+
+        fillSelect(dom.category, categories, 'Все категории');
+        dom.category.disabled = categories.length === 0;
+
+        if ([...dom.category.options].some(option => option.value === previous)) {
+            dom.category.value = previous;
+        }
+    }
+
+    function isWindowVisible() {
+        return getComputedStyle(dom.win).display !== 'none';
+    }
+
+    function positionSolution() {
+        if (solution.hidden || !isWindowVisible()) return;
+
+        const rect = dom.panel.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const gap = 12;
+        const minimumSideWidth = 350;
+        const preferredWidth = 480;
+
+        const rightSpace = viewportWidth - rect.right - gap - 12;
+        const leftSpace = rect.left - gap - 12;
+
+        let left;
+        let width;
+
+        if (rightSpace >= minimumSideWidth) {
+            width = Math.min(preferredWidth, rightSpace);
+            left = rect.right + gap;
+        } else if (leftSpace >= minimumSideWidth) {
+            width = Math.min(preferredWidth, leftSpace);
+            left = rect.left - gap - width;
+        } else {
+            // На узком экране ответ показывается поверх окна,
+            // но всегда остаётся внутри видимой области.
+            width = Math.min(preferredWidth, viewportWidth - 24);
+            left = Math.max(12, (viewportWidth - width) / 2);
+        }
+
+        const maxTop = Math.max(12, viewportHeight - 120);
+        const top = Math.max(12, Math.min(rect.top, maxTop));
+
+        solution.style.width = `${width}px`;
+        solution.style.left = `${left}px`;
+        solution.style.top = `${top}px`;
+    }
+
+    function closeSolution() {
+        solution.hidden = true;
+        clearInterval(state.positionTimer);
+        state.positionTimer = null;
+
+        dom.list.querySelectorAll('.knw-item.active').forEach(button => {
+            button.classList.remove('active');
+        });
+
+        state.selectedId = null;
+    }
+
+    /**
+     * Ответ из таблицы может содержать HTML-разметку.
+     * Разрешаем только безопасный набор тегов и атрибутов.
+     */
+    function sanitizeArticle(html) {
+        const source = new DOMParser().parseFromString(
+            String(html ?? ''),
+            'text/html'
+        );
+
+        const allowedTags = new Set([
+            'P', 'DIV', 'SPAN', 'BR', 'HR',
+            'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+            'STRONG', 'B', 'EM', 'I', 'U', 'S',
+            'UL', 'OL', 'LI', 'BLOCKQUOTE',
+            'PRE', 'CODE', 'SUP', 'SUB',
+            'TABLE', 'THEAD', 'TBODY', 'TFOOT',
+            'TR', 'TH', 'TD',
+            'A', 'IMG', 'DETAILS', 'SUMMARY'
+        ]);
+
+        const discardedTags = new Set([
+            'SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED',
+            'FORM', 'INPUT', 'BUTTON', 'SELECT', 'TEXTAREA',
+            'SVG', 'MATH', 'LINK', 'META', 'BASE', 'TEMPLATE'
+        ]);
+
+        function safeUrl(raw, image = false) {
+            try {
+                const url = new URL(raw, document.baseURI);
+                const allowed = image
+                    ? ['http:', 'https:']
+                    : ['http:', 'https:', 'mailto:', 'tel:'];
+
+                return allowed.includes(url.protocol) ? url.href : null;
+            } catch {
+                return null;
+            }
+        }
+
+        function copyNode(node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                return document.createTextNode(node.textContent);
+            }
+
+            if (node.nodeType !== Node.ELEMENT_NODE) return null;
+            if (discardedTags.has(node.tagName)) return null;
+
+            const fragment = document.createDocumentFragment();
+            const element = allowedTags.has(node.tagName)
+                ? document.createElement(node.tagName.toLowerCase())
+                : fragment;
+
+            if (node.tagName === 'A') {
+                const href = safeUrl(node.getAttribute('href'));
+                if (href) {
+                    element.setAttribute('href', href);
+                    element.setAttribute('target', '_blank');
+                    element.setAttribute('rel', 'noopener noreferrer');
+                }
+            }
+
+            if (node.tagName === 'IMG') {
+                const src = safeUrl(node.getAttribute('src'), true);
+                if (!src) return null;
+
+                element.setAttribute('src', src);
+                element.setAttribute('alt', node.getAttribute('alt') || '');
+                element.setAttribute('loading', 'lazy');
+            }
+
+            if (node.tagName === 'TH' || node.tagName === 'TD') {
+                for (const attr of ['colspan', 'rowspan']) {
+                    const value = Number(node.getAttribute(attr));
+                    if (Number.isInteger(value) && value >= 1 && value <= 20) {
+                        element.setAttribute(attr, String(value));
+                    }
+                }
+            }
+
+            for (const child of node.childNodes) {
+                const cleanChild = copyNode(child);
+                if (cleanChild) element.appendChild(cleanChild);
+            }
+
+            return element;
+        }
+
+        const result = document.createDocumentFragment();
+
+        for (const child of source.body.childNodes) {
+            const cleanChild = copyNode(child);
+            if (cleanChild) result.appendChild(cleanChild);
+        }
+
+        return result;
+    }
+
+    function openSolution(item, button) {
+        closeSolution();
+
+        state.selectedId = item.id;
+        button.classList.add('active');
+        solutionTitle.textContent = item.title;
+
+        article.replaceChildren(sanitizeArticle(item.content));
+
+        if (!article.textContent.trim() && !article.querySelector('img')) {
+            article.textContent = 'Содержание для этого материала пока не добавлено.';
+        }
+
+        solution.hidden = false;
+        solution.scrollTop = 0;
+        positionSolution();
+
+        // Положение обновляется и при перетаскивании окна сторонним кодом.
+        state.positionTimer = window.setInterval(positionSolution, 150);
+    }
+
+    function renderItems() {
+        closeSolution();
+
+        if (state.loading) {
+            showMessage('Загружаем материалы…');
             return;
         }
 
-        items.forEach((item, i) => {
-            const el = document.createElement('div');
-            el.className = 'knw-item';
-            el.style.animationDelay = `${Math.min(i * 30, 300)}ms`;
-            el.textContent = item[2];
-            el.onclick = () => {
-                document.querySelectorAll('.knw-item').forEach(i => i.classList.remove('active'));
-                el.classList.add('active');
-                dom.solution.innerHTML = `<h3 style="margin-top:0; color:#a78bfa;">${item[2]}</h3><hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">${item[3]}`;
-                dom.solution.style.display = 'block';
-            };
-            dom.list.appendChild(el);
+        if (!state.loaded) return;
+
+        const query = dom.search.value.trim().toLocaleLowerCase('ru');
+        const type = dom.type.value;
+        const category = dom.category.value;
+
+        if (!query && !type && !category) {
+            showMessage('Выберите тип урока или начните поиск.');
+            return;
+        }
+
+        const filtered = state.data.filter(item => {
+            if (type && item.type !== type) return false;
+            if (category && item.category !== category) return false;
+
+            if (!query) return true;
+
+            return [item.title, item.type, item.category]
+                .some(value => value.toLocaleLowerCase('ru').includes(query));
         });
-    };
 
-    const loadData = async () => {
-        setLoader(true);
+        if (!filtered.length) {
+            showMessage('Ничего не найдено. Попробуйте другой запрос или фильтр.');
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        for (const item of filtered.slice(0, MAX_VISIBLE_ITEMS)) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'knw-item';
+            button.dataset.id = String(item.id);
+
+            const main = document.createElement('span');
+            main.className = 'knw-item-main';
+
+            const title = document.createElement('span');
+            title.className = 'knw-item-title';
+            title.textContent = item.title;
+
+            const meta = document.createElement('span');
+            meta.className = 'knw-item-meta';
+            meta.textContent = [item.type, item.category]
+                .filter(Boolean)
+                .join('  /  ');
+
+            const arrow = document.createElement('span');
+            arrow.className = 'knw-item-arrow';
+            arrow.setAttribute('aria-hidden', 'true');
+            arrow.textContent = '↗';
+
+            main.append(title, meta);
+            button.append(main, arrow);
+            fragment.appendChild(button);
+        }
+
+        dom.list.replaceChildren(fragment);
+
+        dom.count.textContent = filtered.length > MAX_VISIBLE_ITEMS
+            ? `${MAX_VISIBLE_ITEMS} из ${filtered.length}`
+            : String(filtered.length);
+    }
+
+    async function loadData() {
+        if (state.loading || state.loaded) return;
+
+        state.loading = true;
+        setStatus('loading', 'Загрузка данных');
+        renderItems();
+
+        const controller = new AbortController();
+        state.requestController = controller;
+        const timeout = window.setTimeout(() => controller.abort(), 15000);
+
         try {
-            const url = 'https://script.google.com/macros/s/AKfycbySlhuMPHSKHiI6Rhoyg797id3lbPg_zdeG_iBoEvYxwqlxkD4QizWm8OJDEucma7tGyg/exec';
-            const resp = await fetch(url);
-            const json = await resp.json();
-            state.data = json.result || [];
-
-            // Строим индекс
-            state.index.clear();
-            state.data.forEach(item => {
-                const key = `${item[0]}::${item[1]}`;
-                if (!state.index.has(key)) state.index.set(key, []);
-                state.index.get(key).push(item);
+            const response = await fetch(DATA_URL, {
+                signal: controller.signal
             });
 
-            // Заполняем типы
-            const types = [...new Set(state.data.map(i => i[0]))];
-            dom.type.innerHTML = '<option value="default">--- Тип урока ---</option>';
-            types.forEach(t => dom.type.add(new Option(t, t)));
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
 
-            dom.list.innerHTML = '<div class="knw-empty">Выберите категорию или используйте поиск</div>';
-        } catch (e) {
-            dom.list.innerHTML = '<div style="color:#ff6b6b; text-align:center; padding:20px;">Ошибка загрузки данных</div>';
+            const json = await response.json();
+
+            if (!Array.isArray(json.result)) {
+                throw new Error('Некорректный формат ответа');
+            }
+
+            state.data = json.result
+                .filter(Array.isArray)
+                .map((row, id) => ({
+                    id,
+                    type: String(row[0] ?? '').trim(),
+                    category: String(row[1] ?? '').trim(),
+                    title: String(row[2] ?? '').trim(),
+                    content: String(row[3] ?? '')
+                }))
+                .filter(item => item.title);
+
+            state.loaded = true;
+
+            fillSelect(
+                dom.type,
+                state.data.map(item => item.type),
+                'Все типы уроков'
+            );
+
+            updateCategories();
+            setStatus('ready', 'Данные загружены');
+
+            state.loading = false;
+
+            if (state.data.length) {
+                renderItems();
+            } else {
+                showMessage('В базе знаний пока нет материалов.');
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.warn('Knowledge Center: превышено время ожидания.');
+            } else {
+                console.error('Knowledge Center: ошибка загрузки.', error);
+            }
+
+            state.loading = false;
+            setStatus('error', 'Ошибка загрузки данных');
+            showMessage('Не удалось загрузить материалы.', true);
+        } finally {
+            clearTimeout(timeout);
+            state.requestController = null;
         }
-        setLoader(false);
-    };
+    }
 
-    // Event Listeners
-    dom.type.onchange = () => {
-        const val = dom.type.value;
-        dom.cat.innerHTML = '<option value="default">--- Категория ---</option>';
-        dom.search.value = '';
-        if (val === 'default') return;
+    function closeWindow() {
+        closeSolution();
+        dom.win.style.display = 'none';
+        document.getElementById('knowledgeCenter')?.classList.remove('active');
+    }
 
-        const cats = [...new Set(state.data.filter(i => i[0] === val).map(i => i[1]))];
-        cats.forEach(c => dom.cat.add(new Option(c, c)));
-    };
+    dom.closeWindow.addEventListener('click', closeWindow);
 
-    dom.cat.onchange = () => {
-        const key = `${dom.type.value}::${dom.cat.value}`;
-        renderItems(state.index.get(key) || []);
-    };
+    solution
+        .querySelector('#knw-close-solution')
+        .addEventListener('click', closeSolution);
 
-    dom.search.oninput = () => {
-        const q = dom.search.value.toLowerCase().trim();
-        dom.type.selectedIndex = 0;
-        dom.cat.innerHTML = '<option value="default">--- Категория ---</option>';
+    dom.type.addEventListener('change', () => {
+        dom.category.value = '';
+        updateCategories();
+        renderItems();
+    });
 
-        if (q.length < 2) {
-            dom.list.innerHTML = '';
+    dom.category.addEventListener('change', renderItems);
+
+    dom.search.addEventListener('input', () => {
+        clearTimeout(state.searchTimer);
+        state.searchTimer = window.setTimeout(renderItems, 120);
+    });
+
+    dom.list.addEventListener('click', event => {
+        const retry = event.target.closest('[data-action="retry"]');
+
+        if (retry) {
+            loadData();
             return;
         }
 
-        const filtered = state.data.filter(i => i[2].toLowerCase().includes(q));
-        renderItems(filtered);
-    };
+        const button = event.target.closest('.knw-item');
+        if (!button || !dom.list.contains(button)) return;
 
-    // Глобальная функция для кнопки открытия (совместимость с основным кодом)
-    window.getknowledgeCenterButtonPress = () => {
-        if (!dom.toggleBtn) dom.toggleBtn = document.getElementById('knowledgeCenter');
+        const item = state.data.find(
+            entry => entry.id === Number(button.dataset.id)
+        );
 
-        if (dom.win.style.display === 'none') {
-            dom.win.style.display = '';
-            dom.toggleBtn?.classList.add('active');
-            if (state.data.length === 0) loadData();
+        if (item) openSolution(item, button);
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape' || !isWindowVisible()) return;
+
+        if (!solution.hidden) {
+            closeSolution();
         } else {
-            dom.win.style.display = 'none';
-            dom.toggleBtn?.classList.remove('active');
+            closeWindow();
         }
+    });
+
+    window.addEventListener('resize', positionSolution);
+    window.addEventListener('scroll', positionSolution, true);
+
+    // Публичное имя сохранено для существующей кнопки сайта.
+    window.getknowledgeCenterButtonPress = () => {
+        if (isWindowVisible()) {
+            closeWindow();
+            return;
+        }
+
+        dom.win.style.display = '';
+        document.getElementById('knowledgeCenter')?.classList.add('active');
+
+        if (!state.loaded) loadData();
     };
 
-    document.getElementById('hideMeKnowledge').onclick = () => {
-        dom.win.style.display = 'none';
-        document.getElementById('knowledgeCenter')?.classList.remove('active');
-    };
-
+    // Если createWindow открыл окно сразу, данные тоже будут загружены.
+    if (isWindowVisible()) loadData();
 })();
