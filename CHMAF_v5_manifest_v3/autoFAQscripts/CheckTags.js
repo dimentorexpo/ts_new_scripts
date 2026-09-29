@@ -262,43 +262,60 @@
             if (!doc.getElementById('skyeng-mod-styles')) {
                 const style = doc.createElement('style');
                 style.id = 'skyeng-mod-styles';
-                style.textContent = `
-                    .skyeng-mod-pinned {
-                        position: relative !important;
-                        border-left: 6px solid #ff9800 !important;
-                        transition: all 0.3s ease;
-                    }
-                    .skyeng-mod-pinned::after {
-                        content: '📌';
-                        position: absolute;
-                        top: 5px;
-                        right: 5px;
-                        font-size: 18px;
-                        z-index: 10;
-                        filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));
-                        pointer-events: none;
-                    }
-                    .skyeng-mod-tag {
-                        text-align: center;
-                        border-radius: 20px;
-                        padding: 2px 8px;
-                        font-size: 12px;
-                        font-weight: bold;
-                        color: #fff;
-                        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-                        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                        transition: background 0.3s;
-                    }
-                    /* Пульсация пустых полей тегов/тем
-                       (класс использовался в JS, но стили для него не были определены) */
-                    .skyeng-mod-pulse {
-                        animation: skyeng-mod-empty-pulse 1.6s ease-in-out infinite !important;
-                    }
-                    @keyframes skyeng-mod-empty-pulse {
-                        0%, 100% { box-shadow: none; }
-                        50% { box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.55); }
-                    }
-                `;
+               style.textContent = `
+
+	.skyeng-mod-pinned {
+    position: relative !important;
+    border-left: 6px solid #ff9800 !important;
+    transition: all 0.3s ease;
+}
+
+    .skyeng-mod-pinned::after {
+        content: '📌';
+        position: absolute;
+        top: 6px;
+        right: 7px;
+        z-index: 10;
+        font-size: 15px;
+        pointer-events: none;
+        filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .3));
+    }
+
+    .skyeng-mod-tag {
+        display: inline-flex;
+        align-items: center;
+        max-width: 100%;
+        padding: 4px 9px;
+        border: 1px solid rgba(255, 255, 255, .18);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.3;
+        text-align: center;
+        text-shadow: none;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, .18);
+    }
+
+    .skyeng-mod-pulse {
+        animation: skyeng-mod-empty-pulse 2s ease-in-out infinite !important;
+    }
+
+    @keyframes skyeng-mod-empty-pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(255, 120, 143, 0);
+        }
+        50% {
+            box-shadow: 0 0 0 3px rgba(255, 120, 143, .18);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .skyeng-mod-pulse {
+            animation: none !important;
+        }
+    }
+`;
                 const target = doc.head || doc.getElementsByTagName('head')[0] || doc.documentElement;
                 if (target) {
                     target.appendChild(style);
@@ -354,9 +371,12 @@
 
                 listObserver.observe(container, { childList: true, subtree: true });
                 sortDialogs(container);
-            } else if (!isDragging) {
-                sortDialogs(container);
-            }
+} else if (!isDragging) {
+    // Подстраховка для карточек, добавленных внутри новых обёрток.
+    // Повторные слушатели не создаются: initDraggable проверяет data-dnd-init.
+    container.querySelectorAll(SELECTORS.card).forEach(initDraggable);
+    sortDialogs(container);
+}
         }, 1500);
     }
 
@@ -447,7 +467,9 @@
                 if (btn) btn.disabled = hasEmpty;
 
                 // Пишем в DOM только при смене состояния (тик каждые 1.5 c)
-                const nextState = hasEmpty ? `no:${serviceEmpty}:${tagEmpty}:${topicEmpty}` : 'ok';
+                const nextState = hasEmpty
+    ? `no:${serviceEmpty}:${tagEmpty}:${topicEmpty}:${missingColor}`
+    : 'ok';
                 if (existing.dataset.lastState === nextState) return;
 
                 existing.dataset.lastState = nextState;
