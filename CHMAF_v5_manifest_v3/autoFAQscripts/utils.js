@@ -1340,6 +1340,7 @@ function addFabButton(
  */
 function positionModuleMenu(menu) {
     const trigger = document.getElementById('MainMenuBtn');
+    const panel = document.getElementById('rightPanel');
 
     if (!menu || !trigger) return;
 
@@ -1354,10 +1355,16 @@ function positionModuleMenu(menu) {
         buttonRect.left - menuRect.width - gap
     );
 
-    const desiredTop =
-        buttonRect.top +
-        buttonRect.height / 2 -
-        menuRect.height / 2;
+    // Выравниваем по верхнему краю первой кнопки панели
+    let desiredTop = buttonRect.top;
+
+    if (panel) {
+        const firstButton = panel.querySelector('.fab-premium');
+
+        if (firstButton) {
+            desiredTop = firstButton.getBoundingClientRect().top;
+        }
+    }
 
     const top = Math.min(
         Math.max(margin, desiredTop),
