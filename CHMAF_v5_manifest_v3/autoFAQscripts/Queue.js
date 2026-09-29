@@ -16,12 +16,13 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
 
-    const state = {
-        refreshInterval: null,
-        countdownInterval: null,
-        globalTimerInterval: null,
-        isRendering: false
-    };
+const state = {
+    refreshInterval: null,
+    countdownInterval: null,
+    globalTimerInterval: null,
+    isRendering: false,
+    renderAgain: false
+};
 
     const injectStyles = () => {
         if (document.getElementById('qg5-styles')) return;
@@ -358,6 +359,272 @@
                 color: #7ee787;
             }
         `;
+		//новая
+		
+		        style.textContent += `
+            /* Queue / corporate graphite.
+               Правила ограничены окном очереди. */
+
+            #AF_Queue .qg5-panel {
+                box-sizing: border-box;
+                width: min(640px, calc(100vw - 24px));
+                max-width: 100%;
+                padding: 18px !important;
+                color: #edf2fb;
+                background:
+                    radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+                    #111827 !important;
+                border: 1px solid #344258 !important;
+                border-radius: 18px;
+                box-shadow:
+                    0 26px 70px rgba(3, 9, 22, .52),
+                    inset 0 1px rgba(255, 255, 255, .06) !important;
+            }
+
+            #AF_Queue .qg5-panel,
+            #AF_Queue .qg5-panel * {
+                box-sizing: border-box;
+            }
+
+#AF_Queue .qg5-panel::before {
+    display: none;
+}
+
+            #AF_Queue .qg5-header {
+                gap: 10px;
+                margin-bottom: 15px;
+                padding-bottom: 14px;
+                border-bottom: 1px solid #344258;
+                cursor: move;
+            }
+
+            #AF_Queue .qg5-stats {
+                flex-wrap: wrap;
+                gap: 6px 11px;
+                min-width: 0;
+                padding: 7px 11px;
+                color: #a6b4cb;
+                background: #182335;
+                border: 1px solid #364660;
+                border-radius: 9px;
+                box-shadow: none;
+                letter-spacing: .04em;
+            }
+
+            #AF_Queue .qg5-stats::before,
+            #AF_Queue .qg5-btn::before,
+            #AF_Queue .qg5-item::after {
+                display: none;
+            }
+
+            #AF_Queue .qg5-stats b,
+            #AF_Queue #qg5-count,
+            #AF_Queue #qg5-timer-refresh {
+                color: #a9c0ff;
+            }
+
+            #AF_Queue .qg5-controls {
+                gap: 9px;
+                margin-bottom: 14px;
+            }
+
+            #AF_Queue .qg5-input {
+                min-width: 0;
+                min-height: 36px;
+                color: #edf2fb;
+                background: #0d1625;
+                border: 1px solid #3a4961;
+                border-radius: 9px;
+                box-shadow: none;
+            }
+
+            #AF_Queue .qg5-input:hover {
+                background: #142034;
+                border-color: #657caa;
+            }
+
+            #AF_Queue .qg5-input:focus {
+                background: #142034;
+                border-color: #829fff;
+                box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
+            }
+
+            #AF_Queue .qg5-btn {
+                min-height: 36px;
+                padding: 8px 12px;
+                color: #dce5f5;
+                background: #1b283c;
+                border: 1px solid #3c4d68;
+                border-radius: 9px;
+                box-shadow: none;
+                transition:
+                    background-color .16s ease,
+                    border-color .16s ease,
+                    transform .16s ease;
+            }
+
+            #AF_Queue .qg5-btn:hover:not(:disabled) {
+                color: #fff;
+                background: #293b56;
+                border-color: #7799e2;
+                box-shadow: none;
+                transform: translateY(-1px);
+            }
+
+            #AF_Queue .qg5-btn:disabled {
+                opacity: .55;
+                filter: none;
+            }
+
+            #AF_Queue #qg5-manual-refresh {
+                color: #eef3ff;
+                background: #4268c9;
+                border-color: #7293ed;
+                box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
+            }
+
+            #AF_Queue #qg5-manual-refresh:hover:not(:disabled) {
+                background: #547ce1;
+                border-color: #a2b9fa;
+                box-shadow: 0 6px 19px rgba(58, 96, 205, .3);
+            }
+
+            #AF_Queue #qg5-hide {
+                background: rgba(255, 116, 140, .08) !important;
+                border-color: rgba(255, 116, 140, .3) !important;
+                color: #ffb0be !important;
+            }
+
+            #AF_Queue .qg5-list {
+                scrollbar-width: thin;
+                scrollbar-color: #536a8e transparent;
+            }
+
+            #AF_Queue .qg5-list::-webkit-scrollbar-track {
+                background: #111b2a;
+                border: none;
+            }
+
+            #AF_Queue .qg5-list::-webkit-scrollbar-thumb,
+            #AF_Queue .qg5-list::-webkit-scrollbar-thumb:hover {
+                background: #536a8e;
+                border: none;
+                box-shadow: none;
+            }
+
+            #AF_Queue .qg5-item {
+                gap: 9px;
+                min-width: 0;
+                margin-bottom: 7px;
+                padding: 10px;
+                background: #1a2536;
+                border: 1px solid #344258;
+                border-left: 3px solid #617fbd;
+                border-radius: 10px;
+                box-shadow: none;
+                transition:
+                    background-color .16s ease,
+                    border-color .16s ease;
+            }
+
+            #AF_Queue .qg5-item::before {
+                display: none;
+            }
+
+            #AF_Queue .qg5-item:hover {
+                background: #23334b;
+                border-color: #6685be;
+                border-left-color: #92afff;
+                box-shadow: none;
+                transform: none;
+            }
+
+            #AF_Queue .qg5-time {
+                flex: 0 0 70px;
+                color: #b6c9f5;
+            }
+
+            #AF_Queue .qg5-timer {
+                color: #c1ceea;
+            }
+
+            #AF_Queue .qg5-usr-name {
+                min-width: 0;
+                color: #f0f4fb;
+            }
+
+            #AF_Queue .qg5-badge,
+            #AF_Queue .qg5-flag {
+                filter: none;
+            }
+
+            #AF_Queue .qg5-item:hover .qg5-badge,
+            #AF_Queue .qg5-item:hover .qg5-flag {
+                transform: none;
+                filter: none;
+            }
+
+            #AF_Queue .qg5-country {
+                max-width: 85px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                color: #c8d6f4;
+                background: #293a56;
+                border: 1px solid #435b80;
+            }
+
+            #AF_Queue button[name="assignToMe"] {
+                flex: 0 0 auto;
+                min-width: 36px !important;
+                color: #cfe0ff !important;
+                background: #293e67 !important;
+                border-color: #536fa7 !important;
+                box-shadow: none !important;
+            }
+
+            #AF_Queue button[name="assignToMe"]:hover:not(:disabled) {
+                color: #fff !important;
+                background: #395892 !important;
+                border-color: #87a9ed !important;
+                box-shadow: none !important;
+                transform: translateY(-1px) !important;
+            }
+
+            #AF_Queue .qg5-btn:focus-visible,
+            #AF_Queue .qg5-input:focus-visible,
+            #AF_Queue .qg5-item:focus-visible {
+                outline: 2px solid #9ab5ff;
+                outline-offset: 2px;
+            }
+
+            @media (max-width: 700px) {
+                #AF_Queue .qg5-header {
+                    flex-wrap: wrap;
+                }
+
+                #AF_Queue #qg5-manual-refresh {
+                    margin-left: 0;
+                }
+
+                #AF_Queue .qg5-item {
+                    flex-wrap: wrap;
+                }
+
+                #AF_Queue .qg5-usr-name {
+                    flex-basis: 35%;
+                }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                #AF_Queue .qg5-panel *,
+                #AF_Queue .qg5-panel *::before,
+                #AF_Queue .qg5-panel *::after {
+                    animation-duration: .01ms !important;
+                    transition-duration: .01ms !important;
+                }
+            }
+        `;
         document.head.appendChild(style);
     };
 
@@ -376,7 +643,9 @@
                 body: JSON.stringify(bodyContent),
                 method: "POST"
             });
-            if (!resp.ok) break;
+            if (!resp.ok) {
+    throw new Error(`Ошибка загрузки страницы ${page}: HTTP ${resp.status}`);
+}
             const data = await resp.json();
             allData = allData.concat(data.items || []);
             totalFetched += (data.items || []).length;
@@ -543,7 +812,10 @@
         },
 
         render: async () => {
-            if (state.isRendering) return;
+            if (state.isRendering) {
+    state.renderAgain = true;
+    return;
+}
             state.isRendering = true;
             const btn = document.getElementById('qg5-manual-refresh');
             if (btn) btn.disabled = true;
@@ -598,6 +870,10 @@
                 // true и модуль переставал обновляться до перезагрузки страницы
                 state.isRendering = false;
                 if (btn) btn.disabled = false;
+				if (state.renderAgain) {
+    state.renderAgain = false;
+    queueMicrotask(() => window.QueueModule.render());
+}
             }
         },
 
@@ -620,13 +896,21 @@
         updateTimers: () => {
             const now = Date.now();
             document.querySelectorAll('.qg5-timer').forEach(el => {
-                const start = parseInt(el.dataset.start);
-                const diff = now - start;
+const start = Number(el.dataset.start);
+
+if (!Number.isFinite(start)) {
+    el.textContent = '—';
+    el.style.color = '';
+    el.style.fontWeight = '';
+    return;
+}
+
+const diff = Math.max(0, now - start);
                 const h = Math.floor(diff / 3600000);
                 const m = Math.floor((diff % 3600000) / 60000);
                 const s = Math.floor((diff % 60000) / 1000);
                 el.textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-                if (h === 0 && m === 0 && s <= 60) {
+                if (diff < 60_000) {
                     el.style.color = "#f9ff00"; el.style.fontWeight = "800";
                 } else { el.style.color = ""; el.style.fontWeight = ""; }
             });
