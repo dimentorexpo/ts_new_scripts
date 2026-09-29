@@ -5,7 +5,7 @@
 
 (() => {
     if (window.__testUsersModuleInitialized) return;
-    window.__testUsersModuleInitialized = true;
+
 
     // Старые сохранённые координаты могли содержать "px".
     // Исправляем их ДО вызова createWindow.
@@ -410,7 +410,6 @@
 
     if (typeof createWindow !== 'function') {
         console.error('[TestUsers] Функция createWindow не найдена');
-        window.__testUsersModuleInitialized = false;
         return;
     }
 
@@ -422,7 +421,6 @@
     );
 
     if (!TestUsersdiv) {
-        window.__testUsersModuleInitialized = false;
         return;
     }
 
@@ -440,9 +438,10 @@
 
     if (Object.values(UI).some(element => !element)) {
         console.error('[TestUsers] Не найдены элементы интерфейса');
-        window.__testUsersModuleInitialized = false;
         return;
     }
+	
+	window.__testUsersModuleInitialized = true;
 
     // Уведомления: сначала существующая функция проекта,
     // при её отсутствии — toast в оригинальном стиле.
@@ -499,8 +498,8 @@
 
         const userId = localStorage.getItem(storageKey)?.trim();
 
-        if (!userId) {
-            notify('ID не найден в настройках', 'error');
+        if (!userId || !/^\d+$/.test(userId)) {
+            notify('Некорректный ID в настройках', 'error');
             showButtonState(button, 'errorbtn');
             return;
         }
@@ -547,8 +546,8 @@
 
         const userId = localStorage.getItem(storageKey)?.trim();
 
-        if (!userId) {
-            notify('ID не найден в настройках', 'error');
+        if (!userId || !/^\d+$/.test(userId)) {
+            notify('Некорректный ID в настройках', 'error');
             showButtonState(button, 'errorbtn');
             return;
         }
@@ -564,43 +563,45 @@
         }
     }
 
-    function handleSearch() {
-        const value = UI.input.value.trim();
+function handleSearch() {
+    const value = UI.input.value.trim();
 
-        if (!/^\d+$/.test(value)) {
-            notify('Введите числовой ID', 'error');
-            UI.input.focus();
-            return;
-        }
-
-        const studentInput = document.getElementById('idstudent');
-        const studentBtn = document.getElementById('getidstudent');
-
-        if (!studentInput || !studentBtn) {
-            notify('Сервис поиска недоступен', 'error');
-            return;
-        }
-
-        const serviceWindow = document.getElementById('AF_Service');
-
-        if (
-            serviceWindow &&
-            getComputedStyle(serviceWindow).display === 'none'
-        ) {
-            serviceWindow.style.display = 'block';
-            document.getElementById('butServ')
-                ?.classList.add('activeScriptBtn');
-        }
-
-        studentInput.value = value;
-        studentInput.dispatchEvent(
-            new Event('input', { bubbles: true })
-        );
-
-        studentBtn.click();
-        UI.input.value = '';
+    if (!/^\d+$/.test(value)) {
+        notify('Введите числовой ID', 'error');
+        UI.input.focus();
+        return false;
     }
 
+    const studentInput = document.getElementById('idstudent');
+    const studentBtn = document.getElementById('getidstudent');
+    const serviceWindow = document.getElementById('AF_Service');
+
+    if (!studentInput || !studentBtn || !serviceWindow) {
+        notify('Сервис поиска недоступен', 'error');
+        return false;
+    }
+
+    // Предыдущее окно могло быть скрыто самим модулем услуг.
+    if (getComputedStyle(serviceWindow).display === 'none') {
+        serviceWindow.style.display = 'block';
+    }
+
+    const serviceToggle = document.getElementById('butServ');
+
+    // В разных частях проекта используются оба класса.
+    serviceToggle?.classList.add('active', 'activeScriptBtn');
+
+    studentInput.value = value;
+    studentInput.dispatchEvent(
+        new Event('input', { bubbles: true })
+    );
+
+    // Сохраняем существующий механизм запуска модуля услуг.
+    studentBtn.click();
+
+    UI.input.value = '';
+    return true;
+}
     UI.studentBtn.addEventListener('click', () => {
         void handleButtonClick(UI.studentBtn, 'test_stud');
     });
@@ -633,21 +634,60 @@
         }
     });
 
-    UI.searchBtn.addEventListener('click', handleSearch);
+UI.searchBtn.addEventListener('click', () => {
+    handleSearch();
+});
 
-    UI.input.addEventListener('keydown', event => {
-        if (event.key === 'Enter') {
+UI.input.addEventListener('keydown', event => {
+    if (event.key !== 'Enter') return;
+
+    event.preventDefault();
+    handleSearch();
+});
+
+UI.input.addEventListener('input', () => {
+    if (typeof onlyNumber === 'function') {
+        onlyNumber(UI.input);
+    } else {
+        UI.input.value = UI.input.value.replace(/\D/g, '');
+    }
+});
+
+UI.input.addEventListener('paste', event => {
+    const pastedText = event.clipboardData
+        ?.getData('text')
+        ?.trim();
+
+    // Если браузер не предоставил содержимое буфера,
+    // не ломаем стандартную вставку.
+    if (pastedText == null) {
+    // Даём браузеру выполнить обычную вставку,
+    // затем запускаем поиск по получившемуся значению.
+    setTimeout(() => {
+        if (UI.input.value.trim()) {
             handleSearch();
         }
-    });
+    }, 0);
+    return;
+}
 
-    // Вставку не перехватываем: работает обычный Ctrl+V.
-    // Если в проекте есть onlyNumber, сохраняем его поведение.
-    UI.input.addEventListener('input', () => {
-        if (typeof onlyNumber === 'function') {
-            onlyNumber(UI.input);
-        }
-    });
+    if (!/^\d+$/.test(pastedText)) {
+        event.preventDefault();
+        notify('В буфере обмена должен быть числовой ID', 'warning');
+        return;
+    }
+
+    event.preventDefault();
+
+    UI.input.value = pastedText;
+    UI.input.dispatchEvent(
+        new Event('input', { bubbles: true })
+    );
+
+    // Важно: вызываем один раз. Не нужно одновременно
+    // нажимать кнопку и вручную запускать getuserinfo().
+    handleSearch();
+});
 
     function validatePosition() {
         if (getComputedStyle(TestUsersdiv).display === 'none') return;
