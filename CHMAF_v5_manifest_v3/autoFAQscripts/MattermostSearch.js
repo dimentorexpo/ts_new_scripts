@@ -1249,24 +1249,7 @@ const loadMore = async () => {
         dom.results = document.getElementById('mms-results');
 		dom.channelBar = document.getElementById('mms-channel-bar');
         dom.searchBtn = document.getElementById('mms-search');
-		
-		// Вложения открываем только как файлы, не отдавая клик обработчикам сайта.
-dom.results.addEventListener('click', (event) => {
-    const target = event.target instanceof Element
-        ? event.target
-        : event.target?.parentElement;
-
-    const link = target?.closest('a.mms-file-img, a.mms-file-link');
-    if (!link || !dom.results.contains(link)) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-
-    // Открываем один раз вручную: стандартный переход по <a> уже отменён.
-    window.open(link.href, '_blank', 'noopener,noreferrer');
-}, true);
-
+	
         dom.win.style.display = 'none';
 
         if (typeof hideWindowOnDoubleClick === 'function') hideWindowOnDoubleClick(WINDOW_ID);
