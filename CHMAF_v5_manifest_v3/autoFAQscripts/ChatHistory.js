@@ -1070,7 +1070,6 @@
             display: inline-grid;
             place-items: center;
             min-height: 40px;
-            padding: 0 14px;
             color: #08202c;
             background: linear-gradient(
                 145deg,
@@ -1770,6 +1769,13 @@
             .afg-gallery {
                 padding: 55px 48px;
             }
+			
+
+.afg-panel.afg-light .afg-user-type--unknown {
+    color: #485a70;
+    background: #e0e7ee;
+    border-color: #b6c4d2;
+}
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1780,6 +1786,106 @@
                 scroll-behavior: auto !important;
             }
         }
+		
+		/* Тип пользователя рядом с именем */
+.afg-panel .afg-user-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+.afg-panel .afg-subtitle-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.afg-panel .afg-user-type {
+    flex: none;
+    padding: 2px 7px;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+/* Цвета — именно здесь, вне @media и после базового правила */
+
+.afg-panel .afg-user-type--student {
+    color: #f3a5aa;
+    background: rgba(218, 100, 113, .13);
+    border-color: rgba(218, 100, 113, .32);
+}
+
+.afg-panel .afg-user-type--teacher {
+    color: #82dde0;
+    background: rgba(72, 188, 192, .12);
+    border-color: rgba(72, 188, 192, .32);
+}
+
+.afg-panel .afg-user-type--parent {
+    color: #9bdfb5;
+    background: rgba(94, 185, 133, .13);
+    border-color: rgba(94, 185, 133, .32);
+}
+
+.afg-panel .afg-user-type--unknown {
+    color: #bac6d7;
+    background: rgba(148, 163, 184, .12);
+    border-color: rgba(148, 163, 184, .29);
+}
+
+.afg-panel.afg-light .afg-user-type--student {
+    color: #9b3f4b;
+    background: #f4dfe1;
+    border-color: #dcadb3;
+}
+
+.afg-panel.afg-light .afg-user-type--teacher {
+    color: #176a71;
+    background: #d7eff0;
+    border-color: #a2d2d4;
+}
+
+.afg-panel.afg-light .afg-user-type--parent {
+    color: #316b48;
+    background: #dcefe3;
+    border-color: #acd3ba;
+}
+
+.afg-panel.afg-light .afg-user-type--unknown {
+    color: #485a70;
+    background: #e0e7ee;
+    border-color: #b6c4d2;
+}
+
+/* Статус остаётся доступным скринридеру, но не занимает место */
+.afg-panel .afg-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Четыре компактные кнопки в шапке */
+.afg-panel .afg-heading-actions {
+    flex: none;
+}
+
+.afg-panel .afg-brand > div:last-child {
+    min-width: 0;
+}
     `;
 
     document.head.append(styles);
@@ -1806,8 +1912,31 @@
                         </div>
                     </div>
                 </div>
+				
+				<span
+    class="afg-visually-hidden"
+    id="afgSectionTitle"
+    aria-live="polite"
+>Начало работы</span>
 
                 <div class="afg-heading-actions">
+				<button
+    class="afg-icon-btn"
+    id="back_to_chat_his"
+    type="button"
+    title="Вернуться к результатам"
+    aria-label="Вернуться к результатам"
+    hidden
+>⬅️</button>
+
+<button
+    class="afg-icon-btn"
+    id="refreshchat"
+    type="button"
+    title="Обновить чат"
+    aria-label="Обновить чат"
+    hidden
+>⟳</button>
                     <button
                         class="afg-icon-btn"
                         id="chagetheme"
@@ -1822,7 +1951,7 @@
                         type="button"
                         title="Закрыть панель"
                         aria-label="Закрыть панель"
-                    >×</button>
+                    >❌</button>
                 </div>
             </div>
 
@@ -1850,7 +1979,7 @@
                     type="button"
                     title="Найти"
                     aria-label="Найти"
-                >⌕</button>
+                >🔎</button>
             </div>
 
             <div class="afg-filters">
@@ -1888,7 +2017,7 @@
                     type="button"
                     title="Обновить операторов"
                     aria-label="Обновить операторов"
-                >⟳</button>
+                >🔄</button>
 
                 <button
                     class="afg-icon-btn"
@@ -1896,7 +2025,7 @@
                     type="button"
                     title="Данные пользователя"
                     aria-label="Данные пользователя"
-                >ⓘ</button>
+                >👤</button>
 
                 <button
                     class="afg-icon-btn"
@@ -1904,7 +2033,7 @@
                     type="button"
                     title="Инструкция"
                     aria-label="Инструкция"
-                >?</button>
+                >❓</button>
 
                 <button
                     class="afg-icon-btn"
@@ -1912,35 +2041,11 @@
                     type="button"
                     title="Очистить"
                     aria-label="Очистить"
-                >⌫</button>
+                >🧹</button>
             </div>
         </div>
 
-        <div class="afg-section-bar">
-            <span class="afg-section-title" id="afgSectionTitle">
-                Начало работы
-            </span>
-
-            <div class="afg-inline-actions">
-                <button
-                    class="afg-secondary"
-                    id="back_to_chat_his"
-                    type="button"
-                    title="Вернуться к результатам"
-                    hidden
-                >← К списку</button>
-
-                <button
-                    class="afg-secondary"
-                    id="refreshchat"
-                    type="button"
-                    title="Обновить чат"
-                    hidden
-                >⟳ Обновить</button>
-            </div>
-        </div>
-
-        <div class="afg-chat-info" id="somechatinfo">
+          <div class="afg-chat-info" id="somechatinfo">
             <div class="afg-identifiers">
                 <div>
                     <span class="afg-identifier-label">
@@ -2069,7 +2174,17 @@
         );
 
         $('chagetheme').textContent =
-            state.theme === 'light' ? '☾' : '◐';
+    state.theme === 'light' ? '🌙' : '☀️';
+
+$('chagetheme').title =
+    state.theme === 'light'
+        ? 'Включить тёмную тему'
+        : 'Включить светлую тему';
+
+$('chagetheme').setAttribute(
+    'aria-label',
+    $('chagetheme').title
+);
 
         localStorage.setItem(
             'afgChatHistoryTheme',
@@ -2112,6 +2227,7 @@
 
     function resetConversation() {
         state.conversation = null;
+		$('afgSubtitle').classList.remove('afg-user-subtitle');
 
         $('somechatinfo').style.display = 'none';
         $('bottommenuchhis').style.display = 'none';
@@ -2184,7 +2300,30 @@
             state.results.length === 0;
 
         $('afgSectionTitle').textContent = 'Переписка';
-        $('afgSubtitle').textContent = String(userName);
+        const subtitle = $('afgSubtitle');
+const userType = String(payload.userType ?? '').trim().toLowerCase();
+
+const typeLabels = {
+    student: 'ученик',
+    teacher: 'преподаватель',
+    parent: 'родитель'
+};
+
+const nameNode = document.createElement('span');
+nameNode.className = 'afg-subtitle-name';
+nameNode.textContent = String(userName);
+
+const typeNode = document.createElement('span');
+
+const typeKey = Object.hasOwn(typeLabels, userType)
+    ? userType
+    : 'unknown';
+
+typeNode.className = `afg-user-type afg-user-type--${typeKey}`;
+typeNode.textContent = typeLabels[userType] || 'неизвестный';
+
+subtitle.classList.add('afg-user-subtitle');
+subtitle.replaceChildren(nameNode, typeNode);
 
         area.setAttribute(
             'openhistorytime',
@@ -2598,7 +2737,7 @@
                 'error'
             );
         } finally {
-            button.textContent = '⟳';
+            button.textContent = '🔄';
             setBusy('RefrehOperators', false);
         }
     }
