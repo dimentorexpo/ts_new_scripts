@@ -1936,7 +1936,7 @@
     title="Обновить чат"
     aria-label="Обновить чат"
     hidden
->⟳</button>
+>🔄️</button>
                     <button
                         class="afg-icon-btn"
                         id="chagetheme"
