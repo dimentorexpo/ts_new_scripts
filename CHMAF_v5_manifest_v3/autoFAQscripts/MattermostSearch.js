@@ -758,18 +758,18 @@ const renderFiles = (post) => {
     }
     if (!files.length) return '';
     return '<div class="mms-files">' + files.map(f => {
-        const url = `${MM_ORIGIN}/api/v4/files/${f.id}`;
+        const url = `${MM_ORIGIN}/api/v4/files/${encodeURIComponent(String(f.id))}`;
         const ext = String(f.extension || '').toLowerCase();
         const isImage = /^(png|jpe?g|gif|webp|svg|bmp|ico)$/.test(ext)
             || /^image\//.test(f.mime_type || '');
         if (isImage) {
-            return `<a class="mms-file-img" href="${url}" target="_blank" title="${escapeHtml(f.name || '')}">
+            return `<a class="mms-file-img" href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(f.name || '')}">
                 <img src="${url}" loading="lazy" alt="${escapeHtml(f.name || 'image')}"
                      onerror="this.closest('.mms-file-img').classList.add('mms-file-broken');">
                 <span class="mms-file-name">${escapeHtml(f.name || '')}</span>
             </a>`;
         }
-        return `<a class="mms-file-link" href="${url}" target="_blank" title="${escapeHtml(f.name || '')}">📎 ${escapeHtml(f.name || f.id)}</a>`;
+        return `<a class="mms-file-link" href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(f.name || '')}">📎 ${escapeHtml(f.name || f.id)}</a>`;
     }).join('') + '</div>';
 };
 
@@ -1249,6 +1249,23 @@ const loadMore = async () => {
         dom.results = document.getElementById('mms-results');
 		dom.channelBar = document.getElementById('mms-channel-bar');
         dom.searchBtn = document.getElementById('mms-search');
+		
+		// Вложения открываем только как файлы, не отдавая клик обработчикам сайта.
+dom.results.addEventListener('click', (event) => {
+    const target = event.target instanceof Element
+        ? event.target
+        : event.target?.parentElement;
+
+    const link = target?.closest('a.mms-file-img, a.mms-file-link');
+    if (!link || !dom.results.contains(link)) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    // Открываем один раз вручную: стандартный переход по <a> уже отменён.
+    window.open(link.href, '_blank', 'noopener,noreferrer');
+}, true);
 
         dom.win.style.display = 'none';
 
