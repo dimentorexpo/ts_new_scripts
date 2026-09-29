@@ -36,10 +36,7 @@ function writeLocalStorage(key, value) {
         localStorage.setItem(key, String(value));
         return true;
     } catch (error) {
-        console.warn(
-            `[ChMAF] Не удалось сохранить ${key}:`,
-            error
-        );
+        console.warn(`[ChMAF] Не удалось сохранить ${key}:`, error);
         return false;
     }
 }
@@ -49,10 +46,7 @@ let scriptAdr =
     DEFAULT_SCRIPT_ADR;
 
 if (!readLocalStorage('scriptAdr')) {
-    writeLocalStorage(
-        'scriptAdr',
-        DEFAULT_SCRIPT_ADR
-    );
+    writeLocalStorage('scriptAdr', DEFAULT_SCRIPT_ADR);
 }
 
 /** @type {ReturnType<typeof setInterval>|null} */
@@ -152,10 +146,7 @@ const cleanupRegistry = {
             try {
                 fn();
             } catch (error) {
-                console.warn(
-                    '[ChMAF] Ошибка очистки:',
-                    error
-                );
+                console.warn('[ChMAF] Ошибка очистки:', error);
             }
         }
 
@@ -253,10 +244,7 @@ const MODULE_MENU_CONFIG = Object.freeze([
         id: 'butMattermost',
         text: '🔍 Mattermost',
         fn: () => {
-            if (
-                typeof window.getMattermostSearchPress ===
-                'function'
-            ) {
+            if (typeof window.getMattermostSearchPress === 'function') {
                 window.getMattermostSearchPress();
             } else {
                 window.createAndShowButton?.(
@@ -276,10 +264,7 @@ const MODULE_MENU_CONFIG = Object.freeze([
 ]);
 
 const MODULE_MENU_MAP = new Map(
-    MODULE_MENU_CONFIG.map(item => [
-        item.id,
-        item
-    ])
+    MODULE_MENU_CONFIG.map(item => [item.id, item])
 );
 
 
@@ -326,9 +311,7 @@ function readStoredCoordinate(key, fallback) {
 
     const value = String(raw).trim();
 
-    if (
-        !/^-?\d+(?:\.\d+)?(?:px)?$/i.test(value)
-    ) {
+    if (!/^-?\d+(?:\.\d+)?(?:px)?$/i.test(value)) {
         return fallback;
     }
 
@@ -353,25 +336,11 @@ function clampWindowPosition(element) {
         return null;
     }
 
-    const maxX = Math.max(
-        0,
-        window.innerWidth - rect.width
-    );
+    const maxX = Math.max(0, window.innerWidth - rect.width);
+    const maxY = Math.max(0, window.innerHeight - rect.height);
 
-    const maxY = Math.max(
-        0,
-        window.innerHeight - rect.height
-    );
-
-    const x = Math.min(
-        Math.max(rect.left, 0),
-        maxX
-    );
-
-    const y = Math.min(
-        Math.max(rect.top, 0),
-        maxY
-    );
+    const x = Math.min(Math.max(rect.left, 0), maxX);
+    const y = Math.min(Math.max(rect.top, 0), maxY);
 
     if (
         Math.abs(x - rect.left) >= 1 ||
@@ -407,11 +376,8 @@ function enableDrag(element, options = {}) {
     let cachedWidth = 0;
     let cachedHeight = 0;
 
-    const previousUserSelect =
-        document.body.style.userSelect;
-
-    const previousCursor =
-        document.body.style.cursor;
+    const previousUserSelect = document.body.style.userSelect;
+    const previousCursor = document.body.style.cursor;
 
     function isInteractive(target) {
         return Boolean(
@@ -433,16 +399,10 @@ function enableDrag(element, options = {}) {
 
         if (typeof handle === 'string') {
             const matched = target.closest(handle);
-
-            return Boolean(
-                matched && element.contains(matched)
-            );
+            return Boolean(matched && element.contains(matched));
         }
 
-        return (
-            target === handle ||
-            handle.contains(target)
-        );
+        return target === handle || handle.contains(target);
     }
 
     if (storageKey && savePosition) {
@@ -456,12 +416,8 @@ function enableDrag(element, options = {}) {
                     Number.isFinite(position?.x) &&
                     Number.isFinite(position?.y)
                 ) {
-                    element.style.left =
-                        `${position.x}px`;
-
-                    element.style.top =
-                        `${position.y}px`;
-
+                    element.style.left = `${position.x}px`;
+                    element.style.top = `${position.y}px`;
                     element.style.right = 'auto';
                 }
             }
@@ -477,48 +433,26 @@ function enableDrag(element, options = {}) {
         return {
             x: Math.min(
                 Math.max(x, 0),
-                Math.max(
-                    0,
-                    window.innerWidth - width
-                )
+                Math.max(0, window.innerWidth - width)
             ),
-
             y: Math.min(
                 Math.max(y, 0),
-                Math.max(
-                    0,
-                    window.innerHeight - height
-                )
+                Math.max(0, window.innerHeight - height)
             )
         };
     }
 
-    function applySnap(
-        x,
-        y,
-        isFinal,
-        width,
-        height
-    ) {
-        let next = clampPosition(
-            x,
-            y,
-            width,
-            height
-        );
+    function applySnap(x, y, isFinal, width, height) {
+        let next = clampPosition(x, y, width, height);
 
         if (snapToEdges) {
-            const rightEdge =
-                window.innerWidth - width;
-
-            const bottomEdge =
-                window.innerHeight - height;
+            const rightEdge = window.innerWidth - width;
+            const bottomEdge = window.innerHeight - height;
 
             if (Math.abs(next.x) < snapThreshold) {
                 next.x = 0;
             } else if (
-                Math.abs(next.x - rightEdge) <
-                snapThreshold
+                Math.abs(next.x - rightEdge) < snapThreshold
             ) {
                 next.x = Math.max(0, rightEdge);
             }
@@ -526,21 +460,15 @@ function enableDrag(element, options = {}) {
             if (Math.abs(next.y) < snapThreshold) {
                 next.y = 0;
             } else if (
-                Math.abs(next.y - bottomEdge) <
-                snapThreshold
+                Math.abs(next.y - bottomEdge) < snapThreshold
             ) {
                 next.y = Math.max(0, bottomEdge);
             }
         }
 
         if (snapGrid > 0 && isFinal) {
-            next.x =
-                Math.round(next.x / snapGrid) *
-                snapGrid;
-
-            next.y =
-                Math.round(next.y / snapGrid) *
-                snapGrid;
+            next.x = Math.round(next.x / snapGrid) * snapGrid;
+            next.y = Math.round(next.y / snapGrid) * snapGrid;
         }
 
         return clampPosition(
@@ -552,11 +480,8 @@ function enableDrag(element, options = {}) {
     }
 
     function restoreBodyStyles() {
-        document.body.style.userSelect =
-            previousUserSelect;
-
-        document.body.style.cursor =
-            previousCursor;
+        document.body.style.userSelect = previousUserSelect;
+        document.body.style.cursor = previousCursor;
     }
 
     function onMouseDown(event) {
@@ -568,8 +493,7 @@ function enableDrag(element, options = {}) {
             return;
         }
 
-        const rect =
-            element.getBoundingClientRect();
+        const rect = element.getBoundingClientRect();
 
         if (!rect.width || !rect.height) {
             return;
@@ -579,27 +503,17 @@ function enableDrag(element, options = {}) {
         cachedWidth = rect.width;
         cachedHeight = rect.height;
 
-        offsetX =
-            event.clientX - rect.left;
-
-        offsetY =
-            event.clientY - rect.top;
+        offsetX = event.clientX - rect.left;
+        offsetY = event.clientY - rect.top;
 
         element.style.transition = 'none';
-
-        document.body.style.userSelect =
-            'none';
-
-        document.body.style.cursor =
-            'grabbing';
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'grabbing';
 
         try {
             onDragStart?.();
         } catch (error) {
-            console.error(
-                '[ChMAF] Ошибка onDragStart:',
-                error
-            );
+            console.error('[ChMAF] Ошибка onDragStart:', error);
         }
 
         event.preventDefault();
@@ -616,14 +530,9 @@ function enableDrag(element, options = {}) {
             cachedHeight
         );
 
-        element.style.left =
-            `${position.x}px`;
-
-        element.style.top =
-            `${position.y}px`;
-
-        element.style.right =
-            'auto';
+        element.style.left = `${position.x}px`;
+        element.style.top = `${position.y}px`;
+        element.style.right = 'auto';
     }
 
     function onMouseUp() {
@@ -631,11 +540,9 @@ function enableDrag(element, options = {}) {
 
         isDragging = false;
         element.style.transition = '';
-
         restoreBodyStyles();
 
-        const rect =
-            element.getBoundingClientRect();
+        const rect = element.getBoundingClientRect();
 
         const position = applySnap(
             rect.left,
@@ -645,19 +552,11 @@ function enableDrag(element, options = {}) {
             rect.height
         );
 
-        element.style.left =
-            `${position.x}px`;
+        element.style.left = `${position.x}px`;
+        element.style.top = `${position.y}px`;
+        element.style.right = 'auto';
 
-        element.style.top =
-            `${position.y}px`;
-
-        element.style.right =
-            'auto';
-
-        if (
-            storageKey &&
-            savePosition
-        ) {
+        if (storageKey && savePosition) {
             writeLocalStorage(
                 storageKey,
                 JSON.stringify(position)
@@ -667,15 +566,11 @@ function enableDrag(element, options = {}) {
         try {
             onDragEnd?.(position);
         } catch (error) {
-            console.error(
-                '[ChMAF] Ошибка onDragEnd:',
-                error
-            );
+            console.error('[ChMAF] Ошибка onDragEnd:', error);
         }
     }
 
-    const signal =
-        cleanupRegistry.signal;
+    const signal = cleanupRegistry.signal;
 
     element.addEventListener(
         'mousedown',
@@ -686,10 +581,7 @@ function enableDrag(element, options = {}) {
     document.addEventListener(
         'mousemove',
         onMouseMove,
-        {
-            signal,
-            passive: true
-        }
+        { signal, passive: true }
     );
 
     document.addEventListener(
@@ -704,20 +596,9 @@ function enableDrag(element, options = {}) {
             restoreBodyStyles();
         }
 
-        element.removeEventListener(
-            'mousedown',
-            onMouseDown
-        );
-
-        document.removeEventListener(
-            'mousemove',
-            onMouseMove
-        );
-
-        document.removeEventListener(
-            'mouseup',
-            onMouseUp
-        );
+        element.removeEventListener('mousedown', onMouseDown);
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
     };
 
     cleanupRegistry.register(cleanup);
@@ -725,51 +606,31 @@ function enableDrag(element, options = {}) {
     return cleanup;
 }
 
-function createWindow(
-    id,
-    topKey,
-    leftKey,
-    content
-) {
-    const existing =
-        document.getElementById(id);
+function createWindow(id, topKey, leftKey, content) {
+    const existing = document.getElementById(id);
 
     if (existing) return existing;
 
-    const windowElement =
-        document.createElement('div');
+    const windowElement = document.createElement('div');
 
-    const storedTop =
-        readStoredCoordinate(topKey, 120);
-
-    const storedLeft =
-        readStoredCoordinate(leftKey, 295);
+    const storedTop = readStoredCoordinate(topKey, 120);
+    const storedLeft = readStoredCoordinate(leftKey, 295);
 
     if (id === 'TestUsers') {
         windowElement.classList.add(
             'onlyfortp',
             'testuserwindow'
         );
-    } else if (
-        id === 'AF_addChatMenu'
-    ) {
-        windowElement.classList.add(
-            'wintInitializeChat'
-        );
+    } else if (id === 'AF_addChatMenu') {
+        windowElement.classList.add('wintInitializeChat');
     } else {
-        windowElement.classList.add(
-            'extwindows'
-        );
+        windowElement.classList.add('extwindows');
     }
 
     windowElement.id = id;
     windowElement.style.position = 'fixed';
-    windowElement.style.top =
-        `${storedTop}px`;
-
-    windowElement.style.left =
-        `${storedLeft}px`;
-
+    windowElement.style.top = `${storedTop}px`;
+    windowElement.style.left = `${storedLeft}px`;
     windowElement.style.display = 'none';
 
     if (
@@ -780,57 +641,35 @@ function createWindow(
             'AF_SpecCommWindow'
         ].includes(id)
     ) {
-        windowElement.style.zIndex =
-            '1100000';
+        windowElement.style.zIndex = '1100000';
     }
 
     // Разметка content создаётся доверенными модулями
     // расширения. API-данные нельзя передавать сюда
     // без экранирования.
-    const template =
-        document.createElement('template');
-
-    template.innerHTML =
-        String(content ?? '');
+    const template = document.createElement('template');
+    template.innerHTML = String(content ?? '');
 
     template.content
-        .querySelectorAll(
-            'script, iframe, object, embed'
-        )
+        .querySelectorAll('script, iframe, object, embed')
         .forEach(node => node.remove());
 
-    windowElement.appendChild(
-        template.content
-    );
+    windowElement.appendChild(template.content);
+    document.body.appendChild(windowElement);
 
-    document.body.appendChild(
-        windowElement
-    );
+    const dragCleanup = enableDrag(windowElement, {
+        handle: '.chmaf-drag-handle',
 
-    const dragCleanup =
-        enableDrag(windowElement, {
-            handle:
-                '.chmaf-drag-handle',
+        // Используем только topKey/leftKey.
+        savePosition: false,
+        snapToEdges: true,
+        snapGrid: 8,
 
-            // Используем только topKey/leftKey.
-            // Старый drag_pos_${id} не должен
-            // перезаписывать позицию окна.
-            savePosition: false,
-            snapToEdges: true,
-            snapGrid: 8,
-
-            onDragEnd(position) {
-                writeLocalStorage(
-                    topKey,
-                    position.y
-                );
-
-                writeLocalStorage(
-                    leftKey,
-                    position.x
-                );
-            }
-        });
+        onDragEnd(position) {
+            writeLocalStorage(topKey, position.y);
+            writeLocalStorage(leftKey, position.x);
+        }
+    });
 
     let lastClickTime = 0;
 
@@ -839,10 +678,8 @@ function createWindow(
 
         if (
             !(
-                input instanceof
-                    HTMLInputElement ||
-                input instanceof
-                    HTMLTextAreaElement
+                input instanceof HTMLInputElement ||
+                input instanceof HTMLTextAreaElement
             )
         ) {
             return;
@@ -859,100 +696,62 @@ function createWindow(
 
         const now = Date.now();
 
-        if (
-            now - lastClickTime < 400
-        ) {
+        if (now - lastClickTime < 400) {
             return;
         }
 
         lastClickTime = now;
 
         if (
-            input.selectionStart !==
-                input.selectionEnd &&
+            input.selectionStart !== input.selectionEnd &&
             event.detail === 1
         ) {
-            const position =
-                getCaretPositionFromPoint(
-                    input,
-                    event.clientX,
-                    event.clientY
-                );
-
-            input.setSelectionRange(
-                position,
-                position
+            const position = getCaretPositionFromPoint(
+                input,
+                event.clientX,
+                event.clientY
             );
+
+            input.setSelectionRange(position, position);
         }
     }
 
     windowElement.addEventListener(
         'mousedown',
         onInputMouseDown,
-        {
-            signal:
-                cleanupRegistry.signal
-        }
+        { signal: cleanupRegistry.signal }
     );
 
-    // Пока display:none, размеры равны нулю.
-    // Проверяем позицию при появлении окна.
-    const observer =
-        new MutationObserver(() => {
-            if (
-                windowElement.style.display ===
-                'none'
-            ) {
-                return;
+    const observer = new MutationObserver(() => {
+        if (windowElement.style.display === 'none') {
+            return;
+        }
+
+        requestAnimationFrame(() => {
+            const position = clampWindowPosition(windowElement);
+
+            if (position) {
+                writeLocalStorage(topKey, position.y);
+                writeLocalStorage(leftKey, position.x);
             }
-
-            requestAnimationFrame(() => {
-                const position =
-                    clampWindowPosition(
-                        windowElement
-                    );
-
-                if (position) {
-                    writeLocalStorage(
-                        topKey,
-                        position.y
-                    );
-
-                    writeLocalStorage(
-                        leftKey,
-                        position.x
-                    );
-                }
-            });
         });
+    });
 
-    observer.observe(
-        windowElement,
-        {
-            attributes: true,
-            attributeFilter: [
-                'style'
-            ]
-        }
-    );
+    observer.observe(windowElement, {
+        attributes: true,
+        attributeFilter: ['style']
+    });
 
-    // Ограничение позиции при изменении размера
-    // браузера.
     const onResize = () => {
         requestAnimationFrame(() => {
-            clampWindowPosition(
-                windowElement
-            );
+            clampWindowPosition(windowElement);
         });
     };
 
     window.addEventListener(
         'resize',
         onResize,
-        {
-            signal:
-                cleanupRegistry.signal
-        }
+        { signal: cleanupRegistry.signal }
     );
 
     cleanupRegistry.register(() => {
@@ -964,50 +763,29 @@ function createWindow(
     return windowElement;
 }
 
-function getCaretPositionFromPoint(
-    element,
-    x,
-    y
-) {
-    if (
-        document.caretPositionFromPoint
-    ) {
-        const position =
-            document.caretPositionFromPoint(
-                x,
-                y
-            );
+function getCaretPositionFromPoint(element, x, y) {
+    if (document.caretPositionFromPoint) {
+        const position = document.caretPositionFromPoint(x, y);
 
         if (
             position &&
             (
                 position.offsetNode === element ||
-                element.contains(
-                    position.offsetNode
-                )
+                element.contains(position.offsetNode)
             )
         ) {
             return position.offset;
         }
     }
 
-    if (
-        document.caretRangeFromPoint
-    ) {
-        const range =
-            document.caretRangeFromPoint(
-                x,
-                y
-            );
+    if (document.caretRangeFromPoint) {
+        const range = document.caretRangeFromPoint(x, y);
 
         if (
             range &&
             (
-                range.startContainer ===
-                    element ||
-                element.contains(
-                    range.startContainer
-                )
+                range.startContainer === element ||
+                element.contains(range.startContainer)
             )
         ) {
             return range.startOffset;
@@ -1018,68 +796,43 @@ function getCaretPositionFromPoint(
 }
 
 function getStorageData(keys) {
-    return new Promise(
-        (resolve, reject) => {
-            try {
-                if (
-                    !globalThis.chrome
-                        ?.storage?.local
-                ) {
-                    reject(
-                        new Error(
-                            'chrome.storage.local недоступен'
-                        )
-                    );
+    return new Promise((resolve, reject) => {
+        try {
+            if (!globalThis.chrome?.storage?.local) {
+                reject(
+                    new Error('chrome.storage.local недоступен')
+                );
+                return;
+            }
+
+            chrome.storage.local.get(keys, result => {
+                const error = chrome.runtime?.lastError;
+
+                if (error) {
+                    reject(new Error(error.message));
                     return;
                 }
 
-                chrome.storage.local.get(
-                    keys,
-                    result => {
-                        const error =
-                            chrome.runtime
-                                ?.lastError;
-
-                        if (error) {
-                            reject(
-                                new Error(
-                                    error.message
-                                )
-                            );
-                            return;
-                        }
-
-                        resolve(
-                            result ?? {}
-                        );
-                    }
-                );
-            } catch (error) {
-                reject(error);
-            }
+                resolve(result ?? {});
+            });
+        } catch (error) {
+            reject(error);
         }
-    );
+    });
 }
 
 
 // ================================================================
-// FAB — исходное оформление сохранено
+// FAB И МЕНЮ
 // ================================================================
 
 function injectFABStyles() {
-    if (
-        document.getElementById(
-            'fab-premium-styles'
-        )
-    ) {
+    if (document.getElementById('fab-premium-styles')) {
         return;
     }
 
-    const style =
-        document.createElement('style');
-
-    style.id =
-        'fab-premium-styles';
+    const style = document.createElement('style');
+    style.id = 'fab-premium-styles';
 
     style.textContent = `
 #rightPanel {
@@ -1094,28 +847,54 @@ function injectFABStyles() {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
 }
-#rightPanel > * { pointer-events: auto; }
+
+#rightPanel > * {
+    pointer-events: auto;
+}
+
 .fab-premium {
     --fab-size: 45px;
     --fab-color: 190;
     --fab-sat: 90%;
     --fab-light: 60%;
+
     position: relative;
     width: var(--fab-size);
     height: var(--fab-size);
     border-radius: 50%;
     border: none;
     cursor: pointer;
-    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%), rgba(18, 18, 28, 0.85);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(255, 255, 255, 0.02) 100%
+        ),
+        rgba(18, 18, 28, 0.85);
+
     backdrop-filter: blur(20px) saturate(150%);
     -webkit-backdrop-filter: blur(20px) saturate(150%);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 1px rgba(255, 255, 255, 0.15);
+
     font-size: 19px;
-    color: hsl(var(--fab-color), var(--fab-sat), var(--fab-light));
+    color: hsl(
+        var(--fab-color),
+        var(--fab-sat),
+        var(--fab-light)
+    );
+
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    transition:
+        all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
     overflow: hidden;
     outline: none;
     user-select: none;
@@ -1123,55 +902,151 @@ function injectFABStyles() {
     margin: 0;
     padding: 0;
 }
+
 .fab-premium::before {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background: radial-gradient(circle at 50% 20%, rgba(255,255,255,0.2) 0%, transparent 60%);
+
+    background:
+        radial-gradient(
+            circle at 50% 20%,
+            rgba(255, 255, 255, 0.2) 0%,
+            transparent 60%
+        );
+
     pointer-events: none;
     opacity: 0.6;
 }
+
 .fab-premium::after {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background: radial-gradient(circle, hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.3) 0%, transparent 70%);
+
+    background:
+        radial-gradient(
+            circle,
+            hsla(
+                var(--fab-color),
+                var(--fab-sat),
+                var(--fab-light),
+                0.3
+            ) 0%,
+            transparent 70%
+        );
+
     transform: scale(0);
     opacity: 0;
     pointer-events: none;
 }
+
 .fab-premium:hover {
     transform: scale(1.1) translateY(-2px);
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), 0 0 24px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.3), 0 0 0 1px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+
+    box-shadow:
+        0 12px 48px rgba(0, 0, 0, 0.5),
+        0 0 24px hsla(
+            var(--fab-color),
+            var(--fab-sat),
+            var(--fab-light),
+            0.3
+        ),
+        0 0 0 1px hsla(
+            var(--fab-color),
+            var(--fab-sat),
+            var(--fab-light),
+            0.5
+        ),
+        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+
     color: #fff;
-    text-shadow: 0 0 12px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.8);
+
+    text-shadow:
+        0 0 12px hsla(
+            var(--fab-color),
+            var(--fab-sat),
+            var(--fab-light),
+            0.8
+        );
 }
+
 .fab-premium:active {
     transform: scale(0.95);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 2px 8px rgba(0, 0, 0, 0.6);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        inset 0 2px 8px rgba(0, 0, 0, 0.6);
     transition: all 0.1s ease;
 }
+
 .fab-premium:active::after {
     animation: fab-ripple 0.6s ease-out;
 }
+
 @keyframes fab-ripple {
-    0% { transform: scale(0); opacity: 1; }
-    100% { transform: scale(2.5); opacity: 0; }
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
 }
+
 .fab-premium.active {
-    background: linear-gradient(145deg, hsla(var(--fab-color), var(--fab-sat), 50%, 0.2) 0%, hsla(var(--fab-color), var(--fab-sat), 30%, 0.1) 100%), rgba(18, 18, 28, 0.95);
-    box-shadow: 0 8px 32px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.3), 0 0 0 2px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.6), inset 0 0 20px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.1);
+    background:
+        linear-gradient(
+            145deg,
+            hsla(
+                var(--fab-color),
+                var(--fab-sat),
+                50%,
+                0.2
+            ) 0%,
+            hsla(
+                var(--fab-color),
+                var(--fab-sat),
+                30%,
+                0.1
+            ) 100%
+        ),
+        rgba(18, 18, 28, 0.95);
+
+    box-shadow:
+        0 8px 32px hsla(
+            var(--fab-color),
+            var(--fab-sat),
+            var(--fab-light),
+            0.3
+        ),
+        0 0 0 2px hsla(
+            var(--fab-color),
+            var(--fab-sat),
+            var(--fab-light),
+            0.6
+        ),
+        inset 0 0 20px hsla(
+            var(--fab-color),
+            var(--fab-sat),
+            var(--fab-light),
+            0.1
+        );
 }
+
 .fab-premium .fab-tooltip {
     position: absolute;
     right: calc(100% + 12px);
     top: 50%;
     transform: translateY(-50%) translateX(10px);
+
     background: rgba(18, 18, 28, 0.95);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+
     color: #fff;
     padding: 8px 14px;
     border-radius: 8px;
@@ -1180,11 +1055,16 @@ function injectFABStyles() {
     white-space: nowrap;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+
     opacity: 0;
     pointer-events: none;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    transition:
+        all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
     z-index: 10;
 }
+
 .fab-premium .fab-tooltip::after {
     content: '';
     position: absolute;
@@ -1194,22 +1074,72 @@ function injectFABStyles() {
     border: 6px solid transparent;
     border-left-color: rgba(18, 18, 28, 0.95);
 }
+
 .fab-premium:hover .fab-tooltip {
     opacity: 1;
     transform: translateY(-50%) translateX(0);
 }
-.fab-premium[data-theme="cyan"] { --fab-color: 190; --fab-sat: 90%; --fab-light: 60%; }
-.fab-premium[data-theme="amber"] { --fab-color: 35; --fab-sat: 95%; --fab-light: 58%; }
-.fab-premium[data-theme="emerald"] { --fab-color: 150; --fab-sat: 80%; --fab-light: 55%; }
-.fab-premium[data-theme="rose"] { --fab-color: 340; --fab-sat: 90%; --fab-light: 65%; }
-.fab-premium[data-theme="violet"] { --fab-color: 265; --fab-sat: 90%; --fab-light: 68%; }
-.fab-premium[data-theme="orange"] { --fab-color: 25; --fab-sat: 95%; --fab-light: 60%; }
-.fab-premium.onlyfortp { display: none; }
-@keyframes fab-slide-in {
-    from { opacity: 0; transform: translateX(100px) scale(0.8); }
-    to { opacity: 1; transform: translateX(0) scale(1); }
+
+.fab-premium[data-theme="cyan"] {
+    --fab-color: 190;
+    --fab-sat: 90%;
+    --fab-light: 60%;
 }
-.fab-premium { animation: fab-slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+
+.fab-premium[data-theme="amber"] {
+    --fab-color: 35;
+    --fab-sat: 95%;
+    --fab-light: 58%;
+}
+
+.fab-premium[data-theme="emerald"] {
+    --fab-color: 150;
+    --fab-sat: 80%;
+    --fab-light: 55%;
+}
+
+.fab-premium[data-theme="rose"] {
+    --fab-color: 340;
+    --fab-sat: 90%;
+    --fab-light: 65%;
+}
+
+.fab-premium[data-theme="violet"] {
+    --fab-color: 265;
+    --fab-sat: 90%;
+    --fab-light: 68%;
+}
+
+.fab-premium[data-theme="orange"] {
+    --fab-color: 25;
+    --fab-sat: 95%;
+    --fab-light: 60%;
+}
+
+.fab-premium.onlyfortp {
+    display: none;
+}
+
+@keyframes fab-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(100px) scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+.fab-premium {
+    animation:
+        fab-slide-in
+        0.4s
+        cubic-bezier(0.34, 1.56, 0.64, 1)
+        backwards;
+}
+
 .fab-premium:nth-child(1) { animation-delay: 0.05s; }
 .fab-premium:nth-child(2) { animation-delay: 0.1s; }
 .fab-premium:nth-child(3) { animation-delay: 0.15s; }
@@ -1218,45 +1148,115 @@ function injectFABStyles() {
 .fab-premium:nth-child(6) { animation-delay: 0.3s; }
 .fab-premium:nth-child(7) { animation-delay: 0.35s; }
 .fab-premium:nth-child(8) { animation-delay: 0.4s; }
-.m-menu-panel {
+
+/*
+ * Меню находится непосредственно в document.body.
+ * Поэтому fixed-координаты задаются относительно экрана,
+ * а не относительно трансформированной панели FAB.
+ */
+#idmymenu.m-menu-panel {
     position: fixed;
-    top: 50%;
-    right: 80px;
-    transform: translateY(-50%);
-    background: rgba(18, 18, 28, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 12px;
-    z-index: 2147483646;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.1);
-    max-height: 80vh;
-    overflow-y: auto;
-}
-.m-menu-btn {
-    padding: 10px 16px;
-    color: #fff;
-    cursor: pointer;
-    border-radius: 8px;
-    margin: 2px 0;
-    transition: all 0.2s ease;
-    font-size: 14px;
-    white-space: nowrap;
-}
-.m-menu-btn:hover {
-    background: rgba(255,255,255,0.1);
-    transform: translateX(-4px);
-}
-.menubarstyle { min-width: 200px; }
-#idmymenu {
-    height: max-content !important;
+    top: 0;
+    left: 0;
+    right: auto;
+    bottom: auto;
     transform: none !important;
-    overflow: hidden auto;
+
+    z-index: 2147483647;
+
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    width: min(248px, calc(100vw - 24px));
+    min-width: 0;
+    height: auto !important;
+    max-height: calc(100dvh - 24px);
+
+    padding: 8px;
+    margin: 0;
+
+    overflow-x: hidden;
+    overflow-y: auto;
     overscroll-behavior: contain;
+
+    background: rgba(20, 22, 34, 0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
 }
+
+/* Не показываем меню, когда JS выставил display:none. */
+#idmymenu.m-menu-panel[style*="display: none"] {
+    display: none !important;
+}
+
 #idmymenu::before,
 #idmymenu::after {
     display: none !important;
+}
+
+#idmymenu .m-menu-btn {
+    box-sizing: border-box;
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 11px;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    margin: 0;
+    padding: 9px 12px;
+
+    color: #e9ecf5;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    box-shadow: none;
+
+    font: 500 13px/1.35 system-ui, sans-serif;
+    text-align: left;
+    white-space: nowrap;
+
+    cursor: pointer;
+    transform: none;
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+}
+
+#idmymenu .m-menu-btn:hover,
+#idmymenu .m-menu-btn:focus-visible {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.08);
+    transform: none;
+    outline: none;
+}
+
+#idmymenu .m-menu-btn:active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+#idmymenu .chmaf-menu-icon {
+    flex: 0 0 22px;
+    width: 22px;
+    font-size: 17px;
+    line-height: 1;
+    text-align: center;
+}
+
+#idmymenu .chmaf-menu-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
     `;
 
@@ -1272,52 +1272,28 @@ function createFAB(config) {
         onClick
     } = config;
 
-    const button =
-        document.createElement('button');
+    const button = document.createElement('button');
 
     button.type = 'button';
     button.id = id;
-    button.className =
-        'fab-premium';
+    button.className = 'fab-premium';
+    button.dataset.theme = theme;
+    button.setAttribute('aria-label', title);
 
-    button.dataset.theme =
-        theme;
+    const iconElement = document.createElement('span');
+    iconElement.textContent = icon;
 
-    button.setAttribute(
-        'aria-label',
-        title
-    );
+    const tooltip = document.createElement('span');
+    tooltip.className = 'fab-tooltip';
+    tooltip.textContent = title;
 
-    const iconElement =
-        document.createElement('span');
+    button.append(iconElement, tooltip);
 
-    iconElement.textContent =
-        icon;
-
-    const tooltip =
-        document.createElement('span');
-
-    tooltip.className =
-        'fab-tooltip';
-
-    tooltip.textContent =
-        title;
-
-    button.append(
-        iconElement,
-        tooltip
-    );
-
-    if (
-        typeof onClick === 'function'
-    ) {
+    if (typeof onClick === 'function') {
         button.addEventListener(
             'click',
             onClick,
-            {
-                signal:
-                    cleanupRegistry.signal
-            }
+            { signal: cleanupRegistry.signal }
         );
     }
 
@@ -1325,26 +1301,14 @@ function createFAB(config) {
 }
 
 function buildSidePanel() {
-    const existing =
-        document.getElementById(
-            'rightPanel'
-        );
-
-    if (existing) {
-        existing.remove();
-    }
+    document.getElementById('rightPanel')?.remove();
 
     injectFABStyles();
 
-    const panel =
-        document.createElement('div');
+    const panel = document.createElement('div');
+    panel.id = 'rightPanel';
 
-    panel.id =
-        'rightPanel';
-
-    document.body.appendChild(
-        panel
-    );
+    document.body.appendChild(panel);
 
     return panel;
 }
@@ -1370,141 +1334,262 @@ function addFabButton(
     return button;
 }
 
-function buildModuleMenu(
-    panel,
-    isTP
-) {
-    const existing =
-        document.getElementById(
-            'idmymenu'
-        );
+/**
+ * Ставит меню слева от кнопки 👺 и выравнивает
+ * центры меню и кнопки по вертикали.
+ */
+function positionModuleMenu(menu) {
+    const trigger = document.getElementById('MainMenuBtn');
 
-    if (existing) {
-        existing.remove();
+    if (!menu || !trigger) return;
+
+    const buttonRect = trigger.getBoundingClientRect();
+    const menuRect = menu.getBoundingClientRect();
+
+    const margin = 12;
+    const gap = 14;
+
+    const left = Math.max(
+        margin,
+        buttonRect.left - menuRect.width - gap
+    );
+
+    const desiredTop =
+        buttonRect.top +
+        buttonRect.height / 2 -
+        menuRect.height / 2;
+
+    const top = Math.min(
+        Math.max(margin, desiredTop),
+        Math.max(
+            margin,
+            window.innerHeight - menuRect.height - margin
+        )
+    );
+
+    menu.style.setProperty(
+        'left',
+        `${Math.round(left)}px`,
+        'important'
+    );
+
+    menu.style.setProperty(
+        'top',
+        `${Math.round(top)}px`,
+        'important'
+    );
+}
+
+function closeModuleMenu() {
+    const menu = document.getElementById('chmaf-module-menu');
+
+    if (menu) {
+        menu.style.setProperty(
+            'display',
+            'none',
+            'important'
+        );
     }
 
-    const menubar =
-        document.createElement('div');
+    document
+        .getElementById('MainMenuBtn')
+        ?.classList.remove('active');
+}
 
-    menubar.id =
-        'idmymenu';
+function buildModuleMenu(panel, isTP) {
+    injectModuleMenuStyles();
 
-    menubar.className =
-        'm-menu-panel menubarstyle';
+    document.getElementById('chmaf-module-menu')?.remove();
 
-    menubar.style.display =
-        'none';
+    const menubar = document.createElement('div');
+
+    // Новый ID: старые стили #idmymenu больше не действуют.
+    menubar.id = 'chmaf-module-menu';
+
+    // Не добавляем старые классы m-menu-panel и menubarstyle:
+    // на них тоже могут действовать стили сайта.
+    menubar.style.setProperty(
+        'display',
+        'none',
+        'important'
+    );
 
     for (const item of MODULE_MENU_CONFIG) {
-        if (
-            item.tp &&
-            !isTP
-        ) {
-            continue;
-        }
+        if (item.tp && !isTP) continue;
 
-        const button =
-            document.createElement(
-                'button'
-            );
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.id = item.id;
+        button.className = 'm-menu-btn';
 
-        button.type =
-            'button';
+        const match = item.text.match(/^(\S+)\s+(.+)$/u);
 
-        button.id =
-            item.id;
+        const iconElement = document.createElement('span');
+        iconElement.className = 'chmaf-menu-icon';
+        iconElement.textContent = match?.[1] ?? '';
 
-        button.className =
-            'm-menu-btn';
+        const labelElement = document.createElement('span');
+        labelElement.className = 'chmaf-menu-label';
+        labelElement.textContent = match?.[2] ?? item.text;
 
-        button.textContent =
-            item.text;
-
-        menubar.appendChild(
-            button
-        );
+        button.append(iconElement, labelElement);
+        menubar.appendChild(button);
     }
 
-    panel.appendChild(
-        menubar
-    );
+    document.body.appendChild(menubar);
 
     menubar.addEventListener(
         'click',
         event => {
-            const button =
-                event.target.closest(
-                    '.m-menu-btn'
-                );
+            const button = event.target instanceof Element
+                ? event.target.closest('.m-menu-btn')
+                : null;
 
-            if (
-                !button ||
-                !menubar.contains(button)
-            ) {
-                return;
-            }
+            if (!button || !menubar.contains(button)) return;
 
-            const config =
-                MODULE_MENU_MAP.get(
-                    button.id
-                );
+            const config = MODULE_MENU_MAP.get(button.id);
 
-            if (config) {
-                try {
-                    const result =
-                        config.fn();
+            try {
+                const result = config?.fn();
 
-                    if (
-                        result &&
-                        typeof result.catch ===
-                            'function'
-                    ) {
-                        result.catch(
-                            error => {
-                                console.error(
-                                    `[ChMAF] Ошибка модуля ${button.id}:`,
-                                    error
-                                );
-
-                                window.showCustomAlert?.(
-                                    `Ошибка модуля: ${button.id}`,
-                                    'error'
-                                );
-                            }
+                if (result && typeof result.catch === 'function') {
+                    result.catch(error => {
+                        console.error(
+                            `[ChMAF] Ошибка модуля ${button.id}:`,
+                            error
                         );
-                    }
-                } catch (error) {
-                    console.error(
-                        `[ChMAF] Ошибка модуля ${button.id}:`,
-                        error
-                    );
 
-                    window.showCustomAlert?.(
-                        `Ошибка модуля: ${button.id}`,
-                        'error'
-                    );
+                        window.showCustomAlert?.(
+                            `Ошибка модуля: ${button.id}`,
+                            'error'
+                        );
+                    });
                 }
+            } catch (error) {
+                console.error(
+                    `[ChMAF] Ошибка модуля ${button.id}:`,
+                    error
+                );
+
+                window.showCustomAlert?.(
+                    `Ошибка модуля: ${button.id}`,
+                    'error'
+                );
             }
 
-            menubar.style.display =
-                'none';
-
-            document
-                .getElementById(
-                    'MainMenuBtn'
-                )
-                ?.classList.remove(
-                    'active'
-                );
+            closeModuleMenu();
         },
-        {
-            signal:
-                cleanupRegistry.signal
-        }
+        { signal: cleanupRegistry.signal }
     );
 
     return menubar;
 }
+
+
+function injectModuleMenuStyles() {
+    if (document.getElementById('chmaf-module-menu-styles')) {
+        return;
+    }
+
+    const style = document.createElement('style');
+    style.id = 'chmaf-module-menu-styles';
+
+    style.textContent = `
+#chmaf-module-menu {
+    position: fixed !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    z-index: 2147483647 !important;
+
+    box-sizing: border-box;
+    width: min(248px, calc(100vw - 24px));
+    max-height: calc(100dvh - 24px);
+    padding: 8px;
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    flex-direction: column;
+    gap: 3px;
+
+    background: rgba(20, 22, 34, 0.97);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+}
+
+#chmaf-module-menu .m-menu-btn {
+    box-sizing: border-box;
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 11px;
+
+    width: 100%;
+    min-height: 42px;
+    margin: 0;
+    padding: 9px 12px;
+
+    color: #e9ecf5;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    box-shadow: none;
+
+    font: 500 13px/1.35 system-ui, sans-serif;
+    text-align: left;
+    cursor: pointer;
+    transform: none;
+}
+
+#chmaf-module-menu .m-menu-btn:hover,
+#chmaf-module-menu .m-menu-btn:focus-visible {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.09);
+    outline: none;
+}
+
+#chmaf-module-menu .chmaf-menu-icon {
+    flex: 0 0 22px;
+    width: 22px;
+    font-size: 17px;
+    line-height: 1;
+    text-align: center;
+}
+
+#chmaf-module-menu .chmaf-menu-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+    `;
+
+    document.head.appendChild(style);
+}
+
+// Если размер окна изменился при открытом меню,
+// пересчитываем его расположение.
+window.addEventListener(
+    'resize',
+    () => {
+        const menu = document.getElementById('chmaf-module-menu');
+
+        if (
+            menu &&
+            getComputedStyle(menu).display !== 'none'
+        ) {
+            positionModuleMenu(menu);
+        }
+    },
+    { signal: cleanupRegistry.signal }
+);
+
+cleanupRegistry.register(() => {
+    document.getElementById('chmaf-module-menu')?.remove();
+});
 
 
 // ================================================================
@@ -1513,61 +1598,39 @@ function buildModuleMenu(
 
 function delayMs(ms) {
     return new Promise(resolve => {
-        const timeout =
-            setTimeout(() => {
-                cleanupRegistry
-                    ._timeouts
-                    .delete(timeout);
+        const timeout = setTimeout(() => {
+            cleanupRegistry._timeouts.delete(timeout);
+            resolve();
+        }, ms);
 
-                resolve();
-            }, ms);
-
-        cleanupRegistry
-            .registerTimeout(timeout);
+        cleanupRegistry.registerTimeout(timeout);
     });
 }
 
-async function waitForOperator(
-    maxMs = 60_000
-) {
-    const startedAt =
-        Date.now();
-
-    let delay =
-        500;
+async function waitForOperator(maxMs = 60_000) {
+    const startedAt = Date.now();
+    let delay = 500;
 
     while (
         !cleanupRegistry.signal?.aborted &&
-        Date.now() - startedAt <
-            maxMs
+        Date.now() - startedAt < maxMs
     ) {
         try {
             if (
-                typeof window.whoAmI ===
-                    'function' &&
+                typeof window.whoAmI === 'function' &&
                 await window.whoAmI()
             ) {
                 return true;
             }
         } catch (error) {
-            console.warn(
-                '[ChMAF] Ошибка whoAmI:',
-                error
-            );
+            console.warn('[ChMAF] Ошибка whoAmI:', error);
         }
 
         await delayMs(delay);
-
-        delay = Math.min(
-            delay * 2,
-            5000
-        );
+        delay = Math.min(delay * 2, 5000);
     }
 
-    console.warn(
-        '[ChMAF] Оператор не идентифицирован'
-    );
-
+    console.warn('[ChMAF] Оператор не идентифицирован');
     return false;
 }
 
@@ -1582,9 +1645,7 @@ async function migrateScriptAddresses() {
     let data = {};
 
     try {
-        data = await getStorageData(
-            keys
-        );
+        data = await getStorageData(keys);
     } catch (error) {
         console.error(
             '[ChMAF] chrome.storage.local недоступен:',
@@ -1592,10 +1653,7 @@ async function migrateScriptAddresses() {
         );
     }
 
-    if (
-        !data ||
-        typeof data !== 'object'
-    ) {
+    if (!data || typeof data !== 'object') {
         data = {};
     }
 
@@ -1621,23 +1679,17 @@ async function migrateScriptAddresses() {
 
     for (const key of keys) {
         if (!data[key]) {
-            data[key] =
-                defaults[key];
-
-            missing[key] =
-                defaults[key];
+            data[key] = defaults[key];
+            missing[key] = defaults[key];
         }
     }
 
     if (
         Object.keys(missing).length &&
-        globalThis.chrome
-            ?.storage?.local
+        globalThis.chrome?.storage?.local
     ) {
         try {
-            chrome.storage.local.set(
-                missing
-            );
+            chrome.storage.local.set(missing);
         } catch (error) {
             console.warn(
                 '[ChMAF] Не удалось записать адреса:',
@@ -1646,24 +1698,14 @@ async function migrateScriptAddresses() {
         }
     }
 
-    const knownAddresses =
-        new Set(
-            keys
-                .map(key => data[key])
-                .filter(Boolean)
-        );
+    const knownAddresses = new Set(
+        keys.map(key => data[key]).filter(Boolean)
+    );
 
-    if (
-        !knownAddresses.has(
-            scriptAdr
-        )
-    ) {
-        const isTP =
-            getOpSection()
-                ? isTpOperator()
-                : readLocalStorage(
-                    'tpflag'
-                ) === 'ТП';
+    if (!knownAddresses.has(scriptAdr)) {
+        const isTP = getOpSection()
+            ? isTpOperator()
+            : readLocalStorage('tpflag') === 'ТП';
 
         scriptAdr =
             (
@@ -1673,10 +1715,7 @@ async function migrateScriptAddresses() {
             ) ||
             DEFAULT_SCRIPT_ADR;
 
-        writeLocalStorage(
-            'scriptAdr',
-            scriptAdr
-        );
+        writeLocalStorage('scriptAdr', scriptAdr);
 
         console.warn(
             '[ChMAF] Адрес шаблонов обновлён:',
@@ -1688,14 +1727,10 @@ async function migrateScriptAddresses() {
 }
 
 function setupDepartment(data) {
-    const section =
-        getOpSection();
+    const section = getOpSection();
 
-    const tpAddress =
-        data?.TP_addr || '';
-
-    const tpReserveAddress =
-        data?.TP_addrRzrv || '';
+    const tpAddress = data?.TP_addr || '';
+    const tpReserveAddress = data?.TP_addrRzrv || '';
 
     const isKC = section
         ? !isTpOperator()
@@ -1704,20 +1739,13 @@ function setupDepartment(data) {
                 scriptAdr !== tpAddress &&
                 scriptAdr !== tpReserveAddress
             )
-            : readLocalStorage(
-                'tpflag'
-            ) !== 'ТП';
+            : readLocalStorage('tpflag') !== 'ТП';
 
     if (
         isKC &&
-        readLocalStorage(
-            'hideTaskWindow'
-        ) === '1'
+        readLocalStorage('hideTaskWindow') === '1'
     ) {
-        writeLocalStorage(
-            'hideTaskWindow',
-            '0'
-        );
+        writeLocalStorage('hideTaskWindow', '0');
     }
 
     try {
@@ -1735,26 +1763,17 @@ function setupDepartment(data) {
 }
 
 function startBackgroundTasks() {
-    if (
-        !window.__chmafCtrlKeysBound
-    ) {
-        window.__chmafCtrlKeysBound =
-            true;
+    if (!window.__chmafCtrlKeysBound) {
+        window.__chmafCtrlKeysBound = true;
 
         const onKeyDown = event => {
-            if (
-                event.key ===
-                'Control'
-            ) {
+            if (event.key === 'Control') {
                 bool = 1;
             }
         };
 
         const onKeyUp = event => {
-            if (
-                event.key ===
-                'Control'
-            ) {
+            if (event.key === 'Control') {
                 bool = 0;
             }
         };
@@ -1766,68 +1785,42 @@ function startBackgroundTasks() {
         window.addEventListener(
             'keydown',
             onKeyDown,
-            {
-                signal:
-                    cleanupRegistry.signal
-            }
+            { signal: cleanupRegistry.signal }
         );
 
         window.addEventListener(
             'keyup',
             onKeyUp,
-            {
-                signal:
-                    cleanupRegistry.signal
-            }
+            { signal: cleanupRegistry.signal }
         );
 
         window.addEventListener(
             'blur',
             onBlur,
-            {
-                signal:
-                    cleanupRegistry.signal
-            }
+            { signal: cleanupRegistry.signal }
         );
 
-        cleanupRegistry.register(
-            () => {
-                window.__chmafCtrlKeysBound =
-                    false;
-            }
-        );
+        cleanupRegistry.register(() => {
+            window.__chmafCtrlKeysBound = false;
+        });
     }
 
-    if (
-        checkchatsIntervalId !==
-        null
-    ) {
-        cleanupRegistry.clearInterval(
-            checkchatsIntervalId
-        );
+    if (checkchatsIntervalId !== null) {
+        cleanupRegistry.clearInterval(checkchatsIntervalId);
     }
 
-    checkchatsIntervalId =
-        cleanupRegistry
-            .registerInterval(
-                setInterval(
-                    () => {
-                        try {
-                            window
-                                .checkchats
-                                ?.();
-                        } catch (
-                            error
-                        ) {
-                            console.error(
-                                '[ChMAF] Ошибка checkchats:',
-                                error
-                            );
-                        }
-                    },
-                    1000
-                )
-            );
+    checkchatsIntervalId = cleanupRegistry.registerInterval(
+        setInterval(() => {
+            try {
+                window.checkchats?.();
+            } catch (error) {
+                console.error(
+                    '[ChMAF] Ошибка checkchats:',
+                    error
+                );
+            }
+        }, 1000)
+    );
 }
 
 
@@ -1835,162 +1828,95 @@ function startBackgroundTasks() {
 // ОРКЕСТРАТОР И SPA-НАВИГАЦИЯ
 // ================================================================
 
-let lastPath =
-    location.pathname;
+let lastPath = location.pathname;
+let lastInitializedPath = '';
 
-let lastInitializedPath =
-    '';
+let moveAgainScheduled = false;
+let moveAgainRunning = false;
 
-let moveAgainScheduled =
-    false;
-
-let moveAgainRunning =
-    false;
-
-let retryOperatorTimeoutId =
-    null;
-
-let lastDepartmentData =
-    {};
+let retryOperatorTimeoutId = null;
+let lastDepartmentData = {};
 
 function scheduleOperatorRetry() {
-    if (
-        retryOperatorTimeoutId !==
-        null
-    ) {
+    if (retryOperatorTimeoutId !== null) {
         return;
     }
 
-    retryOperatorTimeoutId =
-        cleanupRegistry
-            .registerTimeout(
-                setTimeout(
-                    async () => {
-                        const timeoutId =
-                            retryOperatorTimeoutId;
+    retryOperatorTimeoutId = cleanupRegistry.registerTimeout(
+        setTimeout(async () => {
+            const timeoutId = retryOperatorTimeoutId;
 
-                        retryOperatorTimeoutId =
-                            null;
+            retryOperatorTimeoutId = null;
+            cleanupRegistry._timeouts.delete(timeoutId);
 
-                        cleanupRegistry
-                            ._timeouts
-                            .delete(
-                                timeoutId
-                            );
+            if (location.pathname === '/login') {
+                return;
+            }
 
-                        if (
-                            location.pathname ===
-                            '/login'
-                        ) {
-                            return;
-                        }
+            try {
+                const ready = await waitForOperator(30_000);
 
-                        try {
-                            const ready =
-                                await waitForOperator(
-                                    30_000
-                                );
+                if (
+                    !ready ||
+                    location.pathname === '/login'
+                ) {
+                    return;
+                }
 
-                            if (
-                                !ready ||
-                                location.pathname ===
-                                '/login'
-                            ) {
-                                return;
-                            }
+                const data = await migrateScriptAddresses();
+                lastDepartmentData = data;
 
-                            const data =
-                                await migrateScriptAddresses();
+                const panel = document.getElementById(
+                    'rightPanel'
+                );
 
-                            lastDepartmentData =
-                                data;
+                if (!panel) return;
 
-                            const panel =
-                                document.getElementById(
-                                    'rightPanel'
-                                );
+                buildModuleMenu(panel, isTpOperator());
+                setupDepartment(data);
 
-                            if (!panel) return;
-
-                            buildModuleMenu(
-                                panel,
-                                isTpOperator()
-                            );
-
-                            setupDepartment(
-                                data
-                            );
-
-                            console.log(
-                                '[ChMAF] Оператор идентифицирован после повторной попытки'
-                            );
-                        } catch (
-                            error
-                        ) {
-                            console.error(
-                                '[ChMAF] Ошибка повторной идентификации:',
-                                error
-                            );
-                        }
-                    },
-                    15_000
-                )
-            );
+                console.log(
+                    '[ChMAF] Оператор идентифицирован после повторной попытки'
+                );
+            } catch (error) {
+                console.error(
+                    '[ChMAF] Ошибка повторной идентификации:',
+                    error
+                );
+            }
+        }, 15_000)
+    );
 }
 
 async function move_again_AF() {
-    const panel =
-        document.getElementById(
-            'rightPanel'
-        );
+    const panel = document.getElementById('rightPanel');
 
-    if (
-        location.pathname ===
-        '/login'
-    ) {
+    if (location.pathname === '/login') {
+        closeModuleMenu();
+
         if (panel) {
-            panel.style.display =
-                'none';
+            panel.style.display = 'none';
         }
 
         return;
     }
 
-    if (
-        panel &&
-        panel.children.length
-    ) {
-        panel.style.display =
-            '';
+    if (panel && panel.children.length) {
+        panel.style.display = '';
 
-        // При возврате с /login панель не пересоздаём.
-        // Если отдел успел определиться позже,
-        // обновляем его элементы.
-        if (
-            getOpSection() &&
-            lastDepartmentData
-        ) {
-            buildModuleMenu(
-                panel,
-                isTpOperator()
-            );
-
-            setupDepartment(
-                lastDepartmentData
-            );
+        if (getOpSection() && lastDepartmentData) {
+            buildModuleMenu(panel, isTpOperator());
+            setupDepartment(lastDepartmentData);
         }
 
         return;
     }
 
-    if (
-        moveAgainRunning
-    ) {
+    if (moveAgainRunning) {
         return;
     }
 
-    moveAgainRunning =
-        true;
+    moveAgainRunning = true;
 
     try {
         console.log(
@@ -1998,26 +1924,22 @@ async function move_again_AF() {
             location.pathname
         );
 
-        const operatorPromise =
-            waitForOperator();
+        const operatorPromise = waitForOperator();
 
-        const dataPromise =
-            migrateScriptAddresses()
-                .catch(error => {
-                    console.error(
-                        '[ChMAF] Ошибка миграции адресов:',
-                        error
-                    );
+        const dataPromise = migrateScriptAddresses()
+            .catch(error => {
+                console.error(
+                    '[ChMAF] Ошибка миграции адресов:',
+                    error
+                );
 
-                    return {};
-                });
+                return {};
+            });
 
-        // Не блокируем построение панели, но не
-        // загружаем шаблоны по старому адресу.
+        // Не блокируем построение панели, но не загружаем
+        // шаблоны по старому адресу.
         void dataPromise
-            .then(() =>
-                getText()
-            )
+            .then(() => getText())
             .catch(error => {
                 console.error(
                     '[ChMAF] Ошибка загрузки шаблонов:',
@@ -2025,14 +1947,10 @@ async function move_again_AF() {
                 );
             });
 
-        const newPanel =
-            buildSidePanel();
+        const newPanel = buildSidePanel();
 
-        window.__chmafPanel =
-            newPanel;
-
-        lastInitializedPath =
-            location.pathname;
+        window.__chmafPanel = newPanel;
+        lastInitializedPath = location.pathname;
 
         addFabButton(
             newPanel,
@@ -2041,41 +1959,29 @@ async function move_again_AF() {
             'Шаблоны',
             'cyan',
             () => {
-                const element =
-                    document.getElementById(
-                        'AF_helper'
-                    );
+                const element = document.getElementById(
+                    'AF_helper'
+                );
 
                 if (!element) {
-                    window
-                        .createAndShowButton
-                        ?.(
-                            'Панель шаблонов ещё не построена.',
-                            'warning'
-                        );
+                    window.createAndShowButton?.(
+                        'Панель шаблонов ещё не построена.',
+                        'warning'
+                    );
 
                     return;
                 }
 
                 const hidden =
-                    getComputedStyle(
-                        element
-                    ).display ===
-                    'none';
+                    getComputedStyle(element).display === 'none';
 
-                element.style.display =
-                    hidden
-                        ? 'flex'
-                        : 'none';
+                element.style.display = hidden
+                    ? 'flex'
+                    : 'none';
 
                 document
-                    .getElementById(
-                        'scriptBut'
-                    )
-                    ?.classList.toggle(
-                        'active',
-                        hidden
-                    );
+                    .getElementById('scriptBut')
+                    ?.classList.toggle('active', hidden);
             }
         );
 
@@ -2085,10 +1991,7 @@ async function move_again_AF() {
             '📚',
             'Темы',
             'violet',
-            () =>
-                window
-                    .getThemesButtonPress
-                    ?.()
+            () => window.getThemesButtonPress?.()
         );
 
         addFabButton(
@@ -2097,46 +2000,36 @@ async function move_again_AF() {
             '👺',
             'Меню',
             'rose',
-            () => {
-                let menu =
-                    document.getElementById(
-                        'idmymenu'
-                    );
+    () => {
+    let menu = document.getElementById('chmaf-module-menu');
 
-                if (!menu) {
-                    menu =
-                        buildModuleMenu(
-                            newPanel,
-                            isTpOperator()
-                        );
-                }
+    if (!menu) {
+        menu = buildModuleMenu(newPanel, isTpOperator());
+    }
 
-                const hidden =
-                    getComputedStyle(
-                        menu
-                    ).display ===
-                    'none';
+    const isClosed =
+        getComputedStyle(menu).display === 'none';
 
-                menu.style.display =
-                    hidden
-                        ? ''
-                        : 'none';
-
-                document
-                    .getElementById(
-                        'MainMenuBtn'
-                    )
-                    ?.classList.toggle(
-                        'active',
-                        hidden
-                    );
-            }
+    if (isClosed) {
+        // Сначала показываем: иначе невозможно измерить высоту.
+        menu.style.setProperty(
+            'display',
+            'flex',
+            'important'
         );
 
-        buildModuleMenu(
-            newPanel,
-            isTpOperator()
+        positionModuleMenu(menu);
+    } else {
+        closeModuleMenu();
+    }
+
+    document
+        .getElementById('MainMenuBtn')
+        ?.classList.toggle('active', isClosed);
+}
         );
+
+        buildModuleMenu(newPanel, isTpOperator());
 
         addFabButton(
             newPanel,
@@ -2144,54 +2037,33 @@ async function move_again_AF() {
             '☢',
             'История чатов',
             'emerald',
-            () =>
-                window
-                    .getopennewcatButtonPress
-                    ?.()
+            () => window.getopennewcatButtonPress?.()
         );
 
         startBackgroundTasks();
 
-        const [
-            operatorReady,
-            data
-        ] =
-            await Promise.all([
-                operatorPromise,
-                dataPromise
-            ]);
+        const [operatorReady, data] = await Promise.all([
+            operatorPromise,
+            dataPromise
+        ]);
 
-        lastDepartmentData =
-            data;
+        lastDepartmentData = data;
 
-        if (
-            location.pathname ===
-            '/login'
-        ) {
-            newPanel.style.display =
-                'none';
-
+        if (location.pathname === '/login') {
+            closeModuleMenu();
+            newPanel.style.display = 'none';
             return;
         }
 
-        buildModuleMenu(
-            newPanel,
-            isTpOperator()
-        );
+        buildModuleMenu(newPanel, isTpOperator());
 
-        if (
-            operatorReady
-        ) {
-            setupDepartment(
-                data
-            );
+        if (operatorReady) {
+            setupDepartment(data);
         } else {
             scheduleOperatorRetry();
         }
 
-        console.log(
-            '[ChMAF] Инициализация завершена'
-        );
+        console.log('[ChMAF] Инициализация завершена');
     } catch (error) {
         console.error(
             '[ChMAF] Критическая ошибка инициализации:',
@@ -2203,56 +2075,35 @@ async function move_again_AF() {
             'error'
         );
     } finally {
-        moveAgainRunning =
-            false;
+        moveAgainRunning = false;
     }
 }
 
-function scheduleMoveAgain(
-    delay = 1500
-) {
-    if (
-        moveAgainScheduled
-    ) {
+function scheduleMoveAgain(delay = 1500) {
+    if (moveAgainScheduled) {
         return;
     }
 
-    moveAgainScheduled =
-        true;
+    moveAgainScheduled = true;
 
-    const timeoutId =
-        setTimeout(() => {
-            cleanupRegistry
-                ._timeouts
-                .delete(
-                    timeoutId
-                );
+    const timeoutId = setTimeout(() => {
+        cleanupRegistry._timeouts.delete(timeoutId);
+        moveAgainScheduled = false;
 
-            moveAgainScheduled =
-                false;
+        void move_again_AF();
+    }, delay);
 
-            void move_again_AF();
-        }, delay);
-
-    cleanupRegistry
-        .registerTimeout(
-            timeoutId
-        );
+    cleanupRegistry.registerTimeout(timeoutId);
 }
 
 function checkPathChange() {
-    const currentPath =
-        location.pathname;
+    const currentPath = location.pathname;
 
-    if (
-        currentPath ===
-        lastPath
-    ) {
+    if (currentPath === lastPath) {
         return;
     }
 
-    lastPath =
-        currentPath;
+    lastPath = currentPath;
 
     console.log(
         '[ChMAF] Путь изменился:',
@@ -2260,103 +2111,56 @@ function checkPathChange() {
     );
 
     scheduleMoveAgain(
-        currentPath ===
-        '/login'
-            ? 0
-            : 1500
+        currentPath === '/login' ? 0 : 1500
     );
 }
 
-if (
-    lastPath !==
-    '/login'
-) {
-    scheduleMoveAgain(
-        3000
-    );
+if (lastPath !== '/login') {
+    scheduleMoveAgain(3000);
 }
 
 {
-    const originalPushState =
-        history.pushState;
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
 
-    const originalReplaceState =
-        history.replaceState;
+    history.pushState = function (...args) {
+        const result = originalPushState.apply(this, args);
+        checkPathChange();
+        return result;
+    };
 
-    history.pushState =
-        function (...args) {
-            const result =
-                originalPushState
-                    .apply(
-                        this,
-                        args
-                    );
-
-            checkPathChange();
-
-            return result;
-        };
-
-    history.replaceState =
-        function (...args) {
-            const result =
-                originalReplaceState
-                    .apply(
-                        this,
-                        args
-                    );
-
-            checkPathChange();
-
-            return result;
-        };
+    history.replaceState = function (...args) {
+        const result = originalReplaceState.apply(this, args);
+        checkPathChange();
+        return result;
+    };
 
     window.addEventListener(
         'popstate',
         checkPathChange,
-        {
-            signal:
-                cleanupRegistry.signal
-        }
+        { signal: cleanupRegistry.signal }
     );
 
     window.addEventListener(
         'hashchange',
         checkPathChange,
-        {
-            signal:
-                cleanupRegistry.signal
-        }
+        { signal: cleanupRegistry.signal }
     );
 
-    cleanupRegistry.register(
-        () => {
-            if (
-                history.pushState !==
-                originalPushState
-            ) {
-                history.pushState =
-                    originalPushState;
-            }
-
-            if (
-                history.replaceState !==
-                originalReplaceState
-            ) {
-                history.replaceState =
-                    originalReplaceState;
-            }
+    cleanupRegistry.register(() => {
+        if (history.pushState !== originalPushState) {
+            history.pushState = originalPushState;
         }
-    );
+
+        if (history.replaceState !== originalReplaceState) {
+            history.replaceState = originalReplaceState;
+        }
+    });
 }
 
-cleanupRegistry
-    .registerInterval(
-        setInterval(
-            checkPathChange,
-            700
-        )
-    );
+cleanupRegistry.registerInterval(
+    setInterval(checkPathChange, 700)
+);
 
 
 // ================================================================
@@ -2364,69 +2168,41 @@ cleanupRegistry
 // ================================================================
 
 function prepTp() {
-    const panel =
-        document.getElementById(
-            'rightPanel'
-        );
+    const panel = document.getElementById('rightPanel');
 
     if (!panel) return;
 
     document
-        .querySelectorAll(
-            '.onlyfortp:not(.fab-premium)'
-        )
+        .querySelectorAll('.onlyfortp:not(.fab-premium)')
         .forEach(element => {
             if (
-                element.id ===
-                    'TestUsers' ||
-                element.closest(
-                    '#TestUsers'
-                ) ||
-                element.classList
-                    .contains(
-                        'extwindows'
-                    ) ||
-                element.classList
-                    .contains(
-                        'testuserwindow'
-                    )
+                element.id === 'TestUsers' ||
+                element.closest('#TestUsers') ||
+                element.classList.contains('extwindows') ||
+                element.classList.contains('testuserwindow')
             ) {
                 return;
             }
 
-            element.style
-                .removeProperty(
-                    'display'
-                );
+            element.style.removeProperty('display');
         });
 
-    function create(
-        id,
-        icon,
-        title,
-        theme,
-        handler
-    ) {
-        const existing =
-            panel.querySelector(
-                `#${CSS.escape(id)}`
-            );
+    function create(id, icon, title, theme, handler) {
+        const existing = panel.querySelector(
+            `#${CSS.escape(id)}`
+        );
 
         if (existing) {
-            existing.style
-                .setProperty(
-                    'display',
-                    'flex',
-                    'important'
-                );
+            existing.style.setProperty(
+                'display',
+                'flex',
+                'important'
+            );
 
             return;
         }
 
-        if (
-            typeof handler !==
-            'function'
-        ) {
+        if (typeof handler !== 'function') {
             console.warn(
                 `[ChMAF] Модуль кнопки ${id} недоступен`
             );
@@ -2434,30 +2210,23 @@ function prepTp() {
             return;
         }
 
-        const button =
-            createFAB({
-                id,
-                icon,
-                title,
-                theme,
-                onClick:
-                    handler
-            });
+        const button = createFAB({
+            id,
+            icon,
+            title,
+            theme,
+            onClick: handler
+        });
 
-        button.classList.add(
-            'onlyfortp'
+        button.classList.add('onlyfortp');
+
+        button.style.setProperty(
+            'display',
+            'flex',
+            'important'
         );
 
-        button.style
-            .setProperty(
-                'display',
-                'flex',
-                'important'
-            );
-
-        panel.appendChild(
-            button
-        );
+        panel.appendChild(button);
     }
 
     create(
@@ -2465,10 +2234,7 @@ function prepTp() {
         '📅',
         'Datsy',
         'amber',
-        () =>
-            window
-                .getdatsyCalendarButtonPress
-                ?.()
+        () => window.getdatsyCalendarButtonPress?.()
     );
 
     create(
@@ -2477,32 +2243,23 @@ function prepTp() {
         'Сервисы',
         'violet',
         function () {
-            const serviceWindow =
-                document.getElementById(
-                    'AF_Service'
-                );
+            const serviceWindow = document.getElementById(
+                'AF_Service'
+            );
 
-            if (
-                !serviceWindow
-            ) {
+            if (!serviceWindow) {
                 return;
             }
 
             const visible =
-                getComputedStyle(
-                    serviceWindow
-                ).display !==
+                getComputedStyle(serviceWindow).display !==
                 'none';
 
-            serviceWindow.style.display =
-                visible
-                    ? 'none'
-                    : '';
+            serviceWindow.style.display = visible
+                ? 'none'
+                : '';
 
-            this.classList.toggle(
-                'active',
-                !visible
-            );
+            this.classList.toggle('active', !visible);
         }
     );
 
@@ -2511,10 +2268,7 @@ function prepTp() {
         '💡',
         'БЗ',
         'orange',
-        () =>
-            window
-                .getknowledgeCenterButtonPress
-                ?.()
+        () => window.getknowledgeCenterButtonPress?.()
     );
 
     create(
@@ -2522,148 +2276,98 @@ function prepTp() {
         '🛠',
         'Задачи',
         'emerald',
-        () =>
-            window
-                .gettaskButButtonPress
-                ?.()
+        () => window.gettaskButButtonPress?.()
     );
 
     if (
-        timerHideButtonsIntervalId ===
-            null &&
-        typeof window
-            .timerHideButtons ===
-            'function'
+        timerHideButtonsIntervalId === null &&
+        typeof window.timerHideButtons === 'function'
     ) {
         timerHideButtonsIntervalId =
-            cleanupRegistry
-                .registerInterval(
-                    setInterval(
-                        () => {
-                            try {
-                                window
-                                    .timerHideButtons
-                                    ?.();
-                            } catch (
-                                error
-                            ) {
-                                console.error(
-                                    '[ChMAF] timerHideButtons:',
-                                    error
-                                );
-                            }
-                        },
-                        500
-                    )
-                );
+            cleanupRegistry.registerInterval(
+                setInterval(() => {
+                    try {
+                        window.timerHideButtons?.();
+                    } catch (error) {
+                        console.error(
+                            '[ChMAF] timerHideButtons:',
+                            error
+                        );
+                    }
+                }, 500)
+            );
     }
 }
 
 function prepKC() {
-    const languageSwitcher =
-        document.querySelector(
-            '.user_menu-language_switcher'
-        );
+    const languageSwitcher = document.querySelector(
+        '.user_menu-language_switcher'
+    );
 
-    if (
-        languageSwitcher
-    ) {
+    if (languageSwitcher) {
         languageSwitcher.style.display =
-            readLocalStorage(
-                'disablelpmwindow'
-            ) === '1'
+            readLocalStorage('disablelpmwindow') === '1'
                 ? 'none'
                 : '';
     }
 
     document
-        .querySelectorAll(
-            '.onlyfortp'
-        )
+        .querySelectorAll('.onlyfortp')
         .forEach(element => {
-            element.style
-                .setProperty(
-                    'display',
-                    'none',
-                    'important'
-                );
+            element.style.setProperty(
+                'display',
+                'none',
+                'important'
+            );
         });
 
     document
-        .querySelectorAll(
-            '.onlyforkc'
-        )
+        .querySelectorAll('.onlyforkc')
         .forEach(element => {
-            element.style
-                .removeProperty(
-                    'display'
-                );
+            element.style.removeProperty('display');
         });
 
-    if (
-        timerHideButtonsIntervalId !==
-        null
-    ) {
+    if (timerHideButtonsIntervalId !== null) {
         cleanupRegistry.clearInterval(
             timerHideButtonsIntervalId
         );
 
-        timerHideButtonsIntervalId =
-            null;
+        timerHideButtonsIntervalId = null;
     }
 }
 
-window.prepTp =
-    prepTp;
-
-window.prepKC =
-    prepKC;
+window.prepTp = prepTp;
+window.prepKC = prepKC;
 
 
 // ================================================================
 // ЗАПРОСЫ И ШАБЛОНЫ
 // ================================================================
 
-async function fetchGasJson(
-    url,
-    timeoutMs = 15_000
-) {
+async function fetchGasJson(url, timeoutMs = 15_000) {
     let parsedUrl;
 
     try {
-        parsedUrl =
-            new URL(url);
+        parsedUrl = new URL(url);
     } catch {
-        throw new Error(
-            'Некорректный адрес шаблонов'
-        );
+        throw new Error('Некорректный адрес шаблонов');
     }
 
-    if (
-        parsedUrl.protocol !==
-        'https:'
-    ) {
+    if (parsedUrl.protocol !== 'https:') {
         throw new Error(
             'Адрес шаблонов должен использовать HTTPS'
         );
     }
 
-    const controller =
-        new AbortController();
+    const controller = new AbortController();
 
-    const timeoutId =
-        setTimeout(
-            () =>
-                controller.abort(),
-            timeoutMs
-        );
+    const timeoutId = setTimeout(
+        () => controller.abort(),
+        timeoutMs
+    );
 
-    const globalSignal =
-        cleanupRegistry.signal;
-
-    const abortWithGlobal =
-        () =>
-            controller.abort();
+    const globalSignal = cleanupRegistry.signal;
+    const abortWithGlobal = () => controller.abort();
 
     globalSignal?.addEventListener(
         'abort',
@@ -2671,59 +2375,38 @@ async function fetchGasJson(
         { once: true }
     );
 
-    let directError =
-        null;
+    let directError = null;
 
     try {
         try {
-            const response =
-                await fetch(
-                    parsedUrl.href,
-                    {
-                        signal:
-                            controller.signal
-                    }
-                );
+            const response = await fetch(
+                parsedUrl.href,
+                { signal: controller.signal }
+            );
 
-            if (
-                !response.ok
-            ) {
-                throw new Error(
-                    `HTTP ${response.status}`
-                );
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
 
-            const text =
-                await response.text();
+            const text = await response.text();
 
-            if (
-                text.trim()
-                    .startsWith(
-                        '<'
-                    )
-            ) {
+            if (text.trim().startsWith('<')) {
                 throw new Error(
                     'Сервер вернул HTML вместо JSON'
                 );
             }
 
             try {
-                return JSON.parse(
-                    text
-                );
+                return JSON.parse(text);
             } catch {
                 throw new Error(
                     'Сервер вернул некорректный JSON'
                 );
             }
         } catch (error) {
-            directError =
-                error;
+            directError = error;
 
-            if (
-                controller.signal
-                    .aborted
-            ) {
+            if (controller.signal.aborted) {
                 throw new Error(
                     'Таймаут загрузки шаблонов'
                 );
@@ -2735,248 +2418,161 @@ async function fetchGasJson(
             );
         }
 
-        if (
-            !globalThis.chrome
-                ?.runtime
-                ?.sendMessage
-        ) {
-            throw directError ||
-                new Error(
-                    'API расширения недоступно'
-                );
+        if (!globalThis.chrome?.runtime?.sendMessage) {
+            throw (
+                directError ||
+                new Error('API расширения недоступно')
+            );
         }
 
-        const answer =
-            await new Promise(
-                (resolve, reject) => {
-                    let settled =
-                        false;
+        const answer = await new Promise((resolve, reject) => {
+            let settled = false;
 
-                    const finish =
-                        (
-                            error,
-                            value
-                        ) => {
-                            if (
-                                settled
-                            ) {
-                                return;
-                            }
-
-                            settled =
-                                true;
-
-                            clearTimeout(
-                                fallbackTimeout
-                            );
-
-                            if (
-                                error
-                            ) {
-                                reject(
-                                    error
-                                );
-                            } else {
-                                resolve(
-                                    value
-                                );
-                            }
-                        };
-
-                    const fallbackTimeout =
-                        setTimeout(
-                            () =>
-                                finish(
-                                    new Error(
-                                        'Таймаут background-запроса'
-                                    )
-                                ),
-                            timeoutMs
-                        );
-
-                    try {
-                        chrome.runtime
-                            .sendMessage(
-                                {
-                                    action:
-                                        'getFetchRequest',
-
-                                    fetchURL:
-                                        parsedUrl.href
-                                },
-                                response => {
-                                    const error =
-                                        chrome
-                                            .runtime
-                                            .lastError;
-
-                                    if (
-                                        error
-                                    ) {
-                                        finish(
-                                            new Error(
-                                                error.message
-                                            )
-                                        );
-
-                                        return;
-                                    }
-
-                                    if (
-                                        !response
-                                            ?.success
-                                    ) {
-                                        finish(
-                                            new Error(
-                                                response
-                                                    ?.error ||
-                                                'Background-запрос завершился с ошибкой'
-                                            )
-                                        );
-
-                                        return;
-                                    }
-
-                                    finish(
-                                        null,
-                                        response
-                                            .fetchAnswer ??
-                                        response
-                                            .fetchansver
-                                    );
-                                }
-                            );
-                    } catch (
-                        error
-                    ) {
-                        finish(
-                            error
-                        );
-                    }
+            const finish = (error, value) => {
+                if (settled) {
+                    return;
                 }
+
+                settled = true;
+                clearTimeout(fallbackTimeout);
+
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(value);
+                }
+            };
+
+            const fallbackTimeout = setTimeout(
+                () => finish(
+                    new Error(
+                        'Таймаут background-запроса'
+                    )
+                ),
+                timeoutMs
             );
 
+            try {
+                chrome.runtime.sendMessage(
+                    {
+                        action: 'getFetchRequest',
+                        fetchURL: parsedUrl.href
+                    },
+                    response => {
+                        const error = chrome.runtime.lastError;
+
+                        if (error) {
+                            finish(new Error(error.message));
+                            return;
+                        }
+
+                        if (!response?.success) {
+                            finish(
+                                new Error(
+                                    response?.error ||
+                                    'Background-запрос завершился с ошибкой'
+                                )
+                            );
+
+                            return;
+                        }
+
+                        finish(
+                            null,
+                            response.fetchAnswer ??
+                            response.fetchansver
+                        );
+                    }
+                );
+            } catch (error) {
+                finish(error);
+            }
+        });
+
         if (
-            typeof answer ===
-            'object' &&
+            typeof answer === 'object' &&
             answer !== null
         ) {
             return answer;
         }
 
-        const text =
-            String(
-                answer ?? ''
-            );
+        const text = String(answer ?? '');
 
-        if (
-            text.trim()
-                .startsWith('<')
-        ) {
+        if (text.trim().startsWith('<')) {
             throw new Error(
                 'Background вернул HTML вместо JSON'
             );
         }
 
         try {
-            return JSON.parse(
-                text
-            );
+            return JSON.parse(text);
         } catch {
             throw new Error(
                 'Background вернул некорректный JSON'
             );
         }
     } finally {
-        clearTimeout(
-            timeoutId
-        );
+        clearTimeout(timeoutId);
 
-        globalSignal
-            ?.removeEventListener(
-                'abort',
-                abortWithGlobal
-            );
+        globalSignal?.removeEventListener(
+            'abort',
+            abortWithGlobal
+        );
     }
 }
 
-let getTextPromise =
-    null;
+let getTextPromise = null;
 
 function getText() {
-    if (
-        getTextPromise
-    ) {
+    if (getTextPromise) {
         return getTextPromise;
     }
 
-    getTextPromise =
-        loadTextWithRetries()
-            .finally(() => {
-                getTextPromise =
-                    null;
-            });
+    getTextPromise = loadTextWithRetries()
+        .finally(() => {
+            getTextPromise = null;
+        });
 
     return getTextPromise;
 }
 
 async function loadTextWithRetries() {
-    const maxRetries =
-        5;
-
-    let lastError =
-        null;
+    const maxRetries = 5;
+    let lastError = null;
 
     for (
         let attempt = 1;
         attempt <= maxRetries;
         attempt++
     ) {
-        if (
-            cleanupRegistry.signal
-                ?.aborted
-        ) {
+        if (cleanupRegistry.signal?.aborted) {
             return;
         }
 
         try {
-            if (
-                attempt > 1
-            ) {
+            if (attempt > 1) {
                 window.showCustomAlert?.(
                     `Повторная загрузка шаблонов: ${attempt}/${maxRetries}`,
                     'info'
                 );
             }
 
-            const currentAddress =
-                scriptAdr;
+            const currentAddress = scriptAdr;
+            const json = await fetchGasJson(currentAddress);
 
-            const json =
-                await fetchGasJson(
-                    currentAddress
-                );
-
-            if (
-                !Array.isArray(
-                    json?.result
-                )
-            ) {
+            if (!Array.isArray(json?.result)) {
                 throw new Error(
                     'В ответе отсутствует массив result'
                 );
             }
 
-            table =
-                json.result;
+            table = json.result;
 
             console.log(
                 `[ChMAF] Шаблоны загружены: ${table.length} строк`
             );
 
-            if (
-                attempt > 1
-            ) {
+            if (attempt > 1) {
                 window.showCustomAlert?.(
                     'Шаблоны успешно загружены.',
                     'success'
@@ -2984,12 +2580,8 @@ async function loadTextWithRetries() {
             }
 
             try {
-                window
-                    .refreshTemplates
-                    ?.();
-            } catch (
-                error
-            ) {
+                window.refreshTemplates?.();
+            } catch (error) {
                 console.error(
                     '[ChMAF] Ошибка обновления интерфейса шаблонов:',
                     error
@@ -2997,33 +2589,23 @@ async function loadTextWithRetries() {
             }
 
             return table;
-        } catch (
-            error
-        ) {
-            lastError =
-                error;
+        } catch (error) {
+            lastError = error;
 
             console.warn(
                 `[ChMAF] Загрузка шаблонов: попытка ${attempt}/${maxRetries}`,
                 error
             );
 
-            if (
-                attempt <
-                maxRetries
-            ) {
-                const delay =
-                    2 ** attempt *
-                    1000;
+            if (attempt < maxRetries) {
+                const delay = 2 ** attempt * 1000;
 
                 window.showCustomAlert?.(
                     `Не удалось загрузить шаблоны. Повтор через ${delay / 1000} сек.`,
                     'warning'
                 );
 
-                await delayMs(
-                    delay
-                );
+                await delayMs(delay);
             }
         }
     }
@@ -3041,8 +2623,7 @@ async function loadTextWithRetries() {
     return null;
 }
 
-window.getText =
-    getText;
+window.getText = getText;
 
 
 // ================================================================
@@ -3050,422 +2631,218 @@ window.getText =
 // ================================================================
 
 (() => {
-    const MAX_TOASTS =
-        5;
+    const MAX_TOASTS = 5;
+    const activeToasts = [];
 
-    const activeToasts =
-        [];
+    window.showCustomAlert = (
+        message,
+        type = 'info',
+        opts = {}
+    ) => {
+        let normalizedType = type;
+        const text = String(message ?? '');
 
-    window.showCustomAlert =
-        (
-            message,
-            type = 'info',
-            opts = {}
-        ) => {
-            let normalizedType =
-                type;
-
-            const text =
-                String(
-                    message ?? ''
-                );
-
-            if (
-                type ===
-                'message'
+        if (type === 'message') {
+            if (/error|ошибка|fail/i.test(text)) {
+                normalizedType = 'error';
+            } else if (/warning|внимание/i.test(text)) {
+                normalizedType = 'warning';
+            } else if (
+                /success|успешно|скопирован|создан/i.test(text)
             ) {
-                if (
-                    /error|ошибка|fail/i
-                        .test(
-                            text
-                        )
-                ) {
-                    normalizedType =
-                        'error';
-                } else if (
-                    /warning|внимание/i
-                        .test(
-                            text
-                        )
-                ) {
-                    normalizedType =
-                        'warning';
-                } else if (
-                    /success|успешно|скопирован|создан/i
-                        .test(
-                            text
-                        )
-                ) {
-                    normalizedType =
-                        'success';
-                } else {
-                    normalizedType =
-                        'info';
-                }
+                normalizedType = 'success';
+            } else {
+                normalizedType = 'info';
+            }
+        }
+
+        if (
+            ![
+                'success',
+                'error',
+                'warning',
+                'info'
+            ].includes(normalizedType)
+        ) {
+            normalizedType = 'info';
+        }
+
+        let container = document.getElementById(
+            'chmaf-toast-container'
+        );
+
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'chmaf-toast-container';
+            document.body.appendChild(container);
+        }
+
+        while (activeToasts.length >= MAX_TOASTS) {
+            const oldest = activeToasts.shift();
+            oldest?.remove();
+        }
+
+        const requestedDuration = Number(opts.duration);
+
+        const duration =
+            Number.isFinite(requestedDuration) &&
+            requestedDuration > 0
+                ? requestedDuration
+                : normalizedType === 'error'
+                    ? 6000
+                    : 4000;
+
+        const defaultTitle = {
+            success: 'Успешно',
+            error: 'Ошибка',
+            warning: 'Внимание',
+            info: 'Информация'
+        };
+
+        const icons = {
+            success: '✓',
+            error: '✕',
+            warning: '⚠',
+            info: 'ℹ'
+        };
+
+        const toast = document.createElement('div');
+
+        toast.className =
+            `chmaf-toast ${normalizedType}`;
+
+        toast.setAttribute(
+            'role',
+            normalizedType === 'error'
+                ? 'alert'
+                : 'status'
+        );
+
+        const iconElement = document.createElement('div');
+        iconElement.className = 'chmaf-toast-icon';
+        iconElement.textContent = icons[normalizedType];
+
+        const contentElement = document.createElement('div');
+        contentElement.className = 'chmaf-toast-content';
+
+        const titleElement = document.createElement('div');
+        titleElement.className = 'chmaf-toast-title';
+        titleElement.textContent = String(
+            opts.title ||
+            defaultTitle[normalizedType]
+        );
+
+        const messageElement = document.createElement('div');
+        messageElement.className = 'chmaf-toast-msg';
+        messageElement.textContent = text;
+        messageElement.style.whiteSpace = 'pre-line';
+
+        contentElement.append(
+            titleElement,
+            messageElement
+        );
+
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = 'chmaf-toast-close';
+        closeButton.textContent = '×';
+
+        closeButton.setAttribute(
+            'aria-label',
+            'Закрыть уведомление'
+        );
+
+        const progressElement = document.createElement('div');
+        progressElement.className = 'chmaf-toast-progress';
+
+        progressElement.style.transition =
+            `transform ${duration}ms linear`;
+
+        progressElement.style.transform = 'scaleX(1)';
+
+        toast.append(
+            iconElement,
+            contentElement,
+            closeButton,
+            progressElement
+        );
+
+        container.appendChild(toast);
+        activeToasts.push(toast);
+
+        requestAnimationFrame(() => {
+            if (toast.isConnected) {
+                progressElement.style.transform = 'scaleX(0)';
+            }
+        });
+
+        let closed = false;
+        let timer = null;
+        let remaining = duration;
+        let startedAt = Date.now();
+
+        function removeFromList() {
+            const index = activeToasts.indexOf(toast);
+
+            if (index !== -1) {
+                activeToasts.splice(index, 1);
+            }
+        }
+
+        function closeToast() {
+            if (closed) {
+                return;
             }
 
-            if (
-                ![
-                    'success',
-                    'error',
-                    'warning',
-                    'info'
-                ].includes(
-                    normalizedType
-                )
-            ) {
-                normalizedType =
-                    'info';
+            closed = true;
+            clearTimeout(timer);
+            toast.classList.add('closing');
+
+            setTimeout(() => {
+                toast.remove();
+                removeFromList();
+            }, 300);
+        }
+
+        closeButton.addEventListener('click', event => {
+            event.stopPropagation();
+            closeToast();
+        });
+
+        toast.addEventListener('click', closeToast);
+
+        timer = setTimeout(closeToast, duration);
+
+        toast.addEventListener('mouseenter', () => {
+            if (closed) {
+                return;
             }
 
-            let container =
-                document.getElementById(
-                    'chmaf-toast-container'
-                );
+            clearTimeout(timer);
 
-            if (
-                !container
-            ) {
-                container =
-                    document.createElement(
-                        'div'
-                    );
+            remaining -= Date.now() - startedAt;
+            remaining = Math.max(remaining, 500);
 
-                container.id =
-                    'chmaf-toast-container';
+            progressElement.style.transition = 'none';
+        });
 
-                document.body
-                    .appendChild(
-                        container
-                    );
+        toast.addEventListener('mouseleave', () => {
+            if (closed) {
+                return;
             }
 
-            while (
-                activeToasts.length >=
-                MAX_TOASTS
-            ) {
-                const oldest =
-                    activeToasts
-                        .shift();
-
-                oldest?.remove();
-            }
-
-            const requestedDuration =
-                Number(
-                    opts.duration
-                );
-
-            const duration =
-                Number.isFinite(
-                    requestedDuration
-                ) &&
-                requestedDuration > 0
-                    ? requestedDuration
-                    : normalizedType ===
-                        'error'
-                        ? 6000
-                        : 4000;
-
-            const defaultTitle = {
-                success:
-                    'Успешно',
-
-                error:
-                    'Ошибка',
-
-                warning:
-                    'Внимание',
-
-                info:
-                    'Информация'
-            };
-
-            const icons = {
-                success:
-                    '✓',
-
-                error:
-                    '✕',
-
-                warning:
-                    '⚠',
-
-                info:
-                    'ℹ'
-            };
-
-            const toast =
-                document.createElement(
-                    'div'
-                );
-
-            toast.className =
-                `chmaf-toast ${normalizedType}`;
-
-            toast.setAttribute(
-                'role',
-                normalizedType ===
-                    'error'
-                    ? 'alert'
-                    : 'status'
-            );
-
-            const iconElement =
-                document.createElement(
-                    'div'
-                );
-
-            iconElement.className =
-                'chmaf-toast-icon';
-
-            iconElement.textContent =
-                icons[
-                    normalizedType
-                ];
-
-            const contentElement =
-                document.createElement(
-                    'div'
-                );
-
-            contentElement.className =
-                'chmaf-toast-content';
-
-            const titleElement =
-                document.createElement(
-                    'div'
-                );
-
-            titleElement.className =
-                'chmaf-toast-title';
-
-            titleElement.textContent =
-                String(
-                    opts.title ||
-                    defaultTitle[
-                        normalizedType
-                    ]
-                );
-
-            const messageElement =
-                document.createElement(
-                    'div'
-                );
-
-            messageElement.className =
-                'chmaf-toast-msg';
-
-            // Не вставляем сообщения как HTML.
-            messageElement.textContent =
-                text;
-
-            messageElement.style.whiteSpace =
-                'pre-line';
-
-            contentElement.append(
-                titleElement,
-                messageElement
-            );
-
-            const closeButton =
-                document.createElement(
-                    'button'
-                );
-
-            closeButton.type =
-                'button';
-
-            closeButton.className =
-                'chmaf-toast-close';
-
-            closeButton.textContent =
-                '×';
-
-            closeButton.setAttribute(
-                'aria-label',
-                'Закрыть уведомление'
-            );
-
-            const progressElement =
-                document.createElement(
-                    'div'
-                );
-
-            progressElement.className =
-                'chmaf-toast-progress';
+            startedAt = Date.now();
 
             progressElement.style.transition =
-                `transform ${duration}ms linear`;
+                `transform ${remaining}ms linear`;
 
-            progressElement.style.transform =
-                'scaleX(1)';
+            progressElement.style.transform = 'scaleX(0)';
 
-            toast.append(
-                iconElement,
-                contentElement,
-                closeButton,
-                progressElement
-            );
+            timer = setTimeout(closeToast, remaining);
+        });
 
-            container.appendChild(
-                toast
-            );
-
-            activeToasts.push(
-                toast
-            );
-
-            requestAnimationFrame(
-                () => {
-                    if (
-                        toast.isConnected
-                    ) {
-                        progressElement
-                            .style
-                            .transform =
-                            'scaleX(0)';
-                    }
-                }
-            );
-
-            let closed =
-                false;
-
-            let timer =
-                null;
-
-            let remaining =
-                duration;
-
-            let startedAt =
-                Date.now();
-
-            function removeFromList() {
-                const index =
-                    activeToasts
-                        .indexOf(
-                            toast
-                        );
-
-                if (
-                    index !== -1
-                ) {
-                    activeToasts.splice(
-                        index,
-                        1
-                    );
-                }
-            }
-
-            function closeToast() {
-                if (
-                    closed
-                ) {
-                    return;
-                }
-
-                closed =
-                    true;
-
-                clearTimeout(
-                    timer
-                );
-
-                toast.classList.add(
-                    'closing'
-                );
-
-                setTimeout(
-                    () => {
-                        toast.remove();
-                        removeFromList();
-                    },
-                    300
-                );
-            }
-
-            closeButton.addEventListener(
-                'click',
-                event => {
-                    event.stopPropagation();
-                    closeToast();
-                }
-            );
-
-            toast.addEventListener(
-                'click',
-                closeToast
-            );
-
-            timer =
-                setTimeout(
-                    closeToast,
-                    duration
-                );
-
-            toast.addEventListener(
-                'mouseenter',
-                () => {
-                    if (
-                        closed
-                    ) {
-                        return;
-                    }
-
-                    clearTimeout(
-                        timer
-                    );
-
-                    remaining -=
-                        Date.now() -
-                        startedAt;
-
-                    remaining =
-                        Math.max(
-                            remaining,
-                            500
-                        );
-
-                    progressElement
-                        .style
-                        .transition =
-                        'none';
-                }
-            );
-
-            toast.addEventListener(
-                'mouseleave',
-                () => {
-                    if (
-                        closed
-                    ) {
-                        return;
-                    }
-
-                    startedAt =
-                        Date.now();
-
-                    progressElement
-                        .style
-                        .transition =
-                        `transform ${remaining}ms linear`;
-
-                    progressElement
-                        .style
-                        .transform =
-                        'scaleX(0)';
-
-                    timer =
-                        setTimeout(
-                            closeToast,
-                            remaining
-                        );
-                }
-            );
-
-            return toast;
-        };
+        return toast;
+    };
 })();
 
 function notify(
@@ -3480,8 +2857,7 @@ function notify(
     );
 }
 
-window.notify =
-    notify;
+window.notify = notify;
 
 function showToast(
     message,
@@ -3493,61 +2869,42 @@ function showToast(
     );
 }
 
-window.showToast =
-    showToast;
+window.showToast = showToast;
 
 
 // -------------------- КОНТЕКСТ РАСШИРЕНИЯ --------------------
 
 (() => {
-    if (
-        window.__chmafCtxHandler
-    ) {
+    if (window.__chmafCtxHandler) {
         return;
     }
 
-    window.__chmafCtxHandler =
-        true;
+    window.__chmafCtxHandler = true;
 
     const hint =
         'Расширение обновилось и временно недоступно. ' +
         'Сделайте Ctrl+Shift+R. Если не поможет — перезапустите браузер.';
 
-    let lastHintAt =
-        0;
+    let lastHintAt = 0;
 
     function handleContextError(raw) {
-        const message =
-            raw instanceof Error
-                ? raw.message
-                : String(
-                    raw ?? ''
-                );
+        const message = raw instanceof Error
+            ? raw.message
+            : String(raw ?? '');
 
         if (
-            !/Extension context invalidated/i
-                .test(
-                    message
-                )
+            !/Extension context invalidated/i.test(message)
         ) {
             return false;
         }
 
-        const now =
-            Date.now();
+        const now = Date.now();
 
-        if (
-            now - lastHintAt >
-            60_000
-        ) {
-            lastHintAt =
-                now;
+        if (now - lastHintAt > 60_000) {
+            lastHintAt = now;
 
             try {
-                window.showCustomAlert?.(
-                    hint,
-                    'error'
-                );
+                window.showCustomAlert?.(hint, 'error');
             } catch {
                 // Подсказка не должна вызывать новую ошибку.
             }
@@ -3559,18 +2916,11 @@ window.showToast =
     window.addEventListener(
         'unhandledrejection',
         event => {
-            if (
-                handleContextError(
-                    event.reason
-                )
-            ) {
+            if (handleContextError(event.reason)) {
                 event.preventDefault();
             }
         },
-        {
-            signal:
-                cleanupRegistry.signal
-        }
+        { signal: cleanupRegistry.signal }
     );
 
     window.addEventListener(
@@ -3581,14 +2931,8 @@ window.showToast =
                 event.message
             );
         },
-        {
-            signal:
-                cleanupRegistry.signal
-        }
+        { signal: cleanupRegistry.signal }
     );
-
-    // console.error глобально не переопределяем:
-    // это мешает диагностике других модулей.
 })();
 
 
@@ -3597,18 +2941,11 @@ window.showToast =
 // ================================================================
 
 function hideWindowOnDoubleClick(id) {
-    if (
-        readLocalStorage(
-            'dblhidewindow'
-        ) !== '0'
-    ) {
+    if (readLocalStorage('dblhidewindow') !== '0') {
         return;
     }
 
-    const element =
-        document.getElementById(
-            id
-        );
+    const element = document.getElementById(id);
 
     if (!element) return;
 
@@ -3618,105 +2955,59 @@ function hideWindowOnDoubleClick(id) {
             if (
                 event.target
                     ?.closest
-                    ?.(
-                        '.chmaf-drag-handle'
-                    ) &&
-                checkelementtype(
-                    event
-                )
+                    ?.('.chmaf-drag-handle') &&
+                checkelementtype(event)
             ) {
-                element.style.display =
-                    'none';
+                element.style.display = 'none';
             }
         },
-        {
-            signal:
-                cleanupRegistry.signal
-        }
+        { signal: cleanupRegistry.signal }
     );
 }
 
-function hideWindowOnClick(
-    windowId,
-    buttonId
-) {
-    const windowElement =
-        document.getElementById(
-            windowId
-        );
+function hideWindowOnClick(windowId, buttonId) {
+    const windowElement = document.getElementById(
+        windowId
+    );
 
-    const button =
-        document.getElementById(
-            buttonId
-        );
+    const button = document.getElementById(buttonId);
 
-    if (
-        !windowElement ||
-        !button
-    ) {
+    if (!windowElement || !button) {
         return;
     }
 
     button.addEventListener(
         'click',
         () => {
-            windowElement.style.display =
-                'none';
+            windowElement.style.display = 'none';
         },
-        {
-            signal:
-                cleanupRegistry.signal
-        }
+        { signal: cleanupRegistry.signal }
     );
 }
 
 async function copyToClipboard(text) {
-    const value =
-        String(
-            text ?? ''
-        );
+    const value = String(text ?? '');
 
-    if (
-        navigator.clipboard
-            ?.writeText
-    ) {
+    if (navigator.clipboard?.writeText) {
         try {
-            await navigator
-                .clipboard
-                .writeText(
-                    value
-                );
-
+            await navigator.clipboard.writeText(value);
             return;
         } catch {
             // Пробуем резервный способ.
         }
     }
 
-    const textarea =
-        document.createElement(
-            'textarea'
-        );
+    const textarea = document.createElement('textarea');
 
-    textarea.value =
-        value;
-
+    textarea.value = value;
     textarea.style.cssText =
         'position:fixed;left:-9999px;opacity:0;';
 
-    document.body
-        .appendChild(
-            textarea
-        );
-
+    document.body.appendChild(textarea);
     textarea.select();
 
     try {
-        if (
-            !document.execCommand(
-                'copy'
-            )
-        ) {
+        if (!document.execCommand('copy')) {
             throw new Error(
                 'Не удалось скопировать текст'
             );
@@ -3727,359 +3018,241 @@ async function copyToClipboard(text) {
 }
 
 function extractLoginLink(text) {
-    if (
-        typeof text !==
-        'string'
-    ) {
+    if (typeof text !== 'string') {
         return null;
     }
 
-    const matches =
-        text.match(
-            /https:\/\/id\.skyeng\.ru\/auth\/login-link\/[A-Za-z0-9_/-]+/g
-        );
+    const matches = text.match(
+        /https:\/\/id\.skyeng\.ru\/auth\/login-link\/[A-Za-z0-9_/-]+/g
+    );
 
-    return matches
-        ?.at(-1)
-        ?.replace(
-            /["']+$/,
-            ''
-        ) || null;
+    return (
+        matches
+            ?.at(-1)
+            ?.replace(/["']+$/, '') ||
+        null
+    );
 }
 
 function getLoginLink(
     userid,
     timeoutMs = 20_000
 ) {
-    const id =
-        String(
-            userid ?? ''
-        ).trim();
+    const id = String(userid ?? '').trim();
 
-    if (
-        !/^\d+$/.test(
-            id
-        )
-    ) {
+    if (!/^\d+$/.test(id)) {
         return Promise.reject(
-            new Error(
-                'Некорректный userId'
-            )
+            new Error('Некорректный userId')
         );
     }
 
-    return new Promise(
-        (resolve, reject) => {
-            let settled =
-                false;
+    return new Promise((resolve, reject) => {
+        let settled = false;
+        let timedOut = false;
 
-            let timedOut =
-                false;
+        const finish = (error, value) => {
+            if (settled) {
+                return;
+            }
 
-            const finish =
-                (
-                    error,
-                    value
-                ) => {
-                    if (
-                        settled
-                    ) {
+            settled = true;
+            clearTimeout(timeoutId);
+
+            if (error) {
+                reject(error);
+            } else {
+                resolve(value);
+            }
+        };
+
+        const timeoutId = setTimeout(() => {
+            timedOut = true;
+
+            finish(
+                new Error(
+                    'Таймаут получения ссылки'
+                )
+            );
+        }, timeoutMs);
+
+        const body = new URLSearchParams({
+            'login_link_form[id]': id,
+            'login_link_form[target]':
+                'https://vimbox.skyeng.ru',
+            'login_link_form[lifetime]': '3600',
+            'login_link_form[create]': ''
+        }).toString();
+
+        try {
+            if (!globalThis.chrome?.runtime?.sendMessage) {
+                finish(
+                    new Error(
+                        'API расширения недоступно'
+                    )
+                );
+
+                return;
+            }
+
+            chrome.runtime.sendMessage(
+                {
+                    action: 'getFetchRequest',
+
+                    fetchURL:
+                        'https://id.skyeng.ru/admin/auth/login-links',
+
+                    requestOptions: {
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type':
+                                'application/x-www-form-urlencoded'
+                        },
+
+                        body,
+                        credentials: 'include'
+                    }
+                },
+                async response => {
+                    if (settled || timedOut) {
                         return;
                     }
 
-                    settled =
-                        true;
+                    const runtimeError =
+                        chrome.runtime.lastError;
 
-                    clearTimeout(
-                        timeoutId
-                    );
-
-                    if (
-                        error
-                    ) {
-                        reject(
-                            error
-                        );
-                    } else {
-                        resolve(
-                            value
-                        );
-                    }
-                };
-
-            const timeoutId =
-                setTimeout(
-                    () => {
-                        timedOut =
-                            true;
-
+                    if (runtimeError) {
                         finish(
                             new Error(
-                                'Таймаут получения ссылки'
+                                runtimeError.message
                             )
                         );
-                    },
-                    timeoutMs
-                );
 
-            const body =
-                new URLSearchParams({
-                    'login_link_form[id]':
-                        id,
+                        return;
+                    }
 
-                    'login_link_form[target]':
-                        'https://vimbox.skyeng.ru',
+                    if (!response?.success) {
+                        finish(
+                            new Error(
+                                response?.error ||
+                                'Ошибка получения ссылки'
+                            )
+                        );
 
-                    'login_link_form[lifetime]':
-                        '3600',
+                        return;
+                    }
 
-                    'login_link_form[create]':
-                        ''
-                }).toString();
-
-            try {
-                if (
-                    !globalThis.chrome
-                        ?.runtime
-                        ?.sendMessage
-                ) {
-                    finish(
-                        new Error(
-                            'API расширения недоступно'
-                        )
+                    const link = extractLoginLink(
+                        response.fetchAnswer ??
+                        response.fetchansver
                     );
 
-                    return;
-                }
+                    if (!link) {
+                        finish(
+                            new Error(
+                                'Ссылка логинера не найдена'
+                            )
+                        );
 
-                chrome.runtime
-                    .sendMessage(
-                        {
-                            action:
-                                'getFetchRequest',
+                        return;
+                    }
 
-                            fetchURL:
-                                'https://id.skyeng.ru/admin/auth/login-links',
+                    try {
+                        await copyToClipboard(link);
 
-                            requestOptions: {
-                                method:
-                                    'POST',
-
-                                headers: {
-                                    'Content-Type':
-                                        'application/x-www-form-urlencoded'
-                                },
-
-                                body,
-
-                                credentials:
-                                    'include'
-                            }
-                        },
-                        async response => {
-                            if (
-                                settled ||
-                                timedOut
-                            ) {
-                                return;
-                            }
-
-                            const runtimeError =
-                                chrome
-                                    .runtime
-                                    .lastError;
-
-                            if (
-                                runtimeError
-                            ) {
-                                finish(
-                                    new Error(
-                                        runtimeError.message
-                                    )
-                                );
-
-                                return;
-                            }
-
-                            if (
-                                !response
-                                    ?.success
-                            ) {
-                                finish(
-                                    new Error(
-                                        response
-                                            ?.error ||
-                                        'Ошибка получения ссылки'
-                                    )
-                                );
-
-                                return;
-                            }
-
-                            const link =
-                                extractLoginLink(
-                                    response
-                                        .fetchAnswer ??
-                                    response
-                                        .fetchansver
-                                );
-
-                            if (
-                                !link
-                            ) {
-                                finish(
-                                    new Error(
-                                        'Ссылка логинера не найдена'
-                                    )
-                                );
-
-                                return;
-                            }
-
-                            try {
-                                await copyToClipboard(
-                                    link
-                                );
-
-                                if (
-                                    !timedOut
-                                ) {
-                                    finish(
-                                        null,
-                                        true
-                                    );
-                                }
-                            } catch (
-                                error
-                            ) {
-                                finish(
-                                    error
-                                );
-                            }
+                        if (!timedOut) {
+                            finish(null, true);
                         }
-                    );
-            } catch (
-                error
-            ) {
-                finish(
-                    error
-                );
-            }
+                    } catch (error) {
+                        finish(error);
+                    }
+                }
+            );
+        } catch (error) {
+            finish(error);
         }
-    );
+    });
 }
 
 
 // -------------------- ОГРАНИЧЕННАЯ ОБРАБОТКА HTML --------------------
 
 function sanitizeHTML(html) {
-    if (
-        typeof html !==
-        'string'
-    ) {
+    if (typeof html !== 'string') {
         return '';
     }
 
-    const parsed =
-        new DOMParser()
-            .parseFromString(
-                html,
-                'text/html'
-            );
+    const parsed = new DOMParser().parseFromString(
+        html,
+        'text/html'
+    );
 
-    const allowedTags =
-        new Set([
-            'P',
-            'BR',
-            'B',
-            'I',
-            'U',
-            'EM',
-            'STRONG',
-            'A',
-            'UL',
-            'OL',
-            'LI',
-            'SPAN',
-            'DIV',
-            'H1',
-            'H2',
-            'H3',
-            'H4',
-            'H5',
-            'H6',
-            'BLOCKQUOTE',
-            'CODE',
-            'PRE',
-            'TABLE',
-            'THEAD',
-            'TBODY',
-            'TR',
-            'TD',
-            'TH'
-        ]);
+    const allowedTags = new Set([
+        'P',
+        'BR',
+        'B',
+        'I',
+        'U',
+        'EM',
+        'STRONG',
+        'A',
+        'UL',
+        'OL',
+        'LI',
+        'SPAN',
+        'DIV',
+        'H1',
+        'H2',
+        'H3',
+        'H4',
+        'H5',
+        'H6',
+        'BLOCKQUOTE',
+        'CODE',
+        'PRE',
+        'TABLE',
+        'THEAD',
+        'TBODY',
+        'TR',
+        'TD',
+        'TH'
+    ]);
 
-    const allowedAttributes =
-        new Set([
-            'href',
-            'title',
-            'class',
-            'target',
-            'rel'
-        ]);
+    const allowedAttributes = new Set([
+        'href',
+        'title',
+        'class',
+        'target',
+        'rel'
+    ]);
 
-    function safeLink(
-        href
-    ) {
+    function safeLink(href) {
         try {
-            const url =
-                new URL(
-                    href,
-                    location.href
-                );
+            const url = new URL(href, location.href);
 
             return [
                 'https:',
                 'http:',
                 'mailto:',
                 'tel:'
-            ].includes(
-                url.protocol
-            );
+            ].includes(url.protocol);
         } catch {
             return false;
         }
     }
 
     function walk(node) {
-        for (
-            const child of
-            [
-                ...node.childNodes
-            ]
-        ) {
-            if (
-                child.nodeType ===
-                Node.COMMENT_NODE
-            ) {
+        for (const child of [...node.childNodes]) {
+            if (child.nodeType === Node.COMMENT_NODE) {
                 child.remove();
                 continue;
             }
 
-            if (
-                child.nodeType !==
-                Node.ELEMENT_NODE
-            ) {
+            if (child.nodeType !== Node.ELEMENT_NODE) {
                 continue;
             }
 
-            if (
-                !allowedTags.has(
-                    child.tagName
-                )
-            ) {
-                // Не оставляем содержимое опасных
-                // элементов как HTML.
+            if (!allowedTags.has(child.tagName)) {
                 if (
                     [
                         'SCRIPT',
@@ -4089,35 +3262,23 @@ function sanitizeHTML(html) {
                         'EMBED',
                         'SVG',
                         'MATH'
-                    ].includes(
-                        child.tagName
-                    )
+                    ].includes(child.tagName)
                 ) {
                     child.remove();
                 } else {
                     child.replaceWith(
-                        document
-                            .createTextNode(
-                                child.textContent ||
-                                ''
-                            )
+                        document.createTextNode(
+                            child.textContent || ''
+                        )
                     );
                 }
 
                 continue;
             }
 
-            for (
-                const attribute of
-                [
-                    ...child.attributes
-                ]
-            ) {
+            for (const attribute of [...child.attributes]) {
                 if (
-                    !allowedAttributes
-                        .has(
-                            attribute.name
-                        )
+                    !allowedAttributes.has(attribute.name)
                 ) {
                     child.removeAttribute(
                         attribute.name
@@ -4125,30 +3286,13 @@ function sanitizeHTML(html) {
                 }
             }
 
-            // Не сохраняем id из внешнего HTML:
-            // это может конфликтовать с ID интерфейса.
-            child.removeAttribute(
-                'id'
-            );
+            child.removeAttribute('id');
 
-            if (
-                child.tagName ===
-                'A'
-            ) {
-                const href =
-                    child.getAttribute(
-                        'href'
-                    );
+            if (child.tagName === 'A') {
+                const href = child.getAttribute('href');
 
-                if (
-                    !href ||
-                    !safeLink(
-                        href
-                    )
-                ) {
-                    child.removeAttribute(
-                        'href'
-                    );
+                if (!href || !safeLink(href)) {
+                    child.removeAttribute('href');
                 }
 
                 child.setAttribute(
@@ -4157,38 +3301,22 @@ function sanitizeHTML(html) {
                 );
 
                 if (
-                    child.getAttribute(
-                        'target'
-                    ) !==
+                    child.getAttribute('target') !==
                     '_blank'
                 ) {
-                    child.removeAttribute(
-                        'target'
-                    );
+                    child.removeAttribute('target');
                 }
             } else {
-                child.removeAttribute(
-                    'href'
-                );
-
-                child.removeAttribute(
-                    'target'
-                );
-
-                child.removeAttribute(
-                    'rel'
-                );
+                child.removeAttribute('href');
+                child.removeAttribute('target');
+                child.removeAttribute('rel');
             }
 
-            walk(
-                child
-            );
+            walk(child);
         }
     }
 
-    walk(
-        parsed.body
-    );
+    walk(parsed.body);
 
     return parsed.body.innerHTML;
 }
