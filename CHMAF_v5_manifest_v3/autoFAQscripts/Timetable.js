@@ -1,594 +1,618 @@
+// ============================================================
+// ChMAF — Timetable UI
+// ============================================================
+
 var win_TimetableUI = `
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+#AF_TimetableUI .tt-container {
+    --tt-bg: #111827;
+    --tt-surface: #1a2537;
+    --tt-surface-hover: #23334b;
+    --tt-input: #0d1625;
+    --tt-border: #35445e;
+    --tt-text: #f0f4fc;
+    --tt-muted: #a0afc6;
+    --tt-subtle: #8191aa;
+    --tt-accent: #839eff;
+    --tt-accent-soft: rgba(131, 158, 255, .15);
 
-:root {
-    --tt-bg-primary: rgba(12, 12, 28, 0.82);
-    --tt-bg-card: rgba(22, 27, 52, 0.65);
-    --tt-bg-card-hover: rgba(30, 40, 70, 0.8);
-    --tt-border: rgba(255, 255, 255, 0.06);
-    --tt-border-glow: rgba(139, 92, 246, 0.3);
-    --tt-accent: #8b5cf6;
-    --tt-accent-soft: rgba(139, 92, 246, 0.15);
-    --tt-accent-glow: rgba(139, 92, 246, 0.4);
-    --tt-cyan: #22d3ee;
-    --tt-cyan-soft: rgba(34, 211, 238, 0.12);
-    --tt-text-primary: #f1f5f9;
-    --tt-text-secondary: #94a3b8;
-    --tt-text-muted: #64748b;
-    --tt-radius-sm: 8px;
-    --tt-radius-md: 12px;
-    --tt-radius-lg: 16px;
-    --tt-radius-xl: 20px;
-    --tt-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --tt-shadow-md: 0 4px 24px rgba(0, 0, 0, 0.4);
-    --tt-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
-    --tt-shadow-glow: 0 0 30px rgba(139, 92, 246, 0.15);
-}
-
-.tt-container {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--tt-bg-primary);
-    backdrop-filter: blur(40px) saturate(200%) brightness(1.1);
-    -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.1);
-    border: 1px solid var(--tt-border);
-    border-radius: var(--tt-radius-xl);
-    box-shadow: var(--tt-shadow-lg), var(--tt-shadow-glow), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    overflow: hidden;
-    min-width: 820px;
-    max-width: 1000px;
-    color: var(--tt-text-primary);
+    box-sizing: border-box;
     position: relative;
-}
-.tt-container::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.4), rgba(34, 211, 238, 0.3), transparent);
+    width: min(920px, calc(100vw - 24px));
+    max-width: 100%;
+    overflow: hidden;
+    color: var(--tt-text);
+    background:
+        radial-gradient(
+            circle at 90% 0%,
+            rgba(123, 111, 229, .13),
+            transparent 38%
+        ),
+        var(--tt-bg);
+    border: 1px solid var(--tt-border);
+    border-radius: 17px;
+    box-shadow:
+        0 24px 70px rgba(3, 8, 20, .52),
+        inset 0 1px rgba(255, 255, 255, .06);
+    font: 13px/1.45 Inter, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
 }
 
-.tt-header {
+#AF_TimetableUI .tt-container *,
+#AF_TimetableUI .tt-container *::before,
+#AF_TimetableUI .tt-container *::after {
+    box-sizing: border-box;
+}
+
+#AF_TimetableUI .tt-container button,
+#AF_TimetableUI .tt-container input {
+    font: inherit;
+}
+
+#AF_TimetableUI .tt-container button:focus-visible,
+#AF_TimetableUI .tt-container input:focus-visible {
+    outline: 2px solid var(--tt-accent);
+    outline-offset: 2px;
+}
+
+#AF_TimetableUI .tt-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(139, 92, 246, 0.03) 100%);
+    gap: 12px;
+    min-height: 59px;
+    padding: 12px 18px;
     border-bottom: 1px solid var(--tt-border);
     cursor: move;
 }
-.tt-title {
-    font-weight: 700;
-    font-size: 14px;
-    color: var(--tt-text-primary);
-    letter-spacing: 0.2px;
+
+#AF_TimetableUI .tt-title {
     display: flex;
     align-items: center;
-    gap: 6px;
-}
-.tt-title::before {
-    content: '';
-    width: 8px; height: 8px;
-    background: var(--tt-accent);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--tt-accent-glow);
-    flex-shrink: 0;
-}
-.tt-btn {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--tt-border);
-    color: var(--tt-text-muted);
-    width: 30px; height: 30px;
-    border-radius: var(--tt-radius-sm);
-    cursor: pointer;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.tt-btn:hover {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #f87171;
-    box-shadow: 0 0 16px rgba(239, 68, 68, 0.1);
+    flex-wrap: wrap;
+    gap: 8px;
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 750;
 }
 
-.tt-input-group {
-    padding: 18px 20px;
+#AF_TimetableUI .tt-title::before {
+    content: "";
+    flex: 0 0 8px;
+    width: 8px;
+    height: 8px;
+    background: #947ff2;
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(148, 127, 242, .5);
+}
+
+#AF_TimetableUI #inputTeachInfo {
+    color: #b8c8ff;
+    font-size: 12px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+#AF_TimetableUI .tt-btn,
+#AF_TimetableUI .tt-arrow {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    color: #d4def0;
+    background: var(--tt-surface);
+    border: 1px solid var(--tt-border);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background-color .16s, border-color .16s;
+}
+
+#AF_TimetableUI .tt-btn:hover,
+#AF_TimetableUI .tt-arrow:hover {
+    background: var(--tt-surface-hover);
+    border-color: var(--tt-accent);
+}
+
+#AF_TimetableUI #hideshowtimetable:hover {
+    color: #ffb1bf;
+    border-color: #dd7488;
+}
+
+#AF_TimetableUI .tt-input-group {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 11px;
+    padding: 15px 18px;
 }
 
-.tt-week-nav {
+#AF_TimetableUI .tt-week-nav {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: var(--tt-radius-md);
-    border: 1px solid var(--tt-border);
-    padding: 6px;
-}
-.tt-arrow {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--tt-border);
-    color: var(--tt-text-secondary);
-    width: 36px; height: 36px;
-    border-radius: var(--tt-radius-sm);
-    cursor: pointer;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    font-weight: 700;
-}
-.tt-arrow:hover {
-    background: var(--tt-accent-soft);
-    border-color: var(--tt-border-glow);
-    color: var(--tt-text-primary);
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
-}
-.tt-arrow:active {
-    transform: scale(0.92);
-}
-.tt-dates-row {
-    display: flex;
     gap: 10px;
-    align-items: center;
-    justify-content: center;
-}
-.tt-date-field {
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: var(--tt-radius-sm);
-    padding: 8px 14px;
-    font-size: 13px;
-    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-    color: var(--tt-text-primary);
-    min-width: 115px;
-    text-align: center;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-.tt-date-sep {
-    color: var(--tt-accent);
-    font-size: 16px;
-    opacity: 0.6;
+    min-width: 0;
+    padding: 7px;
+    background: rgba(255, 255, 255, .025);
+    border: 1px solid var(--tt-border);
+    border-radius: 11px;
 }
 
-.tt-input-row {
+#AF_TimetableUI .tt-dates-row {
     display: flex;
-    gap: 10px;
     align-items: center;
-}
-.tt-input {
-    width: 100%;
-    padding: 11px 14px;
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--tt-radius-sm);
-    font-size: 13px;
-    color: var(--tt-text-primary);
-    outline: none;
-    box-sizing: border-box;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    flex: 1;
+    justify-content: center;
+    gap: 9px;
     min-width: 0;
 }
-.tt-input::placeholder {
-    color: var(--tt-text-muted);
-}
-.tt-input:focus {
-    border-color: var(--tt-accent);
-    box-shadow: 0 0 0 3px var(--tt-accent-soft), 0 0 20px rgba(139, 92, 246, 0.08);
-}
 
-#tt-teacher-id {
-    flex: 0 0 160px;
-    height: 40px;
-}
-#tt-viz-search {
-    flex: 1;
-    height: 40px;
-    margin-bottom: 0 !important;
-}
-#tt-load-btn {
-    flex-shrink: 0;
-}
-
-.tt-btn-primary {
-    background: linear-gradient(135deg, var(--tt-accent), #6d28d9);
-    color: #fff;
-    border: 1px solid rgba(139, 92, 246, 0.5);
-    white-space: nowrap;
-    padding: 10px 20px;
-    border-radius: var(--tt-radius-sm);
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3);
-    letter-spacing: 0.3px;
-}
-.tt-btn-primary:hover {
-    background: linear-gradient(135deg, #9b6ef8, #7c3aed);
-    box-shadow: 0 4px 24px rgba(139, 92, 246, 0.4);
-    transform: translateY(-1px);
-}
-.tt-btn-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
-}
-
-.tt-result-box {
-    padding: 0 18px 18px;
-    max-height: 500px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
-}
-.tt-result-box::-webkit-scrollbar { width: 6px; }
-.tt-result-box::-webkit-scrollbar-track { background: transparent; }
-.tt-result-box::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 3px; }
-.tt-result-box::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.5); }
-.tt-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.tt-viz-container {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: var(--tt-text-primary);
-    line-height: 1.4;
-}
-.tt-viz-container * { box-sizing: border-box; }
-
-.tt-viz-tabs {
-    display: flex;
-    gap: 2px;
-    padding: 4px 14px;
-    background: rgba(0, 0, 0, 0.2);
-    border-bottom: 1px solid var(--tt-border);
-    flex-shrink: 0;
-    overflow-x: auto;
-    margin: 0 -18px 12px -18px;
-    border-radius: 0 0 var(--tt-radius-md) var(--tt-radius-md);
-}
-.tt-viz-tab {
-    background: transparent;
-    border: none;
-    color: var(--tt-text-muted);
-    padding: 8px 14px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: var(--tt-radius-sm);
-    white-space: nowrap;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-}
-.tt-viz-tab:hover { color: var(--tt-text-secondary); background: rgba(255, 255, 255, 0.03); }
-.tt-viz-tab.active {
-    color: var(--tt-text-primary);
-    background: var(--tt-accent-soft);
-    box-shadow: 0 0 12px rgba(139, 92, 246, 0.1);
-}
-.tt-viz-tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px; left: 20%; right: 20%;
-    height: 2px;
-    background: var(--tt-accent);
-    border-radius: 1px;
-    box-shadow: 0 0 8px var(--tt-accent-glow);
-}
-
-.tt-viz-section { display: none; }
-.tt-viz-section.active {
-    display: block;
-    animation: ttVizFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-@keyframes ttVizFadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.tt-viz-day-group { margin-bottom: 14px; }
-.tt-viz-day-header {
-    font-size: 12px; font-weight: 700;
-    color: var(--tt-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-    padding: 6px 10px;
-    border-radius: var(--tt-radius-sm);
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    display: flex; align-items: center; gap: 8px;
-}
-.tt-viz-day-header::before {
-    content: '';
+#AF_TimetableUI .tt-date-field {
     display: inline-block;
-    width: 6px; height: 6px;
-    background: var(--tt-accent);
-    border-radius: 50%;
-    box-shadow: 0 0 6px var(--tt-accent-glow);
-    flex-shrink: 0;
-}
-.tt-viz-day-header.today {
-    color: #fef3c7;
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(251, 191, 36, 0.10));
-    border-color: rgba(245, 158, 11, 0.3);
-    box-shadow: 0 0 16px rgba(245, 158, 11, 0.12);
-}
-.tt-viz-day-header.today::before {
-    background: #fbbf24;
-    box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
-    animation: todayPulse 2s ease-in-out infinite;
-}
-@keyframes todayPulse {
-    0%, 100% { box-shadow: 0 0 6px rgba(251, 191, 36, 0.4); }
-    50% { box-shadow: 0 0 14px rgba(251, 191, 36, 0.8); }
-}
-
-.tt-viz-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 8px;
-}
-.tt-viz-card {
-    background: var(--tt-bg-card);
+    min-width: 110px;
+    padding: 7px 9px;
+    color: var(--tt-text);
+    background: var(--tt-input);
     border: 1px solid var(--tt-border);
-    border-radius: var(--tt-radius-md);
-    padding: 10px 12px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.tt-viz-card:hover {
-    background: var(--tt-bg-card-hover);
-    border-color: rgba(139, 92, 246, 0.2);
-    box-shadow: var(--tt-shadow-sm), 0 0 20px rgba(139, 92, 246, 0.08);
-    transform: translateY(-1px);
-}
-.tt-viz-card::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    border-radius: 3px 0 0 3px;
-}
-.tt-viz-card-time {
-    font-size: 11px; color: var(--tt-text-muted);
-    display: flex; align-items: center; gap: 4px; margin-bottom: 4px;
-    font-weight: 500;
-}
-.tt-viz-card-student {
-    font-size: 13px; font-weight: 700; color: var(--tt-text-primary);
-    margin-bottom: 4px;
-    line-height: 1.3;
-}
-.tt-viz-card-meta {
-    font-size: 10px; color: var(--tt-text-muted);
-    display: flex; flex-wrap: wrap; gap: 3px; align-items: center;
+    border-radius: 8px;
+    text-align: center;
+    font: 600 12px/1.4 "SFMono-Regular", Consolas, monospace;
 }
 
-.tt-viz-badge {
-    display: inline-flex;
+#AF_TimetableUI .tt-date-sep {
+    color: var(--tt-accent);
+}
+
+#AF_TimetableUI .tt-input-row {
+    display: flex;
     align-items: center;
-    gap: 2px;
-    padding: 2px 6px;
-    border-radius: 5px;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.2px;
-}
-.tt-viz-badge-status {
-    display: flex !important;
-    width: 100% !important;
-    justify-content: center !important;
-    text-align: center !important;
-    box-sizing: border-box;
-    margin-bottom: 5px;
-    padding: 5px 6px !important;
-    border-radius: 6px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    font-size: 10px;
-    text-transform: uppercase;
-}
-.tt-viz-badge-type {
-    background: var(--tt-cyan-soft);
-    color: var(--tt-cyan);
-}
-.tt-viz-badge-mode {
-    background: rgba(251, 191, 36, 0.1);
-    color: #fbbf24;
-}
-.tt-viz-badge-stk {
-    background: rgba(16, 185, 129, 0.1);
-    color: #34d399;
-}
-.tt-viz-badge-svc {
-    background: rgba(236, 72, 153, 0.1);
-    color: #f472b6;
-}
-.tt-viz-badge-creator {
-    background: rgba(148, 163, 184, 0.08);
-    color: var(--tt-text-muted);
-    font-family: 'SF Mono', monospace;
-}
-.tt-viz-badge-substitute {
-    background: rgba(168, 85, 247, 0.15);
-    color: #c084fc;
-}
-.tt-viz-badge-id {
-    background: rgba(0, 0, 0, 0.3);
-    color: var(--tt-text-muted);
-    font-family: 'SF Mono', monospace;
-    font-size: 10px;
+    gap: 9px;
+    min-width: 0;
 }
 
-.tt-viz-status-success::before { background: linear-gradient(180deg, #22c55e, #16a34a); }
-.tt-viz-status-success .tt-viz-badge-status {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(22, 163, 74, 0.08));
-    color: #4ade80;
-    border: 1px solid rgba(34, 197, 94, 0.2);
-}
-.tt-viz-status-moved::before { background: linear-gradient(180deg, #f59e0b, #d97706); }
-.tt-viz-status-moved .tt-viz-badge-status {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.08));
-    color: #fbbf24;
-    border: 1px solid rgba(245, 158, 11, 0.2);
-}
-.tt-viz-status-removed::before,
-.tt-viz-status-canceled::before,
-.tt-viz-status-failed_teacher::before,
-.tt-viz-status-failed_student::before {
-    background: linear-gradient(180deg, #ef4444, #dc2626);
-}
-.tt-viz-status-removed .tt-viz-badge-status,
-.tt-viz-status-canceled .tt-viz-badge-status,
-.tt-viz-status-failed_teacher .tt-viz-badge-status,
-.tt-viz-status-failed_student .tt-viz-badge-status {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(220, 38, 38, 0.08));
-    color: #f87171;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-}
-.tt-viz-status-vacation::before { background: linear-gradient(180deg, #3b82f6, #2563eb); }
-.tt-viz-status-vacation .tt-viz-badge-status {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(37, 99, 235, 0.08));
-    color: #60a5fa;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-}
-.tt-viz-status-substitute::before { background: linear-gradient(180deg, #a855f7, #9333ea); }
-.tt-viz-status-substitute .tt-viz-badge-status {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(147, 51, 234, 0.08));
-    color: #c084fc;
-    border: 1px solid rgba(168, 85, 247, 0.2);
-}
-.tt-viz-status-no_status::before { background: linear-gradient(180deg, #f59e0b, #d97706); }
-.tt-viz-status-no_status .tt-viz-badge-status {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.08));
-    color: #fbbf24;
-    border: 1px solid rgba(245, 158, 11, 0.2);
-}
-.tt-viz-status-default::before { background: linear-gradient(180deg, #64748b, #475569); }
-.tt-viz-status-default .tt-viz-badge-status {
-    background: rgba(100, 116, 139, 0.1);
-    color: var(--tt-text-secondary);
-    border: 1px solid rgba(100, 116, 139, 0.15);
-}
-
-.tt-viz-status-running::before {
-    background: linear-gradient(180deg, #ef4444, #dc2626);
-    box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
-}
-.tt-viz-status-running .tt-viz-badge-status {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(220, 38, 38, 0.12));
-    color: #f87171;
-    border: 1px solid rgba(239, 68, 68, 0.35);
-}
-.tt-viz-status-running {
-    border-color: rgba(239, 68, 68, 0.4) !important;
-    animation: ttPulseRunning 2.5s ease-in-out infinite;
-}
-@keyframes ttPulseRunning {
-    0%, 100% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.1); }
-    50% { box-shadow: 0 0 28px rgba(239, 68, 68, 0.25); }
-}
-
-.tt-viz-comment {
-    margin-top: 6px; padding-top: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
-    font-size: 11px; color: var(--tt-text-muted); font-style: italic;
-    line-height: 1.4;
-}
-.tt-viz-comment.moved-date { color: #fbbf24; font-style: normal; font-weight: 600; }
-.tt-viz-empty {
-    text-align: center; padding: 30px 20px;
-    color: var(--tt-text-muted); font-size: 13px;
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: var(--tt-radius-md);
-    border: 1px dashed rgba(255, 255, 255, 0.06);
-}
-
-.tt-viz-slot-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 6px;
-}
-.tt-viz-slot {
-    background: var(--tt-bg-card);
+#AF_TimetableUI .tt-input {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    height: 39px;
+    padding: 0 11px;
+    color: var(--tt-text);
+    background: var(--tt-input);
     border: 1px solid var(--tt-border);
-    border-radius: var(--tt-radius-sm);
-    padding: 8px 10px;
-    font-size: 12px;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.tt-viz-slot:hover {
-    border-color: rgba(139, 92, 246, 0.2);
-    background: var(--tt-bg-card-hover);
-}
-.tt-viz-slot-time {
-    font-weight: 700; color: var(--tt-text-primary); margin-bottom: 3px; font-size: 12px;
-}
-.tt-viz-slot-types { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
-.tt-viz-slot-type {
-    font-size: 9px; padding: 2px 5px; border-radius: 4px;
-    background: var(--tt-cyan-soft); color: var(--tt-cyan);
-    text-transform: uppercase; font-weight: 700;
-    letter-spacing: 0.2px;
-}
-.tt-viz-slot-type.blocked {
-    background: rgba(239, 68, 68, 0.1);
-    color: #f87171;
+    border-radius: 9px;
+    outline: none;
 }
 
-.tt-viz-search {
-    width: 100%; padding: 5px 12px; border-radius: var(--tt-radius-sm);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(0, 0, 0, 0.25);
-    color: var(--tt-text-primary);
-    font-size: 12px; outline: none;
-    font-family: 'Inter', sans-serif;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+#AF_TimetableUI .tt-input::placeholder {
+    color: var(--tt-subtle);
 }
-.tt-viz-search:focus {
+
+#AF_TimetableUI .tt-input:focus {
     border-color: var(--tt-accent);
     box-shadow: 0 0 0 3px var(--tt-accent-soft);
+}
+
+#AF_TimetableUI #tt-teacher-id {
+    flex: 0 0 170px;
+}
+
+#AF_TimetableUI #tt-viz-search {
+    flex: 1 1 200px;
+}
+
+#AF_TimetableUI .tt-btn-primary {
+    flex: 0 0 auto;
+    min-height: 39px;
+    padding: 0 15px;
+    color: #fff;
+    background: #5b77db;
+    border: 1px solid #829af3;
+    border-radius: 9px;
+    cursor: pointer;
+    font-weight: 700 !important;
+    box-shadow: 0 5px 16px rgba(65, 90, 197, .22);
+    transition: background-color .16s, transform .16s;
+}
+
+#AF_TimetableUI .tt-btn-primary:hover:not(:disabled) {
+    background: #708beb;
+    transform: translateY(-1px);
+}
+
+#AF_TimetableUI .tt-btn-primary:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+#AF_TimetableUI .tt-result-box {
+    max-height: min(510px, 58vh);
+    overflow-y: auto;
+    padding: 0 18px 18px;
+    scrollbar-width: thin;
+    scrollbar-color: #52668a transparent;
+}
+
+#AF_TimetableUI .tt-list {
+    min-width: 0;
+}
+
+#AF_TimetableUI .tt-state {
+    padding: 24px 14px;
+    color: var(--tt-muted);
+    text-align: center;
+}
+
+#AF_TimetableUI .tt-state--error {
+    color: #ffb1bf;
+    background: rgba(225, 101, 124, .09);
+    border: 1px solid rgba(225, 101, 124, .25);
+    border-radius: 10px;
+}
+
+#AF_TimetableUI .tt-viz-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 14px;
+    padding: 5px;
+    overflow-x: auto;
+    background: #172236;
+    border: 1px solid var(--tt-border);
+    border-radius: 10px;
+}
+
+#AF_TimetableUI .tt-viz-tab {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    color: var(--tt-muted);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+#AF_TimetableUI .tt-viz-tab:hover,
+#AF_TimetableUI .tt-viz-tab.active {
+    color: #eff3ff;
+    background: rgba(131, 158, 255, .14);
+    border-color: rgba(131, 158, 255, .3);
+}
+
+#AF_TimetableUI .tt-viz-section {
+    display: none;
+}
+
+#AF_TimetableUI .tt-viz-section.active {
+    display: block;
+}
+
+#AF_TimetableUI .tt-viz-day-group {
+    margin-bottom: 16px;
+}
+
+#AF_TimetableUI .tt-viz-day-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 8px;
+    padding: 7px 10px;
+    color: var(--tt-muted);
+    background: #172235;
+    border: 1px solid var(--tt-border);
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+}
+
+#AF_TimetableUI .tt-viz-day-header.today {
+    color: #d8ceff;
+    background: rgba(145, 118, 229, .14);
+    border-color: rgba(145, 118, 229, .42);
+}
+
+#AF_TimetableUI .tt-viz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+    gap: 8px;
+}
+
+#AF_TimetableUI .tt-viz-card,
+#AF_TimetableUI .tt-viz-slot {
+    min-width: 0;
+    padding: 10px 12px;
+    color: var(--tt-text);
+    background: var(--tt-surface);
+    border: 1px solid var(--tt-border);
+    border-radius: 10px;
+}
+
+#AF_TimetableUI .tt-viz-card {
+    border-left: 3px solid #697992;
+}
+
+#AF_TimetableUI .tt-viz-card:hover,
+#AF_TimetableUI .tt-viz-slot:hover {
+    background: var(--tt-surface-hover);
+}
+
+#AF_TimetableUI .tt-viz-card-time,
+#AF_TimetableUI .tt-viz-slot-time {
+    margin-bottom: 5px;
+    color: var(--tt-muted);
+    font-size: 11px;
+    font-weight: 650;
+}
+
+#AF_TimetableUI .tt-viz-card-student {
+    margin-bottom: 7px;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+#AF_TimetableUI .tt-viz-card-meta,
+#AF_TimetableUI .tt-viz-slot-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+#AF_TimetableUI .tt-viz-badge,
+#AF_TimetableUI .tt-viz-slot-type {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 3px 6px;
+    color: #c6d6f7;
+    background: #283c5e;
+    border-radius: 5px;
+    font-size: 10px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+#AF_TimetableUI .tt-viz-badge-status {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 5px 7px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+#AF_TimetableUI .tt-viz-badge-type {
+    color: #96e0e7;
+    background: rgba(73, 183, 195, .15);
+}
+
+#AF_TimetableUI .tt-viz-badge-mode {
+    color: #cfbdff;
+    background: rgba(155, 121, 230, .18);
+}
+
+#AF_TimetableUI .tt-viz-badge-stk {
+    color: #9bdcc7;
+    background: rgba(94, 178, 150, .16);
+}
+
+#AF_TimetableUI .tt-viz-badge-svc {
+    color: #f0aed4;
+    background: rgba(211, 111, 166, .15);
+}
+
+#AF_TimetableUI .tt-viz-badge-substitute {
+    color: #dac4ff;
+    background: rgba(155, 121, 230, .2);
+}
+
+#AF_TimetableUI .tt-viz-status-success {
+    border-left-color: #65c9a6;
+}
+
+#AF_TimetableUI .tt-viz-status-success .tt-viz-badge-status {
+    color: #9be4cb;
+    background: rgba(94, 178, 150, .14);
+}
+
+#AF_TimetableUI .tt-viz-status-moved,
+#AF_TimetableUI .tt-viz-status-no_status {
+    border-left-color: #a58ee7;
+}
+
+#AF_TimetableUI .tt-viz-status-moved .tt-viz-badge-status,
+#AF_TimetableUI .tt-viz-status-no_status .tt-viz-badge-status {
+    color: #d4c3ff;
+    background: rgba(155, 121, 230, .16);
+}
+
+#AF_TimetableUI .tt-viz-status-removed,
+#AF_TimetableUI .tt-viz-status-canceled,
+#AF_TimetableUI .tt-viz-status-failed_teacher,
+#AF_TimetableUI .tt-viz-status-failed_student,
+#AF_TimetableUI .tt-viz-status-running {
+    border-left-color: #ed8292;
+}
+
+#AF_TimetableUI .tt-viz-status-removed .tt-viz-badge-status,
+#AF_TimetableUI .tt-viz-status-canceled .tt-viz-badge-status,
+#AF_TimetableUI .tt-viz-status-failed_teacher .tt-viz-badge-status,
+#AF_TimetableUI .tt-viz-status-failed_student .tt-viz-badge-status,
+#AF_TimetableUI .tt-viz-status-running .tt-viz-badge-status {
+    color: #ffc0c8;
+    background: rgba(225, 101, 124, .15);
+}
+
+#AF_TimetableUI .tt-viz-status-vacation {
+    border-left-color: #7facf5;
+}
+
+#AF_TimetableUI .tt-viz-status-substitute {
+    border-left-color: #b09af5;
+}
+
+#AF_TimetableUI .tt-viz-status-vacation .tt-viz-badge-status {
+    color: #b7d2ff;
+    background: rgba(102, 149, 235, .16);
+}
+
+#AF_TimetableUI .tt-viz-status-substitute .tt-viz-badge-status {
+    color: #dac4ff;
+    background: rgba(155, 121, 230, .17);
+}
+
+#AF_TimetableUI .tt-viz-comment {
+    margin-top: 7px;
+    padding-top: 6px;
+    color: var(--tt-muted);
+    border-top: 1px solid var(--tt-border);
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+#AF_TimetableUI .tt-viz-comment.moved-date {
+    color: #c6b5f7;
+}
+
+#AF_TimetableUI .tt-viz-empty {
+    padding: 24px;
+    color: var(--tt-muted);
+    background: var(--tt-surface);
+    border: 1px dashed var(--tt-border);
+    border-radius: 10px;
+    text-align: center;
+}
+
+#AF_TimetableUI .tt-viz-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 7px;
+}
+
+#AF_TimetableUI .tt-viz-slot-type.blocked {
+    color: #ffb1bf;
+    background: rgba(225, 101, 124, .15);
+}
+
+#AF_TimetableUI .tt-viz-detail {
+    margin: 4px 0;
+    color: var(--tt-subtle);
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+#AF_TimetableUI .tt-viz-id {
+    color: #91d5ed;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+@media (max-width: 740px) {
+    #AF_TimetableUI .tt-input-row {
+        flex-wrap: wrap;
+    }
+
+    #AF_TimetableUI #tt-teacher-id {
+        flex: 1 1 150px;
+    }
+
+    #AF_TimetableUI #tt-viz-search {
+        flex: 1 1 210px;
+    }
+
+    #AF_TimetableUI #tt-load-btn {
+        flex: 1 1 100%;
+    }
+}
+
+@media (max-width: 430px) {
+    #AF_TimetableUI .tt-header,
+    #AF_TimetableUI .tt-input-group {
+        padding-inline: 12px;
+    }
+
+    #AF_TimetableUI .tt-result-box {
+        padding-inline: 12px;
+    }
+
+    #AF_TimetableUI .tt-date-field {
+        min-width: 0;
+        padding-inline: 5px;
+        font-size: 11px;
+    }
+
+    #AF_TimetableUI .tt-week-nav {
+        gap: 5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #AF_TimetableUI .tt-container *,
+    #AF_TimetableUI .tt-container *::before,
+    #AF_TimetableUI .tt-container *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
 }
 </style>
 
 <div class="tt-container">
     <div class="tt-header chmaf-drag-handle" id="timetable_header">
-        <span class="tt-title">Расписание <span style="font-size:13px;font-weight:700;color:#c7d2fe;" id="inputTeachInfo"></span></span>
-        <button class="tt-btn" id="hideshowtimetable" title="Скрыть">&#10005;</button>
+        <span class="tt-title">
+            Расписание
+            <span id="inputTeachInfo"></span>
+        </span>
+
+        <button class="tt-btn"
+                id="hideshowtimetable"
+                type="button"
+                title="Скрыть"
+                aria-label="Скрыть расписание">×</button>
     </div>
 
     <div class="tt-input-group">
         <div class="tt-week-nav">
-            <button class="tt-arrow" id="tt-prev-week" title="Предыдущая неделя">&lt;</button>
+            <button class="tt-arrow"
+                    id="tt-prev-week"
+                    type="button"
+                    title="Предыдущая неделя"
+                    aria-label="Предыдущая неделя">‹</button>
+
             <div class="tt-dates-row">
                 <span id="tt-date-from" class="tt-date-field">загрузка...</span>
-                <span class="tt-date-sep">&#8594;</span>
+                <span class="tt-date-sep">→</span>
                 <span id="tt-date-to" class="tt-date-field">загрузка...</span>
             </div>
-            <button class="tt-arrow" id="tt-next-week" title="Следующая неделя">&gt;</button>
+
+            <button class="tt-arrow"
+                    id="tt-next-week"
+                    type="button"
+                    title="Следующая неделя"
+                    aria-label="Следующая неделя">›</button>
         </div>
+
         <div class="tt-input-row">
-            <input id="tt-teacher-id" class="tt-input" placeholder="ID преподавателя..." autocomplete="off" type="text">
-            <input type="text" class="tt-input tt-viz-search" id="tt-viz-search" placeholder="Поиск по ID студента, группы или статусу...">
-            <button class="tt-btn-primary" id="tt-load-btn" title="Загрузить расписание">
-                <span>Загрузить</span>
-            </button>
+            <input id="tt-teacher-id"
+                   class="tt-input"
+                   placeholder="ID преподавателя"
+                   autocomplete="off"
+                   inputmode="numeric"
+                   type="text">
+
+            <input id="tt-viz-search"
+                   class="tt-input tt-viz-search"
+                   placeholder="Поиск по студенту, группе или статусу"
+                   autocomplete="off"
+                   type="text">
+
+            <button class="tt-btn-primary"
+                    id="tt-load-btn"
+                    type="button"
+                    title="Загрузить расписание">Загрузить</button>
         </div>
     </div>
 
@@ -597,490 +621,1129 @@ var win_TimetableUI = `
     </div>
 </div>`;
 
-createWindow('AF_TimetableUI', 'winTopTimetable', 'winLeftTimetable', win_TimetableUI);
+createWindow(
+    'AF_TimetableUI',
+    'winTopTimetable',
+    'winLeftTimetable',
+    win_TimetableUI
+);
+
 hideWindowOnClick('AF_TimetableUI', 'hideshowtimetable');
 
+// ============================================================
+// Состояние и утилиты
+// ============================================================
+
 let ttCurrentWeekOffset = 0;
+let ttRequestId = 0;
+let ttHasRequested = false;
+let ttClassFilter = null;
+
+const ttRoot = document.getElementById('AF_TimetableUI');
+const ttEl = id => ttRoot?.querySelector(`#${id}`);
+
+function ttEscape(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function ttArray(value) {
+    return Array.isArray(value) ? value : [];
+}
+
+function ttState(text, isError = false) {
+    const result = ttEl('tt-result-table');
+    if (!result) return;
+
+    const message = document.createElement('div');
+    message.className = isError
+        ? 'tt-state tt-state--error'
+        : 'tt-state';
+    message.textContent = text;
+
+    result.replaceChildren(message);
+}
+
+function ttValidTeacherId(value) {
+    const trimmed = String(value ?? '').trim();
+    if (!/^[1-9]\d*$/.test(trimmed)) return null;
+
+    const id = Number(trimmed);
+    return Number.isSafeInteger(id) ? id : null;
+}
+
+// ============================================================
+// Границы недели в календаре Москвы
+// ============================================================
 
 function getWeekDates(offset = 0) {
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    const diffToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
+    const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Moscow',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).formatToParts(new Date());
 
-    const monday = new Date(now);
-    monday.setDate(now.getDate() + diffToMonday + (offset * 7));
-    monday.setHours(0, 0, 0, 0);
+    const numberPart = type => Number(
+        parts.find(part => part.type === type)?.value
+    );
+
+    const today = new Date(Date.UTC(
+        numberPart('year'),
+        numberPart('month') - 1,
+        numberPart('day')
+    ));
+
+    const daysSinceMonday = (today.getUTCDay() + 6) % 7;
+
+    const monday = new Date(today);
+    monday.setUTCDate(
+        today.getUTCDate() - daysSinceMonday + offset * 7
+    );
 
     const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    sunday.setHours(23, 59, 59, 999);
+    sunday.setUTCDate(monday.getUTCDate() + 6);
 
-    const pad = (n) => String(n).padStart(2, '0');
-    const fmtVisual = (d) => `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
+    const pad = number => String(number).padStart(2, '0');
 
-    const mskOffset = -180;
-    const mondayUTC = new Date(monday.getTime() + mskOffset * 60000);
-    const sundayUTC = new Date(sunday.getTime() + mskOffset * 60000);
+    const visual = date =>
+        `${pad(date.getUTCDate())}-${pad(date.getUTCMonth() + 1)}-${date.getUTCFullYear()}`;
 
-    const apiFrom = new Date(mondayUTC.getTime() - 3 * 60 * 60 * 1000);
-    const apiTo = new Date(sundayUTC.getTime() + 1 * 60 * 60 * 1000 + 1 * 60 * 1000);
+    const api = date =>
+        date.toISOString().slice(0, 19) + '+00:00';
 
-    const fmtAPI = (d) => {
-        return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}+00:00`;
-    };
+    // Понедельник 00:00:00 МСК.
+    const from = new Date(
+        monday.getTime() - 3 * 60 * 60 * 1000
+    );
+
+    // Воскресенье 23:59:59 МСК.
+    const to = new Date(
+        sunday.getTime() +
+        (20 * 60 * 60 + 59 * 60 + 59) * 1000
+    );
 
     return {
-        visualFrom: fmtVisual(monday),
-        visualTo: fmtVisual(sunday),
-        apiFrom: fmtAPI(apiFrom),
-        apiTo: fmtAPI(apiTo)
+        visualFrom: visual(monday),
+        visualTo: visual(sunday),
+        apiFrom: api(from),
+        apiTo: api(to)
     };
 }
 
 function updateWeekDisplay() {
     const dates = getWeekDates(ttCurrentWeekOffset);
-    document.getElementById('tt-date-from').textContent = dates.visualFrom;
-    document.getElementById('tt-date-to').textContent = dates.visualTo;
+
+    const from = ttEl('tt-date-from');
+    const to = ttEl('tt-date-to');
+
+    if (from) from.textContent = dates.visualFrom;
+    if (to) to.textContent = dates.visualTo;
 }
 
-document.getElementById('tt-prev-week').addEventListener('click', () => {
-    ttCurrentWeekOffset--;
-    updateWeekDisplay();
-    autoReloadIfHasData();
-});
+// ============================================================
+// Запрос расписания
+// ============================================================
 
-document.getElementById('tt-next-week').addEventListener('click', () => {
-    ttCurrentWeekOffset++;
-    updateWeekDisplay();
-    autoReloadIfHasData();
-});
+function loadTimetable() {
+    const teacherId = ttValidTeacherId(
+        ttEl('tt-teacher-id')?.value
+    );
 
-function autoReloadIfHasData() {
-    const teacherIdRaw = document.getElementById('tt-teacher-id').value.trim();
-    const resultBox = document.getElementById('tt-result-table');
-    const hasData = resultBox.innerHTML.trim() !== '' &&
-        !resultBox.innerHTML.includes('Загрузка') &&
-        !resultBox.innerHTML.includes('загрузка...');
-
-    if (teacherIdRaw && !isNaN(teacherIdRaw) && hasData) {
-        document.getElementById('tt-load-btn').click();
-    }
-}
-
-document.getElementById('tt-load-btn').addEventListener('click', () => {
-    const teacherIdRaw = document.getElementById('tt-teacher-id').value.trim();
-    const dates = getWeekDates(ttCurrentWeekOffset);
-
-    if (!teacherIdRaw || isNaN(teacherIdRaw)) {
-        createAndShowButton('Введите корректный ID преподавателя (число)', 'warning');
+    if (teacherId === null) {
+        if (typeof createAndShowButton === 'function') {
+            createAndShowButton(
+                'Введите корректный числовой ID преподавателя',
+                'warning'
+            );
+        } else {
+            ttState(
+                'Введите корректный числовой ID преподавателя',
+                true
+            );
+        }
         return;
     }
 
-    const teacherId = parseInt(teacherIdRaw, 10);
-    document.getElementById('tt-result-table').innerHTML = '<div style="padding:24px;text-align:center;color:var(--tt-text-muted);font-size:13px;font-weight:500;">Загрузка...</div>';
+    const dates = getWeekDates(ttCurrentWeekOffset);
+    const requestId = ++ttRequestId;
 
-    chrome.runtime.sendMessage({
-        action: 'getFetchRequest',
-        fetchURL: 'https://timetable.skyeng.ru/api/v3/teacher/search',
-        requestOptions: {
-            headers: {
-                'accept': 'application/json, text/plain, */*',
-                'content-type': 'application/json; charset=UTF-8'
-                // sec-ch-*/sec-fetch*/priority — запрещённые заголовки, браузер их игнорирует
-            },
-            referrer: 'https://timetable.skyeng.ru/',
-            body: JSON.stringify({
-                timetableFrom: dates.apiFrom,
-                timetableTo: dates.apiTo,
-                serviceTypeKey: null,
-                timeRanges: [],
-                expressions: [],
-                teacherIds: [teacherId],
-                isComplexSearch: false,
-                intensity: null,
-                customFilters: { includeTeachersWhoClosedSpecificSlots: false },
-                page: 1,
-                pageSize: 15,
-                orderByProperty: 'by_rating_small_package'
-            }),
-            method: 'POST',
-            credentials: 'include'
-        }
-    }, (response) => {
-        if (chrome.runtime.lastError) {
-            document.getElementById('tt-result-table').innerHTML = '<div style="padding:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:10px;color:#f87171;font-size:12px;">Ошибка связи: ' + chrome.runtime.lastError.message + '</div>';
-            return;
-        }
+    ttHasRequested = true;
+    ttState('Загрузка расписания…');
 
-        if (response && response.success) {
-            let data;
-            try {
-                data = JSON.parse(response.fetchansver);
-            } catch (e) {
-                data = response.fetchansver;
+    const button = ttEl('tt-load-btn');
+    if (button) button.disabled = true;
+
+    try {
+        chrome.runtime.sendMessage({
+            action: 'getFetchRequest',
+            fetchURL:
+                'https://timetable.skyeng.ru/api/v3/teacher/search',
+            requestOptions: {
+                headers: {
+                    accept: 'application/json, text/plain, */*',
+                    'content-type':
+                        'application/json; charset=UTF-8'
+                },
+                referrer: 'https://timetable.skyeng.ru/',
+                body: JSON.stringify({
+                    timetableFrom: dates.apiFrom,
+                    timetableTo: dates.apiTo,
+                    serviceTypeKey: null,
+                    timeRanges: [],
+                    expressions: [],
+                    teacherIds: [teacherId],
+                    isComplexSearch: false,
+                    intensity: null,
+                    customFilters: {
+                        includeTeachersWhoClosedSpecificSlots: false
+                    },
+                    page: 1,
+                    pageSize: 15,
+                    orderByProperty: 'by_rating_small_package'
+                }),
+                method: 'POST',
+                credentials: 'include'
             }
-            renderTimetable(data, teacherId);
-        } else {
-            const errMsg = response?.error || 'Неизвестная ошибка';
-            document.getElementById('tt-result-table').innerHTML = '<div style="padding:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:10px;color:#f87171;font-size:12px;">Ошибка: ' + errMsg + '</div>';
-        }
-    });
-});
+        }, response => {
+            // Ответ старой недели или старого преподавателя не отображаем.
+            if (requestId !== ttRequestId) return;
 
-function renderTimetable(rawData, teacherId) {
-    let data = rawData;
-    if (Array.isArray(data) && data[0]?.result?.[0]) {
-        data = data[0].result[0];
-    } else if (data?.result?.[0]) {
-        data = data.result[0];
-    }
+            if (button) button.disabled = false;
 
-    const container = document.getElementById('tt-result-table');
-    if (!container) return;
+            const runtimeError = chrome.runtime.lastError;
+            if (runtimeError) {
+                ttState(
+                    `Ошибка связи: ${runtimeError.message}`,
+                    true
+                );
+                return;
+            }
 
-    const MSK_OFFSET = 3 * 60 * 60 * 1000;
-    const pad = (n) => String(n).padStart(2, '0');
+            if (!response?.success) {
+                ttState(
+                    `Ошибка: ${response?.error || 'неизвестная ошибка'}`,
+                    true
+                );
+                return;
+            }
 
-    const toMSK = (iso) => {
-        if (!iso) return null;
-        const d = new Date(new Date(iso).getTime() + MSK_OFFSET);
-        return isNaN(d.getTime()) ? null : d;
-    };
-    const fmtDate = (iso) => {
-        const d = toMSK(iso);
-        if (!d) return '-';
-        return `${pad(d.getUTCDate())}-${pad(d.getUTCMonth() + 1)}-${d.getUTCFullYear()}`;
-    };
-    const fmtTime = (iso) => {
-        const d = toMSK(iso);
-        if (!d) return '-';
-        return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} МСК`;
-    };
-    const getDayName = (iso) => {
-        const d = toMSK(iso);
-        if (!d) return '';
-        return d.toLocaleDateString('ru-RU', { weekday: 'long', timeZone: 'UTC' });
-    };
-    const getDateKey = (iso) => {
-        const d = toMSK(iso);
-        if (!d) return 'unknown';
-        return d.toISOString().slice(0, 10);
-    };
+            let data;
 
-    // Парсит T-формат: T109:00:00+0000 → {dayIndex: 0-6 (Пн-Вс), timeStr: 'Пт 16:00 МСК'}
-    const parseT = (t) => {
-        const m = t.match(/T(\d+):(\d+):/);
-        if (!m) return { dayIndex: -1, timeStr: t };
-        const hours = parseInt(m[1]);
-        const day = Math.floor(hours / 24);      // 0=Пн, 1=Вт...
-        const hr = hours % 24;
-        const mskHr = (hr + 3) % 24;
-        const mskDay = (day + Math.floor((hr + 3) / 24)) % 7;
-        const shortDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-        return { dayIndex: mskDay, timeStr: `${shortDays[mskDay] || '?'} ${pad(mskHr)}:${m[2]} МСК` };
-    };
+            try {
+                data = typeof response.fetchansver === 'string'
+                    ? JSON.parse(response.fetchansver)
+                    : response.fetchansver;
 
-    const getStatusInfo = (cls) => {
-        const now = new Date();
-        const start = cls.startAt ? new Date(cls.startAt) : null;
-        const end = cls.endAt ? new Date(cls.endAt) : null;
-        const isRunning = start && end && now >= start && now <= end;
-        const isPast = end && now > end;
-        const isTemplate = !cls.createdByUserId;
+                renderTimetable(data, teacherId);
+            } catch (error) {
+                console.error(
+                    '[Timetable] Ошибка обработки ответа:',
+                    error
+                );
 
-        if (isRunning) return { key: 'running', label: 'Идёт урок', color: 'running' };
-        if (cls.isVacation) return { key: 'vacation', label: 'Отпуск', color: 'vacation' };
-
-        const status = cls.classStatus?.status;
-
-        if (status === 'success') return { key: 'success', label: 'Прошёл', color: 'success' };
-        if (status === 'moved') return { key: 'moved', label: 'Перенесён', color: 'moved' };
-        if (status === 'canceled_by_student' || status === 'cancelled')
-            return { key: 'canceled', label: 'Отменён студентом', color: 'canceled' };
-        if (status === 'failed_by_teacher')
-            return { key: 'failed_teacher', label: 'Пропущен учителем', color: 'failed_teacher' };
-        if (status === 'failed_by_student')
-            return { key: 'failed_student', label: 'Пропущен учеником', color: 'failed_student' };
-        if (status === 'canceled_not_paid')
-            return { key: 'canceled', label: 'Отменен 0 баланс', color: 'failed_student' };
-        if (cls.removedAt && !cls.classStatus)
-            return { key: 'removed', label: 'Отменён', color: 'removed' };
-        if (cls.isSubstituteTeacher || (cls.classProperties || []).some(p => p.propertyId === 'is_substitute_teacher'))
-            return { key: 'substitute', label: 'Замена', color: 'substitute' };
-        if (isTemplate) return { key: 'default', label: 'Запланировано', color: 'default' };
-        if (isPast && !status) return { key: 'no_status', label: 'Нет статуса', color: 'no_status' };
-
-        return { key: 'default', label: 'Запланировано', color: 'default' };
-    };
-
-    const fmtSTK = (stk) => {
-        const map = {
-            'english_adult_not_native_speaker_premium': 'English Adult Premium',
-            'english_adult_not_native_speaker': 'English Adult',
-            'english_adult_native_speaker': 'English Native',
-            'english_kids': 'English Kids',
-            'math': 'Math',
-            'programming': 'Programming',
-        };
-        return map[stk] || (stk ? stk.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '');
-    };
-
-    const fmtMode = (mode) => {
-        if (mode === 'one-to-one') return '1:1';
-        if (mode === 'group') return 'Группа';
-        return mode || '-';
-    };
-
-    const teacherName = data.user?.name || '';
-    const teacherSurname = data.user?.surname || '';
-    const allClasses = [...(data.classes || []), ...(data.futureSingleClasses || [])];
-
-    let html = `<div class="tt-viz-container">`;
-
-    // Табы
-    html += `<div class="tt-viz-tabs">
-        <button class="tt-viz-tab active" data-tab="classes">Занятия (${allClasses.length})</button>
-        <button class="tt-viz-tab" data-tab="slots">Слоты (${(data.singleSlots || []).length + (data.regularSlots || []).length})</button>
-        <button class="tt-viz-tab" data-tab="regular">Регулярное (${(data.classesRegular || []).length})</button>
-    </div>`;
-
-    // === Секция Занятия ===
-    html += `<div class="tt-viz-section active" id="tt-viz-classes">`;
-    if (allClasses.length === 0) {
-        html += `<div class="tt-viz-empty">Нет данных о занятиях</div>`;
-    } else {
-        html += `<div id="tt-viz-classes-grid"></div>`;
-    }
-    html += `</div>`;
-
-    // === Секция Слоты ===
-    html += `<div class="tt-viz-section" id="tt-viz-slots">`;
-    const single = data.singleSlots || [];
-    const regular = data.regularSlots || [];
-
-    if (single.length === 0 && regular.length === 0) {
-        html += `<div class="tt-viz-empty">Нет данных о слотах</div>`;
-    } else {
-        if (single.length) {
-            const slotGroups = {};
-            single.forEach(s => {
-                const key = getDateKey(s.startAt);
-                if (!slotGroups[key]) slotGroups[key] = [];
-                slotGroups[key].push(s);
-            });
-            html += `<div style="margin-bottom:12px"><div class="tt-viz-day-header">Разовые слоты</div>`;
-            Object.keys(slotGroups).sort().forEach(key => {
-                const items = slotGroups[key].sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
-                html += `<div style="margin-bottom:8px"><div style="font-size:10px;color:#64748b;margin-bottom:4px;font-weight:600">${fmtDate(items[0].startAt)}</div><div class="tt-viz-slot-grid">`;
-                items.forEach(s => {
-                    html += `<div class="tt-viz-slot">
-                        <div class="tt-viz-slot-time">${fmtTime(s.startAt)} – ${fmtTime(s.endAt)}</div>
-                        <div class="tt-viz-slot-types">${(s.types || []).map(t => `<span class="tt-viz-slot-type${t.includes('no_new') ? ' blocked' : ''}">${t}</span>`).join('')}</div>
-                    </div>`;
-                });
-                html += `</div></div>`;
-            });
-            html += `</div>`;
-        }
-
-        if (regular.length) {
-            const dayOrder = [0, 1, 2, 3, 4, 5, 6];
-            const dayNamesFull = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
-            const regByDay = {};
-            regular.forEach(s => {
-                const st = parseT(s.startAt);
-                if (st.dayIndex < 0) return;
-                if (!regByDay[st.dayIndex]) regByDay[st.dayIndex] = [];
-                regByDay[st.dayIndex].push(s);
-            });
-            html += `<div style="margin-bottom:12px"><div class="tt-viz-day-header">Регулярные слоты (шаблон)</div>`;
-            dayOrder.forEach(dIdx => {
-                if (!regByDay[dIdx]) return;
-                html += `<div style="margin-bottom:8px"><div style="font-size:10px;color:#64748b;margin-bottom:4px;font-weight:600">${dayNamesFull[dIdx]}</div><div class="tt-viz-slot-grid">`;
-                regByDay[dIdx].forEach(s => {
-                    const st = parseT(s.startAt);
-                    const et = parseT(s.endAt);
-                    html += `<div class="tt-viz-slot">
-                        <div class="tt-viz-slot-time">${st.timeStr} – ${et.timeStr}</div>
-                        <div class="tt-viz-slot-types">${(s.types || []).map(t => `<span class="tt-viz-slot-type${t.includes('no_new') ? ' blocked' : ''}">${t}</span>`).join('')}</div>
-                    </div>`;
-                });
-                html += `</div></div>`;
-            });
-            html += `</div>`;
-        }
-    }
-    html += `</div>`;
-
-    // === Секция Регулярное ===
-    html += `<div class="tt-viz-section" id="tt-viz-regular">`;
-    const regClasses = data.classesRegular || [];
-    if (regClasses.length === 0) {
-        html += `<div class="tt-viz-empty">Нет регулярных занятий</div>`;
-    } else {
-        const dayOrder = [0, 1, 2, 3, 4, 5, 6];
-        const dayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
-        const byDay = {};
-        regClasses.forEach(r => {
-            const s = parseT(r.startAt);
-            if (s.dayIndex < 0) return;
-            if (!byDay[s.dayIndex]) byDay[s.dayIndex] = [];
-            byDay[s.dayIndex].push(r);
+                ttState(
+                    'Не удалось обработать ответ расписания',
+                    true
+                );
+            }
         });
-        dayOrder.forEach(dIdx => {
-            if (!byDay[dIdx]) return;
-            html += `<div class="tt-viz-day-group"><div class="tt-viz-day-header">${dayNames[dIdx]}</div><div class="tt-viz-grid">`;
-            byDay[dIdx].forEach(r => {
-                const s = parseT(r.startAt);
-                const e = parseT(r.endAt);
-                const student = r.groupId
-                    ? `${r.group?.name || 'Группа'} <span style="color:#22d3ee;font-size:11px;font-weight:700">(Group ID:${r.groupId})</span>`
-                    : `Student ${r.studentId ? `<span style="color:#22d3ee;font-size:11px;font-weight:700">(ID:${r.studentId})</span>` : ''}`;
-                html += `<div class="tt-viz-card tt-viz-status-default">
-                    <div class="tt-viz-card-student">${student}</div>
-                    <div class="tt-viz-card-meta">
-                        ${!r.groupId && r.educationServiceId ? `<span class="tt-viz-badge tt-viz-badge-svc">ID услуги: ${r.educationServiceId}</span>` : ''}
-                    </div>
-                    <div class="tt-viz-card-time" style="margin-top:4px">${s.timeStr} – ${e.timeStr}</div>
-                    <div style="font-size:10px;color:#64748b;margin-top:3px">С ${fmtDate(r.firstExemplarOn)}</div>
-                </div>`;
-            });
-            html += `</div></div>`;
-        });
-    }
-    html += `</div></div>`;
+    } catch (error) {
+        if (requestId !== ttRequestId) return;
 
-    container.innerHTML = html;
+        if (button) button.disabled = false;
 
-    // Заголовок
-    const teachInfoEl = document.getElementById('inputTeachInfo');
-    if (teachInfoEl) {
-        teachInfoEl.textContent = `${teacherName} ${teacherSurname} · ID: ${teacherId}`;
-    }
-
-    // Табы — обработчики
-    container.querySelectorAll('.tt-viz-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            container.querySelectorAll('.tt-viz-tab').forEach(t => t.classList.remove('active'));
-            container.querySelectorAll('.tt-viz-section').forEach(s => s.classList.remove('active'));
-            tab.classList.add('active');
-            const sec = container.querySelector('#tt-viz-' + tab.dataset.tab);
-            if (sec) sec.classList.add('active');
-        });
-    });
-
-    // Рендер занятий с поиском
-    if (allClasses.length) {
-        renderClassesGrid(allClasses, container, fmtDate, fmtTime, getDayName, getDateKey, getStatusInfo, fmtSTK, fmtMode, pad);
+        console.error('[Timetable] Ошибка запроса:', error);
+        ttState(`Ошибка запроса: ${error.message}`, true);
     }
 }
 
-function renderClassesGrid(allClasses, container, fmtDate, fmtTime, getDayName, getDateKey, getStatusInfo, fmtSTK, fmtMode, pad) {
-    const grid = container.querySelector('#tt-viz-classes-grid');
-    const search = document.getElementById('tt-viz-search');
+function changeWeek(direction) {
+    ttCurrentWeekOffset += direction;
+    updateWeekDisplay();
+
+    // Даже если преподаватель не указан, старый ответ другой недели
+    // больше не должен перерисовать окно.
+    ++ttRequestId;
+
+    if (
+        ttHasRequested &&
+        ttValidTeacherId(ttEl('tt-teacher-id')?.value) !== null
+    ) {
+        loadTimetable();
+    } else if (ttHasRequested) {
+        ttState(
+            'Неделя изменена. Укажите ID преподавателя и нажмите «Загрузить».'
+        );
+    }
+}
+
+ttEl('tt-prev-week')?.addEventListener(
+    'click',
+    () => changeWeek(-1)
+);
+
+ttEl('tt-next-week')?.addEventListener(
+    'click',
+    () => changeWeek(1)
+);
+
+ttEl('tt-load-btn')?.addEventListener(
+    'click',
+    loadTimetable
+);
+
+ttEl('tt-teacher-id')?.addEventListener(
+    'keydown',
+    event => {
+        if (event.key === 'Enter') loadTimetable();
+    }
+);
+
+ttEl('tt-viz-search')?.addEventListener(
+    'input',
+    event => {
+        ttClassFilter?.(event.target.value);
+    }
+);
+
+// ============================================================
+// Отображение расписания
+// ============================================================
+
+function renderTimetable(rawData, teacherId) {
+    let data = rawData;
+
+    if (Array.isArray(data)) {
+        data = data[0]?.result?.[0] || data[0];
+    } else if (data?.result) {
+        data = data.result[0];
+    }
+
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw new Error('Неожиданный формат ответа API');
+    }
+
+    const container = ttEl('tt-result-table');
+    if (!container) return;
+
+    const previousTab =
+        container.querySelector('.tt-viz-tab.active')
+            ?.dataset.tab || 'classes';
+
+    const MSK_OFFSET = 3 * 60 * 60 * 1000;
+    const pad = number => String(number).padStart(2, '0');
+
+    const toMSK = value => {
+        if (!value) return null;
+
+        const original = new Date(value);
+        if (Number.isNaN(original.getTime())) return null;
+
+        return new Date(original.getTime() + MSK_OFFSET);
+    };
+
+    const fmtDate = value => {
+        const date = toMSK(value);
+        if (!date) return '—';
+
+        return `${pad(date.getUTCDate())}-${pad(date.getUTCMonth() + 1)}-${date.getUTCFullYear()}`;
+    };
+
+    const fmtTime = value => {
+        const date = toMSK(value);
+        if (!date) return '—';
+
+        return `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())} МСК`;
+    };
+
+    const dayName = value => {
+        const date = toMSK(value);
+        return date
+            ? new Intl.DateTimeFormat('ru-RU', {
+                weekday: 'long',
+                timeZone: 'UTC'
+            }).format(date)
+            : '';
+    };
+
+    const dateKey = value => {
+        const date = toMSK(value);
+        return date
+            ? date.toISOString().slice(0, 10)
+            : 'unknown';
+    };
+
+    // Специальный T-формат регулярных слотов API.
+    const parseT = value => {
+        const raw = String(value ?? '');
+        const match = raw.match(/T(\d+):(\d+):/);
+
+        if (!match) {
+            return {
+                dayIndex: -1,
+                timeStr: raw || '—'
+            };
+        }
+
+        const hours = Number(match[1]);
+        const day = Math.floor(hours / 24);
+        const hour = hours % 24;
+        const mskHour = (hour + 3) % 24;
+        const mskDay =
+            ((day + Math.floor((hour + 3) / 24)) % 7 + 7) % 7;
+
+        const shortDays = [
+            'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'
+        ];
+
+        return {
+            dayIndex: mskDay,
+            timeStr:
+                `${shortDays[mskDay]} ` +
+                `${pad(mskHour)}:${match[2]} МСК`
+        };
+    };
+
+    const getStatusInfo = cls => {
+        const now = Date.now();
+
+        const start = cls.startAt
+            ? new Date(cls.startAt).getTime()
+            : NaN;
+
+        const end = cls.endAt
+            ? new Date(cls.endAt).getTime()
+            : NaN;
+
+        const isRunning =
+            Number.isFinite(start) &&
+            Number.isFinite(end) &&
+            now >= start &&
+            now <= end;
+
+        const isPast =
+            Number.isFinite(end) &&
+            now > end;
+
+        if (isRunning) {
+            return {
+                color: 'running',
+                label: 'Идёт урок'
+            };
+        }
+
+        if (cls.isVacation) {
+            return {
+                color: 'vacation',
+                label: 'Отпуск'
+            };
+        }
+
+        const status = cls.classStatus?.status;
+
+        const statuses = {
+            success: ['success', 'Прошёл'],
+            moved: ['moved', 'Перенесён'],
+            canceled_by_student: [
+                'canceled',
+                'Отменён студентом'
+            ],
+            cancelled: [
+                'canceled',
+                'Отменён студентом'
+            ],
+            failed_by_teacher: [
+                'failed_teacher',
+                'Пропущен учителем'
+            ],
+            failed_by_student: [
+                'failed_student',
+                'Пропущен учеником'
+            ],
+            canceled_not_paid: [
+                'canceled',
+                'Отменён: нулевой баланс'
+            ]
+        };
+
+        if (statuses[status]) {
+            return {
+                color: statuses[status][0],
+                label: statuses[status][1]
+            };
+        }
+
+        if (cls.removedAt && !cls.classStatus) {
+            return {
+                color: 'removed',
+                label: 'Отменён'
+            };
+        }
+
+        if (
+            cls.isSubstituteTeacher ||
+            ttArray(cls.classProperties).some(
+                property =>
+                    property?.propertyId ===
+                    'is_substitute_teacher'
+            )
+        ) {
+            return {
+                color: 'substitute',
+                label: 'Замена'
+            };
+        }
+
+        if (isPast && !status && cls.createdByUserId) {
+            return {
+                color: 'no_status',
+                label: 'Нет статуса'
+            };
+        }
+
+        return {
+            color: 'default',
+            label: 'Запланировано'
+        };
+    };
+
+    const fmtSTK = value => {
+        const map = {
+            english_adult_not_native_speaker_premium:
+                'English Adult Premium',
+            english_adult_not_native_speaker:
+                'English Adult',
+            english_adult_native_speaker:
+                'English Native',
+            english_kids: 'English Kids',
+            math: 'Math',
+            programming: 'Programming'
+        };
+
+        const key = String(value ?? '');
+
+        return map[key] ||
+            key.replace(/_/g, ' ')
+                .replace(/\b\w/g, letter =>
+                    letter.toUpperCase()
+                );
+    };
+
+    const fmtMode = value => {
+        if (value === 'one-to-one') return '1:1';
+        if (value === 'group') return 'Группа';
+        return String(value || '—');
+    };
+
+    const classes = [
+        ...ttArray(data.classes),
+        ...ttArray(data.futureSingleClasses)
+    ];
+
+    const singleSlots = ttArray(data.singleSlots);
+    const regularSlots = ttArray(data.regularSlots);
+    const regularClasses = ttArray(data.classesRegular);
+
+    const tabConfig = [
+        ['classes', `Занятия (${classes.length})`],
+        [
+            'slots',
+            `Слоты (${singleSlots.length + regularSlots.length})`
+        ],
+        [
+            'regular',
+            `Регулярное (${regularClasses.length})`
+        ]
+    ];
+
+    let html = `
+        <div class="tt-viz-container">
+            <div class="tt-viz-tabs">
+                ${tabConfig.map(([key, label]) => `
+                    <button class="tt-viz-tab"
+                            type="button"
+                            data-tab="${key}">
+                        ${label}
+                    </button>
+                `).join('')}
+            </div>
+
+            <div class="tt-viz-section" id="tt-viz-classes">
+                ${classes.length
+                    ? '<div id="tt-viz-classes-grid"></div>'
+                    : '<div class="tt-viz-empty">Нет данных о занятиях</div>'
+                }
+            </div>
+
+            <div class="tt-viz-section" id="tt-viz-slots">
+    `;
+
+    if (!singleSlots.length && !regularSlots.length) {
+        html += `
+            <div class="tt-viz-empty">
+                Нет данных о слотах
+            </div>
+        `;
+    } else {
+        if (singleSlots.length) {
+            const groups = new Map();
+
+            for (const slot of singleSlots) {
+                const key = dateKey(slot.startAt);
+
+                if (!groups.has(key)) groups.set(key, []);
+                groups.get(key).push(slot);
+            }
+
+            html += `
+                <div class="tt-viz-day-header">
+                    Разовые слоты
+                </div>
+            `;
+
+            for (const key of [...groups.keys()].sort()) {
+                const slots = groups.get(key).sort(
+                    (a, b) =>
+                        new Date(a.startAt) -
+                        new Date(b.startAt)
+                );
+
+                html += `
+                    <div class="tt-viz-day-group">
+                        <div class="tt-viz-detail">
+                            ${fmtDate(slots[0].startAt)}
+                        </div>
+                        <div class="tt-viz-slot-grid">
+                `;
+
+                for (const slot of slots) {
+                    html += `
+                        <div class="tt-viz-slot">
+                            <div class="tt-viz-slot-time">
+                                ${fmtTime(slot.startAt)}
+                                –
+                                ${fmtTime(slot.endAt)}
+                            </div>
+                            <div class="tt-viz-slot-types">
+                                ${ttArray(slot.types).map(type => `
+                                    <span class="tt-viz-slot-type${
+                                        String(type).includes('no_new')
+                                            ? ' blocked'
+                                            : ''
+                                    }">
+                                        ${ttEscape(type)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                html += '</div></div>';
+            }
+        }
+
+        if (regularSlots.length) {
+            const groups = new Map();
+
+            for (const slot of regularSlots) {
+                const parsed = parseT(slot.startAt);
+
+                if (parsed.dayIndex < 0) continue;
+
+                if (!groups.has(parsed.dayIndex)) {
+                    groups.set(parsed.dayIndex, []);
+                }
+
+                groups.get(parsed.dayIndex).push(slot);
+            }
+
+            const days = [
+                'Понедельник',
+                'Вторник',
+                'Среда',
+                'Четверг',
+                'Пятница',
+                'Суббота',
+                'Воскресенье'
+            ];
+
+            html += `
+                <div class="tt-viz-day-header">
+                    Регулярные слоты
+                </div>
+            `;
+
+            for (let day = 0; day < 7; day++) {
+                if (!groups.has(day)) continue;
+
+                html += `
+                    <div class="tt-viz-day-group">
+                        <div class="tt-viz-detail">
+                            ${days[day]}
+                        </div>
+                        <div class="tt-viz-slot-grid">
+                `;
+
+                for (const slot of groups.get(day)) {
+                    const start = parseT(slot.startAt);
+                    const end = parseT(slot.endAt);
+
+                    html += `
+                        <div class="tt-viz-slot">
+                            <div class="tt-viz-slot-time">
+                                ${ttEscape(start.timeStr)}
+                                –
+                                ${ttEscape(end.timeStr)}
+                            </div>
+                            <div class="tt-viz-slot-types">
+                                ${ttArray(slot.types).map(type => `
+                                    <span class="tt-viz-slot-type${
+                                        String(type).includes('no_new')
+                                            ? ' blocked'
+                                            : ''
+                                    }">
+                                        ${ttEscape(type)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                html += '</div></div>';
+            }
+        }
+    }
+
+    html += `
+            </div>
+            <div class="tt-viz-section" id="tt-viz-regular">
+    `;
+
+    if (!regularClasses.length) {
+        html += `
+            <div class="tt-viz-empty">
+                Нет регулярных занятий
+            </div>
+        `;
+    } else {
+        const groups = new Map();
+
+        for (const item of regularClasses) {
+            const parsed = parseT(item.startAt);
+
+            if (parsed.dayIndex < 0) continue;
+
+            if (!groups.has(parsed.dayIndex)) {
+                groups.set(parsed.dayIndex, []);
+            }
+
+            groups.get(parsed.dayIndex).push(item);
+        }
+
+        const days = [
+            'Понедельник',
+            'Вторник',
+            'Среда',
+            'Четверг',
+            'Пятница',
+            'Суббота',
+            'Воскресенье'
+        ];
+
+        for (let day = 0; day < 7; day++) {
+            if (!groups.has(day)) continue;
+
+            html += `
+                <div class="tt-viz-day-group">
+                    <div class="tt-viz-day-header">
+                        ${days[day]}
+                    </div>
+                    <div class="tt-viz-grid">
+            `;
+
+            for (const item of groups.get(day)) {
+                const start = parseT(item.startAt);
+                const end = parseT(item.endAt);
+
+                const student = item.groupId
+                    ? ttEscape(item.group?.name || 'Группа')
+                    : 'Student';
+
+                const id = item.groupId
+                    ? `<span class="tt-viz-id">
+                           (Group ID: ${ttEscape(item.groupId)})
+                       </span>`
+                    : item.studentId
+                        ? `<span class="tt-viz-id">
+                               (ID: ${ttEscape(item.studentId)})
+                           </span>`
+                        : '';
+
+                html += `
+                    <div class="tt-viz-card tt-viz-status-default">
+                        <div class="tt-viz-card-student">
+                            ${student} ${id}
+                        </div>
+
+                        <div class="tt-viz-card-meta">
+                            ${!item.groupId && item.educationServiceId
+                                ? `<span class="tt-viz-badge tt-viz-badge-svc">
+                                       ID услуги:
+                                       ${ttEscape(item.educationServiceId)}
+                                   </span>`
+                                : ''
+                            }
+                        </div>
+
+                        <div class="tt-viz-card-time">
+                            ${ttEscape(start.timeStr)}
+                            –
+                            ${ttEscape(end.timeStr)}
+                        </div>
+
+                        <div class="tt-viz-detail">
+                            С ${fmtDate(item.firstExemplarOn)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div></div>';
+        }
+    }
+
+    html += '</div></div>';
+
+    container.innerHTML = html;
+
+    const teacherName = [
+        data.user?.name,
+        data.user?.surname
+    ].filter(Boolean).join(' ');
+
+    const heading = ttEl('inputTeachInfo');
+
+    if (heading) {
+        heading.textContent =
+            `${teacherName ? teacherName + ' · ' : ''}` +
+            `ID: ${teacherId}`;
+    }
+
+    function activateTab(key) {
+        for (const tab of container.querySelectorAll(
+            '.tt-viz-tab'
+        )) {
+            tab.classList.toggle(
+                'active',
+                tab.dataset.tab === key
+            );
+        }
+
+        for (const section of container.querySelectorAll(
+            '.tt-viz-section'
+        )) {
+            section.classList.toggle(
+                'active',
+                section.id === `tt-viz-${key}`
+            );
+        }
+    }
+
+    container.querySelectorAll('.tt-viz-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            activateTab(tab.dataset.tab);
+        });
+    });
+
+    activateTab(
+        tabConfig.some(([key]) => key === previousTab)
+            ? previousTab
+            : 'classes'
+    );
+
+    ttClassFilter = null;
+
+    if (classes.length) {
+        renderClassesGrid(
+            classes,
+            container,
+            {
+                fmtDate,
+                fmtTime,
+                dayName,
+                dateKey,
+                getStatusInfo,
+                fmtSTK,
+                fmtMode
+            }
+        );
+    }
+}
+
+function renderClassesGrid(classes, container, helpers) {
+    const grid = container.querySelector(
+        '#tt-viz-classes-grid'
+    );
+
     if (!grid) return;
 
+    const {
+        fmtDate,
+        fmtTime,
+        dayName,
+        dateKey,
+        getStatusInfo,
+        fmtSTK,
+        fmtMode
+    } = helpers;
+
     const render = (filter = '') => {
-        let html = '';
-        const filtered = allClasses.filter(c => {
-            const student = c.group?.name
-                ? `Group ${c.group.name}`
-                : c.student?.user?.name || c.student?.user?.surname || `Student ${c.studentId || c.student?.user?.id || ''}`;
-            const status = getStatusInfo(c).label;
-            const str = `${student} ${status} ${c.id || ''} ${c.type || ''} ${c.serviceTypeKey || ''} ${c.educationServiceId || ''} ${c.groupId || ''} ${c.studentId || ''}`.toLowerCase();
-            return str.includes(filter.toLowerCase());
+        const normalizedFilter =
+            String(filter).trim().toLowerCase();
+
+        const filtered = classes.filter(item => {
+            const student = item.group?.name ||
+                [
+                    item.student?.user?.name,
+                    item.student?.user?.surname
+                ].filter(Boolean).join(' ') ||
+                `Student ${item.studentId || ''}`;
+
+            const searchable = [
+                student,
+                getStatusInfo(item).label,
+                item.id,
+                item.type,
+                item.serviceTypeKey,
+                item.educationServiceId,
+                item.groupId,
+                item.studentId
+            ].join(' ').toLowerCase();
+
+            return searchable.includes(normalizedFilter);
         });
 
-        const groups = {};
-        filtered.forEach(c => {
-            const key = getDateKey(c.startAt);
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(c);
-        });
-        const sortedKeys = Object.keys(groups).sort();
-        const todayKey = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
-
-        if (sortedKeys.length === 0) {
-            grid.innerHTML = '<div class="tt-viz-empty">Ничего не найдено</div>';
+        if (!filtered.length) {
+            grid.innerHTML = `
+                <div class="tt-viz-empty">
+                    Ничего не найдено
+                </div>
+            `;
             return;
         }
 
-        sortedKeys.forEach(key => {
-            const first = groups[key][0];
-            const isToday = key === todayKey;
-            html += `<div class="tt-viz-day-group">
-                <div class="tt-viz-day-header ${isToday ? 'today' : ''}">${fmtDate(first.startAt)} — ${getDayName(first.startAt)}${isToday ? ' ⭐ СЕГОДНЯ' : ''}</div>
-                <div class="tt-viz-grid">`;
+        const groups = new Map();
 
-            groups[key].sort((a, b) => new Date(a.startAt) - new Date(b.startAt)).forEach(c => {
-                const info = getStatusInfo(c);
-                const studentName = c.group?.name
-                    ? `${c.group.name}`
-                    : c.student?.user
-                        ? `${c.student?.user?.name}`
-                        : 'Student';
-                const studentId = c.groupId || c.studentId || c.student?.user?.id || '';
-                const time = fmtTime(c.startAt) + ' – ' + fmtTime(c.endAt);
-                const typeLabel = c.type === 'regular' ? 'Регулярное' : c.type === 'single' ? 'Разовое' : (c.type || '-');
-                const isSub = c.isSubstituteTeacher || (c.classProperties || []).some(p => p.propertyId === 'is_substitute_teacher');
-                const stk = fmtSTK(c.serviceTypeKey);
-                const mode = fmtMode(c.mode);
-                const svcId = c.educationServiceId || '';
-                const creatorId = c.createdByUserId || '';
-                const statusDate = c.classStatus?.createdAt
-                    ? `<div class="tt-viz-comment moved-date">${c.classStatus.status === 'moved' ? 'Перенесено' : 'Статус изменён'}: ${fmtDate(c.classStatus.createdAt)} ${fmtTime(c.classStatus.createdAt)}</div>`
-                    : '';
+        for (const item of filtered) {
+            const key = dateKey(item.startAt);
+
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(item);
+        }
+
+        const todayKey = new Date(
+            Date.now() + 3 * 60 * 60 * 1000
+        ).toISOString().slice(0, 10);
+
+        let html = '';
+
+        for (const key of [...groups.keys()].sort()) {
+            const items = groups.get(key).sort(
+                (a, b) =>
+                    new Date(a.startAt) -
+                    new Date(b.startAt)
+            );
+
+            const first = items[0];
+            const isToday = key === todayKey;
+
+            html += `
+                <div class="tt-viz-day-group">
+                    <div class="tt-viz-day-header${
+                        isToday ? ' today' : ''
+                    }">
+                        ${fmtDate(first.startAt)}
+                        —
+                        ${ttEscape(dayName(first.startAt))}
+                        ${isToday ? ' · СЕГОДНЯ' : ''}
+                    </div>
+
+                    <div class="tt-viz-grid">
+            `;
+
+            for (const item of items) {
+                const status = getStatusInfo(item);
+
+                const studentName =
+                    item.group?.name ||
+                    [
+                        item.student?.user?.name,
+                        item.student?.user?.surname
+                    ].filter(Boolean).join(' ') ||
+                    'Student';
+
+                const studentId =
+                    item.groupId ||
+                    item.studentId ||
+                    item.student?.user?.id ||
+                    '';
 
                 const idHtml = studentId
-                    ? (c.groupId
-                        ? ` <span style="color:#22d3ee;font-size:11px;font-weight:700">(Group ID:${studentId})</span>`
-                        : ` <span style="color:#22d3ee;font-size:11px;font-weight:700">(ID:${studentId})</span>`)
+                    ? `<span class="tt-viz-id">
+                           (${item.groupId ? 'Group ID' : 'ID'}:
+                           ${ttEscape(studentId)})
+                       </span>`
                     : '';
 
-                html += `<div class="tt-viz-card tt-viz-status-${info.color}">
-    <span class="tt-viz-badge tt-viz-badge-status">${info.label}</span>
-    <div class="tt-viz-card-time">${time}</div>
-    <div class="tt-viz-card-student">${studentName}${idHtml}</div>
-    <div class="tt-viz-card-meta">
-        <span class="tt-viz-badge tt-viz-badge-type">${typeLabel}</span>
-        <span class="tt-viz-badge tt-viz-badge-mode">${mode}</span>
-        ${stk ? `<span class="tt-viz-badge tt-viz-badge-stk">${stk}</span>` : ''}
-        ${svcId && !c.groupId ? `<span class="tt-viz-badge tt-viz-badge-svc">ID услуги: ${svcId}</span>` : ''}
-        ${creatorId ? `<span class="tt-viz-badge tt-viz-badge-creator">Создатель: ${creatorId}</span>` : ''}
-        ${isSub ? `<span class="tt-viz-badge tt-viz-badge-substitute">Замена</span>` : ''}
-    </div>
-    ${c.classStatus?.comment ? `<div class="tt-viz-comment">${c.classStatus.comment}</div>` : ''}
-    ${statusDate}
-    ${c.removedAt && c.classStatus?.status !== 'moved' ? `<div class="tt-viz-comment" style="color:#f87171">Удалено: ${fmtDate(c.removedAt)} ${fmtTime(c.removedAt)}</div>` : ''}
-</div>`;
-            });
+                const typeLabel =
+                    item.type === 'regular'
+                        ? 'Регулярное'
+                        : item.type === 'single'
+                            ? 'Разовое'
+                            : item.type || '—';
+
+                const isSubstitute =
+                    item.isSubstituteTeacher ||
+                    ttArray(item.classProperties).some(
+                        property =>
+                            property?.propertyId ===
+                            'is_substitute_teacher'
+                    );
+
+                const stk = fmtSTK(item.serviceTypeKey);
+                const mode = fmtMode(item.mode);
+
+                const statusDate =
+                    item.classStatus?.createdAt
+                        ? `<div class="tt-viz-comment moved-date">
+                               ${item.classStatus.status === 'moved'
+                                   ? 'Перенесено'
+                                   : 'Статус изменён'
+                               }:
+                               ${fmtDate(item.classStatus.createdAt)}
+                               ${fmtTime(item.classStatus.createdAt)}
+                           </div>`
+                        : '';
+
+                html += `
+                    <div class="tt-viz-card tt-viz-status-${status.color}">
+                        <span class="tt-viz-badge tt-viz-badge-status">
+                            ${status.label}
+                        </span>
+
+                        <div class="tt-viz-card-time">
+                            ${fmtTime(item.startAt)}
+                            –
+                            ${fmtTime(item.endAt)}
+                        </div>
+
+                        <div class="tt-viz-card-student">
+                            ${ttEscape(studentName)}
+                            ${idHtml}
+                        </div>
+
+                        <div class="tt-viz-card-meta">
+                            <span class="tt-viz-badge tt-viz-badge-type">
+                                ${ttEscape(typeLabel)}
+                            </span>
+
+                            <span class="tt-viz-badge tt-viz-badge-mode">
+                                ${ttEscape(mode)}
+                            </span>
+
+                            ${stk
+                                ? `<span class="tt-viz-badge tt-viz-badge-stk">
+                                       ${ttEscape(stk)}
+                                   </span>`
+                                : ''
+                            }
+
+                            ${item.educationServiceId && !item.groupId
+                                ? `<span class="tt-viz-badge tt-viz-badge-svc">
+                                       ID услуги:
+                                       ${ttEscape(item.educationServiceId)}
+                                   </span>`
+                                : ''
+                            }
+
+                            ${item.createdByUserId
+                                ? `<span class="tt-viz-badge">
+                                       Создатель:
+                                       ${ttEscape(item.createdByUserId)}
+                                   </span>`
+                                : ''
+                            }
+
+                            ${isSubstitute
+                                ? `<span class="tt-viz-badge tt-viz-badge-substitute">
+                                       Замена
+                                   </span>`
+                                : ''
+                            }
+                        </div>
+
+                        ${item.classStatus?.comment
+                            ? `<div class="tt-viz-comment">
+                                   ${ttEscape(item.classStatus.comment)}
+                               </div>`
+                            : ''
+                        }
+
+                        ${statusDate}
+
+                        ${item.removedAt &&
+                          item.classStatus?.status !== 'moved'
+                            ? `<div class="tt-viz-comment">
+                                   Удалено:
+                                   ${fmtDate(item.removedAt)}
+                                   ${fmtTime(item.removedAt)}
+                               </div>`
+                            : ''
+                        }
+                    </div>
+                `;
+            }
 
             html += '</div></div>';
-        });
+        }
 
         grid.innerHTML = html;
+
+        // Прокручиваем только внутренний список, не страницу AutoFAQ.
+        if (!normalizedFilter && container.querySelector(
+            '#tt-viz-classes.tt-viz-section.active'
+        )) {
+            const todayHeader = grid.querySelector(
+                '.tt-viz-day-header.today'
+            );
+
+            const scrollBox = container.closest(
+                '.tt-result-box'
+            );
+
+            if (todayHeader && scrollBox) {
+                const offset =
+                    todayHeader.getBoundingClientRect().top -
+                    scrollBox.getBoundingClientRect().top +
+                    scrollBox.scrollTop -
+                    12;
+
+                scrollBox.scrollTop = Math.max(0, offset);
+            }
+        }
     };
 
-    render();
+    ttClassFilter = render;
 
-    // Поиск: слушатель вешаем ОДИН раз (раньше дублировался при каждой загрузке
-    // расписания — фильтр применялся N раз, где N = число загрузок)
-    if (search && !search.dataset.ttBound) {
-        search.dataset.ttBound = '1';
-        search.addEventListener('input', (e) => {
-            if (typeof window.__ttApplyClassFilter === 'function') {
-                window.__ttApplyClassFilter(e.target.value);
-            }
-        });
-    }
-    window.__ttApplyClassFilter = render;
-
-    setTimeout(() => {
-        const todayHeader = grid.closest('.tt-viz-container')?.querySelector('.tt-viz-day-header.today');
-        if (todayHeader) {
-            todayHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }, 100);
+    // Сохраняем введённый фильтр и после повторной загрузки данных.
+    render(ttEl('tt-viz-search')?.value || '');
 }
 
 updateWeekDisplay();
@@ -1088,9 +1751,13 @@ updateWeekDisplay();
 function getbutTimetableButtonPress() {
     const win = document.getElementById('AF_TimetableUI');
     if (!win) return;
-    if (win.style.display === 'none' || win.style.display === '') {
+
+    if (
+        win.style.display === 'none' ||
+        win.style.display === ''
+    ) {
         win.style.display = 'block';
-        requestAnimationFrame(() => updateWeekDisplay());
+        requestAnimationFrame(updateWeekDisplay);
     } else {
         win.style.display = 'none';
     }
