@@ -412,6 +412,234 @@ const getThread = async (rootId) => {
     background: rgba(251, 191, 36, 0.2); color: #fcd34d;
     padding: 2px 7px; border-radius: 6px; border: 1px solid rgba(251,191,36,0.35);
 }
+
+/* ChMAF / Mattermost — corporate refinement.
+   Все правила ограничены окном модуля. */
+
+#AF_Mattermost .mms-panel {
+    box-sizing: border-box;
+    width: min(740px, calc(100vw - 24px)) !important;
+    max-width: 100%;
+    background:
+        radial-gradient(
+            circle at 92% 0%,
+            rgba(102, 144, 255, .13),
+            transparent 38%
+        ),
+        #111827 !important;
+    border: 1px solid #344158 !important;
+    border-top: 3px solid #7395f5 !important;
+    border-radius: 18px !important;
+    color: #edf2fb;
+    box-shadow:
+        0 26px 72px rgba(4, 10, 23, .52),
+        inset 0 1px rgba(255, 255, 255, .06) !important;
+}
+
+#AF_Mattermost .mms-panel,
+#AF_Mattermost .mms-panel * {
+    box-sizing: border-box;
+}
+
+#AF_Mattermost .mms-header {
+    gap: 12px;
+    padding-bottom: 13px;
+    border-bottom: 1px solid #303d52;
+}
+
+#AF_Mattermost .mms-title {
+    font-size: 14px;
+    letter-spacing: -.01em;
+}
+
+#AF_Mattermost .mms-subtitle {
+    color: #91a1ba;
+}
+
+#AF_Mattermost .mms-icon {
+    color: #edf3ff;
+    background: linear-gradient(145deg, #344a7c, #514879);
+    border-color: #647ab3;
+    box-shadow: 0 5px 16px rgba(47, 76, 152, .22);
+}
+
+#AF_Mattermost .mms-btn,
+#AF_Mattermost .mms-act-btn {
+    color: #d7e1f2;
+    background: #1c2739;
+    border: 1px solid #384963;
+    box-shadow: none;
+}
+
+#AF_Mattermost .mms-btn:hover:not(:disabled),
+#AF_Mattermost .mms-act-btn:hover {
+    color: #fff;
+    background: #293a54;
+    border-color: #7797da;
+    box-shadow: none;
+}
+
+#AF_Mattermost .mms-btn-primary {
+    color: #fff;
+    background: #5079df;
+    border-color: #789af0;
+    box-shadow: 0 5px 17px rgba(59, 102, 213, .21);
+}
+
+#AF_Mattermost .mms-btn-primary:hover:not(:disabled) {
+    background: #638bf0;
+    border-color: #a0b7f6;
+}
+
+#AF_Mattermost .mms-btn-danger {
+    color: #ffb4c0;
+    background: rgba(255, 113, 137, .08);
+    border-color: rgba(255, 113, 137, .27);
+}
+
+#AF_Mattermost .mms-input {
+    min-width: 0;
+    color: #f1f5fc;
+    background: #0d1625;
+    border-color: #3a4960;
+}
+
+#AF_Mattermost .mms-input:focus {
+    background: #111c2e;
+    border-color: #7b9bfa;
+    box-shadow: 0 0 0 3px rgba(102, 144, 255, .16);
+}
+
+#AF_Mattermost .mms-input::placeholder {
+    color: #8392a8;
+}
+
+#AF_Mattermost select.mms-input option {
+    color: #f1f5fc;
+    background: #182335;
+}
+
+#AF_Mattermost .mms-results {
+    scrollbar-width: thin;
+    scrollbar-color: #526789 transparent;
+}
+
+#AF_Mattermost .mms-item {
+    background: #1a2536;
+    border: 1px solid #344258;
+    border-left: 3px solid #6f91dd;
+    box-shadow: none;
+}
+
+#AF_Mattermost .mms-item:hover {
+    background: #223149;
+    border-color: #6483bb;
+    border-left-color: #89a8ff;
+    transform: translateX(2px);
+}
+
+#AF_Mattermost .mms-item-root {
+    background: #222642;
+    border-left-color: #a58ff3;
+}
+
+#AF_Mattermost .mms-root-badge {
+    color: #dacfff;
+    background: rgba(165, 143, 243, .15);
+    border-color: rgba(165, 143, 243, .42);
+}
+
+#AF_Mattermost .mms-channel,
+#AF_Mattermost .mms-group-cnt {
+    color: #c5d5ff;
+    background: rgba(108, 145, 234, .14);
+    border-color: rgba(108, 145, 234, .36);
+}
+
+#AF_Mattermost .mms-author,
+#AF_Mattermost .mms-thread-info,
+#AF_Mattermost .mms-att-title,
+#AF_Mattermost .mms-file-link {
+    color: #c4d4ff;
+}
+
+#AF_Mattermost .mms-msg,
+#AF_Mattermost .mms-att-text {
+    color: #e6edf8;
+}
+
+#AF_Mattermost .mms-att {
+    background: #121d2d;
+    border-color: #35445c;
+    border-left-color: #7698ec;
+}
+
+#AF_Mattermost .mms-group-head,
+#AF_Mattermost .mms-channel-bar {
+    background: #182438;
+    border-color: #35455f;
+}
+
+#AF_Mattermost .mms-group-head:hover {
+    background: #23334d;
+}
+
+#AF_Mattermost .mms-chip {
+    color: #d2defb;
+    background: #293b60;
+    border-color: #526fa6;
+}
+
+#AF_Mattermost .mms-chip-off {
+    color: #a0aec3;
+    background: #1c2738;
+    border-color: #39475a;
+}
+
+#AF_Mattermost .mms-chip-reset {
+    color: #b7c9ff;
+}
+
+#AF_Mattermost .mms-hit {
+    color: #f0eaff;
+    background: rgba(157, 123, 233, .38);
+}
+
+#AF_Mattermost .mms-spinner {
+    border-color: rgba(115, 149, 245, .22);
+    border-top-color: #8faaff;
+}
+
+#AF_Mattermost .mms-btn:focus-visible,
+#AF_Mattermost .mms-act-btn:focus-visible,
+#AF_Mattermost .mms-input:focus-visible,
+#AF_Mattermost .mms-chip-reset:focus-visible {
+    outline: 2px solid #93afff;
+    outline-offset: 2px;
+}
+
+@media (max-width: 650px) {
+    #AF_Mattermost .mms-search-row:first-of-type {
+        flex-wrap: wrap;
+    }
+
+    #AF_Mattermost #mms-team {
+        width: 100% !important;
+    }
+
+    #AF_Mattermost #mms-query {
+        flex: 1 1 180px !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #AF_Mattermost .mms-panel *,
+    #AF_Mattermost .mms-panel *::before,
+    #AF_Mattermost .mms-panel *::after {
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+    }
+}
     `;
 
     // ═══════════════════════════════════════════════════════
@@ -462,6 +690,8 @@ const getThread = async (rootId) => {
     let searchPage = 0;        // номер текущей страницы
     let hasMore = false;       // есть ли ещё страницы
     let teamsLoaded = false;
+	let viewVersion = 0;
+    let loadingMore = false;
 	let hiddenChannels = new Set();   // каналы, скрытые фильтром-чипсами (п.3/4)
 
     const escapeHtml = (s) => String(s)
@@ -698,7 +928,7 @@ await Promise.all([
 
 const drawResults = (terms) => {
     const list = currentResults.filter(p => !hiddenChannels.has(p.channel_id));
-    dom.results.innerHTML = '';
+	dom.results.innerHTML = '';
     if (!currentResults.length) {
         dom.results.innerHTML = '<div class="mms-empty">Ничего не найдено.</div>';
         setStatus('Найдено: 0', '#f87171');
@@ -794,10 +1024,12 @@ const drawChannelBar = () => {
 // ═══ Пункт 1: просмотр всего треда ═══
 const openThread = async (post) => {
     const rootId = post.root_id || post.id;
+	const version = ++viewVersion;
     dom.channelBar.style.display = 'none';
     dom.results.innerHTML = '<div class="mms-loading"><div class="mms-spinner"></div>Загрузка треда...</div>';
     try {
         const res = await getThread(rootId);
+		if (version !== viewVersion) return;
         const posts = (res && res.posts) || {};
         const order = Array.isArray(res.order) ? res.order : Object.keys(posts);
         const threadPosts = order.map(id => posts[id]).filter(Boolean)
@@ -809,6 +1041,7 @@ const openThread = async (post) => {
             Promise.all(channelIds.map(getChannel)),
             getUsers(userIds)
         ]);
+		if (version !== viewVersion) return;
         dom.results.innerHTML = '';
         // Шапка треда с кнопкой возврата
         const bar = document.createElement('div');
@@ -824,6 +1057,7 @@ const openThread = async (post) => {
             }));
         });
     } catch (e) {
+	if (version !== viewVersion) return;
         dom.results.innerHTML = '<div class="mms-empty">Не удалось загрузить тред.</div>';
         notify(e.message === AUTH_ERR ? 'Нужна авторизация в Mattermost' : 'Ошибка треда: ' + e.message, 'error');
         drawChannelBar();
@@ -831,71 +1065,131 @@ const openThread = async (post) => {
     }
 };
 const closeThread = () => {
+    ++viewVersion;
     drawChannelBar();
     drawResults(searchTerms);
-};	
+};
 	// ═══════════════════════════════════════════════════════
     // Поиск
     // ═══════════════════════════════════════════════════════
-    const runSearch = async () => {
-        const terms = dom.query.value.trim();
-        if (!terms) {
-            setStatus('Введите запрос', '#fbbf24');
-            notify('Введите текст для поиска', 'warning');
-            return;
+const runSearch = async () => {
+    const terms = dom.query.value.trim();
+
+    if (!terms) {
+        setStatus('Введите запрос', '#9db5ff');
+        notify('Введите текст для поиска', 'warning');
+        return;
+    }
+
+    if (!teamId) {
+        setStatus('Команда не выбрана', '#ff8496');
+        return;
+    }
+
+    const version = ++viewVersion;
+    const requestedTeamId = teamId;
+
+    currentResults = [];
+    searchTerms = terms;
+    searchPage = 0;
+    hasMore = false;
+    loadingMore = false;
+    hiddenChannels.clear();
+
+    dom.channelBar.style.display = 'none';
+    dom.channelBar.innerHTML = '';
+    dom.searchBtn.disabled = true;
+    dom.results.innerHTML =
+        '<div class="mms-loading"><div class="mms-spinner"></div>Поиск по Mattermost...</div>';
+
+    try {
+        const res = await searchPosts(requestedTeamId, terms, 0);
+
+        if (version !== viewVersion) return;
+
+        await mergeResults(res, terms);
+
+        if (version !== viewVersion) return;
+
+        drawChannelBar();
+        drawResults(terms);
+    } catch (e) {
+        if (version !== viewVersion) return;
+
+        if (e.message === AUTH_ERR) {
+            setStatus('Нужна авторизация в Mattermost', '#ff8496');
+            notify(
+                '🔐 Откройте https://mm-time.skyeng.tech, войдите — и повторите поиск',
+                'warning'
+            );
+        } else {
+            setStatus('Ошибка: ' + e.message, '#ff8496');
+            notify('Ошибка поиска в Mattermost: ' + e.message, 'error');
         }
-        if (!teamId) {
-            setStatus('Команда не выбрана', '#f87171');
-            return;
-        }
 
-        // Новый поиск — сбрасываем накопленные страницы
-currentResults = [];
-searchTerms = terms;
-searchPage = 0;
-hasMore = false;
-hiddenChannels.clear();   // новый поиск — сбрасываем фильтр каналов
-
-        dom.searchBtn.disabled = true;
-        dom.results.innerHTML = '<div class="mms-loading"><div class="mms-spinner"></div>Поиск по Mattermost...</div>';
-
-        try {
-const res = await searchPosts(teamId, terms, searchPage);
-await mergeResults(res, terms);
-drawChannelBar();      // панель каналов-чипсов
-drawResults(terms);
-        } catch (e) {
-            if (e.message === AUTH_ERR) {
-                setStatus('Нужна авторизация в Mattermost', '#f87171');
-                notify('🔐 Откройте https://mm-time.skyeng.tech, войдите — и повторите поиск', 'warning');
-            } else {
-                setStatus('Ошибка: ' + e.message, '#f87171');
-                notify('Ошибка поиска в Mattermost: ' + e.message, 'error');
-            }
-            dom.results.innerHTML = '<div class="mms-empty">Поиск не удался. Проверьте консоль (F12) для деталей.</div>';
-        } finally {
+        dom.results.innerHTML =
+            '<div class="mms-empty">Поиск не удался. Попробуйте ещё раз.</div>';
+    } finally {
+        if (version === viewVersion) {
             dom.searchBtn.disabled = false;
         }
-    };
+    }
+};
 
     // Догрузка следующей страницы результатов (кнопка «Показать ещё»)
-    const loadMore = async () => {
-        if (!teamId || !searchTerms) return;
-        const btn = document.getElementById('mms-more');
-        if (btn) {
-            btn.disabled = true;
-            btn.textContent = 'Загрузка...';
+const loadMore = async () => {
+    if (!teamId || !searchTerms || !hasMore || loadingMore) return;
+
+    const version = viewVersion;
+    const requestedTeamId = teamId;
+    const requestedTerms = searchTerms;
+    const nextPage = searchPage + 1;
+
+    loadingMore = true;
+
+    const btn = dom.results.querySelector('#mms-more');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Загрузка...';
+    }
+
+    try {
+        const res = await searchPosts(
+            requestedTeamId,
+            requestedTerms,
+            nextPage
+        );
+
+        if (version !== viewVersion) return;
+
+        await mergeResults(res, requestedTerms);
+
+        if (version !== viewVersion) return;
+
+        // Страницу подтверждаем только после успешного получения ответа.
+        searchPage = nextPage;
+
+        drawChannelBar();
+        drawResults(requestedTerms);
+    } catch (e) {
+        if (version !== viewVersion) return;
+
+        notify(
+            e.message === AUTH_ERR
+                ? 'Нужна авторизация в Mattermost'
+                : 'Ошибка догрузки: ' + e.message,
+            'error'
+        );
+
+        // Старую кнопку оставляем доступной для повторной попытки.
+        if (btn?.isConnected) {
+            btn.disabled = false;
+            btn.textContent = '📥 Повторить загрузку';
         }
-        try {
-            searchPage += 1;
-const res = await searchPosts(teamId, searchTerms, searchPage);
-await mergeResults(res, searchTerms);
-drawChannelBar();
-drawResults(searchTerms);
-        } catch (e) {
-            notify(e.message === AUTH_ERR ? 'Нужна авторизация в Mattermost' : 'Ошибка догрузки: ' + e.message, 'error');
-        }
-    };
+    } finally {
+        loadingMore = false;
+    }
+};
 
     // ═══════════════════════════════════════════════════════
     // Инициализация окна
@@ -962,6 +1256,11 @@ drawResults(searchTerms);
 
         document.getElementById('mms-hide').onclick = () => { dom.win.style.display = 'none'; };
         document.getElementById('mms-clear').onclick = () => {
+		++viewVersion;
+loadingMore = false;
+dom.searchBtn.disabled = false;
+dom.channelBar.style.display = 'none';
+dom.channelBar.innerHTML = '';
 dom.query.value = '';
 hiddenChannels.clear();
             currentResults = [];
@@ -975,13 +1274,36 @@ hiddenChannels.clear();
         dom.searchBtn.onclick = runSearch;
         dom.query.addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch(); });
         
-        dom.team.addEventListener('change', () => {
-            const opt = dom.team.options[dom.team.selectedIndex];
-            teamId = opt.value;
-            teamName = opt.dataset.name || teamName; // slug команды, не display-name
-            setStatus(`Команда: ${opt.textContent.trim()}`, '#a5b4fc');
-            try { localStorage.setItem('mms_team_id', opt.value); } catch (e) { /* ignore */ }
-        });
+dom.team.addEventListener('change', () => {
+    const opt = dom.team.options[dom.team.selectedIndex];
+
+    ++viewVersion;
+    loadingMore = false;
+    dom.searchBtn.disabled = false;
+
+    teamId = opt.value;
+    teamName = opt.dataset.name || '';
+
+    currentResults = [];
+    searchTerms = '';
+    searchPage = 0;
+    hasMore = false;
+    hiddenChannels.clear();
+
+    dom.channelBar.style.display = 'none';
+    dom.channelBar.innerHTML = '';
+
+    dom.results.innerHTML =
+        '<div class="mms-empty">Команда изменена. Выполните поиск, чтобы увидеть её сообщения.</div>';
+
+    setStatus(`Команда: ${opt.textContent.trim()}`, '#a9bbef');
+
+    try {
+        localStorage.setItem('mms_team_id', opt.value);
+    } catch (e) {
+        /* localStorage недоступен — выбор всё равно работает */
+    }
+});
 
         // Публичная кнопка: вызывается из меню расширения (utils.js → menuConfig)
         window.getMattermostSearchPress = () => {
