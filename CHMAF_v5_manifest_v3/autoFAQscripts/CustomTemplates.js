@@ -1,243 +1,591 @@
-// --- Инициализация LocalStorage ---
-if (localStorage.getItem('cntTmplts') === null) { localStorage.setItem('cntTmplts', 0); }
-if (localStorage.getItem('cntTmpltsen_') === null) { localStorage.setItem('cntTmpltsen_', 0); }
+// ============================================================
+// ChMAF — Личные шаблоны / CustomTemplates.js
+// ============================================================
+
+// Сохраняем существующий формат данных и ключи localStorage.
+if (localStorage.getItem('cntTmplts') === null) {
+    localStorage.setItem('cntTmplts', '0');
+}
+
+if (localStorage.getItem('cntTmpltsen_') === null) {
+    localStorage.setItem('cntTmpltsen_', '0');
+}
 
 const languageAFbtn = document.getElementById('languageAF');
-let languageTmplt = languageAFbtn.textContent === "Русский" ? '' : 'en_';
-let countOfTemplates = 0; // Сделали числом для корректной математики
 
-// --- Glassmorphism HTML окна "Личные шаблоны" ---
+if (!languageAFbtn) {
+    console.error(
+        '[CustomTemplates] Не найден #languageAF. ' +
+        'Главное окно должно создаваться до загрузки этого файла.'
+    );
+}
+
+let languageTmplt =
+    languageAFbtn?.textContent?.trim() === 'Русский'
+        ? ''
+        : 'en_';
+
+let countOfTemplates = 0;
+
+// ============================================================
+// Окно. ID и существующие классы сохранены для совместимости.
+// ============================================================
+
 var win_CustomTemplates = `
-    <div class="glass-panel" id="custom_templates_window" style="cursor: -webkit-grab; max-height: 80vh; display: flex; flex-direction: column; width: 550px;">
-        <div class="glass-warning-bar chmaf-drag-handle"></div>
-        <h3 class="chmaf-drag-handle" style="margin-top: 5px; margin-bottom: 10px; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.5); color:bisque">Личные шаблоны</h3>
+    <div class="glass-panel"
+         id="custom_templates_window"
+         style="cursor: -webkit-grab; max-height: 80vh; display: flex; flex-direction: column; width: 550px;">
 
-        <div id="cstmTmplates" style="overflow-y: auto; padding-right: 10px; margin-bottom: 10px; flex-grow: 1;">
-            <!-- Сюда будут падать шаблоны -->
+        <div class="glass-warning-bar chmaf-drag-handle"></div>
+
+        <h3 class="chmaf-drag-handle"
+            style="margin-top: 5px; margin-bottom: 10px; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.5); color:bisque">
+            Личные шаблоны
+        </h3>
+
+        <div id="cstmTmplates"
+             style="overflow-y: auto; padding-right: 10px; margin-bottom: 10px; flex-grow: 1;">
+            <!-- Строки шаблонов -->
         </div>
 
-        <div class="flex-row" style="justify-content: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
-            <button id="addTemplate" title="Добавить новый шаблон" class="glass-btn mainButton">➕ Добавить</button>
-            <button id="saveAllTemplates" title="Сохранить все шаблоны" class="glass-btn mainButton">💾 Сохранить всё</button>
-            <button title="Скрытие меню" id="hideCustomTemplates" class="glass-btn buttonHide" style="margin-left: auto;">❌</button>
+        <div class="flex-row"
+             style="justify-content: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
+
+            <button id="addTemplate"
+                    title="Добавить новый шаблон"
+                    class="glass-btn mainButton"
+                    type="button">➕ Добавить</button>
+
+            <button id="saveAllTemplates"
+                    title="Сохранить все шаблоны"
+                    class="glass-btn mainButton"
+                    type="button">💾 Сохранить всё</button>
+
+            <button id="hideCustomTemplates"
+                    title="Скрытие меню"
+                    class="glass-btn buttonHide"
+                    type="button"
+                    style="margin-left: auto;">❌</button>
         </div>
     </div>
 `;
 
-// Создаем окно (эти функции у тебя где-то лежат)
-createWindow('AF_CustomTemplates', 'winTopCustomTemplates', 'winLeftCustomTemplates', win_CustomTemplates);
+createWindow(
+    'AF_CustomTemplates',
+    'winTopCustomTemplates',
+    'winLeftCustomTemplates',
+    win_CustomTemplates
+);
+
 hideWindowOnDoubleClick('AF_CustomTemplates');
 hideWindowOnClick('AF_CustomTemplates', 'hideCustomTemplates');
 
-// Открытие окна "Личные шаблоны"
-document.getElementById('testCustTMPL').addEventListener('click', function () {
-    const custWin = document.getElementById('AF_CustomTemplates');
-    custWin.style.display = (custWin.style.display === '' || custWin.style.display === 'block') ? 'none' : 'block';
-});
+// ============================================================
+// Общие операции с сохранёнными данными
+// ============================================================
 
-// --- Функция добавления строки шаблона ---
+function templateKey(prefix, index) {
+    return `${prefix}${languageTmplt}${index}`;
+}
+
+function readTemplateCount() {
+    const count = Number.parseInt(
+        localStorage.getItem('cntTmplts' + languageTmplt),
+        10
+    );
+
+    return Number.isFinite(count) && count > 0 ? count : 0;
+}
+
+// Сохраняет все видимые поля текущего языка БЕЗ перерисовки.
+// Вызывается перед операциями, которые пересоздают строки.
+function saveVisibleTemplates() {
+    for (let i = 1; i <= countOfTemplates; i++) {
+        const text = document.getElementById(
+            `cstmTmpInp${languageTmplt}${i}`
+        );
+
+        const name = document.getElementById(
+            `tmpNameInp${languageTmplt}${i}`
+        );
+
+        const checkbox = document.getElementById(
+            `checkboxInp${languageTmplt}${i}`
+        );
+
+        if (!text || !name || !checkbox) continue;
+
+        localStorage.setItem(
+            templateKey('template_', i),
+            text.value.replace(/\n/g, '\\n')
+        );
+
+        localStorage.setItem(
+            templateKey('tmp_name_', i),
+            name.value
+        );
+
+        localStorage.setItem(
+            templateKey('checkbox_', i),
+            String(checkbox.checked)
+        );
+    }
+}
+
+// ============================================================
+// Создание строки шаблона
+// ============================================================
+
 function addNewString(index) {
-    const checkboxValue = localStorage.getItem('checkbox_' + languageTmplt + index) === 'true';
-    const tmpNameValue = localStorage.getItem('tmp_name_' + languageTmplt + index) || '';
-    const templateValue = (localStorage.getItem('template_' + languageTmplt + index) || '').replace(/\\n/g, '\n');
+    const container = document.getElementById('cstmTmplates');
+    if (!container) return;
 
-    const cstmTmplates = document.getElementById('cstmTmplates'); // Правильный ID!
+    const checkboxValue =
+        localStorage.getItem(templateKey('checkbox_', index)) === 'true';
 
-    // Красивая и адаптивная Flexbox-верстка для каждой строки шаблона
-    const CustomTemplatesLine = `
-        <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.2);" tmp="template_${languageTmplt}${index}" index="${index}">
+    const nameValue =
+        localStorage.getItem(templateKey('tmp_name_', index)) || '';
+
+    const textValue = (
+        localStorage.getItem(templateKey('template_', index)) || ''
+    ).replace(/\\n/g, '\n');
+
+    const rowHtml = `
+        <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.2);"
+             tmp="template_${languageTmplt}${index}"
+             index="${index}">
+
             <div class="flex-row" style="margin-bottom: 5px;">
-                <input id="checkboxInp${languageTmplt}${index}" type="checkbox" style="cursor: pointer; width: 16px; height: 16px;" title="Отображать в быстром меню" ${checkboxValue ? 'checked' : ''}>
-                <input id="tmpNameInp${languageTmplt}${index}" class="glass-input " style="width: 140px;" placeholder="Имя шаблона">
+                <input id="checkboxInp${languageTmplt}${index}"
+                       type="checkbox"
+                       style="cursor: pointer; width: 16px; height: 16px;"
+                       title="Отображать в быстром меню"
+                       ${checkboxValue ? 'checked' : ''}>
 
-                <button id="sortUpBtn${index}" class="glass-btn mainButton" title="Вверх" style="padding: 2px 8px;">↑</button>
-                <button id="sortDownBtn${index}" class="glass-btn mainButton" title="Вниз" style="padding: 2px 8px;">↓</button>
+                <input id="tmpNameInp${languageTmplt}${index}"
+                       class="glass-input"
+                       style="width: 140px;"
+                       placeholder="Имя шаблона">
+
+                <button id="sortUpBtn${index}"
+                        class="glass-btn mainButton"
+                        type="button"
+                        title="Вверх"
+                        style="padding: 2px 8px;">↑</button>
+
+                <button id="sortDownBtn${index}"
+                        class="glass-btn mainButton"
+                        type="button"
+                        title="Вниз"
+                        style="padding: 2px 8px;">↓</button>
 
                 <div class="flex-right">
-                    <button id="deleteBtn${index}" class="glass-btn mainButton" style="border-color: rgba(255,99,71,0.4); color: #ff8b8b;">Del</button>
-                    <button id="saveBtn${index}" class="glass-btn mainButton">Save</button>
-                    <button id="sendBtn${index}" class="glass-btn mainButton primary">Send</button>
+                    <button id="deleteBtn${index}"
+                            class="glass-btn mainButton"
+                            type="button"
+                            title="Удалить шаблон"
+                            style="border-color: rgba(255,99,71,0.4); color: #ff8b8b;">Del</button>
+
+                    <button id="saveBtn${index}"
+                            class="glass-btn mainButton"
+                            type="button"
+                            title="Сохранить шаблон">Save</button>
+
+                    <button id="sendBtn${index}"
+                            class="glass-btn mainButton primary"
+                            type="button"
+                            title="Перенести текст в главное окно">Send</button>
                 </div>
             </div>
-            <textarea id="cstmTmpInp${languageTmplt}${index}" class="glass-textarea " style="width: 100%; min-height: 45px; resize: vertical; box-sizing: border-box;" placeholder="Текст шаблона..."></textarea>
+
+            <textarea id="cstmTmpInp${languageTmplt}${index}"
+                      class="glass-textarea"
+                      style="width: 100%; min-height: 45px; resize: vertical; box-sizing: border-box;"
+                      placeholder="Текст шаблона..."></textarea>
         </div>
     `;
 
-    cstmTmplates.insertAdjacentHTML('beforeend', CustomTemplatesLine);
+    container.insertAdjacentHTML('beforeend', rowHtml);
 
-    // Подставляем значения
-    document.getElementById(`tmpNameInp${languageTmplt}${index}`).value = tmpNameValue;
-    document.getElementById(`cstmTmpInp${languageTmplt}${index}`).value = templateValue;
+    // Пользовательские данные подставляем через value, не через HTML.
+    document.getElementById(
+        `tmpNameInp${languageTmplt}${index}`
+    ).value = nameValue;
 
-    // Обработчик чекбокса
-    const checkboxInput = document.getElementById(`checkboxInp${languageTmplt}${index}`);
-    checkboxInput.addEventListener('change', function () {
-        localStorage.setItem('checkbox_' + languageTmplt + index, this.checked);
-        refreshHotTmps();
+    document.getElementById(
+        `cstmTmpInp${languageTmplt}${index}`
+    ).value = textValue;
+
+    // При переключении галочки сохраняем также текущее имя и текст строки.
+    document.getElementById(
+        `checkboxInp${languageTmplt}${index}`
+    ).addEventListener('change', () => {
+        saveTemplate(index);
     });
 
-    // Обработчики кнопок
-    document.getElementById(`sortUpBtn${index}`).addEventListener('click', () => sortTemplate(index, -1));
-    document.getElementById(`sortDownBtn${index}`).addEventListener('click', () => sortTemplate(index, 1));
-    document.getElementById(`deleteBtn${index}`).addEventListener('click', () => deleteTemplate(index));
-    document.getElementById(`saveBtn${index}`).addEventListener('click', () => saveTemplate(index));
-    document.getElementById(`sendBtn${index}`).addEventListener('click', () => sendTemplate(index));
+    document.getElementById(`sortUpBtn${index}`)
+        .addEventListener('click', () => sortTemplate(index, -1));
+
+    document.getElementById(`sortDownBtn${index}`)
+        .addEventListener('click', () => sortTemplate(index, 1));
+
+    document.getElementById(`deleteBtn${index}`)
+        .addEventListener('click', () => deleteTemplate(index));
+
+    document.getElementById(`saveBtn${index}`)
+        .addEventListener('click', () => saveTemplate(index));
+
+    document.getElementById(`sendBtn${index}`)
+        .addEventListener('click', () => sendTemplate(index));
 }
 
-// --- Логические функции работы с шаблонами ---
+// ============================================================
+// Операции с шаблонами
+// ============================================================
+
 function saveTemplate(index) {
-    const parent = document.querySelector(`[tmp="template_${languageTmplt}${index}"]`);
-    if (!parent) return;
+    if (index < 1 || index > countOfTemplates) return;
 
-    const inputValue = parent.querySelector(`#cstmTmpInp${languageTmplt}${index}`).value.replace(/\n/g, '\\n');
-    const nameValue = parent.querySelector(`#tmpNameInp${languageTmplt}${index}`).value;
-    const checkboxInp = parent.querySelector(`#checkboxInp${languageTmplt}${index}`); // Ищем чекбокс
+    const text = document.getElementById(
+        `cstmTmpInp${languageTmplt}${index}`
+    );
 
-    // Сохраняем текст и название
-    localStorage.setItem(parent.getAttribute('tmp'), inputValue);
-    localStorage.setItem('tmp_name_' + languageTmplt + index, nameValue);
+    const name = document.getElementById(
+        `tmpNameInp${languageTmplt}${index}`
+    );
 
-    // Сразу сохраняем статус чекбокса!
-    if (checkboxInp) {
-        localStorage.setItem('checkbox_' + languageTmplt + index, checkboxInp.checked);
-    }
+    const checkbox = document.getElementById(
+        `checkboxInp${languageTmplt}${index}`
+    );
 
-    refreshHotTmps(); // Моментально выводим кнопку на экран
+    if (!text || !name || !checkbox) return;
+
+    localStorage.setItem(
+        templateKey('template_', index),
+        text.value.replace(/\n/g, '\\n')
+    );
+
+    localStorage.setItem(
+        templateKey('tmp_name_', index),
+        name.value
+    );
+
+    localStorage.setItem(
+        templateKey('checkbox_', index),
+        String(checkbox.checked)
+    );
+
+    refreshHotTmps();
 }
 
 function deleteTemplate(index) {
-    for (let i = index; i < countOfTemplates; i++) {
-        let nextIndex = i + 1;
-        localStorage.setItem('template_' + languageTmplt + i, localStorage.getItem('template_' + languageTmplt + nextIndex));
-        localStorage.setItem('checkbox_' + languageTmplt + i, localStorage.getItem('checkbox_' + languageTmplt + nextIndex));
-        localStorage.setItem('tmp_name_' + languageTmplt + i, localStorage.getItem('tmp_name_' + languageTmplt + nextIndex));
+    if (
+        !Number.isInteger(index) ||
+        index < 1 ||
+        index > countOfTemplates
+    ) {
+        return;
     }
-    localStorage.removeItem('template_' + languageTmplt + countOfTemplates);
-    localStorage.removeItem('checkbox_' + languageTmplt + countOfTemplates);
-    localStorage.removeItem('tmp_name_' + languageTmplt + countOfTemplates);
+
+    // Важно: сначала сохраняем правки из DOM,
+    // и только потом сдвигаем данные в localStorage.
+    saveVisibleTemplates();
+
+    for (let i = index; i < countOfTemplates; i++) {
+        const nextIndex = i + 1;
+
+        for (const prefix of [
+            'template_',
+            'checkbox_',
+            'tmp_name_'
+        ]) {
+            const nextValue = localStorage.getItem(
+                templateKey(prefix, nextIndex)
+            );
+
+            if (nextValue === null) {
+                localStorage.removeItem(templateKey(prefix, i));
+            } else {
+                localStorage.setItem(
+                    templateKey(prefix, i),
+                    nextValue
+                );
+            }
+        }
+    }
+
+    for (const prefix of [
+        'template_',
+        'checkbox_',
+        'tmp_name_'
+    ]) {
+        localStorage.removeItem(
+            templateKey(prefix, countOfTemplates)
+        );
+    }
+
     countOfTemplates--;
-    localStorage.setItem('cntTmplts' + languageTmplt, countOfTemplates);
+
+    localStorage.setItem(
+        'cntTmplts' + languageTmplt,
+        String(countOfTemplates)
+    );
+
     reloadTemplates();
 }
 
 function sortTemplate(index, direction) {
     const swapIndex = index + direction;
-    if (swapIndex < 1 || swapIndex > countOfTemplates) return;
 
-    ['template_', 'checkbox_', 'tmp_name_'].forEach(prefix => {
-        const current = localStorage.getItem(prefix + languageTmplt + index);
-        const swap = localStorage.getItem(prefix + languageTmplt + swapIndex);
-        localStorage.setItem(prefix + languageTmplt + index, swap);
-        localStorage.setItem(prefix + languageTmplt + swapIndex, current);
-    });
+    if (
+        !Number.isInteger(index) ||
+        (direction !== -1 && direction !== 1) ||
+        swapIndex < 1 ||
+        swapIndex > countOfTemplates
+    ) {
+        return;
+    }
+
+    saveVisibleTemplates();
+
+    for (const prefix of [
+        'template_',
+        'checkbox_',
+        'tmp_name_'
+    ]) {
+        const currentKey = templateKey(prefix, index);
+        const swapKey = templateKey(prefix, swapIndex);
+
+        const current = localStorage.getItem(currentKey);
+        const swap = localStorage.getItem(swapKey);
+
+        if (swap === null) {
+            localStorage.removeItem(currentKey);
+        } else {
+            localStorage.setItem(currentKey, swap);
+        }
+
+        if (current === null) {
+            localStorage.removeItem(swapKey);
+        } else {
+            localStorage.setItem(swapKey, current);
+        }
+    }
+
     reloadTemplates();
 }
 
 function sendTemplate(index) {
-    const text = localStorage.getItem('template_' + languageTmplt + index);
-    if (text) {
-        document.getElementById('inp').value = text.replace(/\\n/g, '\n');
-        document.getElementById('AF_CustomTemplates').style.display = 'none';
+    const field = document.getElementById(
+        `cstmTmpInp${languageTmplt}${index}`
+    );
+
+    const mainInput = document.getElementById('inp');
+    const windowElement =
+        document.getElementById('AF_CustomTemplates');
+
+    if (!field || !mainInput) return;
+
+    // Берём текущий текст из поля, даже если Save ещё не нажали.
+    mainInput.value = field.value;
+    mainInput.dispatchEvent(
+        new Event('input', { bubbles: true })
+    );
+
+    if (windowElement) {
+        windowElement.style.display = 'none';
     }
 }
 
 function reloadTemplates() {
-    countOfTemplates = parseInt(localStorage.getItem('cntTmplts' + languageTmplt)) || 0;
-    const cstmTmplates = document.getElementById('cstmTmplates'); // ИСПРАВЛЕННЫЙ ID
+    countOfTemplates = readTemplateCount();
 
-    if (cstmTmplates) {
-        cstmTmplates.innerHTML = '';
+    const container = document.getElementById('cstmTmplates');
+
+    if (container) {
+        container.replaceChildren();
+
         for (let i = 1; i <= countOfTemplates; i++) {
-            if (typeof addNewString === 'function') addNewString(i);
+            addNewString(i);
         }
     }
 
-    if (typeof refreshHotTmps === 'function') refreshHotTmps();
+    refreshHotTmps();
 }
 
 function refreshHotTmps() {
-    // ВОЗВРАЩАЕМ ПРАВИЛЬНЫЙ КОНТЕЙНЕР #6str (он всегда на виду)
-    const strokaCustTempl = document.getElementById('6str');
+    // Контейнер быстрого меню из главного окна.
+    const container = document.getElementById('6str');
+    if (!container) return;
 
-    if (!strokaCustTempl) return;
+    container.replaceChildren();
 
-    strokaCustTempl.innerHTML = ''; // Очищаем старые кнопки
+    const templateCount = readTemplateCount();
 
-    const tmpltsCount = parseInt(localStorage.getItem('cntTmplts' + languageTmplt)) || 0;
+    for (let i = 1; i <= templateCount; i++) {
+        const checkbox = document.getElementById(
+            `checkboxInp${languageTmplt}${i}`
+        );
 
-    for (let i = 1; i <= tmpltsCount; i++) {
-        const checkbox = document.getElementById(`checkboxInp${languageTmplt}${i}`);
-        const isChecked = checkbox ? checkbox.checked : (localStorage.getItem('checkbox_' + languageTmplt + i) === 'true');
-        const tmpName = localStorage.getItem('tmp_name_' + languageTmplt + i);
+        const isChecked = checkbox
+            ? checkbox.checked
+            : localStorage.getItem(
+                templateKey('checkbox_', i)
+            ) === 'true';
 
-        if (!isChecked || !tmpName) continue;
+        const name = localStorage.getItem(
+            templateKey('tmp_name_', i)
+        );
 
-        // Создаем кнопку личного шаблона
-        const newButton = document.createElement('button');
-        newButton.className = 'glass-btn mainButton';
-        newButton.textContent = tmpName;
+        if (!isChecked || !name) continue;
 
-        // Акцент личных шаблонов (стили в style.css: .chmaf-custom-tmp-btn)
-        newButton.classList.add('chmaf-custom-tmp-btn');
+        const button = document.createElement('button');
 
-        newButton.addEventListener('click', function () {
-            const text = localStorage.getItem('template_' + languageTmplt + i);
-            if (text) document.getElementById('inp').value = text.replace(/\\n/g, '\n');
+        button.type = 'button';
+        button.className =
+            'glass-btn mainButton chmaf-custom-tmp-btn';
+
+        button.textContent = name;
+
+        button.addEventListener('click', () => {
+            const savedText = localStorage.getItem(
+                templateKey('template_', i)
+            );
+
+            const mainInput = document.getElementById('inp');
+
+            if (savedText === null || !mainInput) return;
+
+            mainInput.value = savedText.replace(/\\n/g, '\n');
+            mainInput.dispatchEvent(
+                new Event('input', { bubbles: true })
+            );
         });
 
-        strokaCustTempl.appendChild(newButton);
+        container.append(button);
     }
 }
 
-// --- События главных кнопок ---
-document.getElementById('addTemplate').addEventListener('click', function () {
-    countOfTemplates++;
-    localStorage.setItem('cntTmplts' + languageTmplt, countOfTemplates);
-    localStorage.setItem('template_' + languageTmplt + countOfTemplates, "");
-    localStorage.setItem('checkbox_' + languageTmplt + countOfTemplates, false);
-    localStorage.setItem('tmp_name_' + languageTmplt + countOfTemplates, "");
-    addNewString(countOfTemplates);
-});
+// ============================================================
+// Кнопки окна
+// ============================================================
 
-document.getElementById('saveAllTemplates').addEventListener('click', function () {
-    for (let i = 1; i <= countOfTemplates; i++) {
-        const inputArea = document.getElementById('cstmTmpInp' + languageTmplt + i);
-        const nameInput = document.getElementById('tmpNameInp' + languageTmplt + i);
-        const checkboxInp = document.getElementById('checkboxInp' + languageTmplt + i);
+document.getElementById('testCustTMPL')?.addEventListener(
+    'click',
+    () => {
+        const windowElement =
+            document.getElementById('AF_CustomTemplates');
 
-        if (inputArea && nameInput && checkboxInp) {
-            localStorage.setItem('template_' + languageTmplt + i, inputArea.value.replace(/\n/g, '\\n'));
-            localStorage.setItem('checkbox_' + languageTmplt + i, checkboxInp.checked);
-            localStorage.setItem('tmp_name_' + languageTmplt + i, nameInput.value);
+        if (!windowElement) return;
+
+        windowElement.style.display =
+            windowElement.style.display === 'block'
+                ? 'none'
+                : 'block';
+    }
+);
+
+document.getElementById('addTemplate')?.addEventListener(
+    'click',
+    () => {
+        // Иначе последующая смена языка/сортировка могла бы
+        // потерять изменения в уже существующих строках.
+        saveVisibleTemplates();
+
+        countOfTemplates++;
+
+        localStorage.setItem(
+            'cntTmplts' + languageTmplt,
+            String(countOfTemplates)
+        );
+
+        localStorage.setItem(
+            templateKey('template_', countOfTemplates),
+            ''
+        );
+
+        localStorage.setItem(
+            templateKey('checkbox_', countOfTemplates),
+            'false'
+        );
+
+        localStorage.setItem(
+            templateKey('tmp_name_', countOfTemplates),
+            ''
+        );
+
+        addNewString(countOfTemplates);
+    }
+);
+
+document.getElementById('saveAllTemplates')?.addEventListener(
+    'click',
+    () => {
+        saveVisibleTemplates();
+        refreshHotTmps();
+    }
+);
+
+// Добавить текст из главного окна как новый личный шаблон.
+document.getElementById('addtocusttmplt')?.addEventListener(
+    'click',
+    () => {
+        const mainInput = document.getElementById('inp');
+        const text = mainInput?.value;
+
+        if (!text) return;
+
+        const addButton =
+            document.getElementById('addTemplate');
+
+        if (!addButton) return;
+
+        addButton.click();
+
+        const newField = document.getElementById(
+            `cstmTmpInp${languageTmplt}${countOfTemplates}`
+        );
+
+        if (newField) {
+            newField.value = text;
+
+            // Сразу сохраняем текст нового шаблона.
+            // Раньше в localStorage оставалась пустая строка.
+            saveTemplate(countOfTemplates);
+        }
+
+        const windowElement =
+            document.getElementById('AF_CustomTemplates');
+
+        if (windowElement) {
+            windowElement.style.display = 'block';
         }
     }
-    refreshHotTmps();
-});
+);
 
-// Добавление текста из главного окна
-document.getElementById('addtocusttmplt').addEventListener('click', function () {
-    const tmplttetx = document.getElementById('inp').value;
-    if (tmplttetx) {
-        document.getElementById('addTemplate').click();
-        const templateInput = document.getElementById(`cstmTmpInp${languageTmplt}${countOfTemplates}`);
-        if (templateInput) templateInput.value = tmplttetx;
-        document.getElementById('AF_CustomTemplates').style.display = 'block';
-    }
-});
+// При смене языка сохраняем видимые поля СТАРОГО языка
+// до изменения languageTmplt.
+languageAFbtn?.addEventListener('click', function () {
+    saveVisibleTemplates();
 
-// Кнопка смены языка.
-// Раньше здесь инлайн-перекрашивались ВСЕ .glass-panel (розовый/тёмный фон),
-// что ломало контраст кнопок; теперь — аккуратная подсветка через класс на body.
-languageAFbtn.addEventListener('click', function () {
-    const isEnglish = this.textContent === "Русский";
+    const switchToEnglish =
+        this.textContent.trim() === 'Русский';
 
-    this.textContent = isEnglish ? "Английский" : "Русский";
-    languageTmplt = isEnglish ? 'en_' : '';
+    this.textContent = switchToEnglish
+        ? 'Английский'
+        : 'Русский';
 
-    document.body.classList.toggle('chmaf-en-lang', isEnglish);
+    languageTmplt = switchToEnglish
+        ? 'en_'
+        : '';
+
+    document.body.classList.toggle(
+        'chmaf-en-lang',
+        switchToEnglish
+    );
 
     reloadTemplates();
 });
 
-// Первичный запуск
+// Первичная загрузка.
 reloadTemplates();
