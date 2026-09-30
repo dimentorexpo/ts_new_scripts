@@ -254,15 +254,15 @@
 #AF_Grabber .ag,
 #ag-analytics,
 #ag-column-popover {
-    --ag-bg: #11151d;
-    --ag-panel: #1a202a;
-    --ag-panel-2: #232b37;
-    --ag-border: #353e4b;
-    --ag-text: #f2f2ef;
-    --ag-muted: #a8afba;
-    --ag-accent: #e1b875;
-    --ag-accent-2: #f1d6a9;
-    --ag-error: #f1a5a5;
+--ag-bg: #111827;
+--ag-panel: #182335;
+--ag-panel-2: #1b283c;
+--ag-border: #344258;
+--ag-text: #edf2fb;
+--ag-muted: #a6b4cb;
+--ag-accent: #829fff;
+--ag-accent-2: #a9c0ff;
+--ag-error: #ffb0be;
 
     box-sizing: border-box;
     color: var(--ag-text);
@@ -913,6 +913,106 @@
 #AF_Grabber .ag .ag-theme-menu .ag-check {
     padding: 5px 7px;
 }
+
+/* ===== Graphite-blue skin for Grabber ===== */
+
+#AF_Grabber .ag,
+#ag-analytics {
+    box-shadow: 0 26px 70px rgba(3, 9, 22, .52);
+}
+
+#AF_Grabber .ag {
+    border-color: #344258;
+}
+
+#AF_Grabber .ag input[type="date"],
+#AF_Grabber .ag input[type="search"],
+#AF_Grabber .ag select,
+#ag-analytics input[type="search"] {
+    background: #0d1625;
+}
+
+#AF_Grabber .ag button:hover:not(:disabled),
+#ag-analytics button:hover:not(:disabled),
+#ag-column-popover button:hover:not(:disabled),
+#AF_Grabber .ag .ag-check:hover {
+    background: #293b56;
+}
+
+#AF_Grabber .ag .ag-primary {
+    background: #4268c9;
+    border-color: #7293ed;
+    color: #eef3ff;
+}
+
+#AF_Grabber .ag .ag-primary:hover:not(:disabled) {
+    background: #547ce1;
+    border-color: #a2b9fa;
+}
+
+#AF_Grabber .ag .ag-mark {
+    border-color: #536fa7;
+}
+
+#AF_Grabber .ag th,
+#ag-analytics th {
+    background: #23334b;
+}
+
+#AF_Grabber .ag td,
+#ag-analytics td {
+    border-bottom-color: #344258;
+}
+
+#AF_Grabber .ag tbody tr:hover td {
+    background: #23334b;
+}
+
+#ag-column-popover {
+    border-color: #536fa7;
+    background: #182335;
+}
+
+#ag-column-popover input {
+    accent-color: #829fff;
+}
+
+#ag-analytics {
+    border-color: #344258;
+    background: #111827;
+}
+
+#ag-analytics .ag-graph-scroll {
+    background: #0d1625;
+}
+
+#ag-analytics .ag-series {
+    border-color: #435b80;
+    background: #1a2536;
+}
+
+#ag-analytics .ag-bar-track {
+    background: #344258;
+}
+
+#ag-analytics .ag-bar-fill {
+    background: #829fff;
+}
+
+#ag-tooltip {
+    border-color: #536fa7;
+    background: #1a2536;
+    color: #edf2fb;
+}
+
+#AF_Grabber .ag .ag-theme-menu {
+    border-color: #536fa7;
+    background: #182335;
+}
+
+#AF_Grabber .ag .ag-progress {
+    background: #344258;
+}
 </style>
 
 <div class="ag">
@@ -1049,7 +1149,7 @@
         <div class="ag-analytics-head">
             <div>
                 <strong>Аналитика</strong>
-                <div style="color:#a8afba;font-size:11px">
+                <div style="color:#a6b4cb;font-size:11px">
                     Выбирайте одну или несколько линий
                 </div>
             </div>
@@ -1079,7 +1179,7 @@
                     Снять всё
                 </button>
                 <span data-a-id="selected-count"
-                      style="color:#a8afba"></span>
+                      style="color:#a6b4cb"></span>
             </div>
 
             <div class="ag-series-list" data-a-id="series"></div>
@@ -1113,18 +1213,18 @@
         ['text', 'Комментарий / сообщение']
     ];
 
-    const CHART_COLORS = [
-        '#e1b875',
-        '#75c3db',
-        '#b49ae7',
-        '#8ccf9e',
-        '#e8999b',
-        '#e2ba79',
-        '#80a2ee',
-        '#d696cf',
-        '#98c4be',
-        '#d3a982'
-    ];
+const CHART_COLORS = [
+    '#829fff',
+    '#75c3db',
+    '#b49ae7',
+    '#8ccf9e',
+    '#e8999b',
+    '#617fbd',
+    '#a9c0ff',
+    '#d696cf',
+    '#98c4be',
+    '#c8d6f4'
+];
 
     function checkbox(value, label, name, checked = false) {
         const wrapper = document.createElement('label');
@@ -2510,7 +2610,7 @@
                     y1: y,
                     x2: width - right,
                     y2: y,
-                    stroke: '#384250',
+                    stroke: '#344258',
                     'stroke-width': 1
                 })
             );
@@ -2518,7 +2618,7 @@
             const label = createSvg('text', {
                 x: left - 7,
                 y: y + 4,
-                fill: '#a8afba',
+                fill: '#a6b4cb',
                 'text-anchor': 'end',
                 'font-size': 11
             });
@@ -2538,7 +2638,7 @@
                     left +
                     slot / 47 * chartWidth,
                 y: height - 12,
-                fill: '#a8afba',
+                fill: '#a6b4cb',
                 'text-anchor': 'middle',
                 'font-size': 11
             });
@@ -2596,7 +2696,7 @@
         const hoverLine = createSvg('line', {
             y1: top,
             y2: top + chartHeight,
-            stroke: '#e1b875',
+            stroke: '#829fff',
             'stroke-width': 1,
             'stroke-dasharray': '4 4',
             visibility: 'hidden'
