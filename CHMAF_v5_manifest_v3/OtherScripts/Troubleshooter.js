@@ -1308,9 +1308,47 @@ async function runDiagnostics() {
     }
 
     .role {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       margin: 0;
-      font-size: 16px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 13px;
       font-weight: 750;
+      border: 1px solid;
+      width: fit-content;
+    }
+
+    /* Цветные пилюли ролей: ученик — зелёный, преподаватель — синий */
+    .role.role-student {
+      color: #1a7f4b;
+      background: rgba(52, 199, 123, .12);
+      border-color: rgba(52, 199, 123, .45);
+    }
+    .role.role-student::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #34c77b;
+    }
+    .role.role-teacher {
+      color: #2a5fc9;
+      background: rgba(66, 133, 244, .12);
+      border-color: rgba(66, 133, 244, .45);
+    }
+    .role.role-teacher::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4285f4;
+    }
+    .role.role-unknown {
+      color: #5c6b80;
+      background: rgba(120, 136, 160, .12);
+      border-color: rgba(120, 136, 160, .4);
     }
 
     .id {
@@ -2046,7 +2084,7 @@ async function runDiagnostics() {
     const card = el("article", "card");
     const cardHead = el("div", "card-head");
     const identity = el("div");
-    identity.append(el("h2", "role", ROLE_NAME[user.role]), el("span", "id", `ID: ${user.id}`));
+    identity.append(el("h2", `role role-${user.role}`, ROLE_NAME[user.role]), el("span", "id", `ID: ${user.id}`));
     cardHead.append(identity, el("span", `badge ${user.errors.length ? "bad" : "ok"}`, user.errors.length ? `Событий: ${user.errors.length}` : "Событий не найдено"));
     card.append(cardHead);
 
@@ -2105,7 +2143,7 @@ async function runDiagnostics() {
         const card = el("article", "card");
         const head = el("div", "card-head");
         const identity = el("div");
-        identity.append(el("h2", "role", ROLE_NAME[user.role]), el("span", "id", `ID: ${user.id}`));
+        identity.append(el("h2", `role role-${user.role}`, ROLE_NAME[user.role]), el("span", "id", `ID: ${user.id}`));
         head.append(identity, el("span", "badge bad", `Записей: ${user.bannedServers.length}`));
 
         const list = el("ul", "ban-list");
