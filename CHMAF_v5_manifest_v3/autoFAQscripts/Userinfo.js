@@ -8,10 +8,12 @@ const injectGlassStyles = () => {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
         :root {
-            --af-gold: 255, 215, 0;
+            /* «corporate graphite»: золотой акцент заменён на синий
+               (визуальная копия окна очереди Queue.js, #AF_Queue) */
+            --af-gold: 66, 104, 201;
             --af-gold-dim: rgba(var(--af-gold), 0.15);
             --af-gold-glow: rgba(var(--af-gold), 0.4);
-            --af-bg-dark: rgba(10, 14, 24, 0.92);
+            --af-bg-dark: #111827;
             --af-success: 34, 197, 94;
             --af-error: 239, 68, 68;
         }
@@ -35,13 +37,15 @@ const injectGlassStyles = () => {
         }
 
         .af-gl-panel {
-            background: linear-gradient(165deg, rgba(15, 20, 35, 0.95), rgba(8, 11, 20, 0.98));
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid rgba(var(--af-gold), 0.2);
-            border-top: 1px solid rgba(var(--af-gold), 0.35);
-            border-radius: 16px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(var(--af-gold), 0.08) inset, 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+            background:
+                radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+                #111827;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            border: 1px solid #344258;
+            border-top: 1px solid #344258;
+            border-radius: 18px;
+            box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
             padding: 18px;
             display: flex;
             flex-direction: column;
@@ -86,12 +90,12 @@ const injectGlassStyles = () => {
         .af-gl-row { display: flex; flex-wrap: nowrap; gap: 8px; align-items: center; }
 
         .af-gl-btn {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-            border: 1px solid rgba(var(--af-gold), 0.2);
-            border-radius: 8px;
-            color: #fefefe;
+            background: #1b283c;
+            border: 1px solid #3c4d68;
+            border-radius: 9px;
+            color: #dce5f5;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -101,31 +105,20 @@ const injectGlassStyles = () => {
             height: 34px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: none;
             flex-shrink: 0;
             white-space: nowrap;
         }
 
-        .af-gl-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(var(--af-gold), 0.15), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .af-gl-btn:hover:not(:disabled)::before { left: 100%; }
         .af-gl-btn:hover:not(:disabled) {
-            background: linear-gradient(145deg, rgba(var(--af-gold), 0.15), rgba(255, 255, 255, 0.08));
+            background: #293b56;
+            border-color: #7799e2;
+            color: #fff;
             transform: translateY(-1px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.3), 0 0 12px rgba(var(--af-gold), 0.15);
-            border-color: rgba(var(--af-gold), 0.5);
+            box-shadow: none;
         }
-        .af-gl-btn:active:not(:disabled) { transform: translateY(0) scale(0.96); }
-        .af-gl-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
+        .af-gl-btn:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+        .af-gl-btn:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
 
         .af-gl-btn-icon { width: 34px; padding: 0; font-size: 16px !important; flex-shrink: 0; min-width: 34px; }
 
@@ -138,8 +131,7 @@ const injectGlassStyles = () => {
             border-radius: 6px;
             background: rgba(var(--af-gold), 0.08);
             border: 1px solid rgba(var(--af-gold), 0.25);
-            color: #ffd700;
-            cursor: pointer;
+            color: #a9c0ff;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             font-size: 14px;
             position: relative;
@@ -153,7 +145,7 @@ const injectGlassStyles = () => {
             transform: scale(1.1) rotate(-8deg);
         }
         .af-gl-key-btn:active { transform: scale(0.9); }
-        .af-gl-key-btn.is-loading { animation: keyPulse 1s ease-in-out infinite; color: #fbbf24; border-color: #fbbf24; }
+        .af-gl-key-btn.is-loading { animation: keyPulse 1s ease-in-out infinite; color: #8ab4f8; border-color: #8ab4f8; }
         .af-gl-key-btn.is-success { background: rgba(var(--af-success), 0.2); border-color: rgba(var(--af-success), 0.6); color: #4ade80; box-shadow: 0 0 12px rgba(var(--af-success), 0.3); transform: scale(1.1); }
         .af-gl-key-btn.is-error { background: rgba(var(--af-error), 0.2); border-color: rgba(var(--af-error), 0.6); color: #f87171; box-shadow: 0 0 12px rgba(var(--af-error), 0.3); animation: shake 0.4s ease-in-out; }
 
@@ -161,28 +153,28 @@ const injectGlassStyles = () => {
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 
         .af-gl-input {
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.4), rgba(10, 15, 30, 0.5));
-            border: 1px solid rgba(var(--af-gold), 0.2);
-            border-radius: 8px;
-            color: #fefefe;
+            background: #0d1625;
+            border: 1px solid #3a4961;
+            border-radius: 9px;
+            color: #edf2fb;
             padding: 0 14px;
             height: 34px;
             outline: none;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
             flex: 1;
             min-width: 80px;
             font-weight: 600;
             font-size: 14px;
             letter-spacing: 0.02em;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: none;
         }
         .af-gl-input:focus {
-            border-color: rgba(var(--af-gold), 0.6);
-            box-shadow: 0 0 0 2px rgba(var(--af-gold), 0.1), inset 0 2px 4px rgba(0,0,0,0.2);
-            background: linear-gradient(145deg, rgba(0, 0, 0, 0.5), rgba(10, 15, 30, 0.6));
+            border-color: #829fff;
+            background: #142034;
+            box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
         }
-        .af-gl-input::placeholder { color: rgba(148, 163, 184, 0.5); font-weight: 500; }
+        .af-gl-input::placeholder { color: #7d8ca6; font-weight: 500; }
 
         .af-gl-badge {
             padding: 4px 10px;
@@ -270,27 +262,27 @@ const injectGlassStyles = () => {
         .af-gl-time-group { display: flex; gap: 6px; align-items: center; }
         .af-gl-time-chip { display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; border: 1px solid rgba(var(--af-gold), 0.15); }
         .af-gl-time-label { color: #94a3b8; font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
-        .af-gl-time-value { color: #ffd700; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        .af-gl-time-value { color: #a9c0ff; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
 
         .af-gl-section-title { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 12px; color: #fefefe; margin-top: 4px; letter-spacing: 0.06em; text-transform: uppercase; }
         .af-gl-section-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(var(--af-gold), 0.4), transparent); }
 
         .af-gl-services-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .af-gl-service-card {
-            background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-            border: 1px solid rgba(var(--af-gold), 0.15);
-            border-radius: 12px;
+            background: #1a2536;
+            border: 1px solid #344258;
+            border-left: 3px solid #617fbd;
+            border-radius: 10px;
             padding: 14px;
             position: relative;
             overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: background-color .16s ease, border-color .16s ease;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-        .af-gl-service-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(var(--af-gold), 0.6), transparent); opacity: 0; transition: opacity 0.3s; }
-        .af-gl-service-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.4), 0 0 16px rgba(var(--af-gold), 0.1); border-color: rgba(var(--af-gold), 0.35); }
-        .af-gl-service-card:hover::before { opacity: 1; }
+        .af-gl-service-card::before { content: none; }
+        .af-gl-service-card:hover { transform: none; box-shadow: none; background: #23334b; border-color: #6685be; border-left-color: #92afff; }
 
         .af-gl-service-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
         .af-gl-service-status { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -299,7 +291,7 @@ const injectGlassStyles = () => {
         .af-gl-status-lost { background: rgba(138, 28, 129, 0.25); border: 1px solid rgba(138, 28, 129, 0.5); color: #d8b4fe; }
 
         .af-gl-service-id { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #cbd5e1; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(var(--af-gold), 0.15); display: inline-flex; align-items: center; gap: 6px; }
-        .af-gl-service-balance { display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 800; color: #fde047; font-family: 'JetBrains Mono', monospace; }
+        .af-gl-service-balance { display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 800; color: #a9c0ff; font-family: 'JetBrains Mono', monospace; }
         .af-gl-service-type { font-size: 14px; color: #7dd3fc; font-weight: 600; line-height: 1.3; word-break: break-word; }
         .af-gl-service-teacher { font-size: 12px; color: #86efac; display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(69, 199, 52, 0.08); border-radius: 8px; border: 1px solid rgba(69, 199, 52, 0.2); word-wrap: break-word; }
         .af-gl-service-teacher.missing { color: #fca5a5; background: rgba(220, 20, 60, 0.08); border-color: rgba(220, 20, 60, 0.2); }
@@ -312,8 +304,8 @@ const injectGlassStyles = () => {
 
         .af-gl-empty-state { grid-column: 1 / -1; text-align: center; padding: 20px; color: #94a3b8; font-size: 14px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(var(--af-gold), 0.2); }
 
-        .af-gl-complect-card { background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); border: 1px solid rgba(var(--af-gold), 0.15); border-radius: 10px; padding: 12px; transition: all 0.3s ease; }
-        .af-gl-complect-card:hover { background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); transform: translateX(2px); border-color: rgba(var(--af-gold), 0.3); }
+        .af-gl-complect-card { background: #1a2536; border: 1px solid #344258; border-radius: 10px; padding: 12px; transition: background-color .16s ease, border-color .16s ease; }
+        .af-gl-complect-card:hover { background: #23334b; border-color: #6685be; }
         .af-gl-complect-header { font-weight: 700; font-size: 12px; margin-bottom: 8px; padding: 8px 10px; border-radius: 8px; text-align: center; letter-spacing: 0.02em; }
 
         .af-gl-bg-regular { background: rgba(69, 199, 52, 0.15); border: 1px solid rgba(69, 199, 52, 0.3); color: #86efac; }
@@ -337,8 +329,8 @@ const injectGlassStyles = () => {
         .af-gl-otp-timer-ring { position: relative; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
         .af-gl-otp-timer-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
         .af-gl-otp-timer-bg { fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 2.5; }
-        .af-gl-otp-timer-progress { fill: none; stroke: #ffd700; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 62.83; stroke-dashoffset: 0; transition: stroke-dashoffset 0.1s linear; filter: drop-shadow(0 0 4px rgba(var(--af-gold), 0.5)); }
-        .af-gl-otp-timer-text { font-size: 11px; font-weight: 800; color: #ffd700; z-index: 1; font-family: 'JetBrains Mono', monospace; }
+        .af-gl-otp-timer-progress { fill: none; stroke: #a9c0ff; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 62.83; stroke-dashoffset: 0; transition: stroke-dashoffset 0.1s linear; filter: drop-shadow(0 0 4px rgba(var(--af-gold), 0.5)); }
+        .af-gl-otp-timer-text { font-size: 11px; font-weight: 800; color: #a9c0ff; z-index: 1; font-family: 'JetBrains Mono', monospace; }
 
         @keyframes otpUrgent { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
         .af-gl-otp-timer.urgent .af-gl-otp-timer-ring { animation: otpUrgent 0.7s ease-in-out infinite; }
@@ -400,7 +392,7 @@ const win_serviceinfo = `
 <div class="af-gl-wrapper">
     <div class="af-gl-panel">
         <div class="af-gl-header chmaf-drag-handle" id="servicehead" style="cursor: grab;">
-            <button title="Скрыть меню" id="hideMeservice" class="af-gl-btn af-gl-btn-icon" style="color: #ef4444; min-width: 34px;">❌</button>
+            <button title="Скрыть меню" id="hideMeservice" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px; background: rgba(255, 116, 140, .08); border-color: rgba(255, 116, 140, .3); color: #ffb0be;">❌</button>
             <button title="CRM" id="GotoCRM" class="af-gl-btn" style="min-width: 50px;">CRM</button>
             <button title="Показать контакты" id="dounhidemailandphone" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">👁️</button>
             <button title="Статус CRM" id="CrmStatus" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">⭕</button>
