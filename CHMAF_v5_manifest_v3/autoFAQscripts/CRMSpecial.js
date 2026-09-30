@@ -430,6 +430,13 @@ var win_CRMSPecialCSS3 = `
     border-bottom: 1px dashed #313244;
 }
 #AF_CRMSPecial .nested-info { color: #fab387; font-size: 10px; margin-top: 2px; font-weight: 600; }
+#AF_CRMSPecial .corp-link {
+    color: #89b4fa;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(137, 180, 250, 0.5);
+}
+#AF_CRMSPecial .corp-link:hover { color: #b4d0fc; border-bottom-color: #b4d0fc; }
 `;
 
 const CRSP_WINDOW_ID = 'AF_CRMSPecial';
@@ -660,6 +667,12 @@ function initCRMSPecialModule() {
             ? '<span class="tag-lost">lost</span>'
             : `<span class="tag-stage">${escapeHtml(stage || '—')}</span>`;
     }
+
+    /* Порог автораскрытия заметок: до 200 симв. — спойлер открыт,
+       свыше — по умолчанию свёрнут. */
+    const NOTE_AUTOCOLLAPSE_LIMIT = 200;
+    const noteDetailsAttrs = length =>
+        length > NOTE_AUTOCOLLAPSE_LIMIT ? '' : 'open';
 
     // stage из любого объекта (detail или item списка)
     function getStage(obj) {
@@ -972,14 +985,37 @@ function initCRMSPecialModule() {
             (service.isFirstPaymentReceived ??
                 pick(rawDetail, 'isFirstPaymentReceived'));
 
-        const corp = service.corporate ?? pick(rawDetail, 'corporate') ?? {};
+        const corpRaw = service.corporate ?? pick(rawDetail, 'corporate');
+        const corp = corpRaw ?? {};
         const companyName = corp.companyName ?? pick(rawDetail, 'companyName');
+
+        // Ссылка на компанию нужна только тем, у кого есть corporate;
+        // companyId обычно лежит в data.corporate.companyId (например, 331).
+        const companyId = corpRaw
+            ? (corp.companyId ?? pick(rawDetail, 'companyId'))
+            : undefined;
+
+        const companyLink = (companyId !== undefined && companyId !== null)
+            ? `<a class="corp-link" href="https://crm2.skyeng.ru/companies/${encodeURIComponent(companyId)}" target="_blank" rel="noopener noreferrer" title="Открыть компанию в CRM2">🔗 ID компании: ${escapeHtml(companyId)}</a>`
+            : '';
 
         const contract =
             corp.contract ?? pick(rawDetail, 'contract') ?? {};
 
         const contractTitle = contract.title ?? '—';
-        const contractId = contract.id ?? '—';
+        const contractId = contract.id;
+
+        const hasContractId = contractId !== undefined && contractId !== null;
+        const hasCompanyId = companyId !== undefined && companyId !== null;
+
+        // Ссылка на контракт по схеме CRM2 (нужны и companyId, и contractId):
+        // https://crm2.skyeng.ru/companies/331/contracts/187302
+        // без companyId остаётся просто текст — URL построить не из чего.
+        const contractLine = !hasContractId
+            ? '<span class="dim-text">Договор: —</span>'
+            : (hasCompanyId
+                ? `<a class="corp-link" href="https://crm2.skyeng.ru/companies/${encodeURIComponent(companyId)}/contracts/${encodeURIComponent(contractId)}" target="_blank" rel="noopener noreferrer" title="Открыть контракт в CRM2">🔗 Договор #${escapeHtml(contractId)}</a>`
+                : `<span class="dim-text">Договор #${escapeHtml(contractId)}</span>`);
 
         const specialNote =
             contract.specialNote ?? pick(rawDetail, 'specialNote') ?? '';
@@ -992,10 +1028,8 @@ function initCRMSPecialModule() {
             ? 'tag-balance-ok'
             : (balNum < 0 ? 'tag-balance-zero' : 'dim-text');
 
-        const corpCell = companyName
-            ? `<strong style="color:#fab387">🏢 ${escapeHtml(companyName)}</strong><br>
-               <span style="color:#cdd6f4">${escapeHtml(contractTitle)}</span><br>
-               <span class="dim-text">Договор #${escapeHtml(contractId)}</span>`
+        const corpCell = (companyName || companyLink || hasContractId)
+            ? `${companyName ? `<strong style="color:#fab387">🏢 ${escapeHtml(companyName)}</strong><br>` : ''}${companyLink ? `${companyLink}<br>` : ''}<span style="color:#cdd6f4">${escapeHtml(contractTitle)}</span><br>${contractLine}`
             : '<span class="dim-text">—</span>';
 
         const fallbackTag = rawDetail?._source === 'fallback'
@@ -1009,14 +1043,14 @@ function initCRMSPecialModule() {
         return `
             <tr class="${isChild ? 'child-row' : ''}">
                 <td class="note-cell-highlight">
-                    ${opNote ? `<details ${opNote.length < 150 ? 'open' : ''}>
+                    ${opNote ? `<details ${noteDetailsAttrs(opNote.length)}>
                         <summary>📝 Читать заметку (${opNote.length} симв.)</summary>
                         <div class="note-content">${escapeHtml(opNote).replace(/\n/g, '<br>')}</div>
                     </details>` : '<span class="faint-text">Нет заметок</span>'}
                 </td>
                 <td class="note-cell">
-                    ${specialNote ? `<details open>
-                        <summary style="color:#f38ba8">⚠️ Спец. заметка (${specialNote.length} симв.) — нажми, чтобы свернуть</summary>
+                    ${specialNote ? `<details ${noteDetailsAttrs(specialNote.length)}>
+                        <summary style="color:#f38ba8">⚠️ Спец. заметка (${specialNote.length} симв.) — нажми, чтобы раскрыть/свернуть</summary>
                         <div class="note-content corp-note">${escapeHtml(specialNote).replace(/\n/g, '<br>')}</div>
                     </details>` : '<span class="faint-text">Нет спец. заметки</span>'}
                 </td>
