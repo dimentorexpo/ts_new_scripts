@@ -6,30 +6,31 @@ const themesCSS = document.createElement('style');
 themesCSS.id = 'af-themes-premium-css';
 themesCSS.textContent = `
 #AF_Themes {
-    --primary: #6366f1;
-    --primary-hover: #818cf8;
-    --primary-glow: rgba(99, 102, 241, 0.4);
-    --bg-glass: rgba(10, 15, 30, 0.95);
-    --border-glass: rgba(255, 255, 255, 0.12);
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    /* Палитра "corporate graphite" — визуальная копия окна очереди (Queue.js, #AF_Queue) */
+    --primary: #4268c9;
+    --primary-hover: #547ce1;
+    --primary-glow: rgba(66, 104, 201, 0.35);
+    --bg-glass: #111827;
+    --border-glass: #344258;
+    --text-primary: #edf2fb;
+    --text-secondary: #a6b4cb;
+    --text-muted: #7d8ca6;
     --spacing: 8px;
-    --radius-sm: 6px;
-    --radius-md: 8px;
+    --radius-sm: 9px;
+    --radius-md: 9px;
 
-    background: linear-gradient(135deg, rgba(15, 20, 35, 0.96) 0%, rgba(8, 12, 22, 0.98) 100%) !important;
-    backdrop-filter: blur(32px) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+    background:
+        radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+        #111827 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 
     border: 1px solid var(--border-glass) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.18) !important;
-    border-radius: 12px !important;
+    border-top: 1px solid var(--border-glass) !important;
+    border-radius: 18px !important;
     box-shadow:
-        0 0 0 1px rgba(0,0,0,0.6),
-        0 24px 60px rgba(0, 0, 0, 0.8),
-        0 0 40px rgba(99, 102, 241, 0.08),
-        inset 0 1px 0 rgba(255,255,255,0.08) !important;
+        0 26px 70px rgba(3, 9, 22, .52),
+        inset 0 1px rgba(255, 255, 255, .06) !important;
 
     color: var(--text-primary) !important;
     font-family: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
@@ -47,9 +48,9 @@ themesCSS.textContent = `
     align-items: center;
     gap: 4px;
     padding: 6px 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid #344258;
     cursor: grab;
-    background: rgba(0, 0, 0, 0.2);
+    background: transparent;
   }
 
   #AF_Themes .af-theme-header:active { cursor: grabbing; }
@@ -58,14 +59,14 @@ themesCSS.textContent = `
   #AF_Themes .af-btn {
     height: 24px;
     padding: 0 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #1b283c;
+    border: 1px solid #3c4d68;
     border-radius: var(--radius-sm);
-    color: var(--text-muted);
+    color: #dce5f5;
     font-size: 11px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
     display: inline-flex;
     align-items: center;
     gap: 3px;
@@ -73,35 +74,39 @@ themesCSS.textContent = `
   }
 
   #AF_Themes .af-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: var(--text-primary);
-    transform: translateY(-0.5px);
+    background: #293b56;
+    border-color: #7799e2;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: none;
   }
 
   #AF_Themes .af-btn.primary {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.15));
-    border-color: rgba(99, 102, 241, 0.4);
-    color: #a5b4fc;
+    background: #4268c9;
+    border-color: #7293ed;
+    color: #eef3ff;
+    box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
   }
 
   #AF_Themes .af-btn.primary:hover {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(99, 102, 241, 0.25));
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(99, 102, 241, 0.1);
-    color: #c7d2fe;
+    background: #547ce1;
+    border-color: #a2b9fa;
+    box-shadow: 0 6px 19px rgba(58, 96, 205, .3);
+    color: #fff;
   }
 
   #AF_Themes .buttonHide {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #fca5a5;
+    background: rgba(255, 116, 140, .08);
+    border-color: rgba(255, 116, 140, .3);
+    color: #ffb0be;
     order: -1;
   }
 
   #AF_Themes .buttonHide:hover {
-    background: rgba(239, 68, 68, 0.3);
+    background: rgba(255, 116, 140, .2);
+    border-color: rgba(255, 116, 140, .5);
     color: #fff;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+    box-shadow: none;
   }
 
   /* === ULTRA COMPACT SEARCH ROW === */
@@ -111,30 +116,30 @@ themesCSS.textContent = `
     gap: 6px;
     padding: 8px;
     padding-bottom: 6px;
-    background: rgba(0, 0, 0, 0.15);
+    background: transparent;
   }
 
   #AF_Themes .af-input {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #0d1625;
+    border: 1px solid #3a4961;
     border-radius: var(--radius-sm);
     padding: 6px 10px;
     color: var(--text-primary);
     font-size: 11px;
     outline: none;
-    transition: all 0.15s;
+    transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
     font-weight: 500;
   }
 
   #AF_Themes .af-input::placeholder {
     color: var(--text-muted);
-    opacity: 0.6;
+    opacity: 0.9;
   }
 
   #AF_Themes .af-input:focus {
-    border-color: var(--primary);
-    background: rgba(0, 0, 0, 0.5);
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2), 0 0 20px rgba(99, 102, 241, 0.15);
+    border-color: #829fff;
+    background: #142034;
+    box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
   }
 
   .af-jira-container {
@@ -178,12 +183,10 @@ themesCSS.textContent = `
   /* Премиальный скроллбар */
   #AF_Themes .af-main-layout::-webkit-scrollbar { width: 4px; }
   #AF_Themes .af-main-layout::-webkit-scrollbar-track { background: transparent; }
-  #AF_Themes .af-main-layout::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(99, 102, 241, 0.3), rgba(99, 102, 241, 0.15));
-    border-radius: 10px;
-  }
+  #AF_Themes .af-main-layout::-webkit-scrollbar-thumb,
   #AF_Themes .af-main-layout::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(99, 102, 241, 0.5), rgba(99, 102, 241, 0.3));
+    background: #536a8e;
+    border-radius: 10px;
   }
 
   /* Минималистичные заголовки секций */
@@ -202,26 +205,26 @@ themesCSS.textContent = `
   /* === ULTRA COMPACT THEME BUTTONS === */
   #AF_Themes .theme-main-btn {
     width: 100%;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #1b283c;
+    border: 1px solid #3c4d68;
     border-radius: var(--radius-sm);
     padding: 3px 6px;
-    color: var(--text-primary);
+    color: #dce5f5;
     font-size: 10px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
     margin-bottom: 2px;
     text-align: left;
     line-height: 1.2;
   }
 
   #AF_Themes .theme-main-btn:hover {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.1));
-    border-color: rgba(99, 102, 241, 0.4);
+    background: #293b56;
+    border-color: #7799e2;
     transform: translateX(2px);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2), 0 0 20px rgba(99, 102, 241, 0.1);
-    color: #c7d2fe;
+    box-shadow: none;
+    color: #fff;
   }
 
   /* === ULTRA COMPACT SUBTHEMES === */
@@ -240,15 +243,15 @@ themesCSS.textContent = `
   }
 
   #AF_Themes .searchSubthemes {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #1b283c;
+    border: 1px solid #3c4d68;
     border-radius: var(--radius-sm);
     padding: 6px 10px;
-    color: var(--text-primary);
+    color: #dce5f5;
     font-size: 13px;
     line-height: 1.4;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
     display: flex;
     align-items: center;
     text-align: left;
@@ -256,10 +259,10 @@ themesCSS.textContent = `
   }
 
   #AF_Themes .searchSubthemes:hover {
-    background: linear-gradient(135deg, var(--primary), rgba(99, 102, 241, 0.9));
-    border-color: var(--primary-hover);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3), 0 0 30px rgba(99, 102, 241, 0.15);
+    background: #4268c9;
+    border-color: #7293ed;
+    color: #eef3ff;
+    box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
     transform: translateY(-1px);
   }
 
@@ -282,56 +285,58 @@ themesCSS.textContent = `
 
   #AF_Themes #foundSubthemes::-webkit-scrollbar { width: 4px; }
   #AF_Themes #foundSubthemes::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(99, 102, 241, 0.3), rgba(99, 102, 241, 0.15));
+    background: #536a8e;
     border-radius: 10px;
   }
 
   #AF_Themes .af-found-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-sm);
+    background: #1a2536;
+    border: 1px solid #344258;
+    border-left: 3px solid #617fbd;
+    border-radius: 9px;
     padding: 5px;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    transition: all 0.15s;
+    transition: background-color .16s ease, border-color .16s ease;
   }
 
   #AF_Themes .af-found-card:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(99, 102, 241, 0.4);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    background: #23334b;
+    border-color: #6685be;
+    border-left-color: #92afff;
+    transform: none;
+    box-shadow: none;
   }
 
   #AF_Themes .af-found-badge {
-    color: var(--primary-hover);
+    color: #a9c0ff;
     font-size: 8px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    opacity: 0.8;
+    opacity: 1;
   }
 
   #AF_Themes .af-found-card button {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: var(--radius-sm);
-    color: var(--text-primary);
+    background: #1b283c;
+    border: 1px solid #3c4d68;
+    border-radius: 9px;
+    color: #dce5f5;
     font-size: 10px;
     text-align: left;
     padding: 5px 7px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background-color .16s ease, border-color .16s ease;
     line-height: 1.3;
     font-weight: 500;
   }
 
   #AF_Themes .af-found-card button:hover {
-    background: linear-gradient(135deg, var(--primary), rgba(99, 102, 241, 0.9));
-    color: #fff;
-    border-color: var(--primary-hover);
-    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+    background: #4268c9;
+    color: #eef3ff;
+    border-color: #7293ed;
+    box-shadow: none;
   }
 
   /* === ULTRA COMPACT TAGS === */
@@ -344,18 +349,20 @@ themesCSS.textContent = `
   #AF_Themes .af-tag-row {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-sm);
+    background: #1a2536;
+    border: 1px solid #344258;
+    border-left: 3px solid #617fbd;
+    border-radius: 9px;
     padding: 2px;
-    transition: all 0.15s;
+    transition: background-color .16s ease, border-color .16s ease;
     word-wrap: break-word;
   }
 
   #AF_Themes .af-tag-row:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.1);
+    background: #23334b;
+    border-color: #6685be;
+    border-left-color: #92afff;
+    box-shadow: none;
   }
 
   #AF_Themes .af-checkbox {
@@ -363,7 +370,7 @@ themesCSS.textContent = `
     cursor: pointer;
     width: 13px;
     height: 13px;
-    accent-color: var(--primary);
+    accent-color: #4268c9;
     flex-shrink: 0;
   }
 
