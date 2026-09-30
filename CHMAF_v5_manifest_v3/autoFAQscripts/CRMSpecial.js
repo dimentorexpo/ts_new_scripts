@@ -34,18 +34,18 @@ var win_CRMSPecialUI = `
     </div>
     <hr class="skyeng-divider" />
 
-    <div class="skyeng-section-title">📚 Education Services</div>
+    <div class="skyeng-section-title">📚 Услуги</div>
     <div id="skyeng-services-wrap"><div class="skyeng-empty">Нет данных</div></div>
 
-    <div class="skyeng-section-title">📋 Детали Services</div>
+    <div class="skyeng-section-title">📋 Детали Услуги</div>
     <div id="skyeng-services-detail"><div class="skyeng-empty">Нет данных</div></div>
 
     <hr class="skyeng-divider" />
 
-    <div class="skyeng-section-title">📦 Education Service Kits</div>
+    <div class="skyeng-section-title">📦 Комплектации</div>
     <div id="skyeng-kits-wrap"><div class="skyeng-empty">Нет данных</div></div>
 
-    <div class="skyeng-section-title">📋 Детали Kits</div>
+    <div class="skyeng-section-title">📋 Детали Комплектации</div>
     <div id="skyeng-kits-detail"><div class="skyeng-empty">Нет данных</div></div>
 </div>`;
 
