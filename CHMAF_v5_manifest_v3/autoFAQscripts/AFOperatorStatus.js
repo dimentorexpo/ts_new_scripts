@@ -279,7 +279,26 @@ function attachOpHandlers() {
     document.querySelectorAll('[name="operrow"]').forEach(el => {
         el.onclick = function () {
             const chatHis = document.getElementById('AF_ChatHis');
-            if (chatHis && chatHis.style.display === 'none') document.getElementById('opennewcat')?.click();
+
+            /* Окно истории скрыто CSS-классом .afg-panel { display:none },
+               а не inline-стилем: на свежей странице element.style.display === '',
+               поэтому сравнение с 'none' не срабатывало и панель не открывалась
+               (та же ловушка, что уже исправлена в Queue.js — смотрим
+               вычисленный стиль). */
+            const isHidden = !chatHis ||
+                getComputedStyle(chatHis).display === 'none';
+
+            if (isHidden) {
+                /* Публичная функция ChatHistory надёжнее клика по кнопке ☢:
+                   обработчик FAB вешается в utils.js по ссылке, захваченной
+                   в момент построения панели кнопок. */
+                if (typeof getopennewcatButtonPress === 'function') {
+                    getopennewcatButtonPress();
+                } else {
+                    document.getElementById('opennewcat')?.click();
+                }
+            }
+
             setTimeout(() => {
                 const select = document.getElementById('operatorstp');
                 if (select) {

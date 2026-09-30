@@ -95,9 +95,9 @@ const getLinksHTML = (isTP, customButtons) => {
         console.log('[Link_Hybrid] Генерируем KC версию');
         return `
 <div class="sky-panel" id="main_links_panel_kc">
-    <div class="chmaf-drag-handle" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 8px 12px; border-radius: 8px 8px 0 0; margin: -10px -10px 8px -10px; cursor: grab; display: flex; align-items: center; justify-content: space-between;">
-        <span style="color: white; font-weight: 600; font-size: 14px;">🔗 Ссылки KC</span>
-        <button title="Скрытие меню" id="hideMe" class="sky-btn" style="background: #ff4757; padding: 4px 8px; font-size: 12px;">❌</button>
+    <div class="chmaf-drag-handle" style="padding: 2px 2px 10px; border-bottom: 1px solid #344258; margin-bottom: 10px; cursor: grab; display: flex; align-items: center; justify-content: space-between;">
+        <span style="color: #f0f4fb; font-weight: 600; font-size: 14px;">🔗 Ссылки KC</span>
+        <button title="Скрытие меню" id="hideMe" class="sky-btn" style="padding: 4px 8px; font-size: 12px;">❌</button>
     </div>
     <div class="sky-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 4px;">
         <button title="База знаний" id="knoweledgebaseKC" class="sky-btn">📚</button>
@@ -121,7 +121,7 @@ const getLinksHTML = (isTP, customButtons) => {
         ${customButtons.map(btn => `<button class="sky-btn custom-btn" data-custom-id="${btn.id}" title="${btn.title}">${btn.icon} ${btn.title}</button>`).join('')}
     </div>
     <div style="text-align: center; margin-top: 6px;">
-        <button class="sky-btn" id="add-custom-btn" style="background: rgba(16, 185, 129, 0.3);">➕ Добавить кнопку</button>
+        <button class="sky-btn" id="add-custom-btn">➕ Добавить кнопку</button>
     </div>
 </div>`;
     }
@@ -130,9 +130,9 @@ const getLinksHTML = (isTP, customButtons) => {
     console.log('[Link_Hybrid] Генерируем TP версию');
     const html = `
 <div class="sky-panel" id="main_links_panel">
-    <div class="chmaf-drag-handle" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 8px 12px; border-radius: 8px 8px 0 0; margin: -10px -10px 8px -10px; cursor: grab; display: flex; align-items: center; justify-content: space-between;">
-        <span style="color: white; font-weight: 600; font-size: 14px;">🔗 Ссылки TP</span>
-        <button title="Скрытие меню" id="hideMe" class="sky-btn" style="background: #ff4757; padding: 4px 8px; font-size: 12px;">❌</button>
+    <div class="chmaf-drag-handle" style="padding: 2px 2px 10px; border-bottom: 1px solid #344258; margin-bottom: 10px; cursor: grab; display: flex; align-items: center; justify-content: space-between;">
+        <span style="color: #f0f4fb; font-weight: 600; font-size: 14px;">🔗 Ссылки TP</span>
+        <button title="Скрытие меню" id="hideMe" class="sky-btn" style="padding: 4px 8px; font-size: 12px;">❌</button>
     </div>
     <div class="sky-grid" style="grid-template-columns: repeat(10, 1fr); margin-bottom: 4px;">
         <button title="Удаление ПД" id="deleteaclnk" class="sky-btn">🗑</button>
@@ -229,10 +229,10 @@ const getLinksHTML = (isTP, customButtons) => {
         </div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px;">
-        <button class="sky-btn" id="restartlesson" style="background: #2ed573; color: white;">Classwork💾</button>
-        <button class="sky-btn" id="openGrabber" style="background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%); color: white;">📊 Grabber</button>
-        <button class="sky-btn" id="add-custom-btn" style="background: rgba(16, 185, 129, 0.3);">➕ Кнопка</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; border-top: 1px solid #344258; padding-top: 5px;">
+        <button class="sky-btn" id="restartlesson">Classwork💾</button>
+        <button class="sky-btn" id="openGrabber">📊 Grabber</button>
+        <button class="sky-btn" id="add-custom-btn">➕ Кнопка</button>
         <div style="display: flex; gap: 4px;">
             <button class="sky-btn" id="curVeriOS" style="font-size: 10px;">iOS: ⏳</button>
             <button class="sky-btn" id="curVerAndroid" style="font-size: 10px;">Android: ⏳</button>
@@ -570,9 +570,147 @@ function bindSimpleLinks(linksMap) {
 }
 
 // ==========================================
+// 4.5 СТИЛИ ОКНА (corporate graphite — визуальная копия окна очереди Queue.js).
+// Базовые .sky-* живут в CSS/style.css и могут использоваться другими панелями,
+// поэтому перекрашиваем скоупом #AF_Links, не трогая общий файл.
+// ==========================================
+function injectLinksGraphiteStyles() {
+    if (document.getElementById('AF_Links-graphite-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'AF_Links-graphite-styles';
+    style.textContent = `
+        #AF_Links .sky-panel {
+            background:
+                radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+                #111827 !important;
+            border: 1px solid #344258 !important;
+            border-radius: 18px !important;
+            box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06) !important;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            color: #edf2fb;
+            scrollbar-width: thin;
+            scrollbar-color: #536a8e transparent;
+        }
+
+        #AF_Links .sky-btn {
+            background: #1b283c;
+            border: 1px solid #3c4d68;
+            border-radius: 9px;
+            color: #dce5f5;
+            box-shadow: none;
+            transition:
+                background-color .16s ease,
+                border-color .16s ease,
+                transform .16s ease;
+        }
+
+        #AF_Links .sky-btn:hover {
+            background: #293b56;
+            border-color: #7799e2;
+            color: #fff;
+            box-shadow: none;
+            transform: translateY(-1px);
+        }
+
+        #AF_Links .sky-btn:active {
+            transform: translateY(0);
+            background: #243550;
+        }
+
+        #AF_Links .sky-btn:focus-visible {
+            outline: 2px solid #9ab5ff;
+            outline-offset: 2px;
+        }
+
+        /* Кнопка закрытия — красная гамма кнопки «❌» из очереди.
+           !important нужен, чтобы перебить #hideMe из CSS/style.css. */
+        #AF_Links #hideMe,
+        #AF_Links #hideMe:hover {
+            background: rgba(255, 116, 140, .08) !important;
+            border: 1px solid rgba(255, 116, 140, .3) !important;
+            color: #ffb0be !important;
+        }
+
+        #AF_Links #hideMe:hover {
+            background: rgba(255, 116, 140, .2) !important;
+        }
+
+        /* Спец-кнопки футера: Classwork — вторичная, Grabber — первичная,
+           «➕ Кнопка» — как действие (в стиле assignToMe из очереди) */
+        #AF_Links #restartlesson,
+        #AF_Links #restartlesson:hover {
+            background: #293e67 !important;
+            border: 1px solid #536fa7 !important;
+            color: #cfe0ff !important;
+        }
+
+        #AF_Links #restartlesson:hover {
+            background: #395892 !important;
+            border-color: #87a9ed !important;
+            color: #fff !important;
+        }
+
+        #AF_Links #openGrabber {
+            background: #4268c9;
+            border: 1px solid #7293ed;
+            color: #eef3ff;
+            box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
+        }
+
+        #AF_Links #openGrabber:hover {
+            background: #547ce1;
+            border-color: #a2b9fa;
+            box-shadow: 0 6px 19px rgba(58, 96, 205, .3);
+        }
+
+        #AF_Links #add-custom-btn {
+            background: #293e67;
+            border-color: #536fa7;
+            color: #cfe0ff;
+        }
+
+        #AF_Links #add-custom-btn:hover {
+            background: #395892;
+            border-color: #87a9ed;
+        }
+
+        #AF_Links .sky-input {
+            background: #0d1625;
+            border: 1px solid #3a4961;
+            color: #edf2fb;
+        }
+
+        #AF_Links .sky-input:hover {
+            background: #142034;
+            border-color: #657caa;
+        }
+
+        #AF_Links .sky-input:focus {
+            background: #142034;
+            border-color: #829fff;
+            box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
+        }
+
+        #AF_Links .sky-input::placeholder {
+            color: #7d8ca6;
+        }
+
+        #AF_Links .sky-input:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+    `;
+
+    document.head.appendChild(style);
+}
+
+// ==========================================
 // 5. ЗАПУСК
 // ==========================================
 async function initLinksHybrid() {
+    injectLinksGraphiteStyles();
 
     linksConfig = new LinksConfigHybrid();
     const isTP = linksConfig.config.isTP;

@@ -3,72 +3,87 @@ const fz_styles = `
 <style>
     .fz-container {
         display: flex; flex-direction: column; width: 420px;
-        background: linear-gradient(145deg, #13151a, #1c1f26);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        border-radius: 16px; padding: 18px; color: #e2e8f0;
+        /* Палитра "corporate graphite" — визуальная копия окна очереди (Queue.js, #AF_Queue) */
+        background:
+            radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+            #111827;
+        border: 1px solid #344258;
+        box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
+        border-radius: 18px; padding: 18px; color: #edf2fb;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         box-sizing: border-box; transition: all 0.3s ease;
     }
     .fz-header {
         display: flex; justify-content: space-between; align-items: center;
         margin-bottom: 16px; padding-bottom: 12px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06); cursor: grab;
+        border-bottom: 1px solid #344258; cursor: grab;
     }
     .fz-header:active { cursor: grabbing; }
-    .fz-title { font-size: 14px; font-weight: 600; color: #94a3b8; letter-spacing: 0.5px; text-transform: uppercase; }
+    .fz-title { font-size: 14px; font-weight: 600; color: #a6b4cb; letter-spacing: 0.5px; text-transform: uppercase; }
 
     .fz-btn {
-        background: #272a33; border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 8px; color: #a1a1aa; cursor: pointer;
+        background: #1b283c; border: 1px solid #3c4d68;
+        border-radius: 9px; color: #dce5f5; cursor: pointer;
         padding: 6px 12px; font-size: 13px; font-weight: 600;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
         display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     }
-    .fz-btn:hover { background: #323642; color: #fff; border-color: rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+    .fz-btn:hover { background: #293b56; color: #fff; border-color: #7799e2; box-shadow: none; transform: translateY(-1px); }
     .fz-btn:active { transform: scale(0.96); }
     .fz-btn-icon { padding: 6px 10px; font-size: 14px; }
 
+    /* Закрытие — в красной гамме кнопки «❌» из очереди */
+    #hidefrozechat {
+        background: rgba(255, 116, 140, .08);
+        border-color: rgba(255, 116, 140, .3);
+        color: #ffb0be;
+    }
+    #hidefrozechat:hover {
+        background: rgba(255, 116, 140, .2);
+        border-color: rgba(255, 116, 140, .5);
+        transform: none;
+    }
+
     .fz-input-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
     .fz-input, .fz-textarea {
-        background: #090a0c; border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 10px; color: #f8fafc; padding: 12px 16px; outline: none;
-        transition: all 0.3s ease; width: 100%; box-sizing: border-box;
-        font-size: 14px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        background: #0d1625; border: 1px solid #3a4961;
+        border-radius: 9px; color: #edf2fb; padding: 12px 16px; outline: none;
+        transition: all 0.16s ease; width: 100%; box-sizing: border-box;
+        font-size: 14px; box-shadow: none;
     }
-    .fz-input::placeholder, .fz-textarea::placeholder { color: #475569; }
-    .fz-input:focus, .fz-textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2), inset 0 2px 4px rgba(0,0,0,0.3); }
+    .fz-input::placeholder, .fz-textarea::placeholder { color: #7d8ca6; }
+    .fz-input:focus, .fz-textarea:focus { background: #142034; border-color: #829fff; box-shadow: 0 0 0 3px rgba(110, 152, 247, .16); }
     .fz-textarea { resize: vertical; min-height: 70px; font-family: inherit; }
 
     .fz-action-row { display: flex; gap: 12px; align-items: center; }
 
     /* Кастомный степпер времени (решение проблемы бага с протяжкой) */
     .fz-stepper {
-        display: flex; align-items: center; background: #090a0c;
-        border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px;
-        padding: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        display: flex; align-items: center;        background: #0d1625;
+        border: 1px solid #3a4961; border-radius: 9px;
+        padding: 4px; box-shadow: none;
     }
     .fz-stepper-btn {
-        background: transparent; border: none; color: #64748b;
+        background: transparent; border: none; color: #a6b4cb;
         width: 32px; height: 32px; border-radius: 6px; cursor: pointer;
         font-size: 18px; font-weight: bold; display: flex; align-items: center; justify-content: center;
         transition: 0.2s;
     }
-    .fz-stepper-btn:hover { background: #272a33; color: #fff; }
+    .fz-stepper-btn:hover { background: #293b56; color: #fff; }
     .fz-stepper-val {
         width: 36px; text-align: center; background: transparent; border: none;
         color: #fff; font-size: 16px; font-weight: 700; outline: none; pointer-events: none;
     }
-    .fz-stepper-label { color: #64748b; font-size: 13px; margin-right: 12px; font-weight: 600; user-select: none; }
+    .fz-stepper-label { color: #a6b4cb; font-size: 13px; margin-right: 12px; font-weight: 600; user-select: none; }
 
     .fz-btn-primary {
-        flex: 1; background: linear-gradient(135deg, #2563eb, #4f46e5);
-        color: #fff; border: none; padding: 0 16px; height: 42px; border-radius: 10px;
+        flex: 1; background: #4268c9;
+        color: #eef3ff; border: 1px solid #7293ed; padding: 0 16px; height: 42px; border-radius: 9px;
         font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
-        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255,255,255,0.2);
-        transition: all 0.3s ease; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
+        transition: background-color .16s ease, border-color .16s ease, transform .16s ease; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .fz-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255,255,255,0.2); }
+    .fz-btn-primary:hover { background: #547ce1; border-color: #a2b9fa; transform: translateY(-1px); box-shadow: 0 6px 19px rgba(58, 96, 205, .3); }
     .fz-btn-primary:active { transform: translateY(1px); }
 
     .fz-list {
@@ -76,29 +91,36 @@ const fz_styles = `
         padding-right: 4px; margin-top: 16px;
     }
     .fz-list::-webkit-scrollbar { width: 5px; }
-    .fz-list::-webkit-scrollbar-track { background: #090a0c; border-radius: 4px; }
-    .fz-list::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
-    .fz-list::-webkit-scrollbar-thumb:hover { background: #52525b; }
+    .fz-list::-webkit-scrollbar-track { background: #111b2a; border-radius: 4px; }
+    .fz-list::-webkit-scrollbar-thumb { background: #536a8e; border-radius: 4px; }
+    .fz-list::-webkit-scrollbar-thumb:hover { background: #6b82ab; }
 
     .fz-item {
         display: flex; justify-content: space-between; align-items: center;
-        background: rgba(255, 255, 255, 0.02); padding: 12px 14px;
-        border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.04);
-        transition: all 0.2s;
+        background: #1a2536; padding: 12px 14px;
+        border-radius: 10px; border: 1px solid #344258; border-left: 3px solid #617fbd;
+        transition: background-color .16s ease, border-color .16s ease;
     }
-    .fz-item:hover { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.08); transform: translateX(2px); }
-    .fz-item-hash { font-size: 13px; color: #94a3b8; font-family: monospace; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 150px; }
+    .fz-item:hover { background: #23334b; border-color: #6685be; border-left-color: #92afff; transform: none; }
+    .fz-item-hash { font-size: 13px; color: #a6b4cb; font-family: monospace; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 150px; }
     .fz-item-timer {
         font-family: monospace; font-size: 14px; font-weight: 700;
-        color: #60a5fa; background: #0f172a; padding: 4px 10px; border-radius: 6px;
-        border: 1px solid rgba(96, 165, 250, 0.15); box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        color: #a9c0ff; background: #182335; padding: 4px 10px; border-radius: 6px;
+        border: 1px solid #364660; box-shadow: none;
     }
     .fz-del-btn {
-        background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2);
-        color: #f87171; padding: 6px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: 0.2s;
+        background: rgba(255, 116, 140, .08); border: 1px solid rgba(255, 116, 140, .3);
+        color: #ffb0be; padding: 6px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: 0.2s;
         display: flex; align-items: center; justify-content: center;
     }
-    .fz-del-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fff; }
+    .fz-del-btn:hover { background: rgba(255, 116, 140, .2); border-color: rgba(255, 116, 140, .5); color: #fff; }
+
+    .fz-btn:focus-visible,
+    .fz-input:focus-visible,
+    .fz-textarea:focus-visible {
+        outline: 2px solid #9ab5ff;
+        outline-offset: 2px;
+    }
 </style>
 `;
 

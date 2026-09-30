@@ -34,18 +34,18 @@ var win_CRMSPecialUI = `
     </div>
     <hr class="skyeng-divider" />
 
-    <div class="skyeng-section-title">📚 Education Services</div>
+    <div class="skyeng-section-title">📚 Услуги</div>
     <div id="skyeng-services-wrap"><div class="skyeng-empty">Нет данных</div></div>
 
-    <div class="skyeng-section-title">📋 Детали Services</div>
+    <div class="skyeng-section-title">📋 Детали Услуги</div>
     <div id="skyeng-services-detail"><div class="skyeng-empty">Нет данных</div></div>
 
     <hr class="skyeng-divider" />
 
-    <div class="skyeng-section-title">📦 Education Service Kits</div>
+    <div class="skyeng-section-title">📦 Комплектации</div>
     <div id="skyeng-kits-wrap"><div class="skyeng-empty">Нет данных</div></div>
 
-    <div class="skyeng-section-title">📋 Детали Kits</div>
+    <div class="skyeng-section-title">📋 Детали Комплектации</div>
     <div id="skyeng-kits-detail"><div class="skyeng-empty">Нет данных</div></div>
 </div>`;
 
@@ -903,9 +903,6 @@ function initCRMSPecialModule() {
                 item.productKit?.code ||
                 '—';
 
-            const hasFirst =
-                item.isFirstPaymentReceived || item.hasFirstPayment;
-
             const nestedCount = nestedCountsByKit[item.id] || 0;
 
             return `
@@ -919,7 +916,6 @@ function initCRMSPecialModule() {
                     : ''}
                         </td>
                         <td>${stageTag(item.stage)}</td>
-                        <td>${hasFirst ? '✅' : '❌'}</td>
                     </tr>`;
         }).join('')}
                 </tbody>
@@ -979,11 +975,6 @@ function initCRMSPecialModule() {
         const balance = service.balance ?? pick(rawDetail, 'balance');
         const balanceView =
             (balance === undefined || balance === null) ? '—' : balance;
-
-        const hasFirst =
-            (service.hasFirstPayment ?? pick(rawDetail, 'hasFirstPayment')) ||
-            (service.isFirstPaymentReceived ??
-                pick(rawDetail, 'isFirstPaymentReceived'));
 
         const corpRaw = service.corporate ?? pick(rawDetail, 'corporate');
         const corp = corpRaw ?? {};
@@ -1064,7 +1055,6 @@ function initCRMSPecialModule() {
                     ${balance !== null && balance !== undefined
                 ? `<span class="${balClass}" style="font-size:16px;font-weight:bold;">${escapeHtml(balanceView)}</span><br>`
                 : '<span class="dim-text">баланс: —</span><br>'}
-                    <small class="dim-text">1й платеж: ${hasFirst ? '✅ Да' : '❌ Нет'}</small>
                 </td>
                 <td>
                     ${isChild ? '<span class="child-tree">└─</span>' : ''}<strong style="color:#a6e3a1">${kindIcon} #${escapeHtml(id)}</strong>${fallbackTag}${childTag}<br>
