@@ -292,7 +292,6 @@ themesCSS.textContent = `
   #AF_Themes .af-found-card {
     background: #1a2536;
     border: 1px solid #344258;
-    border-left: 3px solid #617fbd;
     border-radius: 9px;
     padding: 5px;
     display: flex;
@@ -304,7 +303,6 @@ themesCSS.textContent = `
   #AF_Themes .af-found-card:hover {
     background: #23334b;
     border-color: #6685be;
-    border-left-color: #92afff;
     transform: none;
     box-shadow: none;
   }
@@ -351,7 +349,6 @@ themesCSS.textContent = `
     align-items: center;
     background: #1a2536;
     border: 1px solid #344258;
-    border-left: 3px solid #617fbd;
     border-radius: 9px;
     padding: 2px;
     transition: background-color .16s ease, border-color .16s ease;
@@ -361,8 +358,26 @@ themesCSS.textContent = `
   #AF_Themes .af-tag-row:hover {
     background: #23334b;
     border-color: #6685be;
-    border-left-color: #92afff;
     box-shadow: none;
+  }
+
+  /* Выбранный тег (чекбокс отмечен) — вся строка в hover-цветах.
+    Селектор через :has поддерживается в актуальных Chromium ( расширение
+    работает только там); класс-фолбэк .is-checked вешает JS ниже. */
+  #AF_Themes .af-tag-row:has(input[name="tagcheck"]:checked),
+  #AF_Themes .af-tag-row.is-checked {
+    background: #4268c9;
+    border-color: #7293ed;
+  }
+
+  #AF_Themes .af-tag-row:has(input[name="tagcheck"]:checked) .af-item-btn,
+  #AF_Themes .af-tag-row.is-checked .af-item-btn {
+    color: #eef3ff;
+  }
+
+  #AF_Themes .af-tag-row:has(input[name="tagcheck"]:checked) .af-checkbox,
+  #AF_Themes .af-tag-row.is-checked .af-checkbox {
+    accent-color: #a2b9fa;
   }
 
   #AF_Themes .af-checkbox {
@@ -655,8 +670,19 @@ document.getElementById('ClearSmartroomData').addEventListener('click', () => {
     // Очищаем чекбоксы тегов (твой старый код)
     document.querySelectorAll('input[name="tagcheck"]').forEach(cb => cb.checked = false);
 
+    // Снимаем подсветку выбранных строк-тегов
+    document.querySelectorAll('.af-tag-row.is-checked').forEach(el => el.classList.remove('is-checked'));
+
     // Добавляем очистку поиска
     resetSearch();
+});
+
+/* Подсветка строки-тега при выборе чекбокса: класс-фолбэк для браузеров
+   без CSS :has() — если он поддерживается, класс не мешает (значения совпадают) */
+document.getElementById('tags_body').addEventListener('change', e => {
+    if (e.target?.name !== 'tagcheck') return;
+
+    e.target.closest('.af-tag-row')?.classList.toggle('is-checked', e.target.checked);
 });
 
 document.getElementById('multitag').addEventListener('click', async () => {
