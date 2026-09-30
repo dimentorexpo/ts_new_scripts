@@ -256,6 +256,23 @@ const MODULE_MENU_CONFIG = Object.freeze([
         tp: false
     }),
     Object.freeze({
+        id: 'buttonCRMSPecial',
+        text: '☄️ CRM Спец.ком',
+        fn: () => {
+            if (typeof window.getbutCRMSPecialButtonPress === 'function') {
+                window.getbutCRMSPecialButtonPress();
+            } else {
+                // Иначе «кнопка молча ничего не делает»: расширение
+                // не перезагружено или модуль не внедрён на эту страницу.
+                window.createAndShowButton?.(
+                    'Модуль CRM Спец.ком не загружен. Обновите расширение (chrome://extensions ⟳) и нажмите Ctrl+Shift+R.',
+                    'warning'
+                );
+            }
+        },
+        tp: false
+    }),
+    Object.freeze({
         id: 'buttonGetQueue',
         text: '🚧 Очередь',
         fn: () => window.getQueuePress?.(),
@@ -367,7 +384,7 @@ function enableDrag(element, options = {}) {
     } = options;
 
     if (!(element instanceof Element)) {
-        return () => {};
+        return () => { };
     }
 
     let isDragging = false;
@@ -2007,33 +2024,33 @@ async function move_again_AF() {
             '👺',
             'Меню',
             'rose',
-    () => {
-    let menu = document.getElementById('chmaf-module-menu');
+            () => {
+                let menu = document.getElementById('chmaf-module-menu');
 
-    if (!menu) {
-        menu = buildModuleMenu(newPanel, isTpOperator());
-    }
+                if (!menu) {
+                    menu = buildModuleMenu(newPanel, isTpOperator());
+                }
 
-    const isClosed =
-        getComputedStyle(menu).display === 'none';
+                const isClosed =
+                    getComputedStyle(menu).display === 'none';
 
-    if (isClosed) {
-        // Сначала показываем: иначе невозможно измерить высоту.
-        menu.style.setProperty(
-            'display',
-            'flex',
-            'important'
-        );
+                if (isClosed) {
+                    // Сначала показываем: иначе невозможно измерить высоту.
+                    menu.style.setProperty(
+                        'display',
+                        'flex',
+                        'important'
+                    );
 
-        positionModuleMenu(menu);
-    } else {
-        closeModuleMenu();
-    }
+                    positionModuleMenu(menu);
+                } else {
+                    closeModuleMenu();
+                }
 
-    document
-        .getElementById('MainMenuBtn')
-        ?.classList.toggle('active', isClosed);
-}
+                document
+                    .getElementById('MainMenuBtn')
+                    ?.classList.toggle('active', isClosed);
+            }
         );
 
         buildModuleMenu(newPanel, isTpOperator());
@@ -2693,7 +2710,7 @@ window.getText = getText;
 
         const duration =
             Number.isFinite(requestedDuration) &&
-            requestedDuration > 0
+                requestedDuration > 0
                 ? requestedDuration
                 : normalizedType === 'error'
                     ? 6000

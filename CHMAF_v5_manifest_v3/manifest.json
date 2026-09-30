@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "ChMAF",
-	"version": "5.0.163",
+	"version": "5.0.164",
 	"description": "Твой мультитул в работе с чатами",
 	"background": {
 		"service_worker": "bg.js"
@@ -58,6 +58,7 @@
 				"/autoFAQscripts/Vimbot.js",
 				"/autoFAQscripts/CheckTags.js",
 				"/autoFAQscripts/CRMcomments.js",
+				"/autoFAQscripts/CRMSpecial.js",
 				"content.js"
 			],
 			"css": [
