@@ -34,18 +34,18 @@ var win_CRMSPecialUI = `
     </div>
     <hr class="skyeng-divider" />
 
-    <div class="skyeng-section-title">📚 Услуги</div>
+    <div class="skyeng-section-title">📚 Education Services</div>
     <div id="skyeng-services-wrap"><div class="skyeng-empty">Нет данных</div></div>
 
-    <div class="skyeng-section-title">📋 Детали Услуги</div>
+    <div class="skyeng-section-title">📋 Детали Services</div>
     <div id="skyeng-services-detail"><div class="skyeng-empty">Нет данных</div></div>
 
     <hr class="skyeng-divider" />
 
-    <div class="skyeng-section-title">📦 Комплектации</div>
+    <div class="skyeng-section-title">📦 Education Service Kits</div>
     <div id="skyeng-kits-wrap"><div class="skyeng-empty">Нет данных</div></div>
 
-    <div class="skyeng-section-title">📋 Детали Комплектации</div>
+    <div class="skyeng-section-title">📋 Детали Kits</div>
     <div id="skyeng-kits-detail"><div class="skyeng-empty">Нет данных</div></div>
 </div>`;
 
@@ -226,6 +226,48 @@ var win_CRMSPecialCSS = `
 var win_CRMSPecialCSS2 = `
 #AF_CRMSPecial .tag-balance-ok { color: #a6e3a1; font-weight: 700; }
 #AF_CRMSPecial .tag-balance-zero { color: #f38ba8; font-weight: 700; }
+
+/* Баланс — круглая пилюля */
+#AF_CRMSPecial .balance-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 6px 0 4px 0;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.3px;
+    border: 1px solid;
+    width: fit-content;
+}
+#AF_CRMSPecial .balance-pill--plus {
+    color: #a6e3a1;
+    background: rgba(166, 227, 161, 0.12);
+    border-color: rgba(166, 227, 161, 0.45);
+}
+
+#AF_CRMSPecial .balance-pill--minus {
+    color: #f38ba8;
+    background: rgba(243, 139, 168, 0.12);
+    border-color: rgba(243, 139, 168, 0.45);
+}
+
+#AF_CRMSPecial .balance-pill--zero {
+    color: #9399b2;
+    background: rgba(147, 153, 178, 0.1);
+    border-color: rgba(147, 153, 178, 0.35);
+}
+#AF_CRMSPecial .balance-pill--none {
+    color: #7f849c;
+    background: transparent;
+    border-color: #313244;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
 #AF_CRMSPecial .tag-stage {
     background: rgba(137, 180, 250, 0.15);
     color: #89b4fa;
@@ -233,6 +275,16 @@ var win_CRMSPecialCSS2 = `
     padding: 1px 6px;
     border-radius: 4px;
     font-size: 10px;
+}
+#AF_CRMSPecial .tag-incorrect {
+    background: rgba(250, 179, 135, 0.15);
+    color: #fab387;
+    border: 1px solid rgba(250, 179, 135, 0.5);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
 }
 #AF_CRMSPecial .tag-lost {
     background: rgba(203, 166, 247, 0.18);
@@ -259,9 +311,9 @@ var win_CRMSPecialCSS2 = `
     vertical-align: middle;
 }
 #AF_CRMSPecial .tag-fallback {
-    background: rgba(203, 166, 247, 0.15);
-    color: #cba6f7;
-    border: 1px solid rgba(203, 166, 247, 0.4);
+    background: rgba(137, 180, 250, 0.18);
+    color: #89b4fa;
+    border: 1px solid rgba(137, 180, 250, 0.5);
 }
 #AF_CRMSPecial .tag-from-kit {
     background: rgba(250, 179, 135, 0.15);
@@ -363,6 +415,21 @@ var win_CRMSPecialCSS3 = `
 #AF_CRMSPecial tr.child-row td:first-child {
     border-left: 3px solid #fab387;
     padding-left: 14px;
+}
+
+/* FALLBACK-родитель: вся строка выделена ФИОЛЕТОВЫМ — контраст к
+   оранжевым дочерним строкам (у тех левая полоса и заливка #fab387) */
+#AF_CRMSPecial tr.fallback-row td {
+    background: rgba(137, 180, 250, 0.12);
+    border-bottom-color: rgba(137, 180, 250, 0.4);
+}
+#AF_CRMSPecial tr.fallback-row:hover td { background: rgba(137, 180, 250, 0.2); }
+#AF_CRMSPecial tr.fallback-row td:first-child {
+    border-left: 4px solid #89b4fa;
+}
+#AF_CRMSPecial tr.fallback-row td.note-cell,
+#AF_CRMSPecial tr.fallback-row td.note-cell-highlight {
+    background: rgba(137, 180, 250, 0.16) !important;
 }
 #AF_CRMSPecial .child-tree { color: #fab387; font-weight: 800; margin-right: 4px; font-size: 13px; }
 
@@ -662,7 +729,12 @@ function initCRMSPecialModule() {
             .replace(/'/g, '&#039;');
     }
 
-    function stageTag(stage) {
+    function stageTag(stage, isIncorrect = false) {
+        if (isIncorrect) {
+            /* У некорректных услуг вместо stage — явный бейдж */
+            return '<span class="tag-incorrect">⚠️ Некорректная услуга</span>';
+        }
+
         return stage === 'lost'
             ? '<span class="tag-lost">lost</span>'
             : `<span class="tag-stage">${escapeHtml(stage || '—')}</span>`;
@@ -679,6 +751,19 @@ function initCRMSPecialModule() {
         if (!obj || typeof obj !== 'object') return undefined;
         if ('stage' in obj && obj.stage) return obj.stage;
         return pick(obj, 'stage');
+    }
+
+    /* Некорректная услуга: где-либо в ответе есть непустое
+       incorrectnessReason. Такие услуги нельзя дальше парсить —
+       запросы их деталей (например, вложенных в кит) отдают 500. */
+    function getIncorrectness(obj) {
+        if (!obj || typeof obj !== 'object') return null;
+
+        const val = obj.incorrectnessReason ?? pick(obj, 'incorrectnessReason');
+
+        return (val === null || val === undefined || val === '')
+            ? null
+            : String(val);
     }
 
     function toArray(raw) {
@@ -875,7 +960,7 @@ function initCRMSPecialModule() {
                         <td class="dim-text">${index + 1}</td>
                         <td><span class="skyeng-badge">${escapeHtml(item.id)}</span></td>
                         <td>${escapeHtml(item.serviceTypeKey)}</td>
-                        <td>${stageTag(item.stage)}</td>
+                        <td>${stageTag(item.stage, Boolean(item._incorrectReason))}</td>
                     </tr>`).join('')}
                 </tbody>
             </table>
@@ -893,10 +978,9 @@ function initCRMSPecialModule() {
         const lostCount = data.filter(item => item.stage === 'lost').length;
 
         return `
-            <table class="skyeng-table">
-                <thead>
-                    <tr><th>#</th><th>ID</th><th>Продукт</th><th>Stage</th><th>1й платёж</th></tr>
-                </thead>
+            <table class="skyeng-table">                    <thead>
+                <tr><th>#</th><th>ID</th><th>Продукт</th><th>Stage</th></tr>
+            </thead>
                 <tbody>${data.map((item, index) => {
             const productTitle =
                 item.productKit?.title ||
@@ -915,7 +999,7 @@ function initCRMSPecialModule() {
                     ? `<div class="nested-info">↳ ${nestedCount} вложенных услуг</div>`
                     : ''}
                         </td>
-                        <td>${stageTag(item.stage)}</td>
+                        <td>${stageTag(item.stage, Boolean(item._incorrectReason))}</td>
                     </tr>`;
         }).join('')}
                 </tbody>
@@ -1015,15 +1099,26 @@ function initCRMSPecialModule() {
             service.operatorNote ?? pick(rawDetail, 'operatorNote') ?? '';
 
         const balNum = Number(balanceView);
-        const balClass = balNum > 0
-            ? 'tag-balance-ok'
-            : (balNum < 0 ? 'tag-balance-zero' : 'dim-text');
+
+        /* Баланс — круглая пилюля: цвет и иконка зависят от знака,
+           чтобы отношение к балансу считывалось мгновенно */
+        const balancePill = (balance === null || balance === undefined)
+            ? '<span class="balance-pill balance-pill--none">баланс: —</span>'
+            : `<span class="balance-pill ${
+                balNum > 0 ? 'balance-pill--plus' : (balNum < 0 ? 'balance-pill--minus' : 'balance-pill--zero')
+            }" title="${balNum > 0 ? 'Позитивный баланс' : (balNum < 0 ? 'Отрицательный баланс (долг)' : 'Нулевой баланс')}">
+                ${escapeHtml(balanceView)}
+            </span>`;
 
         const corpCell = (companyName || companyLink || hasContractId)
             ? `${companyName ? `<strong style="color:#fab387">🏢 ${escapeHtml(companyName)}</strong><br>` : ''}${companyLink ? `${companyLink}<br>` : ''}<span style="color:#cdd6f4">${escapeHtml(contractTitle)}</span><br>${contractLine}`
             : '<span class="dim-text">—</span>';
 
-        const fallbackTag = rawDetail?._source === 'fallback'
+        /* FALLBACK-кит (загружен через резервный URL) — родитель,
+           ниже в таблице идут его вложенные дети: подсвечиваем строку целиком */
+        const isFallback = rawDetail?._source === 'fallback';
+
+        const fallbackTag = isFallback
             ? '<span class="tag-mini tag-fallback">FALLBACK</span>'
             : '';
 
@@ -1032,7 +1127,7 @@ function initCRMSPecialModule() {
             : '';
 
         return `
-            <tr class="${isChild ? 'child-row' : ''}">
+            <tr class="${[isChild ? 'child-row' : '', isFallback ? 'fallback-row' : ''].filter(Boolean).join(' ')}">
                 <td class="note-cell-highlight">
                     ${opNote ? `<details ${noteDetailsAttrs(opNote.length)}>
                         <summary>📝 Читать заметку (${opNote.length} симв.)</summary>
@@ -1048,13 +1143,11 @@ function initCRMSPecialModule() {
                 <td>${corpCell}</td>
                 <td>
                     <div class="status-group">
-                        ${stageTag(stage)}
-                        <span class="tag-stage">${escapeHtml(stageDb)}</span>
+                        ${stageTag(stage, Boolean(getIncorrectness(rawDetail)))}
+                        ${getIncorrectness(rawDetail) ? '' : `<span class="tag-stage">${escapeHtml(stageDb)}</span>`}
                         ${crisis ? '<span class="tag-stage" style="background:rgba(243,139,168,0.15);color:#f38ba8;border-color:rgba(243,139,168,0.4);">⚠️ Кризисный</span>' : ''}
                     </div>
-                    ${balance !== null && balance !== undefined
-                ? `<span class="${balClass}" style="font-size:16px;font-weight:bold;">${escapeHtml(balanceView)}</span><br>`
-                : '<span class="dim-text">баланс: —</span><br>'}
+                    ${balancePill}
                 </td>
                 <td>
                     ${isChild ? '<span class="child-tree">└─</span>' : ''}<strong style="color:#a6e3a1">${kindIcon} #${escapeHtml(id)}</strong>${fallbackTag}${childTag}<br>
@@ -1067,6 +1160,19 @@ function initCRMSPecialModule() {
 
     function errorRow(data, colCount, isChild = false) {
         return `<tr class="${isChild ? 'child-row' : ''}"><td colspan="${colCount}" style="color:#f38ba8">${isChild ? '<span class="child-tree">└─</span> ' : ''}❌ ID ${escapeHtml(data.id || '?')}: ${escapeHtml(data._error)}</td></tr>`;
+    }
+
+    /* Строка некорректной услуги: только ID и причина, без парсинга. */
+    function incorrectRow(detail, colCount, isChild = false) {
+        const id = detail?.id ?? pick(detail, 'id') ?? '?';
+        const reason = getIncorrectness(detail) || 'Причина не указана';
+
+        return `<tr class="${isChild ? 'child-row' : ''}">
+            <td colspan="${colCount}" style="color:#fab387">
+                ${isChild ? '<span class="child-tree">└─</span> ' : ''}${stageTag(null, true)} <strong>#${escapeHtml(id)}</strong> — парсинг пропущен<br>
+                <span class="dim-text">${escapeHtml(reason)}</span>
+            </td>
+        </tr>`;
     }
 
     function buildMonitorTable(rows, config) {
@@ -1086,17 +1192,19 @@ function initCRMSPecialModule() {
         return `<div class="summary-bar">
             <span class="summary-pill active">✅ Активных <span class="pill-count">${summaryData.active}</span></span>
             ${summaryData.lost > 0 ? `<span class="summary-pill lost">LOST <span class="pill-count">${summaryData.lost}</span></span>` : ''}
+            ${summaryData.incorrect > 0 ? `<span class="summary-pill nested">⚠️ Некорректных <span class="pill-count">${summaryData.incorrect}</span></span>` : ''}
             ${summaryData.nested > 0 ? `<span class="summary-pill nested">↳ Вложенных <span class="pill-count">${summaryData.nested}</span></span>` : ''}
         </div>`;
     }
 
-    function renderMonitorSection(activeRows, lostRows, config, summaryData) {
+    function renderMonitorSection(activeRows, lostRows, config, summaryData, incorrectRows = []) {
         let html = buildSummaryBar(summaryData);
 
         const hasActive = activeRows.length > 0;
         const hasLost = lostRows.length > 0;
+        const hasIncorrect = incorrectRows.length > 0;
 
-        if (!hasActive && !hasLost) {
+        if (!hasActive && !hasLost && !hasIncorrect) {
             return html + `<div class="skyeng-empty">${config.emptyMsg}</div>`;
         }
 
@@ -1110,6 +1218,18 @@ function initCRMSPecialModule() {
                     <summary>🟣 Потерянные: ${lostRows.length} — раскрыть</summary>
                     <div class="lost-spoiler-body">
                         ${buildMonitorTable(lostRows, config)}
+                    </div>
+                </details>`;
+        }
+
+        /* Некорректные (incorrectnessReason): отдельным спойлером,
+           детали таких услуг не запрашивались во избежание 500. */
+        if (hasIncorrect) {
+            html += `
+                <details class="lost-spoiler">
+                    <summary style="background:rgba(250,179,135,0.12);color:#fab387;border-color:rgba(250,179,135,0.45)">⚠️ Некорректные: ${incorrectRows.length} — раскрыть</summary>
+                    <div class="lost-spoiler-body">
+                        ${incorrectRows.join('')}
                     </div>
                 </details>`;
         }
@@ -1187,7 +1307,14 @@ function initCRMSPecialModule() {
 
             const servicesArray = toArray(raw1)
                 .filter(item => item.serviceTypeKey && shouldInclude(item.serviceTypeKey))
-                .map(({ id, serviceTypeKey, stage }) => ({ id, serviceTypeKey, stage }));
+                .map(item => ({
+                    id: item.id,
+                    serviceTypeKey: item.serviceTypeKey,
+                    stage: item.stage,
+                    /* Некорректность видна уже в списке — детали такой
+                       услуги запрашивать не будем (риск 500) */
+                    _incorrectReason: getIncorrectness(item)
+                }));
 
             setHtml('skyeng-services-wrap', renderServicesTable(servicesArray));
 
@@ -1198,7 +1325,13 @@ function initCRMSPecialModule() {
                 `https://backend.skyeng.ru/api/v1/students/${userId}/education-service-kits/`
             );
 
-            const kitsArray = toArray(raw2);
+            const kitsArray = toArray(raw2).map(item => ({
+                ...item,
+                /* incorrectnessReason может прийти прямо в списке
+                   (например, data[1].incorrectnessReason) — тогда кит
+                   некорректен уже на этом шаге */
+                _incorrectReason: getIncorrectness(item)
+            }));
             const nestedCountsByKit = {};
 
             setHtml('skyeng-kits-wrap', renderKitsTable(kitsArray, nestedCountsByKit));
@@ -1210,6 +1343,15 @@ function initCRMSPecialModule() {
                 if (isAborted()) return;
 
                 const service = servicesArray[i];
+
+                /* Уже некорректна по списку — деталей не запрашиваем */
+                if (service._incorrectReason) {
+                    servicesDetails.push({
+                        id: service.id,
+                        incorrectnessReason: service._incorrectReason
+                    });
+                    continue;
+                }
 
                 setStatus(`3/4 Детали services (${i + 1}/${servicesArray.length})...`, 'load');
 
@@ -1232,9 +1374,11 @@ function initCRMSPecialModule() {
             // перерисовываем верхнюю таблицу с реальными stage и счётчиком lost
             setHtml('skyeng-services-wrap', renderServicesTable(servicesArray));
 
-            // ── 4. Детали kits: lost определяем по ответу, вложенные только у активных ──
+            // ── 4. Детали kits: lost по ответу, некорректные — БЕЗ дальнейшего парсинга,
+            // вложенные услуги не запрашиваем вообще (детали некорректной отдают 500) ──
             const kitsActive = [];
             const kitsLost = [];
+            const kitsIncorrect = [];
             let totalNested = 0;
 
             for (let i = 0; i < kitsArray.length; i++) {
@@ -1242,13 +1386,28 @@ function initCRMSPecialModule() {
 
                 const kit = kitsArray[i];
 
+                /* Некорректен по списку (data[i].incorrectnessReason) —
+                   фетч деталей не выполняем вовсе, чтобы не ловить 500 */
+                if (kit._incorrectReason) {
+                    kitsIncorrect.push({
+                        id: kit.id,
+                        incorrectnessReason: kit._incorrectReason
+                    });
+                    continue;
+                }
+
                 setStatus(`4/4 Детали kits (${i + 1}/${kitsArray.length})...`, 'load');
 
                 try {
                     const detail = await skyFetchKitDetail(kit.id, userId);
                     const kitStage = getStage(detail) ?? kit.stage;
+                    const kitIncorrect = getIncorrectness(detail);
 
-                    if (kitStage === 'lost') {
+                    if (kitIncorrect) {
+                        /* Некорректный кит: парсинг прекращаем — ни вложенных,
+                           ни повторных запросов деталей, иначе 500 */
+                        kitsIncorrect.push(detail);
+                    } else if (kitStage === 'lost') {
                         kitsLost.push(detail);
                     } else {
                         detail._nested = [];
@@ -1300,16 +1459,24 @@ function initCRMSPecialModule() {
 
             setHtml('skyeng-kits-wrap', renderKitsTable(kitsArray, nestedCountsByKit));
 
-            // ── Собираем строки: активные отдельно, lost отдельно ──
+            // ── Собираем строки: активные отдельно, lost отдельно, некорректные отдельно ──
             const colsServices = SERVICES_TABLE_CONFIG.cols.length;
             const servicesActiveRows = [];
             const servicesLostRows = [];
+            const servicesIncorrectRows = [];
             let servicesActiveCount = 0;
 
             servicesDetails.forEach(detail => {
                 if (detail && detail._error) {
                     servicesActiveCount++;
                     servicesActiveRows.push(errorRow(detail, colsServices));
+                    return;
+                }
+
+                /* incorrectnessReason важнее stage: некорректная услуга
+                   может числиться lost, но парсить её всё равно нельзя */
+                if (getIncorrectness(detail)) {
+                    servicesIncorrectRows.push(incorrectRow(detail, colsServices));
                     return;
                 }
 
@@ -1339,6 +1506,13 @@ function initCRMSPecialModule() {
                 const kitId = detail.id ?? pick(detail, 'id') ?? '?';
 
                 for (const nestedDetail of nested) {
+                    if (nestedDetail && !nestedDetail._error && getIncorrectness(nestedDetail)) {
+                        /* Некорректная вложенная услуга — только строка с причиной,
+                           никаких дальнейших запросов по ней */
+                        kitsActiveRows.push(incorrectRow(nestedDetail, colsKits, true));
+                        continue;
+                    }
+
                     kitsActiveRows.push(
                         nestedDetail && nestedDetail._error
                             ? errorRow(nestedDetail, colsKits, true)
@@ -1353,6 +1527,12 @@ function initCRMSPecialModule() {
                     : renderMonitorRow(detail)
             );
 
+            const kitsIncorrectRows = kitsIncorrect.map(detail =>
+                detail && detail._error
+                    ? errorRow(detail, colsKits)
+                    : incorrectRow(detail, colsKits)
+            );
+
             // ── Рендер секций ──
             setHtml(
                 'skyeng-services-detail',
@@ -1363,8 +1543,10 @@ function initCRMSPecialModule() {
                     {
                         active: servicesActiveCount,
                         lost: servicesLostRows.length,
+                        incorrect: servicesIncorrectRows.length,
                         nested: 0
-                    }
+                    },
+                    servicesIncorrectRows
                 )
             );
 
@@ -1377,8 +1559,10 @@ function initCRMSPecialModule() {
                     {
                         active: kitsActive.filter(detail => !detail._error).length,
                         lost: kitsLostRows.length,
+                        incorrect: kitsIncorrectRows.length,
                         nested: totalNested
-                    }
+                    },
+                    kitsIncorrectRows
                 )
             );
 
