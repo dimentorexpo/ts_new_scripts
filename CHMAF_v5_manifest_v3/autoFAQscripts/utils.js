@@ -691,6 +691,12 @@ function createWindow(id, topKey, leftKey, content) {
     let lastClickTime = 0;
 
     function onInputMouseDown(event) {
+        // Игнорируем любые нажатия, кроме левой кнопки мыши (0 = Main/Left click).
+        // Правая кнопка мыши (2) не должна трогать выделение или глушить событие.
+        if (event.button !== 0) {
+            return;
+        }
+
         const input = event.target;
 
         if (
@@ -709,20 +715,16 @@ function createWindow(id, topKey, leftKey, content) {
             return;
         }
 
-        event.stopPropagation();
-
         const now = Date.now();
 
-        if (now - lastClickTime < 400) {
+        // Защита от дабл-клика / тройного клика для выделения слов и строк
+        if (now - lastClickTime < 400 || event.detail > 1) {
             return;
         }
 
         lastClickTime = now;
 
-        if (
-            input.selectionStart !== input.selectionEnd &&
-            event.detail === 1
-        ) {
+        if (input.selectionStart !== input.selectionEnd) {
             const position = getCaretPositionFromPoint(
                 input,
                 event.clientX,
@@ -731,6 +733,8 @@ function createWindow(id, topKey, leftKey, content) {
 
             input.setSelectionRange(position, position);
         }
+
+        event.stopPropagation();
     }
 
     windowElement.addEventListener(
