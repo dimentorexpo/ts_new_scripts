@@ -25,6 +25,7 @@ let appverresult;
  * ============================================================ */
 
 const win_Menu = `<!-- описание кнопок меню -->
+	<div id="templatesCRM" class="menubtnsCRM">📑Templates</div>
     <div id="jirafinder" class="menubtnsCRM">🔎Jira search</div>
     <div id="mattermostfinder" class="menubtnsCRM">💬Mattermost search</div>
     <div id="smartroomformCRM" class="menubtnsCRM">🦐Smartroom</div>
