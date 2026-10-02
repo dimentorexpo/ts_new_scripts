@@ -5,7 +5,7 @@ const _sa_play = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentC
 
 var win_SettingsApp =  // описание элементов главного окна
     `<style>
-        #SettingsApp_bar { width: 372px; padding: 0 0 10px 0; border: 1px solid rgba(255,255,255,.09);
+        #SettingsApp_bar { width: 440px; padding: 0 0 10px 0; border: 1px solid rgba(255,255,255,.09);
             border-radius: 16px; overflow: hidden; color: #e2e8f0;
             background: linear-gradient(165deg, #1e1c26 0%, #151320 100%);
             box-shadow: 0 16px 44px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.03);
@@ -40,7 +40,8 @@ var win_SettingsApp =  // описание элементов главного �
         .set-chip:hover { border-color: rgba(201,168,76,.5); transform: translateY(-1px); }
         .set-chip input[type="checkbox"] { accent-color: #c9a84c; margin: 0; }
         #SettingsApp_bar .btnCRM { border-radius: 9px; }
-        #test_stdCRM, #test_teachCRM { width: 120px; text-align: center; }
+        #test_stdCRM, #test_teachCRM { width: 110px; text-align: center; flex-shrink: 0; }
+		.set-row-testacc { display: flex; align-items: center; gap: 8px; margin-top: 7px; flex-wrap: nowrap; }
         #soundplayintervalCRM { width: 56px; text-align: center; }
         .set-fs-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .set-fs-row .btnCRM { flex: 1; justify-content: center; white-space: nowrap; }
@@ -110,12 +111,12 @@ var win_SettingsApp =  // описание элементов главного �
         <!-- ТЕСТОВЫЕ АККАУНТЫ -->
         <div class="set-sec">
             <div class="set-sec-title">👤 Тестовые аккаунты</div>
-            <div class="set-row">
-                <input class="inputCRM" id="test_stdCRM" placeholder="ID тест У" autocomplete="off" title="ID личного тестового ученика" type="text">
-                <button class="btnCRM btnCRMsmall" id="setteststdCRM" title="Добавить в localstorage ID тестового У">💾</button>
-                <input class="inputCRM" id="test_teachCRM" placeholder="ID тест П" autocomplete="off" title="ID личного тестового преподавателя" type="text">
-                <button class="btnCRM btnCRMsmall" id="settestteachCRM" title="Добавить в localstorage ID тестового П">💾</button>
-            </div>
+<div class="set-row-testacc">
+    <input class="inputCRM" id="test_stdCRM" placeholder="ID тест У" autocomplete="off" title="ID личного тестового ученика" type="text">
+    <button class="btnCRM btnCRMsmall" id="setteststdCRM" title="Сохранить ID тестового У">💾</button>
+    <input class="inputCRM" id="test_teachCRM" placeholder="ID тест П" autocomplete="off" title="ID личного тестового преподавателя" type="text">
+    <button class="btnCRM btnCRMsmall" id="settestteachCRM" title="Сохранить ID тестового П">💾</button>
+</div>
         </div>
 
         <!-- РЕЗЕРВНАЯ КОПИЯ -->
@@ -362,17 +363,33 @@ document.getElementById('sound_testCRM').onclick = function () { // кнопка
     }
 }
 
-document.getElementById('setteststdCRM').onclick = function () { // сохраняется ID в настройках расширения тестового ученика в localstorage
-    if (document.getElementById('test_stdCRM').value != '') {
-        localStorage.setItem('test_studCRM', document.getElementById('test_stdCRM').value);
-    } else console.log("Ведите ID тестового ученика")
-}
+document.getElementById('setteststdCRM').onclick = function () {
+    const val = document.getElementById('test_stdCRM').value.trim();
+    if (val !== '') {
+        localStorage.setItem('test_studCRM', val);
+        if (typeof window.crmToast === 'function') {
+            window.crmToast(`ID тестового ученика (${val}) сохранён`, 'success', { duration: 2000 });
+        }
+    } else {
+        if (typeof window.crmToast === 'function') {
+            window.crmToast('Введите ID тестового ученика', 'warning', { duration: 2000 });
+        }
+    }
+};
 
-document.getElementById('settestteachCRM').onclick = function () { // сохраняется ID в настройках расширения тестового учителя в localstorage
-    if (document.getElementById('test_teachCRM').value != '') {
-        localStorage.setItem('test_teachCRM', document.getElementById('test_teachCRM').value);
-    } else console.log("Ведите ID тестового преподавателя")
-}
+document.getElementById('settestteachCRM').onclick = function () {
+    const val = document.getElementById('test_teachCRM').value.trim();
+    if (val !== '') {
+        localStorage.setItem('test_teachCRM', val);
+        if (typeof window.crmToast === 'function') {
+            window.crmToast(`ID тестового преподавателя (${val}) сохранён`, 'success', { duration: 2000 });
+        }
+    } else {
+        if (typeof window.crmToast === 'function') {
+            window.crmToast('Введите ID тестового преподавателя', 'warning', { duration: 2000 });
+        }
+    }
+};
 
 function getLocalstorageToFileCRM(fileName) { //функция сохранения содержимого localstorage в файл на компьютере
 

@@ -200,7 +200,7 @@ function logginerfortestsCRM(polzovatel) {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${polzovatel}&login_link_form%5Btarget%5D=https%3A%2F%2Fvimbox.skyeng.ru%2Fhome&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=`,
+            body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${polzovatel}&login_link_form%5Btarget%5D=https%3A%2F%2Fvimbox.skyeng.ru%2F&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=`,
             mode: 'cors',
             credentials: 'include',
         };
@@ -449,7 +449,7 @@ function checkforsoundplay() {
         // Ищем именно кнопку взятия задачи среди всех .mdc-button.
         const btn = Array.from(takeTaskBtn).find(b => b.innerText.trim() === 'Взять новую задачу');
         const btnActive = btn && !btn.classList.contains('mat-mdc-button-disabled') &&
-                          document.getElementsByClassName('mat-mdc-button-disabled').length == 0;
+            document.getElementsByClassName('mat-mdc-button-disabled').length == 0;
 
         if (btnActive) {
             if (localStorage.getItem('repeatsound') == 0) {
@@ -633,7 +633,7 @@ window.createAndShowButton = createAndShowButton;
     /** Достаёт статус («активный», «временно отключен», ...) из HTML админки. */
     function ubParseStatus(html) {
         const tableMatch = html.match(/<th[^>]*>\s*Статус\s*<\/th>\s*<td>([^<]+)<\/td>/i);
-        const divMatch   = html.match(/статус:\s*<strong>([^<]+)<\/strong>/i);
+        const divMatch = html.match(/статус:\s*<strong>([^<]+)<\/strong>/i);
         const looseMatch = html.match(/статус[:\s]*<strong>([^<]+)<\/strong>/i);
         const m = tableMatch || divMatch || looseMatch;
         return m ? m[1].trim() : null;
@@ -1137,8 +1137,8 @@ window.createAndShowButton = createAndShowButton;
     const isDisabled = (btn) => {
         if (!btn) return true;
         return btn.disabled ||
-               btn.getAttribute('disabled') === 'true' ||
-               btn.classList.contains('mat-mdc-button-disabled');
+            btn.getAttribute('disabled') === 'true' ||
+            btn.classList.contains('mat-mdc-button-disabled');
     };
 
     /* ---------- Основной цикл (раз в секунду) ---------- */
