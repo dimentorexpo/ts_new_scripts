@@ -143,6 +143,7 @@ const injectGlassStyles = () => {
             border-color: rgba(var(--af-gold), 0.6);
             box-shadow: 0 0 12px rgba(var(--af-gold), 0.3);
             transform: scale(1.1) rotate(-8deg);
+            cursor:pointer;
         }
         .af-gl-key-btn:active { transform: scale(0.9); }
         .af-gl-key-btn.is-loading { animation: keyPulse 1s ease-in-out infinite; color: #8ab4f8; border-color: #8ab4f8; }

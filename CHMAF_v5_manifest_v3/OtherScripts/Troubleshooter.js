@@ -355,7 +355,8 @@ async function runDiagnostics() {
 
         history: {
           microphone: [],
-          codecs: []
+          codecs: [],
+          camera: []
         },
 
         seenErrors: new Set(),
@@ -364,6 +365,10 @@ async function runDiagnostics() {
 
         lastMicState: null,
         lastMicSource: null,
+
+        // История камеры: имя + статус на момент каждой записи журнала.
+        lastCameraKey: null,
+        cameraLogSeen: false,
 
         lastCodecState: {
           audio: null,
@@ -519,6 +524,7 @@ async function runDiagnostics() {
     const last = matches.at(-1)?.[1]?.toLowerCase();
 
     if (last) {
+      user.cameraLogSeen = true;
       user.devices.cameraStatus =
         last.startsWith("включ") ? "on" : "off";
     }
@@ -530,11 +536,60 @@ async function runDiagnostics() {
 
     if (!match) return;
 
+    const key = match[1].toLowerCase();
     const value = clean(match[2]);
 
-    if (value) {
-      user.devices[match[1].toLowerCase()] = value;
+    if (key === "camera") {
+      // Для камеры пустое значение и "undefined"/"null"
+      // означают, что в журнале она сейчас не определена —
+      // сбрасываем имя, чтобы история видела переход.
+      user.cameraLogSeen = true;
+      user.devices.camera = value || null;
+      return;
     }
+
+    if (value) {
+      user.devices.mic = value;
+    }
+  }
+
+  /*
+   * История камеры: одно состояние (имя + вкл/выкл) = одна запись.
+   * Ловим переходы вида «камера была → undefined → снова камера»,
+   * а не только последнее значение из журнала.
+   */
+  function trackCameraHistory(user, context, source) {
+    if (!user.cameraLogSeen) return;
+
+    const rawName = user.devices.camera;
+    const name = unknown(rawName) ? null : rawName;
+    const status = user.devices.cameraStatus;
+
+    const key = `${name ?? "~"}|${status ?? "~"}`;
+
+    if (user.lastCameraKey === key) return;
+    user.lastCameraKey = key;
+
+    const label = !name
+      ? "Камера: не определена"
+      : `Камера: ${name}${
+          status === "on"
+            ? " · включена"
+            : status === "off"
+              ? " · выключена"
+              : ""
+        }`;
+
+    user.history.camera.push({
+      ...context,
+      source,
+      name,
+      // Оригинальное «неправильное» значение журнала (undefined/null/пусто).
+      rawName: name ? null : (rawName || ""),
+      status,
+      isUndefined: !name,
+      label
+    });
   }
 
   function readCodec(user, line, context) {
@@ -904,6 +959,8 @@ async function runDiagnostics() {
           const raw = fragment.raw;
           const text = clean(raw);
 
+          const source = microphoneSource(fragments, index);
+
           readAccess(user, raw);
           readCameraState(user, raw);
 
@@ -911,10 +968,7 @@ async function runDiagnostics() {
             user,
             raw,
             context,
-            microphoneSource(
-              fragments,
-              index
-            )
+            source
           );
 
           // Значения устройств и кодеков могут быть
@@ -939,6 +993,10 @@ async function runDiagnostics() {
               normalized
             );
           }
+
+          // Фиксируем переходы камеры (имя → undefined → имя,
+          // включена/выключена) после разбора всех строк блока.
+          trackCameraHistory(user, context, source);
 
           // Чистые блоки audio:/video: не добавляем в события.
           if (
@@ -2009,11 +2067,21 @@ async function runDiagnostics() {
   function appendTimeline(container, entries, type) {
     const timeline = el("ol", "timeline");
     for (const entry of entries) {
-      const tone = type === "microphone" ? (entry.state === "on" ? "good" : "warn") : entry.isUndefined ? "warn" : "good";
+      const tone =
+        type === "microphone"
+          ? entry.state === "on" ? "good" : "warn"
+          : type === "camera"
+            ? entry.isUndefined || entry.status === "off" ? "warn" : "good"
+            : entry.isUndefined ? "warn" : "good";
       const item = el("li", `timeline-item ${tone}`);
       item.append(el("time", "timeline-time", entry.time), el("div", "timeline-label", entry.label));
       if (type === "codecs" && entry.isUndefined) {
         item.append(el("div", "timeline-note", `В журнале явно указано: ${entry.value}`));
+      }
+      if (type === "camera" && entry.isUndefined) {
+        item.append(el("div", "timeline-note", entry.rawName
+          ? `В журнале явно указано: camera: ${entry.rawName}`
+          : "В журнале имя камеры отсутствует."));
       }
       timeline.append(item);
     }
@@ -2030,7 +2098,12 @@ async function runDiagnostics() {
     windowElement.setAttribute("role", "dialog");
     windowElement.setAttribute("aria-modal", "true");
 
-    const titleText = type === "microphone" ? "История микрофона" : "История кодеков";
+    const titleText =
+      type === "microphone"
+        ? "История микрофона"
+        : type === "camera"
+          ? "История камеры"
+          : "История кодеков";
     windowElement.setAttribute("aria-label", `${titleText}: ${ROLE_NAME[user.role]}`);
 
     const historyHead = el("div", "history-head");
@@ -2046,17 +2119,22 @@ async function runDiagnostics() {
     const body = el("div", "history-body");
     const entries = [...user.history[type]].sort((a, b) => compareByTime(a, b, false));
 
-    if (type === "microphone") {
+    if (type === "microphone" || type === "camera") {
+      const isCamera = type === "camera";
       const accessEntries = entries.filter(item => item.source === "access");
       const regularEntries = entries.filter(item => item.source !== "access");
 
       body.append(el("h3", "history-group-title", "При получении доступа к устройствам"));
       if (accessEntries.length) appendTimeline(body, accessEntries, type);
-      else body.append(el("div", "empty", "В журнале не найдено состояния микрофона, связанного с получением доступа."));
+      else body.append(el("div", "empty", isCamera
+        ? "Состояния камеры в момент получения доступа к устройствам в журнале не найдены."
+        : "В журнале не найдено состояния микрофона, связанного с получением доступа."));
 
-      body.append(el("h3", "history-group-title", "Остальные включения и отключения"));
+      body.append(el("h3", "history-group-title", isCamera ? "Остальные изменения камеры" : "Остальные включения и отключения"));
       if (regularEntries.length) appendTimeline(body, regularEntries, type);
-      else body.append(el("div", "empty", "Других переключений микрофона не найдено."));
+      else body.append(el("div", "empty", isCamera
+        ? "Других изменений камеры в журнале не найдено."
+        : "Других переключений микрофона не найдено."));
     } else if (!entries.length) {
       body.append(el("div", "empty", "Явные записи audio: или video: в журнале не найдены."));
     } else {
@@ -2096,7 +2174,12 @@ async function runDiagnostics() {
     const codecHistory = el("button", "tool-btn", "◷ История кодеков");
     codecHistory.type = "button";
     codecHistory.addEventListener("click", () => openHistory(user.id, "codecs"));
-    tools.append(micHistory, codecHistory);
+
+    const cameraHistory = el("button", "tool-btn", "◷ История камеры");
+    cameraHistory.type = "button";
+    cameraHistory.addEventListener("click", () => openHistory(user.id, "camera"));
+
+    tools.append(micHistory, cameraHistory, codecHistory);
     card.append(tools);
 
     const deviceSection = el("section", "section");
