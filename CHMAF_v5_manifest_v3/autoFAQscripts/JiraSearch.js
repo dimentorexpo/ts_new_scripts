@@ -869,32 +869,86 @@ document.getElementById('jirainstr').addEventListener('click', () => {
     window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-jirasearch%F0%9F%94%8EJiraSearch');
 });
 
+function closeChmafMenus() {
+    window.closeModuleMenu?.();
+
+    const legacyMenu = document.getElementById('idmymenu');
+    if (legacyMenu) {
+        legacyMenu.style.setProperty('display', 'none', 'important');
+    }
+
+    const mainMenuBtn = document.getElementById('MainMenuBtn');
+    if (mainMenuBtn) {
+        mainMenuBtn.classList.remove('activeScriptBtn');
+    }
+}
+
 function getJiraOpenFormPress() {
     const mainBox = document.getElementById('AF_Jira');
 
+    if (!mainBox) {
+        window.showCustomAlert?.(
+            'Окно Jira не найдено. Обновите расширение и страницу (Ctrl+Shift+R).',
+            'error'
+        );
+        return;
+    }
+
     if (mainBox.style.display === 'none') {
         mainBox.style.display = '';
-        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn');
-        document.getElementById('idmymenu').style.display = 'none';
-        document.getElementById('JQLquery').value = defqueryitem;
+        closeChmafMenus();
+
+        const jqlQuery = document.getElementById('JQLquery');
+        if (jqlQuery) {
+            jqlQuery.value = defqueryitem;
+        }
 
         // ═══ ЗАЩИТА ОТ ДУБЛЕЙ СЛУШАТЕЛЕЙ ═══
-        // Функция вызывается при каждом открытии меню; без этого флага каждый
-        // open вешал ещё один комплект addEventListener — фильтры запускали
-        // поиск N раз, а «Обновить статус» показывал N алертов.
         const isFirstOpen = !mainBox.dataset.jiraBound;
         mainBox.dataset.jiraBound = '1';
 
         function checkJiraToken() {
-            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: "https://jira.skyeng.link", requestOptions: { method: 'GET' } }, response => {
-                if (response.success && response.fetchansver.match(/name="atlassian-token" content="(.*lin)/)) {
-                    document.getElementById('searchjiratknstatus').innerText = "🟢";
-                } else {
-                    createAndShowButton("Авторизуйтесь в системе Jira — иначе поиск вернёт пустоту", 'warning');
-                    document.getElementById('searchjiratknstatus').innerText = "🔴";
-                }
-            });
+            try {
+                chrome.runtime.sendMessage(
+                    {
+                        action: 'getFetchRequest',
+                        fetchURL: 'https://jira.skyeng.link',
+                        requestOptions: { method: 'GET' }
+                    },
+                    response => {
+                        const statusEl = document.getElementById('searchjiratknstatus');
+                        const html = String(response?.fetchansver ?? '');
+
+                        const ok = Boolean(
+                            response?.success &&
+                            html.match(/name="atlassian-token" content="(.*lin)/)
+                        );
+
+                        if (statusEl) {
+                            statusEl.innerText = ok ? '🟢' : '🔴';
+                        }
+
+                        if (!ok) {
+                            const message =
+                                'Авторизуйтесь в системе Jira — иначе поиск вернёт пустоту';
+
+                            if (typeof window.createAndShowButton === 'function') {
+                                window.createAndShowButton(message, 'warning');
+                            } else {
+                                window.showCustomAlert?.(message, 'warning');
+                            }
+                        }
+                    }
+                );
+            } catch (error) {
+                console.error('[ChMAF][Jira] Ошибка проверки токена:', error);
+                window.showCustomAlert?.(
+                    'Не удалось проверить авторизацию Jira.',
+                    'error'
+                );
+            }
         }
+
         checkJiraToken();
 
         if (localStorage.getItem('bugsarray')) {
@@ -902,96 +956,142 @@ function getJiraOpenFormPress() {
                 const parsedFavs = JSON.parse(localStorage.getItem('bugsarray'));
                 favissues = Array.isArray(parsedFavs) ? parsedFavs : [];
             } catch (e) {
-                // Повреждённый кэш (например, строка "null") больше не роняет панель Jira
+                // Повреждённый кэш не должен ронять панель Jira
                 favissues = [];
                 localStorage.removeItem('bugsarray');
             }
+
             renderFavorites();
         }
 
         if (!isFirstOpen) {
             // Повторное открытие: только обновили токен/избранное — слушатели уже висят
-            document.getElementById('idmymenu').style.display = 'none';
+            closeChmafMenus();
             return;
         }
 
-        document.getElementById('RefreshJiraStatus').addEventListener('click', checkJiraToken);
+        document
+            .getElementById('RefreshJiraStatus')
+            ?.addEventListener('click', checkJiraToken);
 
         const queryButtons = [
             { id: 'defaultQuery', val: () => defqueryitem, search: false },
             { id: 'PSquery', val: () => PSqueryitem, search: false },
             { id: 'freshQuery', val: () => frqueryitem, search: false },
             { id: 'ZBPQuery', val: () => zbpqueryitem, search: false },
-            { id: 'customQuery', val: () => localStorage.getItem('customquery') || "", search: false, custom: true },
-            { id: 'getiosbugs', val: () => "ios", search: true },
-            { id: 'getandroidbugs', val: () => "android", search: true }
+            {
+                id: 'customQuery',
+                val: () => localStorage.getItem('customquery') || '',
+                search: false,
+                custom: true
+            },
+            { id: 'getiosbugs', val: () => 'ios', search: true },
+            { id: 'getandroidbugs', val: () => 'android', search: true }
         ];
 
         queryButtons.forEach(btn => {
-            document.getElementById(btn.id).addEventListener('click', function () {
+            const buttonEl = document.getElementById(btn.id);
+            if (!buttonEl) return;
+
+            buttonEl.addEventListener('click', function () {
                 toggleAndDeactivateQueries(this.id);
                 showelemonpages();
+
                 if (btn.search) {
-                    document.getElementById('testJira').value = btn.val();
-                    document.getElementById('getJiraTasks').click();
+                    const testJira = document.getElementById('testJira');
+                    const getJiraTasks = document.getElementById('getJiraTasks');
+
+                    if (testJira) {
+                        testJira.value = btn.val();
+                    }
+
+                    getJiraTasks?.click();
                 } else {
-                    document.getElementById('JQLquery').value = btn.val();
-                    if (btn.custom) {
-                        document.getElementById('JQLquery').oninput = function () {
-                            localStorage.setItem('customquery', this.value);
-                        };
+                    const jqlQueryEl = document.getElementById('JQLquery');
+
+                    if (jqlQueryEl) {
+                        jqlQueryEl.value = btn.val();
+
+                        if (btn.custom) {
+                            jqlQueryEl.oninput = function () {
+                                localStorage.setItem('customquery', this.value);
+                            };
+                        }
                     }
                 }
             });
         });
 
         // Favourite logic
-        document.getElementById('favouriteBugs').addEventListener('click', function () {
-            const isVisible = document.getElementById('favouriteissuetable').style.display === "block";
+        document.getElementById('favouriteBugs')?.addEventListener('click', function () {
+            const favouriteTable = document.getElementById('favouriteissuetable');
+            const isVisible = favouriteTable?.style.display === 'block';
 
             if (!isVisible) {
                 toggleAndDeactivateQueries(this.id);
-                document.getElementById('issuetable').style.display = "none";
-                document.getElementById('fields_jira_search').style.display = "none";
-                document.getElementById('foundIssuesAmount').style.display = "none";
-                document.getElementById('pagesSwitcher').style.display = "none";
-                document.getElementById('favouriteissuetable').style.display = "block";
-                renderFavorites(); // Просто вызываем рендер, события уже внутри него
+
+                const issuetable = document.getElementById('issuetable');
+                const fields = document.getElementById('fields_jira_search');
+                const amount = document.getElementById('foundIssuesAmount');
+                const pages = document.getElementById('pagesSwitcher');
+
+                if (issuetable) issuetable.style.display = 'none';
+                if (fields) fields.style.display = 'none';
+                if (amount) amount.style.display = 'none';
+                if (pages) pages.style.display = 'none';
+                if (favouriteTable) favouriteTable.style.display = 'block';
+
+                renderFavorites();
             } else {
-                // Если уже открыто — возвращаемся к дефолту или просто скрываем
-                document.getElementById('defaultQuery').click();
+                document.getElementById('defaultQuery')?.click();
             }
         });
 
-        document.getElementById('getJiraTasks').addEventListener('click', () => {
+        document.getElementById('getJiraTasks')?.addEventListener('click', () => {
             ClearPages();
+
             const queries = {
-                'defaultQuery': defqueryitem,
-                'PSquery': PSqueryitem,
-                'freshQuery': frqueryitem,
-                'customQuery': localStorage.getItem('customquery'),
-                'getiosbugs': iosbugsqueryitem,
-                'getandroidbugs': androidbugsqueryitem,
-                'ZBPQuery': zbpqueryitem
+                defaultQuery: defqueryitem,
+                PSquery: PSqueryitem,
+                freshQuery: frqueryitem,
+                customQuery: localStorage.getItem('customquery') || '',
+                getiosbugs: iosbugsqueryitem,
+                getandroidbugs: androidbugsqueryitem,
+                ZBPQuery: zbpqueryitem
             };
 
             for (const id in queries) {
-                if (document.getElementById(id).classList.contains('active-query')) {
-                    document.getElementById('JQLquery').value = queries[id];
-                    requesttojiratext = encodeURI(document.getElementById('JQLquery').value);
-                    getJiraTask(optionsforfetch(requesttojiratext, 0));
+                const activeEl = document.getElementById(id);
+
+                if (activeEl?.classList.contains('active-query')) {
+                    const jqlQueryEl = document.getElementById('JQLquery');
+
+                    if (jqlQueryEl) {
+                        jqlQueryEl.value = queries[id];
+                        requesttojiratext = encodeURI(jqlQueryEl.value);
+                        getJiraTask(optionsforfetch(requesttojiratext, 0));
+                    }
+
                     break;
                 }
             }
         });
 
-        const handleSearchJiraByEnter = (event) => { if (event.key === "Enter") document.getElementById('getJiraTasks').click(); };
-        document.querySelector('#testJira').addEventListener('keydown', handleSearchJiraByEnter);
-        document.querySelector('#JQLquery').addEventListener('keydown', handleSearchJiraByEnter);
+        const handleSearchJiraByEnter = event => {
+            if (event.key === 'Enter') {
+                document.getElementById('getJiraTasks')?.click();
+            }
+        };
 
+        document
+            .querySelector('#testJira')
+            ?.addEventListener('keydown', handleSearchJiraByEnter);
+
+        document
+            .querySelector('#JQLquery')
+            ?.addEventListener('keydown', handleSearchJiraByEnter);
     } else {
         mainBox.style.display = 'none';
-        document.getElementById('MainMenuBtn').classList.remove('activeScriptBtn');
+        closeChmafMenus();
     }
-    document.getElementById('idmymenu').style.display = 'none';
 }

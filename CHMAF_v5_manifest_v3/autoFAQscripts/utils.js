@@ -1423,6 +1423,7 @@ function closeModuleMenu() {
         .getElementById('MainMenuBtn')
         ?.classList.remove('active');
 }
+window.closeModuleMenu = closeModuleMenu;
 
 function buildModuleMenu(panel, isTP) {
     injectModuleMenuStyles();
