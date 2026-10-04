@@ -5,16 +5,17 @@
 const CYBER_CONFIG = {
     apiKey: "4045fcee63d54caab2e216a75c3b7aa5",
     theme: {
-        accent: "#00f2fe",
-        accentGlow: "rgba(0, 242, 254, 0.35)",
-        secondary: "#4facfe",
-        bg: "#090d16",
-        cardBg: "rgba(255, 255, 255, 0.03)",
-        cardBorder: "rgba(255, 255, 255, 0.07)",
-        danger: "#ff4d6d",
-        dangerGlow: "rgba(255, 77, 109, 0.3)",
-        textMain: "#f0f6fc",
-        textMuted: "#8b949e"
+        accent: "#38bdf8",          // Сдержанный деловой Sky Blue
+        accentGlow: "rgba(56, 189, 248, 0.25)",
+        secondary: "#2563eb",       // Корпоративный Royal Blue
+        bgGradient: "linear-gradient(160deg, #1e2638 0%, #111726 100%)", // Темный графитово-синий сланцевый градиент
+        panelBg: "rgba(15, 23, 42, 0.65)", // Полупрозрачный Slate 900
+        cardBg: "rgba(255, 255, 255, 0.04)",
+        cardBorder: "rgba(148, 163, 184, 0.14)", // Мягкая серебристо-синяя окантовка
+        danger: "#f87171",
+        dangerGlow: "rgba(248, 113, 113, 0.25)",
+        textMain: "#f1f5f9",        // Чистый холодный белый
+        textMuted: "#94a3b8"        // Сланцевый серый
     }
 };
 
@@ -33,142 +34,116 @@ const escapeHTML = (str = '') =>
 const injectStyles = () => {
     if (document.getElementById('cyber-ip-styles')) return;
 
-    const { accent, accentGlow, secondary, cardBg, cardBorder, danger, dangerGlow, textMain, textMuted } = CYBER_CONFIG.theme;
+    const { accent, accentGlow, secondary, bgGradient, panelBg, cardBg, cardBorder, danger, dangerGlow, textMain, textMuted } = CYBER_CONFIG.theme;
 
     const style = document.createElement('style');
     style.id = 'cyber-ip-styles';
     style.textContent = `
-        @keyframes cyber-pulse-glow {
-            0%, 100% { box-shadow: 0 0 15px ${accentGlow}; }
-            50% { box-shadow: 0 0 28px ${accentGlow}; }
-        }
-
         @keyframes cyber-scan-radar {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
+        /* Основной контейнер в корпоративном графитово-синем стиле */
         .cyber-ip-container {
             position: fixed;
             z-index: 999999;
             width: 380px;
             box-sizing: border-box;
-            background: linear-gradient(145deg, rgba(13, 17, 26, 0.94) 0%, rgba(6, 9, 15, 0.98) 100%);
-            backdrop-filter: blur(28px) saturate(160%);
-            -webkit-backdrop-filter: blur(28px) saturate(160%);
+            background: ${bgGradient};
+            backdrop-filter: blur(24px) saturate(130%);
+            -webkit-backdrop-filter: blur(24px) saturate(130%);
             border: 1px solid ${cardBorder};
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 20px;
-            font-family: 'JetBrains Mono', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+            border-top: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            padding: 18px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 'JetBrains Mono', sans-serif;
             color: ${textMain};
-            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.75), 0 0 45px rgba(0, 242, 254, 0.08);
+            box-shadow: 0 20px 50px rgba(7, 10, 19, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
             user-select: none;
         }
 
-.cyber-ip-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    cursor: grab;
-    user-select: none;
-    -webkit-user-select: none;
-}
+        /* Заголовок с поддержкой chmaf-drag-handle */
+        .cyber-ip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+        }
 
-.cyber-ip-header:active {
-    cursor: grabbing;
-}
+        .cyber-ip-header:active {
+            cursor: grabbing;
+        }
 
-/* Отключаем перехват кликов у дочерних элементов шапки,
-   чтобы mousedown всегда попадал именно в .chmaf-drag-handle */
-.cyber-ip-header .cyber-ip-brand,
-.cyber-ip-header .cyber-ip-status-node,
-.cyber-ip-header .cyber-ip-title,
-.cyber-ip-header .cyber-ip-subtitle {
-    pointer-events: none;
-}
-
-/* Кнопка закрытия должна кликаться и не запускать drag */
-.cyber-ip-btn-close {
-    pointer-events: auto;
-}
+        .cyber-ip-header .cyber-ip-brand,
+        .cyber-ip-header .cyber-ip-status-node,
+        .cyber-ip-header .cyber-ip-title,
+        .cyber-ip-header .cyber-ip-subtitle {
+            pointer-events: none;
+        }
 
         .cyber-ip-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .cyber-ip-status-node {
-            position: relative;
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.08));
-            border: 1px solid rgba(0, 242, 254, 0.4);
-            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-        }
-
-        .cyber-ip-status-node::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 6px;
-            height: 6px;
-            background: ${accent};
-            border-radius: 50%;
-            box-shadow: 0 0 8px ${accent};
+            font-size: 15px;
         }
 
         .cyber-ip-title {
             font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            background: linear-gradient(90deg, #fff 0%, ${accent} 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #ffffff;
         }
 
         .cyber-ip-subtitle {
-            font-size: 9px;
+            font-size: 10px;
             color: ${textMuted};
-            letter-spacing: 1.5px;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
         }
 
         .cyber-ip-btn-close {
-            background: rgba(255, 77, 109, 0.08);
-            border: 1px solid rgba(255, 77, 109, 0.25);
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.25);
             color: ${danger};
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 12px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.18s ease;
+            pointer-events: auto;
         }
 
         .cyber-ip-btn-close:hover {
             background: ${danger};
             color: #fff;
-            box-shadow: 0 0 15px ${dangerGlow};
-            transform: scale(1.05);
+            box-shadow: 0 0 12px ${dangerGlow};
         }
 
-        /* Input Controls */
+        /* Поле ввода и кнопка */
         .cyber-ip-searchbox {
             display: flex;
             gap: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .cyber-ip-input-wrapper {
@@ -179,63 +154,54 @@ const injectStyles = () => {
         .cyber-ip-input {
             width: 100%;
             box-sizing: border-box;
-            background: rgba(0, 0, 0, 0.45);
+            background: ${panelBg};
             border: 1px solid ${cardBorder};
-            border-radius: 10px;
-            padding: 10px 14px;
+            border-radius: 8px;
+            padding: 9px 12px;
             color: ${accent};
-            font-family: inherit;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 13px;
-            letter-spacing: 1px;
             outline: none;
             transition: all 0.2s ease;
         }
 
         .cyber-ip-input:focus {
             border-color: ${accent};
-            box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.15), 0 0 20px rgba(0, 242, 254, 0.12);
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.18);
         }
 
         .cyber-ip-btn-scan {
-            background: linear-gradient(135deg, ${accent} 0%, ${secondary} 100%);
-            border: none;
-            border-radius: 10px;
+            background: linear-gradient(135deg, #0284c7 0%, ${secondary} 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             padding: 0 16px;
-            color: #041019;
-            font-weight: 700;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 12px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            transition: all 0.2s ease;
         }
 
         .cyber-ip-btn-scan:hover {
-            filter: brightness(1.15);
-            transform: translateY(-1px);
-            box-shadow: 0 0 20px ${accentGlow};
+            filter: brightness(1.12);
+            box-shadow: 0 4px 14px ${accentGlow};
         }
 
         .cyber-ip-btn-scan:active {
-            transform: translateY(0) scale(0.97);
+            transform: scale(0.98);
         }
 
-        /* Results Display Grid */
+        /* Окно результатов HUD */
         .cyber-ip-hud {
-            background: rgba(0, 0, 0, 0.35);
+            background: ${panelBg};
             border: 1px solid ${cardBorder};
-            border-radius: 12px;
+            border-radius: 10px;
             padding: 12px;
-            margin-bottom: 16px;
-            min-height: 120px;
-            max-height: 280px;
+            margin-bottom: 14px;
+            min-height: 110px;
+            max-height: 270px;
             overflow-y: auto;
-            position: relative;
         }
 
         .cyber-ip-placeholder {
@@ -243,19 +209,19 @@ const injectStyles = () => {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100px;
+            height: 95px;
             color: ${textMuted};
-            font-size: 11px;
+            font-size: 12px;
             gap: 8px;
         }
 
         .cyber-ip-spinner {
-            width: 24px;
-            height: 24px;
-            border: 2px solid rgba(0, 242, 254, 0.1);
+            width: 22px;
+            height: 22px;
+            border: 2px solid rgba(56, 189, 248, 0.15);
             border-top-color: ${accent};
             border-radius: 50%;
-            animation: cyber-scan-radar 0.8s linear infinite;
+            animation: cyber-scan-radar 0.75s linear infinite;
         }
 
         .cyber-data-grid {
@@ -267,12 +233,11 @@ const injectStyles = () => {
         .cyber-data-card {
             background: ${cardBg};
             border: 1px solid ${cardBorder};
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 8px 10px;
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            position: relative;
+            gap: 2px;
         }
 
         .cyber-data-card.full-width {
@@ -280,10 +245,11 @@ const injectStyles = () => {
         }
 
         .cyber-data-label {
-            font-size: 9px;
+            font-size: 10px;
+            font-weight: 600;
             color: ${textMuted};
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.6px;
         }
 
         .cyber-data-value {
@@ -298,6 +264,7 @@ const injectStyles = () => {
 
         .cyber-data-value.accent {
             color: ${accent};
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .cyber-copyable {
@@ -306,22 +273,23 @@ const injectStyles = () => {
         }
 
         .cyber-copyable:hover {
-            color: ${accent};
+            color: #ffffff;
+            text-decoration: underline;
         }
 
         .cyber-ip-flag {
-            width: 18px;
-            height: 12px;
+            width: 16px;
+            height: 11px;
             border-radius: 2px;
             object-fit: cover;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
 
-        /* External Intelligence Buttons */
+        /* Кнопки внешних сервисов */
         .cyber-ip-actions-header {
-            font-size: 9px;
+            font-size: 10px;
+            font-weight: 600;
             color: ${textMuted};
-            letter-spacing: 1.2px;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
             margin-bottom: 8px;
             display: block;
@@ -330,35 +298,36 @@ const injectStyles = () => {
         .cyber-ip-alt-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+            gap: 6px;
         }
 
         .cyber-ip-btn-alt {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid ${cardBorder};
-            color: #d1d5db;
-            padding: 8px 4px;
-            font-family: inherit;
-            font-size: 10px;
-            font-weight: 600;
-            border-radius: 8px;
+            color: #cbd5e1;
+            padding: 7px 4px;
+            font-size: 11px;
+            font-weight: 500;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.18s ease;
             text-align: center;
         }
 
         .cyber-ip-btn-alt:hover {
-            background: rgba(0, 242, 254, 0.08);
-            border-color: rgba(0, 242, 254, 0.35);
-            color: #fff;
-            transform: translateY(-1px);
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.4);
+            color: #ffffff;
         }
 
-        /* Scrollbars */
+        /* Скроллбар */
         .cyber-ip-hud::-webkit-scrollbar { width: 4px; }
         .cyber-ip-hud::-webkit-scrollbar-thumb {
-            background: rgba(0, 242, 254, 0.2);
+            background: rgba(148, 163, 184, 0.25);
             border-radius: 4px;
+        }
+        .cyber-ip-hud::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.4);
         }
     `;
     document.head.appendChild(style);
