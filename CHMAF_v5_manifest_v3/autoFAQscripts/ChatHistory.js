@@ -13,839 +13,823 @@
 // ============================================================
 
 (() => {
-    'use strict';
+  "use strict";
 
-    const ROOT_ID = 'AF_ChatHis';
-    const STYLE_ID = 'afg-chat-history-styles';
-    const SERVICE_ID = '361c681b-340a-4e47-9342-c7309e27e7b5';
-    const API = 'https://skyeng.autofaq.ai/api';
+  const ROOT_ID = "AF_ChatHis";
+  const STYLE_ID = "afg-chat-history-styles";
+  const SERVICE_ID = "361c681b-340a-4e47-9342-c7309e27e7b5";
+  const API = "https://skyeng.autofaq.ai/api";
 
-    if (document.getElementById(ROOT_ID)) return;
+  if (document.getElementById(ROOT_ID)) return;
 
-    const state = {
-        conversation: null,
-        results: [],
-        resultsTitle: 'Результаты поиска',
-        operatorRows: [],
-        selectedOperatorId: '',
-        requestId: 0,
-        busy: new Set(),
-        gallery: null,
-        theme: localStorage.getItem('afgChatHistoryTheme') === 'light'
-            ? 'light'
-            : 'dark'
+  const state = {
+    conversation: null,
+    results: [],
+    resultsTitle: "Результаты поиска",
+    operatorRows: [],
+    selectedOperatorId: "",
+    requestId: 0,
+    busy: new Set(),
+    gallery: null,
+    theme:
+      localStorage.getItem("afgChatHistoryTheme") === "light"
+        ? "light"
+        : "dark",
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function notify(message, type = "message") {
+    if (typeof createAndShowButton === "function") {
+      createAndShowButton(message, type);
+      return;
+    }
+
+    const toast = document.createElement("div");
+    toast.className = "afg-toast";
+    toast.textContent = message;
+
+    document.body.append(toast);
+    setTimeout(() => toast.remove(), 3500);
+  }
+
+  function setBusy(id, busy) {
+    const button = $(id);
+    if (!button) return;
+
+    button.disabled = busy;
+
+    if (busy) state.busy.add(id);
+    else state.busy.delete(id);
+  }
+
+  function parseApiDate(value) {
+    if (value === null || value === undefined || value === "") {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : value;
+    }
+
+    // API истории иногда возвращает дату с суффиксом
+    // вроде [Europe/Moscow], который Date не понимает.
+    const normalized =
+      typeof value === "string"
+        ? value.replace(/\[[^\]]*]/g, "").trim()
+        : value;
+
+    const date = new Date(normalized);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  function dateMillis(value) {
+    return parseApiDate(value)?.getTime() ?? null;
+  }
+
+  function readableDate(value) {
+    const date = parseApiDate(value);
+    if (!date) return "Дата неизвестна";
+
+    return new Intl.DateTimeFormat("ru-RU", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(date);
+  }
+
+  function readableTime(value) {
+    const date = parseApiDate(value);
+    if (!date) return "—";
+
+    return new Intl.DateTimeFormat("ru-RU", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).format(date);
+  }
+
+  function readableDateTime(value) {
+    return `${readableDate(value)} · ${readableTime(value)}`;
+  }
+
+  function dateValue(date) {
+    const pad = (n) => String(n).padStart(2, "0");
+
+    return [
+      date.getFullYear(),
+      pad(date.getMonth() + 1),
+      pad(date.getDate()),
+    ].join("-");
+  }
+
+  function setDefaultDates() {
+    const today = new Date();
+    const monthAgo = new Date(today);
+
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+
+    $("dateFromChHis").value = dateValue(monthAgo);
+    $("dateToChHis").value = dateValue(today);
+  }
+
+  function dateRange() {
+    const from = $("dateFromChHis").value;
+    const to = $("dateToChHis").value;
+
+    if (!from || !to) {
+      throw new Error("Выберите обе даты");
+    }
+
+    if (from > to) {
+      throw new Error("Дата начала позже даты окончания");
+    }
+
+    const start = new Date(`${from}T00:00:00`);
+    const end = new Date(`${to}T00:00:00`);
+
+    end.setDate(end.getDate() + 1);
+    end.setMilliseconds(-1);
+
+    return {
+      tsFrom: start.toISOString(),
+      tsTo: end.toISOString(),
     };
+  }
 
-    const $ = id => document.getElementById(id);
+  function duration(ms) {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
 
-    function escapeHtml(value) {
-        return String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+    if (hours) {
+      return `${hours} ч ${String(minutes).padStart(2, "0")} мин`;
     }
 
-    function notify(message, type = 'message') {
-        if (typeof createAndShowButton === 'function') {
-            createAndShowButton(message, type);
-            return;
-        }
-
-        const toast = document.createElement('div');
-        toast.className = 'afg-toast';
-        toast.textContent = message;
-
-        document.body.append(toast);
-        setTimeout(() => toast.remove(), 3500);
+    if (minutes) {
+      return `${minutes} мин ${seconds} сек`;
     }
 
-    function setBusy(id, busy) {
-        const button = $(id);
-        if (!button) return;
+    return `${seconds} сек`;
+  }
 
-        button.disabled = busy;
-
-        if (busy) state.busy.add(id);
-        else state.busy.delete(id);
+  async function apiFetch(url, options) {
+    if (typeof afApiFetch !== "function") {
+      throw new Error("Функция afApiFetch недоступна");
     }
 
-    function parseApiDate(value) {
-        if (value === null || value === undefined || value === '') {
-            return null;
-        }
+    const response = await afApiFetch(url, options);
 
-        if (value instanceof Date) {
-            return Number.isNaN(value.getTime()) ? null : value;
-        }
-
-        // API истории иногда возвращает дату с суффиксом
-        // вроде [Europe/Moscow], который Date не понимает.
-        const normalized = typeof value === 'string'
-            ? value.replace(/\[[^\]]*]/g, '').trim()
-            : value;
-
-        const date = new Date(normalized);
-        return Number.isNaN(date.getTime()) ? null : date;
+    if (!response?.ok) {
+      throw new Error(`Ошибка API: HTTP ${response?.status ?? "?"}`);
     }
 
-    function dateMillis(value) {
-        return parseApiDate(value)?.getTime() ?? null;
+    return response;
+  }
+
+  async function apiJson(url, options) {
+    const response = await apiFetch(url, options);
+    return response.json();
+  }
+
+  function safeUrl(raw) {
+    try {
+      const url = new URL(String(raw ?? ""), location.href);
+
+      return ["http:", "https:"].includes(url.protocol) ? url.href : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function mediaType(url) {
+    try {
+      const path = new URL(url).pathname.toLowerCase();
+
+      if (/\.(png|jpe?g|gif|webp|avif)$/.test(path)) {
+        return "image";
+      }
+
+      if (/\.(mp4|webm|mov|mkv)$/.test(path)) {
+        return "video";
+      }
+
+      if (/\.(mp3|wav|ogg|oga|m4a)$/.test(path)) {
+        return "audio";
+      }
+    } catch {
+      // Некорректный URL далее выводится обычным текстом.
     }
 
-    function readableDate(value) {
-        const date = parseApiDate(value);
-        if (!date) return 'Дата неизвестна';
+    return "file";
+  }
 
-        return new Intl.DateTimeFormat('ru-RU', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        }).format(date);
+  function mediaNode(rawUrl, label = "Открыть файл") {
+    const url = safeUrl(rawUrl);
+
+    if (!url) {
+      return document.createTextNode(label);
     }
 
-    function readableTime(value) {
-        const date = parseApiDate(value);
-        if (!date) return '—';
+    const type = mediaType(url);
 
-        return new Intl.DateTimeFormat('ru-RU', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        }).format(date);
+    if (type === "image") {
+      const image = document.createElement("img");
+
+      image.className = "afg-media-image";
+      image.src = url;
+      image.dataset.full = url;
+      image.alt = label === "Открыть файл" ? "Изображение из диалога" : label;
+      image.loading = "lazy";
+
+      return image;
     }
 
-    function readableDateTime(value) {
-        return `${readableDate(value)} · ${readableTime(value)}`;
+    if (type === "video") {
+      const video = document.createElement("video");
+
+      video.className = "afg-media";
+      video.src = url;
+      video.controls = true;
+      video.preload = "metadata";
+      video.playsInline = true;
+
+      return video;
     }
 
-    function dateValue(date) {
-        const pad = n => String(n).padStart(2, '0');
+    if (type === "audio") {
+      const audio = document.createElement("audio");
 
-        return [
-            date.getFullYear(),
-            pad(date.getMonth() + 1),
-            pad(date.getDate())
-        ].join('-');
+      audio.className = "afg-media";
+      audio.src = url;
+      audio.controls = true;
+      audio.preload = "none";
+
+      return audio;
     }
 
-    function setDefaultDates() {
-        const today = new Date();
-        const monthAgo = new Date(today);
+    const link = document.createElement("a");
 
-        monthAgo.setMonth(monthAgo.getMonth() - 1);
+    link.className = "afg-file-link";
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = `↗ ${label}`;
 
-        $('dateFromChHis').value = dateValue(monthAgo);
-        $('dateToChHis').value = dateValue(today);
+    return link;
+  }
+
+  // Сообщения API очищаются при переносе в DOM:
+  // исходный HTML сообщения никогда не вставляется напрямую.
+  function messageContent(value) {
+    const result = document.createElement("div");
+    result.className = "afg-message-content";
+
+    const parsed = new DOMParser().parseFromString(
+      `<div>${String(value ?? "")}</div>`,
+      "text/html"
+    );
+
+    const allowedTags = new Set([
+      "P",
+      "DIV",
+      "SPAN",
+      "BR",
+      "B",
+      "STRONG",
+      "I",
+      "EM",
+      "U",
+      "S",
+      "UL",
+      "OL",
+      "LI",
+      "BLOCKQUOTE",
+      "PRE",
+      "CODE",
+    ]);
+
+    const blockedTags = new Set([
+      "SCRIPT",
+      "STYLE",
+      "IFRAME",
+      "OBJECT",
+      "EMBED",
+      "SVG",
+      "MATH",
+      "FORM",
+      "INPUT",
+      "BUTTON",
+      "META",
+      "LINK",
+    ]);
+
+    function clean(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent || "";
+        const trimmed = text.trim();
+
+        if (/^https?:\/\/[^\s<>"']+$/i.test(trimmed) && safeUrl(trimmed)) {
+          const wrapper = document.createElement("span");
+          const start = text.indexOf(trimmed);
+
+          wrapper.append(
+            document.createTextNode(text.slice(0, start)),
+            mediaNode(trimmed),
+            document.createTextNode(text.slice(start + trimmed.length))
+          );
+
+          return wrapper;
+        }
+
+        return document.createTextNode(text);
+      }
+
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        return document.createDocumentFragment();
+      }
+
+      if (blockedTags.has(node.tagName)) {
+        return document.createDocumentFragment();
+      }
+
+      if (node.tagName === "A") {
+        const href = safeUrl(node.getAttribute("href"));
+        const label = node.textContent?.trim() || "Открыть ссылку";
+
+        return href ? mediaNode(href, label) : document.createTextNode(label);
+      }
+
+      if (node.tagName === "IMG") {
+        const src = safeUrl(node.getAttribute("src"));
+
+        return src
+          ? mediaNode(src, node.getAttribute("alt") || "Изображение")
+          : document.createDocumentFragment();
+      }
+
+      const output = allowedTags.has(node.tagName)
+        ? document.createElement(node.tagName.toLowerCase())
+        : document.createDocumentFragment();
+
+      for (const child of node.childNodes) {
+        output.append(clean(child));
+      }
+
+      return output;
     }
 
-    function dateRange() {
-        const from = $('dateFromChHis').value;
-        const to = $('dateToChHis').value;
+    const source = parsed.body.firstElementChild;
 
-        if (!from || !to) {
-            throw new Error('Выберите обе даты');
-        }
-
-        if (from > to) {
-            throw new Error('Дата начала позже даты окончания');
-        }
-
-        const start = new Date(`${from}T00:00:00`);
-        const end = new Date(`${to}T00:00:00`);
-
-        end.setDate(end.getDate() + 1);
-        end.setMilliseconds(-1);
-
-        return {
-            tsFrom: start.toISOString(),
-            tsTo: end.toISOString()
-        };
+    if (source) {
+      for (const child of source.childNodes) {
+        result.append(clean(child));
+      }
     }
 
-    function duration(ms) {
-        const total = Math.max(0, Math.floor(ms / 1000));
-        const hours = Math.floor(total / 3600);
-        const minutes = Math.floor((total % 3600) / 60);
-        const seconds = total % 60;
+    return result;
+  }
 
-        if (hours) {
-            return `${hours} ч ${String(minutes).padStart(2, '0')} мин`;
-        }
-
-        if (minutes) {
-            return `${minutes} мин ${seconds} сек`;
-        }
-
-        return `${seconds} сек`;
+  // Техническая информация содержит HTML. Преобразуем его в
+  // обычный текст с переносами, не отображая теги и не выполняя HTML.
+  function techInfoAsText(value) {
+    if (value === null || value === undefined || value === "") {
+      return "Нет данных";
     }
 
-    async function apiFetch(url, options) {
-        if (typeof afApiFetch !== 'function') {
-            throw new Error('Функция afApiFetch недоступна');
-        }
-
-        const response = await afApiFetch(url, options);
-
-        if (!response?.ok) {
-            throw new Error(
-                `Ошибка API: HTTP ${response?.status ?? '?'}`
-            );
-        }
-
-        return response;
+    if (typeof value !== "string") {
+      return JSON.stringify(value, null, 2);
     }
 
-    async function apiJson(url, options) {
-        const response = await apiFetch(url, options);
-        return response.json();
+    const doc = new DOMParser().parseFromString(value, "text/html");
+
+    const parts = [];
+
+    function walk(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        parts.push(node.textContent || "");
+        return;
+      }
+
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+      if (
+        ["SCRIPT", "STYLE", "IFRAME", "OBJECT", "SVG", "MATH"].includes(
+          node.tagName
+        )
+      ) {
+        return;
+      }
+
+      if (node.tagName === "BR") {
+        parts.push("\n");
+        return;
+      }
+
+      const isBlock = ["P", "DIV", "LI"].includes(node.tagName);
+
+      if (isBlock && parts.length) parts.push("\n");
+
+      for (const child of node.childNodes) {
+        walk(child);
+      }
+
+      if (isBlock) parts.push("\n");
     }
 
-    function safeUrl(raw) {
-        try {
-            const url = new URL(String(raw ?? ''), location.href);
-
-            return ['http:', 'https:'].includes(url.protocol)
-                ? url.href
-                : null;
-        } catch {
-            return null;
-        }
+    for (const child of doc.body.childNodes) {
+      walk(child);
     }
 
-    function mediaType(url) {
-        try {
-            const path = new URL(url).pathname.toLowerCase();
+    return (
+      parts
+        .join("")
+        .replace(/\u00a0/g, " ")
+        .replace(/[ \t]+/g, " ")
+        .replace(/ *\n */g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim() || "Нет данных"
+    );
+  }
 
-            if (/\.(png|jpe?g|gif|webp|avif)$/.test(path)) {
-                return 'image';
-            }
+  function normalizedOperatorName(value) {
+    return String(value ?? "")
+      .trim()
+      .replace(/\s*[-–—]\s*/g, "-")
+      .replace(/\s+/g, " ")
+      .toLocaleLowerCase("ru-RU");
+  }
 
-            if (/\.(mp4|webm|mov|mkv)$/.test(path)) {
-                return 'video';
-            }
+  function operatorGroup(fullName) {
+    const name = String(fullName ?? "").trim();
 
-            if (/\.(mp3|wav|ogg|oga|m4a)$/.test(path)) {
-                return 'audio';
-            }
-        } catch {
-            // Некорректный URL далее выводится обычным текстом.
-        }
+    // Длинные префиксы должны проверяться раньше "ТП".
+    const match = name.match(
+      /^(ТП ОС|ТПPrem|Teachers Care|Prem|Sales|ТП|КЦ|КМ|ТС)\s*[-–—]/i
+    );
 
-        return 'file';
+    return match?.[1]?.toLocaleLowerCase("ru-RU") || null;
+  }
+
+  function currentOperatorName() {
+    return (
+      document
+        .querySelector(".user_menu-dropdown-user_name")
+        ?.textContent?.trim() || ""
+    );
+  }
+
+  function currentOperatorId(rows = []) {
+    // В зависимости от способа загрузки расширения operatorId
+    // может быть доступен как обычная переменная, но не через
+    // globalThis.
+    if (typeof operatorId !== "undefined" && operatorId) {
+      return String(operatorId);
     }
 
-    function mediaNode(rawUrl, label = 'Открыть файл') {
-        const url = safeUrl(rawUrl);
-
-        if (!url) {
-            return document.createTextNode(label);
-        }
-
-        const type = mediaType(url);
-
-        if (type === 'image') {
-            const image = document.createElement('img');
-
-            image.className = 'afg-media-image';
-            image.src = url;
-            image.dataset.full = url;
-            image.alt = label === 'Открыть файл'
-                ? 'Изображение из диалога'
-                : label;
-            image.loading = 'lazy';
-
-            return image;
-        }
-
-        if (type === 'video') {
-            const video = document.createElement('video');
-
-            video.className = 'afg-media';
-            video.src = url;
-            video.controls = true;
-            video.preload = 'metadata';
-            video.playsInline = true;
-
-            return video;
-        }
-
-        if (type === 'audio') {
-            const audio = document.createElement('audio');
-
-            audio.className = 'afg-media';
-            audio.src = url;
-            audio.controls = true;
-            audio.preload = 'none';
-
-            return audio;
-        }
-
-        const link = document.createElement('a');
-
-        link.className = 'afg-file-link';
-        link.href = url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.textContent = `↗ ${label}`;
-
-        return link;
+    if (globalThis.operatorId) {
+      return String(globalThis.operatorId);
     }
 
-    // Сообщения API очищаются при переносе в DOM:
-    // исходный HTML сообщения никогда не вставляется напрямую.
-    function messageContent(value) {
-        const result = document.createElement('div');
-        result.className = 'afg-message-content';
+    // Запасной путь — только точное совпадение полного имени.
+    // Выбирать первого оператора группы небезопасно.
+    const name = normalizedOperatorName(currentOperatorName());
 
-        const parsed = new DOMParser().parseFromString(
-            `<div>${String(value ?? '')}</div>`,
-            'text/html'
-        );
+    if (!name) return null;
 
-        const allowedTags = new Set([
-            'P', 'DIV', 'SPAN', 'BR', 'B', 'STRONG', 'I', 'EM',
-            'U', 'S', 'UL', 'OL', 'LI', 'BLOCKQUOTE', 'PRE', 'CODE'
-        ]);
+    const matches = rows.filter(
+      (row) => normalizedOperatorName(row?.operator?.fullName) === name
+    );
 
-        const blockedTags = new Set([
-            'SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED',
-            'SVG', 'MATH', 'FORM', 'INPUT', 'BUTTON', 'META', 'LINK'
-        ]);
+    return matches.length === 1 ? String(matches[0].operator.id) : null;
+  }
 
-        function clean(node) {
-            if (node.nodeType === Node.TEXT_NODE) {
-                const text = node.textContent || '';
-                const trimmed = text.trim();
+  function operatorName(id, fallback = "Оператор") {
+    const sources = [];
 
-                if (
-                    /^https?:\/\/[^\s<>"']+$/i.test(trimmed) &&
-                    safeUrl(trimmed)
-                ) {
-                    const wrapper = document.createElement('span');
-                    const start = text.indexOf(trimmed);
-
-                    wrapper.append(
-                        document.createTextNode(text.slice(0, start)),
-                        mediaNode(trimmed),
-                        document.createTextNode(
-                            text.slice(start + trimmed.length)
-                        )
-                    );
-
-                    return wrapper;
-                }
-
-                return document.createTextNode(text);
-            }
-
-            if (node.nodeType !== Node.ELEMENT_NODE) {
-                return document.createDocumentFragment();
-            }
-
-            if (blockedTags.has(node.tagName)) {
-                return document.createDocumentFragment();
-            }
-
-            if (node.tagName === 'A') {
-                const href = safeUrl(node.getAttribute('href'));
-                const label = node.textContent?.trim() || 'Открыть ссылку';
-
-                return href
-                    ? mediaNode(href, label)
-                    : document.createTextNode(label);
-            }
-
-            if (node.tagName === 'IMG') {
-                const src = safeUrl(node.getAttribute('src'));
-
-                return src
-                    ? mediaNode(
-                        src,
-                        node.getAttribute('alt') || 'Изображение'
-                    )
-                    : document.createDocumentFragment();
-            }
-
-            const output = allowedTags.has(node.tagName)
-                ? document.createElement(node.tagName.toLowerCase())
-                : document.createDocumentFragment();
-
-            for (const child of node.childNodes) {
-                output.append(clean(child));
-            }
-
-            return output;
-        }
-
-        const source = parsed.body.firstElementChild;
-
-        if (source) {
-            for (const child of source.childNodes) {
-                result.append(clean(child));
-            }
-        }
-
-        return result;
+    if (
+      typeof operatorsarray !== "undefined" &&
+      Array.isArray(operatorsarray)
+    ) {
+      sources.push(operatorsarray);
     }
 
-    // Техническая информация содержит HTML. Преобразуем его в
-    // обычный текст с переносами, не отображая теги и не выполняя HTML.
-    function techInfoAsText(value) {
-        if (value === null || value === undefined || value === '') {
-            return 'Нет данных';
-        }
-
-        if (typeof value !== 'string') {
-            return JSON.stringify(value, null, 2);
-        }
-
-        const doc = new DOMParser().parseFromString(
-            value,
-            'text/html'
-        );
-
-        const parts = [];
-
-        function walk(node) {
-            if (node.nodeType === Node.TEXT_NODE) {
-                parts.push(node.textContent || '');
-                return;
-            }
-
-            if (node.nodeType !== Node.ELEMENT_NODE) return;
-
-            if ([
-                'SCRIPT', 'STYLE', 'IFRAME',
-                'OBJECT', 'SVG', 'MATH'
-            ].includes(node.tagName)) {
-                return;
-            }
-
-            if (node.tagName === 'BR') {
-                parts.push('\n');
-                return;
-            }
-
-            const isBlock = ['P', 'DIV', 'LI'].includes(node.tagName);
-
-            if (isBlock && parts.length) parts.push('\n');
-
-            for (const child of node.childNodes) {
-                walk(child);
-            }
-
-            if (isBlock) parts.push('\n');
-        }
-
-        for (const child of doc.body.childNodes) {
-            walk(child);
-        }
-
-        return parts.join('')
-            .replace(/\u00a0/g, ' ')
-            .replace(/[ \t]+/g, ' ')
-            .replace(/ *\n */g, '\n')
-            .replace(/\n{3,}/g, '\n\n')
-            .trim() || 'Нет данных';
+    if (
+      Array.isArray(globalThis.operatorsarray) &&
+      !sources.includes(globalThis.operatorsarray)
+    ) {
+      sources.push(globalThis.operatorsarray);
     }
 
-    function normalizedOperatorName(value) {
-        return String(value ?? '')
-            .trim()
-            .replace(/\s*[-–—]\s*/g, '-')
-            .replace(/\s+/g, ' ')
-            .toLocaleLowerCase('ru-RU');
+    sources.push(state.operatorRows);
+
+    for (const rows of sources) {
+      const found = rows.find(
+        (row) => String(row?.operator?.id) === String(id)
+      );
+
+      if (found?.operator?.fullName) {
+        return found.operator.fullName;
+      }
     }
 
-    function operatorGroup(fullName) {
-        const name = String(fullName ?? '').trim();
+    return fallback;
+  }
 
-        // Длинные префиксы должны проверяться раньше "ТП".
-        const match = name.match(
-            /^(ТП ОС|ТПPrem|Teachers Care|Prem|Sales|ТП|КЦ|КМ|ТС)\s*[-–—]/i
-        );
+  function deptByOperator(id) {
+    if (!id) return null;
 
-        return match?.[1]?.toLocaleLowerCase('ru-RU') || null;
-    }
+    const name = operatorName(id, "");
+    const match = name.match(
+      /^(ТП ОС|ТПPrem|Teachers Care|Prem|Sales|ТП|КЦ|КМ|ТС)\s*[-–—]/i
+    );
 
-    function currentOperatorName() {
-        return document.querySelector(
-            '.user_menu-dropdown-user_name'
-        )?.textContent?.trim() || '';
-    }
+    return match?.[1] || null;
+  }
 
-    function currentOperatorId(rows = []) {
-        // В зависимости от способа загрузки расширения operatorId
-        // может быть доступен как обычная переменная, но не через
-        // globalThis.
-        if (typeof operatorId !== 'undefined' && operatorId) {
-            return String(operatorId);
-        }
+  const techCommentPattern =
+    /^\s*(?:routing[\s\d.:#-]*|final\s*:|итого на данном этапе|route(?:s)?\b[^\n]*(?:\bhdi\b|чатбота|кейс))/i;
 
-        if (globalThis.operatorId) {
-            return String(globalThis.operatorId);
-        }
+  function isTechComment(message) {
+    if (message.operatorId !== "autoFAQ") return false;
 
-        // Запасной путь — только точное совпадение полного имени.
-        // Выбирать первого оператора группы небезопасно.
-        const name = normalizedOperatorName(
-            currentOperatorName()
-        );
+    const text = String(message.txt ?? "")
+      .replace(/<[^>]*>/g, " ")
+      .trim();
 
-        if (!name) return null;
+    return techCommentPattern.test(text);
+  }
 
-        const matches = rows.filter(
-            row =>
-                normalizedOperatorName(
-                    row?.operator?.fullName
-                ) === name
-        );
+  function timeline(messages) {
+    const markers = new Map();
+    const segments = [];
 
-        return matches.length === 1
-            ? String(matches[0].operator.id)
-            : null;
-    }
+    let current = null;
+    let dialogStart = null;
 
-    function operatorName(id, fallback = 'Оператор') {
-        const sources = [];
+    messages.forEach((message, index) => {
+      const ts = dateMillis(message.ts);
+      if (ts === null) return;
 
-        if (
-            typeof operatorsarray !== 'undefined' &&
-            Array.isArray(operatorsarray)
-        ) {
-            sources.push(operatorsarray);
-        }
+      if (message.tpe === "Event" && message.eventTpe === "NewConversation") {
+        dialogStart = ts;
+      }
 
-        if (
-            Array.isArray(globalThis.operatorsarray) &&
-            !sources.includes(globalThis.operatorsarray)
-        ) {
-            sources.push(globalThis.operatorsarray);
-        }
-
-        sources.push(state.operatorRows);
-
-        for (const rows of sources) {
-            const found = rows.find(
-                row =>
-                    String(row?.operator?.id) === String(id)
-            );
-
-            if (found?.operator?.fullName) {
-                return found.operator.fullName;
-            }
-        }
-
-        return fallback;
-    }
-
-    function deptByOperator(id) {
-        if (!id) return null;
-
-        const name = operatorName(id, '');
-        const match = name.match(
-            /^(ТП ОС|ТПPrem|Teachers Care|Prem|Sales|ТП|КЦ|КМ|ТС)\s*[-–—]/i
-        );
-
-        return match?.[1] || null;
-    }
-
-    const techCommentPattern =
-        /^\s*(?:routing[\s\d.:#-]*|final\s*:|итого на данном этапе|route(?:s)?\b[^\n]*(?:\bhdi\b|чатбота|кейс))/i;
-
-    function isTechComment(message) {
-        if (message.operatorId !== 'autoFAQ') return false;
-
-        const text = String(message.txt ?? '')
-            .replace(/<[^>]*>/g, ' ')
-            .trim();
-
-        return techCommentPattern.test(text);
-    }
-
-    function timeline(messages) {
-        const markers = new Map();
-        const segments = [];
-
-        let current = null;
-        let dialogStart = null;
-
-        messages.forEach((message, index) => {
-            const ts = dateMillis(message.ts);
-            if (ts === null) return;
-
-            if (
-                message.tpe === 'Event' &&
-                message.eventTpe === 'NewConversation'
-            ) {
-                dialogStart = ts;
-            }
-
-            if (
-                message.tpe === 'Event' &&
-                message.eventTpe === 'CloseConversation'
-            ) {
-                if (current) {
-                    current.end = ts;
-                    current.active = false;
-                    segments.push(current);
-                    current = null;
-                }
-
-                return;
-            }
-
-            let nextDept = null;
-
-            if (
-                message.tpe === 'Event' &&
-                ['AssignToOperator', 'CreatedByOperator']
-                    .includes(message.eventTpe)
-            ) {
-                nextDept = deptByOperator(message.payload?.oid);
-            }
-
-            if (
-                ['AnswerOperator', 'OperatorComment']
-                    .includes(message.tpe)
-            ) {
-                nextDept =
-                    deptByOperator(message.operatorId) ||
-                    nextDept;
-            }
-
-            if (!nextDept) return;
-
-            if (!current) {
-                current = {
-                    dept: nextDept,
-                    start: ts,
-                    end: ts,
-                    active: true
-                };
-
-                return;
-            }
-
-            if (current.dept === nextDept) return;
-
-            current.end = ts;
-            current.active = false;
-            segments.push(current);
-
-            markers.set(index, {
-                from: current.dept,
-                to: nextDept,
-                start: current.start,
-                end: ts
-            });
-
-            current = {
-                dept: nextDept,
-                start: ts,
-                end: ts,
-                active: true
-            };
-        });
-
+      if (message.tpe === "Event" && message.eventTpe === "CloseConversation") {
         if (current) {
-            const lastTs = messages.length
-                ? dateMillis(messages[messages.length - 1].ts)
-                : null;
-
-            current.end = Math.max(
-                current.start,
-                lastTs ?? current.start
-            );
-
-            segments.push(current);
+          current.end = ts;
+          current.active = false;
+          segments.push(current);
+          current = null;
         }
 
-        // Если за весь диалог определён только один отдел,
-        // считаем время с события начала диалога.
-        if (
-            segments.length === 1 &&
-            dialogStart !== null
-        ) {
-            segments[0].start = Math.min(
-                segments[0].start,
-                dialogStart
-            );
-        }
+        return;
+      }
 
-        return {
-            markers,
-            last: segments.at(-1) || null
+      let nextDept = null;
+
+      if (
+        message.tpe === "Event" &&
+        ["AssignToOperator", "CreatedByOperator"].includes(message.eventTpe)
+      ) {
+        nextDept = deptByOperator(message.payload?.oid);
+      }
+
+      if (["AnswerOperator", "OperatorComment"].includes(message.tpe)) {
+        nextDept = deptByOperator(message.operatorId) || nextDept;
+      }
+
+      if (!nextDept) return;
+
+      if (!current) {
+        current = {
+          dept: nextDept,
+          start: ts,
+          end: ts,
+          active: true,
         };
+
+        return;
+      }
+
+      if (current.dept === nextDept) return;
+
+      current.end = ts;
+      current.active = false;
+      segments.push(current);
+
+      markers.set(index, {
+        from: current.dept,
+        to: nextDept,
+        start: current.start,
+        end: ts,
+      });
+
+      current = {
+        dept: nextDept,
+        start: ts,
+        end: ts,
+        active: true,
+      };
+    });
+
+    if (current) {
+      const lastTs = messages.length
+        ? dateMillis(messages[messages.length - 1].ts)
+        : null;
+
+      current.end = Math.max(current.start, lastTs ?? current.start);
+
+      segments.push(current);
     }
 
-    function deptLine(info, isFinal = false) {
-        const row = document.createElement('div');
-        row.className = 'afg-dept-line';
+    // Если за весь диалог определён только один отдел,
+    // считаем время с события начала диалога.
+    if (segments.length === 1 && dialogStart !== null) {
+      segments[0].start = Math.min(segments[0].start, dialogStart);
+    }
 
-        const caption = document.createElement('div');
-        caption.className = 'afg-dept-caption';
-        caption.textContent = isFinal
-            ? 'ИТОГ ПО ПОСЛЕДНЕМУ ОТДЕЛУ'
-            : 'ВРЕМЯ ДО ПЕРЕДАЧИ';
+    return {
+      markers,
+      last: segments.at(-1) || null,
+    };
+  }
 
-        const main = document.createElement('div');
-        main.className = 'afg-dept-main';
+  function deptLine(info, isFinal = false) {
+    const row = document.createElement("div");
+    row.className = "afg-dept-line";
 
-        const from = document.createElement('span');
-        from.className = 'afg-dept-chip';
-        from.textContent = isFinal ? info.dept : info.from;
+    const caption = document.createElement("div");
+    caption.className = "afg-dept-caption";
+    caption.textContent = isFinal
+      ? "ИТОГ ПО ПОСЛЕДНЕМУ ОТДЕЛУ"
+      : "ВРЕМЯ ДО ПЕРЕДАЧИ";
 
-        const elapsed = document.createElement('strong');
-        elapsed.className = 'afg-dept-duration';
-        elapsed.textContent = duration(info.end - info.start);
+    const main = document.createElement("div");
+    main.className = "afg-dept-main";
 
-        main.append(from, elapsed);
+    const from = document.createElement("span");
+    from.className = "afg-dept-chip";
+    from.textContent = isFinal ? info.dept : info.from;
 
-        if (!isFinal) {
-            const arrow = document.createElement('span');
-            arrow.className = 'afg-dept-arrow';
-            arrow.textContent = '→';
+    const elapsed = document.createElement("strong");
+    elapsed.className = "afg-dept-duration";
+    elapsed.textContent = duration(info.end - info.start);
 
-            const to = document.createElement('span');
-            to.className = 'afg-dept-chip';
-            to.textContent = info.to;
+    main.append(from, elapsed);
 
-            main.append(arrow, to);
-        } else {
-            const status = document.createElement('span');
-            status.className = 'afg-dept-status';
-            status.textContent = info.active
-                ? 'последний этап истории'
-                : 'до закрытия';
+    if (!isFinal) {
+      const arrow = document.createElement("span");
+      arrow.className = "afg-dept-arrow";
+      arrow.textContent = "→";
 
-            main.append(status);
+      const to = document.createElement("span");
+      to.className = "afg-dept-chip";
+      to.textContent = info.to;
+
+      main.append(arrow, to);
+    } else {
+      const status = document.createElement("span");
+      status.className = "afg-dept-status";
+      status.textContent = info.active
+        ? "последний этап истории"
+        : "до закрытия";
+
+      main.append(status);
+    }
+
+    const period = document.createElement("div");
+    period.className = "afg-dept-period";
+    period.textContent =
+      `${readableDateTime(info.start)} → ` + readableDateTime(info.end);
+
+    row.append(caption, main, period);
+    return row;
+  }
+
+  function eventText(message) {
+    const payload = message.payload || {};
+
+    switch (message.eventTpe) {
+      case "NewConversation":
+        return "Начат новый диалог";
+
+      case "FirstTimeInQueue":
+        return "Диалог попал в очередь";
+
+      case "RunScenario":
+        return "Запущен сценарий";
+
+      case "RunIntegration":
+        return payload.name
+          ? `Запущена интеграция ${payload.name}`
+          : "Запущена интеграция";
+
+      case "FinishIntegration":
+        return "Интеграция завершена";
+
+      case "CreatedByOperator":
+        return `${operatorName(payload.oid)} открыл(а) диалог`;
+
+      case "AssignToOperator":
+        return payload.oid
+          ? `Диалог назначен: ${operatorName(payload.oid)}`
+          : "Назначение оператора изменено";
+
+      case "CloseConversation":
+        if (payload.sender === "userAnswerTimer") {
+          return "Автозакрытие: нет активности";
         }
 
-        const period = document.createElement('div');
-        period.className = 'afg-dept-period';
-        period.textContent =
-            `${readableDateTime(info.start)} → ` +
-            readableDateTime(info.end);
-
-        row.append(caption, main, period);
-        return row;
-    }
-
-    function eventText(message) {
-        const payload = message.payload || {};
-
-        switch (message.eventTpe) {
-            case 'NewConversation':
-                return 'Начат новый диалог';
-
-            case 'FirstTimeInQueue':
-                return 'Диалог попал в очередь';
-
-            case 'RunScenario':
-                return 'Запущен сценарий';
-
-            case 'RunIntegration':
-                return payload.name
-                    ? `Запущена интеграция ${payload.name}`
-                    : 'Запущена интеграция';
-
-            case 'FinishIntegration':
-                return 'Интеграция завершена';
-
-            case 'CreatedByOperator':
-                return `${operatorName(payload.oid)} открыл(а) диалог`;
-
-            case 'AssignToOperator':
-                return payload.oid
-                    ? `Диалог назначен: ${operatorName(payload.oid)}`
-                    : 'Назначение оператора изменено';
-
-            case 'CloseConversation':
-                if (payload.sender === 'userAnswerTimer') {
-                    return 'Автозакрытие: нет активности';
-                }
-
-                if (payload.src === 'delivery') {
-                    return 'Диалог закрыт рассылкой';
-                }
-
-                if (payload.src === 'pause') {
-                    return 'Автозакрытие после паузы';
-                }
-
-                return payload.sender
-                    ? `${operatorName(payload.sender)} закрыл(а) диалог`
-                    : 'Диалог закрыт';
-
-            default:
-                return '';
-        }
-    }
-
-    function messageNode(message, userName) {
-        let kind;
-        let author;
-
-        switch (message.tpe) {
-            case 'Question':
-                kind = 'user';
-                author = userName;
-                break;
-
-            case 'AnswerOperator':
-                kind = 'oper';
-                author = operatorName(message.operatorId);
-                break;
-
-            case 'OperatorComment':
-                if (isTechComment(message)) return null;
-
-                kind = 'comment';
-                author = message.operatorId === 'autoFAQ'
-                    ? 'autoFAQ'
-                    : operatorName(message.operatorId);
-                break;
-
-            case 'AnswerOperatorWithBot':
-            case 'AnswerOperatorQuickReply':
-            case 'AnswerSystem':
-            case 'AnswerBot':
-            case 'AnswerChatterbox':
-                kind = 'bot';
-                author = 'AutoFAQ bot';
-                break;
-
-            default:
-                return null;
+        if (payload.src === "delivery") {
+          return "Диалог закрыт рассылкой";
         }
 
-        const card = document.createElement('article');
-        card.className = `afg-msg afg-msg-${kind}`;
+        if (payload.src === "pause") {
+          return "Автозакрытие после паузы";
+        }
 
-        const header = document.createElement('div');
-        header.className = 'afg-msg-header';
+        return payload.sender
+          ? `${operatorName(payload.sender)} закрыл(а) диалог`
+          : "Диалог закрыт";
 
-        const name = document.createElement('span');
-        name.className = 'afg-msg-author';
-        name.textContent = author;
+      default:
+        return "";
+    }
+  }
 
-        const date = document.createElement('span');
-        date.className = 'afg-msg-date';
-        date.textContent = readableDateTime(message.ts);
+  function messageNode(message, userName) {
+    let kind;
+    let author;
 
-        header.append(name, date);
-        card.append(header, messageContent(message.txt));
+    switch (message.tpe) {
+      case "Question":
+        kind = "user";
+        author = userName;
+        break;
 
-        return card;
+      case "AnswerOperator":
+        kind = "oper";
+        author = operatorName(message.operatorId);
+        break;
+
+      case "OperatorComment":
+        if (isTechComment(message)) return null;
+
+        kind = "comment";
+        author =
+          message.operatorId === "autoFAQ"
+            ? "autoFAQ"
+            : operatorName(message.operatorId);
+        break;
+
+      case "AnswerOperatorWithBot":
+      case "AnswerOperatorQuickReply":
+      case "AnswerSystem":
+      case "AnswerBot":
+      case "AnswerChatterbox":
+        kind = "bot";
+        author = "AutoFAQ bot";
+        break;
+
+      default:
+        return null;
     }
 
-    const styles = document.createElement('style');
-    styles.id = STYLE_ID;
+    const card = document.createElement("article");
+    card.className = `afg-msg afg-msg-${kind}`;
 
-    styles.textContent = `
+    const header = document.createElement("div");
+    header.className = "afg-msg-header";
+
+    const name = document.createElement("span");
+    name.className = "afg-msg-author";
+    name.textContent = author;
+
+    const date = document.createElement("span");
+    date.className = "afg-msg-date";
+    date.textContent = readableDateTime(message.ts);
+
+    header.append(name, date);
+    card.append(header, messageContent(message.txt));
+
+    return card;
+  }
+
+  const styles = document.createElement("style");
+  styles.id = STYLE_ID;
+
+  styles.textContent = `
         .afg-panel,
         .afg-panel *,
         .afg-gallery,
@@ -1886,16 +1870,64 @@
 .afg-panel .afg-brand > div:last-child {
     min-width: 0;
 }
+
+/* Кнопка сворачивания/разворачивания */
+.afg-footer-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 4px 10px;
+    margin-bottom: 8px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.16s, color 0.16s;
+}
+
+.afg-footer-toggle:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+}
+
+.afg-footer-toggle-icon {
+    font-size: 10px;
+    transition: transform 0.2s ease;
+}
+
+/* Свёрнутое состояние */
+.afg-footer.afg-footer--collapsed {
+    padding-top: 6px;
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+}
+
+.afg-footer.afg-footer--collapsed .afg-footer-toggle {
+    margin-bottom: 0;
+}
+
+.afg-footer.afg-footer--collapsed .afg-footer-body {
+    display: none;
+}
+
+/* Развёрнутое состояние: переворачиваем стрелку */
+.afg-footer:not(.afg-footer--collapsed) .afg-footer-toggle-icon {
+    transform: rotate(180deg);
+}
     `;
 
-    document.head.append(styles);
+  document.head.append(styles);
 
-    const panel = document.createElement('aside');
-    panel.id = ROOT_ID;
-    panel.className = 'afg-panel';
-    panel.setAttribute('aria-label', 'История диалогов');
+  const panel = document.createElement("aside");
+  panel.id = ROOT_ID;
+  panel.className = "afg-panel";
+  panel.setAttribute("aria-label", "История диалогов");
 
-    panel.innerHTML = `
+  panel.innerHTML = `
         <div class="afg-top">
             <div class="afg-heading">
                 <div class="afg-brand">
@@ -2094,43 +2126,32 @@
             aria-label="Результаты поиска и сообщения"
         ></div>
 
-        <div class="afg-footer" id="bottommenuchhis">
-            <textarea
-                class="afg-input"
-                id="msgftochatornotes"
-                placeholder="Напишите сообщение или заметку…"
-                aria-label="Сообщение или заметка"
-            ></textarea>
-
+        <div class="afg-footer afg-footer--collapsed" id="bottommenuchhis" style="display: none;">
+        <button class="afg-footer-toggle" id="toggleFooterBtn" type="button" title="Развернуть панель ввода">
+            <span class="afg-footer-toggle-icon">▲</span>
+            <span class="afg-footer-toggle-label">Написать сообщение / заметку</span>
+        </button>
+    
+        <div class="afg-footer-body" id="footerBody">
+            <textarea class="afg-input" id="msgftochatornotes" placeholder="Напишите сообщение или заметку…" aria-label="Сообщение или заметка"></textarea>
+    
             <div class="afg-compose-actions">
                 <div class="afg-compose-options">
                     <label>
-                        <input
-                            type="radio"
-                            name="chatornotes"
-                            value="Notes"
-                            checked
-                        >
+                        <input type="radio" name="chatornotes" value="Notes" checked="">
                         Заметка
                     </label>
-
+    
                     <label>
-                        <input
-                            type="radio"
-                            name="chatornotes"
-                            value="Chat"
-                        >
+                        <input type="radio" name="chatornotes" value="Chat">
                         Сообщение
                     </label>
                 </div>
-
-                <button
-                    class="afg-primary"
-                    id="sendmsgtochatornotes"
-                    type="button"
-                >Отправить ↗</button>
+    
+                <button class="afg-primary" id="sendmsgtochatornotes" type="button">Отправить ↗</button>
             </div>
         </div>
+    </div>
 
         <div
             class="afg-modal-layer"
@@ -2165,1425 +2186,1085 @@
         </div>
     `;
 
-    document.body.append(panel);
+  document.body.append(panel);
 
-    function applyTheme() {
-        panel.classList.toggle(
-            'afg-light',
-            state.theme === 'light'
-        );
+  function applyTheme() {
+    panel.classList.toggle("afg-light", state.theme === "light");
 
-        $('chagetheme').textContent =
-    state.theme === 'light' ? '🌙' : '☀️';
+    $("chagetheme").textContent = state.theme === "light" ? "🌙" : "☀️";
 
-$('chagetheme').title =
-    state.theme === 'light'
-        ? 'Включить тёмную тему'
-        : 'Включить светлую тему';
+    $("chagetheme").title =
+      state.theme === "light"
+        ? "Включить тёмную тему"
+        : "Включить светлую тему";
 
-$('chagetheme').setAttribute(
-    'aria-label',
-    $('chagetheme').title
-);
+    $("chagetheme").setAttribute("aria-label", $("chagetheme").title);
 
-        localStorage.setItem(
-            'afgChatHistoryTheme',
-            state.theme
-        );
+    localStorage.setItem("afgChatHistoryTheme", state.theme);
+  }
+
+  function empty(title, text, icon = "⌕") {
+    const area = $("infofield");
+    area.replaceChildren();
+
+    const container = document.createElement("div");
+    container.className = "afg-empty";
+
+    const symbol = document.createElement("div");
+    symbol.className = "afg-empty-icon";
+    symbol.textContent = icon;
+
+    const heading = document.createElement("div");
+    heading.className = "afg-empty-title";
+    heading.textContent = title;
+
+    const description = document.createElement("div");
+    description.className = "afg-empty-text";
+    description.textContent = text;
+
+    container.append(symbol, heading, description);
+    area.append(container);
+    area.scrollTop = 0;
+  }
+
+  function loading(text) {
+    $("afgSectionTitle").textContent = "Загрузка";
+    empty("Немного подождите", text, "◌");
+  }
+
+  function closeModal() {
+    $("userchatdata").classList.remove("afg-open");
+  }
+
+  function resetConversation() {
+    state.conversation = null;
+    $("afgSubtitle").classList.remove("afg-user-subtitle");
+
+    $("somechatinfo").style.display = "none";
+    $("bottommenuchhis").style.display = "none";
+    $("refreshchat").hidden = true;
+    $("back_to_chat_his").hidden = true;
+
+    $("infofield").removeAttribute("opsetction");
+    $("infofield").removeAttribute("openhistorytime");
+
+    closeModal();
+  }
+
+  function clearAll() {
+    state.requestId++;
+    state.results = [];
+    state.resultsTitle = "Результаты поиска";
+
+    resetConversation();
+
+    $("chatuserhis").value = "";
+    $("hashchathis").value = "";
+    $("msgftochatornotes").value = "";
+    $("afgSubtitle").textContent = "Поиск и работа с чатами";
+    $("afgSectionTitle").textContent = "Начало работы";
+
+    empty(
+      "Найдите нужный диалог",
+      "Введите ID пользователя или ID чата. " +
+        "Также можно выбрать оператора на линии.",
+      "⌕"
+    );
+  }
+
+  function renderConversation(conversation) {
+    state.conversation = conversation;
+
+    const user = conversation.channelUser || {};
+    const payload = user.payload || {};
+    const area = $("infofield");
+
+    const messages = Array.isArray(conversation.messages)
+      ? [...conversation.messages].sort(
+          (a, b) => (dateMillis(a.ts) ?? 0) - (dateMillis(b.ts) ?? 0)
+        )
+      : [];
+
+    const userId = payload.id || user.id || user.channelTpe || "Неизвестен";
+
+    const userName = payload.userFullName || user.fullName || "Пользователь";
+
+    $("placeusid").textContent = String(userId);
+    $("placechatid").textContent = String(conversation.id || "");
+
+    $("somechatinfo").style.display = "block";
+    $("bottommenuchhis").style.display = "block";
+    $("refreshchat").hidden = false;
+    $("back_to_chat_his").hidden = state.results.length === 0;
+
+    $("afgSectionTitle").textContent = "Переписка";
+    const subtitle = $("afgSubtitle");
+    const userType = String(payload.userType ?? "")
+      .trim()
+      .toLowerCase();
+
+    const typeLabels = {
+      student: "ученик",
+      teacher: "преподаватель",
+      parent: "родитель",
+    };
+
+    const nameNode = document.createElement("span");
+    nameNode.className = "afg-subtitle-name";
+    nameNode.textContent = String(userName);
+
+    const typeNode = document.createElement("span");
+
+    const typeKey = Object.hasOwn(typeLabels, userType) ? userType : "unknown";
+
+    typeNode.className = `afg-user-type afg-user-type--${typeKey}`;
+    typeNode.textContent = typeLabels[userType] || "неизвестный";
+
+    subtitle.classList.add("afg-user-subtitle");
+    subtitle.replaceChildren(nameNode, typeNode);
+
+    area.setAttribute("openhistorytime", new Date().toISOString());
+    area.removeAttribute("opsetction");
+
+    const groupNames = {
+      "c7bbb211-a217-4ed3-8112-98728dc382d8": "ТП",
+      "8266dbb1-db44-4910-8b5f-a140deeec5c0": "ТП ОС",
+      "b6f7f34d-2f08-fc19-3661-29ac00842898": "КЦ",
+    };
+
+    if (groupNames[conversation.groupId]) {
+      area.setAttribute("opsetction", groupNames[conversation.groupId]);
     }
 
-    function empty(title, text, icon = '⌕') {
-        const area = $('infofield');
-        area.replaceChildren();
+    globalThis.isChatOnOperator = conversation.status === "AssignedToOperator";
 
-        const container = document.createElement('div');
-        container.className = 'afg-empty';
+    area.replaceChildren();
 
-        const symbol = document.createElement('div');
-        symbol.className = 'afg-empty-icon';
-        symbol.textContent = icon;
+    const { markers, last } = timeline(messages);
 
-        const heading = document.createElement('div');
-        heading.className = 'afg-empty-title';
-        heading.textContent = title;
+    messages.forEach((message, index) => {
+      if (markers.has(index)) {
+        area.append(deptLine(markers.get(index)));
+      }
 
-        const description = document.createElement('div');
-        description.className = 'afg-empty-text';
-        description.textContent = text;
-
-        container.append(symbol, heading, description);
-        area.append(container);
-        area.scrollTop = 0;
-    }
-
-    function loading(text) {
-        $('afgSectionTitle').textContent = 'Загрузка';
-        empty('Немного подождите', text, '◌');
-    }
-
-    function closeModal() {
-        $('userchatdata').classList.remove('afg-open');
-    }
-
-    function resetConversation() {
-        state.conversation = null;
-		$('afgSubtitle').classList.remove('afg-user-subtitle');
-
-        $('somechatinfo').style.display = 'none';
-        $('bottommenuchhis').style.display = 'none';
-        $('refreshchat').hidden = true;
-        $('back_to_chat_his').hidden = true;
-
-        $('infofield').removeAttribute('opsetction');
-        $('infofield').removeAttribute('openhistorytime');
-
-        closeModal();
-    }
-
-    function clearAll() {
-        state.requestId++;
-        state.results = [];
-        state.resultsTitle = 'Результаты поиска';
-
-        resetConversation();
-
-        $('chatuserhis').value = '';
-        $('hashchathis').value = '';
-        $('msgftochatornotes').value = '';
-        $('afgSubtitle').textContent =
-            'Поиск и работа с чатами';
-        $('afgSectionTitle').textContent =
-            'Начало работы';
-
-        empty(
-            'Найдите нужный диалог',
-            'Введите ID пользователя или ID чата. ' +
-            'Также можно выбрать оператора на линии.',
-            '⌕'
-        );
-    }
-
-    function renderConversation(conversation) {
-        state.conversation = conversation;
-
-        const user = conversation.channelUser || {};
-        const payload = user.payload || {};
-        const area = $('infofield');
-
-        const messages = Array.isArray(conversation.messages)
-            ? [...conversation.messages].sort(
-                (a, b) =>
-                    (dateMillis(a.ts) ?? 0) -
-                    (dateMillis(b.ts) ?? 0)
-            )
-            : [];
-
-        const userId =
-            payload.id ||
-            user.id ||
-            user.channelTpe ||
-            'Неизвестен';
-
-        const userName =
-            payload.userFullName ||
-            user.fullName ||
-            'Пользователь';
-
-        $('placeusid').textContent = String(userId);
-        $('placechatid').textContent =
-            String(conversation.id || '');
-
-        $('somechatinfo').style.display = 'block';
-        $('bottommenuchhis').style.display = 'block';
-        $('refreshchat').hidden = false;
-        $('back_to_chat_his').hidden =
-            state.results.length === 0;
-
-        $('afgSectionTitle').textContent = 'Переписка';
-        const subtitle = $('afgSubtitle');
-const userType = String(payload.userType ?? '').trim().toLowerCase();
-
-const typeLabels = {
-    student: 'ученик',
-    teacher: 'преподаватель',
-    parent: 'родитель'
-};
-
-const nameNode = document.createElement('span');
-nameNode.className = 'afg-subtitle-name';
-nameNode.textContent = String(userName);
-
-const typeNode = document.createElement('span');
-
-const typeKey = Object.hasOwn(typeLabels, userType)
-    ? userType
-    : 'unknown';
-
-typeNode.className = `afg-user-type afg-user-type--${typeKey}`;
-typeNode.textContent = typeLabels[userType] || 'неизвестный';
-
-subtitle.classList.add('afg-user-subtitle');
-subtitle.replaceChildren(nameNode, typeNode);
-
-        area.setAttribute(
-            'openhistorytime',
-            new Date().toISOString()
-        );
-        area.removeAttribute('opsetction');
-
-        const groupNames = {
-            'c7bbb211-a217-4ed3-8112-98728dc382d8': 'ТП',
-            '8266dbb1-db44-4910-8b5f-a140deeec5c0': 'ТП ОС',
-            'b6f7f34d-2f08-fc19-3661-29ac00842898': 'КЦ'
-        };
-
-        if (groupNames[conversation.groupId]) {
-            area.setAttribute(
-                'opsetction',
-                groupNames[conversation.groupId]
-            );
-        }
-
-        globalThis.isChatOnOperator =
-            conversation.status === 'AssignedToOperator';
-
-        area.replaceChildren();
-
-        const { markers, last } = timeline(messages);
-
-        messages.forEach((message, index) => {
-            if (markers.has(index)) {
-                area.append(deptLine(markers.get(index)));
-            }
-
-            if (message.tpe === 'Event') {
-                const text = eventText(message);
-                if (!text) return;
-
-                const event = document.createElement('div');
-                event.className = 'afg-event';
-                event.textContent =
-                    `${text} · ${readableTime(message.ts)}`;
-
-                area.append(event);
-                return;
-            }
-
-            const node = messageNode(message, userName);
-            if (node) area.append(node);
-        });
-
-        if (last) {
-            area.append(deptLine(last, true));
-        }
-
-        if (!area.childElementCount) {
-            empty(
-                'Сообщений пока нет',
-                'Диалог найден, но история сообщений пуста.',
-                '◇'
-            );
-        }
-
-        // Открываем переписку с НАЧАЛА, не с последнего сообщения.
-        area.scrollTop = 0;
-    }
-
-    function resultTimestamp(item) {
-        return item.ts ||
-            item.createdAt ||
-            item.updatedAt ||
-            null;
-    }
-
-    function resultStatus(item) {
-        if (item.status === 'ClosedByBot') {
-            return '🤖 Bot';
-        }
-
-        const usedStatuses = item.stats?.usedStatuses;
-
-        const hadOperator =
-            item.status === 'AssignedToOperator' ||
-            usedStatuses === 'AssignedToOperator' ||
-            (
-                Array.isArray(usedStatuses) &&
-                usedStatuses.includes('AssignedToOperator')
-            );
-
-        return hadOperator ? '🎧 Оператор' : '';
-    }
-
-    function userTypeBadge(value) {
-        const type = String(value ?? '').trim();
-
-        if (/^teacher$/i.test(type)) {
-            return '👩‍🏫 Teacher';
-        }
-
-        if (/^student$/i.test(type)) {
-            return '🎓 Student';
-        }
-
-        return type ? `👤 ${type}` : '';
-    }
-
-    function renderResults(
-        items,
-        title = 'Результаты поиска'
-    ) {
-        state.results = Array.isArray(items) ? items : [];
-        state.resultsTitle = title;
-
-        resetConversation();
-
-        $('afgSectionTitle').textContent =
-            `${title} · ${state.results.length}`;
-
-        $('afgSubtitle').textContent =
-            'Выберите диалог, чтобы открыть историю';
-
-        const area = $('infofield');
-        area.replaceChildren();
-
-        if (!state.results.length) {
-            empty(
-                'Ничего не найдено',
-                'Попробуйте другой ID или расширьте диапазон дат.',
-                '◇'
-            );
-            return;
-        }
-
-        const fragment = document.createDocumentFragment();
-
-        for (const item of state.results) {
-            const user = item.channelUser || {};
-            const payload = user.payload || {};
-
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'chatlist';
-            button.dataset.id = String(
-                item.conversationId || ''
-            );
-
-            const top = document.createElement('div');
-            top.className = 'afg-list-top';
-
-            const date = document.createElement('span');
-            date.textContent = readableDateTime(
-                resultTimestamp(item)
-            );
-
-            const status = document.createElement('span');
-            status.textContent = resultStatus(item);
-
-            top.append(date, status);
-
-            const bottom = document.createElement('div');
-            bottom.className = 'afg-list-bottom';
-
-            const name = document.createElement('span');
-            name.className = 'afg-list-name';
-            name.textContent =
-                payload.userFullName ||
-                user.fullName ||
-                'Пользователь';
-
-            const type = document.createElement('span');
-            type.className = 'afg-list-tag';
-            type.textContent = userTypeBadge(
-                payload.userType
-            );
-
-            bottom.append(name, type);
-            button.append(top, bottom);
-            fragment.append(button);
-        }
-
-        area.append(fragment);
-        area.scrollTop = 0;
-    }
-
-    async function openConversation(chatId) {
-        if (!chatId) return;
-
-        const requestId = ++state.requestId;
-
-        resetConversation();
-        loading('Открываем переписку…');
-
-        try {
-            const conversation = await apiJson(
-                `${API}/conversations/` +
-                encodeURIComponent(chatId)
-            );
-
-            if (requestId !== state.requestId) return;
-
-            renderConversation(conversation);
-        } catch (error) {
-            if (requestId !== state.requestId) return;
-
-            console.error(error);
-
-            $('afgSectionTitle').textContent = 'Ошибка';
-
-            empty(
-                'Не удалось открыть диалог',
-                'Проверьте ID чата и попробуйте ещё раз.',
-                '!'
-            );
-
-            notify(error.message, 'error');
-        }
-    }
-
-    async function searchHistory(body, title) {
-        const requestId = ++state.requestId;
-
-        resetConversation();
-        loading('Ищем диалоги…');
-        setBusy('btn_search_history', true);
-
-        try {
-            const data = await apiJson(
-                `${API}/conversations/history`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'content-type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        serviceId: SERVICE_ID,
-                        mode: 'Json',
-                        orderBy: 'ts',
-                        orderDirection: 'Desc',
-                        page: 1,
-                        limit: 20,
-                        ...body
-                    })
-                }
-            );
-
-            if (requestId !== state.requestId) return;
-
-            renderResults(data.items, title);
-
-            if (Number(data.total) > 20) {
-                notify(
-                    `Показаны первые 20 диалогов из ${data.total}`,
-                    'warning'
-                );
-            }
-        } catch (error) {
-            if (requestId !== state.requestId) return;
-
-            console.error(error);
-
-            $('afgSectionTitle').textContent =
-                'Ошибка поиска';
-
-            empty(
-                'Не удалось выполнить поиск',
-                'Проверьте соединение и параметры поиска.',
-                '!'
-            );
-
-            notify(error.message, 'error');
-        } finally {
-            setBusy('btn_search_history', false);
-        }
-    }
-
-    async function search() {
-        const userId = $('chatuserhis').value.trim();
-        const chatId = $('hashchathis').value.trim();
-
-        if (Boolean(userId) === Boolean(chatId)) {
-            notify(
-                'Укажите что-то одно: ID пользователя или ID чата',
-                'warning'
-            );
-            return;
-        }
-
-        if (chatId) {
-            state.results = [];
-            await openConversation(chatId);
-            return;
-        }
-
-        try {
-            await searchHistory(
-                {
-                    channelUserFullTextLike: userId,
-                    ...dateRange()
-                },
-                'Диалоги пользователя'
-            );
-        } catch (error) {
-            notify(error.message, 'warning');
-        }
-    }
-
-    async function refreshOperators() {
-        const button = $('RefrehOperators');
-        if (button.disabled) return;
-
-        setBusy('RefrehOperators', true);
-        button.textContent = '◌';
-
-        try {
-            const data = await apiJson(
-                `${API}/operators/statistic/currentState`
-            );
-
-            const rows = Array.isArray(data.onOperator)
-                ? data.onOperator
-                : [];
-
-            state.operatorRows = rows;
-
-            const select = $('operatorstp');
-            const previous = select.value;
-            const ownId = currentOperatorId(rows);
-
-            const ownRow = rows.find(
-                row =>
-                    String(row?.operator?.id) === ownId
-            );
-
-            const group =
-                operatorGroup(currentOperatorName()) ||
-                operatorGroup(ownRow?.operator?.fullName);
-
-            select.replaceChildren();
-
-            if (!group) {
-                select.add(new Option(
-                    'Не удалось определить вашу группу',
-                    ''
-                ));
-
-                state.selectedOperatorId = '';
-
-                notify(
-                    'Не удалось определить группу по имени профиля',
-                    'warning'
-                );
-
-                return;
-            }
-
-            const groupLabel = {
-                'тп ос': 'ТП ОС',
-                'тпprem': 'ТПPrem',
-                'teachers care': 'Teachers Care',
-                'prem': 'Prem',
-                'sales': 'Sales',
-                'тп': 'ТП',
-                'кц': 'КЦ',
-                'км': 'КМ',
-                'тс': 'ТС'
-            }[group] || group;
-
-            select.add(new Option(
-                `Операторы группы ${groupLabel}`,
-                ''
-            ));
-
-            // Строго своя группа. Если она пуста, чужих
-            // операторов в качестве запасного списка не показываем.
-            const groupRows = rows.filter(
-                ({ operator }) =>
-                    operator &&
-                    operator.status !== 'Offline' &&
-                    operatorGroup(operator.fullName) === group
-            );
-
-            const symbols = {
-                Online: '●',
-                Busy: '◐',
-                Pause: '○'
-            };
-
-            for (const { operator, aCnt = 0 } of groupRows) {
-                select.add(new Option(
-                    `${symbols[operator.status] || '·'} ` +
-                    `${operator.fullName} · ${aCnt}`,
-                    String(operator.id)
-                ));
-            }
-
-            if (!groupRows.length) {
-                select.options[0].textContent =
-                    `В группе ${groupLabel} нет операторов на линии`;
-            }
-
-            select.value = previous &&
-                [...select.options].some(
-                    option => option.value === previous
-                )
-                    ? previous
-                    : '';
-
-            state.selectedOperatorId = select.value;
-        } catch (error) {
-            console.error(error);
-            notify(
-                'Не удалось обновить операторов',
-                'error'
-            );
-        } finally {
-            button.textContent = '🔄';
-            setBusy('RefrehOperators', false);
-        }
-    }
-
-    async function searchByOperator() {
-        const id = $('operatorstp').value;
-
-        state.selectedOperatorId = id;
-        if (!id) return;
-
-        const today = dateValue(new Date());
-
-        await searchHistory(
-            {
-                participatingOperatorsIds: [id],
-                tsFrom: new Date(
-                    `${today}T00:00:00`
-                ).toISOString(),
-                tsTo: new Date(
-                    `${today}T23:59:59.999`
-                ).toISOString(),
-                usedStatuses: [
-                    'OnOperator',
-                    'AssignedToOperator',
-                    'Active'
-                ]
-            },
-            'Чаты оператора'
-        );
-    }
-
-    async function assignTo(
-        targetId,
-        conversationId = state.conversation?.id
-    ) {
-        if (!conversationId) {
-            throw new Error('Сначала откройте чат');
-        }
-
-        // У этого API успешный ответ может не иметь JSON-тела.
-        await apiFetch(
-            `${API}/conversation/assign`,
-            {
-                method: 'POST',
-                headers: {
-                    'content-type': 'application/json'
-                },
-                body: JSON.stringify({
-                    command: 'DO_ASSIGN_CONVERSATION',
-                    conversationId,
-                    assignToOperatorId: targetId
-                })
-            }
-        );
-    }
-
-    async function takeChat() {
-        if (state.busy.has('takechat')) return;
-
-        const conversationId = state.conversation?.id;
-
-        if (!conversationId) {
-            notify('Сначала откройте чат', 'warning');
-            return;
-        }
-
-        const openedAt = dateMillis(
-            $('infofield').getAttribute(
-                'openhistorytime'
-            )
-        );
-
-        if (
-            openedAt === null ||
-            Date.now() - openedAt > 60_000
-        ) {
-            notify(
-                'История открыта больше минуты. ' +
-                'Сначала обновите чат.',
-                'warning'
-            );
-            return;
-        }
-
-        const button = $('takechat');
-        const originalText = button.textContent;
-        let returnedToQueue = false;
-
-        setBusy('takechat', true);
-
-        try {
-            let ownId = currentOperatorId(
-                state.operatorRows
-            );
-
-            if (!ownId) {
-                button.textContent =
-                    'Определяем оператора…';
-
-                const data = await apiJson(
-                    `${API}/operators/statistic/currentState`
-                );
-
-                state.operatorRows =
-                    Array.isArray(data.onOperator)
-                        ? data.onOperator
-                        : [];
-
-                ownId = currentOperatorId(
-                    state.operatorRows
-                );
-            }
-
-            if (!ownId) {
-                notify(
-                    'Не удалось определить ваш ID оператора. ' +
-                    'Проверьте совпадение имени профиля ' +
-                    'с именем в списке операторов.',
-                    'error'
-                );
-                return;
-            }
-
-            if (Date.now() - openedAt > 60_000) {
-                notify(
-                    'История устарела. Сначала обновите чат.',
-                    'warning'
-                );
-                return;
-            }
-
-            if (!confirm(
-                'Вернуть чат в очередь и забрать его на себя?'
-            )) {
-                return;
-            }
-
-            button.textContent = 'Возврат в очередь…';
-
-            // Шаг 1: вернуть чат в очередь.
-            // API ожидает строку "null".
-            await assignTo('null', conversationId);
-            returnedToQueue = true;
-
-            button.textContent =
-                'Забираем из очереди…';
-
-            await new Promise(
-                resolve => setTimeout(resolve, 2000)
-            );
-
-            // Шаг 2: досрочно забрать чат себе.
-            await assignTo(ownId, conversationId);
-
-            notify('Чат назначен вам');
-            await openConversation(conversationId);
-        } catch (error) {
-            console.error(error);
-
-            notify(
-                returnedToQueue
-                    ? 'Чат вернулся в очередь, но забрать ' +
-                      'его не удалось. Проверьте его статус.'
-                    : 'Не удалось вернуть чат в очередь: ' +
-                      error.message,
-                'error'
-            );
-        } finally {
-            button.textContent = originalText;
-            setBusy('takechat', false);
-        }
-    }
-
-    async function reassignChat() {
-        const id = state.selectedOperatorId;
-        const chatId = state.conversation?.id;
-        const name = $('operatorstp')
-            .selectedOptions[0]
-            ?.textContent;
-
-        if (!chatId || !id) {
-            notify(
-                'Откройте чат и выберите оператора',
-                'warning'
-            );
-            return;
-        }
-
-        if (!confirm(
-            `Перевести чат оператору «${name}»?`
-        )) {
-            return;
-        }
-
-        setBusy('reassign', true);
-
-        try {
-            await assignTo(id, chatId);
-            notify('Чат переведён оператору');
-            await openConversation(chatId);
-        } catch (error) {
-            console.error(error);
-
-            notify(
-                `Не удалось перевести чат: ${error.message}`,
-                'error'
-            );
-        } finally {
-            setBusy('reassign', false);
-        }
-    }
-
-    async function sendMessage() {
-        const conversation = state.conversation;
-        const field = $('msgftochatornotes');
-        const text = field.value.trim();
-
-        const mode = panel.querySelector(
-            'input[name="chatornotes"]:checked'
-        )?.value;
-
-        if (!conversation?.id || !text || !mode) {
-            notify(
-                'Откройте чат и введите текст',
-                'warning'
-            );
-            return;
-        }
-
-        if (typeof sendAnswersRequest !== 'function') {
-            notify(
-                'Функция отправки недоступна',
-                'error'
-            );
-            return;
-        }
-
-        setBusy('sendmsgtochatornotes', true);
-
-        try {
-            const current = await apiJson(
-                `${API}/conversations/` +
-                encodeURIComponent(conversation.id)
-            );
-
-            const safeText = escapeHtml(text)
-                .replace(/\r?\n/g, '<br>');
-
-            const payload = {
-                sessionId: current.sessionId,
-                conversationId: conversation.id,
-                text: `<p>${safeText}</p>`
-            };
-
-            if (mode === 'Notes') {
-                payload.isComment = true;
-            }
-
-            const response =
-                await sendAnswersRequest(payload);
-
-            if (!response?.ok) {
-                throw new Error(
-                    `Ошибка отправки: HTTP ` +
-                    `${response?.status ?? '?'}`
-                );
-            }
-
-            field.value = '';
-
-            notify(
-                mode === 'Notes'
-                    ? 'Заметка добавлена'
-                    : 'Сообщение отправлено'
-            );
-
-            await openConversation(conversation.id);
-        } catch (error) {
-            console.error(error);
-            notify(error.message, 'error');
-
-            // При ошибке текст остаётся в поле.
-        } finally {
-            setBusy(
-                'sendmsgtochatornotes',
-                false
-            );
-        }
-    }
-
-    function dataRow(label, value) {
-        const row = document.createElement('div');
-        row.className = 'afg-data-row';
-
-        const heading = document.createElement('div');
-        heading.className = 'afg-data-label';
-        heading.textContent = label;
-
-        const content = document.createElement('div');
-        content.className = 'afg-data-value';
-
-        content.textContent =
-            typeof value === 'object' &&
-            value !== null
-                ? JSON.stringify(value, null, 2)
-                : String(value || 'Нет данных');
-
-        row.append(heading, content);
-        return row;
-    }
-
-    function openModal() {
-        if (!state.conversation) {
-            notify(
-                'Сначала откройте диалог',
-                'warning'
-            );
-            return;
-        }
-
-        const user =
-            state.conversation.channelUser || {};
-
-        const payload = user.payload || {};
-
-        const techInfo =
-            payload.techScreeningData ||
-            payload['Тех.инфа об устройствах'];
-
-        $('datafield').replaceChildren(
-            dataRow(
-                'Имя',
-                payload.userFullName ||
-                user.fullName
-            ),
-            dataRow(
-                'Тип пользователя',
-                payload.userType
-            ),
-            dataRow(
-                'User ID',
-                payload.id || user.id
-            ),
-            dataRow(
-                'Email',
-                payload.email
-            ),
-            dataRow(
-                'Телефон',
-                payload.phone
-            ),
-            dataRow(
-                'Техническая информация',
-                techInfoAsText(techInfo)
-            )
-        );
-
-        const crmLink = $('gotocrmhis');
-        const userId = String(
-            payload.id || user.id || ''
-        ).trim();
-
-        if (userId) {
-            crmLink.href =
-                'https://crm2.skyeng.ru/persons/' +
-                encodeURIComponent(userId);
-
-            crmLink.title =
-                'Открыть пользователя в CRM';
-        } else {
-            crmLink.removeAttribute('href');
-            crmLink.title =
-                'ID пользователя для CRM не найден';
-        }
-
-        $('datafield').scrollTop = 0;
-        $('userchatdata').classList.add('afg-open');
-        $('hideuserdatainfo').focus();
-    }
-
-    async function copy(text) {
+      if (message.tpe === "Event") {
+        const text = eventText(message);
         if (!text) return;
 
-        try {
-            if (typeof copyToClipboard === 'function') {
-                await copyToClipboard(text);
-            } else {
-                await navigator.clipboard.writeText(text);
-            }
+        const event = document.createElement("div");
+        event.className = "afg-event";
+        event.textContent = `${text} · ${readableTime(message.ts)}`;
 
-            notify('Скопировано');
-        } catch (error) {
-            console.error(error);
-            notify(
-                'Не удалось скопировать',
-                'error'
-            );
-        }
+        area.append(event);
+        return;
+      }
+
+      const node = messageNode(message, userName);
+      if (node) area.append(node);
+    });
+
+    if (last) {
+      area.append(deptLine(last, true));
     }
 
-    function closeGallery() {
-        if (!state.gallery) return;
-
-        state.gallery.element.remove();
-        state.gallery = null;
+    if (!area.childElementCount) {
+      empty(
+        "Сообщений пока нет",
+        "Диалог найден, но история сообщений пуста.",
+        "◇"
+      );
     }
 
-    function openGallery(clicked) {
+    // Открываем переписку с НАЧАЛА, не с последнего сообщения.
+    area.scrollTop = 0;
+  }
+
+  function resultTimestamp(item) {
+    return item.ts || item.createdAt || item.updatedAt || null;
+  }
+
+  function resultStatus(item) {
+    if (item.status === "ClosedByBot") {
+      return "🤖 Bot";
+    }
+
+    const usedStatuses = item.stats?.usedStatuses;
+
+    const hadOperator =
+      item.status === "AssignedToOperator" ||
+      usedStatuses === "AssignedToOperator" ||
+      (Array.isArray(usedStatuses) &&
+        usedStatuses.includes("AssignedToOperator"));
+
+    return hadOperator ? "🎧 Оператор" : "";
+  }
+
+  function userTypeBadge(value) {
+    const type = String(value ?? "").trim();
+
+    if (/^teacher$/i.test(type)) {
+      return "👩‍🏫 Teacher";
+    }
+
+    if (/^student$/i.test(type)) {
+      return "🎓 Student";
+    }
+
+    return type ? `👤 ${type}` : "";
+  }
+
+  function renderResults(items, title = "Результаты поиска") {
+    state.results = Array.isArray(items) ? items : [];
+    state.resultsTitle = title;
+
+    resetConversation();
+
+    $("afgSectionTitle").textContent = `${title} · ${state.results.length}`;
+
+    $("afgSubtitle").textContent = "Выберите диалог, чтобы открыть историю";
+
+    const area = $("infofield");
+    area.replaceChildren();
+
+    if (!state.results.length) {
+      empty(
+        "Ничего не найдено",
+        "Попробуйте другой ID или расширьте диапазон дат.",
+        "◇"
+      );
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    for (const item of state.results) {
+      const user = item.channelUser || {};
+      const payload = user.payload || {};
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "chatlist";
+      button.dataset.id = String(item.conversationId || "");
+
+      const top = document.createElement("div");
+      top.className = "afg-list-top";
+
+      const date = document.createElement("span");
+      date.textContent = readableDateTime(resultTimestamp(item));
+
+      const status = document.createElement("span");
+      status.textContent = resultStatus(item);
+
+      top.append(date, status);
+
+      const bottom = document.createElement("div");
+      bottom.className = "afg-list-bottom";
+
+      const name = document.createElement("span");
+      name.className = "afg-list-name";
+      name.textContent =
+        payload.userFullName || user.fullName || "Пользователь";
+
+      const type = document.createElement("span");
+      type.className = "afg-list-tag";
+      type.textContent = userTypeBadge(payload.userType);
+
+      bottom.append(name, type);
+      button.append(top, bottom);
+      fragment.append(button);
+    }
+
+    area.append(fragment);
+    area.scrollTop = 0;
+  }
+
+  async function openConversation(chatId) {
+    if (!chatId) return;
+
+    const requestId = ++state.requestId;
+
+    resetConversation();
+    loading("Открываем переписку…");
+
+    try {
+      const conversation = await apiJson(
+        `${API}/conversations/` + encodeURIComponent(chatId)
+      );
+
+      if (requestId !== state.requestId) return;
+
+      renderConversation(conversation);
+    } catch (error) {
+      if (requestId !== state.requestId) return;
+
+      console.error(error);
+
+      $("afgSectionTitle").textContent = "Ошибка";
+
+      empty(
+        "Не удалось открыть диалог",
+        "Проверьте ID чата и попробуйте ещё раз.",
+        "!"
+      );
+
+      notify(error.message, "error");
+    }
+  }
+
+  async function searchHistory(body, title) {
+    const requestId = ++state.requestId;
+
+    resetConversation();
+    loading("Ищем диалоги…");
+    setBusy("btn_search_history", true);
+
+    try {
+      const data = await apiJson(`${API}/conversations/history`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          serviceId: SERVICE_ID,
+          mode: "Json",
+          orderBy: "ts",
+          orderDirection: "Desc",
+          page: 1,
+          limit: 20,
+          ...body,
+        }),
+      });
+
+      if (requestId !== state.requestId) return;
+
+      renderResults(data.items, title);
+
+      if (Number(data.total) > 20) {
+        notify(`Показаны первые 20 диалогов из ${data.total}`, "warning");
+      }
+    } catch (error) {
+      if (requestId !== state.requestId) return;
+
+      console.error(error);
+
+      $("afgSectionTitle").textContent = "Ошибка поиска";
+
+      empty(
+        "Не удалось выполнить поиск",
+        "Проверьте соединение и параметры поиска.",
+        "!"
+      );
+
+      notify(error.message, "error");
+    } finally {
+      setBusy("btn_search_history", false);
+    }
+  }
+
+  async function search() {
+    const userId = $("chatuserhis").value.trim();
+    const chatId = $("hashchathis").value.trim();
+
+    if (Boolean(userId) === Boolean(chatId)) {
+      notify("Укажите что-то одно: ID пользователя или ID чата", "warning");
+      return;
+    }
+
+    if (chatId) {
+      state.results = [];
+      await openConversation(chatId);
+      return;
+    }
+
+    try {
+      await searchHistory(
+        {
+          channelUserFullTextLike: userId,
+          ...dateRange(),
+        },
+        "Диалоги пользователя"
+      );
+    } catch (error) {
+      notify(error.message, "warning");
+    }
+  }
+
+  async function refreshOperators() {
+    const button = $("RefrehOperators");
+    if (button.disabled) return;
+
+    setBusy("RefrehOperators", true);
+    button.textContent = "◌";
+
+    try {
+      const data = await apiJson(`${API}/operators/statistic/currentState`);
+
+      const rows = Array.isArray(data.onOperator) ? data.onOperator : [];
+
+      state.operatorRows = rows;
+
+      const select = $("operatorstp");
+      const previous = select.value;
+      const ownId = currentOperatorId(rows);
+
+      const ownRow = rows.find((row) => String(row?.operator?.id) === ownId);
+
+      const group =
+        operatorGroup(currentOperatorName()) ||
+        operatorGroup(ownRow?.operator?.fullName);
+
+      select.replaceChildren();
+
+      if (!group) {
+        select.add(new Option("Не удалось определить вашу группу", ""));
+
+        state.selectedOperatorId = "";
+
+        notify("Не удалось определить группу по имени профиля", "warning");
+
+        return;
+      }
+
+      const groupLabel =
+        {
+          "тп ос": "ТП ОС",
+          тпprem: "ТПPrem",
+          "teachers care": "Teachers Care",
+          prem: "Prem",
+          sales: "Sales",
+          тп: "ТП",
+          кц: "КЦ",
+          км: "КМ",
+          тс: "ТС",
+        }[group] || group;
+
+      select.add(new Option(`Операторы группы ${groupLabel}`, ""));
+
+      // Строго своя группа. Если она пуста, чужих
+      // операторов в качестве запасного списка не показываем.
+      const groupRows = rows.filter(
+        ({ operator }) =>
+          operator &&
+          operator.status !== "Offline" &&
+          operatorGroup(operator.fullName) === group
+      );
+
+      const symbols = {
+        Online: "●",
+        Busy: "◐",
+        Pause: "○",
+      };
+
+      for (const { operator, aCnt = 0 } of groupRows) {
+        select.add(
+          new Option(
+            `${symbols[operator.status] || "·"} ` +
+              `${operator.fullName} · ${aCnt}`,
+            String(operator.id)
+          )
+        );
+      }
+
+      if (!groupRows.length) {
+        select.options[0].textContent = `В группе ${groupLabel} нет операторов на линии`;
+      }
+
+      select.value =
+        previous &&
+        [...select.options].some((option) => option.value === previous)
+          ? previous
+          : "";
+
+      state.selectedOperatorId = select.value;
+    } catch (error) {
+      console.error(error);
+      notify("Не удалось обновить операторов", "error");
+    } finally {
+      button.textContent = "🔄";
+      setBusy("RefrehOperators", false);
+    }
+  }
+
+  async function searchByOperator() {
+    const id = $("operatorstp").value;
+
+    state.selectedOperatorId = id;
+    if (!id) return;
+
+    const today = dateValue(new Date());
+
+    await searchHistory(
+      {
+        participatingOperatorsIds: [id],
+        tsFrom: new Date(`${today}T00:00:00`).toISOString(),
+        tsTo: new Date(`${today}T23:59:59.999`).toISOString(),
+        usedStatuses: ["OnOperator", "AssignedToOperator", "Active"],
+      },
+      "Чаты оператора"
+    );
+  }
+
+  async function assignTo(targetId, conversationId = state.conversation?.id) {
+    if (!conversationId) {
+      throw new Error("Сначала откройте чат");
+    }
+
+    // У этого API успешный ответ может не иметь JSON-тела.
+    await apiFetch(`${API}/conversation/assign`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        command: "DO_ASSIGN_CONVERSATION",
+        conversationId,
+        assignToOperatorId: targetId,
+      }),
+    });
+  }
+
+  async function takeChat() {
+    if (state.busy.has("takechat")) return;
+
+    const conversationId = state.conversation?.id;
+
+    if (!conversationId) {
+      notify("Сначала откройте чат", "warning");
+      return;
+    }
+
+    const openedAt = dateMillis($("infofield").getAttribute("openhistorytime"));
+
+    if (openedAt === null || Date.now() - openedAt > 60_000) {
+      notify(
+        "История открыта больше минуты. " + "Сначала обновите чат.",
+        "warning"
+      );
+      return;
+    }
+
+    const button = $("takechat");
+    const originalText = button.textContent;
+    let returnedToQueue = false;
+
+    setBusy("takechat", true);
+
+    try {
+      let ownId = currentOperatorId(state.operatorRows);
+
+      if (!ownId) {
+        button.textContent = "Определяем оператора…";
+
+        const data = await apiJson(`${API}/operators/statistic/currentState`);
+
+        state.operatorRows = Array.isArray(data.onOperator)
+          ? data.onOperator
+          : [];
+
+        ownId = currentOperatorId(state.operatorRows);
+      }
+
+      if (!ownId) {
+        notify(
+          "Не удалось определить ваш ID оператора. " +
+            "Проверьте совпадение имени профиля " +
+            "с именем в списке операторов.",
+          "error"
+        );
+        return;
+      }
+
+      if (Date.now() - openedAt > 60_000) {
+        notify("История устарела. Сначала обновите чат.", "warning");
+        return;
+      }
+
+      if (!confirm("Вернуть чат в очередь и забрать его на себя?")) {
+        return;
+      }
+
+      button.textContent = "Возврат в очередь…";
+
+      // Шаг 1: вернуть чат в очередь.
+      // API ожидает строку "null".
+      await assignTo("null", conversationId);
+      returnedToQueue = true;
+
+      button.textContent = "Забираем из очереди…";
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Шаг 2: досрочно забрать чат себе.
+      await assignTo(ownId, conversationId);
+
+      notify("Чат назначен вам");
+      await openConversation(conversationId);
+    } catch (error) {
+      console.error(error);
+
+      notify(
+        returnedToQueue
+          ? "Чат вернулся в очередь, но забрать " +
+              "его не удалось. Проверьте его статус."
+          : "Не удалось вернуть чат в очередь: " + error.message,
+        "error"
+      );
+    } finally {
+      button.textContent = originalText;
+      setBusy("takechat", false);
+    }
+  }
+
+  async function reassignChat() {
+    const id = state.selectedOperatorId;
+    const chatId = state.conversation?.id;
+    const name = $("operatorstp").selectedOptions[0]?.textContent;
+
+    if (!chatId || !id) {
+      notify("Откройте чат и выберите оператора", "warning");
+      return;
+    }
+
+    if (!confirm(`Перевести чат оператору «${name}»?`)) {
+      return;
+    }
+
+    setBusy("reassign", true);
+
+    try {
+      await assignTo(id, chatId);
+      notify("Чат переведён оператору");
+      await openConversation(chatId);
+    } catch (error) {
+      console.error(error);
+
+      notify(`Не удалось перевести чат: ${error.message}`, "error");
+    } finally {
+      setBusy("reassign", false);
+    }
+  }
+
+  async function sendMessage() {
+    const conversation = state.conversation;
+    const field = $("msgftochatornotes");
+    const text = field.value.trim();
+
+    const mode = panel.querySelector(
+      'input[name="chatornotes"]:checked'
+    )?.value;
+
+    if (!conversation?.id || !text || !mode) {
+      notify("Откройте чат и введите текст", "warning");
+      return;
+    }
+
+    if (typeof sendAnswersRequest !== "function") {
+      notify("Функция отправки недоступна", "error");
+      return;
+    }
+
+    setBusy("sendmsgtochatornotes", true);
+
+    try {
+      const current = await apiJson(
+        `${API}/conversations/` + encodeURIComponent(conversation.id)
+      );
+
+      const safeText = escapeHtml(text).replace(/\r?\n/g, "<br>");
+
+      const payload = {
+        sessionId: current.sessionId,
+        conversationId: conversation.id,
+        text: `<p>${safeText}</p>`,
+      };
+
+      if (mode === "Notes") {
+        payload.isComment = true;
+      }
+
+      const response = await sendAnswersRequest(payload);
+
+      if (!response?.ok) {
+        throw new Error(
+          `Ошибка отправки: HTTP ` + `${response?.status ?? "?"}`
+        );
+      }
+
+      field.value = "";
+
+      notify(mode === "Notes" ? "Заметка добавлена" : "Сообщение отправлено");
+
+      await openConversation(conversation.id);
+    } catch (error) {
+      console.error(error);
+      notify(error.message, "error");
+
+      // При ошибке текст остаётся в поле.
+    } finally {
+      setBusy("sendmsgtochatornotes", false);
+    }
+  }
+
+  function dataRow(label, value) {
+    const row = document.createElement("div");
+    row.className = "afg-data-row";
+
+    const heading = document.createElement("div");
+    heading.className = "afg-data-label";
+    heading.textContent = label;
+
+    const content = document.createElement("div");
+    content.className = "afg-data-value";
+
+    content.textContent =
+      typeof value === "object" && value !== null
+        ? JSON.stringify(value, null, 2)
+        : String(value || "Нет данных");
+
+    row.append(heading, content);
+    return row;
+  }
+
+  function openModal() {
+    if (!state.conversation) {
+      notify("Сначала откройте диалог", "warning");
+      return;
+    }
+
+    const user = state.conversation.channelUser || {};
+
+    const payload = user.payload || {};
+
+    const techInfo =
+      payload.techScreeningData || payload["Тех.инфа об устройствах"];
+
+    $("datafield").replaceChildren(
+      dataRow("Имя", payload.userFullName || user.fullName),
+      dataRow("Тип пользователя", payload.userType),
+      dataRow("User ID", payload.id || user.id),
+      dataRow("Email", payload.email),
+      dataRow("Телефон", payload.phone),
+      dataRow("Техническая информация", techInfoAsText(techInfo))
+    );
+
+    const crmLink = $("gotocrmhis");
+    const userId = String(payload.id || user.id || "").trim();
+
+    if (userId) {
+      crmLink.href =
+        "https://crm2.skyeng.ru/persons/" + encodeURIComponent(userId);
+
+      crmLink.title = "Открыть пользователя в CRM";
+    } else {
+      crmLink.removeAttribute("href");
+      crmLink.title = "ID пользователя для CRM не найден";
+    }
+
+    $("datafield").scrollTop = 0;
+    $("userchatdata").classList.add("afg-open");
+    $("hideuserdatainfo").focus();
+  }
+
+  async function copy(text) {
+    if (!text) return;
+
+    try {
+      if (typeof copyToClipboard === "function") {
+        await copyToClipboard(text);
+      } else {
+        await navigator.clipboard.writeText(text);
+      }
+
+      notify("Скопировано");
+    } catch (error) {
+      console.error(error);
+      notify("Не удалось скопировать", "error");
+    }
+  }
+
+  function closeGallery() {
+    if (!state.gallery) return;
+
+    state.gallery.element.remove();
+    state.gallery = null;
+  }
+
+  function openGallery(clicked) {
+    closeGallery();
+
+    const images = [...$("infofield").querySelectorAll(".afg-media-image")].map(
+      (image) => image.dataset.full || image.src
+    );
+
+    if (!images.length) return;
+
+    let index = images.indexOf(clicked.dataset.full || clicked.src);
+
+    if (index < 0) index = 0;
+
+    const overlay = document.createElement("div");
+
+    overlay.className = "afg-gallery";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-label", "Просмотр изображений");
+
+    const image = document.createElement("img");
+
+    image.alt = "Изображение из диалога";
+
+    const counter = document.createElement("div");
+
+    counter.className = "afg-gallery-counter";
+
+    function button(className, text, title, action) {
+      const element = document.createElement("button");
+
+      element.type = "button";
+      element.className = className;
+      element.textContent = text;
+      element.title = title;
+
+      element.addEventListener("click", (event) => {
+        event.stopPropagation();
+        action();
+      });
+
+      return element;
+    }
+
+    function update() {
+      image.src = images[index];
+
+      counter.textContent = `${index + 1} / ${images.length}`;
+    }
+
+    function previous() {
+      index = (index - 1 + images.length) % images.length;
+
+      update();
+    }
+
+    function next() {
+      index = (index + 1) % images.length;
+
+      update();
+    }
+
+    overlay.append(
+      image,
+      counter,
+      button("afg-gallery-prev", "‹", "Предыдущее изображение", previous),
+      button("afg-gallery-next", "›", "Следующее изображение", next),
+      button("afg-gallery-close", "×", "Закрыть", closeGallery)
+    );
+
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) {
         closeGallery();
+      }
+    });
 
-        const images = [
-            ...$('infofield').querySelectorAll(
-                '.afg-media-image'
-            )
-        ].map(
-            image =>
-                image.dataset.full || image.src
-        );
+    document.body.append(overlay);
 
-        if (!images.length) return;
+    state.gallery = {
+      element: overlay,
+      previous,
+      next,
+    };
 
-        let index = images.indexOf(
-            clicked.dataset.full || clicked.src
-        );
+    update();
+  }
 
-        if (index < 0) index = 0;
+  function updateHostPosition(open) {
+    const rightPanel = $("rightPanel");
+    const openButton = $("opennewcat");
 
-        const overlay =
-            document.createElement('div');
-
-        overlay.className = 'afg-gallery';
-        overlay.setAttribute('role', 'dialog');
-        overlay.setAttribute('aria-modal', 'true');
-        overlay.setAttribute(
-            'aria-label',
-            'Просмотр изображений'
-        );
-
-        const image =
-            document.createElement('img');
-
-        image.alt = 'Изображение из диалога';
-
-        const counter =
-            document.createElement('div');
-
-        counter.className =
-            'afg-gallery-counter';
-
-        function button(className, text, title, action) {
-            const element =
-                document.createElement('button');
-
-            element.type = 'button';
-            element.className = className;
-            element.textContent = text;
-            element.title = title;
-
-            element.addEventListener(
-                'click',
-                event => {
-                    event.stopPropagation();
-                    action();
-                }
-            );
-
-            return element;
-        }
-
-        function update() {
-            image.src = images[index];
-
-            counter.textContent =
-                `${index + 1} / ${images.length}`;
-        }
-
-        function previous() {
-            index =
-                (index - 1 + images.length) %
-                images.length;
-
-            update();
-        }
-
-        function next() {
-            index =
-                (index + 1) %
-                images.length;
-
-            update();
-        }
-
-        overlay.append(
-            image,
-            counter,
-            button(
-                'afg-gallery-prev',
-                '‹',
-                'Предыдущее изображение',
-                previous
-            ),
-            button(
-                'afg-gallery-next',
-                '›',
-                'Следующее изображение',
-                next
-            ),
-            button(
-                'afg-gallery-close',
-                '×',
-                'Закрыть',
-                closeGallery
-            )
-        );
-
-        overlay.addEventListener(
-            'click',
-            event => {
-                if (event.target === overlay) {
-                    closeGallery();
-                }
-            }
-        );
-
-        document.body.append(overlay);
-
-        state.gallery = {
-            element: overlay,
-            previous,
-            next
-        };
-
-        update();
+    if (rightPanel) {
+      rightPanel.style.right = open
+        ? `${Math.min(480, window.innerWidth) + 2}px`
+        : "22px";
     }
 
-    function updateHostPosition(open) {
-        const rightPanel = $('rightPanel');
-        const openButton = $('opennewcat');
+    openButton?.classList.toggle("active", open);
+  }
 
-        if (rightPanel) {
-            rightPanel.style.right = open
-                ? `${Math.min(
-                    480,
-                    window.innerWidth
-                ) + 2}px`
-                : '22px';
-        }
+  function togglePanel(force) {
+    const currentlyOpen = panel.style.display === "flex";
 
-        openButton?.classList.toggle(
-            'active',
-            open
-        );
+    const open = typeof force === "boolean" ? force : !currentlyOpen;
+
+    panel.style.display = open ? "flex" : "none";
+
+    updateHostPosition(open);
+
+    if (open) {
+      applyTheme();
+      refreshOperators();
+    } else {
+      closeModal();
+      closeGallery();
+      state.requestId++;
     }
+  }
 
-    function togglePanel(force) {
-        const currentlyOpen =
-            panel.style.display === 'flex';
+  // Совместимость с существующей кнопкой открытия панели.
+  globalThis.getopennewcatButtonPress = () => togglePanel();
 
-        const open =
-            typeof force === 'boolean'
-                ? force
-                : !currentlyOpen;
+  $("hideMeChHis").addEventListener("click", () => togglePanel(false));
 
-        panel.style.display =
-            open ? 'flex' : 'none';
+  $("chagetheme").addEventListener("click", () => {
+    state.theme = state.theme === "dark" ? "light" : "dark";
 
-        updateHostPosition(open);
-
-        if (open) {
-            applyTheme();
-            refreshOperators();
-        } else {
-            closeModal();
-            closeGallery();
-            state.requestId++;
-        }
-    }
-
-    // Совместимость с существующей кнопкой открытия панели.
-    globalThis.getopennewcatButtonPress =
-        () => togglePanel();
-
-    $('hideMeChHis').addEventListener(
-        'click',
-        () => togglePanel(false)
-    );
-
-    $('chagetheme').addEventListener(
-        'click',
-        () => {
-            state.theme =
-                state.theme === 'dark'
-                    ? 'light'
-                    : 'dark';
-
-            applyTheme();
-        }
-    );
-
-    $('btn_search_history')
-        .addEventListener('click', search);
-
-    $('RefrehOperators')
-        .addEventListener(
-            'click',
-            refreshOperators
-        );
-
-    $('operatorstp')
-        .addEventListener(
-            'change',
-            searchByOperator
-        );
-
-    $('clearallinfo')
-        .addEventListener(
-            'click',
-            clearAll
-        );
-
-    $('getdatafrchat')
-        .addEventListener(
-            'click',
-            openModal
-        );
-
-    $('hideuserdatainfo')
-        .addEventListener(
-            'click',
-            closeModal
-        );
-
-    $('userchatdata')
-        .addEventListener(
-            'click',
-            event => {
-                if (
-                    event.target ===
-                    $('userchatdata')
-                ) {
-                    closeModal();
-                }
-            }
-        );
-
-    $('back_to_chat_his')
-        .addEventListener(
-            'click',
-            () => {
-                if (state.results.length) {
-                    renderResults(
-                        state.results,
-                        state.resultsTitle
-                    );
-                }
-            }
-        );
-
-    $('refreshchat')
-        .addEventListener(
-            'click',
-            () => {
-                if (state.conversation?.id) {
-                    openConversation(
-                        state.conversation.id
-                    );
-                }
-            }
-        );
-
-    $('takechat')
-        .addEventListener(
-            'click',
-            takeChat
-        );
-
-    $('reassign')
-        .addEventListener(
-            'click',
-            reassignChat
-        );
-
-    $('sendmsgtochatornotes')
-        .addEventListener(
-            'click',
-            sendMessage
-        );
-
-    $('chatuserhis')
-        .addEventListener(
-            'input',
-            event => {
-                event.target.value =
-                    event.target.value.replace(
-                        /\D/g,
-                        ''
-                    );
-            }
-        );
-
-    for (const id of [
-        'chatuserhis',
-        'hashchathis'
-    ]) {
-        $(id).addEventListener(
-            'keydown',
-            event => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    search();
-                }
-            }
-        );
-    }
-
-    $('msgftochatornotes')
-        .addEventListener(
-            'keydown',
-            event => {
-                if (
-                    event.key === 'Enter' &&
-                    (
-                        event.ctrlKey ||
-                        event.metaKey
-                    )
-                ) {
-                    event.preventDefault();
-                    sendMessage();
-                }
-            }
-        );
-
-    $('infofield')
-        .addEventListener(
-            'click',
-            event => {
-                const image = event.target
-                    .closest('.afg-media-image');
-
-                if (image) {
-                    openGallery(image);
-                    return;
-                }
-
-                const item = event.target
-                    .closest('.chatlist');
-
-                if (item?.dataset.id) {
-                    openConversation(
-                        item.dataset.id
-                    );
-                }
-            }
-        );
-
-    $('infofield')
-        .addEventListener(
-            'contextmenu',
-            event => {
-                const item = event.target
-                    .closest('.chatlist');
-
-                if (!item?.dataset.id) return;
-
-                event.preventDefault();
-                copy(item.dataset.id);
-            }
-        );
-
-    $('placeusid')
-        .addEventListener(
-            'click',
-            () => {
-                copy(
-                    $('placeusid').textContent
-                );
-            }
-        );
-
-    $('placechatid')
-        .addEventListener(
-            'click',
-            () => {
-                const id =
-                    $('placechatid').textContent;
-
-                if (id) {
-                    copy(
-                        'https://skyeng.autofaq.ai/logs/' +
-                        id
-                    );
-                }
-            }
-        );
-
-    $('chhisinstr')
-        .addEventListener(
-            'click',
-            () => {
-                window.open(
-                    'https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971',
-                    '_blank',
-                    'noopener,noreferrer'
-                );
-            }
-        );
-
-    document.addEventListener(
-        'keydown',
-        event => {
-            if (event.key === 'Escape') {
-                if (state.gallery) {
-                    closeGallery();
-                } else {
-                    closeModal();
-                }
-            }
-
-            if (
-                state.gallery &&
-                event.key === 'ArrowLeft'
-            ) {
-                state.gallery.previous();
-            }
-
-            if (
-                state.gallery &&
-                event.key === 'ArrowRight'
-            ) {
-                state.gallery.next();
-            }
-        }
-    );
-
-    window.addEventListener(
-        'resize',
-        () => {
-            if (
-                panel.style.display === 'flex'
-            ) {
-                updateHostPosition(true);
-            }
-        }
-    );
-
-    setDefaultDates();
     applyTheme();
-    clearAll();
+  });
+
+  $("btn_search_history").addEventListener("click", search);
+
+  $("RefrehOperators").addEventListener("click", refreshOperators);
+
+  $("operatorstp").addEventListener("change", searchByOperator);
+
+  $("clearallinfo").addEventListener("click", clearAll);
+
+  $("getdatafrchat").addEventListener("click", openModal);
+
+  $("hideuserdatainfo").addEventListener("click", closeModal);
+
+  $("userchatdata").addEventListener("click", (event) => {
+    if (event.target === $("userchatdata")) {
+      closeModal();
+    }
+  });
+
+  $("back_to_chat_his").addEventListener("click", () => {
+    if (state.results.length) {
+      renderResults(state.results, state.resultsTitle);
+    }
+  });
+
+  $("refreshchat").addEventListener("click", () => {
+    if (state.conversation?.id) {
+      openConversation(state.conversation.id);
+    }
+  });
+
+  $("takechat").addEventListener("click", takeChat);
+
+  $("reassign").addEventListener("click", reassignChat);
+
+  $("sendmsgtochatornotes").addEventListener("click", sendMessage);
+
+  $("chatuserhis").addEventListener("input", (event) => {
+    event.target.value = event.target.value.replace(/\D/g, "");
+  });
+
+  for (const id of ["chatuserhis", "hashchathis"]) {
+    $(id).addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        search();
+      }
+    });
+  }
+
+  $("msgftochatornotes").addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  $("infofield").addEventListener("click", (event) => {
+    const image = event.target.closest(".afg-media-image");
+
+    if (image) {
+      openGallery(image);
+      return;
+    }
+
+    const item = event.target.closest(".chatlist");
+
+    if (item?.dataset.id) {
+      openConversation(item.dataset.id);
+    }
+  });
+
+  $("infofield").addEventListener("contextmenu", (event) => {
+    const item = event.target.closest(".chatlist");
+
+    if (!item?.dataset.id) return;
+
+    event.preventDefault();
+    copy(item.dataset.id);
+  });
+
+  $("placeusid").addEventListener("click", () => {
+    copy($("placeusid").textContent);
+  });
+
+  $("placechatid").addEventListener("click", () => {
+    const id = $("placechatid").textContent;
+
+    if (id) {
+      copy("https://skyeng.autofaq.ai/logs/" + id);
+    }
+  });
+
+  $("chhisinstr").addEventListener("click", () => {
+    window.open(
+      "https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971",
+      "_blank",
+      "noopener,noreferrer"
+    );
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      if (state.gallery) {
+        closeGallery();
+      } else {
+        closeModal();
+      }
+    }
+
+    if (state.gallery && event.key === "ArrowLeft") {
+      state.gallery.previous();
+    }
+
+    if (state.gallery && event.key === "ArrowRight") {
+      state.gallery.next();
+    }
+  });
+
+  const footerEl = $("bottommenuchhis");
+  const toggleBtn = $("toggleFooterBtn");
+  const toggleLabel = toggleBtn.querySelector(".afg-footer-toggle-label");
+
+  toggleBtn.addEventListener("click", () => {
+    const isCollapsed = footerEl.classList.toggle("afg-footer--collapsed");
+
+    // Обновляем подсказку и текст
+    toggleBtn.title = isCollapsed
+      ? "Развернуть панель ввода"
+      : "Свернуть панель ввода";
+    toggleLabel.textContent = isCollapsed
+      ? "Написать сообщение / заметку"
+      : "Свернуть";
+
+    // Если развернули — сразу ставим фокус в поле ввода
+    if (!isCollapsed) {
+      $("msgftochatornotes").focus();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (panel.style.display === "flex") {
+      updateHostPosition(true);
+    }
+  });
+
+  setDefaultDates();
+  applyTheme();
+  clearAll();
 })();
