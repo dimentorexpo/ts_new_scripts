@@ -24,60 +24,46 @@
     },
     "default_title": "TSM - Technical Support Master Personal Cabinet Multitool"
   },
-"content_scripts": [
-  {
-    // Блок 1: Основной интерфейс (Autofaq + Общие сайты Skyeng)
-    "js": ["content.js"],
-    "css": ["/CSS/styles.css"],
-    "matches": [
-      "*://skyeng.autofaq.ai/*",
-      "*://*.skyeng.ru/*", 
-      "*://*.skyeng.tech/*"
-    ],
-    "run_at": "document_idle",
-    "all_frames": true 
-  },
-  {
-    // Блок 2: Специфичные модули для учителей/учеников
-    // ВАЖНО: Проверь, пересекаются ли эти адреса с Блоком 1. 
-    // Если да, лучше вынести уникальные JS сюда, а CSS оставить в одном месте или убрать отсюда, 
-    // если styles.css уже загружен в Блоке 1.
-    "js": [
-      "/Modules/chats.js",
-      "/Modules/exercises.js",
-      "/Modules/lessoninfo.js",
-      "/Modules/main.js",
-      "/Modules/students.js",
-      "/Modules/vocabulary.js"
-    ],
-    // Если styles.css нужен ТОЛЬКО здесь и не грузится сверху — оставь css поле.
-    // Если он уже загружен в первом блоке для тех же доменов — удали строку "css" отсюда, 
-    // чтобы не грузить двойной вес.
-    "matches": [
-      "*://vimbox.skyeng.ru/*",
-      "*://new-teachers.skyeng.ru/*",
-      "*://teachers.skyeng.ru/*",
-      "*://student.skyeng.ru/*",
-      "*://ttc.skyeng.ru/*",
-      "*://teacher.skyeng.ru/*",
-      "*://communications.skyeng.ru/*",
-      "*://start.skyeng.ru/*"
-    ],
-    "run_at": "document_idle",
-    "all_frames": true
-  },
-  {
-     // Блок 3: React Cache (специфика multi-classroom)
-     "js": ["/Modules/reacticache.js"],
-     // Стили скорее всего уже подтянулись из блоков выше, но если нужны особые — оставь.
-     "matches": [
-       "*://vimbox.skyeng.ru/kids/english/teacher/multi-classroom/*"
-     ],
-     "run_at": "document_idle",
-     "all_frames": true
-  }
-],
-  
+  "content_scripts": [
+    {
+      "js": ["content.js"],
+      "css": ["/CSS/styles.css"],
+      "matches": [
+        "*://skyeng.autofaq.ai/*",
+        "*://*.skyeng.ru/*",
+        "*://*.skyeng.tech/*"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "js": [
+        "/Modules/chats.js",
+        "/Modules/exercises.js",
+        "/Modules/lessoninfo.js",
+        "/Modules/main.js",
+        "/Modules/students.js",
+        "/Modules/vocabulary.js"
+      ],
+      "matches": [
+        "*://vimbox.skyeng.ru/*",
+        "*://new-teachers.skyeng.ru/*",
+        "*://teachers.skyeng.ru/*",
+        "*://student.skyeng.ru/*",
+        "*://ttc.skyeng.ru/*",
+        "*://teacher.skyeng.ru/*",
+        "*://communications.skyeng.ru/*",
+        "*://start.skyeng.ru/*"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "js": ["/Modules/reacticache.js"],
+      "matches": [
+        "*://vimbox.skyeng.ru/kids/english/teacher/multi-classroom/*"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
   "icons": {
     "16": "/Icons/16.png",
     "32": "/Icons/32.png",
