@@ -423,7 +423,7 @@ function pageClick(event) {
     const clickedBtn = event.currentTarget;
     const pageNum = clickedBtn.id.split('_')[0];
     document.querySelectorAll('#pages button').forEach((btn) => {
-        btn.style.backgroundColor = 'rgba(36, 62, 229, 0.5)';
+        btn.style.backgroundColor = 'rgba(17, 33, 139, 0.5)';
         btn.style.borderTop = '1px solid rgba(255, 255, 255, 0.2)';
     });
     for (let i = 0; i < 100; i++) {

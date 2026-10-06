@@ -3988,3 +3988,163 @@ body.chmaf-en-lang #custom_templates_window {
     from { opacity: 1; transform: translateX(0) scale(1); }
     to { opacity: 0; transform: translateX(20px) scale(0.9); }
 }
+
+/* 1. Выразительные кнопки шаблонов */
+.glass-btn.mainButton {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.45) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.5) !important;
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.glass-btn.mainButton:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    border-top-color: rgba(255, 255, 255, 0.7) !important;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.5),
+        0 0 8px rgba(255, 255, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    transform: translateY(-1px) !important;
+}
+
+.glass-btn.mainButton:active {
+    transform: translateY(1px) !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* 2. Жесткое принудительное включение инлайн-подсветки для вкладок #pages */
+#pages button.glass-btn.mainButton,
+#pages [id$="_page_button"] {
+    /* Напрямую читаем border-top, цвет и стиль из инлайн-стиля style="..." */
+    border-top-width: 3px !important;
+    border-top-style: solid !important;
+    border-top-color: inherit;
+    
+    border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.4) !important;
+    border-bottom: none !important;
+    
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Активная вкладка (с оранжевой полоской) */
+#pages button.glass-btn.mainButton[style*="orange"],
+#pages [id$="_page_button"][style*="orange"] {
+    border-top-color: #ff9800 !important;
+    border-top-width: 3px !important;
+    background-color: rgba(34, 139, 34, 0.65) !important;
+}
+
+/* Неактивные вкладки (синие) */
+#pages button.glass-btn.mainButton:not([style*="orange"]),
+#pages [id$="_page_button"]:not([style*="orange"]) {
+    border-top-color: rgba(255, 255, 255, 0.2) !important;
+    border-top-width: 1px !important;
+    background-color: rgba(17, 33, 139, 0.45) !important;
+}
+
+/* Отключаем перекрывающие псевдоэлементы подложки */
+#pages .glass-btn.mainButton::before,
+#pages .glass-btn.mainButton::after {
+    display: none !important;
+}
+
+#pages .glass-btn.mainButton:hover {
+    filter: brightness(1.3) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ============================================================
+   ПРЕМИАЛЬНЫЙ ТЕМНО-БИРЮЗОВЫЙ СТИЛЬ КНОПКИ SEND (Dark Teal)
+   ============================================================ */
+#snd.glass-btn.mainButton.primary {
+    background: linear-gradient(180deg, #1b3846 0%, #102530 100%) !important;
+    border: 1px solid #1f5064 !important;
+    border-top: 1px solid #2d7390 !important;
+    border-bottom: 1px solid #08151b !important;
+    color: #e2f1f8 !important;
+    font-weight: 600 !important;
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Отключаем перекрывающие псевдоэлементы подложки */
+#snd.glass-btn.mainButton.primary::before,
+#snd.glass-btn.mainButton.primary::after {
+    display: none !important;
+}
+
+/* Эффект при наведении */
+#snd.glass-btn.mainButton.primary:hover {
+    background: linear-gradient(180deg, #234758 0%, #153140 100%) !important;
+    border-color: #2b6d88 !important;
+    border-top-color: #3fa1c9 !important;
+    color: #ffffff !important;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(45, 115, 144, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Эффект при нажатии */
+#snd.glass-btn.mainButton.primary:active {
+    transform: translateY(1px) !important;
+    background: #0d1e27 !important;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ============================================================
+   ПРИГЛУШЕННЫЙ ТЕМНО-КРАСНЫЙ СТИЛЬ КНОПКИ СКРЫТЬ
+   ============================================================ */
+#hideMenuMain.glass-btn.mainButton.buttonHide {
+    background: linear-gradient(180deg, #3d242a 0%, #29171b 100%) !important;
+    border: 1px solid #6b2f38 !important;
+    border-top: 1px solid #8e3d4a !important;
+    border-bottom: 1px solid #1a0f12 !important;
+    color: #e57373 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+    font-weight: 600 !important;
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Отключаем перекрывающие псевдоэлементы подложки */
+#hideMenuMain.glass-btn.mainButton.buttonHide::before,
+#hideMenuMain.glass-btn.mainButton.buttonHide::after {
+    display: none !important;
+}
+
+/* Эффект при наведении */
+#hideMenuMain.glass-btn.mainButton.buttonHide:hover {
+    background: linear-gradient(180deg, #4f2d35 0%, #361e23 100%) !important;
+    border-color: #8e3d4a !important;
+    border-top-color: #b54d5e !important;
+    color: #ff8a80 !important;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(142, 61, 74, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Эффект при нажатии */
+#hideMenuMain.glass-btn.mainButton.buttonHide:active {
+    transform: translateY(1px) !important;
+    background: #1f1114 !important;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6) !important;
+}
