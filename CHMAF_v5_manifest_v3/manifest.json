@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "ChMAF",
-	"version": "5.0.167",
+	"version": "5.0.168",
 	"description": "Твой мультитул в работе с чатами",
 	"background": {
 		"service_worker": "bg.js"
@@ -126,6 +126,18 @@
 				"https://accounting.skyeng.ru/userpayment/search/transaction*"
 			],
 			"run_at": "document_end"
+		},
+		{
+			"js": [
+				"/OtherScripts/MuteLessonSound.js"
+			],
+			"matches": [
+				"*://vimbox.skyeng.ru/*",
+				"*://student.skyeng.ru/*",
+				"*://teacher.skyeng.ru/*"
+			],
+			"run_at": "document_start",
+			"world": "MAIN"
 		}
 	],
 	"icons": {
