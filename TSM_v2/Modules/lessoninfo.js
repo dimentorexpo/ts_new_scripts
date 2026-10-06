@@ -16,7 +16,7 @@ var win_getLessonInfo = `
     <div class="tsm-lesson-actions" style="display: flex; gap: 8px; margin-bottom: 10px;">
         <button id="hideMeLessonInfo" class="tsm-btn tsm-btn-hide">Hide</button>
         <button id="RefreshInfo" class="tsm-btn tsm-btn-sm" title="Обновить инфо">♻</button>
-        <button id="ClearInfo" class="tsm-btn tsm-btn-sm" title="Очистить поля">🧹</button>
+        <button id="ClearInfo" class="tsm-btn tsm-btn-sm" title="Очистить все поля">🧹</button>
     </div>
 
     <div class="tsm-card">
@@ -68,7 +68,7 @@ var win_getLessonInfo = `
     </div>
     
     <!-- Это окно будет извлечено в корень документа при открытии -->
-    <div id="allParticipants" class="tsm-window" style="display:none; width: 700px; padding: 20px;">
+    <div id="allParticipants" class="tsm-window" style="display:none; padding: 20px;">
         <div class="tsm-modal-header" id="participantsDragHandle">
             <span class="tsm-modal-title">👥 Список участников</span>
             <button class="tsm-close-modal" id="closeParticipantsBtn" title="Закрыть">✖</button>
@@ -90,7 +90,7 @@ var win_getLessonInfo = `
     </div>
 
     <div class="tsm-card">
-        <input id="hashfield" class="tsm-input tsm-input-hash" placeholder="Введите полный хеш комнаты">
+        <input id="hashfield" class="tsm-input tsm-input-hash" placeholder="Вставьте ссылку на комнату или введите хеш">
     </div>
 
     <div class="tsm-card">
@@ -134,7 +134,15 @@ const DOM = {
 
 function parseRoomURL(rawUrl = location.href) {
     if (!rawUrl) throw new Error('URL пустой');
-    const url = rawUrl.startsWith('http') ? new URL(rawUrl) : new URL(rawUrl, location.origin);
+    const trimmed = rawUrl.trim();
+
+    // Пользователь ввёл голый хеш — предмет берём из текущей страницы
+    if (!trimmed.includes('/') && /^[a-z0-9-]{6,}$/i.test(trimmed)) {
+        const currentSubject = location.pathname.split('/').filter(Boolean)[0] || '';
+        return { subject: `${currentSubject}/room`, subjectName: currentSubject, roomHash: trimmed };
+    }
+
+    const url = trimmed.startsWith('http') ? new URL(trimmed) : new URL(trimmed, location.origin);
     const pathParts = url.pathname.split('/').filter(Boolean);
     if (pathParts.length < 4) throw new Error('Некорректный URL комнаты');
     const subjectName = pathParts[1];
@@ -248,7 +256,7 @@ function toggleParticipantsModal() {
     modal.style.zIndex = "999999";
     modal.style.transform = "none";
 
-    modal.style.left = ((window.innerWidth / 2) - 350) + "px";
+    modal.style.left = Math.max(10, (window.innerWidth / 2) - (modal.offsetWidth / 2)) + "px";
     modal.style.top = "10vh";
 
     modal.classList.add('tsm-modal-animate');

@@ -2,17 +2,6 @@
    TSM Students
    ========================================================= */
 
-const win_studentsAdults = `
-<div class="tsm-window-grab">
-    <div class="tsm-toolbar" id="studentsAdultsHeader">
-        <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hidestudentsAdultstMenu">Скрыть</button>
-        <button class="tsm-btn" id="addallchatswithadult" title="Добавляет чаты со всеми учениками из раздела Уроки">➕💬</button>
-        <button class="tsm-btn tsm-btn-sm" id="actualizestudreportadult" title="Актуализирует отчеты по всем ученикам заполняя поля символами --">📝</button>
-    </div>
-    <input id="usersearch" class="tsm-input tsm-input-centered tsm-ml-8" style="width:100%;" placeholder="Enter user ID or name for search">
-    <div id="infobaradult" class="tsm-info-bar-adult"></div>
-</div>`;
-
 const win_studentsSkysmart = `
 <div class="tsm-window-grab">
     <div class="tsm-toolbar" id="studentsSkysmartHeader">
@@ -24,9 +13,6 @@ const win_studentsSkysmart = `
     <div id="infobarskysmart" class="tsm-info-bar-kids"></div>
 </div>`;
 
-const wintStudAdults = createTSMWindow("AFMS_AdultStudInfo", "winTopstudentsAdults", "winLeftstudentsAdults", win_studentsAdults);
-wintStudAdults.className = "tsm-window tsm-window-students-adult";
-
 const wintStudSkysmart = createTSMWindow("AFMS_SkysmartStudInfo", "winTopstudentsSkysmart", "winLeftstudentsSkysmart", win_studentsSkysmart);
 wintStudSkysmart.className = "tsm-window tsm-window-students-kids";
 
@@ -34,7 +20,6 @@ document.getElementById("hidestudentsSkysmartMenu").onclick = function () {
     wintStudSkysmart.style.display = "none";
     restoreMainMenu();
 };
-document.getElementById("hidestudentsAdultstMenu").onclick = function () { wintStudAdults.style.display = "none"; };
 
 function restoreMainMenu() {
     // Возвращаем всё окно меню (AFMS_addMenu), а не только список пунктов:
@@ -149,7 +134,6 @@ document.getElementById("openstudentsmenu").onclick = async function () {
         return;
     }
 
-    wintStudAdults.style.display = "none";
     // Скрываем главное меню ЦЕЛИКОМ (окно AFMS_addMenu), иначе остаётся
     // «шляпка» с кнопкой Скрыть без пунктов меню.
     const mainWin = document.getElementById("AFMS_addMenu");

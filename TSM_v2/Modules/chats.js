@@ -9,8 +9,8 @@ const win_addChatMenu = `
         <span id="outputstatus" class="tsm-status"></span>
     </div>
     <div class="tsm-search-row">
-        <input id="userid1" class="tsm-input tsm-input-centered" style="width:100px;" placeholder="teacherId">
-        <input id="userid2" class="tsm-input tsm-input-centered" style="width:100px;" placeholder="userId #2">
+        <input id="userid1" class="tsm-input tsm-input-centered" placeholder="teacherId">
+        <input id="userid2" class="tsm-input tsm-input-centered" placeholder="userId #2">
         <button class="tsm-btn" id="addChat">➕💬</button>
         <button class="tsm-btn" id="RemoveChat">❌💬</button>
     </div>

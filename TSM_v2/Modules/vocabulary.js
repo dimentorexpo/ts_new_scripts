@@ -313,13 +313,24 @@ async function getwordsets(studentId) {
     document.getElementById("wordsout").innerHTML = "";
     globalWordsCounter = 0;
 
-    const progressBar = setupProgressBar("progressBarSearch", "Загрузка наборов...");
+const progressBar = setupProgressBar("progressBarSearch", "Загрузка наборов...");
 
-    const wordsetsarr = await fetch("https://api-words.skyeng.ru/api/for-vimbox/v1/wordsets.json?studentId=" + studentId + "&pageSize=500", {
+let wordsetsarr;
+try {
+    const resp = await fetch("https://api-words.skyeng.ru/api/for-vimbox/v1/wordsets.json?studentId=" + studentId + "&pageSize=500", {
         headers: WORDS_API_HEADERS()
-    }).then((r) => r.json());
+    });
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    wordsetsarr = await resp.json();
+} catch (err) {
+    console.error("Ошибка загрузки словаря:", err);
+    finishProgressBar(progressBar, "ОШИБКА");
+    document.getElementById("wordsout").innerHTML =
+        '<div class="tsm-empty tsm-text-red">Не удалось загрузить словарь. Проверьте ID ученика и авторизацию.</div>';
+    return;
+}
 
-    if (wordsetsarr.meta.total <= 0) {
+if (wordsetsarr.meta.total <= 0) {
         document.getElementById("wordsout").innerHTML = '<div class="tsm-empty tsm-text-bisque">Словарь пустой!</div>';
         if (!isTaskCancelled) finishProgressBar(progressBar, "СЛОВАРЬ ПУСТ");
         return;
@@ -334,16 +345,20 @@ async function getwordsets(studentId) {
         const wordset = wordsetsarr.data[i];
         const wordSetData = { title: wordset.title, words: [] };
 
-        const objectwdsets = await fetch(`https://api-words.skyeng.ru/api/v1/wordsets/${wordset.id}/words.json?wordsetId=${wordset.id}&studentId=${studentId}&page=1&pageSize=500`, {
-            headers: WORDS_API_HEADERS()
-        }).then((r) => r.json());
-
+let objectwdsets, wordsnames;
+try {
+    objectwdsets = await fetch(
+    `https://api-words.skyeng.ru/api/v1/wordsets/${wordset.id}/words.json?wordsetId=${wordset.id}&studentId=${studentId}&page=1&pageSize=500`,
+    { headers: WORDS_API_HEADERS() }
+).then(r => r.json());
+    const meanings = objectwdsets.data.map((word) => word.meaningId).toString();
+    wordsnames = await fetch("https://dictionary.skyeng.ru/api/for-services/v2/meanings?ids=" + meanings + "&acceptLanguage=ru", { headers: WORDS_API_HEADERS() }).then(r => r.json());
+} catch (err) {
+    console.error("Ошибка загрузки набора " + wordset.title, err);
+    continue;
+}
+// ✅ Вместо удалённого:
         globalWordsCounter += objectwdsets.data.length;
-        const meanings = objectwdsets.data.map((word) => word.meaningId).toString();
-
-        const wordsnames = await fetch("https://dictionary.skyeng.ru/api/for-services/v2/meanings?ids=" + meanings + "&acceptLanguage=ru", {
-            headers: WORDS_API_HEADERS()
-        }).then((r) => r.json());
 
         for (let j = 0; j < objectwdsets.data.length; j++) {
             if (wordsnames[j] != undefined) {
@@ -358,19 +373,20 @@ async function getwordsets(studentId) {
 
         allWordSets.push(wordSetData);
 
-        if (!isTaskCancelled) {
-            renderWordSets(allWordSets, false);
-            document.getElementById("searchwordinput").style.display = "";
-
-            const percent = Math.round(((i + 1) / totalSets) * 100);
-            progressBar.style.width = percent + "%";
-            progressBar.textContent = `Парсинг: ${percent}% (${globalWordsCounter} слов)`;
-        }
+if (!isTaskCancelled) {
+    const percent = Math.round(((i + 1) / totalSets) * 100);
+    progressBar.style.width = percent + "%";
+    progressBar.textContent = `Парсинг: ${percent}% (${globalWordsCounter} слов)`;
+}
 
         await sleep(150);
     }
 
-    if (!isTaskCancelled) finishProgressBar(progressBar, `НАЙДЕНО: ${globalWordsCounter} слов`);
+    if (!isTaskCancelled) {
+    renderWordSets(allWordSets, false);
+    document.getElementById("searchwordinput").style.display = "";
+    finishProgressBar(progressBar, `НАЙДЕНО: ${globalWordsCounter} слов`);
+}
 }
 
 /* ---------- Рендер ---------- */

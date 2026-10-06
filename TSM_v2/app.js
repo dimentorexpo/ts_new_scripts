@@ -295,7 +295,7 @@ const MM_HEADERS = {
 async function postToMessenger(message, channelId, rootId = "") {
     const userId = await getOperatorId();
     if (!userId) throw new Error("MMostOperId не найден");
-    const bodyData = { message, channel_id: channelId, pending_post_id: `${userId}:`, user_id: userId };
+    const bodyData = { message, channel_id: channelId, pending_post_id: `${userId}:${Date.now()}`, user_id: userId };
     if (rootId) bodyData.root_id = rootId;
     const response = await fetch(MESSENGER_API_URL, {
         headers: MM_HEADERS,
@@ -459,29 +459,15 @@ async function cancelSecondLine(info) {
 
 async function sendCustomMessage(info, recipient) {
     try {
-        const operatorId = await getOperatorId();
-        if (!operatorId) {
-            console.error("MMostOperId не найден");
-            return;
-        }
         const tab = await getActiveTab();
-        if (!tab?.id || !isSupportedTabUrl(tab.url)) {
-            console.error("Активная поддерживаемая вкладка не найдена");
-            return;
-        }
+        console.log("[TSM] активная вкладка:", tab?.id, tab?.url);
         const response = await sendMessageToTab(tab.id, { action: "showPromptDialog", linkUrl: info.linkUrl });
+        console.log("[TSM] ответ контент-скрипта:", response);
         if (response?.textmsg) {
-            if (response.textmsg.length > 3) {
-                await sendToSupportChannel(`@techsupport-${recipient} ${info.linkUrl} ${response.textmsg}`);
-            } else {
-                console.error("Текст слишком короткий");
-            }
+            await sendToSupportChannel(`@techsupport-${recipient} ${info.linkUrl} ${response.textmsg}`);
         }
-    } catch (error) {
-        console.error("sendCustomMessage error:", error);
-    }
+    } catch (e) { console.error("[TSM] sendCustomMessage:", e); }
 }
-
 async function sendToDisasterChannel() {
     await getOperatorId();
     const tab = await getActiveTab();

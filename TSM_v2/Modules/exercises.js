@@ -318,8 +318,12 @@ function renderSkysmartIdentity(student, teacher) {
 }
 
 async function getTTCData() {
-    let rhash = document.getElementById('roomhashttc').value;
-    if (rhash.length < 20) {
+const rhash = document.getElementById('roomhashttc').value.trim();
+if (!rhash) {
+    createNotify('Введите хеш комнаты', 'error');
+    return;
+}
+if (true) { // блок загрузки — проверка выше уже валидировала ввод
         await fetch("https://ttc-api.skyeng.ru/api/v1/lesson/join", {
             "headers": { "content-type": "application/json" },
             "body": "{\"roomHash\":\"" + rhash + "\"}",
@@ -333,24 +337,26 @@ async function getTTCData() {
             if (ttcroomdata.participants[0].nodes[0].steps[i].score == null) ttcroomdata.participants[0].nodes[0].steps[i].score = 0;
             if (ttcroomdata.participants[0].nodes[0].steps[i].completeness == null) ttcroomdata.participants[0].nodes[0].steps[i].completeness = 0;
             const step = ttcroomdata.participants[0].nodes[0].steps[i];
-            tmparr += `<div class="tsm-exercise-item" style="display:grid; grid-template-columns: auto 1fr auto auto auto; align-items:center; gap:8px; padding:8px 12px;">
-                <span>${i + 1}.</span>
-                <span>${step.title}</span>
-                <span class="tsm-ttc-step-id">${step.stepId}</span>
-                <span class="tsm-btn-save-ttc" title="Копирует в буфер обмена ссылку на CMS для этого слайда"> 💾 </span>
-                <span class="tsm-text-bisque tsm-text-sm tsm-text-right" style="min-width:40px;">${step.completeness}%</span>
-                <span class="tsm-text-bisque tsm-text-sm tsm-text-right" style="min-width:30px;">${step.score / 10}</span>
-            </div>`;
+tmparr += `<div class="tsm-ttc-slide-item">
+    <span>${i + 1}.</span>
+    <span title="${escapeHTML(step.title)}">${escapeHTML(step.title)}</span>
+    <span class="tsm-ttc-step-id">${escapeHTML(step.stepId)}</span>
+    <span class="tsm-btn-save-ttc" title="Копирует в буфер обмена ссылку на CMS для этого слайда">💾</span>
+    <span class="tsm-text-bisque tsm-text-sm tsm-text-right" style="min-width:40px;">${step.completeness}%</span>
+    <span class="tsm-text-bisque tsm-text-sm tsm-text-right" style="min-width:30px;">${step.score / 10}</span>
+</div>`;
         }
         const ttcSummary = ttcroomdata.participants[0].nodes[0];
         document.getElementById('exercisebarttc').innerHTML =
             `<div class="tsm-ttc-summary">"${ttcSummary.title}" • Выполнено на: ${ttcSummary.completeness}% • Оценка: ${ttcSummary.score / 10}</div>` +
-            `<div class="tsm-ttc-header-row">
-                <span style="flex:1">Название слайда</span>
-                <span style="min-width:50px; text-align:center;">Балл</span>
-                <span style="min-width:40px; text-align:center;">%</span>
-                <span style="min-width:50px; text-align:center;">Ссылка</span>
-            </div>` + tmparr;
+`<div class="tsm-ttc-header-row">
+    <span>#</span>
+    <span>Название слайда</span>
+    <span>ID</span>
+    <span>Ссылка</span>
+    <span style="text-align:center;">%</span>
+    <span style="text-align:center;">Балл</span>
+</div>` + tmparr;
         let savelinkarr = document.getElementsByClassName('tsm-btn-save-ttc');
         for (let z = 0; z < savelinkarr.length; z++) {
             savelinkarr[z].onclick = function () {
@@ -417,29 +423,30 @@ async function OpenExercisesComplect() {
         for (let i = 0; i < themes.length; i++) {
             const theme = themes[i];
             const contentLessonId = theme.meta.contentLessonId;
-            html += `<tr class="tsm-theme-row"><td colspan="7" class="tsm-theme-title">
-                <span class="tsm-btn-save" complectationsData-subtype="${kidsselector}" complectationsData-lessonid="${contentLessonId}" title="Скопировать ссылку на урок">💾</span>
-                ${theme.name}
-            </td></tr>`;
+html += `<tr class="tsm-theme-row"><td colspan="7" class="tsm-theme-title">
+    <span class="tsm-btn-save" complectationsData-subtype="${escapeHTML(kidsselector)}" complectationsData-lessonid="${escapeHTML(contentLessonId)}" title="Скопировать ссылку на урок">💾</span>
+    ${escapeHTML(theme.name)}
+</td></tr>`;
             for (let j = 0; j < theme.cards.length; j++) {
                 const card = theme.cards[j];
-                const completeness = card.completeness ?? "——";
-                const score = card.score ?? "—";
-                let name = card.name;
+const completeness = card.completeness ?? "——";
+const score = card.score ?? "—";
+let name = escapeHTML(card.name);
+const safeStepUuid = escapeHTML(card.stepUuid || "");
                 if (card.emphasis === "writing") name += " ✏";
                 if (card.emphasis === "pronunciation") name += " 🎧";
                 if (card.emphasis === "speaking") name += " 🎙";
                html += `<tr class="tsm-card-row">
                     <td class="tsm-table-cell-center">${j + 1}</td>
                     <td class="tsm-table-cell-center">${name}</td>
-                    <td class="tsm-table-cell-center">${score}</td>
-                    <td class="tsm-table-cell-center">${completeness}</td>
-                    <td class="tsm-btn-save tsm-table-cell-center" complectationsData-subtype="${kidsselector}" complectationsData-lessonid="${contentLessonId}" complectationsData-stepid="${card.id}" title="Скопировать ссылку на слайд">💾</td>
+                    <td class="tsm-table-cell-center">${escapeHTML(String(score))}</td>
+                    <td class="tsm-table-cell-center">${escapeHTML(String(completeness))}</td>
+                    <td class="tsm-btn-save tsm-table-cell-center" complectationsData-subtype="${kidsselector}" complectationsData-lessonid="${contentLessonId}" complectationsData-stepid="${escapeHTML(card.id)}" title="Скопировать ссылку на слайд">💾</td>
                     <td class="tsm-table-cell-center">
-                        <span class="tsm-btn-step" data-stepuuid="${card.stepUuid || ''}" title="Копировать stepUuid">📋</span>
+                        <span class="tsm-btn-step" data-stepuuid="${safeStepUuid}" title="Копировать stepUuid">📋</span>
                     </td>
                     <td class="tsm-table-cell-center">
-                        <span class="tsm-btn-save-revision" data-stepuuid="${card.stepUuid || ''}" data-variantid="${variantId || ''}" title="Сбросить ревизию">↺</span>
+                        <span class="tsm-btn-save-revision" data-stepuuid="${safeStepUuid}" data-variantid="${variantId || ''}" title="Сбросить ревизию">↺</span>
                     </td>
                 </tr>`;
             }
@@ -582,7 +589,7 @@ async function OpenExercisesComplect() {
                             const roomHash = location.pathname.split('/')[4] || '';
                             const contentGroupId = `${body.id}_${theVariantId}`;
 
-                            const delRes = await fetch('https://api-social-science.skyeng.ru/api/v1/store-blocks/delete', {
+                            const delRes = await fetch(`https://api-${kidsselector}.skyeng.ru/api/v1/store-blocks/delete`, {
                                 method: 'POST',
                                 mode: 'cors',
                                 credentials: 'include',

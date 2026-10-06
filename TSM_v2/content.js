@@ -326,7 +326,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     okText: "Отправить",
                     multiline: true
                 });
-                sendResponse({ textmsg, confirmed: textmsg !== null && textmsg.length > 3 });
+                sendResponse({
+    textmsg,
+    confirmed: typeof textmsg === "string" && textmsg.trim().length > 3
+});
             })();
             return true;
     }
@@ -368,8 +371,7 @@ async function sendCommentTSM(txt) {
     const [activeConvId, sessionId] = await getInfoTSM();
     if (!activeConvId || !sessionId) return;
 
-    const escaped = txt.split("\n").join("\\n").split("\"").join("\\\"");
-    const payload = JSON.stringify({ sessionId, conversationId: activeConvId, text: escaped, isComment: true });
+    const payload = JSON.stringify({ sessionId, conversationId: activeConvId, text: txt, isComment: true });
 
     fetch("https://skyeng.autofaq.ai/api/reason8/answers", {
         headers: { "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryH2CK1t5M3Dc3ziNW" },
@@ -399,11 +401,19 @@ function detectSelectionType(text) {
     return "OTHER_SELECTION";
 }
 
+let lastSentSelectionType = null;
+
 function setSelectionListener(doc) {
     doc.addEventListener("selectionchange", () => {
         const selectedText = doc.getSelection().toString().trim();
         if (selectedText) {
-            chrome.runtime.sendMessage({ type: detectSelectionType(selectedText) });
+            const type = detectSelectionType(selectedText);
+            if (type !== lastSentSelectionType) {
+                lastSentSelectionType = type;
+                chrome.runtime.sendMessage({ type });
+            }
+        } else {
+            lastSentSelectionType = null;
         }
     });
 }
