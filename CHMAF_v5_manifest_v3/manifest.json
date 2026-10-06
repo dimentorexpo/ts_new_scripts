@@ -18,7 +18,7 @@
 			"https://crm2.skyeng.ru/*"
 		]
 	},
-	"content_scripts": [
+"content_scripts": [
 		{
 			"js": [
 				"/autoFAQscripts/NotificationSystem.js",
@@ -115,6 +115,15 @@
 			],
 			"matches": [
 				"*://video-trouble-shooter.skyeng.ru/*"
+			],
+			"run_at": "document_end"
+		},
+		{
+			"js": [
+				"/OtherScripts/Transactions.js"
+			],
+			"matches": [
+				"https://accounting.skyeng.ru/userpayment/search/transaction*"
 			],
 			"run_at": "document_end"
 		}
