@@ -2003,33 +2003,6 @@ body {
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.85);
 }
 
-/* --- ЖЕЛТО-ЧЕРНАЯ ЛЕНТА (С анимацией) --- */
-.glass-warning-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 6px;
-  background: repeating-linear-gradient(
-    135deg,
-    #111 0px, #111 12px,
-    #f1c40f 12px, #f1c40f 24px
-  );
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  cursor: grab;
-  opacity: 0.85;
-  box-shadow: inset 0 -1px 2px rgba(0,0,0,0.5);
-  /* Магия движения */
-  background-size: 34px 100%;
-  animation: warning-slide 4s linear infinite;
-}
-
-@keyframes warning-slide {
-  from { background-position: 0 0; }
-  to { background-position: -34px 0; }
-}
-
 /* --- РЯДЫ И ВЫРАВНИВАНИЕ --- */
 .flex-row {
   display: flex;
@@ -3995,7 +3968,7 @@ body.chmaf-en-lang #custom_templates_window {
     border: 1px solid rgba(255, 255, 255, 0.22) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.45) !important;
     border-bottom: 1px solid rgba(0, 0, 0, 0.5) !important;
-    box-shadow: 
+    box-shadow:
         0 2px 6px rgba(0, 0, 0, 0.45),
         inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
     color: #ffffff !important;
@@ -4006,7 +3979,7 @@ body.chmaf-en-lang #custom_templates_window {
     background: rgba(255, 255, 255, 0.16) !important;
     border-color: rgba(255, 255, 255, 0.4) !important;
     border-top-color: rgba(255, 255, 255, 0.7) !important;
-    box-shadow: 
+    box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.5),
         0 0 8px rgba(255, 255, 255, 0.12),
         inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
@@ -4026,11 +3999,11 @@ body.chmaf-en-lang #custom_templates_window {
     border-top-width: 3px !important;
     border-top-style: solid !important;
     border-top-color: inherit;
-    
+
     border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
     border-right: 1px solid rgba(0, 0, 0, 0.4) !important;
     border-bottom: none !important;
-    
+
     box-shadow: none !important;
     transform: none !important;
 }
@@ -4073,7 +4046,7 @@ body.chmaf-en-lang #custom_templates_window {
     border-bottom: 1px solid #08151b !important;
     color: #e2f1f8 !important;
     font-weight: 600 !important;
-    box-shadow: 
+    box-shadow:
         0 2px 6px rgba(0, 0, 0, 0.45),
         inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -4091,7 +4064,7 @@ body.chmaf-en-lang #custom_templates_window {
     border-color: #2b6d88 !important;
     border-top-color: #3fa1c9 !important;
     color: #ffffff !important;
-    box-shadow: 
+    box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.5),
         0 0 10px rgba(45, 115, 144, 0.35),
         inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
@@ -4117,7 +4090,7 @@ body.chmaf-en-lang #custom_templates_window {
     text-transform: uppercase !important;
     letter-spacing: 0.8px !important;
     font-weight: 600 !important;
-    box-shadow: 
+    box-shadow:
         0 2px 6px rgba(0, 0, 0, 0.45),
         inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -4135,7 +4108,7 @@ body.chmaf-en-lang #custom_templates_window {
     border-color: #8e3d4a !important;
     border-top-color: #b54d5e !important;
     color: #ff8a80 !important;
-    box-shadow: 
+    box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.5),
         0 0 10px rgba(142, 61, 74, 0.35),
         inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
