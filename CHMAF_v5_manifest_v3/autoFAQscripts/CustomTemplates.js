@@ -36,8 +36,6 @@ var win_CustomTemplates = `
          id="custom_templates_window"
          style="cursor: -webkit-grab; max-height: 80vh; display: flex; flex-direction: column; width: 550px;">
 
-        <div class="glass-warning-bar chmaf-drag-handle"></div>
-
         <h3 class="chmaf-drag-handle"
             style="margin-top: 5px; margin-bottom: 10px; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.5); color:bisque">
             Личные шаблоны

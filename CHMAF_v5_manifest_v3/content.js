@@ -419,204 +419,239 @@ function initializeMyLogic() {
 }
 if (location.host === 'skyeng.autofaq.ai') waitForElement('#AF_helper', initializeMyLogic);
 
+// ============================================================
+// Оптимизированная Панель шаблонов (Lazy DOM Rendering)
+// ============================================================
+
+// Кэш страниц и шаблонов в оперативной памяти
+let cachedTemplatePages = [];
+let activePageIndex = 0;
+
 function pageClick(event) {
     const clickedBtn = event.currentTarget;
-    const pageNum = clickedBtn.id.split('_')[0];
+    const pageNum = parseInt(clickedBtn.id.split('_')[0], 10);
+
     document.querySelectorAll('#pages button').forEach((btn) => {
         btn.style.backgroundColor = 'rgba(17, 33, 139, 0.5)';
         btn.style.borderTop = '1px solid rgba(255, 255, 255, 0.2)';
     });
-    for (let i = 0; i < 100; i++) {
-        const page = document.getElementById(i + 'page');
-        if (!page) break;
-        page.style.display = 'none';
-    }
     clickedBtn.style.backgroundColor = 'rgba(34, 139, 34, 0.5)';
     clickedBtn.style.borderTop = '3px solid orange';
-    const targetPage = document.getElementById(pageNum + 'page');
-    if (targetPage) targetPage.style.display = 'block';
+
+    activePageIndex = pageNum;
+    renderActivePage(activePageIndex);
 }
 
-// ⚡ ИСПРАВЛЕНО: использует table из utils.js (общий scope)
+// Отрисовка ТОЛЬКО активной страницы
+function renderActivePage(pageIdx) {
+    const contentArea = document.getElementById('7str');
+    const addTmpElement = document.getElementById('addTmp');
+    if (!contentArea) return;
+
+    // Полная очистка предыдущей страницы (удаляем старые кнопки из DOM)
+    contentArea.innerHTML = '';
+    if (addTmpElement) addTmpElement.innerHTML = '';
+
+    const pageData = cachedTemplatePages[pageIdx];
+    if (!pageData) return;
+
+    const pageContainer = document.createElement('div');
+    pageContainer.id = `${pageIdx}page`;
+
+    // Если страница серверная — добавляем блок серверных инпутов
+    if (pageData.type === 'Серверные') {
+        buildServerInputsSection(pageContainer);
+    }
+
+    // Рендерим строки и кнопки
+    pageData.rows.forEach((rowItems, strIdx) => {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'flex-row chmaf-drag-handle';
+        rowEl.id = `${pageIdx}page_${strIdx}str`;
+
+        rowItems.forEach((btnData) => {
+            const templateBtn = document.createElement('button');
+            templateBtn.textContent = btnData.name;
+            templateBtn.className = 'glass-btn mainButton';
+
+            if (pageData.type === 'Шаблоны') {
+                if (btnData.name === 'Урок NS') templateBtn.id = 'NS';
+                templateBtn.addEventListener('click', (event) => window.buttonsFromDoc?.(event.target.textContent));
+
+                if (btnData.isAdditional && addTmpElement) {
+                    addTmpElement.appendChild(templateBtn);
+                } else {
+                    rowEl.appendChild(templateBtn);
+                }
+            } else if (pageData.type === 'Серверные') {
+                templateBtn.addEventListener('click', () => window.servFromDoc?.(btnData.name));
+                rowEl.appendChild(templateBtn);
+            }
+        });
+
+        if (rowEl.children.length > 0) {
+            pageContainer.appendChild(rowEl);
+        }
+    });
+
+    contentArea.appendChild(pageContainer);
+    bindAddTmpToggle(addTmpElement, pageContainer);
+}
+
+function buildServerInputsSection(targetPageContainer) {
+    const linkRow = document.createElement('div');
+    linkRow.className = 'flex-row';
+    const linkInput = document.createElement('input');
+    linkInput.id = 'avariyalink';
+    linkInput.placeholder = 'Ссылка на трэд или Jira северных';
+    linkInput.autocomplete = 'off';
+    linkInput.className = 'glass-input';
+    linkInput.style.flexGrow = '1';
+    linkRow.appendChild(linkInput);
+
+    const clearLinkBtn = document.createElement('button');
+    clearLinkBtn.textContent = '🧹';
+    clearLinkBtn.title = 'Очистить';
+    clearLinkBtn.className = 'glass-btn mainButton';
+    clearLinkBtn.onclick = () => { linkInput.value = ''; };
+    linkRow.appendChild(clearLinkBtn);
+
+    const themeRow = document.createElement('div');
+    themeRow.className = 'flex-row';
+    const themeSelect = document.createElement('select');
+    themeSelect.id = 'avariyatema';
+    themeSelect.className = 'glass-input';
+    themeSelect.style.flexGrow = '1';
+
+    const placeholderOption = document.createElement('option');
+    placeholderOption.text = 'Выбери тематику для серверных';
+    placeholderOption.selected = true;
+    placeholderOption.disabled = true;
+    placeholderOption.value = 'thenenotselect';
+    placeholderOption.style.cssText = 'background-color:orange;color:white;';
+    themeSelect.add(placeholderOption);
+
+    const clearThemeBtn = document.createElement('button');
+    clearThemeBtn.textContent = '🧹';
+    clearThemeBtn.title = 'Сбросить тему';
+    clearThemeBtn.className = 'glass-btn mainButton';
+    clearThemeBtn.onclick = () => { themeSelect.selectedIndex = 0; };
+
+    themeRow.appendChild(themeSelect);
+    themeRow.appendChild(clearThemeBtn);
+
+    targetPageContainer.appendChild(linkRow);
+    targetPageContainer.appendChild(themeRow);
+
+    const themesInterval = setInterval(async () => {
+        if (!themeSelect.isConnected || themeSelect.children.length > 1) {
+            clearInterval(themesInterval);
+            return;
+        }
+        try {
+            const response = await fetch(SERVER_THEMES_SCRIPT_URL);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const text = await response.text();
+            if (text.trim().startsWith('<')) throw new Error('Сервер вернул HTML');
+            const data = JSON.parse(text);
+            if (data.result) {
+                data.result.forEach((item) => addOption(themeSelect, item[3], item[4]));
+            }
+            clearInterval(themesInterval);
+        } catch (e) {
+            console.error('[ChMAF] Ошибка загрузки серверных тем:', e);
+            clearInterval(themesInterval);
+        }
+    }, 4000);
+    window.cleanupRegistry?.register(() => clearInterval(themesInterval));
+}
+
+function bindAddTmpToggle(target, pageContainer) {
+    if (!target) return;
+    pageContainer?.addEventListener('dblclick', (event) => {
+        if (window.checkelementtype?.(event)) {
+            target.style.display = target.style.display === 'none' ? 'flex' : 'none';
+        }
+    });
+}
+
+// Построение структуры в памяти и отрисовка первой вкладки
 function refreshTemplates() {
     if (location.host !== 'skyeng.autofaq.ai') return;
     if (!table || !table.length) {
-        console.warn('[ChMAF:Tpl] refreshTemplates: таблица шаблонов пуста — ожидание загрузки (scriptAdr:',
-            typeof scriptAdr !== 'undefined' ? scriptAdr : '?', ')');
+        console.warn('[ChMAF:Tpl] refreshTemplates: таблица шаблонов пуста');
         return;
     }
     const pagesContainer = document.getElementById('pages');
     const contentArea = document.getElementById('7str');
     const addTmpElement = document.getElementById('addTmp');
-    if (!pagesContainer || !contentArea) {
-        console.warn('[ChMAF:Tpl] refreshTemplates: контейнеры #pages/#7str не найдены — кнопки не отрисованы (панель AF_helper не построена)');
-        return;
-    }
+    if (!pagesContainer || !contentArea) return;
 
-    // Статистика отрисовки — помогает понять, «часть шаблонов» куда делась
-    const tplPageStats = {
-        rows: table.length,
-        pages: 0,
-        buttons: 0,
-        unknownType: new Set()
-    };
-
+    cachedTemplatePages = [];
     pagesContainer.innerHTML = '';
-    document.querySelectorAll('[id$="page"]').forEach((el) => el.remove());
+    contentArea.innerHTML = '';
     if (addTmpElement) addTmpElement.innerHTML = '';
 
-    let countOfStr = 0, countOfPages = 0, pageType = '', addTmpFlag = 0;
-    let currentPage = null, currentRow = null;
+    let currentPageData = null;
+    let currentRowData = [];
+    let isAdditional = false;
+    let pageCounter = 0;
 
-    const makeRow = (extraClass = '') => {
-        currentRow = document.createElement('div');
-        currentRow.className = `flex-row${extraClass ? ' ' + extraClass : ''}`;
-        currentRow.id = `${countOfPages}page_${countOfStr}str`;
-        currentPage.appendChild(currentRow);
-        return currentRow;
-    };
-    const makeClearButton = (title, onClear) => {
-        const btn = document.createElement('button');
-        btn.textContent = '🧹'; btn.title = title; btn.className = 'glass-btn mainButton';
-        btn.onclick = onClear;
-        return btn;
-    };
-
+    // Парсим таблицу в легковесный кэш памяти
     for (const row of table) {
-        switch (row[0]) {
-            case '':
-                addTmpFlag = 0; countOfStr++;
-                currentRow = document.createElement('div');
-                currentRow.className = 'flex-row chmaf-drag-handle';
-                currentRow.id = `${countOfPages}page_${countOfStr}str`;
-                if (currentPage) currentPage.appendChild(currentRow);
-                break;
-            case 'Additional templates':
-                addTmpFlag = 1;
-                if (addTmpElement) addTmpElement.className = 'flex-row glass-panel';
-                break;
-            case 'Страница': {
-                const pageBtn = document.createElement('button');
-                pageBtn.textContent = row[1];
-                pageBtn.className = 'glass-btn mainButton';
-                pageBtn.id = `${countOfPages}_page_button`;
-                pageBtn.addEventListener('click', pageClick);
-                pagesContainer.appendChild(pageBtn);
-                pageType = row[2];
-                tplPageStats.pages++;
-                currentPage = document.createElement('div');
-                currentPage.id = `${countOfPages}page`;
-                contentArea.appendChild(currentPage);
-                countOfPages++; countOfStr = 1;
-                if (pageType === 'Серверные') buildServerInputsSection();
-                makeRow();
-                break;
+        const firstCol = row[0];
+
+        if (firstCol === 'Страница') {
+            if (currentPageData && currentRowData.length) {
+                currentPageData.rows.push(currentRowData);
+                currentRowData = [];
             }
-            default: {
-                const templateBtn = document.createElement('button');
-                templateBtn.textContent = row[0];
-                templateBtn.className = 'glass-btn mainButton';
-                if (pageType === 'Шаблоны') {
-                    if (templateBtn.textContent === 'ус+брауз (П)') continue;
-                    if (templateBtn.textContent === 'Урок NS') templateBtn.id = 'NS';
-                    if (templateBtn.textContent === 'ус+брауз (У)') templateBtn.textContent = 'ус+брауз';
-                    templateBtn.addEventListener('click', (event) => window.buttonsFromDoc?.(event.target.textContent));
-                    if (addTmpFlag === 0 && currentRow) currentRow.appendChild(templateBtn);
-                    else if (addTmpElement) addTmpElement.appendChild(templateBtn);
-                    tplPageStats.buttons++;
-                } else if (pageType === 'Серверные') {
-                    // ⚡ Передаём имя кнопки явно: раньше вызов был без аргументов,
-                    // и на macOS (клик не ставит focus) servFromDoc не мог определить
-                    // имя и шаблон молча не отправлялся.
-                    templateBtn.addEventListener('click', () => window.servFromDoc?.(row[0]));
-                    if (currentRow) currentRow.appendChild(templateBtn);
-                    tplPageStats.buttons++;
-                } else {
-                    tplPageStats.unknownType.add(`${String(pageType)} (${row[0]})`);
-                }
-                break;
+            currentPageData = {
+                id: pageCounter,
+                title: row[1],
+                type: row[2], // 'Шаблоны' или 'Серверные'
+                rows: []
+            };
+            cachedTemplatePages.push(currentPageData);
+
+            // Создаем вкладку-переключатель
+            const pageBtn = document.createElement('button');
+            pageBtn.textContent = row[1];
+            pageBtn.className = 'glass-btn mainButton';
+            pageBtn.id = `${pageCounter}_page_button`;
+            pageBtn.addEventListener('click', pageClick);
+            pagesContainer.appendChild(pageBtn);
+
+            pageCounter++;
+            isAdditional = false;
+        } else if (firstCol === '') {
+            isAdditional = false;
+            if (currentPageData && currentRowData.length) {
+                currentPageData.rows.push(currentRowData);
+                currentRowData = [];
             }
+        } else if (firstCol === 'Additional templates') {
+            isAdditional = true;
+            if (addTmpElement) addTmpElement.className = 'flex-row glass-panel';
+        } else if (currentPageData) {
+            let btnText = firstCol;
+            if (currentPageData.type === 'Шаблоны') {
+                if (btnText === 'ус+брауз (П)') continue;
+                if (btnText === 'ус+брауз (У)') btnText = 'ус+брауз';
+            }
+            currentRowData.push({
+                name: btnText,
+                isAdditional: isAdditional
+            });
         }
     }
-    bindAddTmpToggle(addTmpElement);
+
+    if (currentPageData && currentRowData.length) {
+        currentPageData.rows.push(currentRowData);
+    }
+
+    // Активируем первую страницу (рендер только её кнопок)
     document.getElementById('0_page_button')?.click();
-
-    // Итоговый лог отрисовки: если у коллеги «часть шаблонов не грузится» —
-    // здесь видно, сколько строк/страниц/кнопок реально дошло до DOM.
-    console.log('[ChMAF:Tpl] refreshTemplates отрисован:', {
-        rows: tplPageStats.rows,
-        pages: tplPageStats.pages,
-        buttons: tplPageStats.buttons,
-        unknownPageTypes: tplPageStats.unknownType.size ? Array.from(tplPageStats.unknownType) : []
-    });
-    if (tplPageStats.unknownType.size) {
-        console.warn('[ChMAF:Tpl] строки с неизвестным типом страницы (кнопки НЕ отрисованы):',
-            Array.from(tplPageStats.unknownType));
-    }
-
-    function buildServerInputsSection() {
-        const linkRow = makeRow();
-        const linkInput = document.createElement('input');
-        linkInput.id = 'avariyalink';
-        linkInput.placeholder = 'Ссылка на трэд или Jira северных';
-        linkInput.autocomplete = 'off'; linkInput.className = 'glass-input';
-        linkInput.style.flexGrow = '1';
-        linkRow.appendChild(linkInput);
-        linkRow.appendChild(makeClearButton('Очистить', () => { linkInput.value = ''; }));
-
-        const themeRow = document.createElement('div');
-        themeRow.className = 'flex-row';
-        const themeSelect = document.createElement('select');
-        themeSelect.id = 'avariyatema'; themeSelect.className = 'glass-input';
-        themeSelect.style.flexGrow = '1';
-        const placeholderOption = document.createElement('option');
-        placeholderOption.text = 'Выбери тематику для серверных';
-        placeholderOption.selected = true; placeholderOption.disabled = true;
-        placeholderOption.value = 'thenenotselect';
-        placeholderOption.style.cssText = 'background-color:orange;color:white;';
-        themeSelect.add(placeholderOption);
-        themeRow.appendChild(themeSelect);
-        themeRow.appendChild(makeClearButton('Сбросить тему', () => { themeSelect.selectedIndex = 0; }));
-        currentPage.appendChild(themeRow);
-
-        const themesInterval = setInterval(async () => {
-            if (!themeSelect.isConnected || themeSelect.children.length > 1) {
-                clearInterval(themesInterval);
-                return;
-            }
-            try {
-                const response = await fetch(SERVER_THEMES_SCRIPT_URL);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                const text = await response.text();
-                if (text.trim().startsWith('<')) {
-                    throw new Error('Сервер вернул HTML (404?)');
-                }
-
-                const data = JSON.parse(text);
-                if (data.result) {
-                    data.result.forEach((item) => addOption(themeSelect, item[3], item[4]));
-                }
-                clearInterval(themesInterval);
-            } catch (e) {
-                console.error('[ChMAF] Ошибка загрузки серверных тем:', e);
-                // Не показываем тост каждый раз, чтобы не спамить, только в консоль
-                // window.showCustomAlert?.('⚠️ Не удалось загрузить темы серверных', 'warning');
-                clearInterval(themesInterval); // Останавливаем попытки, чтобы не спамить в консоль
-            }
-        }, 4000);
-        window.cleanupRegistry?.register(() => clearInterval(themesInterval));
-        countOfStr++;
-    }
-
-    function bindAddTmpToggle(target) {
-        if (!target || target.childElementCount === 0) return;
-        document.getElementById('0page')?.addEventListener('dblclick', (event) => {
-            if (window.checkelementtype?.(event)) {
-                target.style.display = target.style.display === 'none' ? 'flex' : 'none';
-            }
-        });
-    }
 }
 window.refreshTemplates = refreshTemplates;
 

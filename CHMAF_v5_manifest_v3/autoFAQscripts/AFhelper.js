@@ -4,7 +4,6 @@
 
 var win_AFhelper = `
 <div class="glass-panel" id="addTmpWrapper">
-    <div class="glass-warning-bar chmaf-drag-handle"></div>
 
     <div class="flex-row chmaf-drag-handle" id="1str" style="padding-top: 5px;">
         <button class="glass-btn mainButton" id="languageAF" title="Переключает язык Русский/Английский">Русский</button>

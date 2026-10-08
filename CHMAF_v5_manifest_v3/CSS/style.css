@@ -4121,3 +4121,8 @@ body.chmaf-en-lang #custom_templates_window {
     background: #1f1114 !important;
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6) !important;
 }
+
+.is-dragging-fast {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}

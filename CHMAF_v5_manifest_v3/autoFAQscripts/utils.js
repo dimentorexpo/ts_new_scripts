@@ -511,10 +511,7 @@ function enableDrag(element, options = {}) {
         }
 
         const rect = element.getBoundingClientRect();
-
-        if (!rect.width || !rect.height) {
-            return;
-        }
+        if (!rect.width || !rect.height) return;
 
         isDragging = true;
         cachedWidth = rect.width;
@@ -522,6 +519,10 @@ function enableDrag(element, options = {}) {
 
         offsetX = event.clientX - rect.left;
         offsetY = event.clientY - rect.top;
+
+        // 🚀 Оптимизация драга: отключаем тяжелые стили и подсказываем GPU
+        element.style.willChange = 'left, top';
+        element.classList.add('is-dragging-fast');
 
         element.style.transition = 'none';
         document.body.style.userSelect = 'none';
@@ -556,11 +557,15 @@ function enableDrag(element, options = {}) {
         if (!isDragging) return;
 
         isDragging = false;
+
+        // 🚀 Возвращаем стандартные стили после завершения перемещения
+        element.style.willChange = 'auto';
+        element.classList.remove('is-dragging-fast');
+
         element.style.transition = '';
         restoreBodyStyles();
 
         const rect = element.getBoundingClientRect();
-
         const position = applySnap(
             rect.left,
             rect.top,
