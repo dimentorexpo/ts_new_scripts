@@ -218,7 +218,7 @@ document.getElementById('sndbot').addEventListener('click', async function () {
 // ============================================================
 document.getElementById('hideMenuMain').addEventListener('click', function () {
     ['AF_helper', 'AF_CustomTemplates', 'AF_Links',
-     'AF_AlarmClock', 'AF_Linksd', 'AF_Settings']
+        'AF_AlarmClock', 'AF_Linksd', 'AF_Settings']
         .forEach((id) => {
             const el = document.getElementById(id);
             if (el) setDisplayStyle(el, 'none');
@@ -248,5 +248,15 @@ document.getElementById('getnewtmpldata').addEventListener('click', async functi
         console.error('Ошибка обновления:', err);
         this.classList.remove('loading-orange');
         this.disabled = false;
+    }
+});
+
+// ============================================================
+// Отправка по Ctrl + Enter (или Cmd + Enter на macOS)
+// ============================================================
+document.getElementById('inp')?.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault(); // Предотвращает перенос строки
+        document.getElementById('snd')?.click();
     }
 });
