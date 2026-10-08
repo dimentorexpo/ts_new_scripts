@@ -8,98 +8,98 @@
 // которые не должны пересекаться с остальными скриптами расширения
 (function () {
 
-// === STATE & CACHE ==========================================================
-const statusContainer = document.createElement('div');
-statusContainer.id = 'idforpeopstatus';
-statusContainer.className = 'op-st-main-container';
+    // === STATE & CACHE ==========================================================
+    const statusContainer = document.createElement('div');
+    statusContainer.id = 'idforpeopstatus';
+    statusContainer.className = 'op-st-main-container';
 
-let opStatusInterval;
-let lastAlertTime = 0;
-let siderCache = null;
-const badgeCache = new Map();
-const alertAudio = new Audio('https://grumstv.github.io/Sounds/alert.mp3');
+    let opStatusInterval;
+    let lastAlertTime = 0;
+    let siderCache = null;
+    const badgeCache = new Map();
+    const alertAudio = new Audio('https://grumstv.github.io/Sounds/alert.mp3');
 
-const OP_GROUP_CONFIG = {
-    'ТП': {
-        operatorMatch: /ТП\D/,
-        queueBy: 'groupId',
-        queueIds: ['c7bbb211-a217-4ed3-8112-98728dc382d8']
-    },
-    'ТП ОС': {
-        operatorMatch: /ТП ОС\D/,
-        queueBy: 'groupId',
-        queueIds: ['8266dbb1-db44-4910-8b5f-a140deeec5c0']
-    },
-    'КЦ': {
-        operatorMatch: /КЦ\D/,
-        queueBy: 'groupId',
-        queueIds: ['b6f7f34d-2f08-fc19-3661-29ac00842898']
-    },
-    'Prem': {
-        operatorMatch: /Prem\D/,
-        queueBy: 'groupId',
-        queueIds: ['68932fae-b9f9-6b37-2a52-911b2b6b4f6d']
-    },
-    'Teachers Care': {
-        operatorMatch: /Teachers Care\D/,
-        sumAllUnassigned: true
-    }
-};
-
-// === CORE LOGIC =============================================================
-async function operstatusleftbar() {
-    try {
-        const key = await waitForOpSectionNew();
-        if (!key || !OP_GROUP_CONFIG[key]) {
-            if (key !== null) statusContainer.innerHTML = '';
-            return;
+    const OP_GROUP_CONFIG = {
+        'ТП': {
+            operatorMatch: /ТП\D/,
+            queueBy: 'groupId',
+            queueIds: ['c7bbb211-a217-4ed3-8112-98728dc382d8']
+        },
+        'ТП ОС': {
+            operatorMatch: /ТП ОС\D/,
+            queueBy: 'groupId',
+            queueIds: ['8266dbb1-db44-4910-8b5f-a140deeec5c0']
+        },
+        'КЦ': {
+            operatorMatch: /КЦ\D/,
+            queueBy: 'groupId',
+            queueIds: ['b6f7f34d-2f08-fc19-3661-29ac00842898']
+        },
+        'Prem': {
+            operatorMatch: /Prem\D/,
+            queueBy: 'groupId',
+            queueIds: ['c1262bdf-444a-41e1-974e-03d754dcff25']
+        },
+        'Teachers Care': {
+            operatorMatch: /Teachers Care\D/,
+            sumAllUnassigned: true
         }
+    };
 
-        const cfg = OP_GROUP_CONFIG[key];
-        // Через общий слой: диагностика ошибок и CSRF-ретрай вместо ручного aftoken
-        const response = await afApiFetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState");
-        const result = await response.json();
+    // === CORE LOGIC =============================================================
+    async function operstatusleftbar() {
+        try {
+            const key = await waitForOpSectionNew();
+            if (!key || !OP_GROUP_CONFIG[key]) {
+                if (key !== null) statusContainer.innerHTML = '';
+                return;
+            }
 
-        const tpQueue = getUnassignedCount(result, OP_GROUP_CONFIG['ТП']);
-        const tpOsQueue = getUnassignedCount(result, OP_GROUP_CONFIG['ТП ОС']);
-        const currentQueue = getUnassignedCount(result, cfg);
+            const cfg = OP_GROUP_CONFIG[key];
+            // Через общий слой: диагностика ошибок и CSRF-ретрай вместо ручного aftoken
+            const response = await afApiFetch("https://skyeng.autofaq.ai/api/operators/statistic/currentState");
+            const result = await response.json();
 
-        if (key === 'ТП ОС' && tpQueue > 0) {
-            showEmergencyQueueAlert(tpQueue);
-        }
+            const tpQueue = getUnassignedCount(result, OP_GROUP_CONFIG['ТП']);
+            const tpOsQueue = getUnassignedCount(result, OP_GROUP_CONFIG['ТП ОС']);
+            const currentQueue = getUnassignedCount(result, cfg);
 
-        let opstats = [];
-        if (key === 'ТП ОС') {
-            const map = new Map();
-            filterOperatorsLocal(result, OP_GROUP_CONFIG['ТП']).forEach(o => map.set(o.operator.id, o));
-            filterOperatorsLocal(result, OP_GROUP_CONFIG['ТП ОС']).forEach(o => map.set(o.operator.id, o));
-            opstats = Array.from(map.values());
-        } else {
-            opstats = filterOperatorsLocal(result, cfg);
-        }
+            if (key === 'ТП ОС' && tpQueue > 0) {
+                showEmergencyQueueAlert(tpQueue);
+            }
 
-        const activeIds = new Set(opstats.map(o => o.operator.id));
-        for (const id of badgeCache.keys()) {
-            if (!activeIds.has(id)) badgeCache.delete(id);
-        }
+            let opstats = [];
+            if (key === 'ТП ОС') {
+                const map = new Map();
+                filterOperatorsLocal(result, OP_GROUP_CONFIG['ТП']).forEach(o => map.set(o.operator.id, o));
+                filterOperatorsLocal(result, OP_GROUP_CONFIG['ТП ОС']).forEach(o => map.set(o.operator.id, o));
+                opstats = Array.from(map.values());
+            } else {
+                opstats = filterOperatorsLocal(result, cfg);
+            }
 
-        const stats = {
-            online: opstats.filter(o => o.operator.status === 'Online').length,
-            busy: opstats.filter(o => o.operator.status === 'Busy').length,
-            pause: opstats.filter(o => o.operator.status === 'Pause').length
-        };
+            const activeIds = new Set(opstats.map(o => o.operator.id));
+            for (const id of badgeCache.keys()) {
+                if (!activeIds.has(id)) badgeCache.delete(id);
+            }
 
-        const hidesummary = localStorage.getItem('hidesummaryflag') === '1';
-        const isAlert = (key === 'ТП' || key === 'ТП ОС') && tpQueue > 10;
+            const stats = {
+                online: opstats.filter(o => o.operator.status === 'Online').length,
+                busy: opstats.filter(o => o.operator.status === 'Busy').length,
+                pause: opstats.filter(o => o.operator.status === 'Pause').length
+            };
 
-        statusContainer.innerHTML = `
+            const hidesummary = localStorage.getItem('hidesummaryflag') === '1';
+            const isAlert = (key === 'ТП' || key === 'ТП ОС') && tpQueue > 10;
+
+            statusContainer.innerHTML = `
             <div class="op-st-queue-box ${isAlert ? 'alert-mode' : ''}">
                 <div class="queue-header">
                     <div class="queue-dot"></div>
                     <span class="queue-title">Очередь</span>
                 </div>
                 ${(key === 'ТП' || key === 'ТП ОС')
-                ? `<div class="queue-stats">
+                    ? `<div class="queue-stats">
                        <div class="queue-stat-item ${tpQueue > 10 ? 'alert-state' : 'normal-state'}">
                            <span class="queue-label">ТП</span>
                            <span class="queue-value">${tpQueue}</span>
@@ -110,7 +110,7 @@ async function operstatusleftbar() {
                            <span class="queue-value">${tpOsQueue}</span>
                        </div>
                    </div>`
-                : `<div class="queue-stats">
+                    : `<div class="queue-stats">
                        <div class="queue-stat-item premium-state">
                            <span class="queue-label">${key}</span>
                            <span class="queue-value">${currentQueue}</span>
@@ -140,121 +140,121 @@ async function operstatusleftbar() {
             </div>
         `;
 
-        attachOpHandlers();
-    } catch (e) { console.error('OpStatus Error:', e); }
-}
-
-// === HELPERS ================================================================
-async function waitForOpSectionNew(timeout = 3000) {
-    return new Promise((resolve) => {
-        const start = Date.now();
-        const check = () => {
-            try {
-                const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
-                const el = iframe?.contentDocument?.querySelector('span[id^="mantine-"][id$="-target"]');
-                if (el) {
-                    const sectionName = el.textContent.split('-')[0].trim();
-                    return resolve(sectionName);
-                }
-            } catch (e) { }
-            if (Date.now() - start > timeout) return resolve(null);
-            requestAnimationFrame(check);
-        };
-        check();
-    });
-}
-
-function getUnassignedCount(result, cfg) {
-    if (!result || !result.unAssigned) return 0;
-    if (cfg.sumAllUnassigned) return result.unAssigned.reduce((s, i) => s + Number(i.count || 0), 0);
-    const key = cfg.queueBy === 'groupId' ? 'groupId' : 'kb';
-    return result.unAssigned
-        .filter(i => cfg.queueIds.includes(i[key]))
-        .reduce((s, i) => s + Number(i.count || 0), 0);
-}
-
-function filterOperatorsLocal(result, cfg) {
-    return (result.onOperator || []).filter(item => {
-        const op = item.operator;
-        if (!op || op.status === 'Offline') return false;
-        if (!cfg.operatorMatch.test(op.fullName || '')) return false;
-        if (cfg.groupIdFilter && item.groupId !== cfg.groupIdFilter) return false;
-        return true;
-    });
-}
-
-const cleanOperatorName = (fullName) => {
-    if (!fullName) return '';
-    let name = fullName;
-    if (!name.startsWith('ТП ОС-')) {
-        name = name.replace(/^(ТП|Prem|КЦ|Teachers Care)-/, '');
+            attachOpHandlers();
+        } catch (e) { console.error('OpStatus Error:', e); }
     }
-    // Имя вставляется в innerHTML — экранируем разметку на всякий случай
-    return name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-};
 
-const renderOperatorRows = (opstats) => {
-    const merged = new Map();
-    opstats.forEach(item => {
-        const id = item.operator.id;
-        if (merged.has(id)) {
-            const existing = merged.get(id);
-            existing.aCnt = (existing.aCnt || 0) + (item.aCnt || 0);
-            existing.cCnt = (existing.cCnt || 0) + (item.cCnt || 0);
-        } else {
-            merged.set(id, { ...item });
-        }
-    });
-    const uniqueOps = Array.from(merged.values());
+    // === HELPERS ================================================================
+    async function waitForOpSectionNew(timeout = 3000) {
+        return new Promise((resolve) => {
+            const start = Date.now();
+            const check = () => {
+                try {
+                    const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+                    const el = iframe?.contentDocument?.querySelector('span[id^="mantine-"][id$="-target"]');
+                    if (el) {
+                        const sectionName = el.textContent.split('-')[0].trim();
+                        return resolve(sectionName);
+                    }
+                } catch (e) { }
+                if (Date.now() - start > timeout) return resolve(null);
+                requestAnimationFrame(check);
+            };
+            check();
+        });
+    }
 
-    const statusMap = {
-        Online: {
-            bg: 'rgba(16, 185, 129, 0.12)',
-            glow: '#10b981',
-            b: 'rgba(16, 185, 129, 0.4)',
-            textGlow: '0 0 8px rgba(16, 185, 129, 0.5)'
-        },
-        Busy: {
-            bg: 'rgba(245, 158, 11, 0.12)',
-            glow: '#f59e0b',
-            b: 'rgba(245, 158, 11, 0.4)',
-            textGlow: '0 0 8px rgba(245, 158, 11, 0.5)'
-        },
-        Pause: {
-            bg: 'rgba(239, 68, 68, 0.12)',
-            glow: '#ef4444',
-            b: 'rgba(239, 68, 68, 0.4)',
-            textGlow: '0 0 8px rgba(239, 68, 68, 0.5)'
+    function getUnassignedCount(result, cfg) {
+        if (!result || !result.unAssigned) return 0;
+        if (cfg.sumAllUnassigned) return result.unAssigned.reduce((s, i) => s + Number(i.count || 0), 0);
+        const key = cfg.queueBy === 'groupId' ? 'groupId' : 'kb';
+        return result.unAssigned
+            .filter(i => cfg.queueIds.includes(i[key]))
+            .reduce((s, i) => s + Number(i.count || 0), 0);
+    }
+
+    function filterOperatorsLocal(result, cfg) {
+        return (result.onOperator || []).filter(item => {
+            const op = item.operator;
+            if (!op || op.status === 'Offline') return false;
+            if (!cfg.operatorMatch.test(op.fullName || '')) return false;
+            if (cfg.groupIdFilter && item.groupId !== cfg.groupIdFilter) return false;
+            return true;
+        });
+    }
+
+    const cleanOperatorName = (fullName) => {
+        if (!fullName) return '';
+        let name = fullName;
+        if (!name.startsWith('ТП ОС-')) {
+            name = name.replace(/^(ТП|Prem|КЦ|Teachers Care)-/, '');
         }
+        // Имя вставляется в innerHTML — экранируем разметку на всякий случай
+        return name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     };
 
-    return uniqueOps.sort((a, b) => a.operator.status.localeCompare(b.operator.status))
-        .map(item => {
-            const op = item.operator;
-            const theme = statusMap[op.status] || {
-                bg: 'rgba(100,100,100,0.1)',
-                glow: '#aaa',
-                b: 'rgba(100,100,100,0.3)',
-                textGlow: 'none'
-            };
-
-            const isTpOs = op.fullName?.toUpperCase().includes('ТП ОС');
-            const currentCount = (item.aCnt || 0) + (item.cCnt || 0);
-
-            const prevCount = badgeCache.get(op.id) || 0;
-            let pulseClass = '';
-            if (prevCount !== 0) {
-                if (currentCount > prevCount) pulseClass = 'pulse-up';
-                else if (currentCount < prevCount) pulseClass = 'pulse-down';
+    const renderOperatorRows = (opstats) => {
+        const merged = new Map();
+        opstats.forEach(item => {
+            const id = item.operator.id;
+            if (merged.has(id)) {
+                const existing = merged.get(id);
+                existing.aCnt = (existing.aCnt || 0) + (item.aCnt || 0);
+                existing.cCnt = (existing.cCnt || 0) + (item.cCnt || 0);
+            } else {
+                merged.set(id, { ...item });
             }
-            badgeCache.set(op.id, currentCount);
+        });
+        const uniqueOps = Array.from(merged.values());
 
-            let opColor = op.status === 'Online' ? '#e2e8f0' : '#94a3b8';
-            if (isTpOs) opColor = op.status === 'Online' ? '#22d3ee' : '#0891b2';
+        const statusMap = {
+            Online: {
+                bg: 'rgba(16, 185, 129, 0.12)',
+                glow: '#10b981',
+                b: 'rgba(16, 185, 129, 0.4)',
+                textGlow: '0 0 8px rgba(16, 185, 129, 0.5)'
+            },
+            Busy: {
+                bg: 'rgba(245, 158, 11, 0.12)',
+                glow: '#f59e0b',
+                b: 'rgba(245, 158, 11, 0.4)',
+                textGlow: '0 0 8px rgba(245, 158, 11, 0.5)'
+            },
+            Pause: {
+                bg: 'rgba(239, 68, 68, 0.12)',
+                glow: '#ef4444',
+                b: 'rgba(239, 68, 68, 0.4)',
+                textGlow: '0 0 8px rgba(239, 68, 68, 0.5)'
+            }
+        };
 
-            const displayName = cleanOperatorName(op.fullName);
+        return uniqueOps.sort((a, b) => a.operator.status.localeCompare(b.operator.status))
+            .map(item => {
+                const op = item.operator;
+                const theme = statusMap[op.status] || {
+                    bg: 'rgba(100,100,100,0.1)',
+                    glow: '#aaa',
+                    b: 'rgba(100,100,100,0.3)',
+                    textGlow: 'none'
+                };
 
-            return `<div class="op-st-row ${isTpOs ? 'tp-os-row' : ''}" name="operrow" data-id="${op.id}">
+                const isTpOs = op.fullName?.toUpperCase().includes('ТП ОС');
+                const currentCount = (item.aCnt || 0) + (item.cCnt || 0);
+
+                const prevCount = badgeCache.get(op.id) || 0;
+                let pulseClass = '';
+                if (prevCount !== 0) {
+                    if (currentCount > prevCount) pulseClass = 'pulse-up';
+                    else if (currentCount < prevCount) pulseClass = 'pulse-down';
+                }
+                badgeCache.set(op.id, currentCount);
+
+                let opColor = op.status === 'Online' ? '#e2e8f0' : '#94a3b8';
+                if (isTpOs) opColor = op.status === 'Online' ? '#22d3ee' : '#0891b2';
+
+                const displayName = cleanOperatorName(op.fullName);
+
+                return `<div class="op-st-row ${isTpOs ? 'tp-os-row' : ''}" name="operrow" data-id="${op.id}">
                         <span class="op-st-badge ${pulseClass}" data-count="${currentCount}"
                             style="--badge-bg: ${theme.bg}; --badge-color: ${theme.glow}; --badge-border: ${theme.b}; --badge-glow: ${theme.textGlow};">
                             ${currentCount}
@@ -263,64 +263,64 @@ const renderOperatorRows = (opstats) => {
                             ${displayName}
                         </span>
                     </div>`;
-        }).join('');
-};
+            }).join('');
+    };
 
-function attachOpHandlers() {
-    const toggleBtn = document.getElementById('op-st-toggle-btn');
-    if (toggleBtn) {
-        toggleBtn.onclick = () => {
-            const isHiding = localStorage.getItem('hidesummaryflag') === '1';
-            localStorage.setItem('hidesummaryflag', isHiding ? '0' : '1');
-            operstatusleftbar();
-        };
+    function attachOpHandlers() {
+        const toggleBtn = document.getElementById('op-st-toggle-btn');
+        if (toggleBtn) {
+            toggleBtn.onclick = () => {
+                const isHiding = localStorage.getItem('hidesummaryflag') === '1';
+                localStorage.setItem('hidesummaryflag', isHiding ? '0' : '1');
+                operstatusleftbar();
+            };
+        }
+
+        document.querySelectorAll('[name="operrow"]').forEach(el => {
+            el.onclick = function () {
+                const chatHis = document.getElementById('AF_ChatHis');
+
+                /* Окно истории скрыто CSS-классом .afg-panel { display:none },
+                   а не inline-стилем: на свежей странице element.style.display === '',
+                   поэтому сравнение с 'none' не срабатывало и панель не открывалась
+                   (та же ловушка, что уже исправлена в Queue.js — смотрим
+                   вычисленный стиль). */
+                const isHidden = !chatHis ||
+                    getComputedStyle(chatHis).display === 'none';
+
+                if (isHidden) {
+                    /* Публичная функция ChatHistory надёжнее клика по кнопке ☢:
+                       обработчик FAB вешается в utils.js по ссылке, захваченной
+                       в момент построения панели кнопок. */
+                    if (typeof getopennewcatButtonPress === 'function') {
+                        getopennewcatButtonPress();
+                    } else {
+                        document.getElementById('opennewcat')?.click();
+                    }
+                }
+
+                setTimeout(() => {
+                    const select = document.getElementById('operatorstp');
+                    if (select) {
+                        select.value = this.getAttribute('data-id');
+                        select.dispatchEvent(new Event('change'));
+                        if (typeof findchatsoper === 'function') findchatsoper();
+                    }
+                }, 800);
+            };
+        });
     }
 
-    document.querySelectorAll('[name="operrow"]').forEach(el => {
-        el.onclick = function () {
-            const chatHis = document.getElementById('AF_ChatHis');
+    // === ALERT ==================================================================
+    const showEmergencyQueueAlert = (count) => {
+        const now = Date.now();
+        if (now - lastAlertTime < 5 * 60 * 1000) return;
 
-            /* Окно истории скрыто CSS-классом .afg-panel { display:none },
-               а не inline-стилем: на свежей странице element.style.display === '',
-               поэтому сравнение с 'none' не срабатывало и панель не открывалась
-               (та же ловушка, что уже исправлена в Queue.js — смотрим
-               вычисленный стиль). */
-            const isHidden = !chatHis ||
-                getComputedStyle(chatHis).display === 'none';
+        document.querySelectorAll('.op-st-alert-overlay').forEach(el => el.remove());
 
-            if (isHidden) {
-                /* Публичная функция ChatHistory надёжнее клика по кнопке ☢:
-                   обработчик FAB вешается в utils.js по ссылке, захваченной
-                   в момент построения панели кнопок. */
-                if (typeof getopennewcatButtonPress === 'function') {
-                    getopennewcatButtonPress();
-                } else {
-                    document.getElementById('opennewcat')?.click();
-                }
-            }
-
-            setTimeout(() => {
-                const select = document.getElementById('operatorstp');
-                if (select) {
-                    select.value = this.getAttribute('data-id');
-                    select.dispatchEvent(new Event('change'));
-                    if (typeof findchatsoper === 'function') findchatsoper();
-                }
-            }, 800);
-        };
-    });
-}
-
-// === ALERT ==================================================================
-const showEmergencyQueueAlert = (count) => {
-    const now = Date.now();
-    if (now - lastAlertTime < 5 * 60 * 1000) return;
-
-    document.querySelectorAll('.op-st-alert-overlay').forEach(el => el.remove());
-
-    const overlay = document.createElement('div');
-    overlay.className = 'op-st-alert-overlay';
-    overlay.innerHTML = `
+        const overlay = document.createElement('div');
+        overlay.className = 'op-st-alert-overlay';
+        overlay.innerHTML = `
         <div class="op-st-alert-modal">
             <div class="op-st-alert-icon">⚠️</div>
             <h2 class="op-st-alert-title">Системная тревога</h2>
@@ -331,28 +331,28 @@ const showEmergencyQueueAlert = (count) => {
             </p>
             <button class="op-st-alert-btn" id="op-st-alert-close">Принято, выхожу</button>
         </div>`;
-    document.body.appendChild(overlay);
+        document.body.appendChild(overlay);
 
-    try {
-        alertAudio.currentTime = 0;
-        alertAudio.volume = 0.6;
-        alertAudio.play().catch(e => console.log('Audio play blocked or failed'));
-    } catch (e) { }
+        try {
+            alertAudio.currentTime = 0;
+            alertAudio.volume = 0.6;
+            alertAudio.play().catch(e => console.log('Audio play blocked or failed'));
+        } catch (e) { }
 
-    document.getElementById('op-st-alert-close').onclick = () => {
-        lastAlertTime = Date.now();
-        overlay.style.opacity = '0';
-        overlay.style.transition = 'opacity 0.4s ease';
-        setTimeout(() => overlay.remove(), 400);
+        document.getElementById('op-st-alert-close').onclick = () => {
+            lastAlertTime = Date.now();
+            overlay.style.opacity = '0';
+            overlay.style.transition = 'opacity 0.4s ease';
+            setTimeout(() => overlay.remove(), 400);
+        };
     };
-};
 
-// === STYLES =================================================================
-const injectOpStatusStyles = () => {
-    if (document.getElementById('op-status-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'op-status-styles';
-    style.innerHTML = `
+    // === STYLES =================================================================
+    const injectOpStatusStyles = () => {
+        if (document.getElementById('op-status-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'op-status-styles';
+        style.innerHTML = `
         /* ПЕРЕМЕННЫЕ: блок :root удалён намеренно — его --glass-bg/--glass-border
            перекрывали одноимённые глобальные токены style.css (premium-modal и др.).
            Значения подставлены литералами в .op-st-main-container ниже */
@@ -1110,47 +1110,47 @@ const injectOpStatusStyles = () => {
             }
         }
     `;
-    document.head.appendChild(style);
-};
-
-// === INIT ===================================================================
-function initializeStartOperStatus() {
-    injectOpStatusStyles();
-
-    statusContainer.addEventListener('mousemove', (e) => {
-        const row = e.target.closest('.op-st-row');
-        if (!row) return;
-        const rect = row.getBoundingClientRect();
-        row.style.setProperty('--x', (e.clientX - rect.left) + 'px');
-        row.style.setProperty('--y', (e.clientY - rect.top) + 'px');
-    });
-
-    const findSider = () => {
-        if (siderCache && siderCache.isConnected) {
-            if (!siderCache.contains(statusContainer)) siderCache.append(statusContainer);
-            return true;
-        }
-        const sider = document.querySelector('.ant-layout-sider-children');
-        if (sider) {
-            siderCache = sider;
-            if (!sider.contains(statusContainer)) sider.append(statusContainer);
-            return true;
-        }
-        return false;
+        document.head.appendChild(style);
     };
 
-    if (!findSider()) {
-        const observer = new MutationObserver(() => {
-            if (findSider()) observer.disconnect();
+    // === INIT ===================================================================
+    function initializeStartOperStatus() {
+        injectOpStatusStyles();
+
+        statusContainer.addEventListener('mousemove', (e) => {
+            const row = e.target.closest('.op-st-row');
+            if (!row) return;
+            const rect = row.getBoundingClientRect();
+            row.style.setProperty('--x', (e.clientX - rect.left) + 'px');
+            row.style.setProperty('--y', (e.clientY - rect.top) + 'px');
         });
-        observer.observe(document.documentElement, { childList: true, subtree: true });
+
+        const findSider = () => {
+            if (siderCache && siderCache.isConnected) {
+                if (!siderCache.contains(statusContainer)) siderCache.append(statusContainer);
+                return true;
+            }
+            const sider = document.querySelector('.ant-layout-sider-children');
+            if (sider) {
+                siderCache = sider;
+                if (!sider.contains(statusContainer)) sider.append(statusContainer);
+                return true;
+            }
+            return false;
+        };
+
+        if (!findSider()) {
+            const observer = new MutationObserver(() => {
+                if (findSider()) observer.disconnect();
+            });
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+        }
+
+        operstatusleftbar();
+        if (opStatusInterval) clearInterval(opStatusInterval);
+        opStatusInterval = setInterval(operstatusleftbar, 8000);
     }
 
-    operstatusleftbar();
-    if (opStatusInterval) clearInterval(opStatusInterval);
-    opStatusInterval = setInterval(operstatusleftbar, 8000);
-}
-
-initializeStartOperStatus();
+    initializeStartOperStatus();
 
 })(); // Конец IIFE
