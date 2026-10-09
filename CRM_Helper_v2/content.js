@@ -617,21 +617,21 @@ window.createAndShowButton = createAndShowButton;
 (function () {
     'use strict';
 
-    // --- Защита от повторной инициализации (если скрипт вдруг инъецируется дважды) ---
-    if (window.__skyCRMHelperInitialized) return;
-    window.__skyCRMHelperInitialized = true;
+    if (window.__skyUserBlockerInitialized) return;
+    window.__skyUserBlockerInitialized = true;
 
-    /** Мы на странице конкретного пользователя? */
-    const isPersonPage = () => /^https:\/\/crm2\.skyeng\.ru\/persons\/\d+/.test(location.href);
+    let checkInterval = null;
+    let isLoading = false;
+    let lastProcessedId = null;
 
-    // ============================================================
-    //  USER BLOCKER — бейдж со статусом пользователя из id.skyeng.ru
-    // ============================================================
-    let ubCheckInterval = null;
-    let ubIsLoading = false;
+    const getUserIdFromUrl = () => {
+        const match = location.pathname.match(/\/persons\/(\d+)/);
+        return match ? match[1] : null;
+    };
 
-    /** Достаёт статус («активный», «временно отключен», ...) из HTML админки. */
-    function ubParseStatus(html) {
+    const isPersonPage = () => Boolean(getUserIdFromUrl());
+
+    function parseStatus(html) {
         const tableMatch = html.match(/<th[^>]*>\s*Статус\s*<\/th>\s*<td>([^<]+)<\/td>/i);
         const divMatch = html.match(/статус:\s*<strong>([^<]+)<\/strong>/i);
         const looseMatch = html.match(/статус[:\s]*<strong>([^<]+)<\/strong>/i);
@@ -639,12 +639,7 @@ window.createAndShowButton = createAndShowButton;
         return m ? m[1].trim() : null;
     }
 
-    function ubStopChecker() {
-        if (ubCheckInterval) { clearInterval(ubCheckInterval); ubCheckInterval = null; }
-    }
-
-    /** Рисует (или обновляет) бейдж статуса рядом с ID пользователя. */
-    function ubRenderBadge(status, sid) {
+    function renderBadge(status, sid) {
         const field = document.querySelector('[data-qa="person-id-field"]');
         if (!field) return;
 
@@ -655,45 +650,71 @@ window.createAndShowButton = createAndShowButton;
             badge = document.createElement('div');
             badge.id = 'isUserBlocked';
             badge.style.cssText = 'color:#fff; padding:2px 6px; margin-top:4px; margin-bottom:4px; border-radius:3px; font-weight:700; display:block; width:fit-content; font-size:12px;';
+
             const badges = container.querySelector('.badges');
-            badges ? container.insertBefore(badge, badges) : container.appendChild(badge);
+            if (badges) {
+                container.insertBefore(badge, badges);
+            } else {
+                container.appendChild(badge);
+            }
         }
 
         badge.textContent = status || 'неизвестно';
         badge.dataset.pid = sid;
 
-        // Цвет бейджа зависит от статуса.
-        if (status === 'активный') badge.style.backgroundColor = '#28a745';
-        else if (status === 'временно отключен') badge.style.backgroundColor = '#d32b49';
-        else badge.style.backgroundColor = '#6c757d';
+        if (status === 'активный') {
+            badge.style.backgroundColor = '#28a745';
+        } else if (status === 'временно отключен') {
+            badge.style.backgroundColor = '#d32b49';
+        } else if (status === 'Загрузка…') {
+            badge.style.backgroundColor = '#17a2b8';
+        } else {
+            badge.style.backgroundColor = '#6c757d';
+        }
     }
 
-    /** Один шаг поллинга: нашли ID пользователя → запросили статус. */
-    function ubTick() {
-        if (!isPersonPage()) { ubStopChecker(); return; }
+    function checkAndFetch() {
+        const sid = getUserIdFromUrl();
+
+        if (!sid) {
+            const badge = document.getElementById('isUserBlocked');
+            if (badge) badge.remove();
+            lastProcessedId = null;
+            return;
+        }
 
         const field = document.querySelector('[data-qa="person-id-field"]');
-        if (!field) return; // страница ещё не отрисована — попробуем на следующем тике
+        // Ждем, пока DOM карточки подгрузится
+        if (!field) return;
 
-        const sid = field.textContent.trim().replace(/\D/g, '');
-        if (!sid) return;
-
-        // Уже показали бейдж именно для этого пользователя — больше не делаем ничего.
+        // Если ID сменился или бейджа нет — сбрасываем и запрашиваем актуальный статус
         const badge = document.getElementById('isUserBlocked');
-        if (badge && badge.dataset.pid === sid) { ubStopChecker(); return; }
-        if (ubIsLoading) return;
+        if (lastProcessedId === sid && badge && badge.dataset.pid === sid) {
+            return;
+        }
 
-        ubRenderBadge('Загрузка…', sid);
-        ubIsLoading = true;
+        if (isLoading) return;
+
+        renderBadge('Загрузка…', sid);
+        isLoading = true;
 
         const fetchURL = `https://id.skyeng.ru/admin/users/${encodeURIComponent(sid)}`;
         const requestOptions = {
             method: 'GET',
             headers: {
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-                "accept-language": "ru,en;q=0.9"
-                // sec-ch-ua / sec-fetch-* — служебные заголовки, их браузер ставит сам,
-                // поэтому вручную их не дублируем.
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                "accept-language": "ru,en;q=0.9",
+                "cache-control": "max-age=0",
+                "priority": "u=0, i",
+                "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"YaBrowser\";v=\"26.3\", \"Yowser\";v=\"2.5\", \"YaBrowserCorp\";v=\"144\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "document",
+                "sec-fetch-mode": "navigate",
+                "sec-fetch-site": "none",
+                "sec-fetch-user": "?1",
+                "sec-gpc": "1",
+                "upgrade-insecure-requests": "1"
             },
             credentials: 'include'
         };
@@ -701,240 +722,66 @@ window.createAndShowButton = createAndShowButton;
         chrome.runtime.sendMessage(
             { action: 'getFetchRequest', fetchURL, requestOptions },
             (response) => {
-                ubIsLoading = false;
+                isLoading = false;
+
+                // Если пока шел запрос пользователь переключился на третье лицо — отбрасываем ответ
+                if (getUserIdFromUrl() !== sid) return;
 
                 if (!response || response.success !== true) {
                     console.error('[UserBlock] Ошибка:', response?.error);
-                    ubRenderBadge('ошибка', sid);
-                    ubStopChecker();
+                    renderBadge('ошибка', sid);
+                    lastProcessedId = sid;
                     return;
                 }
 
                 const html = response.fetchAnswer || response.fetchansver || '';
-                const status = ubParseStatus(html);
+                const status = parseStatus(html);
 
                 if (status) {
-                    ubRenderBadge(status, sid);
+                    renderBadge(status, sid);
                     console.log(`[UserBlock] ${sid} → ${status}`);
                 } else {
-                    ubRenderBadge('статус не найден', sid);
+                    renderBadge('статус не найден', sid);
                     console.warn('[UserBlock] Статус не спарсился для', sid);
                 }
-                ubStopChecker();
+
+                lastProcessedId = sid;
             }
         );
     }
 
-    function ubStartCheck() {
-        if (ubCheckInterval) return;
-        if (!isPersonPage()) return;
-
-        const old = document.getElementById('isUserBlocked');
-        if (old) old.remove();      // новый профиль — старый бейдж не показываем
-        ubIsLoading = false;
-
-        ubTick();
-        ubCheckInterval = setInterval(ubTick, 1000);
-    }
-
-    // ============================================================
-    //  CALL STATUS — индикатор «Можно звонить ученику» / «Не звонить»
-    // ============================================================
-    let csCheckInterval = null;
-    let csIsLoading = false;
-
-    /** Достаёт ID пользователя из URL (/persons/<id>). */
-    function csParsePersonId() {
-        const m = location.pathname.match(/\/persons\/(\d+)/);
-        return m ? m[1] : null;
-    }
-
-    /** Создаёт (или возвращает существующий) элемент-индикатор рядом с кнопкой меню. */
-    function csInsertElement() {
-        const menu = document.getElementById('MenubarCRM');
-        if (!menu) return null;
-
-        let el = document.getElementById('callStatusIndicator');
-        if (el) return el;
-
-        el = document.createElement('span');
-        el.id = 'callStatusIndicator';
-        el.style.cssText = `
-            margin-left: 12px; padding: 6px 12px; border-radius: 12px;
-            font-size: 14px; font-weight: 500; display: inline-flex;
-            align-items: center; gap: 6px; font-family: system-ui, sans-serif;
-            vertical-align: middle; cursor: default;
-        `;
-        menu.insertAdjacentElement('afterend', el);
-        return el;
-    }
-
-    /** Отрисовка индикатора в зависимости от состояния. */
-    function csRender(status, text) {
-        const el = csInsertElement();
-        if (!el) return;
-
-        // Сбрасываем базовые стили перед каждым рендером.
-        el.style.background = '';
-        el.style.color = '';
-        el.style.border = '';
-
-        if (status === 'loading') {
-            el.style.cssText += '; background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb;';
-            el.innerHTML = '⏳ Загрузка статуса…';
-        } else if (status === 'forbidden') {
-            el.style.cssText += '; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;';
-            el.innerHTML = `<span style="width:16px;height:16px;border:2px solid #dc2626;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;background:#dc2626;flex-shrink:0;color:#fff;font-size:11px;font-weight:bold;">✓</span>Не звонить ученику`;
-        } else if (status === 'allowed') {
-            el.style.cssText += '; background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0;';
-            el.innerHTML = `<span style="width:16px;height:16px;border:2px solid #16a34a;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;background:#16a34a;flex-shrink:0;font-size:10px;">🟢</span>Можно звонить ученику`;
-        } else if (status === 'error') {
-            el.style.cssText += '; background: #fef3c7; color: #d97706; border: 1px solid #fde68a;';
-            el.innerHTML = '⚠️ ' + (text || 'Ошибка загрузки');
-        } else {
-            el.style.cssText += '; background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb;';
-            el.textContent = text || 'Статус неизвестен';
+    function handleUrlChange() {
+        const currentSid = getUserIdFromUrl();
+        if (currentSid !== lastProcessedId) {
+            const badge = document.getElementById('isUserBlocked');
+            if (badge) {
+                badge.remove(); // удаляем старый бейдж от прошлого юзера сразу
+            }
         }
+        checkAndFetch();
     }
 
-    /** Загружает данные пользователя и обновляет индикатор. */
-    function csLoad() {
-        if (!isPersonPage()) return;
-        if (csIsLoading) return;
-
-        const personId = csParsePersonId();
-        if (!personId) return;
-
-        // Для этого пользователя уже показан актуальный статус — не дёргаем API.
-        const existing = document.getElementById('callStatusIndicator');
-        if (existing && existing.dataset.personId === personId) {
-            csStopCheck();
-            return;
-        }
-
-        csIsLoading = true;
-        csRender('loading');
-
-        const fetchURL = `https://backend.skyeng.ru/api/persons/${personId}`;
-        const requestOptions = {
-            method: 'GET',
-            headers: {
-                "accept": "application/json, text/plain, */*",
-                "accept-language": "ru"
-            },
-            credentials: 'include'
-        };
-
-        chrome.runtime.sendMessage(
-            { action: 'getFetchRequest', fetchURL, requestOptions },
-            (response) => {
-                csIsLoading = false;
-
-                if (!response || response.success !== true) {
-                    console.error('[CallStatus] Ошибка:', response?.error);
-                    csRender('error', response?.error || 'Ошибка сервера');
-                    return;
-                }
-
-                let data;
-                try {
-                    const raw = response.fetchAnswer || response.fetchansver || response.data;
-                    data = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                } catch (e) {
-                    console.error('[CallStatus] Parse error:', e);
-                    csRender('error', 'Неверный ответ');
-                    return;
-                }
-
-                const forbidden = data?.data?.isForbiddenToCall;
-                const userTypeCRM = data?.data?.type;
-                const el = document.getElementById('callStatusIndicator');
-
-                // Для преподавателей индикатор звонков не нужен — убираем.
-                if (userTypeCRM === "teacher") {
-                    if (el) el.remove();
-                    csStopCheck();
-                    return;
-                }
-
-                if (el) el.dataset.personId = personId;
-
-                if (forbidden === true) csRender('forbidden');
-                else if (forbidden === false) csRender('allowed');
-                else csRender('unknown', 'Статус не определён');
-            }
-        );
-    }
-
-    function csStartCheck() {
-        if (csCheckInterval) return;
-        if (!isPersonPage()) return;
-        csLoad();
-        csCheckInterval = setInterval(csLoad, 2000);
-    }
-
-    function csStopCheck() {
-        if (csCheckInterval) { clearInterval(csCheckInterval); csCheckInterval = null; }
-    }
-
-    // ============================================================
-    //  НАВИГАЦИЯ: единый перехват history (SPA не перезагружает страницу)
-    // ============================================================
-    function onNavigate() {
-        setTimeout(() => {
-            if (!isPersonPage()) {
-                // Ушли со страницы пользователя — глушим оба поллера и чистим UI.
-                ubStopChecker();
-                csStopCheck();
-                const el = document.getElementById('callStatusIndicator');
-                if (el) el.remove();
-                return;
-            }
-
-            // --- UserBlocker: перезапускаем, если сменился пользователь ---
-            const field = document.querySelector('[data-qa="person-id-field"]');
-            const sid = field ? field.textContent.trim().replace(/\D/g, '') : null;
-            const ubBadge = document.getElementById('isUserBlocked');
-            if (!ubBadge || (sid && ubBadge.dataset.pid !== sid)) {
-                ubStopChecker();
-                ubStartCheck();
-            }
-
-            // --- CallStatus: перезапускаем, если сменился пользователь ---
-            const personId = csParsePersonId();
-            const csEl = document.getElementById('callStatusIndicator');
-            if (!csEl || (personId && csEl.dataset.personId !== personId)) {
-                csStopCheck();
-                csStartCheck();
-            }
-        }, 500);
-    }
-
-    // Оборачиваем pushState/replaceState + слушаем popstate.
+    // Перехват роутинга браузера
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
 
     history.pushState = function (...args) {
         originalPushState.apply(this, args);
-        onNavigate();
+        handleUrlChange();
     };
+
     history.replaceState = function (...args) {
         originalReplaceState.apply(this, args);
-        onNavigate();
+        handleUrlChange();
     };
-    window.addEventListener('popstate', onNavigate);
 
-    // Первый запуск.
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            ubStartCheck();
-            csStartCheck();
-        });
-    } else {
-        ubStartCheck();
-        csStartCheck();
-    }
+    window.addEventListener('popstate', handleUrlChange);
+
+    // Фоновый таймер (страховка на случай внутренних роутеров без pushState и задержек рендера DOM)
+    setInterval(checkAndFetch, 800);
 })();
+
+
 /* === КОНЕЦ БЛОКА USERBLOCKER/CALLSTATUS === */
 
 /* ============================================================
