@@ -1306,6 +1306,53 @@
             font-size: 12px;
         }
 
+        .afg-list-badges {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+}
+
+.afg-rate-badge {
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    flex-shrink: 0;
+}
+
+/* Цветовые акценты под оценку (если это число от 1 до 5) */
+.afg-rate-badge[data-rate="5"] {
+    background: rgba(109, 217, 173, 0.2);
+    border-color: rgba(109, 217, 173, 0.4);
+    color: var(--green);
+}
+
+.afg-rate-badge[data-rate="4"] {
+    background: rgba(97, 217, 237, 0.2);
+    border-color: rgba(97, 217, 237, 0.4);
+    color: var(--accent);
+}
+
+.afg-rate-badge[data-rate="1"],
+.afg-rate-badge[data-rate="2"],
+.afg-rate-badge[data-rate="3"] {
+    background: rgba(242, 199, 119, 0.2);
+    border-color: rgba(242, 199, 119, 0.4);
+    color: var(--amber);
+}
+
+.afg-rate-badge--icon {
+    font-size: 13px;
+}
+
         .afg-msg {
             flex: none;
             width: fit-content;
@@ -1753,7 +1800,7 @@
             .afg-gallery {
                 padding: 55px 48px;
             }
-			
+
 
 .afg-panel.afg-light .afg-user-type--unknown {
     color: #485a70;
@@ -1770,7 +1817,7 @@
                 scroll-behavior: auto !important;
             }
         }
-		
+
 		/* Тип пользователя рядом с именем */
 .afg-panel .afg-user-subtitle {
     display: flex;
@@ -1944,7 +1991,7 @@
                         </div>
                     </div>
                 </div>
-				
+
 				<span
     class="afg-visually-hidden"
     id="afgSectionTitle"
@@ -2131,23 +2178,23 @@
             <span class="afg-footer-toggle-icon">▲</span>
             <span class="afg-footer-toggle-label">Написать сообщение / заметку</span>
         </button>
-    
+
         <div class="afg-footer-body" id="footerBody">
             <textarea class="afg-input" id="msgftochatornotes" placeholder="Напишите сообщение или заметку…" aria-label="Сообщение или заметка"></textarea>
-    
+
             <div class="afg-compose-actions">
                 <div class="afg-compose-options">
                     <label>
                         <input type="radio" name="chatornotes" value="Notes" checked="">
                         Заметка
                     </label>
-    
+
                     <label>
                         <input type="radio" name="chatornotes" value="Chat">
                         Сообщение
                     </label>
                 </div>
-    
+
                 <button class="afg-primary" id="sendmsgtochatornotes" type="button">Отправить ↗</button>
             </div>
         </div>
@@ -2267,7 +2314,7 @@
     empty(
       "Найдите нужный диалог",
       "Введите ID пользователя или ID чата. " +
-        "Также можно выбрать оператора на линии.",
+      "Также можно выбрать оператора на линии.",
       "⌕"
     );
   }
@@ -2281,8 +2328,8 @@
 
     const messages = Array.isArray(conversation.messages)
       ? [...conversation.messages].sort(
-          (a, b) => (dateMillis(a.ts) ?? 0) - (dateMillis(b.ts) ?? 0)
-        )
+        (a, b) => (dateMillis(a.ts) ?? 0) - (dateMillis(b.ts) ?? 0)
+      )
       : [];
 
     const userId = payload.id || user.id || user.channelTpe || "Неизвестен";
@@ -2399,6 +2446,44 @@
     return hadOperator ? "🎧 Оператор" : "";
   }
 
+  function resultRatingBadge(item) {
+    // Проверяем статус закрытия ботом или наличие оператора, если оценки нет
+    const rateValue = item.stats?.rate?.rate;
+
+    if (rateValue !== undefined && rateValue !== null && rateValue !== "") {
+      const badge = document.createElement("span");
+      badge.className = "afg-rate-badge";
+      badge.dataset.rate = String(rateValue);
+      badge.title = `Оценка: ${rateValue}`;
+      badge.textContent = String(rateValue);
+      return badge;
+    }
+
+    // Если оценки нет, определяем индикатор как в старой логике
+    let mark = "";
+    let markTitle = "Без оценки";
+
+    if (item.status === "ClosedByBot") {
+      mark = "🤖";
+      markTitle = "Закрыт ботом";
+    } else if (
+      item.stats?.usedStatuses === "AssignedToOperator" ||
+      (Array.isArray(item.stats?.usedStatuses) &&
+        item.stats.usedStatuses.includes("AssignedToOperator"))
+    ) {
+      mark = "🛠";
+      markTitle = "Был на операторе";
+    } else {
+      mark = "⭕";
+    }
+
+    const badge = document.createElement("span");
+    badge.className = "afg-rate-badge afg-rate-badge--icon";
+    badge.title = markTitle;
+    badge.textContent = mark;
+    return badge;
+  }
+
   function userTypeBadge(value) {
     const type = String(value ?? "").trim();
 
@@ -2465,11 +2550,17 @@
       name.textContent =
         payload.userFullName || user.fullName || "Пользователь";
 
+      // Контейнер под бейджи: тип пользователя (Teacher/Student/etc.) + круглая оценка
+      const badgesWrapper = document.createElement("div");
+      badgesWrapper.className = "afg-list-badges";
+
       const type = document.createElement("span");
       type.className = "afg-list-tag";
       type.textContent = userTypeBadge(payload.userType);
 
-      bottom.append(name, type);
+      badgesWrapper.append(type, resultRatingBadge(item));
+
+      bottom.append(name, badgesWrapper);
       button.append(top, bottom);
       fragment.append(button);
     }
@@ -2659,7 +2750,7 @@
         select.add(
           new Option(
             `${symbols[operator.status] || "·"} ` +
-              `${operator.fullName} · ${aCnt}`,
+            `${operator.fullName} · ${aCnt}`,
             String(operator.id)
           )
         );
@@ -2671,7 +2762,7 @@
 
       select.value =
         previous &&
-        [...select.options].some((option) => option.value === previous)
+          [...select.options].some((option) => option.value === previous)
           ? previous
           : "";
 
@@ -2767,8 +2858,8 @@
       if (!ownId) {
         notify(
           "Не удалось определить ваш ID оператора. " +
-            "Проверьте совпадение имени профиля " +
-            "с именем в списке операторов.",
+          "Проверьте совпадение имени профиля " +
+          "с именем в списке операторов.",
           "error"
         );
         return;
@@ -2805,7 +2896,7 @@
       notify(
         returnedToQueue
           ? "Чат вернулся в очередь, но забрать " +
-              "его не удалось. Проверьте его статус."
+          "его не удалось. Проверьте его статус."
           : "Не удалось вернуть чат в очередь: " + error.message,
         "error"
       );
