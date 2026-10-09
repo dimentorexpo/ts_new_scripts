@@ -60,8 +60,14 @@ let testoInterval = setInterval(function () {
 
 	let checkInterval = null;
 	let isLoading = false;
+	let lastProcessedId = null;
 
-	const isPersonPage = () => /^https:\/\/crm2\.skyeng\.ru\/persons\/\d+/.test(location.href);
+	const getUserIdFromUrl = () => {
+		const match = location.pathname.match(/\/persons\/(\d+)/);
+		return match ? match[1] : null;
+	};
+
+	const isPersonPage = () => Boolean(getUserIdFromUrl());
 
 	function parseStatus(html) {
 		const tableMatch = html.match(/<th[^>]*>\s*Статус\s*<\/th>\s*<td>([^<]+)<\/td>/i);
@@ -69,13 +75,6 @@ let testoInterval = setInterval(function () {
 		const looseMatch = html.match(/статус[:\s]*<strong>([^<]+)<\/strong>/i);
 		const m = tableMatch || divMatch || looseMatch;
 		return m ? m[1].trim() : null;
-	}
-
-	function stopChecker() {
-		if (checkInterval) {
-			clearInterval(checkInterval);
-			checkInterval = null;
-		}
 	}
 
 	function renderBadge(status, sid) {
@@ -105,26 +104,30 @@ let testoInterval = setInterval(function () {
 			badge.style.backgroundColor = '#28a745';
 		} else if (status === 'временно отключен') {
 			badge.style.backgroundColor = '#d32b49';
+		} else if (status === 'Загрузка…') {
+			badge.style.backgroundColor = '#17a2b8';
 		} else {
 			badge.style.backgroundColor = '#6c757d';
 		}
 	}
 
-	function tick() {
-		if (!isPersonPage()) {
-			stopChecker();
+	function checkAndFetch() {
+		const sid = getUserIdFromUrl();
+
+		if (!sid) {
+			const badge = document.getElementById('isUserBlocked');
+			if (badge) badge.remove();
+			lastProcessedId = null;
 			return;
 		}
 
 		const field = document.querySelector('[data-qa="person-id-field"]');
+		// Ждем, пока DOM карточки подгрузится
 		if (!field) return;
 
-		const sid = field.textContent.trim().replace(/\D/g, '');
-		if (!sid) return;
-
+		// Если ID сменился или бейджа нет — сбрасываем и запрашиваем актуальный статус
 		const badge = document.getElementById('isUserBlocked');
-		if (badge && badge.dataset.pid === sid) {
-			stopChecker();
+		if (lastProcessedId === sid && badge && badge.dataset.pid === sid) {
 			return;
 		}
 
@@ -159,10 +162,13 @@ let testoInterval = setInterval(function () {
 			(response) => {
 				isLoading = false;
 
+				// Если пока шел запрос пользователь переключился на третье лицо — отбрасываем ответ
+				if (getUserIdFromUrl() !== sid) return;
+
 				if (!response || response.success !== true) {
 					console.error('[UserBlock] Ошибка:', response?.error);
 					renderBadge('ошибка', sid);
-					stopChecker();
+					lastProcessedId = sid;
 					return;
 				}
 
@@ -177,57 +183,40 @@ let testoInterval = setInterval(function () {
 					console.warn('[UserBlock] Статус не спарсился для', sid);
 				}
 
-				stopChecker();
+				lastProcessedId = sid;
 			}
 		);
 	}
 
-	function startCheck() {
-		if (checkInterval) return;
-		if (!isPersonPage()) return;
-
-		const oldBadge = document.getElementById('isUserBlocked');
-		if (oldBadge) oldBadge.remove();
-
-		isLoading = false;
-		tick();
-		checkInterval = setInterval(tick, 1000);
-	}
-
-	function onNavigate() {
-		setTimeout(() => {
-			if (!isPersonPage()) {
-				stopChecker();
-				return;
-			}
-
-			const field = document.querySelector('[data-qa="person-id-field"]');
-			const sid = field ? field.textContent.trim().replace(/\D/g, '') : null;
+	function handleUrlChange() {
+		const currentSid = getUserIdFromUrl();
+		if (currentSid !== lastProcessedId) {
 			const badge = document.getElementById('isUserBlocked');
-
-			if (!badge || (sid && badge.dataset.pid !== sid)) {
-				stopChecker();
-				startCheck();
+			if (badge) {
+				badge.remove(); // удаляем старый бейдж от прошлого юзера сразу
 			}
-		}, 300);
+		}
+		checkAndFetch();
 	}
 
+	// Перехват роутинга браузера
 	const originalPushState = history.pushState;
 	const originalReplaceState = history.replaceState;
 
 	history.pushState = function (...args) {
 		originalPushState.apply(this, args);
-		onNavigate();
+		handleUrlChange();
 	};
 
 	history.replaceState = function (...args) {
 		originalReplaceState.apply(this, args);
-		onNavigate();
+		handleUrlChange();
 	};
 
-	window.addEventListener('popstate', onNavigate);
+	window.addEventListener('popstate', handleUrlChange);
 
-	startCheck();
+	// Фоновый таймер (страховка на случай внутренних роутеров без pushState и задержек рендера DOM)
+	setInterval(checkAndFetch, 800);
 })();
 
 //    position: absolute;
