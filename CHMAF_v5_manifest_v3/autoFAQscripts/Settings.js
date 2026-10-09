@@ -2990,8 +2990,7 @@ async function init_settings() {
 
         // ⚡ нормализованное сравнение: покрывает 'ТП ОС' и лишний whitespace в opsection
         const isTP = (opsection || '').trim().startsWith('ТП');
-        document.querySelectorAll('.onlyfortp').forEach(el => {
-            // Не трогаем окна (TestUsers) — у них display:none это штатное состояние
+        ui.win.querySelectorAll('.onlyfortp').forEach(el => {
             if (el.id === 'TestUsers' || el.closest('#TestUsers')) return;
             if (isTP) el.style.removeProperty('display');
             else el.style.setProperty('display', 'none', 'important');
