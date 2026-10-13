@@ -1831,6 +1831,17 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 13px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #bbf2f9, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.afg-panel.afg-light .afg-subtitle-name {
+    background: linear-gradient(135deg, #094757, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .afg-panel .afg-user-type {
