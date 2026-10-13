@@ -1213,18 +1213,18 @@
         ['text', 'Комментарий / сообщение']
     ];
 
-const CHART_COLORS = [
-    '#829fff',
-    '#75c3db',
-    '#b49ae7',
-    '#8ccf9e',
-    '#e8999b',
-    '#617fbd',
-    '#a9c0ff',
-    '#d696cf',
-    '#98c4be',
-    '#c8d6f4'
-];
+    const CHART_COLORS = [
+        '#829fff',
+        '#75c3db',
+        '#b49ae7',
+        '#8ccf9e',
+        '#e8999b',
+        '#617fbd',
+        '#a9c0ff',
+        '#d696cf',
+        '#98c4be',
+        '#c8d6f4'
+    ];
 
     function checkbox(value, label, name, checked = false) {
         const wrapper = document.createElement('label');
@@ -1441,28 +1441,59 @@ const CHART_COLORS = [
                 `${API}/operators/statistic/currentState`
             );
 
+            const entries = data?.onOperator ?? [];
+            const TARGET_GROUP_ID = 'c7bbb211-a217-4ed3-8112-98728dc382d8';
+            // Проверяем, что имя начинается строго с "ТП-" или "ТП ОС-" (без учета регистра)
+            const PREFIX_REGEX = /^(?:ТП-|ТП ОС-)/i;
+
+            console.group('🔍 [AF Grabber] Анализ операторов и фильтрация');
+            console.log(`Всего записей в ответе API: ${entries.length}`);
+
+            const tableLog = [];
             const unique = new Map();
 
-            for (const entry of data?.onOperator ?? []) {
+            for (const entry of entries) {
                 const operator = entry.operator;
+                const name = String(operator?.fullName ?? '').trim();
+                const id = operator?.id ? String(operator.id) : null;
+                const groupId = entry.groupId;
 
-                if (!OPERATOR_GROUPS.has(entry.groupId) ||
-                    !operator?.id ||
-                    !operator?.fullName) {
+                const matchGroup = groupId === TARGET_GROUP_ID;
+                const matchPrefix = PREFIX_REGEX.test(name);
+                const isPassed = matchGroup && matchPrefix && Boolean(id);
+
+                // Собираем данные для наглядной таблицы в консоли
+                let rejectReason = 'OK';
+                if (!matchGroup) rejectReason = 'Чужой groupId';
+                else if (!matchPrefix) rejectReason = 'Нет префикса ТП- / ТП ОС- (Sales/Prem/без префикса)';
+                else if (!id) rejectReason = 'Нет ID';
+
+                tableLog.push({
+                    'Имя': name || '—',
+                    'groupId': groupId || '—',
+                    'Статус': isPassed ? '✅ Прошел' : '❌ Отсеян',
+                    'Причина отсева': rejectReason
+                });
+
+                if (!isPassed) {
                     continue;
                 }
 
-                const id = String(operator.id);
-
                 unique.set(id, {
                     id,
-                    name: String(operator.fullName)
+                    name
                 });
             }
+
+            // Выводим таблицу с результатами фильтрации
+            //console.table(tableLog);
 
             state.operators = [...unique.values()].sort(
                 (a, b) => a.name.localeCompare(b.name, 'ru')
             );
+
+            console.log(`✅ Итого допущено операторов: ${state.operators.length}`, state.operators);
+            console.groupEnd();
 
             $('operators').replaceChildren(
                 ...state.operators.map(operator =>
@@ -1582,7 +1613,7 @@ const CHART_COLORS = [
 
             if (items.length < limit ||
                 (Number.isFinite(total) &&
-                 page * limit >= total)) {
+                    page * limit >= total)) {
                 break;
             }
 
@@ -1701,8 +1732,8 @@ const CHART_COLORS = [
 
         const userType =
             rawUserType === null ||
-            rawUserType === undefined ||
-            rawUserType === ''
+                rawUserType === undefined ||
+                rawUserType === ''
                 ? 'null'
                 : String(rawUserType);
 
@@ -1779,9 +1810,9 @@ const CHART_COLORS = [
 
         const duration =
             data.tsMod != null &&
-            Number.isFinite(timestamp) &&
-            Number.isFinite(modified) &&
-            modified >= timestamp
+                Number.isFinite(timestamp) &&
+                Number.isFinite(modified) &&
+                modified >= timestamp
                 ? modified - timestamp
                 : null;
 
@@ -1800,7 +1831,7 @@ const CHART_COLORS = [
             csat: chat.rate,
             theme: topicId
                 ? themeNames.get(String(topicId)) ??
-                  'Неизвестная тематика'
+                'Неизвестная тематика'
                 : 'Без тематики',
             sla: duration === null
                 ? null
@@ -1890,7 +1921,7 @@ const CHART_COLORS = [
 
         const slaPercent = knownSla.length
             ? knownSla.filter(record => record.sla).length /
-              knownSla.length * 100
+            knownSla.length * 100
             : null;
 
         const metrics = [
@@ -2277,7 +2308,7 @@ const CHART_COLORS = [
 
             setStatus(
                 error.message ??
-                    'Не удалось выполнить поиск.',
+                'Не удалось выполнить поиск.',
                 true
             );
         } finally {
@@ -2555,8 +2586,8 @@ const CHART_COLORS = [
                 Math.min(
                     event.clientY + 13,
                     window.innerHeight -
-                        height -
-                        10
+                    height -
+                    10
                 )
             )}px`;
     }
@@ -2655,7 +2686,7 @@ const CHART_COLORS = [
 
             const color =
                 CHART_COLORS[
-                    index % CHART_COLORS.length
+                index % CHART_COLORS.length
                 ];
 
             const points = values.map(
@@ -2663,14 +2694,14 @@ const CHART_COLORS = [
                     const x =
                         left +
                         slot / 47 *
-                            chartWidth;
+                        chartWidth;
 
                     const y =
                         top +
                         chartHeight -
                         count /
-                            maximum *
-                            chartHeight;
+                        maximum *
+                        chartHeight;
 
                     return `${x},${y}`;
                 }
@@ -2739,7 +2770,7 @@ const CHART_COLORS = [
                 const x =
                     left +
                     slot / 47 *
-                        chartWidth;
+                    chartWidth;
 
                 hoverLine.setAttribute(
                     'x1',
@@ -2873,8 +2904,8 @@ const CHART_COLORS = [
 
             fill.style.width =
                 `${item.count /
-                    maximum *
-                    100}%`;
+                maximum *
+                100}%`;
 
             track.appendChild(fill);
 
@@ -3313,7 +3344,7 @@ const CHART_COLORS = [
                 inputs.forEach(
                     input =>
                         input.checked =
-                            choose
+                        choose
                 );
             }
         );
@@ -3506,7 +3537,7 @@ const CHART_COLORS = [
             if (
                 !drag ||
                 drag.id !==
-                    event.pointerId
+                event.pointerId
             ) {
                 return;
             }
@@ -3515,9 +3546,9 @@ const CHART_COLORS = [
                 0,
                 Math.min(
                     event.clientX -
-                        drag.x,
+                    drag.x,
                     window.innerWidth -
-                        analytics.offsetWidth
+                    analytics.offsetWidth
                 )
             );
 
@@ -3525,9 +3556,9 @@ const CHART_COLORS = [
                 0,
                 Math.min(
                     event.clientY -
-                        drag.y,
+                    drag.y,
                     window.innerHeight -
-                        55
+                    55
                 )
             );
 
