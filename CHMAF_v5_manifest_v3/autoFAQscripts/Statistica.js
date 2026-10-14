@@ -1035,17 +1035,18 @@ function renderAclsModal(idx, opName) {
 }
 
 // ============================================================================
-// 📊 МОДАЛКА AHT — чаты оператора, отсортированные по времени обработки
+// 📊 МОДАЛКА AHT — в едином стиле с %АЗ (полный хеш чата + подсветка)
 // ============================================================================
 
 function renderAHTModal(idx, opName) {
     const data = window.operatorAHTDetails ? window.operatorAHTDetails[idx] : null;
     if (!data || !data.chats || data.chats.length === 0) {
-        createAndShowButton(`⚠️ Нет данных AHT для оператора ${opName}`, 'warning');
+        if (typeof createAndShowButton === 'function') {
+            createAndShowButton(`⚠️ Нет данных AHT для оператора ${opName}`, 'warning');
+        }
         return;
     }
 
-    // Удаляем старое окно
     const oldContainer = document.getElementById('aht-modal-container');
     if (oldContainer) oldContainer.remove();
     if (window._ahtModalCleanup) {
@@ -1071,14 +1072,19 @@ function renderAHTModal(idx, opName) {
     };
 
     const renderChatList = (chats) => {
-        if (!chats || chats.length === 0) return '<div style="color:gray;font-size:12px;text-align:center;padding-top:10px;">Нет чатов</div>';
-        return chats.map(c => {
+        if (!chats || chats.length === 0) {
+            return '<div style="color:gray; font-size:12px; text-align:center; padding-top:10px;">Нет чатов</div>';
+        }
+        return chats.map((c, index) => {
             const color = getAHTColor(c.ahtSeconds);
             return `
-                <div class="modal-lookchat aht-chat-item" data-hash="${c.chatId}" title="Нажмите, чтобы открыть чат"
-                     style="margin-bottom:6px; background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px; cursor:pointer; border:1px solid transparent; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:#cbd5e1; font-family:monospace; font-size:12px; pointer-events:none;">${c.chatId.substring(0, 8)}…</span>
-                    <span style="color:${color}; font-weight:700; font-size:13px; pointer-events:none;">${formatTime(c.ahtSeconds)}</span>
+                <div class="modal-lookchat" data-hash="${c.chatId}" title="Нажмите, чтобы открыть чат в истории"
+                     style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:4px; cursor:pointer; color:#dfd1f5; font-family:monospace; font-size:13px; border:1px solid transparent; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center;"
+                     onmouseover="if(!this.classList.contains('active-chat')){this.style.background='rgba(83,219,75,0.1)'; this.style.borderColor='#53db4b'; this.style.color='#fff'}"
+                     onmouseout="if(!this.classList.contains('active-chat')){this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#dfd1f5'}">
+                    <span style="pointer-events:none; color:#aaa; font-size:11px; min-width:28px;">${index + 1}.</span>
+                    <span style="pointer-events:none; flex:1; text-align:center;">${c.chatId}</span>
+                    <span style="pointer-events:none; color:${color}; font-weight:700; min-width:75px; text-align:right;">${formatTime(c.ahtSeconds)}</span>
                 </div>`;
         }).join('');
     };
@@ -1090,45 +1096,45 @@ function renderAHTModal(idx, opName) {
         zIndex: '9999999', pointerEvents: 'none'
     });
 
-    let startLeft = Math.max(0, (window.innerWidth - 500) / 2);
+    let startLeft = Math.max(0, (window.innerWidth - 650) / 2);
     let startTop = Math.max(0, (window.innerHeight - 500) / 2);
 
-    if (window.lastModalPos && typeof window.lastModalPos.left === 'number') {
-        startLeft = Math.max(0, Math.min(window.lastModalPos.left + 30, window.innerWidth - 500));
-        startTop = Math.max(0, Math.min(window.lastModalPos.top + 30, window.innerHeight - 200));
+    if (window.lastModalPos && typeof window.lastModalPos.left === 'number' && !isNaN(window.lastModalPos.left)) {
+        startLeft = Math.max(0, Math.min(window.lastModalPos.left, window.innerWidth - 650));
+        startTop = Math.max(0, Math.min(window.lastModalPos.top, window.innerHeight - 200));
     }
 
     const modal = document.createElement('div');
     Object.assign(modal.style, {
         position: 'absolute', pointerEvents: 'auto',
-        backgroundColor: '#2e3b3a', border: '1px solid #5f7875', borderRadius: '12px',
-        width: '500px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.8), 0 0 30px rgba(245,158,11,0.15)', color: 'bisque',
+        backgroundColor: '#2e3b3a', border: '1px solid #5f7875', borderRadius: '8px',
+        width: '650px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.8)', color: 'bisque',
         left: startLeft + 'px', top: startTop + 'px'
     });
 
-    // Временно рендерим чтобы посчитать высоту
     const sortedChatsAsc = [...data.chats].sort((a, b) => a.ahtSeconds - b.ahtSeconds);
 
     modal.innerHTML = `
-        <div class="aht-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background:linear-gradient(135deg, rgba(55,52,71,1) 0%, rgba(40,38,50,1) 100%); cursor:grab; border-top-left-radius:12px; border-top-right-radius:12px; user-select:none;">
+        <div class="aht-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background:rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
             <div>
-                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">⏱ Детали AHT: <span style="color:#f59e0b">${opName}</span></h3>
+                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">Детали AHT: <span style="color:#53db4b">${opName}</span></h3>
                 <div style="font-size:13px; color:#aaa; margin-top:6px;">
-                    Средний AHT: <b style="color:#f59e0b">${formatTime(data.avgAHT)}</b> |
-                    Чатов в расчёте: <b style="color:bisque">${data.totalClosed}</b>
+                    Средний AHT: <b style="color:#e38118">${formatTime(data.avgAHT)}</b> |
+                    Чатов в расчёте: <b style="color:#53db4b">${data.totalClosed}</b>
                 </div>
-                <div style="font-size:11px; color:#888; margin-top:4px;">💡 Клик по чату открывает его в истории</div>
             </div>
             <button id="close-aht-modal" class="af-win-btn buttonHide" style="cursor:pointer; background:transparent; border:none; color:bisque; font-size:16px;">✖</button>
         </div>
-        <div style="display:flex; flex-direction:column; overflow:hidden; background:#464451; border-bottom-left-radius:12px; border-bottom-right-radius:12px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.08);">
-                <span style="font-size:12px; color:#aaa;">Отсортировано: <span id="aht-sort-label" style="color:#f59e0b;">↑ по возрастанию</span></span>
-                <button id="aht-sort-toggle" style="background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; transition:all 0.2s;">↕ Сменить порядок</button>
-            </div>
-            <div id="aht-chats-list" style="overflow-y:auto; flex:1; padding:12px; max-height:60vh;">
-                ${renderChatList(sortedChatsAsc)}
+        <div style="display:flex; flex:1; overflow:hidden; padding:15px; background:#464451; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+            <div style="flex:1; display:flex; flex-direction:column; background:rgba(0,0,0,0.2); border-radius:6px; border:1px solid rgba(255,255,255,0.1); overflow:hidden;">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; border-bottom:1px solid #5f7875; padding:10px 14px; background:rgba(0,0,0,0.3);">
+                    <span>⏱ Список чатов (<span id="aht-sort-label" style="color:#53db4b;">↑ по возрастанию</span>)</span>
+                    <button id="aht-sort-toggle" style="background:rgba(83,219,75,0.15); border:1px solid #53db4b; color:#53db4b; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600;">↕ Сменить порядок</button>
+                </div>
+                <div id="aht-chats-list" style="overflow-y:auto; flex:1; padding:10px; max-height:55vh;">
+                    ${renderChatList(sortedChatsAsc)}
+                </div>
             </div>
         </div>
     `;
@@ -1136,7 +1142,6 @@ function renderAHTModal(idx, opName) {
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    // Обработчик сортировки
     const sortToggle = modal.querySelector('#aht-sort-toggle');
     const chatsListEl = modal.querySelector('#aht-chats-list');
     const sortLabel = modal.querySelector('#aht-sort-label');
@@ -1150,7 +1155,6 @@ function renderAHTModal(idx, opName) {
         sortLabel.textContent = sortAsc ? '↑ по возрастанию' : '↓ по убыванию';
     });
 
-    // Drag & Drop
     const header = modal.querySelector('.aht-modal-header');
     let isDragging = false, startX, startY;
 
@@ -1168,7 +1172,11 @@ function renderAHTModal(idx, opName) {
         if (isDragging) {
             isDragging = false;
             header.style.cursor = 'grab';
-            window.lastModalPos = { left: parseInt(modal.style.left, 10), top: parseInt(modal.style.top, 10) };
+            const leftPos = parseInt(modal.style.left, 10);
+            const topPos = parseInt(modal.style.top, 10);
+            if (!isNaN(leftPos) && !isNaN(topPos)) {
+                window.lastModalPos = { left: leftPos, top: topPos };
+            }
         }
     };
 
@@ -1192,7 +1200,7 @@ function renderAHTModal(idx, opName) {
 }
 
 // ============================================================================
-// 🚀 МОДАЛКА AFRT — чаты вне таргета (> 60 сек)
+// 🚀 МОДАЛКА AFRT — в едином стиле с %АЗ (полный хеш чата + подсветка)
 // ============================================================================
 
 function renderAFRTModal() {
@@ -1212,7 +1220,7 @@ function renderAFRTModal() {
         window._afrtModalCleanup = null;
     }
 
-    let sortAsc = false; // По умолчанию сначала самые долгие
+    let sortAsc = false;
 
     const formatTime = (sec) => {
         if (sec < 60) return sec + 'с';
@@ -1223,12 +1231,14 @@ function renderAFRTModal() {
 
     const renderChatList = (chats) => {
         return chats.map((c, index) => `
-            <div class="modal-lookchat afrt-chat-item" data-hash="${c.chatId}" title="Нажмите, чтобы открыть чат в истории"
-                 style="margin-bottom:6px; background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px; cursor:pointer; border:1px solid transparent; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center; gap:10px;">
-                <span style="color:#64748b; font-size:11px; min-width:22px; pointer-events:none;">${index + 1}.</span>
-                <span style="color:#cbd5e1; font-family:monospace; font-size:12px; flex:1; pointer-events:none;">${c.chatId}</span>
-                <span style="color:#94a3b8; font-size:11px; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; pointer-events:none;" title="${c.operator}">${c.operator}</span>
-                <span style="color:#ef4444; font-weight:700; font-size:13px; min-width:65px; text-align:right; pointer-events:none;">${formatTime(c.diffSeconds)}</span>
+            <div class="modal-lookchat" data-hash="${c.chatId}" title="Нажмите, чтобы открыть чат в истории"
+                 style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:4px; cursor:pointer; color:#dfd1f5; font-family:monospace; font-size:13px; border:1px solid transparent; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center; gap:10px;"
+                 onmouseover="if(!this.classList.contains('active-chat')){this.style.background='rgba(83,219,75,0.1)'; this.style.borderColor='#53db4b'; this.style.color='#fff'}"
+                 onmouseout="if(!this.classList.contains('active-chat')){this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#dfd1f5'}">
+                <span style="pointer-events:none; color:#aaa; font-size:11px; min-width:24px;">${index + 1}.</span>
+                <span style="pointer-events:none; flex:1; text-align:center;">${c.chatId}</span>
+                <span style="pointer-events:none; color:bisque; font-family:sans-serif; font-size:11px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.operator}">${c.operator}</span>
+                <span style="pointer-events:none; color:#ff6b6b; font-weight:700; min-width:70px; text-align:right;">${formatTime(c.diffSeconds)}</span>
             </div>
         `).join('');
     };
@@ -1240,38 +1250,47 @@ function renderAFRTModal() {
         zIndex: '9999999', pointerEvents: 'none'
     });
 
-    let startLeft = Math.max(0, (window.innerWidth - 620) / 2);
-    let startTop = Math.max(0, (window.innerHeight - 520) / 2);
+    let startLeft = Math.max(0, (window.innerWidth - 650) / 2);
+    let startTop = Math.max(0, (window.innerHeight - 500) / 2);
+
+    if (window.lastModalPos && typeof window.lastModalPos.left === 'number' && !isNaN(window.lastModalPos.left)) {
+        startLeft = Math.max(0, Math.min(window.lastModalPos.left, window.innerWidth - 650));
+        startTop = Math.max(0, Math.min(window.lastModalPos.top, window.innerHeight - 200));
+    }
 
     const modal = document.createElement('div');
     Object.assign(modal.style, {
         position: 'absolute', pointerEvents: 'auto',
-        backgroundColor: '#2e3b3a', border: '1px solid #5f7875', borderRadius: '12px',
-        width: '620px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.8), 0 0 30px rgba(239,68,68,0.15)', color: 'bisque',
+        backgroundColor: '#2e3b3a', border: '1px solid #5f7875', borderRadius: '8px',
+        width: '650px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.8)', color: 'bisque',
         left: startLeft + 'px', top: startTop + 'px'
     });
 
     const sortedChats = [...list].sort((a, b) => b.diffSeconds - a.diffSeconds);
 
     modal.innerHTML = `
-        <div class="afrt-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background:linear-gradient(135deg, rgba(55,52,71,1) 0%, rgba(40,38,50,1) 100%); cursor:grab; border-top-left-radius:12px; border-top-right-radius:12px; user-select:none;">
+        <div class="afrt-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background:rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
             <div>
-                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">🚀 AFRT вне таргета (> 60с): <span style="color:#ff6b6b">${list.length} чатов</span></h3>
-                <div style="font-size:11px; color:#888; margin-top:4px;">💡 Клик по строке открывает чат в истории</div>
+                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">Детали AFRT вне таргета (> 60с): <span style="color:#53db4b">${list.length} чатов</span></h3>
+                <div style="font-size:13px; color:#aaa; margin-top:6px;">
+                    Клик по хешу открывает чат в истории и подсвечивает выбранную строку
+                </div>
             </div>
             <button id="close-afrt-modal" class="af-win-btn buttonHide" style="cursor:pointer; background:transparent; border:none; color:bisque; font-size:16px;">✖</button>
         </div>
-        <div style="display:flex; flex-direction:column; overflow:hidden; background:#464451; border-bottom-left-radius:12px; border-bottom-right-radius:12px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.08); gap:8px;">
-                <span style="font-size:12px; color:#aaa;">Сортировка: <span id="afrt-sort-label" style="color:#ff6b6b;">↓ по убыванию времени</span></span>
-                <div style="display:flex; gap:8px;">
-                    <button id="afrt-copy-ids" style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">📋 Скопировать все ID</button>
-                    <button id="afrt-sort-toggle" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#ff6b6b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">↕ Сменить порядок</button>
+        <div style="display:flex; flex:1; overflow:hidden; padding:15px; background:#464451; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+            <div style="flex:1; display:flex; flex-direction:column; background:rgba(0,0,0,0.2); border-radius:6px; border:1px solid rgba(255,255,255,0.1); overflow:hidden;">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; border-bottom:1px solid #5f7875; padding:10px 14px; background:rgba(0,0,0,0.3); gap:8px;">
+                    <span>🚫 Список чатов (<span id="afrt-sort-label" style="color:#53db4b;">↓ по убыванию</span>)</span>
+                    <div style="display:flex; gap:8px;">
+                        <button id="afrt-copy-ids" style="background:rgba(83,219,75,0.15); border:1px solid #53db4b; color:#53db4b; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600;">📋 Скопировать ID</button>
+                        <button id="afrt-sort-toggle" style="background:rgba(83,219,75,0.15); border:1px solid #53db4b; color:#53db4b; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600;">↕ Сменить порядок</button>
+                    </div>
                 </div>
-            </div>
-            <div id="afrt-chats-list" style="overflow-y:auto; flex:1; padding:12px; max-height:60vh;">
-                ${renderChatList(sortedChats)}
+                <div id="afrt-chats-list" style="overflow-y:auto; flex:1; padding:10px; max-height:55vh;">
+                    ${renderChatList(sortedChats)}
+                </div>
             </div>
         </div>
     `;
@@ -1290,18 +1309,17 @@ function renderAFRTModal() {
             ? [...list].sort((a, b) => a.diffSeconds - b.diffSeconds)
             : [...list].sort((a, b) => b.diffSeconds - a.diffSeconds);
         chatsListEl.innerHTML = renderChatList(sorted);
-        sortLabel.textContent = sortAsc ? '↑ по возрастанию времени' : '↓ по убыванию времени';
+        sortLabel.textContent = sortAsc ? '↑ по возрастанию' : '↓ по убыванию';
     });
 
     copyBtn.addEventListener('click', () => {
         const ids = list.map(c => c.chatId).join('\n');
         navigator.clipboard.writeText(ids).then(() => {
             copyBtn.textContent = '✅ Скопировано!';
-            setTimeout(() => { copyBtn.textContent = '📋 Скопировать все ID'; }, 2000);
+            setTimeout(() => { copyBtn.textContent = '📋 Скопировать ID'; }, 2000);
         });
     });
 
-    // Drag & Drop
     const header = modal.querySelector('.afrt-modal-header');
     let isDragging = false, startX, startY;
 
@@ -1319,6 +1337,11 @@ function renderAFRTModal() {
         if (isDragging) {
             isDragging = false;
             header.style.cursor = 'grab';
+            const leftPos = parseInt(modal.style.left, 10);
+            const topPos = parseInt(modal.style.top, 10);
+            if (!isNaN(leftPos) && !isNaN(topPos)) {
+                window.lastModalPos = { left: leftPos, top: topPos };
+            }
         }
     };
 
@@ -2291,26 +2314,13 @@ document.addEventListener('click', (e) => {
         return;
     }
 
-    // 2. Обработчик клика по иконке 👁‍🗨 (открывает панель истории чата)
+    // 2. Обработчик клика по хешу чата в модалках (%АЗ, AHT, AFRT) и иконке 👁‍🗨
     const lookChatBtn = e.target.closest('.modal-lookchat');
     if (lookChatBtn) {
-
-        // Логика подсветки внутри модалки AFRT
-        if (lookChatBtn.closest('#afrt-modal-container')) {
-            document.querySelectorAll('#afrt-modal-container .modal-lookchat').forEach(el => {
-                el.classList.remove('active-chat');
-                el.style.background = 'rgba(255,255,255,0.04)';
-                el.style.borderColor = 'transparent';
-            });
-
-            lookChatBtn.classList.add('active-chat');
-            lookChatBtn.style.background = 'rgba(239,68,68,0.2)';
-            lookChatBtn.style.borderColor = '#ef4444';
-        }
-
-        // Логика эксклюзивной подсветки внутри модалки (%АЗ)
-        if (lookChatBtn.closest('#acls-modal-container')) {
-            document.querySelectorAll('#acls-modal-container .modal-lookchat').forEach(el => {
+        // Единая подсветка выбранного чата для всех трех модалок (%АЗ, AHT, AFRT)
+        const modalContainer = lookChatBtn.closest('#acls-modal-container, #aht-modal-container, #afrt-modal-container');
+        if (modalContainer) {
+            modalContainer.querySelectorAll('.modal-lookchat').forEach(el => {
                 el.classList.remove('active-chat');
                 el.style.background = 'rgba(255,255,255,0.05)';
                 el.style.borderColor = 'transparent';
@@ -2323,31 +2333,21 @@ document.addEventListener('click', (e) => {
             lookChatBtn.style.color = '#fff';
         }
 
-        // Логика подсветки внутри модалки AHT
-        if (lookChatBtn.closest('#aht-modal-container')) {
-            document.querySelectorAll('#aht-modal-container .modal-lookchat').forEach(el => {
-                el.classList.remove('active-chat');
-                el.style.background = 'rgba(255,255,255,0.04)';
-                el.style.borderColor = 'transparent';
-            });
-
-            lookChatBtn.classList.add('active-chat');
-            lookChatBtn.style.background = 'rgba(245,158,11,0.2)';
-            lookChatBtn.style.borderColor = '#f59e0b';
-        }
-
         const val = lookChatBtn.getAttribute('data-hash');
-
         const chatHistoryElement = document.getElementById('AF_ChatHis');
         const chatHistoryButton = document.getElementById('opennewcat');
 
-        if (chatHistoryElement && chatHistoryElement.style.display === 'none' && chatHistoryButton) {
-            chatHistoryButton.click();
+        // Надежная проверка через getComputedStyle (как в Grabber.js), чтобы окно открывалось всегда
+        if (chatHistoryElement && getComputedStyle(chatHistoryElement).display === 'none') {
+            chatHistoryButton?.click();
         }
 
-        if (val && document.getElementById('hashchathis')) {
-            document.getElementById('hashchathis').value = val;
-            document.getElementById('btn_search_history')?.click();
+        const input = document.getElementById('hashchathis');
+        const searchBtn = document.getElementById('btn_search_history') ?? window.btn_search_history;
+
+        if (val && input) {
+            input.value = val;
+            searchBtn?.click();
         }
         return;
     }
