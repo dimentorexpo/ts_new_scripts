@@ -24,9 +24,8 @@ const CONFIGSTAT = {
 // ============================================================================
 
 const getDateRangeStata = (dateFromStr, dateToStr) => {
-    const start = new Date(dateFromStr), end = new Date(dateToStr);
-    start.setUTCHours(0, 0, 0, 0);
-    end.setUTCHours(23, 59, 59, 999);
+    const start = new Date(`${dateFromStr}T00:00:00.000+03:00`);
+    const end = new Date(`${dateToStr}T23:59:59.999+03:00`);
     return [start.toISOString(), end.toISOString()];
 };
 
@@ -566,6 +565,8 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
 
     window.operatorAutoClosedDetails = {};
     window.operatorAHTDetails = {};
+    window.afrtUntargetDetails = new Map();
+
 
     const step = 100 / operatorIds.length;
     let currentWidth = 0;
@@ -635,8 +636,22 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
                                 const m = messages[b];
                                 if (["AnswerOperatorWithBot", "AnswerOperator"].includes(m.tpe)) {
                                     const diff = (new Date(m.ts) - new Date(firstMessageTime)) / 1000;
-                                    if (diff > 60) { massivchikUntarget.add(fres.id); localAFRTUntarget++; }
-                                    else { massivchikTarget.add(fres.id); localAFRTTarget++; }
+                                    if (diff > 60) {
+                                        massivchikUntarget.add(fres.id);
+                                        localAFRTUntarget++;
+                                        // <--- ДОБАВИТЬ СОХРАНЕНИЕ ДЕТАЛЕЙ ЧАТА:
+                                        if (!window.afrtUntargetDetails.has(fres.id)) {
+                                            const opName = document.getElementById('tableStats')?.rows[i + 1]?.cells[0]?.textContent || operatorIds[i];
+                                            window.afrtUntargetDetails.set(fres.id, {
+                                                chatId: fres.id,
+                                                diffSeconds: Math.round(diff),
+                                                operator: opName
+                                            });
+                                        }
+                                    } else {
+                                        massivchikTarget.add(fres.id);
+                                        localAFRTTarget++;
+                                    }
                                     break;
                                 }
                             }
@@ -866,7 +881,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
     setHTML('AFRTGroup', `
         ${afrtPercent} Всего влияли на AFRT: ${uniquedArrayAllLength} из них:
         <div style="margin-top:5px;padding-left:15px;border-left:2px solid #555">
-            • 🚫Вне таргета: ${massivchikUntarget.size}<br>
+            • <span class="afrt-untarget-popup-btn" style="color:#ff6b6b; cursor:pointer; border-bottom:1px dashed #ff6b6b; font-weight:700;" title="Нажмите, чтобы посмотреть список чатов вне таргета">🚫Вне таргета: ${massivchikUntarget.size} 📋</span><br>
             • ✅В таргете: ${massivchikTarget.size}<br>
             🎯Для таргета ${AFRT_TARGET_PERCENT}% можем позволить просрочить:
             <span style="color:${afrtCalcColor}; font-weight:700">${calcAFRTContainer}</span> чатов${afrtExtra}
@@ -1173,6 +1188,156 @@ function renderAHTModal(idx, opName) {
         document.removeEventListener('mouseup', window._ahtMouseUp);
         if (overlay.parentNode) overlay.remove();
         window._ahtModalCleanup = null;
+    };
+}
+
+// ============================================================================
+// 🚀 МОДАЛКА AFRT — чаты вне таргета (> 60 сек)
+// ============================================================================
+
+function renderAFRTModal() {
+    const list = window.afrtUntargetDetails ? Array.from(window.afrtUntargetDetails.values()) : [];
+    if (!list.length) {
+        if (typeof createAndShowButton === 'function') {
+            createAndShowButton('⚠️ Нет чатов вне таргета по AFRT', 'warning');
+        }
+        return;
+    }
+
+    const oldContainer = document.getElementById('afrt-modal-container');
+    if (oldContainer) oldContainer.remove();
+    if (window._afrtModalCleanup) {
+        document.removeEventListener('mousemove', window._afrtMouseMove);
+        document.removeEventListener('mouseup', window._afrtMouseUp);
+        window._afrtModalCleanup = null;
+    }
+
+    let sortAsc = false; // По умолчанию сначала самые долгие
+
+    const formatTime = (sec) => {
+        if (sec < 60) return sec + 'с';
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return m + 'м ' + s + 'с';
+    };
+
+    const renderChatList = (chats) => {
+        return chats.map((c, index) => `
+            <div class="modal-lookchat afrt-chat-item" data-hash="${c.chatId}" title="Нажмите, чтобы открыть чат в истории"
+                 style="margin-bottom:6px; background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px; cursor:pointer; border:1px solid transparent; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                <span style="color:#64748b; font-size:11px; min-width:22px; pointer-events:none;">${index + 1}.</span>
+                <span style="color:#cbd5e1; font-family:monospace; font-size:12px; flex:1; pointer-events:none;">${c.chatId}</span>
+                <span style="color:#94a3b8; font-size:11px; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; pointer-events:none;" title="${c.operator}">${c.operator}</span>
+                <span style="color:#ef4444; font-weight:700; font-size:13px; min-width:65px; text-align:right; pointer-events:none;">${formatTime(c.diffSeconds)}</span>
+            </div>
+        `).join('');
+    };
+
+    const overlay = document.createElement('div');
+    overlay.id = 'afrt-modal-container';
+    Object.assign(overlay.style, {
+        position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
+        zIndex: '9999999', pointerEvents: 'none'
+    });
+
+    let startLeft = Math.max(0, (window.innerWidth - 620) / 2);
+    let startTop = Math.max(0, (window.innerHeight - 520) / 2);
+
+    const modal = document.createElement('div');
+    Object.assign(modal.style, {
+        position: 'absolute', pointerEvents: 'auto',
+        backgroundColor: '#2e3b3a', border: '1px solid #5f7875', borderRadius: '12px',
+        width: '620px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.8), 0 0 30px rgba(239,68,68,0.15)', color: 'bisque',
+        left: startLeft + 'px', top: startTop + 'px'
+    });
+
+    const sortedChats = [...list].sort((a, b) => b.diffSeconds - a.diffSeconds);
+
+    modal.innerHTML = `
+        <div class="afrt-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background:linear-gradient(135deg, rgba(55,52,71,1) 0%, rgba(40,38,50,1) 100%); cursor:grab; border-top-left-radius:12px; border-top-right-radius:12px; user-select:none;">
+            <div>
+                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">🚀 AFRT вне таргета (> 60с): <span style="color:#ff6b6b">${list.length} чатов</span></h3>
+                <div style="font-size:11px; color:#888; margin-top:4px;">💡 Клик по строке открывает чат в истории</div>
+            </div>
+            <button id="close-afrt-modal" class="af-win-btn buttonHide" style="cursor:pointer; background:transparent; border:none; color:bisque; font-size:16px;">✖</button>
+        </div>
+        <div style="display:flex; flex-direction:column; overflow:hidden; background:#464451; border-bottom-left-radius:12px; border-bottom-right-radius:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.08); gap:8px;">
+                <span style="font-size:12px; color:#aaa;">Сортировка: <span id="afrt-sort-label" style="color:#ff6b6b;">↓ по убыванию времени</span></span>
+                <div style="display:flex; gap:8px;">
+                    <button id="afrt-copy-ids" style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">📋 Скопировать все ID</button>
+                    <button id="afrt-sort-toggle" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#ff6b6b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">↕ Сменить порядок</button>
+                </div>
+            </div>
+            <div id="afrt-chats-list" style="overflow-y:auto; flex:1; padding:12px; max-height:60vh;">
+                ${renderChatList(sortedChats)}
+            </div>
+        </div>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    const sortToggle = modal.querySelector('#afrt-sort-toggle');
+    const copyBtn = modal.querySelector('#afrt-copy-ids');
+    const chatsListEl = modal.querySelector('#afrt-chats-list');
+    const sortLabel = modal.querySelector('#afrt-sort-label');
+
+    sortToggle.addEventListener('click', () => {
+        sortAsc = !sortAsc;
+        const sorted = sortAsc
+            ? [...list].sort((a, b) => a.diffSeconds - b.diffSeconds)
+            : [...list].sort((a, b) => b.diffSeconds - a.diffSeconds);
+        chatsListEl.innerHTML = renderChatList(sorted);
+        sortLabel.textContent = sortAsc ? '↑ по возрастанию времени' : '↓ по убыванию времени';
+    });
+
+    copyBtn.addEventListener('click', () => {
+        const ids = list.map(c => c.chatId).join('\n');
+        navigator.clipboard.writeText(ids).then(() => {
+            copyBtn.textContent = '✅ Скопировано!';
+            setTimeout(() => { copyBtn.textContent = '📋 Скопировать все ID'; }, 2000);
+        });
+    });
+
+    // Drag & Drop
+    const header = modal.querySelector('.afrt-modal-header');
+    let isDragging = false, startX, startY;
+
+    window._afrtMouseMove = (e) => {
+        if (!isDragging) return;
+        let newX = e.clientX - startX;
+        let newY = e.clientY - startY;
+        const maxX = window.innerWidth - modal.offsetWidth;
+        const maxY = window.innerHeight - modal.offsetHeight;
+        modal.style.left = Math.max(0, Math.min(newX, maxX)) + 'px';
+        modal.style.top = Math.max(0, Math.min(newY, maxY)) + 'px';
+    };
+
+    window._afrtMouseUp = () => {
+        if (isDragging) {
+            isDragging = false;
+            header.style.cursor = 'grab';
+        }
+    };
+
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.id === 'close-afrt-modal') return;
+        isDragging = true;
+        header.style.cursor = 'grabbing';
+        startX = e.clientX - modal.offsetLeft;
+        startY = e.clientY - modal.offsetTop;
+    });
+
+    document.addEventListener('mousemove', window._afrtMouseMove);
+    document.addEventListener('mouseup', window._afrtMouseUp);
+
+    window._afrtModalCleanup = () => {
+        document.removeEventListener('mousemove', window._afrtMouseMove);
+        document.removeEventListener('mouseup', window._afrtMouseUp);
+        if (overlay.parentNode) overlay.remove();
+        window._afrtModalCleanup = null;
     };
 }
 
@@ -2114,9 +2279,34 @@ document.addEventListener('click', (e) => {
         return;
     }
 
+    // Открытие модалки по AFRT вне таргета
+    if (e.target.closest('.afrt-untarget-popup-btn')) {
+        renderAFRTModal();
+        return;
+    }
+
+    // Закрытие модалки AFRT
+    if (e.target.closest('#close-afrt-modal')) {
+        if (window._afrtModalCleanup) window._afrtModalCleanup();
+        return;
+    }
+
     // 2. Обработчик клика по иконке 👁‍🗨 (открывает панель истории чата)
     const lookChatBtn = e.target.closest('.modal-lookchat');
     if (lookChatBtn) {
+
+        // Логика подсветки внутри модалки AFRT
+        if (lookChatBtn.closest('#afrt-modal-container')) {
+            document.querySelectorAll('#afrt-modal-container .modal-lookchat').forEach(el => {
+                el.classList.remove('active-chat');
+                el.style.background = 'rgba(255,255,255,0.04)';
+                el.style.borderColor = 'transparent';
+            });
+
+            lookChatBtn.classList.add('active-chat');
+            lookChatBtn.style.background = 'rgba(239,68,68,0.2)';
+            lookChatBtn.style.borderColor = '#ef4444';
+        }
 
         // Логика эксклюзивной подсветки внутри модалки (%АЗ)
         if (lookChatBtn.closest('#acls-modal-container')) {

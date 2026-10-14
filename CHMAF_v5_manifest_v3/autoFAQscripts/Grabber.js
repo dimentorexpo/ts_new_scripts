@@ -1209,6 +1209,7 @@
         ['theme', 'Тематика'],
         ['sla', 'SLA'],
         ['country', 'Страна'],
+        ['afrt', 'AFRT'],
         ['department', 'Отдел'],
         ['text', 'Комментарий / сообщение']
     ];
@@ -1590,23 +1591,28 @@
                 : [];
 
             for (const item of items) {
-                if (String(item.operatorId) !== operator.id ||
-                    !item.conversationId) {
+                if (!item.conversationId) {
                     continue;
                 }
 
+                const isClosedByOperator = String(item.operatorId) === operator.id;
                 const rate = parseRate(item);
                 const rateKey = rate === null
                     ? 'none'
                     : String(rate);
 
-                if (filters.marks.has(rateKey)) {
-                    chats.push({
-                        id: String(item.conversationId),
-                        operator: operator.name,
-                        rate
-                    });
+                // Если чат закрыт нашим оператором — проверяем фильтр оценок.
+                // Если чат переведен — берем его всегда для проверки AFRT (оценку все равно скроем).
+                if (isClosedByOperator && !filters.marks.has(rateKey)) {
+                    continue;
                 }
+
+                chats.push({
+                    id: String(item.conversationId),
+                    operator: operator.name,
+                    rate: isClosedByOperator ? rate : null,
+                    isClosedByOperator
+                });
             }
 
             const total = Number(data?.total);
@@ -1687,20 +1693,86 @@
             .trim();
     }
 
+    function calculateAFRT(messages) {
+        if (!Array.isArray(messages) || !messages.length) return null;
+
+        const lastMsg = messages[messages.length - 1];
+        if (lastMsg?.tpe !== 'Question') return null;
+
+        const firstMessageTime = lastMsg.ts;
+        let groupFoundIndex = -1;
+
+        for (let z = messages.length - 1; z >= 0; z--) {
+            if (
+                messages[z].payload?.prevGroup === undefined &&
+                messages[z].payload?.group === 'c7bbb211-a217-4ed3-8112-98728dc382d8'
+            ) {
+                groupFoundIndex = z;
+                break;
+            }
+        }
+
+        if (groupFoundIndex !== -1) {
+            for (let b = groupFoundIndex; b >= 0; b--) {
+                const m = messages[b];
+                if (['AnswerOperatorWithBot', 'AnswerOperator'].includes(m.tpe)) {
+                    const diff = (new Date(m.ts) - new Date(firstMessageTime)) / 1000;
+                    return diff > 60 ? 0 : 1;
+                }
+            }
+        }
+
+        return null;
+    }
+
     async function loadChat(chat, filters) {
         const data = await apiJson(
             `${API}/conversations/${encodeURIComponent(chat.id)}`
         );
 
+        const messages = Array.isArray(data.messages)
+            ? data.messages
+            : [];
+
+        const afrt = calculateAFRT(messages);
+
+        // Если чат был переведен (закрыт не этим оператором):
+        if (!chat.isClosedByOperator) {
+            // Если в нем нет AFRT — он нам вообще не нужен
+            if (afrt === null) {
+                return null;
+            }
+
+            const topicId = data.payload?.topicId?.value;
+            const timestamp = new Date(data.tsCreate).getTime();
+
+            // Возвращаем запись ТОЛЬКО с данными для AFRT (CSAT, SLA и текст обнулены)
+            return {
+                id: String(data.id ?? chat.id),
+                timestamp: Number.isFinite(timestamp) ? timestamp : null,
+                slot: Number.isFinite(timestamp) ? timeSlot(timestamp) : null,
+                date: Number.isFinite(timestamp) ? formatMoscow(timestamp) : '—',
+                operator: chat.operator,
+                csat: null,
+                theme: topicId
+                    ? themeNames.get(String(topicId)) ?? 'Неизвестная тематика'
+                    : 'Без тематики',
+                sla: null,
+                afrt,
+                country: String(data.channelUser?.payload?.country ?? '—'),
+                department: '—',
+                userType: String(data.channelUser?.payload?.userType ?? 'null'),
+                tags: [],
+                text: ''
+            };
+        }
+
+        // --- Стандартная логика для чатов, закрытых самим оператором ---
         const topicId = data.payload?.topicId?.value;
 
         if (!themeMatches(topicId, filters.themes)) {
             return null;
         }
-
-        const messages = Array.isArray(data.messages)
-            ? data.messages
-            : [];
 
         const comments = messages.filter(
             message => message.tpe === 'OperatorComment'
@@ -1836,6 +1908,7 @@
             sla: duration === null
                 ? null
                 : duration <= 25 * 60 * 1000,
+            afrt,
             country: String(
                 data.channelUser?.payload?.country ?? '—'
             ),
@@ -1876,6 +1949,12 @@
     function cellValue(record, field) {
         if (field === 'csat') {
             return record.csat ?? '—';
+        }
+
+        if (field === 'afrt') {
+            return record.afrt === null || record.afrt === undefined
+                ? '—'
+                : record.afrt;
         }
 
         if (field === 'sla') {
@@ -2218,9 +2297,10 @@
                         range,
                         filters
                     );
-
                     for (const chat of chats) {
-                        if (!uniqueChats.has(chat.id)) {
+                        const existing = uniqueChats.get(chat.id);
+                        // Сохраняем чат, если его еще нет, ИЛИ если новая запись — от оператора, который его закрыл
+                        if (!existing || (!existing.isClosedByOperator && chat.isClosedByOperator)) {
                             uniqueChats.set(chat.id, chat);
                         }
                     }
