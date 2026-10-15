@@ -142,17 +142,17 @@ themesCSS.textContent = `
     box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
   }
 
-  .af-jira-container {
+  #AF_Themes .af-jira-container {
     position: relative;
     display: flex;
     align-items: center;
   }
 
-  .af-jira-container .af-input {
+  #AF_Themes .af-jira-container .af-input {
     padding-right: 32px;
   }
 
-  .af-jira-btn {
+  #AF_Themes .af-jira-btn {
     position: absolute;
     right: 4px;
     background: none;
@@ -165,7 +165,7 @@ themesCSS.textContent = `
     color: var(--text-muted);
   }
 
-  .af-jira-btn:hover {
+  #AF_Themes .af-jira-btn:hover {
     transform: scale(1.2);
     color: var(--primary-hover);
     filter: drop-shadow(0 0 8px var(--primary-glow));
@@ -176,6 +176,7 @@ themesCSS.textContent = `
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
+    padding: 0 8px 8px;
     max-height: 60vh;
     overflow-y: auto;
   }
@@ -200,23 +201,31 @@ themesCSS.textContent = `
     padding-left: 2px;
     opacity: 0.7;
   }
-  }
 
   /* === ULTRA COMPACT THEME BUTTONS === */
+  /* Сетка тем — тот же шаг, что у тегов, чтобы колонки выглядели ровно */
+  #AF_Themes #themes_body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    align-content: start;
+  }
+
   #AF_Themes .theme-main-btn {
     width: 100%;
+    min-height: 34px;              /* по высоте как строка тега */
     background: #1b283c;
     border: 1px solid #3c4d68;
     border-radius: var(--radius-sm);
-    padding: 3px 6px;
+    padding: 6px 10px;
     color: #dce5f5;
-    font-size: 10px;
-    font-weight: 500;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
     transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
-    margin-bottom: 2px;
+    margin: 0;
     text-align: left;
-    line-height: 1.2;
+    line-height: 1.3;
   }
 
   #AF_Themes .theme-main-btn:hover {
@@ -237,9 +246,8 @@ themesCSS.textContent = `
     animation: afFadeIn 0.2s ease;
   }
 
-  #AF_Themes .theme-page[style*="display: flex"],
-  #AF_Themes .theme-page[style*="display: block"] {
-    display: grid !important;
+  #AF_Themes .theme-page.is-open {
+    display: grid;
   }
 
   #AF_Themes .searchSubthemes {
@@ -264,13 +272,6 @@ themesCSS.textContent = `
     color: #eef3ff;
     box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
     transform: translateY(-1px);
-  }
-
-  /* Приглушаем теги когда открыты подтемы */
-  .theme-page[style*="display: grid"] ~ .af-column:last-child {
-    opacity: 0.3;
-    pointer-events: none;
-    filter: blur(1px);
   }
 
   /* === ULTRA COMPACT SEARCH RESULTS === */
@@ -361,22 +362,19 @@ themesCSS.textContent = `
     box-shadow: none;
   }
 
-  /* Выбранный тег (чекбокс отмечен) — вся строка в hover-цветах.
-    Селектор через :has поддерживается в актуальных Chromium ( расширение
-    работает только там); класс-фолбэк .is-checked вешает JS ниже. */
-  #AF_Themes .af-tag-row:has(input[name="tagcheck"]:checked),
-  #AF_Themes .af-tag-row.is-checked {
+  /* Выбранный тег — подсветка берётся ТОЛЬКО из реального состояния чекбокса
+    (:has поддерживается в Chromium 105+). Отдельный класс-флаг не используем:
+    при программном cb.checked = false событие change не стреляет и класс «залипал». */
+  #AF_Themes .af-tag-row:has(input[name="tagcheck"]:checked) {
     background: #4268c9;
     border-color: #7293ed;
   }
 
-  #AF_Themes .af-tag-row:has(input[name="tagcheck"]:checked) .af-item-btn,
-  #AF_Themes .af-tag-row.is-checked .af-item-btn {
+  #AF_Themes .af-tag-row:has(input[name="tagcheck"]:checked) .af-item-btn {
     color: #eef3ff;
   }
 
-  #AF_Themes .af-tag-row:has(input[name="tagcheck"]:checked) .af-checkbox,
-  #AF_Themes .af-tag-row.is-checked .af-checkbox {
+  #AF_Themes .af-tag-row:has(input[name="tagcheck"]:checked) .af-checkbox {
     accent-color: #a2b9fa;
   }
 
@@ -475,6 +473,7 @@ async function startThemes() {
     // сохранённый в localStorage scriptAdrTH мог остаться от старого деплоя
     const scriptAdrChek = localStorage.getItem('scriptAdr');
     let scriptAdrTH;
+    KCThemesFlag = 0; // сбрасываем, иначе после смены отдела флаг КЦ «залипает»
 
     if (scriptAdrChek === data.KC_addr || scriptAdrChek === data.KC_addrRzrv) {
         scriptAdrTH = data.KC_addrth;
@@ -495,7 +494,7 @@ window.getThemesButtonPress = function () {
 
     if (!afThemes) return;
 
-    if (afThemes.style.display === '' || afThemes.style.display !== 'none') {
+    if (afThemes.style.display !== 'none') {
         afThemes.style.display = 'none';
         if (themesBtn) themesBtn.classList.remove('active');
     } else {
@@ -532,16 +531,16 @@ document.getElementById('themesinstr').addEventListener('click', () => {
 });
 
 function pagethClick(event) {
-    const pagethId = event.target.dataset.pageId;
+    const pagethId = event.currentTarget.dataset.pageId;
     document.getElementById('backtomenu').style.display = '';
 
-    document.querySelectorAll('.theme-page, .theme-main-btn').forEach(el => el.style.display = 'none');
-    const page = document.getElementById(`page_${pagethId}`);
-    if (page) page.style.display = 'flex';
+    document.querySelectorAll('.theme-main-btn').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.theme-page').forEach(el => el.classList.remove('is-open'));
+    document.getElementById(`page_${pagethId}`)?.classList.add('is-open');
 }
 
 document.getElementById('backtomenu').addEventListener('click', e => {
-    document.querySelectorAll('.theme-page').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.theme-page').forEach(el => el.classList.remove('is-open'));
     document.querySelectorAll('.theme-main-btn').forEach(el => el.style.display = '');
     e.target.style.display = 'none';
 });
@@ -600,7 +599,6 @@ function refreshThemesBtns() {
             currentThemePage = document.createElement('div');
             currentThemePage.id = `page_${currentThemePageId}`;
             currentThemePage.className = 'af-grid-themes theme-page';
-            currentThemePage.style.display = 'none';
             areaThbtns.appendChild(currentThemePage);
 
             return;
@@ -615,13 +613,13 @@ function refreshThemesBtns() {
         if (fontSize) subBtn.style.fontSize = `${fontSize}px`;
 
         if (!addTagFlag && currentThemePage) {
-            subBtn.addEventListener('click', e => setTheme(e.target.value));
+            subBtn.addEventListener('click', e => setTheme(e.currentTarget.value));
             currentThemePage.appendChild(subBtn);
         } else {
             subBtn.name = "tagssbtn";
 
             subBtn.addEventListener('click', e => {
-                const val = e.target.value;
+                const val = e.currentTarget.value;
                 if (val === 'refusal_of_help') RefBtnTag(val);
                 else if (val === 'smartroom') SmartBtnTag(val);
                 else newTaggg(val);
@@ -635,6 +633,7 @@ function refreshThemesBtns() {
                 checkbox.type = 'checkbox';
                 checkbox.name = 'tagcheck';
                 checkbox.className = 'af-checkbox';
+                checkbox.value = label;
 
                 wrapper.appendChild(checkbox);
                 wrapper.appendChild(subBtn);
@@ -645,9 +644,14 @@ function refreshThemesBtns() {
         }
     });
 
-    if (KCThemesFlag === 1) {
-        document.querySelectorAll('.thonlyfortp').forEach(el => el.style.display = 'none');
-    }
+    document.querySelectorAll('.thonlyfortp').forEach(el => {
+        el.style.display = KCThemesFlag === 1 ? 'none' : '';
+    });
+}
+
+// Снять выбор со всех тегов (подсветка строк снимется сама через :has)
+function clearTagSelection() {
+    document.querySelectorAll('input[name="tagcheck"]').forEach(cb => cb.checked = false);
 }
 
 // Функция для полного сброса поиска
@@ -667,61 +671,59 @@ function resetSearch() {
 }
 
 document.getElementById('ClearSmartroomData').addEventListener('click', () => {
-    // Очищаем чекбоксы тегов (твой старый код)
-    document.querySelectorAll('input[name="tagcheck"]').forEach(cb => cb.checked = false);
-
-    // Снимаем подсветку выбранных строк-тегов
-    document.querySelectorAll('.af-tag-row.is-checked').forEach(el => el.classList.remove('is-checked'));
-
-    // Добавляем очистку поиска
+    clearTagSelection();
     resetSearch();
 });
 
-/* Подсветка строки-тега при выборе чекбокса: класс-фолбэк для браузеров
-   без CSS :has() — если он поддерживается, класс не мешает (значения совпадают) */
-document.getElementById('tags_body').addEventListener('change', e => {
-    if (e.target?.name !== 'tagcheck') return;
-
-    e.target.closest('.af-tag-row')?.classList.toggle('is-checked', e.target.checked);
-});
-
-document.getElementById('multitag').addEventListener('click', async () => {
-    const checkboxes = document.querySelectorAll('input[name="tagcheck"]');
-    const buttons = document.querySelectorAll('button[name="tagssbtn"]');
-    const tagsvaluesarr = [];
+document.getElementById('multitag').addEventListener('click', async e => {
+    const btn = e.currentTarget;
     const chatId = getChatId();
+    if (!chatId || btn.disabled) return;
 
-    if (!chatId) return;
+    const tagsvaluesarr = [...document.querySelectorAll('input[name="tagcheck"]:checked')].map(cb => cb.value);
 
-    checkboxes.forEach((cb, index) => {
-        if (cb.checked) {
-            tagsvaluesarr.push(buttons[index].value);
-            if (buttons[index].value === 'smartroom' && document.getElementById('AF_Smartroomform').style.display === 'none') {
-                document.getElementById('smartroomform').click();
-            }
-        }
-    });
-
-    if (tagsvaluesarr.length > 0) {
-        try {
-            await fetch(`https://skyeng.autofaq.ai/api/conversation/${chatId}/payload`, {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                    "x-csrf-token": aftoken
-                },
-                body: JSON.stringify({
-                    conversationId: chatId,
-                    elements: [{ name: "tags", value: tagsvaluesarr }]
-                }),
-                credentials: "include"
-            });
-            checkboxes.forEach(cb => cb.checked = false);
-        } catch (err) {
-            console.error('Payload error:', err);
-        }
-    } else {
+    if (tagsvaluesarr.length === 0) {
         createAndShowButton('Не выбраны теги. Выберите 1 или несколько.', 'error');
+        return;
+    }
+
+    if (tagsvaluesarr.includes('smartroom')) {
+        const smartForm = document.getElementById('AF_Smartroomform');
+        if (smartForm && smartForm.style.display === 'none') {
+            document.getElementById('smartroomform')?.click();
+        }
+    }
+
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Отправка...';
+
+    try {
+        const res = await fetch(`https://skyeng.autofaq.ai/api/conversation/${chatId}/payload`, {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+                "x-csrf-token": aftoken
+            },
+            body: JSON.stringify({
+                conversationId: chatId,
+                elements: [{ name: "tags", value: tagsvaluesarr }]
+            }),
+            credentials: "include"
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        clearTagSelection();
+        btn.textContent = `✓ Отправлено (${tagsvaluesarr.length})`;
+    } catch (err) {
+        console.error('Payload error:', err);
+        createAndShowButton('Не удалось отправить теги, выбор сохранён — попробуйте ещё раз.', 'error');
+        btn.textContent = originalText;
+    } finally {
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }, 1200);
     }
 });
 
@@ -736,7 +738,7 @@ document.getElementById('linktojirasend').addEventListener('click', async () => 
         }
 
         try {
-            await fetch(`https://skyeng.autofaq.ai/api/conversation/${chatId}/payload`, {
+            const res = await fetch(`https://skyeng.autofaq.ai/api/conversation/${chatId}/payload`, {
                 method: "POST",
                 headers: {
                     "content-type": "application/json",
@@ -749,6 +751,7 @@ document.getElementById('linktojirasend').addEventListener('click', async () => 
                 mode: "cors",
                 credentials: "include"
             });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             input.value = "";
         } catch (err) {
             console.error('Jira link send error:', err);
@@ -826,7 +829,7 @@ if (refreshBtn) {
 
         const backBtn = document.getElementById('backtomenu');
         if (backBtn) backBtn.style.display = 'none';
-        document.querySelectorAll('.theme-page').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.theme-page').forEach(el => el.classList.remove('is-open'));
         document.querySelectorAll('.theme-main-btn').forEach(el => el.style.display = '');
 
         const isSuccess = await startThemes();

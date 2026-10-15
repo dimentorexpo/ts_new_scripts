@@ -49,10 +49,38 @@
         "sber-direct.skyeng.ano", "sber-direct.skyeng.courses.ano", "sber-direct.skypro.ano",
         "sber-direct.skysmart.ano", "sber-direct.skysmart.homeschool.ano",
         "sber.skyeng.ano", "sber.skyeng.courses.ano", "sber.skysmart.ano", "sber.skysmart.homeschool.ano",
-        "stripe.ltitc", 
+        "stripe.ltitc",
         "tinkoff.ano", "tinkoff.english", "tinkoff.premium.ano", "tinkoff.salebot.ano",
         "tinkoff.skyeng", "tinkoff.skypro.ano", "tinkoff.skysmart-premium.ano", "tinkoff.skysmart.ano"
     ];
+
+    // Точное сравнение по коду системы. Раньше было includes(): «tinkoff.skyeng»
+    // совпадало с любым кодом, который начинается так же (например, «tinkoff.skyeng.sbp»),
+    // и автоплатёж подсвечивался там, где его нет.
+    const recurrentSystems = new Set(paymentSystems.map(ps => ps.toLowerCase()));
+
+    function isRecurrentSystem(psText) {
+        return psText
+            .toLowerCase()
+            .split(/[\s,;()\/|]+/)
+            .some(token => recurrentSystems.has(token));
+    }
+
+    /** Ищет колонки «Статус» и «Платёжная система» по заголовкам таблицы.
+     *  Если заголовков нет — старые позиции (2-я и 5-я колонка). */
+    function findColumns(tbody) {
+        const table = tbody.closest('table');
+        const headers = table ? [...table.querySelectorAll('thead th, thead td')] : [];
+        const indexOf = re => headers.findIndex(h => re.test(h.textContent.toLowerCase()));
+
+        const status = indexOf(/статус|status/);
+        const ps = indexOf(/платёжн|платежн|payment|систем/);
+
+        return {
+            status: status >= 0 ? status : 1,
+            ps: ps >= 0 ? ps : 4
+        };
+    }
 
     // 3. Стили интерфейса и подсветки таблицы
     const style = document.createElement('style');
@@ -151,7 +179,7 @@
             font-size: 11px; font-weight: bold; border-radius: 4px;
             text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
-		
+
 		.ps-btn-list { background: #e0f2fe; color: #0369a1; }
         .ps-btn-list:hover { background: #bae6fd; }
 
@@ -182,7 +210,9 @@
     const fabBtn = document.createElement('button');
     fabBtn.id = 'ps-fab-btn';
     fabBtn.title = 'Проверить платежи и автоплатежи';
-    fabBtn.innerHTML = '🔍';
+    fabBtn.type = 'button';
+    fabBtn.textContent = '🔍';
+    fabBtn.setAttribute('aria-label', 'Проверить платежи и автоплатежи');
     document.body.appendChild(fabBtn);
 
     // 5. Боковая панель
@@ -203,8 +233,8 @@
             <button class="ps-btn ps-btn-list" id="ps-toggle-systems-btn">📋 Список систем с автоплатежами</button>
             <div id="ps-systems-list-container" style="display: none;"></div>
         </div>
-		
-		
+
+
     `;
     document.body.appendChild(panel);
 
@@ -220,13 +250,16 @@
         let overpayFailedCount = 0;
 
         tables.forEach(tbody => {
+            const columns = findColumns(tbody);
+            const minCells = Math.max(columns.status, columns.ps) + 1;
+
             const rows = tbody.querySelectorAll('tr');
             rows.forEach(row => {
                 const cells = row.querySelectorAll('td');
-                if (cells.length < 5) return;
+                if (cells.length < minCells) return;
 
-                const statusCell = cells[1];
-                const psCell = cells[4];
+                const statusCell = cells[columns.status];
+                const psCell = cells[columns.ps];
 
                 const statusText = statusCell.textContent.toLowerCase().trim();
                 const psText = psCell.textContent.trim();
@@ -268,9 +301,7 @@
                     row.classList.add('ps-highlighted-row-completed');
 
                     // Проверка на рекуррент (без ложных срабатываний)
-                    const isRecurrent = psText.length > 3 && paymentSystems.some(ps => 
-                        psText.toLowerCase().includes(ps.toLowerCase())
-                    );
+                    const isRecurrent = isRecurrentSystem(psText);
 
                     if (isRecurrent) {
                         recurrentCount++;
@@ -358,24 +389,56 @@
         document.getElementById('ps-details').innerHTML = '';
     }
 
-    // 8. Обработчики событий
-    fabBtn.addEventListener('click', () => {
-        if (panel.style.display === 'none') {
-            panel.style.display = 'flex';
-            scanAndHighlight();
-        } else {
-            panel.style.display = 'none';
-        }
+    // 8. Автообновление: пока панель открыта, при смене страницы таблицы
+    // (пагинация, фильтр, подгрузка) анализ пересчитывается сам.
+    // Раньше панель показывала цифры по старой странице.
+    let rescanTimer = 0;
+    const isOwnNode = node =>
+        node.nodeType === Node.ELEMENT_NODE &&
+        (node.classList.contains('ps-overpay-badge') || panel.contains(node) || node === fabBtn);
+
+    const tableObserver = new MutationObserver(mutations => {
+        const relevant = mutations.some(m =>
+            !panel.contains(m.target) &&
+            ([...m.addedNodes].some(n => !isOwnNode(n)) ||
+                [...m.removedNodes].some(n => !isOwnNode(n)))
+        );
+        if (!relevant) return;
+
+        clearTimeout(rescanTimer);
+        rescanTimer = setTimeout(scanAndHighlight, 400);
     });
-	
-	const toggleSystemsBtn = document.getElementById('ps-toggle-systems-btn');
+
+    function openPanel() {
+        panel.style.display = 'flex';
+        scanAndHighlight();
+        tableObserver.observe(document.body, { childList: true, subtree: true });
+    }
+
+    function closePanel() {
+        panel.style.display = 'none';
+        tableObserver.disconnect();
+        clearTimeout(rescanTimer);
+    }
+
+    // 9. Обработчики событий
+    fabBtn.addEventListener('click', () => {
+        if (panel.style.display === 'none') openPanel();
+        else closePanel();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && panel.style.display === 'flex') closePanel();
+    });
+
+    const toggleSystemsBtn = document.getElementById('ps-toggle-systems-btn');
     const systemsListContainer = document.getElementById('ps-systems-list-container');
 
     toggleSystemsBtn.addEventListener('click', () => {
         if (systemsListContainer.style.display === 'none') {
             systemsListContainer.style.display = 'block';
             toggleSystemsBtn.textContent = '▲ Скрыть список систем';
-            
+
             // Заполняем список
             systemsListContainer.innerHTML = `
                 <div style="font-weight: 600; margin-bottom: 6px; color: #374151;">
@@ -389,15 +452,20 @@
         }
     });
 
-    document.getElementById('ps-checker-close').addEventListener('click', () => {
-        panel.style.display = 'none';
+    const closeBtn = document.getElementById('ps-checker-close');
+    closeBtn.setAttribute('role', 'button');
+    closeBtn.setAttribute('tabindex', '0');
+    closeBtn.setAttribute('aria-label', 'Закрыть');
+    closeBtn.addEventListener('click', closePanel);
+    closeBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closePanel(); }
     });
 
     document.getElementById('ps-reset-btn').addEventListener('click', resetHighlight);
 
     document.addEventListener('click', (e) => {
-        if (panel.style.display === 'flex' && !panel.contains(e.target) && e.target !== fabBtn) {
-            panel.style.display = 'none';
+        if (panel.style.display === 'flex' && !panel.contains(e.target) && !fabBtn.contains(e.target)) {
+            closePanel();
         }
     });
 })();

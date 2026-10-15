@@ -1,206 +1,303 @@
-const processedUserIds = {};
-// Лимит кэша: долгая сессия с сотнями ID не должна расти бесконечно
+// ============================================================
+// Troubleshooter: подписи (У)/(П) рядом с ID пользователей
+// ============================================================
+
+// id → { nameofuser, flagusertype }. Map сохраняет порядок вставки,
+// поэтому при переполнении удаляем самую старую запись.
+const processedUserIds = new Map();
 const PROCESSED_CACHE_MAX = 500;
 
-function addusersinfo() {
-    // Функция для обработки элементов
-    function processFields(elements, type) {
-        elements.forEach((field) => {
-            if (!field.hasAttribute('info-added')) {
-                let userid = field.innerText || field.value;  // Для полей ввода используем value
-                // Всегда вызываем getuserinfocrm
-                getuserinfocrm(userid, field, type);
-                field.setAttribute('info-added', 'true');
-            }
-        });
-    }
+// Запросы «в полёте»: 10 ячеек с одним ID = один запрос к CRM, а не десять
+const pendingUserRequests = new Map();
 
-    // Верхние строки с id
-    let usersfields = document.getElementsByClassName('p-10 w-85');
-    let infofields = document.querySelectorAll('.p-10.w-85[info-added]');
-    
-    // ID в столбцах
-    let headerCell = Array.from(document.querySelectorAll('.cdk-header-cell')).filter(cell => /^\d+$/.test(cell.innerText));
-    let headerCellinfo = Array.from(document.querySelectorAll('.cdk-header-cell[info-added]')).filter(cell => /^\d+$/.test(cell.innerText));
-    
-    // ID в списках
-    let listfields = Array.from(document.querySelectorAll('.mat-option-text')).filter(cell => /^\d+$/.test(cell.innerText));
-    let listfieldsinfo = Array.from(document.querySelectorAll('.mat-option-text[info-added]')).filter(cell => /^\d+$/.test(cell.innerText));
+// Неудачные запросы не повторяем чаще раза в 30 с (иначе при разлогине
+// в CRM каждое изменение страницы отправляло бы новую пачку запросов)
+const failedUserRequests = new Map();
+const FAILED_RETRY_MS = 30000;
 
-    // Окно с id в статистике
-    let statfield = Array.from(document.querySelectorAll('[id^="mat-input-"]')).filter(cell => /^\d+$/.test(cell.value));
-    let statfieldinfo = Array.from(document.querySelectorAll('[id^="mat-input-"][info-added]')).filter(cell => /^\d+$/.test(cell.value));
+const ID_RE = /^\d+$/;
+const BADGE_CLASS = 'chmaf-usertype-badge';
 
-    // Обрабатываем usersfields
-    if (usersfields.length > 0 && infofields.length < usersfields.length) {
-        processFields(Array.from(usersfields), 'topline');
-    }
+const USER_FIELD_SOURCES = [
+  { selector: '.p-10.w-85', type: 'topline' },            // верхние строки с id
+  { selector: '.cdk-header-cell', type: 'other' },        // id в столбцах
+  { selector: '.mat-option-text', type: 'other' },        // id в выпадающих списках
+  { selector: '[id^="mat-input-"]', type: 'input' }       // окно с id в статистике
+];
 
-    // Обрабатываем headerCell
-    if (headerCell.length > 0 && headerCellinfo.length < headerCell.length) {
-        processFields(headerCell, 'other');
-    }
+const USER_TYPE_STYLES = {
+  student: { text: '(У)', color: '#DC143C' },
+  teacher: { text: '(П)', color: '#1E90FF' }
+};
 
-    // Обрабатываем listfields
-    if (listfields.length > 0 && listfieldsinfo.length < listfields.length) {
-        processFields(listfields, 'other');
-    }
-
-    // Обрабатываем statfield
-    if (statfield.length > 0 && statfieldinfo.length < statfield.length) {
-        processFields(statfield, 'input');
-    }
+/** Текст элемента без нашей подписи. textContent вместо innerText:
+ *  innerText заставляет браузер пересчитывать вёрстку на каждом вызове. */
+function ownIdText(element) {
+  let text = '';
+  for (const node of element.childNodes) {
+    if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(BADGE_CLASS)) continue;
+    text += node.textContent;
+  }
+  return text.trim();
 }
 
-function getuserinfocrm(userid, pageelement, elemtype) {
-    // Проверяем, есть ли уже информация в объекте
-    if (processedUserIds[userid] && processedUserIds[userid].readyflag === '1') {
-        // Если данные уже есть, используем их для добавления информации
-        addinginfo(pageelement, userid, elemtype);
-        return;
+function addusersinfo() {
+  for (const { selector, type } of USER_FIELD_SOURCES) {
+    for (const element of document.querySelectorAll(selector)) {
+      processUserElement(element, type);
     }
+  }
+}
 
-    // Если данных нет, делаем запрос к серверу
-    const fetchURL = `https://backend.skyeng.ru/api/persons/${userid}?crm2=true&debugParam=person-page`;
-    const requestOptions = {
-        method: 'GET'
-    };
+function processUserElement(element, type) {
+  const userid = type === 'input' ? element.value.trim() : ownIdText(element);
+  if (!ID_RE.test(userid)) return;
 
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions }, function (response) {
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        }
+  // Уже подписан этим же ID — ничего не делаем
+  if (element.dataset.chmafUid === userid) return;
 
-        const userInfo = JSON.parse(response.fetchansver);
-        const nameofuser = `${userInfo.data.name}${userInfo.data.surname ? ` ${userInfo.data.surname}` : ''}`;
-        const flagusertype = userInfo.data.type;
+  // Angular переиспользует узлы: в ячейке мог смениться ID, старую подпись убираем
+  for (const old of element.querySelectorAll(`:scope > .${BADGE_CLASS}`)) old.remove();
 
-        // Cap кэша: удаляем старейшие записи при переполнении
-        const keys = Object.keys(processedUserIds);
-        if (keys.length >= PROCESSED_CACHE_MAX) {
-            delete processedUserIds[keys[0]];
-        }
+  element.dataset.chmafUid = userid;
+  element.setAttribute('info-added', 'true'); // по этому атрибуту диагностика ищет участников
 
-        // Сохраняем данные в объект processedUserIds
-        processedUserIds[userid] = {
-            nameofuser,
-            flagusertype,
-            readyflag: '1'
-        };
-
-        // Добавляем информацию на страницу
-        addinginfo(pageelement, userid, elemtype);
+  getUserInfo(userid)
+    .then((info) => {
+      if (element.dataset.chmafUid === userid) addinginfo(element, userid, type, info);
+    })
+    .catch((error) => {
+      if (element.dataset.chmafUid !== userid) return;
+      // Сбрасываем отметку, чтобы после паузы попробовать ещё раз
+      delete element.dataset.chmafUid;
+      if (type !== 'input') addErrorBadge(element, error);
     });
 }
 
-function addinginfo(pageelement, userid, elemtype) {
-    const flagusertype = processedUserIds[userid].flagusertype;
-    const nameofuser = processedUserIds[userid].nameofuser;
-    const userTypeStyles = {
-        student: { text: '(У)', color: '#DC143C' },
-        teacher: { text: '(П)', color: '#1E90FF' }
-    };
+/** Данные пользователя из CRM: кэш → запрос в полёте → новый запрос. */
+function getUserInfo(userid) {
+  const cached = processedUserIds.get(userid);
+  if (cached) return Promise.resolve(cached);
 
-    const { text, color } = userTypeStyles[flagusertype] || { text: '', color: '' };
-    if (elemtype === 'input') {
-        pageelement.value += text;
-        return
+  const pending = pendingUserRequests.get(userid);
+  if (pending) return pending;
+
+  const failedAt = failedUserRequests.get(userid);
+  if (failedAt && Date.now() - failedAt < FAILED_RETRY_MS) {
+    return Promise.reject(new Error('недавний запрос не удался, повтор позже'));
+  }
+
+  const fetchURL = `https://backend.skyeng.ru/api/persons/${userid}?crm2=true&debugParam=person-page`;
+
+  const request = new Promise((resolve, reject) => {
+    try {
+      chrome.runtime.sendMessage(
+        { action: 'getFetchRequest', fetchURL, requestOptions: { method: 'GET' } },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+            return;
+          }
+          if (!response?.success) {
+            reject(new Error(response?.error || 'пустой ответ расширения'));
+            return;
+          }
+
+          let data;
+          try {
+            data = JSON.parse(response.fetchansver)?.data;
+          } catch (e) {
+            reject(new Error('CRM вернула не JSON (возможно, нужно войти в CRM)'));
+            return;
+          }
+          if (!data) {
+            reject(new Error('в ответе CRM нет данных пользователя'));
+            return;
+          }
+
+          const info = {
+            nameofuser: [data.name, data.surname].filter(Boolean).join(' '),
+            flagusertype: data.type
+          };
+
+          if (processedUserIds.size >= PROCESSED_CACHE_MAX) {
+            processedUserIds.delete(processedUserIds.keys().next().value);
+          }
+          processedUserIds.set(userid, info);
+          failedUserRequests.delete(userid);
+          resolve(info);
+        }
+      );
+    } catch (e) {
+      // Extension context invalidated: расширение обновили, страница старая
+      reject(e);
     }
-    const span = document.createElement('span');
-    span.style.color = color;
-    span.style.fontWeight = '600';
-    span.innerText = text;
+  })
+    .catch((error) => {
+      failedUserRequests.set(userid, Date.now());
+      console.warn(`[ChMAF:TS] Не удалось получить данные пользователя ${userid}:`, error.message);
+      throw error;
+    })
+    .finally(() => pendingUserRequests.delete(userid));
 
-    if (elemtype === 'topline') {
-        span.title = nameofuser;
-        pageelement.style.width = '110px';
-        pageelement.style.color = 'blue';
-        pageelement.style.textDecoration = 'underline';
-        pageelement.style.cursor = 'pointer';
-        pageelement.title = "ЛКМ - открыть пользователя в CRM. ПКМ - скопировать id"
-
-        pageelement.addEventListener('click', () => {
-            window.open(`https://crm2.skyeng.ru/persons/${userid}`);
-        });
-
-        pageelement.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            // Скрипт живёт изолированно — copyToClipboard/createAndShowButton недоступны,
-            // поэтому используем navigator.clipboard напрямую
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(userid).then(() => {
-                    span.textContent = '📋';
-                    setTimeout(() => { span.textContent = text; }, 1200);
-                }).catch(() => { });
-            }
-        });
-    }
-
-    pageelement.appendChild(span);
+  pendingUserRequests.set(userid, request);
+  return request;
 }
 
-// Запускаем один раз при загрузке, чтобы обработать уже существующие элементы
+/** Ждёт ответы CRM по уже найденным ID (нужно диагностике, чтобы роли были известны). */
+function waitForUserBadges(timeoutMs = 3000) {
+  if (!pendingUserRequests.size) return Promise.resolve();
+  return Promise.race([
+    Promise.allSettled([...pendingUserRequests.values()]),
+    new Promise((resolve) => setTimeout(resolve, timeoutMs))
+  ]);
+}
+
+function makeBadge(text, color, title) {
+  const span = document.createElement('span');
+  span.className = BADGE_CLASS;
+  span.style.color = color;
+  span.style.fontWeight = '600';
+  span.textContent = text;
+  if (title) span.title = title;
+  return span;
+}
+
+/** Вместо alert() на каждую ячейку — тихий серый «(?)» с причиной в подсказке. */
+function addErrorBadge(element, error) {
+  if (element.querySelector(`:scope > .${BADGE_CLASS}`)) return;
+  element.appendChild(makeBadge('(?)', '#8a94a6',
+    `Не удалось получить данные из CRM: ${error?.message || error}. Повтор через 30 с.`));
+}
+
+function addinginfo(pageelement, userid, elemtype, info = processedUserIds.get(userid)) {
+  if (!info) return;
+  const { text, color } = USER_TYPE_STYLES[info.flagusertype] || { text: '', color: '' };
+
+  if (elemtype === 'input') {
+    // Подпись дописывается в само поле; после этого значение уже не число
+    // и повторно не обрабатывается
+    if (text) pageelement.value += text;
+    return;
+  }
+
+  if (!text) return;
+
+  const span = makeBadge(text, color, elemtype === 'topline' ? info.nameofuser : '');
+
+  if (elemtype === 'topline') {
+    pageelement.style.width = '110px';
+    pageelement.style.color = 'blue';
+    pageelement.style.textDecoration = 'underline';
+    pageelement.style.cursor = 'pointer';
+    pageelement.title = 'ЛКМ - открыть пользователя в CRM. ПКМ - скопировать id';
+
+    // Обработчики вешаем один раз и читаем актуальный ID в момент клика:
+    // раньше при смене ID в том же элементе копились дубли обработчиков
+    if (!pageelement.dataset.chmafBound) {
+      pageelement.dataset.chmafBound = '1';
+
+      pageelement.addEventListener('click', () => {
+        const id = pageelement.dataset.chmafUid;
+        if (id) window.open(`https://crm2.skyeng.ru/persons/${id}`, '_blank', 'noopener');
+      });
+
+      pageelement.addEventListener('contextmenu', (event) => {
+        const id = pageelement.dataset.chmafUid;
+        if (!id) return;
+        event.preventDefault();
+        // Скрипт живёт изолированно — copyToClipboard недоступен
+        navigator.clipboard?.writeText(id).then(() => {
+          const badge = pageelement.querySelector(`:scope > .${BADGE_CLASS}`);
+          if (!badge) return;
+          const prev = badge.textContent;
+          badge.textContent = '📋';
+          setTimeout(() => { badge.textContent = prev; }, 1200);
+        }).catch(() => { });
+      });
+    }
+  }
+
+  pageelement.appendChild(span);
+}
+
+// Первый проход по уже существующим элементам
 addusersinfo();
 
-const observer = new MutationObserver(mutations => {
-    const addedNodes = mutations.flatMap(mutation => Array.from(mutation.addedNodes));
-    if (addedNodes.length > 0) {
-        addusersinfo();
-    }
+// Angular-страница меняет DOM очень часто. Раньше на КАЖДУЮ мутацию
+// запускался полный обход страницы с innerText (пересчёт вёрстки).
+// Теперь серия мутаций схлопывается в один проход раз в 150 мс,
+// а вставка наших же подписей обход не запускает.
+let userScanTimer = 0;
+
+const userBadgeObserver = new MutationObserver((mutations) => {
+  if (userScanTimer) return;
+
+  const hasForeignNodes = mutations.some((mutation) =>
+    Array.prototype.some.call(mutation.addedNodes, (node) =>
+      !(node.nodeType === Node.ELEMENT_NODE && node.classList.contains(BADGE_CLASS))
+    )
+  );
+  if (!hasForeignNodes) return;
+
+  userScanTimer = setTimeout(() => {
+    userScanTimer = 0;
+    addusersinfo();
+  }, 150);
 });
 
-observer.observe(document.body, { childList: true, subtree: true });
+userBadgeObserver.observe(document.body, { childList: true, subtree: true });
 
 // ==========================================
-// НОВАЯ ФУНКЦИОНАЛЬНОСТЬ: Кнопка диагностики
+// Кнопка диагностики
 // ==========================================
 
 if (window.location.href.includes('video-trouble-shooter.skyeng.ru')) {
-    // Создаем плавающую кнопку
-    const diagBtn = document.createElement('div');
-    diagBtn.id = 'webrtc-diag-floating-btn';
-    diagBtn.innerHTML = '🔍';
-diagBtn.style.cssText = `
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: #243447;
-    color: #ffffff;
-    font-size: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
-    z-index: 999999;
-    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    user-select: none;
-`;
-    
-    // Эффекты при наведении
-diagBtn.addEventListener('mouseenter', () => {
-    diagBtn.style.transform = 'scale(1.05)';
-    diagBtn.style.backgroundColor = '#1B2735';
-    diagBtn.style.boxShadow = '0 10px 28px rgba(15, 23, 42, 0.36)';
-});
+  const diagBtn = document.createElement('button');
+  diagBtn.type = 'button';
+  diagBtn.id = 'webrtc-diag-floating-btn';
+  diagBtn.textContent = '🔍';
+  diagBtn.title = 'Диагностика WebRTC';
+  diagBtn.setAttribute('aria-label', 'Открыть диагностику WebRTC');
+  diagBtn.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        padding: 0;
+        border-radius: 50%;
+        background-color: #243447;
+        color: #ffffff;
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+        z-index: 999999;
+        transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        user-select: none;
+    `;
 
-diagBtn.addEventListener('mouseleave', () => {
-    diagBtn.style.transform = 'scale(1)';
-    diagBtn.style.backgroundColor = '#243447';
-    diagBtn.style.boxShadow = '0 8px 24px rgba(15, 23, 42, 0.28)';
-});
+  const setHover = (on) => {
+    diagBtn.style.transform = on ? 'scale(1.05)' : 'scale(1)';
+    diagBtn.style.backgroundColor = on ? '#1B2735' : '#243447';
+    diagBtn.style.boxShadow = on
+      ? '0 10px 28px rgba(15, 23, 42, 0.36)'
+      : '0 8px 24px rgba(15, 23, 42, 0.28)';
+  };
+  diagBtn.addEventListener('mouseenter', () => setHover(true));
+  diagBtn.addEventListener('mouseleave', () => setHover(false));
+  diagBtn.addEventListener('focus', () => setHover(true));
+  diagBtn.addEventListener('blur', () => setHover(false));
 
-    // При клике запускаем длинный код диагностики
-    diagBtn.addEventListener('click', () => {
-        runDiagnostics();
-    });
+  diagBtn.addEventListener('click', () => {
+    runDiagnostics().catch((error) => console.error('[ChMAF:TS] Диагностика:', error));
+  });
 
-    document.body.appendChild(diagBtn);
+  document.body.appendChild(diagBtn);
 }
 
 // Функция с длинным кодом диагностики
@@ -230,7 +327,7 @@ async function runDiagnostics() {
   ];
 
   const ISSUE_RE =
-  /таймаут|connectionstatefailed|connectionfailed|janussessioncreatetimeout|переподключается|ошибк[аиуеой]\s*:|ошибка подключения|показано уведомление\s*:\s*hardwareerror|не удалось установить видеосвязь\s*\(камера\)|показано уведомление\s*:\s*(?:не выдан доступ к камере\s*\/\s*микрофону|партн[её]р не выдал доступ к камере\s*\/\s*микрофону)/i;
+    /таймаут|connectionstatefailed|connectionfailed|janussessioncreatetimeout|переподключается|ошибк[аиуеой]\s*:|ошибка подключения|показано уведомление\s*:\s*hardwareerror|не удалось установить видеосвязь\s*\(камера\)|показано уведомление\s*:\s*(?:не выдан доступ к камере\s*\/\s*микрофону|партн[её]р не выдал доступ к камере\s*\/\s*микрофону)/i;
 
   const VIDEO_ISSUE_RE =
     /не удалось установить видеосвязь\s*\(камера\)|таймаут при установке видеосвязи\s*\(камера партн[её]ра\)/i;
@@ -307,8 +404,8 @@ async function runDiagnostics() {
     const headers = marked.length
       ? marked
       : [...document.querySelectorAll("th")].filter(th =>
-          /\((П|У)\)/i.test(th.innerText || th.textContent || "")
-        );
+        /\((П|У)\)/i.test(th.innerText || th.textContent || "")
+      );
 
     const result = new Map();
 
@@ -572,13 +669,12 @@ async function runDiagnostics() {
 
     const label = !name
       ? "Камера: не определена"
-      : `Камера: ${name}${
-          status === "on"
-            ? " · включена"
-            : status === "off"
-              ? " · выключена"
-              : ""
-        }`;
+      : `Камера: ${name}${status === "on"
+        ? " · включена"
+        : status === "off"
+          ? " · выключена"
+          : ""
+      }`;
 
     user.history.camera.push({
       ...context,
@@ -617,11 +713,9 @@ async function runDiagnostics() {
         codecType: type,
         value,
         isUndefined: unknown(value),
-        label: `${
-          type === "audio" ? "Аудио" : "Видео"
-        }: ${
-          unknown(value) ? "не определён" : value
-        }`
+        label: `${type === "audio" ? "Аудио" : "Видео"
+          }: ${unknown(value) ? "не определён" : value
+          }`
       });
     }
 
@@ -797,7 +891,7 @@ async function runDiagnostics() {
     if (
       next &&
       fragment.element.parentElement ===
-        next.element.parentElement
+      next.element.parentElement
     ) {
       const match =
         /^\s*видеосервер\s*:\s*(.+?)\s*$/i.exec(
@@ -882,6 +976,14 @@ async function runDiagnostics() {
   async function collect() {
     await expandPanels();
 
+    // Роли (П)/(У) приходят из CRM асинхронно: если 🔍 нажали сразу
+    // после открытия страницы, дожидаемся ответов (не дольше 3 с),
+    // иначе участники попадут в «Участник» без роли.
+    if (typeof waitForUserBadges === "function") {
+      if (typeof addusersinfo === "function") addusersinfo();
+      await waitForUserBadges();
+    }
+
     if (signal.aborted) return [];
 
     const found = findUsers();
@@ -912,7 +1014,7 @@ async function runDiagnostics() {
     if (
       known.length > 1 &&
       known[0].sortTime >
-        known.at(-1).sortTime
+      known.at(-1).sortTime
     ) {
       rowData.reverse();
     }
@@ -1477,7 +1579,7 @@ async function runDiagnostics() {
       border-color: #f3d1cc;
       background: #fff5f3;
     }
-	
+
 	.fact.missing {
   border-color: #e2bd72;
   background: #fff9eb;
@@ -1823,7 +1925,7 @@ async function runDiagnostics() {
         align-items: flex-start;
       }
     }
-	
+
 	/* Компактная верхняя часть */
     .header {
       padding: 12px 18px;
@@ -1910,6 +2012,15 @@ async function runDiagnostics() {
     }
   `;
 
+  // Во время перетаскивания окна размытие всей страницы под подложкой
+  // пересчитывалось бы на каждом кадре — на время drag его выключаем.
+  style.textContent += `
+    .backdrop.is-dragging {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  `;
+
   const backdrop = el("div", "backdrop");
   const panel = el("section", "panel");
 
@@ -1976,29 +2087,29 @@ async function runDiagnostics() {
     const hasDevice = !unknown(mic);
     const stereoMixer = hasDevice && /стерео|stereo|mixer|микшер/i.test(mic);
     const tone =
-  !hasDevice
-    ? "missing"
-    : micStatus === "off"
-      ? "warn"
-      : micStatus === "on"
-        ? "good"
-        : "";
+      !hasDevice
+        ? "missing"
+        : micStatus === "off"
+          ? "warn"
+          : micStatus === "on"
+            ? "good"
+            : "";
     const fact = el("div", `fact ${tone}`.trim());
     const label = el("div", "fact-label", "Микрофон");
     const value = el("div", "fact-value");
     const line = el("div", "device-line");
-   const deviceName =
-  hasDevice
-    ? mic
-    : "🎤 Микрофон";
+    const deviceName =
+      hasDevice
+        ? mic
+        : "🎤 Микрофон";
     const description =
       micStatus === "on"
         ? `${deviceName} · включён`
         : micStatus === "off"
-        ? `${deviceName} · отключён`
-        : hasDevice
-        ? `${mic} · статус неизвестен`
-        : "🎤 Микрофон: не определён";
+          ? `${deviceName} · отключён`
+          : hasDevice
+            ? `${mic} · статус неизвестен`
+            : "🎤 Микрофон: не определён";
 
     line.append(microphoneIcon(micStatus), el("span", "", description));
     value.append(line);
@@ -2018,11 +2129,11 @@ async function runDiagnostics() {
   function cameraDescription(user) {
     const { camera, cameraStatus } = user.devices;
     if (unknown(camera)) {
-  return {
-    text: "📷 Камера: не определена",
-    tone: "missing"
-  };
-}
+      return {
+        text: "📷 Камера: не определена",
+        tone: "missing"
+      };
+    }
     if (cameraStatus === "on") return { text: `${camera} · включена`, tone: "good" };
     if (cameraStatus === "off") return { text: `${camera} · выключена`, tone: "" };
     return { text: `${camera} · статус неизвестен`, tone: "" };
@@ -2327,13 +2438,30 @@ async function runDiagnostics() {
   refreshButton.addEventListener("click", refresh, { signal });
   closeButton.addEventListener("click", destroy, { signal });
   backdrop.addEventListener("click", destroy, { signal });
+  // Карточки перестраиваются целиком, поэтому не на каждую букву,
+  // а после короткой паузы в наборе
+  let searchTimer = 0;
   search.addEventListener("input", () => {
-    searchQuery = search.value.trim();
-    renderGrid();
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      searchQuery = search.value.trim();
+      renderGrid();
+    }, 150);
   }, { signal });
+  signal.addEventListener("abort", () => clearTimeout(searchTimer));
 
   document.addEventListener("keydown", event => {
     if (event.key !== "Escape") return;
+
+    // Первый Esc в непустом поиске очищает поиск, а не закрывает окно
+    if (shadow.activeElement === search && search.value) {
+      clearTimeout(searchTimer);
+      search.value = "";
+      searchQuery = "";
+      renderGrid();
+      return;
+    }
+
     if (activeHistory) {
       activeHistory.remove();
       activeHistory = null;
@@ -2343,27 +2471,62 @@ async function runDiagnostics() {
   }, { signal });
 
   // Перемещение основного окна.
+  // Размеры окна считываем один раз в начале (а не на каждом движении),
+  // позицию применяем не чаще одного раза за кадр.
   let drag = null;
+  let dragFrame = 0;
+
+  function applyDrag() {
+    dragFrame = 0;
+    if (!drag) return;
+    const left = Math.min(drag.maxLeft, Math.max(0, drag.left + drag.x - drag.startX));
+    const top = Math.min(drag.maxTop, Math.max(0, drag.top + drag.y - drag.startY));
+    panel.style.left = `${left}px`;
+    panel.style.top = `${top}px`;
+  }
+
   header.addEventListener("pointerdown", event => {
-    if (event.button !== 0 || event.target.closest("button")) return;
+    if (event.button !== 0 || event.target.closest("button, input")) return;
     const rect = panel.getBoundingClientRect();
-    drag = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, left: rect.left, top: rect.top };
+    drag = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      x: event.clientX,
+      y: event.clientY,
+      left: rect.left,
+      top: rect.top,
+      maxLeft: Math.max(0, innerWidth - rect.width),
+      maxTop: Math.max(0, innerHeight - rect.height)
+    };
     panel.style.left = `${rect.left}px`;
     panel.style.top = `${rect.top}px`;
     panel.style.transform = "none";
+    panel.style.willChange = "left, top";
+    backdrop.classList.add("is-dragging");
+    header.style.cursor = "grabbing";
     header.setPointerCapture(event.pointerId);
   }, { signal });
 
   header.addEventListener("pointermove", event => {
     if (!drag || drag.pointerId !== event.pointerId) return;
-    const maxLeft = Math.max(0, innerWidth - panel.offsetWidth);
-    const maxTop = Math.max(0, innerHeight - panel.offsetHeight);
-    panel.style.left = `${Math.min(maxLeft, Math.max(0, drag.left + event.clientX - drag.startX))}px`;
-    panel.style.top = `${Math.min(maxTop, Math.max(0, drag.top + event.clientY - drag.startY))}px`;
+    drag.x = event.clientX;
+    drag.y = event.clientY;
+    if (!dragFrame) dragFrame = requestAnimationFrame(applyDrag);
   }, { signal });
 
-  for (const type of ["pointerup", "pointercancel"]) {
-    header.addEventListener(type, () => { drag = null; }, { signal });
+  for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
+    header.addEventListener(type, () => {
+      if (!drag) return;
+      if (dragFrame) {
+        cancelAnimationFrame(dragFrame);
+        applyDrag();
+      }
+      drag = null;
+      panel.style.willChange = "";
+      backdrop.classList.remove("is-dragging");
+      header.style.cursor = "";
+    }, { signal });
   }
 
   await refresh();
