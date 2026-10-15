@@ -15,6 +15,14 @@
 
     let opStatusInterval;
     let lastAlertTime = 0;
+    let lastSummaryGrow = { online: 0, busy: 0, pause: 0 };
+
+    const chatsWord = (n) => {
+        const m10 = n % 10, m100 = n % 100;
+        if (m10 === 1 && m100 !== 11) return 'чат';
+        if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'чата';
+        return 'чатов';
+    };
     let siderCache = null;
     const badgeCache = new Map();
     const alertAudio = new Audio('https://grumstv.github.io/Sounds/alert.mp3');
@@ -90,13 +98,30 @@
             };
 
             const hidesummary = localStorage.getItem('hidesummaryflag') === '1';
+            const totalOps = stats.online + stats.busy + stats.pause;
+            const totalChats = opstats.reduce((sum, o) => sum + (o.aCnt || 0) + (o.cCnt || 0), 0);
             const isAlert = (key === 'ТП' || key === 'ТП ОС') && tpQueue > 10;
+            const shownQueue = (key === 'ТП' || key === 'ТП ОС') ? tpQueue + tpOsQueue : currentQueue;
+            const queueLevel = isAlert ? 'alert' : (shownQueue > 0 ? 'wait' : 'calm');
+            const queueText = {
+                calm: 'Очередь пуста',
+                wait: `В очереди: ${shownQueue}`,
+                alert: `Завал: ${shownQueue} в очереди`
+            }[queueLevel];
+
+            // FLIP: запоминаем, где стояли строки до перерисовки
+            const prevTops = new Map();
+            statusContainer.querySelectorAll('.op-st-row').forEach(r => {
+                prevTops.set(r.dataset.id, r.getBoundingClientRect().top);
+            });
 
             statusContainer.innerHTML = `
             <div class="op-st-queue-box ${isAlert ? 'alert-mode' : ''}">
                 <div class="queue-header">
-                    <div class="queue-dot"></div>
-                    <span class="queue-title">Очередь</span>
+                    <div class="queue-pill lvl-${queueLevel}">
+                        <span class="queue-dot"></span>
+                        <span class="queue-title">${queueText}</span>
+                    </div>
                 </div>
                 ${(key === 'ТП' || key === 'ТП ОС')
                     ? `<div class="queue-stats">
@@ -121,30 +146,66 @@
             <div class="op-st-toggle" id="op-st-toggle-btn">
                 ${hidesummary ? '🔽 Сводка' : '🔼 Скрыть'}
             </div>
-            <div id="op-st-stats-panel" class="op-st-hud-trench" style="display: ${hidesummary ? 'none' : 'flex'}">
-                <div class="hud-module m-online">
-                    <div class="hud-mod-glow"></div>
-                    <div class="hud-mod-header">ОНЛАЙН</div>
-                    <div class="hud-mod-value">${stats.online}</div>
+            <div id="op-st-stats-panel" class="op-st-summary" style="display: ${hidesummary ? 'none' : 'flex'}">
+                <div class="sum-head">
+                    <span><b class="sum-total">${totalOps}</b> на линии</span>
+                    <span><b class="sum-total">${totalChats}</b> ${chatsWord(totalChats)} в работе</span>
                 </div>
-                <div class="hud-module m-busy">
-                    <div class="hud-mod-glow"></div>
-                    <div class="hud-mod-header">ЗАНЯТ</div>
-                    <div class="hud-mod-value">${stats.busy}</div>
+                <div class="sum-bar" role="img" aria-label="Онлайн ${stats.online}, занят ${stats.busy}, перерыв ${stats.pause}">
+                    ${['online', 'busy', 'pause'].map(k => `
+                        <span class="sum-seg s-${k} ${stats[k] ? '' : 'is-zero'}" data-grow="${stats[k]}"
+                              style="flex-grow: ${lastSummaryGrow[k]}"></span>`).join('')}
                 </div>
-                <div class="hud-module m-pause">
-                    <div class="hud-mod-glow"></div>
-                    <div class="hud-mod-header">ПЕРЕРЫВ</div>
-                    <div class="hud-mod-value">${stats.pause}</div>
+                <div class="sum-legend">
+                    ${[['online', 'онлайн'], ['busy', 'занят'], ['pause', 'перерыв']].map(([k, label]) => `
+                        <div class="sum-item s-${k} ${stats[k] ? '' : 'is-zero'}">
+                            <span class="sum-num">${stats[k]}</span>
+                            <span class="sum-label"><i class="sum-dot"></i>${label}</span>
+                        </div>`).join('')}
                 </div>
             </div>
         `;
 
+            animateRowMoves(prevTops);
+            animateSummaryBar(stats);
             attachOpHandlers();
         } catch (e) { console.error('OpStatus Error:', e); }
     }
 
     // === HELPERS ================================================================
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+
+    // Сегменты полосы рисуются со старыми пропорциями и в следующем кадре
+    // перетекают в новые — так изменение состава видно глазом
+    function animateSummaryBar(stats) {
+        const segs = statusContainer.querySelectorAll('.sum-seg');
+        const apply = () => segs.forEach(seg => { seg.style.flexGrow = seg.dataset.grow; });
+        if (reducedMotion?.matches) apply();
+        else requestAnimationFrame(() => requestAnimationFrame(apply));
+        lastSummaryGrow = { online: stats.online, busy: stats.busy, pause: stats.pause };
+    }
+
+    // Плавно перемещает строки на новые места после перерисовки innerHTML
+    function animateRowMoves(prevTops) {
+        if (!prevTops.size || reducedMotion?.matches) return;
+        statusContainer.querySelectorAll('.op-st-row').forEach(row => {
+            const before = prevTops.get(row.dataset.id);
+            if (before === undefined) {
+                row.classList.add('op-st-enter');
+                return;
+            }
+            const delta = before - row.getBoundingClientRect().top;
+            if (Math.abs(delta) < 1) return;
+            row.style.transition = 'none';
+            row.style.transform = `translateY(${delta}px)`;
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                row.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                row.style.transform = '';
+                row.addEventListener('transitionend', () => { row.style.transition = ''; }, { once: true });
+            }));
+        });
+    }
+
     async function waitForOpSectionNew(timeout = 3000) {
         return new Promise((resolve) => {
             const start = Date.now();
@@ -228,8 +289,28 @@
             }
         };
 
-        return uniqueOps.sort((a, b) => a.operator.status.localeCompare(b.operator.status))
-            .map(item => {
+        if (!uniqueOps.length) {
+            return `<div class="op-st-empty">На линии никого нет</div>`;
+        }
+
+        const countOf = (it) => (it.aCnt || 0) + (it.cCnt || 0);
+        const isTpOsOp = (op) => !!op.fullName?.toUpperCase().includes('ТП ОС');
+        const STATUS_TEXT = { Online: 'онлайн', Busy: 'занят', Pause: 'перерыв' };
+
+        uniqueOps.sort((a, b) => a.operator.status.localeCompare(b.operator.status));
+
+        // Следующий чат получит онлайн-оператор с минимумом чатов (отдельно для ТП и ТП ОС)
+        const minByGroup = new Map();
+        uniqueOps.forEach(it => {
+            if (it.operator.status !== 'Online') return;
+            const g = isTpOsOp(it.operator) ? 'os' : 'main';
+            const c = countOf(it);
+            if (!minByGroup.has(g) || c < minByGroup.get(g)) minByGroup.set(g, c);
+        });
+
+
+        let prevStatus = null;
+        return uniqueOps.map(item => {
                 const op = item.operator;
                 const theme = statusMap[op.status] || {
                     bg: 'rgba(100,100,100,0.1)',
@@ -238,30 +319,41 @@
                     textGlow: 'none'
                 };
 
-                const isTpOs = op.fullName?.toUpperCase().includes('ТП ОС');
-                const currentCount = (item.aCnt || 0) + (item.cCnt || 0);
+                const isTpOs = isTpOsOp(op);
+                const currentCount = countOf(item);
+                const isOnline = op.status === 'Online';
+                const isNext = isOnline && minByGroup.get(isTpOs ? 'os' : 'main') === currentCount;
 
-                const prevCount = badgeCache.get(op.id) || 0;
                 let pulseClass = '';
-                if (prevCount !== 0) {
+                if (badgeCache.has(op.id)) {
+                    const prevCount = badgeCache.get(op.id);
                     if (currentCount > prevCount) pulseClass = 'pulse-up';
                     else if (currentCount < prevCount) pulseClass = 'pulse-down';
                 }
                 badgeCache.set(op.id, currentCount);
 
-                let opColor = op.status === 'Online' ? '#e2e8f0' : '#94a3b8';
-                if (isTpOs) opColor = op.status === 'Online' ? '#22d3ee' : '#0891b2';
+                // Разделитель между группами статусов
+                const sep = (prevStatus !== null && prevStatus !== op.status) ? '<div class="op-st-sep"></div>' : '';
+                prevStatus = op.status;
 
                 const displayName = cleanOperatorName(op.fullName);
+                const tip = `${STATUS_TEXT[op.status] || op.status}, ${currentCount} ${chatsWord(currentCount)}`
+                    + (isNext ? ' — следующий чат придёт сюда' : '');
 
-                return `<div class="op-st-row ${isTpOs ? 'tp-os-row' : ''}" name="operrow" data-id="${op.id}">
+                const rowClasses = [
+                    'op-st-row',
+                    isTpOs ? 'tp-os-row' : '',
+                    isOnline ? '' : 'is-away',
+                    isNext ? 'is-next' : ''
+                ].filter(Boolean).join(' ');
+
+                return `${sep}<div class="${rowClasses}" name="operrow" data-id="${op.id}" title="${tip}">
                         <span class="op-st-badge ${pulseClass}" data-count="${currentCount}"
                             style="--badge-bg: ${theme.bg}; --badge-color: ${theme.glow}; --badge-border: ${theme.b}; --badge-glow: ${theme.textGlow};">
                             ${currentCount}
                         </span>
-                        <span style="opacity: ${op.status === 'Online' ? 1 : 0.7}; color: ${opColor}; font-weight: ${isTpOs ? '600' : '500'}; letter-spacing: 0.3px;">
-                            ${displayName}
-                        </span>
+                        <span class="op-st-name">${displayName}</span>
+                        ${isNext ? '<span class="op-st-next" aria-hidden="true"></span>' : ''}
                     </div>`;
             }).join('');
     };
@@ -413,24 +505,70 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding-bottom: 2px;
+            padding-top: 8px;
+        }
+
+        /* Индикатор состояния очереди: спокойно / ждут / завал */
+        .queue-pill {
+            --pill-color: #10b981;
+            --pill-rgb: 16, 185, 129;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 11px 4px 9px;
+            border-radius: 999px;
+            background: rgba(var(--pill-rgb), 0.08);
+            border: 1px solid rgba(var(--pill-rgb), 0.22);
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+        .queue-pill.lvl-wait  { --pill-color: #f59e0b; --pill-rgb: 245, 158, 11; }
+        .queue-pill.lvl-alert {
+            --pill-color: #ef4444;
+            --pill-rgb: 239, 68, 68;
+            background: rgba(239, 68, 68, 0.16);
+            border-color: rgba(239, 68, 68, 0.5);
+            animation: pillAlert 1.1s ease-in-out infinite;
         }
 
         .queue-dot {
-            width: 5px;
-            height: 5px;
-            background: #10b981;
+            position: relative;
+            width: 7px;
+            height: 7px;
+            flex-shrink: 0;
             border-radius: 50%;
-            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+            background: var(--pill-color);
+            box-shadow: 0 0 8px rgba(var(--pill-rgb), 0.7);
         }
+        /* Расходящееся кольцо: есть очередь — спокойно, завал — часто */
+        .queue-dot::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: var(--pill-color);
+            opacity: 0;
+        }
+        .lvl-wait  .queue-dot::after { animation: dotRipple 1.8s ease-out infinite; }
+        .lvl-alert .queue-dot::after { animation: dotRipple 0.9s ease-out infinite; }
 
         .queue-title {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 2.5px;
-            color: #64748b;
-            text-transform: uppercase;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            color: #94a3b8;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+        .lvl-wait  .queue-title { color: #fcd34d; }
+        .lvl-alert .queue-title { color: #fecaca; font-weight: 800; }
+
+        @keyframes dotRipple {
+            0%   { transform: scale(1);   opacity: 0.7; }
+            100% { transform: scale(3.2); opacity: 0; }
+        }
+        @keyframes pillAlert {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+            50%      { box-shadow: 0 0 16px 1px rgba(239, 68, 68, 0.45); }
         }
 
         /* === QUEUE STATS PANEL === */
@@ -598,17 +736,6 @@
                 0 0 30px rgba(239, 68, 68, 0.08);
         }
 
-        .op-st-queue-box.alert-mode .queue-dot {
-            background: #ef4444;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
-            animation: pulseAlertDot 1.2s ease-in-out infinite;
-        }
-
-        @keyframes pulseAlertDot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.35; transform: scale(0.75); }
-        }
-
         /* === OPERATOR ROWS === */
         .op-st-row {
             position: relative;
@@ -673,6 +800,72 @@
             box-shadow:
                 inset 0 0 15px rgba(6, 182, 212, 0.08),
                 0 0 20px rgba(6, 182, 212, 0.12);
+        }
+
+        /* === ROW STATES === */
+        .op-st-name {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #e2e8f0;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            position: relative;
+            z-index: 1;
+        }
+        .op-st-row.is-away .op-st-name { color: #94a3b8; opacity: 0.7; }
+        .op-st-row.tp-os-row .op-st-name { color: #22d3ee; font-weight: 600; }
+        .op-st-row.tp-os-row.is-away .op-st-name { color: #0891b2; }
+
+        .op-st-row.is-away { background: transparent; border-color: rgba(255, 255, 255, 0.025); }
+        .op-st-row.is-away:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
+
+        /* Следующий получатель чата */
+        .op-st-row.is-next {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.10) 0%, rgba(16, 185, 129, 0.02) 100%);
+            border-color: rgba(16, 185, 129, 0.18);
+            border-left-color: #10b981;
+        }
+        .op-st-row.tp-os-row.is-next {
+            background: linear-gradient(90deg, rgba(34, 211, 238, 0.14) 0%, rgba(34, 211, 238, 0.03) 100%);
+            border-color: rgba(34, 211, 238, 0.22);
+            border-left-color: #67e8f9;
+        }
+        .op-st-next {
+            flex-shrink: 0;
+            width: 0;
+            height: 0;
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+            border-right: 6px solid #10b981;
+            filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.6));
+            position: relative;
+            z-index: 1;
+        }
+        .tp-os-row .op-st-next {
+            border-right-color: #22d3ee;
+            filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.6));
+        }
+
+        .op-st-sep {
+            height: 1px;
+            margin: 7px 10px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09), transparent);
+        }
+
+        .op-st-empty {
+            padding: 14px 8px;
+            text-align: center;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .op-st-row.op-st-enter { animation: opRowEnter 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        @keyframes opRowEnter {
+            from { opacity: 0; transform: translateX(-8px); }
+            to   { opacity: 1; transform: none; }
         }
 
         /* === BADGES === */
@@ -791,128 +984,102 @@
             background: rgba(167, 139, 250, 0.03);
         }
 
-        /* === HUD TRENCH === */
-        .op-st-hud-trench {
-            display: flex;
-            gap: 6px;
-            margin-top: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 12px;
-            padding: 6px;
-            box-shadow:
-                inset 0 4px 15px rgba(0, 0, 0, 0.8),
-                0 1px 0 rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(0, 0, 0, 0.8);
+        /* === SUMMARY === */
+        .op-st-summary {
+            flex-direction: column;
+            gap: 10px;
+            margin: 4px 6px 10px;
+            padding: 12px 12px 10px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
             position: relative;
             z-index: 1;
         }
 
-        .hud-module {
-            flex: 1;
-            position: relative;
+        .sum-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 10px;
+            color: #64748b;
+            letter-spacing: 0.2px;
+        }
+        .sum-total {
+            font-size: 12px;
+            font-weight: 700;
+            color: #cbd5e1;
+            font-variant-numeric: tabular-nums;
+            margin-right: 2px;
+        }
+
+        /* Полоса состава смены */
+        .sum-bar {
+            display: flex;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.35);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            padding: 1px;
+        }
+        .sum-seg {
+            flex-basis: 0;
+            min-width: 0;
+            height: 100%;
+            margin: 0 1px;
+            border-radius: 999px;
+            background: var(--sum-color);
+            box-shadow: 0 0 10px var(--sum-glow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            transition: flex-grow 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), margin 0.4s ease;
+        }
+        .sum-seg.is-zero { margin: 0; }
+
+        .s-online { --sum-color: #10b981; --sum-glow: rgba(16, 185, 129, 0.45); --sum-text: #6ee7b7; }
+        .s-busy   { --sum-color: #f59e0b; --sum-glow: rgba(245, 158, 11, 0.45); --sum-text: #fcd34d; }
+        .s-pause  { --sum-color: #ef4444; --sum-glow: rgba(239, 68, 68, 0.45);  --sum-text: #fca5a5; }
+
+        .sum-legend {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .sum-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 8px 0 6px 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%);
-            border-radius: 8px;
-            border-top: 2px solid var(--mod-color);
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: default;
-        }
-
-        .hud-module::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 10px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%);
-            pointer-events: none;
-        }
-
-        .hud-module:hover {
-            transform: translateY(-2px);
-            background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
-
-        .hud-mod-header {
-            font-size: 8px;
-            font-weight: 800;
-            color: rgba(255, 255, 255, 0.6);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            z-index: 2;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-        }
-
-        .hud-diamond {
-            width: 4px;
-            height: 4px;
-            background: var(--mod-color);
-            transform: rotate(45deg);
-            box-shadow: 0 0 8px var(--mod-color), 0 0 2px #fff;
-            animation: diamondPulse 2s infinite alternate;
-        }
-
-        .hud-mod-value {
-            font-size: 20px;
-            font-weight: 900;
-            font-family: 'Courier New', monospace;
-            color: #ffffff;
-            margin-top: 4px;
-            z-index: 2;
-            text-shadow:
-                0 0 15px var(--mod-color),
-                0 2px 4px rgba(0,0,0,0.8);
-            transition: all 0.3s ease;
-            font-variant-numeric: tabular-nums;
-            font-feature-settings: "tnum";
-        }
-
-        .hud-module:hover .hud-mod-value {
-            text-shadow:
-                0 0 25px var(--mod-color),
-                0 0 5px #fff;
-            transform: scale(1.05);
-        }
-
-        .hud-mod-glow {
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 20px;
-            background: var(--mod-color);
-            filter: blur(12px);
-            opacity: 0.15;
-            z-index: 1;
+            gap: 2px;
             transition: opacity 0.3s ease;
         }
+        .sum-item + .sum-item { border-left: 1px solid rgba(255, 255, 255, 0.05); }
 
-        .hud-module:hover .hud-mod-glow {
-            opacity: 0.35;
-            animation: pulseGlow 1.5s infinite alternate;
+        .sum-num {
+            font-size: 20px;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.5px;
+            color: var(--sum-text);
+            text-shadow: 0 0 14px var(--sum-glow);
+            font-variant-numeric: tabular-nums;
+        }
+        .sum-label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 9.5px;
+            color: #94a3b8;
+        }
+        .sum-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--sum-color);
+            box-shadow: 0 0 6px var(--sum-glow);
         }
 
-        .m-online { --mod-color: #10b981; }
-        .m-busy   { --mod-color: #f59e0b; }
-        .m-pause  { --mod-color: #ef4444; }
-
-        @keyframes diamondPulse {
-            0% { filter: brightness(1); transform: rotate(45deg) scale(1); }
-            100% { filter: brightness(1.5); transform: rotate(45deg) scale(1.2); box-shadow: 0 0 12px var(--mod-color), 0 0 4px #fff; }
-        }
-
-        @keyframes pulseGlow {
-            0% { opacity: 0.2; transform: translateX(-50%) scaleY(1); }
-            100% { opacity: 0.4; transform: translateX(-50%) scaleY(1.5); }
-        }
+        .sum-item.is-zero .sum-num { color: #475569; text-shadow: none; }
+        .sum-item.is-zero .sum-dot { background: #475569; box-shadow: none; }
+        .sum-item.is-zero .sum-label { color: #64748b; }
 
         /* === ALERT MODAL === */
         .op-st-alert-overlay {
