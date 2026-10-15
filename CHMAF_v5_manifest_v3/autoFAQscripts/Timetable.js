@@ -623,8 +623,10 @@ var win_TimetableUI = `
 
 createWindow(
     'AF_TimetableUI',
-    'winTopTimetable',
-    'winLeftTimetable',
+    // Отдельные ключи: Userinfo.js хранит под winTopTimetable/winLeftTimetable
+    // позицию своего окна AF_Timetable, и окна перетирали положение друг друга.
+    'winTopTimetableUI',
+    'winLeftTimetableUI',
     win_TimetableUI
 );
 

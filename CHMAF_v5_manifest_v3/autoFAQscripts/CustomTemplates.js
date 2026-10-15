@@ -165,31 +165,31 @@ function addNewString(index) {
                        style="width: 140px;"
                        placeholder="Имя шаблона">
 
-                <button id="sortUpBtn${index}"
+                <button id="ctSortUpBtn${index}"
                         class="glass-btn mainButton"
                         type="button"
                         title="Вверх"
                         style="padding: 2px 8px;">↑</button>
 
-                <button id="sortDownBtn${index}"
+                <button id="ctSortDownBtn${index}"
                         class="glass-btn mainButton"
                         type="button"
                         title="Вниз"
                         style="padding: 2px 8px;">↓</button>
 
                 <div class="flex-right">
-                    <button id="deleteBtn${index}"
+                    <button id="ctDeleteBtn${index}"
                             class="glass-btn mainButton"
                             type="button"
                             title="Удалить шаблон"
                             style="border-color: rgba(255,99,71,0.4); color: #ff8b8b;">Del</button>
 
-                    <button id="saveBtn${index}"
+                    <button id="ctSaveBtn${index}"
                             class="glass-btn mainButton"
                             type="button"
                             title="Сохранить шаблон">Save</button>
 
-                    <button id="sendBtn${index}"
+                    <button id="ctSendBtn${index}"
                             class="glass-btn mainButton primary"
                             type="button"
                             title="Перенести текст в главное окно">Send</button>
@@ -214,6 +214,19 @@ function addNewString(index) {
         `cstmTmpInp${languageTmplt}${index}`
     ).value = textValue;
 
+    // Автосохранение: правки не теряются, если закрыть окно без «Save».
+    let autosaveTimer = null;
+    const scheduleAutosave = () => {
+        clearTimeout(autosaveTimer);
+        autosaveTimer = setTimeout(() => saveTemplate(index), 500);
+    };
+
+    document.getElementById(`tmpNameInp${languageTmplt}${index}`)
+        .addEventListener('input', scheduleAutosave);
+
+    document.getElementById(`cstmTmpInp${languageTmplt}${index}`)
+        .addEventListener('input', scheduleAutosave);
+
     // При переключении галочки сохраняем также текущее имя и текст строки.
     document.getElementById(
         `checkboxInp${languageTmplt}${index}`
@@ -221,19 +234,19 @@ function addNewString(index) {
         saveTemplate(index);
     });
 
-    document.getElementById(`sortUpBtn${index}`)
+    document.getElementById(`ctSortUpBtn${index}`)
         .addEventListener('click', () => sortTemplate(index, -1));
 
-    document.getElementById(`sortDownBtn${index}`)
+    document.getElementById(`ctSortDownBtn${index}`)
         .addEventListener('click', () => sortTemplate(index, 1));
 
-    document.getElementById(`deleteBtn${index}`)
+    document.getElementById(`ctDeleteBtn${index}`)
         .addEventListener('click', () => deleteTemplate(index));
 
-    document.getElementById(`saveBtn${index}`)
+    document.getElementById(`ctSaveBtn${index}`)
         .addEventListener('click', () => saveTemplate(index));
 
-    document.getElementById(`sendBtn${index}`)
+    document.getElementById(`ctSendBtn${index}`)
         .addEventListener('click', () => sendTemplate(index));
 }
 
@@ -476,10 +489,11 @@ document.getElementById('testCustTMPL')?.addEventListener(
 
         if (!windowElement) return;
 
+        // Проверяем реальную видимость: display === '' тоже означает «открыто».
         windowElement.style.display =
-            windowElement.style.display === 'block'
-                ? 'none'
-                : 'block';
+            getComputedStyle(windowElement).display === 'none'
+                ? 'block'
+                : 'none';
     }
 );
 
