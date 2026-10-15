@@ -440,8 +440,8 @@
         console.error('[TestUsers] Не найдены элементы интерфейса');
         return;
     }
-	
-	window.__testUsersModuleInitialized = true;
+
+    window.__testUsersModuleInitialized = true;
 
     // Уведомления: сначала существующая функция проекта,
     // при её отсутствии — toast в оригинальном стиле.
@@ -563,45 +563,45 @@
         }
     }
 
-function handleSearch() {
-    const value = UI.input.value.trim();
+    function handleSearch() {
+        const value = UI.input.value.trim();
 
-    if (!/^\d+$/.test(value)) {
-        notify('Введите числовой ID', 'error');
-        UI.input.focus();
-        return false;
+        if (!/^\d+$/.test(value)) {
+            notify('Введите числовой ID', 'error');
+            UI.input.focus();
+            return false;
+        }
+
+        const studentInput = document.getElementById('idstudent');
+        const studentBtn = document.getElementById('getidstudent');
+        const serviceWindow = document.getElementById('AF_Service');
+
+        if (!studentInput || !studentBtn || !serviceWindow) {
+            notify('Сервис поиска недоступен', 'error');
+            return false;
+        }
+
+        // Предыдущее окно могло быть скрыто самим модулем услуг.
+        if (getComputedStyle(serviceWindow).display === 'none') {
+            serviceWindow.style.display = 'block';
+        }
+
+        const serviceToggle = document.getElementById('butServ');
+
+        // В разных частях проекта используются оба класса.
+        serviceToggle?.classList.add('active', 'activeScriptBtn');
+
+        studentInput.value = value;
+        studentInput.dispatchEvent(
+            new Event('input', { bubbles: true })
+        );
+
+        // Сохраняем существующий механизм запуска модуля услуг.
+        studentBtn.click();
+
+        UI.input.value = '';
+        return true;
     }
-
-    const studentInput = document.getElementById('idstudent');
-    const studentBtn = document.getElementById('getidstudent');
-    const serviceWindow = document.getElementById('AF_Service');
-
-    if (!studentInput || !studentBtn || !serviceWindow) {
-        notify('Сервис поиска недоступен', 'error');
-        return false;
-    }
-
-    // Предыдущее окно могло быть скрыто самим модулем услуг.
-    if (getComputedStyle(serviceWindow).display === 'none') {
-        serviceWindow.style.display = 'block';
-    }
-
-    const serviceToggle = document.getElementById('butServ');
-
-    // В разных частях проекта используются оба класса.
-    serviceToggle?.classList.add('active', 'activeScriptBtn');
-
-    studentInput.value = value;
-    studentInput.dispatchEvent(
-        new Event('input', { bubbles: true })
-    );
-
-    // Сохраняем существующий механизм запуска модуля услуг.
-    studentBtn.click();
-
-    UI.input.value = '';
-    return true;
-}
     UI.studentBtn.addEventListener('click', () => {
         void handleButtonClick(UI.studentBtn, 'test_stud');
     });
@@ -634,60 +634,66 @@ function handleSearch() {
         }
     });
 
-UI.searchBtn.addEventListener('click', () => {
-    handleSearch();
-});
+    UI.searchBtn.addEventListener('click', () => {
+        handleSearch();
+    });
 
-UI.input.addEventListener('keydown', event => {
-    if (event.key !== 'Enter') return;
+    UI.input.addEventListener('keydown', event => {
+        if (event.key !== 'Enter') return;
 
-    event.preventDefault();
-    handleSearch();
-});
-
-UI.input.addEventListener('input', () => {
-    if (typeof onlyNumber === 'function') {
-        onlyNumber(UI.input);
-    } else {
-        UI.input.value = UI.input.value.replace(/\D/g, '');
-    }
-});
-
-UI.input.addEventListener('paste', event => {
-    const pastedText = event.clipboardData
-        ?.getData('text')
-        ?.trim();
-
-    // Если браузер не предоставил содержимое буфера,
-    // не ломаем стандартную вставку.
-    if (pastedText == null) {
-    // Даём браузеру выполнить обычную вставку,
-    // затем запускаем поиск по получившемуся значению.
-    setTimeout(() => {
-        if (UI.input.value.trim()) {
-            handleSearch();
-        }
-    }, 0);
-    return;
-}
-
-    if (!/^\d+$/.test(pastedText)) {
         event.preventDefault();
-        notify('В буфере обмена должен быть числовой ID', 'warning');
-        return;
-    }
+        handleSearch();
+    });
 
-    event.preventDefault();
+    UI.input.addEventListener('input', () => {
+        if (typeof onlyNumber === 'function') {
+            onlyNumber(UI.input);
+        } else {
+            UI.input.value = UI.input.value.replace(/\D/g, '');
+        }
+    });
 
-    UI.input.value = pastedText;
-    UI.input.dispatchEvent(
-        new Event('input', { bubbles: true })
-    );
+    UI.input.addEventListener('paste', event => {
+        const pastedText = event.clipboardData
+            ?.getData('text')
+            ?.trim();
 
-    // Важно: вызываем один раз. Не нужно одновременно
-    // нажимать кнопку и вручную запускать getuserinfo().
-    handleSearch();
-});
+        // Если браузер не предоставил содержимое буфера,
+        // не ломаем стандартную вставку.
+        if (pastedText == null) {
+            // Даём браузеру выполнить обычную вставку,
+            // затем запускаем поиск по получившемуся значению.
+            setTimeout(() => {
+                if (UI.input.value.trim()) {
+                    handleSearch();
+                }
+            }, 0);
+            return;
+        }
+
+        // Из «ID: 123456», «id 123456» или ссылки на CRM достаём единственное число.
+        const numbers = pastedText.match(/\d{4,}/g) || [];
+        const idFromText = /^\d+$/.test(pastedText)
+            ? pastedText
+            : (numbers.length === 1 ? numbers[0] : null);
+
+        if (!idFromText) {
+            event.preventDefault();
+            notify('В буфере обмена должен быть числовой ID', 'warning');
+            return;
+        }
+
+        event.preventDefault();
+
+        UI.input.value = idFromText;
+        UI.input.dispatchEvent(
+            new Event('input', { bubbles: true })
+        );
+
+        // Важно: вызываем один раз. Не нужно одновременно
+        // нажимать кнопку и вручную запускать getuserinfo().
+        handleSearch();
+    });
 
     function validatePosition() {
         if (getComputedStyle(TestUsersdiv).display === 'none') return;
@@ -745,7 +751,11 @@ UI.input.addEventListener('paste', event => {
             window.location.pathname !== '/login' &&
             localStorage.getItem('disablelpmwindow') !== '1';
 
-        TestUsersdiv.style.display = shouldShow ? 'block' : 'none';
+        // Пишем в style только при изменении — раньше запись шла каждые 1.2 с
+        const nextDisplay = shouldShow ? 'block' : 'none';
+        if (TestUsersdiv.style.display !== nextDisplay) {
+            TestUsersdiv.style.display = nextDisplay;
+        }
 
         if (shouldShow) {
             requestAnimationFrame(validatePosition);

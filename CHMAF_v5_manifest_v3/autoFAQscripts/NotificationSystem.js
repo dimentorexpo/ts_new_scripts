@@ -261,6 +261,13 @@
     function mountToast(toast, id, duration) {
         container.appendChild(toast);
 
+        // duration <= 0 — «висит, пока не закроют». Раньше такой тост закрывался мгновенно.
+        const sticky = !(duration > 0);
+        if (sticky) {
+            toast.querySelector('.chmaf-progress')?.remove();
+            toast.querySelector('.chmaf-timer')?.remove();
+        }
+
         const state = {
             element: toast,
             duration: duration,
@@ -281,6 +288,7 @@
         const timerEl = toast.querySelector('.chmaf-timer');
 
         const tick = () => {
+            if (sticky) return;
             if (state.isPaused) {
                 state.rafId = requestAnimationFrame(tick);
                 return;
@@ -312,6 +320,9 @@
         });
 
         toast.addEventListener('mouseleave', () => {
+            // mouseleave без mouseenter (тост появился прямо под курсором) раньше
+            // прибавлял к паузе «Date.now() - 0» — и тост больше никогда не закрывался.
+            if (!state.isPaused) return;
             state.isPaused = false;
             state.totalPausedTime += (Date.now() - state.pauseStartTime);
         });
@@ -326,6 +337,10 @@
             if (qIndex !== -1) toastQueue.splice(qIndex, 1);
             return;
         }
+
+        // Повторный вызов во время анимации скрытия ничего не делает
+        if (state.dismissing) return;
+        state.dismissing = true;
 
         if (state.rafId) cancelAnimationFrame(state.rafId);
 
@@ -365,8 +380,16 @@
         }
     };
 
+    // Сообщения часто содержат текст ошибок от серверов. Разрешаем только <br>
+    // (им пользуются модули для переноса строк), остальное экранируем —
+    // иначе случайный HTML в тексте ошибки ломал разметку тоста.
+    const toSafeHtml = (msg) => escapeHtml(String(msg ?? '')).replace(/&lt;br\s*\/?&gt;/gi, '<br>');
+
     if (typeof window.createAndShowButton === 'undefined') {
-        window.createAndShowButton = (msg, type = 'message') => API.show(msg, type, { html: true });
+        window.createAndShowButton = (msg, type = 'message') => {
+            if (msg instanceof Error) msg = msg.message;
+            return API.show(toSafeHtml(msg), type, { html: true });
+        };
     }
 
     window.NotificationSystem = API;

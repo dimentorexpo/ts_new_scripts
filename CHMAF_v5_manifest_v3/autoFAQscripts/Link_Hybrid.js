@@ -88,6 +88,11 @@ class LinksConfigHybrid {
 // ==========================================
 // 2. HTML TEMPLATES (Компактные из оригинала)
 // ==========================================
+// Экранирование пользовательских данных (названия/иконки/URL своих кнопок)
+const linksEsc = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+})[ch]);
+
 const getLinksHTML = (isTP, customButtons) => {
 
     if (!isTP) {
@@ -118,7 +123,7 @@ const getLinksHTML = (isTP, customButtons) => {
         <button class="sky-btn" id="shablKC">📝 Шаблоны</button>
         <button class="sky-btn" id="narushKC">⚠️ Нарушение БП</button>
         <button class="sky-btn" id="grafKC">📅 График</button>
-        ${customButtons.map(btn => `<button class="sky-btn custom-btn" data-custom-id="${btn.id}" title="${btn.title}">${btn.icon} ${btn.title}</button>`).join('')}
+        ${customButtons.map(btn => `<button class="sky-btn custom-btn" data-custom-id="${linksEsc(btn.id)}" title="${linksEsc(btn.title)}">${linksEsc(btn.icon)} ${linksEsc(btn.title)}</button>`).join('')}
     </div>
     <div style="text-align: center; margin-top: 6px;">
         <button class="sky-btn" id="add-custom-btn">➕ Добавить кнопку</button>
@@ -175,7 +180,7 @@ const getLinksHTML = (isTP, customButtons) => {
         <button class="sky-btn" id="rkKidsTP" title="Админка Kids РК (встречи клубов)">🧒 РК Kids</button>
         <button class="sky-btn" id="rkAdultsTP" title="Админка Adults РК (расписание клубов)">👥 РК Adults</button>
         <button class="sky-btn" id="flexAdminTP" title="Админка Flex (публичные семинары)">🎓 Flex</button>
-        ${customButtons.map(btn => `<button class="sky-btn custom-btn" data-custom-id="${btn.id}" title="${btn.title}">${btn.icon} ${btn.title}</button>`).join('')}
+        ${customButtons.map(btn => `<button class="sky-btn custom-btn" data-custom-id="${linksEsc(btn.id)}" title="${linksEsc(btn.title)}">${linksEsc(btn.icon)} ${linksEsc(btn.title)}</button>`).join('')}
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;">
@@ -259,15 +264,15 @@ function showCustomButtonModal(config, existingButton = null) {
         <div class="premium-modal-body">
             <div class="premium-form-group">
                 <label class="premium-form-label">Название</label>
-                <input type="text" class="premium-form-input" id="btn-title" value="${existingButton?.title || ''}" placeholder="Моя ссылка">
+                <input type="text" class="premium-form-input" id="btn-title" value="${linksEsc(existingButton?.title)}" placeholder="Моя ссылка">
             </div>
             <div class="premium-form-group">
                 <label class="premium-form-label">Иконка (эмодзи)</label>
-                <input type="text" class="premium-form-input" id="btn-icon" value="${existingButton?.icon || ''}" placeholder="🔗" maxlength="2">
+                <input type="text" class="premium-form-input" id="btn-icon" value="${linksEsc(existingButton?.icon)}" placeholder="🔗" maxlength="8">
             </div>
             <div class="premium-form-group">
                 <label class="premium-form-label">URL</label>
-                <input type="text" class="premium-form-input" id="btn-url" value="${existingButton?.url || ''}" placeholder="https://example.com">
+                <input type="text" class="premium-form-input" id="btn-url" value="${linksEsc(existingButton?.url)}" placeholder="https://example.com">
             </div>
         </div>
         <div class="premium-modal-footer">
@@ -286,6 +291,8 @@ function showCustomButtonModal(config, existingButton = null) {
     document.getElementById('modal-close').onclick = close;
     document.getElementById('cancel-btn').onclick = close;
     modal.onclick = (e) => { if (e.target === modal) close(); };
+    modal.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.getElementById('btn-title')?.focus();
 
     document.getElementById('save-btn').onclick = () => {
         const title = document.getElementById('btn-title').value.trim();
@@ -295,6 +302,12 @@ function showCustomButtonModal(config, existingButton = null) {
         if (!title || !icon || !url) {
             if (typeof showCustomAlert === 'function') showCustomAlert('Заполните все поля', 'warning');
             else alert('Заполните все поля');
+            return;
+        }
+        // Только http(s): ссылка вида javascript:… выполнила бы код на странице
+        if (!/^https?:\/\//i.test(url)) {
+            if (typeof showCustomAlert === 'function') showCustomAlert('URL должен начинаться с http:// или https://', 'warning');
+            else alert('URL должен начинаться с http:// или https://');
             return;
         }
 
@@ -331,7 +344,9 @@ function reloadLinksPanel() {
     const isTP = linksConfig.config.isTP;
     const customButtons = linksConfig.getCustomButtons();
     container.innerHTML = getLinksHTML(isTP, customButtons);
-
+    // Кнопка ❌ пересоздана — привязываем закрытие заново (раньше после
+    // добавления/правки своей кнопки окно переставало закрываться по ❌)
+    if (typeof hideWindowOnClick === 'function') hideWindowOnClick('AF_Links', 'hideMe');
     initEventHandlers(isTP ? 'TP' : 'KC');
 }
 
@@ -353,7 +368,7 @@ function initEventHandlers(section) {
         btn.onclick = () => {
             const id = btn.dataset.customId;
             const button = linksConfig.getCustomButtons().find(b => b.id === id);
-            if (button?.url) window.open(button.url, '_blank');
+            if (button?.url && /^https?:\/\//i.test(button.url)) window.open(button.url, '_blank');
         };
     });
 
@@ -371,7 +386,7 @@ function initEventHandlers(section) {
             'RKKC': "https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubMemberCrudController&signature=V8w5PW8LT3GcoYMoSYzprG1lCW8F5sb5y7Bdrxh08pc",
             'rkKidsKC': "https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubKidMeetingCrudController&entityFqcn=App%5CEntity%5CClubMeeting",
             'rkAdultsKC': "https://skyeng.ru/clubs/admin/schedule",
-            'flexAdminKC': "https://public-seminars-admin.skyeng.ru/english?dateFrom=1787605200&dateTo=1787691599",
+            'flexAdminKC': flexAdminTodayUrl,
             'shablKC': "https://docs.google.com/spreadsheets/d/14paTabjaJcRIvlpTQzdGePltiN0bsPaFjFEbn4DD3Ho/edit#gid=410124091",
             'narushKC': "https://docs.google.com/forms/d/e/1FAIpQLSeAxtdad9yc5iLo-7v4rqMj5M2wdaJKOpzy5X_eWkHqHWY9sg/viewform",
             'grafKC': "https://docs.google.com/spreadsheets/d/1SiD1yfpzIEF8ZafVXnq0Z-hyF0b45aAQ8s6BWgy-s0c/edit#gid=1933422994"
@@ -415,7 +430,7 @@ function initEventHandlers(section) {
         'faqext': "https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971",
         'rkKidsTP': "https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubKidMeetingCrudController&entityFqcn=App%5CEntity%5CClubMeeting",
         'rkAdultsTP': "https://skyeng.ru/clubs/admin/schedule",
-        'flexAdminTP': "https://public-seminars-admin.skyeng.ru/english?dateFrom=1787605200&dateTo=1787691599"
+        'flexAdminTP': flexAdminTodayUrl
     };
 
     bindSimpleLinks(linksTP);
@@ -562,10 +577,21 @@ async function getVersionsApp() {
     }
 }
 
+// Ссылка на flex-админку за ТЕКУЩИЕ сутки по МСК. Раньше в ссылке были зашиты
+// timestamps одного конкретного дня (25.08.2026), и она всегда открывала его.
+function flexAdminTodayUrl() {
+    const DAY = 86400;
+    const MSK = 3 * 3600;
+    const nowSec = Math.floor(Date.now() / 1000);
+    const dayStart = Math.floor((nowSec + MSK) / DAY) * DAY - MSK;
+    return `https://public-seminars-admin.skyeng.ru/english?dateFrom=${dayStart}&dateTo=${dayStart + DAY - 1}`;
+}
+
 function bindSimpleLinks(linksMap) {
     Object.entries(linksMap).forEach(([id, url]) => {
         const el = document.getElementById(id);
-        if (el) el.onclick = () => window.open(url, '_blank');
+        // URL вычисляем при клике: ссылка «на сегодня» не должна застревать на дне загрузки
+        if (el) el.onclick = () => window.open(typeof url === 'function' ? url() : url, '_blank');
     });
 }
 

@@ -102,6 +102,7 @@ const fz_styles = `
         transition: background-color .16s ease, border-color .16s ease;
     }
     .fz-item:hover { background: #23334b; border-color: #6685be; border-left-color: #92afff; transform: none; }
+    .fz-item-warn { font-size: 12px; cursor: help; flex-shrink: 0; }
     .fz-item-hash { font-size: 13px; color: #a6b4cb; font-family: monospace; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 150px; }
     .fz-item-timer {
         font-family: monospace; font-size: 14px; font-weight: 700;
@@ -163,21 +164,27 @@ const wintFrozeChat = createWindow('AF_FrozeChat', 'winTopFrozeChat', 'winLeftFr
 hideWindowOnDoubleClick('AF_FrozeChat');
 hideWindowOnClick('AF_FrozeChat', 'hidefrozechat');
 
+// ============================================================
+// АВТООТВЕТ ПО ТАЙМЕРУ
+//  • Таймеры сохраняются в localStorage и переживают перезагрузку страницы.
+//  • Перед отправкой проверяется, не ответил ли оператор в чате сам после
+//    запуска таймера, — если ответил, автоответ отменяется.
+//  • Несколько вкладок AutoFAQ не отправят один автоответ дважды:
+//    вкладка «захватывает» таймер перед отправкой.
+// ============================================================
+
+const FZ_STORAGE_KEY = 'AF_autoRespondTimers';
+const FZ_DEFAULT_RESPONSE = 'Извините за ожидание! Мне нужно еще немного времени, но я уже почти готов с ответом. Спасибо за ваше понимание! 🙏😊';
+const FZ_MAX_LATE_MS = 10 * 60 * 1000;   // опоздали больше чем на 10 мин (страница была закрыта) — не отправляем
+const FZ_REPLY_CHECK_MS = 30 * 1000;     // как часто проверять, не ответил ли оператор
+const FZ_CLAIM_TTL_MS = 60 * 1000;       // «захват» таймера вкладкой на время отправки
+
 function getbutFrozeChatButtonPress() {
-    // Безопасное хранилище (решает проблему дублирования и утечки памяти)
-    window.__FrozeChatState = window.__FrozeChatState || {
-        chats: new Map(),
-        timeouts: new Map(),
-        intervals: new Map(),
-        isInitialized: false
-    };
-
-    const state = window.__FrozeChatState;
-    const DEFAULT_RESPONSE = 'Извините за ожидание! Мне нужно еще немного времени, но я уже почти готов с ответом. Спасибо за ваше понимание! 🙏😊';
-    const TIMER_UPDATE_INTERVAL = 1000;
-
     const chatWindow = document.getElementById('AF_FrozeChat');
-    if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+    if (!chatWindow) return;
+
+    // Реальная видимость: display === '' у открытого окна — это «видно»
+    if (getComputedStyle(chatWindow).display === 'none') {
         chatWindow.style.display = 'block';
         const myMenu = document.getElementById('idmymenu');
         if (myMenu) myMenu.style.display = 'none';
@@ -186,187 +193,72 @@ function getbutFrozeChatButtonPress() {
     } else {
         chatWindow.style.display = 'none';
     }
+}
 
-    if (!state.isInitialized) {
+(function initAutoRespond() {
+    if (window.__FrozeChatState?.isInitialized) return;
 
-        document.getElementById('hidefrozechat').addEventListener('click', () => {
-            chatWindow.style.display = 'none';
-        });
+    const TAB_ID = Math.random().toString(36).slice(2);
 
-        document.getElementById('clearallchathash').addEventListener('click', () => {
-            for (const [hash, data] of state.timeouts) {
-                clearTimeout(data.timeoutId);
-                clearInterval(state.intervals.get(hash));
-            }
-            state.chats.clear();
-            state.timeouts.clear();
-            state.intervals.clear();
-            updateChatsList();
-        });
+    const state = window.__FrozeChatState = {
+        timers: new Map(),   // hash → { timeoutId }
+        pending: new Set(),  // хэши, для которых идёт создание таймера
+        isInitialized: true
+    };
 
-        // Логика кастомного безопасного степпера (нет бага перетаскивания)
-        const timerInput = document.getElementById('frozetimer');
-        document.getElementById('fz-timer-minus').addEventListener('click', () => {
-            let val = parseInt(timerInput.value, 10) || 0;
-            if (val > 0) timerInput.value = val - 1;
-        });
-        document.getElementById('fz-timer-plus').addEventListener('click', () => {
-            let val = parseInt(timerInput.value, 10) || 0;
-            if (val < 59) timerInput.value = val + 1;
-        });
+    const notify = (msg, type = 'message') => {
+        if (typeof createAndShowButton === 'function') createAndShowButton(msg, type);
+        else console.log('[AutoRespond]', msg);
+    };
 
-        document.getElementById('freezechat').addEventListener('click', async () => {
-            const hashInput = document.getElementById('chatfrozehash').value.trim();
-            if (!hashInput) {
-                return createAndShowButton('Не введен хеш чата!', 'error');
-            }
-
-            const extractHash = (input) => {
-                const parts = input.split('/');
-                if (parts.length === 1) return parts[0];
-                if (parts[3] === 'logs') return parts[4];
-                if (parts[4] === 'assigned') return parts[5];
-                return input;
-            };
-
-            const chatHash = extractHash(hashInput);
-            const customMessage = document.getElementById('chatfrozemsg').value || DEFAULT_RESPONSE;
-            const durationInput = parseInt(document.getElementById('frozetimer').value, 10) || 0;
-            const duration = durationInput * 60 * 1000;
-
-            if (state.chats.has(chatHash)) {
-                return createAndShowButton('Таймер для этого чата уже запущен', 'warning');
-            }
-
-            // Резервируем слот синхронно до первого await —
-            // иначе быстрый двойной клик успевал создать два таймера на один хэш
-            state.chats.set(chatHash, { reserved: true });
-
-            try {
-                const sessionId = await getsesid(chatHash);
-
-                const timerData = {
-                    message: customMessage,
-                    sessionId: sessionId,
-                    endTime: Date.now() + duration,
-                    cancelled: false
-                };
-
-                state.chats.set(chatHash, timerData);
-
-                const timeoutId = setTimeout(async () => {
-                    const currentData = state.timeouts.get(chatHash);
-                    if (!currentData || currentData.cancelled) return;
-
-                    try {
-                        const response = await sendMessage(currentData.sessionId, chatHash, currentData.message);
-                        // Таймер снимаем только при успешной отправке,
-                        // иначе автоответ терялся молча
-                        if (response && response.ok) {
-                            cancelTimer(chatHash);
-                        } else {
-                            createAndShowButton(`Не удалось отправить автоответ для чата ${chatHash}`, 'error');
-                        }
-                    } catch (e) {
-                        console.error('AutoReply send error:', e);
-                        createAndShowButton(`Не удалось отправить автоответ для чата ${chatHash}`, 'error');
-                    }
-                }, duration);
-
-                state.timeouts.set(chatHash, { timeoutId, ...timerData });
-
-                const intervalId = setInterval(() => {
-                    const currentData = state.timeouts.get(chatHash);
-                    if (!currentData || currentData.cancelled) {
-                        clearInterval(intervalId);
-                        return;
-                    }
-
-                    const remaining = timerData.endTime - Date.now();
-                    if (remaining <= 0) {
-                        clearInterval(intervalId);
-                    } else {
-                        updateTimerDisplay(chatHash, remaining);
-                    }
-                }, TIMER_UPDATE_INTERVAL);
-
-                state.intervals.set(chatHash, intervalId);
-
-                updateChatsList();
-                document.getElementById('chatfrozehash').value = '';
-                document.getElementById('chatfrozemsg').value = '';
-
-            } catch (error) {
-                state.chats.delete(chatHash); // снимаем резерв при ошибке
-                console.error('Failed to initialize timer:', error);
-                createAndShowButton('Ошибка при инициализации таймера', 'error');
-            }
-        });
-
-        state.isInitialized = true;
-    }
-
-    function updateTimerDisplay(hash, remaining) {
-        const element = document.querySelector(`[data-hash="${hash}"] .fz-item-timer`);
-        if (element) {
-            const minutes = Math.floor(remaining / 60000);
-            const seconds = Math.floor((remaining % 60000) / 1000);
-            element.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    // ---------- Хранилище ----------
+    const loadAll = () => {
+        try {
+            const obj = JSON.parse(localStorage.getItem(FZ_STORAGE_KEY) || '{}');
+            return obj && typeof obj === 'object' ? obj : {};
+        } catch (_) {
+            return {};
         }
-    }
-
-    function updateChatsList() {
-        const container = document.getElementById('chathastable');
-        container.innerHTML = '';
-
-        for (const [hash, data] of state.chats) {
-            // Резерв «{reserved: true}» ставится до получения sessionId —
-            // не рендерим его как таймер с NaN (грязные цифры в списке)
-            if (!data || typeof data.endTime !== 'number') continue;
-
-            const remaining = data.endTime - Date.now();
-            const minutes = Math.max(0, Math.floor(remaining / 60000));
-            const seconds = Math.max(0, Math.floor((remaining % 60000) / 1000));
-            const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-            const div = document.createElement('div');
-            div.className = 'fz-item';
-            div.dataset.hash = hash;
-
-            div.innerHTML = `
-                <span class="fz-item-hash" title="${hash}">${hash}</span>
-                <span class="fz-item-timer">${timeString}</span>
-                <button name="deletetimer" class="fz-del-btn" data-hash="${hash}" title="Удалить таймер">✕</button>
-            `;
-            container.appendChild(div);
+    };
+    const saveAll = (all) => {
+        try {
+            localStorage.setItem(FZ_STORAGE_KEY, JSON.stringify(all));
+        } catch (e) {
+            console.warn('[AutoRespond] Не удалось сохранить таймеры:', e);
         }
+    };
+    const getRec = (hash) => loadAll()[hash] || null;
+    const putRec = (hash, rec) => { const all = loadAll(); all[hash] = rec; saveAll(all); };
+    const delRec = (hash) => { const all = loadAll(); if (hash in all) { delete all[hash]; saveAll(all); } };
 
-        container.querySelectorAll('[name="deletetimer"]').forEach(btn => {
-            btn.addEventListener('click', function () {
-                cancelTimer(this.dataset.hash);
-            });
-        });
-    }
+    // ---------- Сообщения оператора в чате ----------
+    // Снимок «сколько ответов оператора было на момент запуска таймера».
+    // Сравниваем количество, а не время: так не мешает разница часов
+    // между компьютером и сервером AutoFAQ.
+    const isOperatorMessage = (m) => /AnswerOperator/i.test(String(m?.tpe ?? m?.type ?? ''));
+    const msgTime = (m) => {
+        const t = m?.ts ?? m?.createdAt ?? m?.time;
+        const n = typeof t === 'number' ? t : Date.parse(t);
+        return Number.isFinite(n) ? n : 0;
+    };
+    const takeSnapshot = (conv) => {
+        if (!Array.isArray(conv?.messages)) return null;
+        const ops = conv.messages.filter(isOperatorMessage);
+        return { count: ops.length, lastTs: ops.reduce((max, m) => Math.max(max, msgTime(m)), 0) };
+    };
+    // true — оператор ответил после запуска; false — нет; null — не удалось понять
+    const operatorRepliedSince = (conv, baseline) => {
+        const snap = takeSnapshot(conv);
+        if (!snap || !baseline) return null;
+        return snap.count > baseline.count || snap.lastTs > baseline.lastTs;
+    };
 
-    function cancelTimer(hash) {
-        const timerData = state.timeouts.get(hash);
-        if (timerData) {
-            timerData.cancelled = true;
-            clearTimeout(timerData.timeoutId);
+    const fetchConversation = async (hash) => {
+        if (typeof doOperationsWithConversations !== 'function') {
+            throw new Error('doOperationsWithConversations недоступна');
         }
-        clearInterval(state.intervals.get(hash));
-
-        state.timeouts.delete(hash);
-        state.chats.delete(hash);
-        state.intervals.delete(hash);
-
-        updateChatsList();
-    }
-
-    async function getsesid(arg) {
-        const datachat = await doOperationsWithConversations(arg);
-        return datachat.sessionId;
-    }
+        return doOperationsWithConversations(hash);
+    };
 
     async function sendMessage(sessionId, hash, message) {
         // Через общий слой: FormData вместо ручного multipart,
@@ -383,4 +275,298 @@ function getbutFrozeChatButtonPress() {
 
         return response;
     }
-}
+
+    // ---------- Планирование ----------
+    function unschedule(hash) {
+        clearTimeout(state.timers.get(hash)?.timeoutId);
+        state.timers.delete(hash);
+    }
+
+    function schedule(hash, delayOverride = null) {
+        unschedule(hash);
+        const rec = getRec(hash);
+        if (!rec) return;
+        const delay = delayOverride ?? Math.max(0, rec.endTime - Date.now());
+        state.timers.set(hash, { timeoutId: setTimeout(() => fire(hash), Math.min(delay, 2 ** 31 - 1)) });
+    }
+
+    function finish(hash) {
+        unschedule(hash);
+        delRec(hash);
+        updateChatsList();
+    }
+
+    // Отправка не удалась: снимаем таймер и явно сообщаем, чтобы его можно было запустить заново
+    function failTimer(hash) {
+        finish(hash);
+        notify(`Автоответ для чата ${hash} НЕ отправлен — таймер снят, запусти заново или ответь вручную`, 'error');
+    }
+
+    // Захват таймера вкладкой: если открыто несколько вкладок, отправит только одна
+    async function claim(hash) {
+        const rec = getRec(hash);
+        if (!rec) return null;
+        if (rec.claimedBy && rec.claimedBy !== TAB_ID && Date.now() - rec.claimedAt < FZ_CLAIM_TTL_MS) return null;
+
+        rec.claimedBy = TAB_ID;
+        rec.claimedAt = Date.now();
+        putRec(hash, rec);
+
+        await new Promise(r => setTimeout(r, 150 + Math.random() * 250));
+        const again = getRec(hash);
+        return again && again.claimedBy === TAB_ID ? again : null;
+    }
+
+    function release(hash) {
+        const rec = getRec(hash);
+        if (rec && rec.claimedBy === TAB_ID) {
+            delete rec.claimedBy;
+            delete rec.claimedAt;
+            putRec(hash, rec);
+        }
+    }
+
+    async function fire(hash) {
+        state.timers.delete(hash);
+
+        const rec = await claim(hash);
+        if (!rec) {
+            // Таймер удалили или его отправляет другая вкладка. Если та вкладка
+            // «умрёт» посреди отправки, попробуем сами после истечения захвата.
+            if (getRec(hash)) schedule(hash, FZ_CLAIM_TTL_MS + 1000);
+            updateChatsList();
+            return;
+        }
+
+        // Таймер успели перезапустить с новым временем
+        if (Date.now() < rec.endTime - 1000) {
+            release(hash);
+            schedule(hash);
+            return;
+        }
+
+        markItem(hash, 'Отправка…');
+
+        let conv = null;
+        try {
+            conv = await fetchConversation(hash);
+        } catch (e) {
+            console.warn('[AutoRespond] Не удалось прочитать чат перед отправкой:', e);
+        }
+
+        if (operatorRepliedSince(conv, rec.baseline) === true) {
+            finish(hash);
+            notify(`Автоответ для чата ${hash} отменён — вы уже ответили клиенту`, 'info');
+            return;
+        }
+
+        try {
+            const sessionId = conv?.sessionId || rec.sessionId;
+            const response = await sendMessage(sessionId, hash, rec.message);
+            if (response && response.ok) {
+                finish(hash);
+                notify(`✅ Автоответ отправлен в чат ${hash}`, 'success');
+            } else {
+                failTimer(hash);
+            }
+        } catch (e) {
+            console.error('AutoReply send error:', e);
+            failTimer(hash);
+        }
+    }
+
+    // ---------- Восстановление после перезагрузки ----------
+    function restoreAll() {
+        const now = Date.now();
+        for (const [hash, rec] of Object.entries(loadAll())) {
+            if (!rec || typeof rec.endTime !== 'number') {
+                delRec(hash);
+                continue;
+            }
+            if (now - rec.endTime > FZ_MAX_LATE_MS) {
+                delRec(hash);
+                notify(`Автоответ для чата ${hash} не отправлен: страница была закрыта в момент отправки`, 'warning');
+                continue;
+            }
+            // Время уже прошло, но недавно — отправим сразу (с проверкой ответа оператора)
+            schedule(hash);
+        }
+        updateChatsList();
+    }
+
+    // Другая вкладка добавила / удалила / отправила таймер — синхронизируемся
+    window.addEventListener('storage', (e) => {
+        if (e.key !== FZ_STORAGE_KEY) return;
+        const all = loadAll();
+        for (const hash of [...state.timers.keys()]) {
+            if (!all[hash]) unschedule(hash);
+        }
+        for (const hash of Object.keys(all)) {
+            if (!state.timers.has(hash)) schedule(hash);
+        }
+        updateChatsList();
+    });
+
+    // Периодически проверяем, не ответил ли оператор сам, — чтобы таймер
+    // исчезал из списка сразу, а не только в момент отправки
+    setInterval(async () => {
+        if (document.visibilityState !== 'visible') return;
+        for (const [hash, rec] of Object.entries(loadAll())) {
+            if (!rec?.baseline || rec.claimedBy) continue;
+            if (rec.endTime - Date.now() < 5000) continue; // скоро проверит fire()
+            try {
+                const conv = await fetchConversation(hash);
+                if (operatorRepliedSince(conv, rec.baseline) === true && getRec(hash)) {
+                    finish(hash);
+                    notify(`Автоответ для чата ${hash} отменён — вы уже ответили клиенту`, 'info');
+                }
+            } catch (_) { /* сеть — проверим в следующий раз или перед отправкой */ }
+        }
+    }, FZ_REPLY_CHECK_MS);
+
+    // ---------- Список таймеров в окне ----------
+    const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[ch]);
+
+    const formatRemaining = (ms) => {
+        const total = Math.max(0, Math.floor(ms / 1000));
+        return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+    };
+
+    function markItem(hash, text) {
+        const item = [...document.querySelectorAll('#chathastable .fz-item')].find(i => i.dataset.hash === hash);
+        const el = item?.querySelector('.fz-item-timer');
+        if (el) {
+            el.textContent = text;
+            el.dataset.frozen = '1';
+        }
+    }
+
+    function updateChatsList() {
+        const container = document.getElementById('chathastable');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const entries = Object.entries(loadAll()).sort((a, b) => a[1].endTime - b[1].endTime);
+        for (const [hash, rec] of entries) {
+            const div = document.createElement('div');
+            div.className = 'fz-item';
+            div.dataset.hash = hash;
+            div.dataset.end = String(rec.endTime);
+
+            const warn = rec.baseline
+                ? ''
+                : '<span class="fz-item-warn" title="Не удалось прочитать сообщения чата: автоответ уйдёт, даже если вы ответите сами">⚠️</span>';
+
+            div.innerHTML = `
+                <span class="fz-item-hash" title="${escHtml(hash)}">${escHtml(hash)}</span>
+                ${warn}
+                <span class="fz-item-timer">${formatRemaining(rec.endTime - Date.now())}</span>
+                <button name="deletetimer" class="fz-del-btn" data-hash="${escHtml(hash)}" title="Удалить таймер">✕</button>
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    // Один общий тикер обратного отсчёта вместо интервала на каждый таймер
+    setInterval(() => {
+        document.querySelectorAll('#chathastable .fz-item').forEach(item => {
+            const timer = item.querySelector('.fz-item-timer');
+            if (!timer || timer.dataset.frozen) return;
+            timer.textContent = formatRemaining(Number(item.dataset.end) - Date.now());
+        });
+    }, 1000);
+
+    // ---------- Обработчики окна ----------
+    document.getElementById('chathastable')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[name="deletetimer"]');
+        if (btn) finish(btn.dataset.hash);
+    });
+
+    document.getElementById('clearallchathash')?.addEventListener('click', () => {
+        for (const hash of [...state.timers.keys()]) unschedule(hash);
+        saveAll({});
+        updateChatsList();
+    });
+
+    // Кастомный степпер (нет бага перетаскивания)
+    const timerInput = document.getElementById('frozetimer');
+    document.getElementById('fz-timer-minus')?.addEventListener('click', () => {
+        const val = parseInt(timerInput.value, 10) || 0;
+        if (val > 0) timerInput.value = val - 1;
+    });
+    document.getElementById('fz-timer-plus')?.addEventListener('click', () => {
+        const val = parseInt(timerInput.value, 10) || 0;
+        if (val < 59) timerInput.value = val + 1;
+    });
+
+    // Хэш — последний сегмент пути ссылки (assigned / archive / logs / голый хэш)
+    const extractHash = (input) => {
+        try {
+            const url = new URL(input);
+            return url.pathname.split('/').filter(Boolean).pop() || '';
+        } catch (_) {
+            return input.split(/[?#]/)[0].split('/').filter(Boolean).pop() || '';
+        }
+    };
+
+    let warnedNoSnapshot = false;
+
+    document.getElementById('freezechat')?.addEventListener('click', async () => {
+        const hashInput = document.getElementById('chatfrozehash').value.trim();
+        if (!hashInput) {
+            return notify('Не введен хеш чата!', 'error');
+        }
+
+        const chatHash = extractHash(hashInput);
+        if (!/^[\w-]{6,}$/.test(chatHash)) {
+            return notify('Не похоже на хэш чата — проверь ссылку', 'error');
+        }
+
+        const customMessage = document.getElementById('chatfrozemsg').value || FZ_DEFAULT_RESPONSE;
+        const duration = (parseInt(timerInput.value, 10) || 0) * 60 * 1000;
+
+        if (getRec(chatHash) || state.pending.has(chatHash)) {
+            return notify('Таймер для этого чата уже запущен', 'warning');
+        }
+
+        // Резервируем синхронно до первого await — иначе быстрый двойной клик
+        // успевал создать два таймера на один хэш
+        state.pending.add(chatHash);
+
+        try {
+            const conv = await fetchConversation(chatHash);
+            if (!conv?.sessionId) throw new Error('не найден sessionId чата');
+
+            const baseline = takeSnapshot(conv);
+            if (!baseline && !warnedNoSnapshot) {
+                warnedNoSnapshot = true;
+                console.warn('[AutoRespond] В ответе по чату нет списка сообщений — проверка «оператор уже ответил» недоступна', conv);
+                notify('Не удалось прочитать сообщения чата: автоответ уйдёт, даже если вы ответите сами', 'warning');
+            }
+
+            const now = Date.now();
+            putRec(chatHash, {
+                message: customMessage,
+                sessionId: conv.sessionId,
+                createdAt: now,
+                endTime: now + duration,
+                baseline
+            });
+
+            schedule(chatHash);
+            updateChatsList();
+
+            document.getElementById('chatfrozehash').value = '';
+            document.getElementById('chatfrozemsg').value = '';
+        } catch (error) {
+            console.error('Failed to initialize timer:', error);
+            notify('Ошибка при инициализации таймера: ' + (error?.message || error), 'error');
+        } finally {
+            state.pending.delete(chatHash);
+        }
+    });
+
+    restoreAll();
+})();

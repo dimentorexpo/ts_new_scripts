@@ -17,6 +17,23 @@
     let hasReordered = false;
     let listObserver = null;
     let activeContainer = null;
+    let blockedCloseBtn = null; // кнопка «Закрыть», которую заблокировали МЫ
+
+    // Блокируем/разблокируем кнопку закрытия чата. Разблокируем только ту,
+    // которую блокировали сами: раньше при переходе в чат без полей формы,
+    // в список /assigned или в архив кнопка оставалась заблокированной.
+    const setCloseBlocked = (btn, blocked) => {
+        if (blocked && btn) {
+            if (blockedCloseBtn && blockedCloseBtn !== btn) blockedCloseBtn.disabled = false;
+            btn.disabled = true;
+            blockedCloseBtn = btn;
+            return;
+        }
+        if (blockedCloseBtn) {
+            blockedCloseBtn.disabled = false;
+            blockedCloseBtn = null;
+        }
+    };
 
     // ─── Утилиты для настраиваемого цвета «Нет тега/темы» ───
     const getMissingTagColor = () => {
@@ -27,6 +44,14 @@
         // Fallback — читаем напрямую из localStorage (ключ как в Settings.js)
         try { return localStorage.getItem('missingTagColor') || '#ff1744'; }
         catch (e) { return '#ff1744'; }
+    };
+
+    // Цвет из настроек может прийти как #f00 или с мусором — приводим к #rrggbb,
+    // иначе hexToRgba/darkenHex давали NaN и подсветка пропадала.
+    const normalizeHex = (hex) => {
+        let h = String(hex || '').trim().replace('#', '');
+        if (/^[0-9a-f]{3}$/i.test(h)) h = h.split('').map(c => c + c).join('');
+        return /^[0-9a-f]{6}$/i.test(h) ? `#${h.toLowerCase()}` : '#ff1744';
     };
 
     const hexToRgba = (hex, alpha) => {
@@ -262,7 +287,7 @@
             if (!doc.getElementById('skyeng-mod-styles')) {
                 const style = doc.createElement('style');
                 style.id = 'skyeng-mod-styles';
-               style.textContent = `
+                style.textContent = `
 
 	.skyeng-mod-pinned {
     position: relative !important;
@@ -371,12 +396,12 @@
 
                 listObserver.observe(container, { childList: true, subtree: true });
                 sortDialogs(container);
-} else if (!isDragging) {
-    // Подстраховка для карточек, добавленных внутри новых обёрток.
-    // Повторные слушатели не создаются: initDraggable проверяет data-dnd-init.
-    container.querySelectorAll(SELECTORS.card).forEach(initDraggable);
-    sortDialogs(container);
-}
+            } else if (!isDragging) {
+                // Подстраховка для карточек, добавленных внутри новых обёрток.
+                // Повторные слушатели не создаются: initDraggable проверяет data-dnd-init.
+                container.querySelectorAll(SELECTORS.card).forEach(initDraggable);
+                sortDialogs(container);
+            }
         }, 1500);
     }
 
@@ -385,22 +410,19 @@
     function initTagChecker() {
         setInterval(() => {
             try {
-                const missingColor = getMissingTagColor();          // ← выбранный цвет
+                const missingColor = normalizeHex(getMissingTagColor());          // ← выбранный цвет
                 const missingColorDark = darkenHex(missingColor, 40);   // ← авто-темнее для градиента
                 const missingRgbaBg = hexToRgba(missingColor, 0.06); // ← фон подсветки поля
                 const missingRgbaGlow = hexToRgba(missingColor, 0.5);  // ← тень бейджа
 
                 const doc = getActiveIframeDoc();
-                if (!doc) return;
-
+                if (!doc) return setCloseBlocked(null, false);
                 const currentUrl = doc.location ? doc.location.pathname : window.location.pathname;
                 const urlParts = currentUrl.split('/').filter(Boolean);
                 const currentConvId = urlParts[urlParts.length - 1];
-
-                if (!currentConvId || currentConvId === 'assigned' || currentConvId === 'archive') return;
-
-                const convElement = doc.querySelector(`[data-conv-id="${currentConvId}"]`);
-                if (!convElement) return;
+                if (!currentConvId || currentConvId === 'assigned' || currentConvId === 'archive') return setCloseBlocked(null, false);
+                const convElement = doc.querySelector(`[data-conv-id="${CSS.escape(currentConvId)}"]`);
+                if (!convElement) return setCloseBlocked(null, false);
 
                 // Берём только листовые обёртки (одна на поле) внутри списка полей формы.
                 // Общая обёртка всей формы тоже имеет класс List_ListWrapper — её текст
@@ -418,7 +440,7 @@
                     else if (!topicBlock && txt.includes("Выбор темы/подтемы")) { topicBlock = wrap; }
                 });
 
-                if (!serviceBlock && !tagBlock && !topicBlock) return;
+                if (!serviceBlock && !tagBlock && !topicBlock) return setCloseBlocked(null, false);
 
                 const btn = doc.querySelector('button[title="Закрыть"]');
 
@@ -464,12 +486,12 @@
                 styleEmptyBlock(tagBlock, tagEmpty);
                 styleEmptyBlock(topicBlock, topicEmpty);
 
-                if (btn) btn.disabled = hasEmpty;
+                setCloseBlocked(btn, hasEmpty);
 
                 // Пишем в DOM только при смене состояния (тик каждые 1.5 c)
                 const nextState = hasEmpty
-    ? `no:${serviceEmpty}:${tagEmpty}:${topicEmpty}:${missingColor}`
-    : 'ok';
+                    ? `no:${serviceEmpty}:${tagEmpty}:${topicEmpty}:${missingColor}`
+                    : 'ok';
                 if (existing.dataset.lastState === nextState) return;
 
                 existing.dataset.lastState = nextState;

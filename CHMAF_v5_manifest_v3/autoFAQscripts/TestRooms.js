@@ -88,7 +88,7 @@
     const win_Template = `
         <div class="trm-panel" id="trm-container">
             <div class="trm-header chmaf-drag-handle" id="trm-drag">
-                <button id="hideMetestrooms" class="trm-btn trm-btn-hide">hide</button>
+                <button id="hideMetestrooms" class="trm-btn trm-btn-hide" title="Скрыть">✕</button>
                 <div style="display:flex; gap:5px;">
                     <button id="clrTestRooms" class="trm-btn" title="Очистить" style="font-size:14px;">🧹</button>
                     <button id="aboutTestRooms" class="trm-btn" title="Инструкция">❓</button>
@@ -173,9 +173,14 @@
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".charAt(Math.floor(Math.random() * 62))
         ).join('');
 
-    const validate = (val, msg, errors) => {
-        if (!val || val.length < 4) { errors.push(msg); return null; }
-        return val.replace(/[^0-9,]/g, '');
+    // Сначала чистим, потом проверяем: раньше «abcd» проходило проверку длины,
+    // а в запрос уходил пустой ID. Для П — один ID, для У — можно через запятую.
+    const validate = (val, msg, errors, allowList = false) => {
+        const clean = String(val || '').replace(allowList ? /[^0-9,]/g : /\D/g, '')
+            .split(',').filter(Boolean).join(',');
+        const ok = allowList ? /^\d{4,}(,\d{4,})*$/.test(clean) : /^\d{4,}$/.test(clean);
+        if (!ok) { errors.push(msg); return null; }
+        return clean;
     };
 
     // Единая точка показа уведомлений
@@ -225,7 +230,7 @@
         if (!lessonType) errors.push('Выбери тип урока');
         if (!subject) errors.push('Выбери предмет');
         const tId = validate(TR.teacher.value, 'ID преподавателя', errors);
-        const sIdRaw = validate(TR.student.value, 'ID ученика', errors);
+        const sIdRaw = validate(TR.student.value, 'ID ученика', errors, true);
         if (errors.length) return notify(errors.join('<br>'), 'error');
         // URLSearchParams сам кодирует запятые как %2C;
         // прежняя ручная замена давала двойное кодирование (%252C) и ломала мульти-ID
@@ -246,12 +251,19 @@
         }, response => {
             if (response?.success) {
                 notify('Тестовый урок создан! 🚀 Приглашение на него доступно в ЛКУ и ЛКП', 'info');
-                setTimeout(() => TR.win.style.display = 'none', 3000);
-            } else { createAndShowButton('Ошибка создания: ' + (response?.error || 'unknown'), 'error'); }
+                // Таймер запоминаем: при повторном открытии окна он отменяется,
+                // иначе окно закрывалось «само» через пару секунд после открытия.
+                clearTimeout(TR.hideTimer);
+                TR.hideTimer = setTimeout(() => TR.win.style.display = 'none', 3000);
+            } else {
+                notify('Ошибка создания: ' + (response?.error || chrome.runtime.lastError?.message || 'unknown'), 'error');
+            }
         });
     };
 
     window.getTestRoomsButtonPress = () => {
-        TR.win.style.display = (TR.win.style.display === 'none' || TR.win.style.display === '') ? 'block' : 'none';
+        clearTimeout(TR.hideTimer);
+        // Реальная видимость: display === '' у открытого окна — это «видно»
+        TR.win.style.display = getComputedStyle(TR.win).display === 'none' ? 'block' : 'none';
     };
 })();

@@ -7,7 +7,8 @@
 
     function notify(message, type = 'info') {
         if (typeof createAndShowButton === 'function') {
-            createAndShowButton(message);
+            // Тип передаём дальше: раньше ошибки показывались обычным серым сообщением
+            createAndShowButton(message, type);
         } else {
             console.log(`[Vimbot] ${message}`);
         }
@@ -92,16 +93,24 @@
         };
 
         let checkTimeout;
+        let checkRequestId = 0;
+        let chatAvailable = null; // true / false / null — неизвестно
         const checkChatStatus = (userId) => {
             if (!userId || userId.length < 4) return;
             setStatus("🔍 Проверка каналов связи...", "#feca57");
+            chatAvailable = null;
+
+            // Ответ проверки предыдущего ID не должен перетереть статус нового
+            const requestId = ++checkRequestId;
 
             const fetchURL = `https://communications.skyeng.ru/gateway/widget/vimbot/users/${userId}/channels`;
             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions: { method: "GET", credentials: "include" } }, (response) => {
+                if (requestId !== checkRequestId) return;
                 if (!response?.success) return setStatus("❌ Ошибка соединения", "#ff6b6b");
                 try {
                     const data = JSON.parse(response.fetchansver);
                     const hasSupport = data.data?.some(item => item.label === "Support chat");
+                    chatAvailable = !!hasSupport;
                     if (hasSupport) {
                         setStatus("Чат доступен ✅", "#1dd1a1");
                     } else {
@@ -119,6 +128,8 @@
 
             if (!userId || userId.length < 4) return notify('Введите ID пользователя', 'error');
             if (!text) return notify('Введите текст сообщения', 'error');
+            if (chatAvailable === false &&
+                !confirm('У пользователя не найден чат поддержки. Всё равно отправить?')) return;
 
             UI.sendBtn.disabled = true;
             UI.sendBtn.style.opacity = "0.6";
@@ -138,11 +149,12 @@
             };
 
             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions }, (response) => {
+                void chrome.runtime.lastError; // гасим «Unchecked runtime.lastError»
                 UI.sendBtn.disabled = false;
                 UI.sendBtn.style.opacity = "1";
                 UI.sendBtn.textContent = "💬 Отправить сообщение";
                 if (response?.success) {
-                    notify('✅ Успешно отправлено!');
+                    notify('✅ Успешно отправлено!', 'success');
                     UI.textArea.value = '';
                 } else {
                     notify('❌ Ошибка при отправке', 'error');
@@ -182,10 +194,13 @@
         if (UI.openUserBtn) {
             UI.openUserBtn.addEventListener('click', () => {
                 const sId = UI.idStudentInput?.value.trim();
+                UI.win.style.display = 'block';
                 if (sId) {
-                    UI.win.style.display = 'block';
                     UI.uIdInput.value = sId;
                     checkChatStatus(sId);
+                } else {
+                    // Раньше без ID в поле услуг кнопка молча ничего не делала
+                    UI.uIdInput.focus();
                 }
             });
         }

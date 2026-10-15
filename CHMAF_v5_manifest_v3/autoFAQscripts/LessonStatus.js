@@ -621,6 +621,10 @@
         return `${day}-${month}-${year} ${h}:${min}:${sec}`;
     };
 
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[ch]);
+
     const getStatusBadge = (status, isRemoved) => {
         if (isRemoved) {
             return `<span class="${CONFIG.prefix}__status ${CONFIG.prefix}__status--removed">🗑 Удалён</span>`;
@@ -629,7 +633,7 @@
             return `<span class="${CONFIG.prefix}__status ${CONFIG.prefix}__status--success">✓ Проведён</span>`;
         }
         if (status) {
-            return `<span class="${CONFIG.prefix}__status ${CONFIG.prefix}__status--error">✕ ${status}</span>`;
+            return `<span class="${CONFIG.prefix}__status ${CONFIG.prefix}__status--error">✕ ${esc(status)}</span>`;
         }
         return `<span class="${CONFIG.prefix}__status ${CONFIG.prefix}__status--unknown">? Неизвестно</span>`;
     };
@@ -671,9 +675,9 @@
                     <td>${formatDateTime(cls.startAt, true)}</td>
                     <td>${getStatusBadge(status?.status, isRemoved)}</td>
                     <td>${status ? formatDateTime(status.createdAt) : ''}</td>
-                    <td>${status?.createdByUserId || ''}</td>
-                    <td class="${CONFIG.prefix}__cell--type">${cls.type || ''}</td>
-                    <td class="${CONFIG.prefix}__cell--comment" title="${status?.comment || ''}">${status?.comment || ''}</td>
+                    <td>${esc(status?.createdByUserId || '')}</td>
+                    <td class="${CONFIG.prefix}__cell--type">${esc(cls.type || '')}</td>
+                    <td class="${CONFIG.prefix}__cell--comment" title="${esc(status?.comment || '')}">${esc(status?.comment || '')}</td>
                     <td>${isRemoved ? formatDateTime(cls.removedAt) : ''}</td>
                 </tr>
             `;
@@ -722,22 +726,41 @@
 
     const fetchLessons = async () => {
         const teacherId = $(`#${CONFIG.prefix}-teacher-id`).value.trim();
-        const studentId = $(`#${CONFIG.prefix}-student-id`).value;
+        const studentId = $(`#${CONFIG.prefix}-student-id`).value.trim();
 
-        if (!teacherId) {
-            createAndShowButton('Введите ID учителя', 'warning');
+        if (!/^\d+$/.test(teacherId)) {
+            createAndShowButton('Введите числовой ID учителя', 'warning');
             return;
         }
 
+        const fromVal = $(`#${CONFIG.prefix}-date-from`).value;
+        const toVal = $(`#${CONFIG.prefix}-date-to`).value;
+        if (!fromVal || !toVal || fromVal > toVal) {
+            createAndShowButton('Проверь даты: «с» не может быть позже «по»', 'warning');
+            return;
+        }
+
+        // Новый поиск — старый кэш больше не актуален. Раньше после поиска по другому
+        // преподавателю фильтр по ученику показывал уроки ПРЕДЫДУЩЕГО преподавателя.
+        state.lastClasses = null;
+        const requestId = state.requestId = (state.requestId || 0) + 1;
+
         showLoading();
 
-        const apiFrom = getApiDateStr($(`#${CONFIG.prefix}-date-from`).value, false);
-        const apiTo = getApiDateStr($(`#${CONFIG.prefix}-date-to`).value, true);
+        const apiFrom = getApiDateStr(fromVal, false);
+        const apiTo = getApiDateStr(toVal, true);
+
+        const body = new URLSearchParams();
+        body.append('from', apiFrom);
+        body.append('to', apiTo);
+        body.append('offset', '0');
+        body.append('filters[teacherIds][]', teacherId);
+        body.append('callback', 'getJSONP');
 
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `from=${apiFrom}&to=${apiTo}&offset=0&filters[teacherIds][]=${teacherId}&callback=getJSONP`,
+            body: body.toString(),
             credentials: 'include'
         };
 
@@ -757,6 +780,9 @@
                 );
             });
 
+            // Пока шёл запрос, запустили новый (Enter + вставка, смена ID) — этот ответ устарел
+            if (requestId !== state.requestId) return;
+
             const data = JSON.parse(response.fetchansver);
             const classes = data?.[0]?.result?.[0]?.classes;
 
@@ -772,9 +798,10 @@
             renderTable(classes, studentId);
 
         } catch (err) {
+            if (requestId !== state.requestId) return;
             console.error('[LessonStatus]', err);
             $(`#${CONFIG.prefix}-content`).innerHTML = emptyStateHtml(
-                '⚠️', 'Ошибка загрузки', err.message, 'rose'
+                '⚠️', 'Ошибка загрузки', esc(err.message), 'rose'
             );
         } finally {
         }
@@ -811,6 +838,7 @@
         if (!confirm('Вы уверены, что хотите очистить все поля?')) return;
 
         resetDates();
+        state.lastClasses = null;
         $(`#${CONFIG.prefix}-teacher-id`).value = '';
         $(`#${CONFIG.prefix}-student-id`).value = '';
         $(`#${CONFIG.prefix}-content`).innerHTML = emptyStateHtml(
@@ -823,7 +851,7 @@
 
     const toggleWindow = () => {
         const win = state.windowRef;
-        const isVisible = win.style.display !== 'none';
+        const isVisible = getComputedStyle(win).display !== 'none';
 
         if (isVisible) {
             win.style.display = 'none';
@@ -936,6 +964,11 @@
 
         // Initial state
         resetDates();
+
+        // Окно создаётся по первому нажатию и сразу переключается toggleWindow.
+        // Если createWindow вернул видимое окно, первый клик его тут же прятал —
+        // приходилось жать дважды. Явно начинаем со скрытого состояния.
+        state.windowRef.style.display = 'none';
     };
 
     // ─── PUBLIC API ─────────────────────────────────────────────
