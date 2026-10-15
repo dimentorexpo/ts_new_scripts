@@ -22,27 +22,27 @@ var win_AFhelper = `
     </div>
 
     <div class="flex-row" style="justify-content: center;">
-        <input id="phone_tr" class="glass-input onlyfortp" placeholder="Телефон" autocomplete="off" type="text" style="width: 180px; text-align: center;">
-        <input id="email_tr" class="glass-input onlyfortp" placeholder="Почта" autocomplete="off" type="text" style="width: 180px; text-align: center;">
+        <input id="phone_tr" class="glass-input onlyfortp" placeholder="Телефон" autocomplete="off" type="tel" inputmode="tel" style="width: 180px; text-align: center;">
+        <input id="email_tr" class="glass-input onlyfortp" placeholder="Почта" autocomplete="off" type="text" inputmode="email" style="width: 180px; text-align: center;">
     </div>
 
     <div id="pages" style="margin-bottom: 5px; font-size: 17px;"></div>
     <div id="7str"></div>
     <div id="6str"></div>
 
-    <textarea id="inp" class="glass-textarea" style="width: 100%; min-height: 100px; max-height: 350px; resize: vertical; margin-bottom: 8px; box-sizing: border-box; font-size:17px"></textarea>
+    <textarea id="inp" class="glass-textarea" placeholder="Текст ответа (Ctrl+Enter — отправить)" style="width: 100%; min-height: 100px; max-height: 350px; resize: vertical; margin-bottom: 8px; box-sizing: border-box; font-size:17px"></textarea>
 
     <div id="hyperlnk" class="flex-row hyper-bar">
-        <input id="bindlinktotext" class="glass-input" type="text" placeholder="Enter your link 🔗 here" title="Ссылка для встраивания" style="flex-grow: 1; text-align: center;">
+        <input id="bindlinktotext" class="glass-input" type="text" placeholder="Вставь ссылку, выдели текст и нажми Enter" title="Ссылка для встраивания. Enter — вставить, Esc — закрыть" style="flex-grow: 1; text-align: center;">
         <button class="glass-btn mainButton" id="insertlinktotext">Insert ✅</button>
     </div>
 
     <div class="flex-row chmaf-drag-handle">
         <button class="glass-btn mainButton" id="msg1" title="Отправить или доработать">Доработать</button>
         <button class="glass-btn mainButton msgtype" id="msg" title="Отправить в заметки или в чат">Чат</button>
-        <button class="glass-btn mainButton" id="opandclsbarhyper" title="Прикрепить ссылку">🔗</button>
+        <button class="glass-btn mainButton" id="opandclsbarhyper" title="Прикрепить ссылку" aria-expanded="false">🔗</button>
         <button class="glass-btn mainButton" id="sndbot" title="Отправить от имени бота">🤖</button>
-        <button class="glass-btn mainButton primary" id="snd" title="Отправить текст">Send</button>
+        <button class="glass-btn mainButton primary" id="snd" title="Отправить текст (Ctrl+Enter)">Send</button>
 
         <div class="flex-right">
             <button class="glass-btn mainButton" id="addtocusttmplt" title="Сохранить в личные шаблоны">⬆️+Tmpl</button>
@@ -55,14 +55,89 @@ var win_AFhelper = `
 
 createWindow('AF_helper', 'winTopAF', 'winLeftAF', win_AFhelper);
 
+// ============================================================
+// Утилиты
+// ============================================================
+const $af = (id) => document.getElementById(id);
+
+/** Тост, если в расширении есть система уведомлений; иначе — в консоль. */
+function afNotify(message, type = 'message') {
+    if (typeof window.showCustomAlert === 'function') return window.showCustomAlert(message, type);
+    if (typeof createAndShowButton === 'function') return createAndShowButton(message, type);
+    (type === 'error' ? console.warn : console.log)('[ChMAF]', message);
+}
+
+/** Кратко подсвечивает элемент классом (ошибка/успех) и снимает его. */
+function afFlash(el, className, ms = 1200) {
+    if (!el) return;
+    el.classList.remove(className);
+    void el.offsetWidth; // перезапуск анимации, если класс уже стоял
+    el.classList.add(className);
+    setTimeout(() => el.classList.remove(className), ms);
+}
+
+/** Блокирует кнопку на время async-действия (не меньше minMs — защита от дабл-клика). */
+async function afWithLock(btn, action, minMs = 500) {
+    if (btn.dataset.busy === '1') return;
+    btn.dataset.busy = '1';
+    btn.disabled = true;
+    const started = Date.now();
+    try {
+        return await action();
+    } finally {
+        const rest = Math.max(0, minMs - (Date.now() - started));
+        setTimeout(() => { btn.disabled = false; btn.dataset.busy = ''; }, rest);
+    }
+}
+
 // --- Применение сохранённого масштаба при загрузке ---
 (function applyInitialScale() {
-    const savedScale = localStorage.getItem('AF_windowScale') || 100;
-    const target = document.getElementById('AF_helper') || document.getElementById('addTmpWrapper');
+    const savedScale = Number(localStorage.getItem('AF_windowScale')) || 100;
+    const target = $af('AF_helper') || $af('addTmpWrapper');
     if (target) {
         target.style.transformOrigin = 'top left';
         target.style.transform = `scale(${savedScale / 100})`;
     }
+})();
+
+// ============================================================
+// Плавное перетаскивание: на время drag выключаем blur/анимации
+// у содержимого окна (класс .is-dragging-fast, стили — в style.css).
+// Класс ставится только после реального сдвига мыши > 4px,
+// поэтому обычные клики по кнопкам в рядах-ручках не затрагиваются.
+// ============================================================
+(function setupDragPerformance() {
+    const win = $af('AF_helper');
+    if (!win) return;
+
+    let pending = false;
+    let startX = 0;
+    let startY = 0;
+
+    win.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        if (!e.target.closest('.chmaf-drag-handle')) return;
+        if (e.target.closest('input, textarea, [contenteditable]')) return;
+        pending = true;
+        startX = e.clientX;
+        startY = e.clientY;
+    }, true);
+
+    window.addEventListener('pointermove', (e) => {
+        if (!pending) return;
+        if (Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) > 4) {
+            pending = false;
+            win.classList.add('is-dragging-fast');
+        }
+    }, { passive: true });
+
+    const stop = () => {
+        pending = false;
+        win.classList.remove('is-dragging-fast');
+    };
+    window.addEventListener('pointerup', stop, true);
+    window.addEventListener('pointercancel', stop, true);
+    window.addEventListener('blur', stop);
 })();
 
 /**
@@ -90,172 +165,256 @@ function replaceSelectedText(elem, formatCallback) {
     return false;
 }
 
+/** Вставляет текст в позицию курсора. */
+function afInsertAtCursor(elem, text) {
+    elem.focus();
+    const pos = typeof elem.selectionStart === 'number' ? elem.selectionStart : elem.value.length;
+    elem.value = elem.value.slice(0, pos) + text + elem.value.slice(pos);
+    elem.setSelectionRange(pos + text.length, pos + text.length);
+}
+
 // ============================================================
 // Переключатели режима: «Чат/Заметки» и «Доработать/Отправить»
 // ============================================================
-const msgBtn = document.getElementById('msg');
-const msg1Btn = document.getElementById('msg1');
+const msgBtn = $af('msg');
+const msg1Btn = $af('msg1');
 
 msg1Btn.classList.add('msg1type');
 
 /** Восстанавливает подпись и подсветку кнопки-режима из localStorage. */
-function restoreModeButton(btn, storageKey, defaultText, markerWord, markerClass) {
-    btn.textContent = localStorage.getItem(storageKey) || defaultText;
-    btn.classList.toggle(markerClass, btn.textContent.includes(markerWord));
+function restoreModeButton(btn, storageKey, allowed, markerWord, markerClass) {
+    const saved = localStorage.getItem(storageKey);
+    // В localStorage мог остаться мусор — принимаем только известные подписи
+    btn.textContent = allowed.includes(saved) ? saved : allowed[0];
+    const on = btn.textContent === markerWord;
+    btn.classList.toggle(markerClass, on);
+    btn.setAttribute('aria-pressed', String(on));
 }
 
-restoreModeButton(msgBtn, 'msg', 'Чат', 'Заметки', 'notes');
-restoreModeButton(msg1Btn, 'msg1', 'Доработать', 'Отправить', 'send-mode');
+restoreModeButton(msgBtn, 'msg', ['Чат', 'Заметки'], 'Заметки', 'notes');
+restoreModeButton(msg1Btn, 'msg1', ['Доработать', 'Отправить'], 'Отправить', 'send-mode');
 
 msgBtn.addEventListener('click', function () {
-    const isChat = this.textContent.includes('Чат');
+    const toNotes = this.textContent === 'Чат';
 
-    this.textContent = isChat ? 'Заметки' : 'Чат';
-    this.classList.toggle('notes', isChat);
+    this.textContent = toNotes ? 'Заметки' : 'Чат';
+    this.classList.toggle('notes', toNotes);
+    this.setAttribute('aria-pressed', String(toNotes));
     localStorage.setItem('msg', this.textContent);
 });
 
 msg1Btn.addEventListener('click', function () {
-    const isSend = this.textContent.includes('Отправить');
+    const toSend = this.textContent === 'Доработать';
 
-    this.textContent = isSend ? 'Доработать' : 'Отправить';
-    this.classList.toggle('send-mode', !isSend);
+    this.textContent = toSend ? 'Отправить' : 'Доработать';
+    this.classList.toggle('send-mode', toSend);
+    this.setAttribute('aria-pressed', String(toSend));
     localStorage.setItem('msg1', this.textContent);
 });
 
 // ============================================================
 // Отправка (Send): в чат/заметки с учётом состояния шаблонов
 // ============================================================
-document.getElementById('snd').addEventListener('click', function () {
-    const inp = document.getElementById('inp');
-
-    // Блокировка от дабл-клика
-    this.disabled = true;
-    setTimeout(() => { this.disabled = false; }, 500);
-
+$af('snd').addEventListener('click', function () {
+    const inp = $af('inp');
     const textVal = inp.value;
 
-    if (msgBtn.textContent === 'Чат') {
-        if (template_flag === 1) {
-            if (template_flag2 === 1) sendAnswerTemplate2(textVal, 1);
-            else sendAnswerTemplate('', '', 1, textVal, 1);
-        } else {
-            sendAnswer(textVal, 0);
-        }
-    } else {
-        sendComment(textVal);
+    if (!textVal.trim()) {
+        afFlash(inp, 'input-error');
+        return;
     }
 
-    // Очистка полей
-    inp.value = '';
-    const phoneTr = document.getElementById('phone_tr');
-    const emailTr = document.getElementById('email_tr');
-    if (phoneTr) phoneTr.value = '';
-    if (emailTr) emailTr.value = '';
+    afWithLock(this, async () => {
+        try {
+            if (msgBtn.textContent === 'Чат') {
+                if (template_flag === 1) {
+                    if (template_flag2 === 1) await sendAnswerTemplate2(textVal, 1);
+                    else await sendAnswerTemplate('', '', 1, textVal, 1);
+                } else {
+                    await sendAnswer(textVal, 0);
+                }
+            } else {
+                await sendComment(textVal);
+            }
+        } catch (err) {
+            // Текст не стираем — оператор не теряет набранное
+            console.error('[ChMAF] Ошибка отправки:', err);
+            afNotify('⚠️ Не удалось отправить — текст остался в поле', 'error');
+            return;
+        }
+
+        // Чистим, только если за время отправки текст не меняли
+        if (inp.value === textVal) inp.value = '';
+        const phoneTr = $af('phone_tr');
+        const emailTr = $af('email_tr');
+        if (phoneTr) phoneTr.value = '';
+        if (emailTr) emailTr.value = '';
+    });
 });
 
 // ============================================================
 // Панель гиперссылок
 // ============================================================
-const hyperLnkPanel = document.getElementById('hyperlnk');
+const hyperLnkPanel = $af('hyperlnk');
+const afHyperToggleBtn = $af('opandclsbarhyper');
+const afLinkInput = $af('bindlinktotext');
 
-document.getElementById('opandclsbarhyper').addEventListener('click', function () {
-    hyperLnkPanel.classList.toggle('active');
+function afSetHyperPanel(open) {
+    hyperLnkPanel.classList.toggle('active', open);
+    afHyperToggleBtn.setAttribute('aria-expanded', String(open));
+    if (open) afLinkInput.focus();
+}
+
+/** Нормализует ссылку: добавляет https://, отсекает javascript:/data:, экранирует кавычки. */
+function afNormalizeLink(raw) {
+    let url = raw.trim();
+    if (!url) return null;
+    if (/^(javascript|data|vbscript):/i.test(url)) return null;
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(url)) url = 'https://' + url;
+    return url.replace(/"/g, '%22').replace(/</g, '%3C').replace(/>/g, '%3E');
+}
+
+function afInsertLink() {
+    const textArea = $af('inp');
+    const url = afNormalizeLink(afLinkInput.value);
+
+    if (!url) {
+        afFlash(afLinkInput, 'input-error');
+        afLinkInput.focus();
+        return;
+    }
+
+    const toAnchor = (text) => `<a href="${url}" target="_blank" rel="noopener">${text}</a>`;
+
+    // Есть выделение — оборачиваем его; нет — вставляем саму ссылку в позицию курсора
+    if (!replaceSelectedText(textArea, toAnchor)) {
+        afInsertAtCursor(textArea, toAnchor(url));
+    }
+
+    afLinkInput.value = '';
+    afSetHyperPanel(false);
+}
+
+afHyperToggleBtn.addEventListener('click', () => {
+    afSetHyperPanel(!hyperLnkPanel.classList.contains('active'));
 });
 
-document.getElementById('insertlinktotext').addEventListener('click', function () {
-    const linkInput = document.getElementById('bindlinktotext');
-    const textArea = document.getElementById('inp');
+$af('insertlinktotext').addEventListener('click', afInsertLink);
 
-    const formatLink = (text) => `<a href="${linkInput.value}" target="_blank" rel="noopener">${text}</a>`;
-
-    if (replaceSelectedText(textArea, formatLink)) {
-        linkInput.value = '';
-        hyperLnkPanel.classList.remove('active');
+afLinkInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.isComposing) {
+        e.preventDefault();
+        afInsertLink();
+    } else if (e.key === 'Escape') {
+        afSetHyperPanel(false);
+        $af('inp').focus();
     }
 });
 
 // ============================================================
 // Отправка от имени бота
 // ============================================================
-document.getElementById('sndbot').addEventListener('click', async function () {
-    const inp = document.getElementById('inp');
+$af('sndbot').addEventListener('click', function () {
+    const inp = $af('inp');
     const textVal = inp.value;
 
-    if (!textVal.trim()) return;
+    if (!textVal.trim()) {
+        afFlash(inp, 'input-error');
+        return;
+    }
 
-    const [adr, adr1, uid] = await getInfo(0);
+    if (msgBtn.textContent !== 'Чат') {
+        afNotify('🤖 От имени бота можно отправить только в чат — переключи «Заметки» на «Чат»', 'error');
+        return;
+    }
 
-    let formattedText = textVal.split('\n')
-        .map(line => line.trim() ? `<p>${line}</p>` : '<p><br></p>')
-        .join('');
+    afWithLock(this, async () => {
+        const [, conversationId, sessionId] = await getInfo(0);
 
-    if (msgBtn.textContent === 'Чат') {
-        const formData = new FormData();
-        formData.append('payload', JSON.stringify({
-            sessionId: uid,
-            conversationId: adr1,
-            text: formattedText,
+        const payload = {
+            sessionId,
+            conversationId,
+            text: textVal.split('\n')
+                .map((line) => (line.trim() ? `<p>${line}</p>` : '<p><br></p>'))
+                .join(''),
             suggestedAnswerDocId: 0
-        }));
+        };
 
         try {
-            // Без content-type: при FormData браузер сам ставит multipart с boundary
-            await afApiFetch(`${AF_ORIGIN}/api/reason8/answers`, {
-                method: 'POST',
-                body: formData
-            });
-            inp.value = '';
+            let response;
+            if (typeof sendAnswersRequest === 'function') {
+                // Общий путь из TemplatesFuncs.js: сам покажет тост при HTTP-ошибке
+                response = await sendAnswersRequest(payload);
+            } else {
+                const formData = new FormData();
+                formData.append('payload', JSON.stringify(payload));
+                const origin = typeof AF_ORIGIN !== 'undefined' ? AF_ORIGIN : 'https://skyeng.autofaq.ai';
+                response = await afApiFetch(`${origin}/api/reason8/answers`, { method: 'POST', body: formData });
+            }
+
+            if (response && response.ok) {
+                if (inp.value === textVal) inp.value = '';
+                afFlash(this, 'success-green', 900);
+            } else {
+                afFlash(this, 'error-red', 1500);
+            }
         } catch (err) {
-            console.error('Ошибка отправки ботом:', err);
+            console.error('[ChMAF] Ошибка отправки ботом:', err);
+            afFlash(this, 'error-red', 1500);
+            afNotify('⚠️ Бот не отправил сообщение — текст остался в поле', 'error');
         }
-    }
+    });
 });
 
 // ============================================================
 // Скрытие всех окон расширения
 // ============================================================
-document.getElementById('hideMenuMain').addEventListener('click', function () {
+$af('hideMenuMain').addEventListener('click', function () {
     ['AF_helper', 'AF_CustomTemplates', 'AF_Links',
         'AF_AlarmClock', 'AF_Linksd', 'AF_Settings']
         .forEach((id) => {
-            const el = document.getElementById(id);
+            const el = $af(id);
             if (el) setDisplayStyle(el, 'none');
         });
 
-    document.getElementById('scriptBut')?.classList.remove('active');
+    $af('scriptBut')?.classList.remove('active');
 });
 
 // ============================================================
-// Обновление шаблонов с анимацией и блокировкой от дабл-клика
+// Обновление шаблонов: загрузка → успех/ошибка
 // ============================================================
-document.getElementById('getnewtmpldata').addEventListener('click', async function () {
-    this.classList.add('loading-orange'); // статус "Загрузка"
-    this.disabled = true;
+$af('getnewtmpldata').addEventListener('click', async function () {
+    if (this.disabled) return;
+    const btn = this;
+
+    btn.classList.remove('success-green', 'error-red');
+    btn.classList.add('loading-orange');
+    btn.disabled = true;
 
     try {
         await getText();
-
-        this.classList.remove('loading-orange');
-        this.classList.add('success-green'); // статус "Успех"
-
+        btn.classList.replace('loading-orange', 'success-green');
         setTimeout(() => {
-            this.classList.remove('success-green');
-            this.disabled = false;
+            btn.classList.remove('success-green');
+            btn.disabled = false;
         }, 3000);
     } catch (err) {
-        console.error('Ошибка обновления:', err);
-        this.classList.remove('loading-orange');
-        this.disabled = false;
+        console.error('[ChMAF] Ошибка обновления шаблонов:', err);
+        btn.classList.replace('loading-orange', 'error-red');
+        afNotify('⚠️ Шаблоны не обновились — подробности в консоли', 'error');
+        setTimeout(() => {
+            btn.classList.remove('error-red');
+            btn.disabled = false;
+        }, 2500);
     }
 });
 
 // ============================================================
 // Отправка по Ctrl + Enter (или Cmd + Enter на macOS)
 // ============================================================
-document.getElementById('inp')?.addEventListener('keydown', function (e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+$af('inp')?.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !e.isComposing && !e.repeat) {
         e.preventDefault(); // Предотвращает перенос строки
-        document.getElementById('snd')?.click();
+        $af('snd')?.click();
     }
 });

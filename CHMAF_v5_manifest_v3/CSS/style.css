@@ -4126,3 +4126,115 @@ body.chmaf-en-lang #custom_templates_window {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
 }
+
+/* ============================================================
+   ChMAF — ПРОИЗВОДИТЕЛЬНОСТЬ ОКНА ШАБЛОНОВ
+   Главная причина тормозов при перетаскивании: у КАЖДОЙ
+   .glass-btn было два псевдоэлемента с backdrop-filter
+   (::before blur 14-16px и ::after blur 10px). 60 кнопок =
+   120 слоёв размытия, которые браузер пересчитывает в каждом
+   кадре drag. Внутри .glass-panel фон уже размыт самой
+   панелью, поэтому второй blur визуально почти незаметен.
+   ============================================================ */
+.glass-panel .glass-btn::before,
+.glass-panel .glass-btn::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* transition: all анимировал всё подряд, включая перерасчёт тени */
+.glass-panel {
+    transition: box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+                border-color 0.4s ease;
+}
+
+/* Во время перетаскивания (класс ставит AFhelper.js):
+   без размытия у содержимого, без переходов и hover-эффектов.
+   Блюр самой панели оставляем — один слой браузер тянет. */
+.is-dragging-fast *:not(.glass-panel),
+.is-dragging-fast *::before,
+.is-dragging-fast *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transition: none !important;
+    animation-play-state: paused !important;
+}
+
+.is-dragging-fast {
+    cursor: grabbing !important;
+    user-select: none !important;
+    will-change: left, top, transform;
+}
+
+/* Кнопки не ловят hover под курсором и не срабатывают кликом после drag */
+.is-dragging-fast .glass-btn {
+    pointer-events: none !important;
+}
+
+/* ============================================================
+   Состояния кнопок и полей
+   ============================================================ */
+#getnewtmpldata .btn-icon {
+    display: inline-block;
+}
+
+#getnewtmpldata.loading-orange .btn-icon {
+    animation: chmaf-spin 0.9s linear infinite;
+}
+
+#getnewtmpldata.success-green .btn-icon {
+    animation: chmaf-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.error-red {
+    background-color: #b3261e !important;
+    border-color: #8c1d18 !important;
+    pointer-events: none;
+}
+
+@keyframes chmaf-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes chmaf-pop {
+    0%   { transform: scale(0.6); }
+    100% { transform: scale(1); }
+}
+
+/* Пустой текст / пустая ссылка: короткий «отказ» полем */
+.glass-input.input-error,
+.glass-textarea.input-error {
+    border-color: #e5484d !important;
+    box-shadow: 0 0 0 2px rgba(229, 72, 77, 0.35), var(--input-shadow) !important;
+    animation: chmaf-shake 0.32s ease;
+}
+
+@keyframes chmaf-shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-4px); }
+    75%      { transform: translateX(4px); }
+}
+
+/* Панель ссылки раскрывается, а не выпрыгивает */
+.hyper-bar.active {
+    animation: chmaf-hyper-in 0.18s ease-out;
+}
+
+@keyframes chmaf-hyper-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+#opandclsbarhyper[aria-expanded="true"] {
+    border-color: var(--neon, #5fb3d9) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #getnewtmpldata.loading-orange .btn-icon,
+    #getnewtmpldata.success-green .btn-icon,
+    .glass-input.input-error,
+    .glass-textarea.input-error,
+    .hyper-bar.active {
+        animation: none !important;
+    }
+}
