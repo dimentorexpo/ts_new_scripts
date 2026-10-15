@@ -392,6 +392,9 @@ function enableDrag(element, options = {}) {
     let offsetY = 0;
     let cachedWidth = 0;
     let cachedHeight = 0;
+    let lastClientX = 0;
+    let lastClientY = 0;
+    let moveFrame = 0;
 
     const previousUserSelect = document.body.style.userSelect;
     const previousCursor = document.body.style.cursor;
@@ -520,8 +523,10 @@ function enableDrag(element, options = {}) {
         offsetX = event.clientX - rect.left;
         offsetY = event.clientY - rect.top;
 
-        // 🚀 Оптимизация драга: отключаем тяжелые стили и подсказываем GPU
-        element.style.willChange = 'left, top';
+        // 🚀 Оптимизация драга: отключаем тяжелые стили и выносим окно
+        // в отдельный GPU-слой (will-change: transform). Сдвиг слоя
+        // не требует перерисовки содержимого окна на каждом кадре.
+        element.style.willChange = 'transform';
         element.classList.add('is-dragging-fast');
 
         element.style.transition = 'none';
@@ -537,12 +542,13 @@ function enableDrag(element, options = {}) {
         event.preventDefault();
     }
 
-    function onMouseMove(event) {
+    function applyMove() {
+        moveFrame = 0;
         if (!isDragging) return;
 
         const position = applySnap(
-            event.clientX - offsetX,
-            event.clientY - offsetY,
+            lastClientX - offsetX,
+            lastClientY - offsetY,
             false,
             cachedWidth,
             cachedHeight
@@ -553,10 +559,25 @@ function enableDrag(element, options = {}) {
         element.style.right = 'auto';
     }
 
+    function onMouseMove(event) {
+        if (!isDragging) return;
+
+        // Мышь с опросом 500–1000 Гц шлёт mousemove чаще, чем экран
+        // успевает рисовать. Двигаем окно не чаще одного раза за кадр.
+        lastClientX = event.clientX;
+        lastClientY = event.clientY;
+        if (!moveFrame) moveFrame = requestAnimationFrame(applyMove);
+    }
+
     function onMouseUp() {
         if (!isDragging) return;
 
         isDragging = false;
+
+        if (moveFrame) {
+            cancelAnimationFrame(moveFrame);
+            moveFrame = 0;
+        }
 
         // 🚀 Возвращаем стандартные стили после завершения перемещения
         element.style.willChange = 'auto';
@@ -748,12 +769,26 @@ function createWindow(id, topKey, leftKey, content) {
         { signal: cleanupRegistry.signal }
     );
 
+    // Следит за показом окна, чтобы оно не оказалось за краем экрана.
+    // Во время drag style меняется на каждом кадре, а clampWindowPosition
+    // делает getComputedStyle + getBoundingClientRect + запись в localStorage:
+    // это принудительный пересчёт вёрстки и запись на диск каждый кадр.
+    // Поэтому во время перетаскивания пропускаем (позицию сохранит onDragEnd),
+    // а в остальное время схлопываем серию изменений в одну проверку за кадр.
+    let clampFrame = 0;
+
     const observer = new MutationObserver(() => {
-        if (windowElement.style.display === 'none') {
+        if (
+            clampFrame ||
+            windowElement.style.display === 'none' ||
+            windowElement.classList.contains('is-dragging-fast')
+        ) {
             return;
         }
 
-        requestAnimationFrame(() => {
+        clampFrame = requestAnimationFrame(() => {
+            clampFrame = 0;
+
             const position = clampWindowPosition(windowElement);
 
             if (position) {

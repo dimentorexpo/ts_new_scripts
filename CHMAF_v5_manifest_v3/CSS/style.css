@@ -4148,7 +4148,7 @@ body.chmaf-en-lang #custom_templates_window {
                 border-color 0.4s ease;
 }
 
-/* Во время перетаскивания (класс ставит AFhelper.js):
+/* Во время перетаскивания (класс ставит enableDrag в utils.js):
    без размытия у содержимого, без переходов и hover-эффектов.
    Блюр самой панели оставляем — один слой браузер тянет. */
 .is-dragging-fast *:not(.glass-panel),
@@ -4163,7 +4163,6 @@ body.chmaf-en-lang #custom_templates_window {
 .is-dragging-fast {
     cursor: grabbing !important;
     user-select: none !important;
-    will-change: left, top, transform;
 }
 
 /* Кнопки не ловят hover под курсором и не срабатывают кликом после drag */
@@ -4237,4 +4236,22 @@ body.chmaf-en-lang #custom_templates_window {
     .hyper-bar.active {
         animation: none !important;
     }
+}
+
+/* Дополнительные шаблоны (#addTmp) получают класс glass-panel и
+   оказываются панелью внутри панели: второй blur(35px) не нужен */
+.glass-panel .glass-panel {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* ============================================================
+   Вкладки шаблонов: активная вкладка — класс .is-active
+   (раньше определялась по инлайн-стилю style*="orange")
+   ============================================================ */
+#pages button.glass-btn.mainButton.is-active,
+#pages [id$="_page_button"].is-active {
+    border-top-color: #ff9800 !important;
+    border-top-width: 3px !important;
+    background-color: rgba(34, 139, 34, 0.65) !important;
 }

@@ -420,82 +420,150 @@ function initializeMyLogic() {
 if (location.host === 'skyeng.autofaq.ai') waitForElement('#AF_helper', initializeMyLogic);
 
 // ============================================================
-// Оптимизированная Панель шаблонов (Lazy DOM Rendering)
+// Панель шаблонов: вкладки строятся из памяти (table), а не из сети.
+// DOM вкладки создаётся при первом открытии и дальше кэшируется:
+// повторное переключение — это просто перестановка готового узла,
+// без пересоздания кнопок и обработчиков. Введённая ссылка и
+// выбранная тематика на «Серверных» больше не теряются при переключении.
 // ============================================================
 
-// Кэш страниц и шаблонов в оперативной памяти
-let cachedTemplatePages = [];
+let cachedTemplatePages = [];   // [{ id, title, type, rows, dom? }]
 let activePageIndex = 0;
+const ACTIVE_TAB_KEY = 'chmafActiveTemplateTab';
+
+/** Тематики серверных: грузим один раз за сессию, переиспользуем при 🔄. */
+let serverThemesPromise = null;
 
 function pageClick(event) {
-    const clickedBtn = event.currentTarget;
-    const pageNum = parseInt(clickedBtn.id.split('_')[0], 10);
-
-    document.querySelectorAll('#pages button').forEach((btn) => {
-        btn.style.backgroundColor = 'rgba(17, 33, 139, 0.5)';
-        btn.style.borderTop = '1px solid rgba(255, 255, 255, 0.2)';
-    });
-    clickedBtn.style.backgroundColor = 'rgba(34, 139, 34, 0.5)';
-    clickedBtn.style.borderTop = '3px solid orange';
-
-    activePageIndex = pageNum;
-    renderActivePage(activePageIndex);
+    const pageNum = parseInt(event.currentTarget.id, 10);
+    if (Number.isNaN(pageNum)) return;
+    activatePage(pageNum);
 }
 
-// Отрисовка ТОЛЬКО активной страницы
-function renderActivePage(pageIdx) {
-    const contentArea = document.getElementById('7str');
-    const addTmpElement = document.getElementById('addTmp');
-    if (!contentArea) return;
+function activatePage(pageIdx) {
+    const page = cachedTemplatePages[pageIdx];
+    if (!page) return;
 
-    // Полная очистка предыдущей страницы (удаляем старые кнопки из DOM)
-    contentArea.innerHTML = '';
-    if (addTmpElement) addTmpElement.innerHTML = '';
+    document.querySelectorAll('#pages [id$="_page_button"]').forEach((btn) => {
+        const isActive = btn.id === `${pageIdx}_page_button`;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-selected', String(isActive));
+    });
 
+    activePageIndex = pageIdx;
+    try { localStorage.setItem(ACTIVE_TAB_KEY, page.title); } catch { /* не критично */ }
+
+    renderActivePage(pageIdx);
+}
+
+/** Один обработчик на всю вкладку вместо обработчика на каждую кнопку. */
+function onTemplateAreaClick(event) {
+    const btn = event.target.closest('button[data-tpl]');
+    if (!btn) return;
+
+    if (btn.dataset.kind === 'server') window.servFromDoc?.(btn.dataset.tpl);
+    else window.buttonsFromDoc?.(btn.dataset.tpl);
+}
+
+/** Строит DOM вкладки (один раз) и кладёт его в кэш страницы. */
+function buildPageDom(pageIdx) {
     const pageData = cachedTemplatePages[pageIdx];
-    if (!pageData) return;
 
-    const pageContainer = document.createElement('div');
-    pageContainer.id = `${pageIdx}page`;
+    const container = document.createElement('div');
+    container.id = `${pageIdx}page`;
 
-    // Если страница серверная — добавляем блок серверных инпутов
+    const addTmpBox = document.createDocumentFragment();
+    const addTmpNodes = [];
+
     if (pageData.type === 'Серверные') {
-        buildServerInputsSection(pageContainer);
+        buildServerInputsSection(container);
     }
 
-    // Рендерим строки и кнопки
     pageData.rows.forEach((rowItems, strIdx) => {
         const rowEl = document.createElement('div');
         rowEl.className = 'flex-row chmaf-drag-handle';
         rowEl.id = `${pageIdx}page_${strIdx}str`;
 
         rowItems.forEach((btnData) => {
-            const templateBtn = document.createElement('button');
-            templateBtn.textContent = btnData.name;
-            templateBtn.className = 'glass-btn mainButton';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = btnData.name;
+            btn.className = 'glass-btn mainButton';
+            btn.dataset.tpl = btnData.name;
 
             if (pageData.type === 'Шаблоны') {
-                if (btnData.name === 'Урок NS') templateBtn.id = 'NS';
-                templateBtn.addEventListener('click', (event) => window.buttonsFromDoc?.(event.target.textContent));
-
-                if (btnData.isAdditional && addTmpElement) {
-                    addTmpElement.appendChild(templateBtn);
-                } else {
-                    rowEl.appendChild(templateBtn);
+                if (btnData.name === 'Урок NS') btn.id = 'NS';
+                if (btnData.isAdditional) {
+                    addTmpNodes.push(btn);
+                    return;
                 }
             } else if (pageData.type === 'Серверные') {
-                templateBtn.addEventListener('click', () => window.servFromDoc?.(btnData.name));
-                rowEl.appendChild(templateBtn);
+                btn.dataset.kind = 'server';
+            } else {
+                return; // неизвестный тип страницы — кнопки не показываем, как и раньше
             }
+            rowEl.appendChild(btn);
         });
 
-        if (rowEl.children.length > 0) {
-            pageContainer.appendChild(rowEl);
-        }
+        if (rowEl.children.length > 0) container.appendChild(rowEl);
     });
 
-    contentArea.appendChild(pageContainer);
-    bindAddTmpToggle(addTmpElement, pageContainer);
+    addTmpNodes.forEach((n) => addTmpBox.appendChild(n));
+
+    container.addEventListener('click', onTemplateAreaClick);
+    bindAddTmpToggle(document.getElementById('addTmp'), container);
+
+    pageData.dom = { container, addTmpNodes };
+    return pageData.dom;
+}
+
+// Показ ТОЛЬКО активной страницы (остальные лежат в памяти, вне DOM)
+function renderActivePage(pageIdx) {
+    const contentArea = document.getElementById('7str');
+    const addTmpElement = document.getElementById('addTmp');
+    if (!contentArea) return;
+
+    const pageData = cachedTemplatePages[pageIdx];
+    if (!pageData) {
+        contentArea.replaceChildren();
+        addTmpElement?.replaceChildren();
+        return;
+    }
+
+    const dom = pageData.dom || buildPageDom(pageIdx);
+
+    // replaceChildren снимает прошлую вкладку из DOM, но её узлы живы в кэше
+    contentArea.replaceChildren(dom.container);
+    addTmpElement?.replaceChildren(...dom.addTmpNodes);
+}
+
+function loadServerThemes() {
+    if (serverThemesPromise) return serverThemesPromise;
+
+    serverThemesPromise = (async () => {
+        const attempts = 3;
+        for (let i = 1; i <= attempts; i++) {
+            if (window.cleanupRegistry?.signal?.aborted) return [];
+            try {
+                const response = await fetch(SERVER_THEMES_SCRIPT_URL);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const text = await response.text();
+                if (text.trim().startsWith('<')) throw new Error('Сервер вернул HTML');
+                const data = JSON.parse(text);
+                return Array.isArray(data.result) ? data.result : [];
+            } catch (e) {
+                console.warn(`[ChMAF] Серверные темы: попытка ${i}/${attempts}`, e);
+                if (i < attempts) await new Promise((r) => setTimeout(r, 4000));
+            }
+        }
+        throw new Error('Серверные темы не загрузились');
+    })().catch((e) => {
+        console.error('[ChMAF] Ошибка загрузки серверных тем:', e);
+        serverThemesPromise = null; // при следующем открытии вкладки попробуем снова
+        return [];
+    });
+
+    return serverThemesPromise;
 }
 
 function buildServerInputsSection(targetPageContainer) {
@@ -510,6 +578,7 @@ function buildServerInputsSection(targetPageContainer) {
     linkRow.appendChild(linkInput);
 
     const clearLinkBtn = document.createElement('button');
+    clearLinkBtn.type = 'button';
     clearLinkBtn.textContent = '🧹';
     clearLinkBtn.title = 'Очистить';
     clearLinkBtn.className = 'glass-btn mainButton';
@@ -524,7 +593,7 @@ function buildServerInputsSection(targetPageContainer) {
     themeSelect.style.flexGrow = '1';
 
     const placeholderOption = document.createElement('option');
-    placeholderOption.text = 'Выбери тематику для серверных';
+    placeholderOption.text = 'Загружаю тематики…';
     placeholderOption.selected = true;
     placeholderOption.disabled = true;
     placeholderOption.value = 'thenenotselect';
@@ -532,6 +601,7 @@ function buildServerInputsSection(targetPageContainer) {
     themeSelect.add(placeholderOption);
 
     const clearThemeBtn = document.createElement('button');
+    clearThemeBtn.type = 'button';
     clearThemeBtn.textContent = '🧹';
     clearThemeBtn.title = 'Сбросить тему';
     clearThemeBtn.className = 'glass-btn mainButton';
@@ -543,27 +613,26 @@ function buildServerInputsSection(targetPageContainer) {
     targetPageContainer.appendChild(linkRow);
     targetPageContainer.appendChild(themeRow);
 
-    const themesInterval = setInterval(async () => {
-        if (!themeSelect.isConnected || themeSelect.children.length > 1) {
-            clearInterval(themesInterval);
-            return;
-        }
-        try {
-            const response = await fetch(SERVER_THEMES_SCRIPT_URL);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const text = await response.text();
-            if (text.trim().startsWith('<')) throw new Error('Сервер вернул HTML');
-            const data = JSON.parse(text);
-            if (data.result) {
-                data.result.forEach((item) => addOption(themeSelect, item[3], item[4]));
+    let filling = false;
+    const fillThemes = () => {
+        if (filling || themeSelect.options.length > 1) return;
+        filling = true;
+        placeholderOption.text = 'Загружаю тематики…';
+        loadServerThemes().then((items) => {
+            filling = false;
+            if (!items.length) {
+                placeholderOption.text = 'Тематики не загрузились — нажми сюда, чтобы повторить';
+                return;
             }
-            clearInterval(themesInterval);
-        } catch (e) {
-            console.error('[ChMAF] Ошибка загрузки серверных тем:', e);
-            clearInterval(themesInterval);
-        }
-    }, 4000);
-    window.cleanupRegistry?.register(() => clearInterval(themesInterval));
+            items.forEach((item) => addOption(themeSelect, item[3], item[4]));
+            placeholderOption.text = 'Выбери тематику для серверных';
+        });
+    };
+
+    // Сразу, без прежней 4-секундной паузы перед первым запросом;
+    // при неудаче — повтор по клику на список
+    fillThemes();
+    themeSelect.addEventListener('mousedown', fillThemes);
 }
 
 function bindAddTmpToggle(target, pageContainer) {
@@ -575,7 +644,7 @@ function bindAddTmpToggle(target, pageContainer) {
     });
 }
 
-// Построение структуры в памяти и отрисовка первой вкладки
+// Разбор таблицы в лёгкий кэш и показ вкладки (той же, что была открыта)
 function refreshTemplates() {
     if (location.host !== 'skyeng.autofaq.ai') return;
     if (!table || !table.length) {
@@ -587,49 +656,50 @@ function refreshTemplates() {
     const addTmpElement = document.getElementById('addTmp');
     if (!pagesContainer || !contentArea) return;
 
-    cachedTemplatePages = [];
-    pagesContainer.innerHTML = '';
-    contentArea.innerHTML = '';
-    if (addTmpElement) addTmpElement.innerHTML = '';
+    // Запоминаем открытую вкладку по названию, чтобы 🔄 не выкидывал на первую
+    let wantedTitle = cachedTemplatePages[activePageIndex]?.title;
+    if (!wantedTitle) {
+        try { wantedTitle = localStorage.getItem(ACTIVE_TAB_KEY); } catch { wantedTitle = null; }
+    }
 
+    cachedTemplatePages = [];
+    contentArea.replaceChildren();
+    if (addTmpElement) addTmpElement.replaceChildren();
+
+    const tabsFragment = document.createDocumentFragment();
     let currentPageData = null;
     let currentRowData = [];
     let isAdditional = false;
-    let pageCounter = 0;
 
-    // Парсим таблицу в легковесный кэш памяти
+    const flushRow = () => {
+        if (currentPageData && currentRowData.length) {
+            currentPageData.rows.push(currentRowData);
+            currentRowData = [];
+        }
+    };
+
     for (const row of table) {
         const firstCol = row[0];
 
         if (firstCol === 'Страница') {
-            if (currentPageData && currentRowData.length) {
-                currentPageData.rows.push(currentRowData);
-                currentRowData = [];
-            }
-            currentPageData = {
-                id: pageCounter,
-                title: row[1],
-                type: row[2], // 'Шаблоны' или 'Серверные'
-                rows: []
-            };
+            flushRow();
+            const id = cachedTemplatePages.length;
+            currentPageData = { id, title: row[1], type: row[2], rows: [], dom: null };
             cachedTemplatePages.push(currentPageData);
 
-            // Создаем вкладку-переключатель
             const pageBtn = document.createElement('button');
+            pageBtn.type = 'button';
             pageBtn.textContent = row[1];
             pageBtn.className = 'glass-btn mainButton';
-            pageBtn.id = `${pageCounter}_page_button`;
+            pageBtn.id = `${id}_page_button`;
+            pageBtn.setAttribute('role', 'tab');
             pageBtn.addEventListener('click', pageClick);
-            pagesContainer.appendChild(pageBtn);
+            tabsFragment.appendChild(pageBtn);
 
-            pageCounter++;
             isAdditional = false;
         } else if (firstCol === '') {
             isAdditional = false;
-            if (currentPageData && currentRowData.length) {
-                currentPageData.rows.push(currentRowData);
-                currentRowData = [];
-            }
+            flushRow();
         } else if (firstCol === 'Additional templates') {
             isAdditional = true;
             if (addTmpElement) addTmpElement.className = 'flex-row glass-panel';
@@ -639,19 +709,16 @@ function refreshTemplates() {
                 if (btnText === 'ус+брауз (П)') continue;
                 if (btnText === 'ус+брауз (У)') btnText = 'ус+брауз';
             }
-            currentRowData.push({
-                name: btnText,
-                isAdditional: isAdditional
-            });
+            currentRowData.push({ name: btnText, isAdditional });
         }
     }
+    flushRow();
 
-    if (currentPageData && currentRowData.length) {
-        currentPageData.rows.push(currentRowData);
-    }
+    pagesContainer.setAttribute('role', 'tablist');
+    pagesContainer.replaceChildren(tabsFragment);
 
-    // Активируем первую страницу (рендер только её кнопок)
-    document.getElementById('0_page_button')?.click();
+    const restored = cachedTemplatePages.findIndex((p) => p.title === wantedTitle);
+    activatePage(restored >= 0 ? restored : 0);
 }
 window.refreshTemplates = refreshTemplates;
 

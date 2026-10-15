@@ -100,46 +100,6 @@ async function afWithLock(btn, action, minMs = 500) {
     }
 })();
 
-// ============================================================
-// Плавное перетаскивание: на время drag выключаем blur/анимации
-// у содержимого окна (класс .is-dragging-fast, стили — в style.css).
-// Класс ставится только после реального сдвига мыши > 4px,
-// поэтому обычные клики по кнопкам в рядах-ручках не затрагиваются.
-// ============================================================
-(function setupDragPerformance() {
-    const win = $af('AF_helper');
-    if (!win) return;
-
-    let pending = false;
-    let startX = 0;
-    let startY = 0;
-
-    win.addEventListener('pointerdown', (e) => {
-        if (e.button !== 0) return;
-        if (!e.target.closest('.chmaf-drag-handle')) return;
-        if (e.target.closest('input, textarea, [contenteditable]')) return;
-        pending = true;
-        startX = e.clientX;
-        startY = e.clientY;
-    }, true);
-
-    window.addEventListener('pointermove', (e) => {
-        if (!pending) return;
-        if (Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) > 4) {
-            pending = false;
-            win.classList.add('is-dragging-fast');
-        }
-    }, { passive: true });
-
-    const stop = () => {
-        pending = false;
-        win.classList.remove('is-dragging-fast');
-    };
-    window.addEventListener('pointerup', stop, true);
-    window.addEventListener('pointercancel', stop, true);
-    window.addEventListener('blur', stop);
-})();
-
 /**
  * Заменяет выделенный в textarea текст на результат formatCallback.
  * @param {HTMLTextAreaElement} elem — поле ввода
@@ -392,7 +352,10 @@ $af('getnewtmpldata').addEventListener('click', async function () {
     btn.disabled = true;
 
     try {
-        await getText();
+        // getText не бросает исключение после 5 неудачных попыток, а возвращает null
+        const result = await getText();
+        if (!Array.isArray(result)) throw new Error('getText вернул пустой результат');
+
         btn.classList.replace('loading-orange', 'success-green');
         setTimeout(() => {
             btn.classList.remove('success-green');
