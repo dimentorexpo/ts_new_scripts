@@ -86,7 +86,7 @@
         .knw-eyebrow {
             margin-bottom: 3px;
             color: #8fa2c1;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: .15em;
             text-transform: uppercase;
@@ -94,7 +94,7 @@
 
         .knw-title {
             color: #f5f8ff;
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 700;
             letter-spacing: -.025em;
         }
@@ -181,7 +181,7 @@
             color: #edf3ff;
             background: rgba(6, 11, 20, .46);
             font: inherit;
-            font-size: 12px;
+            font-size: 14px;
             transition: border-color .18s, box-shadow .18s, background .18s;
         }
 
@@ -231,7 +231,7 @@
             gap: 10px;
             margin: 18px 1px 9px;
             color: #8fa2c1;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: .12em;
             text-transform: uppercase;
@@ -303,16 +303,16 @@
         .knw-item-title {
             display: block;
             overflow-wrap: anywhere;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
-            line-height: 1.45;
+            line-height: 1.5;
         }
 
         .knw-item-meta {
             display: block;
             margin-top: 4px;
             color: #91a3be;
-            font-size: 10px;
+            font-size: 12px;
             line-height: 1.35;
         }
 
@@ -331,7 +331,7 @@
             border-radius: 11px;
             color: #a0afc6;
             text-align: center;
-            font-size: 12px;
+            font-size: 14px;
             line-height: 1.6;
         }
 
@@ -382,7 +382,7 @@
         .knw-solution-label {
             margin-bottom: 7px;
             color: #98b5ff;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: .14em;
             text-transform: uppercase;
@@ -391,7 +391,7 @@
         .knw-solution-title {
             margin: 0;
             color: #f6f8ff;
-            font-size: 17px;
+            font-size: 19px;
             line-height: 1.35;
             overflow-wrap: anywhere;
         }
@@ -399,8 +399,8 @@
         .knw-article {
             padding-top: 7px;
             color: #d6dfec;
-            font-size: 13px;
-            line-height: 1.7;
+            font-size: 15px;
+            line-height: 1.75;
             overflow-wrap: anywhere;
         }
 
@@ -491,44 +491,6 @@
                 transition: none !important;
             }
         }
-		
-		/* Более комфортный размер текста */
-.knw-title {
-    font-size: 17px;
-}
-
-.knw-eyebrow,
-.knw-list-heading,
-.knw-solution-label {
-    font-size: 11px;
-}
-
-.knw-input,
-.knw-select {
-    font-size: 14px;
-}
-
-.knw-item-title {
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.knw-item-meta {
-    font-size: 12px;
-}
-
-.knw-empty {
-    font-size: 14px;
-}
-
-.knw-solution-title {
-    font-size: 19px;
-}
-
-.knw-article {
-    font-size: 15px;
-    line-height: 1.75;
-}
     `;
 
     if (!document.getElementById('knw-styles')) {
@@ -715,7 +677,14 @@
     }
 
     function positionSolution() {
-        if (solution.hidden || !isWindowVisible()) return;
+        if (solution.hidden) return;
+
+        // Окно базы скрыли сторонним кодом (двойной клик, кнопка меню) —
+        // материал не должен остаться висеть на странице сам по себе.
+        if (!isWindowVisible()) {
+            closeSolution();
+            return;
+        }
 
         const rect = dom.panel.getBoundingClientRect();
         const viewportWidth = window.innerWidth;
@@ -1070,6 +1039,14 @@
 
     document.addEventListener('keydown', event => {
         if (event.key !== 'Escape' || !isWindowVisible()) return;
+
+        // Esc в поле ввода чата или другом окне не должен закрывать базу знаний.
+        const active = document.activeElement;
+        const insideKnowledge = active &&
+            (dom.win.contains(active) || solution.contains(active));
+        const isEditable = active &&
+            (active.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName));
+        if (isEditable && !insideKnowledge) return;
 
         if (!solution.hidden) {
             closeSolution();

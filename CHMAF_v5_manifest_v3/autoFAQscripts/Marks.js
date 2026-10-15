@@ -752,8 +752,8 @@ function marksRenderResult({ id, name, items, reportedTotal, complete }) {
     const rated = counts.slice(1).reduce((sum, count) => sum + count, 0);
     const loaded = items.length;
 
-    // Если не все страницы загрузились, не выдаём проценты
-    // от загруженных записей за проценты от всей истории.
+    // Проценты считаем по реально загруженным обращениям; если загрузились
+    // не все страницы, ниже выводится пояснение «Показаны N из M».
     const denominator = loaded;
 
     const root = document.createDocumentFragment();
@@ -1002,8 +1002,10 @@ async function getUserMarks(option, idfromchat) {
         serviceId: "361c681b-340a-4e47-9342-c7309e27e7b5",
         mode: "Json",
         channelUserFullTextLike: id,
-        tsFrom: `${from}T00:00:00.000Z`,
-        tsTo: `${to}T23:59:59.999Z`,
+        // Границы дня по локальному времени оператора, а не по UTC:
+        // иначе для МСК период сдвигается на 3 часа (с 03:00 до 02:59).
+        tsFrom: new Date(`${from}T00:00:00`).toISOString(),
+        tsTo: new Date(`${to}T23:59:59.999`).toISOString(),
         orderBy: "ts",
         orderDirection: "Desc",
         limit: PAGE_SIZE

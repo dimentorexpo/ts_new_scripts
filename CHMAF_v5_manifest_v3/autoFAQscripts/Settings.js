@@ -3065,6 +3065,14 @@ async function init_settings() {
 
     // --- Department Switchers ---
     const setDept = (addr, isTP) => {
+        // Адреса читаются из chrome.storage; если их там нет (свежий профиль,
+        // сбой загрузки), раньше в scriptAdr записывалась строка "undefined"
+        // и после перезагрузки шаблоны переставали грузиться вовсе.
+        if (!addr || typeof addr !== 'string' || !/^https:\/\//.test(addr)) {
+            createAndShowButton?.('⚠️ Адрес отдела не загружен — перезагрузите страницу и попробуйте снова', 'error');
+            console.warn('[ChMAF] setDept: пустой адрес отдела', { addr, isTP });
+            return;
+        }
         localStorage.setItem('scriptAdr', addr);
         if (isTP) localStorage.setItem('tpflag', 'ТП');
         else localStorage.removeItem('tpflag');
@@ -3077,32 +3085,97 @@ async function init_settings() {
     document.getElementById('set_TPrezerv').onclick = () => setDept(ADDR.TP_Rzrv, true);
 
     // --- Backup Logic ---
+    // localStorage общий для ChMAF и самого AutoFAQ. Раньше экспорт выгружал его
+    // ЦЕЛИКОМ — вместе с токеном CRM (token_global) и служебными данными сайта.
+    // Отправленный коллеге файл давал доступ к CRM от имени автора, а импорт
+    // чужого файла подменял токен и ID расширения у получателя.
+    const BACKUP_META_KEY = '__chmafExport';
+    const isPrivateBackupKey = (key) =>
+        key === 'token_global' ||
+        key === 'ext_id' ||
+        key === BACKUP_META_KEY ||
+        /token|csrf|session|auth|jwt|passw|secret|cookie/i.test(key) ||
+        /^(persist:|SMART_TABLE\.|messageContent\.)/.test(key);
+
     document.getElementById('savesettingstofile').onclick = () => {
         const data = {};
+        let skipped = 0;
         for (let i = 0; i < localStorage.length; i++) {
             const k = localStorage.key(i);
+            if (isPrivateBackupKey(k)) { skipped++; continue; }
             data[k] = localStorage.getItem(k);
         }
-        const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+        data[BACKUP_META_KEY] = JSON.stringify({
+            date: new Date().toISOString(),
+            version: (() => { try { return chrome.runtime.getManifest().version; } catch { return '?'; } })()
+        });
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = url;
         link.download = `chmaf_settings_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
         link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+
+        if (skipped) console.info(`[ChMAF] Экспорт: пропущено служебных/секретных ключей — ${skipped}`);
+        createAndShowButton?.('💾 Настройки сохранены (токены и служебные данные не включены)', 'message');
     };
 
-    document.getElementById('fileinput').onchange = (e) => {
+    const fileInput = document.getElementById('fileinput');
+    fileInput.accept = '.json,application/json';
+    fileInput.onchange = (e) => {
         const file = e.target.files[0];
+        // Сбрасываем, чтобы повторный выбор того же файла снова вызывал onchange
+        e.target.value = '';
         if (!file) return;
+
         const reader = new FileReader();
         reader.onload = (ev) => {
+            let json;
             try {
-                const json = JSON.parse(ev.target.result);
-                Object.entries(json).forEach(([k, v]) => localStorage.setItem(k, v));
-                createAndShowButton?.('Настройки загружены! Перезагрузка...', 'message');
-                setTimeout(() => location.reload(), 1500);
-            } catch (err) { createAndShowButton('Ошибка формата файла', 'error'); }
+                json = JSON.parse(ev.target.result);
+            } catch (err) {
+                createAndShowButton?.('Ошибка формата файла: это не JSON', 'error');
+                return;
+            }
+
+            if (!json || typeof json !== 'object' || Array.isArray(json)) {
+                createAndShowButton?.('Ошибка формата файла: ожидался объект настроек', 'error');
+                return;
+            }
+
+            const entries = Object.entries(json).filter(([k, v]) =>
+                !isPrivateBackupKey(k) &&
+                ['string', 'number', 'boolean'].includes(typeof v)
+            );
+            const skipped = Object.keys(json).length - entries.length - (BACKUP_META_KEY in json ? 1 : 0);
+
+            if (!entries.length) {
+                createAndShowButton?.('В файле нет настроек ChMAF', 'error');
+                return;
+            }
+
+            if (!confirm(`Загрузить ${entries.length} настроек из файла «${file.name}»?\n` +
+                'Текущие значения этих настроек будут заменены, страница перезагрузится.' +
+                (skipped > 0 ? `\n\nПропущено служебных/секретных значений: ${skipped}.` : ''))) {
+                return;
+            }
+
+            try {
+                entries.forEach(([k, v]) => localStorage.setItem(k, String(v)));
+            } catch (err) {
+                console.error('[ChMAF] Импорт настроек:', err);
+                createAndShowButton?.('Не удалось сохранить настройки (переполнено хранилище?)', 'error');
+                return;
+            }
+
+            createAndShowButton?.('Настройки загружены! Перезагрузка...', 'message');
+            setTimeout(() => location.reload(), 1500);
         };
+        reader.onerror = () => createAndShowButton?.('Не удалось прочитать файл', 'error');
         reader.readAsText(file);
     };
 
@@ -3141,4 +3214,8 @@ async function init_settings() {
 }
 
 // Global initialization
-init_settings();
+// Без catch ошибка (например, расширение обновили, и chrome.storage недоступен)
+// уходила в «тихий» unhandled rejection, а окно настроек просто не появлялось.
+init_settings().catch((error) => {
+    console.error('[ChMAF] Не удалось инициализировать настройки:', error);
+});

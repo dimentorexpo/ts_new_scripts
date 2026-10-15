@@ -870,6 +870,11 @@ function changeWeek(direction) {
     // больше не должен перерисовать окно.
     ++ttRequestId;
 
+    // Ответ отменённого запроса больше не придёт в обработчик,
+    // поэтому разблокируем кнопку здесь, иначе она «залипает».
+    const loadButton = ttEl('tt-load-btn');
+    if (loadButton) loadButton.disabled = false;
+
     if (
         ttHasRequested &&
         ttValidTeacherId(ttEl('tt-teacher-id')?.value) !== null
@@ -1030,13 +1035,6 @@ function renderTimetable(rawData, teacherId) {
             Number.isFinite(end) &&
             now > end;
 
-        if (isRunning) {
-            return {
-                color: 'running',
-                label: 'Идёт урок'
-            };
-        }
-
         if (cls.isVacation) {
             return {
                 color: 'vacation',
@@ -1055,7 +1053,7 @@ function renderTimetable(rawData, teacherId) {
             ],
             cancelled: [
                 'canceled',
-                'Отменён студентом'
+                'Отменён'
             ],
             failed_by_teacher: [
                 'failed_teacher',
@@ -1082,6 +1080,15 @@ function renderTimetable(rawData, teacherId) {
             return {
                 color: 'removed',
                 label: 'Отменён'
+            };
+        }
+
+        // «Идёт урок» — только для живого занятия: отменённый или
+        // перенесённый урок в своё время не должен показываться как идущий.
+        if (isRunning) {
+            return {
+                color: 'running',
+                label: 'Идёт урок'
             };
         }
 
@@ -1175,9 +1182,9 @@ function renderTimetable(rawData, teacherId) {
 
             <div class="tt-viz-section" id="tt-viz-classes">
                 ${classes.length
-                    ? '<div id="tt-viz-classes-grid"></div>'
-                    : '<div class="tt-viz-empty">Нет данных о занятиях</div>'
-                }
+            ? '<div id="tt-viz-classes-grid"></div>'
+            : '<div class="tt-viz-empty">Нет данных о занятиях</div>'
+        }
             </div>
 
             <div class="tt-viz-section" id="tt-viz-slots">
@@ -1231,11 +1238,10 @@ function renderTimetable(rawData, teacherId) {
                             </div>
                             <div class="tt-viz-slot-types">
                                 ${ttArray(slot.types).map(type => `
-                                    <span class="tt-viz-slot-type${
-                                        String(type).includes('no_new')
-                                            ? ' blocked'
-                                            : ''
-                                    }">
+                                    <span class="tt-viz-slot-type${String(type).includes('no_new')
+                            ? ' blocked'
+                            : ''
+                        }">
                                         ${ttEscape(type)}
                                     </span>
                                 `).join('')}
@@ -1303,11 +1309,10 @@ function renderTimetable(rawData, teacherId) {
                             </div>
                             <div class="tt-viz-slot-types">
                                 ${ttArray(slot.types).map(type => `
-                                    <span class="tt-viz-slot-type${
-                                        String(type).includes('no_new')
-                                            ? ' blocked'
-                                            : ''
-                                    }">
+                                    <span class="tt-viz-slot-type${String(type).includes('no_new')
+                            ? ' blocked'
+                            : ''
+                        }">
                                         ${ttEscape(type)}
                                     </span>
                                 `).join('')}
@@ -1374,7 +1379,7 @@ function renderTimetable(rawData, teacherId) {
 
                 const student = item.groupId
                     ? ttEscape(item.group?.name || 'Группа')
-                    : 'Student';
+                    : 'Ученик';
 
                 const id = item.groupId
                     ? `<span class="tt-viz-id">
@@ -1394,12 +1399,12 @@ function renderTimetable(rawData, teacherId) {
 
                         <div class="tt-viz-card-meta">
                             ${!item.groupId && item.educationServiceId
-                                ? `<span class="tt-viz-badge tt-viz-badge-svc">
+                        ? `<span class="tt-viz-badge tt-viz-badge-svc">
                                        ID услуги:
                                        ${ttEscape(item.educationServiceId)}
                                    </span>`
-                                : ''
-                            }
+                        : ''
+                    }
                         </div>
 
                         <div class="tt-viz-card-time">
@@ -1514,7 +1519,7 @@ function renderClassesGrid(classes, container, helpers) {
                     item.student?.user?.name,
                     item.student?.user?.surname
                 ].filter(Boolean).join(' ') ||
-                `Student ${item.studentId || ''}`;
+                `Ученик ${item.studentId || ''}`;
 
             const searchable = [
                 student,
@@ -1566,9 +1571,8 @@ function renderClassesGrid(classes, container, helpers) {
 
             html += `
                 <div class="tt-viz-day-group">
-                    <div class="tt-viz-day-header${
-                        isToday ? ' today' : ''
-                    }">
+                    <div class="tt-viz-day-header${isToday ? ' today' : ''
+                }">
                         ${fmtDate(first.startAt)}
                         —
                         ${ttEscape(dayName(first.startAt))}
@@ -1587,7 +1591,7 @@ function renderClassesGrid(classes, container, helpers) {
                         item.student?.user?.name,
                         item.student?.user?.surname
                     ].filter(Boolean).join(' ') ||
-                    'Student';
+                    'Ученик';
 
                 const studentId =
                     item.groupId ||
@@ -1624,9 +1628,9 @@ function renderClassesGrid(classes, container, helpers) {
                     item.classStatus?.createdAt
                         ? `<div class="tt-viz-comment moved-date">
                                ${item.classStatus.status === 'moved'
-                                   ? 'Перенесено'
-                                   : 'Статус изменён'
-                               }:
+                            ? 'Перенесено'
+                            : 'Статус изменён'
+                        }:
                                ${fmtDate(item.classStatus.createdAt)}
                                ${fmtTime(item.classStatus.createdAt)}
                            </div>`
@@ -1659,54 +1663,54 @@ function renderClassesGrid(classes, container, helpers) {
                             </span>
 
                             ${stk
-                                ? `<span class="tt-viz-badge tt-viz-badge-stk">
+                        ? `<span class="tt-viz-badge tt-viz-badge-stk">
                                        ${ttEscape(stk)}
                                    </span>`
-                                : ''
-                            }
+                        : ''
+                    }
 
                             ${item.educationServiceId && !item.groupId
-                                ? `<span class="tt-viz-badge tt-viz-badge-svc">
+                        ? `<span class="tt-viz-badge tt-viz-badge-svc">
                                        ID услуги:
                                        ${ttEscape(item.educationServiceId)}
                                    </span>`
-                                : ''
-                            }
+                        : ''
+                    }
 
                             ${item.createdByUserId
-                                ? `<span class="tt-viz-badge">
+                        ? `<span class="tt-viz-badge">
                                        Создатель:
                                        ${ttEscape(item.createdByUserId)}
                                    </span>`
-                                : ''
-                            }
+                        : ''
+                    }
 
                             ${isSubstitute
-                                ? `<span class="tt-viz-badge tt-viz-badge-substitute">
+                        ? `<span class="tt-viz-badge tt-viz-badge-substitute">
                                        Замена
                                    </span>`
-                                : ''
-                            }
+                        : ''
+                    }
                         </div>
 
                         ${item.classStatus?.comment
-                            ? `<div class="tt-viz-comment">
+                        ? `<div class="tt-viz-comment">
                                    ${ttEscape(item.classStatus.comment)}
                                </div>`
-                            : ''
-                        }
+                        : ''
+                    }
 
                         ${statusDate}
 
                         ${item.removedAt &&
-                          item.classStatus?.status !== 'moved'
-                            ? `<div class="tt-viz-comment">
+                        item.classStatus?.status !== 'moved'
+                        ? `<div class="tt-viz-comment">
                                    Удалено:
                                    ${fmtDate(item.removedAt)}
                                    ${fmtTime(item.removedAt)}
                                </div>`
-                            : ''
-                        }
+                        : ''
+                    }
                     </div>
                 `;
             }
@@ -1752,10 +1756,9 @@ function getbutTimetableButtonPress() {
     const win = document.getElementById('AF_TimetableUI');
     if (!win) return;
 
-    if (
-        win.style.display === 'none' ||
-        win.style.display === ''
-    ) {
+    // Проверяем реальную видимость: style.display === '' означает
+    // «окно видно», и раньше первый клик по открытому окну его не закрывал.
+    if (getComputedStyle(win).display === 'none') {
         win.style.display = 'block';
         requestAnimationFrame(updateWeekDisplay);
     } else {

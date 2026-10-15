@@ -16,7 +16,9 @@ const CONFIGSTAT = {
     SLA_THRESHOLD_MINUTES: 25,
     ART_THRESHOLD_SECONDS: 120,
     AFRT_THRESHOLD_SECONDS: 60,
-    PAGE_LIMIT: 100
+    PAGE_LIMIT: 100,
+    // Сколько чатов загружаем одновременно. Раньше — строго по одному.
+    CONCURRENCY: 6
 };
 
 // ============================================================================
@@ -33,14 +35,59 @@ const apiFetch = async (endpoint, body = null, method = 'GET') => {
     const url = `${CONFIGSTAT.API.BASE_URL}${endpoint}`;
     const options = {
         method,
-        headers: { 'content-type': 'application/json', 'x-csrf-token': aftoken },
+        headers: { 'content-type': 'application/json' },
         credentials: 'include'
     };
     if (body) options.body = typeof body === 'string' ? body : JSON.stringify(body);
-    const r = await fetch(url, options);
+
+    // afApiFetch (content.js) берёт csrf из cookie и повторяет запрос при 403.
+    // Раньше здесь был голый fetch с aftoken, который мог быть ещё пустым.
+    let r;
+    if (typeof afApiFetch === 'function') {
+        r = await afApiFetch(url, options);
+    } else {
+        options.headers['x-csrf-token'] = aftoken;
+        r = await fetch(url, options);
+    }
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return r.json();
 };
+
+/** Обрабатывает items с ограничением числа одновременных запросов, порядок результатов сохраняется. */
+async function mapWithConcurrency(items, limit, worker) {
+    const results = new Array(items.length);
+    let next = 0;
+    async function runner() {
+        while (next < items.length) {
+            const index = next++;
+            results[index] = await worker(items[index], index);
+        }
+    }
+    await Promise.all(Array.from({ length: Math.min(limit, items.length) }, runner));
+    return results;
+}
+
+/** Экранирование для вставки в HTML-атрибуты и разметку. */
+const escapeStatHtml = (value) => String(value ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+/** Добавляет <style> один раз (раньше каждый запуск статистики добавлял новый тег в <head>). */
+function ensureStatStyle(id, css) {
+    if (document.getElementById(id)) return;
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = css;
+    document.head.appendChild(style);
+}
+
+/** Отдел: часть полного имени до первого «-» («ТП-Иванов Иван» → «ТП»). */
+const getSectionOf = (fullName) => String(fullName ?? '').split('-')[0].trim();
+
+// Номер текущего запуска: повторное нажатие кнопки отменяет предыдущий расчёт,
+// иначе два расчёта одновременно писали в одну таблицу и обнуляли данные друг друга.
+let statRunId = 0;
+let csatRunId = 0;
 
 const showLoader = (id = 'outputstatafield', text = '⏳ Загрузка...') => {
     const el = document.getElementById(id);
@@ -79,12 +126,14 @@ async function fetchStaticDataStat() {
 // ============================================================================
 
 async function getStats() {
+    const runId = ++statRunId;
     try {
         showLoader();
         const progressBar = document.getElementById('progress-bar');
         if (progressBar) { progressBar.style.width = '0%'; progressBar.textContent = ''; }
 
-        const opSection = document.querySelector('.user_menu-dropdown-user_name')?.textContent.split('-')[0].trim();
+        const myFullName = document.querySelector('.user_menu-dropdown-user_name')?.textContent.trim() || '';
+        const opSection = getSectionOf(myFullName);
         if (!opSection) throw new Error('Не определён отдел');
 
         const dF = document.getElementById("dateFromStat"), dT = document.getElementById("dateToStat");
@@ -97,11 +146,14 @@ async function getStats() {
             apiFetch(`${CONFIGSTAT.API.OPERATOR_ACTIVITY}?dateFrom=${dateFrom}&dateTo=${dateTo}`),
             fetchStaticDataStat()
         ]);
+        if (runId !== statRunId) return; // запущен новый расчёт
 
         const rows = activityData.rows ?? activityData.data?.rows ?? activityData.result?.rows ?? [];
         if (!rows.length) { showError('📭 Нет данных за период'); return; }
 
-        const filteredOperators = rows.filter(r => r.operator?.includes(opSection)).sort((a, b) => (b.conversationClosed || 0) - (a.conversationClosed || 0));
+        // Точное сравнение отдела. Раньше было includes(): отдел «ТП» захватывал
+        // и «ТПPrem-…», «ТП2Л-…» — в таблицу попадали чужие операторы.
+        const filteredOperators = rows.filter(r => getSectionOf(r.operator) === opSection).sort((a, b) => (b.conversationClosed || 0) - (a.conversationClosed || 0));
         if (!filteredOperators.length) { showError(`⚠️ Не найдено операторов "${opSection}"`); return; }
 
         window.activeopersId = filteredOperators.map(o => o.operatorId || o.id);
@@ -109,8 +161,7 @@ async function getStats() {
         const availableOperators = (staticData.onOperator || [])
             .filter(k => k.operator?.fullName)
             .filter(k => {
-                const sec = k.operator.fullName.split('-')[0].trim();
-                if (sec !== opSection) return false;
+                if (getSectionOf(k.operator.fullName) !== opSection) return false;
                 if (k.operator.kbs?.length) return CONFIGSTAT.PRIORITY_KBS.some(x => k.operator.kbs.includes(x));
                 return true;
             })
@@ -122,14 +173,18 @@ async function getStats() {
         });
 
         const chatCounts = await Promise.all(chatCountPromises);
+        if (runId !== statRunId) return;
         const chatCountMap = new Map(availableOperators.map((op, i) => [op.fullName, chatCounts[i]]));
 
-        renderStatsTable(filteredOperators, chatCountMap, opSection);
-        await getopersSLA(dateFrom, dateTo, window.activeopersId, progressBar);
+        // Раньше сюда передавался отдел («ТП»), а сравнивался он с полным именем —
+        // ⭐ и подсветка «это я» не срабатывали никогда.
+        const rowRefs = renderStatsTable(filteredOperators, chatCountMap, myFullName);
+        await getopersSLA(dateFrom, dateTo, window.activeopersId, progressBar, { rowRefs, runId });
 
     } catch (e) {
+        if (runId !== statRunId) return;
         console.error('💥 getStats:', e);
-        showError(e.message || 'Ошибка загрузки');
+        showError(escapeStatHtml(e.message || 'Ошибка загрузки'));
     }
 }
 
@@ -193,7 +248,15 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
     const tbody = document.createElement('tbody');
     const fragment = document.createDocumentFragment();
 
+    // Ссылки на ячейки каждого оператора. Раньше ячейки искались через
+    // getElementsByName по порядку в документе: после сортировки по AHT во время
+    // загрузки цифры записывались в строки других операторов.
+    const rowRefs = [];
+
     operators.forEach((op, index) => {
+        const rowRef = { name: op.operator, cells: {} };
+        rowRefs.push(rowRef);
+
         const tr = Object.assign(document.createElement('tr'), {
             style: `
                 border-bottom: 1px solid rgba(56, 189, 248, 0.1);
@@ -215,7 +278,7 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
             this.style.boxShadow = '';
         };
 
-        const isCurrent = op.operator === currentOperator;
+        const isCurrent = Boolean(currentOperator) && String(op.operator ?? '').trim() === currentOperator;
         const nameStyle = `
             text-align: left;
             padding: 12px 16px;
@@ -262,6 +325,7 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
                 td.innerHTML = '<span style="font-size: 10px; opacity: 0.7; animation: loadingPulse 1.5s ease-in-out infinite;">⏳</span>';
                 td.setAttribute('name', attr);
             }
+            rowRef.cells[attr] = td;
             tr.appendChild(td);
         });
 
@@ -271,9 +335,8 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
     tbody.appendChild(fragment);
     table.appendChild(tbody);
 
-    // Добавляем CSS анимации
-    const style = document.createElement('style');
-    style.textContent = `
+    // Добавляем CSS анимации (один раз)
+    ensureStatStyle('chmaf-stat-table-anim', `
         @keyframes tableEntrance {
             from { opacity: 0; transform: translateY(20px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -290,8 +353,7 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
             0%, 100% { opacity: 0.3; }
             50% { opacity: 1; }
         }
-    `;
-    document.head.appendChild(style);
+    `);
 
     const output = document.getElementById('outputstatafield');
     if (output) {
@@ -299,6 +361,7 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
         output.appendChild(table);
     }
     renderSummaryStats(operators, chatCountMap);
+    return rowRefs;
 }
 
 function renderSummaryStats(operators, chatCountMap) {
@@ -511,9 +574,8 @@ function renderSummaryStats(operators, chatCountMap) {
         summary.appendChild(statCard);
     });
 
-    // Добавляем CSS анимации
-    const style = document.createElement('style');
-    style.textContent = `
+    // Добавляем CSS анимации (один раз)
+    ensureStatStyle('chmaf-stat-summary-anim', `
         @keyframes summaryEntrance {
             from { opacity: 0; transform: translateY(30px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -525,8 +587,7 @@ function renderSummaryStats(operators, chatCountMap) {
         .stat-loading {
             animation: loadingPulse 1.5s ease-in-out infinite;
         }
-    `;
-    document.head.appendChild(style);
+    `);
 
     output.appendChild(summary);
 }
@@ -535,7 +596,7 @@ function renderSummaryStats(operators, chatCountMap) {
 // 🎯 getopersSLA
 // ============================================================================
 
-async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
+async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs = null, runId } = {}) {
     if (!operatorIds?.length) return;
 
     const SLA_TARGET_PERCENT = 81;
@@ -554,11 +615,26 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
 
     let massivchikUntarget = new Set(), massivchikTarget = new Set(), massivchikQueue = new Set();
 
-    const closedchatsDataCells = document.getElementsByName('chtclosed');
-    const slaDataCells = document.getElementsByName('sladata');
-    const csatDataCells = document.getElementsByName('csatdata');
-    const aclosedchatsDataCells = document.getElementsByName('aclosedchatsdata');
-    const ahtDataCells = document.getElementsByName('ahtdata');
+    const legacyCells = {
+        chtclosed: document.getElementsByName('chtclosed'),
+        sladata: document.getElementsByName('sladata'),
+        csatdata: document.getElementsByName('csatdata'),
+        aclosedchatsdata: document.getElementsByName('aclosedchatsdata'),
+        ahtdata: document.getElementsByName('ahtdata')
+    };
+    const cellsFor = (i) => rowRefs?.[i]?.cells || {
+        chtclosed: legacyCells.chtclosed[i],
+        sladata: legacyCells.sladata[i],
+        csatdata: legacyCells.csatdata[i],
+        aclosedchatsdata: legacyCells.aclosedchatsdata[i],
+        ahtdata: legacyCells.ahtdata[i]
+    };
+    // Имя берём из данных, а не из N-й строки таблицы (после сортировки там другой оператор)
+    const nameFor = (i) => rowRefs?.[i]?.name || String(operatorIds[i]);
+    const isStale = () => runId !== undefined && runId !== statRunId;
+
+    let failedChats = 0;
+    let failedPages = 0;
 
     resetRateCounts();
     window.filteredarray = [];
@@ -571,7 +647,31 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
     const step = 100 / operatorIds.length;
     let currentWidth = 0;
 
+    /** Мини-прогресс в ячейке «Закрыто»: разметка создаётся один раз, дальше меняются ширина и текст. */
+    function createCellProgress(cell) {
+        if (!cell) return () => { };
+        cell.innerHTML = `
+            <div style="width: 60px; margin: 0 auto; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; position: relative; height: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
+                <div data-bar style="width: 0%; height: 100%; background-color: #53db4b; transition: width 0.1s ease;"></div>
+                <div data-pct style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; text-align: center; font-size: 10px; color: white; line-height: 16px; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">0%</div>
+            </div>`;
+        const box = cell.firstElementChild;
+        const bar = cell.querySelector('[data-bar]');
+        const label = cell.querySelector('[data-pct]');
+        return (done, total) => {
+            const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+            bar.style.width = `${pct}%`;
+            label.textContent = `${pct}%`;
+            box.title = `Проверено: ${done} / ${total}`;
+        };
+    }
+
     for (let i = 0; i < operatorIds.length; i++) {
+        if (isStale()) return;
+
+        const cells = cellsFor(i);
+        const opName = nameFor(i);
+
         let operclschatcount = 0, csatcount = 0, csatsumma = 0, overduecount = 0, aclschtscount = 0;
         let page = 1, maxpage = 0;
         let localAFRTUntarget = 0, localAFRTTarget = 0;
@@ -587,207 +687,216 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
         // Хранилище деталей AHT для этого оператора
         let ahtChatDetails = [];
 
+        if (!operatorIds[i]) {
+            console.warn('⚠️ getopersSLA: у оператора нет ID —', opName);
+            ['chtclosed', 'sladata', 'csatdata', 'aclosedchatsdata', 'ahtdata'].forEach(k => { if (cells[k]) cells[k].textContent = '-'; });
+            continue;
+        }
+
+        const updateProgress = createCellProgress(cells.chtclosed);
+
         do {
             const bodyStr = JSON.stringify({
                 serviceId: CONFIGSTAT.SERVICE_ID, mode: "Json", participatingOperatorsIds: [operatorIds[i]],
                 tsFrom: dateFrom, tsTo: dateTo, orderBy: "ts", orderDirection: "Asc", page, limit: 100
             });
 
+            let response;
             try {
-                const response = await doOperationsWithHistory(bodyStr);
-                if (!response?.items?.length) break;
+                response = await doOperationsWithHistory(bodyStr);
+            } catch (error) {
+                console.error(`❌ ${opName}: ошибка страницы ${page}:`, error);
+                failedPages++;
+                break;
+            }
+            if (isStale()) return;
+            if (!response?.items?.length) break;
 
-                if (page === 1) totalChatsForOper = response.total || 0;
+            if (page === 1) totalChatsForOper = response.total || 0;
 
-                for (const item of response.items) {
+            // Чаты страницы загружаем параллельно (по CONFIGSTAT.CONCURRENCY),
+            // а считаем — строго по порядку, как раньше.
+            // Ошибка одного чата больше не обрывает подсчёт по оператору целиком.
+            const conversations = await mapWithConcurrency(response.items, CONFIGSTAT.CONCURRENCY, async (item) => {
+                try {
+                    return await doOperationsWithConversations(item.conversationId);
+                } catch (error) {
+                    failedChats++;
+                    console.warn(`⚠️ ${opName}: чат ${item.conversationId} не загрузился:`, error.message);
+                    return null;
+                } finally {
                     processedChatsForOper++;
+                    updateProgress(processedChatsForOper, totalChatsForOper);
+                }
+            });
+            if (isStale()) return;
 
-                    let pct = totalChatsForOper > 0 ? Math.round((processedChatsForOper / totalChatsForOper) * 100) : 0;
-                    if (pct > 100) pct = 100;
+            response.items.forEach((item, itemIndex) => {
+                const fres = conversations[itemIndex];
+                if (!fres) return;
 
-                    if (closedchatsDataCells[i]) {
-                        closedchatsDataCells[i].innerHTML = `
-                            <div title="Проверено: ${processedChatsForOper} / ${totalChatsForOper}" style="width: 60px; margin: 0 auto; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; position: relative; height: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
-                                <div style="width: ${pct}%; height: 100%; background-color: #53db4b; transition: width 0.1s ease;"></div>
-                                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; text-align: center; font-size: 10px; color: white; line-height: 16px; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${pct}%</div>
-                            </div>
-                        `;
+                const messages = fres.messages || [];
+                const lastMsg = messages[messages.length - 1];
+
+                if (lastMsg?.tpe === "Question") {
+                    const firstMessageTime = lastMsg.ts;
+                    let groupFoundIndex = -1;
+
+                    for (let z = messages.length - 1; z >= 0; z--) {
+                        if (messages[z].payload?.prevGroup === undefined && messages[z].payload?.group === CONFIGSTAT.TARGET_GROUP_ID) {
+                            groupFoundIndex = z; break;
+                        }
                     }
 
-                    const fres = await fetch(`${CONFIGSTAT.API.BASE_URL}${CONFIGSTAT.API.CONVERSATIONS}/${item.conversationId}`, {
-                        headers: { "x-csrf-token": aftoken }, credentials: "include"
-                    }).then(r => r.json());
-
-                    const messages = fres.messages || [];
-                    const lastMsg = messages[messages.length - 1];
-
-                    if (lastMsg?.tpe === "Question") {
-                        const firstMessageTime = lastMsg.ts;
-                        let groupFoundIndex = -1;
-
-                        for (let z = messages.length - 1; z >= 0; z--) {
-                            if (messages[z].payload?.prevGroup === undefined && messages[z].payload?.group === "c7bbb211-a217-4ed3-8112-98728dc382d8") {
-                                groupFoundIndex = z; break;
-                            }
-                        }
-
-                        if (groupFoundIndex !== -1) {
-                            for (let b = groupFoundIndex; b >= 0; b--) {
-                                const m = messages[b];
-                                if (["AnswerOperatorWithBot", "AnswerOperator"].includes(m.tpe)) {
-                                    const diff = (new Date(m.ts) - new Date(firstMessageTime)) / 1000;
-                                    if (diff > 60) {
-                                        massivchikUntarget.add(fres.id);
-                                        localAFRTUntarget++;
-                                        // <--- ДОБАВИТЬ СОХРАНЕНИЕ ДЕТАЛЕЙ ЧАТА:
-                                        if (!window.afrtUntargetDetails.has(fres.id)) {
-                                            const opName = document.getElementById('tableStats')?.rows[i + 1]?.cells[0]?.textContent || operatorIds[i];
-                                            window.afrtUntargetDetails.set(fres.id, {
-                                                chatId: fres.id,
-                                                diffSeconds: Math.round(diff),
-                                                operator: opName
-                                            });
-                                        }
-                                    } else {
-                                        massivchikTarget.add(fres.id);
-                                        localAFRTTarget++;
+                    if (groupFoundIndex !== -1) {
+                        for (let b = groupFoundIndex; b >= 0; b--) {
+                            const m = messages[b];
+                            if (["AnswerOperatorWithBot", "AnswerOperator"].includes(m.tpe)) {
+                                const diff = (new Date(m.ts) - new Date(firstMessageTime)) / 1000;
+                                if (diff > CONFIGSTAT.AFRT_THRESHOLD_SECONDS) {
+                                    massivchikUntarget.add(fres.id);
+                                    localAFRTUntarget++;
+                                    if (!window.afrtUntargetDetails.has(fres.id)) {
+                                        window.afrtUntargetDetails.set(fres.id, {
+                                            chatId: fres.id,
+                                            diffSeconds: Math.round(diff),
+                                            operator: opName
+                                        });
                                     }
-                                    break;
+                                } else {
+                                    massivchikTarget.add(fres.id);
+                                    localAFRTTarget++;
                                 }
+                                break;
                             }
-                        }
-                    }
-
-                    // 🎯 СТРОГАЯ ПРОВЕРКА ПО ОПЕРАТОРУ (для %АЗ, CSAT, SLA)
-                    if (fres.operatorId === operatorIds[i]) {
-                        operclschatcount++;
-                        totalChatsClosed[i] = operclschatcount;
-                        window.operatorAutoClosedDetails[i].totalClosed = operclschatcount;
-
-                        // Вычисляем автозакрытия ТОЛЬКО для чатов этого оператора
-                        const autoClosedMsg = messages.find(msg => msg.eventTpe === 'CloseConversation' && msg.payload?.src && ["inactivity_timer", "pause"].includes(msg.payload.src));
-
-                        if (autoClosedMsg) {
-                            aclschtscount++;
-                            arrayaclosedchatscount[i] = aclschtscount;
-
-                            const srcReason = autoClosedMsg.payload.src;
-                            if (srcReason === 'inactivity_timer') {
-                                window.operatorAutoClosedDetails[i].inactivity.push(item.conversationId);
-                            } else if (srcReason === 'pause') {
-                                window.operatorAutoClosedDetails[i].pause.push(item.conversationId);
-                            }
-                        }
-
-                        window.filteredarray.push({
-                            id: "operator" + (i + 1),
-                            chatHashId: item.conversationId,
-                            Duration: item.stats?.conversationDuration ? (item.stats.conversationDuration / 60000).toFixed(1) : "0.0",
-                            Rate: item.stats?.rate?.rate ?? null,
-                            Channel: item.channel?.name ?? ""
-                        });
-
-                        if (item.stats?.rate?.rate) {
-                            csatcount++; csatsumma += item.stats.rate.rate;
-                            arraycsatcount[i] = csatcount; arraycsatsumma[i] = csatsumma;
-                        }
-
-                        if ((item.stats?.conversationDuration / 60000) > CONFIGSTAT.SLA_THRESHOLD_MINUTES) {
-                            overduecount++; operatorOverdueChats[i] = overduecount;
-                        }
-                    }
-
-                    // 🕒 РАСЧЁТ AHT — по аналогии с %АЗ
-                    // Время от последнего назначения оператора до закрытия (или выхода из группы)
-                    const closeEventAHT = fres.messages?.find(msg => msg.eventTpe === 'CloseConversation');
-                    const isClosedNotPauseAHT = closeEventAHT && (!closeEventAHT.payload?.src || closeEventAHT.payload.src !== 'pause');
-
-                    // Все назначения этого оператора (без фильтра по group — AssignToOperator может не содержать group)
-                    const assignEventsAHT = (fres.messages || []).filter(msg =>
-                        msg.eventTpe === 'AssignToOperator' && msg.payload?.oid === operatorIds[i]
-                    );
-
-                    // Определяем: был ли чат когда-либо в нашей целевой группе?
-                    // fres.groupId — финальная группа; ChangeGroup с payload.group === TARGET — вход в нашу группу
-                    const wasInOurGroup = fres.groupId === CONFIGSTAT.TARGET_GROUP_ID ||
-                        (fres.messages || []).some(msg =>
-                            msg.eventTpe === 'ChangeGroup' && msg.payload?.group === CONFIGSTAT.TARGET_GROUP_ID
-                        );
-
-                    // Ищем момент, когда чат покинул нашу группу (ChangeGroup → другая группа)
-                    const groupLeaveEvents = (fres.messages || []).filter(msg =>
-                        msg.eventTpe === 'ChangeGroup' &&
-                        msg.payload?.group && msg.payload.group !== CONFIGSTAT.TARGET_GROUP_ID
-                    );
-                    const groupTransferTime = groupLeaveEvents.length > 0
-                        ? new Date(groupLeaveEvents[0].ts)
-                        : null;
-
-                    if (assignEventsAHT.length > 0 && isClosedNotPauseAHT && wasInOurGroup) {
-                        const lastAssignAHT = assignEventsAHT[assignEventsAHT.length - 1];
-                        const startTimeAHT = new Date(lastAssignAHT.ts);
-                        // Конец = минимум из (время закрытия, время выхода из группы)
-                        const endTimeAHT = groupTransferTime && groupTransferTime > startTimeAHT
-                            ? groupTransferTime
-                            : new Date(closeEventAHT.ts);
-                        const durationSecondsAHT = (endTimeAHT - startTimeAHT) / 1000;
-
-                        if (durationSecondsAHT > 0) {
-                            totalHandleTimeSeconds += durationSecondsAHT;
-                            closedChatsCountForAHT++;
-                            ahtChatDetails.push({
-                                chatId: item.conversationId,
-                                ahtSeconds: Math.round(durationSecondsAHT),
-                                closedAt: closeEventAHT.ts,
-                                assignedAt: lastAssignAHT.ts
-                            });
                         }
                     }
                 }
-                page++;
-                maxpage = Math.ceil(response.total / 100);
-            } catch (error) {
-                console.error(`❌ Ошибка страницы ${page}:`, error);
-                break;
-            }
+
+                // 🎯 СТРОГАЯ ПРОВЕРКА ПО ОПЕРАТОРУ (для %АЗ, CSAT, SLA)
+                if (fres.operatorId === operatorIds[i]) {
+                    operclschatcount++;
+                    totalChatsClosed[i] = operclschatcount;
+                    window.operatorAutoClosedDetails[i].totalClosed = operclschatcount;
+
+                    // Вычисляем автозакрытия ТОЛЬКО для чатов этого оператора
+                    const autoClosedMsg = messages.find(msg => msg.eventTpe === 'CloseConversation' && msg.payload?.src && ["inactivity_timer", "pause"].includes(msg.payload.src));
+
+                    if (autoClosedMsg) {
+                        aclschtscount++;
+                        arrayaclosedchatscount[i] = aclschtscount;
+
+                        const srcReason = autoClosedMsg.payload.src;
+                        if (srcReason === 'inactivity_timer') {
+                            window.operatorAutoClosedDetails[i].inactivity.push(item.conversationId);
+                        } else if (srcReason === 'pause') {
+                            window.operatorAutoClosedDetails[i].pause.push(item.conversationId);
+                        }
+                    }
+
+                    window.filteredarray.push({
+                        id: "operator" + (i + 1),
+                        chatHashId: item.conversationId,
+                        Duration: item.stats?.conversationDuration ? (item.stats.conversationDuration / 60000).toFixed(1) : "0.0",
+                        Rate: item.stats?.rate?.rate ?? null,
+                        Channel: item.channel?.name ?? ""
+                    });
+
+                    if (item.stats?.rate?.rate) {
+                        csatcount++; csatsumma += item.stats.rate.rate;
+                        arraycsatcount[i] = csatcount; arraycsatsumma[i] = csatsumma;
+                    }
+
+                    if ((item.stats?.conversationDuration / 60000) > CONFIGSTAT.SLA_THRESHOLD_MINUTES) {
+                        overduecount++; operatorOverdueChats[i] = overduecount;
+                    }
+                }
+
+                // 🕒 РАСЧЁТ AHT — по аналогии с %АЗ
+                // Время от последнего назначения оператора до закрытия (или выхода из группы)
+                const closeEventAHT = messages.find(msg => msg.eventTpe === 'CloseConversation');
+                const isClosedNotPauseAHT = closeEventAHT && (!closeEventAHT.payload?.src || closeEventAHT.payload.src !== 'pause');
+
+                // Все назначения этого оператора (без фильтра по group — AssignToOperator может не содержать group)
+                const assignEventsAHT = messages.filter(msg =>
+                    msg.eventTpe === 'AssignToOperator' && msg.payload?.oid === operatorIds[i]
+                );
+
+                // Был ли чат когда-либо в нашей целевой группе
+                const wasInOurGroup = fres.groupId === CONFIGSTAT.TARGET_GROUP_ID ||
+                    messages.some(msg =>
+                        msg.eventTpe === 'ChangeGroup' && msg.payload?.group === CONFIGSTAT.TARGET_GROUP_ID
+                    );
+
+                // Момент, когда чат покинул нашу группу (ChangeGroup → другая группа)
+                const groupLeaveEvents = messages.filter(msg =>
+                    msg.eventTpe === 'ChangeGroup' &&
+                    msg.payload?.group && msg.payload.group !== CONFIGSTAT.TARGET_GROUP_ID
+                );
+                const groupTransferTime = groupLeaveEvents.length > 0
+                    ? new Date(groupLeaveEvents[0].ts)
+                    : null;
+
+                if (assignEventsAHT.length > 0 && isClosedNotPauseAHT && wasInOurGroup) {
+                    const lastAssignAHT = assignEventsAHT[assignEventsAHT.length - 1];
+                    const startTimeAHT = new Date(lastAssignAHT.ts);
+                    // Конец = минимум из (время закрытия, время выхода из группы)
+                    const endTimeAHT = groupTransferTime && groupTransferTime > startTimeAHT
+                        ? groupTransferTime
+                        : new Date(closeEventAHT.ts);
+                    const durationSecondsAHT = (endTimeAHT - startTimeAHT) / 1000;
+
+                    if (durationSecondsAHT > 0) {
+                        totalHandleTimeSeconds += durationSecondsAHT;
+                        closedChatsCountForAHT++;
+                        ahtChatDetails.push({
+                            chatId: item.conversationId,
+                            ahtSeconds: Math.round(durationSecondsAHT),
+                            closedAt: closeEventAHT.ts,
+                            assignedAt: lastAssignAHT.ts
+                        });
+                    }
+                }
+            });
+
+            page++;
+            maxpage = Math.ceil((response.total || 0) / 100);
         } while (page <= maxpage);
 
         // ОБНОВЛЕНИЕ ЯЧЕЕК ТАБЛИЦЫ
-        if (slaDataCells[i]) slaDataCells[i].textContent = operclschatcount > 0 ? (100 - ((operatorOverdueChats[i] || 0) / operclschatcount * 100)).toFixed(1) + '%' : '100%';
-        if (closedchatsDataCells[i]) closedchatsDataCells[i].textContent = operclschatcount > 0 ? operclschatcount : '0';
-        if (csatDataCells[i]) csatDataCells[i].textContent = (arraycsatcount[i] && arraycsatsumma[i]) ? (arraycsatsumma[i] / arraycsatcount[i]).toFixed(2) : '-';
+        if (cells.sladata) cells.sladata.textContent = operclschatcount > 0 ? (100 - ((operatorOverdueChats[i] || 0) / operclschatcount * 100)).toFixed(1) + '%' : '100%';
+        if (cells.chtclosed) cells.chtclosed.textContent = operclschatcount > 0 ? operclschatcount : '0';
+        if (cells.csatdata) cells.csatdata.textContent = (arraycsatcount[i] && arraycsatsumma[i]) ? (arraycsatsumma[i] / arraycsatcount[i]).toFixed(2) : '-';
 
-        if (aclosedchatsDataCells[i]) {
+        if (cells.aclosedchatsdata) {
             if (arrayaclosedchatscount[i] && operclschatcount > 0) {
                 const pct = (arrayaclosedchatscount[i] / operclschatcount * 100).toFixed(1) + '%';
-                const opName = document.getElementById('tableStats')?.rows[i + 1]?.cells[0]?.textContent || `Оператор`;
 
-                aclosedchatsDataCells[i].innerHTML = `
-                    <span class="acls-popup-btn" data-opidx="${i}" data-opname="${opName}"
+                cells.aclosedchatsdata.innerHTML = `
+                    <span class="acls-popup-btn" data-opidx="${i}" data-opname="${escapeStatHtml(opName)}"
                           style="color:#53db4b; cursor:pointer; border-bottom:1px dashed #53db4b;"
                           title="Посмотреть детали автозакрытия">
                         ${pct}
                     </span>`;
             } else {
-                aclosedchatsDataCells[i].textContent = '-';
+                cells.aclosedchatsdata.textContent = '-';
             }
         }
 
         // Обновление AHT
-        if (ahtDataCells[i]) {
+        if (cells.ahtdata) {
             if (closedChatsCountForAHT > 0) {
                 const ahtValue = Math.round(totalHandleTimeSeconds / closedChatsCountForAHT);
-                const opName = document.getElementById('tableStats')?.rows[i + 1]?.cells[0]?.textContent || `Оператор`;
                 ahtChatDetails.sort((a, b) => a.ahtSeconds - b.ahtSeconds);
                 window.operatorAHTDetails[i] = { chats: ahtChatDetails, avgAHT: ahtValue, totalClosed: closedChatsCountForAHT };
-                ahtDataCells[i].innerHTML = `
-                    <span class="aht-popup-btn" data-opidx="${i}" data-opname="${opName}"
+                cells.ahtdata.innerHTML = `
+                    <span class="aht-popup-btn" data-opidx="${i}" data-opname="${escapeStatHtml(opName)}"
                           style="color:#f59e0b; cursor:pointer; border-bottom:1px dashed #f59e0b; font-weight:700;"
                           title="Посмотреть чаты с AHT оператора">
                         ${ahtValue}s
                     </span>`;
             } else {
-                ahtDataCells[i].textContent = '-';
+                cells.ahtdata.textContent = '-';
             }
         }
 
@@ -810,6 +919,8 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
             progressBar.textContent = `${currentWidth.toFixed(1)}%`;
         }
     }
+
+    if (isStale()) return;
 
     // Подсчет оценок
     window.filteredarray.forEach(item => {
@@ -887,6 +998,15 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar) {
             <span style="color:${afrtCalcColor}; font-weight:700">${calcAFRTContainer}</span> чатов${afrtExtra}
         </div>
     `);
+    // Раньше незагрузившийся чат молча выпадал из подсчёта — цифры занижались без предупреждения
+    if (failedChats || failedPages) {
+        const output = document.getElementById('outputstatafield');
+        const warning = document.createElement('div');
+        warning.style.cssText = 'margin:12px 0 0;padding:10px 14px;border-radius:8px;background:rgba(245,158,11,0.15);border:1px solid #f59e0b;color:#fcd34d;font-weight:600;';
+        warning.textContent = `⚠️ Не загрузились: чатов — ${failedChats}, страниц списка — ${failedPages}. ` +
+            'Цифры могут быть занижены. Нажми «Статистика» ещё раз.';
+        output?.prepend(warning);
+    }
 }
 
 // ============================================================================
@@ -953,7 +1073,7 @@ function renderAclsModal(idx, opName) {
     modal.innerHTML = `
         <div class="acls-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background: rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
             <div>
-                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">Детали %A3: <span style="color:#53db4b">${opName}</span></h3>
+                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">Детали %A3: <span style="color:#53db4b">${escapeStatHtml(opName)}</span></h3>
                 <div style="font-size:13px; color:#aaa; margin-top:6px;">
                     Всего закрыто: <b style="color:bisque">${data.totalClosed || 0}</b> |
                     Чатов АЗ: <b style="color:#e38118">${data.inactivity ? data.inactivity.length : 0}</b> |
@@ -1118,7 +1238,7 @@ function renderAHTModal(idx, opName) {
     modal.innerHTML = `
         <div class="aht-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background:rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
             <div>
-                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">Детали AHT: <span style="color:#53db4b">${opName}</span></h3>
+                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">Детали AHT: <span style="color:#53db4b">${escapeStatHtml(opName)}</span></h3>
                 <div style="font-size:13px; color:#aaa; margin-top:6px;">
                     Средний AHT: <b style="color:#e38118">${formatTime(data.avgAHT)}</b> |
                     Чатов в расчёте: <b style="color:#53db4b">${data.totalClosed}</b>
@@ -1851,6 +1971,8 @@ function getbuttonGetStatButtonPress() {
 // ============================================================================
 
 async function checkCSAT() {
+    const runId = ++csatRunId;
+    const isStale = () => runId !== csatRunId;
     const timeOut = document.getElementById("timeoutput");
     if (timeOut) timeOut.value = new Date().toLocaleTimeString('ru-RU');['retreivestata', 'buttonCheckStats', 'buttonKCpower', 'buttonTPpower'].forEach(id => document.getElementById(id)?.classList.remove('active-stat-tab'));
     const checkBtn = document.getElementById('buttonCheckStats');
@@ -1868,16 +1990,12 @@ async function checkCSAT() {
 
     if (loader) loader.style.display = '';
 
-    const padStart = (s, len, pad) => String(s).padStart(len, pad);
-    const getFormattedDate = (date) => {
-        const d = new Date(date); d.setDate(d.getDate() - 1);
-        return `${d.getFullYear()}-${padStart(d.getMonth() + 1, 2, '0')}-${padStart(d.getDate(), 2, '0')}T21:00:00.000z`;
-    };
-
-    const selectedDate = new Date(document.getElementById("dateFromStat").value);
-    const selectedEndDate = new Date(document.getElementById("dateToStat").value);
-    const leftDateFromGrab = getFormattedDate(selectedDate);
-    const rightDateToGrab = `${selectedEndDate.getFullYear()}-${padStart(selectedEndDate.getMonth() + 1, 2, '0')}-${padStart(selectedEndDate.getDate(), 2, '0')}T20:59:59.059z`;
+    // Те же границы суток по МСК, что и в «Статистике». Раньше даты считались
+    // через локальный часовой пояс компьютера, а конец дня обрезался на .059 вместо .999
+    const [leftDateFromGrab, rightDateToGrab] = getDateRangeStata(
+        document.getElementById("dateFromStat").value,
+        document.getElementById("dateToStat").value
+    );
 
     let str = document.createElement('p');
     str.style.paddingLeft = '50px';
@@ -1891,23 +2009,41 @@ async function checkCSAT() {
         let totalChatsToProcess = 0;
         let processedChats = 0;
 
+        let failedChats = 0;
+
         while (true) {
             const test = await apiFetch(CONFIGSTAT.API.QUEUES_ARCHIVE, {
                 serviceId: CONFIGSTAT.SERVICE_ID, mode: "Json", tsFrom: leftDateFromGrab, tsTo: rightDateToGrab, orderBy: "ts", orderDirection: "Asc", page, limit: 100
             }, 'POST');
+            if (isStale()) return;
 
             if (page === 1) totalChatsToProcess = test.total || 0;
 
-            for (const item of test.items) {
-                processedChats++;
+            const pageItems = test.items || [];
 
-                if (loaderText && loaderProgress) {
-                    const pct = totalChatsToProcess ? Math.round((processedChats / totalChatsToProcess) * 100) : 0;
-                    loaderText.textContent = `⏳ Проверяем чаты: ${processedChats} из ${totalChatsToProcess} (${pct}%)`;
-                    loaderProgress.style.width = `${pct}%`;
+            // Параллельная загрузка чатов страницы (раньше — строго по одному)
+            const pageChats = await mapWithConcurrency(pageItems, CONFIGSTAT.CONCURRENCY, async (item) => {
+                try {
+                    return await doOperationsWithConversations(item.conversationId);
+                } catch (error) {
+                    failedChats++;
+                    console.warn(`⚠️ CSAT: чат ${item.conversationId} не загрузился:`, error.message);
+                    return null;
+                } finally {
+                    processedChats++;
+                    if (loaderText && loaderProgress && !isStale()) {
+                        const pct = totalChatsToProcess ? Math.min(100, Math.round((processedChats / totalChatsToProcess) * 100)) : 0;
+                        loaderText.textContent = `⏳ Проверяем чаты: ${processedChats} из ${totalChatsToProcess} (${pct}%)`;
+                        loaderProgress.style.width = `${pct}%`;
+                    }
                 }
+            });
+            if (isStale()) return;
 
-                const chat = await doOperationsWithConversations(item.conversationId);
+            for (let itemIndex = 0; itemIndex < pageItems.length; itemIndex++) {
+                const item = pageItems[itemIndex];
+                const chat = pageChats[itemIndex];
+                if (!chat) continue;
 
                 if (typeof operatorId !== 'undefined' && chat.operatorId !== operatorId) continue;
 
@@ -1931,7 +2067,7 @@ async function checkCSAT() {
                 else if (tagStr === '[\n  "request_forwarded_to_2l_tp"\n]') formattedTag = 'Тег: 2ЛТП';
                 else if (tagStr) formattedTag = tagStr.replace(/[\[\]"\n]/g, '').replace(/,\s*/g, ', ').trim() || 'Нет тега!';
 
-                if ((item.stats?.conversationDuration || 0) / 60000 > 25) {
+                if ((item.stats?.conversationDuration || 0) / 60000 > CONFIGSTAT.SLA_THRESHOLD_MINUTES) {
                     slacount++;
                     let tsClean = typeof item.ts === 'string' ? item.ts.split(/\[UTC\]|\[GMT\]/)[0] : item.ts;
                     let tmestmp = new Date(tsClean);
@@ -2097,16 +2233,26 @@ async function checkCSAT() {
                         }
                     </style>
                 `;
+                if (failedChats) {
+                    const warning = document.createElement('div');
+                    warning.style.cssText = 'margin:0 12px 8px;padding:10px 14px;border-radius:8px;background:rgba(245,158,11,0.15);border:1px solid #f59e0b;color:#fcd34d;font-weight:600;';
+                    warning.textContent = `⚠️ Не загрузились ${failedChats} чатов — цифры могут быть занижены. Нажми кнопку ещё раз.`;
+                    str.prepend(warning);
+                }
                 break;
             }
         }
     } catch (e) {
+        if (isStale()) return;
         console.error('❌ checkCSAT:', e);
-        str.innerHTML = `<span style="color:red">Ошибка: ${e.message}</span>`;
+        str.innerHTML = `<span style="color:red">Ошибка: ${escapeStatHtml(e.message)}</span>`;
         if (loader) loader.style.display = 'none';
     } finally {
-        if (checkBtn) checkBtn.innerHTML = '<span class="af-tab-icon">⭐</span> CSAT + АЗ чаты';
-        if (csatDiv) csatDiv.appendChild(str);
+        // Устаревший запуск (нажали кнопку ещё раз) ничего не дописывает в окно
+        if (!isStale()) {
+            if (checkBtn) checkBtn.innerHTML = '<span class="af-tab-icon">⭐</span> CSAT + АЗ чаты';
+            if (csatDiv) csatDiv.appendChild(str);
+        }
     }
 }
 

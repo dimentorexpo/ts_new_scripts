@@ -239,6 +239,7 @@
         records: [],
         columnFilters: new Map(),
         busy: false,
+        operatorsLoadedAt: 0,
 
         analytics: {
             group: 'theme',
@@ -1434,6 +1435,11 @@
     }
 
     async function loadOperators() {
+        // Сохраняем выбор: при обновлении списка снятые галочки остаются снятыми
+        const previouslyUnchecked = new Set(
+            [...$('operators').querySelectorAll('input:not(:checked)')].map(input => input.value)
+        );
+
         $('operators').textContent = 'Загрузка…';
         action('search').disabled = true;
 
@@ -1447,8 +1453,12 @@
             // Проверяем, что имя начинается строго с "ТП-" или "ТП ОС-" (без учета регистра)
             const PREFIX_REGEX = /^(?:ТП-|ТП ОС-)/i;
 
-            console.group('🔍 [AF Grabber] Анализ операторов и фильтрация');
-            console.log(`Всего записей в ответе API: ${entries.length}`);
+            // Подробный разбор фильтрации — только в режиме отладки
+            const debug = (() => { try { return localStorage.getItem('chmafDebug') === '1'; } catch { return false; } })();
+            if (debug) {
+                console.group('🔍 [AF Grabber] Анализ операторов и фильтрация');
+                console.log(`Всего записей в ответе API: ${entries.length}`);
+            }
 
             const tableLog = [];
             const unique = new Map();
@@ -1486,15 +1496,16 @@
                 });
             }
 
-            // Выводим таблицу с результатами фильтрации
-            //console.table(tableLog);
-
             state.operators = [...unique.values()].sort(
                 (a, b) => a.name.localeCompare(b.name, 'ru')
             );
+            state.operatorsLoadedAt = Date.now();
 
-            console.log(`✅ Итого допущено операторов: ${state.operators.length}`, state.operators);
-            console.groupEnd();
+            if (debug) {
+                console.table(tableLog);
+                console.log(`✅ Итого допущено операторов: ${state.operators.length}`, state.operators);
+                console.groupEnd();
+            }
 
             $('operators').replaceChildren(
                 ...state.operators.map(operator =>
@@ -1502,7 +1513,7 @@
                         operator.id,
                         operator.name,
                         'operator',
-                        true
+                        !previouslyUnchecked.has(operator.id)
                     )
                 )
             );
@@ -1542,8 +1553,26 @@
                 .toLocaleLowerCase('ru'),
             message: $('message').value
                 .trim()
-                .toLocaleLowerCase('ru')
+                .toLocaleLowerCase('ru'),
+            // Сняты ли какие-то оценки (по умолчанию выбраны все 6 вариантов)
+            marksNarrowed: selected($('marks')).length < $('marks').querySelectorAll('input').length
         };
+    }
+
+    /**
+     * Фильтры, которые нельзя проверить у переведённого чата (оценка, комментарий
+     * оператора, критичность, отдел, текст, теги, тип пользователя). Если хоть один
+     * задан, переведённые чаты в выборку не попадают: раньше они показывались
+     * при любых фильтрах и «засоряли» результат строками без оценки.
+     */
+    function hasNarrowingFilters(filters) {
+        return filters.marksNarrowed ||
+            Boolean(filters.comment) ||
+            Boolean(filters.message) ||
+            filters.tags.size > 0 ||
+            !filters.priorities.includes('Any') ||
+            !filters.departments.includes('Any') ||
+            !filters.userTypes.includes('Any');
     }
 
     function parseRate(item) {
@@ -1607,11 +1636,15 @@
                     continue;
                 }
 
+                const duration = Number(item.stats?.conversationDuration);
+
                 chats.push({
                     id: String(item.conversationId),
                     operator: operator.name,
                     rate: isClosedByOperator ? rate : null,
-                    isClosedByOperator
+                    isClosedByOperator,
+                    // Длительность из истории — та же, по которой считает «Статистика»
+                    duration: Number.isFinite(duration) ? duration : null
                 });
             }
 
@@ -1743,7 +1776,16 @@
                 return null;
             }
 
+            if (hasNarrowingFilters(filters)) {
+                return null;
+            }
+
             const topicId = data.payload?.topicId?.value;
+
+            // Тематику у переведённого чата проверить можно — проверяем
+            if (!themeMatches(topicId, filters.themes)) {
+                return null;
+            }
             const timestamp = new Date(data.tsCreate).getTime();
 
             // Возвращаем запись ТОЛЬКО с данными для AFRT (CSAT, SLA и текст обнулены)
@@ -1880,8 +1922,13 @@
         const timestamp = new Date(data.tsCreate).getTime();
         const modified = new Date(data.tsMod).getTime();
 
-        const duration =
-            data.tsMod != null &&
+        // SLA считаем по длительности разговора из истории (как в «Статистике»).
+        // tsMod — время ПОСЛЕДНЕГО изменения чата: оно сдвигается, когда после
+        // закрытия приходит оценка или меняются теги, и SLA ложно становился «Нет».
+        // tsMod остаётся запасным вариантом, если длительности в истории нет.
+        const duration = chat.duration !== null && chat.duration !== undefined
+            ? chat.duration
+            : data.tsMod != null &&
                 Number.isFinite(timestamp) &&
                 Number.isFinite(modified) &&
                 modified >= timestamp
@@ -2288,37 +2335,43 @@
             let failedOperators = 0;
             let failedChats = 0;
 
-            for (let i = 0; i < operators.length; i++) {
-                const operator = operators[i];
+            // История операторов грузится параллельно (раньше — по одному),
+            // а объединяется строго в порядке списка, чтобы результат не зависел
+            // от того, чей ответ пришёл первым.
+            const historyByOperator = new Array(operators.length).fill(null);
 
-                try {
-                    const chats = await loadHistory(
-                        operator,
-                        range,
-                        filters
-                    );
-                    for (const chat of chats) {
-                        const existing = uniqueChats.get(chat.id);
-                        // Сохраняем чат, если его еще нет, ИЛИ если новая запись — от оператора, который его закрыл
-                        if (!existing || (!existing.isClosedByOperator && chat.isClosedByOperator)) {
-                            uniqueChats.set(chat.id, chat);
-                        }
+            await parallel(
+                operators.map((operator, index) => ({ operator, index })),
+                4,
+                async ({ operator, index }) => {
+                    try {
+                        historyByOperator[index] = await loadHistory(
+                            operator,
+                            range,
+                            filters
+                        );
+                    } catch (error) {
+                        failedOperators++;
+                        console.error(
+                            `История оператора ${operator.name}:`,
+                            error
+                        );
                     }
-                } catch (error) {
-                    failedOperators++;
-                    console.error(
-                        `История оператора ${operator.name}:`,
-                        error
-                    );
+                },
+                (done, total) => {
+                    setProgress(done / Math.max(total, 1) * 35);
+                    setStatus(`История: ${done} / ${total}`);
                 }
+            );
 
-                setProgress(
-                    (i + 1) / operators.length * 35
-                );
-
-                setStatus(
-                    `История: ${i + 1} / ${operators.length}`
-                );
+            for (const chats of historyByOperator) {
+                for (const chat of chats || []) {
+                    const existing = uniqueChats.get(chat.id);
+                    // Сохраняем чат, если его еще нет, ИЛИ если новая запись — от оператора, который его закрыл
+                    if (!existing || (!existing.isClosedByOperator && chat.isClosedByOperator)) {
+                        uniqueChats.set(chat.id, chat);
+                    }
+                }
             }
 
             const chats = [...uniqueChats.values()];
@@ -3172,10 +3225,19 @@
         }
     }
 
+    // Excel в русской локали делит столбцы по «;» — с «,» всё открывалось одной колонкой
+    const CSV_SEPARATOR = ';';
+
     function csvCell(value) {
-        return `"${String(
-            value ?? ''
-        ).replace(/"/g, '""')}"`;
+        let text = String(value ?? '');
+
+        // Защита от CSV-инъекции: в выгрузку попадают тексты пользователей,
+        // и строка, начинающаяся с = + - @, в Excel выполнится как формула.
+        if (/^[=+\-@\t\r]/.test(text)) {
+            text = `'${text}`;
+        }
+
+        return `"${text.replace(/"/g, '""')}"`;
     }
 
     function downloadCsv(
@@ -3197,12 +3259,12 @@
             [
                 headers
                     .map(csvCell)
-                    .join(','),
+                    .join(CSV_SEPARATOR),
 
                 ...rows.map(row =>
                     row
                         .map(csvCell)
-                        .join(',')
+                        .join(CSV_SEPARATOR)
                 )
             ].join('\r\n');
 
@@ -3738,9 +3800,14 @@
                 return;
             }
 
-            if (
-                !state.operators.length
-            ) {
+            // Список берётся из текущего состояния (кто сейчас в смене).
+            // Раньше он грузился один раз и не обновлялся до перезагрузки страницы:
+            // вышедшие позже операторы в нём не появлялись.
+            const OPERATORS_TTL_MS = 5 * 60 * 1000;
+            const stale = !state.operatorsLoadedAt ||
+                Date.now() - state.operatorsLoadedAt > OPERATORS_TTL_MS;
+
+            if (!state.busy && (!state.operators.length || stale)) {
                 loadOperators();
             }
         };
