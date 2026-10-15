@@ -1,153 +1,227 @@
-﻿/* =========================================================
-   TSM Exercises — NEON GLASS ULTRA Refactored
+/* =========================================================
+   TSM Exercises — Smartroom, TTC, Комплектации
    ========================================================= */
 
-let hwroomdata = '';
-let ttcroomdata = '';
+const EMPHASIS_ICONS = { writing: "✏", pronunciation: "🎧", speaking: "🎙" };
+
+/* ---------- Разметка окон ---------- */
+
+const identityStripHTML = (suffix) => `
+<div class="tsm-info-panel">
+    <div class="tsm-info-row tsm-info-row-inline">
+        <span class="tsm-chip tsm-chip-person" id="studname${suffix}"></span>
+        <span class="tsm-chip" id="studserviceid${suffix}" title="ID услуги"></span>
+        <span class="tsm-chip" id="studid${suffix}" title="ID ученика"></span>
+        ${suffix ? `<span class="tsm-chip" id="groupid${suffix}" title="ID группы"></span>` : ""}
+        <span class="tsm-info-divider" aria-hidden="true"></span>
+        <span class="tsm-chip tsm-chip-person tsm-chip-teacher" id="teachname${suffix}"></span>
+        <span class="tsm-chip" id="teachdid${suffix}" title="ID преподавателя"></span>
+        ${suffix ? `<span class="tsm-chip tsm-chip-status" id="RoomStatus"></span>
+        <span class="tsm-chip tsm-chip-violet" id="variantIdComplectChip" style="display:none;">variantId <span id="variantIdValue"></span></span>` : ""}
+    </div>
+</div>`;
 
 const win_kidsExercises = `
 <div class="tsm-window-grab">
-    <div class="tsm-toolbar" id="exercisesSkysmartHeader">
-        <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideExercisesSkysmartMenu">Скрыть</button>
-        <button class="tsm-btn tsm-btn-sm" id="RefreshInfoExerciseKids" title="Обновляет информацию по открытой комнате">♻</button>
-        <span id="studname" class="tsm-identity tsm-text-cyan tsm-glow-cyan"></span>
-        <span id="studserviceid" class="tsm-identity tsm-cursor-pointer"></span>
-        <span id="studid" class="tsm-identity tsm-cursor-pointer"></span>
-    </div>
-    <div class="tsm-toolbar" id="exercisesSkysmartTeacher">
-        <label class="tsm-checkbox-label">
-            <input type="checkbox" id="hideNullCards">Скрыть Темы с 0 карточек
+    <div class="tsm-window-header">
+        <span class="tsm-window-title">🎓 Smartroom</span>
+        <label class="tsm-checkbox-label" title="Не показывать темы без карточек">
+            <input type="checkbox" id="hideNullCards">Скрыть пустые темы
         </label>
-        <span id="teachname" class="tsm-identity tsm-text-cyan tsm-glow-cyan"></span>
-        <span id="teachdid" class="tsm-identity tsm-cursor-pointer"></span>
+        <span class="tsm-toolbar-spacer"></span>
+        <button type="button" class="tsm-btn tsm-btn-icon" id="RefreshInfoExerciseKids" title="Подставить ссылку текущей страницы">♻</button>
+        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideExercisesSkysmartMenu">✕</button>
     </div>
     <div class="tsm-input-group">
-        <input id="roomhashhwkids" placeholder="homework link" class="tsm-input tsm-input-centered tsm-input-pill">
-        <button class="tsm-btn tsm-btn-sm" id="getroomdatakids">🔎</button>
+        <input id="roomhashhwkids" class="tsm-input" autocomplete="off" placeholder="Ссылка на комнату или домашку">
+        <button type="button" class="tsm-btn" id="getroomdatakids">Загрузить</button>
     </div>
+    <div id="identityKids" style="display:none;">${identityStripHTML("")}</div>
     <div id="exercisebarskysmart" class="tsm-exercise-bar"></div>
 </div>`;
 
 const win_TTCExercises = `
 <div class="tsm-window-grab">
-    <div class="tsm-toolbar" id="exercisesTTCHeader">
-        <button class="tsm-btn tsm-btn-hide" title="скрывает меню" id="hideExercisesTTCMenu">Скрыть</button>
-        <button class="tsm-btn tsm-btn-sm" id="RefreshInfoExerciseTTC" title="Обновляет информацию по открытой комнате">♻</button>
+    <div class="tsm-window-header">
+        <span class="tsm-window-title">👽 TTC</span>
+        <span class="tsm-toolbar-spacer"></span>
+        <button type="button" class="tsm-btn tsm-btn-icon" id="RefreshInfoExerciseTTC" title="Подставить хеш текущей страницы">♻</button>
+        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideExercisesTTCMenu">✕</button>
     </div>
     <div class="tsm-input-group">
-        <input id="roomhashttc" placeholder="Room link" class="tsm-input tsm-input-centered">
-        <button class="tsm-btn tsm-btn-sm" id="getroomdatattc">🔎</button>
+        <input id="roomhashttc" class="tsm-input" autocomplete="off" placeholder="Хеш комнаты TTC">
+        <button type="button" class="tsm-btn" id="getroomdatattc">Загрузить</button>
     </div>
     <div id="exercisebarttc" class="tsm-exercise-bar"></div>
 </div>`;
 
 const win_complectationExercises = `
 <div class="tsm-window-grab">
-    <div class="tsm-info-panel" id="exercisesComplectHeaderWrapper">
-        <div class="tsm-info-row" id="exercisesComplectHeader">
-            <button class="tsm-btn tsm-btn-hide" id="hideExercisesComplectMenu" title="скрыть меню">Скрыть</button>
-            <button class="tsm-btn tsm-btn-sm" id="RefreshInfoExerciseComplect" title="Обновляет информацию по открытой комнате">♻</button>
-            <div class="tsm-chip tsm-chip-blue"><span id="studnameComplect"></span></div>
-            <div class="tsm-chip" title="ID услуги"><span id="studserviceidComplect"></span></div>
-            <div class="tsm-chip" title="ID ученика"><span id="studidComplect"></span></div>
-            <div class="tsm-chip" title="ID группы"><span id="groupidComplect"></span></div>
-        </div>
-        <div class="tsm-info-row" id="exercisesComplectTeacher">
-            <div class="tsm-chip tsm-chip-purple"><span id="teachnameComplect"></span></div>
-            <div class="tsm-chip" title="ID учителя"><span id="teachdidComplect"></span></div>
-            <div class="tsm-chip tsm-chip-green"><span id="RoomStatus"></span></div>
-            <div class="tsm-chip tsm-chip-violet" id="variantIdComplectChip" style="display:none;">
-                <span class="tsm-user-select-none">variantId: </span><span id="variantIdValue"></span>
-            </div>
-        </div>
+    <div class="tsm-window-header">
+        <span class="tsm-window-title">🛍 Комплектации</span>
+        <span class="tsm-toolbar-spacer"></span>
+        <button type="button" class="tsm-btn tsm-btn-icon" id="RefreshInfoExerciseComplect" title="Подставить ссылку текущей страницы">♻</button>
+        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" id="hideExercisesComplectMenu" title="Скрыть" aria-label="Скрыть">✕</button>
     </div>
     <div class="tsm-input-group">
-        <input id="roomhashhwComplect" placeholder="Room link" class="tsm-input tsm-input-centered tsm-input-pill">
-        <button class="tsm-btn tsm-btn-sm" id="getroomdataComplect">🔎</button>
+        <input id="roomhashhwComplect" class="tsm-input" autocomplete="off" placeholder="Ссылка на комнату">
+        <button type="button" class="tsm-btn" id="getroomdataComplect">Загрузить</button>
     </div>
+    <div id="identityComplect" style="display:none;">${identityStripHTML("Complect")}</div>
     <div id="exercisebarComplect" class="tsm-exercise-bar"></div>
 </div>`;
 
-const wintExercSkysmart = createTSMWindow('AFMS_SkysmartExercInfo', 'winTopexercisesSkysmart', 'winLeftexercisesSkysmart', win_kidsExercises);
-wintExercSkysmart.className = 'tsm-window tsm-window-exercises';
+const wintExercSkysmart = createTSMWindow("AFMS_SkysmartExercInfo", "winTopexercisesSkysmart", "winLeftexercisesSkysmart", win_kidsExercises);
+wintExercSkysmart.className = "tsm-window tsm-window-exercises";
 
-const wintExercTTC = createTSMWindow('AFMS_TTCExercInfo', 'winTopexercisesTTC', 'winLeftexercisesTTC', win_TTCExercises);
-wintExercTTC.className = 'tsm-window tsm-window-exercises';
+const wintExercTTC = createTSMWindow("AFMS_TTCExercInfo", "winTopexercisesTTC", "winLeftexercisesTTC", win_TTCExercises);
+wintExercTTC.className = "tsm-window tsm-window-exercises";
 
-const wintComplect = createTSMWindow('AFMS_Complect', 'winTopComplect', 'winLeftComplect', win_complectationExercises);
-wintComplect.className = 'tsm-window tsm-window-exercises';
+const wintComplect = createTSMWindow("AFMS_Complect", "winTopComplect", "winLeftComplect", win_complectationExercises);
+wintComplect.className = "tsm-window tsm-window-exercises";
 
-async function OpenExercisesSmartroom() {
-    if (wintExercSkysmart.style.display == 'none') {
-        wintExercSkysmart.style.display = '';
-        wintExercTTC.style.display = 'none';
-        document.getElementById('RefreshInfoExerciseKids').onclick = function () {
-            document.getElementById('roomhashhwkids').value = document.URL;
-        };
-        document.getElementById('hideExercisesSkysmartMenu').onclick = function () {
-            wintExercSkysmart.style.display = 'none';
-        };
-        document.getElementById('roomhashhwkids').value = document.URL;
-        setTimeout(function () {
-            getroomdatakids.click();
-        }, 1000);
-        document.getElementById('getroomdatakids').onclick = async function () {
-            const container = document.getElementById('exercisebarskysmart');
-            container.innerHTML = '<div class="tsm-empty tsm-text-secondary">Загрузка данных комнаты…</div>';
-            this.classList.add('is-loading');
-            try {
-                let urlComponents = document.getElementById('roomhashhwkids').value.split('/');
-                if (!urlComponents[4] || !urlComponents[6]) {
-                    createNotify('Некорректная ссылка на комнату', 'error');
-                    container.innerHTML = '<div class="tsm-empty">Укажите корректную ссылку на комнату и нажмите 🔎</div>';
-                    return;
-                }
-                let hashroomkids = urlComponents[6].split('?')[0];
-                let kidsselector = urlComponents[4];
-                const baseURL = `https://api-${kidsselector}.skyeng.ru/api/v2/rooms/`;
-                await gethwroominfo(baseURL, hashroomkids);
-                container.innerHTML = '';
-                getkidsroominfo(hwroomdata, kidsselector);
-            } catch (err) {
-                container.innerHTML = '<div class="tsm-empty">Не удалось загрузить данные. Проверьте ссылку.</div>';
-                console.error(err);
-            } finally {
-                this.classList.remove('is-loading');
-            }
-        };
-    } else {
-        wintExercSkysmart.style.display = 'none';
+/* ---------- Общие помощники ---------- */
+
+const EMPTY_ROOM_HINT = '<div class="tsm-empty">Откройте комнату ученика или вставьте ссылку на неё и нажмите «Загрузить»</div>';
+
+/* Разбор ссылки вида https://vimbox.skyeng.ru/kids/<subject>/room/<hash>
+   (и /kids/<subject>/room/test/<hash> для тестовых комнат) */
+function parseKidsRoomLink(raw) {
+    const value = String(raw || "").trim();
+    if (!value) throw new Error("Вставьте ссылку на комнату");
+    let url;
+    try {
+        url = new URL(value, location.origin);
+    } catch {
+        throw new Error("Некорректная ссылка на комнату");
     }
+    const parts = url.pathname.split("/").filter(Boolean);
+    const subject = parts[1];
+    const isTest = parts[3] === "test";
+    const hash = isTest ? parts[4] : parts[3];
+    if (!subject || !hash || parts[0] !== "kids") throw new Error("Ссылка не похожа на ссылку комнаты /kids/…/room/…");
+    return { subject, hash, isTest };
 }
 
-async function gethwroominfo(api, hash) {
-    await fetch(api + hash, { "credentials": "include" })
-        .then(r => r.json()).then(r => hwroomdata = r);
+function looksLikeKidsRoom(link) {
+    try { parseKidsRoomLink(link); return true; } catch { return false; }
 }
+
+function cmsLessonLink(subject, lessonId, stepId) {
+    const base = `https://cms.skyeng.ru/${subject}/cms/lesson/${lessonId}`;
+    return stepId ? `${base}/cards/${stepId}/edit` : base;
+}
+
+function normalizeCard(card) {
+    let completeness = card.completeness;
+    let score = card.score;
+    if (completeness === 100 && score == null) score = 100;
+    if (completeness == null) return { completeness: "—", score: "—", done: false, empty: true };
+    return { completeness, score: score ?? "—", done: completeness >= 100, empty: false };
+}
+
+function cardDisplayName(card) {
+    const icon = EMPHASIS_ICONS[card.emphasis];
+    return escapeHTML(card.name) + (icon ? ` <span class="tsm-emphasis" title="${escapeHTML(card.emphasis)}">${icon}</span>` : "");
+}
+
+function categoryStatsHTML(block) {
+    if (!block) return "";
+    return `<div class="tsm-stats">
+        <div class="tsm-stat"><span class="tsm-stat-value">${escapeHTML(block.completedCardsCount ?? 0)}<span class="tsm-stat-of">/${escapeHTML(block.cardsCount ?? 0)}</span></span><span class="tsm-stat-label">карточек завершено</span></div>
+        <div class="tsm-stat"><span class="tsm-stat-value">${escapeHTML(block.completeness ?? 0)}%</span><span class="tsm-stat-label">выполнено</span></div>
+        <div class="tsm-stat"><span class="tsm-stat-value">${escapeHTML(block.score ?? "—")}</span><span class="tsm-stat-label">баллов из 100</span></div>
+    </div>`;
+}
+
+function collapsibleHTML(title, count, inner, open = false) {
+    return `<div class="tsm-collapsible${open ? " active" : ""}" role="button" tabindex="0" aria-expanded="${open}">
+        <span>${escapeHTML(title)}</span>${count != null ? `<span class="tsm-collapsible-count">${count}</span>` : ""}
+    </div>
+    <div class="tsm-slide-box" style="${open ? "" : "display:none"}">${inner}</div>`;
+}
+
+/* Один обработчик на контейнер: раскрытие секций + действия по data-action */
+function bindExerciseContainer(container, actions) {
+    const toggle = (head) => {
+        const box = head.nextElementSibling;
+        const open = box.style.display === "none";
+        box.style.display = open ? "" : "none";
+        head.classList.toggle("active", open);
+        head.setAttribute("aria-expanded", String(open));
+    };
+    container.addEventListener("click", (event) => {
+        const head = event.target.closest(".tsm-collapsible");
+        if (head && container.contains(head)) {
+            toggle(head);
+            return;
+        }
+        const actionEl = event.target.closest("[data-action]");
+        if (actionEl && actions[actionEl.dataset.action]) actions[actionEl.dataset.action](actionEl);
+    });
+    container.addEventListener("keydown", (event) => {
+        const head = event.target.closest(".tsm-collapsible");
+        if (head && (event.key === "Enter" || event.key === " ")) {
+            event.preventDefault();
+            toggle(head);
+        }
+    });
+}
+
+function setChip(elementId, label, value, copyable = true) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    if (value == null || value === "") {
+        el.style.display = "none";
+        return;
+    }
+    el.style.display = "";
+    el.innerHTML = `<span class="tsm-chip-label">${escapeHTML(label)}</span>${escapeHTML(value)}`;
+    if (copyable) markCopyable(el, String(value));
+}
+
+function renderIdentity(suffix, student, teacher, extra = {}) {
+    setChip(`studname${suffix}`, "👨‍🎓", student?.name, false);
+    setChip(`studserviceid${suffix}`, "услуга", student?.educationServiceId);
+    setChip(`studid${suffix}`, "ID", student?.userId);
+    setChip(`teachname${suffix}`, "👽", teacher?.name, false);
+    setChip(`teachdid${suffix}`, "ID", teacher?.userId);
+    if (suffix) setChip(`groupid${suffix}`, "группа", extra.groupId);
+}
+
+function splitParticipants(participants = []) {
+    const student = participants.find((p) => p.role === "student") || null;
+    const teacher = participants.find((p) => p.role !== "student") || null;
+    return { student, teacher };
+}
+
+async function fetchJson(url, options = {}) {
+    const response = await fetch(url, { credentials: "include", ...options });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+}
+
+/* =========================================================
+   Smartroom
+   ========================================================= */
+
+const smartroomState = { data: null, room: null };
 
 const hideNullCardsCheckbox = document.getElementById("hideNullCards");
-let checkedHideNullCards = localStorage.getItem("Nullcards");
-if (checkedHideNullCards === null) {
-    checkedHideNullCards = "1";
-    localStorage.setItem("Nullcards", checkedHideNullCards);
-    hideNullCardsCheckbox.checked = true;
-} else {
-    hideNullCardsCheckbox.checked = checkedHideNullCards === "1";
-}
+hideNullCardsCheckbox.checked = localStorage.getItem("Nullcards") !== "0";
 hideNullCardsCheckbox.addEventListener("change", function () {
-    checkedHideNullCards = this.checked ? "1" : "0";
-    localStorage.setItem("Nullcards", checkedHideNullCards);
-    document.getElementById('getroomdatakids').click();
+    localStorage.setItem("Nullcards", this.checked ? "1" : "0");
+    /* Перерисовываем из уже загруженных данных — без повторного запроса */
+    if (smartroomState.data) renderSmartroom();
 });
 
-async function LoadStep(stepuuid) {
-    const response = await fetch("https://api-english.skyeng.ru/api/student-cabinet/v1/step-store/load-step", {
+async function LoadStep(stepUuid) {
+    const data = await fetchJson("https://api-english.skyeng.ru/api/student-cabinet/v1/step-store/load-step", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({ stepUuid: stepuuid, last: true, language: "ru", baseDomain: "skyeng.ru" }),
-        credentials: "include"
+        body: JSON.stringify({ stepUuid, last: true, language: "ru", baseDomain: "skyeng.ru" })
     });
-    const data = await response.json();
+    if (data?.id == null) throw new Error("load-step не вернул id шага");
     return String(data.id);
 }
 
@@ -155,515 +229,449 @@ async function ResetStepProgress(apiName, userId, stepId, roomHash) {
     try {
         const response = await fetch(`https://api-${apiName}.skyeng.ru/api/v1/store-blocks/delete`, {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json", "Accept": "application/json" },
-            body: JSON.stringify({ userId: userId, contentGroupId: stepId, roomHash: roomHash }),
-            credentials: "include"
+            body: JSON.stringify({ userId, contentGroupId: stepId, roomHash })
         });
-        if (!response.ok) {
-            console.error("Ошибка удаления:", response.status, response.statusText);
-            return false;
-        }
-        const result = await response.json();
-        console.log("Удаление прошло успешно:", result);
-        return true;
+        if (!response.ok) console.error("[TSM] store-blocks/delete:", response.status, response.statusText);
+        return response.ok;
     } catch (err) {
-        console.error("Сбой при запросе:", err);
+        console.error("[TSM] Сбой store-blocks/delete:", err);
         return false;
     }
 }
 
-function getkidsroominfo(data, subjecttype) {
-    const nullCards = localStorage.getItem("Nullcards") === "1";
-    const studentId = data.participants.find(p => p.role === "student")?.userId;
-    const indexOfSlides = data.lessonCards.findIndex(c => c.userId === studentId);
+function smartroomCategoryHTML(title, block, subject, isHomework) {
+    if (!block) return "";
+    const hideEmpty = localStorage.getItem("Nullcards") !== "0";
+    let rows = "";
 
-    const normalizeCard = (card) => {
-        let completeness = card.completeness;
-        let score = card.score;
-        if (completeness === 100 && score == null) score = 100;
-        if (completeness == null) { completeness = "——"; score = "—"; }
-        return { completeness, score };
-    };
-
-    const renderCategory = (title, cardBlock, isHomework = false) => {
-        const themes = cardBlock[indexOfSlides].themes;
-        let rows = "";
-        themes.forEach(theme => {
-            if (!nullCards || theme.cards.length > 0) {
-                const safeThemeName = escapeHTML(theme.name);
-                const safeSubtype = escapeHTML(subjecttype);
-                const safeLessonId = escapeHTML(theme.meta?.contentLessonId);
-                rows += `<tr class="tsm-theme-row"><td colspan="8">
-                    <span class="tsm-btn-save" title="Копирует в буфер обмена ссылку на CMS для этого урока" data-subtype="${safeSubtype}" data-lessonid="${safeLessonId}">💾</span>
-                    ${safeThemeName}
-                </td></tr>`;
-            }
-            theme.cards.forEach((card, idx) => {
-                const { completeness, score } = normalizeCard(card);
-                const emphasisIcons = { writing: "✏", pronunciation: "🎧", speaking: "🎙" };
-                const icon = isHomework ? (emphasisIcons[card.emphasis] || "") : "";
-                const cardName = escapeHTML(card.name) + icon;
-                const safeSubtype = escapeHTML(subjecttype);
-                const safeLessonId = escapeHTML(theme.meta?.contentLessonId);
-                const safeCardId = escapeHTML(card.id);
-                const safeStepUuid = escapeHTML(card.stepUuid);
-                const completenessCell = completeness == 100
-                    ? `<td class="tsm-table-cell-center" style="background:rgba(57,255,20,0.15); color:var(--tsm-neon-lime);">${escapeHTML(completeness)}</td>`
-                    : `<td class="tsm-table-cell-center" style="background:rgba(255,140,0,0.12); color:var(--tsm-neon-orange);">${escapeHTML(completeness)}</td>`;
-                rows += `<tr class="tsm-card-row">
-                    <td class="tsm-table-cell-center">${idx + 1}</td>
-                    <td class="tsm-table-cell">${cardName}</td>
-                    <td class="tsm-table-cell-center">${escapeHTML(score)}</td>
-                    ${completenessCell}
-                    <td class="tsm-btn-save tsm-table-cell-center" title="Копирует в буфер обмена ссылку на CMS для этого слайда" data-subtype="${safeSubtype}" data-lessonid="${safeLessonId}" data-stepid="${safeCardId}">💾</td>
-                    <td class="tsm-table-cell-center tsm-text-xs">${toMoscowTime(card.sentAt)}</td>
-                    <td class="tsm-table-cell-center tsm-text-xs">${toMoscowTime(card.scoreUpdatedAt)}</td>
-                    ${isHomework ? `<td class="tsm-btn-reset tsm-table-cell-center" data-stepUUID="${safeStepUuid}">🔄️</td>` : ""}
-                </tr>`;
-            });
-        });
-
-        return `<div class="tsm-collapsible">${escapeHTML(title)}</div>
-        <div class="tsm-slide-box" style="display:none">
-            <div class="tsm-exercise-item">
-                <div style="text-align:center;">Информация по категории: ${escapeHTML(title)}</div>
-                Количество завершенных карточек: ${cardBlock[indexOfSlides].completedCardsCount} из ${cardBlock[indexOfSlides].cardsCount}
-                <br>Общий % завершения слайдов: ${cardBlock[indexOfSlides].completeness}%
-                <br>Итоговый результат: ${cardBlock[indexOfSlides].score} баллов из 100
+    (block.themes || []).forEach((theme) => {
+        const cards = theme.cards || [];
+        if (hideEmpty && cards.length === 0) return;
+        const lessonId = escapeHTML(theme.meta?.contentLessonId);
+        rows += `<tr class="tsm-theme-row"><td colspan="${isHomework ? 8 : 7}">
+            <div class="tsm-theme-title">
+                <button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" title="Скопировать ссылку на урок в CMS">💾</button>
+                <span class="tsm-theme-name" title="${escapeHTML(theme.name)}">${escapeHTML(theme.name)}</span>
             </div>
-            <table class="tsm-slide-table" style="width:100%; border-collapse:collapse; margin-top:10px;">
-                <thead><tr class="tsm-table-header">
-                    <th class="tsm-table-cell-center">#</th>
-                    <th class="tsm-table-cell-center">Название слайда</th>
-                    <th class="tsm-table-cell-center">Балл</th>
-                    <th class="tsm-table-cell-center">%</th>
-                    <th class="tsm-table-cell-center">Ссылка</th>
-                    <th class="tsm-table-cell-center">Задано</th>
-                    <th class="tsm-table-cell-center">Обновлен скор</th>
-                    ${isHomework ? `<th class="tsm-table-cell-center">Сброс</th>` : ""}
-                </tr></thead>
-                <tbody>${rows}</tbody>
-            </table>
-        </div>`;
-    };
+        </td></tr>`;
 
-    document.getElementById("exercisebarskysmart").innerHTML +=
-        renderCategory("🎓План урока", data.lessonCards) +
-        renderCategory("💼План домашки", data.homeworkCards, true);
+        cards.forEach((card, idx) => {
+            const { completeness, score, done, empty } = normalizeCard(card);
+            const cellClass = empty ? "" : (done ? "tsm-cell-success" : "tsm-cell-warn");
+            rows += `<tr class="tsm-card-row">
+                <td class="tsm-table-cell-center tsm-cell-num">${idx + 1}</td>
+                <td class="tsm-card-name">${cardDisplayName(card)}</td>
+                <td class="tsm-table-cell-center">${escapeHTML(score)}</td>
+                <td class="tsm-table-cell-center ${cellClass}">${escapeHTML(completeness)}</td>
+                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" data-stepid="${escapeHTML(card.id)}" title="Скопировать ссылку на слайд в CMS">💾</button></td>
+                <td class="tsm-table-cell-center tsm-text-xs">${toMoscowTime(card.sentAt)}</td>
+                <td class="tsm-table-cell-center tsm-text-xs">${toMoscowTime(card.scoreUpdatedAt)}</td>
+                ${isHomework ? `<td class="tsm-table-cell-center"><button type="button" class="tsm-btn-reset" data-action="reset-progress" data-stepuuid="${escapeHTML(card.stepUuid)}" data-cardname="${escapeHTML(card.name)}" title="Сбросить прогресс ученика по слайду">↻</button></td>` : ""}
+            </tr>`;
+        });
+    });
 
-    let subjbtnsarr = document.getElementById('exercisebarskysmart').getElementsByClassName('tsm-collapsible');
-    let slidesbar = document.getElementById('exercisebarskysmart').getElementsByClassName('tsm-slide-box');
-    for (let i = 0; i < subjbtnsarr.length; i++) {
-        subjbtnsarr[i].onclick = function () {
-            if (slidesbar[i].style.display == 'none') slidesbar[i].style.display = '';
-            else slidesbar[i].style.display = 'none';
-        };
+    const table = `<div class="tsm-table-scroll"><table class="tsm-slide-table${isHomework ? "" : " tsm-slide-table-lesson"}">
+        <thead><tr class="tsm-table-header">
+            <th>#</th><th>Слайд</th><th>Балл</th><th>%</th><th>CMS</th><th>Задано</th><th>Скор обновлён</th>
+            ${isHomework ? "<th>Сброс</th>" : ""}
+        </tr></thead>
+        <tbody>${rows || `<tr><td colspan="8" class="tsm-table-empty">Нет карточек</td></tr>`}</tbody>
+    </table></div>`;
+
+    return collapsibleHTML(title, block.cardsCount, categoryStatsHTML(block) + table);
+}
+
+function renderSmartroom() {
+    const { data, room } = smartroomState;
+    const container = document.getElementById("exercisebarskysmart");
+    const { student, teacher } = splitParticipants(data.participants);
+    const index = student ? (data.lessonCards || []).findIndex((c) => c.userId === student.userId) : -1;
+
+    renderIdentity("", student, teacher);
+    document.getElementById("identityKids").style.display = "";
+
+    if (index < 0) {
+        container.innerHTML = '<div class="tsm-empty">В комнате не найден план ученика</div>';
+        return;
+    }
+    container.innerHTML =
+        smartroomCategoryHTML("🎓 План урока", data.lessonCards?.[index], room.subject, false) +
+        smartroomCategoryHTML("💼 План домашки", data.homeworkCards?.[index], room.subject, true);
+}
+
+async function loadSmartroom() {
+    const button = document.getElementById("getroomdatakids");
+    const container = document.getElementById("exercisebarskysmart");
+    let room;
+    try {
+        room = parseKidsRoomLink(document.getElementById("roomhashhwkids").value);
+    } catch (err) {
+        container.innerHTML = `<div class="tsm-empty">${escapeHTML(err.message)}</div>`;
+        return;
     }
 
-    let savelinkarr = document.getElementById('exercisebarskysmart').getElementsByClassName('tsm-btn-save');
-    for (let z = 0; z < savelinkarr.length; z++) {
-        savelinkarr[z].onclick = function () {
-            let subtype = this.getAttribute('data-subtype');
-            let lessonid = this.getAttribute('data-lessonid');
-            let stepid = this.getAttribute('data-stepid');
-            let link = !stepid ? `https://cms.skyeng.ru/${subtype}/cms/lesson/${lessonid}` : `https://cms.skyeng.ru/${subtype}/cms/lesson/${lessonid}/cards/${stepid}/edit`;
-            savelinkarr[z].textContent = "✅";
-            copyToClipboardTSM(link);
-            createNotify('💾 Ссылка на слайд в CMS cкопирована в буфер обмена', 'message');
-            setTimeout(function () { savelinkarr[z].textContent = "💾"; }, 4000);
-        };
-    }
-
-    let rstProgArray = document.getElementById('exercisebarskysmart').getElementsByClassName('tsm-btn-reset');
-    for (let k = 0; k < rstProgArray.length; k++) {
-        rstProgArray[k].onclick = async function () {
-            let apiToDoName = location.pathname.split('/')[2].trim();
-            let roomhashtoinsert = location.pathname.split('/')[4].trim();
-            let stepuuid = this.getAttribute('data-stepUuid');
-            let studentID = Number(document.getElementById('studid').textContent.split(" ")[1]);
-            let getNumberToDelete = await LoadStep(stepuuid);
-            const success = await ResetStepProgress(apiToDoName, studentID, getNumberToDelete, roomhashtoinsert);
-            if (success) {
-                rstProgArray[k].textContent = "✅";
-                setTimeout(function () { rstProgArray[k].textContent = "🔄️"; }, 4000);
-            } else {
-                rstProgArray[k].textContent = "❌";
-                setTimeout(function () { rstProgArray[k].textContent = "🔄️"; }, 4000);
-            }
-        };
-    }
-
-    if (data.participants[0].role == 'student') {
-        renderSkysmartIdentity(data.participants[0], data.participants[1]);
-    } else if (data.participants[1].role == 'student') {
-        renderSkysmartIdentity(data.participants[1], data.participants[0]);
+    container.innerHTML = '<div class="tsm-empty tsm-empty-loading">Загружаем данные комнаты…</div>';
+    setBusy(button, true);
+    try {
+        smartroomState.data = await fetchJson(`https://api-${room.subject}.skyeng.ru/api/v2/rooms/${room.hash}`);
+        smartroomState.room = room;
+        renderSmartroom();
+    } catch (err) {
+        console.error("[TSM Smartroom]", err);
+        container.innerHTML = `<div class="tsm-empty">Не удалось загрузить комнату (${escapeHTML(err.message)}). Проверьте ссылку и авторизацию.</div>`;
+    } finally {
+        setBusy(button, false);
     }
 }
 
-function setIdField(elementId, label, value) {
-    const el = document.getElementById(elementId);
-    el.innerHTML = `<span class="tsm-user-select-none tsm-identity-emoji">${escapeHTML(label)}</span>${escapeHTML(value)}`;
-    if (value != null) {
-        el.style.cursor = "pointer";
-        markCopyable(el, String(value));
+bindExerciseContainer(document.getElementById("exercisebarskysmart"), {
+    "copy-cms": async (el) => {
+        const link = cmsLessonLink(el.dataset.subtype, el.dataset.lessonid, el.dataset.stepid);
+        if (await copyWithNotify(link, el.dataset.stepid ? "Ссылка на слайд в CMS скопирована" : "Ссылка на урок в CMS скопирована")) flashButton(el, "✓");
+    },
+    "reset-progress": async (el) => {
+        const { room, data } = smartroomState;
+        const student = splitParticipants(data?.participants).student;
+        if (!room || !student) return;
+
+        const confirmed = await tsmConfirm({
+            title: "Сброс прогресса",
+            message: `Ответы ученика ${student.name} на слайде «${el.dataset.cardname}» будут удалены без возможности восстановления.`,
+            okText: "Сбросить",
+            danger: true
+        });
+        if (!confirmed) return;
+
+        el.disabled = true;
+        try {
+            const stepId = await LoadStep(el.dataset.stepuuid);
+            /* FIX: хеш комнаты берётся из загруженной ссылки, а не из адреса страницы */
+            const ok = await ResetStepProgress(room.subject, Number(student.userId), stepId, room.hash);
+            flashButton(el, ok ? "✓" : "✕", 3000);
+            createNotify(ok ? "Прогресс по слайду сброшен" : "Сервер не принял сброс прогресса", ok ? "message" : "error");
+        } catch (err) {
+            flashButton(el, "✕", 3000);
+            createNotify(`Не удалось сбросить прогресс: ${err.message}`, "error");
+        } finally {
+            el.disabled = false;
+        }
+    }
+});
+
+document.getElementById("getroomdatakids").onclick = loadSmartroom;
+document.getElementById("roomhashhwkids").addEventListener("keydown", (e) => { if (e.key === "Enter") loadSmartroom(); });
+document.getElementById("RefreshInfoExerciseKids").onclick = () => {
+    document.getElementById("roomhashhwkids").value = document.URL;
+    loadSmartroom();
+};
+document.getElementById("hideExercisesSkysmartMenu").onclick = () => { wintExercSkysmart.style.display = "none"; };
+
+function OpenExercisesSmartroom() {
+    if (!toggleTSMWindow(wintExercSkysmart)) return;
+    wintExercTTC.style.display = "none";
+    const input = document.getElementById("roomhashhwkids");
+    if (looksLikeKidsRoom(document.URL)) {
+        input.value = document.URL;
+        loadSmartroom();
+    } else if (!smartroomState.data) {
+        document.getElementById("exercisebarskysmart").innerHTML = EMPTY_ROOM_HINT;
+        input.focus();
     }
 }
 
-function renderSkysmartIdentity(student, teacher) {
-    document.getElementById('studname').innerHTML = '<span class="tsm-identity-emoji"> 👨‍🎓 </span>' + escapeHTML(student.name);
-    setIdField('studserviceid', '🆔 услуги: ', student.educationServiceId);
-    setIdField('studid', '🆔: ', student.userId);
-    document.getElementById('teachname').innerHTML = '<span class="tsm-identity-emoji"> 👽 Teacher </span>' + escapeHTML(teacher.name);
-    setIdField('teachdid', '🆔: ', teacher.userId);
+/* =========================================================
+   TTC
+   ========================================================= */
+
+function currentTTCHash() {
+    return location.host === "ttc.skyeng.ru" ? (document.URL.split("/")[5] || "").split("?")[0] : "";
 }
 
 async function getTTCData() {
-const rhash = document.getElementById('roomhashttc').value.trim();
-if (!rhash) {
-    createNotify('Введите хеш комнаты', 'error');
-    return;
-}
-if (true) { // блок загрузки — проверка выше уже валидировала ввод
-        await fetch("https://ttc-api.skyeng.ru/api/v1/lesson/join", {
-            "headers": { "content-type": "application/json" },
-            "body": "{\"roomHash\":\"" + rhash + "\"}",
-            "method": "POST",
-            "mode": "cors",
-            "credentials": "include"
-        }).then(r => r.json()).then(r => ttcroomdata = r);
-        console.log(ttcroomdata);
-        let tmparr = '';
-        for (let i = 0; i < ttcroomdata.participants[0].nodes[0].steps.length; i++) {
-            if (ttcroomdata.participants[0].nodes[0].steps[i].score == null) ttcroomdata.participants[0].nodes[0].steps[i].score = 0;
-            if (ttcroomdata.participants[0].nodes[0].steps[i].completeness == null) ttcroomdata.participants[0].nodes[0].steps[i].completeness = 0;
-            const step = ttcroomdata.participants[0].nodes[0].steps[i];
-tmparr += `<div class="tsm-ttc-slide-item">
-    <span>${i + 1}.</span>
-    <span title="${escapeHTML(step.title)}">${escapeHTML(step.title)}</span>
-    <span class="tsm-ttc-step-id">${escapeHTML(step.stepId)}</span>
-    <span class="tsm-btn-save-ttc" title="Копирует в буфер обмена ссылку на CMS для этого слайда">💾</span>
-    <span class="tsm-text-bisque tsm-text-sm tsm-text-right" style="min-width:40px;">${step.completeness}%</span>
-    <span class="tsm-text-bisque tsm-text-sm tsm-text-right" style="min-width:30px;">${step.score / 10}</span>
-</div>`;
-        }
-        const ttcSummary = ttcroomdata.participants[0].nodes[0];
-        document.getElementById('exercisebarttc').innerHTML =
-            `<div class="tsm-ttc-summary">"${ttcSummary.title}" • Выполнено на: ${ttcSummary.completeness}% • Оценка: ${ttcSummary.score / 10}</div>` +
-`<div class="tsm-ttc-header-row">
-    <span>#</span>
-    <span>Название слайда</span>
-    <span>ID</span>
-    <span>Ссылка</span>
-    <span style="text-align:center;">%</span>
-    <span style="text-align:center;">Балл</span>
-</div>` + tmparr;
-        let savelinkarr = document.getElementsByClassName('tsm-btn-save-ttc');
-        for (let z = 0; z < savelinkarr.length; z++) {
-            savelinkarr[z].onclick = function () {
-                copyToClipboardTSM("https://content-vimbox.skyeng.ru/cms/stepStore/update/stepId/" + document.getElementsByClassName('tsm-ttc-step-id')[z].textContent);
-            };
-        }
+    const button = document.getElementById("getroomdatattc");
+    const container = document.getElementById("exercisebarttc");
+    const rhash = document.getElementById("roomhashttc").value.trim();
+    if (!rhash) {
+        container.innerHTML = '<div class="tsm-empty">Откройте курс TTC или введите хеш комнаты</div>';
+        return;
+    }
+
+    container.innerHTML = '<div class="tsm-empty tsm-empty-loading">Загружаем курс…</div>';
+    setBusy(button, true);
+    try {
+        /* FIX: тело запроса собиралось конкатенацией строк — кавычка в хеше ломала JSON */
+        const data = await fetchJson("https://ttc-api.skyeng.ru/api/v1/lesson/join", {
+            method: "POST",
+            mode: "cors",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ roomHash: rhash })
+        });
+        const node = data?.participants?.[0]?.nodes?.[0];
+        if (!node) throw new Error("в ответе нет данных урока");
+
+        const steps = node.steps || [];
+        const items = steps.map((step, i) => `<div class="tsm-ttc-slide-item">
+            <span class="tsm-cell-num">${i + 1}</span>
+            <span class="tsm-ttc-title" title="${escapeHTML(step.title)}">${escapeHTML(step.title)}</span>
+            <span class="tsm-ttc-step-id">${escapeHTML(step.stepId)}</span>
+            <button type="button" class="tsm-btn-save-ttc" data-action="copy-ttc" data-stepid="${escapeHTML(step.stepId)}" title="Скопировать ссылку на слайд в CMS">💾</button>
+            <span class="tsm-ttc-num ${(step.completeness ?? 0) >= 100 ? "tsm-text-ok" : ""}">${escapeHTML(step.completeness ?? 0)}%</span>
+            <span class="tsm-ttc-num">${escapeHTML((step.score ?? 0) / 10)}</span>
+        </div>`).join("");
+
+        /* FIX: название урока выводилось без экранирования */
+        container.innerHTML = `<div class="tsm-ttc-summary">
+                <div class="tsm-ttc-summary-title">${escapeHTML(node.title)}</div>
+                <div class="tsm-stats">
+                    <div class="tsm-stat"><span class="tsm-stat-value">${escapeHTML(node.completeness ?? 0)}%</span><span class="tsm-stat-label">выполнено</span></div>
+                    <div class="tsm-stat"><span class="tsm-stat-value">${escapeHTML((node.score ?? 0) / 10)}</span><span class="tsm-stat-label">оценка</span></div>
+                    <div class="tsm-stat"><span class="tsm-stat-value">${steps.length}</span><span class="tsm-stat-label">слайдов</span></div>
+                </div>
+            </div>
+            <div class="tsm-ttc-header-row"><span>#</span><span>Слайд</span><span>ID</span><span>CMS</span><span>%</span><span>Балл</span></div>
+            ${items || '<div class="tsm-empty">В уроке нет слайдов</div>'}`;
+    } catch (err) {
+        console.error("[TSM TTC]", err);
+        container.innerHTML = `<div class="tsm-empty">Не удалось загрузить курс (${escapeHTML(err.message)})</div>`;
+    } finally {
+        setBusy(button, false);
     }
 }
 
-async function OpenExercisesTTC() {
-    if (wintExercTTC.style.display == 'none') {
-        wintExercTTC.style.display = '';
-        wintExercSkysmart.style.display = 'none';
-        if (location.host == 'ttc.skyeng.ru') {
-            document.getElementById('roomhashttc').value = document.URL.split('/')[5];
-            getTTCData();
-        } else {
-            document.getElementById('roomhashttc').value = "Не открыт TTC курс! Откройте и повторите Или введите хеш одним словом";
-        }
-        document.getElementById('hideExercisesTTCMenu').onclick = function () {
-            wintExercTTC.style.display = 'none';
-        };
-        document.getElementById('RefreshInfoExerciseTTC').onclick = function () {
-            if (location.host == 'ttc.skyeng.ru') {
-                document.getElementById('roomhashttc').value = document.URL.split('/')[5];
-                getTTCData();
-            } else {
-                document.getElementById('roomhashttc').value = "Не открыт TTC курс! Откройте и повторите Или введите хеш одним словом";
-            }
-        };
-        document.getElementById('getroomdatattc').onclick = getTTCData;
+bindExerciseContainer(document.getElementById("exercisebarttc"), {
+    "copy-ttc": async (el) => {
+        if (await copyWithNotify(`https://content-vimbox.skyeng.ru/cms/stepStore/update/stepId/${el.dataset.stepid}`, "Ссылка на слайд в CMS скопирована")) flashButton(el, "✓");
+    }
+});
+
+document.getElementById("getroomdatattc").onclick = getTTCData;
+document.getElementById("roomhashttc").addEventListener("keydown", (e) => { if (e.key === "Enter") getTTCData(); });
+document.getElementById("hideExercisesTTCMenu").onclick = () => { wintExercTTC.style.display = "none"; };
+document.getElementById("RefreshInfoExerciseTTC").onclick = () => {
+    const hash = currentTTCHash();
+    if (!hash) {
+        createNotify("Текущая страница — не курс TTC. Введите хеш вручную", "error");
+        return;
+    }
+    document.getElementById("roomhashttc").value = hash;
+    getTTCData();
+};
+
+function OpenExercisesTTC() {
+    if (!toggleTSMWindow(wintExercTTC)) return;
+    wintExercSkysmart.style.display = "none";
+    const hash = currentTTCHash();
+    const input = document.getElementById("roomhashttc");
+    if (hash) {
+        input.value = hash;
+        getTTCData();
     } else {
-        wintExercTTC.style.display = 'none';
+        /* FIX: подсказка раньше записывалась в value поля и уходила в запрос как хеш */
+        document.getElementById("exercisebarttc").innerHTML = '<div class="tsm-empty">Откройте курс TTC или введите хеш комнаты</div>';
+        input.focus();
     }
 }
 
-async function OpenExercisesComplect() {
-    if (document.getElementById('AFMS_Complect').style.display == 'none') {
-        wintComplect.style.display = '';
-        wintExercSkysmart.style.display = 'none';
-        wintExercTTC.style.display = 'none';
-        document.getElementById('AFMS_addMenu').style.display = 'none';
-        document.getElementById('roomhashhwComplect').value = document.URL;
-        setTimeout(function () {
-            getroomdataComplect.click();
-        }, 500);
-    } else {
-        wintComplect.style.display = 'none';
-    }
-    document.getElementById('hideExercisesComplectMenu').onclick = function () {
-        wintComplect.style.display = 'none';
-    };
+/* =========================================================
+   Комплектации
+   ========================================================= */
 
-    function buildCardsTable(themes, kidsselector, variantId) {
-        let html = `<table class="tsm-exercise-table"><thead><tr class="tsm-table-header">
-            <th class="tsm-table-cell-center">#</th>
-            <th class="tsm-table-cell-center">Название</th>
-            <th class="tsm-table-cell-center">Балл</th>
-            <th class="tsm-table-cell-center">%</th>
-            <th class="tsm-table-cell-center">ССЫЛКА</th>
-            <th class="tsm-table-cell-center">СТЕП</th>
-            <th class="tsm-table-cell-center">СБРОС</th>
-        </tr></thead><tbody>`;
-        for (let i = 0; i < themes.length; i++) {
-            const theme = themes[i];
-            const contentLessonId = theme.meta.contentLessonId;
-html += `<tr class="tsm-theme-row"><td colspan="7" class="tsm-theme-title">
-    <span class="tsm-btn-save" complectationsData-subtype="${escapeHTML(kidsselector)}" complectationsData-lessonid="${escapeHTML(contentLessonId)}" title="Скопировать ссылку на урок">💾</span>
-    ${escapeHTML(theme.name)}
-</td></tr>`;
-            for (let j = 0; j < theme.cards.length; j++) {
-                const card = theme.cards[j];
-const completeness = card.completeness ?? "——";
-const score = card.score ?? "—";
-let name = escapeHTML(card.name);
-const safeStepUuid = escapeHTML(card.stepUuid || "");
-                if (card.emphasis === "writing") name += " ✏";
-                if (card.emphasis === "pronunciation") name += " 🎧";
-                if (card.emphasis === "speaking") name += " 🎙";
-               html += `<tr class="tsm-card-row">
-                    <td class="tsm-table-cell-center">${j + 1}</td>
-                    <td class="tsm-table-cell-center">${name}</td>
-                    <td class="tsm-table-cell-center">${escapeHTML(String(score))}</td>
-                    <td class="tsm-table-cell-center">${escapeHTML(String(completeness))}</td>
-                    <td class="tsm-btn-save tsm-table-cell-center" complectationsData-subtype="${kidsselector}" complectationsData-lessonid="${contentLessonId}" complectationsData-stepid="${escapeHTML(card.id)}" title="Скопировать ссылку на слайд">💾</td>
-                    <td class="tsm-table-cell-center">
-                        <span class="tsm-btn-step" data-stepuuid="${safeStepUuid}" title="Копировать stepUuid">📋</span>
-                    </td>
-                    <td class="tsm-table-cell-center">
-                        <span class="tsm-btn-save-revision" data-stepuuid="${safeStepUuid}" data-variantid="${variantId || ''}" title="Сбросить ревизию">↺</span>
-                    </td>
-                </tr>`;
-            }
+const complectState = { room: null, studentId: "" };
+
+function complectTableHTML(themes, subject, variantId) {
+    let rows = "";
+    (themes || []).forEach((theme) => {
+        const lessonId = escapeHTML(theme.meta?.contentLessonId);
+        rows += `<tr class="tsm-theme-row"><td colspan="7">
+            <div class="tsm-theme-title">
+                <button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" title="Скопировать ссылку на урок в CMS">💾</button>
+                <span class="tsm-theme-name" title="${escapeHTML(theme.name)}">${escapeHTML(theme.name)}</span>
+            </div>
+        </td></tr>`;
+
+        (theme.cards || []).forEach((card, j) => {
+            const { completeness, score, done, empty } = normalizeCard(card);
+            const uuid = escapeHTML(card.stepUuid || "");
+            rows += `<tr class="tsm-card-row">
+                <td class="tsm-table-cell-center tsm-cell-num">${j + 1}</td>
+                <td class="tsm-card-name">${cardDisplayName(card)}</td>
+                <td class="tsm-table-cell-center">${escapeHTML(score)}</td>
+                <td class="tsm-table-cell-center ${empty ? "" : (done ? "tsm-cell-success" : "tsm-cell-warn")}">${escapeHTML(completeness)}</td>
+                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" data-stepid="${escapeHTML(card.id)}" title="Скопировать ссылку на слайд в CMS">💾</button></td>
+                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-step" data-action="copy-uuid" data-stepuuid="${uuid}" title="Скопировать stepUuid">📋</button></td>
+                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save-revision" data-action="reset-revision" data-stepuuid="${uuid}" data-variantid="${escapeHTML(variantId || "")}" data-cardname="${escapeHTML(card.name)}" title="Сбросить ревизию слайда">↺</button></td>
+            </tr>`;
+        });
+    });
+
+    return `<div class="tsm-table-scroll"><table class="tsm-exercise-table">
+        <thead><tr class="tsm-table-header"><th>#</th><th>Слайд</th><th>Балл</th><th>%</th><th>CMS</th><th>Степ</th><th>Сброс</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="7" class="tsm-table-empty">Нет карточек</td></tr>'}</tbody>
+    </table></div>`;
+}
+
+function blockVariantId(block) {
+    return block?.themes?.[0]?.variantId || block?.variantId || "";
+}
+
+async function loadComplect() {
+    const button = document.getElementById("getroomdataComplect");
+    const container = document.getElementById("exercisebarComplect");
+    const rawLink = document.getElementById("roomhashhwComplect").value.trim();
+    let room;
+    try {
+        room = parseKidsRoomLink(rawLink);
+    } catch (err) {
+        container.innerHTML = `<div class="tsm-empty">${escapeHTML(err.message)}</div>`;
+        return;
+    }
+
+    container.innerHTML = '<div class="tsm-empty tsm-empty-loading">Загружаем комплектации…</div>';
+    setBusy(button, true);
+    try {
+        const url = `https://api-${room.subject}.skyeng.ru/api/v2/rooms/${room.hash}${room.isTest ? "" : "?verbosity=only_mine_participants"}`;
+        const data = await fetchJson(url, {
+            method: room.isTest ? "GET" : "POST",
+            mode: "cors",
+            headers: { "content-type": "application/json" },
+            body: room.isTest ? null : JSON.stringify({ roomHash: rawLink })
+        });
+
+        const { student, teacher } = splitParticipants(data.participants);
+        const index = student ? (data.lessonCards || []).findIndex((c) => c.userId === student.userId) : -1;
+
+        renderIdentity("Complect", student, teacher, { groupId: data.groupInfo?.externalGroupId });
+        renderComplectStatus(data.status, blockVariantId(data.homeworkCards?.[index]));
+        document.getElementById("identityComplect").style.display = "";
+
+        complectState.room = room;
+        complectState.studentId = String(student?.userId ?? "");
+
+        if (index < 0) {
+            container.innerHTML = '<div class="tsm-empty">В комнате не найден план ученика</div>';
+            return;
         }
-        html += `</tbody></table>`;
-        return html;
+
+        const lesson = data.lessonCards[index];
+        const homework = data.homeworkCards?.[index];
+        const diagnostic = data.diagnosticsCards?.[index];
+        const hasDiagnostic = Array.isArray(diagnostic?.themes) && diagnostic.themes.some((t) => (t.cards || []).length > 0);
+
+        container.innerHTML =
+            collapsibleHTML("🎓 План урока", lesson?.cardsCount, categoryStatsHTML(lesson) + complectTableHTML(lesson?.themes, room.subject, blockVariantId(lesson))) +
+            (homework ? collapsibleHTML("💼 План домашки", homework.cardsCount, categoryStatsHTML(homework) + complectTableHTML(homework.themes, room.subject, blockVariantId(homework))) : "") +
+            (hasDiagnostic ? collapsibleHTML("🧪 Diagnostic", diagnostic.cardsCount, categoryStatsHTML(diagnostic) + complectTableHTML(diagnostic.themes, room.subject, "")) : "");
+    } catch (err) {
+        console.error("[TSM Комплектации]", err);
+        container.innerHTML = `<div class="tsm-empty">Не удалось загрузить комнату (${escapeHTML(err.message)}). Проверьте ссылку и авторизацию.</div>`;
+    } finally {
+        setBusy(button, false);
+    }
+}
+
+function renderComplectStatus(status, variantId) {
+    const statusEl = document.getElementById("RoomStatus");
+    statusEl.innerHTML = `<span class="tsm-chip-label">статус</span>${escapeHTML(status || "—")}`;
+    statusEl.dataset.state = status === "success" ? "ok" : "warn";
+
+    const variantChip = document.getElementById("variantIdComplectChip");
+    const variantValue = document.getElementById("variantIdValue");
+    if (variantId) {
+        variantValue.textContent = variantId;
+        variantChip.style.display = "";
+        markCopyable(variantChip, String(variantId));
+    } else {
+        variantChip.style.display = "none";
+    }
+}
+
+async function resetRevision(el) {
+    const { room, studentId } = complectState;
+    const stepUuid = el.dataset.stepuuid;
+    const variantId = el.dataset.variantid;
+    if (!room || !stepUuid) {
+        createNotify("У слайда нет stepUuid", "error");
+        return;
     }
 
-    function buildCollapsibleBlock(title, infoHTML, tableHTML) {
-        return `<div class="tsm-collapsible">${title}</div>
-        <div class="tsm-slide-box" style="display:none">
-            ${infoHTML}
-            ${tableHTML}
-        </div>`;
-    }
+    const confirmed = await tsmConfirm({
+        title: "Сброс ревизии",
+        message: `Сохранённые ответы на слайде «${el.dataset.cardname}» будут удалены, слайд загрузится в последней ревизии.`,
+        okText: "Сбросить ревизию",
+        danger: true
+    });
+    if (!confirmed) return;
 
-    function buildCategoryInfoBlock(cardData, title) {
-        return `<div class="category-info" style="color:bisque;">
-            <div style="margin-left:30%"><b>Информация по категории: ${title}</b></div>
-            <div>Количество завершенных карточек: ${cardData.completedCardsCount} из ${cardData.cardsCount}</div>
-            <div>Общий % завершения слайдов: ${cardData.completeness}%</div>
-            <div>Итоговый результат: ${cardData.score} баллов из 100</div>
-        </div>`;
-    }
+    el.disabled = true;
+    try {
+        const loaded = await fetchJson(`https://api-${room.subject}.skyeng.ru/api/student-cabinet/v1/step-store/load-step`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ stepUuid, variantId, last: true })
+        });
+        if (!loaded?.id) throw new Error("load-step не вернул id");
 
-    document.getElementById('getroomdataComplect').onclick = async function () {
-        const container = document.getElementById('exercisebarComplect');
-        container.innerHTML = '<div class="tsm-empty tsm-text-secondary">Загрузка комплектаций…</div>';
-        this.classList.add('is-loading');
-        try {
-            const rhash = document.getElementById('roomhashhwComplect').value;
-            const urlComponents = rhash.split('/');
-            if (!urlComponents[4] || !urlComponents[6]) {
-                createNotify('Некорректная ссылка на комнату', 'error');
-                container.innerHTML = '<div class="tsm-empty">Укажите корректную ссылку на комнату и нажмите 🔎</div>';
-                return;
-            }
-        const isTest = urlComponents[6].split('?')[0] === 'test';
-        const kidsselector = urlComponents[4];
-        const hashroomkids = isTest ? urlComponents[7] : urlComponents[6].split('?')[0];
-        const baseURL = `https://api-${kidsselector}.skyeng.ru/api/v2/rooms/${hashroomkids}${isTest ? '' : '?verbosity=only_mine_participants'}`;
-
-        const complectationsData = await fetch(baseURL, {
-            method: isTest ? "GET" : "POST",
+        /* FIX: roomHash раньше брался из адреса страницы (для тестовых комнат там «test») */
+        const delRes = await fetch(`https://api-${room.subject}.skyeng.ru/api/v1/store-blocks/delete`, {
+            method: "POST",
             mode: "cors",
             credentials: "include",
-            headers: { "content-type": "application/json" },
-            body: isTest ? null : `{\"roomHash\":\"${rhash}\"}`
-        }).then(r => r.json());
+            headers: { "accept": "application/json", "content-type": "application/json" },
+            body: JSON.stringify({ userId: studentId, contentGroupId: `${loaded.id}_${variantId}`, roomHash: room.hash })
+        });
 
-        container.innerHTML = '';
-
-        const student = complectationsData.participants.find(p => p.role === "student");
-        const indexOfSlides = complectationsData.lessonCards.findIndex(c => c.userId === student.userId);
-
-        // variantId для домашки и урока — берём из themes[0] каждого блока
-        const homeworkVariantId = complectationsData.homeworkCards[indexOfSlides]?.themes?.[0]?.variantId
-            || complectationsData.homeworkCards[indexOfSlides]?.variantId
-            || '';
-        const lessonVariantId = complectationsData.lessonCards[indexOfSlides]?.themes?.[0]?.variantId
-            || complectationsData.lessonCards[indexOfSlides]?.variantId
-            || '';
-
-        const lessonInfo = buildCategoryInfoBlock(complectationsData.lessonCards[indexOfSlides], "План урока");
-        const lessonTable = buildCardsTable(complectationsData.lessonCards[indexOfSlides].themes, kidsselector, lessonVariantId);
-        document.getElementById('exercisebarComplect').innerHTML += buildCollapsibleBlock("🎓План урока", lessonInfo, lessonTable);
-
-        const homeworkInfo = buildCategoryInfoBlock(complectationsData.homeworkCards[indexOfSlides], "План домашки");
-        const homeworkTable = buildCardsTable(complectationsData.homeworkCards[indexOfSlides].themes, kidsselector, homeworkVariantId);
-        document.getElementById('exercisebarComplect').innerHTML += buildCollapsibleBlock("💼План домашки", homeworkInfo, homeworkTable);
-
-        const diagnosticBlock = complectationsData.diagnosticsCards?.[indexOfSlides];
-        const hasDiagnosticCards = diagnosticBlock && Array.isArray(diagnosticBlock.themes) && diagnosticBlock.themes.some(theme => theme.cards.length > 0);
-        if (hasDiagnosticCards) {
-            const diagnosticInfo = buildCategoryInfoBlock(diagnosticBlock, "Diagnostic");
-            const diagnosticTable = buildCardsTable(diagnosticBlock.themes, kidsselector, '');
-            document.getElementById('exercisebarComplect').innerHTML += buildCollapsibleBlock("Diagnostic", diagnosticInfo, diagnosticTable);
+        if (delRes.ok) {
+            flashButton(el, "✓", 2500);
+            createNotify("Ревизия сброшена");
+        } else {
+            flashButton(el, "✕", 2500);
+            createNotify(`Ревизия обновлена, но сервер не удалил ответы: HTTP ${delRes.status}`, "error");
         }
-
-        const subjbtnsarr = document.getElementById('exercisebarComplect').getElementsByClassName('tsm-collapsible');
-        const slidesbar = document.getElementById('exercisebarComplect').getElementsByClassName('tsm-slide-box');
-        for (let i = 0; i < subjbtnsarr.length; i++) {
-            subjbtnsarr[i].onclick = function () {
-                slidesbar[i].style.display = slidesbar[i].style.display === 'none' ? '' : 'none';
-            };
-        }
-
-        const savelinkarr = document.getElementById('exercisebarComplect').getElementsByClassName('tsm-btn-save');
-        for (let z = 0; z < savelinkarr.length; z++) {
-            savelinkarr[z].onclick = function () {
-                const subtype = this.getAttribute('complectationsData-subtype');
-                const lessonid = this.getAttribute('complectationsData-lessonid');
-                const stepid = this.getAttribute('complectationsData-stepid');
-                const link = stepid ? `https://cms.skyeng.ru/${subtype}/cms/lesson/${lessonid}/cards/${stepid}/edit` : `https://cms.skyeng.ru/${subtype}/cms/lesson/${lessonid}`;
-                savelinkarr[z].textContent = "✅";
-                copyToClipboardTSM(link);
-                createNotify('💾 Ссылка на слайд в CMS cкопирована в буфер обмена', 'message');
-                setTimeout(function () { savelinkarr[z].textContent = "💾"; }, 4000);
-            };
-        }
-
-        const stepbtnarr = document.getElementById('exercisebarComplect').getElementsByClassName('tsm-btn-step');
-        for (let s = 0; s < stepbtnarr.length; s++) {
-            stepbtnarr[s].onclick = function () {
-                const stepUuid = this.getAttribute('data-stepuuid');
-                if (!stepUuid) {
-                    createNotify('stepUuid не найден', 'error');
-                    return;
-                }
-                copyToClipboardTSM(stepUuid);
-                createNotify('📋 stepUuid скопирован в буфер обмена', 'message');
-            };
-        }
-
-        const resetBtnArr = document.getElementById('exercisebarComplect').getElementsByClassName('tsm-btn-save-revision');
-        for (let r = 0; r < resetBtnArr.length; r++) {
-            resetBtnArr[r].onclick = async function () {
-                const stepuuid = this.getAttribute('data-stepuuid');
-                const theVariantId = this.getAttribute('data-variantid');
-                const kidsselector = urlComponents[4];
-                if (!stepuuid) {
-                    createNotify('stepUuid не найден', 'error');
-                    return;
-                }
-                this.textContent = "🔄";
-                try {
-                    const res = await fetch(`https://api-${kidsselector}.skyeng.ru/api/student-cabinet/v1/step-store/load-step`, {
-                        method: "POST",
-                        credentials: "include",
-                        headers: { "content-type": "application/json" },
-                        body: JSON.stringify({ stepUuid: stepuuid, variantId: theVariantId, last: true }),
-                    });
-                    const body = await res.json().catch(() => null);
-                    if (res.status === 200 && body?.id) {
-                        // === ВТОРОЙ ЗАПРОС: store-blocks/delete для комплектаций ===
-                        try {
-                            const userIdSpan = document.getElementById('studidComplect');
-                            const userIdText = userIdSpan ? userIdSpan.textContent.trim() : '';
-                            const userId = userIdText.replace(/\D/g, '');
-                            const roomHash = location.pathname.split('/')[4] || '';
-                            const contentGroupId = `${body.id}_${theVariantId}`;
-
-                            const delRes = await fetch(`https://api-${kidsselector}.skyeng.ru/api/v1/store-blocks/delete`, {
-                                method: 'POST',
-                                mode: 'cors',
-                                credentials: 'include',
-                                headers: {
-                                    'accept': 'application/json',
-                                    'content-type': 'application/json',
-                                },
-                                referrer: 'https://vimbox.skyeng.ru/',
-                                body: JSON.stringify({
-                                    userId: userId,
-                                    contentGroupId: contentGroupId,
-                                    roomHash: roomHash,
-                                }),
-                            });
-
-                            if (delRes.ok) {
-                                createNotify('✅ Ревизия удалена на сервере', 'message');
-                            } else {
-                                createNotify(`⚠️ Сервер вернул ошибку: ${delRes.status}`, 'error');
-                            }
-                        } catch (delErr) {
-                            // Второй запрос не критичен — сообщаем, но не ломаем поток
-                            createNotify('⚠️ Ошибка удаления на сервере', 'error');
-                        }
-
-                        // Обновление UI после load-step
-                        setTimeout(() => { this.textContent = "✅"; }, 400);
-                        setTimeout(() => { this.textContent = "↺"; }, 2000);
-                        createNotify("✅ Ревизия успешно обновлена", 'message');
-                    } else {
-                        this.textContent = "↺";
-                        createNotify(`❌ Ошибка ревизии: HTTP ${res.status}`, 'error');
-                    }
-                } catch (err) {
-                    this.textContent = "↺";
-                    createNotify('❌ Ошибка сети', 'error');
-                }
-            };
-        }
-
-        const studentIndex = complectationsData.participants.findIndex(p => p.role === 'student');
-        const teacherIndex = 1 - studentIndex;
-        const studentData = complectationsData.participants[studentIndex];
-        const teacherData = complectationsData.participants[teacherIndex];
-
-        const variantId = complectationsData.homeworkCards[indexOfSlides]?.themes[0]?.variantId
-            || complectationsData.homeworkCards[indexOfSlides]?.variantId
-            || '';
-        renderComplectIdentity(studentData, teacherData, complectationsData.groupInfo?.externalGroupId, complectationsData.status, variantId);
-        } catch (err) {
-            container.innerHTML = '<div class="tsm-empty">Не удалось загрузить данные. Проверьте ссылку.</div>';
-            console.error(err);
-        } finally {
-            this.classList.remove('is-loading');
-        }
-    };
-}
-
-function renderComplectIdentity(studentData, teacherData, externalGroupId, status, variantId) {
-    document.getElementById('studnameComplect').innerHTML = `<span class="tsm-identity-emoji"> 👨‍🎓 </span>${escapeHTML(studentData.name)}`;
-    setIdField('studserviceidComplect', '🆔 услуги: ', studentData.educationServiceId);
-    setIdField('studidComplect', '🆔: ', studentData.userId);
-    setIdField('groupidComplect', '🆔 гр: ', externalGroupId);
-    document.getElementById('teachnameComplect').innerHTML = `<span class="tsm-identity-emoji"> 👽 Teacher </span>${escapeHTML(teacherData.name)}`;
-    setIdField('teachdidComplect', '🆔: ', teacherData.userId);
-    const statusColor = status === 'success' ? 'var(--tsm-neon-lime)' : 'var(--tsm-neon-gold)';
-    document.getElementById('RoomStatus').innerHTML = `<span class="tsm-user-select-none tsm-identity-emoji">Статус комнаты: </span><span style="color:${statusColor}; text-shadow:0 0 8px ${statusColor};">${escapeHTML(status)}</span>`;
-    if (variantId) {
-        const variantChip = document.getElementById('variantIdComplectChip');
-        const variantValue = document.getElementById('variantIdValue');
-        variantValue.textContent = variantId;
-        variantChip.style.display = '';
-        variantValue.style.cursor = 'pointer';
-        markCopyable(variantValue, variantId);
+    } catch (err) {
+        flashButton(el, "✕", 2500);
+        createNotify(`Не удалось сбросить ревизию: ${err.message}`, "error");
+    } finally {
+        el.disabled = false;
     }
 }
 
+bindExerciseContainer(document.getElementById("exercisebarComplect"), {
+    "copy-cms": async (el) => {
+        const link = cmsLessonLink(el.dataset.subtype, el.dataset.lessonid, el.dataset.stepid);
+        if (await copyWithNotify(link, el.dataset.stepid ? "Ссылка на слайд в CMS скопирована" : "Ссылка на урок в CMS скопирована")) flashButton(el, "✓");
+    },
+    "copy-uuid": async (el) => {
+        if (!el.dataset.stepuuid) {
+            createNotify("У слайда нет stepUuid", "error");
+            return;
+        }
+        if (await copyWithNotify(el.dataset.stepuuid, "stepUuid скопирован")) flashButton(el, "✓");
+    },
+    "reset-revision": resetRevision
+});
+
+document.getElementById("getroomdataComplect").onclick = loadComplect;
+document.getElementById("roomhashhwComplect").addEventListener("keydown", (e) => { if (e.key === "Enter") loadComplect(); });
+document.getElementById("hideExercisesComplectMenu").onclick = () => { wintComplect.style.display = "none"; };
+document.getElementById("RefreshInfoExerciseComplect").onclick = () => {
+    document.getElementById("roomhashhwComplect").value = document.URL;
+    loadComplect();
+};
+
+function OpenExercisesComplect() {
+    if (!toggleTSMWindow(wintComplect)) return;
+    wintExercSkysmart.style.display = "none";
+    wintExercTTC.style.display = "none";
+    document.getElementById("AFMS_addMenu").style.display = "none";
+    const input = document.getElementById("roomhashhwComplect");
+    if (looksLikeKidsRoom(document.URL)) {
+        input.value = document.URL;
+        loadComplect();
+    } else if (!complectState.room) {
+        document.getElementById("exercisebarComplect").innerHTML = EMPTY_ROOM_HINT;
+        input.focus();
+    }
+}

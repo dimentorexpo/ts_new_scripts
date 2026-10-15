@@ -1,200 +1,156 @@
 /* =========================================================
-   TSM Lesson Info — NEON GLASS ULTRA Refactored
+   TSM Lesson Info — информация о комнате
    ========================================================= */
 
-const PLATFORM = { VIMBOX: 1 };
-const ORIGIN_VIMBOX = 'https://vimbox.skyeng.ru';
+const ORIGIN_VIMBOX = "https://vimbox.skyeng.ru";
 
-const SUBJECTS = {
-    english: 'english', math: 'math', 'computer-science': 'computer-science',
-    geography: 'geography', chess: 'chess', 'social-science': 'social-science',
-    history: 'history', biology: 'biology', physics: 'physics',
-    literature: 'literature', chemistry: 'chemistry', russian: 'russian', preschool: 'preschool'
-};
+const SUBJECTS = new Set([
+    "english", "math", "computer-science", "geography", "chess", "social-science",
+    "history", "biology", "physics", "literature", "chemistry", "russian", "preschool"
+]);
 
-var win_getLessonInfo = `
-    <div class="tsm-lesson-actions" style="display: flex; gap: 8px; margin-bottom: 10px;">
-        <button id="hideMeLessonInfo" class="tsm-btn tsm-btn-hide">Hide</button>
-        <button id="RefreshInfo" class="tsm-btn tsm-btn-sm" title="Обновить инфо">♻</button>
-        <button id="ClearInfo" class="tsm-btn tsm-btn-sm" title="Очистить все поля">🧹</button>
+const CREATION_TYPES = { auto: "Автоматически", manually: "Вручную" };
+
+const win_getLessonInfo = `
+<div class="tsm-window-header">
+    <span class="tsm-window-title">ℹ️ Комната</span>
+    <span class="tsm-toolbar-spacer"></span>
+    <button type="button" id="RefreshInfo" class="tsm-btn tsm-btn-icon" title="Обновить по текущей странице">♻</button>
+    <button type="button" id="ClearInfo" class="tsm-btn tsm-btn-icon" title="Очистить поля">🧹</button>
+    <button type="button" id="hideMeLessonInfo" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть">✕</button>
+</div>
+
+<div class="tsm-input-group">
+    <input id="hashfield" class="tsm-input tsm-input-hash" autocomplete="off" placeholder="Ссылка на комнату или хеш">
+    <button type="button" id="searchHash" class="tsm-btn" title="Найти комнату">Найти</button>
+</div>
+
+<div id="lessonInfoBody" class="tsm-lesson-body">
+    <div class="tsm-card">
+        <div class="tsm-card-title">Занятие</div>
+        <div class="tsm-field"><span class="tsm-field-label">Предмет</span><span id="subjectnamefield" class="tsm-field-value"></span></div>
+        <div class="tsm-field"><span class="tsm-field-label">Создана</span><span id="creationType" class="tsm-field-value"></span></div>
+        <div class="tsm-field"><span class="tsm-field-label">Тип</span><span id="lessonType" class="tsm-field-value"></span></div>
+        <div class="tsm-field"><span class="tsm-field-label">Статус</span><span id="statusroom" class="tsm-field-value"></span></div>
+        <div class="tsm-field"><span class="tsm-field-label">Хеш</span><span id="hashroom" class="tsm-field-value tsm-field-link" title="Клик — скопировать ссылку на комнату"></span></div>
     </div>
 
     <div class="tsm-card">
-        <div class="tsm-card-title">Информация о занятии</div>
-        <div class="tsm-field">
-            <span class="tsm-field-label">Предмет:</span>
-            <span id="subjectnamefield" class="tsm-field-value"></span>
+        <div class="tsm-card-title">Участники
+            <button type="button" id="participantCounter" class="tsm-counter tsm-counter-btn" title="Открыть список участников">0</button>
         </div>
-        <div class="tsm-field">
-            <span class="tsm-field-label">Создана:</span>
-            <span id="creationType" class="tsm-field-value"></span>
-        </div>
-        <div class="tsm-field" id="roomfor-block" style="display:none;">
-            <span class="tsm-field-label">Room for:</span>
-            <span id="forstudentid" class="tsm-field-value"></span>
-        </div>
+        <div class="tsm-field"><span class="tsm-field-label">Преподаватель</span><span id="partteachid" class="tsm-field-value"></span></div>
+        <div class="tsm-field"><span class="tsm-field-label">Ученик</span><span id="partstudid" class="tsm-field-value"></span></div>
     </div>
 
-    <div class="tsm-card">
-        <div class="tsm-card-title">Комната</div>
-        <div class="tsm-field">
-            <span class="tsm-field-label">Статус:</span>
-            <span id="statusroom" class="tsm-field-value"></span>
-        </div>
-        <div class="tsm-field">
-            <span class="tsm-field-label">Хеш комнаты:</span>
-            <span id="hashroom" class="tsm-field-value" style="cursor:pointer; color:var(--tsm-neon-cyan);"></span>
-        </div>
-        <div class="tsm-field">
-            <span class="tsm-field-label">Тип:</span>
-            <span id="lessonType" class="tsm-field-value"></span>
-        </div>
+    <div class="tsm-action-row">
+        <button type="button" id="setstclass" class="tsm-btn" disabled title="Вернуть комнату в статус classwork">▶ Classwork</button>
+        <button type="button" id="setstsucc" class="tsm-btn" disabled title="Перевести комнату в статус success">✓ Success</button>
     </div>
+</div>
 
-    <div class="tsm-card">
-        <div class="tsm-card-title">Участники</div>
-        <div style="color:var(--tsm-text-secondary); margin-bottom: 12px; font-size: 12px; display: flex; align-items: center; justify-content: space-between;">
-            <span>Количество участников:</span>
-            <span id="participantCounter" title="Кликните, чтобы открыть список" style="cursor:pointer;">0</span>
-        </div>
-        <div class="tsm-field">
-            <span class="tsm-field-label">Teacher:</span>
-            <span id="partteachid" class="tsm-field-value"></span>
-        </div>
-        <div class="tsm-field">
-            <span class="tsm-field-label">Student:</span>
-            <span id="partstudid" class="tsm-field-value"></span>
-        </div>
+<!-- Окно переносится в body при первом открытии -->
+<div id="allParticipants" class="tsm-window tsm-window-participants" style="display:none;">
+    <div class="tsm-modal-header" id="participantsDragHandle">
+        <span class="tsm-modal-title">👥 Участники комнаты</span>
+        <button type="button" class="tsm-close-modal" id="closeParticipantsBtn" title="Закрыть" aria-label="Закрыть">✕</button>
     </div>
-    
-    <!-- Это окно будет извлечено в корень документа при открытии -->
-    <div id="allParticipants" class="tsm-window" style="display:none; padding: 20px;">
-        <div class="tsm-modal-header" id="participantsDragHandle">
-            <span class="tsm-modal-title">👥 Список участников</span>
-            <button class="tsm-close-modal" id="closeParticipantsBtn" title="Закрыть">✖</button>
-        </div>
-        
-        <div class="tsm-modal-body">
-            <input id="searchForParticipant" class="tsm-input" placeholder="Введите ID или Имя для поиска..." style="margin-bottom: 15px;">
-            <div class="tsm-table-wrapper" style="max-height: 350px; overflow-y: auto;">
-                <table id="participantsOutput" class="tsm-table">
-                    <thead>
-                        <tr><th>Тип</th><th>ID</th><th>Имя</th><th>Время входа, МСК</th></tr>
-                    </thead>
-                    <tbody id="participantsTbody">
-                        <!-- Сюда вставляются строки -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <input id="searchForParticipant" class="tsm-input" autocomplete="off" placeholder="Поиск по ID или имени">
+    <div class="tsm-table-wrapper">
+        <table id="participantsOutput" class="tsm-table">
+            <thead><tr><th>Роль</th><th>ID</th><th>Имя</th><th>Вход, МСК</th></tr></thead>
+            <tbody id="participantsTbody"></tbody>
+        </table>
     </div>
+</div>`;
 
-    <div class="tsm-card">
-        <input id="hashfield" class="tsm-input tsm-input-hash" placeholder="Вставьте ссылку на комнату или введите хеш">
-    </div>
-
-    <div class="tsm-card">
-        <div class="tsm-lesson-actions" style="display: flex; gap: 8px;">
-            <button id="setstclass" class="tsm-btn" style="flex:1;">▶️ Classwork</button>
-            <button id="setstsucc" class="tsm-btn" style="flex:1;">✅ Success</button>
-            <button id="searchHash" class="tsm-btn" style="flex:1;">🔍 Search</button>
-        </div>
-    </div>
-`;
-
-const wintLessonInfo = createTSMWindow('AFMS_LessonInfo', 'winTopLessonInfo', 'winLeftLessonInfo', win_getLessonInfo);
-wintLessonInfo.className = 'tsm-window tsm-window-lesson';
-
-async function OpenLessonmInfoMenu() {
-    const menuVisible = wintLessonInfo.style.display !== 'none';
-    wintLessonInfo.style.display = menuVisible ? 'none' : '';
-    if (!menuVisible) {
-        openMenu(false);
-        setupEventHandlers();
-    }
-}
+const wintLessonInfo = createTSMWindow("AFMS_LessonInfo", "winTopLessonInfo", "winLeftLessonInfo", win_getLessonInfo);
+wintLessonInfo.className = "tsm-window tsm-window-lesson";
 
 const DOM = {
-    platform: () => document.getElementById('platformname'),
-    roomFor: () => document.getElementById('roomfor'),
-    studentId: () => document.getElementById('forstudentid'),
-    subject: () => document.getElementById('subjectnamefield'),
-    status: () => document.getElementById('statusroom'),
-    hash: () => document.getElementById('hashroom'),
-    lesType: () => document.getElementById('lessonType'),
-    particCounter: () => document.getElementById('participantCounter'),
-    allParticipants: () => document.getElementById('participantsOutput'),
-    teacher: () => document.getElementById('partteachid'),
-    student: () => document.getElementById('partstudid'),
-    creationType: () => document.getElementById('creationType'),
-    hashInput: () => document.getElementById('hashfield'),
-    btnClass: () => document.getElementById('setstclass'),
-    btnSuccess: () => document.getElementById('setstsucc')
+    subject: () => document.getElementById("subjectnamefield"),
+    status: () => document.getElementById("statusroom"),
+    hash: () => document.getElementById("hashroom"),
+    lesType: () => document.getElementById("lessonType"),
+    particCounter: () => document.getElementById("participantCounter"),
+    teacher: () => document.getElementById("partteachid"),
+    student: () => document.getElementById("partstudid"),
+    creationType: () => document.getElementById("creationType"),
+    hashInput: () => document.getElementById("hashfield"),
+    btnClass: () => document.getElementById("setstclass"),
+    btnSuccess: () => document.getElementById("setstsucc")
 };
 
-function parseRoomURL(rawUrl = location.href) {
-    if (!rawUrl) throw new Error('URL пустой');
-    const trimmed = rawUrl.trim();
+/* Комната, данные которой сейчас показаны */
+let currentLessonRoom = null;
 
-    // Пользователь ввёл голый хеш — предмет берём из текущей страницы
-    if (!trimmed.includes('/') && /^[a-z0-9-]{6,}$/i.test(trimmed)) {
-        const currentSubject = location.pathname.split('/').filter(Boolean)[0] || '';
-        return { subject: `${currentSubject}/room`, subjectName: currentSubject, roomHash: trimmed };
-    }
-
-    const url = trimmed.startsWith('http') ? new URL(trimmed) : new URL(trimmed, location.origin);
-    const pathParts = url.pathname.split('/').filter(Boolean);
-    if (pathParts.length < 4) throw new Error('Некорректный URL комнаты');
-    const subjectName = pathParts[1];
-    const roomHash = pathParts[3];
-    return { subject: `${subjectName}/room`, subjectName, roomHash };
+function subjectFromPath(pathname) {
+    /* /kids/<subject>/room/<hash> или /<subject>/room/<hash> */
+    const parts = pathname.split("/").filter(Boolean);
+    return parts.find((part) => SUBJECTS.has(part)) || "";
 }
 
-function getApiEndpoint(subject, version) {
-    const name = subject.split('/')[0];
-    if (!SUBJECTS[name]) {
-        console.error(`Предмет ${name} не поддерживается`);
-        return null;
+function parseRoomURL(rawUrl = location.href) {
+    const trimmed = String(rawUrl || "").trim();
+    if (!trimmed) throw new Error("Пустая ссылка");
+
+    /* Голый хеш — предмет берём из текущей страницы.
+       FIX: раньше брался первый сегмент пути («kids») вместо предмета */
+    if (!trimmed.includes("/") && /^[a-z0-9-]{6,}$/i.test(trimmed)) {
+        const subjectName = subjectFromPath(location.pathname);
+        if (!subjectName) throw new Error("По голому хешу предмет определяется только со страницы комнаты — вставьте полную ссылку");
+        return { subjectName, roomHash: trimmed };
     }
-    return `https://api-${SUBJECTS[name]}.skyeng.ru/api/v${version}/rooms/`;
+
+    const url = trimmed.startsWith("http") ? new URL(trimmed) : new URL(trimmed, location.origin);
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    const roomIndex = pathParts.indexOf("room");
+    const subjectName = subjectFromPath(url.pathname);
+    const roomHash = roomIndex >= 0 ? pathParts[roomIndex + 1] : pathParts[3];
+    if (!subjectName || !roomHash) throw new Error("Ссылка не похожа на ссылку комнаты");
+    return { subjectName, roomHash };
+}
+
+function getApiEndpoint(subjectName, version) {
+    if (!SUBJECTS.has(subjectName)) throw new Error(`Предмет «${subjectName}» не поддерживается`);
+    return `https://api-${subjectName}.skyeng.ru/api/v${version}/rooms/`;
 }
 
 async function apiRequest(url, options = {}) {
-    const response = await fetch(url, { credentials: 'include', ...options });
-    if (!response.ok) throw new Error(`API error: ${response.status}`);
+    const response = await fetch(url, { credentials: "include", ...options });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const text = await response.text();
     if (!text) return { ok: true };
     try { return JSON.parse(text); }
-    catch (e) {
-        console.warn("Ответ не JSON:", text);
-        return { ok: true, raw: text };
-    }
+    catch { return { ok: true, raw: text }; }
 }
 
+function setStatusButtons(enabled) {
+    DOM.btnClass().disabled = !enabled;
+    DOM.btnSuccess().disabled = !enabled;
+}
+
+/* FIX: «Очистить» раньше прятал кнопки смены статуса навсегда */
 function clearUI() {
-    Object.entries(DOM).forEach(([key, get]) => {
-        if (key === "allParticipants") return;
-        const el = get();
-        if (!el) return;
-        if ("value" in el) el.value = "";
-        else el.textContent = "";
+    ["subject", "status", "hash", "lesType", "teacher", "student", "creationType"].forEach((key) => {
+        const el = DOM[key]();
+        el.textContent = "";
+        el.removeAttribute("title");
+        el.dataset.state = "";
     });
-    document.getElementById("participantsTbody").innerHTML = "";
-    DOM.btnClass().style.display = "none";
-    DOM.btnSuccess().style.display = "none";
+    DOM.hashInput().value = "";
     DOM.particCounter().textContent = "0";
+    document.getElementById("participantsTbody").innerHTML = "";
+    currentLessonRoom = null;
+    setStatusButtons(false);
 }
 
 function filterParticipants(query) {
-    const tbody = document.getElementById("participantsTbody");
-    const rows = tbody.querySelectorAll("tr");
-    const isNumeric = /^\d+$/.test(query);
     const q = query.toLowerCase();
-    rows.forEach(row => {
-        const userId = row.children[1].textContent.toLowerCase();
-        const name = row.children[2].textContent.toLowerCase();
-        let match = isNumeric ? userId.includes(q) : name.includes(q);
-        row.style.display = match ? "" : "none";
+    const isNumeric = /^\d+$/.test(q);
+    document.querySelectorAll("#participantsTbody tr").forEach((row) => {
+        const target = row.children[isNumeric ? 1 : 2]?.textContent.toLowerCase() || "";
+        row.style.display = !q || target.includes(q) ? "" : "none";
     });
 }
 
@@ -209,186 +165,170 @@ function sortParticipants(participants) {
     });
 }
 
-async function loadRoomInfo(api, roomHash, subjectName) {
+function fillParticipantField(target, participant) {
+    if (!participant) {
+        target.textContent = "—";
+        target.removeAttribute("title");
+        return;
+    }
+    target.textContent = participant.userId;
+    target.title = `Имя: ${participant.name}\nСоздание: ${toMoscowTime(participant.startAt)}\nПодключение: ${toMoscowTime(participant.joinedAt)}`;
+    markCopyable(target, String(participant.userId));
+}
+
+function renderParticipantsTable(participants) {
+    document.getElementById("participantsTbody").innerHTML = sortParticipants(participants)
+        .map((p) => `<tr class="${p.joinedAt ? "" : "tsm-row-muted"}"><td>${p.role === "teacher" ? "Преподаватель" : escapeHTML(p.role)}</td><td>${escapeHTML(p.userId)}</td><td>${escapeHTML(p.name)}</td><td>${toMoscowTime(p.joinedAt)}</td></tr>`)
+        .join("");
+}
+
+async function loadRoomInfo(subjectName, roomHash, button) {
+    setBusy(button, true);
     try {
-        const data = await apiRequest(api + roomHash);
-        console.log(data);
-        DOM.status().textContent = data.status;
-        DOM.hash().textContent = data.hash;
-        DOM.lesType().textContent = data.type;
-        DOM.subject().textContent = subjectName.toUpperCase();
-        DOM.creationType().textContent = data.meta.creationType == "auto" ? "Автоматически" : data.meta.creationType == "manually" ? "Вручную" : "Через админку";
-        DOM.particCounter().textContent = data.allParticipantsCount;
-        
-        if (data.participants.length == 2) {
-            updateParticipants(data.participants);
-        } else {
-            updateParticipantsWebinar(data.participants);
-            const searchInput = document.getElementById("searchForParticipant");
-            searchInput.oninput = function () {
-                filterParticipants(this.value.trim());
-            };
-        }
+        const data = await apiRequest(getApiEndpoint(subjectName, 2) + roomHash);
+        const participants = Array.isArray(data.participants) ? data.participants : [];
 
-        DOM.particCounter().onclick = toggleParticipantsModal;
+        DOM.status().textContent = data.status ?? "—";
+        DOM.status().dataset.state = data.status || "";
+        DOM.hash().textContent = data.hash ?? roomHash;
+        DOM.lesType().textContent = data.type ?? "—";
+        DOM.subject().textContent = subjectName;
+        DOM.creationType().textContent = CREATION_TYPES[data.meta?.creationType] || (data.meta?.creationType ? "Через админку" : "—");
+        DOM.particCounter().textContent = data.allParticipantsCount ?? participants.length;
 
+        /* Преподаватель и первый ученик показываются всегда, полный список — в отдельном окне */
+        fillParticipantField(DOM.teacher(), participants.find((p) => p.role === "teacher"));
+        const students = participants.filter((p) => p.role !== "teacher");
+        fillParticipantField(DOM.student(), students.length === 1 ? students[0] : null);
+        if (students.length > 1) DOM.student().textContent = `${students.length} — см. список`;
+        renderParticipantsTable(participants);
+
+        currentLessonRoom = { subjectName, roomHash: data.hash ?? roomHash };
+        setStatusButtons(true);
     } catch (e) {
-        console.error('Ошибка загрузки комнаты:', e);
+        console.error("[TSM Комната] Ошибка загрузки:", e);
+        createNotify(`Не удалось загрузить комнату: ${e.message}`, "error");
+    } finally {
+        setBusy(button, false);
     }
 }
 
 function toggleParticipantsModal() {
-    const modal = document.getElementById('allParticipants');
+    const modal = document.getElementById("allParticipants");
     if (!modal) return;
-
-    if (modal.style.display === "block") {
+    if (modal.style.display !== "none") {
         modal.style.display = "none";
         return;
     }
-
-    if (modal.parentNode !== document.body) {
-        document.body.appendChild(modal);
-    }
+    if (modal.parentNode !== document.body) document.body.appendChild(modal);
 
     modal.style.display = "block";
-    modal.style.position = "absolute";
-    modal.style.margin = "0";
-    modal.style.zIndex = "999999";
-    modal.style.transform = "none";
-
-    modal.style.left = Math.max(10, (window.innerWidth / 2) - (modal.offsetWidth / 2)) + "px";
+    bringToFront(modal);
+    modal.style.left = `${Math.max(10, window.innerWidth / 2 - modal.offsetWidth / 2)}px`;
     modal.style.top = "10vh";
 
-    modal.classList.add('tsm-modal-animate');
-    clearTimeout(modal._tsmAnimTimer);
-    modal._tsmAnimTimer = setTimeout(() => modal.classList.remove('tsm-modal-animate'), 500);
+    modal.classList.remove("tsm-modal-animate");
+    void modal.offsetWidth;
+    modal.classList.add("tsm-modal-animate");
 
-    makeDraggable(modal, document.getElementById('participantsDragHandle'));
+    makeDraggable(modal, document.getElementById("participantsDragHandle"));
+    document.getElementById("searchForParticipant").focus();
 }
 
-function updateParticipants(participants) {
-    participants.forEach(p => {
-        const target = p.role === 'teacher' ? DOM.teacher() : DOM.student();
-        target.textContent = p.userId;
-        target.title = `Имя: ${p.name}\nСоздание: ${toMoscowTime(p.startAt)}\nПодключение: ${toMoscowTime(p.joinedAt)}`;
-        markCopyable(target, String(p.userId));
-    });
-}
-
-function updateParticipantsWebinar(participants) {
-    const sorted = sortParticipants(participants);
-    document.getElementById("participantsTbody").innerHTML = sorted
-        .map((p) => `<tr><td>${escapeHTML(p.role)}</td><td>${escapeHTML(p.userId)}</td><td>${escapeHTML(p.name)}</td><td>${toMoscowTime(p.joinedAt)}</td></tr>`)
-        .join("");
-}
-
-async function changeRoomStatus(status) {
-    try {
-        const { subject, roomHash } = DOM.hashInput().value ? parseRoomURL(DOM.hashInput().value) : parseRoomURL();
-        const api = getApiEndpoint(subject, 1);
-        await apiRequest(api + roomHash, {
-            method: 'PATCH',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ status, name: '' })
-        });
-        createNotify(`Статус изменён на ${status}`);
-        setTimeout(() => location.reload(), 1200);
-    } catch (e) {
-        console.error('Ошибка изменения статуса:', e);
-        createNotify('Ошибка изменения статуса', 'error');
-    }
-}
-
-/* =========================================================
-   Перетаскивание окна за заголовок
-   ========================================================= */
-
+/* Перетаскивание окна участников за заголовок (окно position: fixed) */
 function makeDraggable(windowEl, handleEl) {
-    if (!windowEl || !handleEl) return;
-    if (windowEl._tsmDragInitialized) return;
+    if (!windowEl || !handleEl || windowEl._tsmDragInitialized) return;
     windowEl._tsmDragInitialized = true;
 
-    let isDragging = false;
-    let startX, startY, startLeft, startTop;
-
-    handleEl.style.cursor = 'move';
-    handleEl.style.userSelect = 'none';
-
-    handleEl.addEventListener('mousedown', function (e) {
-        if (e.button !== 0) return;
-        if (e.target.closest('button, a, input')) return;
-
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-
-        const rect = windowEl.getBoundingClientRect();
-        startLeft = rect.left + window.scrollX;
-        startTop  = rect.top  + window.scrollY;
-
-        windowEl.style.position = 'absolute';
-        windowEl.style.left     = startLeft + 'px';
-        windowEl.style.top      = startTop  + 'px';
-        windowEl.style.margin   = '0';
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup',   onMouseUp);
+    handleEl.addEventListener("mousedown", (e) => {
+        if (e.button !== 0 || e.target.closest("button, a, input")) return;
         e.preventDefault();
-    });
+        bringToFront(windowEl);
+        const rect = windowEl.getBoundingClientRect();
+        const startX = e.clientX;
+        const startY = e.clientY;
 
-    function onMouseMove(e) {
-        if (!isDragging) return;
-        windowEl.style.left = (startLeft + e.clientX - startX) + 'px';
-        windowEl.style.top  = (startTop  + e.clientY - startY) + 'px';
-    }
-
-    function onMouseUp() {
-        isDragging = false;
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup',   onMouseUp);
-    }
-}
-
-function setupEventHandlers() {
-    DOM.btnClass().onclick = () => changeRoomStatus('classwork');
-    DOM.btnSuccess().onclick = () => changeRoomStatus('success');
-    
-    DOM.hash().onclick = async () => {
-        const link = `https://vimbox.skyeng.ru/kids/${DOM.subject().textContent.toLowerCase()}/room/${DOM.hash().textContent}`;
-        const copied = await copyToClipboardTSM(link);
-        if (copied) createNotify('🔗 Ссылка скопирована');
-    };
-    
-    document.getElementById('ClearInfo').onclick = clearUI;
-    document.getElementById('RefreshInfo').onclick = () => openMenu(false);
-    document.getElementById('searchHash').onclick = () => openMenu(true);
-    document.getElementById('hideMeLessonInfo').onclick = () => wintLessonInfo.style.display = 'none';
-
-    const closeBtn = document.getElementById('closeParticipantsBtn');
-    if (closeBtn) {
-        closeBtn.onclick = () => {
-            const modal = document.getElementById('allParticipants');
-            if (modal) modal.style.display = 'none';
+        const onMouseMove = (ev) => {
+            windowEl.style.left = `${tsmClamp(rect.left + ev.clientX - startX, 8, window.innerWidth - rect.width - 8)}px`;
+            windowEl.style.top = `${tsmClamp(rect.top + ev.clientY - startY, 8, window.innerHeight - 60)}px`;
         };
+        const onMouseUp = () => {
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+        };
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+    });
+}
+
+async function changeRoomStatus(status, button) {
+    if (!currentLessonRoom) {
+        createNotify("Сначала загрузите комнату", "error");
+        return;
     }
-    
-    const allParts = document.getElementById('allParticipants');
-    if (allParts) {
-        allParts.addEventListener('mousedown', e => { e.stopPropagation(); });
+    const { subjectName, roomHash } = currentLessonRoom;
+
+    /* FIX: смена статуса раньше выполнялась без подтверждения */
+    const confirmed = await tsmConfirm({
+        title: "Смена статуса комнаты",
+        message: `Комната ${roomHash} (${subjectName}) получит статус «${status}».`,
+        okText: "Изменить статус"
+    });
+    if (!confirmed) return;
+
+    setBusy(button, true);
+    try {
+        await apiRequest(getApiEndpoint(subjectName, 1) + roomHash, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ status, name: "" })
+        });
+        createNotify(`Статус комнаты изменён на «${status}»`);
+        /* Перезагружаем страницу, только если она и есть эта комната */
+        if (location.pathname.includes(roomHash)) setTimeout(() => location.reload(), 1200);
+        else loadRoomInfo(subjectName, roomHash);
+    } catch (e) {
+        console.error("[TSM Комната] Ошибка изменения статуса:", e);
+        createNotify(`Не удалось изменить статус: ${e.message}`, "error");
+    } finally {
+        setBusy(button, false);
     }
 }
 
-function openMenu(isSearch) {
-    if (isSearch == false && location.origin !== ORIGIN_VIMBOX) return;
+function openMenu(isSearch, button) {
+    if (!isSearch && location.origin !== ORIGIN_VIMBOX) return;
     try {
-        const { subject, subjectName, roomHash } = isSearch ? parseRoomURL(DOM.hashInput().value) : parseRoomURL();
-        const api = getApiEndpoint(subject, 2);
-        if (!api) {
-            console.error('API endpoint не определён');
-            return;
-        }
-        loadRoomInfo(api, roomHash, subjectName);
+        const { subjectName, roomHash } = isSearch ? parseRoomURL(DOM.hashInput().value) : parseRoomURL();
+        loadRoomInfo(subjectName, roomHash, button);
     } catch (e) {
-        console.error('Ошибка при открытии меню:', e);
+        if (isSearch) createNotify(e.message, "error");
+        else console.info("[TSM Комната] Текущая страница не является комнатой:", e.message);
     }
+}
+
+/* Обработчики навешиваются один раз */
+DOM.btnClass().onclick = function () { changeRoomStatus("classwork", this); };
+DOM.btnSuccess().onclick = function () { changeRoomStatus("success", this); };
+DOM.particCounter().onclick = toggleParticipantsModal;
+DOM.hash().onclick = async () => {
+    if (!currentLessonRoom) return;
+    const link = `${ORIGIN_VIMBOX}/kids/${currentLessonRoom.subjectName}/room/${currentLessonRoom.roomHash}`;
+    if (await copyToClipboardTSM(link)) createNotify("Ссылка на комнату скопирована");
+};
+document.getElementById("ClearInfo").onclick = clearUI;
+document.getElementById("RefreshInfo").onclick = function () { openMenu(false, this); };
+document.getElementById("searchHash").onclick = function () { openMenu(true, this); };
+DOM.hashInput().addEventListener("keydown", (event) => {
+    if (event.key === "Enter") openMenu(true, document.getElementById("searchHash"));
+});
+document.getElementById("hideMeLessonInfo").onclick = () => { wintLessonInfo.style.display = "none"; };
+document.getElementById("closeParticipantsBtn").onclick = () => {
+    document.getElementById("allParticipants").style.display = "none";
+};
+document.getElementById("searchForParticipant").addEventListener("input", function () {
+    filterParticipants(this.value.trim());
+});
+
+function OpenLessonmInfoMenu() {
+    if (toggleTSMWindow(wintLessonInfo)) openMenu(false, document.getElementById("RefreshInfo"));
 }
