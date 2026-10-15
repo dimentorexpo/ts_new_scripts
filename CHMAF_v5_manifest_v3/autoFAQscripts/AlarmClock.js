@@ -502,7 +502,20 @@
         safeShowAlert("⏰ Время ставить занят! Будильник сработал!", 1);
     };
 
+    const MISSED_GRACE_MS = 5 * 60 * 1000; // сработать, если вкладку открыли чуть позже времени
+
     const triggerAlarm = (cfg) => {
+        // Будильник могли удалить/переставить в ДРУГОЙ вкладке AutoFAQ: таймер этой
+        // вкладки об этом не знал и всё равно ставил «Занят». Сверяемся с хранилищем.
+        // Заодно это защищает от двойного срабатывания, если открыто несколько вкладок:
+        // первая сработавшая вкладка удаляет ключ, остальные видят, что его нет.
+        const stamp = Number(localStorage.getItem(cfg.key));
+        if (!stamp || stamp - Date.now() > 1000) {
+            if (timeouts[cfg.id]) { clearTimeout(timeouts[cfg.id]); delete timeouts[cfg.id]; }
+            if (stamp) timeouts[cfg.id] = setTimeout(() => triggerAlarm(cfg), stamp - Date.now());
+            return;
+        }
+
         setOperatorBusy();
 
         // Cleanup
@@ -551,8 +564,11 @@
 
         if (!validation.valid) {
             safeShowAlert(validation.error);
-            if (hourEl && !validation.hour && validation.hour !== 0) hourEl.classList.add('error');
-            if (minEl && !validation.minute && validation.minute !== 0) minEl.classList.add('error');
+            // Подсвечиваем только поле с ошибкой (раньше всегда горели оба).
+            const hv = safeParseInt(hourEl?.value);
+            const mv = safeParseInt(minEl?.value);
+            if (hourEl && (hv === null || hv < 0 || hv > 23)) hourEl.classList.add('error');
+            if (minEl && (mv === null || mv < 0 || mv > 59)) minEl.classList.add('error');
             setTimeout(() => {
                 hourEl?.classList.remove('error');
                 minEl?.classList.remove('error');
@@ -710,6 +726,23 @@
     //  RESTORE STATE
     // ═══════════════════════════════════════════════════════════════════════════
 
+    // Подтягивает поля и кнопку из хранилища (для синхронизации вкладок).
+    const restoreInputs = (cfg) => {
+        const hourEl = document.getElementById(cfg.hourId);
+        const minEl = document.getElementById(cfg.minId);
+        const btnEl = document.getElementById(cfg.btnId);
+        const isSet = !!localStorage.getItem(cfg.key);
+        const savedH = localStorage.getItem(cfg.lsHourKey);
+        const savedM = localStorage.getItem(cfg.lsMinKey);
+
+        if (hourEl) { hourEl.value = isSet && savedH !== null ? format(savedH) : ''; hourEl.classList.toggle('valid', isSet); }
+        if (minEl) { minEl.value = isSet && savedM !== null ? format(savedM) : ''; minEl.classList.toggle('valid', isSet); }
+        if (btnEl) {
+            btnEl.textContent = isSet ? 'Изменить' : 'Установить';
+            btnEl.classList.toggle('set', isSet);
+        }
+    };
+
     const restoreAlarmState = (cfg) => {
         const hourEl = document.getElementById(cfg.hourId);
         const minEl = document.getElementById(cfg.minId);
@@ -739,6 +772,10 @@
                 }
                 const cardEl = document.getElementById(cfg.dispId)?.closest('.alc-card');
                 if (cardEl) cardEl.classList.add('active');
+            } else if (timeLeft > -MISSED_GRACE_MS) {
+                // Страницу перезагрузили через минуту-другую после времени будильника —
+                // раньше он молча удалялся и «Занят» так и не ставился.
+                triggerAlarm(cfg);
             } else {
                 // Alarm expired while away
                 localStorage.removeItem(cfg.key);
@@ -847,6 +884,21 @@
                     if (win) win.style.display = win.style.display === 'none' ? 'block' : 'none';
                 };
             }
+
+            // Синхронизация между вкладками: будильник поставили/удалили в другой
+            // вкладке — пересоздаём таймер здесь.
+            window.addEventListener('storage', (e) => {
+                const cfg = ALARMS_CONFIG.find(c => c.key === e.key);
+                if (!cfg) return;
+
+                if (timeouts[cfg.id]) { clearTimeout(timeouts[cfg.id]); delete timeouts[cfg.id]; }
+                const stamp = Number(e.newValue);
+                if (stamp && stamp > Date.now()) {
+                    timeouts[cfg.id] = setTimeout(() => triggerAlarm(cfg), stamp - Date.now());
+                }
+                restoreInputs(cfg);
+                refreshGlobalReminderIcon();
+            });
 
             // Start update loop
             if (updateInterval) clearInterval(updateInterval);

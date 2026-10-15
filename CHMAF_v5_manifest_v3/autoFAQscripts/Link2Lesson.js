@@ -18,7 +18,7 @@
             { v: "chinese", t: "Китайский" }, { v: "japanese", t: "Японский" },
             { v: "turkish", t: "Турецкий" }, { v: "portuguese", t: "Португальский" },
             { v: "korean", t: "Корейский" }, { v: "greek", t: "Греческий" },
-            { v: "preschool", t: "Дошкольник" }
+            { v: "preschool", t: "Дошколка" }
         ]
     };
 
@@ -189,7 +189,7 @@
                 <div class="l2l-actions">
                     <button id="l2l-clear" class="l2l-btn" title="Очистить">🧹</button>
                     <button id="l2l-help" class="l2l-btn" title="Инструкция">❓</button>
-                    <button id="l2l-hide" class="buttonHide" title="Скрыть">✕</button>
+                    <button id="l2l-hide" class="l2l-btn buttonHide" title="Скрыть">✕</button>
                 </div>
             </div>
 
@@ -201,7 +201,7 @@
             </div>
 
             <div class="l2l-row">
-                <input id="l2l-hash" class="l2l-input" placeholder="Введи хэш комнаты..." autocomplete="off">
+                <input id="l2l-hash" class="l2l-input" placeholder="Хэш комнаты или ссылка на урок..." autocomplete="off">
             </div>
 
             <div class="l2l-checkbox-group">
@@ -253,6 +253,19 @@
             ui.hw.onchange = () => { if (ui.hw.checked) ui.web.checked = false; };
 
             // Основная кнопка
+            // Вставили целую ссылку vimbox — достаём из неё хэш и предмет.
+            ui.hash.addEventListener('input', () => {
+                const m = ui.hash.value.match(/\/kids\/([a-z-]+)\/room\/([a-zA-Z0-9]+)/) ||
+                    ui.hash.value.match(/\/room\/([a-zA-Z0-9]+)/);
+                if (!m) return;
+
+                const [subjFromLink, hashFromLink] = m.length === 3 ? [m[1], m[2]] : [null, m[1]];
+                ui.hash.value = hashFromLink;
+                if (subjFromLink && state.subjects.some(s => s.v === subjFromLink)) {
+                    ui.subj.value = subjFromLink;
+                }
+            });
+
             document.getElementById('l2l-create').onclick = function () {
                 const subject = ui.subj.value;
                 const hash = ui.hash.value.trim();
@@ -272,13 +285,15 @@
 
                 if (typeof copyToClipboard === 'function') {
                     copyToClipboard(finalLink);
-                    createAndShowButton('Ссылка скопирована! 💾', 'message');
+                    if (typeof createAndShowButton === 'function') createAndShowButton('Ссылка скопирована! 💾', 'message');
                 } else {
                     console.log(finalLink);
                 }
 
-                // Авто-очистка и скрытие
-                setTimeout(() => { ui.win.style.display = 'none'; }, 3000);
+                // Авто-скрытие. Таймер запоминаем, чтобы отменить его при повторном
+                // открытии окна — иначе окно закрывалось «само» через пару секунд.
+                clearTimeout(self.hideTimer);
+                self.hideTimer = setTimeout(() => { ui.win.style.display = 'none'; }, 3000);
             };
         }
     };
@@ -287,7 +302,13 @@
     window.getlink2lessButtonPress = function () {
         window.Link2LessonModule.init();
         const win = document.getElementById('AF_link2less');
-        win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'block' : 'none';
+        if (!win) return;
+
+        clearTimeout(window.Link2LessonModule.hideTimer);
+
+        // Реальная видимость: style.display === '' у открытого окна раньше
+        // считалось «закрыто», и первый клик по кнопке ничего не закрывал.
+        win.style.display = getComputedStyle(win).display === 'none' ? 'block' : 'none';
     };
 
 })();

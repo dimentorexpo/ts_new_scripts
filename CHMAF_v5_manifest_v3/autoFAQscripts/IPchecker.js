@@ -341,7 +341,7 @@ function createIPCheckerWindow() {
     injectStyles();
 
     const html = `
-        <div class="cyber-ip-container chmaf-window" id="AF_IpCheck">
+        <div class="cyber-ip-container chmaf-window" id="AF_IpCheck_panel">
             <!-- Ровно тот класс для перетаскивания: chmaf-drag-handle -->
             <div class="cyber-ip-header chmaf-drag-handle" id="AF_IpCheck_header">
                 <div class="cyber-ip-brand">
@@ -392,7 +392,10 @@ function createIPCheckerWindow() {
 
         const wrapper = document.createElement('div');
         wrapper.innerHTML = html.trim();
-        document.body.appendChild(wrapper.firstElementChild);
+        const panel = wrapper.firstElementChild;
+        // Без createWindow обёртки нет — панель сама становится окном.
+        panel.id = 'AF_IpCheck';
+        document.body.appendChild(panel);
     }
 }
 
@@ -437,14 +440,31 @@ const IP_MANAGER = {
         }
     },
 
+    // Достаём IP из вставленного текста («IP: 1.2.3.4», «1.2.3.4:443» и т.п.).
+    extractIp(raw) {
+        const text = String(raw ?? '').trim();
+        const ipv4 = text.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/);
+        if (ipv4) return ipv4[0];
+
+        const ipv6 = text.match(/[0-9a-fA-F]{0,4}(?::[0-9a-fA-F]{0,4}){2,7}/);
+        return ipv6 ? ipv6[0] : text;
+    },
+
+    requestId: 0,
+
     async fetchIpData() {
         const input = $cyber('#cyber-ip-input-field');
-        const ip = input?.value.trim();
+        const ip = this.extractIp(input?.value);
 
         if (!ip) {
             input?.focus();
             return;
         }
+
+        if (input) input.value = ip;
+
+        // Ответ предыдущего сканирования не должен перетереть новый.
+        const requestId = ++this.requestId;
 
         this.showLoading();
 
@@ -456,6 +476,13 @@ const IP_MANAGER = {
                 fetchURL: url,
                 requestOptions: { method: "GET" }
             }, (response) => {
+                if (requestId !== this.requestId) return;
+
+                if (chrome.runtime.lastError) {
+                    this.showError(chrome.runtime.lastError.message);
+                    return;
+                }
+
                 if (!response?.success) {
                     this.showError(response?.error || 'Transmission Gateway Failure');
                     return;
@@ -467,6 +494,11 @@ const IP_MANAGER = {
             try {
                 const res = await fetch(url);
                 const data = await res.json();
+                if (requestId !== this.requestId) return;
+                if (!res.ok || data?.message) {
+                    this.showError(data?.message || `HTTP ${res.status}`);
+                    return;
+                }
                 this.renderResult(data);
             } catch (err) {
                 this.showError('CORS/Network error occurred');
@@ -549,17 +581,26 @@ const IP_MANAGER = {
 
         // Быстрое копирование адреса при клике
         display.querySelectorAll('.cyber-copyable').forEach(el => {
-            el.addEventListener('click', () => {
-                navigator.clipboard.writeText(el.dataset.copy);
-                const originalText = el.textContent;
-                el.textContent = 'COPIED TO CLIPBOARD';
-                setTimeout(() => el.textContent = originalText, 1200);
+            const originalText = el.textContent;
+            let resetTimer = null;
+
+            el.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(el.dataset.copy);
+                    el.textContent = 'COPIED TO CLIPBOARD';
+                } catch {
+                    el.textContent = 'COPY FAILED';
+                }
+
+                // Повторный клик не «запоминает» надпись COPIED навсегда.
+                clearTimeout(resetTimer);
+                resetTimer = setTimeout(() => el.textContent = originalText, 1200);
             });
         });
     },
 
     openExternal(type) {
-        const ip = $cyber('#cyber-ip-input-field')?.value.trim();
+        const ip = this.extractIp($cyber('#cyber-ip-input-field')?.value);
         if (!ip) return;
 
         const links = {
@@ -600,10 +641,8 @@ function initIPCheckerInterface() {
             }
         });
 
-        // Разрешаем цифры, точки, двоеточия и hex-символы для IPv4 и IPv6
-        input.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/[^0-9a-fA-F.:]/g, '');
-        });
+        // Фильтрацию на каждом вводе убрали: она прыгала курсором в конец
+        // и портила вставку вида «IP: 1.2.3.4». IP извлекается при сканировании.
     }
 
     // Делегирование внешних ссылок

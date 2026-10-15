@@ -295,6 +295,40 @@ const injectGlassStyles = () => {
         .af-gl-service-balance { display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 800; color: #a9c0ff; font-family: 'JetBrains Mono', monospace; }
         .af-gl-service-type { font-size: 14px; color: #7dd3fc; font-weight: 600; line-height: 1.3; word-break: break-word; }
         .af-gl-service-teacher { font-size: 12px; color: #86efac; display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: rgba(69, 199, 52, 0.08); border-radius: 8px; border: 1px solid rgba(69, 199, 52, 0.2); word-wrap: break-word; }
+        .af-gl-service-teacher > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+        .af-gl-teacher-loginer { margin-left: auto; font-size: 13px; }
+        .af-gl-teacher-loginer.is-loading { opacity: 1; pointer-events: none; }
+
+        .af-gl-type-emoji { font-size: 14px; text-transform: none; vertical-align: -1px; }
+
+        /* Потерянные услуги — свёрнутая группа под основными */
+        .af-gl-lost-group {
+            grid-column: 1 / -1;
+            border: 1px dashed rgba(138, 28, 129, 0.45);
+            border-radius: 10px;
+            background: rgba(138, 28, 129, 0.06);
+        }
+        .af-gl-lost-group > summary {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            list-style: none;
+            font-size: 12px; font-weight: 700;
+            color: #d8b4fe;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            user-select: none;
+        }
+        .af-gl-lost-group > summary::-webkit-details-marker { display: none; }
+        .af-gl-lost-group > summary::after { content: '▸'; margin-left: auto; transition: transform .16s ease; }
+        .af-gl-lost-group[open] > summary::after { transform: rotate(90deg); }
+        .af-gl-lost-group > summary:hover { background: rgba(138, 28, 129, 0.12); border-radius: 10px; }
+        .af-gl-lost-count {
+            padding: 1px 8px; border-radius: 999px;
+            background: rgba(138, 28, 129, 0.3); color: #f3e8ff; font-size: 11px;
+        }
+        .af-gl-lost-grid { padding: 0 10px 10px; }
+        .af-gl-service-card-lost { opacity: 0.8; }
+
         .af-gl-service-teacher.missing { color: #fca5a5; background: rgba(220, 20, 60, 0.08); border-color: rgba(220, 20, 60, 0.2); }
 
         .af-gl-scrollable { max-height: 380px; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 12px; }
@@ -822,18 +856,33 @@ function formatLessonDate(dateString) {
     return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
+const teacherLoginerBtn = (teacherId) => teacherId
+    ? `<span class="af-gl-icon-btn af-gl-teacher-loginer" data-loginer-id="${escapeUserinfoHtml(teacherId)}" title="Ссылка-логинер преподавателя">🔑</span>`
+    : '';
+
+const escapeUserinfoHtml = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+})[ch]);
+
 function createFutureLessonHTML(lesson, type) {
-    const { startedAt, lessonType, educationService, teacher } = lesson;
+    const { startedAt, lessonType, educationService = {}, teacher } = lesson;
     const translatedType = LESSONS_CONFIG.LESSON_TYPE_MAP[lessonType] || lessonType;
     const srvTitle = (servicecontainer?.data || []).find(i => i.serviceTypeKey === educationService.serviceTypeKey)?.shortTitle || educationService.serviceTypeKey;
-    const teacherInfo = teacher ? `<div style="font-size:12px; color:#86efac; margin-top:6px;">👨‍🏫 ${teacher.general.id} ${teacher.general.name} ${teacher.general.surname}</div>` : '';
-    const statusHTML = type === 'past' ? `<div style="font-size:12px; margin-top:6px;">Статус: <span style="color:#86efac; font-weight:600;">Прошел</span></div>` : '';
+    const tg = teacher?.general;
+    const teacherInfo = tg ? `<div style="font-size:12px; color:#86efac; margin-top:6px;">👽 ${escapeUserinfoHtml(tg.id)} ${escapeUserinfoHtml(tg.name)} ${escapeUserinfoHtml(tg.surname)}</div>` : '';
+
+    // Раньше у всех прошедших уроков был зашит статус «Прошел»,
+    // а STATUS_MAP не использовался. Берём реальный статус из ответа.
+    const rawStatus = lesson.status ?? lesson.lessonStatus ?? lesson.classStatus?.status;
+    const statusText = rawStatus ? (PAST_LESSONS_CONFIG.STATUS_MAP[rawStatus] || rawStatus) : '';
+    const statusColor = rawStatus === 'success' ? '#86efac' : '#fca5a5';
+    const statusHTML = type === 'past' && statusText ? `<div style="font-size:12px; margin-top:6px;">Статус: <span style="color:${statusColor}; font-weight:600;">${escapeUserinfoHtml(statusText)}</span></div>` : '';
 
     return `
         <div style="background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border: 1px solid rgba(255,215,0,0.15); border-radius: 12px; padding: 12px; margin-bottom: 8px;">
             <div style="margin-bottom:4px; font-size:12px;"><span style="color:#fde047;">📅</span> ${formatLessonDate(startedAt)}</div>
             <div style="margin-bottom:4px; font-size:12px;"><span style="color:#7dd3fc;">🎓</span> ${translatedType}</div>
-            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#94a3b8;">📚</span> ${educationService.id} ${srvTitle}</div>
+            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#94a3b8;">📚</span> ${escapeUserinfoHtml(educationService.id)} ${escapeUserinfoHtml(srvTitle)}</div>
             ${statusHTML}
             ${teacherInfo}
         </div>`;
@@ -901,28 +950,48 @@ async function getusernamecrm() {
 
     document.getElementById('usrName').textContent = `${data.name} ${data.surname || ''}`.trim();
     const typeEl = document.getElementById('usrType');
-    typeEl.innerHTML = isStudent ? `<span style="color:#86efac;">🎓 Ученик</span>` : `<span style="color:#7dd3fc;">👨‍🏫 Преподаватель</span>`;
+    typeEl.innerHTML = isStudent
+        ? `<span style="color:#86efac;"><span class="af-gl-type-emoji">🧑‍🎓</span> Ученик</span>`
+        : `<span style="color:#7dd3fc;"><span class="af-gl-type-emoji">👽</span> Преподаватель</span>`;
 
     document.getElementById('usrCountry').textContent = data.country || '—';
 
     const avatarWrapper = document.getElementById('avatarWrapper');
     const avatarEl = document.getElementById('useravatar');
-    if (data.avatarUrl) {
-        const matchSrc = data.avatarUrl.match(/https:\/\/cdn-auth-avatars\.skyeng\.ru\/\d+\/[a-f0-9-]+$/)?.[0];
-        if (matchSrc) {
-            avatarEl.src = matchSrc;
-            avatarWrapper.style.display = 'flex';
-        } else {
+    // Раньше URL проверялся жёстким шаблоном «/<цифры>/<hex>» до конца строки:
+    // стоило CDN добавить расширение (.jpg/.webp), параметры (?v=…) или поменять
+    // формат имени — аватар молча пропадал. Теперь принимаем любой https-адрес
+    // на домене skyeng, а если картинка не загрузилась — просто прячем блок.
+    avatarWrapper.style.display = 'none';
+    avatarEl.onload = null;
+    avatarEl.onerror = null;
+
+    let avatarSrc = null;
+    try {
+        const u = new URL(String(data.avatarUrl || ''));
+        if (u.protocol === 'https:' && /(^|\.)skyeng\.ru$/.test(u.hostname)) avatarSrc = u.href;
+    } catch (_) { /* пустой или кривой URL — аватара нет */ }
+
+    if (avatarSrc) {
+        avatarEl.onload = () => { avatarWrapper.style.display = 'flex'; };
+        avatarEl.onerror = () => {
             avatarWrapper.style.display = 'none';
-        }
-    } else {
-        avatarWrapper.style.display = 'none';
+            console.warn('[Userinfo] Аватар не загрузился:', avatarSrc);
+        };
+        avatarEl.src = avatarSrc;
+    } else if (data.avatarUrl) {
+        console.warn('[Userinfo] Неожиданный адрес аватара:', data.avatarUrl);
     }
 
     let ageIco = "❓";
     if (data.birthday) {
-        const age = new Date().getFullYear() - Number(data.birthday.split('-')[0]);
-        ageIco = age < 18 ? "🔞" : age < 99 ? "🅰️" : "❓";
+        // Полный возраст с учётом месяца и дня: раньше считалась только разница
+        // годов, и 17-летний ученик с ДР в конце года показывался совершеннолетним.
+        const [by, bm, bd] = String(data.birthday).split('-').map(Number);
+        const now = new Date();
+        let age = now.getFullYear() - by;
+        if (now.getMonth() + 1 < bm || (now.getMonth() + 1 === bm && now.getDate() < bd)) age--;
+        ageIco = Number.isFinite(age) ? (age < 18 ? "🔞" : age < 99 ? "🅰️" : "❓") : "❓";
     }
     document.getElementById('usrAge').textContent = ageIco;
 
@@ -961,6 +1030,7 @@ async function crmstatus() {
     const statusEl = document.getElementById('getcurrentstatus');
     const crmEl = document.getElementById('CrmStatus');
     statusEl.style.display = 'none';
+    statusEl.title = '';
     crmEl.style.display = 'none';
 
     try {
@@ -972,12 +1042,14 @@ async function crmstatus() {
         const tasks = JSON.parse(res.fetchansver).data;
         let flags = { tpOut: false, tp: false, notTp: false, wait: false, processing: false, operator: '' };
 
-        tasks.forEach(task => {
-            if (task.operatorGroup.name === 'technical_support_outgoing') {
+        (Array.isArray(tasks) ? tasks : []).forEach(task => {
+            const group = task?.operatorGroup?.name;
+            if (group === 'technical_support_outgoing') {
                 flags.tpOut = true;
                 if (task.status === 'waiting') flags.wait = true;
-                if (task.status === 'processing') { flags.processing = true; flags.operator = task.operator.name; }
-            } else if (task.operatorGroup.name === 'technical_support_first_line') {
+                // operator бывает null (задача ещё не взята) — раньше это роняло весь статус.
+                if (task.status === 'processing') { flags.processing = true; flags.operator = task.operator?.name || ''; }
+            } else if (group === 'technical_support_first_line') {
                 flags.tp = true;
             } else { flags.notTp = true; }
         });
@@ -1089,6 +1161,8 @@ async function getservices(stidNew) {
         const data = JSON.parse(servicesRes.fetchansver);
         if (data.data.length > 0) {
             let htmlStr = '';
+            let lostHtml = '';
+            let lostCount = 0;
             let srvKeyMap = new Map((servicecontainer?.data || []).map(d => [d.serviceTypeKey, d.shortTitle]));
 
             data.data.forEach((service) => {
@@ -1114,8 +1188,14 @@ async function getservices(stidNew) {
                     </div>`;
                 } else if (service.stage === "regular_lessons") {
                     statusClass = 'af-gl-status-regular'; statusText = 'Регулярные'; statusIcon = '';
-                    const t = service.teacher ? `<div class="af-gl-service-teacher">👨‍🏫 ${service.teacher.general.id}, ${service.teacher.general.name} ${service.teacher.general.surname}</div>` : `<div class="af-gl-service-teacher missing">👨‍🏫 Не закреплен!</div>`;
-                    const tmp = service.temporaryTeacher ? `<div class="af-gl-service-teacher" style="margin-top:6px; background: rgba(253, 224, 71, 0.08); border-color: rgba(253, 224, 71, 0.2); color: #fde047;">⏳ ${service.temporaryTeacher.general.id}, ${service.temporaryTeacher.general.name}</div>` : '';
+                    const tg = service.teacher?.general;
+                    const ttg = service.temporaryTeacher?.general;
+                    const t = tg
+                        ? `<div class="af-gl-service-teacher"><span>👽 ${escapeUserinfoHtml(tg.id)}, ${escapeUserinfoHtml(tg.name)} ${escapeUserinfoHtml(tg.surname)}</span>${teacherLoginerBtn(tg.id)}</div>`
+                        : `<div class="af-gl-service-teacher missing">👽 Не закреплен!</div>`;
+                    const tmp = ttg
+                        ? `<div class="af-gl-service-teacher" style="margin-top:6px; background: rgba(253, 224, 71, 0.08); border-color: rgba(253, 224, 71, 0.2); color: #fde047;"><span>⏳ ${escapeUserinfoHtml(ttg.id)}, ${escapeUserinfoHtml(ttg.name)}</span>${teacherLoginerBtn(ttg.id)}</div>`
+                        : '';
                     htmlStr += `<div class="af-gl-service-card">
                         <div class="af-gl-service-header">
                             <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
@@ -1127,7 +1207,9 @@ async function getservices(stidNew) {
                     </div>`;
                 } else if (service.stage === "lost") {
                     statusClass = 'af-gl-status-lost'; statusText = 'Потерянная'; statusIcon = '💀';
-                    htmlStr += `<div class="af-gl-service-card">
+                    lostCount++;
+                    // Потерянные копим отдельно и показываем свёрнутыми под основными
+                    lostHtml += `<div class="af-gl-service-card af-gl-service-card-lost">
                         <div class="af-gl-service-header">
                             <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
                             <span class="af-gl-service-id">#${service.id} <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID">📋</span></span>
@@ -1136,6 +1218,16 @@ async function getservices(stidNew) {
                     </div>`;
                 }
             });
+
+            if (lostCount > 0) {
+                htmlStr += `<details class="af-gl-lost-group">
+                    <summary>
+                        <span>💀 Потерянные услуги</span>
+                        <span class="af-gl-lost-count">${lostCount}</span>
+                    </summary>
+                    <div class="af-gl-services-grid af-gl-lost-grid">${lostHtml}</div>
+                </details>`;
+            }
 
             servTable.innerHTML = htmlStr || '<div class="af-gl-empty-state">Нет отображаемых услуг</div>';
 
@@ -1177,7 +1269,13 @@ async function getuserinfo() {
 
     try {
         await getusernamecrm();
-        await Promise.all([getUserStatus(), typeof crmstatus === 'function' && crmstatus()]);
+
+        // allSettled: если статус в id.skyeng не распарсился, услуги всё равно
+        // загружаются. Раньше одна ошибка статуса прятала услуги за сообщением об ошибке.
+        const [statusResult] = await Promise.allSettled([getUserStatus(), crmstatus()]);
+        if (statusResult.status === 'rejected') {
+            console.warn('Статус пользователя не получен:', statusResult.reason);
+        }
 
         if (window.flagusertype === "teacher") {
             document.getElementById('servicetable').innerHTML = '';
@@ -1225,29 +1323,35 @@ document.getElementById('personalteacherpage')?.addEventListener('click', () => 
 
 document.getElementById('getPastAndFutureLessons')?.addEventListener('click', () => {
     const tt = document.getElementById('AF_Timetable');
-    if (tt) tt.style.display = tt.style.display === '' ? 'none' : '';
-    document.getElementById('getlessonfuture')?.click();
+    if (!tt) return;
+
+    const opening = getComputedStyle(tt).display === 'none';
+    tt.style.display = opening ? '' : 'none';
+
+    // Уроки грузим только при открытии, а не при закрытии окна.
+    if (opening) document.getElementById('getlessonfuture')?.click();
 });
 
 // =====================================================================
 // 🔑 ОБРАБОТЧИК КНОПКИ "ССЫЛКА-ЛОГИНЕР"
 // =====================================================================
-document.getElementById('getloginer')?.addEventListener('click', async function () {
-    const id = idstudentField?.value.trim();
+// Общая логика ключика: и для пользователя в шапке, и для преподавателей в услугах.
+async function runLoginerButton(btn, id) {
     if (!id) {
         if (typeof createAndShowButton === 'function') createAndShowButton('Введите ID для получения ссылки', 'warning');
         return;
     }
+    if (btn.classList.contains('is-loading')) return;
 
-    const btn = this;
+    const idleIcon = '🔑';
     btn.classList.remove('is-success', 'is-error');
     btn.classList.add('is-loading');
     btn.innerHTML = '⏳';
 
     try {
-        if (typeof getLoginLink === 'function') {
-            await getLoginLink(id);
-        }
+        // Раньше при отсутствии getLoginLink показывалось «скопирована», хотя ничего не произошло.
+        if (typeof getLoginLink !== 'function') throw new Error('функция getLoginLink не загружена');
+        await getLoginLink(id);
 
         btn.classList.remove('is-loading');
         btn.classList.add('is-success');
@@ -1263,7 +1367,20 @@ document.getElementById('getloginer')?.addEventListener('click', async function 
     } finally {
         setTimeout(() => {
             btn.classList.remove('is-success', 'is-error', 'is-loading');
-            btn.innerHTML = '🔑';
+            btn.innerHTML = idleIcon;
         }, 2000);
     }
+}
+
+document.getElementById('getloginer')?.addEventListener('click', function () {
+    runLoginerButton(this, idstudentField?.value.trim());
+});
+
+// Ключики преподавателей в карточках услуг. Делегирование: карточки
+// перерисовываются при каждой загрузке, а обработчик вешается один раз.
+document.getElementById('servicetable')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.af-gl-teacher-loginer');
+    if (!btn) return;
+    e.stopPropagation();
+    runLoginerButton(btn, btn.dataset.loginerId);
 });

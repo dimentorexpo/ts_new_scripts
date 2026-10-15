@@ -355,10 +355,10 @@ document.getElementById('addsrc').onclick = function () {
 const AF_LX_GRAFANA = {
     grafanalnk: 'https://grafana.skyeng.link/d/NZkMHsVMk/video-servers-health-check?orgId=1&refresh=1m',
     grafanapoolCRM2: 'https://grafana.skyeng.link/d/fzN-fk5Gk/task-dashboard?orgId=1&var-task_id=null&var-task_status=waiting&var-task_status=assigned&var-task_status=processing&var-operator_group_id=All&var-operator_id=All&var-task_operator_group_id=207',
-    grafanadeystviyauroki: 'https://grafana.skyeng.link/d/f744d199-99db-4d86-98b3-a91edbdc273c/dejstvija-nad-urokami?orgId=1&var-student_id=&var-teacher_id=19886047&var-group_id=&from=now-2d&to=now',
+    grafanadeystviyauroki: 'https://grafana.skyeng.link/d/f744d199-99db-4d86-98b3-a91edbdc273c/dejstvija-nad-urokami?orgId=1&var-student_id=&var-teacher_id=&var-group_id=&from=now-2d&to=now',
     grafanazaprosperenos: 'https://grafana.skyeng.link/d/aey5ciha9s35sb/zapros-na-perenos-uroka?orgId=1&var-teacher_id=&from=now-2d&to=now',
     grafanopencloseslots: 'https://grafana.skyeng.link/d/e457e17f-729c-499d-bd38-b68dc32ef599/logi-otkrytija-zakrytija-slotov-p?orgId=1&from=now-2d&to=now',
-    grafanablocks: 'https://grafana.skyeng.link/d/dd4c2d01-65ec-493b-9089-15591c91aea2/blokirovki-uslug?orgId=1&var-reason_type=All&var-education_service_kit_id=&var-education_service_id=&var-owner_id=42397377&from=now-2d&to=now'
+    grafanablocks: 'https://grafana.skyeng.link/d/dd4c2d01-65ec-493b-9089-15591c91aea2/blokirovki-uslug?orgId=1&var-reason_type=All&var-education_service_kit_id=&var-education_service_id=&var-owner_id=&from=now-2d&to=now'
 };
 
 Object.entries(AF_LX_GRAFANA).forEach(([id, url]) => {
@@ -376,7 +376,7 @@ const openWidgetLessonStatus = () => {
         createAndShowButton('Введите id в поле', 'error');
         return;
     }
-    window.open('https://grafana.skyeng.link/d/DZop3WKVz/nextlesson-analytics?orgId=1&var-UserId=' + input.value + '&from=now-24h&to=now');
+    window.open('https://grafana.skyeng.link/d/DZop3WKVz/nextlesson-analytics?orgId=1&var-UserId=' + encodeURIComponent(input.value.trim()) + '&from=now-24h&to=now');
     input.value = '';
 };
 

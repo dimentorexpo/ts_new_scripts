@@ -61,7 +61,7 @@
             pointer-events: none;
         }
 
-        .af-btn {
+        .${CONFIG.prefix}-container .af-btn {
             padding: 7px 13px;
             border-radius: 9px;
             font-size: 12px;
@@ -74,13 +74,13 @@
             transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .af-btn:hover {
+        .${CONFIG.prefix}-container .af-btn:hover {
             background: rgba(255, 255, 255, 0.13);
             border-color: rgba(129, 140, 248, 0.4);
             transform: translateY(-1px);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
         }
-        .af-btn:active { transform: translateY(0) scale(0.97); }
+        .${CONFIG.prefix}-container .af-btn:active { transform: translateY(0) scale(0.97); }
 
         .${CONFIG.prefix}-input-row {
             display: flex;
@@ -111,7 +111,7 @@
             box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.14);
         }
 
-        .af-btn-primary {
+        .${CONFIG.prefix}-container .af-btn-primary {
             background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%) !important;
             border: none !important;
             color: #0b0d1c !important;
@@ -119,7 +119,7 @@
             box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
         }
 
-        .af-btn-primary:hover {
+        .${CONFIG.prefix}-container .af-btn-primary:hover {
             filter: brightness(1.1);
             transform: translateY(-1px);
             box-shadow: 0 8px 26px rgba(99, 102, 241, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
@@ -178,7 +178,7 @@
         }
         .${CONFIG.prefix}-table tr:hover td:first-child { border-left-color: rgba(129, 140, 248, 0.7); }
 
-        .status-badge {
+        .${CONFIG.prefix}-container .status-badge {
             padding: 4px 11px;
             border-radius: 20px;
             font-weight: 800;
@@ -186,11 +186,11 @@
             letter-spacing: 0.8px;
             display: inline-block;
         }
-        .status-yes { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
-        .status-no { background: rgba(248, 113, 113, 0.12); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+        .${CONFIG.prefix}-container .status-yes { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
+        .${CONFIG.prefix}-container .status-no { background: rgba(248, 113, 113, 0.12); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
 
-        .user-name { font-weight: 600; color: #fff; }
-        .date-cell { color: #a5b4fc; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+        .${CONFIG.prefix}-container .user-name { font-weight: 600; color: #fff; }
+        .${CONFIG.prefix}-container .date-cell { color: #a5b4fc; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
 
         .${CONFIG.prefix}-loader {
             text-align: center;
@@ -234,6 +234,10 @@
         </div>
         <div class="${CONFIG.prefix}-content" id="${CONFIG.prefix}-table-root"></div>
     `;
+
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[ch]);
 
     class NaborStatusWidget {
         constructor() {
@@ -306,18 +310,23 @@
                 ox = this.el.offsetLeft - e.clientX;
                 oy = this.el.offsetTop - e.clientY;
             };
-            document.onmouseup = () => isDown = false;
-            document.onmousemove = (e) => {
+            // addEventListener, а не document.onmouseup/onmousemove: присваивание
+            // затирало обработчики других модулей (и наоборот — они затирали этот).
+            document.addEventListener('mouseup', () => { isDown = false; });
+            document.addEventListener('mousemove', (e) => {
                 if (isDown) {
                     this.el.style.left = (e.clientX + ox) + 'px';
                     this.el.style.top = (e.clientY + oy) + 'px';
                 }
-            };
+            });
         }
 
         async loadData() {
             const tId = this.refs.input.value.trim();
-            if (tId.length < 3) return;
+            if (!/^\d{3,}$/.test(tId)) {
+                this.refs.tableRoot.innerHTML = `<div class="${CONFIG.prefix}-error">Введите числовой ID преподавателя</div>`;
+                return;
+            }
 
             this.refs.tableRoot.innerHTML = `<div class="${CONFIG.prefix}-loader">⌛ Получение логов...</div>`;
 
@@ -329,7 +338,7 @@
                     until: null, lastPreviousRecordId: null
                 });
 
-                if (!logRes.success) throw new Error(logRes.error);
+                if (!logRes?.success) throw new Error(logRes?.error || chrome.runtime.lastError?.message || 'нет ответа от расширения');
                 const changelog = JSON.parse(logRes.fetchansver).data?.changelog || [];
 
                 if (changelog.length === 0) {
@@ -345,7 +354,7 @@
                 const nameRes = await this.request(CONFIG.api.userData, { hashes: uniqueHashes });
                 const namesMap = {};
 
-                if (nameRes.success) {
+                if (nameRes?.success) {
                     const uData = JSON.parse(nameRes.fetchansver);
                     // Создаем карту: hash -> Имя Фамилия
                     uniqueHashes.forEach((hash, index) => {
@@ -358,7 +367,7 @@
                 this.render(changelog, namesMap);
 
             } catch (err) {
-                this.refs.tableRoot.innerHTML = `<div class="${CONFIG.prefix}-error">Ошибка: ${err.message}</div>`;
+                this.refs.tableRoot.innerHTML = `<div class="${CONFIG.prefix}-error">Ошибка: ${esc(err.message)}</div>`;
             }
         }
 
@@ -376,8 +385,13 @@
                     <tbody>`;
 
             list.forEach(item => {
-                const date = new Date(new Date(item.createdAt).getTime() + 10800000);
-                const fDate = date.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                // Раньше к времени вручную прибавлялось +3ч, а toLocaleString ещё раз
+                // переводил в пояс браузера — у оператора в МСК время уезжало на +3ч.
+                const fDate = new Date(item.createdAt).toLocaleString('ru-RU', {
+                    timeZone: 'Europe/Moscow',
+                    day: '2-digit', month: '2-digit', year: '2-digit',
+                    hour: '2-digit', minute: '2-digit'
+                });
 
                 const statusClass = item.valueAfter ? 'status-no' : 'status-yes';
                 const statusText = item.valueAfter ? 'ЗАКРЫТ' : 'ОТКРЫТ';
@@ -386,9 +400,9 @@
                 html += `
                     <tr>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                        <td style="color:#cbd5e1; font-size:11px;">${item.context || '—'}</td>
-                        <td class="date-cell">${fDate}</td>
-                        <td class="user-name">${userName}</td>
+                        <td style="color:#cbd5e1; font-size:11px;">${esc(item.context || '—')}</td>
+                        <td class="date-cell">${esc(fDate)}</td>
+                        <td class="user-name">${esc(userName)}</td>
                     </tr>`;
             });
 

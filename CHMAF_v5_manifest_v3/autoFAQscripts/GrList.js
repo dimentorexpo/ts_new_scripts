@@ -766,12 +766,12 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
     const container = document.getElementById('ngu-results');
     const groupId = document.getElementById('ngu-input-id').value.trim();
 
-    if (!groupId) {
+    if (!/^\d+$/.test(groupId)) {
         container.innerHTML = `
             <div class="ngu-status error">
                 <span class="ngu-status-icon">⚠</span>
                 <div class="ngu-status-title">Требуется ID группы</div>
-                <div class="ngu-status-desc">Введите идентификатор для поиска</div>
+                <div class="ngu-status-desc">Введите числовой идентификатор группы</div>
             </div>`;
         return;
     }
@@ -857,12 +857,13 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
                 </div>
             </div>`;
 
-        if (teacherCount > 0) {
+        // Показываем всех преподавателей группы, а не только первого.
+        (teachers || []).forEach(teacher => {
             const teacherRow = document.createElement('div');
             teacherRow.className = 'ngu-teacher';
-            teacherRow.innerHTML = `<span class="ngu-teacher-icon">●</span> Преподаватель: ${nguEsc(teachers[0].userId)}`;
+            teacherRow.innerHTML = `<span class="ngu-teacher-icon">●</span> Преподаватель: ${nguEsc(teacher.userId)}`;
             container.appendChild(teacherRow);
-        }
+        });
 
         students.forEach((student, index) => {
             const name = namesMap[student.userId] || 'Имя не определено';

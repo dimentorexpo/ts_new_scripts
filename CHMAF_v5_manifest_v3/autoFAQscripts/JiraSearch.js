@@ -409,9 +409,14 @@ const JQLTemplates = { // шаблоны JQL запросов
 };
 
 // передача запросов в форму через геттеры
+// Кавычки и обратный слэш в тексте поиска экранируем, иначе JQL ломается
+// (например, поиск по фразе с ") и Jira возвращает ошибку вместо задач.
+const escapeJqlText = (value) => String(value ?? '').replace(/[\\"]/g, '\\$&');
+
 Object.entries(JQLTemplates).forEach(([key, template]) => {
     Object.defineProperty(window, key, {
-        get: () => template.replace('${testJira.value}', document.getElementById('testJira').value)
+        // Функция-замена: строка-замена интерпретировала бы $& и $' в тексте поиска.
+        get: () => template.replace('${testJira.value}', () => escapeJqlText(document.getElementById('testJira').value))
     });
 });
 
@@ -719,9 +724,15 @@ function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids) {
 function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
     refreshissuesarr.forEach((issueElement, index) => {
         issueElement.addEventListener('click', () => {
+            // Защита от двойного клика: два параллельных чтения счётчика
+            // давали одно и то же значение, и +1 засчитывался один раз.
+            if (issueElement.dataset.busy) return;
+            issueElement.dataset.busy = '1';
+            const unlock = () => { delete issueElement.dataset.busy; };
+
             const fetchURLToken = `https://jira.skyeng.link/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueIds[index]}`;
             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLToken, requestOptions: { method: 'GET', credentials: 'include' } }, responseToken => {
-                if (responseToken.success) {
+                if (responseToken?.success) {
                     const responseAuth = responseToken.fetchansver;
                     const jira_token = responseAuth.match(/"atl_token":"(.*lin)/)?.[1];
                     const countMatch = responseAuth.match(/customfield_15410.*?value=.*?(\d+)/);
@@ -736,15 +747,27 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
                         };
 
                         chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLIncrease, requestOptions: requestOptionsIncrease }, responseIncrease => {
-                            if (responseIncrease.success) {
-                                document.querySelectorAll('.newcount')[index].innerHTML = increasedcount;
+                            unlock();
+                            if (responseIncrease?.success) {
+                                // Счётчик своей строки, а не N-й .newcount на всей странице.
+                                const badge = issueElement.closest('.jiras-glass-issue-row')?.querySelector('.newcount');
+                                if (badge) badge.textContent = increasedcount;
+
+                                const fav = favissues.find(f => String(f.id) === String(issueIds[index]));
+                                if (fav) {
+                                    fav.num = increasedcount;
+                                    localStorage.setItem('bugsarray', JSON.stringify(favissues));
+                                }
                             } else {
-                                console.log('Ошибка при увеличении счетчика Support Tab:', responseIncrease.error);
+                                console.log('Ошибка при увеличении счетчика Support Tab:', responseIncrease?.error);
                             }
                         });
+                    } else {
+                        unlock();
                     }
                 } else {
-                    console.log('Ошибка при получении токена и счетчика:', responseToken.error);
+                    unlock();
+                    console.log('Ошибка при получении токена и счетчика:', responseToken?.error);
                 }
             });
         });
@@ -754,7 +777,7 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
 function getJiraTask(requestOptions) {
     const fetchURL = 'https://jira.skyeng.link/rest/issueNav/1/issueTable';
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions }, tasksresponse => {
-        if (tasksresponse.success) {
+        if (tasksresponse?.success) {
             const rezissuetable = JSON.parse(tasksresponse.fetchansver);
             const { issueKeys, table, issueIds } = rezissuetable.issueTable;
 
@@ -779,7 +802,8 @@ function getJiraTask(requestOptions) {
             hydratePriorityImages(document.getElementById('issuetable'));
             const foundIssuesAmount = issueKeys.length;
 
-            addPageSwitcher(Math.floor(foundIssuesAmount / 50) + 1);
+            // ceil: при ровно 50 задачах раньше появлялась пустая вторая страница.
+            addPageSwitcher(Math.ceil(foundIssuesAmount / 50));
             document.getElementById('foundIssuesAmount').innerHTML = `Всего найдено задач: ${foundIssuesAmount}`;
 
             addJiraIssueOnClickEvent(document.querySelectorAll('.jiraissues'), issueKeys);
@@ -793,7 +817,7 @@ function getJiraTask(requestOptions) {
 
             switchJiraPages();
         } else {
-            createAndShowButton('Не удалось получить задачи: ' + (tasksresponse.error || 'неизвестная ошибка'), 'error');
+            createAndShowButton('Не удалось получить задачи: ' + (tasksresponse?.error || chrome.runtime.lastError?.message || 'неизвестная ошибка'), 'error');
         }
     });
 }
@@ -843,7 +867,7 @@ function switchJiraPages() {
                         );
                         addRefreshIssueOnClickEvent(document.querySelectorAll('.refreshissues'), ids);
                     } else {
-                        console.log('Ошибка при запросе: ', response.error);
+                        console.log('Ошибка при запросе: ', response?.error);
                     }
                 });
             }
@@ -1068,7 +1092,9 @@ function getJiraOpenFormPress() {
 
                     if (jqlQueryEl) {
                         jqlQueryEl.value = queries[id];
-                        requesttojiratext = encodeURI(jqlQueryEl.value);
+                        // encodeURIComponent: encodeURI не кодирует & и +, и запрос
+                        // «C++» или «A&B» обрезался/искажался в теле формы.
+                        requesttojiratext = encodeURIComponent(jqlQueryEl.value);
                         getJiraTask(optionsforfetch(requesttojiratext, 0));
                     }
 

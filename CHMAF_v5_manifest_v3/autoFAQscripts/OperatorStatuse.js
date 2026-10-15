@@ -571,7 +571,8 @@ function afosCreateItem(name, icon) {
     const el = document.createElement('div');
     el.className = `${AFOS_PREFIX}status-item ${AFOS_PREFIX}item-enter`;
     el.dataset.name = name;
-    el.innerHTML = `<span class="${AFOS_PREFIX}status-icon">${icon}</span><span>${name}</span>`;
+    el.innerHTML = `<span class="${AFOS_PREFIX}status-icon">${icon}</span><span></span>`;
+    el.lastElementChild.textContent = name;
     requestAnimationFrame(() => el.classList.remove(`${AFOS_PREFIX}item-enter`));
     return el;
 }
@@ -627,12 +628,16 @@ function afosRenderDiff(message) {
         const listEl = block.querySelector(`.${AFOS_PREFIX}status-list`);
         const badgeEl = block.querySelector(`.${AFOS_PREFIX}status-badge`);
 
+        // Элементы, которые уже уезжают (item-exit), не считаем «текущими»:
+        // иначе оператор, вернувшийся в статус за 200 мс анимации, не добавлялся
+        // обратно и пропадал из списка до следующего изменения.
+        const liveSelector = `.${AFOS_PREFIX}status-item:not(.${AFOS_PREFIX}item-exit)`;
         const currentNames = new Set();
-        listEl.querySelectorAll(`.${AFOS_PREFIX}status-item`).forEach(el => currentNames.add(el.dataset.name));
+        listEl.querySelectorAll(liveSelector).forEach(el => currentNames.add(el.dataset.name));
         const newNames = new Set(data.names);
 
         // Remove old
-        listEl.querySelectorAll(`.${AFOS_PREFIX}status-item`).forEach(el => {
+        listEl.querySelectorAll(liveSelector).forEach(el => {
             if (!newNames.has(el.dataset.name)) {
                 el.classList.add(`${AFOS_PREFIX}item-exit`);
                 setTimeout(() => el.remove(), 200);
@@ -701,40 +706,64 @@ function afosClearTable() {
 // ==========================================
 
 let afosSocket = null;
-let afosCheckInterval = null;
+let afosReconnectTimer = null;
+let afosWanted = false; // окно открыто — соединение должно жить
+
+function afosIsWindowVisible() {
+    const win = document.getElementById(AFOS_CONFIG.windowId);
+    return !!win && getComputedStyle(win).display !== 'none';
+}
 
 function afosInitSocket() {
-    if (afosSocket?.readyState === WebSocket.OPEN) return;
+    afosWanted = true;
+    clearTimeout(afosReconnectTimer);
+
+    // Не плодим второй сокет, пока первый подключается (раньше проверялся только OPEN,
+    // и быстрый повторный клик создавал параллельное соединение).
+    if (afosSocket && (afosSocket.readyState === WebSocket.OPEN ||
+        afosSocket.readyState === WebSocket.CONNECTING)) return;
 
     try {
-        afosSocket = new WebSocket(AFOS_CONFIG.wsUrl);
+        const socket = new WebSocket(AFOS_CONFIG.wsUrl);
+        afosSocket = socket;
 
-        afosCheckInterval = setInterval(() => {
-            if (afosSocket.readyState === WebSocket.OPEN) {
-                clearInterval(afosCheckInterval);
-                afosCheckInterval = null;
+        // onopen вместо опроса readyState каждые 500 мс: раньше при неудачном
+        // подключении интервал крутился бесконечно.
+        socket.onopen = () => socket.send(AFOS_CONFIG.wsGroup);
 
-                afosSocket.send(AFOS_CONFIG.wsGroup);
-
-                afosSocket.onmessage = (event) => {
-                    afosSocket.send(AFOS_CONFIG.wsPing);
-                    afosRenderDiff(event.data);
-                };
-
-                afosSocket.onerror = (err) => console.warn('[AF OperStatus] WS error:', err);
-                afosSocket.onclose = () => { afosSocket = null; };
+        socket.onmessage = (event) => {
+            // Окно скрыли двойным кликом — сокет больше не нужен.
+            if (!afosIsWindowVisible()) {
+                afosCloseSocket();
+                afosClearTable();
+                return;
             }
-        }, AFOS_CONFIG.checkInterval);
+            socket.send(AFOS_CONFIG.wsPing);
+            afosRenderDiff(event.data);
+        };
+
+        socket.onerror = (err) => console.warn('[AF OperStatus] WS error:', err);
+
+        socket.onclose = () => {
+            if (afosSocket === socket) afosSocket = null;
+            // Сервер оборвал соединение, а окно открыто — переподключаемся,
+            // иначе на экране висели устаревшие статусы без признаков обрыва.
+            if (afosWanted && afosIsWindowVisible()) {
+                afosReconnectTimer = setTimeout(afosInitSocket, 3000);
+            }
+        };
     } catch (err) {
         console.error('[AF OperStatus] WS failed:', err);
     }
 }
 
 function afosCloseSocket() {
-    if (afosCheckInterval) { clearInterval(afosCheckInterval); afosCheckInterval = null; }
+    afosWanted = false;
+    clearTimeout(afosReconnectTimer);
     if (afosSocket) {
-        try { afosSocket.send(AFOS_CONFIG.wsClose); afosSocket.close(); } catch (e) { }
+        const socket = afosSocket;
         afosSocket = null;
+        try { socket.send(AFOS_CONFIG.wsClose); socket.close(); } catch (e) { }
     }
 }
 
@@ -744,7 +773,7 @@ function afosToggleWindow() {
     const btn = document.getElementById('MainMenuBtn');
     if (!win) return;
 
-    const isHidden = win.style.display === 'none';
+    const isHidden = getComputedStyle(win).display === 'none';
     win.style.display = isHidden ? '' : 'none';
     if (menu) menu.style.display = 'none';
     if (btn) btn.classList.remove('activeScriptBtn');

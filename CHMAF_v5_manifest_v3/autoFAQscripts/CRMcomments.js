@@ -337,11 +337,6 @@ var win_CRMcommentsUI = `
     font-weight: 500;
 }
 
-.gcrm-td-msg {
-    color: #94a3b8;
-    max-width: 200px;
-    word-break: break-word;
-}
 
 .gcrm-count {
     margin-top: 10px;
@@ -436,7 +431,8 @@ hideWindowOnClick('AF_CRMComments', 'hideshowcrmcomments');
 function getbutCRMCommentsButtonPress() {
     const win = document.getElementById('AF_CRMComments');
     if (!win) return;
-    if (win.style.display === 'none' || win.style.display === '') {
+    // Реальная видимость: display === '' у открытого окна — это «видно».
+    if (getComputedStyle(win).display === 'none') {
         win.style.display = 'block';
     } else {
         win.style.display = 'none';
@@ -457,8 +453,8 @@ document.getElementById('gcrm-run-btn').addEventListener('click', async () => {
     const userId = document.getElementById('gcrm-user-id').value.trim();
     const output = document.getElementById('gcrm-result');
 
-    if (!userId) {
-        output.innerHTML = '<span style="color:#f87171;">⚠ Введите ID пользователя</span>';
+    if (!/^\d+$/.test(userId)) {
+        output.innerHTML = '<span style="color:#f87171;">⚠ Введите числовой ID пользователя</span>';
         return;
     }
 
@@ -501,9 +497,12 @@ document.getElementById('gcrm-run-btn').addEventListener('click', async () => {
 
         filtered.sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt));
 
-        const nowMsk = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Moscow' }));
-        const currentHourStart = new Date(nowMsk.getFullYear(), nowMsk.getMonth(), nowMsk.getDate(), nowMsk.getHours(), 0, 0);
-        const currentHourEnd = new Date(nowMsk.getFullYear(), nowMsk.getMonth(), nowMsk.getDate(), nowMsk.getHours() + 1, 0, 0);
+        // МСК = UTC+3 без сдвигов, поэтому начало текущего часа МСК совпадает
+        // с началом текущего часа UTC. Раньше «МСК-время» собиралось как локальная
+        // дата, и у оператора не в МСК подсветка «текущего часа» съезжала.
+        const HOUR = 60 * 60 * 1000;
+        const currentHourStart = new Date(Math.floor(Date.now() / HOUR) * HOUR);
+        const currentHourEnd = new Date(currentHourStart.getTime() + HOUR);
         const dayAgo = new Date(currentHourStart.getTime() - 24 * 60 * 60 * 1000);
 
         const rows = filtered.map(item => {
@@ -579,6 +578,10 @@ document.getElementById('gcrm-run-btn').addEventListener('click', async () => {
         console.error('CRM Comments error:', error);
         output.innerHTML = `<span style="color:#f87171;">❌ Ошибка: ${escapeHtml(error.message)}</span>`;
     }
+});
+
+document.getElementById('gcrm-user-id').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('gcrm-run-btn').click();
 });
 
 function escapeHtml(text) {
