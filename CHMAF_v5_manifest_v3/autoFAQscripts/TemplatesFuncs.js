@@ -642,11 +642,16 @@ function startTimer() {
         }
     }
 
-    // Звук при входящих запросах
-    if (localStorage.getItem('audio') === '1' &&
-        hrefIsNow.includes('skyeng.autofaq.ai') && taketaskElement) {
-        ConvAudio(taketaskElement.textContent !== 'Нет входящих запросов' ? 'on' : 'off');
-    }
+    // Звук при входящих запросах. Если звук выключили в настройках, ушли со
+    // страницы /assigned или кнопка «Взять запрос» пропала — звук глушим.
+    // Раньше в этих случаях ConvAudio не вызывался, и сигнал повторялся бесконечно.
+    const soundWanted = localStorage.getItem('audio') === '1' &&
+        hrefIsNow.includes('skyeng.autofaq.ai') && taketaskElement &&
+        taketaskElement.textContent !== 'Нет входящих запросов';
+    // soundintervalset/audio объявлены в content.js — проверяем через typeof,
+    // чтобы вызов каждые 500 мс не падал, если их там нет
+    if (soundWanted) ConvAudio('on');
+    else if (typeof soundintervalset !== 'undefined' && soundintervalset) ConvAudio('off');
 }
 
 // ============================================================

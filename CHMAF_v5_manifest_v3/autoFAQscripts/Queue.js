@@ -373,11 +373,65 @@
                 border-color: #87a9ed !important;
                 transform: translateY(-1px) !important;
             }
+
+            /* «Загрузить ещё» под списком */
+            #AF_Queue .qg5-load-more {
+                display: block;
+                width: 100%;
+                margin: 8px 0 4px;
+                padding: 9px 12px;
+                background: #1b283c;
+                border: 1px dashed #536fa7;
+                border-radius: 9px;
+                color: #cfe0ff;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+            }
+            #AF_Queue .qg5-load-more:hover:not(:disabled) { background: #293e67; border-style: solid; }
+            #AF_Queue .qg5-load-more:disabled { opacity: .6; cursor: progress; }
+
+            /* Кнопка «кто я» в шапке и окно выбора оператора */
+            #AF_Queue #qg5-whoami.qg5-whoami-unknown { border-color: rgba(255, 116, 140, .5) !important; color: #ffb0be !important; }
+            #AF_Queue .qg5-picker {
+                position: absolute;
+                inset: 0;
+                z-index: 5;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(8, 12, 22, .72);
+                border-radius: inherit;
+            }
+            #AF_Queue .qg5-picker-box {
+                width: min(360px, 92%);
+                padding: 16px;
+                background: #111827;
+                border: 1px solid #3c4d68;
+                border-radius: 14px;
+                box-shadow: 0 18px 50px rgba(0, 0, 0, .5);
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                color: #dce5f5;
+                font-size: 12px;
+            }
+            #AF_Queue .qg5-picker-title { font-size: 13px; font-weight: 700; color: #fff; }
+            #AF_Queue .qg5-picker-hint { color: #8e96b8; line-height: 1.4; }
+            #AF_Queue .qg5-picker-actions { display: flex; gap: 8px; justify-content: flex-end; }
+            #AF_Queue #qg5-picker-select { height: auto; min-height: 150px; padding: 4px; }
+            #AF_Queue #qg5-picker-select optgroup { color: #8e96b8; font-style: normal; font-size: 11px; }
+            #AF_Queue #qg5-picker-select option { color: #dce5f5; padding: 4px 6px; border-radius: 6px; font-size: 12px; }
+            #AF_Queue #qg5-picker-select option:checked { background: #395892; color: #fff; }
         `;
         document.head.appendChild(style);
     };
 
-    async function fetchAllPages(url, initialBodyContent) {
+    // Порция загрузки: 5 страниц по 100 чатов. «Загрузить ещё» добавляет порцию.
+    const PAGES_PER_PORTION = 5;
+    state.pageLimit = PAGES_PER_PORTION;
+
+    async function fetchAllPages(url, initialBodyContent, maxPages = PAGES_PER_PORTION) {
         let allData = [];
         let page = 1;
         let totalFetched = 0;
@@ -397,7 +451,9 @@
             totalFetched += (data.items || []).length;
             if (page === 1) totalAvailable = data.total;
             page++;
-        } while (totalFetched < totalAvailable && page <= 5);
+        } while (totalFetched < totalAvailable && page <= maxPages);
+        // Сколько чатов всего: если загружено не всё, в шапке покажем «N (из M)»
+        allData.total = Number(totalAvailable) || allData.length;
         return allData;
     }
 
@@ -433,6 +489,261 @@
         if (hasOperators) return "❌";
         return "🚫";
     };
+
+    // ─── Определение своего ID оператора ───────────────────────────
+    // Глобальный operatorId есть не всегда: например, у учётки без префикса
+    // «ТП-» он не находится. Тогда ищем себя в списке операторов онлайн
+    // по имени (с префиксом отдела и без), а если однозначно не вышло —
+    // просим один раз выбрать себя из списка и запоминаем выбор.
+    const OP_CACHE_KEY = 'qg5_myOperator';
+    const DEPT_PREFIX = /^(ТП ОС|ТПPrem|Teachers Care|Prem|Sales|ТП|КЦ|КМ|ТС)\s*-\s*/i;
+
+    const normName = (v) => String(v ?? '').trim()
+        .replace(/\s*[-–—]\s*/g, '-')
+        .replace(/\s+/g, ' ')
+        .toLocaleLowerCase('ru-RU');
+    const coreName = (v) => normName(v).replace(DEPT_PREFIX, '').trim();
+
+    const myDisplayName = () =>
+        document.querySelector('.user_menu-dropdown-user_name')?.textContent?.trim() || '';
+
+    const readCachedOperator = () => {
+        try {
+            const c = JSON.parse(localStorage.getItem(OP_CACHE_KEY) || 'null');
+            // Кэш привязан к имени в профиле: на общем компьютере у другого
+            // оператора чужой ID не подхватится
+            if (c?.id && (!c.forName || !myDisplayName() || c.forName === myDisplayName())) return c;
+        } catch (_) { /* битый кэш */ }
+        return null;
+    };
+    const saveCachedOperator = (id, fullName) => {
+        try {
+            localStorage.setItem(OP_CACHE_KEY, JSON.stringify({ id: String(id), fullName, forName: myDisplayName() }));
+        } catch (_) { }
+    };
+
+    const fetchOnlineOperators = async () => {
+        const resp = await afApiFetch('https://skyeng.autofaq.ai/api/operators/statistic/currentState', { method: 'GET' });
+        if (resp && resp.ok === false) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        // Один оператор приходит несколькими строками (по строке на каждую
+        // группу/очередь, где он состоит) — оставляем по одному на ID.
+        const unique = new Map();
+        (Array.isArray(data?.onOperator) ? data.onOperator : [])
+            .map(r => r?.operator)
+            .filter(op => op?.id && op?.fullName)
+            .forEach(op => { if (!unique.has(String(op.id))) unique.set(String(op.id), op); });
+        return [...unique.values()];
+    };
+
+    // Насколько имя оператора похоже на имя в вашем профиле (0 — не похоже).
+    // Сравниваем без префикса отдела: совпавшие слова (имя, фамилия) весят
+    // больше всего, начало слова («Иван» ↔ «Ивано») — меньше, плюс общая
+    // схожесть по парам букв, чтобы ловить опечатки и «ё/е».
+    const nameSimilarity = (me, other) => {
+        const prep = (v) => coreName(v).replace(/ё/g, 'е');
+        const a = prep(me), b = prep(other);
+        if (!a || !b) return 0;
+        if (a === b) return 100;
+
+        const ta = a.split(/[\s-]+/).filter(Boolean);
+        const tb = b.split(/[\s-]+/).filter(Boolean);
+        let score = 0;
+        for (const x of ta) {
+            if (tb.includes(x)) score += 30;
+            else if (x.length >= 3 && tb.some(y => y.startsWith(x.slice(0, 4)) || x.startsWith(y.slice(0, 4)))) score += 10;
+        }
+
+        const bigrams = (t) => {
+            const m = new Map();
+            for (let i = 0; i < t.length - 1; i++) {
+                const g = t.slice(i, i + 2);
+                m.set(g, (m.get(g) || 0) + 1);
+            }
+            return m;
+        };
+        const ba = bigrams(a), bb = bigrams(b);
+        let common = 0;
+        ba.forEach((n, g) => { common += Math.min(n, bb.get(g) || 0); });
+        const dice = (2 * common) / Math.max(1, (a.length - 1) + (b.length - 1));
+        score += Math.round(dice * 20);
+
+        return score;
+    };
+
+    const matchOperator = (operators) => {
+        const me = myDisplayName();
+        if (!me) return null;
+        const exact = operators.filter(op => normName(op.fullName) === normName(me));
+        if (exact.length === 1) return exact[0];
+        // «ТП-Иван Иванов» ↔ «Иван Иванов»: сравниваем без префикса отдела
+        const core = operators.filter(op => coreName(op.fullName) === coreName(me));
+        return core.length === 1 ? core[0] : null;
+    };
+
+    async function resolveMyOperatorId({ interactive = true } = {}) {
+        if (typeof operatorId !== 'undefined' && operatorId) return String(operatorId);
+
+        const cached = readCachedOperator();
+        if (cached) return cached.id;
+
+        try {
+            const found = matchOperator(await fetchOnlineOperators());
+            if (found) {
+                saveCachedOperator(found.id, found.fullName);
+                refreshWhoAmI();
+                return String(found.id);
+            }
+        } catch (e) {
+            console.warn('[Queue] Не удалось получить список операторов:', e);
+        }
+
+        return interactive ? pickOperator() : null;
+    }
+
+    function refreshWhoAmI() {
+        const btn = document.getElementById('qg5-whoami');
+        if (!btn) return;
+        const globalId = typeof operatorId !== 'undefined' && operatorId ? String(operatorId) : null;
+        const cached = readCachedOperator();
+        const known = globalId || cached?.id;
+        btn.classList.toggle('qg5-whoami-unknown', !known);
+        btn.title = globalId
+            ? `Вы: ID ${globalId} (определён расширением)`
+            : cached
+                ? `Вы: ${cached.fullName || ''} · ID ${cached.id}. Нажмите, чтобы выбрать другого`
+                : 'ID оператора не определён — нажмите, чтобы выбрать себя';
+    }
+
+    // Окно выбора себя из списка операторов онлайн. Возвращает ID или null.
+    function pickOperator(manual = false) {
+        return new Promise(async (resolve) => {
+            const panel = document.getElementById('qg5-container');
+            if (!panel) return resolve(null);
+            panel.querySelector('.qg5-picker')?.remove();
+
+            let operators = [];
+            try {
+                operators = await fetchOnlineOperators();
+            } catch (e) {
+                if (typeof createAndShowButton === 'function') createAndShowButton('Не удалось загрузить список операторов', 'error');
+                return resolve(null);
+            }
+            operators.sort((a, b) => a.fullName.localeCompare(b.fullName, 'ru'));
+
+            // Наверх — самые похожие на имя в вашем профиле
+            const me = myDisplayName();
+            const scored = operators
+                .map(op => ({ op, score: me ? nameSimilarity(me, op.fullName) : 0 }))
+                .filter(x => x.score >= 25)
+                .sort((x, y) => y.score - x.score)
+                .slice(0, 6);
+            const suggestedIds = new Set(scored.map(x => String(x.op.id)));
+
+            // Одинаковые имена у разных учёток (например, с префиксом и без) —
+            // подписываем ID, чтобы их можно было различить
+            const nameCount = new Map();
+            operators.forEach(op => nameCount.set(normName(op.fullName), (nameCount.get(normName(op.fullName)) || 0) + 1));
+            const labelOf = (op) => nameCount.get(normName(op.fullName)) > 1
+                ? `${op.fullName} · ID ${op.id}`
+                : op.fullName;
+
+            const guess = matchOperator(operators);
+            const cached = readCachedOperator();
+            const preselect = String(cached?.id || guess?.id || scored[0]?.op.id || '');
+
+            const overlay = document.createElement('div');
+            overlay.className = 'qg5-picker';
+            overlay.innerHTML = `
+                <div class="qg5-picker-box">
+                    <div class="qg5-picker-title">Кто вы в AutoFAQ?</div>
+                    <div class="qg5-picker-hint">${manual
+                    ? 'Выберите свою учётку — она будет использоваться для «Забрать чат».'
+                    : 'Не удалось однозначно найти вашу учётку (например, имя без префикса «ТП-»). Выберите себя один раз — выбор запомнится.'}</div>
+                    <input class="qg5-input" id="qg5-picker-filter" type="text" autocomplete="off"
+                           placeholder="🔎 Начните вводить имя…">
+                    <select class="qg5-input" id="qg5-picker-select" size="8"></select>
+                    <div class="qg5-picker-hint" id="qg5-picker-count"></div>
+                    <div class="qg5-picker-actions">
+                        <button type="button" class="qg5-btn" data-act="cancel">Отмена</button>
+                        <button type="button" class="qg5-btn" data-act="ok">Это я</button>
+                    </div>
+                </div>`;
+            const select = overlay.querySelector('#qg5-picker-select');
+            const filterInput = overlay.querySelector('#qg5-picker-filter');
+            const countEl = overlay.querySelector('#qg5-picker-count');
+
+            const makeOption = (op) => {
+                const opt = document.createElement('option');
+                opt.value = String(op.id);
+                opt.textContent = labelOf(op);
+                return opt;
+            };
+
+            // Список: сначала «Похожие на вас», потом остальные по алфавиту.
+            // Фильтр ищет по любой части имени, без учёта регистра и «ё».
+            const renderOptions = (query = '') => {
+                const q = normName(query).replace(/ё/g, 'е');
+                const fits = (op) => !q || normName(op.fullName).replace(/ё/g, 'е').includes(q) || String(op.id).includes(q);
+                const keep = select.value;
+                select.replaceChildren();
+
+                const top = scored.map(x => x.op).filter(fits);
+                const rest = operators.filter(op => !suggestedIds.has(String(op.id)) && fits(op));
+
+                if (top.length) {
+                    const group = document.createElement('optgroup');
+                    group.label = 'Похожие на вас';
+                    top.forEach(op => group.appendChild(makeOption(op)));
+                    select.appendChild(group);
+                }
+                if (rest.length) {
+                    const group = document.createElement('optgroup');
+                    group.label = top.length ? 'Остальные' : 'Операторы онлайн';
+                    rest.forEach(op => group.appendChild(makeOption(op)));
+                    select.appendChild(group);
+                }
+
+                const shown = top.length + rest.length;
+                countEl.textContent = shown
+                    ? `Показано ${shown} из ${operators.length} (уникальных)`
+                    : 'Никого не нашли — попробуйте часть фамилии';
+
+                if (keep && [...select.options].some(o => o.value === keep)) select.value = keep;
+                else if (select.options.length) select.selectedIndex = 0;
+            };
+
+            renderOptions();
+            if (preselect) select.value = preselect;
+
+            filterInput.addEventListener('input', () => renderOptions(filterInput.value));
+            filterInput.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown') { e.preventDefault(); select.focus(); }
+                if (e.key === 'Enter') { e.preventDefault(); overlay.querySelector('[data-act="ok"]').click(); }
+            });
+            select.addEventListener('dblclick', () => overlay.querySelector('[data-act="ok"]').click());
+            select.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); overlay.querySelector('[data-act="ok"]').click(); }
+            });
+
+            const close = (id) => { overlay.remove(); refreshWhoAmI(); resolve(id); };
+            overlay.addEventListener('click', (e) => {
+                const act = e.target.closest('[data-act]')?.dataset.act;
+                if (act === 'cancel') close(null);
+                if (act === 'ok' && select.value) {
+                    const op = operators.find(o => String(o.id) === select.value);
+                    saveCachedOperator(select.value, op?.fullName || '');
+                    close(select.value);
+                }
+            });
+            // Двойной клик внутри окна выбора не должен закрывать окно очереди
+            overlay.addEventListener('dblclick', (e) => e.stopPropagation());
+
+            panel.style.position = panel.style.position || 'relative';
+            panel.appendChild(overlay);
+            filterInput.focus();
+        });
+    }
 
     const QUEUE_GROUPS = {
         TP: { label: '🛡️ ТП', ids: ['c7bbb211-a217-4ed3-8112-98728dc382d8'] },
@@ -497,9 +808,11 @@
         });
 
         if (countEl) {
-            countEl.textContent = isFilterActive
+            const truncated = dataChts.total > dataChts.length;
+            countEl.textContent = (isFilterActive
                 ? `${visibleItems.length} / ${dataChts.length}`
-                : `${dataChts.length}`;
+                : `${dataChts.length}`) + (truncated ? ` (из ${dataChts.total})` : '');
+            countEl.title = truncated ? `Загружено ${dataChts.length} из ${dataChts.total} — кнопка «Загрузить ещё» внизу списка` : '';
         }
 
         if (visibleItems.length === 0) {
@@ -523,6 +836,23 @@
                 <button class="qg5-btn" name="assignToMe">🫳</button>
             </div>`;
         }).join('');
+
+        // Загружены не все чаты — кнопка следующей порции под списком
+        const remaining = (dataChts.total || 0) - dataChts.length;
+        if (remaining > 0) {
+            const portion = Math.min(PAGES_PER_PORTION * 100, remaining);
+            list.insertAdjacentHTML('beforeend', `
+                <button type="button" class="qg5-load-more" id="qg5-load-more"
+                        title="Следующие чаты (более старые). Автообновление будет держать загруженный объём">
+                    ⬇️ Загрузить ещё ${portion} · загружено ${dataChts.length} из ${dataChts.total}
+                </button>`);
+            document.getElementById('qg5-load-more').onclick = (e) => {
+                e.currentTarget.disabled = true;
+                e.currentTarget.textContent = '⏳ Загружаем…';
+                state.pageLimit += PAGES_PER_PORTION;
+                window.QueueModule.render();
+            };
+        }
 
         window.QueueModule.attachItemHandlers();
     };
@@ -550,6 +880,7 @@
                                 </span>
                             </span>
                         </div>
+                        <button class="qg5-btn" id="qg5-whoami" title="Ваш ID оператора для «Забрать чат»">👤</button>
                         <button class="qg5-btn" id="qg5-manual-refresh">🔎 Check Queue</button>
                     </div>
                     <div class="qg5-controls">
@@ -579,6 +910,13 @@
         },
 
         render: async () => {
+            // Окно скрыли (❌ или двойной клик) — автообновление больше не нужно.
+            // Раньше очередь продолжала опрашивать AutoFAQ каждые N секунд в фоне.
+            const queueWin = document.getElementById('AF_Queue');
+            if (!queueWin || getComputedStyle(queueWin).display === 'none') {
+                window.QueueModule.stopAutoRefresh();
+                return;
+            }
             if (state.isRendering) {
                 state.renderAgain = true;
                 return;
@@ -602,7 +940,7 @@
                     orderDirection: "Desc"
                 };
 
-                dataChts = await fetchAllPages("https://skyeng.autofaq.ai/api/conversations/history", initialBodyContent);
+                dataChts = await fetchAllPages("https://skyeng.autofaq.ai/api/conversations/history", initialBodyContent, state.pageLimit);
                 renderChatList();
             } catch (e) {
                 console.error('[Queue] Ошибка загрузки очереди:', e);
@@ -634,7 +972,7 @@
                     e.stopPropagation();
                     const itemElem = allAssignBtns[z].closest('.qg5-item');
                     const originalIdx = Number(itemElem?.dataset.index);
-                    this.QueueModule.takeChat(dataChts[originalIdx]?.conversationId);
+                    window.QueueModule.takeChat(dataChts[originalIdx]?.conversationId, allAssignBtns[z]);
                 };
             }
         },
@@ -661,8 +999,13 @@
         },
 
         attachEvents: () => {
-            document.getElementById('qg5-hide').onclick = () => document.getElementById('AF_Queue').style.display = 'none';
+            document.getElementById('qg5-hide').onclick = () => {
+                document.getElementById('AF_Queue').style.display = 'none';
+                window.QueueModule.stopAutoRefresh();
+            };
             document.getElementById('qg5-manual-refresh').onclick = () => this.QueueModule.render();
+            document.getElementById('qg5-whoami').onclick = () => pickOperator(true);
+            refreshWhoAmI();
 
             const intervalInput = document.getElementById('qg5-interval');
             intervalInput.value = localStorage.getItem("RefreshTimerSeconds") || 10;
@@ -673,13 +1016,18 @@
                 this.QueueModule.startAutoRefresh();
             };
 
-            document.getElementById('qg5-status-type').onchange = () => this.QueueModule.render();
+            // Сменили статус или группу — начинаем снова с первой порции
+            document.getElementById('qg5-status-type').onchange = () => {
+                state.pageLimit = PAGES_PER_PORTION;
+                this.QueueModule.render();
+            };
 
             const groupSel = document.getElementById('qg5-group-type');
             if (groupSel) {
                 groupSel.value = localStorage.getItem('qg5_group') || getDefaultGroupKey();
                 groupSel.onchange = () => {
                     localStorage.setItem('qg5_group', groupSel.value);
+                    state.pageLimit = PAGES_PER_PORTION;
                     this.QueueModule.render();
                 };
             }
@@ -699,6 +1047,13 @@
             });
         },
 
+        stopAutoRefresh: () => {
+            clearInterval(state.refreshInterval);
+            clearInterval(state.countdownInterval);
+            state.refreshInterval = null;
+            state.countdownInterval = null;
+        },
+
         startAutoRefresh: () => {
             clearInterval(state.refreshInterval);
             clearInterval(state.countdownInterval);
@@ -713,27 +1068,62 @@
             state.refreshInterval = setInterval(() => this.QueueModule.render(), sec * 1000);
         },
 
-        takeChat: (cid) => {
-            const assign = (oid) => afApiFetch("https://skyeng.autofaq.ai/api/conversation/assign", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ command: "DO_ASSIGN_CONVERSATION", conversationId: cid, assignToOperatorId: oid })
-            });
-            assign("null").then(() => setTimeout(() => assign(typeof operatorId !== 'undefined' ? operatorId : null), 2000));
+        takeChat: async (cid, button) => {
+            const notifyQ = (msg, type) => typeof createAndShowButton === 'function' && createAndShowButton(msg, type);
+
+            if (!cid || button?.disabled) return;
+
+            // ID определяем ДО возврата чата в очередь: без него второй шаг
+            // назначил бы чат «никому», и он ушёл бы в общую очередь.
+            // Если автоматически не нашли — один раз выбираете себя из списка.
+            const myId = await resolveMyOperatorId();
+            if (!myId) {
+                notifyQ('ID оператора не выбран — чат не тронут', 'warning');
+                return;
+            }
+
+            const assign = async (oid) => {
+                const resp = await afApiFetch("https://skyeng.autofaq.ai/api/conversation/assign", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ command: "DO_ASSIGN_CONVERSATION", conversationId: cid, assignToOperatorId: oid })
+                });
+                if (resp && resp.ok === false) throw new Error(`HTTP ${resp.status}`);
+                return resp;
+            };
+
+            if (button) { button.disabled = true; button.textContent = '⏳'; }
+            let returnedToQueue = false;
+            try {
+                // API ожидает строку "null" для возврата в очередь
+                await assign("null");
+                returnedToQueue = true;
+                await new Promise(r => setTimeout(r, 2000));
+                await assign(myId);
+                notifyQ('Чат назначен вам', 'success');
+                window.QueueModule.render();
+            } catch (e) {
+                console.error('[Queue] Не удалось забрать чат:', e);
+                notifyQ(returnedToQueue
+                    ? 'Чат вернулся в очередь, но забрать его не удалось — проверьте его статус'
+                    : 'Не удалось забрать чат: ' + (e.message || e), 'error');
+            } finally {
+                if (button) { button.disabled = false; button.textContent = '🫳'; }
+            }
         }
     };
 
     window.getQueuePress = () => {
         window.QueueModule.init();
         const win = document.getElementById('AF_Queue');
-        if (win.style.display === 'none' || win.style.display === '') {
+        // Реальная видимость: display === '' у открытого окна — это «видно»
+        if (getComputedStyle(win).display === 'none') {
             win.style.display = 'block';
             window.QueueModule.render();
             window.QueueModule.startAutoRefresh();
         } else {
             win.style.display = 'none';
-            clearInterval(state.refreshInterval);
-            clearInterval(state.countdownInterval);
+            window.QueueModule.stopAutoRefresh();
         }
     };
 })();

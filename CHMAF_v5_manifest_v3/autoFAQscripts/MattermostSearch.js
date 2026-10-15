@@ -187,11 +187,11 @@
             body: JSON.stringify({ terms, is_or_search: true, page, per_page: SEARCH_LIMIT })
         });
     };
-	
-	// Пункт 1: загрузка всего треда по корневому посту
-const getThread = async (rootId) => {
-    return await mmRequest(`/api/v4/posts/${rootId}/thread`, { method: 'GET' });
-};
+
+    // Пункт 1: загрузка всего треда по корневому посту
+    const getThread = async (rootId) => {
+        return await mmRequest(`/api/v4/posts/${rootId}/thread`, { method: 'GET' });
+    };
 
     const getChannel = async (channelId) => {
         if (cache.channels[channelId]) return cache.channels[channelId];
@@ -204,7 +204,9 @@ const getThread = async (rootId) => {
             };
             persistCache();
         } catch (e) {
-            cache.channels[channelId] = { name: channelId, displayName: channelId, teamId: '' };
+            // Временную ошибку не кэшируем: иначе канал навсегда показывался бы
+            // по ID (заглушка попадала в localStorage при следующем сохранении кэша)
+            return { name: channelId, displayName: channelId, teamId: '' };
         }
         return cache.channels[channelId];
     };
@@ -337,7 +339,7 @@ const getThread = async (rootId) => {
             animation: mms-spin 0.9s linear infinite;
         }
         @keyframes mms-spin { 100% { transform: rotate(360deg); } }
-		
+
 		/* ═══ Группировка по каналам (п.3) ═══ */
 .mms-group { margin-bottom: 10px; }
 .mms-group-head {
@@ -690,9 +692,9 @@ const getThread = async (rootId) => {
     let searchPage = 0;        // номер текущей страницы
     let hasMore = false;       // есть ли ещё страницы
     let teamsLoaded = false;
-	let viewVersion = 0;
+    let viewVersion = 0;
     let loadingMore = false;
-	let hiddenChannels = new Set();   // каналы, скрытые фильтром-чипсами (п.3/4)
+    let hiddenChannels = new Set();   // каналы, скрытые фильтром-чипсами (п.3/4)
 
     const escapeHtml = (s) => String(s)
         .replace(/&/g, '&amp;')
@@ -712,16 +714,26 @@ const getThread = async (rootId) => {
         return text;
     };
 
-    // Подсветка искомых слов (безопасно: работаем с уже экранированным текстом)
-    const highlight = (escapedText, terms) => {
-        if (!terms) return escapedText;
-        const words = String(terms).split(/\s+/).filter(w => w.length > 2);
-        let out = escapedText;
-        words.forEach(word => {
-            const pattern = new RegExp(escapeHtml(word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-            out = out.replace(pattern, m => `<span class="mms-hit">${m}</span>`);
-        });
-        return out;
+    // Подсветка искомых слов: обрезаем СЫРОЙ текст, затем за один проход
+    // экранируем и подсвечиваем. Раньше подсветка шла по уже экранированному
+    // тексту, а обрезка — после вставки <span>: слова «span», «class», «quot»,
+    // «amp» ломали разметку, а обрезка рвала тег или сущность (&am…) пополам.
+    const highlightRaw = (rawText, terms, maxLen = Infinity) => {
+        const text = String(rawText ?? '').slice(0, maxLen);
+        const words = String(terms || '').split(/\s+/).filter(w => w.length > 2)
+            .map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        if (!words.length) return escapeHtml(text);
+
+        const pattern = new RegExp(`(${words.join('|')})`, 'gi');
+        return text.split(pattern).map((part, i) =>
+            i % 2 === 1 ? `<span class="mms-hit">${escapeHtml(part)}</span>` : escapeHtml(part)
+        ).join('');
+    };
+
+    // Цвет полосы вложения — только hex/rgb/имя цвета, без произвольного CSS
+    const safeColor = (value) => {
+        const c = String(value || '').trim();
+        return /^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\)|[a-z]{3,20})$/i.test(c) ? c : '';
     };
 
     const setStatus = (text, color) => {
@@ -745,55 +757,54 @@ const getThread = async (rootId) => {
         if (Array.isArray(fromMeta)) return fromMeta;
         return [];
     };
-	
-	// ═══ Пункт 2: превью файлов и картинок ═══
-// Картинки рендерим через <img> напрямую — для тегов <img> CORS не применяется,
-// браузер сам шлёт cookie на домен картинки. Если сервер отдаёт cookie с
-// SameSite=Strict, картинка может не загрузиться — тогда сработает onerror
-// и блок изящно деградирует в кликабельную ссылку (файл всё равно доступен).
-const renderFiles = (post) => {
-    let files = (post.metadata && Array.isArray(post.metadata.files)) ? post.metadata.files : [];
-    if (!files.length && Array.isArray(post.file_ids) && post.file_ids.length) {
-        files = post.file_ids.map(id => ({ id, name: 'файл', extension: '' }));
-    }
-    if (!files.length) return '';
-    return '<div class="mms-files">' + files.map(f => {
-        const url = `${MM_ORIGIN}/api/v4/files/${encodeURIComponent(String(f.id))}`;
-        const ext = String(f.extension || '').toLowerCase();
-        const isImage = /^(png|jpe?g|gif|webp|svg|bmp|ico)$/.test(ext)
-            || /^image\//.test(f.mime_type || '');
-        if (isImage) {
-            return `<a class="mms-file-img" href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(f.name || '')}">
-                <img src="${url}" loading="lazy" alt="${escapeHtml(f.name || 'image')}"
-                     onerror="this.closest('.mms-file-img').classList.add('mms-file-broken');">
+
+    // ═══ Пункт 2: превью файлов и картинок ═══
+    // Картинки рендерим через <img> напрямую — для тегов <img> CORS не применяется,
+    // браузер сам шлёт cookie на домен картинки. Если сервер отдаёт cookie с
+    // SameSite=Strict, картинка может не загрузиться — тогда сработает onerror
+    // и блок изящно деградирует в кликабельную ссылку (файл всё равно доступен).
+    const renderFiles = (post) => {
+        let files = (post.metadata && Array.isArray(post.metadata.files)) ? post.metadata.files : [];
+        if (!files.length && Array.isArray(post.file_ids) && post.file_ids.length) {
+            files = post.file_ids.map(id => ({ id, name: 'файл', extension: '' }));
+        }
+        if (!files.length) return '';
+        return '<div class="mms-files">' + files.map(f => {
+            const url = `${MM_ORIGIN}/api/v4/files/${encodeURIComponent(String(f.id))}`;
+            const ext = String(f.extension || '').toLowerCase();
+            const isImage = /^(png|jpe?g|gif|webp|svg|bmp|ico)$/.test(ext)
+                || /^image\//.test(f.mime_type || '');
+            if (isImage) {
+                return `<a class="mms-file-img" href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(f.name || '')}">
+                <img src="${url}" loading="lazy" alt="${escapeHtml(f.name || 'image')}">
                 <span class="mms-file-name">${escapeHtml(f.name || '')}</span>
             </a>`;
-        }
-        return `<a class="mms-file-link" href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(f.name || '')}">📎 ${escapeHtml(f.name || f.id)}</a>`;
-    }).join('') + '</div>';
-};
+            }
+            return `<a class="mms-file-link" href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(f.name || '')}">📎 ${escapeHtml(f.name || f.id)}</a>`;
+        }).join('') + '</div>';
+    };
 
     const renderAttachments = (post, terms) => {
         const atts = getAttachments(post);
         if (!atts.length) return '';
         return atts.map((a) => {
-            const borderColor = (a && a.color) ? escapeHtml(String(a.color)) : '';
+            const borderColor = (a && a.color) ? safeColor(a.color) : '';
             const title = (a && a.title)
-                ? `<div class="mms-att-title">${escapeHtml(String(a.title)).slice(0, 400)}</div>`
+                ? `<div class="mms-att-title">${escapeHtml(String(a.title).slice(0, 400))}</div>`
                 : '';
             const text = (a && a.text)
-                ? `<div class="mms-att-text">${highlight(escapeHtml(String(a.text)).slice(0, 1200), terms)}</div>`
+                ? `<div class="mms-att-text">${highlightRaw(a.text, terms, 1200)}</div>`
                 : '';
             const fields = (a && Array.isArray(a.fields) && a.fields.length)
                 ? `<div class="mms-att-fields">${a.fields.map((f) => {
-                      const ft = (f && f.title) ? `<span class="mms-att-f-title">${escapeHtml(String(f.title))}</span>` : '';
-                      let fv = '';
-                      if (f && f.value !== undefined && f.value !== null) {
-                          fv = `<span class="mms-att-f-value">${highlight(escapeHtml(String(f.value)).slice(0, 600), terms)}</span>`;
-                      }
-                      if (!ft && !fv) return '';
-                      return `<div class="mms-att-field${f && f.short ? ' mms-att-field-short' : ''}">${ft}${fv}</div>`;
-                  }).join('')}</div>`
+                    const ft = (f && f.title) ? `<span class="mms-att-f-title">${escapeHtml(String(f.title))}</span>` : '';
+                    let fv = '';
+                    if (f && f.value !== undefined && f.value !== null) {
+                        fv = `<span class="mms-att-f-value">${highlightRaw(f.value, terms, 600)}</span>`;
+                    }
+                    if (!ft && !fv) return '';
+                    return `<div class="mms-att-field${f && f.short ? ' mms-att-field-short' : ''}">${ft}${fv}</div>`;
+                }).join('')}</div>`
                 : '';
             if (!title && !text && !fields) return '';
             return `<div class="mms-att"${borderColor ? ' style="border-left-color:' + borderColor + ';"' : ''}>${title}${text}${fields}</div>`;
@@ -801,26 +812,26 @@ const renderFiles = (post) => {
     };
 
 
-// ═══ Универсальный рендер одного поста (используется и в результатах, и в треде) ═══
-const renderPostItem = (post, terms, opts = {}) => {
-    const { isThreadRoot = false, showThreadButton = true } = opts;
-    const ch = cache.channels[post.channel_id] || { displayName: post.channel_id };
-    const author = cache.users[post.user_id] || post.user_id || '—';
-    const date = new Date(post.create_at).toLocaleString('ru-RU');
-    const preview = highlight(escapeHtml(previewOf(post.message)), terms).slice(0, 900);
-    const attachmentsHtml = renderAttachments(post, terms);
-    const filesHtml = renderFiles(post);
-    const permalink = `${MM_ORIGIN}/${teamName}/pl/${post.id}`;
-    // Пункт 1: кнопка треда — если пост является ответом (есть root_id)
-    // либо корневой пост с ответами (если сервер вернул reply_count)
-    const inThread = !!post.root_id;
-    const hasReplies = (post.reply_count || 0) > 0;
-    const threadBtnHtml = (showThreadButton && (inThread || hasReplies))
-        ? `<button class="mms-act-btn" data-action="thread" title="Показать весь тред">🧵 Тред${hasReplies && !inThread ? ' (' + post.reply_count + ')' : ''}</button>`
-        : '';
-    const item = document.createElement('div');
-    item.className = 'mms-item' + (isThreadRoot ? ' mms-item-root' : '');
-    item.innerHTML = `
+    // ═══ Универсальный рендер одного поста (используется и в результатах, и в треде) ═══
+    const renderPostItem = (post, terms, opts = {}) => {
+        const { isThreadRoot = false, showThreadButton = true } = opts;
+        const ch = cache.channels[post.channel_id] || { displayName: post.channel_id };
+        const author = cache.users[post.user_id] || post.user_id || '—';
+        const date = new Date(post.create_at).toLocaleString('ru-RU');
+        const preview = highlightRaw(previewOf(post.message), terms, 900);
+        const attachmentsHtml = renderAttachments(post, terms);
+        const filesHtml = renderFiles(post);
+        const permalink = `${MM_ORIGIN}/${teamName}/pl/${post.id}`;
+        // Пункт 1: кнопка треда — если пост является ответом (есть root_id)
+        // либо корневой пост с ответами (если сервер вернул reply_count)
+        const inThread = !!post.root_id;
+        const hasReplies = (post.reply_count || 0) > 0;
+        const threadBtnHtml = (showThreadButton && (inThread || hasReplies))
+            ? `<button class="mms-act-btn" data-action="thread" title="Показать весь тред">🧵 Тред${hasReplies && !inThread ? ' (' + post.reply_count + ')' : ''}</button>`
+            : '';
+        const item = document.createElement('div');
+        item.className = 'mms-item' + (isThreadRoot ? ' mms-item-root' : '');
+        item.innerHTML = `
         <div class="mms-item-head">
             ${isThreadRoot ? '<span class="mms-root-badge">НАЧАЛО ТРЕДА</span>' : ''}
             <span class="mms-channel"># ${escapeHtml(ch.displayName)}</span>
@@ -836,21 +847,21 @@ const renderPostItem = (post, terms, opts = {}) => {
             ${threadBtnHtml}
         </div>
     `;
-    item.querySelector('[data-action="open"]').onclick = () => window.open(permalink, '_blank');
-    item.querySelector('[data-action="copy"]').onclick = () => {
-        const copyText = (t) => (typeof copyToClipboard === 'function')
-            ? copyToClipboard(t)
-            : (navigator.clipboard && navigator.clipboard.writeText
-                ? navigator.clipboard.writeText(t)
-                : Promise.reject(new Error('clipboard недоступен')));
-        copyText(permalink)
-            .then(() => notify('Ссылка скопирована 💾', 'message'))
-            .catch(() => notify('Не удалось скопировать', 'error'));
+        item.querySelector('[data-action="open"]').onclick = () => window.open(permalink, '_blank');
+        item.querySelector('[data-action="copy"]').onclick = () => {
+            const copyText = (t) => (typeof copyToClipboard === 'function')
+                ? copyToClipboard(t)
+                : (navigator.clipboard && navigator.clipboard.writeText
+                    ? navigator.clipboard.writeText(t)
+                    : Promise.reject(new Error('clipboard недоступен')));
+            copyText(permalink)
+                .then(() => notify('Ссылка скопирована 💾', 'message'))
+                .catch(() => notify('Не удалось скопировать', 'error'));
+        };
+        const threadBtn = item.querySelector('[data-action="thread"]');
+        if (threadBtn) threadBtn.onclick = () => openThread(post);
+        return item;
     };
-    const threadBtn = item.querySelector('[data-action="thread"]');
-    if (threadBtn) threadBtn.onclick = () => openThread(post);
-    return item;
-};
     // ═══════════════════════════════════════════════════════
     // Команды (teams)
     // ═══════════════════════════════════════════════════════
@@ -920,276 +931,276 @@ const renderPostItem = (post, terms, opts = {}) => {
         const channelIds = [...new Set(fresh.map(p => p.channel_id).filter(Boolean))];
         const userIds = [...new Set(fresh.map(p => p.user_id).filter(Boolean))];
 
-await Promise.all([
-    Promise.all(channelIds.map(getChannel)),
-    getUsers(userIds)
-]);
-    };
-
-const drawResults = (terms) => {
-    const list = currentResults.filter(p => !hiddenChannels.has(p.channel_id));
-	dom.results.innerHTML = '';
-    if (!currentResults.length) {
-        dom.results.innerHTML = '<div class="mms-empty">Ничего не найдено.</div>';
-        setStatus('Найдено: 0', '#f87171');
-        return;
-    }
-    if (!list.length) {
-        dom.results.innerHTML = '<div class="mms-empty">Все каналы скрыты фильтром. Нажмите «показать все».</div>';
-        setStatus(`Найдено: ${currentResults.length} (все скрыты)`, '#fbbf24');
-        return;
-    }
-    // Пункт 3: группировка постов по каналам
-    const groups = new Map();
-    list.forEach(p => {
-        const id = p.channel_id || '_unknown';
-        if (!groups.has(id)) groups.set(id, []);
-        groups.get(id).push(p);
-    });
-    const sorted = [...groups.entries()].sort((a, b) => b[1].length - a[1].length);
-    sorted.forEach(([chId, posts]) => {
-        const ch = cache.channels[chId] || { displayName: chId };
-        const groupEl = document.createElement('div');
-        groupEl.className = 'mms-group';
-        const head = document.createElement('div');
-        head.className = 'mms-group-head';
-        head.innerHTML = `<span class="mms-group-arrow">▾</span>
-            <span class="mms-channel"># ${escapeHtml(ch.displayName)}</span>
-            <span class="mms-group-cnt">${posts.length}</span>`;
-        head.onclick = () => groupEl.classList.toggle('mms-collapsed');
-        const body = document.createElement('div');
-        body.className = 'mms-group-body';
-        posts.forEach(post => body.appendChild(renderPostItem(post, terms)));
-        groupEl.appendChild(head);
-        groupEl.appendChild(body);
-        dom.results.appendChild(groupEl);
-    });
-    // Кнопка догрузки
-    if (hasMore && currentResults.length) {
-        const moreBtn = document.createElement('button');
-        moreBtn.id = 'mms-more';
-        moreBtn.className = 'mms-btn mms-btn-primary';
-        moreBtn.style.cssText = 'width:100%;margin-top:10px;';
-        moreBtn.textContent = '📥 Показать ещё';
-        moreBtn.onclick = loadMore;
-        dom.results.appendChild(moreBtn);
-    }
-    const hiddenCnt = currentResults.length - list.length;
-    setStatus(hiddenCnt > 0
-        ? `Найдено: ${list.length} (показано) из ${currentResults.length}`
-        : `Найдено: ${currentResults.length}`, '#86efac');
-};
-    
-	// ═══ Пункт 4: автоматический список каналов из результатов с мультивыбором ═══
-// Каждый чипс = канал + счётчик найденных. Клик тогглит видимость канала.
-// Заменяет текстовый фильтр: оператор видит ВСЕ каналы, где есть совпадения,
-// и кликом выбирает комбинацию для просмотра.
-const drawChannelBar = () => {
-    const counts = new Map();
-    currentResults.forEach(p => {
-        if (p.channel_id) counts.set(p.channel_id, (counts.get(p.channel_id) || 0) + 1);
-    });
-    // Один канал — панель не нужна, экономим место
-    if (counts.size <= 1) {
-        dom.channelBar.style.display = 'none';
-        dom.channelBar.innerHTML = '';
-        return;
-    }
-    dom.channelBar.style.display = 'flex';
-    const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-    dom.channelBar.innerHTML = entries.map(([id, cnt]) => {
-        const ch = cache.channels[id] || { displayName: id };
-        const off = hiddenChannels.has(id);
-        return `<span class="mms-chip${off ? ' mms-chip-off' : ''}" data-ch="${id}" title="Показать/скрыть канал">
-            <span class="mms-chip-name"># ${escapeHtml(ch.displayName)}</span>
-            <span class="mms-chip-cnt">${cnt}</span>
-        </span>`;
-    }).join('') + (hiddenChannels.size ? '<button class="mms-chip-reset" id="mms-chip-reset">показать все</button>' : '');
-    dom.channelBar.querySelectorAll('.mms-chip').forEach(chip => {
-        chip.onclick = () => {
-            const id = chip.dataset.ch;
-            if (hiddenChannels.has(id)) hiddenChannels.delete(id); else hiddenChannels.add(id);
-            drawChannelBar();
-            drawResults(searchTerms);
-        };
-    });
-    const reset = dom.channelBar.querySelector('#mms-chip-reset');
-    if (reset) reset.onclick = () => {
-        hiddenChannels.clear();
-        drawChannelBar();
-        drawResults(searchTerms);
-    };
-};
-	
-// ═══ Пункт 1: просмотр всего треда ═══
-const openThread = async (post) => {
-    const rootId = post.root_id || post.id;
-	const version = ++viewVersion;
-    dom.channelBar.style.display = 'none';
-    dom.results.innerHTML = '<div class="mms-loading"><div class="mms-spinner"></div>Загрузка треда...</div>';
-    try {
-        const res = await getThread(rootId);
-		if (version !== viewVersion) return;
-        const posts = (res && res.posts) || {};
-        const order = Array.isArray(res.order) ? res.order : Object.keys(posts);
-        const threadPosts = order.map(id => posts[id]).filter(Boolean)
-            .sort((a, b) => (a.create_at || 0) - (b.create_at || 0));
-        // Подтягиваем имена авторов и каналов для постов треда
-        const userIds = [...new Set(threadPosts.map(p => p.user_id).filter(Boolean))];
-        const channelIds = [...new Set(threadPosts.map(p => p.channel_id).filter(Boolean))];
         await Promise.all([
             Promise.all(channelIds.map(getChannel)),
             getUsers(userIds)
         ]);
-		if (version !== viewVersion) return;
+    };
+
+    const drawResults = (terms) => {
+        const list = currentResults.filter(p => !hiddenChannels.has(p.channel_id));
         dom.results.innerHTML = '';
-        // Шапка треда с кнопкой возврата
-        const bar = document.createElement('div');
-        bar.className = 'mms-thread-bar';
-        bar.innerHTML = `<button class="mms-btn" id="mms-thread-back">← К результатам</button>
-            <span class="mms-thread-info">🧵 Тред · ${threadPosts.length} сообщ.</span>`;
-        dom.results.appendChild(bar);
-        bar.querySelector('#mms-thread-back').onclick = closeThread;
-        threadPosts.forEach(p => {
-            dom.results.appendChild(renderPostItem(p, searchTerms, {
-                isThreadRoot: p.id === rootId,
-                showThreadButton: false   // из треда в тред не уходим
-            }));
+        if (!currentResults.length) {
+            dom.results.innerHTML = '<div class="mms-empty">Ничего не найдено.</div>';
+            setStatus('Найдено: 0', '#f87171');
+            return;
+        }
+        if (!list.length) {
+            dom.results.innerHTML = '<div class="mms-empty">Все каналы скрыты фильтром. Нажмите «показать все».</div>';
+            setStatus(`Найдено: ${currentResults.length} (все скрыты)`, '#fbbf24');
+            return;
+        }
+        // Пункт 3: группировка постов по каналам
+        const groups = new Map();
+        list.forEach(p => {
+            const id = p.channel_id || '_unknown';
+            if (!groups.has(id)) groups.set(id, []);
+            groups.get(id).push(p);
         });
-    } catch (e) {
-	if (version !== viewVersion) return;
-        dom.results.innerHTML = '<div class="mms-empty">Не удалось загрузить тред.</div>';
-        notify(e.message === AUTH_ERR ? 'Нужна авторизация в Mattermost' : 'Ошибка треда: ' + e.message, 'error');
+        const sorted = [...groups.entries()].sort((a, b) => b[1].length - a[1].length);
+        sorted.forEach(([chId, posts]) => {
+            const ch = cache.channels[chId] || { displayName: chId };
+            const groupEl = document.createElement('div');
+            groupEl.className = 'mms-group';
+            const head = document.createElement('div');
+            head.className = 'mms-group-head';
+            head.innerHTML = `<span class="mms-group-arrow">▾</span>
+            <span class="mms-channel"># ${escapeHtml(ch.displayName)}</span>
+            <span class="mms-group-cnt">${posts.length}</span>`;
+            head.onclick = () => groupEl.classList.toggle('mms-collapsed');
+            const body = document.createElement('div');
+            body.className = 'mms-group-body';
+            posts.forEach(post => body.appendChild(renderPostItem(post, terms)));
+            groupEl.appendChild(head);
+            groupEl.appendChild(body);
+            dom.results.appendChild(groupEl);
+        });
+        // Кнопка догрузки
+        if (hasMore && currentResults.length) {
+            const moreBtn = document.createElement('button');
+            moreBtn.id = 'mms-more';
+            moreBtn.className = 'mms-btn mms-btn-primary';
+            moreBtn.style.cssText = 'width:100%;margin-top:10px;';
+            moreBtn.textContent = '📥 Показать ещё';
+            moreBtn.onclick = loadMore;
+            dom.results.appendChild(moreBtn);
+        }
+        const hiddenCnt = currentResults.length - list.length;
+        setStatus(hiddenCnt > 0
+            ? `Найдено: ${list.length} (показано) из ${currentResults.length}`
+            : `Найдено: ${currentResults.length}`, '#86efac');
+    };
+
+    // ═══ Пункт 4: автоматический список каналов из результатов с мультивыбором ═══
+    // Каждый чипс = канал + счётчик найденных. Клик тогглит видимость канала.
+    // Заменяет текстовый фильтр: оператор видит ВСЕ каналы, где есть совпадения,
+    // и кликом выбирает комбинацию для просмотра.
+    const drawChannelBar = () => {
+        const counts = new Map();
+        currentResults.forEach(p => {
+            if (p.channel_id) counts.set(p.channel_id, (counts.get(p.channel_id) || 0) + 1);
+        });
+        // Один канал — панель не нужна, экономим место
+        if (counts.size <= 1) {
+            dom.channelBar.style.display = 'none';
+            dom.channelBar.innerHTML = '';
+            return;
+        }
+        dom.channelBar.style.display = 'flex';
+        const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+        dom.channelBar.innerHTML = entries.map(([id, cnt]) => {
+            const ch = cache.channels[id] || { displayName: id };
+            const off = hiddenChannels.has(id);
+            return `<span class="mms-chip${off ? ' mms-chip-off' : ''}" data-ch="${id}" title="Показать/скрыть канал">
+            <span class="mms-chip-name"># ${escapeHtml(ch.displayName)}</span>
+            <span class="mms-chip-cnt">${cnt}</span>
+        </span>`;
+        }).join('') + (hiddenChannels.size ? '<button class="mms-chip-reset" id="mms-chip-reset">показать все</button>' : '');
+        dom.channelBar.querySelectorAll('.mms-chip').forEach(chip => {
+            chip.onclick = () => {
+                const id = chip.dataset.ch;
+                if (hiddenChannels.has(id)) hiddenChannels.delete(id); else hiddenChannels.add(id);
+                drawChannelBar();
+                drawResults(searchTerms);
+            };
+        });
+        const reset = dom.channelBar.querySelector('#mms-chip-reset');
+        if (reset) reset.onclick = () => {
+            hiddenChannels.clear();
+            drawChannelBar();
+            drawResults(searchTerms);
+        };
+    };
+
+    // ═══ Пункт 1: просмотр всего треда ═══
+    const openThread = async (post) => {
+        const rootId = post.root_id || post.id;
+        const version = ++viewVersion;
+        dom.channelBar.style.display = 'none';
+        dom.results.innerHTML = '<div class="mms-loading"><div class="mms-spinner"></div>Загрузка треда...</div>';
+        try {
+            const res = await getThread(rootId);
+            if (version !== viewVersion) return;
+            const posts = (res && res.posts) || {};
+            const order = Array.isArray(res.order) ? res.order : Object.keys(posts);
+            const threadPosts = order.map(id => posts[id]).filter(Boolean)
+                .sort((a, b) => (a.create_at || 0) - (b.create_at || 0));
+            // Подтягиваем имена авторов и каналов для постов треда
+            const userIds = [...new Set(threadPosts.map(p => p.user_id).filter(Boolean))];
+            const channelIds = [...new Set(threadPosts.map(p => p.channel_id).filter(Boolean))];
+            await Promise.all([
+                Promise.all(channelIds.map(getChannel)),
+                getUsers(userIds)
+            ]);
+            if (version !== viewVersion) return;
+            dom.results.innerHTML = '';
+            // Шапка треда с кнопкой возврата
+            const bar = document.createElement('div');
+            bar.className = 'mms-thread-bar';
+            bar.innerHTML = `<button class="mms-btn" id="mms-thread-back">← К результатам</button>
+            <span class="mms-thread-info">🧵 Тред · ${threadPosts.length} сообщ.</span>`;
+            dom.results.appendChild(bar);
+            bar.querySelector('#mms-thread-back').onclick = closeThread;
+            threadPosts.forEach(p => {
+                dom.results.appendChild(renderPostItem(p, searchTerms, {
+                    isThreadRoot: p.id === rootId,
+                    showThreadButton: false   // из треда в тред не уходим
+                }));
+            });
+        } catch (e) {
+            if (version !== viewVersion) return;
+            dom.results.innerHTML = '<div class="mms-empty">Не удалось загрузить тред.</div>';
+            notify(e.message === AUTH_ERR ? 'Нужна авторизация в Mattermost' : 'Ошибка треда: ' + e.message, 'error');
+            drawChannelBar();
+            drawResults(searchTerms);
+        }
+    };
+    const closeThread = () => {
+        ++viewVersion;
         drawChannelBar();
         drawResults(searchTerms);
-    }
-};
-const closeThread = () => {
-    ++viewVersion;
-    drawChannelBar();
-    drawResults(searchTerms);
-};
-	// ═══════════════════════════════════════════════════════
+    };
+    // ═══════════════════════════════════════════════════════
     // Поиск
     // ═══════════════════════════════════════════════════════
-const runSearch = async () => {
-    const terms = dom.query.value.trim();
+    const runSearch = async () => {
+        const terms = dom.query.value.trim();
 
-    if (!terms) {
-        setStatus('Введите запрос', '#9db5ff');
-        notify('Введите текст для поиска', 'warning');
-        return;
-    }
-
-    if (!teamId) {
-        setStatus('Команда не выбрана', '#ff8496');
-        return;
-    }
-
-    const version = ++viewVersion;
-    const requestedTeamId = teamId;
-
-    currentResults = [];
-    searchTerms = terms;
-    searchPage = 0;
-    hasMore = false;
-    loadingMore = false;
-    hiddenChannels.clear();
-
-    dom.channelBar.style.display = 'none';
-    dom.channelBar.innerHTML = '';
-    dom.searchBtn.disabled = true;
-    dom.results.innerHTML =
-        '<div class="mms-loading"><div class="mms-spinner"></div>Поиск по Mattermost...</div>';
-
-    try {
-        const res = await searchPosts(requestedTeamId, terms, 0);
-
-        if (version !== viewVersion) return;
-
-        await mergeResults(res, terms);
-
-        if (version !== viewVersion) return;
-
-        drawChannelBar();
-        drawResults(terms);
-    } catch (e) {
-        if (version !== viewVersion) return;
-
-        if (e.message === AUTH_ERR) {
-            setStatus('Нужна авторизация в Mattermost', '#ff8496');
-            notify(
-                '🔐 Откройте https://mm-time.skyeng.tech, войдите — и повторите поиск',
-                'warning'
-            );
-        } else {
-            setStatus('Ошибка: ' + e.message, '#ff8496');
-            notify('Ошибка поиска в Mattermost: ' + e.message, 'error');
+        if (!terms) {
+            setStatus('Введите запрос', '#9db5ff');
+            notify('Введите текст для поиска', 'warning');
+            return;
         }
 
+        if (!teamId) {
+            setStatus('Команда не выбрана', '#ff8496');
+            return;
+        }
+
+        const version = ++viewVersion;
+        const requestedTeamId = teamId;
+
+        currentResults = [];
+        searchTerms = terms;
+        searchPage = 0;
+        hasMore = false;
+        loadingMore = false;
+        hiddenChannels.clear();
+
+        dom.channelBar.style.display = 'none';
+        dom.channelBar.innerHTML = '';
+        dom.searchBtn.disabled = true;
         dom.results.innerHTML =
-            '<div class="mms-empty">Поиск не удался. Попробуйте ещё раз.</div>';
-    } finally {
-        if (version === viewVersion) {
-            dom.searchBtn.disabled = false;
+            '<div class="mms-loading"><div class="mms-spinner"></div>Поиск по Mattermost...</div>';
+
+        try {
+            const res = await searchPosts(requestedTeamId, terms, 0);
+
+            if (version !== viewVersion) return;
+
+            await mergeResults(res, terms);
+
+            if (version !== viewVersion) return;
+
+            drawChannelBar();
+            drawResults(terms);
+        } catch (e) {
+            if (version !== viewVersion) return;
+
+            if (e.message === AUTH_ERR) {
+                setStatus('Нужна авторизация в Mattermost', '#ff8496');
+                notify(
+                    '🔐 Откройте https://mm-time.skyeng.tech, войдите — и повторите поиск',
+                    'warning'
+                );
+            } else {
+                setStatus('Ошибка: ' + e.message, '#ff8496');
+                notify('Ошибка поиска в Mattermost: ' + e.message, 'error');
+            }
+
+            dom.results.innerHTML =
+                '<div class="mms-empty">Поиск не удался. Попробуйте ещё раз.</div>';
+        } finally {
+            if (version === viewVersion) {
+                dom.searchBtn.disabled = false;
+            }
         }
-    }
-};
+    };
 
     // Догрузка следующей страницы результатов (кнопка «Показать ещё»)
-const loadMore = async () => {
-    if (!teamId || !searchTerms || !hasMore || loadingMore) return;
+    const loadMore = async () => {
+        if (!teamId || !searchTerms || !hasMore || loadingMore) return;
 
-    const version = viewVersion;
-    const requestedTeamId = teamId;
-    const requestedTerms = searchTerms;
-    const nextPage = searchPage + 1;
+        const version = viewVersion;
+        const requestedTeamId = teamId;
+        const requestedTerms = searchTerms;
+        const nextPage = searchPage + 1;
 
-    loadingMore = true;
+        loadingMore = true;
 
-    const btn = dom.results.querySelector('#mms-more');
-    if (btn) {
-        btn.disabled = true;
-        btn.textContent = 'Загрузка...';
-    }
-
-    try {
-        const res = await searchPosts(
-            requestedTeamId,
-            requestedTerms,
-            nextPage
-        );
-
-        if (version !== viewVersion) return;
-
-        await mergeResults(res, requestedTerms);
-
-        if (version !== viewVersion) return;
-
-        // Страницу подтверждаем только после успешного получения ответа.
-        searchPage = nextPage;
-
-        drawChannelBar();
-        drawResults(requestedTerms);
-    } catch (e) {
-        if (version !== viewVersion) return;
-
-        notify(
-            e.message === AUTH_ERR
-                ? 'Нужна авторизация в Mattermost'
-                : 'Ошибка догрузки: ' + e.message,
-            'error'
-        );
-
-        // Старую кнопку оставляем доступной для повторной попытки.
-        if (btn?.isConnected) {
-            btn.disabled = false;
-            btn.textContent = '📥 Повторить загрузку';
+        const btn = dom.results.querySelector('#mms-more');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Загрузка...';
         }
-    } finally {
-        loadingMore = false;
-    }
-};
+
+        try {
+            const res = await searchPosts(
+                requestedTeamId,
+                requestedTerms,
+                nextPage
+            );
+
+            if (version !== viewVersion) return;
+
+            await mergeResults(res, requestedTerms);
+
+            if (version !== viewVersion) return;
+
+            // Страницу подтверждаем только после успешного получения ответа.
+            searchPage = nextPage;
+
+            drawChannelBar();
+            drawResults(requestedTerms);
+        } catch (e) {
+            if (version !== viewVersion) return;
+
+            notify(
+                e.message === AUTH_ERR
+                    ? 'Нужна авторизация в Mattermost'
+                    : 'Ошибка догрузки: ' + e.message,
+                'error'
+            );
+
+            // Старую кнопку оставляем доступной для повторной попытки.
+            if (btn?.isConnected) {
+                btn.disabled = false;
+                btn.textContent = '📥 Повторить загрузку';
+            }
+        } finally {
+            loadingMore = false;
+        }
+    };
 
     // ═══════════════════════════════════════════════════════
     // Инициализация окна
@@ -1247,22 +1258,30 @@ const loadMore = async () => {
         dom.query = document.getElementById('mms-query');
         dom.status = document.getElementById('mms-status');
         dom.results = document.getElementById('mms-results');
-		dom.channelBar = document.getElementById('mms-channel-bar');
+        dom.channelBar = document.getElementById('mms-channel-bar');
         dom.searchBtn = document.getElementById('mms-search');
-	
+
+        // Битые картинки: inline onerror в разметке блокируется CSP страницы
+        // AutoFAQ, поэтому ловим ошибку загрузки делегированно (error не всплывает —
+        // нужен перехват на фазе capture).
+        dom.results?.addEventListener('error', (e) => {
+            const img = e.target;
+            if (img && img.tagName === 'IMG') img.closest('.mms-file-img')?.classList.add('mms-file-broken');
+        }, true);
+
         dom.win.style.display = 'none';
 
         if (typeof hideWindowOnDoubleClick === 'function') hideWindowOnDoubleClick(WINDOW_ID);
 
         document.getElementById('mms-hide').onclick = () => { dom.win.style.display = 'none'; };
         document.getElementById('mms-clear').onclick = () => {
-		++viewVersion;
-loadingMore = false;
-dom.searchBtn.disabled = false;
-dom.channelBar.style.display = 'none';
-dom.channelBar.innerHTML = '';
-dom.query.value = '';
-hiddenChannels.clear();
+            ++viewVersion;
+            loadingMore = false;
+            dom.searchBtn.disabled = false;
+            dom.channelBar.style.display = 'none';
+            dom.channelBar.innerHTML = '';
+            dom.query.value = '';
+            hiddenChannels.clear();
             currentResults = [];
             searchTerms = '';
             searchPage = 0;
@@ -1273,37 +1292,37 @@ hiddenChannels.clear();
 
         dom.searchBtn.onclick = runSearch;
         dom.query.addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch(); });
-        
-dom.team.addEventListener('change', () => {
-    const opt = dom.team.options[dom.team.selectedIndex];
 
-    ++viewVersion;
-    loadingMore = false;
-    dom.searchBtn.disabled = false;
+        dom.team.addEventListener('change', () => {
+            const opt = dom.team.options[dom.team.selectedIndex];
 
-    teamId = opt.value;
-    teamName = opt.dataset.name || '';
+            ++viewVersion;
+            loadingMore = false;
+            dom.searchBtn.disabled = false;
 
-    currentResults = [];
-    searchTerms = '';
-    searchPage = 0;
-    hasMore = false;
-    hiddenChannels.clear();
+            teamId = opt.value;
+            teamName = opt.dataset.name || '';
 
-    dom.channelBar.style.display = 'none';
-    dom.channelBar.innerHTML = '';
+            currentResults = [];
+            searchTerms = '';
+            searchPage = 0;
+            hasMore = false;
+            hiddenChannels.clear();
 
-    dom.results.innerHTML =
-        '<div class="mms-empty">Команда изменена. Выполните поиск, чтобы увидеть её сообщения.</div>';
+            dom.channelBar.style.display = 'none';
+            dom.channelBar.innerHTML = '';
 
-    setStatus(`Команда: ${opt.textContent.trim()}`, '#a9bbef');
+            dom.results.innerHTML =
+                '<div class="mms-empty">Команда изменена. Выполните поиск, чтобы увидеть её сообщения.</div>';
 
-    try {
-        localStorage.setItem('mms_team_id', opt.value);
-    } catch (e) {
-        /* localStorage недоступен — выбор всё равно работает */
-    }
-});
+            setStatus(`Команда: ${opt.textContent.trim()}`, '#a9bbef');
+
+            try {
+                localStorage.setItem('mms_team_id', opt.value);
+            } catch (e) {
+                /* localStorage недоступен — выбор всё равно работает */
+            }
+        });
 
         // Публичная кнопка: вызывается из меню расширения (utils.js → menuConfig)
         window.getMattermostSearchPress = () => {

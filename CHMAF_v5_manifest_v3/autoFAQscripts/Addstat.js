@@ -17,7 +17,8 @@ function saveFavorites() {
 window.getStatsButtonPress = function () {
     let win = document.getElementById('AF_Stat');
     if (!win) return;
-    win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'block' : 'none';
+    // Реальная видимость: display === '' у открытого окна — это «видно»
+    win.style.display = getComputedStyle(win).display === 'none' ? 'block' : 'none';
 };
 
 // ---------- 2. Разметка основного окна (Cyber-Dark UI) ----------
@@ -1006,10 +1007,19 @@ function fmtDate(d) {
     return `${y}-${m}-${day}`;
 }
 
+// Время по МСК (UTC+3) → ISO в UTC. Раньше дата создавалась в поясе браузера
+// и из неё ещё раз вычиталось 3 часа: у оператора в МСК период уезжал
+// на 3 часа назад (с 21:00 предыдущего дня до 20:59 последнего).
 function toUTC(dateStr, h, m, s, ms) {
-    const d = new Date(dateStr + "T00:00:00");
-    d.setHours(h - 3, m, s, ms);
-    return d.toISOString();
+    const [y, mo, d] = String(dateStr).split('-').map(Number);
+    return new Date(Date.UTC(y, mo - 1, d, h - 3, m, s, ms)).toISOString();
+}
+
+// Экранирование для вставки в innerHTML (заметки избранного вводятся вручную)
+function addsEsc(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[ch]);
 }
 
 function shiftDates(days) {
@@ -1071,12 +1081,12 @@ function renderFavoritesWindow() {
         const favData = favoritesChats[chatId];
         html += `<div class="fav-item">
             <span style="color:#b829ea; margin-right:5px;">⚡</span>
-            <a href="https://skyeng.autofaq.ai/logs/${chatId}" target="_blank" class="fav-link">${chatId}</a>
-            <span class="fav-date">${favData.date}</span>
-            <div class="fav-comment">Заметка: <span class="fav-comment-text">${favData.comment}</span></div>
+            <a href="https://skyeng.autofaq.ai/logs/${encodeURIComponent(chatId)}" target="_blank" class="fav-link">${addsEsc(chatId)}</a>
+            <span class="fav-date">${addsEsc(favData?.date)}</span>
+            <div class="fav-comment">Заметка: <span class="fav-comment-text">${addsEsc(favData?.comment)}</span></div>
             <div class="fav-actions">
-                <span class="fav-icon open-history-btn" data-id="${chatId}" title="Открыть историю">👁️</span>
-                <span class="fav-icon toggle-fav-btn" data-id="${chatId}" title="Удалить из избранного">🗑️</span>
+                <span class="fav-icon open-history-btn" data-id="${addsEsc(chatId)}" title="Открыть историю">👁️</span>
+                <span class="fav-icon toggle-fav-btn" data-id="${addsEsc(chatId)}" title="Удалить из избранного">🗑️</span>
             </div>
         </div>`;
     });
@@ -1086,7 +1096,7 @@ function renderFavoritesWindow() {
 function toggleFavoritesWindow() {
     const favWin = document.getElementById('AF_Fav');
     if (!favWin) return;
-    if (favWin.style.display === 'none' || favWin.style.display === '') {
+    if (getComputedStyle(favWin).display === 'none') {
         renderFavoritesWindow();
         favWin.style.display = 'block';
     } else {
@@ -1125,6 +1135,8 @@ function attachEventHandlers() {
     const statBtn = document.getElementById('getstatfromperiod');
     if (statBtn) {
         statBtn.onclick = async function () {
+            // Повторный клик во время подсчёта запускал второй параллельный проход
+            if (this.dataset.busy) return;
             switchView('chatsinfoout');
             const dateFromEl = document.getElementById('dateFrom');
             const dateToEl = document.getElementById('dateTo');
@@ -1140,6 +1152,7 @@ function attachEventHandlers() {
             const btn = this;
             const originalText = btn.textContent;
             btn.textContent = "⏳...";
+            btn.dataset.busy = '1';
 
             if (out) {
                 out.innerHTML = `
@@ -1177,15 +1190,33 @@ function attachEventHandlers() {
 
                     if (page === 1) totalArchiveItems = data.total || 1;
 
-                    for (const item of data.items) {
-                        const conv = await doOperationsWithConversations(item.conversationId);
+                    // Чаты страницы загружаем параллельно (по 6 одновременно) вместо
+                    // строго по одному — подсчёт за день идёт в разы быстрее.
+                    // Ошибка одного чата больше не обрывает всю статистику.
+                    const pageItems = data.items;
+                    const convs = new Array(pageItems.length);
+                    let nextIdx = 0;
+                    const worker = async () => {
+                        while (nextIdx < pageItems.length) {
+                            const idx = nextIdx++;
+                            try {
+                                convs[idx] = await doOperationsWithConversations(pageItems[idx].conversationId);
+                            } catch (err) {
+                                console.warn('[Addstat] Не удалось загрузить чат', pageItems[idx].conversationId, err);
+                                convs[idx] = null;
+                            }
+                            processedCount++;
+                            const percent = Math.min(100, Math.round((processedCount / totalArchiveItems) * 100));
+                            const fill = document.getElementById('statProgressFill');
+                            const text = document.getElementById('statProgressText');
+                            if (fill) fill.style.width = percent + '%';
+                            if (text) text.textContent = `Анализ пула очереди... ${processedCount} / ${totalArchiveItems} (${percent}%)`;
+                        }
+                    };
+                    await Promise.all(Array.from({ length: Math.min(6, pageItems.length) }, worker));
 
-                        processedCount++;
-                        let percent = Math.min(100, Math.round((processedCount / totalArchiveItems) * 100));
-                        const fill = document.getElementById('statProgressFill');
-                        const text = document.getElementById('statProgressText');
-                        if (fill) fill.style.width = percent + '%';
-                        if (text) text.textContent = `Анализ пула очереди... ${processedCount} / ${totalArchiveItems} (${percent}%)`;
+                    for (const [itemIdx, item] of pageItems.entries()) {
+                        const conv = convs[itemIdx] || {};
 
                         const myOpId = typeof operatorId !== 'undefined' ? String(operatorId) : '';
 
@@ -1251,13 +1282,15 @@ function attachEventHandlers() {
                         if (isTouchedByMe) touchedCount++;
                         if (isClosedByMe) manualClosed++;
 
-                        if (isLine2) {
+                        // «Переведено на 2ЛТП» — только чаты, где работал этот оператор.
+                        // Раньше считались переводы по ВСЕМУ пулу очереди за период.
+                        if (isLine2 && isTouchedByMe) {
                             line2Count++;
                             const isFav = !!favoritesChats[item.conversationId];
                             line2Html += `<div class="line2-item">
                                 <div class="line2-left">
                                     <span class="line2-arrow">⚡</span>
-                                    <a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" target="_blank" class="adds-chat-link">${item.conversationId}</a>
+                                    <a href="https://skyeng.autofaq.ai/logs/${encodeURIComponent(item.conversationId)}" target="_blank" class="adds-chat-link">${addsEsc(item.conversationId)}</a>
                                 </div>
                                 <div class="line2-actions">
                                     <span class="adds-action-icon open-history-btn" data-id="${item.conversationId}" title="История">👁️</span>
@@ -1340,6 +1373,7 @@ function attachEventHandlers() {
                 if (out) out.innerHTML = "<div style='color:#ef4444; padding:10px;'>Ошибка при загрузке. Проверьте консоль.</div>";
             } finally {
                 btn.textContent = originalText;
+                delete btn.dataset.busy;
             }
         };
     }

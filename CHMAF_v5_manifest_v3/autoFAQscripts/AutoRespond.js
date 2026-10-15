@@ -235,7 +235,13 @@ function getbutFrozeChatButtonPress() {
     // Снимок «сколько ответов оператора было на момент запуска таймера».
     // Сравниваем количество, а не время: так не мешает разница часов
     // между компьютером и сервером AutoFAQ.
-    const isOperatorMessage = (m) => /AnswerOperator/i.test(String(m?.tpe ?? m?.type ?? ''));
+    // Ответ оператора — любое сообщение семейства AnswerOperator*, включая
+    // шаблоны, отправленные оператором «от имени бота» (AnswerOperatorWithBot,
+    // AnswerOperatorQuickReply). Отсекаем только то, что прислал сам AutoFAQ
+    // (operatorId === 'autoFAQ'), и чисто ботовые типы (AnswerBot, AnswerSystem…),
+    // которые сюда и не попадают.
+    const OPERATOR_TYPES = new Set(['AnswerOperator', 'AnswerOperatorWithBot', 'AnswerOperatorQuickReply']);
+    const isOperatorMessage = (m) => OPERATOR_TYPES.has(m?.tpe) && m?.operatorId !== 'autoFAQ';
     const msgTime = (m) => {
         const t = m?.ts ?? m?.createdAt ?? m?.time;
         const n = typeof t === 'number' ? t : Date.parse(t);
