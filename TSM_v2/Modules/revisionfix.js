@@ -1,11 +1,14 @@
 /* =========================================================
-   TSM Масс-фикс ревизий
-   Перезагружает выбранные слайды комнаты в последней ревизии
-   (step-store/load-step, last: true) сразу для списка учеников.
-   Ответы учеников НЕ сбрасываются.
+   TSM Масс-фикс слайдов
+   Две операции над выбранными слайдами комнаты для списка учеников:
+   1) load-step  — обновление ревизии (last: true), ответы НЕ трогаются;
+   2) delete blocks — удаление сохранённых ответов (store-blocks/delete).
+      contentGroupId = <id из student-cabinet load-step по stepUuid>_<variantId>
    ========================================================= */
 
-const REVFIX_DELAY_MS = 150;
+const REVFIX_DELAY_MS = 150;     // пауза между учениками/слайдами
+const REVFIX_OP_DELAY_MS = 150;  // пауза между load-step и delete для одной пары
+const REVFIX_RESET_WORD = "СБРОС";
 
 const win_revisionFix = `
 <div class="tsm-window-grab">
@@ -19,10 +22,24 @@ const win_revisionFix = `
         <input id="revfixRoomLink" class="tsm-input" autocomplete="off" placeholder="Ссылка на комнату">
         <button type="button" class="tsm-btn" id="revfixLoad">Загрузить</button>
     </div>
-    <div class="tsm-fix-note">
-        <span class="tsm-fix-note-icon">↻</span>
-        <span>Обновляется <b>только ревизия</b>: слайд перезагружается в последней версии. Ответы учеников не сбрасываются.</span>
+
+    <div class="tsm-fix-ops">
+        <label class="tsm-fix-op" data-op="load">
+            <span class="tsm-custom-checkbox"><input type="checkbox" id="revfixOpLoad" checked><span class="tsm-checkmark"></span></span>
+            <span class="tsm-fix-op-body">
+                <span class="tsm-fix-op-title">↻ Обновить ревизию <code>load-step</code></span>
+                <span class="tsm-fix-op-desc">Слайд перезагружается в последней версии. Прогресс и ответы учеников сохраняются.</span>
+            </span>
+        </label>
+        <label class="tsm-fix-op tsm-fix-op-danger" data-op="delete">
+            <span class="tsm-custom-checkbox"><input type="checkbox" id="revfixOpDelete"><span class="tsm-checkmark"></span></span>
+            <span class="tsm-fix-op-body">
+                <span class="tsm-fix-op-title">⚠ Сбросить ответы <code>delete blocks</code></span>
+                <span class="tsm-fix-op-desc">Удаляет все введённые ответы учеников на выбранных слайдах. Восстановить их нельзя.</span>
+            </span>
+        </label>
     </div>
+
     <div class="tsm-fix-layout">
         <section class="tsm-fix-col">
             <div class="tsm-fix-col-head">
@@ -56,55 +73,75 @@ wintRevisionFix.className = "tsm-window tsm-window-revfix";
 
 const revfixState = {
     room: null,       // { subject, hash, isTest }
-    slides: [],       // [{ stepUuid, name, section, theme }]
-    roomStudents: [], // ID учеников из комнаты
+    slides: [],       // [{ stepUuid, variantId, name, section, theme }]
+    roomStudents: [],
     running: false,
     stopRequested: false,
-    results: []       // [{ studentId, stepUuid, name, status, id, ok }]
+    ops: { load: true, delete: false }, // операции последнего запуска (для «Повторить ошибки»)
+    results: []       // [{ studentId, slide, load: {status,id,ok,error}, del: {status,ok,error,cgId} }]
 };
 
-/* ---------- Разбор ввода ---------- */
+/* ---------- Ввод ---------- */
 
 function revfixParseStudentIds() {
     const raw = document.getElementById("revfixStudents").value;
-    const ids = raw.split(/[\s,;]+/).map((s) => s.replace(/\D/g, "")).filter(Boolean);
-    return [...new Set(ids)];
+    return [...new Set(raw.split(/[\s,;]+/).map((s) => s.replace(/\D/g, "")).filter(Boolean))];
 }
 
 function revfixSelectedSlides() {
-    const uuids = Array.from(document.querySelectorAll("#revfixSlides .tsm-fix-slide input:checked"))
-        .map((input) => input.closest(".tsm-fix-slide").dataset.stepuuid);
-    return revfixState.slides.filter((slide) => uuids.includes(slide.stepUuid));
+    const uuids = new Set(Array.from(document.querySelectorAll("#revfixSlides .tsm-fix-slide input:checked"))
+        .map((input) => input.closest(".tsm-fix-slide").dataset.stepuuid));
+    return revfixState.slides.filter((slide) => uuids.has(slide.stepUuid));
+}
+
+function revfixSelectedOps() {
+    return {
+        load: document.getElementById("revfixOpLoad").checked,
+        delete: document.getElementById("revfixOpDelete").checked
+    };
 }
 
 function revfixUpdateControls() {
     const slides = revfixSelectedSlides();
     const students = revfixParseStudentIds();
-    const total = slides.length * students.length;
+    const ops = revfixSelectedOps();
+    const pairs = slides.length * students.length;
     const button = document.getElementById("revfixRun");
 
     document.getElementById("revfixSlidesCounter").textContent = revfixState.slides.length
         ? `${slides.length}/${revfixState.slides.length}` : "";
     document.getElementById("revfixStudentsCounter").textContent = students.length ? String(students.length) : "";
 
-    document.getElementById("revfixStudents").readOnly = revfixState.running;
-    document.getElementById("revfixSlides").classList.toggle("is-locked", revfixState.running);
-    document.getElementById("revfixLoad").disabled = revfixState.running;
+    /* Опасный режим подсвечивает всё окно, чтобы его нельзя было не заметить */
+    wintRevisionFix.classList.toggle("tsm-revfix-danger", ops.delete);
+    document.querySelectorAll(".tsm-fix-op").forEach((op) => {
+        op.classList.toggle("is-on", ops[op.dataset.op]);
+    });
 
+    const lock = revfixState.running;
+    document.getElementById("revfixStudents").readOnly = lock;
+    document.getElementById("revfixSlides").classList.toggle("is-locked", lock);
+    document.getElementById("revfixLoad").disabled = lock;
+    document.querySelectorAll(".tsm-fix-op input").forEach((input) => { input.disabled = lock; });
+
+    button.classList.remove("tsm-btn-stop", "tsm-fix-run-danger");
     if (revfixState.running) {
         button.disabled = false;
         button.textContent = "Остановить";
         button.classList.add("tsm-btn-stop");
         return;
     }
-    button.classList.remove("tsm-btn-stop");
-    button.disabled = total === 0;
+
+    button.disabled = pairs === 0 || (!ops.load && !ops.delete);
     if (!revfixState.slides.length) button.textContent = "Загрузите комнату";
     else if (!slides.length) button.textContent = "Выберите слайды";
     else if (!students.length) button.textContent = "Добавьте ID учеников";
-    else button.textContent = `Обновить ревизии (${total})`;
+    else if (!ops.load && !ops.delete) button.textContent = "Выберите операцию";
+    else if (ops.delete) {
+        button.textContent = ops.load ? `Обновить и сбросить (${pairs})` : `Сбросить ответы (${pairs})`;
+        button.classList.add("tsm-fix-run-danger");
+    } else button.textContent = `Обновить ревизии (${pairs})`;
 
-    /* Состояние «выбрать все» в шапках секций */
     document.querySelectorAll("#revfixSlides .tsm-fix-section").forEach((section) => {
         const boxes = Array.from(section.querySelectorAll(".tsm-fix-slide input:not(:disabled)"));
         const toggle = section.querySelector(".tsm-fix-section-toggle input");
@@ -122,6 +159,7 @@ function revfixCollectSlides(block, sectionTitle) {
         (theme.cards || []).forEach((card) => {
             slides.push({
                 stepUuid: card.stepUuid || "",
+                variantId: String(card.variantId ?? theme.variantId ?? block.variantId ?? ""),
                 name: card.name || "Без названия",
                 section: sectionTitle,
                 theme: theme.name || ""
@@ -139,10 +177,13 @@ function revfixRenderSlides() {
         if (!slides.length) return "";
         let lastTheme = null;
         const rows = slides.map((slide, i) => {
-            const themeRow = slide.theme !== lastTheme ? `<div class="tsm-fix-theme" title="${escapeHTML(slide.theme)}">${escapeHTML(slide.theme)}</div>` : "";
+            const themeRow = slide.theme !== lastTheme
+                ? `<div class="tsm-fix-theme" title="${escapeHTML(slide.theme)}">${escapeHTML(slide.theme)}</div>` : "";
             lastTheme = slide.theme;
             const disabled = !slide.stepUuid;
-            return `${themeRow}<label class="tsm-fix-slide${disabled ? " is-disabled" : ""}" data-stepuuid="${escapeHTML(slide.stepUuid)}" title="${disabled ? "У слайда нет stepUuid" : "stepUuid: " + escapeHTML(slide.stepUuid)}">
+            const hint = disabled ? "У слайда нет stepUuid"
+                : `stepUuid: ${slide.stepUuid}\nvariantId: ${slide.variantId || "не найден — сброс ответов недоступен"}`;
+            return `${themeRow}<label class="tsm-fix-slide${disabled ? " is-disabled" : ""}" data-stepuuid="${escapeHTML(slide.stepUuid)}" data-variantid="${escapeHTML(slide.variantId)}" title="${escapeHTML(hint)}">
                 <span class="tsm-custom-checkbox"><input type="checkbox" ${disabled ? "disabled" : ""}><span class="tsm-checkmark"></span></span>
                 <span class="tsm-fix-slide-num">${i + 1}</span>
                 <span class="tsm-fix-slide-name">${escapeHTML(slide.name)}</span>
@@ -165,7 +206,7 @@ function revfixRenderSlides() {
 
 async function revfixLoadRoom() {
     if (revfixState.running) {
-        createNotify("Дождитесь окончания обновления", "error");
+        createNotify("Дождитесь окончания операции", "error");
         return;
     }
     const button = document.getElementById("revfixLoad");
@@ -210,14 +251,76 @@ async function revfixLoadRoom() {
     }
 }
 
-/* ---------- Запуск ---------- */
+/* ---------- Запросы ---------- */
 
-function revfixSetProgress(done, total, failed) {
+function revfixApi(path) {
+    return `https://api-${revfixState.room.subject}.skyeng.ru${path}`;
+}
+
+/* Обновление ревизии слайда у ученика (ответы сохраняются) */
+async function revfixLoadStep(studentId, slide) {
+    const payload = { studentId: Number(studentId), stepUuid: slide.stepUuid, last: true };
+    if (slide.variantId) payload.variantId = slide.variantId;
+    const res = await fetch(revfixApi("/api/teacher-cabinet/v1/step-store/load-step"), {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+    const body = await res.json().catch(() => null);
+    const id = body?.id ?? null;
+    const ok = res.ok && id != null;
+    return { status: res.status, id, ok, error: ok ? "" : (body?.message || body?.error || (res.ok ? "нет id в ответе" : `HTTP ${res.status}`)) };
+}
+
+/* ContentGroupID слайда: id из student-cabinet load-step по stepUuid (общий для всех учеников) */
+async function revfixResolveContentGroupId(slide) {
+    const res = await fetch(revfixApi("/api/student-cabinet/v1/step-store/load-step"), {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
+        headers: { "accept": "application/json", "content-type": "application/json" },
+        body: JSON.stringify({ stepUuid: slide.stepUuid })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data?.id == null) throw new Error("в ответе нет id");
+    return `${data.id}_${slide.variantId}`;
+}
+
+/* Удаление сохранённых ответов ученика на слайде */
+async function revfixDeleteBlocks(studentId, contentGroupId) {
+    const res = await fetch(revfixApi("/api/v1/store-blocks/delete"), {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ userId: Number(studentId), contentGroupId, roomHash: revfixState.room.hash })
+    });
+    return { status: res.status, ok: res.ok, error: res.ok ? "" : `HTTP ${res.status}` };
+}
+
+/* ---------- Прогресс и результаты ---------- */
+
+function revfixSetProgress(done, total, failed, label) {
     const percent = total ? Math.round((done / total) * 100) : 0;
-    document.getElementById("revfixProgressBar").style.width = `${percent}%`;
-    document.getElementById("revfixProgressBar").dataset.tone = failed ? "warn" : (done === total ? "ok" : "");
+    const bar = document.getElementById("revfixProgressBar");
+    bar.style.width = `${percent}%`;
+    const tone = revfixState.ops.delete ? "bad" : "";
+    bar.dataset.tone = failed ? "warn" : (done === total && total ? "ok" : tone);
     document.getElementById("revfixProgressLabel").textContent =
-        `${done} / ${total}${failed ? ` — ошибок: ${failed}` : ""}`;
+        label || `${done} / ${total}${failed ? ` — ошибок: ${failed}` : ""}`;
+}
+
+function revfixOpCell(op, kind) {
+    if (!op) return '<span class="tsm-text-xs">—</span>';
+    if (op.ok) return kind === "load"
+        ? `<span class="tsm-fix-ok">${escapeHTML(op.id)}</span>`
+        : '<span class="tsm-fix-ok">сброшены</span>';
+    return `<span class="tsm-fix-err" title="${escapeHTML(op.error)}">${escapeHTML(op.error || "ошибка")}</span>`;
+}
+
+function revfixRowFailed(r) {
+    return (r.load && !r.load.ok) || (r.del && !r.del.ok);
 }
 
 function revfixRenderResults() {
@@ -227,67 +330,96 @@ function revfixRenderResults() {
         box.innerHTML = "";
         return;
     }
-    const failed = results.filter((r) => !r.ok);
-    const rows = results.map((r) => `<tr class="${r.ok ? "" : "tsm-fix-row-fail"}">
+    const loadOk = results.filter((r) => r.load?.ok).length;
+    const delOk = results.filter((r) => r.del?.ok).length;
+    const failed = results.filter(revfixRowFailed).length;
+    const { ops } = revfixState;
+
+    const rows = results.map((r) => `<tr class="${revfixRowFailed(r) ? "tsm-fix-row-fail" : ""}">
         <td>${escapeHTML(r.studentId)}</td>
-        <td class="tsm-fix-cell-name" title="${escapeHTML(r.stepUuid)}">${escapeHTML(r.name)}</td>
-        <td>${escapeHTML(r.status)}</td>
-        <td>${r.ok ? escapeHTML(r.id) : `<span class="tsm-fix-err">${escapeHTML(r.error || "ошибка")}</span>`}</td>
+        <td class="tsm-fix-cell-name" title="${escapeHTML(r.slide.stepUuid)}">${escapeHTML(r.slide.name)}</td>
+        ${ops.load ? `<td>${revfixOpCell(r.load, "load")}</td>` : ""}
+        ${ops.delete ? `<td>${revfixOpCell(r.del, "delete")}</td>` : ""}
     </tr>`).join("");
 
     box.innerHTML = `<div class="tsm-fix-results-head">
-            <span class="tsm-fix-stat tsm-fix-stat-ok">Обновлено: ${results.length - failed.length}</span>
-            ${failed.length ? `<span class="tsm-fix-stat tsm-fix-stat-bad">Ошибок: ${failed.length}</span>` : ""}
+            ${ops.load ? `<span class="tsm-fix-stat tsm-fix-stat-ok" title="Ревизий обновлено">↻ Ревизии: ${loadOk}</span>` : ""}
+            ${ops.delete ? `<span class="tsm-fix-stat tsm-fix-stat-del" title="Ответов сброшено">⚠ Ответы: ${delOk}</span>` : ""}
+            ${failed ? `<span class="tsm-fix-stat tsm-fix-stat-bad" title="Пар ученик × слайд с ошибками">✕ Ошибки: ${failed}</span>` : ""}
             <span class="tsm-toolbar-spacer"></span>
-            ${failed.length && !revfixState.running ? `<button type="button" class="tsm-btn" id="revfixRetry">Повторить ошибки</button>` : ""}
-            <button type="button" class="tsm-btn" id="revfixCopyReport">Скопировать отчёт</button>
+            ${failed && !revfixState.running ? '<button type="button" class="tsm-btn tsm-fix-head-btn" id="revfixRetry">Повторить ошибки</button>' : ""}
+            <button type="button" class="tsm-btn tsm-fix-head-btn" id="revfixCopyReport">Отчёт в буфер</button>
         </div>
         <div class="tsm-table-wrapper tsm-fix-results-table">
             <table class="tsm-table">
-                <thead><tr><th>Ученик</th><th>Слайд</th><th>HTTP</th><th>id ревизии</th></tr></thead>
+                <thead><tr><th>Ученик</th><th>Слайд</th>${ops.load ? "<th>Ревизия (id)</th>" : ""}${ops.delete ? "<th>Ответы</th>" : ""}</tr></thead>
                 <tbody>${rows}</tbody>
             </table>
         </div>`;
 }
 
-async function revfixRun(pairs) {
-    const { room } = revfixState;
+/* ---------- Запуск ---------- */
+
+const revfixSleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function revfixRun(pairs, ops) {
     revfixState.running = true;
     revfixState.stopRequested = false;
+    revfixState.ops = ops;
     revfixState.results = [];
     document.getElementById("revfixProgressBox").style.display = "";
     document.getElementById("revfixProgressWrap").classList.add("is-running");
     revfixUpdateControls();
-    revfixSetProgress(0, pairs.length, 0);
 
-    const url = `https://api-${room.subject}.skyeng.ru/api/teacher-cabinet/v1/step-store/load-step`;
-    let failed = 0;
-
-    for (let i = 0; i < pairs.length; i++) {
-        if (revfixState.stopRequested) break;
-        const { studentId, slide } = pairs[i];
-        const result = { studentId, stepUuid: slide.stepUuid, name: slide.name, status: "—", id: null, ok: false, slide };
-        try {
-            const res = await fetch(url, {
-                method: "POST",
-                credentials: "include",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ studentId: Number(studentId), stepUuid: slide.stepUuid, last: true })
-            });
-            const body = await res.json().catch(() => null);
-            result.status = res.status;
-            result.id = body?.id ?? null;
-            result.ok = res.ok && result.id != null;
-            if (!result.ok) result.error = body?.message || body?.error || (res.ok ? "нет id в ответе" : `HTTP ${res.status}`);
-        } catch (err) {
-            result.status = "сеть";
-            result.error = err.message;
+    /* 1. Для сброса ответов сначала получаем contentGroupId каждого слайда (один раз на слайд) */
+    const cgIds = new Map();
+    const cgErrors = new Map();
+    if (ops.delete) {
+        const slides = [...new Map(pairs.map((p) => [p.slide.stepUuid, p.slide])).values()];
+        for (let i = 0; i < slides.length && !revfixState.stopRequested; i++) {
+            revfixSetProgress(0, pairs.length, 0, `Получаем contentGroupId: ${i + 1} / ${slides.length}`);
+            try {
+                cgIds.set(slides[i].stepUuid, await revfixResolveContentGroupId(slides[i]));
+            } catch (err) {
+                cgErrors.set(slides[i].stepUuid, `contentGroupId: ${err.message}`);
+            }
+            await revfixSleep(REVFIX_DELAY_MS);
         }
-        if (!result.ok) failed++;
-        revfixState.results.push(result);
+    }
+
+    /* 2. Основной проход: для каждой пары ученик × слайд — load-step, затем delete */
+    let failed = 0;
+    for (let i = 0; i < pairs.length && !revfixState.stopRequested; i++) {
+        const { studentId, slide } = pairs[i];
+        const row = { studentId, slide, load: null, del: null };
+
+        if (ops.load) {
+            try {
+                row.load = await revfixLoadStep(studentId, slide);
+            } catch (err) {
+                row.load = { status: "сеть", ok: false, error: err.message };
+            }
+            if (ops.delete) await revfixSleep(REVFIX_OP_DELAY_MS);
+        }
+
+        if (ops.delete && !revfixState.stopRequested) {
+            const cgId = cgIds.get(slide.stepUuid);
+            if (!cgId) {
+                row.del = { ok: false, error: cgErrors.get(slide.stepUuid) || "нет contentGroupId" };
+            } else {
+                try {
+                    row.del = { ...(await revfixDeleteBlocks(studentId, cgId)), cgId };
+                } catch (err) {
+                    row.del = { status: "сеть", ok: false, error: err.message, cgId };
+                }
+            }
+        }
+
+        if (revfixRowFailed(row)) failed++;
+        revfixState.results.push(row);
         revfixSetProgress(i + 1, pairs.length, failed);
         revfixRenderResults();
-        await new Promise((r) => setTimeout(r, REVFIX_DELAY_MS));
+        await revfixSleep(REVFIX_DELAY_MS);
     }
 
     const stopped = revfixState.stopRequested;
@@ -295,12 +427,57 @@ async function revfixRun(pairs) {
     document.getElementById("revfixProgressWrap").classList.remove("is-running");
     revfixUpdateControls();
     revfixRenderResults();
-    console.table(revfixState.results.map(({ slide, ...rest }) => rest));
+    console.table(revfixState.results.map((r) => ({
+        studentId: r.studentId, slide: r.slide.name, stepUuid: r.slide.stepUuid,
+        loadStatus: r.load?.status, loadId: r.load?.id, deleteStatus: r.del?.status, contentGroupId: r.del?.cgId
+    })));
 
     const done = revfixState.results.length;
     if (stopped) createNotify(`Остановлено: обработано ${done} из ${pairs.length}`, "error");
-    else if (failed) createNotify(`Ревизии обновлены: ${done - failed} из ${done}. Ошибок: ${failed}`, "error");
-    else createNotify(`Ревизии обновлены: ${done} из ${done}`);
+    else if (failed) createNotify(`Готово с ошибками: ${failed} из ${done}. Их можно повторить`, "error");
+    else createNotify(ops.delete ? `Готово: ответы сброшены у ${done} пар ученик × слайд` : `Ревизии обновлены: ${done} из ${done}`);
+}
+
+/* Двухступенчатое подтверждение для сброса ответов: диалог + ввод контрольного слова */
+async function revfixConfirm(slides, students, ops) {
+    const total = slides.length * students.length;
+    const subject = revfixState.room.subject;
+
+    if (!ops.delete) {
+        return tsmConfirm({
+            title: "Обновить ревизии",
+            message: `Слайдов: ${slides.length}, учеников: ${students.length}, всего запросов: ${total}.\nПредмет: ${subject}.\n\nСлайды перезагрузятся в последней ревизии. Ответы учеников не сбрасываются.`,
+            okText: "Обновить ревизии"
+        });
+    }
+
+    const noVariant = slides.filter((s) => !s.variantId);
+    if (noVariant.length) {
+        createNotify(`Сброс невозможен: у ${noVariant.length} слайд(ов) нет variantId — «${noVariant[0].name}». Снимите их с выбора`, "error");
+        return false;
+    }
+
+    const first = await tsmConfirm({
+        title: "⚠ Сброс ответов учеников",
+        message: `Будут БЕЗВОЗВРАТНО удалены введённые ответы:\nслайдов — ${slides.length}, учеников — ${students.length}, всего — ${total} пар.\nКомната: ${revfixState.room.hash} (${subject}).\n${ops.load ? "\nПеред сбросом каждому слайду обновится ревизия." : ""}\n\nУбедитесь, что список учеников и слайдов верный.`,
+        okText: "Продолжить",
+        danger: true
+    });
+    if (!first) return false;
+
+    const typed = await tsmPrompt({
+        title: "Подтвердите сброс",
+        message: `Чтобы удалить ответы у ${students.length} учеников, введите слово ${REVFIX_RESET_WORD}`,
+        placeholder: REVFIX_RESET_WORD,
+        okText: "Сбросить ответы",
+        danger: true
+    });
+    if (typed == null) return false;
+    if (typed.trim().toUpperCase() !== REVFIX_RESET_WORD) {
+        createNotify("Контрольное слово не совпало — сброс отменён", "error");
+        return false;
+    }
+    return true;
 }
 
 async function revfixStart() {
@@ -310,19 +487,14 @@ async function revfixStart() {
     }
     const slides = revfixSelectedSlides();
     const students = revfixParseStudentIds();
-    if (!revfixState.room || !slides.length || !students.length) return;
+    const ops = revfixSelectedOps();
+    if (!revfixState.room || !slides.length || !students.length || (!ops.load && !ops.delete)) return;
 
-    const total = slides.length * students.length;
-    const confirmed = await tsmConfirm({
-        title: "Масс-фикс ревизий",
-        message: `Слайдов: ${slides.length}, учеников: ${students.length}, всего запросов: ${total}.\nПредмет: ${revfixState.room.subject}.\n\nСлайды перезагрузятся в последней ревизии. Ответы учеников не сбрасываются.`,
-        okText: "Обновить ревизии"
-    });
-    if (!confirmed) return;
+    if (!(await revfixConfirm(slides, students, ops))) return;
 
     const pairs = [];
     students.forEach((studentId) => slides.forEach((slide) => pairs.push({ studentId, slide })));
-    revfixRun(pairs);
+    revfixRun(pairs, ops);
 }
 
 /* ---------- Обработчики ---------- */
@@ -337,6 +509,8 @@ revfixSlidesEl.addEventListener("change", (event) => {
     revfixUpdateControls();
 });
 
+document.getElementById("revfixOpLoad").addEventListener("change", revfixUpdateControls);
+document.getElementById("revfixOpDelete").addEventListener("change", revfixUpdateControls);
 document.getElementById("revfixStudents").addEventListener("input", revfixUpdateControls);
 document.getElementById("revfixRun").onclick = revfixStart;
 document.getElementById("revfixLoad").onclick = revfixLoadRoom;
@@ -349,18 +523,28 @@ document.getElementById("hideRevisionFix").onclick = () => { wintRevisionFix.sty
 
 document.getElementById("revfixResults").addEventListener("click", async (event) => {
     if (event.target.id === "revfixCopyReport") {
-        const lines = ["studentId\tslide\tstepUuid\tstatus\tid"]
-            .concat(revfixState.results.map((r) => [r.studentId, r.name, r.stepUuid, r.status, r.ok ? r.id : (r.error || "")].join("\t")));
+        const lines = ["studentId\tslide\tstepUuid\tloadStatus\trevisionId\tdeleteStatus\tcontentGroupId"]
+            .concat(revfixState.results.map((r) => [
+                r.studentId, r.slide.name, r.slide.stepUuid,
+                r.load ? (r.load.ok ? r.load.status : r.load.error) : "",
+                r.load?.id ?? "",
+                r.del ? (r.del.ok ? r.del.status : r.del.error) : "",
+                r.del?.cgId ?? ""
+            ].join("\t")));
         await copyWithNotify(lines.join("\n"), "Отчёт скопирован — можно вставить в таблицу");
     } else if (event.target.id === "revfixRetry") {
-        const pairs = revfixState.results.filter((r) => !r.ok).map((r) => ({ studentId: r.studentId, slide: r.slide }));
-        if (!pairs.length) return;
+        const failedRows = revfixState.results.filter(revfixRowFailed);
+        if (!failedRows.length) return;
+        const ops = revfixState.ops;
         const confirmed = await tsmConfirm({
             title: "Повторить ошибки",
-            message: `Повторно отправить ${pairs.length} запросов, завершившихся ошибкой?`,
-            okText: "Повторить"
+            message: `Повторно выполнить ${failedRows.length} пар ученик × слайд с теми же операциями`
+                + (ops.delete ? ", включая СБРОС ОТВЕТОВ." : ".")
+                + "\nОперации, которые уже прошли успешно, тоже повторятся для этих пар.",
+            okText: "Повторить",
+            danger: ops.delete
         });
-        if (confirmed) revfixRun(pairs);
+        if (confirmed) revfixRun(failedRows.map((r) => ({ studentId: r.studentId, slide: r.slide })), ops);
     }
 });
 

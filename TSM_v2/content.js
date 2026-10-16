@@ -263,12 +263,13 @@ function tsmConfirm({ title = "", message = "", okText = "OK", cancelText = "О�
     });
 }
 
-function tsmPrompt({ title = "", message = "", value = "", placeholder = "", okText = "OK", cancelText = "Отмена", multiline = false } = {}) {
+function tsmPrompt({ title = "", message = "", value = "", placeholder = "", okText = "OK", cancelText = "Отмена", multiline = false, danger = false } = {}) {
     return new Promise((resolve) => {
         const overlay = buildTsmDialog({ title, message, okText, cancelText, inputMode: multiline ? "multiline" : "text" });
         const input = overlay.querySelector(".tsm-dialog-input");
         const okBtn = overlay.querySelector(".tsm-dialog-btn-ok");
         const cancelBtn = overlay.querySelector(".tsm-dialog-btn-cancel");
+        if (danger) okBtn.classList.add("tsm-dialog-btn-danger");
 
         input.placeholder = placeholder;
         input.value = value;

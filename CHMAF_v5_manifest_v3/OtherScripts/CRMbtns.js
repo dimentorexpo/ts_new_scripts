@@ -182,23 +182,37 @@
 		return m ? m[1].trim() : null;
 	}
 
-	const BADGE_COLORS = {
-		'активный': '#28a745',
-		'временно отключен': '#d32b49',
-		'Загрузка…': '#17a2b8'
+	// Пилюля: насыщенная заливка, белый текст, лёгкая тень
+	const BADGE_STYLES = {
+		'активный': { bg: '#1f9d55', shadow: 'rgba(31,157,85,.35)' },
+		'временно отключен': { bg: '#d6334f', shadow: 'rgba(214,51,79,.35)' },
+		'Загрузка…': { bg: '#1495b0', shadow: 'rgba(20,149,176,.35)' }
 	};
+	const BADGE_DEFAULT = { bg: '#6c757d', shadow: 'rgba(108,117,125,.3)' };
+
+	// Точку рисует ::before из чужого CSS — инлайн-стилем псевдоэлемент не убрать
+	function injectBadgeCss() {
+		if (document.getElementById('isUserBlockedCss')) return;
+		const style = document.createElement('style');
+		style.id = 'isUserBlockedCss';
+		style.textContent = '#isUserBlocked::before, #isUserBlocked::after { content: none !important; display: none !important; }';
+		(document.head || document.documentElement).appendChild(style);
+	}
 
 	function renderBadge(status, sid, title = '') {
 		const field = document.querySelector('[data-qa="person-id-field"]');
 		if (!field) return;
 
+		injectBadgeCss();
 		const container = field.closest('.data-container') || field.parentElement;
 		let badge = document.getElementById('isUserBlocked');
 
 		if (!badge) {
 			badge = document.createElement('div');
 			badge.id = 'isUserBlocked';
-			badge.style.cssText = 'color:#fff; padding:2px 6px; margin-top:4px; margin-bottom:4px; border-radius:3px; font-weight:700; display:block; width:fit-content; font-size:12px;';
+			badge.style.cssText = 'display:flex; align-items:center; width:fit-content; margin:4px 0; padding:3px 12px; ' +
+				'border:0; border-radius:999px; color:#fff; font-size:12px; font-weight:700; line-height:16px; ' +
+				'letter-spacing:.2px; white-space:nowrap;';
 
 			const badges = container.querySelector('.badges');
 			if (badges) {
@@ -211,7 +225,10 @@
 		badge.textContent = status || 'неизвестно';
 		badge.title = title;
 		badge.dataset.pid = sid;
-		badge.style.backgroundColor = BADGE_COLORS[status] || '#6c757d';
+		const look = BADGE_STYLES[status] || BADGE_DEFAULT;
+		badge.style.setProperty('background', look.bg, 'important');
+		badge.style.setProperty('color', '#fff', 'important');
+		badge.style.setProperty('box-shadow', `0 1px 3px ${look.shadow}`, 'important');
 	}
 
 	function rememberStatus(sid, entry) {
