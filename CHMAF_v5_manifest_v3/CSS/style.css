@@ -4912,3 +4912,401 @@ body.chmaf-en-lang #AF_helper #languageAF.glass-btn.mainButton {
 @media (prefers-reduced-motion: reduce) {
     #AF_helper button.glass-btn.mainButton.afh-marq-run { animation: none; text-overflow: ellipsis; }
 }
+
+
+/* ============================================================
+   AF_CustomTemplates — «Личные шаблоны» в стиле окна AF_helper
+   Все правила с префиксом #AF_CustomTemplates — другие окна не задеты.
+   ============================================================ */
+#AF_CustomTemplates {
+    --ct-bg: #111827;
+    --ct-card: #1a2536;
+    --ct-line: #344258;
+    --ct-btn: #1b283c;
+    --ct-btn-line: #3c4d68;
+    --ct-btn-hover: #293b56;
+    --ct-btn-hover-line: #7799e2;
+    --ct-field: #0d1625;
+    --ct-field-line: #3a4961;
+    --ct-focus: #829fff;
+    --ct-primary: #4268c9;
+    --ct-primary-hover: #547ce1;
+    --ct-primary-line: #7293ed;
+    --ct-accent: #a9c0ff;
+    --ct-muted: #94a3b8;
+    --ct-glow: rgba(105, 137, 238, .13);
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+#AF_CustomTemplates #custom_templates_window.glass-panel {
+    display: flex;
+    flex-direction: column;
+    width: min(560px, calc(100vw - 16px));
+    max-height: 80vh;
+    padding: 18px !important;
+    color: #f1f5f9;
+    background:
+        radial-gradient(circle at 95% 0%, var(--ct-glow), transparent 40%),
+        var(--ct-bg) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--ct-line) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06) !important;
+    cursor: default;
+}
+
+/* --- Шапка --- */
+#AF_CustomTemplates .ct-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(66, 104, 201, .15);
+    cursor: grab;
+    user-select: none;
+}
+
+#AF_CustomTemplates .ct-header:active { cursor: grabbing; }
+
+#AF_CustomTemplates .ct-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 40%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
+}
+
+#AF_CustomTemplates .ct-title {
+    flex: 1;
+    min-width: 0;
+    color: #fefefe;
+    font-size: 15px;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+
+#AF_CustomTemplates .ct-lang {
+    flex: none;
+    padding: 3px 10px;
+    color: var(--ct-accent);
+    background: rgba(66, 104, 201, .14);
+    border: 1px solid rgba(119, 153, 226, .45);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+}
+
+#AF_CustomTemplates .ct-lang-en { display: none; }
+body.chmaf-en-lang #AF_CustomTemplates .ct-lang-ru { display: none; }
+body.chmaf-en-lang #AF_CustomTemplates .ct-lang-en { display: inline; }
+
+/* --- Кнопки --- */
+#AF_CustomTemplates .glass-btn.mainButton {
+    height: 34px;
+    min-width: 34px;
+    padding: 0 12px !important;
+    color: #dce5f5 !important;
+    background: var(--ct-btn) !important;
+    border: 1px solid var(--ct-btn-line) !important;
+    border-radius: 9px !important;
+    box-shadow: none !important;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .45);
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease !important;
+}
+
+#AF_CustomTemplates .glass-btn.mainButton::before,
+#AF_CustomTemplates .glass-btn.mainButton::after { display: none !important; }
+
+#AF_CustomTemplates .glass-btn.mainButton:hover:not(:disabled) {
+    color: #fff !important;
+    background: var(--ct-btn-hover) !important;
+    border-color: var(--ct-btn-hover-line) !important;
+    transform: translateY(-1px) !important;
+}
+
+#AF_CustomTemplates .glass-btn.mainButton:active:not(:disabled) {
+    transform: translateY(0) scale(.98) !important;
+}
+
+#AF_CustomTemplates .glass-btn.mainButton:focus-visible {
+    outline: 2px solid #9ab5ff;
+    outline-offset: 2px;
+}
+
+#AF_CustomTemplates .glass-btn.mainButton.ct-icon-btn {
+    width: 34px;
+    padding: 0 !important;
+    font-size: 15px;
+}
+
+#AF_CustomTemplates .glass-btn.mainButton.buttonHide {
+    color: #ffb0be !important;
+    background: rgba(255, 116, 140, .08) !important;
+    border-color: rgba(255, 116, 140, .3) !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+}
+
+#AF_CustomTemplates .glass-btn.mainButton.buttonHide:hover {
+    background: rgba(255, 116, 140, .16) !important;
+    border-color: rgba(255, 116, 140, .55) !important;
+}
+
+#AF_CustomTemplates .glass-btn.mainButton.ct-danger:hover:not(:disabled) {
+    background: rgba(220, 20, 60, .2) !important;
+    border-color: rgba(255, 116, 140, .6) !important;
+}
+
+#AF_CustomTemplates .glass-btn.mainButton.primary,
+#AF_CustomTemplates .glass-btn.mainButton.ct-primary {
+    color: #fff !important;
+    background: var(--ct-primary) !important;
+    border-color: var(--ct-primary-line) !important;
+    box-shadow: 0 5px 15px rgba(58, 96, 205, .25) !important;
+    min-width: 0;
+}
+
+#AF_CustomTemplates .glass-btn.mainButton.primary:hover:not(:disabled),
+#AF_CustomTemplates .glass-btn.mainButton.ct-primary:hover:not(:disabled) {
+    background: var(--ct-primary-hover) !important;
+    border-color: #a2b9fa !important;
+}
+
+/* --- Список шаблонов --- */
+#AF_CustomTemplates .ct-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: 0 -6px 14px 0;
+    padding-right: 6px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(66, 104, 201, .4) transparent;
+}
+
+#AF_CustomTemplates .ct-list::-webkit-scrollbar { width: 4px; }
+#AF_CustomTemplates .ct-list::-webkit-scrollbar-thumb { background: rgba(66, 104, 201, .3); border-radius: 8px; }
+
+/* Пусто — подсказка вместо пустоты */
+#AF_CustomTemplates .ct-list:empty::before {
+    content: 'Личных шаблонов пока нет. Нажмите «➕ Добавить» или «⬆️+Tmpl» в главном окне, чтобы сохранить текст из поля ответа.';
+    display: block;
+    padding: 26px 18px;
+    color: var(--ct-muted);
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
+    border: 1px dashed rgba(66, 104, 201, .3);
+    border-radius: 12px;
+}
+
+/* Карточка шаблона */
+#AF_CustomTemplates .ct-row {
+    flex: none;
+    padding: 10px;
+    background: var(--ct-card);
+    border: 1px solid var(--ct-line);
+    border-left: 3px solid #617fbd;
+    border-radius: 12px;
+    transition: border-color .16s ease, background-color .16s ease;
+}
+
+#AF_CustomTemplates .ct-row:focus-within {
+    background: #1d2a3f;
+    border-left-color: #92afff;
+}
+
+/* Шаблон не показывается в меню — полоса приглушена */
+#AF_CustomTemplates .ct-row:has(.ct-switch input:not(:checked)) {
+    border-left-color: #3c4d68;
+}
+
+#AF_CustomTemplates .ct-row-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+#AF_CustomTemplates .ct-tools {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+}
+
+#AF_CustomTemplates .glass-btn.mainButton.ct-send {
+    padding: 0 12px !important;
+}
+
+/* Переключатель «в меню» вместо голой галочки */
+#AF_CustomTemplates .ct-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+    cursor: pointer;
+    user-select: none;
+}
+
+#AF_CustomTemplates .ct-switch input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+}
+
+#AF_CustomTemplates .ct-switch-track {
+    position: relative;
+    width: 30px;
+    height: 18px;
+    background: #0d1625;
+    border: 1px solid var(--ct-btn-line);
+    border-radius: 999px;
+    transition: background-color .16s ease, border-color .16s ease;
+}
+
+#AF_CustomTemplates .ct-switch-track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    background: #7d8ca6;
+    border-radius: 50%;
+    transition: transform .18s ease, background-color .16s ease;
+}
+
+#AF_CustomTemplates .ct-switch input:checked + .ct-switch-track {
+    background: var(--ct-primary);
+    border-color: var(--ct-primary-line);
+}
+
+#AF_CustomTemplates .ct-switch input:checked + .ct-switch-track::after {
+    background: #fff;
+    transform: translateX(12px);
+}
+
+#AF_CustomTemplates .ct-switch input:focus-visible + .ct-switch-track {
+    outline: 2px solid #9ab5ff;
+    outline-offset: 2px;
+}
+
+#AF_CustomTemplates .ct-switch-text {
+    color: var(--ct-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+#AF_CustomTemplates .ct-switch input:checked ~ .ct-switch-text { color: var(--ct-accent); }
+
+/* --- Поля --- */
+#AF_CustomTemplates .glass-input,
+#AF_CustomTemplates .glass-textarea {
+    color: #edf2fb !important;
+    background: var(--ct-field) !important;
+    border: 1px solid var(--ct-field-line) !important;
+    border-radius: 9px !important;
+    box-shadow: none !important;
+    transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease !important;
+}
+
+#AF_CustomTemplates .glass-input.ct-name {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    height: 34px;
+    padding: 0 12px !important;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#AF_CustomTemplates .glass-textarea.ct-text {
+    display: block;
+    width: 100%;
+    min-height: 56px;
+    max-height: 260px;
+    margin: 0;
+    padding: 9px 12px !important;
+    box-sizing: border-box;
+    resize: vertical;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+#AF_CustomTemplates .glass-input::placeholder,
+#AF_CustomTemplates .glass-textarea::placeholder { color: #7d8ca6 !important; }
+
+#AF_CustomTemplates .glass-input:focus,
+#AF_CustomTemplates .glass-textarea:focus {
+    background: #142034 !important;
+    border-color: var(--ct-focus) !important;
+    box-shadow: 0 0 0 3px rgba(110, 152, 247, .16) !important;
+    outline: none !important;
+}
+
+#AF_CustomTemplates .glass-textarea::-webkit-resizer {
+    background: repeating-linear-gradient(-45deg,
+        transparent 0, transparent 4px,
+        rgba(119, 153, 226, .6) 4px, rgba(119, 153, 226, .6) 6px);
+}
+
+/* --- Подвал --- */
+#AF_CustomTemplates .ct-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: none;
+    padding-top: 12px;
+    border-top: 1px solid rgba(66, 104, 201, .15);
+}
+
+#AF_CustomTemplates .ct-footer #addTemplate { margin-right: auto !important; }
+
+/* --- Английский режим: тот же оттенок, что у главного окна --- */
+body.chmaf-en-lang #AF_CustomTemplates {
+    --ct-glow: hsla(var(--en-h), 80%, 60%, .22);
+    --ct-line: hsla(var(--en-h), 45%, 45%, .55);
+    --ct-btn-line: hsla(var(--en-h), 40%, 50%, .45);
+    --ct-btn-hover-line: hsl(var(--en-h), 75%, 72%);
+    --ct-primary: hsl(var(--en-h), 55%, 50%);
+    --ct-primary-hover: hsl(var(--en-h), 60%, 57%);
+    --ct-primary-line: hsl(var(--en-h), 70%, 68%);
+    --ct-accent: hsl(var(--en-h), 85%, 82%);
+    --ct-focus: hsl(var(--en-h), 80%, 72%);
+}
+
+body.chmaf-en-lang #AF_CustomTemplates #custom_templates_window.glass-panel {
+    background:
+        radial-gradient(circle at 95% 0%, var(--ct-glow), transparent 45%),
+        linear-gradient(160deg, hsla(var(--en-h), 35%, 16%, 1), #111827 65%) !important;
+}
+
+body.chmaf-en-lang #AF_CustomTemplates .ct-lang {
+    color: #fff;
+    background: hsl(var(--en-h), 55%, 45%);
+    border-color: hsla(var(--en-h), 90%, 78%, .7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #AF_CustomTemplates * { transition: none !important; }
+}

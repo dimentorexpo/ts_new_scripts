@@ -32,23 +32,27 @@ let countOfTemplates = 0;
 // ============================================================
 
 var win_CustomTemplates = `
-    <div class="glass-panel"
-         id="custom_templates_window"
-         style="cursor: -webkit-grab; max-height: 80vh; display: flex; flex-direction: column; width: 550px;">
+    <div class="glass-panel ct-panel" id="custom_templates_window">
 
-        <h3 class="chmaf-drag-handle"
-            style="margin-top: 5px; margin-bottom: 10px; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.5); color:bisque">
-            Личные шаблоны
-        </h3>
+        <div class="ct-header chmaf-drag-handle">
+            <button id="hideCustomTemplates"
+                    title="Скрыть окно"
+                    aria-label="Закрыть окно"
+                    class="glass-btn mainButton buttonHide ct-icon-btn"
+                    type="button">❌</button>
 
-        <div id="cstmTmplates"
-             style="overflow-y: auto; padding-right: 10px; margin-bottom: 10px; flex-grow: 1;">
+            <div class="ct-title">📒 Личные шаблоны</div>
+
+            <span class="ct-lang" title="Шаблоны какого языка сейчас редактируются (переключается кнопкой языка в главном окне)">
+                <span class="ct-lang-ru">RU</span><span class="ct-lang-en">EN</span>
+            </span>
+        </div>
+
+        <div id="cstmTmplates" class="ct-list">
             <!-- Строки шаблонов -->
         </div>
 
-        <div class="flex-row"
-             style="justify-content: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
-
+        <div class="ct-footer">
             <button id="addTemplate"
                     title="Добавить новый шаблон"
                     class="glass-btn mainButton"
@@ -56,14 +60,8 @@ var win_CustomTemplates = `
 
             <button id="saveAllTemplates"
                     title="Сохранить все шаблоны"
-                    class="glass-btn mainButton"
+                    class="glass-btn mainButton ct-primary"
                     type="button">💾 Сохранить всё</button>
-
-            <button id="hideCustomTemplates"
-                    title="Скрытие меню"
-                    class="glass-btn buttonHide"
-                    type="button"
-                    style="margin-left: auto;">❌</button>
         </div>
     </div>
 `;
@@ -149,57 +147,58 @@ function addNewString(index) {
     ).replace(/\\n/g, '\n');
 
     const rowHtml = `
-        <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.2);"
+        <div class="ct-row"
              tmp="template_${languageTmplt}${index}"
              index="${index}">
 
-            <div class="flex-row" style="margin-bottom: 5px;">
-                <input id="checkboxInp${languageTmplt}${index}"
-                       type="checkbox"
-                       style="cursor: pointer; width: 16px; height: 16px;"
-                       title="Отображать в быстром меню"
-                       ${checkboxValue ? 'checked' : ''}>
+            <div class="ct-row-head">
+                <label class="ct-switch" title="Показывать кнопку шаблона в главном окне">
+                    <input id="checkboxInp${languageTmplt}${index}"
+                           type="checkbox"
+                           ${checkboxValue ? 'checked' : ''}>
+                    <span class="ct-switch-track" aria-hidden="true"></span>
+                    <span class="ct-switch-text">в меню</span>
+                </label>
 
                 <input id="tmpNameInp${languageTmplt}${index}"
-                       class="glass-input"
-                       style="width: 140px;"
-                       placeholder="Имя шаблона">
+                       class="glass-input ct-name"
+                       placeholder="Название кнопки">
 
-                <button id="ctSortUpBtn${index}"
-                        class="glass-btn mainButton"
-                        type="button"
-                        title="Вверх"
-                        style="padding: 2px 8px;">↑</button>
+                <div class="ct-tools">
+                    <button id="ctSortUpBtn${index}"
+                            class="glass-btn mainButton ct-icon-btn"
+                            type="button"
+                            title="Переместить вверх"
+                            aria-label="Переместить вверх">↑</button>
 
-                <button id="ctSortDownBtn${index}"
-                        class="glass-btn mainButton"
-                        type="button"
-                        title="Вниз"
-                        style="padding: 2px 8px;">↓</button>
+                    <button id="ctSortDownBtn${index}"
+                            class="glass-btn mainButton ct-icon-btn"
+                            type="button"
+                            title="Переместить вниз"
+                            aria-label="Переместить вниз">↓</button>
 
-                <div class="flex-right">
                     <button id="ctDeleteBtn${index}"
-                            class="glass-btn mainButton"
+                            class="glass-btn mainButton ct-icon-btn ct-danger"
                             type="button"
                             title="Удалить шаблон"
-                            style="border-color: rgba(255,99,71,0.4); color: #ff8b8b;">Del</button>
+                            aria-label="Удалить шаблон">🗑️</button>
 
                     <button id="ctSaveBtn${index}"
-                            class="glass-btn mainButton"
+                            class="glass-btn mainButton ct-icon-btn"
                             type="button"
-                            title="Сохранить шаблон">Save</button>
+                            title="Сохранить шаблон (сохраняется и автоматически)"
+                            aria-label="Сохранить шаблон">💾</button>
 
                     <button id="ctSendBtn${index}"
-                            class="glass-btn mainButton primary"
+                            class="glass-btn mainButton primary ct-send"
                             type="button"
-                            title="Перенести текст в главное окно">Send</button>
+                            title="Перенести текст в главное окно">Вставить</button>
                 </div>
             </div>
 
             <textarea id="cstmTmpInp${languageTmplt}${index}"
-                      class="glass-textarea"
-                      style="width: 100%; min-height: 45px; resize: vertical; box-sizing: border-box;"
-                      placeholder="Текст шаблона..."></textarea>
+                      class="glass-textarea ct-text"
+                      placeholder="Текст шаблона…"></textarea>
         </div>
     `;
 

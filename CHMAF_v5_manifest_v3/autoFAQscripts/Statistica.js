@@ -96,7 +96,7 @@ const showLoader = (id = 'outputstatafield', text = '⏳ Загрузка...') =
 
 const showError = (msg, id = 'outputstatafield') => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = `<div style="padding:15px;color:#ff6b6b">❌ ${msg}</div>`;
+    if (el) el.innerHTML = `<div style="padding:15px;color:#fca5a5">❌ ${msg}</div>`;
     console.error('❌', msg);
 };
 
@@ -202,10 +202,10 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
             border-collapse: separate;
             border-spacing: 0;
             font-size: 13px;
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+            background: #1a2536;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(66, 104, 201, 0.2);
             animation: tableEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         `
     });
@@ -215,8 +215,8 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     headerRow.style.cssText = `
-        background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-        box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+        background: #162133;
+        box-shadow: inset 0 -1px 0 #344258;
     `;
 
     columns.forEach((text, colIdx) => {
@@ -225,16 +225,16 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
             padding: 14px 12px;
             border: none;
             font-weight: 700;
-            color: #0f172a;
+            color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 12px;
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+            letter-spacing: 0.06em;
+            font-size: 11px;
+            text-shadow: none;
             position: relative;
         `;
 
         if (text === '⏱AHT') {
-            th.innerHTML = `<span style="cursor:pointer;border-bottom:2px dashed #0f172a;padding-bottom:2px;" class="aht-sort-btn" data-sort="asc" title="Сортировать по AHT">⏱AHT ▲</span>`;
+            th.innerHTML = `<span style="cursor:pointer;border-bottom:1px dashed #94a3b8;padding-bottom:2px;" class="aht-sort-btn" data-sort="asc" title="Сортировать по AHT">⏱AHT ▲</span>`;
             th.style.cursor = 'pointer';
         } else {
             th.textContent = text;
@@ -259,7 +259,7 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
 
         const tr = Object.assign(document.createElement('tr'), {
             style: `
-                border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+                border-bottom: 1px solid rgba(66, 104, 201, 0.1);
                 transition: all 0.3s ease;
                 animation: rowFadeIn 0.4s ease forwards;
                 animation-delay: ${index * 0.05}s;
@@ -268,9 +268,9 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
         });
 
         tr.onmouseenter = function () {
-            this.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(168, 85, 247, 0.1) 100%)';
+            this.style.background = 'rgba(0, 0, 0, 0.22)';
             this.style.transform = 'scale(1.02)';
-            this.style.boxShadow = '0 4px 20px rgba(56, 189, 248, 0.3)';
+            this.style.boxShadow = '0 4px 20px rgba(66, 104, 201, 0.3)';
         };
         tr.onmouseleave = function () {
             this.style.background = '';
@@ -283,8 +283,8 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
             text-align: left;
             padding: 12px 16px;
             font-weight: ${isCurrent ? '800' : '600'};
-            color: ${isCurrent ? '#53db4b' : '#e2e8f0'};
-            text-shadow: ${isCurrent ? '0 0 10px rgba(83, 219, 75, 0.6), 1px 2px 5px rgba(0,0,0,0.55)' : 'none'};
+            color: ${isCurrent ? '#86efac' : '#e2e8f0'};
+            text-shadow: ${isCurrent ? '0 0 10px rgba(134, 239, 172, 0.6), 1px 2px 5px rgba(0,0,0,0.55)' : 'none'};
             position: relative;
         `;
 
@@ -319,8 +319,8 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
             if (attr === 'chtcnt') {
                 td.textContent = chatCountMap.get(op.operator) ?? 0;
                 td.className = 'chtcnt';
-                td.style.color = '#38bdf8';
-                td.style.textShadow = '0 0 8px rgba(56, 189, 248, 0.5)';
+                td.style.color = '#a9c0ff';
+                td.style.textShadow = '0 0 8px rgba(66, 104, 201, 0.5)';
             } else {
                 td.innerHTML = '<span style="font-size: 10px; opacity: 0.7; animation: loadingPulse 1.5s ease-in-out infinite;">⏳</span>';
                 td.setAttribute('name', attr);
@@ -374,23 +374,23 @@ function renderSummaryStats(operators, chatCountMap) {
         style: `
             margin: 30px 0 0 0;
             padding: 25px;
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
+            background: #1a2536;
             border-radius: 16px;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(66, 104, 201, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(66, 104, 201, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
             animation: summaryEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
         `
     });
 
     const stats = [
-        { label: '📦 Закрыто чатов:', value: '<span id="allChatsClsd" class="stat-loading">⏳</span>', icon: '📦', color: '#38bdf8', compact: true },
-        { label: '✋ Пощупано чатов:', value: totalTouched, icon: '✋', color: '#a855f7', compact: true },
-        { label: '🤖 Средний %АЗ:', value: '<span id="avgAutoClosedGroup" class="stat-loading">⏳</span>', icon: '🤖', color: '#10b981', compact: true },
-        { label: '🌟 Средний CSAT:', value: '<span id="avgCsatonGroup" class="stat-loading">⏳</span>', icon: '🌟', color: '#f59e0b', compact: true },
-        { label: '⏱ Средний AHT:', value: '<span id="avgAHTGroup" class="stat-loading">⏳</span>', icon: '⏱', color: '#06b6d4', compact: true },
-        { label: '📋 Разбивка по оценкам:', value: '<span id="CSATDetails" class="stat-loading">⏳</span>', icon: '📋', color: '#ec4899', compact: false },
-        { label: '🕒 SLA закрытия:', value: '<span id="SLAonGroup" class="stat-loading">⏳</span>', icon: '🕒', color: '#8b5cf6', compact: false },
-        { label: '🚀 AFRT:', value: '<span id="AFRTGroup" class="stat-loading">⏳</span>', icon: '🚀', color: '#14b8a6', compact: false },
+        { label: '📦 Закрыто чатов:', value: '<span id="allChatsClsd" class="stat-loading">⏳</span>', icon: '📦', color: '#a9c0ff', compact: true },
+        { label: '✋ Пощупано чатов:', value: totalTouched, icon: '✋', color: '#a9c0ff', compact: true },
+        { label: '🤖 Средний %АЗ:', value: '<span id="avgAutoClosedGroup" class="stat-loading">⏳</span>', icon: '🤖', color: '#a9c0ff', compact: true },
+        { label: '🌟 Средний CSAT:', value: '<span id="avgCsatonGroup" class="stat-loading">⏳</span>', icon: '🌟', color: '#a9c0ff', compact: true },
+        { label: '⏱ Средний AHT:', value: '<span id="avgAHTGroup" class="stat-loading">⏳</span>', icon: '⏱', color: '#a9c0ff', compact: true },
+        { label: '📋 Разбивка по оценкам:', value: '<span id="CSATDetails" class="stat-loading">⏳</span>', icon: '📋', color: '#a9c0ff', compact: false },
+        { label: '🕒 SLA закрытия:', value: '<span id="SLAonGroup" class="stat-loading">⏳</span>', icon: '🕒', color: '#a9c0ff', compact: false },
+        { label: '🚀 AFRT:', value: '<span id="AFRTGroup" class="stat-loading">⏳</span>', icon: '🚀', color: '#a9c0ff', compact: false },
     ];
 
     // Компактные карточки (2 колонки)
@@ -409,9 +409,9 @@ function renderSummaryStats(operators, chatCountMap) {
             align-items: center;
             gap: 15px;
             padding: 18px;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%);
+            background: rgba(0, 0, 0, 0.22);
             border-radius: 12px;
-            border: 1px solid rgba(${stat.color === '#38bdf8' ? '56, 189, 248' : stat.color === '#a855f7' ? '168, 85, 247' : stat.color === '#10b981' ? '16, 185, 129' : stat.color === '#06b6d4' ? '6, 182, 212' : '245, 158, 11'}, 0.2);
+            border: 1px solid #344258;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
             transition: all 0.3s ease;
             animation: statCardSlide 0.5s ease forwards;
@@ -422,15 +422,15 @@ function renderSummaryStats(operators, chatCountMap) {
         `;
 
         statCard.onmouseenter = function () {
-            this.style.transform = 'translateY(-3px) scale(1.02)';
-            this.style.boxShadow = `0 8px 30px rgba(0, 0, 0, 0.5), 0 0 25px ${stat.color}50`;
-            this.style.borderColor = stat.color + '80';
+            this.style.transform = 'translateY(-1px)';
+            this.style.boxShadow = '0 6px 18px rgba(3, 9, 22, 0.45)';
+            this.style.borderColor = '#7799e2';
         };
 
         statCard.onmouseleave = function () {
             this.style.transform = '';
             this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)';
-            this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            this.style.borderColor = '#344258';
         };
 
         const iconBox = document.createElement('div');
@@ -441,11 +441,11 @@ function renderSummaryStats(operators, chatCountMap) {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, ${stat.color}30, ${stat.color}10);
+            background: rgba(66, 104, 201, 0.12);
             border-radius: 12px;
-            border: 1px solid ${stat.color}40;
-            box-shadow: 0 0 20px ${stat.color}30, inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            filter: drop-shadow(0 0 10px ${stat.color});
+            border: 1px solid rgba(119, 153, 226, 0.35);
+            box-shadow: none;
+
         `;
         iconBox.textContent = stat.icon;
 
@@ -472,7 +472,7 @@ function renderSummaryStats(operators, chatCountMap) {
             font-size: 22px;
             font-weight: 800;
             color: ${stat.color};
-            text-shadow: 0 0 10px ${stat.color}80;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
             line-height: 1.2;
         `;
         valueDiv.innerHTML = typeof stat.value === 'number' ? stat.value : stat.value;
@@ -497,9 +497,9 @@ function renderSummaryStats(operators, chatCountMap) {
             gap: 15px;
             padding: 18px;
             margin-bottom: 15px;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%);
+            background: rgba(0, 0, 0, 0.22);
             border-radius: 12px;
-            border: 1px solid rgba(${stat.color === '#ec4899' ? '236, 72, 153' : stat.color === '#8b5cf6' ? '139, 92, 246' : '20, 184, 166'}, 0.2);
+            border: 1px solid #344258;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
             transition: all 0.3s ease;
             animation: statCardSlide 0.5s ease forwards;
@@ -511,14 +511,14 @@ function renderSummaryStats(operators, chatCountMap) {
 
         statCard.onmouseenter = function () {
             this.style.transform = 'translateX(5px)';
-            this.style.boxShadow = `0 6px 25px rgba(0, 0, 0, 0.5), 0 0 20px ${stat.color}40`;
-            this.style.borderColor = stat.color + '80';
+            this.style.boxShadow = `0 6px 25px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(119, 153, 226, 0.35)`;
+            this.style.borderColor = '#7799e2';
         };
 
         statCard.onmouseleave = function () {
             this.style.transform = '';
             this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)';
-            this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            this.style.borderColor = '#344258';
         };
 
         const iconBox = document.createElement('div');
@@ -529,11 +529,11 @@ function renderSummaryStats(operators, chatCountMap) {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, ${stat.color}30, ${stat.color}10);
+            background: rgba(66, 104, 201, 0.12);
             border-radius: 12px;
-            border: 1px solid ${stat.color}40;
-            box-shadow: 0 0 20px ${stat.color}30, inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            filter: drop-shadow(0 0 10px ${stat.color});
+            border: 1px solid rgba(119, 153, 226, 0.35);
+            box-shadow: none;
+
         `;
         iconBox.textContent = stat.icon;
 
@@ -560,7 +560,7 @@ function renderSummaryStats(operators, chatCountMap) {
             font-size: 18px;
             font-weight: 800;
             color: ${stat.color};
-            text-shadow: 0 0 10px ${stat.color}80;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
             line-height: 1.4;
         `;
         valueDiv.innerHTML = typeof stat.value === 'number' ? stat.value : stat.value;
@@ -652,7 +652,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
         if (!cell) return () => { };
         cell.innerHTML = `
             <div style="width: 60px; margin: 0 auto; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; position: relative; height: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
-                <div data-bar style="width: 0%; height: 100%; background-color: #53db4b; transition: width 0.1s ease;"></div>
+                <div data-bar style="width: 0%; height: 100%; background-color: #86efac; transition: width 0.1s ease;"></div>
                 <div data-pct style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; text-align: center; font-size: 10px; color: white; line-height: 16px; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">0%</div>
             </div>`;
         const box = cell.firstElementChild;
@@ -874,7 +874,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
 
                 cells.aclosedchatsdata.innerHTML = `
                     <span class="acls-popup-btn" data-opidx="${i}" data-opname="${escapeStatHtml(opName)}"
-                          style="color:#53db4b; cursor:pointer; border-bottom:1px dashed #53db4b;"
+                          style="color:#86efac; cursor:pointer; border-bottom:1px dashed #86efac;"
                           title="Посмотреть детали автозакрытия">
                         ${pct}
                     </span>`;
@@ -891,7 +891,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
                 window.operatorAHTDetails[i] = { chats: ahtChatDetails, avgAHT: ahtValue, totalClosed: closedChatsCountForAHT };
                 cells.ahtdata.innerHTML = `
                     <span class="aht-popup-btn" data-opidx="${i}" data-opname="${escapeStatHtml(opName)}"
-                          style="color:#f59e0b; cursor:pointer; border-bottom:1px dashed #f59e0b; font-weight:700;"
+                          style="color:#fcd34d; cursor:pointer; border-bottom:1px dashed #fcd34d; font-weight:700;"
                           title="Посмотреть чаты с AHT оператора">
                         ${ahtValue}s
                     </span>`;
@@ -931,8 +931,9 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
     const calcChatsClsContainer = alloperChatsclsed > 0 ? ((((alloperChatsclsed - alloperSLAclsed) * 100) / SLA_TARGET_PERCENT) - alloperChatsclsed).toFixed(1) : '0.0';
     const calcAFRTContainer = uniquedArrayAllLength > 0 ? (((massivchikTarget.size * 100) / AFRT_TARGET_PERCENT) - uniquedArrayAllLength).toFixed(1) : '0.0';
 
-    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    const setHTML = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+    // Значение пришло — снимаем «мигание загрузки» (раньше цифры мигали бесконечно)
+    const set = (id, val) => { const el = document.getElementById(id); if (el) { el.textContent = val; el.classList.remove('stat-loading'); } };
+    const setHTML = (id, html) => { const el = document.getElementById(id); if (el) { el.innerHTML = html; el.classList.remove('stat-loading'); } };
 
     set('avgCsatonGroup', alloperCSATcount > 0 ? (alloperCSATsumma / alloperCSATcount).toFixed(2) : 'N/A');
     const c5 = rateCounts['5'] || 0;
@@ -942,9 +943,9 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
     const c1 = rateCounts['1'] || 0;
 
     setHTML('CSATDetails', `
-        <div style="margin-top: 8px; margin-bottom: 12px; border-radius: 6px; overflow: hidden; display: block; width: max-content; border: 1px solid #5f7875; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+        <div style="margin-top: 8px; margin-bottom: 12px; border-radius: 6px; overflow: hidden; display: block; width: max-content; border: 1px solid #344258; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
             <table style="text-align: center; border-collapse: collapse; background: rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; margin: 0; white-space: nowrap;">
-                <tr style="background: rgba(0,0,0,0.4); font-size: 13px; color: bisque;">
+                <tr style="background: rgba(0,0,0,0.4); font-size: 13px; color: #e2e8f0;">
                     <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">5 😊</td>
                     <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">4 🥴</td>
                     <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">3 😐</td>
@@ -952,11 +953,11 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
                     <td style="padding: 6px 14px;">1 🤬</td>
                 </tr>
                 <tr style="font-size: 15px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #53db4b; font-weight: bold;">${c5} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c5 * 5})</span></td>
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #b8db4b; font-weight: bold;">${c4} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c4 * 4})</span></td>
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #dbd24b; font-weight: bold;">${c3} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c3 * 3})</span></td>
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #db8c4b; font-weight: bold;">${c2} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c2 * 2})</span></td>
-                    <td style="padding: 6px 14px; color: #ff6b6b; font-weight: bold;">${c1} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c1 * 1})</span></td>
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #86efac; font-weight: bold;">${c5} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c5 * 5})</span></td>
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #7dd3fc; font-weight: bold;">${c4} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c4 * 4})</span></td>
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #fcd34d; font-weight: bold;">${c3} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c3 * 3})</span></td>
+                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #fdba74; font-weight: bold;">${c2} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c2 * 2})</span></td>
+                    <td style="padding: 6px 14px; color: #fca5a5; font-weight: bold;">${c1} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c1 * 1})</span></td>
                 </tr>
             </table>
         </div>
@@ -966,12 +967,12 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
 
     // Добавляем вычисление Среднего %АЗ по всему отделу
     const avgAclsPct = alloperChatsclsed > 0 ? ((totalGroupAutoClosed / alloperChatsclsed) * 100).toFixed(1) + '%' : '0.0%';
-    setHTML('avgAutoClosedGroup', `<span style="color:#53db4b; font-weight:bold;">${avgAclsPct}</span> <span style="font-size:12px;color:#aaa;">(АЗ: ${totalGroupAutoClosed} / Закрыто: ${alloperChatsclsed})</span>`);
+    setHTML('avgAutoClosedGroup', `<span style="color:#86efac; font-weight:bold;">${avgAclsPct}</span> <span style="font-size:12px;color:#aaa;">(АЗ: ${totalGroupAutoClosed} / Закрыто: ${alloperChatsclsed})</span>`);
 
     // Добавляем вычисление Среднего AHT по всему отделу
     const avgAHTValue = totalGroupClosedChatsForAHT > 0 ? Math.round(totalGroupHandleTimeSeconds / totalGroupClosedChatsForAHT) : 0;
     setHTML('avgAHTGroup', avgAHTValue > 0
-        ? `<span style="color:#f59e0b; font-weight:bold; font-size:16px;">${avgAHTValue}s</span> <span style="font-size:11px; color:#aaa;">(${totalGroupClosedChatsForAHT} чатов)</span>`
+        ? `<span style="color:#fcd34d; font-weight:bold; font-size:16px;">${avgAHTValue}s</span> <span style="font-size:11px; color:#aaa;">(${totalGroupClosedChatsForAHT} чатов)</span>`
         : '<span style="color:#64748b;">N/A</span>');
 
     const slaPercent = alloperChatsclsed > 0 ? ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' : '100%';
@@ -992,7 +993,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
     setHTML('AFRTGroup', `
         ${afrtPercent} Всего влияли на AFRT: ${uniquedArrayAllLength} из них:
         <div style="margin-top:5px;padding-left:15px;border-left:2px solid #555">
-            • <span class="afrt-untarget-popup-btn" style="color:#ff6b6b; cursor:pointer; border-bottom:1px dashed #ff6b6b; font-weight:700;" title="Нажмите, чтобы посмотреть список чатов вне таргета">🚫Вне таргета: ${massivchikUntarget.size} 📋</span><br>
+            • <span class="afrt-untarget-popup-btn" style="color:#fca5a5; cursor:pointer; border-bottom:1px dashed #fca5a5; font-weight:700;" title="Нажмите, чтобы посмотреть список чатов вне таргета">🚫Вне таргета: ${massivchikUntarget.size} 📋</span><br>
             • ✅В таргете: ${massivchikTarget.size}<br>
             🎯Для таргета ${AFRT_TARGET_PERCENT}% можем позволить просрочить:
             <span style="color:${afrtCalcColor}; font-weight:700">${calcAFRTContainer}</span> чатов${afrtExtra}
@@ -1002,7 +1003,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
     if (failedChats || failedPages) {
         const output = document.getElementById('outputstatafield');
         const warning = document.createElement('div');
-        warning.style.cssText = 'margin:12px 0 0;padding:10px 14px;border-radius:8px;background:rgba(245,158,11,0.15);border:1px solid #f59e0b;color:#fcd34d;font-weight:600;';
+        warning.style.cssText = 'margin:12px 0 0;padding:10px 14px;border-radius:8px;background:rgba(252,211,77,0.15);border:1px solid #fcd34d;color:#fcd34d;font-weight:600;';
         warning.textContent = `⚠️ Не загрузились: чатов — ${failedChats}, страниц списка — ${failedPages}. ` +
             'Цифры могут быть занижены. Нажми «Статистика» ещё раз.';
         output?.prepend(warning);
@@ -1036,9 +1037,9 @@ function renderAclsModal(idx, opName) {
         if (!list || list.length === 0) return '<div style="color:gray; font-size:12px; text-align:center; padding-top:10px;">Нет чатов</div>';
         return list.map(hash => `
             <div class="modal-lookchat" data-hash="${hash}" title="Нажмите, чтобы открыть чат в истории"
-                 style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:4px; cursor:pointer; color:#dfd1f5; font-family:monospace; font-size:13px; text-align:center; border: 1px solid transparent; transition: all 0.2s;"
-                 onmouseover="if(!this.classList.contains('active-chat')){this.style.background='rgba(83,219,75,0.1)'; this.style.borderColor='#53db4b'; this.style.color='#fff'}"
-                 onmouseout="if(!this.classList.contains('active-chat')){this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#dfd1f5'}">
+                 style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:4px; cursor:pointer; color:#a9c0ff; font-family:monospace; font-size:13px; text-align:center; border: 1px solid transparent; transition: all 0.2s;"
+                 onmouseover="if(!this.classList.contains('active-chat')){this.style.background='rgba(134,239,172,0.1)'; this.style.borderColor='#86efac'; this.style.color='#fff'}"
+                 onmouseout="if(!this.classList.contains('active-chat')){this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#a9c0ff'}">
                 <span style="pointer-events: none;">${hash}</span>
             </div>
         `).join('');
@@ -1063,30 +1064,30 @@ function renderAclsModal(idx, opName) {
     const modal = document.createElement('div');
     Object.assign(modal.style, {
         position: 'absolute', pointerEvents: 'auto',
-        backgroundColor: '#2e3b3a', border: '1px solid #5f7875', borderRadius: '8px',
+        backgroundColor: '#111827', border: '1px solid #344258', borderRadius: '14px',
         width: '650px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.8)', color: 'bisque',
+        boxShadow: '0 26px 70px rgba(3, 9, 22, 0.6)', color: '#e2e8f0',
         left: startLeft + 'px',
         top: startTop + 'px'
     });
 
     modal.innerHTML = `
-        <div class="acls-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background: rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
+        <div class="acls-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #344258; display:flex; justify-content:space-between; align-items:flex-start; background: rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
             <div>
-                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">Детали %A3: <span style="color:#53db4b">${escapeStatHtml(opName)}</span></h3>
+                <h3 style="margin:0; font-size:16px; font-weight:600; color:#e2e8f0;">Детали %A3: <span style="color:#86efac">${escapeStatHtml(opName)}</span></h3>
                 <div style="font-size:13px; color:#aaa; margin-top:6px;">
-                    Всего закрыто: <b style="color:bisque">${data.totalClosed || 0}</b> |
-                    Чатов АЗ: <b style="color:#e38118">${data.inactivity ? data.inactivity.length : 0}</b> |
-                    Чатов отложек с АЗ: <b style="color:#53db4b">${data.pause ? data.pause.length : 0}</b>
+                    Всего закрыто: <b style="color:#e2e8f0">${data.totalClosed || 0}</b> |
+                    Чатов АЗ: <b style="color:#fdba74">${data.inactivity ? data.inactivity.length : 0}</b> |
+                    Чатов отложек с АЗ: <b style="color:#86efac">${data.pause ? data.pause.length : 0}</b>
                 </div>
             </div>
-            <button id="close-acls-modal" class="af-win-btn buttonHide" style="cursor:pointer; background:transparent; border:none; color:bisque; font-size:16px;">✖</button>
+            <button id="close-acls-modal" class="af-win-btn buttonHide" style="cursor:pointer; background:transparent; border:none; color:#e2e8f0; font-size:16px;">✖</button>
         </div>
-        <div style="display:flex; flex:1; overflow:hidden; padding:15px; gap:15px; background:#464451; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+        <div style="display:flex; flex:1; overflow:hidden; padding:15px; gap:15px; background:#0f1726; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
             <!-- Колонка 1: inactivity_timer -->
             <div style="flex:1; display:flex; flex-direction:column; background:rgba(0,0,0,0.2); border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
-                <div style="text-align:center; font-weight:bold; margin-bottom:10px; border-bottom:1px solid #5f7875; padding:10px; background:rgba(0,0,0,0.3);">
-                    ⏳ Обычные АЗ: <span style="color:#53db4b">${data.inactivity ? data.inactivity.length : 0}</span>
+                <div style="text-align:center; font-weight:bold; margin-bottom:10px; border-bottom:1px solid #344258; padding:10px; background:rgba(0,0,0,0.3);">
+                    ⏳ Обычные АЗ: <span style="color:#86efac">${data.inactivity ? data.inactivity.length : 0}</span>
                 </div>
                 <div style="overflow-y:auto; flex:1; padding:10px;">
                     ${createListHtml(data.inactivity)}
@@ -1094,8 +1095,8 @@ function renderAclsModal(idx, opName) {
             </div>
             <!-- Колонка 2: pause -->
             <div style="flex:1; display:flex; flex-direction:column; background:rgba(0,0,0,0.2); border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
-                <div style="text-align:center; font-weight:bold; margin-bottom:10px; border-bottom:1px solid #5f7875; padding:10px; background:rgba(0,0,0,0.3);">
-                    ⏸️ Отложки с АЗ: <span style="color:#53db4b">${data.pause ? data.pause.length : 0}</span>
+                <div style="text-align:center; font-weight:bold; margin-bottom:10px; border-bottom:1px solid #344258; padding:10px; background:rgba(0,0,0,0.3);">
+                    ⏸️ Отложки с АЗ: <span style="color:#86efac">${data.pause ? data.pause.length : 0}</span>
                 </div>
                 <div style="overflow-y:auto; flex:1; padding:10px;">
                     ${createListHtml(data.pause)}
@@ -1185,10 +1186,10 @@ function renderAHTModal(idx, opName) {
     };
 
     const getAHTColor = (sec) => {
-        if (sec <= 60) return '#53db4b';
-        if (sec <= 120) return '#f59e0b';
-        if (sec <= 300) return '#f97316';
-        return '#ef4444';
+        if (sec <= 60) return '#86efac';
+        if (sec <= 120) return '#fcd34d';
+        if (sec <= 300) return '#fdba74';
+        return '#fca5a5';
     };
 
     const renderChatList = (chats) => {
@@ -1199,9 +1200,9 @@ function renderAHTModal(idx, opName) {
             const color = getAHTColor(c.ahtSeconds);
             return `
                 <div class="modal-lookchat" data-hash="${c.chatId}" title="Нажмите, чтобы открыть чат в истории"
-                     style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:4px; cursor:pointer; color:#dfd1f5; font-family:monospace; font-size:13px; border:1px solid transparent; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center;"
-                     onmouseover="if(!this.classList.contains('active-chat')){this.style.background='rgba(83,219,75,0.1)'; this.style.borderColor='#53db4b'; this.style.color='#fff'}"
-                     onmouseout="if(!this.classList.contains('active-chat')){this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#dfd1f5'}">
+                     style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:4px; cursor:pointer; color:#a9c0ff; font-family:monospace; font-size:13px; border:1px solid transparent; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center;"
+                     onmouseover="if(!this.classList.contains('active-chat')){this.style.background='rgba(134,239,172,0.1)'; this.style.borderColor='#86efac'; this.style.color='#fff'}"
+                     onmouseout="if(!this.classList.contains('active-chat')){this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#a9c0ff'}">
                     <span style="pointer-events:none; color:#aaa; font-size:11px; min-width:28px;">${index + 1}.</span>
                     <span style="pointer-events:none; flex:1; text-align:center;">${c.chatId}</span>
                     <span style="pointer-events:none; color:${color}; font-weight:700; min-width:75px; text-align:right;">${formatTime(c.ahtSeconds)}</span>
@@ -1227,30 +1228,30 @@ function renderAHTModal(idx, opName) {
     const modal = document.createElement('div');
     Object.assign(modal.style, {
         position: 'absolute', pointerEvents: 'auto',
-        backgroundColor: '#2e3b3a', border: '1px solid #5f7875', borderRadius: '8px',
+        backgroundColor: '#111827', border: '1px solid #344258', borderRadius: '14px',
         width: '650px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.8)', color: 'bisque',
+        boxShadow: '0 26px 70px rgba(3, 9, 22, 0.6)', color: '#e2e8f0',
         left: startLeft + 'px', top: startTop + 'px'
     });
 
     const sortedChatsAsc = [...data.chats].sort((a, b) => a.ahtSeconds - b.ahtSeconds);
 
     modal.innerHTML = `
-        <div class="aht-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background:rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
+        <div class="aht-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #344258; display:flex; justify-content:space-between; align-items:flex-start; background:rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
             <div>
-                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">Детали AHT: <span style="color:#53db4b">${escapeStatHtml(opName)}</span></h3>
+                <h3 style="margin:0; font-size:16px; font-weight:600; color:#e2e8f0;">Детали AHT: <span style="color:#86efac">${escapeStatHtml(opName)}</span></h3>
                 <div style="font-size:13px; color:#aaa; margin-top:6px;">
-                    Средний AHT: <b style="color:#e38118">${formatTime(data.avgAHT)}</b> |
-                    Чатов в расчёте: <b style="color:#53db4b">${data.totalClosed}</b>
+                    Средний AHT: <b style="color:#fdba74">${formatTime(data.avgAHT)}</b> |
+                    Чатов в расчёте: <b style="color:#86efac">${data.totalClosed}</b>
                 </div>
             </div>
-            <button id="close-aht-modal" class="af-win-btn buttonHide" style="cursor:pointer; background:transparent; border:none; color:bisque; font-size:16px;">✖</button>
+            <button id="close-aht-modal" class="af-win-btn buttonHide" style="cursor:pointer; background:transparent; border:none; color:#e2e8f0; font-size:16px;">✖</button>
         </div>
-        <div style="display:flex; flex:1; overflow:hidden; padding:15px; background:#464451; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+        <div style="display:flex; flex:1; overflow:hidden; padding:15px; background:#0f1726; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
             <div style="flex:1; display:flex; flex-direction:column; background:rgba(0,0,0,0.2); border-radius:6px; border:1px solid rgba(255,255,255,0.1); overflow:hidden;">
-                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; border-bottom:1px solid #5f7875; padding:10px 14px; background:rgba(0,0,0,0.3);">
-                    <span>⏱ Список чатов (<span id="aht-sort-label" style="color:#53db4b;">↑ по возрастанию</span>)</span>
-                    <button id="aht-sort-toggle" style="background:rgba(83,219,75,0.15); border:1px solid #53db4b; color:#53db4b; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600;">↕ Сменить порядок</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; border-bottom:1px solid #344258; padding:10px 14px; background:rgba(0,0,0,0.3);">
+                    <span>⏱ Список чатов (<span id="aht-sort-label" style="color:#86efac;">↑ по возрастанию</span>)</span>
+                    <button id="aht-sort-toggle" style="background:rgba(134,239,172,0.15); border:1px solid #86efac; color:#86efac; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600;">↕ Сменить порядок</button>
                 </div>
                 <div id="aht-chats-list" style="overflow-y:auto; flex:1; padding:10px; max-height:55vh;">
                     ${renderChatList(sortedChatsAsc)}
@@ -1352,13 +1353,13 @@ function renderAFRTModal() {
     const renderChatList = (chats) => {
         return chats.map((c, index) => `
             <div class="modal-lookchat" data-hash="${c.chatId}" title="Нажмите, чтобы открыть чат в истории"
-                 style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:4px; cursor:pointer; color:#dfd1f5; font-family:monospace; font-size:13px; border:1px solid transparent; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center; gap:10px;"
-                 onmouseover="if(!this.classList.contains('active-chat')){this.style.background='rgba(83,219,75,0.1)'; this.style.borderColor='#53db4b'; this.style.color='#fff'}"
-                 onmouseout="if(!this.classList.contains('active-chat')){this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#dfd1f5'}">
+                 style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:4px; cursor:pointer; color:#a9c0ff; font-family:monospace; font-size:13px; border:1px solid transparent; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center; gap:10px;"
+                 onmouseover="if(!this.classList.contains('active-chat')){this.style.background='rgba(134,239,172,0.1)'; this.style.borderColor='#86efac'; this.style.color='#fff'}"
+                 onmouseout="if(!this.classList.contains('active-chat')){this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#a9c0ff'}">
                 <span style="pointer-events:none; color:#aaa; font-size:11px; min-width:24px;">${index + 1}.</span>
                 <span style="pointer-events:none; flex:1; text-align:center;">${c.chatId}</span>
-                <span style="pointer-events:none; color:bisque; font-family:sans-serif; font-size:11px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.operator}">${c.operator}</span>
-                <span style="pointer-events:none; color:#ff6b6b; font-weight:700; min-width:70px; text-align:right;">${formatTime(c.diffSeconds)}</span>
+                <span style="pointer-events:none; color:#e2e8f0; font-family:sans-serif; font-size:11px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.operator}">${c.operator}</span>
+                <span style="pointer-events:none; color:#fca5a5; font-weight:700; min-width:70px; text-align:right;">${formatTime(c.diffSeconds)}</span>
             </div>
         `).join('');
     };
@@ -1381,31 +1382,31 @@ function renderAFRTModal() {
     const modal = document.createElement('div');
     Object.assign(modal.style, {
         position: 'absolute', pointerEvents: 'auto',
-        backgroundColor: '#2e3b3a', border: '1px solid #5f7875', borderRadius: '8px',
+        backgroundColor: '#111827', border: '1px solid #344258', borderRadius: '14px',
         width: '650px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.8)', color: 'bisque',
+        boxShadow: '0 26px 70px rgba(3, 9, 22, 0.6)', color: '#e2e8f0',
         left: startLeft + 'px', top: startTop + 'px'
     });
 
     const sortedChats = [...list].sort((a, b) => b.diffSeconds - a.diffSeconds);
 
     modal.innerHTML = `
-        <div class="afrt-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #5f7875; display:flex; justify-content:space-between; align-items:flex-start; background:rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
+        <div class="afrt-modal-header chmaf-drag-handle" style="padding:15px 20px; border-bottom:1px solid #344258; display:flex; justify-content:space-between; align-items:flex-start; background:rgb(55 52 71); cursor:grab; border-top-left-radius:8px; border-top-right-radius:8px; user-select:none;">
             <div>
-                <h3 style="margin:0; font-size:16px; font-weight:600; color:bisque;">Детали AFRT вне таргета (> 60с): <span style="color:#53db4b">${list.length} чатов</span></h3>
+                <h3 style="margin:0; font-size:16px; font-weight:600; color:#e2e8f0;">Детали AFRT вне таргета (> 60с): <span style="color:#86efac">${list.length} чатов</span></h3>
                 <div style="font-size:13px; color:#aaa; margin-top:6px;">
                     Клик по хешу открывает чат в истории и подсвечивает выбранную строку
                 </div>
             </div>
-            <button id="close-afrt-modal" class="af-win-btn buttonHide" style="cursor:pointer; background:transparent; border:none; color:bisque; font-size:16px;">✖</button>
+            <button id="close-afrt-modal" class="af-win-btn buttonHide" style="cursor:pointer; background:transparent; border:none; color:#e2e8f0; font-size:16px;">✖</button>
         </div>
-        <div style="display:flex; flex:1; overflow:hidden; padding:15px; background:#464451; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+        <div style="display:flex; flex:1; overflow:hidden; padding:15px; background:#0f1726; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
             <div style="flex:1; display:flex; flex-direction:column; background:rgba(0,0,0,0.2); border-radius:6px; border:1px solid rgba(255,255,255,0.1); overflow:hidden;">
-                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; border-bottom:1px solid #5f7875; padding:10px 14px; background:rgba(0,0,0,0.3); gap:8px;">
-                    <span>🚫 Список чатов (<span id="afrt-sort-label" style="color:#53db4b;">↓ по убыванию</span>)</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; border-bottom:1px solid #344258; padding:10px 14px; background:rgba(0,0,0,0.3); gap:8px;">
+                    <span>🚫 Список чатов (<span id="afrt-sort-label" style="color:#86efac;">↓ по убыванию</span>)</span>
                     <div style="display:flex; gap:8px;">
-                        <button id="afrt-copy-ids" style="background:rgba(83,219,75,0.15); border:1px solid #53db4b; color:#53db4b; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600;">📋 Скопировать ID</button>
-                        <button id="afrt-sort-toggle" style="background:rgba(83,219,75,0.15); border:1px solid #53db4b; color:#53db4b; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600;">↕ Сменить порядок</button>
+                        <button id="afrt-copy-ids" style="background:rgba(134,239,172,0.15); border:1px solid #86efac; color:#86efac; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600;">📋 Скопировать ID</button>
+                        <button id="afrt-sort-toggle" style="background:rgba(134,239,172,0.15); border:1px solid #86efac; color:#86efac; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600;">↕ Сменить порядок</button>
                     </div>
                 </div>
                 <div id="afrt-chats-list" style="overflow-y:auto; flex:1; padding:10px; max-height:55vh;">
@@ -1491,399 +1492,406 @@ function renderAFRTModal() {
 var win_StatisticaAF = `
 <style>
 /* ============================================================================
-   🎨 ПРЕМИАЛЬНЫЙ LUXURY ДИЗАЙН ДАШБОРДА
+   Статистика AutoFAQ — «corporate graphite», как Queue / ChatHistory / Userinfo.
+   Все правила внутри #AF_StataAF: на другие окна стили не протекают.
    ============================================================================ */
-
-#af-dashboard-wrapper {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-    border: 2px solid transparent;
-    border-image: linear-gradient(135deg, #38bdf8, #a855f7, #f43f5e) 1;
-    border-radius: 16px;
-    box-shadow:
-        0 25px 80px rgba(0, 0, 0, 0.9),
-        0 0 60px rgba(56, 189, 248, 0.3),
-        0 0 40px rgba(168, 85, 247, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    overflow: hidden;
-    position: relative;
-    animation: dashboardEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+#AF_StataAF {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
 }
 
-#af-dashboard-wrapper::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 200%;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #38bdf8, #a855f7, #f43f5e, transparent);
-    animation: borderShimmer 4s linear infinite;
-}
+#AF_StataAF #af-dashboard-wrapper,
+#AF_StataAF #af-dashboard-wrapper * { box-sizing: border-box; }
 
-@keyframes dashboardEntrance {
-    from { opacity: 0; transform: scale(0.95) translateY(-20px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-@keyframes borderShimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
-}
-
-/* Шапка */
-#stataaf_header {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
-    padding: 18px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid rgba(56, 189, 248, 0.3);
-    cursor: move;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    position: relative;
-    overflow: hidden;
-}
-
-#stataaf_header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.1), transparent);
-    transition: left 0.6s;
-}
-
-#stataaf_header:hover::before {
-    left: 100%;
-}
-
-.af-title {
-    font-size: 22px;
-    font-weight: 800;
-    background: linear-gradient(135deg, #38bdf8, #a855f7, #f43f5e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 0 30px rgba(56, 189, 248, 0.5);
-    letter-spacing: 0.5px;
-    animation: titlePulse 3s ease-in-out infinite;
-}
-
-@keyframes titlePulse {
-    0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(1.3); }
-}
-
-.af-window-controls {
-    display: flex;
-    gap: 10px;
-}
-
-.af-win-btn {
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.05) 100%);
-    border: 1px solid rgba(56, 189, 248, 0.4);
-    color: #38bdf8;
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    position: relative;
-    overflow: hidden;
-}
-
-.af-win-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(56, 189, 248, 0.4);
-    transition: width 0.4s, height 0.4s, top 0.4s, left 0.4s;
-}
-
-.af-win-btn:hover {
-    background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-    color: #0f172a;
-    box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), 0 0 40px rgba(56, 189, 248, 0.3);
-    transform: translateY(-2px) scale(1.05);
-}
-
-.af-win-btn:hover::before {
-    width: 300px;
-    height: 300px;
-    top: -150px;
-    left: -150px;
-}
-
-.buttonHide {
-    border-color: rgba(244, 63, 94, 0.4);
-    color: #f43f5e;
-    background: linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(244, 63, 94, 0.05) 100%);
-}
-
-.buttonHide:hover {
-    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
-    color: #fff;
-    box-shadow: 0 0 25px rgba(244, 63, 94, 0.6);
-}
-
-/* Панель дат */
-.af-dates-panel {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
-    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
-    gap: 20px;
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4);
-}
-
-.af-date-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #cbd5e1;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.af-date-input {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border: 1px solid rgba(56, 189, 248, 0.4);
+#AF_StataAF #af-dashboard-wrapper {
+    width: min(760px, calc(100vw - 16px));
     color: #e2e8f0;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-family: 'Courier New', monospace;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    letter-spacing: .01em;
+    -webkit-font-smoothing: antialiased;
+    background:
+        radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+        #111827;
+    border: 1px solid #344258;
+    border-radius: 18px;
+    box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
+    overflow: hidden;
+}
+
+/* --- Шапка: ❌ слева, заголовок, 🧹 справа --- */
+#AF_StataAF #stataaf_header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 18px;
+    padding: 18px 0 12px;
+    border-bottom: 1px solid rgba(66, 104, 201, .15);
+    cursor: grab;
+    user-select: none;
+}
+
+#AF_StataAF #stataaf_header:active { cursor: grabbing; }
+
+#AF_StataAF #stataaf_header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 40%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
+}
+
+#AF_StataAF .af-title {
+    flex: 1;
+    min-width: 0;
+    color: #fefefe;
+    font-size: 15px;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+
+/* --- Кнопки --- */
+#AF_StataAF .af-win-btn,
+#AF_StataAF .af-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex: none;
+    height: 34px;
+    min-width: 34px;
+    padding: 0 12px;
+    color: #dce5f5;
+    background: #1b283c;
+    border: 1px solid #3c4d68;
+    border-radius: 9px;
+    font: inherit;
     font-size: 13px;
     font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.af-date-input:focus {
-    outline: none;
-    border-color: #a855f7;
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-}
-
-.af-nav-btns {
-    display: flex;
-    gap: 10px;
-}
-
-.af-nav-btn {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%);
-    border: 1px solid rgba(168, 85, 247, 0.4);
-    color: #a855f7;
-    padding: 8px 16px;
-    border-radius: 8px;
     cursor: pointer;
-    font-size: 13px;
-    font-weight: 700;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
 }
 
-.af-nav-btn:hover {
-    background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+#AF_StataAF .af-win-btn { width: 34px; padding: 0; font-size: 15px; }
+
+#AF_StataAF .af-win-btn:hover,
+#AF_StataAF .af-nav-btn:hover {
     color: #fff;
-    box-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
-    transform: translateY(-2px);
+    background: #293b56;
+    border-color: #7799e2;
+    transform: translateY(-1px);
 }
 
-/* Вкладки */
-.af-tabs {
+#AF_StataAF .af-win-btn:active,
+#AF_StataAF .af-nav-btn:active { transform: translateY(0) scale(.98); }
+
+#AF_StataAF .af-win-btn:focus-visible,
+#AF_StataAF .af-nav-btn:focus-visible,
+#AF_StataAF .af-tab:focus-visible {
+    outline: 2px solid #9ab5ff;
+    outline-offset: 2px;
+}
+
+#AF_StataAF .af-win-btn.buttonHide {
+    color: #ffb0be;
+    background: rgba(255, 116, 140, .08);
+    border-color: rgba(255, 116, 140, .3);
+}
+
+#AF_StataAF .af-win-btn.buttonHide:hover {
+    background: rgba(255, 116, 140, .16);
+    border-color: rgba(255, 116, 140, .55);
+}
+
+/* --- Период --- */
+#AF_StataAF .af-dates-panel {
     display: flex;
-    gap: 6px;
-    padding: 10px 16px;
-    background: rgba(15, 23, 42, 0.6);
-    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 18px 0;
+}
+
+#AF_StataAF .af-date-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+#AF_StataAF .af-date-input {
+    width: 150px;
+    height: 34px;
+    padding: 0 12px;
+    color: #edf2fb;
+    color-scheme: dark;
+    background: #0d1625;
+    border: 1px solid #3a4961;
+    border-radius: 9px;
+    outline: none;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+#AF_StataAF .af-date-input:focus {
+    background: #142034;
+    border-color: #829fff;
+    box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
+}
+
+#AF_StataAF .af-nav-btns {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+    order: 3;
+}
+
+/* --- Разделы: сегментированный переключатель --- */
+#AF_StataAF .af-tabs {
+    display: flex;
+    gap: 4px;
+    margin: 14px 18px 0;
+    padding: 4px;
+    background: #0d1625;
+    border: 1px solid #344258;
+    border-radius: 12px;
     overflow-x: auto;
 }
 
-.af-tab {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    color: #cbd5e1;
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    display: flex;
+#AF_StataAF .af-tab {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    position: relative;
-    overflow: hidden;
+    flex: 1 1 0;
+    min-width: max-content;
+    height: 34px;
+    padding: 0 12px;
+    color: #94a3b8;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    box-shadow: none;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .16s ease, color .16s ease;
 }
 
-.af-tab::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #38bdf8, #a855f7);
-    transition: width 0.3s ease;
+#AF_StataAF .af-tab:hover {
+    color: #fff;
+    background: rgba(66, 104, 201, .16);
 }
 
-.af-tab:hover {
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(168, 85, 247, 0.15) 100%);
-    border-color: #38bdf8;
-    color: #38bdf8;
-    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3);
-    transform: translateY(-2px);
+/* Глобальный .active-stat-tab из style.css (зелёная полоса) здесь заменён */
+#AF_StataAF .af-tab.active-stat-tab {
+    color: #fff;
+    background: #4268c9;
+    border: 1px solid #7293ed;
+    box-shadow: 0 4px 12px rgba(58, 96, 205, .3);
+    text-shadow: none;
+    font-weight: 600;
 }
 
-.af-tab:hover::before {
-    width: 100%;
-}
+#AF_StataAF .af-tab-icon { font-size: 14px; }
 
-.af-tab.active-stat-tab {
-    background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-    border-color: #38bdf8;
-    color: #0f172a;
-    box-shadow: 0 0 30px rgba(56, 189, 248, 0.6), 0 0 50px rgba(56, 189, 248, 0.3);
-    transform: translateY(-2px);
-}
-
-.af-tab-icon {
-    font-size: 14px;
-    filter: drop-shadow(0 0 5px currentColor);
-}
-
-/* Статус-бар */
-.af-status-bar {
+/* --- Время обновления и прогресс --- */
+#AF_StataAF .af-status-bar {
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 14px 24px;
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
-    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+    gap: 12px;
+    padding: 12px 18px;
 }
 
-.af-clock {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border: 1px solid rgba(56, 189, 248, 0.4);
-    color: #38bdf8;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-family: 'Courier New', monospace;
-    font-size: 15px;
+#AF_StataAF .af-clock {
+    flex: none;
+    width: 104px;
+    height: 30px;
+    padding: 0 10px;
+    color: #a9c0ff;
+    background: #0d1625;
+    border: 1px solid #344258;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px;
     font-weight: 700;
     text-align: center;
-    min-width: 120px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(56, 189, 248, 0.1);
-    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    -webkit-text-fill-color: #a9c0ff;
+    opacity: 1;
 }
 
-.af-progress-bg {
-    flex: 1;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    height: 24px;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 15px rgba(56, 189, 248, 0.1);
+#AF_StataAF .af-progress-bg {
     position: relative;
+    flex: 1;
+    height: 18px;
+    background: #0d1625;
+    border: 1px solid #344258;
+    border-radius: 999px;
+    overflow: hidden;
 }
 
-#progress-bar {
+#AF_StataAF #progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #38bdf8, #a855f7, #f43f5e);
-    background-size: 200% 100%;
-    animation: progressFlow 2s ease infinite;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-    box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
-    transition: width 0.3s ease;
+    background: #4268c9;
+    border-radius: inherit;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: width .3s ease;
 }
 
-@keyframes progressFlow {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-}
-
-/* Контент */
-.af-content-area {
-    padding: 16px;
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+/* --- Рабочая область --- */
+#AF_StataAF .af-content-area {
     min-height: 300px;
     max-height: 65vh;
+    padding: 4px 18px 18px;
     overflow-y: auto;
-    color: bisque;
-    box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5);
+    overscroll-behavior: contain;
+    color: #e2e8f0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(66, 104, 201, .4) transparent;
 }
 
-.af-content-area::-webkit-scrollbar {
-    width: 10px;
+#AF_StataAF .af-content-area::-webkit-scrollbar { width: 4px; }
+#AF_StataAF .af-content-area::-webkit-scrollbar-track { background: transparent; }
+#AF_StataAF .af-content-area::-webkit-scrollbar-thumb { background: rgba(66, 104, 201, .3); border-radius: 8px; }
+#AF_StataAF .af-content-area::-webkit-scrollbar-thumb:hover { background: rgba(66, 104, 201, .6); }
+
+/* --- Старые стили статистики из style.css (серо-зелёные) здесь перекрыты --- */
+#AF_StataAF #stataaf_header,
+#AF_StataAF .af-dates-panel,
+#AF_StataAF .af-status-bar,
+#AF_StataAF .af-content-area {
+    background: none;
+    border-top: 0;
+    box-shadow: none;
 }
 
-.af-content-area::-webkit-scrollbar-track {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    border-radius: 5px;
-    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
+#AF_StataAF .af-dates-panel { border-bottom: 0; justify-content: flex-start; }
+#AF_StataAF .af-status-bar { border-bottom: 0; z-index: auto; }
+#AF_StataAF .af-nav-btns { padding: 0; background: none; border: 0; }
+#AF_StataAF .af-tab { flex-direction: row; position: static; }
+#AF_StataAF .af-tab.active-stat-tab { margin-bottom: 0; padding-bottom: 0; z-index: auto; }
+#AF_StataAF .af-clock,
+#AF_StataAF .af-progress-bg { box-shadow: none; }
+#AF_StataAF #progress-bar { text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+
+/* --- Таблица операторов --- */
+#AF_StataAF #tableStats {
+    background: #1a2536 !important;
+    border: 1px solid #344258 !important;
+    border-radius: 12px;
+    box-shadow: none !important;
+    margin-bottom: 14px;
 }
 
-.af-content-area::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #38bdf8 0%, #a855f7 100%);
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+#AF_StataAF #tableStats thead tr { background: #162133 !important; }
+
+#AF_StataAF #tableStats th {
+    color: #94a3b8 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: .06em;
+    border-bottom: 1px solid #344258 !important;
 }
 
-.af-content-area::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #0ea5e9 0%, #9333ea 100%);
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+#AF_StataAF #tableStats td {
+    color: #e2e8f0 !important;
+    border-bottom: 1px solid rgba(52, 66, 88, .6) !important;
+}
+
+#AF_StataAF #tableStats tbody tr { background: #1a2536 !important; }
+#AF_StataAF #tableStats tbody tr:nth-child(even) { background: #18222f !important; }
+#AF_StataAF #tableStats tbody tr:hover { background: #23334b !important; }
+#AF_StataAF #tableStats tbody tr:last-child td { border-bottom: 0 !important; }
+
+/* Своя строка — синяя полоса слева, имя акцентом */
+#AF_StataAF #tableStats tbody tr:has(td > span:only-child) td:first-child,
+#AF_StataAF #tableStats tbody td:first-child:has(> span) {
+    color: #a9c0ff !important;
+    box-shadow: inset 3px 0 0 #7799e2;
+    text-shadow: none !important;
+    padding-left: 30px !important;   /* место под ⭐ */
+}
+
+/* Загрузка */
+#AF_StataAF #msgloader { padding: 40px 20px; text-align: center; }
+
+#AF_StataAF #loader-text {
+    margin-bottom: 12px;
+    color: #a9c0ff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#AF_StataAF .af-loader-track {
+    width: 50%;
+    height: 6px;
+    margin: 0 auto;
+    background: #0d1625;
+    border: 1px solid #344258;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+#AF_StataAF #loader-progress {
+    width: 0%;
+    height: 100%;
+    background: #4268c9;
+    transition: width .2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #AF_StataAF * { animation: none !important; transition: none !important; }
 }
 </style>
 
 <div id="af-dashboard-wrapper">
     <!-- Шапка -->
     <div id="stataaf_header" class="chmaf-drag-handle">
-        <div class="af-title">🚀 AutoFAQ Dashboard</div>
-        <div class="af-window-controls">
-            <button class="af-win-btn" id="clearstatawindow" title="Очистить данные">🧹</button>
-            <button class="af-win-btn buttonHide" id="hidestatisticaaf" title="Скрыть окно">❌</button>
-        </div>
+        <button class="af-win-btn buttonHide" id="hidestatisticaaf" title="Скрыть окно" aria-label="Закрыть окно">❌</button>
+        <div class="af-title">📊 Статистика AutoFAQ</div>
+        <button class="af-win-btn" id="clearstatawindow" title="Очистить данные" aria-label="Очистить данные">🧹</button>
     </div>
 
-    <!-- Фильтры дат -->
+    <!-- Период -->
     <div class="af-dates-panel" id="periodOfStata">
         <div class="af-date-group">
-            <span>От:</span>
+            <span>С</span>
             <input type="date" class="af-date-input" id="dateFromStat">
         </div>
-        <div class="af-nav-btns">
-            <button class="af-nav-btn" id="dayminusminus">◀ -1 День</button>
-            <button class="af-nav-btn" id="dayplusplus">+1 День ▶</button>
-        </div>
         <div class="af-date-group">
-            <span>До:</span>
+            <span>По</span>
             <input type="date" class="af-date-input" id="dateToStat">
+        </div>
+        <div class="af-nav-btns">
+            <button class="af-nav-btn" id="dayminusminus" title="Сдвинуть период на день назад">◀ День</button>
+            <button class="af-nav-btn" id="dayplusplus" title="Сдвинуть период на день вперёд">День ▶</button>
         </div>
     </div>
 
-    <!-- Вкладки-кнопки -->
+    <!-- Разделы -->
     <div class="af-tabs">
         <button class="af-tab" id="retreivestata">
             <span class="af-tab-icon">📊</span>
@@ -1903,25 +1911,23 @@ var win_StatisticaAF = `
         </button>
     </div>
 
-    <!-- Инфо-панель (Часы и Прогресс) -->
+    <!-- Время обновления и прогресс -->
     <div class="af-status-bar">
-        <input type="text" id="timeoutput" class="af-clock" disabled placeholder="--:--:--">
-        <div class="af-progress-bg">
+        <input type="text" id="timeoutput" class="af-clock" disabled placeholder="--:--:--" title="Время последнего обновления">
+        <div class="af-progress-bg" title="Прогресс загрузки">
             <div id="progress-bar"></div>
         </div>
     </div>
 
     <!-- Рабочая область -->
     <div class="af-content-area">
-        <!-- Анимация загрузки -->
-        <div id="msgloader" style="display:none; padding: 40px 20px; text-align: center;">
-            <div style="color:#53db4b; margin-bottom: 12px; font-weight: 600; font-size: 16px; letter-spacing: 0.5px;" id="loader-text">⏳ Анализ данных...</div>
-            <div style="width: 50%; margin: 0 auto; background: #15151a; height: 6px; border-radius: 3px; overflow: hidden; border: 1px solid #32323f; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);">
-                <div id="loader-progress" style="width: 0%; height: 100%; background: linear-gradient(90deg, #53db4b, #28a745); transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+        <div id="msgloader" style="display:none;">
+            <div id="loader-text">⏳ Анализ данных...</div>
+            <div class="af-loader-track">
+                <div id="loader-progress"></div>
             </div>
         </div>
 
-        <!-- Контейнеры для вывода JS -->
         <div id="outputstatafield"></div>
         <div id="csatandthemes" style="display:none; line-height: 1.6;"></div>
         <div id="loadkctp" style="display:none; line-height: 1.6;"></div>
@@ -2058,7 +2064,7 @@ async function checkCSAT() {
                     const srcLabel = srcReason === 'pause' ? '⏸️' : '⏳';
                     const srcText = srcReason === 'pause' ? 'отложка' : 'таймер';
                     console.log(`✅ Найдено автозакрытие: ${item.conversationId}, тип: ${srcReason}`);
-                    aclosedchats.push(`<span style="color:#dfd1f5; font-weight:700">${srcLabel}</span> <span name="aclsconv">${item.conversationId}</span> <span style="color:#64748b; font-size:10px;">(${srcText})</span> <span class="lookaclschat modal-lookchat" data-hash="${item.conversationId}" style="margin-left: 10px; cursor: pointer">👁‍🗨</span>`);
+                    aclosedchats.push(`<span style="color:#a9c0ff; font-weight:700">${srcLabel}</span> <span name="aclsconv">${item.conversationId}</span> <span style="color:#64748b; font-size:10px;">(${srcText})</span> <span class="lookaclschat modal-lookchat" data-hash="${item.conversationId}" style="margin-left: 10px; cursor: pointer">👁‍🗨</span>`);
                 }
 
                 let tagStr = chat.payload?.tags?.value || '';
@@ -2112,41 +2118,41 @@ async function checkCSAT() {
                         <!-- Главные метрики -->
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
                             <!-- CSAT Score -->
-                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid rgba(56, 189, 248, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease;">
-                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                            <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid rgba(66, 104, 201, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(66, 104, 201, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease;">
+                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
                                 <div style="position: relative; z-index: 1;">
-                                    <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">⭐</div>
+                                    <div style="font-size: 32px; margin-bottom: 6px;">⭐</div>
                                     <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Средний CSAT</div>
-                                    <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);">${avg}</div>
+                                    <div style="font-size: 28px; font-weight: 800; color: #f8fafc;">${avg}</div>
                                     <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Всего оценок: ${csatCount}</div>
                                 </div>
                             </div>
 
                             <!-- SLA Закрытия -->
-                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid rgba(168, 85, 247, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.1s backwards;">
-                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                            <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid rgba(66, 104, 201, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(66, 104, 201, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.1s backwards;">
+                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
                                 <div style="position: relative; z-index: 1;">
-                                    <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5));">🕒</div>
+                                    <div style="font-size: 32px; margin-bottom: 6px;">🕒</div>
                                     <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">SLA Закрытия</div>
-                                    <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);">${slaPct}%</div>
+                                    <div style="font-size: 28px; font-weight: 800; color: #f8fafc;">${slaPct}%</div>
                                     <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Просрочено: ${slacount} из ${clschatarr.length}</div>
                                 </div>
                             </div>
 
                             <!-- Автозакрытия -->
-                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid rgba(16, 185, 129, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.2s backwards;">
-                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                            <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid rgba(134, 239, 172, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(134, 239, 172, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.2s backwards;">
+                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
                                 <div style="position: relative; z-index: 1;">
-                                    <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));">🤖</div>
+                                    <div style="font-size: 32px; margin-bottom: 6px;">🤖</div>
                                     <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Автозакрытия</div>
-                                    <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #10b981, #14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">${aclosedchats.length}</div>
+                                    <div style="font-size: 28px; font-weight: 800; color: #f8fafc;">${aclosedchats.length}</div>
                                     <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Потеряшки</div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Разбивка оценок -->
-                        <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border-radius: 12px; padding: 16px; border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.3s backwards;">
+                        <div style="background: #1a2536; border-radius: 12px; padding: 16px; border: 1px solid rgba(66, 104, 201, 0.2); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.3s backwards;">
                             <div style="font-size: 14px; font-weight: 700; color: #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                                 <span style="font-size: 20px;">📊</span>
                                 <span>Детализация оценок CSAT</span>
@@ -2154,20 +2160,20 @@ async function checkCSAT() {
 
                             <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 12px;">
                                 ${[
-                        { rate: 5, count: c5, emoji: '😊', color: '#10b981', label: 'Отлично' },
-                        { rate: 4, count: c4, emoji: '🙂', color: '#84cc16', label: 'Хорошо' },
-                        { rate: 3, count: c3, emoji: '😐', color: '#f59e0b', label: 'Средне' },
-                        { rate: 2, count: c2, emoji: '😞', color: '#f97316', label: 'Плохо' },
-                        { rate: 1, count: c1, emoji: '😡', color: '#ef4444', label: 'Ужасно' }
+                        { rate: 5, count: c5, emoji: '😊', color: '#86efac', label: 'Отлично' },
+                        { rate: 4, count: c4, emoji: '🙂', color: '#7dd3fc', label: 'Хорошо' },
+                        { rate: 3, count: c3, emoji: '😐', color: '#fcd34d', label: 'Средне' },
+                        { rate: 2, count: c2, emoji: '😞', color: '#fdba74', label: 'Плохо' },
+                        { rate: 1, count: c1, emoji: '😡', color: '#fca5a5', label: 'Ужасно' }
                     ].map(item => {
                         const percentage = totalRatings > 0 ? ((item.count / totalRatings) * 100).toFixed(1) : 0;
                         return `
-                                        <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%); border-radius: 10px; padding: 12px; border: 1px solid ${item.color}40; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px ${item.color}60';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.3)';">
-                                            <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px ${item.color});">${item.emoji}</div>
+                                        <div style="background: rgba(0, 0, 0, 0.22); border-radius: 10px; padding: 12px; border: 1px solid ${item.color}40; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px ${item.color}60';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.3)';">
+                                            <div style="font-size: 32px; margin-bottom: 6px;">${item.emoji}</div>
                                             <div style="font-size: 22px; font-weight: 800; color: ${item.color}; text-shadow: 0 0 12px ${item.color}80; margin-bottom: 4px;">${item.count}</div>
                                             <div style="font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px;">${item.label}</div>
                                             <div style="background: rgba(0,0,0,0.3); height: 4px; border-radius: 2px; overflow: hidden; margin-top: 6px;">
-                                                <div style="width: ${percentage}%; height: 100%; background: linear-gradient(90deg, ${item.color}, ${item.color}cc); box-shadow: 0 0 8px ${item.color}; transition: width 0.5s ease;"></div>
+                                                <div style="width: ${percentage}%; height: 100%; background: linear-gradient(90deg, ${item.color}, ${item.color}cc); box-shadow: none; transition: width 0.5s ease;"></div>
                                             </div>
                                             <div style="font-size: 9px; color: #64748b; margin-top: 4px;">${percentage}%</div>
                                         </div>
@@ -2179,17 +2185,17 @@ async function checkCSAT() {
                             ${flagmid || flagbad || flagvbad ? `
                                 <div style="background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.05);">
                                     <div style="font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 10px;">⚠️ Чаты с низкими оценками:</div>
-                                    ${flagmid ? `<div style="margin-bottom: 10px; padding: 10px; background: rgba(245, 158, 11, 0.1); border-left: 3px solid #f59e0b; border-radius: 6px;"><div style="color: #f59e0b; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😐 Оценки 3:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagmid}</div></div>` : ''}
-                                    ${flagbad ? `<div style="margin-bottom: 10px; padding: 10px; background: rgba(249, 115, 22, 0.1); border-left: 3px solid #f97316; border-radius: 6px;"><div style="color: #f97316; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😞 Оценки 2:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagbad}</div></div>` : ''}
-                                    ${flagvbad ? `<div style="padding: 10px; background: rgba(239, 68, 68, 0.1); border-left: 3px solid #ef4444; border-radius: 6px;"><div style="color: #ef4444; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😡 Оценки 1:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagvbad}</div></div>` : ''}
+                                    ${flagmid ? `<div style="margin-bottom: 10px; padding: 10px; background: rgba(252, 211, 77, 0.1); border-left: 3px solid #fcd34d; border-radius: 6px;"><div style="color: #fcd34d; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😐 Оценки 3:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagmid}</div></div>` : ''}
+                                    ${flagbad ? `<div style="margin-bottom: 10px; padding: 10px; background: rgba(253, 186, 116, 0.1); border-left: 3px solid #fdba74; border-radius: 6px;"><div style="color: #fdba74; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😞 Оценки 2:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagbad}</div></div>` : ''}
+                                    ${flagvbad ? `<div style="padding: 10px; background: rgba(239, 68, 68, 0.1); border-left: 3px solid #fca5a5; border-radius: 6px;"><div style="color: #fca5a5; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😡 Оценки 1:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagvbad}</div></div>` : ''}
                                 </div>
                             ` : ''}
                         </div>
 
                         <!-- Чаты без тематики -->
                         ${stringChatsWithoutTopic ? `
-                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border-radius: 12px; padding: 16px; border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.4s backwards;">
-                                <div style="font-size: 14px; font-weight: 700; color: #f59e0b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                            <div style="background: #1a2536; border-radius: 12px; padding: 16px; border: 1px solid rgba(252, 211, 77, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.4s backwards;">
+                                <div style="font-size: 14px; font-weight: 700; color: #fcd34d; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
                                     <span style="font-size: 20px;">⚠️</span>
                                     <span>Чаты без тематики</span>
                                 </div>
@@ -2201,8 +2207,8 @@ async function checkCSAT() {
 
                         <!-- SLA Просрочки -->
                         ${abovecloseslaarr ? `
-                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border-radius: 12px; padding: 16px; border: 1px solid rgba(239, 68, 68, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.5s backwards;">
-                                <div style="font-size: 14px; font-weight: 700; color: #ef4444; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                            <div style="background: #1a2536; border-radius: 12px; padding: 16px; border: 1px solid rgba(239, 68, 68, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.5s backwards;">
+                                <div style="font-size: 14px; font-weight: 700; color: #fca5a5; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
                                     <span style="font-size: 20px;">🚨</span>
                                     <span>Чаты с превышением SLA (> 25 минут)</span>
                                 </div>
@@ -2214,8 +2220,8 @@ async function checkCSAT() {
 
                         <!-- Автозакрытые чаты -->
                         ${aclosedchats.length > 0 ? `
-                            <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border-radius: 12px; padding: 16px; border: 1px solid rgba(16, 185, 129, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); animation: cardEntrance 0.5s ease 0.6s backwards;">
-                                <div style="font-size: 14px; font-weight: 700; color: #10b981; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                            <div style="background: #1a2536; border-radius: 12px; padding: 16px; border: 1px solid rgba(134, 239, 172, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); animation: cardEntrance 0.5s ease 0.6s backwards;">
+                                <div style="font-size: 14px; font-weight: 700; color: #86efac; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
                                     <span style="font-size: 20px;">🤖</span>
                                     <span>Автозакрытые чаты (потеряшки)</span>
                                 </div>
@@ -2235,7 +2241,7 @@ async function checkCSAT() {
                 `;
                 if (failedChats) {
                     const warning = document.createElement('div');
-                    warning.style.cssText = 'margin:0 12px 8px;padding:10px 14px;border-radius:8px;background:rgba(245,158,11,0.15);border:1px solid #f59e0b;color:#fcd34d;font-weight:600;';
+                    warning.style.cssText = 'margin:0 12px 8px;padding:10px 14px;border-radius:8px;background:rgba(252,211,77,0.15);border:1px solid #fcd34d;color:#fcd34d;font-weight:600;';
                     warning.textContent = `⚠️ Не загрузились ${failedChats} чатов — цифры могут быть занижены. Нажми кнопку ещё раз.`;
                     str.prepend(warning);
                 }
@@ -2287,7 +2293,7 @@ async function checkload(department, flag) {
         const onLine = ops.filter(o => o.status === '🟢').length, busy = ops.filter(o => o.status === '🟡').length, pause = ops.filter(o => o.status === '🔴').length;
         const totalChats = ops.reduce((s, o) => s + o.chats, 0), ratio = onLine ? totalChats / onLine : 0;
         const loadTxt = ratio <= 2.2 ? 'Низкая 🟢' : ratio <= 3.2 ? 'Средняя 🟡' : ratio <= 4.4 ? 'Высокая 🟠' : 'Критическая 🔴';
-        const loadColor = ratio <= 2.2 ? '#53db4b' : ratio <= 3.2 ? '#dbd24b' : ratio <= 4.4 ? '#db8c4b' : '#ff6b6b';
+        const loadColor = ratio <= 2.2 ? '#86efac' : ratio <= 3.2 ? '#fcd34d' : ratio <= 4.4 ? '#fdba74' : '#fca5a5';
 
         if (load) {
             load.innerHTML = `
@@ -2295,26 +2301,26 @@ async function checkload(department, flag) {
                 <!-- Главные метрики нагрузки -->
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
                     <!-- Операторы на линии -->
-                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid rgba(56, 189, 248, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease;">
-                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                    <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid rgba(66, 104, 201, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(66, 104, 201, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease;">
+                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
                         <div style="position: relative; z-index: 1;">
-                            <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">👨‍💻</div>
+                            <div style="font-size: 32px; margin-bottom: 6px;">👨‍💻</div>
                             <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Операторов на линии</div>
-                            <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);">${ops.length}</div>
+                            <div style="font-size: 28px; font-weight: 800; color: #f8fafc;">${ops.length}</div>
                             <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center;">
                                 <div style="text-align: center;">
                                     <div style="font-size: 16px;">🟢</div>
-                                    <div style="font-size: 14px; font-weight: 700; color: #10b981;">${onLine}</div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #86efac;">${onLine}</div>
                                     <div style="font-size: 8px; color: #64748b; text-transform: uppercase;">Online</div>
                                 </div>
                                 <div style="text-align: center;">
                                     <div style="font-size: 16px;">🟡</div>
-                                    <div style="font-size: 14px; font-weight: 700; color: #f59e0b;">${busy}</div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #fcd34d;">${busy}</div>
                                     <div style="font-size: 8px; color: #64748b; text-transform: uppercase;">Busy</div>
                                 </div>
                                 <div style="text-align: center;">
                                     <div style="font-size: 16px;">🔴</div>
-                                    <div style="font-size: 14px; font-weight: 700; color: #ef4444;">${pause}</div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #fca5a5;">${pause}</div>
                                     <div style="font-size: 8px; color: #64748b; text-transform: uppercase;">Pause</div>
                                 </div>
                             </div>
@@ -2322,46 +2328,46 @@ async function checkload(department, flag) {
                     </div>
 
                     <!-- Всего чатов -->
-                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid rgba(16, 185, 129, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.1s backwards;">
-                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                    <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid rgba(134, 239, 172, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(134, 239, 172, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.1s backwards;">
+                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
                         <div style="position: relative; z-index: 1;">
-                            <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));">💬</div>
+                            <div style="font-size: 32px; margin-bottom: 6px;">💬</div>
                             <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Чатов в работе</div>
-                            <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #10b981, #14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">${totalChats}</div>
+                            <div style="font-size: 28px; font-weight: 800; color: #f8fafc;">${totalChats}</div>
                             <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Распределено по операторам</div>
                         </div>
                     </div>
 
                     <!-- Уровень нагрузки -->
-                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; padding: 15px; border: 1px solid ${loadColor}50; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px ${loadColor}30; position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.2s backwards;">
-                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: radial-gradient(circle, ${loadColor}20 0%, transparent 70%); border-radius: 50%;"></div>
+                    <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid ${loadColor}50; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px ${loadColor}30; position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.2s backwards;">
+                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
                         <div style="position: relative; z-index: 1;">
-                            <div style="font-size: 32px; margin-bottom: 6px; filter: drop-shadow(0 0 8px ${loadColor});">⚖️</div>
+                            <div style="font-size: 32px; margin-bottom: 6px;">⚖️</div>
                             <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Уровень нагрузки</div>
                             <div style="font-size: 20px; font-weight: 800; color: ${loadColor}; text-shadow: 0 0 15px ${loadColor}80; margin-bottom: 4px;">${loadTxt}</div>
                             <div style="font-size: 13px; color: #cbd5e1; font-weight: 600;">~ ${ratio.toFixed(1)} чат / оператор</div>
                             <div style="background: rgba(0,0,0,0.3); height: 6px; border-radius: 3px; overflow: hidden; margin-top: 10px;">
-                                <div style="width: ${Math.min((ratio / 5) * 100, 100)}%; height: 100%; background: linear-gradient(90deg, ${loadColor}, ${loadColor}cc); box-shadow: 0 0 12px ${loadColor}; transition: width 0.5s ease;"></div>
+                                <div style="width: ${Math.min((ratio / 5) * 100, 100)}%; height: 100%; background: linear-gradient(90deg, ${loadColor}, ${loadColor}cc); box-shadow: none; transition: width 0.5s ease;"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Детализация по операторам -->
-                <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border-radius: 12px; padding: 16px; border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); animation: cardEntrance 0.5s ease 0.3s backwards;">
+                <div style="background: #1a2536; border-radius: 12px; padding: 16px; border: 1px solid rgba(66, 104, 201, 0.2); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); animation: cardEntrance 0.5s ease 0.3s backwards;">
                     <div style="font-size: 14px; font-weight: 700; color: #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 20px;">📋</span>
                         <span>Детализация по операторам</span>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px;">
                         ${ops.map((o, idx) => {
-                const chatColor = o.chats === 0 ? '#64748b' : o.chats <= 2 ? '#10b981' : o.chats <= 4 ? '#f59e0b' : '#ef4444';
+                const chatColor = o.chats === 0 ? '#64748b' : o.chats <= 2 ? '#86efac' : o.chats <= 4 ? '#fcd34d' : '#fca5a5';
                 return `
-                                <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%); border-radius: 10px; padding: 10px; border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: all 0.3s ease; animation: operatorCardSlide 0.4s ease ${idx * 0.03}s backwards;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(56, 189, 248, 0.4)'; this.style.borderColor='rgba(56, 189, 248, 0.5)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.3)'; this.style.borderColor='rgba(56, 189, 248, 0.2)';">
+                                <div style="background: rgba(0, 0, 0, 0.22); border-radius: 10px; padding: 10px; border: 1px solid rgba(66, 104, 201, 0.2); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: all 0.3s ease; animation: operatorCardSlide 0.4s ease ${idx * 0.03}s backwards;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(66, 104, 201, 0.4)'; this.style.borderColor='rgba(66, 104, 201, 0.5)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.3)'; this.style.borderColor='rgba(66, 104, 201, 0.2)';">
                                     <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                                         <div style="flex: 1; min-width: 0;">
                                             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-                                                <span style="font-size: 16px; filter: drop-shadow(0 0 4px currentColor);">${o.status}</span>
+                                                <span style="font-size: 16px;">${o.status}</span>
                                                 <span style="color: #e2e8f0; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${o.name}">${o.name}</span>
                                             </div>
                                             <div style="font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px;">
@@ -2470,12 +2476,12 @@ document.addEventListener('click', (e) => {
                 el.classList.remove('active-chat');
                 el.style.background = 'rgba(255,255,255,0.05)';
                 el.style.borderColor = 'transparent';
-                el.style.color = '#dfd1f5';
+                el.style.color = '#a9c0ff';
             });
 
             lookChatBtn.classList.add('active-chat');
-            lookChatBtn.style.background = 'rgba(83,219,75,0.3)';
-            lookChatBtn.style.borderColor = '#53db4b';
+            lookChatBtn.style.background = 'rgba(134,239,172,0.3)';
+            lookChatBtn.style.borderColor = '#86efac';
             lookChatBtn.style.color = '#fff';
         }
 
