@@ -2,7 +2,7 @@
  * ==========================================
  * CRYSTAL GLASS LESSON STATUS MODULE
  * Премиальный интерфейс проверки статусов уроков
- * Стиль: Crystal Glassmorphism Dark UI
+ * Стиль: «corporate graphite», как Queue / ChatHistory / Userinfo
  * Префикс: gls- (glass-lesson-status)
  * ==========================================
  */
@@ -29,10 +29,8 @@
 
     /** Единый премиальный вид для всех пустых/ошибочных состояний */
     const emptyStateHtml = (icon, title, sub = '', tone = 'accent') => {
-        const chipBg = tone === 'rose'
-            ? 'linear-gradient(135deg, rgba(248,113,113,.18), rgba(220,38,38,.06))'
-            : 'linear-gradient(135deg, rgba(139,92,246,.18), rgba(34,211,238,.07))';
-        const chipBorder = tone === 'rose' ? 'rgba(248,113,113,.32)' : 'rgba(139,92,246,.28)';
+        const chipBg = tone === 'rose' ? 'rgba(220, 20, 60, .12)' : 'rgba(66, 104, 201, .12)';
+        const chipBorder = tone === 'rose' ? 'rgba(220, 20, 60, .35)' : 'rgba(66, 104, 201, .3)';
         return `
             <div class="${CONFIG.prefix}__empty">
                 <div class="${CONFIG.prefix}__empty-icon" style="background:${chipBg}; border-color:${chipBorder};">${icon}</div>
@@ -43,501 +41,458 @@
 
     // ─── UNIQUE CSS STYLES ──────────────────────────────────────
     const glassStyles = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-        :root {
-            --gls-bg: rgba(8, 8, 22, 0.88);
-            --gls-bg-card: rgba(16, 18, 38, 0.7);
-            --gls-border: rgba(255, 255, 255, 0.06);
-            --gls-border-glow: rgba(124, 58, 237, 0.3);
-            --gls-accent: #8b5cf6;
-            --gls-accent-soft: rgba(139, 92, 246, 0.12);
-            --gls-accent-glow: rgba(139, 92, 246, 0.35);
-            --gls-cyan: #22d3ee;
-            --gls-cyan-soft: rgba(34, 211, 238, 0.1);
+        /* Оформление как в Queue / ChatHistory / Userinfo («corporate graphite»).
+           Переменные объявлены на окне, а не на :root страницы. */
+        .${CONFIG.prefix}-window {
+            --gls-bg: #111827;
+            --gls-card: #1a2536;
+            --gls-card-hover: #23334b;
+            --gls-line: #344258;
+            --gls-btn: #1b283c;
+            --gls-btn-line: #3c4d68;
+            --gls-btn-hover: #293b56;
+            --gls-btn-hover-line: #7799e2;
+            --gls-field: #0d1625;
+            --gls-field-line: #3a4961;
+            --gls-primary: #4268c9;
+            --gls-primary-hover: #547ce1;
+            --gls-primary-line: #7293ed;
+            --gls-accent: #a9c0ff;
+            --gls-accent-soft: rgba(66, 104, 201, .15);
             --gls-text: #f1f5f9;
             --gls-text-secondary: #94a3b8;
-            --gls-text-muted: #64748b;
-            --gls-success: #34d399;
-            --gls-error: #f87171;
-            --gls-radius: 16px;
-        }
+            --gls-text-muted: #7d8ca6;
+            --gls-success: #86efac;
+            --gls-error: #fca5a5;
 
-        /* === CORE WINDOW === */
-        .${CONFIG.prefix}-window {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            letter-spacing: .01em;
+            -webkit-font-smoothing: antialiased;
             color: var(--gls-text);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
             position: fixed !important;
             z-index: 999999 !important;
             width: 1120px;
-            border-radius: var(--gls-radius);
-            background: var(--gls-bg);
-            backdrop-filter: blur(40px) saturate(200%) brightness(1.1);
-            -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.1);
-            border: 1px solid var(--gls-border);
-            box-shadow:
-                0 25px 60px -12px rgba(0, 0, 0, 0.6),
-                0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-                0 0 80px rgba(124, 58, 237, 0.06) inset;
+            max-width: calc(100vw - 16px);
+            background:
+                radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+                var(--gls-bg) !important;
+            border: 1px solid var(--gls-line) !important;
+            border-radius: 18px !important;
+            box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06) !important;
             overflow: hidden;
-            transition: opacity ${CONFIG.animDuration}ms ease, transform ${CONFIG.animDuration}ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: opacity ${CONFIG.animDuration}ms ease, transform ${CONFIG.animDuration}ms ease;
             cursor: default;
         }
-        .${CONFIG.prefix}-window::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), rgba(34, 211, 238, 0.4), transparent);
-            z-index: 10;
-        }
-        .${CONFIG.prefix}-window::after {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: radial-gradient(ellipse at 30% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
-                        radial-gradient(ellipse at 70% 80%, rgba(34, 211, 238, 0.03) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
+
+        .${CONFIG.prefix}-window *,
+        .${CONFIG.prefix}-window *::before,
+        .${CONFIG.prefix}-window *::after {
+            box-sizing: border-box;
         }
 
         .${CONFIG.prefix}-window.${CONFIG.prefix}--hidden {
             opacity: 0;
             pointer-events: none;
-            transform: scale(0.96) translateY(10px);
+            transform: translateY(8px);
         }
 
-        /* === HEADER / TOOLBAR === */
+        /* === ШАПКА: ❌ слева, заголовок, кнопки справа === */
         .${CONFIG.prefix}__header {
+            position: relative;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 18px 24px 14px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
-            border-bottom: 1px solid var(--gls-border);
+            gap: 8px;
+            margin: 0 18px;
+            padding: 18px 0 12px;
+            border-bottom: 1px solid rgba(66, 104, 201, .15);
             cursor: grab;
             user-select: none;
-            position: relative;
-            z-index: 5;
         }
+
+        .${CONFIG.prefix}__header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 40%;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
+        }
+
         .${CONFIG.prefix}__header:active { cursor: grabbing; }
 
         .${CONFIG.prefix}__title {
-            color: var(--gls-text);
+            flex: 1;
+            min-width: 0;
+            color: #fefefe;
             font-size: 15px;
             font-weight: 700;
-            letter-spacing: 0.2px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .${CONFIG.prefix}__title-icon {
-            width: 34px;
-            height: 34px;
-            background: linear-gradient(135deg, var(--gls-accent-soft), rgba(34, 211, 238, 0.08));
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            box-shadow: 0 0 16px rgba(139, 92, 246, 0.1);
+            white-space: nowrap;
         }
 
         .${CONFIG.prefix}__toolbar {
             display: flex;
-            gap: 6px;
+            gap: 8px;
         }
 
-        /* === GLASS BUTTONS === */
+        /* === КНОПКИ === */
         .${CONFIG.prefix}__btn {
-            position: relative;
-            padding: 8px 16px;
-            border-radius: 10px;
-            border: 1px solid var(--gls-border);
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--gls-text-secondary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex: none;
+            height: 34px;
+            padding: 0 14px;
+            color: #dce5f5;
+            background: var(--gls-btn);
+            border: 1px solid var(--gls-btn-line);
+            border-radius: 9px;
             font-family: inherit;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
+            white-space: nowrap;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
-            overflow: hidden;
             outline: none;
             user-select: none;
-        }
-
-        .${CONFIG.prefix}__btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent);
-            opacity: 0;
-            transition: opacity 0.2s;
+            transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
         }
 
         .${CONFIG.prefix}__btn:hover {
-            color: var(--gls-text);
-            border-color: rgba(255,255,255,0.12);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            color: #fff;
+            background: var(--gls-btn-hover);
+            border-color: var(--gls-btn-hover-line);
+            transform: translateY(-1px);
         }
 
-        .${CONFIG.prefix}__btn:hover::before { opacity: 1; }
+        .${CONFIG.prefix}__btn:active { transform: translateY(0) scale(.98); }
 
-        .${CONFIG.prefix}__btn:active {
-            transform: scale(0.97);
-            transition-duration: 0.05s;
+        .${CONFIG.prefix}__btn:focus-visible,
+        .${CONFIG.prefix}__date-nav:focus-visible {
+            outline: 2px solid #9ab5ff;
+            outline-offset: 2px;
         }
 
         .${CONFIG.prefix}__btn--primary {
-            background: linear-gradient(135deg, var(--gls-accent), #6d28d9);
-            border-color: rgba(139, 92, 246, 0.5);
-            color: #fff;
-            box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3);
-            letter-spacing: 0.3px;
-        }
-        .${CONFIG.prefix}__btn--primary:hover {
-            background: linear-gradient(135deg, #9b6ef8, #7c3aed);
-            box-shadow: 0 4px 24px rgba(139, 92, 246, 0.4);
-            transform: translateY(-1px);
-            color: #fff;
+            color: #eef3ff;
+            background: var(--gls-primary);
+            border-color: var(--gls-primary-line);
+            box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
         }
 
-        .${CONFIG.prefix}__btn--danger {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.2);
-            color: var(--gls-error);
-            padding: 8px 12px;
-            font-size: 15px;
-        }
-        .${CONFIG.prefix}__btn--danger:hover {
-            background: rgba(239, 68, 68, 0.18);
-            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
+        .${CONFIG.prefix}__btn--primary:hover {
+            color: #fff;
+            background: var(--gls-primary-hover);
+            border-color: #a2b9fa;
         }
 
         .${CONFIG.prefix}__btn--icon {
-            padding: 8px;
+            width: 34px;
+            padding: 0;
+            font-size: 16px;
+        }
+
+        .${CONFIG.prefix}__btn--close {
+            color: #ffb0be;
+            background: rgba(255, 116, 140, .08);
+            border-color: rgba(255, 116, 140, .3);
+        }
+
+        .${CONFIG.prefix}__btn--close:hover {
+            color: #ffb0be;
+            background: rgba(255, 116, 140, .16);
+            border-color: rgba(255, 116, 140, .55);
+        }
+
+        /* === ДАТЫ === */
+        .${CONFIG.prefix}__date-nav {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: none;
             width: 34px;
             height: 34px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-        }
-
-        /* === DATE NAV BUTTONS === */
-        .${CONFIG.prefix}__date-nav {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--gls-border);
-            color: var(--gls-cyan);
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
+            color: var(--gls-accent);
+            background: var(--gls-btn);
+            border: 1px solid var(--gls-btn-line);
+            border-radius: 9px;
             font-size: 13px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
+            cursor: pointer;
             outline: none;
-        }
-        .${CONFIG.prefix}__date-nav:hover {
-            background: var(--gls-cyan-soft);
-            color: var(--gls-cyan);
-            border-color: rgba(34, 211, 238, 0.3);
-            box-shadow: 0 0 12px rgba(34, 211, 238, 0.15);
-        }
-        .${CONFIG.prefix}__date-nav:active {
-            transform: scale(0.92);
+            transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
         }
 
-        /* === CONTROLS BAR === */
+        .${CONFIG.prefix}__date-nav:hover {
+            color: #fff;
+            background: var(--gls-btn-hover);
+            border-color: var(--gls-btn-hover-line);
+        }
+
+        .${CONFIG.prefix}__date-nav:active { transform: scale(.94); }
+
+        /* === ПАНЕЛЬ ФИЛЬТРОВ === */
         .${CONFIG.prefix}__controls {
             display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 14px 24px;
-            background: rgba(0, 0, 0, 0.2);
-            border-bottom: 1px solid var(--gls-border);
             flex-wrap: wrap;
-            position: relative;
-            z-index: 5;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 18px;
         }
 
         .${CONFIG.prefix}__field-group {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .${CONFIG.prefix}__label {
-            color: var(--gls-text-muted);
+            color: var(--gls-text-secondary);
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: .08em;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
             white-space: nowrap;
         }
 
         .${CONFIG.prefix}__input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 8px;
-            padding: 8px 12px;
-            color: var(--gls-text);
-            font-family: inherit;
-            font-size: 13px;
+            height: 34px;
+            padding: 0 12px;
+            color: #edf2fb;
+            background: var(--gls-field);
+            border: 1px solid var(--gls-field-line);
+            border-radius: 9px;
             outline: none;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
         }
-
-        .${CONFIG.prefix}__input:hover { border-color: rgba(255,255,255,0.1); }
 
         .${CONFIG.prefix}__input:focus {
-            border-color: var(--gls-accent);
-            box-shadow: 0 0 0 3px var(--gls-accent-soft), 0 0 16px rgba(139, 92, 246, 0.08);
-            background: rgba(0, 0, 0, 0.4);
+            background: #142034;
+            border-color: #829fff;
+            box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
         }
 
-        .${CONFIG.prefix}__input::placeholder { color: var(--gls-text-muted); }
+        .${CONFIG.prefix}__input::placeholder {
+            color: var(--gls-text-muted);
+            font-weight: 500;
+        }
 
         .${CONFIG.prefix}__input--date {
-            width: 130px;
+            width: 146px;
             color-scheme: dark;
         }
 
         .${CONFIG.prefix}__input--id {
-            width: 110px;
+            width: 120px;
             text-align: center;
-            font-variant-numeric: tabular-nums;
+            font-family: 'JetBrains Mono', monospace;
             font-weight: 600;
+            font-variant-numeric: tabular-nums;
         }
 
-        .${CONFIG.prefix}__spacer { flex: 1; min-width: 20px; }
+        .${CONFIG.prefix}__spacer { flex: 1; min-width: 12px; }
 
-        /* === CONTENT AREA === */
+        /* === СОДЕРЖИМОЕ === */
         .${CONFIG.prefix}__content {
-            padding: 0 24px 24px;
             max-height: ${CONFIG.maxTableHeight}px;
-            overflow-y: auto;
+            padding: 0 18px 18px;
             overflow-x: hidden;
-            position: relative;
-            z-index: 5;
+            overflow-y: auto;
+            overscroll-behavior: contain;
             scrollbar-width: thin;
-            scrollbar-color: rgba(139, 92, 246, 0.25) transparent;
+            scrollbar-color: rgba(66, 104, 201, .4) transparent;
         }
 
-        .${CONFIG.prefix}__content::-webkit-scrollbar { width: 5px; }
+        .${CONFIG.prefix}__content::-webkit-scrollbar { width: 4px; }
         .${CONFIG.prefix}__content::-webkit-scrollbar-track { background: transparent; }
         .${CONFIG.prefix}__content::-webkit-scrollbar-thumb {
-            background: rgba(139, 92, 246, 0.25);
-            border-radius: 3px;
+            background: rgba(66, 104, 201, .3);
+            border-radius: 8px;
         }
-        .${CONFIG.prefix}__content::-webkit-scrollbar-thumb:hover {
-            background: rgba(139, 92, 246, 0.4);
-        }
+        .${CONFIG.prefix}__content::-webkit-scrollbar-thumb:hover { background: rgba(66, 104, 201, .6); }
 
-        /* === TABLE === */
+        /* === ТАБЛИЦА === */
         .${CONFIG.prefix}__table-wrap {
-            border-radius: var(--gls-radius);
             overflow: hidden;
-            border: 1px solid var(--gls-border);
-            background: var(--gls-bg-card);
+            background: var(--gls-card);
+            border: 1px solid var(--gls-line);
+            border-radius: 12px;
         }
 
         .${CONFIG.prefix}__table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
+            color: #e2e8f0;
             font-size: 13px;
-            color: rgba(255,255,255,0.85);
         }
 
         .${CONFIG.prefix}__table thead th {
-            background: linear-gradient(180deg, rgba(139, 92, 246, 0.08), rgba(0, 0, 0, 0.15));
-            padding: 12px 12px;
-            font-weight: 700;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--gls-text-secondary);
-            border-bottom: 1px solid var(--gls-border);
             position: sticky;
             top: 0;
             z-index: 2;
+            padding: 10px 12px;
+            color: var(--gls-text-secondary);
+            background: #162133;
+            border-bottom: 1px solid var(--gls-line);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
             white-space: nowrap;
         }
 
-        .${CONFIG.prefix}__table tbody tr {
-            transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .${CONFIG.prefix}__table tbody tr:hover {
-            background: rgba(139, 92, 246, 0.04);
-        }
+        .${CONFIG.prefix}__table tbody tr { transition: background-color .16s ease; }
+        .${CONFIG.prefix}__table tbody tr:nth-child(even) { background: rgba(0, 0, 0, .12); }
+        .${CONFIG.prefix}__table tbody tr:hover { background: var(--gls-card-hover); }
 
         .${CONFIG.prefix}__table tbody tr:not(:last-child) td {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(52, 66, 88, .6);
         }
 
         .${CONFIG.prefix}__table td {
-            padding: 10px 12px;
+            padding: 9px 12px;
+            font-size: 13px;
             text-align: center;
-            font-size: 12px;
         }
 
         .${CONFIG.prefix}__cell--id {
-            font-weight: 700;
             color: var(--gls-accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 6px;
-            font-family: 'SF Mono', 'Fira Code', monospace;
-            font-size: 11px;
+            transition: background-color .16s ease, color .16s ease;
         }
 
         .${CONFIG.prefix}__cell--id:hover {
+            color: #fff;
             background: var(--gls-accent-soft);
-            color: #c4b5fd;
-            text-shadow: 0 0 10px var(--gls-accent-glow);
         }
 
+        /* Статусы — как статусы услуг в Userinfo */
         .${CONFIG.prefix}__status {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+            gap: 4px;
+            padding: 3px 8px;
             border: 1px solid;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            white-space: nowrap;
         }
 
         .${CONFIG.prefix}__status--success {
-            background: rgba(34, 197, 94, 0.1);
             color: var(--gls-success);
-            border-color: rgba(34, 197, 94, 0.2);
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.08);
+            background: rgba(69, 199, 52, .15);
+            border-color: rgba(69, 199, 52, .4);
         }
 
         .${CONFIG.prefix}__status--error {
-            background: rgba(239, 68, 68, 0.1);
             color: var(--gls-error);
-            border-color: rgba(239, 68, 68, 0.2);
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.08);
+            background: rgba(220, 20, 60, .15);
+            border-color: rgba(220, 20, 60, .35);
         }
 
         .${CONFIG.prefix}__status--removed {
-            background: rgba(239, 68, 68, 0.12);
-            color: #fca5a5;
-            border-color: rgba(252, 165, 165, 0.2);
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.1);
+            color: #d8b4fe;
+            background: rgba(138, 28, 129, .25);
+            border-color: rgba(138, 28, 129, .5);
         }
 
         .${CONFIG.prefix}__status--unknown {
-            background: rgba(100, 116, 139, 0.1);
-            color: var(--gls-text-muted);
-            border-color: rgba(100, 116, 139, 0.15);
+            color: #cbd5e1;
+            background: rgba(148, 163, 184, .12);
+            border-color: rgba(148, 163, 184, .3);
         }
 
         .${CONFIG.prefix}__cell--comment {
-            max-width: 180px;
+            max-width: 200px;
             overflow: hidden;
+            color: var(--gls-text-secondary);
+            font-size: 12px;
             text-overflow: ellipsis;
             white-space: nowrap;
-            color: var(--gls-text-muted);
-            font-size: 11px;
         }
 
         .${CONFIG.prefix}__cell--type {
-            font-size: 10px;
-            color: var(--gls-text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #7dd3fc;
+            font-size: 12px;
+            font-weight: 600;
         }
 
-        /* === LOADING & EMPTY STATES === */
+        /* === ЗАГРУЗКА И ПУСТЫЕ СОСТОЯНИЯ === */
         .${CONFIG.prefix}__loader {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 60px 20px;
-            gap: 14px;
-            color: var(--gls-text-muted);
+            gap: 12px;
+            padding: 56px 20px;
+            color: var(--gls-text-secondary);
         }
 
         .${CONFIG.prefix}__spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid rgba(139, 92, 246, 0.15);
-            border-top-color: var(--gls-accent);
+            width: 34px;
+            height: 34px;
+            border: 3px solid rgba(66, 104, 201, .2);
+            border-top-color: #7799e2;
             border-radius: 50%;
-            animation: ${CONFIG.prefix}-spin 0.7s linear infinite;
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+            animation: ${CONFIG.prefix}-spin .7s linear infinite;
         }
 
         @keyframes ${CONFIG.prefix}-spin { to { transform: rotate(360deg); } }
 
         .${CONFIG.prefix}__empty {
-            text-align: center;
-            padding: 44px 24px;
+            padding: 40px 24px;
             color: var(--gls-text-secondary);
-            background: linear-gradient(160deg,
-                rgba(139, 92, 246, 0.05) 0%,
-                rgba(34, 211, 238, 0.03) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: var(--gls-radius);
+            text-align: center;
+            background: rgba(255, 255, 255, .02);
+            border: 1px dashed rgba(66, 104, 201, .25);
+            border-radius: 12px;
         }
 
         .${CONFIG.prefix}__empty-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 14px;
+            background: rgba(66, 104, 201, .12);
+            border: 1px solid rgba(66, 104, 201, .3);
             border-radius: 16px;
-            background: linear-gradient(135deg,
-                rgba(139, 92, 246, 0.18),
-                rgba(34, 211, 238, 0.07));
-            border: 1px solid rgba(139, 92, 246, 0.28);
-            box-shadow:
-                0 0 26px rgba(139, 92, 246, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            font-size: 26px;
         }
 
         .${CONFIG.prefix}__empty-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--gls-text);
             margin-bottom: 6px;
-            letter-spacing: 0.2px;
+            color: var(--gls-text);
+            font-size: 15px;
+            font-weight: 700;
         }
 
         .${CONFIG.prefix}__empty-sub {
-            font-size: 12px;
-            color: var(--gls-text-muted);
+            color: var(--gls-text-secondary);
+            font-size: 13px;
         }
     `;
 
     // ─── HTML TEMPLATE ──────────────────────────────────────────
     const windowTemplate = `
         <div class="${CONFIG.prefix}__header" id="${CONFIG.prefix}-drag-handle">
-            <div class="${CONFIG.prefix}__title">
-                <div class="${CONFIG.prefix}__title-icon">📊</div>
-                <span>Статус уроков</span>
-            </div>
+            <button class="${CONFIG.prefix}__btn ${CONFIG.prefix}__btn--icon ${CONFIG.prefix}__btn--close buttonHide" id="${CONFIG.prefix}-hide" title="Скрыть окно">❌</button>
+            <div class="${CONFIG.prefix}__title">📊 Статус уроков</div>
             <div class="${CONFIG.prefix}__toolbar">
                 <button class="${CONFIG.prefix}__btn ${CONFIG.prefix}__btn--icon" id="${CONFIG.prefix}-clear" title="Очистить поля">🧹</button>
-                <button class="${CONFIG.prefix}__btn ${CONFIG.prefix}__btn--icon buttonHide" id="${CONFIG.prefix}-hide" title="Скрыть окно">✕</button>
             </div>
         </div>
 
@@ -555,7 +510,7 @@
 
             <button class="${CONFIG.prefix}__date-nav" id="${CONFIG.prefix}-next-day" title="День вперед">▶</button>
 
-            <div class="${CONFIG.prefix}__field-group" style="margin-left: 12px;">
+            <div class="${CONFIG.prefix}__field-group" style="margin-left: 8px;">
                 <span class="${CONFIG.prefix}__label">Учитель</span>
                 <input type="text" class="${CONFIG.prefix}__input ${CONFIG.prefix}__input--id" id="${CONFIG.prefix}-teacher-id" placeholder="ID" title="ID учителя для поиска">
             </div>
@@ -567,7 +522,7 @@
             <div class="${CONFIG.prefix}__spacer"></div>
 
             <button class="${CONFIG.prefix}__btn ${CONFIG.prefix}__btn--primary" id="${CONFIG.prefix}-search">
-                <span>🔍 Получить инфо</span>
+                <span>🚀 Получить инфо</span>
             </button>
         </div>
 
@@ -719,7 +674,7 @@
             <div class="${CONFIG.prefix}__loader">
                 <div class="${CONFIG.prefix}__spinner"></div>
                 <div>Загрузка данных...</div>
-                <div style="font-size: 12px; opacity: 0.5;">Если информация не появится, нажмите повторно</div>
+                <div style="font-size: 12px; opacity: 0.7;">Если информация не появится, нажмите повторно</div>
             </div>
         `;
     };
@@ -905,7 +860,7 @@
             state.windowRef.style.cssText += `
                 position: fixed;
                 z-index: 999999;
-                border-radius: 16px;
+                border-radius: 18px;
                 overflow: hidden;
             `;
         }
