@@ -948,7 +948,7 @@ function transfPageButtons(textFromTable) {
         textFromTable = textFromTable.split('(email)').join(maskEmail(email));
     }
 
-    if (textFromTable.includes('(name)')) {
+    if (/(\(name\))/i.test(textFromTable)) {
         const tempname = getActiveConvUserName();
         const cyrillicPattern = /^[\u0400-\u04FF]+$/;
         const languageAF = langEl ? langEl.innerHTML : 'Русский';
@@ -961,7 +961,7 @@ function transfPageButtons(textFromTable) {
             if (matchesLanguage) name = tempname;
         }
 
-        textFromTable = textFromTable.split('(name)').join(name);
+        textFromTable = textFromTable.replace(/\(name\)/gi, name);
     }
 
     return textFromTable;
@@ -1305,26 +1305,37 @@ const AUTOFAQ_SERVICE_IDS = {
  * Чистит HTML ответа AutoFAQ, сохраняя ссылки <a>.
  * Цепочка преобразований — как в оригинале.
  */
+/**
+ * Чистит HTML ответа AutoFAQ, сохраняя структуру абзацев, пустые строки и ссылки <a>.
+ */
 function stripAutoFaqHtml(html) {
-    const P_TAG = '<p class="TextEditor_Paragraph__68XKv">';
+    if (!html) return '';
 
-    let text = html
-        .split('<br>').join('\n')
-        .split('<br>↵').join('\n')
-        .split('&nbsp;').join(' ')
-        .split('<br />').join('\n');
-
-    if (text.startsWith(P_TAG)) {
-        text = text.replace(P_TAG, '');
-    }
-    text = text.split(P_TAG).join('\n').split('</p>').join('');
-
-    return text
+    return html
+        // 1. Сначала превращаем пустые абзацы (<p><br></p>, <p>&nbsp;</p>, <p></p>) в перенос строки
+        .replace(/<p[^>]*>\s*(?:<br\s*\/?>|&nbsp;)?\s*<\/p>/gi, '\n')
+        // 2. Обычные переносы <br>
+        .replace(/<br\s*\/?>↵?/gi, '\n')
+        // 3. Закрывающие теги абзацев и блоков превращаем в перенос строки
+        .replace(/<\/(p|div|li)>/gi, '\n')
+        // 4. Удаляем открывающие теги абзацев/блоков (с любыми классами)
+        .replace(/<(p|div|ul|ol|li)[^>]*>/gi, '')
+        // 5. Неразрывные пробелы
+        .replace(/&nbsp;/gi, ' ')
+        // 6. Сохраняем ссылки <a>...</a> и вырезаем остальные HTML-теги
         .split('<a').join('TMPaTMP')
         .split('</a').join('TMPENDaTMEPEND')
         .replace(/<\/?[^>]+>/g, '')
         .split('TMPaTMP').join('<a')
-        .split('TMPENDaTMEPEND').join('</a');
+        .split('TMPENDaTMEPEND').join('</a')
+        // 7. Убираем лишние пробелы/переносы по краям всего текста и более 2 переносов подряд
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
+/** Укороченная цепочка очистки (для быстрых шаблонов) — используем ту же логику. */
+function stripAutoFaqHtmlLight(html) {
+    return stripAutoFaqHtml(html);
 }
 
 /** Укороченная цепочка очистки (для быстрых шаблонов). */

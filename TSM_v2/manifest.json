@@ -3,7 +3,7 @@
   "name": "Technical Support Master",
   "short_name": "TSM",
   "description": "Контекстное и вспомогательное меню с доп.функциями для ЛК пользователей. Включается дабл кликом ЛКМ или комб. клавиш ALT+0",
-  "version": "2.0.31",
+  "version": "2.0.32",
   "permissions": [
     "contextMenus",
     "clipboardWrite",
@@ -40,6 +40,7 @@
         "/Modules/main.js",
         "/Modules/chats.js",
         "/Modules/exercises.js",
+        "/Modules/revisionfix.js",
         "/Modules/lessoninfo.js",
         "/Modules/students.js",
         "/Modules/vocabulary.js"

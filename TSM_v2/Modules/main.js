@@ -47,6 +47,10 @@ const win_addMenu = `
             <span class="tsm-menu-icon">🛍</span>
             <span class="tsm-menu-text">Комплектации</span>
         </button>
+        <button type="button" id="exercisesRevisionFix" class="tsm-menu-item" title="Обновить ревизию слайдов сразу у списка учеников">
+            <span class="tsm-menu-icon">🛠</span>
+            <span class="tsm-menu-text">Масс-фикс ревизий</span>
+        </button>
     </div>
 </div>`;
 
@@ -108,6 +112,7 @@ document.getElementById("openlesinfomenu").onclick = () => OpenLessonmInfoMenu()
 document.getElementById("exercisekysmart").onclick = () => OpenExercisesSmartroom();
 document.getElementById("exercisesttc").onclick = () => OpenExercisesTTC();
 document.getElementById("exercisesComplect").onclick = () => OpenExercisesComplect();
+document.getElementById("exercisesRevisionFix").onclick = () => OpenRevisionFix();
 
 /* ID текущего пользователя (кэшируется на время жизни страницы) */
 let tsmUserIdPromise = null;
