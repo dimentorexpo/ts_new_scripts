@@ -26,6 +26,13 @@ var win_AFhelper = `
         <input id="email_tr" class="glass-input onlyfortp" placeholder="Почта" autocomplete="off" type="text" inputmode="email" style="width: 180px; text-align: center;">
     </div>
 
+    <div class="afh-search" id="afhSearchBox">
+        <input id="afhSearch" class="glass-input" type="search" autocomplete="off" spellcheck="false"
+               placeholder="🔎 Поиск шаблона — по названию или тексту"
+               aria-label="Поиск шаблона" aria-controls="afhSearchResults" aria-expanded="false">
+        <div class="afh-search-results" id="afhSearchResults" role="listbox" hidden></div>
+    </div>
+
     <div id="pages" style="margin-bottom: 5px; font-size: 17px;"></div>
     <div id="7str"></div>
     <div id="6str"></div>
@@ -381,3 +388,351 @@ $af('inp')?.addEventListener('keydown', function (e) {
         $af('snd')?.click();
     }
 });
+
+// ============================================================
+// 🔎 Поиск по шаблонам
+// Ищет по названию кнопки и тексту шаблона во всех вкладках,
+// подсказывает, на какой вкладке лежит шаблон, показывает текст.
+//  • клик / Enter — открыть вкладку и подсветить кнопку
+//  • «Вставить» / Ctrl+Enter — сработать как клик по кнопке шаблона
+//  • Esc — очистить поиск
+// Индекс строится из DOM при каждом поиске, поэтому после
+// «Обновить шаблоны» ничего пересобирать не нужно.
+// ============================================================
+(function initTemplateSearch() {
+    const wrapper = $af('addTmpWrapper');
+    const input = $af('afhSearch');
+    const results = $af('afhSearchResults');
+    if (!wrapper || !input || !results) return;
+
+    const MAX_RESULTS = 30;
+    // Кнопки окна, которые не являются шаблонами
+    const SERVICE_ZONES = '#pages, #afhSearchBox, #hyperlnk, #hyperlnk + .flex-row, #addTmpWrapper > .flex-row:first-child';
+
+    let found = [];
+    let activeIndex = -1;
+    let debounceId = null;
+
+    const norm = (s) => String(s ?? '').toLocaleLowerCase('ru-RU').replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
+
+    const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+
+    /** Убирает HTML-разметку из текста шаблона (в таблице бывают <a>, <br>). */
+    function plainText(s) {
+        const div = document.createElement('div');
+        div.innerHTML = String(s ?? '').replace(/<br\s*\/?>/gi, ' ');
+        return div.textContent.replace(/\s+/g, ' ').trim();
+    }
+
+    // --- Текст шаблона из таблицы (table из utils.js): строка, где есть название кнопки,
+    //     и первая следующая за ним ячейка длиннее названия. Кэш — на каждую версию table.
+    let textCacheFor = null;
+    let textCache = new Map();
+
+    function textFromTable(label) {
+        const rows = typeof table !== 'undefined' && Array.isArray(table) ? table : null;
+        if (!rows) return '';
+
+        if (textCacheFor !== rows) {
+            textCacheFor = rows;
+            textCache = new Map();
+        }
+        if (textCache.has(label)) return textCache.get(label);
+
+        let text = '';
+        const key = norm(label);
+
+        for (const row of rows) {
+            if (!Array.isArray(row)) continue;
+            const idx = row.findIndex((cell) => typeof cell === 'string' && norm(cell) === key);
+            if (idx === -1) continue;
+
+            const next = row.slice(idx + 1).find((cell) =>
+                typeof cell === 'string' && cell.trim().length > label.length
+            );
+            if (next) { text = plainText(next); break; }
+        }
+
+        textCache.set(label, text);
+        return text;
+    }
+
+    function textOf(btn, label) {
+        const own = btn.dataset.text || btn.dataset.tmpl || btn.dataset.template ||
+            (btn.value && btn.value !== label ? btn.value : '') ||
+            (btn.title && btn.title !== label && btn.title.length > 20 ? btn.title : '');
+        return own ? plainText(own) : textFromTable(label);
+    }
+
+    /** Вкладка, на которой лежит кнопка: ищем предка, для которого есть кнопка «<id>_button». */
+    function pageOf(btn) {
+        for (let el = btn.parentElement; el && el !== wrapper; el = el.parentElement) {
+            if (el.id) {
+                const tab = document.getElementById(el.id + '_button');
+                if (tab && tab.closest('#pages')) return { name: tab.textContent.trim(), tab };
+            }
+            if (el.id === '6str') return { name: 'Личные шаблоны', tab: null };
+            if (el.id === 'addTmp') return { name: 'Доп. шаблоны', tab: null };
+        }
+        const active = document.querySelector('#pages .is-active, #pages [style*="orange"]');
+        return { name: active ? active.textContent.trim() : 'текущая вкладка', tab: null };
+    }
+
+    function isTemplateButton(btn) {
+        if (btn.closest(SERVICE_ZONES)) return false;
+        const label = btn.textContent.trim();
+        if (!label || label === '🧹') return false;
+        return true;
+    }
+
+    function buildIndex() {
+        return [...wrapper.querySelectorAll('button')]
+            .filter(isTemplateButton)
+            .map((btn) => {
+                const label = btn.textContent.trim();
+                const text = textOf(btn, label);
+                return {
+                    btn, label, text,
+                    page: pageOf(btn),
+                    visible: btn.offsetParent !== null,
+                    nLabel: norm(label),
+                    nText: norm(text)
+                };
+            });
+    }
+
+    function score(item, tokens) {
+        let total = 0;
+        for (const t of tokens) {
+            if (item.nLabel.startsWith(t)) total += 30;
+            else if (item.nLabel.includes(t)) total += 20;
+            else if (item.nText.includes(t)) total += 5;
+            else return 0; // все слова запроса должны найтись
+        }
+        return total + (item.visible ? 1 : 0);
+    }
+
+    /** Подсветка совпадений: сначала делим исходный текст, потом экранируем куски. */
+    function highlight(text, tokens) {
+        const parts = tokens.filter(Boolean)
+            .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/е/g, '[её]'));
+        if (!parts.length) return escHtml(text);
+
+        const re = new RegExp(`(${parts.join('|')})`, 'gi');
+        return String(text).split(re)
+            .map((chunk, i) => (i % 2 ? `<mark>${escHtml(chunk)}</mark>` : escHtml(chunk)))
+            .join('');
+    }
+
+    /** Фрагмент текста вокруг первого совпадения. */
+    function snippet(text, tokens) {
+        if (!text) return '';
+        const n = norm(text);
+        const pos = tokens.map((t) => n.indexOf(t)).filter((p) => p >= 0).sort((a, b) => a - b)[0] ?? 0;
+        const start = Math.max(0, pos - 40);
+        const cut = text.slice(start, start + 170);
+        return (start > 0 ? '…' : '') + cut + (start + 170 < text.length ? '…' : '');
+    }
+
+    function setDimmed(matchSet) {
+        wrapper.classList.toggle('afh-searching', Boolean(matchSet));
+        wrapper.querySelectorAll('.afh-dim').forEach((b) => b.classList.remove('afh-dim'));
+        if (!matchSet) return;
+        buildIndex().forEach((item) => {
+            if (item.visible && !matchSet.has(item.btn)) item.btn.classList.add('afh-dim');
+        });
+    }
+
+    function closeResults() {
+        results.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+        activeIndex = -1;
+    }
+
+    function render(query) {
+        const tokens = norm(query).split(' ').filter(Boolean);
+
+        if (!tokens.length) {
+            found = [];
+            results.innerHTML = '';
+            closeResults();
+            setDimmed(null);
+            return;
+        }
+
+        found = buildIndex()
+            .map((item) => ({ item, s: score(item, tokens) }))
+            .filter((x) => x.s > 0)
+            .sort((a, b) => b.s - a.s || a.item.label.localeCompare(b.item.label, 'ru'))
+            .map((x) => x.item);
+
+        setDimmed(new Set(found.map((f) => f.btn)));
+
+        if (!found.length) {
+            results.innerHTML = '<div class="afh-sr-empty">Ничего не нашлось. Попробуйте другое слово или часть слова.</div>';
+        } else {
+            const shown = found.slice(0, MAX_RESULTS);
+            results.innerHTML = shown.map((item, i) => `
+                <div class="afh-sr-item" role="option" data-i="${i}" aria-selected="false">
+                    <div class="afh-sr-top">
+                        <span class="afh-sr-label">${highlight(item.label, tokens)}</span>
+                        <span class="afh-sr-page${item.visible ? ' is-here' : ''}">${item.visible ? '✓ на экране' : '📁 ' + escHtml(item.page.name)}</span>
+                        <button type="button" class="afh-sr-insert" data-i="${i}" title="Сработать как клик по шаблону (Ctrl+Enter)">Вставить</button>
+                    </div>
+                    ${item.text ? `<div class="afh-sr-text">${highlight(snippet(item.text, tokens), tokens)}</div>` : ''}
+                </div>`).join('') +
+                (found.length > MAX_RESULTS
+                    ? `<div class="afh-sr-more">…и ещё ${found.length - MAX_RESULTS}. Уточните запрос.</div>`
+                    : '');
+        }
+
+        results.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+        setActive(found.length ? 0 : -1);
+    }
+
+    function setActive(i) {
+        const items = results.querySelectorAll('.afh-sr-item');
+        items.forEach((el) => el.setAttribute('aria-selected', 'false'));
+        activeIndex = i;
+        const el = items[i];
+        if (el) {
+            el.setAttribute('aria-selected', 'true');
+            el.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    /** Открывает вкладку с шаблоном и подсвечивает кнопку. */
+    function reveal(item) {
+        if (!item) return;
+        if (item.btn.offsetParent === null && item.page.tab) item.page.tab.click();
+
+        requestAnimationFrame(() => {
+            if (item.btn.offsetParent === null) {
+                afNotify(`Шаблон «${item.label}» на вкладке «${item.page.name}», но открыть её не удалось`, 'warning');
+                return;
+            }
+            item.btn.classList.remove('afh-dim');
+            item.btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            afFlash(item.btn, 'afh-found-flash', 1600);
+            item.btn.focus({ preventScroll: true });
+        });
+    }
+
+    function apply(item) {
+        if (!item) return;
+        reveal(item);
+        requestAnimationFrame(() => {
+            item.btn.click();
+            clearSearch();
+        });
+    }
+
+    function clearSearch() {
+        input.value = '';
+        render('');
+    }
+
+    input.addEventListener('input', () => {
+        clearTimeout(debounceId);
+        debounceId = setTimeout(() => render(input.value), 80);
+    });
+
+    input.addEventListener('focus', () => {
+        if (input.value.trim()) render(input.value);
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (e.isComposing) return;
+        const count = results.querySelectorAll('.afh-sr-item').length;
+
+        if (e.key === 'ArrowDown' && count) {
+            e.preventDefault();
+            if (results.hidden) render(input.value);
+            setActive(Math.min(activeIndex + 1, count - 1));
+        } else if (e.key === 'ArrowUp' && count) {
+            e.preventDefault();
+            setActive(Math.max(activeIndex - 1, 0));
+        } else if (e.key === 'Enter' && activeIndex >= 0) {
+            e.preventDefault();
+            const item = found[activeIndex];
+            if (e.ctrlKey || e.metaKey) apply(item);
+            else { reveal(item); closeResults(); }
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            clearSearch();
+        }
+    });
+
+    // mousedown, а не click: иначе поле теряет фокус раньше, чем сработает выбор
+    results.addEventListener('mousedown', (e) => {
+        const insertBtn = e.target.closest('.afh-sr-insert');
+        const row = e.target.closest('.afh-sr-item');
+        if (!row) return;
+        e.preventDefault();
+
+        const item = found[Number((insertBtn || row).dataset.i)];
+        if (insertBtn) apply(item);
+        else { reveal(item); closeResults(); }
+    });
+
+    results.addEventListener('mousemove', (e) => {
+        const row = e.target.closest('.afh-sr-item');
+        if (row && Number(row.dataset.i) !== activeIndex) setActive(Number(row.dataset.i));
+    });
+
+    // Клик мимо поиска закрывает список (подсветка совпадений остаётся, пока есть запрос)
+    document.addEventListener('mousedown', (e) => {
+        if (!e.target.closest('#afhSearchBox')) closeResults();
+    });
+})();
+
+// ============================================================
+// Кнопки шаблонов: бегущая строка при наведении, если текст не влез
+// (сетка и анимация — style.css, класс .afh-marq-run).
+// Разметку кнопок не трогаем: текст сдвигается через text-indent.
+// ============================================================
+(function initTemplateMarquee() {
+    const wrapper = $af('addTmpWrapper');
+    if (!wrapper) return;
+
+    const SPEED_PX_PER_SEC = 45;
+    const ZONES = '[id="7str"], [id="6str"], #addTmp';
+
+    function isTemplateButton(el) {
+        return el instanceof HTMLButtonElement &&
+            el.matches('button.glass-btn.mainButton') &&
+            Boolean(el.closest(ZONES)) &&
+            !el.parentElement?.querySelector(':scope > input, :scope > select, :scope > textarea');
+    }
+
+    function start(btn) {
+        btn.classList.remove('afh-marq-run');
+        const overflow = btn.scrollWidth - btn.clientWidth;
+        if (overflow <= 2) return;
+
+        btn.style.setProperty('--afh-marq-shift', `-${overflow + 6}px`);
+        btn.style.setProperty('--afh-marq-time', `${Math.max(1.6, overflow / SPEED_PX_PER_SEC + 1).toFixed(2)}s`);
+        btn.classList.add('afh-marq-run');
+    }
+
+    function stop(btn) {
+        btn.classList.remove('afh-marq-run');
+    }
+
+    wrapper.addEventListener('mouseover', (e) => {
+        const btn = e.target.closest('button');
+        if (btn && !btn.contains(e.relatedTarget) && isTemplateButton(btn)) start(btn);
+    });
+
+    wrapper.addEventListener('mouseout', (e) => {
+        const btn = e.target.closest('button');
+        if (btn && !btn.contains(e.relatedTarget)) stop(btn);
+    });
+
+    // С клавиатуры (и после поиска) — для кнопки в фокусе
+    wrapper.addEventListener('focusin', (e) => { if (isTemplateButton(e.target)) start(e.target); });
+    wrapper.addEventListener('focusout', (e) => { if (e.target instanceof HTMLButtonElement) stop(e.target); });
+})();

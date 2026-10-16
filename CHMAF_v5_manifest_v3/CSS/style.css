@@ -4259,3 +4259,656 @@ body.chmaf-en-lang #custom_templates_window {
     border-top-width: 3px !important;
     background-color: rgba(34, 139, 34, 0.65) !important;
 }
+
+/* ============================================================
+   AF_helper — «corporate graphite», как Queue / ChatHistory / Userinfo
+   Слой стилей только для главного окна шаблонов (#AF_helper).
+   Стоит последним в файле и с префиксом #AF_helper, поэтому
+   перекрывает старые glass-правила, не трогая другие окна.
+   ============================================================ */
+#AF_helper {
+    --afh-bg: #111827;
+    --afh-card: #1a2536;
+    --afh-line: #344258;
+    --afh-btn: #1b283c;
+    --afh-btn-line: #3c4d68;
+    --afh-btn-hover: #293b56;
+    --afh-btn-hover-line: #7799e2;
+    --afh-field: #0d1625;
+    --afh-field-line: #3a4961;
+    --afh-focus: #829fff;
+    --afh-primary: #4268c9;
+    --afh-primary-hover: #547ce1;
+    --afh-primary-line: #7293ed;
+    --afh-accent: #a9c0ff;
+    --afh-text: #f1f5f9;
+    --afh-text-2: #dce5f5;
+    --afh-muted: #94a3b8;
+    --afh-glow: rgba(105, 137, 238, .13);
+
+    /* Внешнюю рамку createWindow не показываем — рамка у самой панели */
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+/* --- Панель --- */
+#AF_helper #addTmpWrapper.glass-panel {
+    background:
+        radial-gradient(circle at 95% 0%, var(--afh-glow), transparent 40%),
+        var(--afh-bg) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--afh-line) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06) !important;
+    padding: 18px !important;
+    color: var(--afh-text);
+    -webkit-font-smoothing: antialiased;
+}
+
+#AF_helper #addTmpWrapper.glass-panel:hover {
+    box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06) !important;
+}
+
+/* Вложенные панели (#addTmp) — без второй рамки и фона */
+#AF_helper #addTmpWrapper .glass-panel {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    width: auto !important;
+}
+
+/* --- Шапка: линия-акцент снизу, как у остальных окон --- */
+#AF_helper #addTmpWrapper > .flex-row:first-child {
+    position: relative;
+    padding: 0 0 12px !important;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(66, 104, 201, .15);
+}
+
+#AF_helper #addTmpWrapper > .flex-row:first-child::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 40%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
+    pointer-events: none;
+}
+
+/* --- Все кнопки окна: плоские «чипы» --- */
+#AF_helper .glass-btn.mainButton {
+    height: 34px;
+    min-width: 34px;
+    padding: 0 12px !important;
+    color: var(--afh-text-2) !important;
+    background: var(--afh-btn) !important;
+    border: 1px solid var(--afh-btn-line) !important;
+    border-radius: 9px !important;
+    box-shadow: none !important;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .45);
+    transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease !important;
+}
+
+/* Старые стеклянные подложки больше не нужны (и не грузят отрисовку) */
+#AF_helper .glass-btn.mainButton::before,
+#AF_helper .glass-btn.mainButton:not(#msg):not(#msg1)::after {
+    display: none !important;
+}
+
+#AF_helper .glass-btn.mainButton:hover:not(:disabled) {
+    color: #fff !important;
+    background: var(--afh-btn-hover) !important;
+    border-color: var(--afh-btn-hover-line) !important;
+    box-shadow: 0 4px 12px rgba(3, 9, 22, .35) !important;
+    transform: translateY(-1px) !important;
+}
+
+#AF_helper .glass-btn.mainButton:active:not(:disabled) {
+    background: #16233a !important;
+    box-shadow: none !important;
+    transform: translateY(0) scale(.98) !important;
+}
+
+#AF_helper .glass-btn.mainButton:focus-visible {
+    outline: 2px solid #9ab5ff;
+    outline-offset: 2px;
+}
+
+/* Служебные кнопки шапки (🔔 ♻️ * L ⚙) — ровные квадраты */
+#AF_helper #reminderstatus.glass-btn.mainButton,
+#AF_helper #getnewtmpldata.glass-btn.mainButton,
+#AF_helper #addsrc.glass-btn.mainButton,
+#AF_helper #links.glass-btn.mainButton,
+#AF_helper #setting.glass-btn.mainButton,
+#AF_helper #testCustTMPL.glass-btn.mainButton {
+    width: 34px;
+    padding: 0 !important;
+    font-size: 15px;
+}
+
+/* Язык — акцентная пилюля */
+#AF_helper #languageAF.glass-btn.mainButton {
+    color: var(--afh-accent) !important;
+    background: rgba(66, 104, 201, .14) !important;
+    border-color: rgba(119, 153, 226, .45) !important;
+    border-radius: 999px !important;
+    padding: 0 14px !important;
+}
+
+#AF_helper #languageAF.glass-btn.mainButton:hover {
+    color: #fff !important;
+    background: rgba(66, 104, 201, .28) !important;
+    border-color: var(--afh-btn-hover-line) !important;
+}
+
+/* «Скрыть» — мягкий розовый, как ❌ в других окнах, без капслока */
+#AF_helper #hideMenuMain.glass-btn.mainButton.buttonHide {
+    color: #ffb0be !important;
+    background: rgba(255, 116, 140, .08) !important;
+    border: 1px solid rgba(255, 116, 140, .3) !important;
+    text-transform: none !important;
+    letter-spacing: .01em !important;
+    font-size: 13.5px !important;
+}
+
+#AF_helper #hideMenuMain.glass-btn.mainButton.buttonHide:hover {
+    color: #ffc6d0 !important;
+    background: rgba(255, 116, 140, .16) !important;
+    border-color: rgba(255, 116, 140, .55) !important;
+}
+
+/* --- Вкладки (#pages): сегментированный переключатель --- */
+#AF_helper #pages {
+    gap: 4px !important;
+    padding: 4px;
+    background: var(--afh-field) !important;
+    border: 1px solid var(--afh-line) !important;
+    border-radius: 12px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, .35) !important;
+}
+
+#AF_helper #pages .glass-btn.mainButton {
+    height: 32px !important;
+    padding: 0 6px !important;
+    color: var(--afh-muted) !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    filter: none !important;
+    font-size: 13px !important;
+}
+
+#AF_helper #pages .glass-btn.mainButton:hover {
+    color: #fff !important;
+    background: rgba(66, 104, 201, .16) !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+#AF_helper #pages .glass-btn.mainButton.is-active,
+#AF_helper #pages .glass-btn.mainButton[style*="orange"] {
+    color: #fff !important;
+    background: var(--afh-primary) !important;
+    border: 1px solid var(--afh-primary-line) !important;
+    box-shadow: 0 4px 12px rgba(58, 96, 205, .3) !important;
+}
+
+/* --- Личные шаблоны (#6str): синий оттенок вместо стального --- */
+#AF_helper .glass-btn.mainButton.chmaf-custom-tmp-btn {
+    color: #e3ebff !important;
+    background: rgba(66, 104, 201, .16) !important;
+    border-color: rgba(119, 153, 226, .45) !important;
+}
+
+#AF_helper .glass-btn.mainButton.chmaf-custom-tmp-btn:hover {
+    background: rgba(66, 104, 201, .3) !important;
+    border-color: var(--afh-btn-hover-line) !important;
+}
+
+/* --- Поля --- */
+#AF_helper .glass-input,
+#AF_helper .glass-textarea {
+    color: #edf2fb !important;
+    background: var(--afh-field) !important;
+    border: 1px solid var(--afh-field-line) !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease !important;
+}
+
+#AF_helper .glass-input {
+    height: 36px;
+    padding: 0 12px !important;
+    font-weight: 500;
+}
+
+#AF_helper .glass-textarea {
+    padding: 12px 14px !important;
+    border-radius: 12px !important;
+    line-height: 1.5;
+}
+
+#AF_helper .glass-input::placeholder,
+#AF_helper .glass-textarea::placeholder {
+    color: #7d8ca6 !important;
+}
+
+#AF_helper .glass-input:focus,
+#AF_helper .glass-textarea:focus {
+    background: #142034 !important;
+    border-color: var(--afh-focus) !important;
+    box-shadow: 0 0 0 3px rgba(110, 152, 247, .16) !important;
+}
+
+#AF_helper .glass-textarea::-webkit-resizer,
+#AF_helper .glass-textarea:hover::-webkit-resizer {
+    background: repeating-linear-gradient(-45deg,
+        transparent 0, transparent 4px,
+        rgba(119, 153, 226, .6) 4px, rgba(119, 153, 226, .6) 6px);
+}
+
+#AF_helper .glass-input.input-error,
+#AF_helper .glass-textarea.input-error {
+    border-color: #e5484d !important;
+    box-shadow: 0 0 0 3px rgba(229, 72, 77, .25) !important;
+}
+
+/* Панель ссылки */
+#AF_helper .hyper-bar {
+    background: var(--afh-card) !important;
+    border: 1px solid var(--afh-line) !important;
+    border-radius: 12px !important;
+}
+
+#AF_helper #opandclsbarhyper[aria-expanded="true"] {
+    color: #fff !important;
+    background: rgba(66, 104, 201, .25) !important;
+    border-color: var(--afh-btn-hover-line) !important;
+}
+
+/* --- Нижняя панель --- */
+
+/* Переключатели режимов: точка-индикатор вместо неоновой колбы */
+#AF_helper #hyperlnk + .flex-row #msg.msgtype,
+#AF_helper #hyperlnk + .flex-row #msg1.msg1type {
+    padding: 0 12px 0 26px !important;
+}
+
+#AF_helper #msg.msgtype::after,
+#AF_helper #msg1.msg1type::after {
+    display: block !important;
+    top: 50% !important;
+    left: 12px !important;
+    width: 8px !important;
+    height: 8px !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    transform: translateY(-50%) !important;
+}
+
+/* Чат — зелёный, Заметки — голубой */
+#AF_helper #msg.msgtype:not(.notes)::after { background: #86efac !important; box-shadow: 0 0 8px rgba(134, 239, 172, .7) !important; }
+#AF_helper #msg.msgtype.notes::after       { background: #7dd3fc !important; box-shadow: 0 0 8px rgba(125, 211, 252, .7) !important; }
+
+/* Доработать — фиолетовый, Отправить — зелёный */
+#AF_helper #msg1.msg1type:not(.send-mode)::after { background: #c4b5fd !important; box-shadow: 0 0 8px rgba(196, 181, 253, .7) !important; }
+#AF_helper #msg1.msg1type.send-mode::after       { background: #86efac !important; box-shadow: 0 0 8px rgba(134, 239, 172, .7) !important; }
+
+/* Send — главная кнопка окна */
+#AF_helper #hyperlnk + .flex-row #snd.glass-btn.mainButton.primary {
+    min-width: 92px;
+    padding: 0 18px !important;
+    color: #fff !important;
+    background: var(--afh-primary) !important;
+    border: 1px solid var(--afh-primary-line) !important;
+    box-shadow: 0 6px 18px rgba(58, 96, 205, .32) !important;
+    font-size: 14px;
+    font-weight: 700 !important;
+    letter-spacing: .02em;
+}
+
+#AF_helper #snd.glass-btn.mainButton.primary:hover:not(:disabled) {
+    background: var(--afh-primary-hover) !important;
+    border-color: #a2b9fa !important;
+    box-shadow: 0 8px 22px rgba(58, 96, 205, .42) !important;
+}
+
+#AF_helper #snd.glass-btn.mainButton.primary:active:not(:disabled) {
+    background: #3a5eb8 !important;
+}
+
+/* +Tmpl и Vimbot — того же размера, что и остальные */
+#AF_helper #addtocusttmplt.glass-btn.mainButton,
+#AF_helper #openVimbotWindows.glass-btn.mainButton {
+    font-size: 13px;
+    color: var(--afh-muted) !important;
+}
+
+#AF_helper #addtocusttmplt.glass-btn.mainButton:hover,
+#AF_helper #openVimbotWindows.glass-btn.mainButton:hover {
+    color: #fff !important;
+}
+
+/* Нижняя «док»-панель */
+#AF_helper #hyperlnk + .flex-row {
+    padding: 10px 12px;
+    background: rgba(13, 22, 37, .65) !important;
+    border: 1px solid var(--afh-line) !important;
+    border-radius: 14px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, .35) !important;
+}
+
+#AF_helper #hyperlnk + .flex-row .glass-btn.mainButton {
+    flex-shrink: 0;
+    height: 36px !important;
+    padding: 0 10px !important;
+    border-radius: 9px !important;
+}
+
+/* --- Состояния кнопки обновления шаблонов --- */
+#AF_helper #getnewtmpldata.loading-orange {
+    color: #fdba74 !important;
+    border-color: rgba(255, 140, 0, .5) !important;
+}
+
+#AF_helper #getnewtmpldata.success-green {
+    background: rgba(69, 199, 52, .18) !important;
+    border-color: rgba(69, 199, 52, .55) !important;
+}
+
+#AF_helper .glass-btn.mainButton.error-red {
+    background: rgba(220, 20, 60, .22) !important;
+    border-color: rgba(220, 20, 60, .6) !important;
+}
+
+/* --- Английский режим: тот же графит, оттенок из настроек (--en-h) --- */
+body.chmaf-en-lang #AF_helper {
+    --afh-glow: hsla(var(--en-h), 80%, 60%, .22);
+    --afh-line: hsla(var(--en-h), 45%, 45%, .55);
+    --afh-btn-line: hsla(var(--en-h), 40%, 50%, .45);
+    --afh-btn-hover-line: hsl(var(--en-h), 75%, 72%);
+    --afh-primary: hsl(var(--en-h), 55%, 50%);
+    --afh-primary-hover: hsl(var(--en-h), 60%, 57%);
+    --afh-primary-line: hsl(var(--en-h), 70%, 68%);
+    --afh-accent: hsl(var(--en-h), 85%, 82%);
+    --afh-focus: hsl(var(--en-h), 80%, 72%);
+}
+
+body.chmaf-en-lang #AF_helper #addTmpWrapper.glass-panel {
+    background:
+        radial-gradient(circle at 95% 0%, var(--afh-glow), transparent 45%),
+        linear-gradient(160deg, hsla(var(--en-h), 35%, 16%, 1), #111827 65%) !important;
+}
+
+/* Кнопка языка в EN-режиме остаётся яркой — сразу видно, что шаблоны английские */
+body.chmaf-en-lang #AF_helper #languageAF.glass-btn.mainButton {
+    color: #fff !important;
+    background: linear-gradient(135deg, hsl(var(--en-h), 70%, 52%), hsl(calc(var(--en-h) + 8), 75%, 36%)) !important;
+    border-color: hsla(var(--en-h), 90%, 78%, .7) !important;
+    box-shadow: 0 4px 14px hsla(var(--en-h), 85%, 40%, .45) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #AF_helper .glass-btn.mainButton { transition: none !important; }
+}
+
+/* Поле + кнопка в одном ряду (ссылка на трэд/Jira, выбор тематики серверных…).
+   design-system.css даёт .glass-input/.glass-select ширину 100%: вместе с
+   flex-grow поле занимало весь ряд, и 🧹 переносилась на следующую строку.
+   Поля с заданной в px шириной (Телефон, Почта) не трогаем. */
+#AF_helper .flex-row > :is(input, select, .glass-input, .glass-select):not([style*="px"]) {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+}
+
+#AF_helper .flex-row > :is(input, select, .glass-input, .glass-select):not([style*="px"]) ~ .glass-btn.mainButton {
+    flex-shrink: 0;
+}
+
+/* Выпадающие списки — в том же стиле, что и поля */
+#AF_helper select.glass-input,
+#AF_helper select.glass-select,
+#AF_helper #addTmpWrapper select {
+    height: 36px;
+    padding: 0 12px;
+    color: #edf2fb;
+    color-scheme: dark;
+    background-color: var(--afh-field);
+    border: 1px solid var(--afh-field-line);
+    border-radius: 10px;
+}
+
+/* ============================================================
+   🔎 Поиск по шаблонам (AFhelper.js → initTemplateSearch)
+   ============================================================ */
+#AF_helper .afh-search {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+#AF_helper #afhSearch.glass-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 14px !important;
+    font-size: 14px;
+}
+
+#AF_helper #afhSearch::-webkit-search-cancel-button {
+    filter: invert(.7);
+    cursor: pointer;
+}
+
+#AF_helper .afh-search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 60;
+    max-height: 340px;
+    padding: 6px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #0f1726;
+    border: 1px solid var(--afh-line);
+    border-radius: 12px;
+    box-shadow: 0 18px 44px rgba(3, 9, 22, .6);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(66, 104, 201, .4) transparent;
+}
+
+#AF_helper .afh-search-results[hidden] { display: none; }
+
+#AF_helper .afh-sr-item {
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-left: 3px solid transparent;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+#AF_helper .afh-sr-item[aria-selected="true"] {
+    background: #1b283c;
+    border-color: var(--afh-btn-line);
+    border-left-color: var(--afh-primary-line);
+}
+
+#AF_helper .afh-sr-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+#AF_helper .afh-sr-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: #f1f5f9;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#AF_helper .afh-sr-page {
+    flex: none;
+    padding: 2px 8px;
+    color: var(--afh-accent);
+    background: rgba(66, 104, 201, .14);
+    border: 1px solid rgba(119, 153, 226, .35);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+#AF_helper .afh-sr-page.is-here {
+    color: #86efac;
+    background: rgba(69, 199, 52, .12);
+    border-color: rgba(69, 199, 52, .35);
+}
+
+#AF_helper .afh-sr-insert {
+    flex: none;
+    height: 26px;
+    padding: 0 10px;
+    color: #eef3ff;
+    background: var(--afh-primary);
+    border: 1px solid var(--afh-primary-line);
+    border-radius: 7px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .12s ease, background-color .12s ease;
+}
+
+#AF_helper .afh-sr-item[aria-selected="true"] .afh-sr-insert,
+#AF_helper .afh-sr-item:hover .afh-sr-insert { opacity: 1; }
+
+#AF_helper .afh-sr-insert:hover { background: var(--afh-primary-hover); }
+
+#AF_helper .afh-sr-text {
+    margin-top: 4px;
+    color: var(--afh-muted);
+    font-size: 12.5px;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+#AF_helper .afh-search-results mark {
+    padding: 0 1px;
+    color: #fff;
+    background: rgba(253, 186, 116, .35);
+    border-radius: 3px;
+}
+
+#AF_helper .afh-sr-empty,
+#AF_helper .afh-sr-more {
+    padding: 12px 10px;
+    color: var(--afh-muted);
+    font-size: 13px;
+    text-align: center;
+}
+
+/* Пока идёт поиск — неподходящие кнопки на экране приглушены */
+#AF_helper .glass-btn.mainButton.afh-dim {
+    opacity: .28;
+}
+
+#AF_helper .glass-btn.mainButton.afh-dim:hover { opacity: .8; }
+
+/* Найденная кнопка коротко подсвечивается */
+#AF_helper .glass-btn.mainButton.afh-found-flash {
+    border-color: #fdba74 !important;
+    box-shadow: 0 0 0 3px rgba(253, 186, 116, .35) !important;
+    animation: afh-found 1.6s ease;
+}
+
+@keyframes afh-found {
+    0%, 30%, 60% { background-color: rgba(253, 186, 116, .3); }
+    15%, 45%, 100% { background-color: var(--afh-btn); }
+}
+
+/* Свою подсветку фокуса уже даёт box-shadow — бирюзовая обводка design-system не нужна */
+#AF_helper .glass-input:focus-visible,
+#AF_helper .glass-textarea:focus-visible,
+#AF_helper select:focus-visible {
+    outline: none !important;
+}
+
+/* ============================================================
+   Кнопки шаблонов — ровная сетка + бегущая строка при наведении
+   Сетка ставится на ряды с кнопками в #7str / #6str / #addTmp.
+   Ряды с полями (ссылка, выбор тематики + 🧹) не трогаем.
+   display без !important: скрытые вкладки (инлайн display:none)
+   остаются скрытыми. Разметку кнопок не меняем — текст едет
+   через text-indent, поэтому обработчики шаблонов не затронуты.
+   ============================================================ */
+#AF_helper :is([id="7str"], [id="6str"], #addTmp) div:has(> button.glass-btn.mainButton):not(:has(> input, > select, > textarea)),
+#AF_helper :is([id="7str"], [id="6str"], #addTmp):has(> button.glass-btn.mainButton):not(:has(> input, > select, > textarea)) {
+    /* Каждый ряд шаблонов — одна строка, кнопки делят ширину поровну:
+       края рядов ровные слева и справа */
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 8px;
+    align-items: stretch;
+}
+
+/* В очень длинных рядах (9+ кнопок) — перенос по сетке, чтобы кнопки не сжимались до точек */
+#AF_helper :is([id="7str"], [id="6str"], #addTmp) div:has(> button.glass-btn.mainButton:nth-of-type(9)):not(:has(> input, > select, > textarea)),
+#AF_helper :is([id="7str"], [id="6str"], #addTmp):has(> button.glass-btn.mainButton:nth-of-type(9)):not(:has(> input, > select, > textarea)) {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+}
+
+#AF_helper :is([id="7str"], [id="6str"], #addTmp) div:has(> button.glass-btn.mainButton):not(:has(> input, > select, > textarea)) > button.glass-btn.mainButton,
+#AF_helper :is([id="7str"], [id="6str"], #addTmp):has(> button.glass-btn.mainButton):not(:has(> input, > select, > textarea)) > button.glass-btn.mainButton {
+    display: block !important;
+    width: 100%;
+    min-width: 0;
+    padding: 0 8px !important;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 32px;
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-indent: 0;
+}
+
+/* Наведение: текст плавно уезжает до конца и возвращается */
+#AF_helper button.glass-btn.mainButton.afh-marq-run {
+    text-align: left;
+    text-overflow: clip;
+    animation: afh-marquee var(--afh-marq-time, 3s) ease-in-out infinite alternate;
+}
+
+@keyframes afh-marquee {
+    0%, 12% { text-indent: 0; }
+    88%, 100% { text-indent: var(--afh-marq-shift, 0px); }
+}
+
+/* Старая бегущая строка из style.css (.btn-text с дублем через ::after) внутри окна
+   отключена — её заменяет afh-marq-run */
+#AF_helper .glass-btn .btn-text::after { display: none !important; }
+#AF_helper .glass-btn:hover .btn-text { animation: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+    #AF_helper button.glass-btn.mainButton.afh-marq-run { animation: none; text-overflow: ellipsis; }
+}
