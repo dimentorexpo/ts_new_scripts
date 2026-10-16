@@ -2611,65 +2611,307 @@ async function init_settings() {
         const style = document.createElement('style');
         style.id = 'chmaf-settings-styles';
         style.textContent = `
-            .set-glass-panel { background: rgba(30, 32, 45, 0.8) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 20px; color: #e0e0e0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5); padding: 0 !important; overflow: hidden; z-index: 1000001; }
-            .set-glass-header { background: rgba(255, 255, 255, 0.07); padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: grab; }
-            .set-glass-content { padding: 20px; max-height: 80vh; overflow-y: auto; }
-            .set-glass-content::-webkit-scrollbar { width: 6px; }
-            .set-glass-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-            .set-group { background: rgba(255, 255, 255, 0.04); border-radius: 14px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255, 255, 255, 0.06); }
-            .set-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: nowrap; }
-            .set-label { color: #bbb; font-size: 0.9em; min-width: 140px; flex-shrink: 0; }
-            .set-btn { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; padding: 6px 14px; border-radius: 10px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; white-space: nowrap; }
-            .set-btn:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-1.5px); border-color: rgba(255,255,255,0.2); }
-            .set-btn:active { transform: translateY(0.5px); }
-            .set-btn.active { background: #388e3c; border-color: #4caf50; }
-            .set-input { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #fff; padding: 6px 12px; outline: none; font-size: 13px; transition: all 0.2s; }
-            .set-input:focus { border-color: #7c4dff; background: rgba(0,0,0,0.5); }
-            .set-select { background: #1e202d; color: #fff; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 6px; font-size: 13px; outline: none; }
-            .set-slider { flex-grow: 1; accent-color: #7c4dff; height: 4px; cursor: pointer; }
-            .set-dept-badge { flex: 1; font-size: 12px; font-weight: 600; text-align: center; padding: 8px 4px; }
-            .set-grid-colors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; }
-            .set-color-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: #999; }
+            /* ============================================================
+               Настройки ChMAF — «corporate graphite», как Userinfo / AF_helper.
+               Все правила внутри #AF_Settings.
+               ============================================================ */
+            #AF_Settings { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+            #AF_Settings .set-glass-panel, #AF_Settings .set-glass-panel * { box-sizing: border-box; }
 
-            /* Стили для круглых кнопок-пресетов */
-            .bg-preset { width: 32px !important; height: 32px !important; padding: 0 !important; border-radius: 50% !important; border: 2px solid rgba(255, 255, 255, 0.2) !important; }
-            .bg-preset.active {
-                box-shadow: 0 0 0 2px #7c4dff, 0 0 8px rgba(124, 77, 255, 0.5) !important;
-                border-color: #7c4dff !important;
-                transform: scale(1.15) !important;
+            #AF_Settings .set-glass-panel {
+                width: min(500px, calc(100vw - 16px));
+                padding: 0 !important;
+                overflow: hidden;
+                color: #e2e8f0;
+                /* Тот же системный шрифт, что у окна шаблонов (AF_helper) */
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                font-size: 13.5px;
+                line-height: 1.45;
+                -webkit-font-smoothing: antialiased;
+                background: radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%), #111827 !important;
+                border: 1px solid #344258 !important;
+                border-radius: 18px;
+                box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
+                z-index: 1000001;
             }
+
+            /* Шапка */
+            #AF_Settings .set-glass-header {
+                position: relative;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin: 0 18px;
+                padding: 18px 0 12px;
+                border-bottom: 1px solid rgba(66, 104, 201, .15);
+                cursor: grab;
+                user-select: none;
+            }
+            #AF_Settings .set-glass-header:active { cursor: grabbing; }
+            #AF_Settings .set-glass-header::after {
+                content: ''; position: absolute; bottom: -1px; left: 0; width: 40%; height: 1px;
+                background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
+            }
+            #AF_Settings .set-title { flex: 1; color: #fefefe; font-size: 15px; font-weight: 700; letter-spacing: .01em; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+
+            #AF_Settings .set-glass-content {
+                max-height: 78vh;
+                padding: 14px 18px 18px;
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(66, 104, 201, .4) transparent;
+            }
+            #AF_Settings .set-glass-content::-webkit-scrollbar { width: 4px; }
+            #AF_Settings .set-glass-content::-webkit-scrollbar-thumb { background: rgba(66, 104, 201, .3); border-radius: 8px; }
+
+            /* Секции */
+            #AF_Settings .set-section-title {
+                display: flex; align-items: center; gap: 8px;
+                margin: 10px 0 6px;
+                color: #fefefe;
+                font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+            }
+            #AF_Settings .set-section-title:first-child { margin-top: 2px; }
+            #AF_Settings .set-section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(66, 104, 201, .4), transparent); }
+
+            #AF_Settings .set-group {
+                padding: 4px 12px;
+                margin: 0 0 4px;
+                background: rgba(13, 22, 37, .65);
+                border: 1px solid #344258;
+                border-radius: 14px;
+                box-shadow: inset 0 1px 3px rgba(0, 0, 0, .35);
+            }
+
+            /* Строка: подпись слева, управление справа */
+            #AF_Settings .set-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 46px;
+                padding: 5px 0;
+                margin: 0;
+            }
+            #AF_Settings .set-row + .set-row { border-top: 1px solid rgba(52, 66, 88, .6); }
+            #AF_Settings .set-row[style*="display: none"] + .set-row { border-top: 1px solid rgba(52, 66, 88, .6); }
+
+            #AF_Settings .set-label {
+                flex: none;
+                width: 128px;
+                min-width: 0;
+                white-space: nowrap;
+                color: #94a3b8;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            #AF_Settings .set-fill { flex: 1; min-width: 0; }
+            #AF_Settings .set-hint { color: #7d8ca6; font-size: 11.5px; font-family: 'JetBrains Mono', ui-monospace, monospace; white-space: nowrap; }
+
+            /* Кнопки */
+            #AF_Settings .set-btn {
+                display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+                flex: none;
+                height: 34px; min-width: 34px; padding: 0 12px;
+                color: #dce5f5;
+                background: #1b283c;
+                border: 1px solid #3c4d68;
+                border-radius: 9px;
+                font: inherit; font-size: 13.5px; font-weight: 600;
+                letter-spacing: .01em;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, .45);
+                white-space: nowrap;
+                cursor: pointer;
+                transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
+            }
+            #AF_Settings .set-btn:hover { color: #fff; background: #293b56; border-color: #7799e2; box-shadow: 0 4px 12px rgba(3, 9, 22, .35); transform: translateY(-1px); }
+            #AF_Settings .set-btn:active { transform: translateY(0) scale(.98); }
+            #AF_Settings .set-btn:focus-visible,
+            #AF_Settings .set-input:focus-visible,
+            #AF_Settings .set-select:focus-visible { outline: 2px solid #9ab5ff; outline-offset: 2px; }
+            #AF_Settings .set-btn.set-icon { width: 34px; padding: 0; font-size: 15px; }
+
+            #AF_Settings .buttonHide {
+                display: inline-flex; align-items: center; justify-content: center;
+                width: 34px; height: 34px; padding: 0;
+                color: #ffb0be; background: rgba(255, 116, 140, .08);
+                border: 1px solid rgba(255, 116, 140, .3); border-radius: 9px;
+                font-size: 15px; cursor: pointer; opacity: 1;
+                text-transform: none; letter-spacing: 0;
+            }
+            #AF_Settings .buttonHide:hover { background: rgba(255, 116, 140, .16); border-color: rgba(255, 116, 140, .55); }
+
+            /* Поля */
+            #AF_Settings .set-input,
+            #AF_Settings .set-select {
+                height: 36px;
+                padding: 0 12px;
+                color: #edf2fb;
+                color-scheme: dark;
+                background: #0d1625;
+                border: 1px solid #3a4961;
+                border-radius: 10px;
+                outline: none;
+                font: inherit; font-size: 13.5px; font-weight: 500;
+                transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
+            }
+            #AF_Settings .set-input:focus,
+            #AF_Settings .set-select:focus { background: #142034; border-color: #829fff; box-shadow: 0 0 0 3px rgba(110, 152, 247, .16); }
+            #AF_Settings .set-input::placeholder { color: #7d8ca6; }
+            #AF_Settings .set-num { width: 70px; text-align: center; }
+
+            /* «Статус при входе» — цветная точка-полоса вместо заливки всего списка */
+            #AF_Settings #defaultStatusAfterLogin { border-left-width: 4px; }
+            #AF_Settings #defaultStatusAfterLogin[data-status="Online"]  { border-left-color: #86efac; }
+            #AF_Settings #defaultStatusAfterLogin[data-status="Busy"]    { border-left-color: #fcd34d; }
+            #AF_Settings #defaultStatusAfterLogin[data-status="Offline"] { border-left-color: #fca5a5; }
+
+            /* Ползунки */
+            #AF_Settings .set-slider { flex: 1; min-width: 0; height: 4px; accent-color: #4268c9; cursor: pointer; }
+
+            /* Выбор цвета — аккуратные квадраты */
+            #AF_Settings input[type="color"] {
+                flex: none;
+                width: 34px; height: 34px; padding: 2px;
+                background: #0d1625;
+                border: 1px solid #3a4961;
+                border-radius: 9px;
+                cursor: pointer;
+            }
+            #AF_Settings input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+            #AF_Settings input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 6px; }
+
+            /* Пресеты фона — маленькие кружки */
+            #AF_Settings .set-presets { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+            #AF_Settings .bg-preset,
+            #AF_Settings .hue-preset {
+                width: 22px !important; height: 22px !important; min-width: 0 !important; padding: 0 !important;
+                border-radius: 50% !important;
+                border: 2px solid rgba(255, 255, 255, .18) !important;
+                font-size: 0;
+                transform: none;
+            }
+            #AF_Settings .bg-preset:hover,
+            #AF_Settings .hue-preset:hover { border-color: #7799e2 !important; transform: scale(1.12); }
+            #AF_Settings .bg-preset.active { border-color: #fff !important; box-shadow: 0 0 0 2px #4268c9 !important; transform: scale(1.1) !important; }
+            #AF_Settings .set-divider { width: 1px; height: 22px; background: #344258; margin: 0 2px; }
+
+            /* EN-оттенок: радужная шкала — это сам инструмент выбора, её оставляем */
+            #AF_Settings #enLangHueSlider {
+                flex: 1; min-width: 0; height: 10px; padding: 0;
+                -webkit-appearance: none; appearance: none;
+                border: 1px solid #344258; border-radius: 999px; cursor: pointer;
+                background: linear-gradient(90deg, hsl(0,70%,58%), hsl(60,70%,55%), hsl(120,60%,50%), hsl(180,65%,52%), hsl(240,70%,64%), hsl(300,65%,60%), hsl(360,70%,58%));
+            }
+            #AF_Settings #enLangHueSlider::-webkit-slider-thumb {
+                -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+                background: #fff; border: 2px solid #111827; box-shadow: 0 1px 4px rgba(0, 0, 0, .5);
+            }
+            #AF_Settings #enLangHueSwatch { flex: none; width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, .2); }
+
+            /* Цвета таймеров — три подписанных квадрата в строку */
+            #AF_Settings .set-timer-colors { display: flex; gap: 14px; flex: 1; }
+            #AF_Settings .set-color-wrap { display: flex; align-items: center; gap: 6px; color: #94a3b8; font-size: 12px; }
+
+            /* Аудио-переключатель (глобальный .checkbox-audio из style.css) — компактный */
+            #AF_Settings .checkbox-audio { height: 22px; line-height: 22px; margin: 0 0 0 auto; }
+            #AF_Settings .checkbox-audio .checkbox-audio-switch {
+                width: 42px; height: 22px;
+                background: #0d1625; border: 1px solid #3c4d68; border-radius: 999px;
+            }
+            #AF_Settings .checkbox-audio .checkbox-audio-switch:before {
+                top: 2px; left: 2px; width: 16px; height: 16px; line-height: 16px;
+                font-size: 10px; background: #7d8ca6; box-shadow: none;
+            }
+            #AF_Settings .checkbox-audio input[type=checkbox]:checked + .checkbox-audio-switch { background: #4268c9; border-color: #7293ed; }
+            #AF_Settings .checkbox-audio input[type=checkbox]:checked + .checkbox-audio-switch:before { background: #fff; transform: translateX(20px); }
+
+            /* Галочки поведения — маленькие переключатели */
+            #AF_Settings .set-toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; padding: 6px 0; }
+            #AF_Settings .set-toggle {
+                display: flex; align-items: center; gap: 8px;
+                min-height: 34px;
+                color: #dce5f5; font-size: 13px;
+                cursor: pointer; user-select: none;
+            }
+            #AF_Settings .set-toggle input[type="checkbox"] {
+                -webkit-appearance: none; appearance: none;
+                position: relative; flex: none;
+                width: 30px; height: 18px; margin: 0;
+                background: #0d1625; border: 1px solid #3c4d68; border-radius: 999px;
+                cursor: pointer; transition: background-color .16s ease, border-color .16s ease;
+            }
+            #AF_Settings .set-toggle input[type="checkbox"]::after {
+                content: ''; position: absolute; top: 2px; left: 2px;
+                width: 12px; height: 12px; border-radius: 50%;
+                background: #7d8ca6; transition: transform .18s ease, background-color .16s ease;
+            }
+            #AF_Settings .set-toggle input[type="checkbox"]:checked { background: #4268c9; border-color: #7293ed; }
+            #AF_Settings .set-toggle input[type="checkbox"]:checked::after { background: #fff; transform: translateX(12px); }
+            #AF_Settings .set-toggle input[type="checkbox"]:focus-visible { outline: 2px solid #9ab5ff; outline-offset: 2px; }
+
+            /* Отдел — сегментированный переключатель */
+            #AF_Settings .set-segment {
+                display: flex; gap: 4px; flex: 1;
+                padding: 4px;
+                background: #0d1625; border: 1px solid #344258; border-radius: 12px;
+                box-shadow: inset 0 1px 3px rgba(0, 0, 0, .35);
+            }
+            #AF_Settings .set-dept-badge {
+                flex: 1; height: 32px;
+                color: #94a3b8; background: transparent; border-color: transparent;
+                border-radius: 8px; font-size: 13px; font-weight: 600;
+            }
+            #AF_Settings .set-dept-badge:hover { color: #fff; background: rgba(66, 104, 201, .16); border-color: transparent; transform: none; }
+            #AF_Settings .set-dept-badge.active { color: #fff; background: #4268c9; border-color: #7293ed; box-shadow: 0 4px 12px rgba(58, 96, 205, .3); }
+
+            /* Тестовые ID */
+            #AF_Settings .set-test-ids { display: grid; grid-template-columns: 1fr 34px 1fr 34px; gap: 6px; flex: 1; }
+            #AF_Settings .set-test-ids .set-input { width: 100%; text-align: center; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+            /* Подвал */
+            #AF_Settings .set-footer {
+                display: flex; gap: 8px;
+                margin-top: 12px; padding-top: 12px;
+                border-top: 1px solid rgba(66, 104, 201, .15);
+            }
+            #AF_Settings .set-footer .set-btn { flex: 1; }
+
+            @media (prefers-reduced-motion: reduce) { #AF_Settings * { transition: none !important; } }
         `;
         document.head.appendChild(style);
     };
     // HTML-разметка окна настроек (Glassmorphism)
 
     const win_Settings = `
-        <div class="set-glass-panel" style="width: 540px" id="settings_container">
+        <div class="set-glass-panel" id="settings_container">
             <div class="set-glass-header chmaf-drag-handle" id="settings_head">
-                <span style="font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 18px;">⚙</span> Настройки ChMAF
-                </span>
-                <button id="hideMeSettings" class="buttonHide" style="padding: 4px 10px; font-size: 11px; opacity: 0.8;">hide</button>
+                <button id="hideMeSettings" class="buttonHide" title="Скрыть окно" aria-label="Закрыть окно">❌</button>
+                <span class="set-title">⚙️ Настройки ChMAF</span>
             </div>
 
             <div class="set-glass-content">
-                <!-- Аудио и Масштаб -->
+
+                <!-- 🔔 Звук и окно -->
+                <div class="set-section-title">🔔 Звук и окно</div>
                 <div class="set-group">
                     <div class="set-row">
-                        <select id="soundlistaddr" class="set-select" style="width: 190px; text-align:center;">
-                            <option selected disabled>Звук уведомления</option>
+                        <span class="set-label">Звук</span>
+                        <select id="soundlistaddr" class="set-select set-fill">
+                            <option selected disabled>Выберите звук</option>
                             <option value="othersound">Свой звук...</option>
                         </select>
-                        <button class="set-btn" id="sound_test" title="Проверить">▶</button>
-                        <label class="checkbox-audio" style="margin-left: auto;">
+                        <button class="set-btn set-icon" id="sound_test" title="Проверить звук">▶</button>
+                        <label class="checkbox-audio" title="Звук включён / выключен">
                             <input id="audioswitcher" type="checkbox">
                             <span class="checkbox-audio-switch"></span>
                         </label>
                     </div>
 
                     <div class="set-row" id="custom_sound_row" style="display: none;">
-                        <input class="set-input" id="sound_adr" placeholder="URL звука" style="width: 100%;">
-                        <button class="set-btn" id="sound_save">💾</button>
+                        <span class="set-label">Ссылка на звук</span>
+                        <input class="set-input set-fill" id="sound_adr" placeholder="https://…/sound.mp3">
+                        <button class="set-btn set-icon" id="sound_save" title="Сохранить">💾</button>
                     </div>
 
                     <div class="set-row">
@@ -2678,86 +2920,72 @@ async function init_settings() {
                     </div>
 
                     <div class="set-row">
-                        <span class="set-label">Масштаб окна</span>
-                        <input id="scaleSliderAF" type="range" class="set-slider" min="50" max="100" step="1">
-                        <span id="scale_val" style="min-width: 40px; text-align: right; font-size: 12px; font-family: monospace;">100%</span>
+                        <span class="set-label" title="Через сколько секунд повторять звук уведомления">Повтор, сек</span>
+                        <input class="set-input set-num" id="soundplayinterval" type="number" min="1">
+                        <button class="set-btn set-icon" id="setsoundplayinterval" title="Сохранить интервал">💾</button>
                     </div>
 
                     <div class="set-row">
-                        <span class="set-label">Интервал звука (сек)</span>
-                        <input class="set-input" id="soundplayinterval" type="number" style="width: 65px; text-align: center;">
-                        <button class="set-btn" id="setsoundplayinterval">SET⌚</button>
+                        <span class="set-label">Масштаб окна</span>
+                        <input id="scaleSliderAF" type="range" class="set-slider" min="50" max="100" step="1">
+                        <span id="scale_val" class="set-hint" style="min-width: 40px; text-align: right;">100%</span>
                     </div>
                 </div>
 
-                <!-- Темы и Цвета -->
+                <!-- 🎨 Оформление -->
+                <div class="set-section-title">🎨 Оформление</div>
                 <div class="set-group">
-
-                    <!-- Выбор фона приложения -->
-                    <div class="set-row" style="margin-top: 5px; flex-direction: column; align-items: flex-start; background: rgba(0,0,0,0.15); padding: 12px; border-radius: 10px;">
-                        <span class="set-label" style="margin-bottom: 8px;">Цвет фона диалогов:</span>
-                        <div style="display: flex; gap: 12px; width: 100%; align-items: center;">
-                            <input type="color" id="appBgColorPicker" class="set-input" title="Свой цвет" style="padding:0; width:34px; height:34px; border-radius:8px; cursor:pointer; flex-shrink: 0;">
-                            <div style="width: 1px; height: 25px; background: rgba(255,255,255,0.2); margin: 0 4px;"></div>
-
-                            <button class="set-btn bg-preset" data-color="#FFFFFF" title="Белый (Дефолт)" style="background:#FFFFFF;"></button>
+                    <div class="set-row">
+                        <span class="set-label">Фон диалогов</span>
+                        <div class="set-presets">
+                            <input type="color" id="appBgColorPicker" title="Свой цвет">
+                            <span class="set-divider"></span>
+                            <button class="set-btn bg-preset" data-color="#FFFFFF" title="Белый (по умолчанию)" style="background:#FFFFFF;"></button>
                             <button class="set-btn bg-preset" data-color="#2B2D30" title="Darcula (JetBrains)" style="background:#2B2D30;"></button>
                             <button class="set-btn bg-preset" data-color="#282C34" title="One Dark" style="background:#282C34;"></button>
                             <button class="set-btn bg-preset" data-color="#22272e" title="GitHub Dark" style="background:#22272e;"></button>
                             <button class="set-btn bg-preset" data-color="#1A1B26" title="Tokyo Night" style="background:#1A1B26;"></button>
-                            <button class="set-btn bg-preset" data-color="#1E1E2E" title="Catppuccin (Пастель)" style="background:#1E1E2E;"></button>
-                            <button class="set-btn bg-preset" data-color="#2E3440" title="Nord (Холодная)" style="background:#2E3440;"></button>
+                            <button class="set-btn bg-preset" data-color="#1E1E2E" title="Catppuccin" style="background:#1E1E2E;"></button>
+                            <button class="set-btn bg-preset" data-color="#2E3440" title="Nord" style="background:#2E3440;"></button>
                         </div>
                     </div>
 
-                                                        <!-- Выбор цвета индикатора «Нет тега/темы» -->
-                    <div class="set-row" style="margin-top: 12px; align-items: center;">
-                        <span class="set-label">Индикатор «Нет тега»:</span>
-                        <input type="color" id="missingTagColorPicker" class="set-input" title="Цвет бейджа при отсутствии тега/темы" style="padding:0; width:34px; height:34px; border-radius:8px; cursor:pointer; flex-shrink: 0;">
-                        <span id="missingTagColorLabel" style="font-size: 12px; color: #888; font-family: monospace;">#ff1744</span>
+                    <div class="set-row">
+                        <span class="set-label">Метка «Нет тега»</span>
+                        <input type="color" id="missingTagColorPicker" title="Цвет бейджа, когда у чата нет тега/темы">
+                        <span id="missingTagColorLabel" class="set-hint">#ff1744</span>
                     </div>
 
-                    <!-- Оттенок режима английского языка -->
-                    <div class="set-row" style="margin-top: 12px; flex-direction: column; align-items: stretch; background: rgba(0,0,0,0.15); padding: 12px; border-radius: 10px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                            <span class="set-label">Оттенок EN-режима шаблонов:</span>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span id="enLangHueSwatch" title="Текущий оттенок" style="width:22px; height:22px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:hsl(265,85%,62%);"></span>
-                                <span id="enLangHueVal" style="font-size:12px; color:#888; font-family:monospace;">265°</span>
-                            </div>
-                        </div>
+                    <div class="set-row">
+                        <span class="set-label">Цвет EN-режима</span>
                         <input type="range" id="enLangHueSlider" min="0" max="360" step="1" value="265"
-                               title="Перетащи — цвет темы при переключении на Английский меняется вживую"
-                               style="padding:0; height:12px; -webkit-appearance:none; appearance:none; border:none; border-radius:6px; cursor:pointer;
-                                      background: linear-gradient(90deg, hsl(0,80%,60%), hsl(60,80%,55%), hsl(120,75%,50%), hsl(180,80%,52%), hsl(240,82%,64%), hsl(300,80%,60%), hsl(360,80%,60%));">
-                        <div style="display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;">
-                            <button type="button" class="set-btn hue-preset" data-hue="265">🟣 Фиолет</button>
-                            <button type="button" class="set-btn hue-preset" data-hue="152">🟢 Изумруд</button>
-                            <button type="button" class="set-btn hue-preset" data-hue="210">🔵 Циан</button>
-                            <button type="button" class="set-btn hue-preset" data-hue="330">🩷 Розовый</button>
-                            <button type="button" class="set-btn hue-preset" data-hue="30">🟠 Янтарный</button>
+                               title="Цвет окна шаблонов в английском режиме — меняется вживую">
+                        <span id="enLangHueSwatch" title="Текущий оттенок" style="background:hsl(265,85%,62%);"></span>
+                        <span id="enLangHueVal" class="set-hint">265°</span>
+                    </div>
+                    <div class="set-row" style="min-height: 36px; padding-top: 0; border-top: 0;">
+                        <span class="set-label"></span>
+                        <div class="set-presets">
+                            <button type="button" class="set-btn hue-preset" data-hue="265" title="Фиолетовый" style="background:hsl(265,70%,60%);">Фиолет</button>
+                            <button type="button" class="set-btn hue-preset" data-hue="152" title="Изумрудный" style="background:hsl(152,60%,45%);">Изумруд</button>
+                            <button type="button" class="set-btn hue-preset" data-hue="210" title="Голубой" style="background:hsl(210,70%,55%);">Циан</button>
+                            <button type="button" class="set-btn hue-preset" data-hue="330" title="Розовый" style="background:hsl(330,65%,58%);">Розовый</button>
+                            <button type="button" class="set-btn hue-preset" data-hue="30" title="Янтарный" style="background:hsl(30,80%,55%);">Янтарный</button>
                         </div>
                     </div>
 
-                    <div class="set-row" style="margin-top: 15px;">
-                        <div class="set-grid-colors">
-                            <div class="set-color-wrap">
-                                <input type="color" id="aclstimepicker" class="set-input" style="padding:0; width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,0.1); cursor:pointer;">
-                                <span>Закрытие</span>
-                            </div>
-                            <div class="set-color-wrap">
-                                <input type="color" id="answtimepicker" class="set-input" style="padding:0; width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,0.1); cursor:pointer;">
-                                <span>Новый</span>
-                            </div>
-                            <div class="set-color-wrap">
-                                <input type="color" id="responstimepicker" class="set-input" style="padding:0; width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,0.1); cursor:pointer;">
-                                <span>Ожидание</span>
-                            </div>
+                    <div class="set-row">
+                        <span class="set-label">Цвета таймеров</span>
+                        <div class="set-timer-colors">
+                            <label class="set-color-wrap"><input type="color" id="aclstimepicker"><span>Закрытие</span></label>
+                            <label class="set-color-wrap"><input type="color" id="answtimepicker"><span>Новый</span></label>
+                            <label class="set-color-wrap"><input type="color" id="responstimepicker"><span>Ожидание</span></label>
                         </div>
                     </div>
-                    <div class="set-row" style="margin-top: 5px;">
-                         <span class="set-label">Статус при входе</span>
-                         <select id="defaultStatusAfterLogin" class="set-select" style="flex: 1; text-align:center;">
+
+                    <div class="set-row">
+                        <span class="set-label">Статус при входе</span>
+                        <select id="defaultStatusAfterLogin" class="set-select set-fill">
                             <option value="Online">🟢 Онлайн</option>
                             <option value="Busy">🟡 Занят</option>
                             <option value="Offline">🔴 Офлайн</option>
@@ -2765,42 +2993,48 @@ async function init_settings() {
                     </div>
                 </div>
 
-                <!-- Функционал -->
+                <!-- 🧩 Поведение (только ТП) -->
+                <div class="set-section-title onlyfortp">🧩 Поведение</div>
                 <div class="set-group onlyfortp">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85em; color: #ccc;">
-                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="hidelpmwindow"> Скрыть окно У/П</label>
-                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="showquicktags"> Быстрые тэги в меню</label>
-                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="hideInnerTaskCreate"> Скрыть окно задач</label>
-                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="dblhidewindow"> Отключить dblclick hide</label>
-                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="brnotificatios"> Отключить Notifications</label>
-                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="clearlessoninfo"> Не очищать LessonInfo</label>
+                    <div class="set-toggles">
+                        <label class="set-toggle"><input type="checkbox" id="hidelpmwindow"> Скрыть окно У/П</label>
+                        <label class="set-toggle"><input type="checkbox" id="showquicktags"> Быстрые тэги в меню</label>
+                        <label class="set-toggle"><input type="checkbox" id="hideInnerTaskCreate"> Скрыть окно задач</label>
+                        <label class="set-toggle"><input type="checkbox" id="dblhidewindow"> Без скрытия по dblclick</label>
+                        <label class="set-toggle"><input type="checkbox" id="brnotificatios"> Без push-уведомлений</label>
+                        <label class="set-toggle"><input type="checkbox" id="clearlessoninfo"> Не очищать LessonInfo</label>
                     </div>
                 </div>
 
-                <!-- Отделы и Тестовые ID -->
+                <!-- 🏢 Отдел -->
+                <div class="set-section-title">🏢 Отдел</div>
                 <div class="set-group">
                     <div class="set-row">
-                        <button class="set-btn set-dept-badge" id="set_TP">ТП</button>
-                        <button class="set-btn set-dept-badge" id="set_TPrezerv">ТП рез</button>
-                        <button class="set-btn set-dept-badge" id="set_KC">КЦ</button>
-                        <button class="set-btn set-dept-badge" id="set_KCrezerv">КЦ рез</button>
+                        <span class="set-label">Шаблоны отдела</span>
+                        <div class="set-segment">
+                            <button class="set-btn set-dept-badge" id="set_TP">ТП</button>
+                            <button class="set-btn set-dept-badge" id="set_TPrezerv">ТП рез</button>
+                            <button class="set-btn set-dept-badge" id="set_KC">КЦ</button>
+                            <button class="set-btn set-dept-badge" id="set_KCrezerv">КЦ рез</button>
+                        </div>
                     </div>
-                    <div class="set-row onlyfortp" style="margin-top: 10px;">
-                        <div style="display: grid; grid-template-columns: 1fr 40px 1fr 40px; gap: 8px; width: 100%; align-items: center;">
-                            <input class="set-input" id="test_std" placeholder="ID Ученика" style="width: 100%; box-sizing: border-box; text-align:center;">
-                            <button class="set-btn" id="setteststd" style="padding: 6px 0; width: 100%;">💾</button>
-                            <input class="set-input" id="test_teach" placeholder="ID Препода" style="width: 100%; box-sizing: border-box; text-align:center;">
-                            <button class="set-btn" id="settestteach" style="padding: 6px 0; width: 100%;">💾</button>
+                    <div class="set-row onlyfortp">
+                        <span class="set-label">Тестовые ID</span>
+                        <div class="set-test-ids">
+                            <input class="set-input" id="test_std" placeholder="Ученик">
+                            <button class="set-btn set-icon" id="setteststd" title="Сохранить ID ученика">💾</button>
+                            <input class="set-input" id="test_teach" placeholder="Препод">
+                            <button class="set-btn set-icon" id="settestteach" title="Сохранить ID преподавателя">💾</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Backup -->
-                <div class="set-row" style="justify-content: center; gap: 12px; margin-top: 10px; margin-bottom: 0; flex-wrap: wrap;">
-                    <button class="set-btn" id="savesettingstofile" style="background: rgba(124, 77, 255, 0.15); border-color: rgba(124, 77, 255, 0.3);">💾 Экспорт</button>
-                    <label class="set-btn" for="fileinput" style="background: rgba(255, 255, 255, 0.05);">⤵ Импорт</label>
+                <!-- Резервная копия -->
+                <div class="set-footer">
+                    <button class="set-btn" id="savesettingstofile" title="Сохранить все настройки в файл">💾 Экспорт</button>
+                    <label class="set-btn" for="fileinput" title="Загрузить настройки из файла">⤵ Импорт</label>
                     <input type="file" id="fileinput" style="display:none;">
-                    <button class="set-btn" id="chmaf_copy_diag_btn" style="background: rgba(0, 200, 83, 0.15); border-color: rgba(0, 200, 83, 0.35);" title="Скопировать диагностический отчёт для поддержки">🩺 Диагностика</button>
+                    <button class="set-btn" id="chmaf_copy_diag_btn" title="Скопировать диагностический отчёт для поддержки">🩺 Диагностика</button>
                 </div>
             </div>
         </div>
@@ -2983,8 +3217,8 @@ async function init_settings() {
         ui.statusList.value = Settings.get('defaultStatusAfterLogin') || 'Online';
         ui.statusList.onchange = () => {
             Settings.set('defaultStatusAfterLogin', ui.statusList.value);
-            const colors = { Online: '#388e3c', Busy: '#fbc02d', Offline: '#d32f2f' };
-            ui.statusList.style.background = colors[ui.statusList.value];
+            // Цвет статуса — полосой слева (CSS по data-status), а не заливкой всего списка
+            ui.statusList.dataset.status = ui.statusList.value;
         };
         ui.statusList.dispatchEvent(new Event('change'));
 
