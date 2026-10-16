@@ -391,13 +391,16 @@ $af('inp')?.addEventListener('keydown', function (e) {
 
 // ============================================================
 // 🔎 Поиск по шаблонам
-// Ищет по названию кнопки и тексту шаблона во всех вкладках,
+// Ищет по названию кнопки и тексту шаблона во ВСЕХ вкладках,
 // подсказывает, на какой вкладке лежит шаблон, показывает текст.
 //  • клик / Enter — открыть вкладку и подсветить кнопку
 //  • «Вставить» / Ctrl+Enter — сработать как клик по кнопке шаблона
 //  • Esc — очистить поиск
-// Индекс строится из DOM при каждом поиске, поэтому после
-// «Обновить шаблоны» ничего пересобирать не нужно.
+//
+// Кнопки вкладки рисуются только когда вкладка открыта, поэтому при
+// первом поиске окно один раз «пролистывает» все вкладки (незаметно,
+// содержимое на это время скрыто) и запоминает их шаблоны. Индекс
+// пересобирается после «Обновить шаблоны» (новая table) и раз в 5 минут.
 // ============================================================
 (function initTemplateSearch() {
     const wrapper = $af('addTmpWrapper');
@@ -406,6 +409,7 @@ $af('inp')?.addEventListener('keydown', function (e) {
     if (!wrapper || !input || !results) return;
 
     const MAX_RESULTS = 30;
+    const INDEX_TTL_MS = 5 * 60 * 1000;
     // Кнопки окна, которые не являются шаблонами
     const SERVICE_ZONES = '#pages, #afhSearchBox, #hyperlnk, #hyperlnk + .flex-row, #addTmpWrapper > .flex-row:first-child';
 
@@ -426,13 +430,15 @@ $af('inp')?.addEventListener('keydown', function (e) {
         return div.textContent.replace(/\s+/g, ' ').trim();
     }
 
+    const currentTable = () => (typeof table !== 'undefined' && Array.isArray(table) ? table : null);
+
     // --- Текст шаблона из таблицы (table из utils.js): строка, где есть название кнопки,
-    //     и первая следующая за ним ячейка длиннее названия. Кэш — на каждую версию table.
+    //     и первая следующая за ним ячейка длиннее названия.
     let textCacheFor = null;
     let textCache = new Map();
 
     function textFromTable(label) {
-        const rows = typeof table !== 'undefined' && Array.isArray(table) ? table : null;
+        const rows = currentTable();
         if (!rows) return '';
 
         if (textCacheFor !== rows) {
@@ -466,41 +472,138 @@ $af('inp')?.addEventListener('keydown', function (e) {
         return own ? plainText(own) : textFromTable(label);
     }
 
-    /** Вкладка, на которой лежит кнопка: ищем предка, для которого есть кнопка «<id>_button». */
-    function pageOf(btn) {
-        for (let el = btn.parentElement; el && el !== wrapper; el = el.parentElement) {
-            if (el.id) {
-                const tab = document.getElementById(el.id + '_button');
-                if (tab && tab.closest('#pages')) return { name: tab.textContent.trim(), tab };
-            }
-            if (el.id === '6str') return { name: 'Личные шаблоны', tab: null };
-            if (el.id === 'addTmp') return { name: 'Доп. шаблоны', tab: null };
-        }
-        const active = document.querySelector('#pages .is-active, #pages [style*="orange"]');
-        return { name: active ? active.textContent.trim() : 'текущая вкладка', tab: null };
-    }
+    // --- Вкладки ---
+    const getTabs = () => [...document.querySelectorAll('#pages button')];
+    const getActiveTab = () =>
+        document.querySelector('#pages .is-active, #pages [style*="orange"]') || null;
+    const tabName = (tab) => (tab ? tab.textContent.trim() : 'текущая вкладка');
 
     function isTemplateButton(btn) {
         if (btn.closest(SERVICE_ZONES)) return false;
         const label = btn.textContent.trim();
-        if (!label || label === '🧹') return false;
-        return true;
+        return Boolean(label) && label !== '🧹';
     }
 
-    function buildIndex() {
+    /** Шаблоны, которые сейчас есть в окне и видны. Вкладку определяем по активной. */
+    function liveItems() {
+        const activeTab = getActiveTab();
         return [...wrapper.querySelectorAll('button')]
-            .filter(isTemplateButton)
+            .filter((btn) => isTemplateButton(btn) && btn.offsetParent !== null)
             .map((btn) => {
                 const label = btn.textContent.trim();
-                const text = textOf(btn, label);
-                return {
-                    btn, label, text,
-                    page: pageOf(btn),
-                    visible: btn.offsetParent !== null,
-                    nLabel: norm(label),
-                    nText: norm(text)
-                };
+                const personal = btn.closest('[id="6str"]');
+                const extra = btn.closest('#addTmp');
+                const page = personal ? { name: 'Личные шаблоны', tab: null }
+                    : extra ? { name: 'Доп. шаблоны', tab: null }
+                        : { name: tabName(activeTab), tab: activeTab };
+                return { btn, label, text: textOf(btn, label), page, visible: true };
             });
+    }
+
+    // --- Индекс всех вкладок: один раз пролистываем вкладки и запоминаем шаблоны ---
+    let indexCache = null;      // [{ label, text, tabIndex, tabLabel }]
+    let indexBuiltAt = 0;
+    let indexTable = null;
+    let indexPromise = null;
+
+    const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
+
+    let scanning = false;
+
+    async function buildFullIndex() {
+        scanning = true;
+        const tabs = getTabs();
+        const original = getActiveTab();
+        const items = [];
+        if (!tabs.length) return items;
+
+        // Пока перебираем вкладки — содержимое скрыто, а высота зафиксирована,
+        // чтобы окно не «прыгало», если вкладка рисуется не мгновенно
+        const zone = $af('7str');
+        const keepHeight = zone ? zone.offsetHeight : 0;
+        if (zone) { zone.style.height = keepHeight + 'px'; zone.style.overflow = 'hidden'; }
+        wrapper.classList.add('afh-scanning');
+        try {
+            for (let i = 0; i < tabs.length; i++) {
+                const tab = tabs[i];
+                const before = liveSignature();
+                tab.click();
+                // Вкладка обычно рисуется сразу; если нет — даём ей пару кадров
+                if (liveSignature() === before) { await nextFrame(); }
+                if (liveSignature() === before) { await nextFrame(); }
+
+                liveItems()
+                    .filter((it) => it.page.tab) // личные/доп. шаблоны видны всегда — их берём «вживую»
+                    .forEach((it) => items.push({
+                        label: it.label,
+                        text: it.text,
+                        tabIndex: i,
+                        tabLabel: tab.textContent.trim()
+                    }));
+            }
+        } finally {
+            // Возвращаем вкладку, которая была открыта
+            if (original && original.isConnected) original.click();
+            else tabs[0]?.click();
+            wrapper.classList.remove('afh-scanning');
+            if (zone) { zone.style.height = ''; zone.style.overflow = ''; }
+            scanning = false;
+            requestAnimationFrame(() => { cleanupStale(); refreshMatches(); });
+        }
+        return items;
+    }
+
+    function liveSignature() {
+        const zone = $af('7str');
+        return zone ? zone.textContent.length + ':' + zone.childElementCount + ':' + (getActiveTab()?.id || '') : '';
+    }
+
+    function ensureIndex() {
+        const stale = !indexCache ||
+            indexTable !== currentTable() ||
+            Date.now() - indexBuiltAt > INDEX_TTL_MS;
+
+        if (!stale) return Promise.resolve(indexCache);
+        if (indexPromise) return indexPromise;
+
+        indexPromise = buildFullIndex()
+            .then((items) => {
+                indexCache = items;
+                indexBuiltAt = Date.now();
+                indexTable = currentTable();
+                return items;
+            })
+            .catch((err) => {
+                console.warn('[ChMAF] Поиск: не удалось просмотреть вкладки', err);
+                return indexCache || [];
+            })
+            .finally(() => { indexPromise = null; });
+
+        return indexPromise;
+    }
+
+    /** Живые шаблоны (с кнопками) + шаблоны других вкладок из индекса. */
+    function allItems() {
+        const live = liveItems();
+        const activeTab = getActiveTab();
+        const tabs = getTabs();
+        const seen = new Set(live.map((it) => it.page.name + '\u0000' + it.label));
+
+        const hidden = (indexCache || [])
+            .filter((it) => {
+                const tab = tabs[it.tabIndex];
+                if (tab && tab === activeTab) return false; // эта вкладка открыта — берём «вживую»
+                return !seen.has(it.tabLabel + '\u0000' + it.label);
+            })
+            .map((it) => ({
+                btn: null,
+                label: it.label,
+                text: it.text,
+                page: { name: it.tabLabel, tab: tabs[it.tabIndex] || null },
+                visible: false
+            }));
+
+        return [...live, ...hidden].map((it) => ({ ...it, nLabel: norm(it.label), nText: norm(it.text) }));
     }
 
     function score(item, tokens) {
@@ -536,13 +639,40 @@ $af('inp')?.addEventListener('keydown', function (e) {
         return (start > 0 ? '…' : '') + cut + (start + 170 < text.length ? '…' : '');
     }
 
+    // Приглушение при поиске: класс .afh-searching на окне + .afh-match на совпавших кнопках.
+    // Сам по себе .afh-match ничего не меняет внешне, поэтому даже если вкладка
+    // сохранит кнопку вместе с классом, без активного поиска «залипания» не будет.
+    // Кнопки, которые подсвечены прямо сейчас. WeakSet, а не data-атрибут: копия кнопки,
+    // восстановленная вкладкой из сохранённого HTML, — это другой элемент, и её подсветка снимется.
+    const flashing = new WeakSet();
+
     function setDimmed(matchSet) {
         wrapper.classList.toggle('afh-searching', Boolean(matchSet));
-        wrapper.querySelectorAll('.afh-dim').forEach((b) => b.classList.remove('afh-dim'));
+        wrapper.querySelectorAll('.afh-match, .afh-dim').forEach((b) => b.classList.remove('afh-match', 'afh-dim'));
         if (!matchSet) return;
-        buildIndex().forEach((item) => {
-            if (item.visible && !matchSet.has(item.btn)) item.btn.classList.add('afh-dim');
-        });
+        matchSet.forEach((btn) => btn?.classList.add('afh-match'));
+    }
+
+    /** Пересчитать совпадения для того, что сейчас на экране (после смены вкладки). */
+    function refreshMatches() {
+        const tokens = norm(input.value).split(' ').filter(Boolean);
+        if (!tokens.length) { setDimmed(null); return; }
+
+        const matched = liveItems()
+            .filter((item) => score({ ...item, nLabel: norm(item.label), nText: norm(item.text) }, tokens) > 0)
+            .map((item) => item.btn);
+        setDimmed(new Set(matched));
+    }
+
+    /** Снять «залипшие» классы (подсветка, бегущая строка), если они попали в перерисованную вкладку. */
+    function cleanupStale() {
+        document.querySelectorAll('#AF_helper button.afh-found-flash, #AF_helper button.afh-marq-run, #AF_helper button.afh-dim')
+            .forEach((btn) => {
+                if (btn.matches(':hover, :focus') && !btn.classList.contains('afh-dim')) return;
+                btn.classList.remove('afh-dim', 'afh-marq-run');
+                if (!flashing.has(btn)) btn.classList.remove('afh-found-flash');
+            });
+        if (!input.value.trim()) setDimmed(null);
     }
 
     function closeResults() {
@@ -562,30 +692,35 @@ $af('inp')?.addEventListener('keydown', function (e) {
             return;
         }
 
-        found = buildIndex()
+        found = allItems()
             .map((item) => ({ item, s: score(item, tokens) }))
             .filter((x) => x.s > 0)
             .sort((a, b) => b.s - a.s || a.item.label.localeCompare(b.item.label, 'ru'))
             .map((x) => x.item);
 
-        setDimmed(new Set(found.map((f) => f.btn)));
+        refreshMatches();
+
+        const scanning = Boolean(indexPromise);
 
         if (!found.length) {
-            results.innerHTML = '<div class="afh-sr-empty">Ничего не нашлось. Попробуйте другое слово или часть слова.</div>';
+            results.innerHTML = scanning
+                ? '<div class="afh-sr-empty"><span class="afh-sr-spinner"></span>Просматриваю все вкладки…</div>'
+                : '<div class="afh-sr-empty">Ничего не нашлось. Попробуйте другое слово или часть слова.</div>';
         } else {
             const shown = found.slice(0, MAX_RESULTS);
             results.innerHTML = shown.map((item, i) => `
                 <div class="afh-sr-item" role="option" data-i="${i}" aria-selected="false">
                     <div class="afh-sr-top">
                         <span class="afh-sr-label">${highlight(item.label, tokens)}</span>
-                        <span class="afh-sr-page${item.visible ? ' is-here' : ''}">${item.visible ? '✓ на экране' : '📁 ' + escHtml(item.page.name)}</span>
+                        <span class="afh-sr-page${item.visible ? ' is-here' : ''}" title="${item.visible ? 'Кнопка уже на экране' : 'Шаблон на вкладке «' + escHtml(item.page.name) + '»'}">${item.visible ? '✓ на экране' : '📁 ' + escHtml(item.page.name)}</span>
                         <button type="button" class="afh-sr-insert" data-i="${i}" title="Сработать как клик по шаблону (Ctrl+Enter)">Вставить</button>
                     </div>
                     ${item.text ? `<div class="afh-sr-text">${highlight(snippet(item.text, tokens), tokens)}</div>` : ''}
                 </div>`).join('') +
                 (found.length > MAX_RESULTS
                     ? `<div class="afh-sr-more">…и ещё ${found.length - MAX_RESULTS}. Уточните запрос.</div>`
-                    : '');
+                    : '') +
+                (scanning ? '<div class="afh-sr-more"><span class="afh-sr-spinner"></span>Ищу и в остальных вкладках…</div>' : '');
         }
 
         results.hidden = false;
@@ -604,44 +739,75 @@ $af('inp')?.addEventListener('keydown', function (e) {
         }
     }
 
-    /** Открывает вкладку с шаблоном и подсвечивает кнопку. */
-    function reveal(item) {
-        if (!item) return;
-        if (item.btn.offsetParent === null && item.page.tab) item.page.tab.click();
-
-        requestAnimationFrame(() => {
-            if (item.btn.offsetParent === null) {
-                afNotify(`Шаблон «${item.label}» на вкладке «${item.page.name}», но открыть её не удалось`, 'warning');
-                return;
-            }
-            item.btn.classList.remove('afh-dim');
-            item.btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-            afFlash(item.btn, 'afh-found-flash', 1600);
-            item.btn.focus({ preventScroll: true });
-        });
+    /** Находит кнопку шаблона на экране по названию (после переключения вкладки). */
+    function findLiveButton(label) {
+        return liveItems().find((it) => it.label === label)?.btn || null;
     }
 
-    function apply(item) {
-        if (!item) return;
-        reveal(item);
-        requestAnimationFrame(() => {
-            item.btn.click();
-            clearSearch();
-        });
+    /** Открывает вкладку с шаблоном, подсвечивает кнопку и возвращает её. */
+    async function reveal(item) {
+        if (!item) return null;
+
+        let btn = item.btn && item.btn.isConnected && item.btn.offsetParent !== null ? item.btn : null;
+
+        if (!btn && item.page.tab) {
+            item.page.tab.click();
+            btn = findLiveButton(item.label);
+            if (!btn) { await nextFrame(); btn = findLiveButton(item.label); }
+        }
+
+        if (!btn) {
+            afNotify(`Шаблон «${item.label}» на вкладке «${item.page.name}», но кнопка не нашлась — обновите шаблоны`, 'warning');
+            return null;
+        }
+
+        btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        flashing.add(btn);
+        afFlash(btn, 'afh-found-flash', 1600);
+        setTimeout(() => flashing.delete(btn), 1700);
+        btn.focus({ preventScroll: true });
+        return btn;
+    }
+
+    async function apply(item) {
+        const btn = await reveal(item);
+        if (!btn) return;
+        btn.click();
+        clearSearch();
+    }
+
+    function choose(item) {
+        closeResults();
+        // Совпадения пересчитываются для открывшейся вкладки
+        reveal(item).then(refreshMatches);
     }
 
     function clearSearch() {
         input.value = '';
         render('');
+        cleanupStale();
+    }
+
+    function runSearch() {
+        render(input.value);
+        // Индекс остальных вкладок ещё не готов или устарел — строим и перерисовываем
+        if (input.value.trim() && (!indexCache || indexTable !== currentTable() || Date.now() - indexBuiltAt > INDEX_TTL_MS)) {
+            ensureIndex().then(() => {
+                if (input.value.trim()) render(input.value);
+            });
+            if (indexPromise) render(input.value); // показать «ищу в остальных вкладках…»
+        }
     }
 
     input.addEventListener('input', () => {
         clearTimeout(debounceId);
-        debounceId = setTimeout(() => render(input.value), 80);
+        debounceId = setTimeout(runSearch, 80);
     });
 
+    // Индекс начинаем строить сразу при фокусе — к моменту ввода он уже готов
     input.addEventListener('focus', () => {
-        if (input.value.trim()) render(input.value);
+        ensureIndex();
+        if (input.value.trim()) runSearch();
     });
 
     input.addEventListener('keydown', (e) => {
@@ -659,7 +825,7 @@ $af('inp')?.addEventListener('keydown', function (e) {
             e.preventDefault();
             const item = found[activeIndex];
             if (e.ctrlKey || e.metaKey) apply(item);
-            else { reveal(item); closeResults(); }
+            else choose(item);
         } else if (e.key === 'Escape') {
             e.preventDefault();
             clearSearch();
@@ -675,7 +841,7 @@ $af('inp')?.addEventListener('keydown', function (e) {
 
         const item = found[Number((insertBtn || row).dataset.i)];
         if (insertBtn) apply(item);
-        else { reveal(item); closeResults(); }
+        else choose(item);
     });
 
     results.addEventListener('mousemove', (e) => {
@@ -686,6 +852,31 @@ $af('inp')?.addEventListener('keydown', function (e) {
     // Клик мимо поиска закрывает список (подсветка совпадений остаётся, пока есть запрос)
     document.addEventListener('mousedown', (e) => {
         if (!e.target.closest('#afhSearchBox')) closeResults();
+    });
+
+    // После «Обновить шаблоны» индекс устаревает
+    $af('getnewtmpldata')?.addEventListener('click', () => { indexCache = null; });
+
+    // Ручное переключение вкладки — пересчитать совпадения (или снять подсветку, если поиска нет)
+    $af('pages')?.addEventListener('click', () => {
+        if (scanning) return; // это сам поиск перебирает вкладки
+        requestAnimationFrame(() => { cleanupStale(); refreshMatches(); });
+    });
+
+    // Вкладка перерисовалась (в т.ч. из сохранённой копии) — чистим состояние кнопок
+    let cleanupScheduled = false;
+    const zoneObserver = new MutationObserver(() => {
+        if (scanning || cleanupScheduled) return;
+        cleanupScheduled = true;
+        requestAnimationFrame(() => {
+            cleanupScheduled = false;
+            cleanupStale();
+            if (input.value.trim()) refreshMatches();
+        });
+    });
+    ['7str', '6str', 'addTmp'].forEach((id) => {
+        const el = $af(id);
+        if (el) zoneObserver.observe(el, { childList: true, subtree: true });
     });
 })();
 

@@ -5310,3 +5310,31 @@ body.chmaf-en-lang #AF_CustomTemplates .ct-lang {
 @media (prefers-reduced-motion: reduce) {
     #AF_CustomTemplates * { transition: none !important; }
 }
+
+/* Поиск один раз «пролистывает» вкладки, чтобы найти шаблоны на скрытых —
+   на это время содержимое вкладки не показываем */
+#AF_helper .afh-scanning [id="7str"] { visibility: hidden; }
+
+#AF_helper .afh-sr-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 8px;
+    vertical-align: -1px;
+    border: 2px solid rgba(66, 104, 201, .25);
+    border-top-color: #7799e2;
+    border-radius: 50%;
+    animation: afh-spin .7s linear infinite;
+}
+
+@keyframes afh-spin { to { transform: rotate(360deg); } }
+
+/* Приглушение при поиске — только пока в поле есть запрос (класс на окне).
+   Совпавшие кнопки помечены .afh-match; без .afh-searching метка ни на что не влияет. */
+#AF_helper #addTmpWrapper.afh-searching :is([id="7str"], [id="6str"], #addTmp) button.glass-btn.mainButton:not(.afh-match) {
+    opacity: .28;
+}
+
+#AF_helper #addTmpWrapper.afh-searching :is([id="7str"], [id="6str"], #addTmp) button.glass-btn.mainButton:not(.afh-match):hover {
+    opacity: .8;
+}
