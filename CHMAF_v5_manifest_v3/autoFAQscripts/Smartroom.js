@@ -88,7 +88,7 @@
     // ------------------------------------------------------------
     // Стили
     // ------------------------------------------------------------
-const styles = `
+    const styles = `
     /* Сбрасываем оформление внешней рамки, если её добавляет createWindow */
     #${WINDOW_ID} {
         background: transparent !important;
@@ -113,7 +113,7 @@ const styles = `
         --sr-line-strong: #3a4961;
 
         --sr-text: #edf2fb;
-        --sr-muted: #a6b4cb;
+        --sr-muted: #94a3b8;
         --sr-subtle: #8ea0bd;
 
         --sr-accent: #4268c9;
@@ -141,15 +141,12 @@ const styles = `
             0 26px 70px rgba(3, 9, 22, .52),
             inset 0 1px rgba(255, 255, 255, .06);
 
-        font-family:
-            Inter,
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            Arial,
-            sans-serif;
-        font-size: 13px;
-        line-height: 1.4;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        letter-spacing: 0.01em;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+        -webkit-font-smoothing: antialiased;
     }
 
     .${PREFIX} button,
@@ -158,84 +155,61 @@ const styles = `
         font: inherit;
     }
 
-    /* Шапка */
+    /* Шапка — как .af-gl-header в Userinfo */
 
     .${PREFIX}__header {
+        position: relative;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         flex: none;
 
         min-width: 0;
-        padding: 12px 13px;
+        margin: 0 18px;
+        padding: 18px 0 12px;
 
-        background: transparent;
-        border-bottom: 1px solid var(--sr-line);
+        border-bottom: 1px solid rgba(66, 104, 201, .15);
 
         cursor: grab;
         user-select: none;
+    }
+
+    .${PREFIX}__header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 40%;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
     }
 
     .${PREFIX}__header:active {
         cursor: grabbing;
     }
 
-    .${PREFIX}__mark {
-        display: grid;
-        place-items: center;
-        flex: none;
-
-        width: 34px;
-        height: 34px;
-
-        color: #a9c0ff;
-        background: var(--sr-surface);
-        border: 1px solid #364660;
-        border-radius: 9px;
-
-        font-size: 16px;
-        font-weight: 800;
-    }
-
-    .${PREFIX}__heading {
+    .${PREFIX}__title {
         flex: 1;
         min-width: 0;
-    }
-
-    .${PREFIX}__eyebrow {
-        color: var(--sr-muted);
-        font-size: 9px;
-        font-weight: 700;
-        letter-spacing: .12em;
-        text-transform: uppercase;
-    }
-
-    .${PREFIX}__title {
-        margin: 3px 0 0;
+        margin: 0;
         overflow: hidden;
 
-        color: #f0f4fb;
-        font-size: 14px;
+        color: #fefefe;
+        font-size: 15px;
         font-weight: 700;
-        letter-spacing: -.025em;
         line-height: 1.2;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
-    .${PREFIX}__actions {
-        display: flex;
-        flex: none;
-        gap: 5px;
-    }
-
     .${PREFIX}__icon-button {
-        display: grid;
-        place-items: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         flex: none;
 
-        width: 29px;
-        height: 29px;
+        width: 34px;
+        height: 34px;
         padding: 0;
 
         color: #dce5f5;
@@ -243,28 +217,40 @@ const styles = `
         border: 1px solid #3c4d68;
         border-radius: 9px;
 
+        font-size: 16px;
         cursor: pointer;
 
         transition:
-            color .16s ease,
-            background .16s ease,
-            border-color .16s ease;
+            background-color .16s ease,
+            border-color .16s ease,
+            transform .16s ease;
     }
 
-    .${PREFIX}__icon-button:hover {
+    .${PREFIX}__icon-button:hover:not(:disabled) {
         color: #fff;
         background: #293b56;
         border-color: #7799e2;
+        transform: translateY(-1px);
     }
 
-    .${PREFIX}__icon-button--close:hover {
+    .${PREFIX}__icon-button:active:not(:disabled) {
+        transform: translateY(0) scale(.98);
+    }
+
+    .${PREFIX}__icon-button--close {
         color: #ffb0be;
-        background: rgba(255, 116, 140, .12);
-        border-color: rgba(255, 116, 140, .4);
+        background: rgba(255, 116, 140, .08);
+        border-color: rgba(255, 116, 140, .3);
+    }
+
+    .${PREFIX}__icon-button--close:hover:not(:disabled) {
+        color: #ffb0be;
+        background: rgba(255, 116, 140, .16);
+        border-color: rgba(255, 116, 140, .55);
     }
 
     .${PREFIX}__icon-button:disabled {
-        opacity: .5;
+        opacity: .55;
         cursor: not-allowed;
     }
 
@@ -286,21 +272,21 @@ const styles = `
         flex: 1 1 auto;
 
         min-height: 0;
-        padding: 15px;
+        padding: 14px 18px;
         overflow-y: auto;
         overscroll-behavior: contain;
 
         scrollbar-width: thin;
-        scrollbar-color: #536a8e transparent;
+        scrollbar-color: rgba(66, 104, 201, .4) transparent;
     }
 
     .${PREFIX}__body::-webkit-scrollbar {
-        width: 6px;
+        width: 4px;
     }
 
     .${PREFIX}__body::-webkit-scrollbar-thumb {
-        background: #536a8e;
-        border-radius: 10px;
+        background: rgba(66, 104, 201, .3);
+        border-radius: 8px;
     }
 
     /* Группы и подписи */
@@ -326,9 +312,9 @@ const styles = `
         padding: 0;
 
         color: var(--sr-muted);
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 700;
-        letter-spacing: .09em;
+        letter-spacing: .08em;
         line-height: 1.3;
         text-transform: uppercase;
     }
@@ -363,16 +349,16 @@ const styles = `
         align-items: center;
         justify-content: center;
 
-        min-height: 31px;
-        padding: 5px 11px;
+        min-height: 34px;
+        padding: 5px 12px;
 
         color: #dce5f5;
         background: #1b283c;
         border: 1px solid #3c4d68;
         border-radius: 9px;
 
-        font-size: 12px;
-        font-weight: 550;
+        font-size: 13px;
+        font-weight: 600;
         line-height: 1.2;
 
         cursor: pointer;
@@ -409,15 +395,16 @@ const styles = `
         width: 100%;
         min-width: 0;
 
-        padding: 9px 11px;
+        padding: 7px 12px;
 
         color: var(--sr-text);
         background: var(--sr-field);
         border: 1px solid var(--sr-line-strong);
-        border-radius: 8px;
+        border-radius: 9px;
         outline: none;
 
-        font-size: 12px;
+        font-size: 14px;
+        font-weight: 500;
         line-height: 1.4;
 
         transition:
@@ -427,7 +414,7 @@ const styles = `
     }
 
     .${PREFIX}__input {
-        min-height: 38px;
+        min-height: 34px;
     }
 
     .${PREFIX}__input::placeholder,
@@ -468,7 +455,7 @@ const styles = `
 
     .${PREFIX}__footer {
         flex: none;
-        padding: 11px 14px 14px;
+        padding: 12px 18px 18px;
 
         background: transparent;
         border-top: 1px solid var(--sr-line);
@@ -477,7 +464,7 @@ const styles = `
     .${PREFIX}__status {
         margin: 0 0 9px;
         color: var(--sr-muted);
-        font-size: 11px;
+        font-size: 12px;
         line-height: 1.45;
     }
 
@@ -500,8 +487,8 @@ const styles = `
         gap: 8px;
 
         width: 100%;
-        min-height: 41px;
-        padding: 10px 16px;
+        min-height: 38px;
+        padding: 8px 16px;
 
         color: #eef3ff;
         background: #4268c9;
@@ -510,8 +497,8 @@ const styles = `
 
         box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
 
-        font-size: 12px;
-        font-weight: 750;
+        font-size: 14px;
+        font-weight: 600;
 
         cursor: pointer;
 
@@ -555,11 +542,11 @@ const styles = `
 
         .${PREFIX}__body {
             gap: 11px;
-            padding: 11px 14px;
+            padding: 11px 18px;
         }
 
         .${PREFIX}__header {
-            padding-top: 9px;
+            padding-top: 12px;
             padding-bottom: 9px;
         }
     }
@@ -581,32 +568,26 @@ const styles = `
 
         <div class="${PREFIX}">
             <div class="${PREFIX}__header chmaf-drag-handle" id="smartroomsug_form_header">
-                <div class="${PREFIX}__mark" aria-hidden="true">S</div>
+                <button type="button"
+                        class="${PREFIX}__icon-button ${PREFIX}__icon-button--close"
+                        id="hideMeSmartRoomForm"
+                        title="Скрыть"
+                        aria-label="Закрыть окно">❌</button>
 
-                <div class="${PREFIX}__heading">
-                    <div class="${PREFIX}__eyebrow">SmartRoom · Feedback</div>
-                    <h2 class="${PREFIX}__title">Пожелание по улучшению</h2>
-                </div>
+                <h2 class="${PREFIX}__title" title="Пожелание по улучшению SmartRoom">🦐 SmartRoom</h2>
 
-                <div class="${PREFIX}__actions">
-                    <button type="button" class="${PREFIX}__icon-button"
-                            id="refreshhashsmartform"
-                            title="Обновить данные клиента из чата"
-                            aria-label="Обновить данные клиента">↻</button>
-                    <button type="button" class="${PREFIX}__icon-button"
-                            id="clearsmartroomform"
-                            title="Очистить форму"
-                            aria-label="Очистить форму">⌫</button>
-                    <button type="button" class="${PREFIX}__icon-button"
-                            id="smartroomforminstr"
-                            title="Открыть инструкцию"
-                            aria-label="Открыть инструкцию">?</button>
-                    <button type="button"
-                            class="${PREFIX}__icon-button ${PREFIX}__icon-button--close"
-                            id="hideMeSmartRoomForm"
-                            title="Закрыть окно"
-                            aria-label="Закрыть окно">✕</button>
-                </div>
+                <button type="button" class="${PREFIX}__icon-button"
+                        id="refreshhashsmartform"
+                        title="Обновить данные клиента из чата"
+                        aria-label="Обновить данные клиента">♻️</button>
+                <button type="button" class="${PREFIX}__icon-button"
+                        id="clearsmartroomform"
+                        title="Очистить форму"
+                        aria-label="Очистить форму">🧹</button>
+                <button type="button" class="${PREFIX}__icon-button"
+                        id="smartroomforminstr"
+                        title="Открыть инструкцию"
+                        aria-label="Открыть инструкцию">📖</button>
             </div>
 
             <form class="${PREFIX}__form" id="smartroom_form_menu" novalidate>

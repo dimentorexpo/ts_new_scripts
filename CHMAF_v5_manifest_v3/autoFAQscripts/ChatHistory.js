@@ -10,6 +10,7 @@
 //   operatorId
 //   createAndShowButton(message, type)
 //   copyToClipboard(text)
+//   getLoginLink(id)          — ключик 🔑 «ссылка-логинер» у ID пользователя
 // ============================================================
 
 (() => {
@@ -191,7 +192,9 @@
     const response = await afApiFetch(url, options);
 
     if (!response?.ok) {
-      throw new Error(`Ошибка API: HTTP ${response?.status ?? "?"}`);
+      const error = new Error(`Ошибка API: HTTP ${response?.status ?? "?"}`);
+      error.status = response?.status;
+      throw error;
     }
 
     return response;
@@ -216,15 +219,15 @@
     try {
       const path = new URL(url).pathname.toLowerCase();
 
-      if (/\.(png|jpe?g|gif|webp|avif)$/.test(path)) {
+      if (/\.(png|jpe?g|gif|webp|avif|bmp)$/.test(path)) {
         return "image";
       }
 
-      if (/\.(mp4|webm|mov|mkv)$/.test(path)) {
+      if (/\.(mp4|m4v|webm|mov|mkv)$/.test(path)) {
         return "video";
       }
 
-      if (/\.(mp3|wav|ogg|oga|m4a)$/.test(path)) {
+      if (/\.(mp3|wav|ogg|oga|opus|m4a)$/.test(path)) {
         return "audio";
       }
     } catch {
@@ -234,11 +237,109 @@
     return "file";
   }
 
-  function mediaNode(rawUrl, label = "Открыть файл") {
+  // Известные сервисы: хост → короткое название.
+  // Функция получает URL и может дописать к названию полезную часть пути.
+  const LINK_LABELS = [
+    [/^video-trouble-shooter\.skyeng\.ru$/, () => "Trouble-Shooter"],
+    [/^crm2\.skyeng\.ru$/, (u) => {
+      const person = u.pathname.match(/\/persons\/(\d+)/);
+      const task = u.pathname.match(/\/task\/(\d+)/);
+      if (task) return `CRM · задача ${task[1]}`;
+      return person ? `CRM · ${person[1]}` : "CRM";
+    }],
+    [/^id\.skyeng\.ru$/, (u) => {
+      const user = u.pathname.match(/\/users\/(\d+)/);
+      return user ? `ID Skyeng · ${user[1]}` : "ID Skyeng";
+    }],
+    [/^vimbox\.skyeng\.ru$/, () => "Vimbox"],
+    [/(^|\.)autofaq\.ai$/, () => "AutoFAQ"],
+    [/^jira\./, (u) => {
+      const key = u.pathname.match(/\/browse\/([A-Z][A-Z0-9]+-\d+)/i);
+      return key ? `Jira · ${key[1].toUpperCase()}` : "Jira";
+    }],
+    [/^confluence\./, () => "Confluence"],
+    [/^mm-time\.skyeng\.tech$/, () => "Mattermost"],
+    [/^docs\.google\.com$/, (u) => {
+      if (u.pathname.startsWith("/spreadsheets")) return "Google Таблица";
+      if (u.pathname.startsWith("/presentation")) return "Google Презентация";
+      if (u.pathname.startsWith("/forms")) return "Google Форма";
+      return "Google Документ";
+    }],
+    [/^drive\.google\.com$/, () => "Google Диск"],
+    [/^(www\.)?(youtube\.com|youtu\.be)$/, () => "YouTube"],
+    [/^(www\.)?loom\.com$/, () => "Loom"],
+  ];
+
+  // Подпись для ссылки вместо «Открыть файл»:
+  // известный сервис → его название, файл → имя файла,
+  // иначе → домен и первый раздел пути (video-trouble-shooter.skyeng.ru → Trouble-Shooter
+  // задан выше, остальное — например «help.skyeng.ru › faq»).
+  function linkLabel(url) {
+    let u;
+    try {
+      u = new URL(url);
+    } catch {
+      return "Открыть ссылку";
+    }
+
+    const host = u.hostname.toLowerCase();
+
+    for (const [pattern, label] of LINK_LABELS) {
+      if (pattern.test(host)) return label(u);
+    }
+
+    const segments = u.pathname.split("/").filter(Boolean);
+    const last = segments[segments.length - 1] || "";
+
+    if (/\.[a-z0-9]{2,5}$/i.test(last)) {
+      try {
+        return `📄 ${decodeURIComponent(last)}`;
+      } catch {
+        return `📄 ${last}`;
+      }
+    }
+
+    const shortHost = host.replace(/^www\./, "");
+    const section = segments[0] && segments[0].length <= 30 ? ` › ${segments[0]}` : "";
+
+    return shortHost + section;
+  }
+
+  const looksLikeUrl = (text) => /^(https?:\/\/|www\.)\S+$/i.test(String(text).trim());
+
+  function fileLink(url, label) {
+    const link = document.createElement("a");
+
+    link.className = "afg-file-link";
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.title = url;
+    link.textContent = `↗ ${label}`;
+
+    return link;
+  }
+
+  // Если картинка или видео не загрузились (нет доступа, кодек .mov/.mkv
+  // не поддерживается браузером), вместо пустой рамки показываем ссылку.
+  function fallbackToLink(element, url, label) {
+    element.addEventListener(
+      "error",
+      () => element.replaceWith(fileLink(url, label)),
+      { once: true }
+    );
+  }
+
+  function mediaNode(rawUrl, label) {
     const url = safeUrl(rawUrl);
 
     if (!url) {
-      return document.createTextNode(label);
+      return document.createTextNode(label || String(rawUrl ?? ""));
+    }
+
+    // Подпись, совпадающая с самой ссылкой, ничего не говорит — заменяем
+    if (!label || looksLikeUrl(label)) {
+      label = linkLabel(url);
     }
 
     const type = mediaType(url);
@@ -249,8 +350,9 @@
       image.className = "afg-media-image";
       image.src = url;
       image.dataset.full = url;
-      image.alt = label === "Открыть файл" ? "Изображение из диалога" : label;
+      image.alt = label;
       image.loading = "lazy";
+      fallbackToLink(image, url, label);
 
       return image;
     }
@@ -263,6 +365,7 @@
       video.controls = true;
       video.preload = "metadata";
       video.playsInline = true;
+      fallbackToLink(video, url, label);
 
       return video;
     }
@@ -274,19 +377,48 @@
       audio.src = url;
       audio.controls = true;
       audio.preload = "none";
+      fallbackToLink(audio, url, label);
 
       return audio;
     }
 
-    const link = document.createElement("a");
+    return fileLink(url, label);
+  }
 
-    link.className = "afg-file-link";
-    link.href = url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.textContent = `↗ ${label}`;
+  // Находит ссылки внутри обычного текста, а не только когда
+  // строка целиком состоит из ссылки: «смотри https://… пожалуйста».
+  const URL_IN_TEXT_RE = /https?:\/\/[^\s<>"']+/gi;
+  const TRAILING_PUNCT_RE = /[.,;:!?»)\]]+$/;
 
-    return link;
+  function linkifyText(text) {
+    if (!/https?:\/\//i.test(text)) {
+      return document.createTextNode(text);
+    }
+
+    const fragment = document.createDocumentFragment();
+    let last = 0;
+
+    for (const match of text.matchAll(URL_IN_TEXT_RE)) {
+      let raw = match[0];
+      const tail = raw.match(TRAILING_PUNCT_RE);
+
+      // Точка или скобка в конце предложения — не часть ссылки.
+      // Закрывающую скобку оставляем, если в ссылке есть открывающая.
+      if (tail && !(tail[0] === ")" && raw.includes("("))) {
+        raw = raw.slice(0, -tail[0].length);
+      }
+
+      const url = safeUrl(raw);
+      if (!url) continue;
+
+      fragment.append(document.createTextNode(text.slice(last, match.index)));
+      fragment.append(mediaNode(raw));
+      last = match.index + raw.length;
+    }
+
+    fragment.append(document.createTextNode(text.slice(last)));
+
+    return fragment;
   }
 
   // Сообщения API очищаются при переносе в DOM:
@@ -336,23 +468,7 @@
 
     function clean(node) {
       if (node.nodeType === Node.TEXT_NODE) {
-        const text = node.textContent || "";
-        const trimmed = text.trim();
-
-        if (/^https?:\/\/[^\s<>"']+$/i.test(trimmed) && safeUrl(trimmed)) {
-          const wrapper = document.createElement("span");
-          const start = text.indexOf(trimmed);
-
-          wrapper.append(
-            document.createTextNode(text.slice(0, start)),
-            mediaNode(trimmed),
-            document.createTextNode(text.slice(start + trimmed.length))
-          );
-
-          return wrapper;
-        }
-
-        return document.createTextNode(text);
+        return linkifyText(node.textContent || "");
       }
 
       if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -365,16 +481,16 @@
 
       if (node.tagName === "A") {
         const href = safeUrl(node.getAttribute("href"));
-        const label = node.textContent?.trim() || "Открыть ссылку";
+        const text = node.textContent?.trim() || "";
 
-        return href ? mediaNode(href, label) : document.createTextNode(label);
+        return href ? mediaNode(href, text) : document.createTextNode(text);
       }
 
       if (node.tagName === "IMG") {
         const src = safeUrl(node.getAttribute("src"));
 
         return src
-          ? mediaNode(src, node.getAttribute("alt") || "Изображение")
+          ? mediaNode(src, node.getAttribute("alt") || "Изображение из диалога")
           : document.createDocumentFragment();
       }
 
@@ -838,18 +954,34 @@
         }
 
         .afg-panel {
-            --bg: #0d1423;
-            --surface: #141d30;
-            --surface-2: #19253a;
-            --surface-hover: #213048;
-            --line: rgba(197, 219, 255, .12);
-            --text: #eef5ff;
-            --muted: #a4b3ca;
-            --subtle: #8799b3;
-            --accent: #61d9ed;
-            --accent-bg: rgba(69, 208, 231, .12);
-            --green: #6dd9ad;
-            --amber: #f2c777;
+            /* Палитра «corporate graphite» — как в окне Userinfo (#af-glass-styles) */
+            --bg: #111827;
+            --surface: #1a2536;
+            --surface-2: #162133;
+            --surface-hover: #23334b;
+            --line: #344258;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --subtle: #7d8ca6;
+            --accent: #a9c0ff;
+            --accent-bg: rgba(66, 104, 201, .15);
+            --green: #86efac;
+            --amber: #fdba74;
+
+            --btn-bg: #1b283c;
+            --btn-line: #3c4d68;
+            --btn-hover: #293b56;
+            --btn-hover-line: #7799e2;
+            --field: #0d1625;
+            --field-line: #3a4961;
+            --focus: #829fff;
+            --primary: #4268c9;
+            --primary-hover: #547ce1;
+            --primary-line: #7293ed;
+            --primary-text: #eef3ff;
+            --close: #ffb0be;
+            --close-bg: rgba(255, 116, 140, .08);
+            --close-line: rgba(255, 116, 140, .3);
 
             position: fixed;
             top: 0;
@@ -864,16 +996,13 @@
             isolation: isolate;
             color: var(--text);
             background:
-                radial-gradient(
-                    circle at 95% -10%,
-                    rgba(73, 188, 220, .12),
-                    transparent 32%
-                ),
-                linear-gradient(165deg, #111b2d, var(--bg) 56%);
-            border-left: 1px solid rgba(147, 221, 245, .18);
-            box-shadow: -20px 0 70px rgba(0, 0, 0, .46);
-            font: 14px/1.5 Inter, -apple-system,
-                BlinkMacSystemFont, "Segoe UI", sans-serif;
+                radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+                var(--bg);
+            border-left: 1px solid var(--line);
+            box-shadow: -20px 0 70px rgba(3, 9, 22, .52), inset 1px 0 rgba(255, 255, 255, .06);
+            font: 14px/1.5 'Inter', system-ui, -apple-system, sans-serif;
+            letter-spacing: .01em;
+            -webkit-font-smoothing: antialiased;
         }
 
         .afg-panel.afg-light {
@@ -885,17 +1014,28 @@
             --text: #142338;
             --muted: #40566d;
             --subtle: #536a81;
-            --accent: #08657d;
-            --accent-bg: rgba(8, 101, 125, .11);
+            --accent: #2f56b5;
+            --accent-bg: rgba(66, 104, 201, .11);
             --green: #087253;
             --amber: #8c611a;
 
+            --btn-bg: #e9eff5;
+            --btn-line: rgba(33, 57, 84, .2);
+            --btn-hover: #d0deea;
+            --btn-hover-line: #5f7fc9;
+            --field: #f3f6fa;
+            --field-line: rgba(33, 57, 84, .2);
+            --focus: #4268c9;
+            --primary: #4268c9;
+            --primary-hover: #3a5eb8;
+            --primary-line: #3557ad;
+            --primary-text: #fff;
+            --close: #b8324a;
+            --close-bg: rgba(214, 51, 79, .08);
+            --close-line: rgba(214, 51, 79, .3);
+
             background:
-                radial-gradient(
-                    circle at 95% -10%,
-                    rgba(48, 153, 178, .10),
-                    transparent 35%
-                ),
+                radial-gradient(circle at 95% 0%, rgba(66, 104, 201, .10), transparent 40%),
                 var(--bg);
             box-shadow: -18px 0 55px rgba(24, 42, 68, .17);
         }
@@ -1214,7 +1354,7 @@
             overflow-anchor: none;
             scroll-behavior: auto;
             scrollbar-color:
-                rgba(103, 183, 204, .38)
+                rgba(66, 104, 201, .4)
                 transparent;
             scrollbar-width: thin;
         }
@@ -1238,7 +1378,7 @@
             margin-bottom: 18px;
             color: var(--accent);
             background: var(--accent-bg);
-            border: 1px solid rgba(87, 205, 229, .19);
+            border: 1px solid rgba(66, 104, 201, .25);
             border-radius: 21px;
             font-size: 27px;
         }
@@ -1274,7 +1414,7 @@
 
         .chatlist:hover {
             background: var(--surface-hover);
-            border-color: rgba(83, 198, 227, .4);
+            border-color: var(--btn-hover-line);
             transform: translateY(-1px);
         }
 
@@ -1336,8 +1476,8 @@
 }
 
 .afg-rate-badge[data-rate="4"] {
-    background: rgba(97, 217, 237, 0.2);
-    border-color: rgba(97, 217, 237, 0.4);
+    background: rgba(66, 104, 201, 0.2);
+    border-color: rgba(66, 104, 201, 0.45);
     color: var(--accent);
 }
 
@@ -1595,7 +1735,7 @@
         }
 
         .afg-compose-options input {
-            accent-color: #49c9dc;
+            accent-color: var(--primary);
         }
 
         .afg-modal-layer {
@@ -1745,8 +1885,8 @@
             max-width: 340px;
             padding: 11px 15px;
             color: #fff;
-            background: #243b50;
-            border: 1px solid rgba(128, 218, 235, .4);
+            background: #1b283c;
+            border: 1px solid #7799e2;
             border-radius: 11px;
             box-shadow: 0 12px 35px rgba(0, 0, 0, .3);
             font: 13px Inter, sans-serif;
@@ -1833,15 +1973,7 @@
     white-space: nowrap;
     font-size: 13px;
     font-weight: 800;
-    background: linear-gradient(135deg, #bbf2f9, var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.afg-panel.afg-light .afg-subtitle-name {
-    background: linear-gradient(135deg, #094757, var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text);
 }
 
 .afg-panel .afg-user-type {
@@ -1866,9 +1998,9 @@
 }
 
 .afg-panel .afg-user-type--teacher {
-    color: #82dde0;
-    background: rgba(72, 188, 192, .12);
-    border-color: rgba(72, 188, 192, .32);
+    color: #7dd3fc;
+    background: rgba(30, 144, 255, .15);
+    border-color: rgba(30, 144, 255, .3);
 }
 
 .afg-panel .afg-user-type--parent {
@@ -1976,6 +2108,388 @@
 .afg-footer:not(.afg-footer--collapsed) .afg-footer-toggle-icon {
     transform: rotate(180deg);
 }
+
+/* ===== Оформление как в Userinfo ===== */
+.afg-panel:not(.afg-light) {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+
+.afg-panel .afg-heading {
+    position: relative;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(66, 104, 201, .15);
+}
+
+.afg-panel .afg-heading::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 40%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
+}
+
+.afg-panel .afg-brand {
+    flex: 1;
+}
+
+.afg-panel .afg-title {
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.afg-panel .afg-icon-btn,
+.afg-panel .afg-secondary {
+    color: var(--text);
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-line);
+    border-radius: 9px;
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
+}
+
+.afg-panel .afg-icon-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+}
+
+.afg-panel .afg-secondary {
+    min-height: 34px;
+    padding: 0 14px;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+}
+
+.afg-panel .afg-icon-btn:hover:not(:disabled),
+.afg-panel .afg-secondary:hover:not(:disabled) {
+    color: var(--text);
+    background: var(--btn-hover);
+    border-color: var(--btn-hover-line);
+    transform: translateY(-1px);
+}
+
+.afg-panel .afg-icon-btn:active:not(:disabled),
+.afg-panel .afg-secondary:active:not(:disabled) {
+    transform: translateY(0) scale(.98);
+}
+
+.afg-panel .afg-icon-btn--close {
+    color: var(--close);
+    background: var(--close-bg);
+    border-color: var(--close-line);
+}
+
+.afg-panel .afg-icon-btn--close:hover:not(:disabled) {
+    color: var(--close);
+    background: var(--close-bg);
+    border-color: var(--close);
+}
+
+.afg-panel .afg-input {
+    color: var(--text);
+    background: var(--field);
+    border: 1px solid var(--field-line);
+    border-radius: 9px;
+    font-weight: 500;
+    transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.afg-panel .afg-input::placeholder {
+    color: var(--subtle);
+    font-weight: 500;
+}
+
+.afg-panel .afg-input:focus {
+    border-color: var(--focus);
+    box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
+}
+
+.afg-panel:not(.afg-light) .afg-input:focus {
+    background: #142034;
+}
+
+.afg-panel .afg-search-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 36px;
+}
+
+.afg-panel .afg-search-row .afg-input {
+    height: 36px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.afg-panel .afg-primary {
+    min-height: 36px;
+    color: var(--primary-text);
+    background: var(--primary);
+    border: 1px solid var(--primary-line);
+    border-radius: 9px;
+    font-weight: 600 !important;
+    text-shadow: none;
+    box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
+}
+
+.afg-panel .afg-primary:hover {
+    filter: none;
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.afg-panel #sendmsgtochatornotes {
+    padding: 0 16px;
+}
+
+.afg-panel .afg-section-title,
+.afg-panel .afg-identifier-label,
+.afg-panel .afg-data-label {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+}
+
+.afg-panel .afg-utility {
+    background: transparent;
+}
+
+.afg-panel .afg-chat-info {
+    background: var(--surface-2);
+}
+
+/* ID пользователя + ключик логинера */
+.afg-panel .afg-id-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.afg-panel .afg-id-row .afg-copy {
+    flex: 0 1 auto;
+    width: auto;
+    min-width: 0;
+}
+
+.afg-panel .afg-copy {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+.afg-panel .afg-key-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    color: var(--accent);
+    background: rgba(66, 104, 201, .08);
+    border: 1px solid rgba(66, 104, 201, .25);
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.afg-panel .afg-key-btn:hover:not(:disabled) {
+    background: rgba(66, 104, 201, .2);
+    border-color: rgba(66, 104, 201, .6);
+    box-shadow: 0 0 12px rgba(66, 104, 201, .3);
+    transform: scale(1.1) rotate(-8deg);
+}
+
+.afg-panel .afg-key-btn:active { transform: scale(.9); }
+.afg-panel .afg-key-btn.is-loading { opacity: 1; cursor: wait; animation: afgKeyPulse 1s ease-in-out infinite; }
+.afg-panel .afg-key-btn.is-success { background: rgba(34, 197, 94, .2); border-color: rgba(34, 197, 94, .6); }
+.afg-panel .afg-key-btn.is-error { background: rgba(239, 68, 68, .2); border-color: rgba(239, 68, 68, .6); }
+
+@keyframes afgKeyPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+
+/* Карточки результатов — как карточки услуг в Userinfo */
+.afg-panel .chatlist {
+    border-left: 3px solid #617fbd;
+    border-radius: 10px;
+}
+
+.afg-panel .chatlist:hover {
+    border-left-color: #92afff;
+}
+
+.afg-panel .afg-msg {
+    border-radius: 12px;
+}
+
+.afg-panel .afg-empty-icon {
+    border-radius: 16px;
+}
+
+.afg-panel .afg-modal {
+    background: var(--bg);
+    border-radius: 18px;
+}
+
+/* ===== Перевод чата: выбор оператора ТП ===== */
+.afg-panel .afg-rp-chat {
+    margin: -6px 0 12px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.afg-panel .afg-rp-chat b {
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+}
+
+.afg-panel .afg-rp-filter {
+    height: 36px;
+    padding: 0 12px;
+    flex: none;
+}
+
+.afg-panel .afg-rp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 120px;
+    max-height: 340px;
+    margin-top: 10px;
+    padding-right: 4px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(66, 104, 201, .4) transparent;
+}
+
+.afg-panel .afg-rp-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    color: var(--text);
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-line);
+    border-left: 3px solid var(--btn-line);
+    border-radius: 9px;
+    text-align: left;
+    transition: background-color .16s ease, border-color .16s ease;
+}
+
+.afg-panel .afg-rp-item:hover {
+    background: var(--btn-hover);
+    border-color: var(--btn-hover-line);
+}
+
+.afg-panel .afg-rp-item[aria-selected="true"] {
+    background: var(--accent-bg);
+    border-color: var(--primary-line);
+    border-left-color: var(--primary-line);
+}
+
+.afg-panel .afg-rp-dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #94a3b8;
+}
+
+.afg-panel .afg-rp-dot--Online { background: #22c55e; box-shadow: 0 0 6px rgba(34, 197, 94, .6); }
+.afg-panel .afg-rp-dot--Busy { background: #f59e0b; }
+.afg-panel .afg-rp-dot--Pause { background: #94a3b8; }
+
+.afg-panel .afg-rp-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.afg-panel .afg-rp-meta {
+    flex: none;
+    color: var(--muted);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.afg-panel .afg-rp-info {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.afg-panel .afg-rp-empty {
+    padding: 22px 10px;
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+}
+
+.afg-panel .afg-rp-error {
+    margin-top: 12px;
+    padding: 10px 12px;
+    color: #fca5a5;
+    background: rgba(220, 20, 60, .1);
+    border: 1px solid rgba(220, 20, 60, .3);
+    border-radius: 9px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.afg-panel.afg-light .afg-rp-error {
+    color: #9b2335;
+    background: #fbe9ec;
+    border-color: #f1b9c3;
+}
+
+.afg-panel .afg-rp-confirm {
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid #fdba74;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.afg-panel .afg-rp-confirm b {
+    color: var(--text);
+}
+
+.afg-panel .afg-rp-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: none;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+}
+
+.afg-panel .afg-rp-actions .afg-primary {
+    padding: 0 16px;
+}
+
+.afg-panel .afg-rp-actions .afg-primary:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+}
     `;
 
   document.head.append(styles);
@@ -1988,45 +2502,48 @@
   panel.innerHTML = `
         <div class="afg-top">
             <div class="afg-heading">
-                <div class="afg-brand">
-                    <div class="afg-brand-mark" aria-hidden="true">
-                        ◈
-                    </div>
+                <button
+                    class="afg-icon-btn afg-icon-btn--close"
+                    id="hideMeChHis"
+                    type="button"
+                    title="Закрыть панель"
+                    aria-label="Закрыть панель"
+                >❌</button>
 
+                <div class="afg-brand">
                     <div>
-                        <div class="afg-title">
-                            История диалогов
-                        </div>
+                        <div class="afg-title">🗄️ История диалогов</div>
                         <div class="afg-subtitle" id="afgSubtitle">
                             Поиск и работа с чатами
                         </div>
                     </div>
                 </div>
 
-				<span
-    class="afg-visually-hidden"
-    id="afgSectionTitle"
-    aria-live="polite"
->Начало работы</span>
+                <span
+                    class="afg-visually-hidden"
+                    id="afgSectionTitle"
+                    aria-live="polite"
+                >Начало работы</span>
 
                 <div class="afg-heading-actions">
-				<button
-    class="afg-icon-btn"
-    id="back_to_chat_his"
-    type="button"
-    title="Вернуться к результатам"
-    aria-label="Вернуться к результатам"
-    hidden
->⬅️</button>
+                    <button
+                        class="afg-icon-btn"
+                        id="back_to_chat_his"
+                        type="button"
+                        title="Вернуться к результатам"
+                        aria-label="Вернуться к результатам"
+                        hidden
+                    >⬅️</button>
 
-<button
-    class="afg-icon-btn"
-    id="refreshchat"
-    type="button"
-    title="Обновить чат"
-    aria-label="Обновить чат"
-    hidden
->🔄️</button>
+                    <button
+                        class="afg-icon-btn"
+                        id="refreshchat"
+                        type="button"
+                        title="Обновить чат"
+                        aria-label="Обновить чат"
+                        hidden
+                    >♻️</button>
+
                     <button
                         class="afg-icon-btn"
                         id="chagetheme"
@@ -2034,14 +2551,6 @@
                         title="Сменить тему"
                         aria-label="Сменить тему"
                     >◐</button>
-
-                    <button
-                        class="afg-icon-btn"
-                        id="hideMeChHis"
-                        type="button"
-                        title="Закрыть панель"
-                        aria-label="Закрыть панель"
-                    >❌</button>
                 </div>
             </div>
 
@@ -2107,7 +2616,7 @@
                     type="button"
                     title="Обновить операторов"
                     aria-label="Обновить операторов"
-                >🔄</button>
+                >♻️</button>
 
                 <button
                     class="afg-icon-btn"
@@ -2123,7 +2632,7 @@
                     type="button"
                     title="Инструкция"
                     aria-label="Инструкция"
-                >❓</button>
+                >📖</button>
 
                 <button
                     class="afg-icon-btn"
@@ -2141,12 +2650,22 @@
                     <span class="afg-identifier-label">
                         Пользователь
                     </span>
-                    <button
-                        class="afg-copy"
-                        id="placeusid"
-                        type="button"
-                        title="Копировать ID"
-                    ></button>
+                    <div class="afg-id-row">
+                        <button
+                            class="afg-copy"
+                            id="placeusid"
+                            type="button"
+                            title="Копировать ID"
+                        ></button>
+                        <button
+                            class="afg-key-btn"
+                            id="afgLoginerBtn"
+                            type="button"
+                            title="Ссылка-логинер"
+                            aria-label="Скопировать ссылку-логинер"
+                            hidden
+                        >🔑</button>
+                    </div>
                 </div>
 
                 <div>
@@ -2242,6 +2761,51 @@
                 </div>
             </div>
         </div>
+
+        <div
+            class="afg-modal-layer"
+            id="reassignpicker"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Перевод чата оператору"
+        >
+            <div class="afg-modal">
+                <div class="afg-modal-head">
+                    <span>🔀 Перевести чат</span>
+
+                    <button
+                        class="afg-icon-btn afg-icon-btn--close"
+                        id="hidereassignpicker"
+                        type="button"
+                        aria-label="Закрыть"
+                    >❌</button>
+                </div>
+
+                <div class="afg-rp-chat" id="afgRpChat"></div>
+
+                <div id="afgRpChoose">
+                    <input
+                        class="afg-input afg-rp-filter"
+                        id="afgRpFilter"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="🔎 Начните вводить имя…"
+                        aria-label="Поиск оператора"
+                    >
+                    <div class="afg-rp-list" id="afgRpList" role="listbox" aria-label="Операторы ТП"></div>
+                    <div class="afg-rp-info" id="afgRpInfo"></div>
+                </div>
+
+                <div class="afg-rp-confirm" id="afgRpConfirm" hidden></div>
+
+                <div class="afg-rp-error" id="afgRpError" role="alert" hidden></div>
+
+                <div class="afg-rp-actions">
+                    <button class="afg-secondary" id="afgRpBack" type="button">Отмена</button>
+                    <button class="afg-primary" id="afgRpNext" type="button" disabled>Выберите оператора</button>
+                </div>
+            </div>
+        </div>
     `;
 
   document.body.append(panel);
@@ -2292,6 +2856,7 @@
 
   function closeModal() {
     $("userchatdata").classList.remove("afg-open");
+    $("reassignpicker")?.classList.remove("afg-open");
   }
 
   function resetConversation() {
@@ -2348,6 +2913,7 @@
     const userName = payload.userFullName || user.fullName || "Пользователь";
 
     $("placeusid").textContent = String(userId);
+    $("afgLoginerBtn").hidden = !/^\d+$/.test(String(userId));
     $("placechatid").textContent = String(conversation.id || "");
 
     $("somechatinfo").style.display = "block";
@@ -2782,7 +3348,7 @@
       console.error(error);
       notify("Не удалось обновить операторов", "error");
     } finally {
-      button.textContent = "🔄";
+      button.textContent = "♻️";
       setBusy("RefrehOperators", false);
     }
   }
@@ -2917,32 +3483,333 @@
     }
   }
 
+  // ------------------------------------------------------------
+  // Перевод чата оператору ТП
+  // ------------------------------------------------------------
+
+  // Статусы закрытого диалога в AutoFAQ. Всё, где есть «Closed»,
+  // тоже считаем закрытым — на случай новых вариантов автозакрытия.
+  const CLOSED_STATUS_TEXT = {
+    ClosedByOperator: "закрыт оператором",
+    ClosedByBot: "закрыт ботом",
+    ClosedByUser: "закрыт пользователем",
+    ClosedByClient: "закрыт пользователем",
+    AutoClosed: "закрыт автоматически (автозакрытие)",
+    ClosedAutomatically: "закрыт автоматически (автозакрытие)",
+    ClosedByTimeout: "закрыт автоматически (автозакрытие)",
+    ClosedByTimer: "закрыт автоматически (автозакрытие)",
+    ClosedBySystem: "закрыт автоматически (автозакрытие)",
+  };
+
+  function closedReason(status) {
+    const value = String(status ?? "");
+
+    if (CLOSED_STATUS_TEXT[value]) return CLOSED_STATUS_TEXT[value];
+    if (/auto.?clos|timeout/i.test(value)) return "закрыт автоматически (автозакрытие)";
+    if (/clos|finish|archiv/i.test(value)) return `закрыт (статус ${value})`;
+
+    return null;
+  }
+
+  // Понятный сотруднику текст вместо «HTTP 409».
+  function transferErrorText(error) {
+    const status = error?.status;
+
+    if (!status) {
+      if (/afApiFetch/.test(error?.message || "")) {
+        return "Расширение загрузилось не полностью. Перезагрузите страницу AutoFAQ и попробуйте снова.";
+      }
+
+      return "Нет связи с AutoFAQ. Проверьте интернет или VPN и попробуйте ещё раз.";
+    }
+
+    if (status === 401) {
+      return "Сессия AutoFAQ истекла. Обновите страницу AutoFAQ, войдите заново и повторите перевод.";
+    }
+
+    if (status === 403) {
+      return "У вашей учётки нет прав переводить этот чат. Обратитесь к старшему смены.";
+    }
+
+    if (status === 404) {
+      return "Чат не найден в AutoFAQ — возможно, его удалили или ID указан неверно.";
+    }
+
+    if (status === 400 || status === 409 || status === 422) {
+      return "AutoFAQ отклонил перевод: чат уже закрыт, переведён или выбранный оператор не может его принять. Обновите чат и проверьте его статус.";
+    }
+
+    if (status === 429) {
+      return "Слишком много запросов к AutoFAQ. Подождите полминуты и попробуйте снова.";
+    }
+
+    if (status >= 500) {
+      return `Сервер AutoFAQ сейчас не отвечает (ошибка ${status}). Попробуйте через минуту.`;
+    }
+
+    return `Не удалось перевести чат (ошибка ${status}).`;
+  }
+
+  // ТП — строго префикс «ТП-», без «ТП ОС-» и «ТПPrem-».
+  const isTpOperator = (fullName) => operatorGroup(fullName) === "тп";
+
+  const OPERATOR_STATUS_TEXT = { Online: "онлайн", Busy: "занят", Pause: "пауза" };
+  const OPERATOR_STATUS_ORDER = { Online: 0, Busy: 1, Pause: 2 };
+
+  function chatsCount(n) {
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    const word = mod10 === 1 && mod100 !== 11
+      ? "чат"
+      : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? "чата" : "чатов";
+    return `${n} ${word}`;
+  }
+
+  const picker = {
+    chatId: null,
+    operators: [],
+    selectedId: "",
+    step: "choose",
+    busy: false,
+  };
+
+  function pickerError(text) {
+    const box = $("afgRpError");
+    box.textContent = text || "";
+    box.hidden = !text;
+  }
+
+  function closeReassignPicker() {
+    if (picker.busy) return;
+    $("reassignpicker").classList.remove("afg-open");
+  }
+
+  function pickerSelected() {
+    return picker.operators.find((op) => op.id === picker.selectedId) || null;
+  }
+
+  function updatePickerButtons() {
+    const next = $("afgRpNext");
+    const back = $("afgRpBack");
+    const selected = pickerSelected();
+
+    back.textContent = picker.step === "confirm" ? "← Назад" : "Отмена";
+
+    if (picker.step === "confirm") {
+      next.textContent = picker.busy ? "Переводим…" : "Да, перевести";
+      next.disabled = picker.busy;
+      back.disabled = picker.busy;
+      return;
+    }
+
+    back.disabled = false;
+    next.disabled = !selected;
+    next.textContent = selected ? "Далее →" : "Выберите оператора";
+  }
+
+  function renderPickerList() {
+    const list = $("afgRpList");
+    const query = $("afgRpFilter").value.trim().toLocaleLowerCase("ru-RU").replace(/ё/g, "е");
+
+    const shown = picker.operators.filter((op) =>
+      !query || op.search.includes(query)
+    );
+
+    list.replaceChildren();
+
+    if (!shown.length) {
+      const emptyNode = document.createElement("div");
+      emptyNode.className = "afg-rp-empty";
+      emptyNode.textContent = picker.operators.length
+        ? "Никого не нашли — попробуйте часть фамилии"
+        : "Сейчас нет операторов ТП на линии";
+      list.append(emptyNode);
+    }
+
+    for (const op of shown) {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "afg-rp-item";
+      item.dataset.id = op.id;
+      item.setAttribute("role", "option");
+      item.setAttribute("aria-selected", String(op.id === picker.selectedId));
+      item.title = `ID ${op.id}`;
+
+      const dot = document.createElement("span");
+      dot.className = `afg-rp-dot afg-rp-dot--${op.status}`;
+
+      const name = document.createElement("span");
+      name.className = "afg-rp-name";
+      name.textContent = op.fullName;
+
+      const meta = document.createElement("span");
+      meta.className = "afg-rp-meta";
+      meta.textContent = `${OPERATOR_STATUS_TEXT[op.status] || op.status} · чатов: ${op.chats}`;
+
+      item.append(dot, name, meta);
+      list.append(item);
+    }
+
+    $("afgRpInfo").textContent = picker.operators.length
+      ? `Показано ${shown.length} из ${picker.operators.length} операторов ТП на линии`
+      : "";
+
+    updatePickerButtons();
+  }
+
+  function showPickerStep(step) {
+    picker.step = step;
+    $("afgRpChoose").hidden = step !== "choose";
+    $("afgRpConfirm").hidden = step !== "confirm";
+
+    if (step === "confirm") {
+      const op = pickerSelected();
+      const box = $("afgRpConfirm");
+      const name = document.createElement("b");
+      name.textContent = op.fullName;
+
+      box.replaceChildren(
+        "Перевести чат оператору ",
+        name,
+        `? Сейчас у оператора ${chatsCount(op.chats)}, статус — ${OPERATOR_STATUS_TEXT[op.status] || op.status}.`
+      );
+    } else {
+      $("afgRpFilter").focus();
+    }
+
+    updatePickerButtons();
+  }
+
+  // Свежий статус чата прямо с сервера: пока оператор выбирал,
+  // чат мог закрыться (в том числе автозакрытием).
+  async function checkChatIsActive(chatId) {
+    const conversation = await apiJson(`${API}/conversations/` + encodeURIComponent(chatId));
+    const reason = closedReason(conversation?.status);
+
+    if (reason) {
+      return `Чат ${reason} — переводить можно только активные чаты.`;
+    }
+
+    return null;
+  }
+
   async function reassignChat() {
-    const id = state.selectedOperatorId;
+    if (state.busy.has("reassign")) return;
+
     const chatId = state.conversation?.id;
-    const name = $("operatorstp").selectedOptions[0]?.textContent;
 
-    if (!chatId || !id) {
-      notify("Откройте чат и выберите оператора", "warning");
+    if (!chatId) {
+      notify("Сначала откройте чат", "warning");
       return;
     }
 
-    if (!confirm(`Перевести чат оператору «${name}»?`)) {
+    // Быстрая проверка по уже открытому чату — без лишних запросов.
+    const knownReason = closedReason(state.conversation?.status);
+
+    if (knownReason) {
+      notify(`Нельзя перевести: чат ${knownReason}. Переводить можно только активные чаты.`, "warning");
       return;
     }
+
+    const button = $("reassign");
+    const originalText = button.textContent;
 
     setBusy("reassign", true);
+    button.textContent = "Загружаем операторов…";
 
     try {
-      await assignTo(id, chatId);
-      notify("Чат переведён оператору");
-      await openConversation(chatId);
+      const closedText = await checkChatIsActive(chatId);
+
+      if (closedText) {
+        notify("Нельзя перевести: " + closedText.charAt(0).toLowerCase() + closedText.slice(1), "warning");
+        return;
+      }
+
+      const data = await apiJson(`${API}/operators/statistic/currentState`);
+      const rows = Array.isArray(data?.onOperator) ? data.onOperator : [];
+      state.operatorRows = rows;
+
+      const ownId = currentOperatorId(rows);
+      const unique = new Map();
+
+      for (const { operator, aCnt = 0 } of rows) {
+        if (!operator?.id || !operator.fullName) continue;
+        if (operator.status === "Offline" || !isTpOperator(operator.fullName)) continue;
+        if (ownId && String(operator.id) === ownId) continue; // себе — через «Забрать чат»
+
+        const id = String(operator.id);
+
+        if (!unique.has(id)) {
+          unique.set(id, {
+            id,
+            fullName: operator.fullName,
+            status: operator.status,
+            chats: Number(aCnt) || 0,
+            search: operator.fullName.toLocaleLowerCase("ru-RU").replace(/ё/g, "е") + " " + id,
+          });
+        }
+      }
+
+      picker.operators = [...unique.values()].sort(
+        (a, b) =>
+          (OPERATOR_STATUS_ORDER[a.status] ?? 9) - (OPERATOR_STATUS_ORDER[b.status] ?? 9) ||
+          a.fullName.localeCompare(b.fullName, "ru")
+      );
+      picker.chatId = chatId;
+      picker.selectedId = "";
+      picker.busy = false;
+
+      const chatNode = document.createElement("b");
+      chatNode.textContent = chatId;
+      $("afgRpChat").replaceChildren("Чат ", chatNode);
+      $("afgRpFilter").value = "";
+      pickerError("");
+
+      $("reassignpicker").classList.add("afg-open");
+      renderPickerList();
+      showPickerStep("choose");
     } catch (error) {
       console.error(error);
-
-      notify(`Не удалось перевести чат: ${error.message}`, "error");
+      notify("Не удалось открыть список операторов. " + transferErrorText(error), "error");
     } finally {
+      button.textContent = originalText;
       setBusy("reassign", false);
+    }
+  }
+
+  async function confirmReassign() {
+    const op = pickerSelected();
+    const chatId = picker.chatId;
+
+    if (!op || !chatId || picker.busy) return;
+
+    picker.busy = true;
+    pickerError("");
+    updatePickerButtons();
+
+    try {
+      const closedText = await checkChatIsActive(chatId);
+
+      if (closedText) {
+        pickerError(closedText);
+        return;
+      }
+
+      await assignTo(op.id, chatId);
+
+      picker.busy = false;
+      closeReassignPicker();
+      notify(`Чат переведён оператору ${op.fullName}`);
+
+      if (state.conversation?.id === chatId) {
+        await openConversation(chatId);
+      }
+    } catch (error) {
+      console.error("[ChatHistory] Перевод чата:", error);
+      pickerError(transferErrorText(error));
+    } finally {
+      picker.busy = false;
+      updatePickerButtons();
     }
   }
 
@@ -3255,6 +4122,71 @@
 
   $("reassign").addEventListener("click", reassignChat);
 
+  $("hidereassignpicker").addEventListener("click", closeReassignPicker);
+
+  $("reassignpicker").addEventListener("click", (event) => {
+    if (event.target === $("reassignpicker")) closeReassignPicker();
+  });
+
+  $("afgRpList").addEventListener("click", (event) => {
+    const item = event.target.closest(".afg-rp-item");
+    if (!item) return;
+
+    picker.selectedId = item.dataset.id;
+    pickerError("");
+    renderPickerList();
+  });
+
+  // Двойной клик по оператору — сразу к подтверждению
+  $("afgRpList").addEventListener("dblclick", (event) => {
+    if (event.target.closest(".afg-rp-item") && pickerSelected()) {
+      showPickerStep("confirm");
+    }
+  });
+
+  $("afgRpFilter").addEventListener("input", renderPickerList);
+
+  // Стрелки — по списку, Enter — дальше / подтвердить
+  $("afgRpFilter").addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+
+      const ids = [...$("afgRpList").querySelectorAll(".afg-rp-item")].map((item) => item.dataset.id);
+      if (!ids.length) return;
+
+      const index = ids.indexOf(picker.selectedId);
+      const nextIndex = event.key === "ArrowDown"
+        ? Math.min(index + 1, ids.length - 1)
+        : Math.max(index - 1, 0);
+
+      picker.selectedId = ids[index === -1 ? 0 : nextIndex];
+      renderPickerList();
+      $("afgRpList").querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
+    }
+
+    if (event.key === "Enter" && pickerSelected()) {
+      event.preventDefault();
+      showPickerStep("confirm");
+    }
+  });
+
+  $("afgRpBack").addEventListener("click", () => {
+    if (picker.step === "confirm") {
+      pickerError("");
+      showPickerStep("choose");
+    } else {
+      closeReassignPicker();
+    }
+  });
+
+  $("afgRpNext").addEventListener("click", () => {
+    if (picker.step === "choose") {
+      if (pickerSelected()) showPickerStep("confirm");
+    } else {
+      confirmReassign();
+    }
+  });
+
   $("sendmsgtochatornotes").addEventListener("click", sendMessage);
 
   $("chatuserhis").addEventListener("input", (event) => {
@@ -3305,6 +4237,41 @@
     copy($("placeusid").textContent);
   });
 
+  // 🔑 Ссылка-логинер — та же логика, что у ключика в Userinfo.
+  // getLoginLink(id) — общая функция расширения: получает и копирует ссылку.
+  $("afgLoginerBtn").addEventListener("click", async () => {
+    const btn = $("afgLoginerBtn");
+    const id = $("placeusid").textContent.trim();
+
+    if (!/^\d+$/.test(id) || btn.classList.contains("is-loading")) return;
+
+    btn.classList.remove("is-success", "is-error");
+    btn.classList.add("is-loading");
+    btn.textContent = "⏳";
+
+    try {
+      if (typeof getLoginLink !== "function") {
+        throw new Error("функция getLoginLink не загружена");
+      }
+
+      await getLoginLink(id);
+
+      btn.classList.add("is-success");
+      btn.textContent = "✅";
+      notify("💾 Ссылка-логинер скопирована", "message");
+    } catch (error) {
+      btn.classList.add("is-error");
+      btn.textContent = "❌";
+      notify("Не удалось получить логинер: " + (error?.message || "ошибка"), "error");
+    } finally {
+      btn.classList.remove("is-loading");
+      setTimeout(() => {
+        btn.classList.remove("is-success", "is-error");
+        btn.textContent = "🔑";
+      }, 2000);
+    }
+  });
+
   $("placechatid").addEventListener("click", () => {
     const id = $("placechatid").textContent;
 
@@ -3325,6 +4292,8 @@
     if (event.key === "Escape") {
       if (state.gallery) {
         closeGallery();
+      } else if ($("reassignpicker").classList.contains("afg-open")) {
+        closeReassignPicker();
       } else {
         closeModal();
       }

@@ -5,6 +5,7 @@
 
 const marksStyles = `
 <style>
+    /* Оформление как у окна Userinfo (#af-glass-styles, «corporate graphite») */
     #AF_Marks {
         background: transparent !important;
         border: 0 !important;
@@ -17,35 +18,26 @@ const marksStyles = `
     }
 
     #marks_wrapper {
-        --afm-text: #eef2fa;
-        --afm-muted: #9da9bd;
-        --afm-line: #3a4559;
-
-        width: min(390px, calc(100vw - 20px));
-        padding: 17px;
+        width: min(420px, calc(100vw - 20px));
+        padding: 18px;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 14px;
 
-        color: var(--afm-text);
-        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        letter-spacing: 0.01em;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+        -webkit-font-smoothing: antialiased;
 
         background:
-            radial-gradient(
-                circle at 100% 0%,
-                rgba(82, 99, 192, .13),
-                transparent 44%
-            ),
-            linear-gradient(155deg, #282e3b 0%, #202633 72%, #1c222d 100%);
-
-        border: 1px solid #495468;
-        border-top-color: #647086;
-        border-radius: 16px;
-
-        box-shadow:
-            0 26px 65px rgba(0, 0, 0, .46),
-            0 5px 16px rgba(0, 0, 0, .18),
-            inset 0 1px rgba(255, 255, 255, .07);
+            radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+            #111827;
+        border: 1px solid #344258;
+        border-radius: 18px;
+        box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
     }
 
     #marks_wrapper button,
@@ -55,129 +47,88 @@ const marksStyles = `
 
     /* Шапка */
 
-    #marks_wrapper .afm-header,
-    #marks_wrapper .afm-brand,
-    #marks_wrapper .afm-actions,
-    #marks_wrapper .afm-search {
+    #marks_wrapper .afm-header {
         display: flex;
         align-items: center;
+        gap: 8px;
+        position: relative;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(66, 104, 201, .15);
+        cursor: grab;
     }
 
-    #marks_wrapper .afm-header {
-        justify-content: space-between;
-        gap: 10px;
-        cursor: grab;
+    #marks_wrapper .afm-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 40%;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
     }
 
     #marks_wrapper .afm-header:active {
         cursor: grabbing;
     }
 
-    #marks_wrapper .afm-brand {
-        min-width: 0;
-        gap: 11px;
-    }
-
-    #marks_wrapper .afm-icon {
-        flex: none;
-        display: grid;
-        place-items: center;
-
-        width: 39px;
-        height: 39px;
-
-        color: #dce5ff;
-        font-size: 19px;
-
-        background: linear-gradient(145deg, #394a77, #30365e);
-        border: 1px solid #6678ad;
-        border-radius: 10px;
-
-        box-shadow:
-            inset 0 1px rgba(255, 255, 255, .13),
-            0 5px 12px rgba(0, 0, 0, .18);
-    }
-
     #marks_wrapper .afm-title {
+        flex: 1;
+        min-width: 0;
         margin: 0;
-        color: #f2f5fb;
-        font-size: 14px;
-        font-weight: 750;
-        letter-spacing: -.025em;
-    }
-
-    #marks_wrapper .afm-subtitle {
-        margin-top: 4px;
-        color: #9ba8bf;
-        font-size: 9px;
+        overflow: hidden;
+        color: #fefefe;
+        font-size: 15px;
         font-weight: 700;
-        letter-spacing: .14em;
-        text-transform: uppercase;
-    }
-
-    #marks_wrapper .afm-actions {
-        flex: none;
-        gap: 6px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     /* Кнопки */
 
     #marks_wrapper .afm-btn {
         flex: none;
-        display: grid;
-        place-items: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
 
-        min-width: 35px;
-        height: 35px;
-        padding: 0 10px;
+        min-width: 34px;
+        height: 34px;
+        padding: 0;
 
-        color: #c2cadb;
-        background: #303848;
-        border: 1px solid #465167;
+        color: #dce5f5;
+        font-size: 16px;
+        background: #1b283c;
+        border: 1px solid #3c4d68;
         border-radius: 9px;
-
         cursor: pointer;
 
-        transition:
-            background .18s ease,
-            border-color .18s ease,
-            transform .18s ease;
+        transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
     }
 
     #marks_wrapper .afm-btn:hover {
-        background: #3b465b;
-        border-color: #7584a3;
+        color: #fff;
+        background: #293b56;
+        border-color: #7799e2;
         transform: translateY(-1px);
     }
 
     #marks_wrapper .afm-btn:active {
-        transform: translateY(0);
+        transform: translateY(0) scale(.98);
     }
 
-    #marks_wrapper #hideMeMarks:hover {
-        color: #ffb7c1;
-        background: #503643;
-        border-color: #89576b;
+    #marks_wrapper .afm-btn--close {
+        color: #ffb0be;
+        background: rgba(255, 116, 140, .08);
+        border-color: rgba(255, 116, 140, .3);
     }
 
-    #marks_wrapper .afm-btn--primary {
-        color: #fff;
-        font-size: 21px;
-        font-weight: 700;
-
-        background: linear-gradient(135deg, #348ff0, #5868dc);
-        border-color: #679fff;
-
-        box-shadow: 0 5px 14px rgba(42, 107, 222, .2);
-    }
-
-    #marks_wrapper .afm-btn--primary:hover {
-        background: linear-gradient(135deg, #52a7ff, #717df0);
-        border-color: #9bc3ff;
+    #marks_wrapper .afm-btn--close:hover {
+        background: rgba(255, 116, 140, .16);
+        border-color: rgba(255, 116, 140, .55);
     }
 
     #marks_wrapper .afm-btn:focus-visible {
-        outline: 2px solid #86b8ff;
+        outline: 2px solid #9ab5ff;
         outline-offset: 2px;
     }
 
@@ -193,60 +144,74 @@ const marksStyles = `
         display: flex;
         flex-direction: column;
         min-width: 0;
-        gap: 7px;
+        gap: 6px;
     }
 
     #marks_wrapper .afm-label,
     #marks_wrapper .afm-section-label {
-        color: #9eabc0;
-        font-size: 10px;
-        font-weight: 750;
-        letter-spacing: .1em;
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .08em;
         text-transform: uppercase;
+    }
+
+    #marks_wrapper .afm-section-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #fefefe;
+        font-size: 12px;
+        letter-spacing: .06em;
+    }
+
+    #marks_wrapper .afm-section-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(66, 104, 201, .4), transparent);
     }
 
     #marks_wrapper .afm-input {
         width: 100%;
         min-width: 0;
-        height: 39px;
-        padding: 0 11px;
+        height: 34px;
+        padding: 0 12px;
 
-        color: #edf2fa;
+        color: #edf2fb;
         color-scheme: dark;
-        background: #1a212d;
-        border: 1px solid #414e63;
+        background: #0d1625;
+        border: 1px solid #3a4961;
         border-radius: 9px;
         outline: none;
 
-        font-size: 12px;
-        font-weight: 550;
+        font-size: 14px;
+        font-weight: 600;
 
-        transition:
-            border-color .18s ease,
-            box-shadow .18s ease;
+        transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
     }
 
     #marks_wrapper .afm-input::placeholder {
-        color: #8795aa;
+        color: #7d8ca6;
         opacity: 1;
-        font-weight: 400;
-    }
-
-    #marks_wrapper .afm-input:hover {
-        border-color: #61718d;
+        font-weight: 500;
     }
 
     #marks_wrapper .afm-input:focus {
-        border-color: #67aaff;
-        box-shadow: 0 0 0 3px rgba(54, 143, 240, .15);
+        background: #142034;
+        border-color: #829fff;
+        box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
     }
 
     #marks_wrapper .afm-search {
-        gap: 7px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
     #marks_wrapper .afm-search .afm-input {
         flex: 1;
+        text-align: center;
     }
 
     /* Панель результата */
@@ -255,43 +220,34 @@ const marksStyles = `
         min-height: 88px;
         max-height: min(510px, 55vh);
         max-height: min(510px, 55dvh);
-        padding: 13px;
+        padding: 14px;
 
         overflow-y: auto;
         overscroll-behavior: contain;
 
-        background: #1a202b;
-        border: 1px solid #394458;
+        background: linear-gradient(145deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .01));
+        border: 1px solid rgba(66, 104, 201, .15);
         border-radius: 12px;
-
-        box-shadow: inset 0 2px 8px rgba(0, 0, 0, .15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .2), inset 0 1px 0 rgba(255, 255, 255, .05);
 
         scrollbar-width: thin;
-        scrollbar-color: #566685 transparent;
+        scrollbar-color: rgba(66, 104, 201, .4) transparent;
     }
 
-    #marks_wrapper .afm-panel::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    #marks_wrapper .afm-panel::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    #marks_wrapper .afm-panel::-webkit-scrollbar-thumb {
-        background: #566685;
-        border-radius: 10px;
-    }
+    #marks_wrapper .afm-panel::-webkit-scrollbar { width: 4px; }
+    #marks_wrapper .afm-panel::-webkit-scrollbar-track { background: transparent; }
+    #marks_wrapper .afm-panel::-webkit-scrollbar-thumb { background: rgba(66, 104, 201, .3); border-radius: 8px; }
+    #marks_wrapper .afm-panel::-webkit-scrollbar-thumb:hover { background: rgba(66, 104, 201, .6); }
 
     #marks_wrapper .afm-message {
         padding: 10px 2px;
-        color: #a6b2c5;
-        font-size: 12px;
-        line-height: 1.55;
+        color: #94a3b8;
+        font-size: 14px;
+        text-align: center;
     }
 
     #marks_wrapper .afm-message--error {
-        color: #ffacb7;
+        color: #fca5a5;
     }
 
     /* Пользователь */
@@ -299,26 +255,26 @@ const marksStyles = `
     #marks_wrapper .afm-person {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         min-width: 0;
-        margin-bottom: 13px;
+        margin-bottom: 14px;
     }
 
     #marks_wrapper .afm-avatar {
         flex: none;
         display: grid;
         place-items: center;
+        width: 44px;
+        height: 44px;
 
-        width: 36px;
-        height: 36px;
-
-        color: #d8e5ff;
-        font-size: 15px;
+        color: #a9c0ff;
+        font-size: 17px;
         font-weight: 800;
 
-        background: #303e65;
-        border: 1px solid #526ca4;
-        border-radius: 9px;
+        background: rgba(66, 104, 201, .12);
+        border: 2px solid rgba(66, 104, 201, .5);
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, .4);
     }
 
     #marks_wrapper .afm-person-info {
@@ -327,18 +283,19 @@ const marksStyles = `
 
     #marks_wrapper .afm-person-name {
         overflow-wrap: anywhere;
-        color: #f1f4fa;
-        font-size: 12px;
-        font-weight: 750;
-        line-height: 1.35;
+        color: #fefefe;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.3;
     }
 
     #marks_wrapper .afm-person-id {
-        margin-top: 3px;
+        margin-top: 2px;
         overflow-wrap: anywhere;
-        color: #9daac0;
-        font-size: 10px;
-        font-weight: 600;
+        color: #94a3b8;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 500;
     }
 
     /* Главный показатель */
@@ -349,42 +306,31 @@ const marksStyles = `
         justify-content: space-between;
         gap: 10px;
 
-        padding: 15px;
-        margin-bottom: 18px;
+        padding: 14px;
+        margin-bottom: 16px;
 
-        background:
-            radial-gradient(
-                circle at 100% 0%,
-                rgba(128, 121, 255, .25),
-                transparent 55%
-            ),
-            linear-gradient(115deg, #254a83, #343d80 65%, #484080);
-
-        border: 1px solid #6478ba;
-        border-left: 3px solid #7dbbff;
+        background: #1a2536;
+        border: 1px solid #344258;
+        border-left: 3px solid #92afff;
         border-radius: 10px;
-
-        box-shadow:
-            inset 0 1px rgba(255, 255, 255, .11),
-            0 8px 18px rgba(11, 22, 55, .22);
     }
 
     #marks_wrapper .afm-hero-caption {
         display: block;
-        color: #d0ddf5;
-        font-size: 10px;
-        font-weight: 600;
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
     }
 
     #marks_wrapper .afm-hero-number {
         display: block;
-        margin-top: 5px;
-
+        margin-top: 6px;
         color: #fff;
-        font-size: 29px;
+        font-size: 30px;
         font-weight: 800;
         line-height: 1;
-        letter-spacing: -.05em;
         font-variant-numeric: tabular-nums;
     }
 
@@ -395,11 +341,10 @@ const marksStyles = `
     #marks_wrapper .afm-hero-percent {
         display: block;
         margin-bottom: 4px;
-
-        color: #d9e9ff;
+        color: #a9c0ff;
+        font-family: 'JetBrains Mono', monospace;
         font-size: 19px;
-        font-weight: 800;
-        font-variant-numeric: tabular-nums;
+        font-weight: 700;
     }
 
     /* Карточки оценок */
@@ -407,53 +352,30 @@ const marksStyles = `
     #marks_wrapper .afm-ratings {
         display: grid;
         gap: 8px;
-        margin-top: 11px;
+        margin-top: 10px;
     }
 
     #marks_wrapper .afm-rating {
-        --rating-color: #8ba9e6;
-        --rating-bg: #303b59;
-        --rating-border: #52648e;
+        --rating-color: #a9c0ff;
 
-        padding: 10px 11px;
-
-        background: linear-gradient(145deg, #293242, #242c3a);
-        border: 1px solid #3c485d;
+        padding: 10px 12px;
+        background: #1a2536;
+        border: 1px solid #344258;
+        border-left: 3px solid var(--rating-color);
         border-radius: 10px;
-
-        box-shadow: inset 0 1px rgba(255, 255, 255, .045);
+        transition: background-color .16s ease, border-color .16s ease;
     }
 
-    /* Холодная шкала сверху, тёплая — только для низких оценок */
-    #marks_wrapper .afm-rating--5 {
-        --rating-color: #64b5ff;
-        --rating-bg: #253e60;
-        --rating-border: #426da0;
+    #marks_wrapper .afm-rating:hover {
+        background: #23334b;
     }
 
-    #marks_wrapper .afm-rating--4 {
-        --rating-color: #8b9cff;
-        --rating-bg: #32385f;
-        --rating-border: #5d68a4;
-    }
-
-    #marks_wrapper .afm-rating--3 {
-        --rating-color: #b69af2;
-        --rating-bg: #403456;
-        --rating-border: #725a98;
-    }
-
-    #marks_wrapper .afm-rating--2 {
-        --rating-color: #eba77f;
-        --rating-bg: #4a3740;
-        --rating-border: #805963;
-    }
-
-    #marks_wrapper .afm-rating--1 {
-        --rating-color: #f1829b;
-        --rating-bg: #4d3142;
-        --rating-border: #875267;
-    }
+    /* Статусные цвета как в Userinfo: зелёный — хорошо, красный — плохо */
+    #marks_wrapper .afm-rating--5 { --rating-color: #86efac; }
+    #marks_wrapper .afm-rating--4 { --rating-color: #7dd3fc; }
+    #marks_wrapper .afm-rating--3 { --rating-color: #a9c0ff; }
+    #marks_wrapper .afm-rating--2 { --rating-color: #fdba74; }
+    #marks_wrapper .afm-rating--1 { --rating-color: #fca5a5; }
 
     #marks_wrapper .afm-rating-top {
         display: flex;
@@ -465,7 +387,7 @@ const marksStyles = `
     #marks_wrapper .afm-rating-identity {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         min-width: 0;
     }
 
@@ -473,32 +395,31 @@ const marksStyles = `
         flex: none;
         display: grid;
         place-items: center;
-
-        width: 29px;
-        height: 29px;
+        width: 30px;
+        height: 30px;
 
         color: var(--rating-color);
-        background: var(--rating-bg);
-        border: 1px solid var(--rating-border);
+        background: rgba(0, 0, 0, .3);
+        border: 1px solid rgba(66, 104, 201, .25);
         border-radius: 8px;
 
-        font-size: 13px;
-        font-weight: 800;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 700;
     }
 
     #marks_wrapper .afm-rating-name {
         display: block;
-        color: #e9eef8;
-        font-size: 11px;
-        font-weight: 700;
+        color: #f1f5f9;
+        font-size: 13px;
+        font-weight: 600;
     }
 
     #marks_wrapper .afm-rating-stars {
         display: block;
-        margin-top: 2px;
-
+        margin-top: 1px;
         color: var(--rating-color);
-        font-size: 9px;
+        font-size: 10px;
         letter-spacing: 1px;
         white-space: nowrap;
     }
@@ -511,25 +432,23 @@ const marksStyles = `
 
     #marks_wrapper .afm-rating-count {
         display: block;
-        color: #f3f5fb;
-        font-size: 13px;
+        color: #f1f5f9;
+        font-size: 15px;
         font-weight: 800;
     }
 
     #marks_wrapper .afm-rating-percent {
         display: block;
-        margin-top: 2px;
-        color: #a6b1c5;
-        font-size: 10px;
+        color: #94a3b8;
+        font-size: 11px;
         font-weight: 600;
     }
 
     #marks_wrapper .afm-track {
         height: 5px;
-        margin-top: 10px;
+        margin-top: 9px;
         overflow: hidden;
-
-        background: #19212e;
+        background: rgba(0, 0, 0, .35);
         border-radius: 10px;
     }
 
@@ -543,48 +462,52 @@ const marksStyles = `
     /* Нижние метрики */
 
     #marks_wrapper .afm-summary-title {
-        margin-top: 18px;
+        margin-top: 16px;
         margin-bottom: 10px;
     }
 
     #marks_wrapper .afm-summary {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
+        gap: 10px;
     }
 
     #marks_wrapper .afm-metric {
         min-width: 0;
-        min-height: 71px;
-        padding: 11px;
+        padding: 10px 12px;
+        background: rgba(0, 0, 0, .25);
+        border: 1px solid rgba(66, 104, 201, .1);
+        border-radius: 10px;
+        transition: background-color .25s ease, border-color .25s ease;
+    }
 
-        background: #293242;
-        border: 1px solid #404d63;
-        border-radius: 9px;
+    #marks_wrapper .afm-metric:hover {
+        background: rgba(0, 0, 0, .35);
+        border-color: rgba(66, 104, 201, .25);
     }
 
     #marks_wrapper .afm-metric-value {
         display: block;
-        color: #eef2fb;
-        font-size: 16px;
+        color: #f1f5f9;
+        font-size: 17px;
         font-weight: 800;
-        line-height: 1.15;
+        line-height: 1.2;
         font-variant-numeric: tabular-nums;
     }
 
     #marks_wrapper .afm-metric-label {
         display: block;
-        margin-top: 7px;
-        color: #a8b4c7;
-        font-size: 10px;
-        font-weight: 550;
+        margin-top: 4px;
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 600;
         line-height: 1.35;
     }
 
     #marks_wrapper .afm-note {
         margin-top: 12px;
-        color: #a7b2c5;
-        font-size: 10px;
+        color: #94a3b8;
+        font-size: 12px;
         line-height: 1.5;
     }
 
@@ -600,20 +523,11 @@ const marksStyles = `
 const win_Marks = marksStyles + `
 <div id="marks_wrapper">
     <div class="afm-header chmaf-drag-handle" id="marks_header">
-        <div class="afm-brand">
-            <div class="afm-icon" aria-hidden="true">✦</div>
-            <div>
-                <h2 class="afm-title">Статистика оценок</h2>
-                <div class="afm-subtitle">Score analytics</div>
-            </div>
-        </div>
-
-        <div class="afm-actions">
-            <button class="afm-btn" id="marksinstr" type="button"
-                    title="Инструкция" aria-label="Открыть инструкцию">?</button>
-            <button class="afm-btn buttonHide" id="hideMeMarks" type="button"
-                    title="Закрыть" aria-label="Закрыть окно">×</button>
-        </div>
+        <button class="afm-btn afm-btn--close buttonHide" id="hideMeMarks" type="button"
+                title="Скрыть" aria-label="Закрыть окно">❌</button>
+        <h2 class="afm-title">📊 Статистика оценок</h2>
+        <button class="afm-btn" id="marksinstr" type="button"
+                title="Инструкция" aria-label="Открыть инструкцию">📖</button>
     </div>
 
     <div class="afm-filters">
@@ -632,10 +546,10 @@ const win_Marks = marksStyles + `
                placeholder="ID ученика или учителя"
                aria-label="ID ученика или учителя"
                autocomplete="off">
-        <button class="afm-btn afm-btn--primary" id="findmarksstat"
-                type="button" title="Найти" aria-label="Найти оценки">⌕</button>
+        <button class="afm-btn" id="findmarksstat"
+                type="button" title="Найти" aria-label="Найти оценки">🚀</button>
         <button class="afm-btn" id="clearmarksstat"
-                type="button" title="Очистить" aria-label="Очистить поиск">↺</button>
+                type="button" title="Очистить" aria-label="Очистить поиск">🧹</button>
     </div>
 
     <div class="afm-panel" id="marks_box">
