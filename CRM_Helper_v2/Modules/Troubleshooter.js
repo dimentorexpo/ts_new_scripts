@@ -1,202 +1,122 @@
-const processedUserIds = {};
-// Лимит кэша: долгая сессия с сотнями ID не должна расти бесконечно
-const PROCESSED_CACHE_MAX = 500;
+/**
+ * Troubleshooter.js — дополнения для video-trouble-shooter.skyeng.ru:
+ *  1. рядом с ID пользователей подписывает роль (У)/(П) и имя (через backend CRM);
+ *  2. плавающая кнопка «Диагностика WebRTC» с разбором журнала комнаты.
+ * Общие утилиты (crmRequestJson, crmCopy, crmToast) берутся из content.js.
+ */
 
-function addusersinfo() {
-    // Функция для обработки элементов
-    function processFields(elements, type) {
-        elements.forEach((field) => {
-            if (!field.hasAttribute('info-added')) {
-                let userid = field.innerText || field.value;  // Для полей ввода используем value
-                // Всегда вызываем getuserinfocrm
-                getuserinfocrm(userid, field, type);
-                field.setAttribute('info-added', 'true');
-            }
-        });
+const tsUserCache = new Map();      // userId → Promise<{name, type}>
+const TS_CACHE_MAX = 500;
+
+/** Данные пользователя: один запрос на ID, даже если он встречается на странице много раз. */
+function tsGetUser(userId) {
+    if (!tsUserCache.has(userId)) {
+        if (tsUserCache.size >= TS_CACHE_MAX) tsUserCache.delete(tsUserCache.keys().next().value);
+        const promise = crmRequestJson(`https://backend.skyeng.ru/api/persons/${encodeURIComponent(userId)}?crm2=true&debugParam=person-page`, { method: 'GET' })
+            .then((res) => ({
+                name: [res?.data?.name, res?.data?.surname].filter(Boolean).join(' '),
+                type: res?.data?.type || ''
+            }))
+            .catch((e) => {
+                tsUserCache.delete(userId); // при следующем проходе попробуем снова
+                console.warn('[Troubleshooter] нет данных пользователя', userId, e.message);
+                return null;
+            });
+        tsUserCache.set(userId, promise);
     }
-
-    // Верхние строки с id
-    let usersfields = document.getElementsByClassName('p-10 w-85');
-    let infofields = document.querySelectorAll('.p-10.w-85[info-added]');
-    
-    // ID в столбцах
-    let headerCell = Array.from(document.querySelectorAll('.cdk-header-cell')).filter(cell => /^\d+$/.test(cell.innerText));
-    let headerCellinfo = Array.from(document.querySelectorAll('.cdk-header-cell[info-added]')).filter(cell => /^\d+$/.test(cell.innerText));
-    
-    // ID в списках
-    let listfields = Array.from(document.querySelectorAll('.mat-option-text')).filter(cell => /^\d+$/.test(cell.innerText));
-    let listfieldsinfo = Array.from(document.querySelectorAll('.mat-option-text[info-added]')).filter(cell => /^\d+$/.test(cell.innerText));
-
-    // Окно с id в статистике
-    let statfield = Array.from(document.querySelectorAll('[id^="mat-input-"]')).filter(cell => /^\d+$/.test(cell.value));
-    let statfieldinfo = Array.from(document.querySelectorAll('[id^="mat-input-"][info-added]')).filter(cell => /^\d+$/.test(cell.value));
-
-    // Обрабатываем usersfields
-    if (usersfields.length > 0 && infofields.length < usersfields.length) {
-        processFields(Array.from(usersfields), 'topline');
-    }
-
-    // Обрабатываем headerCell
-    if (headerCell.length > 0 && headerCellinfo.length < headerCell.length) {
-        processFields(headerCell, 'other');
-    }
-
-    // Обрабатываем listfields
-    if (listfields.length > 0 && listfieldsinfo.length < listfields.length) {
-        processFields(listfields, 'other');
-    }
-
-    // Обрабатываем statfield
-    if (statfield.length > 0 && statfieldinfo.length < statfield.length) {
-        processFields(statfield, 'input');
-    }
+    return tsUserCache.get(userId);
 }
 
+const TS_ROLE = {
+    student: { text: '(У)', color: '#c93d48' },
+    teacher: { text: '(П)', color: '#2f6db3' }
+};
 
-function getuserinfocrm(userid, pageelement, elemtype) {
-    // Проверяем, есть ли уже информация в объекте
-    if (processedUserIds[userid] && processedUserIds[userid].readyflag === '1') {
-        // Если данные уже есть, используем их для добавления информации
-        addinginfo(pageelement, userid, elemtype);
+async function tsDecorate(field, kind) {
+    const userId = (kind === 'input' ? field.value : field.innerText).trim();
+    if (!/^\d+$/.test(userId)) return;
+    const info = await tsGetUser(userId);
+    if (!info) {
+        field.removeAttribute('info-added'); // разрешаем повторную попытку
+        return;
+    }
+    const role = TS_ROLE[info.type] || { text: '', color: '' };
+
+    if (kind === 'input') {
+        if (role.text && !field.value.endsWith(role.text)) field.value += role.text;
         return;
     }
 
-    // Если данных нет, делаем запрос к серверу
-    const fetchURL = `https://backend.skyeng.ru/api/persons/${userid}?crm2=true&debugParam=person-page`;
-    const requestOptions = {
-        method: 'GET'
-    };
-
-    chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions }, function (response) {
-        if (!response.success) {
-            alert('Не удалось выполнить запрос: ' + response.error);
-            return;
-        }
-
-        const userInfo = JSON.parse(response.fetchansver);
-        const nameofuser = `${userInfo.data.name}${userInfo.data.surname ? ` ${userInfo.data.surname}` : ''}`;
-        const flagusertype = userInfo.data.type;
-
-        // Cap кэша: удаляем старейшие записи при переполнении
-        const keys = Object.keys(processedUserIds);
-        if (keys.length >= PROCESSED_CACHE_MAX) {
-            delete processedUserIds[keys[0]];
-        }
-
-        // Сохраняем данные в объект processedUserIds
-        processedUserIds[userid] = {
-            nameofuser,
-            flagusertype,
-            readyflag: '1'
-        };
-
-        // Добавляем информацию на страницу
-        addinginfo(pageelement, userid, elemtype);
-    });
-}
-
-function addinginfo(pageelement, userid, elemtype) {
-    const flagusertype = processedUserIds[userid].flagusertype;
-    const nameofuser = processedUserIds[userid].nameofuser;
-    const userTypeStyles = {
-        student: { text: '(У)', color: '#DC143C' },
-        teacher: { text: '(П)', color: '#c9a84c' }
-    };
-
-    const { text, color } = userTypeStyles[flagusertype] || { text: '', color: '' };
-    if (elemtype === 'input') {
-        pageelement.value += text;
-        return
-    }
     const span = document.createElement('span');
-    span.style.color = color;
-    span.style.fontWeight = '600';
-    span.innerText = text;
+    span.style.cssText = `color:${role.color};font-weight:600;margin-left:2px;`;
+    span.textContent = role.text;
+    if (info.name) span.title = info.name;
 
-    if (elemtype === 'topline') {
-        span.title = nameofuser;
-        pageelement.style.width = '110px';
-        pageelement.style.color = '#c9a84c';
-        pageelement.style.textDecoration = 'underline';
-        pageelement.style.cursor = 'pointer';
-        // FIX: присваивание pageelement.tagName='A' удалено — tagName только для чтения.
-        pageelement.title = "ЛКМ - открыть пользователя в CRM. ПКМ - скопировать id"
-
-        pageelement.addEventListener('click', () => {
-            window.open(`https://crm2.skyeng.ru/persons/${userid}`);
-        });
-
-        pageelement.addEventListener('contextmenu', (event) => {
+    if (kind === 'topline') {
+        field.style.width = '110px';
+        field.style.color = '#2f6db3';
+        field.style.textDecoration = 'underline';
+        field.style.cursor = 'pointer';
+        field.title = `${info.name ? info.name + '. ' : ''}Клик — открыть в CRM, правый клик — скопировать ID`;
+        field.addEventListener('click', () => window.open(`https://crm2.skyeng.ru/persons/${userId}`, '_blank', 'noopener'));
+        field.addEventListener('contextmenu', async (event) => {
             event.preventDefault();
-            copyToClipboard(userid)
-            createAndShowButton('💾 Скопировано');
+            if (await crmCopy(userId)) crmToast(`ID ${userId} скопирован`, 'success', { duration: 1800 });
         });
     }
-
-    pageelement.appendChild(span);
+    field.appendChild(span);
 }
 
-// Запускаем один раз при загрузке, чтобы обработать уже существующие элементы
+function addusersinfo() {
+    const groups = [
+        [document.querySelectorAll('.p-10.w-85:not([info-added])'), 'topline'],
+        [document.querySelectorAll('.cdk-header-cell:not([info-added])'), 'other'],
+        [document.querySelectorAll('.mat-option-text:not([info-added])'), 'other'],
+        [document.querySelectorAll('[id^="mat-input-"]:not([info-added])'), 'input']
+    ];
+    for (const [nodes, kind] of groups) {
+        nodes.forEach((field) => {
+            const value = (kind === 'input' ? field.value : field.innerText).trim();
+            if (kind !== 'topline' && !/^\d+$/.test(value)) return;
+            field.setAttribute('info-added', 'true');
+            tsDecorate(field, kind);
+        });
+    }
+}
+
 addusersinfo();
 
-// Наблюдатель за DOM. FIX: раньше addusersinfo() выполнялся на КАЖДУЮ мутацию,
-// что сильно грузило страницу — теперь запуск отложен на 200 мс после последней мутации.
+// Перезапуск через 200 мс после последней мутации DOM.
 let observerDebounce = null;
-const observer = new MutationObserver(() => {
+new MutationObserver(() => {
     clearTimeout(observerDebounce);
     observerDebounce = setTimeout(addusersinfo, 200);
-});
+}).observe(document.body, { childList: true, subtree: true });
 
-observer.observe(document.body, { childList: true, subtree: true });
+/* ==========================================================================
+ *  Кнопка «Диагностика WebRTC»
+ * ========================================================================== */
 
-// ==========================================
-// НОВАЯ ФУНКЦИОНАЛЬНОСТЬ: Кнопка диагностики
-// ==========================================
+if (location.hostname === 'video-trouble-shooter.skyeng.ru') {
+    const diagStyle = document.createElement('style');
+    diagStyle.textContent = `
+        #webrtc-diag-floating-btn {
+            position: fixed; right: 24px; bottom: 24px; z-index: 999999;
+            display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 14px;
+            font: 600 13px "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; color: #fff;
+            background: #2f6db3; border: 0; border-radius: 22px;
+            box-shadow: 0 10px 28px rgba(3, 7, 14, .3); cursor: pointer; transition: background .12s ease;
+        }
+        #webrtc-diag-floating-btn:hover { background: #3a7cc6; }
+        #webrtc-diag-floating-btn:focus-visible { outline: 2px solid #7cc4ff; outline-offset: 3px; }`;
+    document.head.appendChild(diagStyle);
 
-if (window.location.href.includes('video-trouble-shooter.skyeng.ru')) {
-    // Создаем плавающую кнопку
-    const diagBtn = document.createElement('div');
+    const diagBtn = document.createElement('button');
+    diagBtn.type = 'button';
     diagBtn.id = 'webrtc-diag-floating-btn';
-    diagBtn.innerHTML = '🔍';
-diagBtn.style.cssText = `
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: #243447;
-    color: #ffffff;
-    font-size: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
-    z-index: 999999;
-    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    user-select: none;
-`;
-    
-    // Эффекты при наведении
-diagBtn.addEventListener('mouseenter', () => {
-    diagBtn.style.transform = 'scale(1.05)';
-    diagBtn.style.backgroundColor = '#1B2735';
-    diagBtn.style.boxShadow = '0 10px 28px rgba(15, 23, 42, 0.36)';
-});
-
-diagBtn.addEventListener('mouseleave', () => {
-    diagBtn.style.transform = 'scale(1)';
-    diagBtn.style.backgroundColor = '#243447';
-    diagBtn.style.boxShadow = '0 8px 24px rgba(15, 23, 42, 0.28)';
-});
-
-    // При клике запускаем длинный код диагностики
-    diagBtn.addEventListener('click', () => {
-        runDiagnostics();
-    });
-
+    diagBtn.title = 'Разобрать журнал комнаты: устройства, кодеки, события подключения';
+    diagBtn.innerHTML = '<span aria-hidden="true">🩺</span><span>Диагностика WebRTC</span>';
+    diagBtn.addEventListener('click', () => runDiagnostics());
     document.body.appendChild(diagBtn);
 }
 
@@ -1475,18 +1395,18 @@ async function runDiagnostics() {
       background: #fff5f3;
     }
 	
-	.fact.missing {
-  border-color: #e2bd72;
-  background: #fff9eb;
-  box-shadow: inset 3px 0 0 #d5a54d;
-}
+	    .fact.missing {
+      border-color: #f2c7a6;
+      background: #fff5ee;
+      box-shadow: inset 3px 0 0 #e8833a;
+    }
 
-.fact.missing .fact-label {
-  color: #8a6420;
-}
+    .fact.missing .fact-label {
+      color: #9a4a12;
+    }
 
-.fact.missing .fact-value {
-  color: #6d4b12;
+    .fact.missing .fact-value {
+      color: #7a3a0e;
   font-weight: 760;
 }
 

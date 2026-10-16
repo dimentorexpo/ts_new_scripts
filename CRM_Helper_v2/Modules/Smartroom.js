@@ -1,304 +1,172 @@
-var win_smartroomform =  // описание элементов окна Мультирум пожелания/баги
-	`<div class="maindivst" style="display: flex; width: 414px;">
-		<div>
-        <span style="width: 414px">
-                <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 410px; display:flex; align-items:center; gap:4px;" id="smartroomsug_form_header">
-                            <button class="buttonHide" title="скрывает меню" id="hideMeSmartRoomForm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> hide</button>
-                            <button class="btnCRM btnCRMsmall" title="Обновить хеш чата" id="refreshhashsmartform" style="display:flex; align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
-                            <button class="btnCRM btnCRMsmall" title="Очистить форму" id="clearsmartroomform" style="display:flex; align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l3-3h12l3 3"/><path d="M5 6v12a2 2 0 002 2h10a2 2 0 002-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-							<button class="btnCRM btnCRMsmall" title="Инструкция" id="smartroomforminstr" style="margin-left:auto;">❓</button>
-                        </div>
+/**
+ * Smartroom.js — форма «Smartroom: пожелания и негатив».
+ * Ответ уходит в Google-форму (через bg.js). ID клиента и комментарий
+ * подставляются из открытой карточки/задачи CRM.
+ */
+(function () {
+    'use strict';
 
-                        <div style="margin: 5px; margin-top: 0px; width: 410px" id="smartroom_form_menu">
-							<label style="color:#c4ffd3; padding:5px; font-weight: 500;">Тип клиента</label>
-							<br>
-							<div style="margin-top:5px; margin-bottom:5px;" id = "smartroomuser">
-								<input class = "smartroom-radio" type="radio" id="typestudadults" name="typetoform" value="Ученик Adults">
-								<label class = "smartroom-label spanCRM" for="typestudadults">Ученик Adults</label>
-								<input class = "smartroom-radio" type="radio" id="typestudkids" name="typetoform" value="Ученик Kids">
-								<label class = "smartroom-label spanCRM" for="typestudkids">Ученик Kids</label>
-								<input class = "smartroom-radio" type="radio" id="typestudprem" name="typetoform" value="Ученик Premium">
-								<label class = "smartroom-label spanCRM" for="typestudprem">Ученик Premium</label>
-								<br>
-							    <input class = "smartroom-radio" type="radio" id="typeteach" name="typetoform" value="Преподаватель">
-								<label class = "smartroom-label spanCRM" for="typeteach">Преподаватель</label>
-							</div>
+    const FORM_URL = 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse';
+    const HELP_URL = 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-smartroom%F0%9F%A6%90Smartroom';
 
-                            <label style="margin-top: 5px; color:#c4ffd3; padding:5px; font-weight: 500;">Формат обучения</label>
-							<br>
-							<div style="margin-top:5px; margin-bottom: 5px;" id = "smartroomformat">
-								<input class = "smartroom-radio" type="radio" id="formatF2F" name="formattoform" value="F2F">
-								<label class = "smartroom-label spanCRM" for="formatF2F">F2F</label>
-								<input class = "smartroom-radio" type="radio" id="formatF2G" name="formattoform" value="F2G">
-								<label class = "smartroom-label spanCRM" for="formatF2G">F2G</label>
-								<input class = "smartroom-radio" type="radio" id="formatvebinar" name="formattoform" value="Вебинар">
-								<label class = "smartroom-label spanCRM" for="formatvebinar">Вебинар</label>
-							    <input class = "smartroom-radio" type="radio" id="formatPU" name="formattoform" value="ПУ">
-								<label class = "smartroom-label spanCRM" for="formatPU">ПУ</label>
-							</div>
+    const CLIENT_TYPES = [['typestudadults', 'Ученик Adults'], ['typestudkids', 'Ученик Kids'], ['typestudprem', 'Ученик Premium'], ['typeteach', 'Преподаватель']];
+    const FORMATS = [['formatF2F', 'F2F'], ['formatF2G', 'F2G'], ['formatvebinar', 'Вебинар'], ['formatPU', 'ПУ']];
+    const REQUESTS = [['whatobratsugest', 'Пожелание по улучшению', 'Пожелание'], ['whattonegative', 'Негатив по работе функционала платформы', 'Негатив']];
+    const ECOSYSTEM = [['ecosystemplat', 'Функционал платформы', 'Платформа'], ['ecosystemios', 'Мобильное приложение IOS', 'МП iOS'], ['ecosystemandr', 'Мобильное приложение Android', 'МП Android']];
+    const TOPICS = ['Домашние задания', 'Интерфейс платформы', 'Функционал урока П', 'Функционал урока У', 'Вернуть старую платформу', 'Мобильное приложение Skyeng'];
+    const SUBTOPICS = ['Интерфейс раздела домашки', 'Нет', 'Перемешаны слайды в уроке', 'План урока', 'План урока\\домашки', 'Вложения', 'Домашка', 'Информирование', 'Навигация в домашке', 'Не видно какие уроки уже пройдены У', 'П не может изменить оценку', 'Предложения по улучшению', 'Сброс ответов', 'Вход в урок', 'Заметки', 'Масштабирование видео', 'Не находит словарь', 'Нет отображения кол-ва символов', 'Нумерация степов в уроке', 'ОС', 'Плохой шрифт', 'Словарь', 'Урок', 'Ширина доски', 'Баллы и картинки', 'Нет прохождения тестов', 'Повтор пройденного материала', 'Связь У с П', 'Звуки', 'Перевод слов на стороне У'];
 
-							<input class="inputCRM" id="clientid" style="margin-top:5px;" placeholder="ID пользователя" autocomplete="off" type="text">
-							<br>
+    const choices = (name, items) => items.map(([id, value, label]) =>
+        `<label class="crm-choice"><input type="radio" name="${name}" id="${id}" value="${crmEsc(value)}"><span>${crmEsc(label || value)}</span></label>`
+    ).join('');
 
-							<div style="margin-top:5px; color:#c4ffd3; padding:5px; font-weight: 500;" id = "smartroomquestion">С чем обратились?</div>
-								<input class = "smartroom-radio" type="radio" id="whatobratsugest" name="whatobratform" value="Пожелание по улучшению">
-								<label class = "smartroom-label spanCRM" for="whatobratsugest">Пожелания</label>
-								<input class = "smartroom-radio" type="radio" id="whattonegative" name="whatobratform" value="Негатив по работе функционала платформы">
-								<label class = "smartroom-label spanCRM" for="whattonegative">Негатив</label>
-							
-							<div style="color:#c4ffd3; padding:5px; font-weight: 500;" id = "smartroomecosysrem">Экосистема</div>
-                                <input class = "smartroom-radio" type="radio" id="ecosystemplat" name="smartroomecos" value="Функционал платформы"> 
-                                <label class = "smartroom-label spanCRM" for="ecosystemplat">Функционал платформы</label>
-                                <input class = "smartroom-radio" type="radio" id="ecosystemios" name="smartroomecos" value="Мобильное приложение IOS"> 
-                                <label class = "smartroom-label spanCRM" for="ecosystemios">МП IOS</label>
-                                <input class = "smartroom-radio" type="radio" id="ecosystemandr" name="smartroomecos" value="Мобильное приложение Android"> 
-                                <label class = "smartroom-label spanCRM" for="ecosystemandr">МП Android</label>
+    const options = (items) => '<option value="" disabled selected>Выберите…</option>' +
+        items.map((v) => `<option value="${crmEsc(v)}">${crmEsc(v)}</option>`).join('');
 
-							<div style="color:#c4ffd3; padding:5px; font-weight: 500;">Тема</div>
-							<div>
-								<select class="inputCRM" id="cattwosmatrtoom" style="margin-left: 5px; padding-top: 5px; vertical-align: middle; color: black;">
-									<option style="background-color:DarkKhaki;" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
-									<option value="Домашние задания">-Домашние задания</option>
-									<option value="Интерфейс платформы">-Интерфейс платформы</option>
-									<option value="Функционал урока П">-Функционал урока П</option>
-									<option value="Функционал урока У">-Функционал урока У</option>
-									<option value="Вернуть старую платформу">-Вернуть старую платформу</option>
-									<option value="Мобильное приложение Skyeng">-Мобильное приложение Skyeng</option>
-                                </select>
-							</div>	
+    const html = `
+        ${crmWinHeader({
+            icon: '🦐',
+            title: 'Smartroom: пожелания',
+            tools: crmToolButton('refreshhashsmartform', crmIcon('refresh', 15), 'Подставить ID и комментарий из открытой задачи') +
+                   crmToolButton('clearsmartroomform', crmIcon('clear', 15), 'Очистить форму') +
+                   crmToolButton('smartroomforminstr', crmIcon('help', 15), 'Инструкция'),
+            closeId: 'hideMeSmartRoomForm'
+        })}
+        <div class="crm-body" id="smartroom_form_menu">
+            <div class="crm-section-title">Кто обратился</div>
+            <div class="crm-choices" id="smartroomuser">${choices('typetoform', CLIENT_TYPES)}</div>
 
-							<div style="color:#c4ffd3; padding:5px; font-weight: 500;">Подтема</div>
-							<div>
-								<select class="inputCRM" id="catthreesmatrtoom" style="margin-left: 5px; padding-top: 5px; vertical-align: middle; color: black;">
-									<option style="background-color:DarkKhaki;" value="Выбрать категорию" disabled selected>Выбрать категорию</option>
-									<option value="Интерфейс раздела домашки">-Интерфейс раздела домашки</option>
-									<option value="Нет">-Нет</option>
-									<option value="Перемешаны слайды в уроке">-Перемешаны слайды в уроке</option>
-									<option value="План урока">-План урока</option>
-									<option value="План урока\\домашки">-План урока\домашки</option>
-									<option value="Вложения">-Вложения</option>
-									<option value="Домашка">-Домашка</option>
-									<option value="Информирование">-Информирование</option>
-									<option value="Навигация в домашке">-Навигация в домашке</option>
-									<option value="Не видно какие уроки уже пройдены У">-Не видно какие уроки уже пройдены У</option>
-									<option value="П не может изменить оценку">-П не может изменить оценку</option>
-									<option value="Предложения по улучшению">-Предложения по улучшению</option>
-									<option value="Сброс ответов">-Сброс ответов</option>
-									<option value="Вход в урок">-Вход в урок</option>
-									<option value="Заметки">-Заметки</option>
-									<option value="Масштабирование видео">-Масштабирование видео</option>
-									<option value="Не находит словарь">-Не находит словарь</option>
-									<option value="Нет отображения кол-ва символов">-Нет отображения кол-ва символов</option>
-									<option value="Нумерация степов в уроке">-Нумерация степов в уроке</option>
-									<option value="ОС">-ОС</option>
-									<option value="Плохой шрифт">-Плохой шрифт</option>
-									<option value="Словарь">-Словарь</option>
-									<option value="Урок">-Урок</option>
-									<option value="Ширина доски">-Ширина доски</option>
-									<option value="Баллы и картинки">-Баллы и картинки</option>
-									<option value="Нет прохождения тестов">-Нет прохождения тестов</option>
-									<option value="Повтор пройденного материала">-Повтор пройденного материала</option>
-									<option value="Связь У с П">-Связь У с П</option>
-									<option value="Звуки">-Звуки</option>
-									<option value="Перевод слов на стороне У">-Перевод слов на стороне У</option>
-                                </select>
-							</div>
-							
-						<div>	
-							<textarea class="textareaCRM"id="fullcomentsmartroom" placeholder="Полный комментарий предложения по улучшению" autocomplete="off" type="text" style="text-align: center; width: 405px; color: black; margin-top: 5px" data-gramm="false" wt-ignore-input="true"></textarea>
-						<br>
-							<button class="btnCRM" title="Отправляет заполненные поля формы в док" id="send2smartroom" style="width:105px; position: relative; left: 50%; margin-top: 5px; transform: translate(-50%, 0);">Отправить</button>
-						</div>
-				</span>
-        </span>
-		</div>
-</div>`;
+            <div class="crm-section-title" style="margin-top:12px">Формат обучения</div>
+            <div class="crm-choices" id="smartroomformat">${choices('formattoform', FORMATS)}</div>
 
-const wintSmartroom = createWindowCRM('AF_Smartroomform', 'winTopSmartroom', 'winLeftSmartroom', win_smartroomform);
-hideWindowOnDoubleClick('AF_Smartroomform');
-hideWindowOnClick('AF_Smartroomform', 'hideMeSmartRoomForm');
+            <div class="crm-row" style="margin-top:12px">
+                <div class="crm-grow">
+                    <div class="crm-section-title">С чем обратились</div>
+                    <div class="crm-choices" id="smartroomquestion">${choices('whatobratform', REQUESTS)}</div>
+                </div>
+            </div>
 
+            <div class="crm-section-title" style="margin-top:12px">Экосистема</div>
+            <div class="crm-choices" id="smartroomecosysrem">${choices('smartroomecos', ECOSYSTEM)}</div>
 
-document.getElementById('smartroomformCRM').onclick = function () {
-	if (document.getElementById('AF_Smartroomform').style.display == '') {
-		document.getElementById('AF_Smartroomform').style.display = 'none'
-		document.getElementById('idmymenucrm').style.display = 'none'
-	} else {
-		document.getElementById('AF_Smartroomform').style.display = ''
-		document.getElementById('idmymenucrm').style.display = 'none'
-	}
+            <div class="crm-row" style="margin-top:12px; align-items:flex-start">
+                <label class="crm-grow"><span class="crm-section-title" style="display:block">ID пользователя</span>
+                    <input class="crm-input crm-mono" id="clientid" placeholder="Например, 12345678" autocomplete="off" inputmode="numeric"></label>
+            </div>
 
-    function clearradio() { // функция очистки радиобатонов
-        let cheksradio = document.getElementsByClassName('smartroom-radio');
-        for (let j = 0; j < cheksradio.length; j++) {
-            cheksradio[j].checked = false
+            <div class="crm-row" style="margin-top:10px; align-items:flex-start">
+                <label class="crm-grow"><span class="crm-section-title" style="display:block">Тема</span>
+                    <select class="crm-select" id="cattwosmatrtoom">${options(TOPICS)}</select></label>
+                <label class="crm-grow"><span class="crm-section-title" style="display:block">Подтема</span>
+                    <select class="crm-select" id="catthreesmatrtoom">${options(SUBTOPICS)}</select></label>
+            </div>
+
+            <label style="display:block; margin-top:10px"><span class="crm-section-title" style="display:block">Комментарий</span>
+                <textarea class="crm-textarea" id="fullcomentsmartroom" rows="4" placeholder="Что именно предлагает или на что жалуется пользователь" data-gramm="false"></textarea></label>
+
+            <button type="button" class="crm-btn crm-btn-primary crm-btn-block" id="send2smartroom" style="margin-top:12px; height:36px">Отправить в документ</button>
+        </div>`;
+
+    createWindowCRM('AF_Smartroomform', 'winTopSmartroom', 'winLeftSmartroom', html);
+    const win = document.getElementById('AF_Smartroomform');
+    win.style.width = '500px';
+    hideWindowOnDoubleClick('AF_Smartroomform');
+    hideWindowOnClick('AF_Smartroomform', 'hideMeSmartRoomForm');
+
+    const $ = (id) => document.getElementById(id);
+    $('clientid').addEventListener('input', (e) => onlyNumbers(e.target));
+
+    /* ---------- Данные со страницы CRM ---------- */
+
+    function fillFromPage() {
+        const personId = crmPersonIdFromUrl();
+        if (personId) $('clientid').value = personId;
+
+        if (location.pathname.split('/')[4] === 'task') {
+            const row = crmFindCommentRow();
+            const text = row ? row.innerText.replace(/^Комментарий\s*/, '').trim() : '';
+            if (text) $('fullcomentsmartroom').value = text;
         }
-		document.getElementById('cattwosmatrtoom').selectedIndex = 0;
-		document.getElementById('catthreesmatrtoom').selectedIndex = 0;
     }
 
-	if (location.pathname.split('/')[4] == 'task')
-		document.getElementById('fullcomentsmartroom').value = document.getElementsByTagName('crm-grid')[8].children[0].innerText.replace('Комментарий\n', '')
+    function clearForm() {
+        win.querySelectorAll('input[type="radio"]').forEach((r) => { r.checked = false; });
+        $('cattwosmatrtoom').selectedIndex = 0;
+        $('catthreesmatrtoom').selectedIndex = 0;
+        $('clientid').value = '';
+        $('fullcomentsmartroom').value = '';
+        win.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
+    }
 
-	if (document.URL.split('/')[3] == 'persons') {
-		var clientId = document.URL.split('/')[4];
-		// Регулярное выражение для проверки, что clientId является числом от 4 до 10 цифр
-		var regex = /^\d{4,10}$/;
+    /* ---------- Отправка ---------- */
 
-		if (regex.test(clientId)) {
-			document.getElementById('clientid').value = clientId;
-		}
-	}
+    const checked = (name) => {
+        const el = win.querySelector(`input[name="${name}"]:checked`);
+        return el ? el.value : '';
+    };
 
-	document.getElementById('send2smartroom').onclick = function () {
+    function validate() {
+        const rules = [
+            ['smartroomuser', !!checked('typetoform')],
+            ['smartroomformat', !!checked('formattoform')],
+            ['smartroomquestion', !!checked('whatobratform')],
+            ['smartroomecosysrem', !!checked('smartroomecos')],
+            ['clientid', $('clientid').value.trim().length >= 3],
+            ['cattwosmatrtoom', !!$('cattwosmatrtoom').value],
+            ['catthreesmatrtoom', !!$('catthreesmatrtoom').value],
+            ['fullcomentsmartroom', $('fullcomentsmartroom').value.trim().length >= 3]
+        ];
+        rules.forEach(([id, ok]) => $(id).classList.toggle('is-invalid', !ok));
+        return rules.every(([, ok]) => ok);
+    }
 
-        let checkedclienttype;
-        let checkedquestion;
-        let checkeducformat;
-        let checkecosystem;
-        let cat2selected;
-        let cat3selected;
+    // Выбор снимает подсветку ошибки с группы.
+    win.addEventListener('change', (e) => {
+        const group = e.target.closest('.crm-choices') || e.target;
+        group.classList.remove('is-invalid');
+    });
 
-        let flagemptysmart = 0;
-
-        if (!document.getElementsByName('typetoform')[0].checked && !document.getElementsByName('typetoform')[1].checked && !document.getElementsByName('typetoform')[2].checked && !document.getElementsByName('typetoform')[3].checked) {
-            document.getElementById('smartroomuser').classList.add('sr-invalid');
-            flagemptysmart = 1;
-        } else {
-            document.getElementById('smartroomuser').classList.remove('sr-invalid');
-        }
-        
-        if (!document.getElementsByName('formattoform')[0].checked && !document.getElementsByName('formattoform')[1].checked && !document.getElementsByName('formattoform')[2].checked && !document.getElementsByName('formattoform')[3].checked) {
-            document.getElementById('smartroomformat').classList.add('sr-invalid');
-            flagemptysmart = 1;
-        } else {
-            document.getElementById('smartroomformat').classList.remove('sr-invalid');
-        }
-
-        if (document.getElementById('clientid').value.length < 3) {
-            document.getElementById('clientid').classList.add('sr-invalid');
-            flagemptysmart = 1;
-        } else {
-            document.getElementById('clientid').classList.remove('sr-invalid');
-        }
-
-        if (!document.getElementsByName('whatobratform')[0].checked && !document.getElementsByName('whatobratform')[1].checked) {
-            document.getElementById('smartroomquestion').classList.add('sr-invalid');
-            flagemptysmart = 1;
-        } else {
-            document.getElementById('smartroomquestion').classList.remove('sr-invalid');
+    $('send2smartroom').onclick = async () => {
+        const btn = $('send2smartroom');
+        if (btn.disabled) return;
+        if (!validate()) {
+            crmToast('Заполните выделенные поля', 'warning', { title: 'Smartroom' });
+            return;
         }
 
-        if (!document.getElementsByName('smartroomecos')[0].checked && !document.getElementsByName('smartroomecos')[1].checked && !document.getElementsByName('smartroomecos')[2].checked) {
-            document.getElementById('smartroomecosysrem').classList.add('sr-invalid');
-            flagemptysmart = 1;
-        } else {
-            document.getElementById('smartroomecosysrem').classList.remove('sr-invalid');
+        const body = new URLSearchParams({
+            'entry.505070950': $('clientid').value.trim(),
+            'entry.1879097323': $('fullcomentsmartroom').value.trim(),
+            'entry.1625340245': $('cattwosmatrtoom').value,
+            'entry.478427702': $('catthreesmatrtoom').value,
+            'entry.466256037': checked('typetoform'),
+            'entry.685236831': checked('formattoform'),
+            'entry.876256156': checked('whatobratform'),
+            'entry.156405977': checked('smartroomecos')
+        }).toString();
+
+        crmSetBusy(btn, true);
+        try {
+            await crmRequest(FORM_URL, {
+                method: 'POST',
+                headers: { 'content-type': 'application/x-www-form-urlencoded' },
+                body
+            });
+            crmToast('Пожелание записано в документ Smartroom', 'success', { title: 'Smartroom' });
+            clearForm();
+            crmHideWindow(win);
+        } catch (e) {
+            crmToast(`Не удалось отправить: ${e.message}`, 'error', { title: 'Smartroom' });
+        } finally {
+            crmSetBusy(btn, false);
         }
+    };
 
-        if (document.getElementById('fullcomentsmartroom').value.length < 3) {
-            document.getElementById('fullcomentsmartroom').classList.add('sr-invalid');
-            flagemptysmart = 1;
-        } else {
-            document.getElementById('fullcomentsmartroom').classList.remove('sr-invalid');
-        }
+    $('clearsmartroomform').onclick = clearForm;
+    $('refreshhashsmartform').onclick = fillFromPage;
+    $('smartroomforminstr').onclick = () => window.open(HELP_URL, '_blank', 'noopener');
 
-        if (flagemptysmart == 1 && typeof window.crmToast === 'function') {
-            window.crmToast('Заполните выделенные поля формы', 'warning', { title: 'Smartroom' });
-        }
-
-        if (flagemptysmart == 0) {
-            for (let i = 0; i < document.getElementsByName('typetoform').length; i++) {
-                if (document.getElementsByName('typetoform')[i].checked == true)
-                    checkedclienttype = document.getElementsByName('typetoform')[i].value;
-            }
-
-            for (let i = 0; i < document.getElementsByName('formattoform').length; i++) {
-                if (document.getElementsByName('formattoform')[i].checked == true)
-                    checkeducformat = document.getElementsByName('formattoform')[i].value;
-            }
-
-            for (let i = 0; i < document.getElementsByName('smartroomecos').length; i++) {
-                if (document.getElementsByName('smartroomecos')[i].checked == true)
-                    checkecosystem = document.getElementsByName('smartroomecos')[i].value;
-            }
-
-            for (let i = 0; i < document.getElementById('cattwosmatrtoom').length; i++) {
-                if (document.getElementById('cattwosmatrtoom')[i].selected == true)
-                    cat2selected = document.getElementById('cattwosmatrtoom')[i].value
-            }
-
-            for (let i = 0; i < document.getElementById('catthreesmatrtoom').length; i++) {
-                if (document.getElementById('catthreesmatrtoom')[i].selected == true)
-                    cat3selected = document.getElementById('catthreesmatrtoom')[i].value
-            }
-
-            for (let i = 0; i < document.getElementsByName('whatobratform').length; i++) {
-                if (document.getElementsByName('whatobratform')[i].checked == true)
-                    checkedquestion = document.getElementsByName('whatobratform')[i].value;
-            }
-
-            let body2 = 'entry.505070950=' + encodeURIComponent(document.getElementById('clientid').value) + '&entry.1879097323=' + encodeURIComponent(document.getElementById('fullcomentsmartroom').value) + '&entry.1625340245=' + encodeURIComponent(cat2selected) + '&entry.478427702=' + encodeURIComponent(cat3selected) + '&entry.466256037=' + encodeURIComponent(checkedclienttype) + '&entry.685236831=' + encodeURIComponent(checkeducformat) + '&entry.876256156=' + encodeURIComponent(checkedquestion) + '&entry.156405977=' + encodeURIComponent(checkecosystem)
-
-			const requestOptions = {
-				"headers": {
-					"content-type": "application/x-www-form-urlencoded",
-				},
-				"body": body2,
-				"method": "POST",
-			}
-			const requestAdr = 'https://docs.google.com/forms/u/1/d/e/1FAIpQLScnX8PdboJjcq2hgLmIyHvZoaqKXmgfp-6gGkyFjwJ1JYAK3Q/formResponse';
-
-			chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: requestAdr, requestOptions: requestOptions }, function (offerresponse) {
-				if (offerresponse.success) {
-					document.getElementById('send2smartroom').innerText = "Отправлено✅"
-					if (typeof window.crmToast === 'function') {
-						window.crmToast('Пожелание отправлено в документ Smartroom', 'success', { title: 'Smartroom' });
-					}
-					setTimeout(() => {
-						document.getElementById('send2smartroom').innerText = "Отправить"
-						document.getElementById('AF_Smartroomform').style.display = 'none'
-						document.getElementById('clientid').value = ''
-						document.getElementById('fullcomentsmartroom').value = ''
-						clearradio()
-					}, 3000)
-				} else {
-					if (typeof window.crmToast === 'function') {
-						window.crmToast('Не удалось отправить пожелания: ' + (offerresponse.error || 'неизвестная ошибка'), 'error', { title: 'Smartroom' });
-					} else {
-						alert('Не удалось отправить пожелания ' + offerresponse.error);
-					}
-				}
-			});
-		}
-	}
-
-	document.getElementById('clearsmartroomform').onclick = function () {
-		document.getElementById('clientid').value = ''
-		document.getElementById('fullcomentsmartroom').value = ''
-		document.getElementById('smartroomuser').style.background = '';
-		document.getElementById('clientid').style.background = '';
-		document.getElementById('smartroomquestion').style.background = '';
-		document.getElementById('fullcomentsmartroom').style.background = '';
-		clearradio()
-	}
-
-	document.getElementById('smartroomforminstr').onclick = function () {
-		window.open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-smartroom%F0%9F%A6%90Smartroom')
-	}
-
-	document.getElementById('refreshhashsmartform').onclick = function () {
-		if (document.URL.split('/')[3] == 'persons') {
-			var clientId = document.URL.split('/')[4];
-			// Регулярное выражение для проверки, что clientId является числом от 4 до 10 цифр
-			var regex = /^\d{4,10}$/;
-
-			if (regex.test(clientId)) {
-				document.getElementById('clientid').value = clientId;
-			}
-		}
-		if (location.pathname.split('/')[4] == 'task')
-			document.getElementById('fullcomentsmartroom').value = document.getElementsByTagName('crm-grid')[8].children[0].innerText.replace('Комментарий\n', '')
-	}
-}
+    $('smartroomformCRM').onclick = () => {
+        if (crmToggleWindow(win)) fillFromPage();
+    };
+})();

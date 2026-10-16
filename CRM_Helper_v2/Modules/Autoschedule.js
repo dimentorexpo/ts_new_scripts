@@ -1,175 +1,147 @@
-let configsObj = null; // FIX: инициализируем null, чтобы можно было безопасно проверять перед использованием
-var win_Autoschedule =  // описание элементов окна статуса уроков
-    `<div class="maindivst" style="display: flex; width: 700px;">
-        <span style="width: 1060px">
-                <span style="cursor: -webkit-grab;">
-                        <div style="margin: 5px; width: 700px;">
-                                <button class="buttonHide" id="hideMeAutoSchedule"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> hide</button>
-                                <button class="btnCRM btnCRMsmall" id="clearAutoSchedule" title="Очищает поля" style="display:flex; align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l3-3h12l3 3"/><path d="M5 6v12a2 2 0 002 2h10a2 2 0 002-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-                        </div>
-                        <div style="margin: 5px; width: 700px">
-                            <input class="inputCRM" id="studentAPSearch" placeholder="Student ID" title="Введите ID ученика, чтобы отфильтровать поиск" autocomplete="off" type="text" style="position:relative; text-align:center; width:200px; color:black; margin-left:30%;">
-                            <button class="btnCRM" title="Запускает процесс поиска информации по статусам урока (отменен, перенесен, удален)" id="startlookAPstatus" style="float: right; margin-right: 10%;">Узнатть статус АП</button>
-						</div>
-				</span>
-						<div>
-							<p id="aptabledata" style="margin-top:5px; max-height:400px; overflow:auto; display:none; color:bisque; text-align:center"></p>
-						</div>
-        </span>
-</div>`;
+/**
+ * Autoschedule.js — «Автоподбор»: для каждой услуги ученика показывает,
+ * доступен ли автоподбор преподавателя и почему нет.
+ */
+(function () {
+    'use strict';
 
-const wintAutoSchedule = createWindowCRM('AF_Autoschedule', 'winTopAutoSchedule', 'winLeftAutoSchedule', win_Autoschedule);
-hideWindowOnDoubleClick('AF_Autoschedule');
+    // Услуги, для которых автоподбор не применяется.
+    const SKIP_SERVICE_TYPES = new Set(['english_adult_self_study', 'english_adult_not_native_speaker_talks_15min', 'life_adult']);
 
-document.getElementById('hideMeAutoSchedule').onclick = function () { // скрытие окна статус урока
-    document.getElementById('AF_Autoschedule').style.display = 'none'
-    document.querySelector('#aptabledata').innerText = "";
-    document.querySelector('#studentAPSearch').value = "";
-}
+    const html = `
+        ${crmWinHeader({
+            icon: '🗓️',
+            title: 'Автоподбор',
+            tools: crmToolButton('clearAutoSchedule', crmIcon('clear', 15), 'Очистить'),
+            closeId: 'hideMeAutoSchedule'
+        })}
+        <div class="crm-body">
+            <div class="crm-input-group">
+                <input class="crm-input crm-mono" id="studentAPSearch" placeholder="ID ученика" autocomplete="off" inputmode="numeric">
+                <button type="button" class="crm-btn crm-btn-primary" id="startlookAPstatus">Проверить</button>
+            </div>
+            <div id="aptabledata" style="margin-top:12px"><div class="crm-empty">Введите ID ученика — покажу автоподбор по каждой услуге.</div></div>
+        </div>`;
 
-document.getElementById('clearAutoSchedule').onclick = function () { // скрытие окна статус урока
-    document.querySelector('#aptabledata').innerText = "";
-    document.querySelector('#studentAPSearch').value = "";
-}
+    createWindowCRM('AF_Autoschedule', 'winTopAutoSchedule', 'winLeftAutoSchedule', html);
+    const win = document.getElementById('AF_Autoschedule');
+    win.style.width = '680px';
+    hideWindowOnDoubleClick('AF_Autoschedule');
 
-document.getElementById('butAutoschedule').onclick = function () {
-    if (document.getElementById('AF_Autoschedule').style.display == '') {
-        document.getElementById('AF_Autoschedule').style.display = 'none'
-        document.getElementById('idmymenucrm').style.display = 'none'
-    } else {
-        document.getElementById('AF_Autoschedule').style.display = ''
-        document.getElementById('idmymenucrm').style.display = 'none'
-		configsObj = ''
-		
-		const fetchURL = `https://backend.skyeng.ru/api/products/configurations/`;
-        const requestOptions = {
-            method: 'GET'
-        };
+    const input = document.getElementById('studentAPSearch');
+    const out = document.getElementById('aptabledata');
+    const btn = document.getElementById('startlookAPstatus');
+    const EMPTY = '<div class="crm-empty">Введите ID ученика — покажу автоподбор по каждой услуге.</div>';
 
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
-            if (!response.success) {
-                alert('Не удалось выполнить запрос: ' + response.error);
-                return;
-            } else {
-                const otvetConfigs = JSON.parse(response.fetchansver);
-                configsObj = new Map(otvetConfigs.data.map(d => [d.serviceTypeKey, d.shortTitle]));
-                console.log(configsObj)
-            }
-        })
+    /* ---------- Справочник названий услуг (грузим один раз) ---------- */
+
+    let configsPromise = null;
+
+    function loadConfigs() {
+        if (!configsPromise) {
+            configsPromise = crmRequestJson('https://backend.skyeng.ru/api/products/configurations/', { method: 'GET' })
+                .then((res) => new Map((res.data || []).map((d) => [d.serviceTypeKey, d.shortTitle])))
+                .catch((e) => {
+                    console.warn('[Autoschedule] справочник услуг не загружен:', e.message);
+                    configsPromise = null; // попробуем ещё раз в следующий раз
+                    return new Map();
+                });
+        }
+        return configsPromise;
     }
-}
 
-function parseSrvAndAP() {
+    /** Причины недоступности бывают строками или объектами — приводим к тексту. */
+    function formatReasons(reasons) {
+        if (!Array.isArray(reasons) || !reasons.length) return '';
+        return reasons.map((r) => (typeof r === 'string' ? r : r?.message || r?.title || r?.code || JSON.stringify(r))).join('; ');
+    }
 
-    const studid = document.getElementById('studentAPSearch').value.trim()
-    let massivOfSrvIDs = []
-    if (studid.length < 3) {
-        alert("ID не введен или меньше трех символов. Пожалуйста, введите корректный ID и повторите попытку!")
-    } else {
-        const fetchURL = `https://backend.skyeng.ru/api/students/${studid}/education-services/`;
-        const requestOptions = {
-            method: 'GET'
-        };
+    let requestSeq = 0;
 
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) { // получение информации авторизован пользователь на сайте Datsy или нет
-            if (!response.success) {
-                alert('Не удалось выполнить запрос: ' + response.error);
+    async function check() {
+        const studentId = input.value.replace(/\D/g, '');
+        input.classList.toggle('is-invalid', studentId.length < 3);
+        if (studentId.length < 3) { input.focus(); return; }
+
+        const seq = ++requestSeq;
+        crmSetBusy(btn, true);
+        out.innerHTML = '<div class="crm-loading"><span class="crm-spinner"></span>Загружаю услуги ученика…</div>';
+
+        try {
+            const [services, names] = await Promise.all([
+                crmRequestJson(`https://backend.skyeng.ru/api/students/${studentId}/education-services/`, { method: 'GET' }),
+                loadConfigs()
+            ]);
+            if (seq !== requestSeq) return;
+
+            const items = (services.data || []).filter((s) => !SKIP_SERVICE_TYPES.has(s.serviceTypeKey));
+            if (!items.length) {
+                out.innerHTML = '<div class="crm-empty">У ученика нет услуг, для которых работает автоподбор.</div>';
                 return;
-            } else {
-                document.querySelector('#aptabledata').style.display = "";
-                document.querySelector('#aptabledata').innerText = "Загрузка. Если информация не появилась нажмите повторно на кнопку получить инфа";
-                const otvetServices = JSON.parse(response.fetchansver);
-                console.log(otvetServices)
-                if (otvetServices.data.length != 0) {
-                    checkAPAvailability(otvetServices.data)
+            }
+
+            const results = await Promise.allSettled(items.map((s) =>
+                crmRequestJson(`https://teachers-schedule.skyeng.ru/api/education-services/${s.id}/auto-schedule/is-available/`, { method: 'GET' })
+            ));
+            if (seq !== requestSeq) return;
+
+            const rows = items.map((s, i) => {
+                const title = names.get(s.serviceTypeKey) || s.serviceTypeKey;
+                const r = results[i];
+                let status;
+                let reason;
+                if (r.status === 'rejected') {
+                    status = '<span class="crm-pill">нет ответа</span>';
+                    reason = `<span class="is-muted">${crmEsc(r.reason.message)}</span>`;
                 } else {
-                    document.querySelector('#aptabledata').innerText = "Услуги отсутствуют или не прошли фильтр";
+                    const available = r.value?.data?.isAvailable === true;
+                    status = available
+                        ? '<span class="crm-pill" data-tone="ok"><span class="crm-dot"></span>Доступен</span>'
+                        : '<span class="crm-pill" data-tone="bad"><span class="crm-dot"></span>Недоступен</span>';
+                    reason = crmEsc(formatReasons(r.value?.data?.reasons) || '—');
                 }
-            }
-        })
+                return `<tr>
+                    <td class="crm-mono">${crmEsc(s.id)}</td>
+                    <td title="${crmEsc(s.serviceTypeKey)}">${crmEsc(title)}</td>
+                    <td>${status}</td>
+                    <td class="is-wrap">${reason}</td>
+                </tr>`;
+            }).join('');
 
+            out.innerHTML = `
+                <div class="crm-table-wrap">
+                    <table class="crm-table">
+                        <thead><tr><th>ID услуги</th><th>Услуга</th><th>Автоподбор</th><th>Причина</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>`;
+        } catch (e) {
+            if (seq !== requestSeq) return;
+            out.innerHTML = `<div class="crm-empty is-error">Не удалось получить услуги: ${crmEsc(e.message)}. Проверьте ID и вход в CRM.</div>`;
+        } finally {
+            if (seq === requestSeq) crmSetBusy(btn, false);
+        }
     }
-}
 
-function checkAPAvailability(items) {
-    const table = document.createElement('table');
-    table.style.width = '99.4%';
-    table.style.color = 'bisque';
-    table.style.fontWeight = '500';
-    table.style.backgroundColor = '#464451';
-    table.style.borderStyle = 'double';
-    table.style.fontSize = '13px';
-
-    const headers = ["ID услуги", "STK услуги", "Статус АП", "Причина недоступности"];
-    let headerRow = document.createElement('tr');
-    headers.forEach(header => {
-        let th = document.createElement('th');
-        th.textContent = header;
-        th.style = 'text-align:center; font-weight:700; background:dimgrey; border:1px solid black; padding:5px; position: sticky; top: 0;'
-        headerRow.appendChild(th);
-    });
-    table.appendChild(headerRow);
-
-    if (items) {
-        items.forEach(item => {
-            if (item.serviceTypeKey !== 'english_adult_self_study' && item.serviceTypeKey !== 'english_adult_not_native_speaker_talks_15min' && item.serviceTypeKey !==  'life_adult') {
-
-                const fetchURL = `https://teachers-schedule.skyeng.ru/api/education-services/${item.id}/auto-schedule/is-available/`;
-                const requestOptions = {
-                    method: 'GET'
-                };
-
-                chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions: requestOptions }, function (response) {
-                    if (!response.success) {
-                        alert('Не удалось выполнить запрос: ' + response.error);
-                        return;
-                    } else {
-                        const otvetAPstatus = JSON.parse(response.fetchansver);
-                        console.log(otvetAPstatus)
-
-                        let serviceId = item.id;
-
-                        // FIX: раньше при незагруженном configsObj падал TypeError,
-                        // теперь просто показываем системный ключ услуги.
-                        let STKname = (configsObj && configsObj.has(item.serviceTypeKey))
-                            ? configsObj.get(item.serviceTypeKey)
-                            : item.serviceTypeKey;
-                        let row = document.createElement('tr');
-                        row.classList = "rowOfLessonStatus"
-                        let cell;
-
-                        cell = document.createElement('td');
-                        cell.textContent = serviceId;
-                        cell.style = "border: 1px solid black; font-size:12px;"
-                        row.appendChild(cell);
-
-                        cell = document.createElement('td');
-                        cell.textContent = STKname;
-                        cell.style = "border: 1px solid black; font-size:12px;"
-                        row.appendChild(cell);
-
-                        let isDostupenAP = otvetAPstatus.data.isAvailable;
-                        cell = document.createElement('td');
-                        cell.innerHTML = isDostupenAP == true ? `<span style="color:#1de51d; font-weight: 700; font-size: 13px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">Доступен</span>` : `<span style="color:coral;  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); font-weight: 700; font-size: 13px;">Недоступен</span>`
-                        cell.style = "border: 1px solid black; font-size:12px;"
-                        row.appendChild(cell);
-
-                        // FIX: reasons может быть undefined — раньше .length падал.
-                        let reasonNedostupen = otvetAPstatus.data?.reasons ?? [];
-                        cell = document.createElement('td');
-                        cell.textContent = reasonNedostupen.length == 0 ? "➖" : reasonNedostupen
-                        cell.style = "border: 1px solid black; font-size:12px;"
-                        row.appendChild(cell);
-                        table.appendChild(row);
-                        document.getElementById('aptabledata').innerHTML = '';
-                        document.getElementById('aptabledata').appendChild(table);
-
-                    }
-                })
-            }
-        });
+    function clear() {
+        requestSeq++;
+        crmSetBusy(btn, false);
+        input.value = '';
+        input.classList.remove('is-invalid');
+        out.innerHTML = EMPTY;
     }
-}
 
-let btnStartSearchAP = document.getElementById('startlookAPstatus')
-btnStartSearchAP.addEventListener('click', parseSrvAndAP)
+    input.addEventListener('input', () => onlyNumbers(input));
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') check(); });
+    btn.addEventListener('click', check);
+    document.getElementById('clearAutoSchedule').onclick = clear;
+    document.getElementById('hideMeAutoSchedule').onclick = () => { crmHideWindow(win); clear(); };
+
+    document.getElementById('butAutoschedule').onclick = () => {
+        if (!crmToggleWindow(win)) return;
+        loadConfigs();
+        const personId = crmPersonIdFromUrl();
+        if (personId && !input.value) input.value = personId;
+        input.focus();
+    };
+})();

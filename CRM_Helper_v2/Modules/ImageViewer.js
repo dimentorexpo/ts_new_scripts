@@ -22,7 +22,7 @@
     viewerStyles.textContent = `
         #crmViewerOverlay {
             position: fixed; inset: 0; z-index: 2147483646;
-            background: rgba(0, 0, 0, 0.88);
+            background: rgba(8, 11, 16, 0.9);
             display: none;
             align-items: center; justify-content: center;
         }
@@ -44,9 +44,9 @@
 
         .crm-viewer-btn {
             position: fixed;
-            background: rgba(255, 255, 255, 0.12);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: #1a2029;
+            color: #e6ebf2;
+            border: 1px solid rgba(148, 163, 184, 0.3);
             border-radius: 50%;
             width: 42px; height: 42px;
             font-size: 20px; line-height: 1;
@@ -54,7 +54,8 @@
             display: flex; align-items: center; justify-content: center;
             transition: background 0.15s;
         }
-        .crm-viewer-btn:hover { background: rgba(255, 255, 255, 0.3); }
+        .crm-viewer-btn:hover { background: #2a3442; }
+        .crm-viewer-btn:focus-visible { outline: 2px solid #7cc4ff; outline-offset: 2px; }
 
         #crmViewerClose   { top: 16px; right: 16px; }
         #crmViewerPrev    { left: 16px; top: 50%; transform: translateY(-50%); }
@@ -63,9 +64,10 @@
         #crmViewerCaption {
             position: fixed;
             bottom: 18px; left: 50%; transform: translateX(-50%);
-            color: #ddd;
-            font: 13px 'Segoe UI', system-ui, sans-serif;
-            background: rgba(0, 0, 0, 0.5);
+            color: #a3afc0;
+            font: 12.5px 'Segoe UI', system-ui, sans-serif;
+            background: #1a2029;
+            border: 1px solid rgba(148, 163, 184, 0.26);
             padding: 4px 12px;
             border-radius: 12px;
             pointer-events: none;
@@ -170,8 +172,13 @@
     document.addEventListener('keydown', function (event) {
         if (!overlay.classList.contains('crm-viewer-opened')) return;
 
+        // Клавиши не должны доходить до страницы CRM (прокрутка, хоткеи).
+        if (['Escape', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
         if (event.key === 'Escape') closeViewer();
         else if (event.key === 'ArrowLeft') showImage(currentIndex - 1);
         else if (event.key === 'ArrowRight') showImage(currentIndex + 1);
-    });
+    }, true);
 })();

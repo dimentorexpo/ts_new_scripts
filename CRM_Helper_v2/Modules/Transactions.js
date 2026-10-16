@@ -1,403 +1,273 @@
+/**
+ * Transactions.js — «Анализ платежей» на accounting.skyeng.ru (поиск транзакций).
+ * Подсвечивает строки по статусу (completed / failed / processing), отмечает
+ * платёжные системы с автоплатежами и failed-платежи через overpay.
+ *
+ * Работает на сторонней (светлой) странице, поэтому стили самодостаточные:
+ * styles.css расширения сюда не подключается.
+ */
 (() => {
-    // 1. Очистка предыдущих элементов и снятие подсветки
-    const existingFab = document.getElementById('ps-fab-btn');
-    const existingPanel = document.getElementById('ps-checker-panel');
-    const existingStyle = document.getElementById('ps-custom-styles');
+    'use strict';
 
-    if (existingFab) existingFab.remove();
-    if (existingPanel) existingPanel.remove();
-    if (existingStyle) existingStyle.remove();
+    ['ps-fab-btn', 'ps-checker-panel', 'ps-custom-styles'].forEach((id) => document.getElementById(id)?.remove());
 
-    function clearHighlighting() {
-        // Удаляем созданные бейджи
-        document.querySelectorAll('.ps-overpay-badge').forEach(badge => badge.remove());
-
-        // Снимаем классы с ячеек
-        document.querySelectorAll(
-            '.ps-status-completed, .ps-status-failed, .ps-status-processing, .ps-recurrent-highlight, .ps-overpay-failed'
-        ).forEach(el => {
-            el.classList.remove(
-                'ps-status-completed',
-                'ps-status-failed',
-                'ps-status-processing',
-                'ps-recurrent-highlight',
-                'ps-overpay-failed'
-            );
-            el.title = '';
-        });
-
-        // Снимаем подсветку со строк
-        document.querySelectorAll(
-            '.ps-highlighted-row-completed, .ps-highlighted-row-failed, .ps-highlighted-row-processing'
-        ).forEach(row => {
-            row.classList.remove(
-                'ps-highlighted-row-completed',
-                'ps-highlighted-row-failed',
-                'ps-highlighted-row-processing'
-            );
-        });
-    }
-
-    clearHighlighting();
-
-    // 2. Список платежных систем с поддержкой автоплатежей
-    const paymentSystems = [
-        "bank131.agt",
-        "gazprombank.skyeng.ano", "gazprombank.skypro.ano", "gazprombank.skysmart.ano",
-        "payanyway.skyeng.ano", "payanyway.skypro.ano", "payanyway.skysmart.ano",
-        "rsb.bank_card.skyeng.ano", "rsb.bank_card.skypro.ano", "rsb.bank_card.skysmart.ano",
-        "sber-direct.skyeng.ano", "sber-direct.skyeng.courses.ano", "sber-direct.skypro.ano",
-        "sber-direct.skysmart.ano", "sber-direct.skysmart.homeschool.ano",
-        "sber.skyeng.ano", "sber.skyeng.courses.ano", "sber.skysmart.ano", "sber.skysmart.homeschool.ano",
-        "stripe.ltitc", 
-        "tinkoff.ano", "tinkoff.english", "tinkoff.premium.ano", "tinkoff.salebot.ano",
-        "tinkoff.skyeng", "tinkoff.skypro.ano", "tinkoff.skysmart-premium.ano", "tinkoff.skysmart.ano"
+    // Платёжные системы с поддержкой автоплатежей (рекуррент).
+    const PAYMENT_SYSTEMS = [
+        'bank131.agt',
+        'gazprombank.skyeng.ano', 'gazprombank.skypro.ano', 'gazprombank.skysmart.ano',
+        'payanyway.skyeng.ano', 'payanyway.skypro.ano', 'payanyway.skysmart.ano',
+        'rsb.bank_card.skyeng.ano', 'rsb.bank_card.skypro.ano', 'rsb.bank_card.skysmart.ano',
+        'sber-direct.skyeng.ano', 'sber-direct.skyeng.courses.ano', 'sber-direct.skypro.ano',
+        'sber-direct.skysmart.ano', 'sber-direct.skysmart.homeschool.ano',
+        'sber.skyeng.ano', 'sber.skyeng.courses.ano', 'sber.skysmart.ano', 'sber.skysmart.homeschool.ano',
+        'stripe.ltitc',
+        'tinkoff.ano', 'tinkoff.english', 'tinkoff.premium.ano', 'tinkoff.salebot.ano',
+        'tinkoff.skyeng', 'tinkoff.skypro.ano', 'tinkoff.skysmart-premium.ano', 'tinkoff.skysmart.ano'
     ];
 
-    // 3. Стили интерфейса и подсветки таблицы
+    // Совпадение целиком: «tinkoff.ano» не должен срабатывать внутри «tinkoff.anoXYZ».
+    const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const RECURRENT_RE = new RegExp(`(^|[^a-z0-9._-])(${PAYMENT_SYSTEMS.map(escapeRe).join('|')})(?=$|[^a-z0-9._-])`, 'i');
+
+    const ROW_CLASSES = ['ps-row-completed', 'ps-row-failed', 'ps-row-processing'];
+    const CELL_CLASSES = ['ps-status-completed', 'ps-status-failed', 'ps-status-processing', 'ps-recurrent', 'ps-overpay-failed'];
+
     const style = document.createElement('style');
     style.id = 'ps-custom-styles';
     style.textContent = `
+        #ps-fab-btn, #ps-checker-panel {
+            --bg: #141920; --bg-2: #1a2029; --bg-3: #222a35; --bg-hover: #2a3442;
+            --line: rgba(148,163,184,.13); --line-strong: rgba(148,163,184,.26);
+            --text: #e6ebf2; --text-2: #a3afc0; --text-3: #6f7b8e;
+            --accent: #7cc4ff; --primary: #2f6db3; --primary-hover: #3a7cc6;
+            --ok: #5fcf98; --warn: #f2a65a; --bad: #f07a7e; --violet: #a99cff;
+            font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+        }
         #ps-fab-btn {
-            position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px;
-            border-radius: 50%; background: #303b4d; color: #fff; border: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25); cursor: pointer; z-index: 999998;
-            font-size: 26px; display: flex; align-items: center; justify-content: center;
-            transition: transform 0.2s, background 0.2s;
+            position: fixed; right: 24px; bottom: 24px; z-index: 999998;
+            display: flex; align-items: center; gap: 8px;
+            height: 44px; padding: 0 16px 0 14px;
+            font-size: 13px; font-weight: 600; color: #fff;
+            background: var(--primary); border: 0; border-radius: 22px;
+            box-shadow: 0 10px 28px rgba(3,7,14,.35); cursor: pointer;
+            transition: background .12s ease;
         }
-        #ps-fab-btn:hover { transform: scale(1.1); background: #2563eb; }
-
+        #ps-fab-btn:hover { background: var(--primary-hover); }
+        #ps-fab-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
         #ps-checker-panel {
-            position: fixed; bottom: 90px; right: 24px; width: 390px; max-height: 75vh;
-            background: #ffffff; border: 1px solid #d1d5db; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            z-index: 999999; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            font-size: 13px; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden;
-            animation: ps-slide-up 0.3s ease-out;
+            position: fixed; right: 24px; bottom: 80px; z-index: 999999;
+            display: flex; flex-direction: column;
+            width: 380px; max-height: 75vh; overflow: hidden;
+            font-size: 13px; line-height: 1.45; color: var(--text);
+            background: var(--bg); border: 1px solid var(--line-strong); border-radius: 12px;
+            box-shadow: 0 18px 48px rgba(3,7,14,.45), 0 2px 8px rgba(3,7,14,.25);
+            animation: ps-in .16s ease-out;
         }
-        @keyframes ps-slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        #ps-checker-header {
-            background: #1f2937; color: #fff; padding: 12px 16px; display: flex;
-            justify-content: space-between; align-items: center;
+        #ps-checker-panel * { box-sizing: border-box; }
+        @keyframes ps-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        .ps-head {
+            display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 8px 0 14px;
+            font-size: 13.5px; font-weight: 600; background: var(--bg-2); border-bottom: 1px solid var(--line);
         }
-        #ps-checker-header span { font-weight: 600; font-size: 14px; }
-        #ps-checker-close { cursor: pointer; font-size: 18px; line-height: 1; opacity: 0.7; }
-        #ps-checker-close:hover { opacity: 1; }
-
-        #ps-checker-body { padding: 16px; overflow-y: auto; flex: 1; background: #f9fafb; }
-
-        .verdict-box {
-            padding: 12px; border-radius: 8px; font-weight: 700; text-align: center;
-            margin-bottom: 12px; font-size: 14px; line-height: 1.4;
+        .ps-close {
+            margin-left: auto; width: 30px; height: 30px; padding: 0;
+            font-size: 15px; color: var(--text-2); background: transparent; border: 0; border-radius: 7px; cursor: pointer;
         }
-        .verdict-yes { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
-        .verdict-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-        .verdict-info { background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }
-        .verdict-no { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
-
-        .ps-recommendation-box {
-            margin-bottom: 12px; padding: 10px; background: #fae8ff; border-radius: 6px;
-            border-left: 4px solid #9333ea; color: #581c87; font-size: 12px; line-height: 1.4;
+        .ps-close:hover { color: var(--bad); background: rgba(240,122,126,.13); }
+        .ps-body { padding: 14px; overflow-y: auto; }
+        .ps-verdict {
+            padding: 10px 12px; margin-bottom: 12px; font-weight: 600;
+            background: var(--bg-2); border: 1px solid var(--line); border-left: 3px solid var(--text-3); border-radius: 8px;
         }
-
+        .ps-verdict[data-tone="ok"]   { border-left-color: var(--ok); }
+        .ps-verdict[data-tone="warn"] { border-left-color: var(--warn); }
+        .ps-verdict[data-tone="info"] { border-left-color: var(--accent); }
+        .ps-recommend {
+            padding: 10px 12px; margin-bottom: 12px; font-size: 12.5px;
+            background: rgba(169,156,255,.12); border: 1px solid rgba(169,156,255,.35); border-radius: 8px;
+        }
+        .ps-stats { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin-bottom: 12px; font-size: 12.5px; color: var(--text-2); }
+        .ps-stats b { color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+        .ps-legend { display: grid; gap: 6px; padding: 10px 12px; margin-bottom: 12px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; font-size: 12px; color: var(--text-2); }
+        .ps-legend-item { display: flex; align-items: center; gap: 8px; }
+        .ps-swatch { flex: none; width: 14px; height: 14px; border-radius: 4px; }
         .ps-btn {
-            width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer;
-            font-size: 13px; font-weight: 600; margin-top: 8px; transition: background 0.2s;
+            width: 100%; height: 32px; margin-top: 6px;
+            font: inherit; font-weight: 500; color: var(--text);
+            background: var(--bg-3); border: 1px solid var(--line-strong); border-radius: 8px; cursor: pointer;
         }
-        .ps-btn-reset { background: #e5e7eb; color: #374151; }
-        .ps-btn-reset:hover { background: #d1d5db; }
+        .ps-btn:hover { background: var(--bg-hover); }
+        .ps-systems { max-height: 180px; margin-top: 8px; overflow-y: auto; padding: 8px; background: #0f1318; border: 1px solid var(--line); border-radius: 8px; }
+        .ps-system { padding: 2px 4px; font: 11.5px/1.6 Consolas, "SF Mono", monospace; color: var(--text-2); word-break: break-all; }
 
-        .legend-item {
-            display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px;
-        }
-        .legend-color {
-            width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;
-        }
-
-        /* Табличные стили */
-        .ps-highlighted-row-completed { background-color: #f0fdf4 !important; }
-        .ps-highlighted-row-failed { background-color: #fef2f2 !important; }
-        .ps-highlighted-row-processing { background-color: #fffbeb !important; }
-
-        .ps-status-completed {
-            background-color: #d1fae5 !important; color: #065f46 !important;
-            font-weight: bold !important; border: 1px solid #10b981 !important;
-        }
-        .ps-status-failed {
-            background-color: #fee2e2 !important; color: #991b1b !important;
-            font-weight: bold !important; border: 2px solid #ef4444 !important;
-        }
-        .ps-status-processing {
-            background-color: #fef3c7 !important; color: #92400e !important;
-            font-weight: bold !important; border: 2px solid #f59e0b !important;
-        }
-
-        .ps-recurrent-highlight {
-            background-color: #fef08a !important; color: #854d0e !important;
-            font-weight: 900 !important; border: 2px dashed #eab308 !important;
-        }
-        .ps-recurrent-highlight::before {
-            content: "🔄 "; font-size: 1.2em; vertical-align: middle;
-        }
-
-        /* Стили для overpay + failed */
-        .ps-overpay-failed {
-            background-color: #f3e8ff !important; color: #581c87 !important;
-            font-weight: 800 !important; border: 2px dashed #9333ea !important;
-        }
+        /* Подсветка таблицы на светлой странице */
+        .ps-row-completed  { background-color: #f1fbf6 !important; }
+        .ps-row-failed     { background-color: #fdf3f3 !important; }
+        .ps-row-processing { background-color: #fff6ee !important; }
+        .ps-status-completed  { background-color: #ddf5e9 !important; color: #126b45 !important; font-weight: 600 !important; box-shadow: inset 0 0 0 1px #5fcf98 !important; }
+        .ps-status-failed     { background-color: #fde3e4 !important; color: #a3262d !important; font-weight: 600 !important; box-shadow: inset 0 0 0 2px #e05a60 !important; }
+        .ps-status-processing { background-color: #ffead6 !important; color: #8a4310 !important; font-weight: 600 !important; box-shadow: inset 0 0 0 2px #f2a65a !important; }
+        .ps-recurrent { background-color: #e3f0fd !important; color: #13406f !important; font-weight: 700 !important; box-shadow: inset 0 0 0 2px #2f6db3 !important; }
+        .ps-recurrent::before { content: "🔄 "; }
+        .ps-overpay-failed { background-color: #efecff !important; color: #3f2f8f !important; font-weight: 700 !important; box-shadow: inset 0 0 0 2px #8b7cf0 !important; }
         .ps-overpay-badge {
-            display: block; margin-top: 4px; padding: 3px 6px;
-            background: #9333ea; color: #ffffff !important;
-            font-size: 11px; font-weight: bold; border-radius: 4px;
-            text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-		
-		.ps-btn-list { background: #e0f2fe; color: #0369a1; }
-        .ps-btn-list:hover { background: #bae6fd; }
-
-        #ps-systems-list-container {
-            margin-top: 10px;
-            padding: 10px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            max-height: 180px;
-            overflow-y: auto;
-            font-size: 11px;
-            line-height: 1.6;
-        }
-        .ps-system-item {
-            padding: 3px 6px;
-            margin-bottom: 4px;
-            background: #f3f4f6;
-            border-radius: 4px;
-            font-family: monospace;
-            word-break: break-all;
-            color: #1f2937;
+            display: block; width: fit-content; margin-top: 4px; padding: 2px 8px;
+            font-size: 11px; font-weight: 600; color: #fff !important; background: #6a5ad6; border-radius: 999px;
         }
     `;
     document.head.appendChild(style);
 
-    // 4. Кнопка запуска (FAB)
-    const fabBtn = document.createElement('button');
-    fabBtn.id = 'ps-fab-btn';
-    fabBtn.title = 'Проверить платежи и автоплатежи';
-    fabBtn.innerHTML = '🔍';
-    document.body.appendChild(fabBtn);
+    const fab = document.createElement('button');
+    fab.type = 'button';
+    fab.id = 'ps-fab-btn';
+    fab.title = 'Проверить платежи и автоплатежи в таблице';
+    fab.innerHTML = '<span aria-hidden="true">💳</span><span>Анализ платежей</span>';
+    document.body.appendChild(fab);
 
-    // 5. Боковая панель
     const panel = document.createElement('div');
     panel.id = 'ps-checker-panel';
     panel.style.display = 'none';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', 'Анализ платежей');
     panel.innerHTML = `
-        <div id="ps-checker-header">
-            <span>💳 Анализ платежей</span>
-            <span id="ps-checker-close">✕</span>
-        </div>
-<div id="ps-checker-body">
-            <div id="ps-verdict" class="verdict-box verdict-no">Нажмите для сканирования</div>
+        <div class="ps-head">💳 Анализ платежей<button type="button" class="ps-close" id="ps-checker-close" title="Закрыть" aria-label="Закрыть">✕</button></div>
+        <div class="ps-body">
+            <div class="ps-verdict" id="ps-verdict">Таблица ещё не проверена</div>
             <div id="ps-recommendation"></div>
-            <div id="ps-legend" style="margin-bottom: 12px; padding: 10px; background: #fff; border-radius: 6px; border: 1px solid #e5e7eb;"></div>
-            <div id="ps-details" style="font-size: 13px; color: #4b5563; line-height: 1.5;"></div>
-            <button class="ps-btn ps-btn-reset" id="ps-reset-btn">Сбросить подсветку</button>
-            <button class="ps-btn ps-btn-list" id="ps-toggle-systems-btn">📋 Список систем с автоплатежами</button>
-            <div id="ps-systems-list-container" style="display: none;"></div>
-        </div>
-		
-		
-    `;
+            <div class="ps-stats" id="ps-details"></div>
+            <div class="ps-legend">
+                <div class="ps-legend-item"><span class="ps-swatch" style="background:#e3f0fd;box-shadow:inset 0 0 0 2px #2f6db3"></span>Completed, система с автоплатежами</div>
+                <div class="ps-legend-item"><span class="ps-swatch" style="background:#efecff;box-shadow:inset 0 0 0 2px #8b7cf0"></span>Failed через overpay → «Белорусский банк»</div>
+                <div class="ps-legend-item"><span class="ps-swatch" style="background:#ddf5e9;box-shadow:inset 0 0 0 1px #5fcf98"></span>Completed</div>
+                <div class="ps-legend-item"><span class="ps-swatch" style="background:#fde3e4;box-shadow:inset 0 0 0 2px #e05a60"></span>Failed</div>
+                <div class="ps-legend-item"><span class="ps-swatch" style="background:#ffead6;box-shadow:inset 0 0 0 2px #f2a65a"></span>Processing</div>
+            </div>
+            <button type="button" class="ps-btn" id="ps-rescan-btn">Проверить заново</button>
+            <button type="button" class="ps-btn" id="ps-reset-btn">Снять подсветку</button>
+            <button type="button" class="ps-btn" id="ps-toggle-systems-btn">Системы с автоплатежами (${PAYMENT_SYSTEMS.length})</button>
+            <div class="ps-systems" id="ps-systems-list-container" style="display:none">
+                ${PAYMENT_SYSTEMS.map((s) => `<div class="ps-system">${s}</div>`).join('')}
+            </div>
+        </div>`;
     document.body.appendChild(panel);
 
-    // 6. Основной алгоритм проверки
+    const $ = (id) => document.getElementById(id);
+
+    function clearHighlighting() {
+        document.querySelectorAll('.ps-overpay-badge').forEach((b) => b.remove());
+        document.querySelectorAll(CELL_CLASSES.map((c) => `.${c}`).join(',')).forEach((el) => {
+            el.classList.remove(...CELL_CLASSES);
+            if (el.dataset.psTitle !== undefined) {
+                el.title = el.dataset.psTitle;
+                delete el.dataset.psTitle;
+            }
+        });
+        document.querySelectorAll(ROW_CLASSES.map((c) => `.${c}`).join(',')).forEach((row) => row.classList.remove(...ROW_CLASSES));
+    }
+
+    /** Подсказка на ячейке; исходный title страницы сохраняем, чтобы вернуть при сбросе. */
+    function setTitle(el, text) {
+        if (el.dataset.psTitle === undefined) el.dataset.psTitle = el.title || '';
+        el.title = text;
+    }
+
     function scanAndHighlight() {
         clearHighlighting();
+        const stats = { recurrent: 0, completed: 0, failed: 0, processing: 0, overpay: 0 };
 
-        const tables = document.querySelectorAll('table tbody');
-        let recurrentCount = 0;
-        let completedCount = 0;
-        let failedCount = 0;
-        let processingCount = 0;
-        let overpayFailedCount = 0;
+        document.querySelectorAll('table tbody tr').forEach((row) => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length < 5) return;
+            const statusCell = cells[1];
+            const psCell = cells[4];
+            const status = statusCell.textContent.toLowerCase().trim();
+            const ps = psCell.textContent.trim();
 
-        tables.forEach(tbody => {
-            const rows = tbody.querySelectorAll('tr');
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length < 5) return;
-
-                const statusCell = cells[1];
-                const psCell = cells[4];
-
-                const statusText = statusCell.textContent.toLowerCase().trim();
-                const psText = psCell.textContent.trim();
-                const isOverpay = psText.toLowerCase().includes('overpay');
-
-                // 1. FAILED
-                if (statusText.includes('failed')) {
-                    failedCount++;
-                    statusCell.classList.add('ps-status-failed');
-                    statusCell.title = '❌ Платеж не прошел';
-                    row.classList.add('ps-highlighted-row-failed');
-
-                    // Проверка на overpay при ошибке
-                    if (isOverpay) {
-                        overpayFailedCount++;
-                        psCell.classList.add('ps-overpay-failed');
-                        psCell.title = '💡 Ошибка Overpay: рекомендуется использовать платежную систему "Белорусский банк"';
-
-                        if (!psCell.querySelector('.ps-overpay-badge')) {
-                            const badge = document.createElement('div');
-                            badge.className = 'ps-overpay-badge';
-                            badge.innerHTML = '🇧🇾 Предложить "Белорусский банк"';
-                            psCell.appendChild(badge);
-                        }
-                    }
+            if (status.includes('failed')) {
+                stats.failed++;
+                statusCell.classList.add('ps-status-failed');
+                setTitle(statusCell, 'Платёж не прошёл');
+                row.classList.add('ps-row-failed');
+                if (/overpay/i.test(ps)) {
+                    stats.overpay++;
+                    psCell.classList.add('ps-overpay-failed');
+                    setTitle(psCell, 'Ошибка overpay: предложите оплату через «Белорусский банк»');
+                    const badge = document.createElement('div');
+                    badge.className = 'ps-overpay-badge';
+                    badge.textContent = 'Предложить «Белорусский банк»';
+                    psCell.appendChild(badge);
                 }
-                // 2. PROCESSING
-                else if (statusText.includes('processing')) {
-                    processingCount++;
-                    statusCell.classList.add('ps-status-processing');
-                    statusCell.title = '⏳ Платеж в обработке';
-                    row.classList.add('ps-highlighted-row-processing');
+            } else if (status.includes('processing')) {
+                stats.processing++;
+                statusCell.classList.add('ps-status-processing');
+                setTitle(statusCell, 'Платёж в обработке');
+                row.classList.add('ps-row-processing');
+            } else if (status.includes('completed')) {
+                stats.completed++;
+                statusCell.classList.add('ps-status-completed');
+                setTitle(statusCell, 'Платёж успешно завершён');
+                row.classList.add('ps-row-completed');
+                if (RECURRENT_RE.test(ps)) {
+                    stats.recurrent++;
+                    psCell.classList.add('ps-recurrent');
+                    setTitle(psCell, 'Эта платёжная система поддерживает автоплатежи');
                 }
-                // 3. COMPLETED
-                else if (statusText.includes('completed')) {
-                    completedCount++;
-                    statusCell.classList.add('ps-status-completed');
-                    statusCell.title = '✅ Платеж успешно завершен';
-                    row.classList.add('ps-highlighted-row-completed');
-
-                    // Проверка на рекуррент (без ложных срабатываний)
-                    const isRecurrent = psText.length > 3 && paymentSystems.some(ps => 
-                        psText.toLowerCase().includes(ps.toLowerCase())
-                    );
-
-                    if (isRecurrent) {
-                        recurrentCount++;
-                        psCell.classList.add('ps-recurrent-highlight');
-                        psCell.title = '🔔 ВНИМАНИЕ: Эта платежная система поддерживает автоплатежи (рекуррент)!';
-                    }
-                }
-            });
+            }
         });
 
-        // Обновляем легенду
-        const legendBox = document.getElementById('ps-legend');
-        legendBox.innerHTML = `
-            <div class="legend-item">
-                <div class="legend-color" style="background: #fef08a; border: 2px dashed #eab308;"></div>
-                <span>🔄 Completed + возможен автоплатеж</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #f3e8ff; border: 2px dashed #9333ea;"></div>
-                <span>🇧🇾 Failed Overpay ➔ Белорусский банк</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #d1fae5; border-color: #10b981;"></div>
-                <span>✅ Просто Completed (успешно)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #fee2e2; border-color: #ef4444;"></div>
-                <span>❌ Failed</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #fef3c7; border-color: #f59e0b;"></div>
-                <span>⏳ Processing</span>
-            </div>
-        `;
-
-        // Блок рекомендаций
-        const recommendationBox = document.getElementById('ps-recommendation');
-        if (overpayFailedCount > 0) {
-            recommendationBox.innerHTML = `
-                <div class="ps-recommendation-box">
-                    <b>💡 Рекомендация по оплате:</b><br>
-                    Обнаружено платежей с ошибкой <b>overpay: ${overpayFailedCount}</b>.<br>
-                    Предложите клиенту провести оплату через <b>«Белорусский банк»</b>.
-                </div>
-            `;
+        const verdict = $('ps-verdict');
+        if (stats.recurrent) {
+            verdict.dataset.tone = 'ok';
+            verdict.textContent = `Платежей с возможным автоплатежом: ${stats.recurrent}`;
+        } else if (stats.failed && !stats.completed) {
+            verdict.dataset.tone = 'warn';
+            verdict.textContent = `Все платежи в статусе failed (${stats.failed})`;
+        } else if (stats.completed) {
+            verdict.dataset.tone = 'info';
+            verdict.textContent = `Завершено: ${stats.completed}. Автоплатежи для этих систем не предусмотрены`;
         } else {
-            recommendationBox.innerHTML = '';
+            verdict.dataset.tone = '';
+            verdict.textContent = 'Платежи в таблице не найдены';
         }
 
-        // Обновляем вердикт и статистику
-        const verdictBox = document.getElementById('ps-verdict');
-        const detailsBox = document.getElementById('ps-details');
+        $('ps-recommendation').innerHTML = stats.overpay
+            ? `<div class="ps-recommend"><b>Overpay с ошибкой: ${stats.overpay}.</b> Предложите клиенту оплатить через «Белорусский банк».</div>`
+            : '';
 
-        let summaryHTML = `<b>Статистика по таблице:</b><br>`;
-        if (recurrentCount > 0) summaryHTML += `🔄 С возможными автоплатежами: <b>${recurrentCount}</b><br>`;
-        if (completedCount > 0) summaryHTML += `✅ Всего Completed: ${completedCount}<br>`;
-        if (failedCount > 0) summaryHTML += `❌ Failed: ${failedCount}<br>`;
-        if (overpayFailedCount > 0) summaryHTML += `🟣 Из них Overpay: <b>${overpayFailedCount}</b><br>`;
-        if (processingCount > 0) summaryHTML += `⏳ Processing: ${processingCount}<br>`;
-
-        if (recurrentCount > 0) {
-            verdictBox.className = 'verdict-box verdict-yes';
-            verdictBox.innerHTML = `✅ Найдено ${recurrentCount} платежей, где возможны автоплатежи`;
-        } else if (failedCount > 0 && completedCount === 0) {
-            verdictBox.className = 'verdict-box verdict-warning';
-            verdictBox.innerHTML = `⚠️ Все платежи failed (${failedCount})`;
-        } else if (completedCount > 0 && recurrentCount === 0) {
-            verdictBox.className = 'verdict-box verdict-info';
-            verdictBox.innerHTML = `ℹ️ Завершено: ${completedCount}, но для этих ПС автоплатежи не предусмотрены`;
-        } else {
-            verdictBox.className = 'verdict-box verdict-no';
-            verdictBox.innerHTML = `Платежи не найдены`;
-        }
-
-        detailsBox.innerHTML = summaryHTML;
+        const lines = [
+            ['С автоплатежом', stats.recurrent], ['Completed', stats.completed], ['Failed', stats.failed],
+            ['из них overpay', stats.overpay], ['Processing', stats.processing]
+        ].filter(([, n]) => n);
+        $('ps-details').innerHTML = lines.map(([label, n]) => `<span>${label}</span><b>${n}</b>`).join('');
     }
 
-    // 7. Сброс подсветки
     function resetHighlight() {
         clearHighlighting();
-        document.getElementById('ps-verdict').className = 'verdict-box verdict-no';
-        document.getElementById('ps-verdict').innerHTML = 'Подсветка сброшена';
-        document.getElementById('ps-recommendation').innerHTML = '';
-        document.getElementById('ps-legend').innerHTML = '';
-        document.getElementById('ps-details').innerHTML = '';
+        $('ps-verdict').dataset.tone = '';
+        $('ps-verdict').textContent = 'Подсветка снята';
+        $('ps-recommendation').innerHTML = '';
+        $('ps-details').innerHTML = '';
     }
 
-    // 8. Обработчики событий
-    fabBtn.addEventListener('click', () => {
-        if (panel.style.display === 'none') {
-            panel.style.display = 'flex';
-            scanAndHighlight();
-        } else {
-            panel.style.display = 'none';
-        }
-    });
-	
-	const toggleSystemsBtn = document.getElementById('ps-toggle-systems-btn');
-    const systemsListContainer = document.getElementById('ps-systems-list-container');
+    const isOpen = () => panel.style.display !== 'none';
+    const closePanel = () => { panel.style.display = 'none'; };
 
-    toggleSystemsBtn.addEventListener('click', () => {
-        if (systemsListContainer.style.display === 'none') {
-            systemsListContainer.style.display = 'block';
-            toggleSystemsBtn.textContent = '▲ Скрыть список систем';
-            
-            // Заполняем список
-            systemsListContainer.innerHTML = `
-                <div style="font-weight: 600; margin-bottom: 6px; color: #374151;">
-                    Всего систем (${paymentSystems.length}):
-                </div>
-                ${paymentSystems.map(sys => `<div class="ps-system-item">${sys}</div>`).join('')}
-            `;
-        } else {
-            systemsListContainer.style.display = 'none';
-            toggleSystemsBtn.textContent = '📋 Список систем с автоплатежами';
-        }
+    fab.addEventListener('click', () => {
+        if (isOpen()) { closePanel(); return; }
+        panel.style.display = 'flex';
+        scanAndHighlight();
     });
 
-    document.getElementById('ps-checker-close').addEventListener('click', () => {
-        panel.style.display = 'none';
+    $('ps-toggle-systems-btn').addEventListener('click', () => {
+        const list = $('ps-systems-list-container');
+        list.style.display = list.style.display === 'none' ? 'block' : 'none';
     });
+    $('ps-checker-close').addEventListener('click', closePanel);
+    $('ps-reset-btn').addEventListener('click', resetHighlight);
+    $('ps-rescan-btn').addEventListener('click', scanAndHighlight);
 
-    document.getElementById('ps-reset-btn').addEventListener('click', resetHighlight);
-
-    document.addEventListener('click', (e) => {
-        if (panel.style.display === 'flex' && !panel.contains(e.target) && e.target !== fabBtn) {
-            panel.style.display = 'none';
-        }
+    document.addEventListener('mousedown', (e) => {
+        if (isOpen() && !panel.contains(e.target) && !fab.contains(e.target)) closePanel();
     });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && isOpen()) closePanel(); });
 })();

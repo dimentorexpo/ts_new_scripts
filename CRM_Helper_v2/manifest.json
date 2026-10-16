@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CRMHelper",
-    "version": "2.0.38",
+    "version": "2.0.39",
     "description": "Твой мультитул в работе с обращениями",
     "background": {
         "service_worker": "bg.js"
@@ -11,11 +11,15 @@
         "default_title": "CRMHelper - Easy help for your work"
     },
     "externally_connectable": {
-        "matches": ["*://crm2.skyeng.ru/*"]
+        "matches": [
+            "*://crm2.skyeng.ru/*"
+        ]
     },
     "content_scripts": [
         {
-            "js": ["content.js"],
+            "js": [
+                "content.js"
+            ],
             "matches": [
                 "*://crm2.skyeng.ru/*",
                 "*://video-trouble-shooter.skyeng.ru/*"
@@ -33,7 +37,7 @@
                 "/Modules/SettingsApp.js",
                 "/Modules/Smartroom.js",
                 "/Modules/TestRooms.js",
-				"/Modules/Autoschedule.js",
+                "/Modules/Autoschedule.js",
                 "/Modules/ImageViewer.js",
                 "/Modules/MattermostSearch.js",
                 "/Modules/Templates.js"
@@ -41,23 +45,32 @@
             "css": [
                 "/CSS/styles.css"
             ],
-            "matches": ["*://crm2.skyeng.ru/*"],
+            "matches": [
+                "*://crm2.skyeng.ru/*"
+            ],
             "run_at": "document_idle"
         },
-				{
-			"js": [
-				"/Modules/Transactions.js"
-			],
-			"matches": [
-				"https://accounting.skyeng.ru/userpayment/search/transaction*"
-			],
-			"run_at": "document_end"
-		},
         {
-			"js": ["/Modules/Troubleshooter.js"],
-			"matches": ["*://video-trouble-shooter.skyeng.ru/*"],
-			"run_at": "document_end"
-		}
+            "js": [
+                "/Modules/Transactions.js"
+            ],
+            "matches": [
+                "https://accounting.skyeng.ru/userpayment/search/transaction*"
+            ],
+            "run_at": "document_end"
+        },
+        {
+            "js": [
+                "/Modules/Troubleshooter.js"
+            ],
+            "matches": [
+                "*://video-trouble-shooter.skyeng.ru/*"
+            ],
+            "run_at": "document_end",
+            "css": [
+                "/CSS/styles.css"
+            ]
+        }
     ],
     "icons": {
         "32": "/Icons/32.png",
@@ -66,8 +79,12 @@
     },
     "web_accessible_resources": [
         {
-            "resources": ["Modules/*"],
-            "matches": ["<all_urls>"]
+            "resources": [
+                "Modules/*"
+            ],
+            "matches": [
+                "https://*.skyeng.ru/*"
+            ]
         }
     ],
     "permissions": [

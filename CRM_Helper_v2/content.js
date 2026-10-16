@@ -1,168 +1,151 @@
 /**
- * content.js — основной контент-скрипт расширения CRMHelper.
+ * content.js — основной контент-скрипт CRMHelper.
  *
- * Отвечает за:
- *  1. Кнопку «Меню» и всплывающее меню модулей в верхней панели CRM.
- *  2. Общие утилиты, которыми пользуются модули (createWindowCRM, copyToClipboard и т.д.).
- *  3. Звуковое оповещение о новых задачах + предпросмотр скриншотов в чатах.
- *  4. Блок UserBlocker/CallStatus на страницах /persons/:id.
- *  5. SkyAuto — автовзятие задач из пула.
+ *  1. Общие утилиты для модулей: окна, запросы через bg.js, тосты, диалоги, иконки.
+ *  2. Кнопка «Меню» в тулбаре CRM и выпадающее меню модулей.
+ *  3. Звук новой задачи и превью скриншотов в карточке задачи.
+ *  4. Бейдж статуса пользователя на /persons/:id.
+ *  5. SkyAuto — автовзятие задачи из пула.
+ *
+ * Скрипт подключается и на video-trouble-shooter.skyeng.ru (ради общих утилит),
+ * поэтому всё, что относится только к CRM, запускается под флагом CRM_IS_CRM.
+ * Все контент-скрипты расширения делят одну глобальную область: имена верхнего
+ * уровня здесь — публичное API для модулей, повторять их в модулях нельзя.
  */
 
-/* ============================================================
- *  ХРАНИЛИЩЕ И ГЛОБАЛЬНОЕ СОСТОЯНИЕ
- * ============================================================ */
-
-// Контейнер списка звуков — используется модулем SettingsApp.js (глобальная зависимость).
-var soundsconteinerCRM;
-
-// Флаг/ID интервала повторного звука (true = однократный звук уже проигран).
-let soundintervalsetCRM = null;
-let appverresult;
+const CRM_IS_CRM = location.hostname === 'crm2.skyeng.ru';
 
 /* ============================================================
- *  РАЗМЕТКА МЕНЮ
+ *  1. ОБЩИЕ УТИЛИТЫ
  * ============================================================ */
 
-const win_Menu = `<!-- описание кнопок меню -->
-	<div id="templatesCRM" class="menubtnsCRM">📑Templates</div>
-    <div id="jirafinder" class="menubtnsCRM">🔎Jira search</div>
-    <div id="mattermostfinder" class="menubtnsCRM">💬Mattermost search</div>
-    <div id="smartroomformCRM" class="menubtnsCRM">🦐Smartroom</div>
-    <div id="butLessonInfoCRM" class="menubtnsCRM">🎓 Lesson Info</div>
-    <div id="butAutoschedule" class="menubtnsCRM">👽 Автоподбор</div>
-    <div id="butdiagtoolsCRM" class="menubtnsCRM">🛠 Diagnostic tools</div>
-    <div id="btnOperStatus" class="menubtnsCRM">🕵️‍♀️ OperStatus</div>
-    <div id="btnCreateTestRoom" class="menubtnsCRM">🎲 Create Test Room</div>
-    <div id="btnAlarmclock" class="menubtnsCRM">🔕Reminder</div>
-    <div id="btnSettingsApp" class="menubtnsCRM">⚙ Settings</div>
-    <!-- Вертикальные ярлыки тестовых У/П по краям меню -->
-    <span id="testuchenik" style="height: 277px;">Тест У</span>
-    <span id="testprepod" style="height: 277px;">Тест П</span>
-`;
-
-/* ============================================================
- *  ОБЩИЕ УТИЛИТЫ (используются и модулями)
- * ============================================================ */
-
-// Кнопка «Меню» для верхней панели CRM.
-let upmenubtn = document.createElement('span');
-upmenubtn.innerText = "Меню";
-upmenubtn.id = 'MenubarCRM';
-upmenubtn.style = "cursor:pointer;font-weight:500; text-shadow: 1px 0 1px #000, 0 1px 1px #000, -1px 0 1px #000, 0 -1px 1px #000; border: 1px solid black; padding: 8px; background: #5083ff; border-radius:18px";
-
-/**
- * Создаёт «плавающее» окно расширения.
- * @param {string} id       - id создаваемого DOM-элемента.
- * @param {string} topKey   - ключ localStorage для сохранённой координаты top.
- * @param {string} leftKey  - ключ localStorage для сохранённой координаты left.
- * @param {string} content  - HTML-содержимое окна.
- * @returns {HTMLElement}
- */
-function createWindowCRM(id, topKey, leftKey, content) {
-    const windowElement = document.createElement('div');
-    document.body.append(windowElement);
-
-    // Восстанавливаем последнюю позицию окна или используем дефолтную.
-    const storedTop = localStorage.getItem(topKey) || '120';
-    const storedLeft = localStorage.getItem(leftKey) || '295';
-
-    windowElement.classList.add('showedwindows');
-    windowElement.style.cssText = `top: ${storedTop}px; left: ${storedLeft}px; display:none;`;
-    windowElement.setAttribute('id', id);
-    windowElement.innerHTML = content;
-
-    // Перетаскивание окна мышью (за любую область, кроме контролов).
-    windowElement.onmousedown = function (event) {
-        if (!checkelementtype(event)) return; // клик по кнопке/полю — не таскаем окно
-
-        const startX = event.clientX;
-        const startY = event.clientY;
-        const elemLeft = windowElement.offsetLeft;
-        const elemTop = windowElement.offsetTop;
-
-        function onMouseMove(e) {
-            // Если кнопка мыши уже отпущена (за пределами окна) — завершаем перенос.
-            if (!(e.buttons & 1)) {
-                onMouseUp();
-                return;
-            }
-            const deltaX = e.clientX - startX;
-            const deltaY = e.clientY - startY;
-
-            windowElement.style.left = `${elemLeft + deltaX}px`;
-            windowElement.style.top = `${elemTop + deltaY}px`;
-
-            // Сохраняем позицию, чтобы восстановить её после перезагрузки страницы.
-            localStorage.setItem(topKey, String(elemTop + deltaY));
-            localStorage.setItem(leftKey, String(elemLeft + deltaX));
-        }
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-    };
-
-    return windowElement;
+/** Экранирование текста для вставки в HTML. */
+function crmEsc(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
-/** Изменить display элемента. */
-function setDisplayStyle(element, value) {
-    element.style.display = value;
-}
+/** Набор линейных иконок (stroke = currentColor). */
+const CRM_ICON_PATHS = {
+    close: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+    refresh: '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>',
+    clear: '<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/>',
+    search: '<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+    help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><line x1="12" y1="17" x2="12" y2="17.01"/>',
+    doc: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+    copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+    external: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
+    play: '<polygon points="6 4 20 12 6 20 6 4" fill="currentColor" stroke="none"/>',
+    stop: '<rect x="6" y="6" width="12" height="12" rx="1.5" fill="currentColor" stroke="none"/>',
+    save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
+    download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+    upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+    plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+    minus: '<line x1="5" y1="12" x2="19" y2="12"/>',
+    star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    insert: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+    trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>',
+    grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    back: '<polyline points="15 18 9 12 15 6"/>',
+    next: '<polyline points="9 18 15 12 9 6"/>',
+    thread: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'
+};
 
-/** Скрыть окно двойным кликом (по «свободной» области окна). */
-function hideWindowOnDoubleClick(id) {
-    const windowElement = document.getElementById(id);
-    windowElement.ondblclick = function (a) {
-        if (checkelementtype(a)) {
-            setDisplayStyle(windowElement, 'none');
-        }
-    };
-}
-
-/** Скрыть окно кликом по кнопке hide. */
-function hideWindowOnClick(windowId, buttonId) {
-    const windowElement = document.getElementById(windowId);
-    const buttonElement = document.getElementById(buttonId);
-
-    buttonElement.onclick = function () {
-        setDisplayStyle(windowElement, 'none');
-    };
-}
-
-/** Добавить <option> в выпадающий список. */
-function addOptionCRM(oListboxCRM, text, value) {
-    const oOptionCRM = document.createElement("option");
-    oOptionCRM.appendChild(document.createTextNode(text));
-    oOptionCRM.setAttribute("value", value);
-    oListboxCRM.appendChild(oOptionCRM);
+/** SVG-иконка по имени. */
+function crmIcon(name, size = 16) {
+    const paths = CRM_ICON_PATHS[name] || '';
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 }
 
 /**
- * Проверка цели mousedown/dblclick: разрешаем действие только если
- * пользователь нажал не на интерактивный элемент (кнопку/поле/селект).
+ * Запрос через bg.js (обход CORS). Возвращает текст ответа.
+ * Ошибка содержит .status (HTTP-код, если сервер ответил).
  */
-function checkelementtype(a) {
-    const elem = document.elementFromPoint(a.clientX, a.clientY);
-    const isInteractive =
-        elem.nodeName === 'BUTTON' ||
-        elem.nodeName === 'INPUT' ||
-        elem.nodeName === 'TEXTAREA' ||
-        elem.nodeName === 'SELECT' ||
-        elem.classList.contains('checkbox-audio-switch-CRM');
+function crmRequest(url, options = {}) {
+    return new Promise((resolve, reject) => {
+        try {
+            chrome.runtime.sendMessage(
+                { action: 'getFetchRequest', fetchURL: url, requestOptions: options },
+                (resp) => {
+                    if (chrome.runtime.lastError) {
+                        reject(new Error(chrome.runtime.lastError.message));
+                        return;
+                    }
+                    if (!resp || !resp.success) {
+                        const err = new Error((resp && resp.error) || 'Нет ответа от расширения');
+                        err.status = (resp && resp.status) || 0;
+                        reject(err);
+                        return;
+                    }
+                    resolve(resp.fetchansver);
+                }
+            );
+        } catch (e) {
+            // Бывает после обновления расширения: старая вкладка теряет связь с bg.js.
+            reject(new Error('Расширение обновилось — перезагрузите страницу'));
+        }
+    });
+}
 
-    return !isInteractive;
+/** То же, что crmRequest, но с разбором JSON. */
+async function crmRequestJson(url, options = {}) {
+    const text = await crmRequest(url, options);
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        throw new Error('Сервер вернул не JSON');
+    }
+}
+
+/** Копирование в буфер обмена с запасным путём через execCommand. */
+async function crmCopy(text) {
+    try {
+        await navigator.clipboard.writeText(String(text));
+        return true;
+    } catch (_) { /* пробуем старый способ */ }
+
+    const el = document.createElement('textarea');
+    el.value = String(text);
+    el.setAttribute('readonly', '');
+    el.style.cssText = 'position:fixed;top:-1000px;opacity:0;';
+    document.body.appendChild(el);
+    el.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
+    el.remove();
+    return ok;
+}
+
+/** Совместимость со старым кодом. */
+const copyToClipboard = (str) => { crmCopy(str); };
+
+/** Кнопка в состоянии «идёт запрос». */
+function crmSetBusy(button, busy) {
+    if (!button) return;
+    button.disabled = !!busy;
+    button.classList.toggle('is-busy', !!busy);
+}
+
+/** Пауза. */
+function crmSleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** ID пользователя из адреса /persons/<id>, если открыта карточка. */
+function crmPersonIdFromUrl() {
+    const m = location.pathname.match(/\/persons\/(\d{3,12})/);
+    return m ? m[1] : '';
 }
 
 /** Ограничение количества символов в поле значением maxLength. */
 function maxLengthCheck(object) {
-    if (object.value.length > object.maxLength)
+    if (object.maxLength > 0 && object.value.length > object.maxLength) {
         object.value = object.value.slice(0, object.maxLength);
+    }
 }
 
 /** Принудительная установка значения поля в границы min/max. */
@@ -170,12 +153,9 @@ function checkMinMaxValue(input) {
     const minValue = parseInt(input.min, 10);
     const maxValue = parseInt(input.max, 10);
     const currentValue = parseInt(input.value, 10);
-
-    if (currentValue < minValue) {
-        input.value = minValue;
-    } else if (currentValue > maxValue) {
-        input.value = maxValue;
-    }
+    if (Number.isNaN(currentValue)) return;
+    if (!Number.isNaN(minValue) && currentValue < minValue) input.value = minValue;
+    else if (!Number.isNaN(maxValue) && currentValue > maxValue) input.value = maxValue;
 }
 
 /** Разрешить ввод только цифр. */
@@ -188,197 +168,486 @@ function onlyNumbersAndComma(object) {
     object.value = object.value.replace(/[^0-9,]/g, '');
 }
 
+/** Добавить <option> в выпадающий список. */
+function addOptionCRM(listbox, text, value) {
+    const option = document.createElement('option');
+    option.textContent = text;
+    option.value = value;
+    listbox.appendChild(option);
+}
+
+/* ============================================================
+ *  ТОСТЫ И ДИАЛОГИ
+ * ============================================================ */
+
 /**
- * Создание логинера (ссылки входа) для тестового У/П через id.skyeng.ru.
- * Запрос идёт через bg.js (обход CORS). Ссылка копируется в буфер обмена.
+ * Уведомление в правом верхнем углу.
+ * @param {string} message - текст (выводится как текст, не HTML).
+ * @param {'info'|'success'|'warning'|'error'} type
+ * @param {{title?:string, duration?:number, sticky?:boolean, html?:boolean}} opts
  */
-function logginerfortestsCRM(polzovatel) {
-    return new Promise((resolve, reject) => {
-        const fetchURL = 'https://id.skyeng.ru/admin/auth/login-links';
-        const requestOptions = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `login_link_form%5Bidentity%5D=&login_link_form%5Bid%5D=${polzovatel}&login_link_form%5Btarget%5D=https%3A%2F%2Fvimbox.skyeng.ru%2F&login_link_form%5Blifetime%5D=3600&login_link_form%5Bcreate%5D=`,
-            mode: 'cors',
-            credentials: 'include',
+function crmToast(message, type = 'info', opts = {}) {
+    let container = document.getElementById('crm-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'crm-toast-container';
+        container.setAttribute('aria-live', 'polite');
+        document.body.appendChild(container);
+    }
+
+    // Не больше пяти уведомлений одновременно.
+    while (container.children.length >= 5) container.firstElementChild.remove();
+
+    const icons = { success: '✓', error: '!', warning: '!', info: 'i' };
+    const titles = { success: 'Готово', error: 'Ошибка', warning: 'Внимание', info: 'Информация' };
+    const duration = opts.sticky ? 0 : (opts.duration || (type === 'error' ? 6000 : 3500));
+
+    const toast = document.createElement('div');
+    toast.className = `crm-toast ${type}`;
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.innerHTML = `
+        <div class="crm-toast-icon">${icons[type] || 'i'}</div>
+        <div class="crm-toast-content">
+            <div class="crm-toast-title"></div>
+            <div class="crm-toast-msg"></div>
+        </div>
+        <button type="button" class="crm-toast-close" title="Закрыть" aria-label="Закрыть">×</button>
+        ${duration ? '<div class="crm-toast-progress"></div>' : ''}`;
+
+    toast.querySelector('.crm-toast-title').textContent = opts.title || titles[type] || titles.info;
+    const msgEl = toast.querySelector('.crm-toast-msg');
+    if (opts.html) msgEl.innerHTML = String(message);
+    else msgEl.textContent = String(message ?? '');
+    if (!String(message ?? '').trim()) msgEl.remove();
+
+    container.appendChild(toast);
+
+    let closed = false;
+    const close = () => {
+        if (closed) return;
+        closed = true;
+        toast.classList.add('closing');
+        setTimeout(() => toast.remove(), 180);
+    };
+
+    toast.querySelector('.crm-toast-close').onclick = (e) => { e.stopPropagation(); close(); };
+    toast.onclick = close;
+
+    if (duration) {
+        const progress = toast.querySelector('.crm-toast-progress');
+        let remaining = duration;
+        let startedAt = Date.now();
+        let timer = setTimeout(close, remaining);
+
+        progress.style.transition = `transform ${remaining}ms linear`;
+        requestAnimationFrame(() => { progress.style.transform = 'scaleX(0)'; });
+
+        // Наведение «замораживает» таймер.
+        toast.onmouseenter = () => {
+            clearTimeout(timer);
+            remaining = Math.max(600, remaining - (Date.now() - startedAt));
+            const scale = progress.getBoundingClientRect().width / toast.getBoundingClientRect().width;
+            progress.style.transition = 'none';
+            progress.style.transform = `scaleX(${scale})`;
+        };
+        toast.onmouseleave = () => {
+            startedAt = Date.now();
+            progress.style.transition = `transform ${remaining}ms linear`;
+            requestAnimationFrame(() => { progress.style.transform = 'scaleX(0)'; });
+            timer = setTimeout(close, remaining);
+        };
+    }
+
+    return toast;
+}
+window.crmToast = crmToast;
+
+/** Старое API уведомлений: тип угадывается по тексту, если не указан явно. */
+function createAndShowButton(text, type) {
+    let normalized = type || 'success';
+    if (!type) {
+        if (/не удалось|ошибка|error|запрет/i.test(text)) normalized = 'error';
+        else if (/внимание|не указан/i.test(text)) normalized = 'warning';
+    }
+    return crmToast(text, normalized);
+}
+window.createAndShowButton = createAndShowButton;
+
+/**
+ * Модальный диалог подтверждения (замена confirm()).
+ * Для разрушительных действий danger: true — фокус по умолчанию на «Отмена».
+ * @returns {Promise<boolean>}
+ */
+function crmConfirm({ title = 'Подтвердите действие', message = '', okText = 'Продолжить', cancelText = 'Отмена', danger = false } = {}) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'crm-scope crm-dialog-overlay';
+        overlay.innerHTML = `
+            <div class="crm-dialog" role="alertdialog" aria-modal="true">
+                <div class="crm-dialog-body">
+                    <div class="crm-dialog-title"></div>
+                    <div class="crm-dialog-msg"></div>
+                </div>
+                <div class="crm-dialog-foot">
+                    <button type="button" class="crm-btn" data-answer="0"></button>
+                    <button type="button" class="crm-btn ${danger ? 'crm-btn-danger-solid' : 'crm-btn-primary'}" data-answer="1"></button>
+                </div>
+            </div>`;
+        overlay.querySelector('.crm-dialog-title').textContent = title;
+        overlay.querySelector('.crm-dialog-msg').textContent = message;
+        const cancelBtn = overlay.querySelector('[data-answer="0"]');
+        const okBtn = overlay.querySelector('[data-answer="1"]');
+        cancelBtn.textContent = cancelText;
+        okBtn.textContent = okText;
+
+        const finish = (answer) => {
+            document.removeEventListener('keydown', onKey, true);
+            overlay.remove();
+            resolve(answer);
+        };
+        const onKey = (e) => {
+            if (e.key === 'Escape') { e.stopPropagation(); finish(false); }
         };
 
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURL, requestOptions }, function (loginresponse) {
-            if (!loginresponse || !loginresponse.success) {
-                alert('Не удалось получить логиннер: ' + (loginresponse ? loginresponse.error : 'нет ответа'));
-                reject(new Error(loginresponse ? loginresponse.error : 'no response'));
-                return;
-            }
+        cancelBtn.onclick = () => finish(false);
+        okBtn.onclick = () => finish(true);
+        overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) finish(false); });
+        document.addEventListener('keydown', onKey, true);
 
-            const link = extractLoginLink(loginresponse.fetchansver);
-            if (!link) {
-                console.log('Ссылка логинера не найдена в ответе');
-                reject(new Error('Ссылка логинера не найдена'));
-                return;
-            }
-
-            navigator.clipboard.writeText(link).then(() => {
-                console.log('Логинер создан для пользователя: ' + polzovatel);
-                resolve(true);
-            }).catch(err => {
-                console.error('Не удалось скопировать текст: ', err);
-                reject(err);
-            });
-        });
+        document.body.appendChild(overlay);
+        (danger ? cancelBtn : okBtn).focus();
     });
 }
 
-/** Резервное копирование в буфер обмена (устаревший execCommand). */
-const copyToClipboard = str => {
-    const el = document.createElement('textarea');
-    el.value = str;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-};
+/* ============================================================
+ *  ОКНА
+ * ============================================================ */
+
+let crmTopZ = 9950;
+
+/** Поднимает окно поверх остальных окон расширения. */
+function crmBringToFront(win) {
+    crmTopZ += 1;
+    win.style.zIndex = String(crmTopZ);
+}
+
+/** Возвращает окно в видимую область экрана (хотя бы шапка должна быть видна). */
+function crmClampWindow(win) {
+    if (!win || win.style.display === 'none') return;
+    const rect = win.getBoundingClientRect();
+    const minLeft = Math.min(8, 140 - rect.width);
+    const maxLeft = Math.max(minLeft, window.innerWidth - 140);
+    const maxTop = Math.max(8, window.innerHeight - 48);
+    const left = Math.min(maxLeft, Math.max(minLeft, rect.left));
+    const top = Math.min(maxTop, Math.max(8, rect.top));
+    if (left !== rect.left) win.style.left = `${Math.round(left)}px`;
+    if (top !== rect.top) win.style.top = `${Math.round(top)}px`;
+}
+
+/**
+ * Проверка цели mousedown/dblclick: true — клик по «свободному» месту,
+ * false — по интерактивному элементу (кнопке, полю, ссылке и т. п.).
+ */
+function checkelementtype(event) {
+    const target = event && event.target instanceof Element ? event.target : null;
+    if (!target) return true;
+    return !target.closest('button, input, textarea, select, option, label, a, [contenteditable="true"], [contenteditable=""], .crm-no-drag');
+}
+
+/**
+ * Создаёт плавающее окно расширения.
+ * Перетаскивается за шапку (.crm-head), позиция запоминается в localStorage.
+ */
+function createWindowCRM(id, topKey, leftKey, content, opts = {}) {
+    const win = document.createElement('div');
+    win.id = id;
+    win.className = 'showedwindows crm-scope' + (opts.className ? ` ${opts.className}` : '');
+
+    const storedTop = parseInt(localStorage.getItem(topKey), 10);
+    const storedLeft = parseInt(localStorage.getItem(leftKey), 10);
+    win.style.top = `${Number.isFinite(storedTop) ? storedTop : 120}px`;
+    win.style.left = `${Number.isFinite(storedLeft) ? storedLeft : 295}px`;
+    win.style.display = 'none';
+    win.innerHTML = content;
+    document.body.append(win);
+
+    win.addEventListener('mousedown', () => crmBringToFront(win), true);
+
+    win.addEventListener('mousedown', (event) => {
+        if (event.button !== 0) return;
+        const handle = win.querySelector('.crm-head');
+        if (handle && !handle.contains(event.target)) return; // тянем только за шапку
+        if (!checkelementtype(event)) return;
+
+        event.preventDefault();
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const elemLeft = win.offsetLeft;
+        const elemTop = win.offsetTop;
+
+        const onMove = (e) => {
+            if (!(e.buttons & 1)) { onUp(); return; }
+            win.style.left = `${elemLeft + e.clientX - startX}px`;
+            win.style.top = `${elemTop + e.clientY - startY}px`;
+        };
+        const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            crmClampWindow(win);
+            localStorage.setItem(topKey, String(win.offsetTop));
+            localStorage.setItem(leftKey, String(win.offsetLeft));
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    });
+
+    return win;
+}
+
+/** Показать окно. */
+function crmShowWindow(win) {
+    if (!win) return;
+    win.style.display = '';
+    crmBringToFront(win);
+    requestAnimationFrame(() => crmClampWindow(win));
+    win.dispatchEvent(new CustomEvent('crm:shown'));
+}
+
+/** Скрыть окно (модули могут слушать событие crm:hidden). */
+function crmHideWindow(win) {
+    if (!win || win.style.display === 'none') return;
+    win.style.display = 'none';
+    win.dispatchEvent(new CustomEvent('crm:hidden'));
+}
+
+/** Переключить окно; возвращает true, если окно открылось. */
+function crmToggleWindow(idOrEl) {
+    const win = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
+    crmCloseMenu();
+    if (!win) return false;
+    if (win.style.display === 'none') {
+        crmShowWindow(win);
+        return true;
+    }
+    crmHideWindow(win);
+    return false;
+}
+
+/** Изменить display элемента (старое API). */
+function setDisplayStyle(element, value) {
+    if (value === 'none') crmHideWindow(element);
+    else element.style.display = value;
+}
+
+/** Скрыть окно двойным кликом по шапке. */
+function hideWindowOnDoubleClick(id) {
+    const win = document.getElementById(id);
+    if (!win) return;
+    win.addEventListener('dblclick', (event) => {
+        const head = win.querySelector('.crm-head');
+        if (head && !head.contains(event.target)) return;
+        if (!checkelementtype(event)) return;
+        crmHideWindow(win);
+    });
+}
+
+/** Скрыть окно кликом по кнопке. */
+function hideWindowOnClick(windowId, buttonId) {
+    const win = document.getElementById(windowId);
+    const button = document.getElementById(buttonId);
+    if (win && button) button.onclick = () => crmHideWindow(win);
+}
+
+/**
+ * Разметка шапки окна: иконка и заголовок слева, инструменты и «Скрыть» справа.
+ * Все аргументы — доверенные строки из кода модулей.
+ */
+function crmWinHeader({ icon = '', title = '', tools = '', closeId = '', closeTitle = 'Скрыть' }) {
+    return `
+        <div class="crm-head">
+            <span class="crm-title">${icon ? `<span class="crm-title-ico">${icon}</span>` : ''}<span>${title}</span></span>
+            <span class="crm-head-tools">
+                ${tools}
+                <button type="button" class="crm-icon-btn is-close" id="${closeId}" title="${closeTitle}" aria-label="${closeTitle}">${crmIcon('close')}</button>
+            </span>
+        </div>`;
+}
+
+/** Иконка-кнопка для шапки. */
+function crmToolButton(id, icon, title) {
+    return `<button type="button" class="crm-icon-btn" id="${id}" title="${title}" aria-label="${title}">${icon}</button>`;
+}
+
+window.addEventListener('resize', () => {
+    document.querySelectorAll('.showedwindows').forEach(crmClampWindow);
+});
+
+/* ============================================================
+ *  ЛОГИНЕР ДЛЯ ТЕСТОВЫХ У/П
+ * ============================================================ */
 
 /** Достаёт из HTML-ответа последнюю ссылку логинера. */
 function extractLoginLink(text) {
-    const regex = /https:\/\/id\.skyeng\.ru\/auth\/login-link\/\S+/g;
-    const matches = text.match(regex);
+    const matches = String(text || '').match(/https:\/\/id\.skyeng\.ru\/auth\/login-link\/[^\s"'<>]+/g);
+    return matches && matches.length ? matches[matches.length - 1] : null;
+}
 
-    if (matches && matches.length) {
-        // Берём последний URL и отрезаем кавычки в конце, если есть.
-        return matches[matches.length - 1].replace(/["']+$/, '');
-    }
-    return null;
+/** Создаёт ссылку входа для тестового пользователя и копирует её в буфер. */
+async function logginerfortestsCRM(userId) {
+    if (!userId) throw new Error('ID тестового пользователя не задан в настройках');
+
+    const body = new URLSearchParams({
+        'login_link_form[identity]': '',
+        'login_link_form[id]': String(userId),
+        'login_link_form[target]': 'https://vimbox.skyeng.ru/',
+        'login_link_form[lifetime]': '3600',
+        'login_link_form[create]': ''
+    }).toString();
+
+    const html = await crmRequest('https://id.skyeng.ru/admin/auth/login-links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+        credentials: 'include'
+    });
+
+    const link = extractLoginLink(html);
+    if (!link) throw new Error('Ссылка не найдена в ответе — проверьте вход в id.skyeng.ru');
+    if (!(await crmCopy(link))) throw new Error('Не удалось скопировать ссылку');
+    return link;
 }
 
 /* ============================================================
- *  КНОПКА «МЕНЮ» И САМО МЕНЮ
+ *  2. КНОПКА «МЕНЮ» И МЕНЮ МОДУЛЕЙ
  * ============================================================ */
 
-let menubarcrm = document.createElement('div');
+// [id, иконка, подпись, подсказка]. id используются модулями — не переименовывать.
+const CRM_MENU_ITEMS = [
+    ['templatesCRM', '📑', 'Шаблоны ответов', 'Поиск, правка и вставка шаблона в поле ответа'],
+    ['jirafinder', '🔎', 'Поиск в Jira', 'Баги и задачи, избранное, Support Tab'],
+    ['mattermostfinder', '💬', 'Поиск в Mattermost', 'Поиск сообщений по каналам'],
+    ['smartroomformCRM', '🦐', 'Smartroom: пожелания', 'Отправить пожелание или негатив в документ Smartroom'],
+    ['butLessonInfoCRM', '🎓', 'Статусы уроков', 'Уроки преподавателя за период'],
+    ['butAutoschedule', '🗓️', 'Автоподбор', 'Доступность автоподбора по услугам ученика'],
+    ['butdiagtoolsCRM', '🧰', 'Ссылки и инструменты', 'Быстрые ссылки и переходы по ID'],
+    ['btnOperStatus', '🎧', 'Статусы операторов', 'Кто свободен, на линии, в DND'],
+    ['btnCreateTestRoom', '🎲', 'Тестовый урок', 'Создать тестовую комнату'],
+    ['btnAlarmclock', '🔕', 'Напоминания', 'Два напоминания на время'],
+    ['btnSettingsApp', '⚙️', 'Настройки', 'Звук, автовзятие, тестовые аккаунты, резервная копия']
+];
+
+const menubarcrm = document.createElement('div');
 menubarcrm.id = 'idmymenucrm';
-menubarcrm.style = `background: white; position:absolute; left: 950px; top: 50px; border: 0px solid #000000; display:none; min-height: 60px; min-width:170px; box-shadow: -1px 4px 16px 7px rgba(34, 60, 80, 0.09); z-index:999;`;
-menubarcrm.innerHTML = win_Menu;
-document.body.append(menubarcrm)
+menubarcrm.className = 'crm-scope';
+menubarcrm.setAttribute('role', 'menu');
+menubarcrm.style.display = 'none';
+menubarcrm.innerHTML =
+    CRM_MENU_ITEMS.map(([id, icon, label, hint]) =>
+        `<button type="button" class="menubtnsCRM" id="${id}" role="menuitem" title="${crmEsc(hint)}">` +
+        `<span class="crm-menu-ico">${icon}</span><span class="crm-menu-text">${crmEsc(label)}</span></button>`
+    ).join('') +
+    `<div class="crm-menu-sep"></div>
+     <div class="crm-menu-foot">
+        <span class="crm-label" title="Ссылка входа для тестового пользователя копируется в буфер">Логинер</span>
+        <button type="button" class="crm-btn crm-btn-sm" id="testuchenik" title="Скопировать ссылку входа тестового ученика">Тест У</button>
+        <button type="button" class="crm-btn crm-btn-sm" id="testprepod" title="Скопировать ссылку входа тестового преподавателя">Тест П</button>
+     </div>`;
+document.body.append(menubarcrm);
 
-// Клик мимо меню (по странице CRM) — закрываем меню.
-if (document.querySelector('crm-container') != null) {
-    document.querySelector('crm-container').addEventListener('click', function (event) {
-        const e = document.getElementById('idmymenucrm');
-        if (e && !e.contains(event.target)) e.style.display = 'none';
-    });
+const upmenubtn = document.createElement('button');
+upmenubtn.type = 'button';
+upmenubtn.id = 'MenubarCRM';
+upmenubtn.innerHTML = `${crmIcon('grid', 15)}<span>Меню</span>`;
+upmenubtn.title = 'Модули CRMHelper';
+
+/** Иконка пункта меню (например, индикатор напоминаний). */
+function crmSetMenuIcon(itemId, icon) {
+    const el = document.querySelector(`#${itemId} .crm-menu-ico`);
+    if (el) el.textContent = icon;
 }
 
-/**
- * Инициализация: вставляем кнопку «Меню» в тулбар CRM, как только он появится.
- * Страница — SPA, тулбар рисуется асинхронно, поэтому поллим каждые 3 сек.
- */
+function crmCloseMenu() {
+    menubarcrm.style.display = 'none';
+    upmenubtn.classList.remove('is-open');
+}
+
+function crmOpenMenu() {
+    menubarcrm.style.display = '';
+    upmenubtn.classList.add('is-open');
+    const btnRect = upmenubtn.getBoundingClientRect();
+    const width = menubarcrm.offsetWidth;
+    const left = Math.min(Math.max(8, btnRect.left), window.innerWidth - width - 8);
+    menubarcrm.style.left = `${Math.round(left)}px`;
+    menubarcrm.style.top = `${Math.round(btnRect.bottom + 6)}px`;
+}
+
+upmenubtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (menubarcrm.style.display === 'none') crmOpenMenu();
+    else crmCloseMenu();
+});
+
+// Клик мимо меню или Esc — закрываем.
+document.addEventListener('mousedown', (e) => {
+    if (menubarcrm.style.display === 'none') return;
+    if (menubarcrm.contains(e.target) || upmenubtn.contains(e.target)) return;
+    crmCloseMenu();
+}, true);
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menubarcrm.style.display !== 'none') crmCloseMenu();
+});
+
+/** Вставляет кнопку «Меню» в тулбар CRM, как только он появится (SPA). */
 function initialize() {
-    try {
-        if (location.origin !== 'https://crm2.skyeng.ru') return;
-
-        const toolbarRow = document.getElementsByClassName('mat-toolbar-row')[0];
-        if (toolbarRow != undefined && document.getElementById('MenubarCRM') == null) {
-            toolbarRow.children[1].children[0].append(upmenubtn);
-
-            document.getElementById('MenubarCRM').onclick = function () {
-                const menuEl = document.getElementById('idmymenucrm');
-                if (menuEl.style.display == 'none') {
-                    // Показываем меню и позиционируем его под кнопкой.
-                    menuEl.style.display = '';
-                    const xvarmenu = parseInt(document.getElementById('MenubarCRM').getBoundingClientRect().x - 21, 10);
-                    menubarcrm.style.left = xvarmenu + 'px';
-
-                    // Растягиваем вертикальные ярлыки тестовых У/П на высоту меню.
-                    const hghtelem = menuEl.offsetHeight - 12;
-                    document.getElementById("testuchenik").style.height = hghtelem + "px";
-                    document.getElementById("testprepod").style.height = hghtelem + "px";
-                } else {
-                    menuEl.style.display = 'none';
-                }
-            };
-
-        }
-    }
-    catch (e) { console.error(e, e.stack); }
+    if (!CRM_IS_CRM || document.getElementById('MenubarCRM')) return;
+    const toolbarRow = document.querySelector('.mat-toolbar-row');
+    if (!toolbarRow) return;
+    const slot = (toolbarRow.children[1] && toolbarRow.children[1].children[0]) || toolbarRow;
+    slot.append(upmenubtn);
 }
 
-// MutationObserver вместо setInterval — реагирует на появление тулбара мгновенно
-if (location.origin === 'https://crm2.skyeng.ru') {
-    initialize(); // первичная попытка
-    const mo = new MutationObserver(() => {
-        if (document.getElementsByClassName('mat-toolbar-row').length > 0 && document.getElementById('MenubarCRM') == null) {
-            initialize();
-        }
-    });
-    mo.observe(document.body || document.documentElement, { childList: true, subtree: true });
-} else {
-    let init = setInterval(initialize, 3000);
+if (CRM_IS_CRM) {
+    initialize();
+    let menuInitQueued = false;
+    new MutationObserver(() => {
+        if (menuInitQueued) return;
+        menuInitQueued = true;
+        requestAnimationFrame(() => {
+            menuInitQueued = false;
+            if (!document.getElementById('MenubarCRM')) initialize();
+        });
+    }).observe(document.body, { childList: true, subtree: true });
 }
 
-/**
- * Единый обработчик для кнопок «Тест У» / «Тест П»:
- * создаёт логинер и подсвечивает кнопку результатом.
- */
-function setupTestLoginButton(buttonId, storageKey) {
+/** Кнопки «Тест У» / «Тест П»: создать логинер и показать результат. */
+function setupTestLoginButton(buttonId, storageKey, label) {
     const btn = document.getElementById(buttonId);
-
-    btn.onclick = function () {
-        btn.classList.add('active');
-
-        logginerfortestsCRM(localStorage.getItem(storageKey))
-            .then(() => {
-                btn.classList.remove('active');
-                btn.classList.add('successbtn');
-                setTimeout(() => btn.classList.remove('successbtn'), 1000);
-            })
-            .catch(() => {
-                btn.classList.remove('active');
-                btn.classList.add('errorbtn');
-                setTimeout(() => btn.classList.remove('errorbtn'), 1000);
-            });
+    btn.onclick = async () => {
+        if (btn.disabled) return;
+        crmSetBusy(btn, true);
+        try {
+            await logginerfortestsCRM(localStorage.getItem(storageKey));
+            btn.classList.add('successbtn');
+            crmToast(`Ссылка входа (${label}) скопирована`, 'success', { duration: 2500 });
+        } catch (e) {
+            btn.classList.add('errorbtn');
+            crmToast(e.message, 'error', { title: `Логинер: ${label}` });
+        } finally {
+            crmSetBusy(btn, false);
+            setTimeout(() => btn.classList.remove('successbtn', 'errorbtn'), 1500);
+        }
     };
 }
 
-setupTestLoginButton('testuchenik', 'test_studCRM');
-setupTestLoginButton('testprepod', 'test_teachCRM');
+setupTestLoginButton('testuchenik', 'test_studCRM', 'тестовый ученик');
+setupTestLoginButton('testprepod', 'test_teachCRM', 'тестовый преподаватель');
 
 /* ============================================================
- *  КНОПКА «MATTERMOST SEARCH» В МЕНЮ
- *  Обработчик здесь (в content.js), потому что content_scripts
- *  загружаются раньше модулей и гарантируют привязку onclick.
- * ============================================================ */
-document.getElementById('mattermostfinder').onclick = function () {
-    var win = document.getElementById('AF_Mattermost');
-    // Если окна нет — создаём его (стили + HTML)
-    if (!win) {
-        var css = document.createElement('style');
-        css.id = 'mms-styles';
-        css.textContent = '.mms-panel{background:linear-gradient(165deg,rgba(24,26,36,.96) 0%,rgba(11,12,18,.98) 100%)!important;backdrop-filter:blur(24px) saturate(140%);border:1px solid rgba(255,255,255,.09)!important;border-top:2px solid rgba(184,134,11,.55)!important;border-radius:18px!important;color:#e8ecf4;font-family:Inter,Segoe UI,system-ui,sans-serif;box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 40px rgba(184,134,11,.06)!important;padding:16px!important;overflow:hidden}.mms-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;cursor:grab}.mms-titleblock{display:flex;align-items:center;gap:10px}.mms-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;background:linear-gradient(135deg,rgba(184,134,11,.25),rgba(160,126,53,.12));border:1px solid rgba(184,134,11,.35);box-shadow:0 4px 14px rgba(184,134,11,.2),inset 0 1px 0 rgba(255,255,255,.15)}.mms-title{font-size:13px;font-weight:700;color:#fff;letter-spacing:.3px}.mms-subtitle{font-size:9px;text-transform:uppercase;letter-spacing:1.4px;color:rgba(255,255,255,.45)}.mms-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#e8e0d0;padding:7px 12px;border-radius:10px;cursor:pointer;transition:all .22s cubic-bezier(.4,0,.2,1);font-size:12px;line-height:1}.mms-btn:hover{background:rgba(255,255,255,.13);border-color:rgba(184,134,11,.4);transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.35)}.mms-btn:active{transform:translateY(0) scale(.97)}.mms-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}.mms-btn-danger{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#fca5a5}.mms-btn-primary{background:linear-gradient(135deg,rgba(184,134,11,.85),rgba(160,126,53,.75));border:none;color:#fff;font-weight:700;box-shadow:0 6px 20px rgba(184,134,11,.3),inset 0 1px 0 rgba(255,255,255,.2)}.mms-btn-primary:hover{filter:brightness(1.12)}.mms-search-row{display:flex;gap:8px;align-items:center}.mms-input{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.09);border-radius:10px;color:#fff;padding:9px 12px;outline:none;font-size:13px;font-family:inherit;transition:all .22s cubic-bezier(.4,0,.2,1);box-sizing:border-box}.mms-input::placeholder{color:rgba(255,255,255,.35)}.mms-input:focus{border-color:rgba(184,134,11,.6);background:rgba(0,0,0,.5);box-shadow:0 0 0 3px rgba(184,134,11,.12)}select.mms-input option{background:#14121d;color:#e8ecf4}.mms-status{font-size:12px;color:rgba(255,255,255,.55);white-space:nowrap}.mms-results{margin-top:12px;max-height:580px;overflow-y:auto;padding-right:6px}.mms-results::-webkit-scrollbar{width:5px}.mms-results::-webkit-scrollbar-track{background:transparent}.mms-results::-webkit-scrollbar-thumb{background:rgba(184,134,11,.25);border-radius:10px}.mms-empty{text-align:center;padding:26px 16px;opacity:.45;font-size:12px;letter-spacing:.3px}.mms-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-left:3px solid rgba(184,134,11,.7);padding:12px 14px;margin-bottom:9px;border-radius:11px;transition:all .22s cubic-bezier(.4,0,.2,1)}.mms-item:hover{background:rgba(255,255,255,.08);border-color:rgba(184,134,11,.35);transform:translateX(3px)}.mms-item-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}.mms-channel{display:inline-flex;align-items:center;gap:4px;background:rgba(184,134,11,.15);border:1px solid rgba(184,134,11,.3);color:#d4a843;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}.mms-author{font-size:13px;font-weight:600;color:#e8d5a0}.mms-time{font-size:10px;opacity:.5;font-family:SF Mono,monospace}.mms-msg{font-size:14.5px;line-height:1.55;color:#e8ecf4;word-break:break-word;white-space:pre-wrap}.mms-att{margin-top:8px;padding:9px 11px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.07);border-left:3px solid rgba(184,134,11,.65);border-radius:9px}.mms-att-title{font-weight:700;color:#e8d5a0;font-size:14px;margin-bottom:3px;word-break:break-word}.mms-att-text{font-size:13.5px;line-height:1.5;color:#e0d8c8;white-space:pre-wrap;word-break:break-word;margin-top:3px}.mms-att-fields{display:flex;flex-wrap:wrap;gap:7px 16px;margin-top:7px}.mms-att-field{font-size:11.5px;min-width:150px;flex:1 1 100%}.mms-att-field-short{flex:1 1 40%;min-width:130px}.mms-att-f-title{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.45);margin-bottom:2px}.mms-att-f-value{color:#f0ece4;word-break:break-word;white-space:pre-wrap}.mms-actions{display:flex;gap:6px;margin-top:7px}.mms-act-btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);color:#c4b896;padding:4px 9px;border-radius:7px;cursor:pointer;font-size:11px;transition:all .18s ease}.mms-act-btn:hover{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(184,134,11,.45)}.mms-hit{background:rgba(250,204,21,.35);color:#fde68a;border-radius:3px;padding:0 1px}.mms-loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:26px 16px;opacity:.7;font-size:13px}.mms-spinner{width:18px;height:18px;border-radius:50%;border:2px solid rgba(184,134,11,.2);border-top-color:#c9a84c;animation:mms-spin .9s linear infinite}@keyframes mms-spin{100%{transform:rotate(360deg)}}.mms-group{margin-bottom:10px}.mms-group-head{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;user-select:none;background:rgba(184,134,11,.08);border:1px solid rgba(184,134,11,.15);border-radius:10px;margin-bottom:6px;transition:background .2s;font-size:13px}.mms-group-head:hover{background:rgba(184,134,11,.15)}.mms-group-arrow{font-size:10px;transition:transform .2s;opacity:.6}.mms-group.mms-collapsed .mms-group-arrow{transform:rotate(-90deg)}.mms-group.mms-collapsed .mms-group-body{display:none}.mms-group-cnt{margin-left:auto;font-size:10px;font-weight:700;background:rgba(184,134,11,.25);color:#e8d5a0;padding:1px 7px;border-radius:10px}.mms-channel-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;padding:8px 10px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.06);border-radius:10px}.mms-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;cursor:pointer;font-size:11px;font-weight:600;background:rgba(184,134,11,.18);border:1px solid rgba(184,134,11,.35);color:#e8d5a0;transition:all .18s;user-select:none}.mms-chip:hover{background:rgba(184,134,11,.3)}.mms-chip-off{opacity:.4;background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:#a09880}.mms-chip-name{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mms-chip-cnt{font-size:10px;opacity:.7}.mms-chip-reset{background:none;border:none;color:#d4a843;cursor:pointer;font-size:11px;text-decoration:underline;padding:2px 6px}.mms-files{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.mms-file-img{position:relative;display:inline-block;max-width:180px;border-radius:9px;overflow:hidden;border:1px solid rgba(255,255,255,.1);transition:transform .2s;text-decoration:none}.mms-file-img:hover{transform:scale(1.02);border-color:rgba(184,134,11,.5)}.mms-file-img img{display:block;max-width:100%;max-height:140px;object-fit:cover}.mms-file-name{display:block;font-size:10px;color:#c4b896;padding:3px 6px;background:rgba(0,0,0,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mms-file-broken img{display:none}.mms-file-broken::before{content:"🖼 ";font-size:18px;display:block;padding:8px}.mms-file-link{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:9px;font-size:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#e8d5a0;text-decoration:none;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mms-file-link:hover{background:rgba(184,134,11,.15);border-color:rgba(184,134,11,.4)}.mms-thread-bar{display:flex;align-items:center;gap:12px;margin-bottom:12px}.mms-thread-info{font-size:12px;color:#d4a843;font-weight:600}.mms-item-root{border-left-color:#fbbf24;background:rgba(251,191,36,.06)}.mms-root-badge{font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(251,191,36,.2);color:#fcd34d;padding:2px 7px;border-radius:6px;border:1px solid rgba(251,191,36,.35)}';
-        document.head.appendChild(css);
-        win = createWindowCRM('AF_Mattermost', 'winTopMMS', 'winLeftMMS', '<div class="mms-panel" style="width:740px;"><div class="mms-header"><div class="mms-titleblock"><span class="mms-icon">🔍</span><div><div class="mms-title">Mattermost Search</div><div class="mms-subtitle">поиск по каналам Skyeng</div></div></div><div style="display:flex;gap:8px;"><button class="mms-btn" id="mms-clear" title="Очистить">🧹</button><button class="mms-btn mms-btn-danger" id="mms-hide" title="Скрыть">✕</button></div></div><div class="mms-search-row"><select class="mms-input" id="mms-team" style="width:180px;text-align:center;"><option value="">Загрузка команд...</option></select><input class="mms-input" id="mms-query" placeholder="Что ищем? (Enter)" autocomplete="off" style="flex:1;"><button class="mms-btn mms-btn-primary" id="mms-search">🚀 Найти</button></div><div class="mms-search-row" style="margin-top:8px;"><span class="mms-status" id="mms-status"></span></div><div class="mms-channel-bar" id="mms-channel-bar" style="display:none;"></div><div id="mms-results" class="mms-results"><div class="mms-empty">Введите запрос и нажмите «Найти».</div></div></div>');
-        hideWindowOnDoubleClick('AF_Mattermost');
-        hideWindowOnClick('AF_Mattermost', 'mms-hide');
-    }
-    // Закрываем выпадающее меню
-    document.getElementById('idmymenucrm').style.display = 'none';
-    // Делегируем полный функционал IIFE (треды, файлы, группы, чипсы)
-    if (typeof window.mmsToggle === 'function') {
-        window.mmsToggle();
-    } else if (win.style.display == 'none') {
-        // IIFE ещё не загрузился — просто показываем окно
-        win.style.display = '';
-    } else {
-        win.style.display = 'none';
-    }
-};
-
-/* ============================================================
- *  ПРЕДПРОСМОРТ СКРИНШОТОВ В АКТИВНОМ ЧАТЕ
+ *  3. ПРЕВЬЮ СКРИНШОТОВ В КАРТОЧКЕ ЗАДАЧИ
  * ============================================================ */
 
-// Домены-источники картинок, ссылки на которые превращаем в превью.
 const SCREENSHOT_HOSTS = new Set([
     'vimbox-resource-chat-prod.imgix.net',
     'vimbox-resource-storage-prod-ru-1.storage.yandexcloud.net',
@@ -388,699 +657,361 @@ const SCREENSHOT_HOSTS = new Set([
     'skr.sh'
 ]);
 
-function screenshotsCRM() { // просмотр и трансформация скриншотов в активном чате
-    const rows = document.getElementsByTagName('crm-row');
-    for (let i = 0; i < rows.length; i++) {
-        // Ищем строку «Комментарий» в карточке задачи.
-        if (rows[i].children.length !== 0 && rows[i].children[0].innerText === 'Комментарий') {
-            const divimg = rows[i];
+/** Строка «Комментарий» в карточке задачи (crm-row). */
+function crmFindCommentRow() {
+    for (const row of document.getElementsByTagName('crm-row')) {
+        if (row.children.length && row.children[0].innerText.trim() === 'Комментарий') return row;
+    }
+    return null;
+}
 
-            for (const a of divimg.querySelectorAll('a')) {
-                // ФИКС: раньше проверка «уже обработано» применялась только к skr.sh
-                // (приоритет && выше ||), из-за чего остальные картинки
-                // пересоздавались заново каждые 5 секунд. Теперь guard общий для всех хостов.
-                if (SCREENSHOT_HOSTS.has(a.host) && !a.classList.contains('crm-screenshot-link')) {
-                    const img = document.createElement('img');
-                    img.style.width = '100px';
-                    img.src = a.href;
-                    img.alt = 'Изображение';
+function screenshotsCRM() {
+    const row = crmFindCommentRow();
+    if (!row) return;
+    for (const a of row.querySelectorAll('a:not(.crm-screenshot-link)')) {
+        if (!SCREENSHOT_HOSTS.has(a.host)) continue;
+        const img = document.createElement('img');
+        img.src = a.href;
+        img.alt = 'Скриншот';
+        img.loading = 'lazy';
 
-                    const alink = document.createElement('a');
-                    // Класс-метка: (1) «ссылка уже обработана», (2) триггер для
-                    // собственного просмотрщика ImageViewer.js (замена Lightbox).
-                    alink.classList.add('crm-screenshot-link');
-                    alink.href = img.src;
-                    alink.append(img);
-
-                    a.replaceWith(alink);
-                }
-            }
-        }
+        const link = document.createElement('a');
+        link.className = 'crm-screenshot-link';  // триггер для ImageViewer.js
+        link.href = a.href;
+        link.append(img);
+        a.replaceWith(link);
     }
 }
 
-screenshotsCRM();
-// MutationObserver с debounce вместо частого синхронного обхода тяжелого DOM дерева CRM
-let screenshotsDebounce = null;
-const screenshotsMO = new MutationObserver(() => {
-    if (screenshotsDebounce) clearTimeout(screenshotsDebounce);
-    screenshotsDebounce = setTimeout(screenshotsCRM, 200);
-});
-screenshotsMO.observe(document.body || document.documentElement, { childList: true, subtree: true });
+if (CRM_IS_CRM) {
+    screenshotsCRM();
+    let screenshotsDebounce = null;
+    new MutationObserver(() => {
+        clearTimeout(screenshotsDebounce);
+        screenshotsDebounce = setTimeout(screenshotsCRM, 250);
+    }).observe(document.body, { childList: true, subtree: true });
+}
 
 /* ============================================================
  *  ЗВУК НОВОЙ ЗАДАЧИ
+ *  Плеер общий: настройки (SettingsApp.js) меняют источник и громкость.
  * ============================================================ */
 
-let takeTaskBtn;
+const CRM_DEFAULT_SOUND = 'https://dimentorexpo.github.io/Sounds/msg.mp3';
+var soundsconteinerCRM;            // список звуков (заполняет SettingsApp.js)
+let soundintervalsetCRM = null;    // true — разовый звук проигран; число — id интервала повтора
+let audioCRM = new Audio(localStorage.getItem('sound_strCRM') || CRM_DEFAULT_SOUND);
+audioCRM.volume = Math.min(1, Math.max(0, parseFloat(localStorage.getItem('audioCRMvol') ?? '1') || 0));
 
-/** Полностью останавливает воспроизведение звука (и разовый интервал). */
+/** Меняет источник звука, сохраняя громкость. */
+function crmSetSound(url) {
+    const volume = audioCRM.volume;
+    audioCRM.pause();
+    audioCRM = new Audio(url || CRM_DEFAULT_SOUND);
+    audioCRM.volume = volume;
+}
+
+/** Проиграть звук; блокировку автоплея браузером просто пишем в консоль. */
+function crmPlaySound() {
+    try {
+        audioCRM.currentTime = 0;
+        const p = audioCRM.play();
+        if (p && p.catch) p.catch((e) => console.log('[CRMHelper] звук не воспроизведён:', e.name));
+    } catch (e) {
+        console.log('[CRMHelper] звук не воспроизведён:', e);
+    }
+}
+
+/** Полностью останавливает повтор звука. */
 function stopSoundInterval() {
-    clearInterval(soundintervalsetCRM);
+    if (typeof soundintervalsetCRM === 'number') clearInterval(soundintervalsetCRM);
     soundintervalsetCRM = null;
 }
 
 function checkforsoundplay() {
-    takeTaskBtn = document.getElementsByClassName('mdc-button');
-    const onStartPage = window.location.href.indexOf('https://crm2.skyeng.ru/customer-support/start') !== -1;
-    const soundEnabled = localStorage.getItem('audioCRM') == 1;
+    const onStartPage = location.href.includes('https://crm2.skyeng.ru/customer-support/start');
+    const soundEnabled = localStorage.getItem('audioCRM') !== '0';
+    if (!soundEnabled || !onStartPage) { stopSoundInterval(); return; }
 
-    if (soundEnabled && onStartPage && takeTaskBtn.length > 0) {
-        // Ищем именно кнопку взятия задачи среди всех .mdc-button.
-        const btn = Array.from(takeTaskBtn).find(b => b.innerText.trim() === 'Взять новую задачу');
-        const btnActive = btn && !btn.classList.contains('mat-mdc-button-disabled') &&
-            document.getElementsByClassName('mat-mdc-button-disabled').length == 0;
+    const btn = Array.from(document.getElementsByClassName('mdc-button'))
+        .find((b) => b.innerText.trim() === 'Взять новую задачу');
+    const btnActive = btn && !btn.classList.contains('mat-mdc-button-disabled') &&
+        document.getElementsByClassName('mat-mdc-button-disabled').length === 0;
 
-        if (btnActive) {
-            if (localStorage.getItem('repeatsound') == 0) {
-                // Разовый режим: проигрываем звук один раз при появлении задачи.
-                if (!soundintervalsetCRM) {
-                    audioCRM.play();
-                    soundintervalsetCRM = true;
-                }
-            } else {
-                // Режим повтора: играем звук каждые N секунд, пока задачу не возьмут.
-                if (!soundintervalsetCRM) {
-                    audioCRM.oncanplaythrough = (event) => {
-                        const playedPromise = audioCRM.play();
-                        if (playedPromise) {
-                            playedPromise.catch((e) => {
-                                // Автоплей может быть заблокирован браузером до первого взаимодействия.
-                                console.log(e);
-                                if (e.name === 'NotAllowedError' || e.name === 'NotSupportedError') {
-                                    console.log(e.name);
-                                }
-                            }).then(() => {
-                                console.log("playing sound repeatedly !!!");
-                            });
-                        }
-                    };
-                    soundintervalsetCRM = setInterval(() => { audioCRM.play(); }, localStorage.getItem('splinterCRM') * 1000);
-                }
-            }
-        } else {
-            stopSoundInterval(); // ФИКС: прежнее условие (a != null || a != true) было всегда истинным
-        }
+    if (!btnActive) { stopSoundInterval(); return; }
+    if (soundintervalsetCRM) return; // уже играет / уже проиграно
+
+    crmPlaySound();
+    if (localStorage.getItem('repeatsound') === '1') {
+        const seconds = Math.min(59, Math.max(1, parseInt(localStorage.getItem('splinterCRM'), 10) || 3));
+        soundintervalsetCRM = setInterval(crmPlaySound, seconds * 1000);
     } else {
-        stopSoundInterval(); // выключены звук/страница или задач нет
+        soundintervalsetCRM = true;
     }
 }
 
-setInterval(checkforsoundplay, 1000);
+if (CRM_IS_CRM) setInterval(checkforsoundplay, 1000);
 
 /* ============================================================
- *  СОВРЕМЕННАЯ СИСТЕМА УВЕДОМЛЕНИЙ (TOASTS)
- * ============================================================ */
-
-function crmToast(message, type = 'info', opts = {}) {
-    let container = document.getElementById('crm-toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'crm-toast-container';
-        document.body.appendChild(container);
-    }
-
-    const duration = opts.duration || (type === 'error' ? 6000 : 4000);
-    const title = opts.title || (type === 'success' ? 'Успешно' : type === 'error' ? 'Ошибка' : type === 'warning' ? 'Внимание' : 'Инфо');
-
-    const icons = {
-        success: '✓',
-        error: '✕',
-        warning: '⚠',
-        info: 'ℹ'
-    };
-
-    const toast = document.createElement('div');
-    toast.className = `crm-toast ${type}`;
-
-    const iconEl = document.createElement('div');
-    iconEl.className = 'crm-toast-icon';
-    iconEl.textContent = icons[type] || 'ℹ';
-
-    const contentEl = document.createElement('div');
-    contentEl.className = 'crm-toast-content';
-
-    const titleEl = document.createElement('div');
-    titleEl.className = 'crm-toast-title';
-    titleEl.textContent = title;
-
-    const msgEl = document.createElement('div');
-    msgEl.className = 'crm-toast-msg';
-    msgEl.innerHTML = typeof message === 'string' ? message : String(message);
-
-    contentEl.appendChild(titleEl);
-    contentEl.appendChild(msgEl);
-
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'crm-toast-close';
-    closeBtn.innerHTML = '×';
-    closeBtn.title = 'Закрыть';
-
-    const progressEl = document.createElement('div');
-    progressEl.className = 'crm-toast-progress';
-    progressEl.style.transition = `transform ${duration}ms linear`;
-    progressEl.style.transform = 'scaleX(1)';
-
-    toast.appendChild(iconEl);
-    toast.appendChild(contentEl);
-    toast.appendChild(closeBtn);
-    toast.appendChild(progressEl);
-
-    container.appendChild(toast);
-
-    // Запуск полоски прогресса
-    requestAnimationFrame(() => {
-        progressEl.style.transform = 'scaleX(0)';
-    });
-
-    let isClosed = false;
-    const closeToast = () => {
-        if (isClosed) return;
-        isClosed = true;
-        toast.classList.add('closing');
-        setTimeout(() => {
-            if (toast.parentNode) toast.remove();
-        }, 260);
-    };
-
-    closeBtn.onclick = (e) => {
-        e.stopPropagation();
-        closeToast();
-    };
-
-    toast.onclick = () => {
-        closeToast();
-    };
-
-    let remaining = duration;
-    let startedAt = Date.now();
-    let timer = setTimeout(closeToast, duration);
-
-    // Наведение — «замораживает» таймер, уход курсора — продолжает с остатка.
-    toast.onmouseenter = function () {
-        clearTimeout(timer);
-        remaining -= (Date.now() - startedAt);
-        if (remaining < 500) remaining = 500;
-        progressEl.style.transition = 'none';
-    };
-    toast.onmouseleave = function () {
-        startedAt = Date.now();
-        progressEl.style.transition = `transform ${remaining}ms linear`;
-        progressEl.style.transform = 'scaleX(0)';
-        timer = setTimeout(closeToast, remaining);
-    };
-
-    return toast;
-}
-
-// Экспортируем в window для всех модулей CRM
-window.crmToast = crmToast;
-
-/* Обратная совместимость для createAndShowButton: перенаправляем на crmToast */
-function createAndShowButton(text, type = 'success') {
-    let normalizedType = 'success';
-    if (type === 'error' || /не удалось|ошибка|error|запрет/i.test(text)) {
-        normalizedType = 'error';
-    } else if (type === 'warning' || /внимание|не указан/i.test(text)) {
-        normalizedType = 'warning';
-    } else if (type === 'info') {
-        normalizedType = 'info';
-    }
-    return crmToast(text, normalizedType);
-}
-window.createAndShowButton = createAndShowButton;
-
-/* ============================================================
- *  БЛОК: UserBlocker (статус пользователя) + CallStatus (isForbiddenToCall)
- *  Работает на страницах https://crm2.skyeng.ru/persons/<id>
+ *  4. СТАТУС ПОЛЬЗОВАТЕЛЯ НА /persons/:id
+ *  SPA-роутинг страницы из контент-скрипта не перехватить (у нас свой
+ *  экземпляр history), поэтому отслеживаем адрес таймером.
  * ============================================================ */
 (function () {
     'use strict';
-
-    if (window.__skyUserBlockerInitialized) return;
+    if (!CRM_IS_CRM || window.__skyUserBlockerInitialized) return;
     window.__skyUserBlockerInitialized = true;
 
-    let checkInterval = null;
     let isLoading = false;
     let lastProcessedId = null;
 
-    const getUserIdFromUrl = () => {
-        const match = location.pathname.match(/\/persons\/(\d+)/);
-        return match ? match[1] : null;
-    };
-
-    const isPersonPage = () => Boolean(getUserIdFromUrl());
-
     function parseStatus(html) {
-        const tableMatch = html.match(/<th[^>]*>\s*Статус\s*<\/th>\s*<td>([^<]+)<\/td>/i);
-        const divMatch = html.match(/статус:\s*<strong>([^<]+)<\/strong>/i);
-        const looseMatch = html.match(/статус[:\s]*<strong>([^<]+)<\/strong>/i);
-        const m = tableMatch || divMatch || looseMatch;
+        const m = html.match(/<th[^>]*>\s*Статус\s*<\/th>\s*<td>([^<]+)<\/td>/i) ||
+                  html.match(/статус[:\s]*<strong>([^<]+)<\/strong>/i);
         return m ? m[1].trim() : null;
     }
 
-    function renderBadge(status, sid) {
+    function renderBadge(status, sid, tone) {
         const field = document.querySelector('[data-qa="person-id-field"]');
         if (!field) return;
-
         const container = field.closest('.data-container') || field.parentElement;
-        let badge = document.getElementById('isUserBlocked');
 
+        let badge = document.getElementById('isUserBlocked');
         if (!badge) {
             badge = document.createElement('div');
             badge.id = 'isUserBlocked';
-            badge.style.cssText = 'color:#fff; padding:2px 6px; margin-top:4px; margin-bottom:4px; border-radius:3px; font-weight:700; display:block; width:fit-content; font-size:12px;';
-
+            badge.title = 'Статус учётной записи в id.skyeng.ru';
             const badges = container.querySelector('.badges');
-            if (badges) {
-                container.insertBefore(badge, badges);
-            } else {
-                container.appendChild(badge);
-            }
+            if (badges) container.insertBefore(badge, badges);
+            else container.appendChild(badge);
+
+            // В горизонтальном flex-контейнере бейдж выравниваем по центру строки,
+            // иначе он «съезжает» вниз относительно поля ID.
+            const cs = getComputedStyle(container);
+            const rowFlex = cs.display.includes('flex') && !cs.flexDirection.startsWith('column');
+            badge.classList.toggle('is-inline', rowFlex);
         }
 
         badge.textContent = status || 'неизвестно';
         badge.dataset.pid = sid;
-
-        if (status === 'активный') {
-            badge.style.backgroundColor = '#28a745';
-        } else if (status === 'временно отключен') {
-            badge.style.backgroundColor = '#d32b49';
-        } else if (status === 'Загрузка…') {
-            badge.style.backgroundColor = '#17a2b8';
-        } else {
-            badge.style.backgroundColor = '#6c757d';
-        }
+        badge.dataset.tone = tone ||
+            (status === 'активный' ? 'ok' : status === 'временно отключен' ? 'bad' : 'muted');
     }
 
-    function checkAndFetch() {
-        const sid = getUserIdFromUrl();
+    async function checkAndFetch() {
+        const sid = crmPersonIdFromUrl();
+        const badge = document.getElementById('isUserBlocked');
 
         if (!sid) {
-            const badge = document.getElementById('isUserBlocked');
             if (badge) badge.remove();
             lastProcessedId = null;
             return;
         }
-
-        const field = document.querySelector('[data-qa="person-id-field"]');
-        // Ждем, пока DOM карточки подгрузится
-        if (!field) return;
-
-        // Если ID сменился или бейджа нет — сбрасываем и запрашиваем актуальный статус
-        const badge = document.getElementById('isUserBlocked');
-        if (lastProcessedId === sid && badge && badge.dataset.pid === sid) {
-            return;
-        }
-
+        if (badge && badge.dataset.pid !== sid) badge.remove();
+        if (!document.querySelector('[data-qa="person-id-field"]')) return; // карточка ещё рисуется
+        if (lastProcessedId === sid && document.getElementById('isUserBlocked')) return;
         if (isLoading) return;
 
-        renderBadge('Загрузка…', sid);
         isLoading = true;
-
-        const fetchURL = `https://id.skyeng.ru/admin/users/${encodeURIComponent(sid)}`;
-        const requestOptions = {
-            method: 'GET',
-            headers: {
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-                "accept-language": "ru,en;q=0.9",
-                "cache-control": "max-age=0",
-                "priority": "u=0, i",
-                "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"YaBrowser\";v=\"26.3\", \"Yowser\";v=\"2.5\", \"YaBrowserCorp\";v=\"144\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "\"Windows\"",
-                "sec-fetch-dest": "document",
-                "sec-fetch-mode": "navigate",
-                "sec-fetch-site": "none",
-                "sec-fetch-user": "?1",
-                "sec-gpc": "1",
-                "upgrade-insecure-requests": "1"
-            },
-            credentials: 'include'
-        };
-
-        chrome.runtime.sendMessage(
-            { action: 'getFetchRequest', fetchURL, requestOptions },
-            (response) => {
-                isLoading = false;
-
-                // Если пока шел запрос пользователь переключился на третье лицо — отбрасываем ответ
-                if (getUserIdFromUrl() !== sid) return;
-
-                if (!response || response.success !== true) {
-                    console.error('[UserBlock] Ошибка:', response?.error);
-                    renderBadge('ошибка', sid);
-                    lastProcessedId = sid;
-                    return;
-                }
-
-                const html = response.fetchAnswer || response.fetchansver || '';
-                const status = parseStatus(html);
-
-                if (status) {
-                    renderBadge(status, sid);
-                    console.log(`[UserBlock] ${sid} → ${status}`);
-                } else {
-                    renderBadge('статус не найден', sid);
-                    console.warn('[UserBlock] Статус не спарсился для', sid);
-                }
-
-                lastProcessedId = sid;
-            }
-        );
-    }
-
-    function handleUrlChange() {
-        const currentSid = getUserIdFromUrl();
-        if (currentSid !== lastProcessedId) {
-            const badge = document.getElementById('isUserBlocked');
-            if (badge) {
-                badge.remove(); // удаляем старый бейдж от прошлого юзера сразу
-            }
+        renderBadge('Загрузка…', sid, 'info');
+        try {
+            const html = await crmRequest(`https://id.skyeng.ru/admin/users/${encodeURIComponent(sid)}`, {
+                method: 'GET',
+                headers: { accept: 'text/html,application/xhtml+xml' },
+                credentials: 'include'
+            });
+            if (crmPersonIdFromUrl() !== sid) return; // пока шёл запрос, открыли другого пользователя
+            const status = parseStatus(html);
+            renderBadge(status || 'статус не найден', sid);
+        } catch (e) {
+            if (crmPersonIdFromUrl() === sid) renderBadge('нет доступа к id.skyeng.ru', sid, 'muted');
+            console.warn('[UserBlock]', e.message);
+        } finally {
+            isLoading = false;
+            lastProcessedId = sid;
         }
-        checkAndFetch();
     }
 
-    // Перехват роутинга браузера
-    const originalPushState = history.pushState;
-    const originalReplaceState = history.replaceState;
-
-    history.pushState = function (...args) {
-        originalPushState.apply(this, args);
-        handleUrlChange();
-    };
-
-    history.replaceState = function (...args) {
-        originalReplaceState.apply(this, args);
-        handleUrlChange();
-    };
-
-    window.addEventListener('popstate', handleUrlChange);
-
-    // Фоновый таймер (страховка на случай внутренних роутеров без pushState и задержек рендера DOM)
-    setInterval(checkAndFetch, 800);
+    window.addEventListener('popstate', checkAndFetch);
+    setInterval(checkAndFetch, 1000);
 })();
 
-
-/* === КОНЕЦ БЛОКА USERBLOCKER/CALLSTATUS === */
-
 /* ============================================================
- *  SKYAUTO — АВТОВЗЯТИЕ ЗАДАЧИ С ПУЛА
+ *  5. SKYAUTO — АВТОВЗЯТИЕ ЗАДАЧИ ИЗ ПУЛА
  * ============================================================ */
 (function () {
     'use strict';
+    if (!CRM_IS_CRM) return;
 
     const BTN_TEXT = 'Взять новую задачу';
     const TARGET_PATH = '/customer-support/start';
-    const COOLDOWN_MS = 20000;              // пауза после клика/возврата на страницу
+    const COOLDOWN_MS = 20000;                 // пауза после клика / возврата на страницу
     const LAST_CLICK_KEY = 'skyauto_lastclick';
     const UI_POS_KEY = 'skyauto_ui_pos';
+    const ALL_STATUSES = ['В работе', 'Оффлайн', 'Перерыв/обед', 'Тренинг', 'Встреча', 'Работа с выгрузкой', 'Работа в другом отделе'];
 
     let lastClickedBtn = null;
     let wasDisabled = true;
-    let lastUrl = location.pathname;
     let cooldownUntil = 0;
     let btnWasVisible = false;
     let isFirstTick = true;
 
     // Восстанавливаем кулдаун после перезагрузки страницы.
-    const lastClick = sessionStorage.getItem(LAST_CLICK_KEY);
-    if (lastClick && location.pathname.includes(TARGET_PATH)) {
-        const nextAllowed = parseInt(lastClick, 10) + COOLDOWN_MS; // FIX: добавлено основание системы счисления
-        if (nextAllowed > Date.now()) {
-            cooldownUntil = nextAllowed;
-            console.log('SkyAuto: Кулдаун восстановлен после перезагрузки');
-        }
+    const lastClick = parseInt(sessionStorage.getItem(LAST_CLICK_KEY), 10);
+    if (lastClick && location.pathname.includes(TARGET_PATH) && lastClick + COOLDOWN_MS > Date.now()) {
+        cooldownUntil = lastClick + COOLDOWN_MS;
     }
 
-    /* ---------- Всплывающая панель статуса ---------- */
+    /* ---------- Панель статуса ---------- */
     const ui = document.createElement('div');
-    ui.style.cssText = `
-        position: fixed;
-        z-index: 99999;
-        background: #1a1a2e;
-        color: #a0a0b0;
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        font-size: 12px;
-        line-height: 1.5;
-        padding: 10px 14px;
-        border-radius: 10px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-        min-width: 200px;
-        opacity: 0;
-        transition: opacity 0.3s;
-        cursor: default;
-        user-select: none;
-    `;
+    ui.className = 'crm-scope crm-skyauto';
+    ui.innerHTML = `
+        <div class="crm-skyauto-head"><span>SkyAuto</span><span aria-hidden="true">⋮⋮</span></div>
+        <div class="crm-skyauto-body">
+            <div class="crm-skyauto-main"><span class="crm-dot"></span><span class="crm-skyauto-text"></span></div>
+            <div class="crm-skyauto-sub"></div>
+        </div>`;
+    const header = ui.querySelector('.crm-skyauto-head');
+    const mainEl = ui.querySelector('.crm-skyauto-main');
+    const textEl = ui.querySelector('.crm-skyauto-text');
+    const subEl = ui.querySelector('.crm-skyauto-sub');
 
-    // Шапка панели — за неё можно перетаскивать.
-    const header = document.createElement('div');
-    header.style.cssText = `
-        cursor: move;
-        margin: -10px -14px 6px -14px;
-        padding: 6px 14px;
-        background: rgba(255,255,255,0.05);
-        border-radius: 10px 10px 0 0;
-        font-size: 10px;
-        color: #666;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    `;
-    header.innerHTML = '<span>SkyAuto</span><span style="font-size:14px;">⋮⋮</span>';
-    ui.appendChild(header);
-
-    const contentDiv = document.createElement('div');
-    ui.appendChild(contentDiv);
-
-    // Восстанавливаем сохранённую позицию панели.
-    const savedPos = localStorage.getItem(UI_POS_KEY);
-    if (savedPos) {
-        try {
-            const pos = JSON.parse(savedPos);
-            ui.style.top = pos.top + 'px';
-            ui.style.left = pos.left + 'px';
-        } catch (e) {
-            ui.style.top = '12px';
-            ui.style.right = '12px';
-        }
-    } else {
+    try {
+        const pos = JSON.parse(localStorage.getItem(UI_POS_KEY) || 'null');
+        if (pos && Number.isFinite(pos.top) && Number.isFinite(pos.left)) {
+            ui.style.top = `${Math.min(Math.max(0, pos.top), window.innerHeight - 60)}px`;
+            ui.style.left = `${Math.min(Math.max(0, pos.left), window.innerWidth - 220)}px`;
+        } else throw new Error('нет позиции');
+    } catch (_) {
         ui.style.top = '12px';
         ui.style.right = '12px';
     }
 
-    /* ---------- Перетаскивание панели ---------- */
-    let isDragging = false;
-    let dragOffsetX = 0;
-    let dragOffsetY = 0;
-
+    let drag = null;
     header.addEventListener('mousedown', (e) => {
-        isDragging = true;
         const rect = ui.getBoundingClientRect();
-        dragOffsetX = e.clientX - rect.left;
-        dragOffsetY = e.clientY - rect.top;
-        ui.style.transition = 'none';
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
+        drag = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
         e.preventDefault();
-        ui.style.left = (e.clientX - dragOffsetX) + 'px';
-        ui.style.top = (e.clientY - dragOffsetY) + 'px';
+    });
+    document.addEventListener('mousemove', (e) => {
+        if (!drag) return;
+        ui.style.left = `${e.clientX - drag.dx}px`;
+        ui.style.top = `${e.clientY - drag.dy}px`;
         ui.style.right = 'auto';
     });
-
     document.addEventListener('mouseup', () => {
-        if (!isDragging) return;
-        isDragging = false;
-        ui.style.transition = 'opacity 0.3s';
+        if (!drag) return;
+        drag = null;
         const rect = ui.getBoundingClientRect();
-        localStorage.setItem(UI_POS_KEY, JSON.stringify({ top: rect.top, left: rect.left }));
+        localStorage.setItem(UI_POS_KEY, JSON.stringify({ top: Math.round(rect.top), left: Math.round(rect.left) }));
     });
 
-    const attachUI = () => {
-        if (document.body) {
-            document.body.appendChild(ui);
-            ui.style.opacity = '1';
-        } else {
-            setTimeout(attachUI, 100);
-        }
-    };
-    attachUI();
+    document.body.appendChild(ui);
 
-    /** Обновляет текст панели статуса. */
-    const updateStatus = (mainText, color = '#a0a0b0', subText = '') => {
-        contentDiv.innerHTML = `
-            <div style="font-weight:600; color:${color}; margin-bottom:2px;">🤖 ${mainText}</div>
-            ${subText ? `<div style="color:#888; font-size:11px;">${subText}</div>` : ''}
-        `;
+    let lastRendered = '';
+    const updateStatus = (main, tone = '', sub = '') => {
+        const key = `${main}|${tone}|${sub}`;
+        if (key === lastRendered) return; // не трогаем DOM без изменений
+        lastRendered = key;
+        textEl.textContent = main;
+        mainEl.dataset.tone = tone;
+        subEl.textContent = sub;
     };
 
-    /* ---------- Определение статуса оператора ---------- */
-
-    // Все известные статусы оператора в CRM.
-    const ALL_STATUSES = [
-        'В работе', 'Оффлайн', 'Перерыв/обед', 'Тренинг',
-        'Встреча', 'Работа с выгрузкой', 'Работа в другом отделе'
-    ];
-
-    /** Убирает из текста статуса таймер вида (ЧЧ:ММ:СС). */
+    /* ---------- Статус оператора ---------- */
     const stripTimer = (text) => text.replace(/\s*\(\d{1,2}:\d{2}:\d{2}\)/, '').trim();
+    const matchKnownStatus = (text) => ALL_STATUSES.find((s) => text.includes(s));
 
-    /** Соотносит текст с известными статусами; возвращает null, если это мусор. */
-    const matchKnownStatus = (text) => ALL_STATUSES.find(s => text.includes(s));
-
-    /**
-     * ГИБРИДНЫЙ v3: пробует несколько способов определить статус оператора,
-     * от самого точного к самому грубому.
-     */
+    /** Несколько способов определить статус: от точного к грубому. */
     const getOperatorStatus = () => {
-        // Способ A: crm-operator-statuses > button (самый точный).
-        const container = document.querySelector('crm-operator-statuses');
-        if (container) {
-            const btn = container.querySelector('button');
-            if (btn) {
-                const text = stripTimer(btn.textContent);
-                if (text) {
-                    const matched = matchKnownStatus(text);
-                    if (matched) return matched;
-                    if (text.length < 50) return text; // похож на статус — берём как есть
-                }
-            }
+        const btn = document.querySelector('crm-operator-statuses button');
+        if (btn) {
+            const text = stripTimer(btn.textContent);
+            const matched = text && matchKnownStatus(text);
+            if (matched) return matched;
+            if (text && text.length < 50) return text;
         }
 
-        // Способ B: aria-label кнопки статуса.
         const statusBtn = document.querySelector('button[aria-haspopup="menu"]');
-        if (statusBtn?.ariaLabel) {
-            const clean = stripTimer(statusBtn.ariaLabel);
-            const matched = matchKnownStatus(clean);
+        if (statusBtn && statusBtn.ariaLabel) {
+            const matched = matchKnownStatus(stripTimer(statusBtn.ariaLabel));
             if (matched) return matched;
         }
 
-        // Способ C: span.mdc-button__label, содержащий таймер.
-        const allSpans = document.querySelectorAll('span.mdc-button__label');
-        for (const span of allSpans) {
+        for (const span of document.querySelectorAll('span.mdc-button__label')) {
             const text = span.textContent.trim();
             if (/\(\d{1,2}:\d{2}:\d{2}\)/.test(text)) {
                 const status = stripTimer(text);
-                const matched = matchKnownStatus(status);
-                if (matched) return matched;
-                if (status.length < 50) return status;
+                return matchKnownStatus(status) || (status.length < 50 ? status : null);
             }
         }
-
-        // Способ D: грубый поиск «Статус (таймер)» по всему тексту страницы.
-        const bodyText = document.body?.innerText || '';
-        for (const status of ALL_STATUSES) {
-            const escaped = status.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(escaped + '\\s*\\(\\d{1,2}:\\d{2}:\\d{2}\\)');
-            if (regex.test(bodyText)) return status;
-        }
-
         return null;
     };
 
-    /** Кнопка взятия задачи сейчас недоступна? */
-    const isDisabled = (btn) => {
-        if (!btn) return true;
-        return btn.disabled ||
-            btn.getAttribute('disabled') === 'true' ||
-            btn.classList.contains('mat-mdc-button-disabled');
-    };
+    const isDisabled = (btn) => !btn || btn.disabled ||
+        btn.getAttribute('disabled') === 'true' || btn.classList.contains('mat-mdc-button-disabled');
 
-    /* ---------- Основной цикл (раз в секунду) ---------- */
+    /* ---------- Основной цикл ---------- */
     const tick = () => {
-        const currentUrl = location.pathname;
         const now = Date.now();
 
-        if (currentUrl !== lastUrl) {
-            lastUrl = currentUrl;
-        }
-
-        if (!currentUrl.includes(TARGET_PATH)) {
-            updateStatus('Вне зоны', '#666', 'Работаем только на /start');
+        if (!location.pathname.includes(TARGET_PATH)) {
+            updateStatus('Вне зоны', '', 'Работает только на странице /start');
             btnWasVisible = false;
             return;
         }
 
-        // --- Ищем кнопку взятия задачи ---
-        const btn = [...document.querySelectorAll('button')].find(b =>
-            b.textContent.trim().includes(BTN_TEXT)
-        );
-
+        const btn = [...document.querySelectorAll('button')].find((b) => b.textContent.trim().includes(BTN_TEXT));
         if (!btn) {
             lastClickedBtn = null;
             wasDisabled = true;
             btnWasVisible = false;
-            updateStatus('Ожидание', '#a0a0b0', 'Кнопка не найдена');
+            updateStatus('Ожидание', '', 'Кнопка взятия задачи не найдена');
             return;
         }
 
-        // Кнопка появилась после отсутствия = вернулись на страницу → пауза 20 сек.
+        // Кнопка появилась после отсутствия — вернулись на страницу: пауза.
         if (!btnWasVisible && !isFirstTick) {
             cooldownUntil = now + COOLDOWN_MS;
             lastClickedBtn = null;
             wasDisabled = true;
-            console.log('SkyAuto: Кнопка появилась, кулдаун 20 сек');
         }
         btnWasVisible = true;
         isFirstTick = false;
 
-        // FIX: проверку настройки автовзятия делаем ДО определения статуса оператора —
-        // иначе при выключенной функции панель показывала «ПАУЗА» вместо «ВЫКЛЮЧЕНО».
         if (localStorage.getItem('skyauto_enabled') === '0') {
-            updateStatus('ВЫКЛЮЧЕНО', '#ff5555', 'Автовзятие отключено в настройках');
+            updateStatus('Выключено', 'bad', 'Автовзятие отключено в настройках');
             return;
         }
 
-        // --- Проверка статуса оператора: работаем только в режиме «В работе» ---
         const status = getOperatorStatus();
-
         if (status !== 'В работе') {
-            const display = status || 'не определён';
-            updateStatus('ПАУЗА', '#ff5555', `Статус: ${display} (нужен "В работе")`);
+            updateStatus('Пауза', 'warn', `Статус: ${status || 'не определён'}. Нужен «В работе»`);
             return;
         }
 
-        // --- Кулдаун после предыдущего клика ---
         if (cooldownUntil > now) {
-            const sec = Math.ceil((cooldownUntil - now) / 1000);
-            updateStatus('Кулдаун', '#ffd700', `Автоклик через ${sec} сек...`);
+            updateStatus('Кулдаун', 'info', `Автоклик через ${Math.ceil((cooldownUntil - now) / 1000)} с`);
             return;
         }
 
-        // --- Состояние кнопки ---
-        const disabled = isDisabled(btn);
-
-        if (disabled) {
-            updateStatus('Мониторинг', '#00ff88', 'Кнопка недоступна, жду активации...');
+        if (isDisabled(btn)) {
+            updateStatus('Мониторинг', 'ok', 'Кнопка недоступна, жду активации');
             lastClickedBtn = null;
             wasDisabled = true;
             return;
         }
 
-        // --- Кликаем ---
         if (btn !== lastClickedBtn || wasDisabled) {
             lastClickedBtn = btn;
             wasDisabled = false;
-
-            updateStatus('КЛИК!', '#00ff88', 'Взял новую задачу');
-            console.log('SkyAuto: Кликаю!', new Date().toLocaleTimeString());
+            updateStatus('Беру задачу', 'ok', 'Нажата «Взять новую задачу»');
             btn.click();
-
             sessionStorage.setItem(LAST_CLICK_KEY, String(Date.now()));
-
-            setTimeout(() => {
-                if (location.pathname.includes(TARGET_PATH)) {
-                    updateStatus('Мониторинг', '#00ff88', 'Задача взята, жду следующей...');
-                }
-            }, 3000);
         } else {
-            updateStatus('Мониторинг', '#00ff88', 'Кнопка активна, уже кликал');
+            updateStatus('Мониторинг', 'ok', 'Кнопка активна, клик уже был');
         }
     };
 
     setInterval(tick, 1000);
-    console.log('SkyAuto: Запущен.');
 })();
-
