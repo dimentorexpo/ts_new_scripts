@@ -393,6 +393,7 @@ async function createLoginLink(info, tab) {
             body: formBody.toString()
         });
 
+        if (!res.ok) throw new Error(`id.skyeng.ru ответил HTTP ${res.status}`);
         const loginLink = extractLoginLink(await res.text());
         if (loginLink) {
             await sendMessageToTab(tab.id, { action: "copyToClipboard", text: loginLink, label: "Ссылка-логинер скопирована" });

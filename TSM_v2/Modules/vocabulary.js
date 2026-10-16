@@ -298,13 +298,17 @@ async function getwordsets(studentId) {
             const setWords = await fetch(
                 `https://api-words.skyeng.ru/api/v1/wordsets/${wordset.id}/words.json?wordsetId=${wordset.id}&studentId=${studentId}&page=1&pageSize=500`,
                 { headers: WORDS_API_HEADERS() }
-            ).then((r) => r.json());
+            ).then((r) => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            });
             const words = setWords?.data || [];
 
             let meaningsById = new Map();
             if (words.length) {
                 const ids = words.map((w) => w.meaningId).join(",");
-                const meanings = await fetch(`https://dictionary.skyeng.ru/api/for-services/v2/meanings?ids=${ids}&acceptLanguage=ru`, { headers: WORDS_API_HEADERS() }).then((r) => r.json());
+                const meanings = await fetch(`https://dictionary.skyeng.ru/api/for-services/v2/meanings?ids=${ids}&acceptLanguage=ru`, { headers: WORDS_API_HEADERS() })
+                    .then((r) => (r.ok ? r.json() : []));
                 /* FIX: сопоставление шло по индексу массива — если словарь возвращал значения
                    в другом порядке или без части ID, слова получали чужие названия */
                 meaningsById = new Map((Array.isArray(meanings) ? meanings : []).map((m) => [String(m.id), m]));
