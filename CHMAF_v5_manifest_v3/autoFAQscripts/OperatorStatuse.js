@@ -1,6 +1,12 @@
 // ==========================================
-// AF OperStatus — Cyber-Dark UI (Sleek Dark)
-// Zero-flicker Diff Render Engine
+// AF OperStatus — «Статусы операторов» в реальном времени
+// (Ready / InService / AfterService / Timeout / DND) через WebSocket телефонии.
+// Оформление как в Queue / ChatHistory / Userinfo («corporate graphite»).
+//
+// Протокол Engine.IO v4 / Socket.IO:
+//   сервер шлёт «0{…}» (handshake) → подписываемся на «40/group-413,»;
+//   «2» (ping) → отвечаем «3» (pong);
+//   данные приходят пакетами «42/group-413,[...]».
 // ==========================================
 
 const AFOS_PREFIX = 'afos-';
@@ -8,527 +14,332 @@ const AFOS_PREFIX = 'afos-';
 const AFOS_CONFIG = {
     windowId: 'AF_OperStat',
     headerId: 'OpSt_header',
-    boxId: 'opers_box',
     tableId: 'operstatustable',
+    connId: 'opstat_conn',
     hideBtnId: 'hideMeOpSt',
     clearBtnId: 'clearopersinfo',
     wsUrl: 'wss://telephony.skyeng.ru/phone-stats/?EIO=4&transport=websocket',
-    wsGroup: '40/group-413,',
-    wsPing: '3',
-    wsClose: '2',
-    checkInterval: 500
+    namespace: '/group-413',
+    reconnectMs: 3000
 };
 
-const AFOS_STATUS_MAP = {
-    Ready: {
-        regex: /(:")(\D+)(",)(?="lastStatus":"Ready")/gm,
-        icon: '🟢',
-        label: 'Ready',
-        accent: '#00e676',
-        glow: 'rgba(0, 230, 118, 0.4)',
-        badgeBg: 'linear-gradient(135deg, #69f0ae, #00c853)' // Оставлено для совместимости, но переопределено в CSS
-    },
-    InServiceOut: {
-        regex: /(:")(\D+)(",)(?="lastStatus":"InServiceOut")/gm,
-        icon: '📞',
-        label: 'In Service',
-        accent: '#00e5ff',
-        glow: 'rgba(0, 229, 255, 0.4)',
-        badgeBg: 'linear-gradient(135deg, #ffd740, #ffab00)'
-    },
-    AfterServiceOut: {
-        regex: /(:")(\D+)(",)(?="lastStatus":"AfterServiceOut")/gm,
-        icon: '📵',
-        label: 'After Service',
-        accent: '#ff9100',
-        glow: 'rgba(255, 145, 0, 0.4)',
-        badgeBg: 'linear-gradient(135deg, #ffab40, #ff6d00)'
-    },
-    Timeout: {
-        regex: /(:")(\D+)(",)(?="lastStatus":"Timeout")/gm,
-        icon: '⏳',
-        label: 'Timeout',
-        accent: '#ff1744',
-        glow: 'rgba(255, 23, 68, 0.4)',
-        badgeBg: 'linear-gradient(135deg, #ff5252, #d50000)'
-    },
-    DND: {
-        regex: /(:")(\D+)(",)(?="lastStatus":"DND")/gm,
-        icon: '🍔',
-        label: 'DND',
-        accent: '#d500f9',
-        glow: 'rgba(213, 0, 249, 0.4)',
-        badgeBg: 'linear-gradient(135deg, #ff4081, #c51162)'
-    }
-};
+// lastStatus в данных → карточка в окне
+const AFOS_STATUS_META = [
+    { key: 'Ready', title: 'Свободны', hint: 'Ready', tone: 'ok', empty: 'нет свободных' },
+    { key: 'InServiceOut', title: 'В звонке', hint: 'InService', tone: 'info', empty: 'никто не разговаривает' },
+    { key: 'AfterServiceOut', title: 'После звонка', hint: 'AfterService', tone: 'violet', empty: 'пусто' },
+    { key: 'Timeout', title: 'Таймаут', hint: 'Timeout', tone: 'warn', empty: 'пусто' },
+    { key: 'DND', title: 'Не беспокоить', hint: 'DND', tone: 'bad', empty: 'пусто' }
+];
 
 // ==========================================
-// State & DOM Cache
-// ==========================================
-
-const afosState = {
-    blocks: new Map(),
-    items: new Map(),
-    totalEl: null,
-    lastMessage: null
-};
-
-// ==========================================
-// HTML Template (Cyber-Dark Styles)
+// HTML + стили
 // ==========================================
 
 const win_OperStatus = `
-<div class="${AFOS_PREFIX}wrapper">
-    <div class="${AFOS_PREFIX}inner">
-        <div class="${AFOS_PREFIX}ambient-glow"></div>
-        <div class="${AFOS_PREFIX}noise"></div>
-        <div class="${AFOS_PREFIX}drag-handle chmaf-drag-handle" id="${AFOS_CONFIG.headerId}">
-            <div class="${AFOS_PREFIX}title">
-                <span class="${AFOS_PREFIX}title-dot"></span>
-                <span>Операторы CRM</span>
-            </div>
-            <div class="${AFOS_PREFIX}header-actions">
-                <button class="${AFOS_PREFIX}btn ${AFOS_PREFIX}btn-clear" title="Очистить список" id="${AFOS_CONFIG.clearBtnId}">
-                    <span class="${AFOS_PREFIX}btn-icon">🧹</span>
-                </button>
-                <button class="${AFOS_PREFIX}btn ${AFOS_PREFIX}btn-hide buttonHide" title="Скрыть окно" id="${AFOS_CONFIG.hideBtnId}">
-                    <span class="${AFOS_PREFIX}btn-icon">✕</span>
-                </button>
-            </div>
-        </div>
-        <div class="${AFOS_PREFIX}content" id="${AFOS_CONFIG.boxId}">
-            <div class="${AFOS_PREFIX}table" id="${AFOS_CONFIG.tableId}"></div>
+<div class="${AFOS_PREFIX}panel">
+    <div class="${AFOS_PREFIX}header chmaf-drag-handle" id="${AFOS_CONFIG.headerId}">
+        <button class="${AFOS_PREFIX}btn ${AFOS_PREFIX}btn--close buttonHide" id="${AFOS_CONFIG.hideBtnId}"
+                type="button" title="Скрыть окно" aria-label="Закрыть окно">❌</button>
+        <div class="${AFOS_PREFIX}title">🎧 Статусы операторов</div>
+        <span class="${AFOS_PREFIX}pill" id="${AFOS_CONFIG.connId}">Отключено</span>
+        <button class="${AFOS_PREFIX}btn" id="${AFOS_CONFIG.clearBtnId}"
+                type="button" title="Очистить список" aria-label="Очистить список">🧹</button>
+    </div>
+    <div class="${AFOS_PREFIX}body">
+        <div id="${AFOS_CONFIG.tableId}" aria-live="polite">
+            <div class="${AFOS_PREFIX}empty">Откройте окно — подключусь к телефонии</div>
         </div>
     </div>
 </div>
 
 <style>
-/* ============================================
-   AF OperStatus — NEON GLASS ULTRA
-   ============================================ */
-
-.${AFOS_PREFIX}wrapper {
-    display: flex;
-    width: 420px;
-    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    color: #e2e8f0;
+/* Внешнюю рамку createWindow убираем — видна только панель */
+#${AFOS_CONFIG.windowId} {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
-.${AFOS_PREFIX}inner {
-    width: 100%;
-    margin: 6px;
-    position: relative;
+.${AFOS_PREFIX}panel,
+.${AFOS_PREFIX}panel * { box-sizing: border-box; }
+
+.${AFOS_PREFIX}panel {
+    width: min(440px, calc(100vw - 16px));
+    color: #f1f5f9;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    letter-spacing: .01em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+    -webkit-font-smoothing: antialiased;
     background:
-        linear-gradient(135deg, rgba(26, 26, 44, 0.94) 0%, rgba(18, 18, 34, 0.96) 100%),
-        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23242850' fill-opacity='0.25'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    backdrop-filter: blur(20px) saturate(1.3);
-    -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.5),
-        0 20px 50px rgba(0, 0, 0, 0.7),
-        0 0 30px rgba(139, 92, 246, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+        #111827;
+    border: 1px solid #344258;
+    border-radius: 18px;
+    box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
     overflow: hidden;
-    animation: ${AFOS_PREFIX}fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1);
 }
 
-/* Animated neon top border */
-.${AFOS_PREFIX}inner::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -50%; right: -50%;
-    height: 2px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        #8b5cf6 20%,
-        #ec4899 40%,
-        #06b6d4 60%,
-        #8b5cf6 80%,
-        transparent 100%);
-    background-size: 200% 100%;
-    animation: ${AFOS_PREFIX}neonBorderFlow 3s linear infinite;
-    opacity: 0.7;
-    z-index: 5;
-    pointer-events: none;
-}
-
-/* Inner radial glow */
-.${AFOS_PREFIX}inner::after {
-    content: '';
-    position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 1;
-}
-
-@keyframes ${AFOS_PREFIX}neonBorderFlow {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
-}
-
-.${AFOS_PREFIX}ambient-glow {
-    position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background:
-        radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.03), transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.03), transparent 50%);
-    animation: ${AFOS_PREFIX}ambientMove 25s linear infinite;
-    pointer-events: none;
-    z-index: 0;
-}
-
-@keyframes ${AFOS_PREFIX}ambientMove {
-    0% { transform: translate(0, 0) rotate(0deg); }
-    50% { transform: translate(2%, 2%) rotate(180deg); }
-    100% { transform: translate(0, 0) rotate(360deg); }
-}
-
-.${AFOS_PREFIX}noise {
-    position: absolute; inset: 0;
-    opacity: 0.012;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 1;
-}
-
-.${AFOS_PREFIX}drag-handle, .${AFOS_PREFIX}content { position: relative; z-index: 2; }
-
-.${AFOS_PREFIX}drag-handle {
+/* Шапка: ❌ слева, заголовок, статус соединения, 🧹 */
+.${AFOS_PREFIX}header {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 8px;
+    margin: 0 18px;
+    padding: 18px 0 12px;
+    border-bottom: 1px solid rgba(66, 104, 201, .15);
     cursor: grab;
     user-select: none;
-    position: relative;
-    z-index: 3;
 }
 
-.${AFOS_PREFIX}drag-handle:active { cursor: grabbing; }
+.${AFOS_PREFIX}header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 40%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
+}
+
+.${AFOS_PREFIX}header:active { cursor: grabbing; }
 
 .${AFOS_PREFIX}title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: #fff;
-    text-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: #fefefe;
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
-
-.${AFOS_PREFIX}title-dot {
-    width: 7px; height: 7px;
-    background: #22d3ee;
-    border-radius: 50%;
-    box-shadow: 0 0 8px #22d3ee, 0 0 16px rgba(34, 211, 238, 0.5);
-    animation: ${AFOS_PREFIX}pulseNeon 2.5s ease-in-out infinite;
-}
-
-@keyframes ${AFOS_PREFIX}pulseNeon {
-    0%, 100% { opacity: 1; box-shadow: 0 0 8px #22d3ee, 0 0 16px rgba(34,211,238,0.5); }
-    50% { opacity: 0.5; box-shadow: 0 0 4px #22d3ee, 0 0 8px rgba(34,211,238,0.2); }
-}
-
-.${AFOS_PREFIX}header-actions { display: flex; gap: 6px; }
 
 .${AFOS_PREFIX}btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px; height: 28px;
+    flex: none;
+    width: 34px;
+    height: 34px;
     padding: 0;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
+    color: #dce5f5;
+    background: #1b283c;
+    border: 1px solid #3c4d68;
+    border-radius: 9px;
+    font-size: 16px;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.${AFOS_PREFIX}btn::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 45%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
-    border-radius: 8px 8px 0 0;
-    pointer-events: none;
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
 }
 
 .${AFOS_PREFIX}btn:hover {
-    background: rgba(255, 255, 255, 0.06);
     color: #fff;
+    background: #293b56;
+    border-color: #7799e2;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
-.${AFOS_PREFIX}btn-clear:hover {
-    border-color: rgba(34, 211, 238, 0.4);
-    color: #22d3ee;
-    box-shadow: 0 0 12px rgba(34, 211, 238, 0.15), inset 0 0 8px rgba(34, 211, 238, 0.05);
+.${AFOS_PREFIX}btn:active { transform: translateY(0) scale(.98); }
+
+.${AFOS_PREFIX}btn--close {
+    color: #ffb0be;
+    background: rgba(255, 116, 140, .08);
+    border-color: rgba(255, 116, 140, .3);
 }
 
-.${AFOS_PREFIX}btn-hide:hover {
-    border-color: rgba(248, 113, 113, 0.4);
-    color: #f87171;
-    box-shadow: 0 0 12px rgba(248, 113, 113, 0.15), inset 0 0 8px rgba(248, 113, 113, 0.05);
+.${AFOS_PREFIX}btn--close:hover {
+    color: #ffb0be;
+    background: rgba(255, 116, 140, .16);
+    border-color: rgba(255, 116, 140, .55);
 }
 
-.${AFOS_PREFIX}content { padding: 14px; }
-
-.${AFOS_PREFIX}table {
-    max-height: 700px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-right: 4px;
+.${AFOS_PREFIX}btn:focus-visible {
+    outline: 2px solid #9ab5ff;
+    outline-offset: 2px;
 }
 
-.${AFOS_PREFIX}table::-webkit-scrollbar { width: 4px; }
-.${AFOS_PREFIX}table::-webkit-scrollbar-track { background: transparent; }
-.${AFOS_PREFIX}table::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 4px; }
-.${AFOS_PREFIX}table::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.5); }
+/* Цвета статусов — общие для пилюль, точек и полос карточек */
+.${AFOS_PREFIX}panel [data-tone]        { --tone: #94a3b8; --tone-bg: rgba(148, 163, 184, .12); --tone-line: rgba(148, 163, 184, .3); }
+.${AFOS_PREFIX}panel [data-tone="ok"]     { --tone: #86efac; --tone-bg: rgba(69, 199, 52, .15);  --tone-line: rgba(69, 199, 52, .4); }
+.${AFOS_PREFIX}panel [data-tone="info"]   { --tone: #7dd3fc; --tone-bg: rgba(30, 144, 255, .15); --tone-line: rgba(30, 144, 255, .35); }
+.${AFOS_PREFIX}panel [data-tone="violet"] { --tone: #c4b5fd; --tone-bg: rgba(139, 92, 246, .15); --tone-line: rgba(139, 92, 246, .4); }
+.${AFOS_PREFIX}panel [data-tone="warn"]   { --tone: #fdba74; --tone-bg: rgba(255, 140, 0, .15);  --tone-line: rgba(255, 140, 0, .4); }
+.${AFOS_PREFIX}panel [data-tone="bad"]    { --tone: #fca5a5; --tone-bg: rgba(220, 20, 60, .15);  --tone-line: rgba(220, 20, 60, .35); }
 
-/* Status Block — Neon Glass Card */
-.${AFOS_PREFIX}status-block {
-    margin-bottom: 12px;
-    position: relative;
-    background: linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-left: 3px solid var(--afos-accent);
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.03);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    animation: ${AFOS_PREFIX}fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
-    overflow: hidden;
-}
-
-.${AFOS_PREFIX}status-block::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 40%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%);
-    border-radius: 12px 12px 0 0;
-    pointer-events: none;
-}
-
-.${AFOS_PREFIX}status-block:hover {
-    transform: translateX(3px) translateY(-1px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 20px var(--afos-glow, transparent);
-    background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
-    border-color: rgba(255, 255, 255, 0.08);
-}
-
-.${AFOS_PREFIX}status-header {
-    display: flex;
+/* Пилюля: статус соединения и счётчики */
+.${AFOS_PREFIX}pill {
+    --tone: #94a3b8; --tone-bg: rgba(148, 163, 184, .12); --tone-line: rgba(148, 163, 184, .3);
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 8px 14px;
+    justify-content: center;
+    flex: none;
+    min-width: 26px;
+    height: 24px;
+    padding: 0 9px;
+    color: var(--tone);
+    background: var(--tone-bg);
+    border: 1px solid var(--tone-line);
+    border-radius: 999px;
+    font-size: 12px;
     font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--afos-accent, #fff);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    background: rgba(0, 0, 0, 0.15);
-    position: relative;
-    z-index: 1;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
-/* Premium Neon Glass Badge */
-.${AFOS_PREFIX}status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 28px;
-    padding: 3px 8px;
-    font-size: 12px;
-    font-weight: 900;
-    font-family: 'Consolas', monospace;
-    color: var(--afos-accent);
-    background:
-        linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%),
-        rgba(0, 0, 0, 0.35);
-    border: 1px solid var(--afos-accent);
-    border-radius: 8px;
-    box-shadow:
-        0 2px 6px rgba(0,0,0,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 10px var(--afos-glow);
-    text-shadow: 0 0 8px var(--afos-accent);
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-    overflow: hidden;
+/* Тело */
+.${AFOS_PREFIX}body {
+    max-height: min(560px, 70vh);
+    padding: 14px 18px 18px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(66, 104, 201, .4) transparent;
 }
 
-.${AFOS_PREFIX}status-badge::after {
-    content: '';
-    position: absolute;
-    bottom: -2px; left: 15%; right: 15%;
-    height: 4px;
-    background: var(--afos-accent);
-    border-radius: 50%;
-    filter: blur(4px);
-    opacity: 0.4;
-}
+.${AFOS_PREFIX}body::-webkit-scrollbar { width: 4px; }
+.${AFOS_PREFIX}body::-webkit-scrollbar-thumb { background: rgba(66, 104, 201, .3); border-radius: 8px; }
 
-.${AFOS_PREFIX}status-badge.${AFOS_PREFIX}badge-pop {
-    animation: ${AFOS_PREFIX}badgeCyberPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes ${AFOS_PREFIX}badgeCyberPop {
-    0% { transform: scale(1); box-shadow: 0 0 10px var(--afos-glow); }
-    40% { transform: scale(1.2); box-shadow: 0 0 25px var(--afos-accent), inset 0 0 10px var(--afos-accent); }
-    100% { transform: scale(1); box-shadow: 0 0 10px var(--afos-glow); }
-}
-
-.${AFOS_PREFIX}status-list { padding: 6px 14px; position: relative; z-index: 1; }
-
-.${AFOS_PREFIX}status-item {
+#${AFOS_CONFIG.tableId} {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 10px;
-    padding: 5px 0;
-    font-size: 12px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
-    border-bottom: 1px dotted rgba(255, 255, 255, 0.04);
-    transition: all 0.25s ease;
-    opacity: 1;
-    transform: translateX(0);
 }
 
-.${AFOS_PREFIX}status-item:last-child { border-bottom: none; }
-
-.${AFOS_PREFIX}status-item:hover {
-    color: #fff;
-    transform: translateX(5px);
-    text-shadow: 0 0 8px var(--afos-glow);
-}
-
-.${AFOS_PREFIX}status-item.${AFOS_PREFIX}item-enter {
-    animation: ${AFOS_PREFIX}itemEnter 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-
-.${AFOS_PREFIX}status-item.${AFOS_PREFIX}item-exit {
-    animation: ${AFOS_PREFIX}itemExit 0.2s ease-in forwards;
-    pointer-events: none;
-}
-
-@keyframes ${AFOS_PREFIX}itemEnter {
-    from { opacity: 0; transform: translateX(-10px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes ${AFOS_PREFIX}itemExit {
-    from { opacity: 1; transform: translateX(0); }
-    to { opacity: 0; transform: translateX(10px); }
-}
-
-.${AFOS_PREFIX}status-icon {
-    font-size: 13px;
-    filter: drop-shadow(0 0 4px rgba(255,255,255,0.2));
-    flex-shrink: 0;
-}
-
-/* Total Block — Cyan Neon Glass Core */
-.${AFOS_PREFIX}total-block {
-    margin-top: 10px;
-    position: relative;
-    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-    border: 1px solid rgba(34, 211, 238, 0.15);
-    border-left: 3px solid #22d3ee;
-    border-radius: 12px;
-    padding: 10px 14px;
+/* «Операторов в системе» */
+.${AFOS_PREFIX}total {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-weight: 800;
+    padding: 10px 14px;
+    background: rgba(66, 104, 201, .12);
+    border: 1px solid rgba(66, 104, 201, .3);
+    border-left: 3px solid #92afff;
+    border-radius: 10px;
+    color: #94a3b8;
     font-size: 11px;
-    letter-spacing: 1px;
+    font-weight: 700;
+    letter-spacing: .08em;
     text-transform: uppercase;
-    color: #e2e8f0;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(34, 211, 238, 0.06), inset 0 1px 0 rgba(255,255,255,0.03);
-    animation: ${AFOS_PREFIX}fadeInUp 0.5s 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
-    overflow: hidden;
 }
 
-.${AFOS_PREFIX}total-block::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 40%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
-    border-radius: 12px 12px 0 0;
-    pointer-events: none;
+.${AFOS_PREFIX}total b {
+    color: #fff;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
 }
 
-.${AFOS_PREFIX}total-badge {
-    display: inline-flex;
+/* Карточка статуса */
+.${AFOS_PREFIX}card {
+    padding: 10px 12px 12px;
+    background: #1a2536;
+    border: 1px solid #344258;
+    border-left: 3px solid var(--tone);
+    border-radius: 10px;
+    transition: background-color .16s ease;
+}
+
+.${AFOS_PREFIX}card:hover { background: #1e2b40; }
+
+.${AFOS_PREFIX}card-head {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    padding: 3px 10px;
-    font-size: 13px;
-    font-weight: 900;
-    font-family: 'Consolas', monospace;
-    color: #22d3ee;
-    background:
-        linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%),
-        rgba(0, 0, 0, 0.35);
-    border: 1px solid #22d3ee;
-    border-radius: 8px;
-    box-shadow:
-        0 2px 6px rgba(0,0,0,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 0 12px rgba(34, 211, 238, 0.25);
-    text-shadow: 0 0 8px #22d3ee;
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-    overflow: hidden;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: #f1f5f9;
+    font-size: 14px;
+    font-weight: 700;
 }
 
-.${AFOS_PREFIX}total-badge::after {
-    content: '';
-    position: absolute;
-    bottom: -2px; left: 15%; right: 15%;
-    height: 4px;
-    background: #22d3ee;
+.${AFOS_PREFIX}card-head .${AFOS_PREFIX}pill { margin-left: auto; }
+
+.${AFOS_PREFIX}dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    background: var(--tone);
     border-radius: 50%;
-    filter: blur(4px);
-    opacity: 0.4;
+    box-shadow: 0 0 6px var(--tone-line);
 }
 
-.${AFOS_PREFIX}total-badge.${AFOS_PREFIX}badge-pop {
-    animation: ${AFOS_PREFIX}badgeTotalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+.${AFOS_PREFIX}hint-key {
+    color: #7d8ca6;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
 }
 
-@keyframes ${AFOS_PREFIX}badgeTotalPop {
-    0% { transform: scale(1); box-shadow: 0 0 12px rgba(34, 211, 238, 0.25); }
-    40% { transform: scale(1.25); box-shadow: 0 0 30px #22d3ee, inset 0 0 15px #22d3ee; }
-    100% { transform: scale(1); box-shadow: 0 0 12px rgba(34, 211, 238, 0.25); }
+.${AFOS_PREFIX}list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
-/* Base Animations */
-@keyframes ${AFOS_PREFIX}fadeInUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.${AFOS_PREFIX}chip {
+    padding: 3px 9px;
+    color: #e2e8f0;
+    background: rgba(0, 0, 0, .25);
+    border: 1px solid rgba(66, 104, 201, .2);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
-.${AFOS_PREFIX}status-block:nth-child(1) { animation-delay: 0.03s; }
-.${AFOS_PREFIX}status-block:nth-child(2) { animation-delay: 0.06s; }
-.${AFOS_PREFIX}status-block:nth-child(3) { animation-delay: 0.09s; }
-.${AFOS_PREFIX}status-block:nth-child(4) { animation-delay: 0.12s; }
-.${AFOS_PREFIX}status-block:nth-child(5) { animation-delay: 0.15s; }
+.${AFOS_PREFIX}chip.is-new {
+    animation: ${AFOS_PREFIX}chipIn .35s ease;
+}
+
+@keyframes ${AFOS_PREFIX}chipIn {
+    from { background: var(--tone-bg); border-color: var(--tone-line); }
+}
+
+.${AFOS_PREFIX}empty-hint {
+    color: #7d8ca6;
+    font-size: 13px;
+}
+
+/* Пустое / ошибочное состояние окна */
+.${AFOS_PREFIX}empty {
+    padding: 28px 16px;
+    color: #94a3b8;
+    font-size: 13px;
+    text-align: center;
+    background: rgba(255, 255, 255, .02);
+    border: 1px dashed rgba(66, 104, 201, .25);
+    border-radius: 12px;
+}
+
+.${AFOS_PREFIX}empty.is-error {
+    color: #fca5a5;
+    border-color: rgba(220, 20, 60, .35);
+}
+
+.${AFOS_PREFIX}spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    vertical-align: -2px;
+    border: 2px solid rgba(66, 104, 201, .25);
+    border-top-color: #7799e2;
+    border-radius: 50%;
+    animation: ${AFOS_PREFIX}spin .7s linear infinite;
+}
+
+@keyframes ${AFOS_PREFIX}spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .${AFOS_PREFIX}panel * { animation: none !important; transition: none !important; }
+}
 </style>
 `;
 
@@ -539,166 +350,152 @@ const win_OperStatus = `
 createWindow('AF_OperStat', 'winTopOpStat', 'winLeftOpStat', win_OperStatus);
 hideWindowOnDoubleClick('AF_OperStat');
 
+const afosState = {
+    cards: new Map(),   // key → { el, countEl, listEl, names, signature }
+    totalEl: null
+};
+
+const afosTable = document.getElementById(AFOS_CONFIG.tableId);
+const afosConn = document.getElementById(AFOS_CONFIG.connId);
+
+function afosEsc(text) {
+    const span = document.createElement('span');
+    span.textContent = String(text ?? '');
+    return span.innerHTML;
+}
+
+function afosSetConn(text, tone) {
+    if (!afosConn) return;
+    afosConn.textContent = text;
+    if (tone) afosConn.dataset.tone = tone;
+    else delete afosConn.dataset.tone;
+}
+
+function afosShowMessage(text, { loading = false, error = false } = {}) {
+    afosState.cards.clear();
+    afosState.totalEl = null;
+    afosTable.innerHTML =
+        `<div class="${AFOS_PREFIX}empty${error ? ' is-error' : ''}">` +
+        (loading ? `<span class="${AFOS_PREFIX}spinner"></span>` : '') +
+        `${afosEsc(text)}</div>`;
+}
+
 // ==========================================
-// Diff Render Engine (Zero Flicker)
+// Разбор пакета
 // ==========================================
 
-function afosExtractNames(message, regex) {
-    if (!message || !regex) return [];
-    const matches = message.match(regex);
-    if (!matches) return [];
-    return matches.map(m => m.replace(/[:" ,]/g, ''));
+/** Достаёт из пакета пары {name, status}. Сначала JSON, при неудаче — регулярка. */
+function afosParseOperators(message) {
+    const result = [];
+    const start = message.search(/[[{]/);
+
+    if (start !== -1) {
+        try {
+            const payload = JSON.parse(message.slice(start));
+            const visit = (node) => {
+                if (!node || typeof node !== 'object') return;
+                if (Array.isArray(node)) { node.forEach(visit); return; }
+
+                if (typeof node.lastStatus === 'string') {
+                    let name = node.operatorName || node.operator || node.name || node.fullName ||
+                        node.userName || node.username || node.login || node.fio;
+
+                    if (typeof name !== 'string' || !name.trim()) {
+                        const entry = Object.entries(node)
+                            .find(([k, v]) => k !== 'lastStatus' && typeof v === 'string' && v.trim());
+                        name = entry ? entry[1] : '';
+                    }
+
+                    if (name) result.push({ name: name.trim(), status: node.lastStatus });
+                }
+
+                Object.values(node).forEach(visit);
+            };
+
+            visit(payload);
+            return result;
+        } catch (_) { /* не JSON — ниже регулярка */ }
+    }
+
+    const re = /:\s*"([^"]+)"\s*,\s*"lastStatus"\s*:\s*"([^"]+)"/g;
+    let m;
+    while ((m = re.exec(message)) !== null) result.push({ name: m[1].trim(), status: m[2] });
+    return result;
 }
 
-function afosCreateBlock(label, accent, glow, badgeBg) {
-    const block = document.createElement('div');
-    block.className = `${AFOS_PREFIX}status-block`;
-    block.style.setProperty('--afos-accent', accent);
-    block.style.setProperty('--afos-glow', glow);
-    block.style.setProperty('--afos-badge-bg', badgeBg);
-    block.dataset.label = label;
-    block.innerHTML = `
-        <div class="${AFOS_PREFIX}status-header">
-            <span>${label}</span>
-            <span class="${AFOS_PREFIX}status-badge">0</span>
-        </div>
-        <div class="${AFOS_PREFIX}status-list"></div>
-    `;
-    return block;
-}
+// ==========================================
+// Отрисовка без мерцания: карточки создаются один раз,
+// список карточки перерисовывается, только если состав изменился
+// ==========================================
 
-function afosCreateItem(name, icon) {
-    const el = document.createElement('div');
-    el.className = `${AFOS_PREFIX}status-item ${AFOS_PREFIX}item-enter`;
-    el.dataset.name = name;
-    el.innerHTML = `<span class="${AFOS_PREFIX}status-icon">${icon}</span><span></span>`;
-    el.lastElementChild.textContent = name;
-    requestAnimationFrame(() => el.classList.remove(`${AFOS_PREFIX}item-enter`));
-    return el;
-}
+function afosBuildSkeleton() {
+    afosTable.innerHTML = '';
 
-function afosPopBadge(badge) {
-    badge.classList.remove(`${AFOS_PREFIX}badge-pop`);
-    void badge.offsetWidth;
-    badge.classList.add(`${AFOS_PREFIX}badge-pop`);
-}
+    const total = document.createElement('div');
+    total.className = `${AFOS_PREFIX}total`;
+    total.innerHTML = `<span>Операторов в системе</span><b>0</b>`;
+    afosTable.append(total);
+    afosState.totalEl = total.querySelector('b');
 
-function afosRenderDiff(message) {
-    const container = document.getElementById(AFOS_CONFIG.tableId);
-    if (!container) return;
+    for (const meta of AFOS_STATUS_META) {
+        const card = document.createElement('div');
+        card.className = `${AFOS_PREFIX}card`;
+        card.dataset.tone = meta.tone;
+        card.innerHTML = `
+            <div class="${AFOS_PREFIX}card-head" title="Статус в телефонии: ${meta.hint}">
+                <span class="${AFOS_PREFIX}dot"></span>
+                <span>${meta.title}</span>
+                <span class="${AFOS_PREFIX}hint-key">${meta.hint}</span>
+                <span class="${AFOS_PREFIX}pill" data-tone="${meta.tone}">0</span>
+            </div>
+            <div class="${AFOS_PREFIX}list"></div>`;
+        afosTable.append(card);
 
-    const newData = new Map();
-    let totalCount = 0;
-
-    for (const cfg of Object.values(AFOS_STATUS_MAP)) {
-        const names = afosExtractNames(message, cfg.regex);
-        totalCount += names.length;
-        newData.set(cfg.label, {
-            names,
-            icon: cfg.icon,
-            accent: cfg.accent,
-            glow: cfg.glow,
-            badgeBg: cfg.badgeBg
+        afosState.cards.set(meta.key, {
+            el: card,
+            countEl: card.querySelector(`.${AFOS_PREFIX}pill`),
+            listEl: card.querySelector(`.${AFOS_PREFIX}list`),
+            names: new Set(),
+            signature: null
         });
     }
+}
 
-    // Remove obsolete blocks with animation
-    for (const [label, block] of afosState.blocks) {
-        if (!newData.has(label)) {
-            block.style.transition = 'all 0.25s ease';
-            block.style.opacity = '0';
-            block.style.transform = 'scale(0.95)';
-            setTimeout(() => block.remove(), 260);
-            afosState.blocks.delete(label);
-            for (const key of afosState.items.keys()) {
-                if (key.startsWith(label + ':')) afosState.items.delete(key);
-            }
-        }
+function afosRender(operators) {
+    if (!afosState.totalEl) afosBuildSkeleton();
+
+    const byStatus = new Map(AFOS_STATUS_META.map((s) => [s.key, new Set()]));
+    operators.forEach(({ name, status }) => {
+        if (byStatus.has(status)) byStatus.get(status).add(name);
+    });
+
+    let total = 0;
+
+    for (const meta of AFOS_STATUS_META) {
+        const card = afosState.cards.get(meta.key);
+        const names = [...byStatus.get(meta.key)].sort((a, b) => a.localeCompare(b, 'ru'));
+        const signature = names.join('\n');
+        total += names.length;
+
+        if (signature === card.signature) continue;
+
+        const prev = card.names;
+        card.countEl.textContent = names.length;
+        card.listEl.innerHTML = names.length
+            ? names.map((n) =>
+                `<span class="${AFOS_PREFIX}chip${card.signature !== null && !prev.has(n) ? ' is-new' : ''}">${afosEsc(n)}</span>`
+            ).join('')
+            : `<span class="${AFOS_PREFIX}empty-hint">${meta.empty}</span>`;
+
+        card.names = new Set(names);
+        card.signature = signature;
     }
 
-    // Update / create blocks
-    for (const [label, data] of newData) {
-        let block = afosState.blocks.get(label);
-        if (!block) {
-            block = afosCreateBlock(label, data.accent, data.glow, data.badgeBg);
-            container.appendChild(block);
-            afosState.blocks.set(label, block);
-        }
-
-        const listEl = block.querySelector(`.${AFOS_PREFIX}status-list`);
-        const badgeEl = block.querySelector(`.${AFOS_PREFIX}status-badge`);
-
-        // Элементы, которые уже уезжают (item-exit), не считаем «текущими»:
-        // иначе оператор, вернувшийся в статус за 200 мс анимации, не добавлялся
-        // обратно и пропадал из списка до следующего изменения.
-        const liveSelector = `.${AFOS_PREFIX}status-item:not(.${AFOS_PREFIX}item-exit)`;
-        const currentNames = new Set();
-        listEl.querySelectorAll(liveSelector).forEach(el => currentNames.add(el.dataset.name));
-        const newNames = new Set(data.names);
-
-        // Remove old
-        listEl.querySelectorAll(liveSelector).forEach(el => {
-            if (!newNames.has(el.dataset.name)) {
-                el.classList.add(`${AFOS_PREFIX}item-exit`);
-                setTimeout(() => el.remove(), 200);
-                afosState.items.delete(`${label}:${el.dataset.name}`);
-            }
-        });
-
-        // Add new
-        data.names.forEach(name => {
-            if (!currentNames.has(name)) {
-                const item = afosCreateItem(name, data.icon);
-                listEl.appendChild(item);
-                afosState.items.set(`${label}:${name}`, item);
-            }
-        });
-
-        // Update badge
-        const oldCount = parseInt(badgeEl.textContent, 10) || 0;
-        if (oldCount !== data.names.length) {
-            badgeEl.textContent = data.names.length;
-            afosPopBadge(badgeEl);
-        }
-    }
-
-    // Total block
-    if (!afosState.totalEl) {
-        afosState.totalEl = document.createElement('div');
-        afosState.totalEl.className = `${AFOS_PREFIX}total-block`;
-        afosState.totalEl.innerHTML = `
-            <span>Всего операторов</span>
-            <span class="${AFOS_PREFIX}total-badge">0</span>
-        `;
-        container.appendChild(afosState.totalEl);
-    }
-
-    const totalBadge = afosState.totalEl.querySelector(`.${AFOS_PREFIX}total-badge`);
-    const oldTotal = parseInt(totalBadge.textContent, 10) || 0;
-    if (oldTotal !== totalCount) {
-        totalBadge.textContent = totalCount;
-        afosPopBadge(totalBadge);
-    }
-
-    afosState.lastMessage = message;
+    afosState.totalEl.textContent = total;
 }
 
 function afosClearTable() {
-    const container = document.getElementById(AFOS_CONFIG.tableId);
-    if (!container) return;
-
-    const blocks = container.querySelectorAll(`.${AFOS_PREFIX}status-block, .${AFOS_PREFIX}total-block`);
-    blocks.forEach((b, i) => {
-        b.style.transition = 'all 0.25s ease';
-        b.style.opacity = '0';
-        b.style.transform = 'translateY(-8px)';
-        setTimeout(() => b.remove(), 260 + i * 30);
-    });
-
-    afosState.blocks.clear();
-    afosState.items.clear();
-    afosState.totalEl = null;
-    afosState.lastMessage = null;
+    afosShowMessage('Список очищен, жду следующего обновления…');
 }
 
 // ==========================================
@@ -718,53 +515,76 @@ function afosInitSocket() {
     afosWanted = true;
     clearTimeout(afosReconnectTimer);
 
-    // Не плодим второй сокет, пока первый подключается (раньше проверялся только OPEN,
-    // и быстрый повторный клик создавал параллельное соединение).
+    // Не плодим второй сокет, пока первый подключается
     if (afosSocket && (afosSocket.readyState === WebSocket.OPEN ||
         afosSocket.readyState === WebSocket.CONNECTING)) return;
 
+    afosSetConn('Подключение…', 'info');
+    if (!afosState.totalEl) afosShowMessage('Подключаюсь к телефонии…', { loading: true });
+
+    let socket;
     try {
-        const socket = new WebSocket(AFOS_CONFIG.wsUrl);
-        afosSocket = socket;
-
-        // onopen вместо опроса readyState каждые 500 мс: раньше при неудачном
-        // подключении интервал крутился бесконечно.
-        socket.onopen = () => socket.send(AFOS_CONFIG.wsGroup);
-
-        socket.onmessage = (event) => {
-            // Окно скрыли двойным кликом — сокет больше не нужен.
-            if (!afosIsWindowVisible()) {
-                afosCloseSocket();
-                afosClearTable();
-                return;
-            }
-            socket.send(AFOS_CONFIG.wsPing);
-            afosRenderDiff(event.data);
-        };
-
-        socket.onerror = (err) => console.warn('[AF OperStatus] WS error:', err);
-
-        socket.onclose = () => {
-            if (afosSocket === socket) afosSocket = null;
-            // Сервер оборвал соединение, а окно открыто — переподключаемся,
-            // иначе на экране висели устаревшие статусы без признаков обрыва.
-            if (afosWanted && afosIsWindowVisible()) {
-                afosReconnectTimer = setTimeout(afosInitSocket, 3000);
-            }
-        };
+        socket = new WebSocket(AFOS_CONFIG.wsUrl);
     } catch (err) {
         console.error('[AF OperStatus] WS failed:', err);
+        afosSetConn('Ошибка', 'bad');
+        afosShowMessage('Не удалось подключиться к телефонии.', { error: true });
+        return;
     }
+
+    afosSocket = socket;
+
+    socket.onmessage = (event) => {
+        if (afosSocket !== socket) return;
+        const message = String(event.data);
+
+        if (message === '2') { socket.send('3'); return; }                              // ping → pong
+        if (message.startsWith('0')) { socket.send('40' + AFOS_CONFIG.namespace + ','); return; } // handshake → подписка
+        if (message.startsWith('40')) { afosSetConn('Онлайн', 'ok'); return; }
+        if (!message.startsWith('42')) return;                                         // служебные пакеты не рисуем
+
+        // Окно скрыли двойным кликом — сокет больше не нужен
+        if (!afosIsWindowVisible()) {
+            afosCloseSocket();
+            return;
+        }
+
+        afosSetConn('Онлайн', 'ok');
+        afosRender(afosParseOperators(message));
+    };
+
+    socket.onerror = (err) => console.warn('[AF OperStatus] WS error:', err);
+
+    socket.onclose = () => {
+        if (afosSocket !== socket) return;
+        afosSocket = null;
+
+        // Сервер оборвал соединение, а окно открыто — переподключаемся
+        if (afosWanted && afosIsWindowVisible()) {
+            afosSetConn('Переподключение…', 'warn');
+            afosReconnectTimer = setTimeout(afosInitSocket, AFOS_CONFIG.reconnectMs);
+            return;
+        }
+
+        afosSetConn('Отключено', '');
+    };
 }
 
 function afosCloseSocket() {
     afosWanted = false;
     clearTimeout(afosReconnectTimer);
+
     if (afosSocket) {
         const socket = afosSocket;
         afosSocket = null;
-        try { socket.send(AFOS_CONFIG.wsClose); socket.close(); } catch (e) { }
+        socket.onopen = socket.onmessage = socket.onclose = socket.onerror = null;
+        try {
+            if (socket.readyState === WebSocket.OPEN) socket.send('41' + AFOS_CONFIG.namespace + ',');
+            socket.close();
+        } catch (e) { /* уже закрыт */ }
     }
+
+    afosSetConn('Отключено', '');
 }
 
 function afosToggleWindow() {
@@ -778,8 +598,12 @@ function afosToggleWindow() {
     if (menu) menu.style.display = 'none';
     if (btn) btn.classList.remove('activeScriptBtn');
 
-    if (isHidden) afosInitSocket();
-    else { afosCloseSocket(); afosClearTable(); }
+    if (isHidden) {
+        afosInitSocket();
+    } else {
+        afosCloseSocket();
+        afosShowMessage('Откройте окно — подключусь к телефонии');
+    }
 }
 
 // ==========================================

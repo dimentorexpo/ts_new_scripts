@@ -15,8 +15,8 @@
     // lastStatus в данных → карточка в окне.
     const STATUS_META = [
         { key: 'Ready', title: 'Свободны', hint: 'Ready', tone: 'ok', empty: 'нет свободных' },
-        { key: 'InServiceOut', title: 'На линии', hint: 'InService', tone: 'info', empty: 'никто не разговаривает' },
-        { key: 'AfterServiceOut', title: 'Постобработка', hint: 'Afterservice', tone: 'violet', empty: 'пусто' },
+        { key: 'InServiceOut', title: 'В звонке', hint: 'InService', tone: 'info', empty: 'никто не разговаривает' },
+        { key: 'AfterServiceOut', title: 'После звонка', hint: 'Afterservice', tone: 'violet', empty: 'пусто' },
         { key: 'Timeout', title: 'Таймаут', hint: 'Timeout', tone: 'warn', empty: 'пусто' },
         { key: 'DND', title: 'Не беспокоить', hint: 'DND', tone: 'bad', empty: 'пусто' }
     ];
