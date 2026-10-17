@@ -1,5 +1,5 @@
 /**
- * Knowledge Center — Graphite / Electric Blue
+ * Knowledge Center — «corporate graphite», как AF_helper / Userinfo
  * Совместим с существующими createWindow(...) и кнопкой #knowledgeCenter.
  */
 (function () {
@@ -23,6 +23,13 @@
     };
 
     const styles = `
+        /* Оформление «corporate graphite» — как AF_helper / Userinfo / ChatHistory */
+        #AF_Knowledge {
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
         .knw-panel,
         .knw-panel *,
         .knw-solution,
@@ -30,144 +37,132 @@
             box-sizing: border-box;
         }
 
+        .knw-panel,
+        .knw-solution {
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI",
+                Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 13.5px;
+            -webkit-font-smoothing: antialiased;
+        }
+
         .knw-panel {
             width: min(540px, calc(100vw - 24px));
             padding: 0 !important;
             overflow: hidden !important;
-            color: #eaf0fa;
-            font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
-                "Segoe UI", sans-serif;
             background:
-                radial-gradient(circle at 8% 0%, rgba(92, 135, 255, .12), transparent 42%),
-                linear-gradient(155deg, #1a202e 0%, #10151f 65%, #0d121b 100%) !important;
-            border: 1px solid rgba(178, 197, 231, .18);
-            border-radius: 20px;
-            box-shadow:
-                0 28px 75px rgba(0, 0, 0, .55),
-                0 1px 0 rgba(255, 255, 255, .07) inset;
+                radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+                #111827 !important;
+            border: 1px solid #344258;
+            border-radius: 18px;
+            box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
         }
 
+        /* --- Шапка: ❌ слева, заголовок, индикатор загрузки справа --- */
         .knw-header {
+            position: relative;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            min-height: 78px;
-            padding: 16px 18px;
-            border-bottom: 1px solid rgba(178, 197, 231, .11);
+            gap: 8px;
+            margin: 0 18px;
+            padding: 18px 0 12px;
+            border-bottom: 1px solid rgba(66, 104, 201, .15);
             cursor: grab;
             user-select: none;
         }
 
+        .knw-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 40%;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
+        }
+
         .knw-header:active { cursor: grabbing; }
 
-        .knw-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 0;
-        }
-
-        .knw-mark {
-            display: grid;
-            place-items: center;
-            flex: 0 0 40px;
-            width: 40px;
-            height: 40px;
-            border: 1px solid rgba(125, 163, 255, .45);
-            border-radius: 12px;
-            color: #b7cdff;
-            background: linear-gradient(145deg, #263c67, #19253d);
-            box-shadow: 0 6px 18px rgba(54, 105, 236, .18);
-            font-size: 23px;
-            line-height: 1;
-        }
-
-        .knw-eyebrow {
-            margin-bottom: 3px;
-            color: #8fa2c1;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .15em;
-            text-transform: uppercase;
-        }
-
         .knw-title {
-            color: #f5f8ff;
-            font-size: 17px;
+            flex: 1;
+            min-width: 0;
+            color: #fefefe;
+            font-size: 15px;
             font-weight: 700;
-            letter-spacing: -.025em;
+            letter-spacing: .01em;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
         }
 
         .knw-header-actions {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
+        /* Индикатор: серый — не загружено, синий — загрузка, зелёный — готово, красный — ошибка */
         .knw-status {
-            width: 7px;
-            height: 7px;
-            flex: 0 0 7px;
+            width: 9px;
+            height: 9px;
+            flex: 0 0 9px;
             border-radius: 50%;
-            background: #74829a;
-            box-shadow: 0 0 0 4px rgba(116, 130, 154, .12);
+            background: #7d8ca6;
         }
 
-        .knw-status[data-state="ready"] {
-            background: #72d6e9;
-            box-shadow: 0 0 0 4px rgba(114, 214, 233, .12);
-        }
-
-        .knw-status[data-state="loading"] {
-            background: #85aaff;
-            box-shadow: 0 0 0 4px rgba(133, 170, 255, .13);
-            animation: knw-pulse 1.2s ease-in-out infinite;
-        }
-
-        .knw-status[data-state="error"] {
-            background: #ff8295;
-            box-shadow: 0 0 0 4px rgba(255, 130, 149, .12);
-        }
+        .knw-status[data-state="ready"] { background: #86efac; box-shadow: 0 0 6px rgba(134, 239, 172, .6); }
+        .knw-status[data-state="loading"] { background: #7799e2; animation: knw-pulse 1.2s ease-in-out infinite; }
+        .knw-status[data-state="error"] { background: #fca5a5; box-shadow: 0 0 6px rgba(252, 165, 165, .6); }
 
         .knw-icon-button {
-            display: grid;
-            place-items: center;
-            flex: 0 0 32px;
-            width: 32px;
-            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 34px;
+            width: 34px;
+            height: 34px;
             padding: 0;
-            border: 1px solid rgba(178, 197, 231, .15);
+            color: #dce5f5;
+            background: #1b283c;
+            border: 1px solid #3c4d68;
             border-radius: 9px;
-            color: #b9c7dd;
-            background: rgba(255, 255, 255, .035);
             font: inherit;
-            font-size: 19px;
+            font-size: 15px;
             line-height: 1;
             cursor: pointer;
-            transition: background .18s, color .18s, border-color .18s;
+            transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
         }
 
         .knw-icon-button:hover {
             color: #fff;
-            background: rgba(118, 158, 255, .13);
-            border-color: rgba(118, 158, 255, .4);
+            background: #293b56;
+            border-color: #7799e2;
+            transform: translateY(-1px);
         }
 
-        .knw-body { padding: 17px 18px 18px; }
+        .knw-icon-button.knw-close {
+            color: #ffb0be;
+            background: rgba(255, 116, 140, .08);
+            border-color: rgba(255, 116, 140, .3);
+        }
+
+        .knw-icon-button.knw-close:hover {
+            background: rgba(255, 116, 140, .16);
+            border-color: rgba(255, 116, 140, .55);
+        }
+
+        /* --- Поиск и фильтры --- */
+        .knw-body { padding: 14px 18px 18px; }
 
         .knw-search-wrap {
             position: relative;
-            margin-bottom: 11px;
+            margin-bottom: 8px;
         }
 
         .knw-search-icon {
             position: absolute;
             top: 50%;
-            left: 14px;
+            left: 12px;
             transform: translateY(-50%);
-            color: #8799b6;
-            font-size: 18px;
+            font-size: 14px;
             line-height: 1;
             pointer-events: none;
         }
@@ -175,127 +170,136 @@
         .knw-input,
         .knw-select {
             min-width: 0;
-            border: 1px solid rgba(178, 197, 231, .15);
-            border-radius: 11px;
+            height: 36px;
+            color: #edf2fb;
+            color-scheme: dark;
+            background: #0d1625;
+            border: 1px solid #3a4961;
+            border-radius: 10px;
             outline: none;
-            color: #edf3ff;
-            background: rgba(6, 11, 20, .46);
             font: inherit;
-            font-size: 14px;
-            transition: border-color .18s, box-shadow .18s, background .18s;
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
         }
 
         .knw-input {
             display: block;
             width: 100%;
-            height: 43px;
-            padding: 0 14px 0 41px;
+            padding: 0 12px 0 36px;
         }
 
-        .knw-input::placeholder { color: #8291a9; }
+        .knw-input::placeholder { color: #7d8ca6; font-weight: 400; }
 
         .knw-input:focus,
         .knw-select:focus {
-            border-color: #789fff;
-            background: rgba(8, 15, 28, .8);
-            box-shadow: 0 0 0 3px rgba(102, 147, 255, .15);
+            background: #142034;
+            border-color: #829fff;
+            box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
         }
 
         .knw-filters {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
         }
 
         .knw-select {
             width: 100%;
-            height: 39px;
-            padding: 0 11px;
-            color-scheme: dark;
+            padding: 0 10px;
             cursor: pointer;
         }
 
-        .knw-select:disabled {
-            opacity: .48;
-            cursor: not-allowed;
-        }
+        .knw-select:disabled { opacity: .5; cursor: not-allowed; }
 
-        .knw-select option {
-            color: #edf3ff;
-            background: #17202e;
-        }
+        .knw-select option { color: #edf2fb; background: #111827; }
 
+        /* Заголовок списка — как секции в Userinfo */
         .knw-list-heading {
             display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin: 18px 1px 9px;
-            color: #8fa2c1;
+            align-items: center;
+            gap: 8px;
+            margin: 14px 0 8px;
+            color: #fefefe;
             font-size: 11px;
             font-weight: 700;
-            letter-spacing: .12em;
+            letter-spacing: .08em;
             text-transform: uppercase;
         }
 
+        .knw-list-heading::after {
+            content: '';
+            order: 1;
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(66, 104, 201, .4), transparent);
+        }
+
         .knw-count {
-            color: #a9c3ff;
+            order: 2;
+            padding: 1px 8px;
+            color: #a9c0ff;
+            background: rgba(66, 104, 201, .14);
+            border: 1px solid rgba(119, 153, 226, .35);
+            border-radius: 999px;
+            font-size: 11px;
+            letter-spacing: 0;
+            text-transform: none;
             font-variant-numeric: tabular-nums;
         }
 
+        .knw-count:empty { display: none; }
+
+        /* --- Список материалов --- */
         .knw-scroll-area {
             min-height: 110px;
             max-height: min(390px, 48vh);
             overflow: auto;
+            overscroll-behavior: contain;
             padding: 1px 4px 1px 1px;
             scrollbar-width: thin;
-            scrollbar-color: #405474 transparent;
+            scrollbar-color: rgba(66, 104, 201, .4) transparent;
         }
 
         .knw-scroll-area::-webkit-scrollbar,
-        .knw-solution::-webkit-scrollbar { width: 6px; }
+        .knw-solution::-webkit-scrollbar { width: 4px; }
 
         .knw-scroll-area::-webkit-scrollbar-thumb,
         .knw-solution::-webkit-scrollbar-thumb {
             border-radius: 8px;
-            background: #405474;
+            background: rgba(66, 104, 201, .3);
         }
 
         .knw-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 14px;
+            gap: 12px;
             width: 100%;
-            margin: 0 0 7px;
-            padding: 12px 13px;
-            border: 1px solid rgba(178, 197, 231, .1);
-            border-radius: 11px;
-            color: #e4ebf7;
-            background: rgba(255, 255, 255, .035);
+            margin: 0 0 6px;
+            padding: 10px 12px;
+            color: #f1f5f9;
+            background: #1a2536;
+            border: 1px solid #344258;
+            border-left: 3px solid #617fbd;
+            border-radius: 10px;
             text-align: left;
             font: inherit;
             cursor: pointer;
-            transition:
-                border-color .18s,
-                background .18s,
-                transform .18s,
-                box-shadow .18s;
+            transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
         }
 
         .knw-item:hover {
-            transform: translateY(-1px);
-            border-color: rgba(126, 166, 255, .45);
-            background: rgba(105, 148, 255, .09);
+            background: #23334b;
+            border-color: #6685be;
+            border-left-color: #92afff;
+            transform: translateX(2px);
         }
 
         .knw-item.active {
-            border-color: rgba(126, 166, 255, .65);
-            background: linear-gradient(
-                110deg,
-                rgba(83, 130, 245, .2),
-                rgba(83, 130, 245, .07)
-            );
-            box-shadow: inset 3px 0 0 #82aaff;
+            background: rgba(66, 104, 201, .2);
+            border-color: #7293ed;
+            border-left-color: #a9c0ff;
         }
 
         .knw-item-main { min-width: 0; }
@@ -303,51 +307,58 @@
         .knw-item-title {
             display: block;
             overflow-wrap: anywhere;
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 600;
-            line-height: 1.5;
+            line-height: 1.45;
         }
 
         .knw-item-meta {
             display: block;
-            margin-top: 4px;
-            color: #91a3be;
+            margin-top: 3px;
+            color: #94a3b8;
             font-size: 12px;
             line-height: 1.35;
         }
 
         .knw-item-arrow {
             flex: 0 0 auto;
-            color: #89aafb;
-            font-size: 18px;
+            color: #7d8ca6;
+            font-size: 16px;
+            transition: color .16s ease, transform .16s ease;
         }
+
+        .knw-item:hover .knw-item-arrow,
+        .knw-item.active .knw-item-arrow { color: #a9c0ff; transform: translateX(2px); }
 
         .knw-empty {
             display: grid;
             place-items: center;
             min-height: 110px;
             padding: 20px;
-            border: 1px dashed rgba(178, 197, 231, .16);
-            border-radius: 11px;
-            color: #a0afc6;
+            color: #94a3b8;
+            border: 1px dashed rgba(66, 104, 201, .3);
+            border-radius: 12px;
             text-align: center;
-            font-size: 14px;
+            font-size: 13.5px;
             line-height: 1.6;
         }
 
         .knw-retry {
             margin-top: 10px;
-            padding: 8px 12px;
-            border: 1px solid rgba(126, 166, 255, .45);
-            border-radius: 8px;
-            color: #c5d6ff;
-            background: rgba(105, 148, 255, .1);
+            height: 34px;
+            padding: 0 14px;
+            color: #fff;
+            background: #4268c9;
+            border: 1px solid #7293ed;
+            border-radius: 9px;
             font: inherit;
+            font-weight: 600;
             cursor: pointer;
         }
 
-        .knw-retry:hover { background: rgba(105, 148, 255, .19); }
+        .knw-retry:hover { background: #547ce1; }
 
+        /* --- Окно материала --- */
         .knw-solution {
             position: fixed;
             z-index: 2147483000;
@@ -355,52 +366,62 @@
             max-height: calc(100vh - 24px);
             max-height: calc(100dvh - 24px);
             overflow: auto;
-            padding: 20px;
-            border: 1px solid rgba(151, 180, 239, .26);
-            border-top: 2px solid #83aaff;
+            padding: 0 18px 18px;
+            background: #111827;   /* однотонный: шапка «прилипает» при прокрутке и не должна выделяться */
+            border: 1px solid #344258;
             border-radius: 18px;
-            color: #e8eef8;
-            background:
-                radial-gradient(circle at 100% 0%, rgba(103, 151, 255, .13), transparent 45%),
-                #151c29;
-            box-shadow: 0 28px 80px rgba(0, 0, 0, .65);
+            box-shadow: 0 26px 70px rgba(3, 9, 22, .6), inset 0 1px rgba(255, 255, 255, .06);
             scrollbar-width: thin;
-            scrollbar-color: #405474 transparent;
+            scrollbar-color: rgba(66, 104, 201, .4) transparent;
         }
 
         .knw-solution[hidden] { display: none !important; }
 
         .knw-solution-head {
+            position: sticky;
+            top: 0;
+            z-index: 1;
             display: flex;
             align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(178, 197, 231, .14);
+            gap: 10px;
+            padding: 18px 0 12px;
+            background: #111827;
+            border-bottom: 1px solid rgba(66, 104, 201, .15);
+        }
+
+        .knw-solution-head::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 40%;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
         }
 
         .knw-solution-label {
-            margin-bottom: 7px;
-            color: #98b5ff;
+            margin-bottom: 4px;
+            color: #94a3b8;
             font-size: 11px;
             font-weight: 700;
-            letter-spacing: .14em;
+            letter-spacing: .08em;
             text-transform: uppercase;
         }
 
         .knw-solution-title {
             margin: 0;
-            color: #f6f8ff;
-            font-size: 19px;
+            color: #fefefe;
+            font-size: 16px;
+            font-weight: 700;
             line-height: 1.35;
             overflow-wrap: anywhere;
         }
 
         .knw-article {
-            padding-top: 7px;
-            color: #d6dfec;
-            font-size: 15px;
-            line-height: 1.75;
+            padding-top: 6px;
+            color: #dce5f5;
+            font-size: 14px;
+            line-height: 1.7;
             overflow-wrap: anywhere;
         }
 
@@ -408,50 +429,56 @@
         .knw-article h2,
         .knw-article h3,
         .knw-article h4 {
-            margin: 20px 0 8px;
-            color: #f1f5ff;
+            margin: 18px 0 8px;
+            color: #fefefe;
             line-height: 1.35;
         }
 
-        .knw-article p { margin: 12px 0; }
+        .knw-article p { margin: 10px 0; }
         .knw-article ul,
         .knw-article ol { padding-left: 22px; }
 
-        .knw-article a {
-            color: #a9c5ff;
-            text-underline-offset: 3px;
-        }
-
+        .knw-article a { color: #a9c0ff; text-underline-offset: 3px; }
         .knw-article a:hover { color: #d1e0ff; }
 
         .knw-article img {
             display: block;
             max-width: 100%;
             height: auto;
-            margin: 14px 0;
-            border-radius: 9px;
+            margin: 12px 0;
+            border: 1px solid #344258;
+            border-radius: 10px;
         }
 
         .knw-article pre,
         .knw-article code {
-            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
             font-size: .92em;
+        }
+
+        .knw-article code {
+            padding: 1px 5px;
+            background: #0d1625;
+            border-radius: 5px;
         }
 
         .knw-article pre {
             overflow: auto;
-            padding: 13px;
-            border: 1px solid rgba(178, 197, 231, .12);
-            border-radius: 9px;
-            background: #0d1420;
+            padding: 12px;
+            background: #0d1625;
+            border: 1px solid #344258;
+            border-radius: 10px;
         }
 
+        .knw-article pre code { padding: 0; background: none; }
+
         .knw-article blockquote {
-            margin: 14px 0;
-            padding: 3px 14px;
-            border-left: 2px solid #83aaff;
-            color: #b9c9e4;
-            background: rgba(105, 148, 255, .06);
+            margin: 12px 0;
+            padding: 6px 12px;
+            color: #cbd5e1;
+            background: rgba(66, 104, 201, .1);
+            border-left: 3px solid #92afff;
+            border-radius: 0 8px 8px 0;
         }
 
         .knw-article table {
@@ -464,24 +491,24 @@
         .knw-article th,
         .knw-article td {
             padding: 7px 9px;
-            border: 1px solid rgba(178, 197, 231, .2);
+            border: 1px solid #344258;
             text-align: left;
         }
 
+        .knw-article th { color: #94a3b8; background: #162133; }
+
         .knw-panel :focus-visible,
         .knw-solution :focus-visible {
-            outline: 2px solid #9dbbff;
+            outline: 2px solid #9ab5ff;
             outline-offset: 2px;
         }
 
-        @keyframes knw-pulse {
-            50% { opacity: .45; }
-        }
+        @keyframes knw-pulse { 50% { opacity: .4; } }
 
         @media (max-width: 420px) {
-            .knw-header { padding: 13px 14px; }
-            .knw-body { padding: 14px; }
-            .knw-solution { padding: 16px; }
+            .knw-header { margin: 0 14px; }
+            .knw-body { padding: 12px 14px 14px; }
+            .knw-solution { padding: 0 14px 14px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -503,13 +530,15 @@
     const windowMarkup = `
         <div class="knw-panel">
             <div class="knw-header chmaf-drag-handle" id="knw_drag_handle">
-                <div class="knw-brand">
-                    <div class="knw-mark" aria-hidden="true">◇</div>
-                    <div>
-                        <div class="knw-eyebrow">Knowledge Center</div>
-                        <div class="knw-title">База знаний</div>
-                    </div>
-                </div>
+                <button
+                    id="hideMeKnowledge"
+                    class="knw-icon-button knw-close"
+                    type="button"
+                    aria-label="Закрыть базу знаний"
+                    title="Скрыть окно"
+                >❌</button>
+
+                <div class="knw-title">📚 База знаний</div>
 
                 <div class="knw-header-actions">
                     <span
@@ -520,26 +549,19 @@
                         aria-label="Данные не загружены"
                         title="Данные не загружены"
                     ></span>
-                    <button
-                        id="hideMeKnowledge"
-                        class="knw-icon-button"
-                        type="button"
-                        aria-label="Закрыть базу знаний"
-                        title="Закрыть"
-                    >×</button>
                 </div>
             </div>
 
             <div class="knw-body">
                 <div class="knw-search-wrap">
-                    <span class="knw-search-icon" aria-hidden="true">⌕</span>
+                    <span class="knw-search-icon" aria-hidden="true">🔎</span>
                     <input
                         id="knw-search"
                         class="knw-input"
                         type="search"
                         autocomplete="off"
                         aria-label="Поиск по базе знаний"
-                        placeholder="Поиск по базе знаний"
+                        placeholder="Поиск по базе знаний…"
                     >
                 </div>
 
@@ -599,17 +621,17 @@
     solution.setAttribute('aria-label', 'Содержание материала');
     solution.innerHTML = `
         <div class="knw-solution-head">
-            <div>
-                <div class="knw-solution-label">Материал базы знаний</div>
-                <h2 class="knw-solution-title" id="knw-solution-title"></h2>
-            </div>
             <button
-                class="knw-icon-button"
+                class="knw-icon-button knw-close"
                 id="knw-close-solution"
                 type="button"
                 aria-label="Закрыть материал"
                 title="Закрыть материал"
-            >×</button>
+            >❌</button>
+            <div style="min-width: 0;">
+                <div class="knw-solution-label">📄 Материал базы знаний</div>
+                <h2 class="knw-solution-title" id="knw-solution-title"></h2>
+            </div>
         </div>
         <div class="knw-article" id="knw-article"></div>
     `;

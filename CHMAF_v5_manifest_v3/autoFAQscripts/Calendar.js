@@ -56,11 +56,15 @@
         style.id = 'chmaf-calendar-styles';
 
         style.textContent = `
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
-
+            /* Оформление «corporate graphite» — как AF_helper / Userinfo / ChatHistory */
             #AF_Calendar {
-                color: #eff5fc;
-                font-family: Inter, system-ui, sans-serif;
+                color: #e2e8f0;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI",
+                    Roboto, "Helvetica Neue", Arial, sans-serif;
+                -webkit-font-smoothing: antialiased;
+                background: transparent !important;
+                border: 0 !important;
+                box-shadow: none !important;
             }
 
             #AF_Calendar *,
@@ -77,28 +81,19 @@
                 max-height: calc(100dvh - 16px);
             }
 
+            /* Панели */
             #AF_Calendar .af-calendar-main,
             #AF_Calendar .af-calendar-side {
-                border: 1px solid #34435c;
-                border-radius: 16px;
                 background:
-                    radial-gradient(
-                        ellipse at 100% 0%,
-                        rgba(40,103,145,.23),
-                        transparent 48%
-                    ),
-                    linear-gradient(
-                        150deg,
-                        #192539,
-                        #101827 80%
-                    );
-                box-shadow:
-                    0 22px 55px rgba(2,8,20,.46),
-                    inset 0 1px 0 rgba(255,255,255,.07);
+                    radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+                    #111827;
+                border: 1px solid #344258;
+                border-radius: 18px;
+                box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
             }
 
             #AF_Calendar .af-calendar-main {
-                width: min(600px, calc(100vw - 24px));
+                width: min(540px, calc(100vw - 24px));
                 flex: 0 0 auto;
                 overflow: hidden;
             }
@@ -107,79 +102,127 @@
             #AF_Calendar .af-calendar-side {
                 max-height: min(800px, calc(100dvh - 24px));
                 overflow: auto;
-                padding: 15px;
+                overscroll-behavior: contain;
+                padding: 18px;
                 scrollbar-width: thin;
-                scrollbar-color: #506783 transparent;
+                scrollbar-color: rgba(66, 104, 201, .4) transparent;
             }
 
-            #AF_Calendar .af-calendar-side {
-                flex: 0 0 340px;
-                width: 340px;
-            }
+            #AF_Calendar .af-calendar-scroll::-webkit-scrollbar,
+            #AF_Calendar .af-calendar-side::-webkit-scrollbar { width: 4px; }
+            #AF_Calendar .af-calendar-scroll::-webkit-scrollbar-thumb,
+            #AF_Calendar .af-calendar-side::-webkit-scrollbar-thumb { background: rgba(66, 104, 201, .3); border-radius: 8px; }
 
-            #AF_Calendar .af-calendar-editor {
-                flex-basis: 350px;
-                width: 350px;
-            }
+            #AF_Calendar .af-calendar-side { flex: 0 0 360px; width: 360px; }
+            #AF_Calendar .af-calendar-editor { flex-basis: 350px; width: 350px; }
 
+            /* Шапки: ❌ слева, заголовок, линия-акцент снизу */
             #AF_Calendar .af-calendar-toolbar,
             #AF_Calendar .af-calendar-nav,
             #AF_Calendar .af-calendar-side-header {
                 display: flex;
                 align-items: center;
-                gap: 7px;
+                gap: 8px;
                 flex-wrap: wrap;
+            }
+
+            #AF_Calendar .af-calendar-toolbar { flex-wrap: nowrap; gap: 6px; }
+            #AF_Calendar .af-calendar-toolbar .af-calendar-title { white-space: nowrap; margin-right: 2px; }
+
+            /* У шапки календаря тот же id, что у старой шапки статистики в style.css —
+               её серый фон и отступы здесь сбрасываем */
+            #AF_Calendar #stataaf_header {
+                justify-content: flex-start;
+                margin: 0;
+                padding: 0 0 12px;
+                background: none;
+                box-shadow: none;
             }
 
             #AF_Calendar .af-calendar-toolbar,
             #AF_Calendar .af-calendar-side-header {
-                padding-bottom: 11px;
-                border-bottom: 1px solid #34435c;
+                position: relative;
+                padding-bottom: 12px;
+                border-bottom: 1px solid rgba(66, 104, 201, .15);
             }
+
+            #AF_Calendar .af-calendar-toolbar::after,
+            #AF_Calendar .af-calendar-side-header::after {
+                content: '';
+                position: absolute;
+                bottom: -1px;
+                left: 0;
+                width: 40%;
+                height: 1px;
+                background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
+            }
+
+            /* Окно можно тянуть за любое пустое место панели: кнопки, поля и слоты
+               перетаскивание не запускают (это проверяет enableDrag в utils.js) */
+            #AF_Calendar .chmaf-drag-handle { cursor: grab; user-select: none; }
+            #AF_Calendar .chmaf-drag-handle:active { cursor: grabbing; }
+            #AF_Calendar .chmaf-drag-handle :is(button, label) { cursor: pointer; }
+            #AF_Calendar .chmaf-drag-handle input { cursor: text; }
+            #AF_Calendar .chmaf-drag-handle input[type="checkbox"],
+            #AF_Calendar .chmaf-drag-handle input[type="date"] { cursor: pointer; }
 
             #AF_Calendar .af-calendar-nav {
                 justify-content: center;
-                padding: 13px 0;
+                flex-wrap: nowrap;
+                padding: 12px 0;
             }
 
-            #AF_Calendar .af-calendar-spacer {
-                flex: 1;
-            }
+            #AF_Calendar .af-calendar-spacer { flex: 1; }
 
             #AF_Calendar .af-calendar-title {
-                color: #f0f5fc;
-                font-size: 13px;
-                font-weight: 800;
+                color: #fefefe;
+                font-size: 15px;
+                font-weight: 700;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
             }
 
+            #AF_Calendar .af-calendar-side-header .af-calendar-title { flex: 1; }
+
+            /* Кнопки */
             #AF_Calendar .af-calendar-btn,
             #AF_Calendar .af-calendar-slot,
             #AF_Calendar .af-calendar-badge {
                 appearance: none;
-                border: 1px solid #3a4b65;
+                color: #dce5f5;
+                background: #1b283c;
+                border: 1px solid #3c4d68;
                 border-radius: 9px;
-                background: #202e43;
-                color: #ecf4fd;
-                font: 600 12px/1.2 Inter, system-ui, sans-serif;
+                font: inherit;
+                font-size: 13px;
+                font-weight: 600;
+                line-height: 1.2;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, .45);
                 cursor: pointer;
-                transition:
-                    background .18s ease,
-                    border-color .18s ease,
-                    transform .18s ease;
+                transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
             }
 
             #AF_Calendar .af-calendar-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                min-width: 34px;
                 min-height: 34px;
-                padding: 7px 10px;
+                padding: 0 12px;
                 white-space: nowrap;
             }
 
+            #AF_Calendar .af-calendar-btn--icon { width: 34px; padding: 0; font-size: 15px; }
+
             #AF_Calendar .af-calendar-btn:hover:not(:disabled),
             #AF_Calendar .af-calendar-badge:hover:not(:disabled) {
-                border-color: #4fbbe8;
-                background: #263d55;
+                color: #fff;
+                background: #293b56;
+                border-color: #7799e2;
                 transform: translateY(-1px);
             }
+
+            #AF_Calendar .af-calendar-btn:active:not(:disabled) { transform: translateY(0) scale(.98); }
 
             #AF_Calendar .af-calendar-btn:disabled,
             #AF_Calendar .af-calendar-slot:disabled {
@@ -189,105 +232,161 @@
 
             #AF_Calendar .af-calendar-btn--primary,
             #AF_Calendar .af-calendar-btn.is-active {
-                border-color: #347ca5;
-                background: #174561;
-                color: #c9f2ff;
+                color: #fff;
+                background: #4268c9;
+                border-color: #7293ed;
+                box-shadow: 0 5px 15px rgba(58, 96, 205, .25);
             }
+
+            #AF_Calendar .af-calendar-btn--primary:hover:not(:disabled),
+            #AF_Calendar .af-calendar-btn.is-active:hover:not(:disabled) {
+                background: #547ce1;
+                border-color: #a2b9fa;
+            }
+
+            #AF_Calendar #availableActiveSlots { color: #86efac; font-size: 10px; }
 
             #AF_Calendar .af-calendar-btn--danger {
-                color: #ff9aaa;
+                color: #ffb0be;
+                background: rgba(255, 116, 140, .08);
+                border-color: rgba(255, 116, 140, .3);
             }
 
+            #AF_Calendar .af-calendar-btn--danger:hover:not(:disabled) {
+                color: #ffc6d0;
+                background: rgba(255, 116, 140, .16);
+                border-color: rgba(255, 116, 140, .55);
+            }
+
+            /* Поля */
             #AF_Calendar .af-calendar-input {
                 min-width: 0;
                 min-height: 34px;
-                padding: 6px 9px;
-                border: 1px solid #3a4b65;
-                border-radius: 8px;
+                padding: 0 10px;
+                color: #edf2fb;
+                color-scheme: dark;
+                background: #0d1625;
+                border: 1px solid #3a4961;
+                border-radius: 9px;
                 outline: none;
-                background: #101b2b;
-                color: #ecf4fd;
-                font: 600 12px Inter, system-ui, sans-serif;
+                font: inherit;
+                font-size: 13px;
+                font-weight: 600;
+                transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
             }
 
+            #AF_Calendar .af-calendar-input::placeholder { color: #7d8ca6; font-weight: 500; }
+
             #AF_Calendar .af-calendar-input:focus {
-                border-color: #67d5f4;
-                box-shadow: 0 0 0 3px rgba(103,213,244,.12);
+                background: #142034;
+                border-color: #829fff;
+                box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
             }
 
             #AF_Calendar .af-calendar-date {
-                width: 145px;
-                color-scheme: dark;
-                font-family: 'JetBrains Mono', monospace;
+                width: 150px;
+                font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
             }
 
             #AF_Calendar .af-calendar-clock {
-                width: 66px;
+                width: 70px;
+                color: #a9c0ff;
                 text-align: center;
-                color: #80dfff;
-                font-family: 'JetBrains Mono', monospace;
+                font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
             }
 
-            #AF_Calendar .af-calendar-muted {
-                color: #aabbd1;
-                font-size: 11px;
-            }
+            #AF_Calendar .af-calendar-muted { color: #94a3b8; font-size: 12px; }
 
             #AF_Calendar .af-calendar-timezone {
-                padding: 6px 8px;
-                border: 1px solid #425779;
-                border-radius: 7px;
-                background: #202d45;
-                color: #aecbff;
-                font: 600 11px 'JetBrains Mono', monospace;
+                padding: 4px 10px;
+                color: #a9c0ff;
+                background: rgba(66, 104, 201, .14);
+                border: 1px solid rgba(119, 153, 226, .35);
+                border-radius: 999px;
+                font: 600 11px 'JetBrains Mono', ui-monospace, Consolas, monospace;
             }
 
+            /* «Автообновление» — маленький переключатель, как в Настройках */
             #AF_Calendar .af-calendar-auto {
                 display: inline-flex;
                 align-items: center;
-                gap: 5px;
-                color: #c5d3e4;
-                font-size: 11px;
+                gap: 6px;
+                color: #94a3b8;
+                font-size: 12px;
+                font-weight: 600;
                 cursor: pointer;
                 white-space: nowrap;
+                user-select: none;
             }
 
             #AF_Calendar .af-calendar-auto input {
-                accent-color: #49bde8;
+                -webkit-appearance: none;
+                appearance: none;
+                position: relative;
+                flex: none;
+                width: 30px;
+                height: 18px;
+                margin: 0;
+                background: #0d1625;
+                border: 1px solid #3c4d68;
+                border-radius: 999px;
+                cursor: pointer;
+                transition: background-color .16s ease, border-color .16s ease;
             }
 
+            #AF_Calendar .af-calendar-auto input::after {
+                content: '';
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                width: 12px;
+                height: 12px;
+                background: #7d8ca6;
+                border-radius: 50%;
+                transition: transform .18s ease, background-color .16s ease;
+            }
+
+            #AF_Calendar .af-calendar-auto input:checked { background: #4268c9; border-color: #7293ed; }
+            #AF_Calendar .af-calendar-auto input:checked::after { background: #fff; transform: translateX(12px); }
+            #AF_Calendar .af-calendar-auto:has(input:checked) { color: #a9c0ff; }
+
+            /* Сетка слотов */
             #AF_Calendar .af-calendar-slots {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 8px;
+                gap: 6px;
             }
 
             #AF_Calendar .af-calendar-slot {
                 position: relative;
-                min-height: 42px;
-                font: 700 14px 'JetBrains Mono', monospace;
+                min-height: 34px;
+                font: 700 14px 'JetBrains Mono', ui-monospace, Consolas, monospace;
             }
 
-            #AF_Calendar .af-calendar-slot:hover {
-                transform: translateY(-2px);
+            #AF_Calendar .af-calendar-slot:hover:not(:disabled) {
+                color: #fff;
+                border-color: #7799e2;
+                transform: translateY(-1px);
             }
 
+            /* Свободно — обычная тёмная плитка со светло-зелёным временем,
+               занято — розоватое время, прошло — приглушено. Без заливок и полос. */
             #AF_Calendar .af-slot-free {
-                border-color: #317b80;
-                background: #173e46;
-                color: #a8f0e9;
+                color: #b9e8c8;
+                background: #1b283c;
+                border-color: #344a5a;
             }
 
             #AF_Calendar .af-slot-full {
-                border-color: #925263;
-                background: #482b3a;
-                color: #ffc1cb;
+                color: #f3b4bf;
+                background: #1f2235;
+                border-color: #4a3a4f;
             }
 
             #AF_Calendar .af-slot-past {
-                border-color: #3d4c61;
-                background: #253144;
-                color: #aebdd0;
+                color: #5f6e86;
+                background: #141d2c;
+                border-color: #2a3649;
             }
 
             /*
@@ -295,54 +394,59 @@
              * существующие события по-прежнему можно открыть.
              */
             #AF_Calendar .af-calendar-slot.is-booking-closed.af-slot-free {
-                border-color: #526078;
-                background: #253144;
-                color: #aebdd0;
+                color: #7d8ca6;
+                background: #162133;
+                border-color: #2f3c51;
             }
 
+            /* Слот с моим событием — синяя метка */
             #AF_Calendar .af-calendar-slot.is-mine {
-                outline: 2px solid #69dcf8;
+                outline: 2px solid #7799e2;
                 outline-offset: -4px;
             }
 
             #AF_Calendar .af-calendar-slot.is-mine::after {
                 content: '●';
                 position: absolute;
-                right: 8px;
-                top: 4px;
-                color: #69dcf8;
+                right: 7px;
+                top: 2px;
+                color: #a9c0ff;
                 font-size: 9px;
             }
 
             #AF_Calendar .af-calendar-slot.is-selected {
-                box-shadow: 0 0 0 2px #79dafa;
+                box-shadow: 0 0 0 2px #829fff;
             }
 
             #AF_Calendar .af-calendar-badge {
-                padding: 8px 12px;
-                border-color: #4389a9;
-                background: #163f59;
-                color: #c7f4ff;
-                font: 700 12px 'JetBrains Mono', monospace;
+                padding: 8px 14px;
+                color: #fff;
+                background: rgba(66, 104, 201, .2);
+                border-color: #7293ed;
+                font: 700 13px 'JetBrains Mono', ui-monospace, Consolas, monospace;
             }
 
+            /* Строки событий (редактор слота и «Мои слоты») */
             #AF_Calendar .af-calendar-slot-row,
             #AF_Calendar .af-calendar-my-row {
                 display: flex;
                 align-items: center;
-                gap: 7px;
+                gap: 8px;
                 min-width: 0;
                 margin-top: 8px;
-                padding: 9px;
-                border: 1px solid #34435c;
+                padding: 8px 10px;
+                background: #1a2536;
+                border: 1px solid #344258;
+                border-left: 3px solid #3c4d68;
                 border-radius: 10px;
-                background: #152135;
             }
+
+            #AF_Calendar .af-calendar-my-row { border-left-color: #617fbd; }
 
             #AF_Calendar .af-calendar-slot-num {
                 flex: 0 0 23px;
-                color: #aebdd0;
-                font: 700 11px 'JetBrains Mono', monospace;
+                color: #7d8ca6;
+                font: 700 11px 'JetBrains Mono', ui-monospace, Consolas, monospace;
             }
 
             #AF_Calendar .af-calendar-slot-row .af-calendar-input {
@@ -351,65 +455,72 @@
                 text-overflow: ellipsis;
             }
 
-            #AF_Calendar .af-calendar-slot-row.is-occupied {
-                border-color: #3e7180;
-            }
+            #AF_Calendar .af-calendar-slot-row .af-calendar-btn,
+            #AF_Calendar .af-calendar-my-row .af-calendar-btn { width: 34px; padding: 0; }
+
+            #AF_Calendar .af-calendar-slot-row.is-occupied { border-left-color: #617fbd; }
 
             #AF_Calendar .af-calendar-slot-row.is-mine {
-                background: #16333f;
+                background: rgba(66, 104, 201, .14);
+                border-left-color: #a9c0ff;
             }
 
             #AF_Calendar .af-calendar-my-time {
                 flex: 0 0 52px;
-                color: #8ee3fa;
-                font: 700 12px 'JetBrains Mono', monospace;
+                color: #a9c0ff;
+                font: 700 13px 'JetBrains Mono', ui-monospace, Consolas, monospace;
             }
 
             #AF_Calendar .af-calendar-my-id {
-                flex: 0 0 82px;
-                width: 82px;
+                flex: 0 0 86px;
+                width: 86px;
                 text-align: center;
+                font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
             }
 
             #AF_Calendar .af-calendar-status {
-                padding: 5px 6px;
-                border-radius: 6px;
-                background: #283850;
-                color: #b8d1f3;
-                font-size: 10px;
+                padding: 3px 8px;
+                color: #cbd5e1;
+                background: rgba(148, 163, 184, .12);
+                border: 1px solid rgba(148, 163, 184, .3);
+                border-radius: 999px;
+                font-size: 11px;
                 font-weight: 700;
+                white-space: nowrap;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                flex: 1 1 auto;
             }
+
+            #AF_Calendar .af-calendar-my-row .af-calendar-btn { flex: none; margin-left: auto; }
 
             #AF_Calendar .af-calendar-empty {
                 grid-column: 1 / -1;
                 padding: 22px 12px;
-                border: 1px dashed #42536b;
-                border-radius: 10px;
-                color: #aabbd1;
+                color: #94a3b8;
+                border: 1px dashed rgba(66, 104, 201, .3);
+                border-radius: 12px;
                 text-align: center;
-                font-size: 12px;
+                font-size: 13px;
             }
 
             #AF_Calendar .af-calendar-error {
-                color: #ff9aaa;
-                border-color: #855263;
+                color: #fca5a5;
+                border-color: rgba(220, 20, 60, .4);
             }
 
             #AF_Calendar :is(button, input):focus-visible {
-                outline: 2px solid #80def7;
+                outline: 2px solid #9ab5ff;
                 outline-offset: 2px;
             }
 
             @media (max-width: 1050px) {
-                #AF_Calendar .af-calendar-layout {
-                    overflow-x: auto;
-                }
+                #AF_Calendar .af-calendar-layout { overflow-x: auto; }
             }
 
             @media (max-width: 630px) {
-                #AF_Calendar .af-calendar-slots {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
+                #AF_Calendar .af-calendar-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             }
 
             @media (prefers-reduced-motion: reduce) {
@@ -433,20 +544,20 @@
         <div class="af-calendar-layout">
             <section
                 id="slotList"
-                class="af-calendar-side af-calendar-editor"
+                class="af-calendar-side af-calendar-editor chmaf-drag-handle"
                 style="display:none"
             >
                 <div class="af-calendar-side-header chmaf-drag-handle">
-                    <span class="af-calendar-title">
-                        Редактирование слота
-                    </span>
-
                     <button
                         id="hideSlot"
                         type="button"
-                        class="af-calendar-btn af-calendar-btn--danger"
+                        class="af-calendar-btn af-calendar-btn--danger af-calendar-btn--icon"
                         title="Закрыть редактор"
-                    >×</button>
+                    >❌</button>
+
+                    <span class="af-calendar-title">
+                        ✏️ Редактирование слота
+                    </span>
                 </div>
 
                 <div style="text-align:center;margin:12px 0">
@@ -463,7 +574,7 @@
 
             <section
                 id="AF_Calendar_Container"
-                class="af-calendar-main"
+                class="af-calendar-main chmaf-drag-handle"
             >
                 <div class="af-calendar-scroll">
                     <div
@@ -473,21 +584,25 @@
                         <button
                             id="hidecalendar"
                             type="button"
-                            class="af-calendar-btn af-calendar-btn--danger"
-                            title="Скрыть"
-                        >×</button>
+                            class="af-calendar-btn af-calendar-btn--danger af-calendar-btn--icon"
+                            title="Скрыть окно"
+                        >❌</button>
+
+                        <span class="af-calendar-title">📅 Календарь</span>
 
                         <button
                             id="clearcalendar"
                             type="button"
-                            class="af-calendar-btn"
-                        >Очистить</button>
+                            class="af-calendar-btn af-calendar-btn--icon"
+                            title="Очистить"
+                        >🧹</button>
 
                         <button
                             id="refreshcalendar"
                             type="button"
-                            class="af-calendar-btn"
-                        >↻</button>
+                            class="af-calendar-btn af-calendar-btn--icon"
+                            title="Обновить"
+                        >♻️</button>
 
                         <button
                             id="opendatsy"
@@ -495,12 +610,12 @@
                             class="af-calendar-btn"
                         >Datsy ↗</button>
 
-                        <label class="af-calendar-auto">
+                        <label class="af-calendar-auto" title="Автообновление календаря">
                             <input
                                 id="autorefreshswitcher"
                                 type="checkbox"
                             >
-                            Автообновление
+                            Авто
                         </label>
 
                         <span class="af-calendar-spacer"></span>
@@ -522,7 +637,8 @@
                         <button
                             id="prevDay"
                             type="button"
-                            class="af-calendar-btn"
+                            class="af-calendar-btn af-calendar-btn--icon"
+                            title="Предыдущий день"
                         >◀</button>
 
                         <input
@@ -535,7 +651,8 @@
                         <button
                             id="nextDay"
                             type="button"
-                            class="af-calendar-btn"
+                            class="af-calendar-btn af-calendar-btn--icon"
+                            title="Следующий день"
                         >▶</button>
 
                         <button
@@ -544,20 +661,17 @@
                             class="af-calendar-btn"
                         >Сегодня</button>
 
-                        <span class="af-calendar-muted">
-                            Обновлено
-                        </span>
-
                         <input
                             id="datenowtime"
                             type="text"
                             class="af-calendar-input af-calendar-clock"
                             readonly
+                            title="Время последнего обновления (МСК)"
                             aria-label="Время обновления по Москве"
                         >
 
-                        <span class="af-calendar-timezone">
-                            МСК UTC+3
+                        <span class="af-calendar-timezone" title="Время слотов — московское, UTC+3">
+                            МСК
                         </span>
                     </div>
 
@@ -570,11 +684,20 @@
 
             <section
                 id="operatorActiveSlots"
-                class="af-calendar-side"
+                class="af-calendar-side chmaf-drag-handle"
                 style="display:none"
             ></section>
         </div>
     `;
+
+    // Клик по полосе прокрутки панели — это прокрутка, а не перетаскивание окна
+    function guardScrollbarDrag(event) {
+        const el = event.currentTarget;
+        const scrollbarWidth = el.offsetWidth - el.clientWidth;
+        if (scrollbarWidth > 0 && event.offsetX >= el.clientWidth) {
+            event.stopPropagation();
+        }
+    }
 
     const calendarWindow = createWindow(
         'AF_Calendar',
@@ -587,6 +710,10 @@
         console.error('[Calendar] Не удалось создать окно');
         return;
     }
+
+    calendarWindow
+        .querySelectorAll('.af-calendar-scroll, .af-calendar-side')
+        .forEach(panel => panel.addEventListener('mousedown', guardScrollbarDrag, true));
 
     const $ = id =>
         calendarWindow.querySelector(`#${id}`);
@@ -766,7 +893,7 @@
         return (
             calendarWindow.isConnected &&
             getComputedStyle(calendarWindow).display !==
-                'none'
+            'none'
         );
     }
 
@@ -1482,8 +1609,7 @@
 
         try {
             const response = await request(
-                `/api/main-events/?date=${
-                    encodeURIComponent(date)
+                `/api/main-events/?date=${encodeURIComponent(date)
                 }`
             );
 
