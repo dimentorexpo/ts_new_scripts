@@ -357,6 +357,47 @@ function ensureTsThemeStyle() {
       border-bottom-color: #e0f0ff !important;
     }
 
+
+    /* --- Цвета журнала и полосы устройств (заданы «прообразы» под инверсию) --- */
+
+    /* Ячейки журнала: тёмный фон + цветная полоса слева вместо сплошной заливки */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) td.-info {
+      background: #d9edff !important;            /* → #1a2a48 */
+      box-shadow: inset 3px 0 0 #285ac5 !important; /* → #7aa2f7 */
+    }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) td.-good {
+      background: #d0f2e4 !important;            /* → #163126 */
+      box-shadow: inset 3px 0 0 #006900 !important; /* → #4ade80 */
+    }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) td.-warning {
+      background: #f6e8cf !important;            /* → #352a16 */
+      box-shadow: inset 3px 0 0 #622800 !important; /* → #facc15 */
+    }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(td.-error, td.-bad, td.-danger, td.-critical) {
+      background: #ffebf7 !important;            /* → #33202a */
+      box-shadow: inset 3px 0 0 #f24a4a !important; /* → #f87171 */
+    }
+
+    /* Полосы браузеров: мягкие градиенты вместо «кислотных» плашек */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .browser {
+      color: #000000 !important;                 /* → белый текст */
+      border: 0 !important;
+      background: linear-gradient(90deg, #66abff, #7194ff) !important; /* → синий/индиго */
+      font-weight: 600;
+    }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .browser.chrome {
+      background: linear-gradient(90deg, #3e96e9, #09aad9) !important;  /* → синий → бирюза */
+    }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .browser.yandex {
+      background: linear-gradient(90deg, #ad85ff, #ff7bbb) !important;  /* → фиолет → малина */
+    }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .browser.safari {
+      background: linear-gradient(90deg, #1da9a2, #09aad9) !important;  /* → морская волна */
+    }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .browser.firefox {
+      background: linear-gradient(90deg, #f96c1e, #ff8d8d) !important;  /* → оранжевый → коралл */
+    }
+
     html.chmaf-ts-dark ::-webkit-scrollbar { width: 10px; height: 10px; background: #111827; }
     html.chmaf-ts-dark ::-webkit-scrollbar-thumb { background: #344258; border-radius: 8px; border: 2px solid #111827; }
   `;
