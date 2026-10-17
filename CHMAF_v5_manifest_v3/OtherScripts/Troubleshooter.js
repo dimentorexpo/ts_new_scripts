@@ -41,12 +41,29 @@ function ownIdText(element) {
   return text.trim();
 }
 
+function tagBrowserBars() {
+  for (const bar of document.querySelectorAll('.browser, [dstooltip].browser, .mw-browser-line [dstooltip]')) {
+    const raw = (bar.textContent || '') + ' ' + (bar.getAttribute('dstooltip') || '') + ' ' + (bar.className || '');
+    const text = raw.toLowerCase();
+    if (text.includes('safari')) {
+      bar.classList.add('chmaf-browser-safari');
+    } else if (text.includes('chrome')) {
+      bar.classList.add('chmaf-browser-chrome');
+    } else if (text.includes('yandex') || text.includes('ya')) {
+      bar.classList.add('chmaf-browser-yandex');
+    } else if (text.includes('firefox')) {
+      bar.classList.add('chmaf-browser-firefox');
+    }
+  }
+}
+
 function addusersinfo() {
   for (const { selector, type } of USER_FIELD_SOURCES) {
     for (const element of document.querySelectorAll(selector)) {
       processUserElement(element, type);
     }
   }
+  tagBrowserBars();
 }
 
 function processUserElement(element, type) {
@@ -268,7 +285,7 @@ function ensureTsThemeStyle() {
   style.textContent = `
     html.chmaf-ts-dark,
     html.chmaf-ts-dark body {
-      background: #111827 !important;
+      background: #191919 !important;
       color-scheme: dark;
     }
 
@@ -385,21 +402,21 @@ function ensureTsThemeStyle() {
       background: linear-gradient(90deg, #66abff, #7194ff) !important; /* → синий/индиго */
       font-weight: 600;
     }
-    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .browser.chrome {
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.browser.chrome, .browser.Chrome, .browser[class*="chrome" i], .chmaf-browser-chrome) {
       background: linear-gradient(90deg, #3e96e9, #09aad9) !important;  /* → синий → бирюза */
     }
-    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .browser.yandex {
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.browser.yandex, .browser.Yandex, .browser[class*="yandex" i], .chmaf-browser-yandex) {
       background: linear-gradient(90deg, #ad85ff, #ff7bbb) !important;  /* → фиолет → малина */
     }
-    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .browser.safari {
-      background: linear-gradient(90deg, #1da9a2, #09aad9) !important;  /* → морская волна */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.browser.safari, .browser.Safari, .browser[class*="safari" i], .chmaf-browser-safari) {
+      background: linear-gradient(90deg, #10b981, #059669) !important;  /* → морская волна / изумруд */
     }
-    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .browser.firefox {
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.browser.firefox, .browser.Firefox, .browser[class*="firefox" i], .chmaf-browser-firefox) {
       background: linear-gradient(90deg, #f96c1e, #ff8d8d) !important;  /* → оранжевый → коралл */
     }
 
-    html.chmaf-ts-dark ::-webkit-scrollbar { width: 10px; height: 10px; background: #111827; }
-    html.chmaf-ts-dark ::-webkit-scrollbar-thumb { background: #344258; border-radius: 8px; border: 2px solid #111827; }
+    html.chmaf-ts-dark ::-webkit-scrollbar { width: 10px; height: 10px; background: #191919; }
+    html.chmaf-ts-dark ::-webkit-scrollbar-thumb { background: #344258; border-radius: 8px; border: 2px solid #191919; }
   `;
   (document.head || document.documentElement).appendChild(style);
 }
@@ -407,6 +424,7 @@ function ensureTsThemeStyle() {
 function applyTsTheme(dark) {
   ensureTsThemeStyle();
   document.documentElement.classList.toggle('chmaf-ts-dark', Boolean(dark));
+  if (dark) tagBrowserBars();
 }
 
 if (window.location.href.includes('video-trouble-shooter.skyeng.ru') && globalThis.chrome?.storage?.local) {
