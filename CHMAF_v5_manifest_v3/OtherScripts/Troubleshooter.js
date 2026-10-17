@@ -249,6 +249,130 @@ const userBadgeObserver = new MutationObserver((mutations) => {
 userBadgeObserver.observe(document.body, { childList: true, subtree: true });
 
 // ==========================================
+// Тёмная тема страницы TroubleShooter
+// Включается/выключается в Настройках ChMAF (chrome.storage: tsDarkTheme,
+// по умолчанию — тёмная). Страница — Angular Material со своими светлыми
+// стилями, поэтому делаем «реверс»: инвертируем содержимое страницы и
+// возвращаем исходные оттенки hue-rotate. Цвета статусов (красный, зелёный,
+// подписи (У)/(П)) сохраняют свой тон, светлые фоны становятся тёмными.
+// Наши окна (диагностика, кнопка 🔍) не инвертируются.
+// ==========================================
+
+const TS_THEME_KEY = 'tsDarkTheme';
+const TS_THEME_STYLE_ID = 'chmaf-ts-dark-theme';
+
+function ensureTsThemeStyle() {
+  if (document.getElementById(TS_THEME_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = TS_THEME_STYLE_ID;
+  style.textContent = `
+    html.chmaf-ts-dark,
+    html.chmaf-ts-dark body {
+      background: #111827 !important;
+      color-scheme: dark;
+    }
+
+    /* Всё содержимое страницы, кроме окон ChMAF */
+    html.chmaf-ts-dark body > :not(script):not(style):not(link):not(.chmaf-ts-keep):not(#webrtc-diag-floating-btn) {
+      filter: invert(.9) hue-rotate(180deg);
+    }
+
+    /* Картинки и видео возвращаем к нормальным цветам */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep):not(#webrtc-diag-floating-btn) :is(img, video, canvas, picture) {
+      filter: invert(1) hue-rotate(180deg);
+    }
+
+    /* Лёгкий синий оттенок — в тон окнам ChMAF, а не нейтрально-серый */
+    html.chmaf-ts-dark body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 2147483000;
+      pointer-events: none;
+      background: rgba(40, 70, 150, .16);
+      mix-blend-mode: screen;
+    }
+
+
+    /* --- Серые элементы страницы → цвета ChMAF.
+       Содержимое страницы инвертировано, поэтому здесь заданы «светлые
+       прообразы»: после invert(.9) + hue-rotate(180deg) они становятся
+       тёмно-синими, как кнопки и поля в окнах расширения. --- */
+
+    /* Кнопки («Обновить» и т. п.); вкладки, чипы и кнопки-иконки не трогаем */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) button:not([role="tab"]):not([class*="chip"]):not([class*="icon-button"]):not([class*="mat-mdc-tab"]):not([class*="expansion"]) {
+      color: #000317 !important;
+      background: #e0f0ff !important;
+      border: 1px solid #aec3e5 !important;
+      border-radius: 8px !important;
+      box-shadow: none !important;
+      transition: background-color .16s ease, border-color .16s ease;
+    }
+
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) button:not([role="tab"]):not([class*="chip"]):not([class*="icon-button"]):not([class*="mat-mdc-tab"]):not([class*="expansion"]):hover:not(:disabled) {
+      background: #c3dafc !important;
+      border-color: #3a65c0 !important;
+    }
+
+    /* Поля ввода, в т. ч. «Выберите промежуток» */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea) {
+      color: #000000 !important;
+      background-color: #f5faff !important;
+      border-color: #b5c7e5 !important;
+      opacity: 1 !important;
+      -webkit-text-fill-color: #000000 !important;
+    }
+
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(input, textarea)::placeholder {
+      color: #6f7f99 !important;
+      -webkit-text-fill-color: #6f7f99 !important;
+    }
+
+    /* Всплывающие подсказки (браузер и ОС на полосе «Устройства пользователя») */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(
+      .mdc-tooltip__surface, .mat-mdc-tooltip, .mat-tooltip, .tooltip-inner, .tooltip, [role="tooltip"]
+    ) {
+      color: #000000 !important;
+      background: #e0f0ff !important;
+      border: 1px solid #aec3e5 !important;
+      box-shadow: none !important;
+    }
+
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.tooltip-arrow, .arrow)::before {
+      border-top-color: #e0f0ff !important;
+      border-bottom-color: #e0f0ff !important;
+    }
+
+    html.chmaf-ts-dark ::-webkit-scrollbar { width: 10px; height: 10px; background: #111827; }
+    html.chmaf-ts-dark ::-webkit-scrollbar-thumb { background: #344258; border-radius: 8px; border: 2px solid #111827; }
+  `;
+  (document.head || document.documentElement).appendChild(style);
+}
+
+function applyTsTheme(dark) {
+  ensureTsThemeStyle();
+  document.documentElement.classList.toggle('chmaf-ts-dark', Boolean(dark));
+}
+
+if (window.location.href.includes('video-trouble-shooter.skyeng.ru') && globalThis.chrome?.storage?.local) {
+  try {
+    chrome.storage.local.get(TS_THEME_KEY, (res) => {
+      if (chrome.runtime?.lastError) { applyTsTheme(true); return; }
+      applyTsTheme(res?.[TS_THEME_KEY] !== false);
+    });
+
+    // Переключили в Настройках — меняем тему сразу, без перезагрузки страницы
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && changes[TS_THEME_KEY]) {
+        applyTsTheme(changes[TS_THEME_KEY].newValue !== false);
+      }
+    });
+  } catch (e) {
+    applyTsTheme(true);
+  }
+}
+
+// ==========================================
 // Кнопка диагностики
 // ==========================================
 
@@ -267,26 +391,27 @@ if (window.location.href.includes('video-trouble-shooter.skyeng.ru')) {
         height: 60px;
         padding: 0;
         border-radius: 50%;
-        background-color: #243447;
+        background-color: #1b283c;
         color: #ffffff;
-        font-size: 28px;
+        font-size: 26px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+        box-shadow: 0 10px 28px rgba(3, 9, 22, 0.45);
         z-index: 999999;
-        transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-        border: 1px solid rgba(255, 255, 255, 0.16);
+        transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        border: 1px solid #3c4d68;
         user-select: none;
     `;
 
   const setHover = (on) => {
     diagBtn.style.transform = on ? 'scale(1.05)' : 'scale(1)';
-    diagBtn.style.backgroundColor = on ? '#1B2735' : '#243447';
+    diagBtn.style.backgroundColor = on ? '#293b56' : '#1b283c';
+    diagBtn.style.borderColor = on ? '#7799e2' : '#3c4d68';
     diagBtn.style.boxShadow = on
-      ? '0 10px 28px rgba(15, 23, 42, 0.36)'
-      : '0 8px 24px rgba(15, 23, 42, 0.28)';
+      ? '0 12px 32px rgba(3, 9, 22, 0.55)'
+      : '0 10px 28px rgba(3, 9, 22, 0.45)';
   };
   diagBtn.addEventListener('mouseenter', () => setHover(true));
   diagBtn.addEventListener('mouseleave', () => setHover(false));
@@ -328,6 +453,8 @@ async function runDiagnostics() {
 
   const ISSUE_RE =
     /таймаут|connectionstatefailed|connectionfailed|janussessioncreatetimeout|переподключается|ошибк[аиуеой]\s*:|ошибка подключения|показано уведомление\s*:\s*hardwareerror|не удалось установить видеосвязь\s*\(камера\)|показано уведомление\s*:\s*(?:не выдан доступ к камере\s*\/\s*микрофону|партн[её]р не выдал доступ к камере\s*\/\s*микрофону)/i;
+
+  const WEBRTC_PROBLEM_RE = /зафиксированы проблемы webrtc/i;
 
   const VIDEO_ISSUE_RE =
     /не удалось установить видеосвязь\s*\(камера\)|таймаут при установке видеосвязи\s*\(камера партн[её]ра\)/i;
@@ -459,6 +586,11 @@ async function runDiagnostics() {
         seenErrors: new Set(),
         seenPlatforms: new Set(),
         seenBannedServers: new Set(),
+
+        // «Зафиксированы проблемы WebRTC» — в список событий не попадают
+        // (их слишком много), но общее количество показываем.
+        webrtcProblems: [],
+        seenWebrtcProblems: new Set(),
 
         lastMicState: null,
         lastMicSource: null,
@@ -820,6 +952,14 @@ async function runDiagnostics() {
     }
 
     if (text.length < 6) return;
+
+    if (WEBRTC_PROBLEM_RE.test(text)) {
+      if (!user.seenWebrtcProblems.has(entry)) {
+        user.seenWebrtcProblems.add(entry);
+        user.webrtcProblems.push({ ...context });
+      }
+      return;
+    }
 
     if (
       NOISE.some(phrase =>
@@ -1205,6 +1345,7 @@ async function runDiagnostics() {
   // ─────────────────────────────────────────────
 
   host = el("div");
+  host.classList.add("chmaf-ts-keep"); // тёмная тема страницы не должна перекрашивать окно диагностики
   host.id =
     "webrtc-premium-diagnostics";
 
@@ -1223,31 +1364,30 @@ async function runDiagnostics() {
   const style = el("style");
 
   style.textContent = `
+    /* Оформление «corporate graphite» — как окна ChMAF (AF_helper, Userinfo, ChatHistory) */
     :host {
-      color-scheme: light;
-      font-family: Inter, ui-sans-serif, -apple-system,
-        BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 14px;
-      color: #17243a;
+      color-scheme: dark;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI",
+        Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 13.5px;
+      color: #e2e8f0;
+      -webkit-font-smoothing: antialiased;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     button,
-    input {
-      font: inherit;
-    }
+    input { font: inherit; }
 
     .backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(10, 20, 36, .54);
-      backdrop-filter: blur(7px);
+      background: rgba(3, 9, 22, .6);
+      backdrop-filter: blur(6px);
       pointer-events: auto;
     }
 
+    /* --- Окно --- */
     .panel {
       position: fixed;
       top: 50%;
@@ -1258,33 +1398,37 @@ async function runDiagnostics() {
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      border: 1px solid rgba(255,255,255,.7);
-      border-radius: 22px;
-      background: #f6f8fc;
-      box-shadow:
-        0 36px 100px rgba(7,19,40,.34),
-        0 2px 12px rgba(7,19,40,.12);
+      background:
+        radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+        #111827;
+      border: 1px solid #344258;
+      border-radius: 18px;
+      box-shadow: 0 26px 70px rgba(3, 9, 22, .6), inset 0 1px rgba(255, 255, 255, .06);
       pointer-events: auto;
     }
 
+    /* --- Шапка: ❌ слева, заголовок, «Обновить» справа --- */
     .header {
-      padding: 25px 28px 23px;
-      color: white;
-      background:
-        radial-gradient(
-          circle at 90% 0%,
-          rgba(80,150,255,.26),
-          transparent 38%
-        ),
-        linear-gradient(120deg, #101d32, #1a3150);
+      position: relative;
+      margin: 0 20px;
+      padding: 16px 0 12px;
+      border-bottom: 1px solid rgba(66, 104, 201, .15);
       cursor: grab;
       touch-action: none;
       user-select: none;
     }
 
-    .header:active {
-      cursor: grabbing;
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 40%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(66, 104, 201, .6), transparent);
     }
+
+    .header:active { cursor: grabbing; }
 
     .topline,
     .actions,
@@ -1297,7 +1441,9 @@ async function runDiagnostics() {
       align-items: center;
     }
 
-    .topline,
+    .topline { gap: 8px; }
+    .heading { flex: 1; min-width: 0; }
+
     .card-head,
     .section-heading,
     .history-head {
@@ -1305,457 +1451,406 @@ async function runDiagnostics() {
       gap: 12px;
     }
 
-    .eyebrow {
-      margin: 0 0 7px;
-      color: #8cb9ff;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-    }
-
     h1 {
       margin: 0;
-      font-size: clamp(19px, 2.4vw, 26px);
-      font-weight: 740;
-      letter-spacing: -.04em;
+      color: #fefefe;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .01em;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
     }
 
-    .subtitle {
-      margin: 9px 0 0;
-      color: #b8c9e0;
-      font-size: 12px;
-    }
-
-    .actions {
-      gap: 8px;
-      flex-shrink: 0;
-    }
+    .actions { gap: 8px; flex-shrink: 0; }
 
     .btn {
-      min-height: 36px;
-      padding: 8px 12px;
-      border: 1px solid rgba(255,255,255,.22);
-      border-radius: 10px;
-      background: rgba(255,255,255,.10);
-      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 34px;
+      padding: 0 12px;
+      color: #dce5f5;
+      background: #1b283c;
+      border: 1px solid #3c4d68;
+      border-radius: 9px;
       cursor: pointer;
-      font-size: 12px;
-      font-weight: 650;
+      font-size: 13px;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, .45);
+      transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
     }
 
-    .btn:hover {
-      background: rgba(255,255,255,.2);
+    .btn:hover:not(:disabled) {
+      color: #fff;
+      background: #293b56;
+      border-color: #7799e2;
+      transform: translateY(-1px);
     }
 
-    .btn:disabled {
-      opacity: .55;
-      cursor: wait;
-    }
+    .btn:disabled { opacity: .55; cursor: wait; }
 
     .btn-close {
-      width: 36px;
+      justify-content: center;
+      width: 34px;
       padding: 0;
-      font-size: 23px;
+      font-size: 15px;
       line-height: 1;
+      background: rgba(255, 116, 140, .08);
+      border-color: rgba(255, 116, 140, .3);
     }
 
+    .btn-close:hover:not(:disabled) {
+      background: rgba(255, 116, 140, .16);
+      border-color: rgba(255, 116, 140, .55);
+    }
+
+    /* --- Содержимое --- */
     .content {
       min-height: 0;
       overflow: auto;
-      padding: 22px 26px 28px;
+      overscroll-behavior: contain;
+      padding: 14px 20px 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(66, 104, 201, .4) transparent;
     }
 
+    .content::-webkit-scrollbar,
+    .logs::-webkit-scrollbar,
+    .history-body::-webkit-scrollbar { width: 4px; }
+
+    .content::-webkit-scrollbar-thumb,
+    .logs::-webkit-scrollbar-thumb,
+    .history-body::-webkit-scrollbar-thumb { background: rgba(66, 104, 201, .3); border-radius: 8px; }
+
+    /* Вкладки — сегментированный переключатель */
     .tabs {
       display: flex;
-      gap: 6px;
-      margin-bottom: 17px;
-      padding: 5px;
-      border: 1px solid #e3eaf4;
+      gap: 4px;
+      width: fit-content;
+      margin-bottom: 12px;
+      padding: 4px;
+      background: #0d1625;
+      border: 1px solid #344258;
       border-radius: 12px;
-      background: #edf2f9;
     }
 
     .tab {
-      padding: 9px 14px;
-      border: 0;
-      border-radius: 9px;
+      height: 32px;
+      padding: 0 14px;
+      color: #94a3b8;
       background: transparent;
-      color: #6a7b94;
+      border: 1px solid transparent;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background-color .16s ease, color .16s ease;
     }
 
-    .tab:hover {
-      color: #294c7b;
-    }
+    .tab:hover { color: #fff; background: rgba(66, 104, 201, .16); }
 
     .tab.active {
-      background: white;
-      color: #244d82;
-      box-shadow: 0 2px 8px rgba(25,53,91,.09);
+      color: #fff;
+      background: #4268c9;
+      border-color: #7293ed;
+      box-shadow: 0 4px 12px rgba(58, 96, 205, .3);
     }
 
-    .tab[hidden] {
-      display: none;
-    }
+    .tab[hidden] { display: none; }
 
+    /* Итоги сверху */
     .summary {
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 18px;
+      gap: 8px;
+      margin-bottom: 14px;
     }
 
     .metric {
-      padding: 10px 14px;
-      border: 1px solid #e2e9f3;
-      border-radius: 12px;
-      background: white;
-      color: #52627b;
-      font-size: 12px;
+      display: inline-flex;
+      align-items: baseline;
+      padding: 7px 12px;
+      color: #94a3b8;
+      background: #1a2536;
+      border: 1px solid #344258;
+      border-radius: 10px;
+      font-size: 12.5px;
     }
 
     .metric strong {
       margin-right: 6px;
-      color: #14243c;
-      font-size: 16px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
     }
 
     .search {
-      width: min(270px, 100%);
-      min-height: 39px;
+      width: min(280px, 100%);
+      min-height: 36px;
       margin-left: auto;
-      padding: 0 13px;
-      border: 1px solid #dce5f1;
-      border-radius: 11px;
+      padding: 0 12px;
+      color: #edf2fb;
+      background: #0d1625;
+      border: 1px solid #3a4961;
+      border-radius: 10px;
       outline: none;
-      background: white;
-      color: #17243a;
+      transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
     }
+
+    .search::placeholder { color: #7d8ca6; }
 
     .search:focus {
-      border-color: #609bf5;
-      box-shadow:
-        0 0 0 3px rgba(96,155,245,.15);
+      background: #142034;
+      border-color: #829fff;
+      box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
     }
 
+    /* --- Карточки участников --- */
     .grid {
       display: grid;
-      grid-template-columns:
-        repeat(
-          auto-fit,
-          minmax(min(100%,365px), 1fr)
-        );
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 365px), 1fr));
       align-items: start;
-      gap: 16px;
+      gap: 14px;
     }
 
     .card {
       min-width: 0;
       overflow: hidden;
-      border: 1px solid #e1e8f2;
-      border-radius: 17px;
-      background: white;
-      box-shadow:
-        0 7px 22px rgba(23,44,75,.045);
+      background: #1a2536;
+      border: 1px solid #344258;
+      border-radius: 14px;
     }
 
     .card-head {
       flex-wrap: wrap;
-      padding: 17px 18px;
-      border-bottom: 1px solid #edf1f6;
+      padding: 14px 16px;
+      background: #162133;
+      border-bottom: 1px solid #344258;
     }
 
     .role {
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      width: fit-content;
       margin: 0;
-      padding: 4px 12px;
+      padding: 3px 11px;
+      border: 1px solid;
       border-radius: 999px;
       font-size: 13px;
-      font-weight: 750;
-      border: 1px solid;
-      width: fit-content;
+      font-weight: 700;
     }
 
-    /* Цветные пилюли ролей: ученик — зелёный, преподаватель — синий */
-    .role.role-student {
-      color: #1a7f4b;
-      background: rgba(52, 199, 123, .12);
-      border-color: rgba(52, 199, 123, .45);
-    }
-    .role.role-student::before {
-      content: '';
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #34c77b;
-    }
-    .role.role-teacher {
-      color: #2a5fc9;
-      background: rgba(66, 133, 244, .12);
-      border-color: rgba(66, 133, 244, .45);
-    }
-    .role.role-teacher::before {
-      content: '';
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #4285f4;
-    }
-    .role.role-unknown {
-      color: #5c6b80;
-      background: rgba(120, 136, 160, .12);
-      border-color: rgba(120, 136, 160, .4);
-    }
+    /* Ученик — красный, преподаватель — синий: как подписи (У)/(П) в журнале */
+    .role.role-student { color: #fca5a5; background: rgba(220, 20, 60, .12); border-color: rgba(220, 20, 60, .35); }
+    .role.role-student::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fca5a5; }
+    .role.role-teacher { color: #a9c0ff; background: rgba(66, 104, 201, .16); border-color: rgba(119, 153, 226, .45); }
+    .role.role-teacher::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #a9c0ff; }
+    .role.role-unknown { color: #cbd5e1; background: rgba(148, 163, 184, .12); border-color: rgba(148, 163, 184, .3); }
 
     .id {
       display: block;
       max-width: 100%;
       margin-top: 5px;
       overflow-wrap: anywhere;
-      color: #7888a0;
-      font-size: 11px;
+      color: #94a3b8;
+      font: 600 12px 'JetBrains Mono', ui-monospace, Consolas, monospace;
     }
+
+    .badges { display: flex; flex-wrap: wrap; gap: 6px; }
 
     .badge {
-      padding: 7px 10px;
+      padding: 4px 10px;
+      border: 1px solid;
       border-radius: 999px;
       white-space: nowrap;
-      font-size: 11px;
-      font-weight: 750;
+      font-size: 11.5px;
+      font-weight: 700;
     }
 
-    .badge.ok {
-      background: #e7f6ee;
-      color: #13784a;
-    }
+    .badge.ok { color: #86efac; background: rgba(69, 199, 52, .12); border-color: rgba(69, 199, 52, .35); }
+    .badge.bad { color: #fca5a5; background: rgba(220, 20, 60, .12); border-color: rgba(220, 20, 60, .35); }
+    .badge.warn { color: #fdba74; background: rgba(255, 140, 0, .12); border-color: rgba(255, 140, 0, .38); cursor: help; }
 
-    .badge.bad {
-      background: #fff0ed;
-      color: #bb4535;
-    }
-
-    .section {
-      padding: 15px 18px 0;
-    }
-
-    .last-section {
-      padding-bottom: 18px;
-    }
+    .section { padding: 14px 16px 0; }
+    .last-section { padding-bottom: 16px; }
 
     .section-title {
-      margin: 0 0 10px;
-      color: #75849a;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: .11em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      margin: 0 0 8px;
+      color: #fefefe;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
       text-transform: uppercase;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(66, 104, 201, .4), transparent);
     }
 
     .facts {
       display: grid;
-      grid-template-columns:
-        repeat(2, minmax(0,1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
     }
 
     .fact {
       min-width: 0;
-      padding: 11px 12px;
-      border: 1px solid #e8edf4;
-      border-radius: 11px;
-      background: #f8fafd;
+      padding: 9px 11px;
+      background: rgba(0, 0, 0, .22);
+      border: 1px solid rgba(66, 104, 201, .15);
+      border-left: 3px solid #3c4d68;
+      border-radius: 10px;
     }
 
-    .fact.good {
-      border-color: #ccebdd;
-      background: #f1fbf5;
-    }
-
-    .fact.warn {
-      border-color: #f3d1cc;
-      background: #fff5f3;
-    }
-
-	.fact.missing {
-  border-color: #e2bd72;
-  background: #fff9eb;
-  box-shadow: inset 3px 0 0 #d5a54d;
-}
-
-.fact.missing .fact-label {
-  color: #8a6420;
-}
-
-.fact.missing .fact-value {
-  color: #6d4b12;
-  font-weight: 760;
-}
+    .fact.good { border-left-color: #86efac; }
+    .fact.warn { border-left-color: #fca5a5; background: rgba(220, 20, 60, .07); }
+    .fact.missing { border-left-color: #fdba74; background: rgba(255, 140, 0, .07); }
+    .fact.missing .fact-label { color: #fdba74; }
+    .fact.missing .fact-value { color: #fed7aa; font-weight: 700; }
 
     .fact-label {
-      margin-bottom: 5px;
-      color: #708098;
+      margin-bottom: 4px;
+      color: #94a3b8;
       font-size: 11px;
-      font-weight: 650;
+      font-weight: 700;
+      letter-spacing: .04em;
     }
 
     .fact-value {
       overflow-wrap: anywhere;
-      color: #24354f;
-      font-size: 12px;
-      font-weight: 650;
+      color: #f1f5f9;
+      font-size: 12.5px;
+      font-weight: 600;
       line-height: 1.45;
     }
 
-    .device-line {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .mic-icon {
-      flex: none;
-      color: #8491a5;
-    }
-
-    .good .mic-icon {
-      color: #15945d;
-    }
-
-    .warn .mic-icon {
-      color: #d14d43;
-    }
+    .device-line { display: flex; align-items: flex-start; gap: 8px; }
+    .mic-icon { flex: none; color: #7d8ca6; }
+    .good .mic-icon { color: #86efac; }
+    .warn .mic-icon { color: #fca5a5; }
 
     .device-hint {
       display: block;
       margin-top: 6px;
-      color: #a0443d;
-      font-size: 11px;
+      color: #fca5a5;
+      font-size: 11.5px;
       font-weight: 500;
       line-height: 1.45;
     }
 
-    .card-tools {
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 14px 18px 0;
-    }
+    .card-tools { flex-wrap: wrap; gap: 6px; padding: 12px 16px 0; }
 
     .tool-btn,
     .sort-btn {
-      border: 1px solid #dce6f4;
+      color: #dce5f5;
+      background: #1b283c;
+      border: 1px solid #3c4d68;
       border-radius: 9px;
-      background: #f4f8ff;
-      color: #315787;
       cursor: pointer;
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 600;
+      transition: background-color .16s ease, border-color .16s ease;
     }
 
-    .tool-btn {
-      padding: 9px 11px;
-    }
-
-    .sort-btn {
-      padding: 6px 8px;
-      white-space: nowrap;
-    }
+    .tool-btn { min-height: 30px; padding: 0 10px; }
+    .sort-btn { min-height: 26px; padding: 0 8px; white-space: nowrap; font-size: 11.5px; }
 
     .tool-btn:hover,
-    .sort-btn:hover {
-      background: #e6f0ff;
+    .sort-btn:hover { color: #fff; background: #293b56; border-color: #7799e2; }
+
+    /* Строка «Зафиксированы проблемы WebRTC: N» над событиями */
+    .webrtc-line {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      margin-bottom: 6px;
+      padding: 7px 10px;
+      border: 1px solid;
+      border-left-width: 3px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      cursor: help;
     }
 
+    .webrtc-line.has { color: #fed7aa; background: rgba(255, 140, 0, .08); border-color: rgba(255, 140, 0, .3); border-left-color: #fdba74; }
+    .webrtc-line.none { color: #94a3b8; background: rgba(0, 0, 0, .18); border-color: rgba(66, 104, 201, .15); border-left-color: #3c4d68; }
+    .webrtc-line-label { flex: 1; min-width: 0; }
+    .webrtc-line-count { color: #fff; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .webrtc-line.none .webrtc-line-count { color: #94a3b8; font-weight: 600; }
+    .webrtc-line-range { color: #94a3b8; font: 600 11.5px 'JetBrains Mono', ui-monospace, Consolas, monospace; }
+
+    /* Журнал событий */
     .logs {
-      max-height: 190px;
+      max-height: 210px;
       overflow: auto;
       margin: 0;
-      padding: 0;
+      padding: 0 4px 0 0;
       list-style: none;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(66, 104, 201, .4) transparent;
     }
 
     .log {
-      margin-top: 7px;
-      padding: 9px 11px;
-      border-left: 3px solid #e88b74;
+      margin-top: 6px;
+      padding: 7px 10px;
+      color: #fecdd3;
+      background: rgba(220, 20, 60, .07);
+      border-left: 3px solid #fca5a5;
       border-radius: 0 8px 8px 0;
-      background: #fff7f5;
-      color: #74453f;
       overflow-wrap: anywhere;
-      font:
-        11px/1.5 ui-monospace,
-        SFMono-Regular,
-        Consolas,
-        monospace;
-		  font-size: 14px;
-      line-height: 1.5;
+      font: 12.5px/1.5 'JetBrains Mono', ui-monospace, Consolas, monospace;
     }
 
     .log.platform {
-      border-left-color: #6d9de9;
-      background: #f2f7ff;
-      color: #31527e;
+      color: #c7d6ff;
+      background: rgba(66, 104, 201, .1);
+      border-left-color: #92afff;
     }
 
     .empty {
       padding: 12px;
-      border: 1px dashed #d6e1ef;
-      border-radius: 11px;
-      background: #f9fbfe;
-      color: #72829a;
-      font-size: 12px;
+      color: #94a3b8;
+      border: 1px dashed rgba(66, 104, 201, .3);
+      border-radius: 10px;
+      font-size: 12.5px;
       line-height: 1.5;
     }
 
-    .notice {
-      min-height: 17px;
-      margin: 12px 0 0;
-      color: #71819a;
-      font-size: 11px;
-    }
+    .notice { min-height: 17px; margin: 12px 0 0; color: #7d8ca6; font-size: 11.5px; }
 
-    .ban-list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .ban-entry {
-      padding: 14px 18px;
-      border-bottom: 1px solid #edf1f6;
-    }
-
-    .ban-entry:last-child {
-      border-bottom: 0;
-    }
+    /* --- Бан серверов --- */
+    .ban-list { margin: 0; padding: 0; list-style: none; }
+    .ban-entry { padding: 12px 16px; border-bottom: 1px solid rgba(52, 66, 88, .6); }
+    .ban-entry:last-child { border-bottom: 0; }
 
     .ban-time {
       display: block;
-      margin-bottom: 8px;
-      color: #8190a5;
-      font-size: 11px;
-      font-weight: 700;
+      margin-bottom: 6px;
+      color: #94a3b8;
+      font: 700 11.5px 'JetBrains Mono', ui-monospace, Consolas, monospace;
     }
 
     .ban-server {
       display: block;
       margin-top: 6px;
-      padding: 10px 12px;
-      border: 1px solid #f0d9d3;
+      padding: 8px 10px;
+      color: #fca5a5;
+      background: rgba(220, 20, 60, .08);
+      border: 1px solid rgba(220, 20, 60, .3);
       border-radius: 9px;
-      background: #fff6f3;
-      color: #a3473b;
       overflow-wrap: anywhere;
-      font:
-        12px/1.5 ui-monospace,
-        SFMono-Regular,
-        Consolas,
-        monospace;
+      font: 12px/1.5 'JetBrains Mono', ui-monospace, Consolas, monospace;
     }
 
+    /* --- Окно истории (микрофон / камера / кодеки) --- */
     .history-overlay {
       position: fixed;
       inset: 0;
@@ -1764,8 +1859,8 @@ async function runDiagnostics() {
       align-items: center;
       justify-content: center;
       padding: 18px;
-      background: rgba(10,20,36,.66);
-      backdrop-filter: blur(5px);
+      background: rgba(3, 9, 22, .6);
+      backdrop-filter: blur(4px);
       pointer-events: auto;
     }
 
@@ -1775,71 +1870,65 @@ async function runDiagnostics() {
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      border: 1px solid #dbe5f2;
+      background: #111827;
+      border: 1px solid #344258;
       border-radius: 18px;
-      background: white;
-      box-shadow:
-        0 30px 80px rgba(6,17,35,.35);
+      box-shadow: 0 26px 70px rgba(3, 9, 22, .6);
     }
 
     .history-head {
-      padding: 19px 21px;
-      border-bottom: 1px solid #e9eef6;
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+      position: relative;
+      margin: 0 18px;
+      padding: 16px 0 12px;
+      border-bottom: 1px solid rgba(66, 104, 201, .15);
     }
 
-    .history-title {
-      margin: 0;
-      color: #14243c;
-      font-size: 17px;
-    }
-
-    .history-subtitle {
-      margin: 5px 0 0;
-      color: #8190a5;
-      font-size: 11px;
-      overflow-wrap: anywhere;
-    }
+    .history-title { margin: 0; color: #fefefe; font-size: 15px; font-weight: 700; }
+    .history-subtitle { margin: 4px 0 0; color: #94a3b8; font-size: 11.5px; overflow-wrap: anywhere; }
 
     .history-close {
-      width: 32px;
-      height: 32px;
-      border: 1px solid #e0e7f1;
+      flex: none;
+      width: 34px;
+      height: 34px;
+      color: #ffb0be;
+      background: rgba(255, 116, 140, .08);
+      border: 1px solid rgba(255, 116, 140, .3);
       border-radius: 9px;
-      background: #f7f9fc;
-      color: #465b79;
       cursor: pointer;
-      font-size: 21px;
+      font-size: 15px;
     }
+
+    .history-close:hover { background: rgba(255, 116, 140, .16); border-color: rgba(255, 116, 140, .55); }
 
     .history-body {
       min-height: 0;
       overflow: auto;
-      padding: 18px 21px 22px;
+      padding: 14px 18px 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(66, 104, 201, .4) transparent;
     }
 
     .history-group-title {
-      margin: 4px 0 14px;
-      color: #526787;
-      font-size: 12px;
-      font-weight: 800;
+      margin: 4px 0 12px;
+      color: #fefefe;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
 
-    .history-group-title:not(:first-child) {
-      margin-top: 25px;
-    }
+    .history-group-title:not(:first-child) { margin-top: 22px; }
 
     .timeline {
       margin: 0;
       padding: 0 0 0 20px;
       list-style: none;
-      border-left: 2px solid #e1eafa;
+      border-left: 2px solid #344258;
     }
 
-    .timeline-item {
-      position: relative;
-      margin: 0 0 15px;
-      padding: 0 0 0 14px;
-    }
+    .timeline-item { position: relative; margin: 0 0 14px; padding: 0 0 0 12px; }
 
     .timeline-item::before {
       content: "";
@@ -1848,167 +1937,40 @@ async function runDiagnostics() {
       left: -26px;
       width: 10px;
       height: 10px;
-      border: 2px solid white;
+      background: #7799e2;
+      border: 2px solid #111827;
       border-radius: 50%;
-      background: #668fe3;
-      box-shadow:
-        0 0 0 1px #b8ccf1;
+      box-shadow: 0 0 0 1px #344258;
     }
 
-    .timeline-item.good::before {
-      background: #22a36a;
-    }
-
-    .timeline-item.warn::before {
-      background: #e16b59;
-    }
+    .timeline-item.good::before { background: #86efac; }
+    .timeline-item.warn::before { background: #fca5a5; }
 
     .timeline-time {
       display: block;
-      margin-bottom: 4px;
-      color: #7e8da4;
-      font-size: 11px;
-      font-weight: 700;
+      margin-bottom: 3px;
+      color: #94a3b8;
+      font: 700 11.5px 'JetBrains Mono', ui-monospace, Consolas, monospace;
     }
 
-    .timeline-label {
-      color: #263954;
-      font-size: 13px;
-      font-weight: 700;
-      overflow-wrap: anywhere;
-    }
+    .timeline-label { color: #f1f5f9; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+    .timeline-note { margin-top: 4px; color: #94a3b8; font-size: 11.5px; line-height: 1.4; }
 
-    .timeline-note {
-      margin-top: 4px;
-      color: #8492a7;
-      font-size: 11px;
-      line-height: 1.4;
-    }
+    button:focus-visible,
+    input:focus-visible { outline: 2px solid #9ab5ff; outline-offset: 2px; }
 
     @media (max-width: 650px) {
-      .panel {
-        max-height: calc(100vh - 20px);
-        border-radius: 16px;
-      }
-
-      .header {
-        padding: 20px 18px;
-      }
-
-      .topline {
-        align-items: flex-start;
-      }
-
-      .actions {
-        gap: 5px;
-      }
-
-      .btn-label {
-        display: none;
-      }
-
-      .btn {
-        min-width: 36px;
-        padding: 8px;
-      }
-
-      .content {
-        padding: 16px;
-      }
-
-      .search {
-        width: 100%;
-        margin-left: 0;
-      }
-
-      .section-heading {
-        align-items: flex-start;
-      }
+      .panel { max-height: calc(100vh - 20px); border-radius: 16px; }
+      .header { margin: 0 12px; }
+      .btn-label { display: none; }
+      .btn { padding: 0 9px; }
+      .content { padding: 11px 12px 14px; }
+      .search { width: 100%; margin-left: 0; }
+      .section-heading { align-items: flex-start; }
     }
 
-	/* Компактная верхняя часть */
-    .header {
-      padding: 12px 18px;
-    }
-
-    .topline {
-      gap: 10px;
-    }
-
-    .eyebrow,
-    .subtitle {
-      display: none;
-    }
-
-    h1 {
-      font-size: 18px;
-      line-height: 1.15;
-      letter-spacing: -.025em;
-    }
-
-    .actions {
-      gap: 6px;
-    }
-
-    .btn {
-      min-height: 32px;
-      padding: 6px 9px;
-      border-radius: 8px;
-      font-size: 11px;
-    }
-
-    .btn-close {
-      width: 32px;
-      padding: 0;
-    }
-
-    /* Компактнее вкладки, показатели и отступы */
-    .content {
-      padding: 13px 16px 17px;
-    }
-
-    .tabs {
-      margin-bottom: 11px;
-      padding: 3px;
-      border-radius: 10px;
-    }
-
-    .tab {
-      padding: 7px 11px;
-      border-radius: 7px;
-    }
-
-    .summary {
-      gap: 7px;
-      margin-bottom: 12px;
-    }
-
-    .metric {
-      padding: 7px 10px;
-      border-radius: 9px;
-    }
-
-    .metric strong {
-      font-size: 14px;
-    }
-
-    .search {
-      min-height: 34px;
-    }
-
-    /* На узком экране сохраняем заголовок и кнопки в одной строке */
-    @media (max-width: 650px) {
-      .header {
-        padding: 11px 13px;
-      }
-
-      h1 {
-        font-size: 16px;
-      }
-
-      .content {
-        padding: 11px;
-      }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
     }
   `;
 
@@ -2032,7 +1994,8 @@ async function runDiagnostics() {
   const topline = el("div", "topline");
   const heading = el("div");
 
-  heading.append(el("h1", "", "Диагностика WebRTC"));
+  heading.className = "heading";
+  heading.append(el("h1", "", "🔍 Диагностика WebRTC"));
 
   const actions = el("div", "actions");
   const refreshButton = el("button", "btn");
@@ -2040,15 +2003,15 @@ async function runDiagnostics() {
   refreshButton.type = "button";
   refreshButton.title = "Обновить данные";
   refreshButton.setAttribute("aria-label", "Обновить данные");
-  refreshButton.append("↻ ", el("span", "btn-label", "Обновить"));
+  refreshButton.append("♻️ ", el("span", "btn-label", "Обновить"));
 
-  const closeButton = el("button", "btn btn-close", "×");
+  const closeButton = el("button", "btn btn-close", "❌");
   closeButton.type = "button";
   closeButton.title = "Закрыть";
   closeButton.setAttribute("aria-label", "Закрыть");
 
-  actions.append(refreshButton, closeButton);
-  topline.append(heading, actions);
+  actions.append(refreshButton);
+  topline.append(closeButton, heading, actions);
   header.append(topline);
 
   const content = el("div", "content");
@@ -2139,6 +2102,22 @@ async function runDiagnostics() {
     return { text: `${camera} · статус неизвестен`, tone: "" };
   }
 
+  function webrtcProblemsSummary(user) {
+    const list = [...user.webrtcProblems].sort((a, b) => compareByTime(a, b, false));
+    const count = list.length;
+    const range = count
+      ? (count > 1 ? `${list[0].time} → ${list[count - 1].time}` : list[0].time)
+      : "";
+    return { count, range };
+  }
+
+  function plural(n, one, few, many) {
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  }
+
   function addLogSection(card, user, type) {
     const isError = type === "error";
     const section = el("section", `section ${isError ? "last-section" : ""}`.trim());
@@ -2156,6 +2135,21 @@ async function runDiagnostics() {
       sectionHeading.append(sortButton);
     }
     section.append(sectionHeading);
+
+    // Общее число записей «Зафиксированы проблемы WebRTC» — отдельной строкой над событиями
+    if (isError) {
+      const { count, range } = webrtcProblemsSummary(user);
+      const line = el("div", `webrtc-line ${count ? "has" : "none"}`);
+      line.append(
+        el("span", "webrtc-line-label", "«Зафиксированы проблемы WebRTC»"),
+        el("strong", "webrtc-line-count",
+          count ? `${count} ${plural(count, "запись", "записи", "записей")}` : "нет")
+      );
+      if (range) line.append(el("span", "webrtc-line-range", range));
+      line.title = "Сколько раз в журнале участника встретилась запись «Зафиксированы проблемы WebRTC». " +
+        "Сами записи в список событий не выводятся — их обычно очень много.";
+      section.append(line);
+    }
 
     const entries = isError
       ? [...user.errors].sort((a, b) => compareByTime(a, b, eventsNewestFirst))
@@ -2221,7 +2215,7 @@ async function runDiagnostics() {
     const historyHeading = el("div");
     historyHeading.append(el("h2", "history-title", titleText), el("p", "history-subtitle", `${ROLE_NAME[user.role]} · ID: ${user.id}`));
 
-    const close = el("button", "history-close", "×");
+    const close = el("button", "history-close", "❌");
     close.type = "button";
     close.title = "Закрыть историю";
     close.setAttribute("aria-label", "Закрыть историю");
@@ -2274,7 +2268,15 @@ async function runDiagnostics() {
     const cardHead = el("div", "card-head");
     const identity = el("div");
     identity.append(el("h2", `role role-${user.role}`, ROLE_NAME[user.role]), el("span", "id", `ID: ${user.id}`));
-    cardHead.append(identity, el("span", `badge ${user.errors.length ? "bad" : "ok"}`, user.errors.length ? `Событий: ${user.errors.length}` : "Событий не найдено"));
+    const badges = el("div", "badges");
+    badges.append(el("span", `badge ${user.errors.length ? "bad" : "ok"}`, user.errors.length ? `Событий: ${user.errors.length}` : "Событий не найдено"));
+    const webrtcCount = user.webrtcProblems.length;
+    if (webrtcCount) {
+      const badge = el("span", "badge warn", `WebRTC: ${webrtcCount}`);
+      badge.title = `«Зафиксированы проблемы WebRTC» — ${webrtcCount} ${plural(webrtcCount, "запись", "записи", "записей")}`;
+      badges.append(badge);
+    }
+    cardHead.append(identity, badges);
     card.append(cardHead);
 
     const tools = el("div", "card-tools");
@@ -2381,8 +2383,9 @@ async function runDiagnostics() {
     grid.replaceChildren(...visible.map(renderCard));
   }
 
-  function metric(label, value) {
+  function metric(label, value, title = "") {
     const result = el("div", "metric");
+    if (title) result.title = title;
     result.append(el("strong", "", String(value)), document.createTextNode(label));
     return result;
   }
@@ -2398,6 +2401,8 @@ async function runDiagnostics() {
     summary.replaceChildren(
       metric("участников", users.length),
       metric("событий", users.reduce((sum, user) => sum + user.errors.length, 0)),
+      metric("проблем WebRTC", users.reduce((sum, user) => sum + user.webrtcProblems.length, 0),
+        "Записей «Зафиксированы проблемы WebRTC» у всех участников"),
       metric("записей о платформе", users.reduce((sum, user) => sum + user.platforms.length, 0)),
       search
     );

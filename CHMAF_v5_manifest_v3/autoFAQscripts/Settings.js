@@ -2984,6 +2984,14 @@ async function init_settings() {
                     </div>
 
                     <div class="set-row">
+                        <span class="set-label" title="Тёмное оформление страницы video-trouble-shooter.skyeng.ru">TroubleShooter</span>
+                        <label class="set-toggle" style="min-height: 0;">
+                            <input type="checkbox" id="tsDarkThemeToggle">
+                            <span id="tsDarkThemeText">Тёмная тема</span>
+                        </label>
+                    </div>
+
+                    <div class="set-row">
                         <span class="set-label">Статус при входе</span>
                         <select id="defaultStatusAfterLogin" class="set-select set-fill">
                             <option value="Online">🟢 Онлайн</option>
@@ -3046,6 +3054,38 @@ async function init_settings() {
     createWindow('AF_Settings', 'winTopSettings', 'winLeftSettings', win_Settings);
     hideWindowOnDoubleClick('AF_Settings');
     hideWindowOnClick('AF_Settings', 'hideMeSettings');
+
+    // Тёмная тема TroubleShooter. Хранится в chrome.storage (а не в localStorage),
+    // потому что TroubleShooter — другой сайт и localStorage AutoFAQ ему не виден.
+    // Открытые вкладки TroubleShooter переключаются сразу (Troubleshooter.js слушает изменения).
+    (function initTsDarkThemeToggle() {
+        const TS_THEME_KEY = 'tsDarkTheme';
+        const toggle = document.getElementById('tsDarkThemeToggle');
+        const text = document.getElementById('tsDarkThemeText');
+        if (!toggle || !globalThis.chrome?.storage?.local) return;
+
+        const paint = (dark) => {
+            toggle.checked = dark;
+            if (text) text.textContent = dark ? 'Тёмная тема' : 'Светлая тема';
+        };
+
+        try {
+            chrome.storage.local.get(TS_THEME_KEY, (res) => {
+                if (chrome.runtime?.lastError) return;
+                paint(res?.[TS_THEME_KEY] !== false); // по умолчанию — тёмная
+            });
+        } catch (e) { /* расширение перезагружено — оставляем как есть */ }
+
+        toggle.addEventListener('change', () => {
+            const dark = toggle.checked;
+            paint(dark);
+            try {
+                chrome.storage.local.set({ [TS_THEME_KEY]: dark });
+            } catch (e) {
+                console.warn('[ChMAF] Не удалось сохранить тему TroubleShooter:', e);
+            }
+        });
+    })();
 
     // --- Helpers ---
     const bindToggle = (id, key, cb) => {
