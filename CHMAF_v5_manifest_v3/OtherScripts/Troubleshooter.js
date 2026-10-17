@@ -314,8 +314,19 @@ function ensureTsThemeStyle() {
       border-color: #3a65c0 !important;
     }
 
-    /* Поля ввода, в т. ч. «Выберите промежуток» */
-    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea) {
+    /* Поля ввода: «Выберите промежуток» (input[skyuiinput]), выпадающие списки
+       ng-zorro (хэш, ID), селект «Сортировка» (Angular Material) */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.ant-select-selector, .mat-mdc-text-field-wrapper, .mdc-text-field--filled) {
+      color: #000000 !important;
+      background-color: #f5faff !important;
+      border: 1px solid #b5c7e5 !important;
+      border-radius: 8px !important;
+      box-shadow: none !important;
+    }
+
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .mdc-line-ripple { display: none !important; }
+
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.ant-select-selection-search-input):not(.mat-mdc-input-element), textarea) {
       color: #000000 !important;
       background-color: #f5faff !important;
       border-color: #b5c7e5 !important;
@@ -328,15 +339,18 @@ function ensureTsThemeStyle() {
       -webkit-text-fill-color: #6f7f99 !important;
     }
 
-    /* Всплывающие подсказки (браузер и ОС на полосе «Устройства пользователя») */
+    /* Всплывающие подсказки (браузер и ОС на полосе «Устройства пользователя» — ds-tooltip) */
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(
-      .mdc-tooltip__surface, .mat-mdc-tooltip, .mat-tooltip, .tooltip-inner, .tooltip, [role="tooltip"]
+      ds-tooltip .root, .mdc-tooltip__surface, .mat-mdc-tooltip, .mat-tooltip, .tooltip-inner, .tooltip, [role="tooltip"]
     ) {
       color: #000000 !important;
       background: #e0f0ff !important;
       border: 1px solid #aec3e5 !important;
       box-shadow: none !important;
     }
+
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) ds-tooltip :is(.content, .body) { color: #000000 !important; }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) ds-tooltip .arrow :is(svg, path) { fill: #e0f0ff !important; color: #e0f0ff !important; }
 
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.tooltip-arrow, .arrow)::before {
       border-top-color: #e0f0ff !important;
@@ -591,6 +605,9 @@ async function runDiagnostics() {
         // (их слишком много), но общее количество показываем.
         webrtcProblems: [],
         seenWebrtcProblems: new Set(),
+
+        // Периоды подключения с полосы «Устройства пользователя»
+        sessions: [],
 
         lastMicState: null,
         lastMicSource: null,
@@ -1113,6 +1130,114 @@ async function runDiagnostics() {
     return "regular";
   }
 
+  // ------------------------------------------------------------
+  // Периоды подключения с разных устройств — из полосы
+  // «Устройства пользователя» над таблицей логов (app-user-agent-timeline).
+  // ------------------------------------------------------------
+  const TIME_ONLY_RE = /^\d{1,2}:\d{2}(?::\d{2})?$/;
+
+  function ownText(element) {
+    let text = "";
+    for (const node of element.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) text += node.textContent;
+    }
+    return clean(text);
+  }
+
+  function minutesOf(time) {
+    const [h, m] = String(time).split(":").map(Number);
+    return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : null;
+  }
+
+  // Подсказка ds-tooltip создаётся только при наведении (в .cdk-overlay-pane).
+  // Имитируем наведение, ждём её и читаем «браузер <br> ОС».
+  async function hoverTooltipLines(bar) {
+    const label = clean(bar.textContent);
+    bar.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    bar.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
+
+    let lines = [];
+    const started = performance.now();
+    while (performance.now() - started < 1200 && !signal.aborted) {
+      const tip = [...document.querySelectorAll("ds-tooltip")].pop();
+      const content = tip?.querySelector(".content") || tip;
+      if (content && clean(content.textContent)) {
+        lines = content.innerHTML
+          .split(/<br\b[^>]*>/i)
+          .map(part => {
+            const div = document.createElement("div");
+            div.innerHTML = part;
+            return clean(div.textContent);
+          })
+          .filter(Boolean);
+        if (!label || lines.some(line => line.toLowerCase().includes(label.toLowerCase()))) break;
+      }
+      await wait(30);
+    }
+
+    bar.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+    bar.dispatchEvent(new MouseEvent("mouseout", { bubbles: true }));
+    await wait(60);
+    return lines;
+  }
+
+  async function readDeviceSessions(found) {
+    // Разметка страницы (проверено в Chrome):
+    // app-user-agent-timeline
+    //   .display-inline-f            — ряд пользователя
+    //     .p-10.w-85                 — ID
+    //     app-timelines .mw-browser-line
+    //       [dstooltip].browser      — «Chrome», «Yandex»… (подсказка: версия + ОС)
+    //       .justify-between p, p    — время начала и конца
+    const timeline = document.querySelector("app-user-agent-timeline");
+    if (!timeline) return;
+
+    const rows = [...timeline.querySelectorAll(".display-inline-f")]
+      .filter(row => row.querySelector(".p-10") && row.querySelector(".mw-browser-line"));
+    if (!rows.length) return;
+
+    // Пока перебираем подсказки — прячем их, чтобы ничего не мигало
+    const hideTips = el("style");
+    hideTips.textContent = "ds-tooltip{visibility:hidden!important}";
+    document.head.append(hideTips);
+
+    try {
+      for (const row of rows) {
+        if (signal.aborted) return;
+
+        const idNode = row.querySelector(".p-10");
+        const id = idNode.dataset.chmafUid || (/(\d{5,})/.exec(idNode.textContent) || [])[1];
+        const user = id && found.get(id);
+        if (!user) continue;
+
+        const sessions = [];
+        for (const line of row.querySelectorAll(".mw-browser-line")) {
+          const bar = line.querySelector("[dstooltip], .browser");
+          const times = [...line.querySelectorAll(".justify-between p, .justify-between span")]
+            .map(node => clean(node.textContent))
+            .filter(text => TIME_ONLY_RE.test(text));
+          const label = clean(bar?.textContent) || "Браузер";
+
+          let browser = label;
+          let os = "";
+          if (bar) {
+            const lines = await hoverTooltipLines(bar);
+            if (lines.length) {
+              browser = lines[0];
+              os = lines.slice(1).join(" ");
+            }
+          }
+
+          sessions.push({ label, browser, os, start: times[0] || null, end: times[1] || null });
+        }
+
+        user.sessions = sessions;
+      }
+    } finally {
+      hideTips.remove();
+    }
+  }
+
   async function collect() {
     await expandPanels();
 
@@ -1127,6 +1252,12 @@ async function runDiagnostics() {
     if (signal.aborted) return [];
 
     const found = findUsers();
+
+    try {
+      await readDeviceSessions(found);
+    } catch (error) {
+      console.warn("[ChMAF:TS] Не удалось прочитать полосу устройств:", error);
+    }
 
     const rowData = [
       ...document.querySelectorAll("tr.mat-mdc-row")
@@ -1765,6 +1896,35 @@ async function runDiagnostics() {
     .tool-btn:hover,
     .sort-btn:hover { color: #fff; background: #293b56; border-color: #7799e2; }
 
+    .badge.info { color: #a9c0ff; background: rgba(66, 104, 201, .16); border-color: rgba(119, 153, 226, .45); cursor: help; }
+
+    /* Периоды подключения с разных устройств */
+    .sessions { margin: 0; padding: 0; list-style: none; }
+
+    .session {
+      padding: 7px 10px;
+      background: rgba(0, 0, 0, .22);
+      border: 1px solid rgba(66, 104, 201, .15);
+      border-left: 3px solid #617fbd;
+      border-radius: 10px;
+    }
+
+    .session + .session { margin-top: 6px; }
+
+    .session-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .session-device { color: #f1f5f9; font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
+    .session-time { flex: none; color: #a9c0ff; font: 700 12.5px 'JetBrains Mono', ui-monospace, Consolas, monospace; }
+    .session-os { margin-top: 2px; color: #94a3b8; font-size: 12px; }
+
+    .session-gap {
+      margin: 4px 0 4px 12px;
+      padding-left: 10px;
+      color: #fdba74;
+      border-left: 2px dashed rgba(253, 186, 116, .5);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
     /* Строка «Зафиксированы проблемы WebRTC: N» над событиями */
     .webrtc-line {
       display: flex;
@@ -2118,6 +2278,52 @@ async function runDiagnostics() {
     return many;
   }
 
+  function deviceIcon(session) {
+    return /android|ios|iphone|ipad/i.test(`${session.os} ${session.browser}`) ? "📱" : "💻";
+  }
+
+  function addSessionsSection(card, user) {
+    const sessions = user.sessions || [];
+    if (!sessions.length) return;
+
+    const section = el("section", "section");
+    const devices = new Set(sessions.map(s => `${s.browser}|${s.os}`.toLowerCase()));
+    const title = sessions.length > 1
+      ? `Подключения: ${sessions.length} · ${devices.size > 1 ? "разные устройства" : "одно устройство"}`
+      : "Подключение";
+    section.append(el("h3", "section-title", title));
+
+    const list = el("ol", "sessions");
+
+    sessions.forEach((session, index) => {
+      if (index > 0) {
+        const prev = sessions[index - 1];
+        const gap = minutesOf(session.start) - minutesOf(prev.end);
+        const changed = `${prev.browser}|${prev.os}` !== `${session.browser}|${session.os}`;
+        if (Number.isFinite(gap) || changed) {
+          const parts = [];
+          if (Number.isFinite(gap) && gap > 0) parts.push(`перерыв ${gap} мин`);
+          if (Number.isFinite(gap) && gap <= 0) parts.push("переподключение без перерыва");
+          if (changed) parts.push("смена устройства/браузера");
+          list.append(el("li", "session-gap", `⏸ ${parts.join(" · ")}`));
+        }
+      }
+
+      const item = el("li", "session");
+      const head = el("div", "session-head");
+      head.append(
+        el("span", "session-device", `${deviceIcon(session)} ${session.browser}`),
+        el("span", "session-time", `${session.start || "?"} → ${session.end || "?"}`)
+      );
+      item.append(head);
+      if (session.os) item.append(el("div", "session-os", session.os));
+      list.append(item);
+    });
+
+    section.append(list);
+    card.append(section);
+  }
+
   function addLogSection(card, user, type) {
     const isError = type === "error";
     const section = el("section", `section ${isError ? "last-section" : ""}`.trim());
@@ -2270,6 +2476,13 @@ async function runDiagnostics() {
     identity.append(el("h2", `role role-${user.role}`, ROLE_NAME[user.role]), el("span", "id", `ID: ${user.id}`));
     const badges = el("div", "badges");
     badges.append(el("span", `badge ${user.errors.length ? "bad" : "ok"}`, user.errors.length ? `Событий: ${user.errors.length}` : "Событий не найдено"));
+    if ((user.sessions || []).length > 1) {
+      const devicesCount = new Set(user.sessions.map(s => `${s.browser}|${s.os}`.toLowerCase())).size;
+      const badge = el("span", "badge info", devicesCount > 1 ? `Устройств: ${devicesCount}` : `Подключений: ${user.sessions.length}`);
+      badge.title = user.sessions.map(s => `${s.start || "?"}–${s.end || "?"} ${s.browser}${s.os ? " · " + s.os : ""}`).join("\n");
+      badges.append(badge);
+    }
+
     const webrtcCount = user.webrtcProblems.length;
     if (webrtcCount) {
       const badge = el("span", "badge warn", `WebRTC: ${webrtcCount}`);
@@ -2294,6 +2507,8 @@ async function runDiagnostics() {
 
     tools.append(micHistory, cameraHistory, codecHistory);
     card.append(tools);
+
+    addSessionsSection(card, user);
 
     const deviceSection = el("section", "section");
     deviceSection.append(el("h3", "section-title", "Устройства"));
