@@ -4537,31 +4537,59 @@ body.chmaf-en-lang #custom_templates_window {
 
 /* --- Нижняя панель --- */
 
-/* Переключатели режимов: точка-индикатор вместо неоновой колбы */
+/* Переключатели режимов «Чат/Заметки» и «Доработать/Отправить»:
+   светящаяся капсула над текстом — цвет показывает текущий режим */
 #AF_helper #hyperlnk + .flex-row #msg.msgtype,
 #AF_helper #hyperlnk + .flex-row #msg1.msg1type {
-    padding: 0 12px 0 26px !important;
+    position: relative;
+    padding: 3px 14px 0 !important;
+    overflow: visible !important;
 }
 
 #AF_helper #msg.msgtype::after,
 #AF_helper #msg1.msg1type::after {
+    content: '' !important;
     display: block !important;
-    top: 50% !important;
-    left: 12px !important;
-    width: 8px !important;
-    height: 8px !important;
+    position: absolute !important;
+    top: 4px !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 46% !important;
+    min-width: 22px;
+    height: 4px !important;
     border: 0 !important;
-    border-radius: 50% !important;
-    transform: translateY(-50%) !important;
+    border-radius: 999px !important;
+    transform: translateX(-50%) !important;
+    opacity: 1 !important;
+    pointer-events: none;
+    transition: background .25s ease, box-shadow .25s ease, width .25s ease !important;
+}
+
+#AF_helper #msg.msgtype:hover::after,
+#AF_helper #msg1.msg1type:hover::after {
+    width: 60% !important;
 }
 
 /* Чат — зелёный, Заметки — голубой */
-#AF_helper #msg.msgtype:not(.notes)::after { background: #86efac !important; box-shadow: 0 0 8px rgba(134, 239, 172, .7) !important; }
-#AF_helper #msg.msgtype.notes::after       { background: #7dd3fc !important; box-shadow: 0 0 8px rgba(125, 211, 252, .7) !important; }
+#AF_helper #msg.msgtype:not(.notes)::after {
+    background: linear-gradient(90deg, #4ade80, #86efac) !important;
+    box-shadow: 0 0 8px rgba(74, 222, 128, .65), 0 1px 0 rgba(255, 255, 255, .25) inset !important;
+}
+#AF_helper #msg.msgtype.notes::after {
+    background: linear-gradient(90deg, #38bdf8, #7dd3fc) !important;
+    box-shadow: 0 0 8px rgba(56, 189, 248, .65), 0 1px 0 rgba(255, 255, 255, .25) inset !important;
+}
 
 /* Доработать — фиолетовый, Отправить — зелёный */
-#AF_helper #msg1.msg1type:not(.send-mode)::after { background: #c4b5fd !important; box-shadow: 0 0 8px rgba(196, 181, 253, .7) !important; }
-#AF_helper #msg1.msg1type.send-mode::after       { background: #86efac !important; box-shadow: 0 0 8px rgba(134, 239, 172, .7) !important; }
+#AF_helper #msg1.msg1type:not(.send-mode)::after {
+    background: linear-gradient(90deg, #a78bfa, #c4b5fd) !important;
+    box-shadow: 0 0 8px rgba(167, 139, 250, .65), 0 1px 0 rgba(255, 255, 255, .25) inset !important;
+}
+#AF_helper #msg1.msg1type.send-mode::after {
+    background: linear-gradient(90deg, #4ade80, #86efac) !important;
+    box-shadow: 0 0 8px rgba(74, 222, 128, .65), 0 1px 0 rgba(255, 255, 255, .25) inset !important;
+}
 
 /* Send — главная кнопка окна */
 #AF_helper #hyperlnk + .flex-row #snd.glass-btn.mainButton.primary {
