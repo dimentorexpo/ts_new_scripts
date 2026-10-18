@@ -1312,6 +1312,9 @@ async function runDiagnostics() {
 
     const found = findUsers();
 
+    // Новые полосы браузеров (другой урок без перезагрузки) — сразу пометить для тёмной темы
+    try { tagBrowserBars(); } catch (error) { /* не критично */ }
+
     try {
       await readDeviceSessions(found);
     } catch (error) {
@@ -1745,7 +1748,82 @@ async function runDiagnostics() {
       box-shadow: 0 4px 12px rgba(58, 96, 205, .3);
     }
 
-    .tab[hidden] { display: none; }
+    .tab[hidden],
+    .tabs[hidden] { display: none; }
+
+    /* Иконки историй в шапке карточки */
+    .card-icons { display: flex; gap: 6px; flex: none; }
+
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      color: #a9c0ff;
+      background: #1b283c;
+      border: 1px solid #3c4d68;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+
+    .icon-btn:hover { color: #fff; background: #293b56; border-color: #7799e2; transform: translateY(-1px); }
+    .icon-btn:focus-visible { outline: 2px solid #9ab5ff; outline-offset: 2px; }
+
+    /* Итог по участнику */
+    .verdict {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 12px 16px 0;
+    }
+
+    .verdict-chip {
+      padding: 4px 10px;
+      border: 1px solid;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .verdict-chip.ok    { color: #86efac; background: rgba(69, 199, 52, .12);  border-color: rgba(69, 199, 52, .35); }
+    .verdict-chip.bad   { color: #fca5a5; background: rgba(220, 20, 60, .12);  border-color: rgba(220, 20, 60, .38); }
+    .verdict-chip.warn  { color: #fdba74; background: rgba(255, 140, 0, .12);  border-color: rgba(255, 140, 0, .38); }
+    .verdict-chip.info  { color: #a9c0ff; background: rgba(66, 104, 201, .16); border-color: rgba(119, 153, 226, .45); }
+    .verdict-chip.muted { color: #cbd5e1; background: rgba(148, 163, 184, .1); border-color: rgba(148, 163, 184, .28); font-weight: 600; }
+
+    /* Оборудование одной строкой */
+    .hw-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .hw-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      min-width: 0;
+      padding: 5px 10px;
+      color: #e2e8f0;
+      background: rgba(0, 0, 0, .22);
+      border: 1px solid rgba(66, 104, 201, .18);
+      border-radius: 9px;
+      font-size: 12.5px;
+      cursor: default;
+    }
+
+    .hw-chip .hw-name { min-width: 0; max-width: 210px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600; }
+    .hw-chip .hw-status { flex: none; padding: 0 6px; border-radius: 6px; font-size: 11px; font-weight: 800; color: #cbd5e1; background: rgba(148, 163, 184, .15); }
+    .hw-chip.good .hw-status { color: #86efac; background: rgba(69, 199, 52, .15); }
+    .hw-chip.bad { border-color: rgba(220, 20, 60, .4); }
+    .hw-chip.bad .hw-status { color: #fca5a5; background: rgba(220, 20, 60, .18); }
+    .hw-chip.warn { border-color: rgba(255, 140, 0, .38); }
+    .hw-chip.warn .hw-name { color: #fdba74; }
+
+    .hw-details { margin-top: 8px; }
 
     /* Итоги сверху */
     .summary {
@@ -2001,10 +2079,11 @@ async function runDiagnostics() {
 
     .webrtc-line.has { color: #fed7aa; background: rgba(255, 140, 0, .08); border-color: rgba(255, 140, 0, .3); border-left-color: #fdba74; }
     .webrtc-line.none { color: #94a3b8; background: rgba(0, 0, 0, .18); border-color: rgba(66, 104, 201, .15); border-left-color: #3c4d68; }
-    .webrtc-line-label { flex: 1; min-width: 0; }
+    .webrtc-line { flex-wrap: nowrap; white-space: nowrap; }
+    .webrtc-line-label { flex: none; }
     .webrtc-line-count { color: #fff; font-weight: 800; font-variant-numeric: tabular-nums; }
     .webrtc-line.none .webrtc-line-count { color: #94a3b8; font-weight: 600; }
-    .webrtc-line-range { color: #94a3b8; font: 600 11.5px 'JetBrains Mono', ui-monospace, Consolas, monospace; }
+    .webrtc-line-range { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: #94a3b8; font: 600 11.5px 'JetBrains Mono', ui-monospace, Consolas, monospace; }
 
     /* Журнал событий */
     .logs {
@@ -2258,6 +2337,8 @@ async function runDiagnostics() {
   shadow.append(style, backdrop, panel);
   document.body.append(host);
 
+  const expandedHardware = new Set();
+
   function addFact(parent, label, value, tone = "") {
     const fact = el("div", `fact ${tone}`.trim());
     fact.append(el("div", "fact-label", label), el("div", "fact-value", value));
@@ -2321,12 +2402,26 @@ async function runDiagnostics() {
     return { text: `${camera} · статус неизвестен`, tone: "" };
   }
 
+  // «2026.10.15 17:38:24» → дата и «17:38»
+  function splitStamp(stamp) {
+    const text = String(stamp || "");
+    const time = /(\d{1,2}:\d{2})(?::\d{2})?\s*$/.exec(text);
+    return { date: clean(text.slice(0, time ? time.index : text.length)), hm: time ? time[1] : text };
+  }
+
   function webrtcProblemsSummary(user) {
     const list = [...user.webrtcProblems].sort((a, b) => compareByTime(a, b, false));
     const count = list.length;
-    const range = count
-      ? (count > 1 ? `${list[0].time} → ${list[count - 1].time}` : list[0].time)
-      : "";
+    if (!count) return { count, range: "" };
+
+    const first = splitStamp(list[0].time);
+    const last = splitStamp(list[count - 1].time);
+    const sameDay = first.date === last.date;
+    const range = count === 1
+      ? first.hm
+      : sameDay
+        ? `${first.hm} → ${last.hm}`
+        : `${list[0].time} → ${list[count - 1].time}`;
     return { count, range };
   }
 
@@ -2335,6 +2430,38 @@ async function runDiagnostics() {
     if (m10 === 1 && m100 !== 11) return one;
     if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
     return many;
+  }
+
+  const shortBrowser = (session) => clean(String(session.browser || session.label || "").split(/\s+/)[0]) || "браузер";
+
+  function verdictItems(user) {
+    const items = [];
+    const errors = user.errors.length;
+    const webrtc = user.webrtcProblems.length;
+    const sessions = user.sessions || [];
+    const { mic, micStatus, camera, cameraStatus } = user.devices;
+
+    if (errors) items.push({ tone: "bad", text: `❗ ${errors} ${plural(errors, "событие", "события", "событий")} подключения` });
+    if (webrtc) items.push({ tone: "warn", text: `⚠️ ${webrtc} ${plural(webrtc, "сбой", "сбоя", "сбоев")} WebRTC` });
+
+    if (sessions.length > 1) {
+      const devices = new Set(sessions.map(item => `${item.browser}|${item.os}`.toLowerCase()));
+      items.push(devices.size > 1
+        ? { tone: "info", text: `🔀 сменил устройство (${sessions.map(shortBrowser).join(" → ")})` }
+        : { tone: "info", text: `🔁 переподключался ${sessions.length - 1} ${plural(sessions.length - 1, "раз", "раза", "раз")}` });
+    }
+
+    if (!unknown(mic) && /стерео|stereo|mixer|микшер/i.test(mic)) items.push({ tone: "bad", text: "🎤 стереомикшер вместо микрофона" });
+    else if (micStatus === "off") items.push({ tone: "bad", text: "🎤 микрофон отключён" });
+    else if (unknown(mic)) items.push({ tone: "warn", text: "🎤 микрофон не определён" });
+
+    if (unknown(camera)) items.push({ tone: "warn", text: "📷 камера не определена" });
+    else if (cameraStatus === "off") items.push({ tone: "muted", text: "📷 камера выключена" });
+
+    if (!items.some(item => item.tone === "bad" || item.tone === "warn")) {
+      items.unshift({ tone: "ok", text: "✅ Проблем не найдено" });
+    }
+    return items;
   }
 
   function deviceIcon(session) {
@@ -2389,7 +2516,7 @@ async function runDiagnostics() {
     const sectionHeading = el("div", "section-heading");
     sectionHeading.append(el("h3", "section-title", isError ? "События подключения" : "Платформа и приложение"));
 
-    if (isError) {
+    if (isError && user.errors.length > 1) {
       const sortButton = el("button", "sort-btn", eventsNewestFirst ? "↓ Сначала поздние" : "↑ Сначала ранние");
       sortButton.type = "button";
       sortButton.title = "Переключить порядок событий";
@@ -2401,19 +2528,20 @@ async function runDiagnostics() {
     }
     section.append(sectionHeading);
 
-    // Общее число записей «Зафиксированы проблемы WebRTC» — отдельной строкой над событиями
+    // Общее число записей «Зафиксированы проблемы WebRTC» — одной строкой над событиями
     if (isError) {
       const { count, range } = webrtcProblemsSummary(user);
-      const line = el("div", `webrtc-line ${count ? "has" : "none"}`);
-      line.append(
-        el("span", "webrtc-line-label", "«Зафиксированы проблемы WebRTC»"),
-        el("strong", "webrtc-line-count",
-          count ? `${count} ${plural(count, "запись", "записи", "записей")}` : "нет")
-      );
-      if (range) line.append(el("span", "webrtc-line-range", range));
-      line.title = "Сколько раз в журнале участника встретилась запись «Зафиксированы проблемы WebRTC». " +
-        "Сами записи в список событий не выводятся — их обычно очень много.";
-      section.append(line);
+      if (count) {
+        const line = el("div", "webrtc-line has");
+        line.append(
+          el("span", "webrtc-line-label", "⚠️ Проблемы WebRTC:"),
+          el("strong", "webrtc-line-count", String(count))
+        );
+        if (range) line.append(el("span", "webrtc-line-range", `· ${range}`));
+        line.title = "Сколько раз в журнале встретилась запись «Зафиксированы проблемы WebRTC». " +
+          "Сами записи в список событий не выводятся — их обычно очень много.";
+        section.append(line);
+      }
     }
 
     const entries = isError
@@ -2421,9 +2549,7 @@ async function runDiagnostics() {
       : [...user.platforms].sort((a, b) => compareByTime(a, b, true));
 
     if (!entries.length) {
-      section.append(
-        el("div", "empty", isError ? "По заданным фильтрам событий не найдено." : "Сведения об Android или iOS в журнале не найдены.")
-      );
+      // Пустые списки не показываем — «ничего нет» уже видно по строке-итогу карточки
     } else {
       const list = el("ul", "logs");
       for (const entry of entries) {
@@ -2528,68 +2654,146 @@ async function runDiagnostics() {
     close.focus();
   }
 
+  // Контурные SVG-иконки для кнопок историй — читаются на тёмном фоне лучше эмодзи
+  const HISTORY_ICON_PATHS = {
+    microphone: [
+      "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z",
+      "M19 11a7 7 0 0 1-14 0",
+      "M12 18v3",
+      "M8.5 21h7"
+    ],
+    camera: [
+      "M4 7h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z",
+      "M16 10.5l5-3v9l-5-3"
+    ],
+    codecs: [
+      "M4 6h9", "M17 6h3", "M15 4v4",
+      "M4 12h3", "M11 12h9", "M9 10v4",
+      "M4 18h11", "M19 18h1", "M17 16v4"
+    ]
+  };
+
+  function historyIcon(type) {
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("width", "18");
+    svg.setAttribute("height", "18");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "1.9");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    for (const d of HISTORY_ICON_PATHS[type] || []) {
+      const path = document.createElementNS(ns, "path");
+      path.setAttribute("d", d);
+      svg.append(path);
+    }
+    return svg;
+  }
+
+  function historyButton(user, type, icon, title) {
+    const button = el("button", "icon-btn");
+    button.append(HISTORY_ICON_PATHS[type] ? historyIcon(type) : document.createTextNode(icon));
+    button.type = "button";
+    button.title = title;
+    button.setAttribute("aria-label", title);
+    button.addEventListener("click", () => openHistory(user.id, type));
+    return button;
+  }
+
+  // Короткое имя устройства для строки «Оборудование»
+  function shortDevice(name) {
+    return clean(String(name || "")
+      .replace(/\s*\([0-9a-f]{4}:[0-9a-f]{4}\)\s*/gi, " ")
+      .replace(/^по умолчанию\s*-\s*/i, ""));
+  }
+
+  function hardwareChip(icon, name, status, tone, title) {
+    const chip = el("span", `hw-chip ${tone}`.trim());
+    chip.title = title;
+    chip.append(el("span", "hw-icon", icon), el("span", "hw-name", name));
+    if (status) chip.append(el("span", "hw-status", status));
+    return chip;
+  }
+
   function renderCard(user) {
     const card = el("article", "card");
+
+    // Шапка: роль + ID слева, истории иконками справа (п. 6)
     const cardHead = el("div", "card-head");
     const identity = el("div");
     identity.append(el("h2", `role role-${user.role}`, ROLE_NAME[user.role]), el("span", "id", `ID: ${user.id}`));
-    const badges = el("div", "badges");
-    badges.append(el("span", `badge ${user.errors.length ? "bad" : "ok"}`, user.errors.length ? `Событий: ${user.errors.length}` : "Событий не найдено"));
-    if ((user.sessions || []).length > 1) {
-      const devicesCount = new Set(user.sessions.map(s => `${s.browser}|${s.os}`.toLowerCase())).size;
-      const badge = el("span", "badge info", devicesCount > 1 ? `Устройств: ${devicesCount}` : `Подключений: ${user.sessions.length}`);
-      badge.title = user.sessions.map(s => `${s.start || "?"}–${s.end || "?"} ${s.browser}${s.os ? " · " + s.os : ""}`).join("\n");
-      badges.append(badge);
-    }
-
-    const webrtcCount = user.webrtcProblems.length;
-    if (webrtcCount) {
-      const badge = el("span", "badge warn", `WebRTC: ${webrtcCount}`);
-      badge.title = `«Зафиксированы проблемы WebRTC» — ${webrtcCount} ${plural(webrtcCount, "запись", "записи", "записей")}`;
-      badges.append(badge);
-    }
-    cardHead.append(identity, badges);
+    const tools = el("div", "card-icons");
+    tools.append(
+      historyButton(user, "microphone", "🎤", "История микрофона"),
+      historyButton(user, "camera", "🎥", "История камеры"),
+      historyButton(user, "codecs", "🎛", "История кодеков")
+    );
+    cardHead.append(identity, tools);
     card.append(cardHead);
 
-    const tools = el("div", "card-tools");
-    const micHistory = el("button", "tool-btn", "◷ История микрофона");
-    micHistory.type = "button";
-    micHistory.addEventListener("click", () => openHistory(user.id, "microphone"));
-
-    const codecHistory = el("button", "tool-btn", "◷ История кодеков");
-    codecHistory.type = "button";
-    codecHistory.addEventListener("click", () => openHistory(user.id, "codecs"));
-
-    const cameraHistory = el("button", "tool-btn", "◷ История камеры");
-    cameraHistory.type = "button";
-    cameraHistory.addEventListener("click", () => openHistory(user.id, "camera"));
-
-    tools.append(micHistory, cameraHistory, codecHistory);
-    card.append(tools);
+    // Итог одной строкой (п. 1)
+    const verdict = el("div", "verdict");
+    for (const item of verdictItems(user)) verdict.append(el("span", `verdict-chip ${item.tone}`, item.text));
+    card.append(verdict);
 
     addSessionsSection(card, user);
 
-    const deviceSection = el("section", "section");
-    deviceSection.append(el("h3", "section-title", "Устройства"));
-    const deviceFacts = el("div", "facts");
+    // Оборудование: одна строка, подробности по клику (п. 5)
+    const { mic, micStatus } = user.devices;
     const camera = cameraDescription(user);
-    addFact(deviceFacts, "Камера", camera.text, camera.tone);
-    addMicrophoneFact(deviceFacts, user);
-    deviceSection.append(deviceFacts);
-    card.append(deviceSection);
+    const cameraName = unknown(user.devices.camera) ? "не определена" : shortDevice(user.devices.camera);
+    const cameraStatus = user.devices.cameraStatus === "on" ? "вкл" : user.devices.cameraStatus === "off" ? "выкл" : "";
+    const micName = unknown(mic) ? "не определён" : shortDevice(mic);
+    const micState = micStatus === "on" ? "вкл" : micStatus === "off" ? "выкл" : "";
+    const micTone = unknown(mic) ? "warn" : micStatus === "off" ? "bad" : micStatus === "on" ? "good" : "";
+    const audio = unknown(user.codecs.audio) ? "—" : user.codecs.audio;
+    const video = unknown(user.codecs.video) ? "—" : user.codecs.video;
 
-    const codecsSection = el("section", "section");
-    codecsSection.append(el("h3", "section-title", "Последние значения кодеков"));
-    const codecFacts = el("div", "facts");
-    addFact(codecFacts, "Аудио", unknown(user.codecs.audio) ? "Нет определённого кодека" : user.codecs.audio);
-    addFact(codecFacts, "Видео", unknown(user.codecs.video) ? "Нет определённого кодека" : user.codecs.video);
-    codecsSection.append(codecFacts);
-    card.append(codecsSection);
+    const hw = el("section", "section");
+    const hwHead = el("div", "section-heading");
+    hwHead.append(el("h3", "section-title", "Оборудование"));
+    const expanded = expandedHardware.has(user.id);
+    const toggle = el("button", "sort-btn", expanded ? "Свернуть ▴" : "Подробнее ▾");
+    toggle.type = "button";
+    toggle.addEventListener("click", () => {
+      if (expandedHardware.has(user.id)) expandedHardware.delete(user.id);
+      else expandedHardware.add(user.id);
+      renderGrid();
+    });
+    hwHead.append(toggle);
+    hw.append(hwHead);
 
-    if (user.role === "student") {
+    const hwRow = el("div", "hw-row");
+    hwRow.append(
+      hardwareChip("🎥", cameraName, cameraStatus, unknown(user.devices.camera) ? "warn" : user.devices.cameraStatus === "on" ? "good" : "", camera.text),
+      hardwareChip("🎤", micName, micState, micTone, micName),
+      hardwareChip("🎛", audio === "—" && video === "—" ? "кодеки не определены" : `${audio} / ${video}`, "", "",
+        `Последние кодеки — аудио: ${audio}, видео: ${video}`)
+    );
+    hw.append(hwRow);
+
+    if (expanded) {
+      const deviceFacts = el("div", "facts hw-details");
+      addFact(deviceFacts, "Камера", camera.text, camera.tone);
+      addMicrophoneFact(deviceFacts, user);
+      addFact(deviceFacts, "Аудиокодек", unknown(user.codecs.audio) ? "Нет определённого кодека" : user.codecs.audio);
+      addFact(deviceFacts, "Видеокодек", unknown(user.codecs.video) ? "Нет определённого кодека" : user.codecs.video);
+      hw.append(deviceFacts);
+    }
+    card.append(hw);
+
+    // Пустые разделы не показываем (п. 2)
+    if (user.role === "student" && user.platforms.length) {
       addLogSection(card, user, "platform");
     }
-    addLogSection(card, user, "error");
+    if (user.errors.length || user.webrtcProblems.length) {
+      addLogSection(card, user, "error");
+    }
+
+    card.lastElementChild?.classList.add("last-section");
     return card;
   }
 
@@ -2672,12 +2876,18 @@ async function runDiagnostics() {
     diagnosticsTab.classList.toggle("active", activeTab === "diagnostics");
     bannedTab.classList.toggle("active", activeTab === "bans");
 
+    tabs.hidden = !hasBans; // одна вкладка — переключатель не нужен
+
+    const events = users.reduce((sum, user) => sum + user.errors.length, 0);
+    const webrtc = users.reduce((sum, user) => sum + user.webrtcProblems.length, 0);
+    const platforms = users.reduce((sum, user) => sum + user.platforms.length, 0);
+
     summary.replaceChildren(
-      metric("участников", users.length),
-      metric("событий", users.reduce((sum, user) => sum + user.errors.length, 0)),
-      metric("проблем WebRTC", users.reduce((sum, user) => sum + user.webrtcProblems.length, 0),
-        "Записей «Зафиксированы проблемы WebRTC» у всех участников"),
-      metric("записей о платформе", users.reduce((sum, user) => sum + user.platforms.length, 0)),
+      metric(plural(users.length, "участник", "участника", "участников"), users.length),
+      ...(events ? [metric(plural(events, "событие", "события", "событий"), events)] : []),
+      ...(webrtc ? [metric(`${plural(webrtc, "сбой", "сбоя", "сбоев")} WebRTC`, webrtc,
+        "Записей «Зафиксированы проблемы WebRTC» у всех участников")] : []),
+      ...(platforms ? [metric(plural(platforms, "запись о платформе", "записи о платформе", "записей о платформе"), platforms)] : []),
       search
     );
     renderGrid();
