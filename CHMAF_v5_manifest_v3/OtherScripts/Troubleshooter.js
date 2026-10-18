@@ -295,7 +295,7 @@ function ensureTsThemeStyle() {
     }
 
     /* Картинки и видео возвращаем к нормальным цветам */
-    html.chmaf-ts-dark body > :not(.chmaf-ts-keep):not(#webrtc-diag-floating-btn) :is(img, video, canvas, picture) {
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep):not(#webrtc-diag-floating-btn) :is(img, video, picture) {
       filter: invert(1) hue-rotate(180deg);
     }
 
@@ -415,6 +415,27 @@ function ensureTsThemeStyle() {
       background: linear-gradient(90deg, #f96c1e, #ff8d8d) !important;  /* → оранжевый → коралл */
     }
 
+    /* Графики «Статистики» (canvas) инвертируются вместе со страницей —
+       это рисунок на прозрачном фоне. Чуть приглушаем перед инверсией,
+       чтобы линии стали ярче на тёмном фоне */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) canvas.canvas-max-h {
+      filter: brightness(.72) contrast(1.15) saturate(1.3);
+    }
+
+    /* Плашка «Внимание!» во вкладке «Статистика» → насыщенная янтарная, без полосы сбоку */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .b-warning {
+      background: #f9dfaf !important;          /* → #45300a */
+      border: 1px solid #bc8521 !important;    /* → #a07424 */
+      box-shadow: none !important;
+    }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .b-warning h3 {
+      color: #4e1400 !important;               /* → #ffd166 */
+      font-weight: 700;
+    }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .b-warning p {
+      color: #140000 !important;               /* → #f3e3c3 */
+    }
+
     html.chmaf-ts-dark ::-webkit-scrollbar { width: 10px; height: 10px; background: #191919; }
     html.chmaf-ts-dark ::-webkit-scrollbar-thumb { background: #344258; border-radius: 8px; border: 2px solid #191919; }
   `;
@@ -443,6 +464,482 @@ if (window.location.href.includes('video-trouble-shooter.skyeng.ru') && globalTh
   } catch (e) {
     applyTsTheme(true);
   }
+}
+
+// ==========================================
+// «Статистика»: аналитика под графиком метрики (RTT, lost, lost-by-remote…)
+// Данные берём там же, где страница: API video.skyeng.ru (Elasticsearch),
+// с тем же токеном token_global из localStorage страницы.
+//   1) logs_videocall (по хэшу урока) → какие janus-сессии у какого userId;
+//   2) logs_janus_events (type 32 / subtype 3) → значения метрик по сессиям.
+// Панель свёрстана в светлых цветах страницы: в тёмной теме она
+// инвертируется вместе со страницей и становится тёмной сама.
+// ==========================================
+const TS_STATS = (() => {
+  const API = 'https://video.skyeng.ru/api/analytics/logs/elasticsearch?options=';
+  const STYLE_ID = 'chmaf-ts-stats-style';
+
+  // Описание полей: подпись, единица, тип (gauge — мгновенное значение, counter — накопительный счётчик)
+  const FIELDS = {
+    // skipZero: 0 = «замера не было» (RTT без трафика не считается), в статистику не берём
+    'rtt': { title: 'RTT (задержка)', unit: 'мс', kind: 'gauge', good: 150, bad: 300, lowerIsBetter: true, skipZero: true },
+    'jitter-local': { title: 'Джиттер (локальный)', unit: 'мс', kind: 'gauge', good: 30, bad: 60, lowerIsBetter: true, skipZero: true },
+    'jitter-remote': { title: 'Джиттер (удалённый)', unit: 'мс', kind: 'gauge', good: 30, bad: 60, lowerIsBetter: true, skipZero: true },
+    'lost': { title: 'Потерянные пакеты (от пользователя к серверу)', unit: 'пак.', kind: 'counter', total: 'packets-received', lossy: true },
+    'lost-by-remote': { title: 'Потерянные пакеты (от сервера к пользователю)', unit: 'пак.', kind: 'counter', total: 'packets-sent', lossy: true },
+    'nacks-sent': { title: 'NACK отправлено', unit: 'шт.', kind: 'counter' },
+    'nacks-received': { title: 'NACK получено', unit: 'шт.', kind: 'counter' },
+    'retransmissions-received': { title: 'Повторные передачи', unit: 'шт.', kind: 'counter' },
+    'packets-sent': { title: 'Пакетов отправлено', unit: 'пак.', kind: 'counter' },
+    'packets-received': { title: 'Пакетов получено', unit: 'пак.', kind: 'counter' },
+    'bytes-sent': { title: 'Отправлено данных', unit: 'МБ', kind: 'counter', scale: 1 / 1048576 },
+    'bytes-received': { title: 'Получено данных', unit: 'МБ', kind: 'counter', scale: 1 / 1048576 },
+    'bytes-sent-lastsec': { title: 'Скорость отправки', unit: 'кбит/с', kind: 'gauge', scale: 8 / 1000 },
+    'bytes-received-lastsec': { title: 'Скорость приёма', unit: 'кбит/с', kind: 'gauge', scale: 8 / 1000 },
+    'in-link-quality': { title: 'Качество канала (вход)', unit: '%', kind: 'gauge', good: 90, bad: 70 },
+    'out-link-quality': { title: 'Качество канала (выход)', unit: '%', kind: 'gauge', good: 90, bad: 70 },
+    'in-media-link-quality': { title: 'Качество медиа (вход)', unit: '%', kind: 'gauge', good: 90, bad: 70 },
+    'out-media-link-quality': { title: 'Качество медиа (выход)', unit: '%', kind: 'gauge', good: 90, bad: 70 },
+    'base': { title: 'base', unit: '', kind: 'gauge' }
+  };
+
+  const MEDIA = [
+    { key: 'video', label: 'Видео' },
+    { key: 'audio', label: 'Аудио' }
+  ];
+
+  let cacheKey = '';
+  let cachePromise = null;
+
+  const token = () => {
+    try { return localStorage.getItem('token_global') || ''; } catch (e) { return ''; }
+  };
+
+  async function es(options) {
+    const response = await fetch(API + encodeURIComponent(JSON.stringify(options)), {
+      credentials: 'include',
+      headers: { Authorization: 'Bearer ' + token() }
+    });
+    if (response.status === 401) throw new Error('нет доступа к API (обновите страницу TroubleShooter и войдите заново)');
+    if (!response.ok) throw new Error(`API ответил ${response.status}`);
+    return response.json();
+  }
+
+  function pageParams() {
+    const params = new URLSearchParams(location.search);
+    return { hash: params.get('hash') || '', from: params.get('from') || '', to: params.get('to') || '' };
+  }
+
+  // Локальное время из адреса страницы → ISO (как делает сама страница)
+  const toIso = (value) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  };
+
+  // userId → janus-сессии урока
+  async function loadUserSessions({ hash, from, to }) {
+    const range = {};
+    if (toIso(from)) range.gte = toIso(from);
+    if (toIso(to)) range.lte = toIso(to);
+
+    const result = await es({
+      index: 'logs_videocall',
+      from: 0,
+      size: 3000,
+      body: {
+        query: {
+          bool: {
+            filter: [
+              { match: { appSessionId: hash } },
+              {
+                bool: {
+                  should: [
+                    { match_phrase: { event: 'tech-summary-minute' } },
+                    { match_phrase: { event: 'vimbox.video.client.partner.joined' } },
+                    { match_phrase: { event: 'connect' } }
+                  ], minimum_should_match: 1
+                }
+              },
+              ...(Object.keys(range).length ? [{ range: { '@timestamp': { format: 'strict_date_optional_time', ...range } } }] : [])
+            ]
+          }
+        },
+        sort: [{ '@timestamp': { order: 'asc', unmapped_type: 'boolean' } }]
+      }
+    });
+
+    const map = new Map();
+    for (const hit of result?.hits?.hits || []) {
+      const source = hit._source || {};
+      if (source.userId == null || source.sessionId == null) continue;
+      const user = String(source.userId);
+      if (!map.has(user)) map.set(user, new Set());
+      map.get(user).add(String(source.sessionId));
+    }
+    return map;
+  }
+
+  async function loadStats(sessionIds) {
+    if (!sessionIds.length) return [];
+    const result = await es({
+      index: 'logs_janus_events*',
+      from: 0,
+      size: 10000,
+      body: {
+        query: {
+          bool: {
+            filter: [
+              { match: { type: 32 } },
+              { match: { subtype: 3 } },
+              { bool: { should: sessionIds.map(id => ({ match: { session_id: id } })), minimum_should_match: 1 } }
+            ]
+          }
+        },
+        sort: [{ timestamp: { order: 'asc', unmapped_type: 'boolean' } }]
+      }
+    });
+    return (result?.hits?.hits || []).map(hit => hit._source).filter(Boolean);
+  }
+
+  function loadAll() {
+    const params = pageParams();
+    const key = `${params.hash}|${params.from}|${params.to}`;
+    if (key === cacheKey && cachePromise) return cachePromise;
+
+    cacheKey = key;
+    cachePromise = (async () => {
+      const users = await loadUserSessions(params);
+      const all = [...new Set([...users.values()].flatMap(set => [...set]))];
+      const samples = await loadStats(all);
+      return { users, samples };
+    })();
+    cachePromise.catch(() => { cacheKey = ''; cachePromise = null; });
+    return cachePromise;
+  }
+
+  // ---------- расчёты ----------
+  const timeOf = (s) => {
+    const t = Date.parse(s['@timestamp']);
+    if (!Number.isNaN(t)) return t;
+    const raw = Number(s.timestamp);
+    return raw > 1e15 ? raw / 1000 : raw; // timestamp janus — в микросекундах
+  };
+
+  const median = (sorted) => {
+    if (!sorted.length) return null;
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  };
+
+  const percentile = (sorted, p) => sorted.length ? sorted[Math.min(sorted.length - 1, Math.ceil(p / 100 * sorted.length) - 1)] : null;
+
+  function analyse(samples, field, mediaKey) {
+    const meta = FIELDS[field] || { title: field, unit: '', kind: 'gauge' };
+    const scale = meta.scale || 1;
+
+    // Сессии считаем по всем замерам (в т. ч. нулевым), чтобы число переподключений
+    // не зависело от выбранной метрики
+    const sessionCount = new Set(samples
+      .filter(s => s.event && s.event.media === mediaKey)
+      .map(s => String(s.session_id))).size;
+
+    const rows = samples
+      .filter(s => s.event && s.event.media === mediaKey && typeof s.event[field] === 'number')
+      .filter(s => !(meta.skipZero && s.event[field] === 0))
+      .map(s => ({ t: timeOf(s), v: s.event[field], stream: `${s.session_id}|${s.handle_id}`, ev: s.event }))
+      .sort((a, b) => a.t - b.t);
+
+    if (!rows.length) return null;
+
+
+    // Разрывы: пауза между соседними замерами заметно больше обычного шага
+    const steps = [];
+    for (let i = 1; i < rows.length; i++) steps.push(rows[i].t - rows[i - 1].t);
+    const sortedSteps = [...steps].sort((a, b) => a - b);
+    const typicalStep = median(sortedSteps) || 0;
+    const gapLimit = Math.max(10000, typicalStep * 3);
+    const gaps = steps.filter(step => step > gapLimit);
+
+    const base = {
+      meta,
+      samples: rows.length,
+      sessions: sessionCount,
+      gaps: gaps.length,
+      gapTime: gaps.reduce((sum, g) => sum + g, 0),
+      from: rows[0].t,
+      to: rows[rows.length - 1].t
+    };
+
+    if (meta.kind === 'counter') {
+      // Накопительный счётчик: считаем прирост внутри каждого потока, сбросы — новый отсчёт
+      const last = new Map();
+      const lastTotal = new Map();
+      let total = 0, episodes = 0, burst = 0, denominator = 0;
+
+      for (const r of rows) {
+        const prev = last.get(r.stream);
+        const delta = prev == null ? 0 : (r.v >= prev ? r.v - prev : r.v);
+        last.set(r.stream, r.v);
+        if (delta > 0) { total += delta; episodes++; burst = Math.max(burst, delta); }
+
+        if (meta.total && typeof r.ev[meta.total] === 'number') {
+          const pt = lastTotal.get(r.stream);
+          const dt = pt == null ? 0 : (r.ev[meta.total] >= pt ? r.ev[meta.total] - pt : r.ev[meta.total]);
+          lastTotal.set(r.stream, r.ev[meta.total]);
+          denominator += Math.max(0, dt);
+        }
+      }
+
+      return {
+        ...base,
+        total: total * scale,
+        episodes,
+        burst: burst * scale,
+        share: meta.total && denominator + total > 0 ? total / (denominator + total) * 100 : null
+      };
+    }
+
+    const values = rows.map(r => r.v * scale).sort((a, b) => a - b);
+    const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+    let badShare = null;
+    if (meta.bad != null) {
+      const badCount = values.filter(v => meta.lowerIsBetter ? v >= meta.bad : v < meta.bad).length;
+      badShare = badCount / values.length * 100;
+    }
+
+    return {
+      ...base,
+      min: values[0],
+      max: values[values.length - 1],
+      avg,
+      median: median(values),
+      p95: percentile(values, 95),
+      badShare
+    };
+  }
+
+  // ---------- вывод ----------
+  const fmt = (v, digits = 0) => v == null ? '—'
+    : Number(v).toLocaleString('ru-RU', { maximumFractionDigits: digits, minimumFractionDigits: 0 });
+
+  const fmtDuration = (ms) => {
+    const sec = Math.round(ms / 1000);
+    if (sec < 60) return `${sec} с`;
+    const min = Math.floor(sec / 60);
+    return sec % 60 ? `${min} мин ${sec % 60} с` : `${min} мин`;
+  };
+
+  function tone(meta, value) {
+    if (meta.good == null || value == null) return '';
+    const lowerBetter = meta.lowerIsBetter !== false && meta.unit !== '%';
+    if (lowerBetter) return value < meta.good ? 'good' : value < meta.bad ? 'warn' : 'bad';
+    return value >= meta.good ? 'good' : value >= meta.bad ? 'warn' : 'bad';
+  }
+
+  const node = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+
+  function stat(label, value, cls = '', title = '') {
+    const box = node('div', `ts-an-stat ${cls}`.trim());
+    if (title) box.title = title;
+    box.append(node('div', 'ts-an-stat-value', value), node('div', 'ts-an-stat-label', label));
+    return box;
+  }
+
+  function renderMedia(column, label, result) {
+    column.append(node('div', 'ts-an-media', label));
+    if (!result) {
+      column.append(node('div', 'ts-an-empty', 'нет данных'));
+      return;
+    }
+
+    const { meta } = result;
+    const unit = meta.unit ? ` ${meta.unit}` : '';
+    const grid = node('div', 'ts-an-grid');
+    const digits = meta.unit === 'МБ' ? 1 : 0;
+
+    if (meta.kind === 'counter') {
+      grid.append(
+        stat('всего за урок', fmt(result.total, digits) + unit,
+          !meta.lossy ? '' : result.total === 0 ? 'good' : result.share == null ? 'warn'
+            : result.share < 1 ? 'good' : result.share < 3 ? 'warn' : 'bad'),
+        stat('эпизодов', fmt(result.episodes), '', 'Сколько раз значение увеличивалось'),
+        stat('макс. за раз', fmt(result.burst, digits) + unit)
+      );
+      if (result.share != null) {
+        const share = result.share;
+        grid.append(stat('доля потерь', `${fmt(share, share < 1 ? 2 : 1)} %`, share < 1 ? 'good' : share < 3 ? 'warn' : 'bad',
+          'Потерянные / (полученные или отправленные + потерянные)'));
+      }
+    } else {
+      grid.append(
+        stat('мин', fmt(result.min) + unit, tone(meta, result.min)),
+        stat('среднее', fmt(result.avg) + unit, tone(meta, result.avg)),
+        stat('медиана', fmt(result.median) + unit, tone(meta, result.median)),
+        stat('95%', fmt(result.p95) + unit, tone(meta, result.p95), '95% замеров не хуже этого значения'),
+        stat('макс', fmt(result.max) + unit, tone(meta, result.max))
+      );
+    }
+    column.append(grid);
+
+    const facts = node('div', 'ts-an-facts');
+    facts.append(node('span', '', `замеров: ${fmt(result.samples)}`));
+    facts.append(node('span', result.gaps ? 'is-warn' : '',
+      result.gaps ? `разрывов: ${result.gaps} (${fmtDuration(result.gapTime)} без данных)` : 'разрывов нет'));
+    if (result.sessions > 1) facts.append(node('span', 'is-info', `переподключений: ${result.sessions - 1}`));
+    if (result.badShare != null && result.badShare > 0) {
+      facts.append(node('span', result.badShare > 20 ? 'is-bad' : 'is-warn',
+        `плохих значений: ${fmt(result.badShare, 1)} %`));
+    }
+    column.append(facts);
+  }
+
+  async function update(chart) {
+    const panel = chart.querySelector('.ts-an');
+    const fieldInput = [...chart.querySelectorAll('input')].find(i => /fields/i.test(i.closest('mat-form-field')?.textContent || ''));
+    const userInput = [...chart.querySelectorAll('input')].find(i => /пользовател/i.test(i.closest('mat-form-field')?.textContent || ''));
+    const field = (fieldInput?.value || '').trim();
+    // В поле может стоять «11030045(У)» (пометку роли добавляет расширение) — берём только номер
+    const userId = ((userInput?.value || '').match(/\d{5,}/) || [''])[0];
+
+    const state = `${field}|${userId}|${location.search}`;
+    if (panel.dataset.state === state) return;
+    panel.dataset.state = state;
+
+    if (!field || !FIELDS[field] && !/^[a-z-]+$/.test(field)) {
+      panel.hidden = true;
+      return;
+    }
+    panel.hidden = false;
+    panel.replaceChildren(node('div', 'ts-an-loading', 'Считаю аналитику…'));
+
+    try {
+      const { users, samples } = await loadAll();
+      if (panel.dataset.state !== state) return; // пока грузили, выбрали другое
+
+      const sessions = users.get(userId);
+      const own = sessions ? samples.filter(s => sessions.has(String(s.session_id))) : [];
+      const meta = FIELDS[field] || { title: field, unit: '', kind: 'gauge' };
+
+      const head = node('div', 'ts-an-head');
+      head.append(node('span', 'ts-an-title', `📊 ${meta.title}`));
+      if (meta.good != null) {
+        const hint = meta.lowerIsBetter === false || meta.unit === '%'
+          ? `норма ≥ ${meta.good}${meta.unit === '%' ? '%' : ''}`
+          : `норма < ${meta.good} ${meta.unit}, плохо ≥ ${meta.bad} ${meta.unit}`;
+        head.append(node('span', 'ts-an-hint', hint));
+      }
+
+      const body = node('div', 'ts-an-body');
+      if (!own.length) {
+        body.append(node('div', 'ts-an-empty', sessions ? 'Для этого пользователя замеров нет.' : 'Не нашёл сессий этого пользователя в уроке.'));
+      } else {
+        for (const media of MEDIA) {
+          const col = node('div', `ts-an-col ts-an-${media.key}`);
+          renderMedia(col, media.label, analyse(own, field, media.key));
+          body.append(col);
+        }
+      }
+      panel.replaceChildren(head, body);
+    } catch (error) {
+      panel.replaceChildren(node('div', 'ts-an-error', `Аналитика недоступна: ${error.message}`));
+      panel.dataset.state = '';
+    }
+  }
+
+  function injectStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    // Светлые цвета страницы: в тёмной теме инвертируются вместе с ней
+    style.textContent = `
+      .ts-an { margin: 6px 0 14px; padding: 12px 14px; background: #ffffff; border: 1px solid #d9e1ee;
+        border-radius: 12px; box-shadow: 0 1px 3px rgba(15, 23, 42, .06); font: 13px/1.45 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #1f2937; }
+      .ts-an[hidden], .ts-field-hint[hidden] { display: none; }
+      .ts-an-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+      .ts-an-title { font-weight: 700; font-size: 14px; color: #0f172a; }
+      .ts-an-hint { color: #64748b; font-size: 12px; }
+      .ts-an-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+      .ts-an-col { padding: 10px 12px; border: 1px solid #e5eaf2; border-left: 3px solid #d6337a; border-radius: 10px; background: #fbfcfe; }
+      .ts-an-audio { border-left-color: #0ea5c6; }
+      .ts-an-media { margin-bottom: 8px; color: #475569; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      .ts-an-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 6px; }
+      .ts-an-stat { padding: 7px 8px; background: #f1f5fb; border-radius: 8px; text-align: center; }
+      .ts-an-stat-value { font-size: 15px; font-weight: 800; color: #0f172a; white-space: nowrap; font-variant-numeric: tabular-nums; }
+      .ts-an-stat-label { margin-top: 2px; color: #64748b; font-size: 11px; }
+      .ts-an-stat.good { background: #e8f7ee; } .ts-an-stat.good .ts-an-stat-value { color: #157347; }
+      .ts-an-stat.warn { background: #fff4e0; } .ts-an-stat.warn .ts-an-stat-value { color: #b45309; }
+      .ts-an-stat.bad  { background: #fdecef; } .ts-an-stat.bad  .ts-an-stat-value { color: #c02646; }
+      .ts-an-facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+      .ts-an-facts span { padding: 2px 8px; background: #eef2f8; border-radius: 999px; color: #475569; font-size: 11.5px; font-weight: 600; }
+      .ts-an-facts .is-warn { background: #fff4e0; color: #b45309; }
+      .ts-an-facts .is-bad { background: #fdecef; color: #c02646; }
+      .ts-an-facts .is-info { background: #e8efff; color: #2f56b5; }
+      .ts-an-empty, .ts-an-loading { color: #64748b; font-size: 12.5px; }
+      .ts-an-error { color: #c02646; font-size: 12.5px; }
+
+      /* Описание метрики рядом с полями: было тонким серым текстом (font-weight 300) */
+      .ts-field-hint { display: block; position: relative; flex: 1 1 360px; min-width: 0; align-self: flex-start;
+        margin: 0 0 0 4px; padding: 9px 14px 9px 38px; background: #f1f5fb; border: 1px solid #d6e0f0; border-radius: 10px;
+        color: #1e293b; font-weight: 500; font-size: 13.5px; line-height: 1.55; letter-spacing: .005em; }
+      .ts-field-hint::before { content: 'i'; position: absolute; left: 12px; top: 10px; width: 17px; height: 17px;
+        border-radius: 50%; background: #2f56b5; color: #fff; font: 700 11px/17px Georgia, serif; text-align: center; }
+    `;
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  // Текст описания — «голый» текстовый узел внутри .controls-container.
+  // Оборачиваем его в span (сам узел не пересоздаём — Angular продолжит его обновлять).
+  function wrapHint(chart) {
+    const container = chart.querySelector('.controls-container');
+    if (!container) return;
+    for (const textNode of [...container.childNodes]) {
+      if (textNode.nodeType !== Node.TEXT_NODE || !textNode.textContent.trim()) continue;
+      const span = node('span', 'ts-field-hint');
+      textNode.before(span);
+      span.append(textNode);
+    }
+    // Описание убрали (поле очищено) — пустую обёртку прячем
+    container.querySelectorAll('.ts-field-hint').forEach(span => {
+      span.hidden = !span.textContent.trim();
+    });
+  }
+
+  function attach(chart) {
+    if (chart.querySelector('.ts-an')) return;
+    const container = chart.querySelector('.charts-container');
+    if (!container) return;
+    const panel = node('div', 'ts-an');
+    panel.hidden = true;
+    container.prepend(panel);
+  }
+
+  function tick() {
+    const charts = document.querySelectorAll('app-charts');
+    if (!charts.length) return;
+    injectStyle();
+    charts.forEach(chart => {
+      wrapHint(chart);
+      attach(chart);
+      if (chart.querySelector('.ts-an')) update(chart);
+    });
+  }
+
+  return {
+    start() {
+      // Поля выбираются через автодополнение Angular без событий input — проверяем раз в секунду
+      setInterval(tick, 1000);
+      tick();
+    }
+  };
+})();
+
+if (window.location.href.includes('video-trouble-shooter.skyeng.ru')) {
+  TS_STATS.start();
 }
 
 // ==========================================
