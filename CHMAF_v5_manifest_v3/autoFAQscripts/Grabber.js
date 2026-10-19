@@ -1211,6 +1211,7 @@
         ['sla', 'SLA'],
         ['country', 'Страна'],
         ['afrt', 'AFRT'],
+        ['queue', 'Очередь'],
         ['department', 'Отдел'],
         ['text', 'Комментарий / сообщение']
     ];
@@ -1726,11 +1727,27 @@
             .trim();
     }
 
+    function isQueueAutoReply(msg) {
+        if (!msg) return false;
+        const txt = String(msg.txt ?? msg.text ?? '').toLowerCase();
+        const hasApology = txt.includes('приносим извинения за ожидание');
+        const hasBusy = txt.includes('специалисты заняты') || txt.includes('в первую очередь');
+
+        if (msg.tpe === 'AnswerSystem' && (hasApology || hasBusy)) {
+            return true;
+        }
+        return hasApology && hasBusy;
+    }
+
     function calculateAFRT(messages) {
-        if (!Array.isArray(messages) || !messages.length) return null;
+        if (!Array.isArray(messages) || !messages.length) {
+            return { afrt: null, queue: false };
+        }
 
         const lastMsg = messages[messages.length - 1];
-        if (lastMsg?.tpe !== 'Question') return null;
+        if (lastMsg?.tpe !== 'Question') {
+            return { afrt: null, queue: false };
+        }
 
         const firstMessageTime = lastMsg.ts;
         let groupFoundIndex = -1;
@@ -1745,17 +1762,81 @@
             }
         }
 
+        let afrt = null;
+
         if (groupFoundIndex !== -1) {
             for (let b = groupFoundIndex; b >= 0; b--) {
                 const m = messages[b];
                 if (['AnswerOperatorWithBot', 'AnswerOperator'].includes(m.tpe)) {
                     const diff = (new Date(m.ts) - new Date(firstMessageTime)) / 1000;
-                    return diff > 60 ? 0 : 1;
+                    afrt = diff > 60 ? 0 : 1;
+                    break;
                 }
             }
         }
 
-        return null;
+        if (afrt === null) {
+            return { afrt: null, queue: false };
+        }
+
+        let queue = false;
+
+        // «Очередь» проверяется и может быть выставлена только при AFRT == 0
+        if (afrt === 0) {
+            let queueMsgIndex = -1;
+
+            // Ищем автоотбивку очереди (начиная с первых сообщений)
+            for (let i = messages.length - 1; i >= 0; i--) {
+                if (isQueueAutoReply(messages[i])) {
+                    queueMsgIndex = i;
+                    break;
+                }
+            }
+
+            if (queueMsgIndex !== -1) {
+                const queueTime = new Date(messages[queueMsgIndex].ts).getTime();
+
+                let assignMsg = null;
+                let firstOperatorMsg = null;
+
+                // Двигаемся хронологически вперед от момента автоотбивки (индекс уменьшается)
+                for (let i = queueMsgIndex - 1; i >= 0; i--) {
+                    const m = messages[i];
+                    if (
+                        !assignMsg &&
+                        m.eventTpe === 'AssignToOperator' &&
+                        m.payload?.oid &&
+                        m.payload.oid !== 'null'
+                    ) {
+                        assignMsg = m;
+                    }
+                    if (
+                        !firstOperatorMsg &&
+                        ['AnswerOperatorWithBot', 'AnswerOperator'].includes(m.tpe)
+                    ) {
+                        firstOperatorMsg = m;
+                    }
+                    if (assignMsg && firstOperatorMsg) {
+                        break;
+                    }
+                }
+
+                // Приоритет — время назначения на оператора, запасной вариант — первый ответ оператора
+                const targetAssign = assignMsg ?? firstOperatorMsg;
+
+                if (targetAssign) {
+                    const assignTime = new Date(targetAssign.ts).getTime();
+                    if (Number.isFinite(queueTime) && Number.isFinite(assignTime)) {
+                        const diffSec = (assignTime - queueTime) / 1000;
+                        if (diffSec > 60) {
+                            queue = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return { afrt, queue };
     }
 
     async function loadChat(chat, filters) {
@@ -1767,7 +1848,7 @@
             ? data.messages
             : [];
 
-        const afrt = calculateAFRT(messages);
+        const { afrt, queue } = calculateAFRT(messages);
 
         // Если чат был переведен (закрыт не этим оператором):
         if (!chat.isClosedByOperator) {
@@ -1801,6 +1882,7 @@
                     : 'Без тематики',
                 sla: null,
                 afrt,
+                queue,
                 country: String(data.channelUser?.payload?.country ?? '—'),
                 department: '—',
                 userType: String(data.channelUser?.payload?.userType ?? 'null'),
@@ -1956,6 +2038,7 @@
                 ? null
                 : duration <= 25 * 60 * 1000,
             afrt,
+            queue,
             country: String(
                 data.channelUser?.payload?.country ?? '—'
             ),
@@ -2002,6 +2085,10 @@
             return record.afrt === null || record.afrt === undefined
                 ? '—'
                 : record.afrt;
+        }
+
+        if (field === 'queue') {
+            return record.queue ? 'Очередь' : '—';
         }
 
         if (field === 'sla') {
