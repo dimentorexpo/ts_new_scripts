@@ -798,8 +798,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
                         id: "operator" + (i + 1),
                         chatHashId: item.conversationId,
                         Duration: item.stats?.conversationDuration ? (item.stats.conversationDuration / 60000).toFixed(1) : "0.0",
-                        Rate: item.stats?.rate?.rate ?? null,
-                        Channel: item.channel?.name ?? ""
+                        Rate: item.stats?.rate?.rate ?? null
                     });
 
                     if (item.stats?.rate?.rate) {
@@ -924,7 +923,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
 
     // Подсчет оценок
     window.filteredarray.forEach(item => {
-        if (item.Rate !== null && item.Channel !== "Telegram techsup acquisition") rateCounts[item.Rate] = (rateCounts[item.Rate] || 0) + 1;
+        if (item.Rate !== null) rateCounts[item.Rate] = (rateCounts[item.Rate] || 0) + 1;
     });
 
     const uniquedArrayAllLength = massivchikUntarget.size + massivchikTarget.size;
@@ -936,32 +935,7 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
     const setHTML = (id, html) => { const el = document.getElementById(id); if (el) { el.innerHTML = html; el.classList.remove('stat-loading'); } };
 
     set('avgCsatonGroup', alloperCSATcount > 0 ? (alloperCSATsumma / alloperCSATcount).toFixed(2) : 'N/A');
-    const c5 = rateCounts['5'] || 0;
-    const c4 = rateCounts['4'] || 0;
-    const c3 = rateCounts['3'] || 0;
-    const c2 = rateCounts['2'] || 0;
-    const c1 = rateCounts['1'] || 0;
-
-    setHTML('CSATDetails', `
-        <div style="margin-top: 8px; margin-bottom: 12px; border-radius: 6px; overflow: hidden; display: block; width: max-content; border: 1px solid #344258; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
-            <table style="text-align: center; border-collapse: collapse; background: rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; margin: 0; white-space: nowrap;">
-                <tr style="background: rgba(0,0,0,0.4); font-size: 13px; color: #e2e8f0;">
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">5 😊</td>
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">4 🥴</td>
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">3 😐</td>
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1);">2 🤢</td>
-                    <td style="padding: 6px 14px;">1 🤬</td>
-                </tr>
-                <tr style="font-size: 15px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #86efac; font-weight: bold;">${c5} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c5 * 5})</span></td>
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #7dd3fc; font-weight: bold;">${c4} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c4 * 4})</span></td>
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #fcd34d; font-weight: bold;">${c3} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c3 * 3})</span></td>
-                    <td style="padding: 6px 14px; border-right: 1px solid rgba(255,255,255,0.1); color: #fdba74; font-weight: bold;">${c2} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c2 * 2})</span></td>
-                    <td style="padding: 6px 14px; color: #fca5a5; font-weight: bold;">${c1} <span style="font-size:11px;color:#aaa;font-weight:normal">(${c1 * 1})</span></td>
-                </tr>
-            </table>
-        </div>
-    `);
+    setHTML('CSATDetails', renderCSATBreakdown(window.filteredarray));
 
     set('allChatsClsd', alloperChatsclsed);
 
@@ -1942,6 +1916,102 @@ if (typeof createWindow === 'function') {
 }
 
 let activeopersId, summclsd;
+
+// ============================================================================
+// 📋 Разбивка по оценкам — карточка-распределение
+// ============================================================================
+
+const CSAT_SCALE = [
+    { r: 5, emoji: '😊', name: 'Отлично', color: '#86efac' },
+    { r: 4, emoji: '🙂', name: 'Хорошо', color: '#7dd3fc' },
+    { r: 3, emoji: '😐', name: 'Нейтрально', color: '#fcd34d' },
+    { r: 2, emoji: '😞', name: 'Плохо', color: '#fdba74' },
+    { r: 1, emoji: '😡', name: 'Ужасно', color: '#fca5a5' }
+];
+// Цель по среднему CSAT для подсказки «сколько пятёрок не хватает». null — не показывать.
+const CSAT_TARGET_AVG = 4.85;
+
+const csatEsc = (v) => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function renderCSATBreakdown(items) {
+    const rated = (items || []).filter(it => it.Rate !== null && it.Rate !== undefined);
+    const byRate = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+    rated.forEach(it => { if (byRate[it.Rate]) byRate[it.Rate].push(it.chatHashId); });
+
+    const total = rated.length;
+    if (!total) return '<span style="color:#64748b;">Оценок за период нет</span>';
+
+    const sum = CSAT_SCALE.reduce((s, x) => s + x.r * byRate[x.r].length, 0);
+    const avg = sum / total;
+    const pct = (n) => (n * 100 / total);
+    const fmtPct = (n) => pct(n).toFixed(1).replace(/\.0$/, '') + '%';
+    const good = byRate[5].length + byRate[4].length;
+    const bad = byRate[2].length + byRate[1].length;
+    const avgColor = avg >= 4.85 ? '#86efac' : avg >= 4.5 ? '#7dd3fc' : avg >= 4 ? '#fcd34d' : '#fca5a5';
+
+    // Сколько пятёрок подряд нужно, чтобы выйти на цель: (sum + 5x) / (total + x) >= T
+    let targetHint = '';
+    if (CSAT_TARGET_AVG && CSAT_TARGET_AVG < 5) {
+        if (avg >= CSAT_TARGET_AVG) {
+            targetHint = `<span style="color:#86efac;">🎯 Цель ${CSAT_TARGET_AVG.toFixed(2)} выполнена</span>`;
+        } else {
+            const need = Math.ceil((CSAT_TARGET_AVG * total - sum) / (5 - CSAT_TARGET_AVG));
+            targetHint = `🎯 До ${CSAT_TARGET_AVG.toFixed(2)} не хватает <b style="color:#fcd34d;">${need}</b> пятёрок подряд`;
+        }
+    }
+
+    const stacked = CSAT_SCALE.filter(x => byRate[x.r].length).map(x =>
+        `<div title="${x.r} ${x.emoji} — ${byRate[x.r].length} (${fmtPct(byRate[x.r].length)})"
+              style="width:${pct(byRate[x.r].length)}%;background:${x.color};min-width:3px;"></div>`).join('');
+
+    const max = Math.max(...CSAT_SCALE.map(x => byRate[x.r].length));
+    const rows = CSAT_SCALE.map(x => {
+        const n = byRate[x.r].length;
+        const chats = byRate[x.r].map(h => `<span class="modal-lookchat" data-hash="${csatEsc(h)}" title="Открыть чат в истории"
+              style="display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;border-radius:6px;border:1px solid transparent;background:rgba(255,255,255,0.05);color:#a9c0ff;font:11px/1.5 monospace;cursor:pointer;">${csatEsc(h)}</span>`).join('');
+        const head = `
+            <span style="width:62px;display:flex;align-items:center;gap:6px;font-weight:700;color:${x.color};">${x.r} <span style="font-size:16px;">${x.emoji}</span></span>
+            <span style="flex:1;height:10px;background:rgba(255,255,255,0.06);border-radius:5px;overflow:hidden;">
+                <span style="display:block;height:100%;width:${max ? n * 100 / max : 0}%;background:${x.color};border-radius:5px;opacity:${n ? 0.9 : 0};transition:width .6s ease;"></span>
+            </span>
+            <span style="width:44px;text-align:right;font-weight:700;color:#e2e8f0;font-variant-numeric:tabular-nums;">${n}</span>
+            <span style="width:52px;text-align:right;color:#94a3b8;font-size:12px;font-variant-numeric:tabular-nums;">${fmtPct(n)}</span>
+            <span style="width:14px;color:#64748b;font-size:10px;">${n ? '▾' : ''}</span>`;
+        const rowStyle = 'display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:8px;';
+        return n
+            ? `<details class="csat-row"><summary title="${x.name}: показать чаты" style="${rowStyle}cursor:pointer;list-style:none;">${head}</summary>
+                   <div style="margin:4px 8px 8px 72px;max-height:140px;overflow:auto;">${chats}</div></details>`
+            : `<div style="${rowStyle}opacity:0.45;">${head}</div>`;
+    }).join('');
+
+    const chip = (label, value, color, hint) => `
+        <div title="${hint}" style="padding:8px 10px;border-radius:10px;background:rgba(0,0,0,0.25);border:1px solid #344258;">
+            <div style="font-size:10px;color:#94a3b8;letter-spacing:0.4px;font-weight:600;">${label}</div>
+            <div style="font-size:18px;font-weight:800;color:${color};font-variant-numeric:tabular-nums;">${value}</div>
+        </div>`;
+
+    return `
+    <style>
+        .csat-row summary::-webkit-details-marker { display:none; }
+        .csat-row summary:hover { background: rgba(255,255,255,0.05); }
+        .csat-row[open] summary { background: rgba(124,196,255,0.08); }
+    </style>
+    <div style="margin-top:8px;padding:14px;border-radius:12px;background:rgba(0,0,0,0.2);border:1px solid #344258;max-width:560px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px;margin-bottom:12px;">
+            ${chip('Среднее', avg.toFixed(2), avgColor, 'Средняя оценка за период')}
+            ${chip('Оценок', total, '#e2e8f0', 'Сколько чатов получили оценку')}
+            ${chip('Хорошие 4–5', fmtPct(good), '#86efac', `${good} из ${total}`)}
+            ${chip('Плохие 1–2', fmtPct(bad), bad ? '#fca5a5' : '#64748b', `${bad} из ${total}`)}
+        </div>
+        <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;margin-bottom:10px;">${stacked}</div>
+        <div style="display:flex;flex-direction:column;gap:2px;">${rows}</div>
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#94a3b8;">
+            <span>${targetHint}</span>
+            <span>Нажми на строку — список чатов</span>
+        </div>
+    </div>`;
+}
+
 let rateCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 function resetRateCounts() { rateCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }; }
 
