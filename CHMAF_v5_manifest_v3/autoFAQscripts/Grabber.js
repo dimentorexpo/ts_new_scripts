@@ -252,23 +252,27 @@
 
     const template = `
 <style>
+/* ============================================================
+   AF Grabber — Visual Style: Corporate Graphite Dark (Queue.js style)
+   ============================================================ */
+
 #AF_Grabber .ag,
 #ag-analytics,
 #ag-column-popover {
---ag-bg: #111827;
---ag-panel: #182335;
---ag-panel-2: #1b283c;
---ag-border: #344258;
---ag-text: #edf2fb;
---ag-muted: #a6b4cb;
---ag-accent: #829fff;
---ag-accent-2: #a9c0ff;
---ag-error: #ffb0be;
+    --ag-bg: #111827;
+    --ag-panel: #182335;
+    --ag-panel-2: #1b283c;
+    --ag-border: #344258;
+    --ag-border-focus: #3a4961;
+    --ag-text: #edf2fb;
+    --ag-muted: #a6b4cb;
+    --ag-accent: #829fff;
+    --ag-accent-2: #a9c0ff;
+    --ag-error: #ffb0be;
 
     box-sizing: border-box;
     color: var(--ag-text);
-    font: 12px/1.45 Inter, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", sans-serif;
+    font: 12px/1.45 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
     color-scheme: dark;
 }
 
@@ -279,14 +283,22 @@
 }
 
 #AF_Grabber .ag {
-    width: min(760px, calc(100vw - 24px));
+    width: min(780px, calc(100vw - 24px));
     max-height: calc(100vh - 24px);
-    overflow: auto;
-    padding: 16px;
-    border: 1px solid #52505a;
-    border-radius: 16px;
-    background: var(--ag-bg);
-    box-shadow: 0 24px 70px rgba(0, 0, 0, .5);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 18px !important;
+    color: #edf2fb;
+    background:
+        radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+        #111827 !important;
+    border: 1px solid #344258 !important;
+    border-radius: 18px !important;
+    box-shadow:
+        0 26px 70px rgba(3, 9, 22, .52),
+        inset 0 1px rgba(255, 255, 255, .06) !important;
+    position: relative;
+    z-index: 1000003;
 }
 
 #AF_Grabber .ag button,
@@ -294,63 +306,119 @@
 #AF_Grabber .ag select,
 #ag-analytics button,
 #ag-column-popover button {
-    font: inherit;
+    font-family: inherit;
 }
 
+/* Кнопки в стиле Queue.js (.qg5-btn) */
 #AF_Grabber .ag button,
 #ag-analytics button,
 #ag-column-popover button {
-    min-height: 30px;
-    padding: 5px 10px;
-    border: 1px solid var(--ag-border);
-    border-radius: 7px;
-    background: var(--ag-panel-2);
-    color: var(--ag-text);
+    min-height: 36px;
+    padding: 8px 14px;
+    color: #dce5f5;
+    background: #1b283c;
+    border: 1px solid #3c4d68;
+    border-radius: 9px;
     cursor: pointer;
-    transition: background .15s, border-color .15s;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease;
 }
 
 #AF_Grabber .ag button:hover:not(:disabled),
 #ag-analytics button:hover:not(:disabled),
 #ag-column-popover button:hover:not(:disabled) {
-    border-color: var(--ag-accent);
-    background: #303a47;
+    color: #fff;
+    background: #293b56;
+    border-color: #7799e2;
+    transform: translateY(-1px);
 }
 
 #AF_Grabber .ag button:disabled,
 #ag-analytics button:disabled {
-    opacity: .45;
+    opacity: .5;
     cursor: not-allowed;
+    transform: none;
 }
 
+/* Основная акцентная кнопка (аналог #qg5-manual-refresh) */
 #AF_Grabber .ag .ag-primary {
-    border-color: var(--ag-accent);
-    background: var(--ag-accent);
-    color: #171714;
-    font-weight: 750;
+    color: #eef3ff !important;
+    background: #4268c9 !important;
+    border-color: #7293ed !important;
+    box-shadow: 0 5px 15px rgba(58, 96, 205, .22) !important;
+    font-weight: 600;
 }
 
 #AF_Grabber .ag .ag-primary:hover:not(:disabled) {
-    background: var(--ag-accent-2);
+    background: #547ce1 !important;
+    border-color: #a2b9fa !important;
+    box-shadow: 0 6px 19px rgba(58, 96, 205, .3) !important;
+    color: #fff !important;
+    transform: translateY(-1px);
 }
 
+/* Кнопка закрытия (аналог #qg5-hide) */
+#AF_Grabber [data-action="close"],
+#ag-analytics [data-a-action="close"] {
+    background: rgba(255, 116, 140, .08) !important;
+    border-color: rgba(255, 116, 140, .3) !important;
+    color: #ffb0be !important;
+    padding: 8px 12px !important;
+    min-height: 36px;
+    border-radius: 9px;
+    font-weight: 600;
+}
+
+#AF_Grabber [data-action="close"]:hover,
+#ag-analytics [data-a-action="close"]:hover {
+    background: rgba(255, 116, 140, .16) !important;
+    border-color: rgba(255, 116, 140, .5) !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+}
+
+/* Поля ввода (аналог .qg5-input) */
 #AF_Grabber .ag input[type="date"],
 #AF_Grabber .ag input[type="search"],
 #AF_Grabber .ag select,
 #ag-analytics input[type="search"] {
-    min-height: 31px;
-    padding: 5px 8px;
-    border: 1px solid var(--ag-border);
-    border-radius: 7px;
+    min-height: 36px;
+    height: 36px;
+    color: #edf2fb;
+    background: #0d1625;
+    border: 1px solid #3a4961;
+    border-radius: 9px;
+    padding: 0 10px;
     outline: none;
-    background: #171d26;
-    color: var(--ag-text);
+    font-size: 13px;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
-#AF_Grabber .ag input:focus,
+#AF_Grabber .ag input[type="date"]:hover,
+#AF_Grabber .ag input[type="search"]:hover,
+#AF_Grabber .ag select:hover,
+#ag-analytics input[type="search"]:hover {
+    background: #142034;
+    border-color: #657caa;
+}
+
+#AF_Grabber .ag input[type="date"]:focus,
+#AF_Grabber .ag input[type="search"]:focus,
 #AF_Grabber .ag select:focus,
-#ag-analytics input:focus {
-    border-color: var(--ag-accent);
+#ag-analytics input[type="search"]:focus {
+    background: #142034;
+    border-color: #829fff;
+    box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
+}
+
+#AF_Grabber .ag select option {
+    background: #111827;
+    color: #edf2fb;
 }
 
 #AF_Grabber .ag :focus-visible,
@@ -360,7 +428,52 @@
     outline-offset: 2px;
 }
 
-#AF_Grabber .ag-head,
+/* Шапка окна (аналог .qg5-header) */
+#AF_Grabber .ag-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #344258;
+    cursor: move;
+}
+
+#AF_Grabber .ag-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+#AF_Grabber .ag-mark {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border: 1px solid #364660;
+    border-radius: 10px;
+    background: #182335;
+    color: #a9c0ff;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+#AF_Grabber .ag-head h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -.01em;
+}
+
+#AF_Grabber .ag-caption {
+    color: #a6b4cb;
+    font-size: 11px;
+}
+
 #AF_Grabber .ag-row,
 #AF_Grabber .ag-period,
 #AF_Grabber .ag-result-head,
@@ -371,65 +484,34 @@
     gap: 8px;
 }
 
-#AF_Grabber .ag-head {
-    justify-content: space-between;
-    margin-bottom: 14px;
-}
-
-#AF_Grabber .ag-title {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    min-width: 0;
-}
-
-#AF_Grabber .ag-mark {
-    display: grid;
-    place-items: center;
-    width: 31px;
-    height: 31px;
-    flex: 0 0 31px;
-    border: 1px solid #806b4c;
-    border-radius: 8px;
-    color: var(--ag-accent);
-    font-size: 13px;
-    font-weight: 800;
-}
-
-#AF_Grabber .ag-head h2 {
-    margin: 0;
-    font-size: 15px;
-    letter-spacing: -.02em;
-}
-
-#AF_Grabber .ag-caption {
-    color: var(--ag-muted);
-    font-size: 11px;
-}
-
 #AF_Grabber .ag-controls {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 9px;
+    gap: 10px;
 }
 
 #AF_Grabber .ag-period {
     flex-wrap: wrap;
+    gap: 8px;
 }
 
 #AF_Grabber .ag-period input[type="date"] {
-    width: 125px;
+    width: 135px;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 12px;
 }
 
 #AF_Grabber .ag-period .ag-caption {
     white-space: nowrap;
+    font-weight: 600;
+    color: #8e96b8;
 }
 
 #AF_Grabber .ag-theme-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
     gap: 8px;
-    margin-top: 9px;
+    margin-top: 10px;
 }
 
 #AF_Grabber .ag-theme-row .ag-theme-dropdown {
@@ -440,59 +522,84 @@
 #AF_Grabber .ag-filters {
     display: flex;
     flex-wrap: wrap;
-    gap: 7px;
-    margin: 13px 0;
+    gap: 8px;
+    margin: 14px 0;
 }
 
+/* Блоки details / фильтры */
 #AF_Grabber .ag details {
-    border: 1px solid var(--ag-border);
-    border-radius: 8px;
-    background: var(--ag-panel);
+    border: 1px solid #344258;
+    border-radius: 10px;
+    background: #182335;
+    transition: border-color .16s ease;
+}
+
+#AF_Grabber .ag details:hover {
+    border-color: #435b80;
 }
 
 #AF_Grabber .ag details[open] {
     flex: 1 1 100%;
     order: 1;
+    border-color: #435b80;
 }
 
 #AF_Grabber .ag summary {
-    padding: 7px 10px;
-    color: var(--ag-accent-2);
+    padding: 8px 12px;
+    color: #b6c9f5;
+    font-weight: 600;
+    font-size: 12px;
     cursor: pointer;
     user-select: none;
+    transition: color .15s;
+}
+
+#AF_Grabber .ag summary:hover {
+    color: #fff;
 }
 
 #AF_Grabber .ag-detail-body {
-    padding: 9px;
-    border-top: 1px solid var(--ag-border);
+    padding: 12px;
+    border-top: 1px solid #344258;
+    background: #0d1625;
+    border-bottom-left-radius: 9px;
+    border-bottom-right-radius: 9px;
 }
 
 #AF_Grabber .ag-checkgrid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 3px;
+    gap: 4px;
     max-height: 160px;
     overflow: auto;
 }
 
 #AF_Grabber .ag-check {
     display: flex;
-    align-items: flex-start;
-    gap: 6px;
+    align-items: center;
+    gap: 7px;
     min-width: 0;
-    padding: 4px;
-    border-radius: 5px;
+    padding: 5px 8px;
+    border: 1px solid transparent;
+    border-radius: 7px;
     cursor: pointer;
+    color: #dce5f5;
+    font-size: 12px;
+    transition: background-color .15s ease, border-color .15s ease;
 }
 
 #AF_Grabber .ag-check:hover {
-    background: #303a47;
+    background: #1e2c40;
+    border-color: #3b4e6d;
 }
 
 #AF_Grabber .ag-check input {
     flex: 0 0 auto;
-    margin-top: 2px;
-    accent-color: var(--ag-accent);
+    margin: 0;
+    accent-color: #7293ed;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
 }
 
 #AF_Grabber .ag-check span {
@@ -508,7 +615,7 @@
 
 #AF_Grabber .ag-search-columns {
     grid-template-columns: 1fr 1fr;
-    margin-top: 9px;
+    margin-top: 10px;
 }
 
 #AF_Grabber .ag-search-columns input {
@@ -516,90 +623,118 @@
 }
 
 #AF_Grabber .ag-filter-section {
-    padding: 8px;
-    border: 1px solid var(--ag-border);
-    border-radius: 7px;
+    padding: 10px;
+    border: 1px solid #344258;
+    border-radius: 9px;
+    background: #151e2d;
 }
 
 #AF_Grabber .ag-filter-section strong {
     display: block;
-    margin-bottom: 4px;
-    color: var(--ag-accent-2);
+    margin-bottom: 6px;
+    color: #a9c0ff;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-weight: 700;
 }
 
+/* Статус и прогресс-бар */
 #AF_Grabber .ag-status {
     min-height: 18px;
-    margin: 5px 0;
-    color: var(--ag-muted);
+    margin: 6px 0;
+    color: #a6b4cb;
+    font-size: 12px;
+    font-weight: 500;
 }
 
 #AF_Grabber .ag-status[data-error="true"] {
-    color: var(--ag-error);
+    color: #ffb0be;
 }
 
 #AF_Grabber .ag-progress {
-    height: 4px;
+    height: 5px;
     overflow: hidden;
-    border-radius: 5px;
-    background: #333b47;
+    border-radius: 6px;
+    background: #1e293b;
+    margin: 8px 0;
 }
 
 #AF_Grabber .ag-progress > span {
     display: block;
     width: 0;
     height: 100%;
-    background: var(--ag-accent);
-    transition: width .2s;
+    background: linear-gradient(90deg, #4268c9, #7293ed);
+    border-radius: inherit;
+    transition: width .2s ease;
 }
 
 #AF_Grabber .ag-result-head {
     justify-content: space-between;
     flex-wrap: wrap;
-    margin: 13px 0 8px;
+    margin: 14px 0 10px;
+    gap: 10px;
 }
 
+/* Метрики (аналог .qg5-stats) */
 #AF_Grabber .ag-metrics {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
+    align-items: center;
 }
 
 #AF_Grabber .ag-metric {
-    padding: 5px 8px;
-    border: 1px solid var(--ag-border);
-    border-radius: 6px;
-    background: var(--ag-panel);
-    color: var(--ag-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 7px 12px;
+    color: #a6b4cb;
+    background: #182335;
+    border: 1px solid #364660;
+    border-radius: 10px;
+    letter-spacing: .03em;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 #AF_Grabber .ag-metric b {
-    color: var(--ag-text);
+    color: #a9c0ff;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
 }
 
+/* Таблица в стиле Queue.js */
 #AF_Grabber .ag-table-wrap,
 #ag-analytics .ag-analytics-table {
-    max-height: min(46vh, 420px);
+    max-height: min(48vh, 460px);
     overflow: auto;
-    border: 1px solid var(--ag-border);
-    border-radius: 8px;
+    border: 1px solid #344258;
+    border-radius: 12px;
+    background: #0d1625;
 }
 
 #AF_Grabber .ag table,
 #ag-analytics table {
     width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12px;
 }
 
 #AF_Grabber .ag th,
 #ag-analytics th {
     position: sticky;
     top: 0;
-    z-index: 1;
-    padding: 8px;
-    border-bottom: 1px solid var(--ag-border);
-    background: #252e3a;
-    color: var(--ag-accent-2);
+    z-index: 2;
+    padding: 9px 10px;
+    border-bottom: 1px solid #344258;
+    background: #182335;
+    color: #a9c0ff;
+    font-weight: 700;
     text-align: left;
     white-space: nowrap;
 }
@@ -607,38 +742,49 @@
 #AF_Grabber .ag td,
 #ag-analytics td {
     max-width: 230px;
-    padding: 7px 8px;
-    border-bottom: 1px solid #303844;
+    padding: 8px 10px;
+    border-bottom: 1px solid #233044;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: #edf2fb;
 }
 
 #AF_Grabber .ag tbody tr {
     cursor: pointer;
+    background: #111827;
+    transition: background-color .15s ease;
+}
+
+#AF_Grabber .ag tbody tr:nth-child(even) {
+    background: #141d2d;
 }
 
 #AF_Grabber .ag tbody tr:hover td {
-    background: #29333f;
+    background: #23334b;
+    color: #fff;
 }
 
 #AF_Grabber .ag-empty {
-    padding: 23px;
+    padding: 28px;
     color: var(--ag-muted);
     text-align: center;
+    font-size: 13px;
 }
 
+/* Выпадающие списки и поповеры колонок */
 #ag-column-popover {
     position: fixed;
     z-index: 2147483002;
-    width: min(290px, calc(100vw - 20px));
-    max-height: 360px;
+    width: min(300px, calc(100vw - 20px));
+    max-height: 380px;
     overflow: auto;
-    padding: 10px;
-    border: 1px solid #6c655b;
-    border-radius: 9px;
-    background: #1c242e;
-    box-shadow: 0 15px 45px rgba(0, 0, 0, .55);
+    padding: 14px;
+    border: 1px solid #3c4d68;
+    border-radius: 14px;
+    background: #111827;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
+    color: #edf2fb;
 }
 
 #ag-column-popover[hidden],
@@ -648,23 +794,100 @@
 }
 
 #ag-column-popover .ag-popover-list {
-    max-height: 235px;
+    max-height: 240px;
     overflow: auto;
-    margin-top: 7px;
+    margin-top: 8px;
 }
 
 #ag-column-popover label {
     display: flex;
-    gap: 6px;
-    padding: 4px;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 6px;
+    border-radius: 6px;
     cursor: pointer;
     overflow-wrap: anywhere;
+    transition: background-color .15s;
+}
+
+#ag-column-popover label:hover {
+    background: #1e2c40;
 }
 
 #ag-column-popover input {
-    accent-color: #e1b875;
+    accent-color: #7293ed;
+    width: 14px;
+    height: 14px;
 }
 
+/* Стили выпадающего списка тематик */
+#AF_Grabber .ag .ag-theme-row .ag-theme-dropdown {
+    position: relative;
+    min-width: 0;
+    width: 100%;
+}
+
+#AF_Grabber .ag .ag-theme-row .ag-theme-dropdown[open] {
+    flex: none;
+    order: 0;
+}
+
+#AF_Grabber .ag .ag-theme-row .ag-theme-dropdown > summary {
+    min-height: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background: #0d1625;
+    border: 1px solid #3a4961;
+    border-radius: 9px;
+    color: #edf2fb;
+    font-size: 13px;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#AF_Grabber .ag .ag-theme-row .ag-theme-dropdown > summary:hover {
+    background: #142034;
+    border-color: #657caa;
+}
+
+#AF_Grabber .ag .ag-theme-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    z-index: 30;
+    width: min(420px, calc(100vw - 45px));
+    max-height: 340px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #3c4d68;
+    border-radius: 12px;
+    background: #111827;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .6);
+}
+
+#AF_Grabber .ag .ag-theme-group {
+    padding: 8px 6px 4px;
+    color: #a9c0ff;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+#AF_Grabber .ag .ag-theme-group:not(:first-child) {
+    margin-top: 6px;
+    border-top: 1px solid #344258;
+}
+
+#AF_Grabber .ag .ag-theme-menu .ag-check {
+    padding: 5px 8px;
+}
+
+/* Окно аналитики */
 #ag-analytics {
     position: fixed;
     top: 45px;
@@ -673,77 +896,86 @@
     width: min(980px, calc(100vw - 24px));
     max-height: calc(100vh - 24px);
     overflow: hidden;
-    border: 1px solid #58515a;
-    border-radius: 14px;
-    background: #11151d;
-    box-shadow: 0 24px 75px rgba(0, 0, 0, .7);
+    border: 1px solid #344258;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+        #111827;
+    box-shadow:
+        0 26px 70px rgba(3, 9, 22, .52),
+        inset 0 1px rgba(255, 255, 255, .06);
 }
 
 #ag-analytics .ag-analytics-head {
     justify-content: space-between;
-    padding: 11px 14px;
-    border-bottom: 1px solid var(--ag-border);
+    padding: 14px 18px;
+    border-bottom: 1px solid #344258;
     cursor: grab;
     touch-action: none;
 }
 
 #ag-analytics .ag-analytics-head strong {
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
 }
 
 #ag-analytics .ag-analytics-body {
     max-height: calc(100vh - 90px);
     overflow: auto;
-    padding: 13px;
+    padding: 16px;
 }
 
 #ag-analytics .ag-analytics-controls {
     flex-wrap: wrap;
-    margin-bottom: 11px;
+    margin-bottom: 12px;
+    gap: 8px;
 }
 
 #ag-analytics button[aria-pressed="true"] {
-    border-color: var(--ag-accent);
-    color: var(--ag-accent-2);
+    background: #2b4372;
+    border-color: #7093e6;
+    box-shadow: 0 0 8px rgba(112, 147, 230, 0.35);
+    color: #fff;
 }
 
 #ag-analytics .ag-series-toolbar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 7px;
-    margin: 10px 0;
+    gap: 8px;
+    margin: 12px 0;
 }
 
 #ag-analytics .ag-series-toolbar input {
-    flex: 1 1 160px;
-    max-width: 240px;
+    flex: 1 1 180px;
+    max-width: 260px;
 }
 
 #ag-analytics .ag-series-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
-    max-height: 105px;
+    gap: 6px;
+    max-height: 110px;
     overflow: auto;
-    padding: 2px 0 7px;
+    padding: 2px 0 8px;
 }
 
 #ag-analytics .ag-series {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     max-width: 300px;
-    padding: 4px 6px;
-    border: 1px solid #404956;
-    border-radius: 6px;
-    background: #1a202a;
+    padding: 5px 8px;
+    border: 1px solid #344258;
+    border-radius: 8px;
+    background: #182335;
     color: var(--ag-text);
 }
 
 #ag-analytics .ag-series input {
     margin: 0;
-    accent-color: var(--ag-accent);
+    accent-color: #7293ed;
 }
 
 #ag-analytics .ag-series-name {
@@ -751,22 +983,29 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     cursor: pointer;
+    font-size: 12px;
 }
 
 #ag-analytics .ag-series .ag-only {
     min-height: 0;
-    padding: 1px 4px;
-    border: 0;
-    background: transparent;
+    padding: 2px 5px;
+    border: 1px solid #3a4961;
+    border-radius: 5px;
+    background: #111827;
     color: var(--ag-muted);
     font-size: 10px;
 }
 
+#ag-analytics .ag-series .ag-only:hover {
+    color: #fff;
+    border-color: #657caa;
+}
+
 #ag-analytics .ag-graph-scroll {
     overflow-x: auto;
-    border: 1px solid var(--ag-border);
-    border-radius: 8px;
-    background: #171d26;
+    border: 1px solid #344258;
+    border-radius: 12px;
+    background: #0d1625;
 }
 
 #ag-analytics svg {
@@ -775,37 +1014,39 @@
 
 #ag-analytics .ag-bars {
     display: grid;
-    gap: 7px;
-    padding: 12px;
+    gap: 8px;
+    padding: 14px;
 }
 
 #ag-analytics .ag-bar {
     display: grid;
     grid-template-columns: minmax(100px, 230px) 1fr 40px;
     align-items: center;
-    gap: 9px;
+    gap: 10px;
 }
 
 #ag-analytics .ag-bar-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 12px;
 }
 
 #ag-analytics .ag-bar-track {
-    height: 11px;
+    height: 12px;
     border-radius: 9px;
-    background: #303b49;
+    background: #1e293b;
+    border: 1px solid #344258;
 }
 
 #ag-analytics .ag-bar-fill {
     height: 100%;
     border-radius: inherit;
-    background: #e1b875;
+    background: linear-gradient(90deg, #4268c9, #7293ed);
 }
 
 #ag-analytics .ag-hint {
-    margin: 8px 0 0;
+    margin: 10px 0 0;
     color: var(--ag-muted);
     font-size: 11px;
 }
@@ -814,15 +1055,71 @@
     position: fixed;
     z-index: 2147483001;
     max-width: min(330px, calc(100vw - 20px));
-    padding: 8px 10px;
-    border: 1px solid #736753;
-    border-radius: 7px;
-    background: #252e39;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
-    color: #f2f2ef;
-    font: 11px/1.5 Inter, sans-serif;
+    padding: 9px 12px;
+    border: 1px solid #3c4d68;
+    border-radius: 10px;
+    background: #182335;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, .5);
+    color: #edf2fb;
+    font: 11px/1.5 'Inter', system-ui, sans-serif;
     pointer-events: none;
     white-space: pre-line;
+}
+
+/* Скроллбары в стиле Queue.js */
+#AF_Grabber .ag::-webkit-scrollbar,
+#AF_Grabber .ag-table-wrap::-webkit-scrollbar,
+#AF_Grabber .ag-checkgrid::-webkit-scrollbar,
+#AF_Grabber .ag .ag-theme-menu::-webkit-scrollbar,
+#ag-column-popover::-webkit-scrollbar,
+#ag-column-popover .ag-popover-list::-webkit-scrollbar,
+#ag-analytics .ag-analytics-body::-webkit-scrollbar,
+#ag-analytics .ag-analytics-table::-webkit-scrollbar,
+#ag-analytics .ag-series-list::-webkit-scrollbar,
+#ag-analytics .ag-graph-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+#AF_Grabber .ag::-webkit-scrollbar-track,
+#AF_Grabber .ag-table-wrap::-webkit-scrollbar-track,
+#AF_Grabber .ag-checkgrid::-webkit-scrollbar-track,
+#AF_Grabber .ag .ag-theme-menu::-webkit-scrollbar-track,
+#ag-column-popover::-webkit-scrollbar-track,
+#ag-column-popover .ag-popover-list::-webkit-scrollbar-track,
+#ag-analytics .ag-analytics-body::-webkit-scrollbar-track,
+#ag-analytics .ag-analytics-table::-webkit-scrollbar-track,
+#ag-analytics .ag-series-list::-webkit-scrollbar-track,
+#ag-analytics .ag-graph-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#AF_Grabber .ag::-webkit-scrollbar-thumb,
+#AF_Grabber .ag-table-wrap::-webkit-scrollbar-thumb,
+#AF_Grabber .ag-checkgrid::-webkit-scrollbar-thumb,
+#AF_Grabber .ag .ag-theme-menu::-webkit-scrollbar-thumb,
+#ag-column-popover::-webkit-scrollbar-thumb,
+#ag-column-popover .ag-popover-list::-webkit-scrollbar-thumb,
+#ag-analytics .ag-analytics-body::-webkit-scrollbar-thumb,
+#ag-analytics .ag-analytics-table::-webkit-scrollbar-thumb,
+#ag-analytics .ag-series-list::-webkit-scrollbar-thumb,
+#ag-analytics .ag-graph-scroll::-webkit-scrollbar-thumb {
+    background: #536a8e;
+    border-radius: 4px;
+}
+
+#AF_Grabber .ag,
+#AF_Grabber .ag-table-wrap,
+#AF_Grabber .ag-checkgrid,
+#AF_Grabber .ag .ag-theme-menu,
+#ag-column-popover,
+#ag-column-popover .ag-popover-list,
+#ag-analytics .ag-analytics-body,
+#ag-analytics .ag-analytics-table,
+#ag-analytics .ag-series-list,
+#ag-analytics .ag-graph-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #536a8e transparent;
 }
 
 @media (max-width: 690px) {
@@ -863,169 +1160,18 @@
         transition: none !important;
     }
 }
-
-#AF_Grabber .ag .ag-theme-row .ag-theme-dropdown {
-    position: relative;
-    min-width: 0;
-    width: 100%;
-}
-
-#AF_Grabber .ag .ag-theme-row .ag-theme-dropdown[open] {
-    flex: none;
-    order: 0;
-}
-
-#AF_Grabber .ag .ag-theme-row .ag-theme-dropdown > summary {
-    min-height: 31px;
-    padding: 5px 10px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--ag-text);
-}
-
-#AF_Grabber .ag .ag-theme-menu {
-    position: absolute;
-    top: calc(100% + 5px);
-    left: 0;
-    z-index: 30;
-    width: min(410px, calc(100vw - 45px));
-    max-height: 320px;
-    overflow-y: auto;
-    padding: 8px;
-    border: 1px solid #6c655b;
-    border-radius: 9px;
-    background: #202832;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, .5);
-}
-
-#AF_Grabber .ag .ag-theme-group {
-    padding: 8px 5px 4px;
-    color: var(--ag-accent);
-    font-size: 11px;
-    font-weight: 700;
-}
-
-#AF_Grabber .ag .ag-theme-group:not(:first-child) {
-    margin-top: 5px;
-    border-top: 1px solid var(--ag-border);
-}
-
-#AF_Grabber .ag .ag-theme-menu .ag-check {
-    padding: 5px 7px;
-}
-
-/* ===== Graphite-blue skin for Grabber ===== */
-
-#AF_Grabber .ag,
-#ag-analytics {
-    box-shadow: 0 26px 70px rgba(3, 9, 22, .52);
-}
-
-#AF_Grabber .ag {
-    border-color: #344258;
-}
-
-#AF_Grabber .ag input[type="date"],
-#AF_Grabber .ag input[type="search"],
-#AF_Grabber .ag select,
-#ag-analytics input[type="search"] {
-    background: #0d1625;
-}
-
-#AF_Grabber .ag button:hover:not(:disabled),
-#ag-analytics button:hover:not(:disabled),
-#ag-column-popover button:hover:not(:disabled),
-#AF_Grabber .ag .ag-check:hover {
-    background: #293b56;
-}
-
-#AF_Grabber .ag .ag-primary {
-    background: #4268c9;
-    border-color: #7293ed;
-    color: #eef3ff;
-}
-
-#AF_Grabber .ag .ag-primary:hover:not(:disabled) {
-    background: #547ce1;
-    border-color: #a2b9fa;
-}
-
-#AF_Grabber .ag .ag-mark {
-    border-color: #536fa7;
-}
-
-#AF_Grabber .ag th,
-#ag-analytics th {
-    background: #23334b;
-}
-
-#AF_Grabber .ag td,
-#ag-analytics td {
-    border-bottom-color: #344258;
-}
-
-#AF_Grabber .ag tbody tr:hover td {
-    background: #23334b;
-}
-
-#ag-column-popover {
-    border-color: #536fa7;
-    background: #182335;
-}
-
-#ag-column-popover input {
-    accent-color: #829fff;
-}
-
-#ag-analytics {
-    border-color: #344258;
-    background: #111827;
-}
-
-#ag-analytics .ag-graph-scroll {
-    background: #0d1625;
-}
-
-#ag-analytics .ag-series {
-    border-color: #435b80;
-    background: #1a2536;
-}
-
-#ag-analytics .ag-bar-track {
-    background: #344258;
-}
-
-#ag-analytics .ag-bar-fill {
-    background: #829fff;
-}
-
-#ag-tooltip {
-    border-color: #536fa7;
-    background: #1a2536;
-    color: #edf2fb;
-}
-
-#AF_Grabber .ag .ag-theme-menu {
-    border-color: #536fa7;
-    background: #182335;
-}
-
-#AF_Grabber .ag .ag-progress {
-    background: #344258;
-}
 </style>
 
 <div class="ag">
     <div class="ag-head chmaf-drag-handle">
         <div class="ag-title">
-            <div class="ag-mark">AF</div>
+            <div class="ag-mark">📊</div>
             <div>
                 <h2>Аналитика обращений</h2>
                 <div class="ag-caption">Чаты · фильтры · динамика</div>
             </div>
         </div>
-        <button type="button" data-action="close">Закрыть</button>
+        <button type="button" class="buttonHide" data-action="close" title="Закрыть">❌</button>
     </div>
 
     <div class="ag-controls">
@@ -1154,7 +1300,7 @@
                     Выбирайте одну или несколько линий
                 </div>
             </div>
-            <button type="button" data-a-action="close">Закрыть</button>
+            <button type="button" class="buttonHide" data-a-action="close" title="Закрыть">❌</button>
         </div>
 
         <div class="ag-analytics-body">
