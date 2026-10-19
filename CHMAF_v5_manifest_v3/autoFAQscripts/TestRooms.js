@@ -1,6 +1,6 @@
 /**
  * Refactored TestRooms Module (Fixed)
- * Style: Dark Glassmorphism
+ * Visual Style: Corporate Graphite Dark (как Queue.js)
  * Unique Prefix: trm-
  */
 
@@ -11,76 +11,154 @@
         const style = document.createElement('style');
         style.id = 'trm-styles';
         style.innerHTML = `
-            .trm-panel {
-                background: rgba(20, 22, 30, 0.85) !important;
-                backdrop-filter: blur(15px);
-                -webkit-backdrop-filter: blur(15px);
-                border: 1px solid rgba(255, 255, 255, 0.08) !important;
-                border-radius: 20px;
-                color: #e2e8f0;
-                font-family: 'Segoe UI', system-ui, sans-serif;
-                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            #AF_testrooms .trm-panel {
+                box-sizing: border-box;
+                width: min(360px, calc(100vw - 24px));
+                max-width: 100%;
                 padding: 18px !important;
-                width: 320px;
+                color: #edf2fb;
+                background:
+                    radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+                    #111827 !important;
+                border: 1px solid #344258 !important;
+                border-radius: 18px;
+                box-shadow:
+                    0 26px 70px rgba(3, 9, 22, .52),
+                    inset 0 1px rgba(255, 255, 255, .06) !important;
+                font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
                 z-index: 1000005;
+                position: relative;
             }
-            .trm-header {
+            #AF_testrooms .trm-panel,
+            #AF_testrooms .trm-panel * { box-sizing: border-box; }
+
+            #AF_testrooms .trm-header {
                 display: flex;
-                justify-content: space-between;
                 align-items: center;
-                margin-bottom: 15px;
-                cursor: grab;
+                gap: 8px;
+                margin-bottom: 14px;
+                padding-bottom: 14px;
+                border-bottom: 1px solid #344258;
+                cursor: move;
             }
-            .trm-row {
+            #AF_testrooms .trm-title {
+                flex: 1;
+                min-width: 0;
+                padding: 7px 12px;
+                color: #a6b4cb;
+                background: #182335;
+                border: 1px solid #364660;
+                border-radius: 10px;
+                letter-spacing: .03em;
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            #AF_testrooms .trm-section-label {
+                margin: 0 0 6px 2px;
+                color: #8e96b8;
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: .03em;
+                text-transform: uppercase;
+            }
+
+            #AF_testrooms .trm-row {
                 display: flex;
                 gap: 8px;
-                margin-bottom: 12px;
+                margin-bottom: 8px;
                 width: 100%;
             }
-            .trm-grid {
+            #AF_testrooms .trm-grid {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr 1fr 1fr 1fr;
                 gap: 8px;
-                margin-bottom: 12px;
+                margin-bottom: 14px;
             }
-            .trm-input, .trm-select {
-                background: rgba(0, 0, 0, 0.3) !important;
-                border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                border-radius: 10px !important;
-                color: #fff !important;
-                padding: 6px 10px !important;
+
+            #AF_testrooms .trm-input,
+            #AF_testrooms .trm-select {
+                width: 100%;
+                min-width: 0;
+                height: 36px;
+                color: #edf2fb !important;
+                background: #0d1625 !important;
+                border: 1px solid #3a4961 !important;
+                border-radius: 9px !important;
+                padding: 0 10px !important;
                 outline: none !important;
                 font-size: 13px !important;
-                width: 100%;
-                box-sizing: border-box;
-                transition: border-color 0.2s;
+                font-family: inherit;
+                transition: background .2s, border-color .2s, box-shadow .2s;
             }
-            .trm-input:focus, .trm-select:focus { border-color: #4facfe !important; }
-            .trm-btn {
-                background: rgba(255, 255, 255, 0.06) !important;
-                border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                border-radius: 10px !important;
-                color: #fff !important;
-                padding: 6px !important;
+            #AF_testrooms .trm-input { font-family: 'JetBrains Mono', 'SF Mono', monospace; }
+            #AF_testrooms .trm-input::placeholder { color: #6b7896; font-family: 'Inter', 'Segoe UI', sans-serif; }
+            #AF_testrooms .trm-input:hover,
+            #AF_testrooms .trm-select:hover {
+                background: #142034 !important;
+                border-color: #657caa !important;
+            }
+            #AF_testrooms .trm-input:focus,
+            #AF_testrooms .trm-select:focus {
+                background: #142034 !important;
+                border-color: #829fff !important;
+                box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
+            }
+            #AF_testrooms .trm-select option { background: #111827; color: #edf2fb; }
+
+            #AF_testrooms .trm-btn {
+                min-height: 36px;
+                padding: 8px 12px;
+                color: #dce5f5;
+                background: #1b283c;
+                border: 1px solid #3c4d68;
+                border-radius: 9px;
                 cursor: pointer;
-                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                font-size: 16px;
+                font-size: 13px;
+                font-weight: 600;
+                font-family: inherit;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 5px;
+                gap: 6px;
+                white-space: nowrap;
+                transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
             }
-            .trm-btn:hover { background: rgba(255, 255, 255, 0.15) !important; transform: translateY(-1px); }
-            .trm-btn-primary {
-                background: linear-gradient(135deg, rgba(79, 172, 254, 0.4), rgba(0, 242, 254, 0.4)) !important;
-                border-color: rgba(79, 172, 254, 0.5) !important;
-                font-weight: 600 !important;
-                padding: 10px !important;
-                width: 100% !important;
-                margin-top: 5px;
+            #AF_testrooms .trm-btn:hover:not(:disabled) {
+                color: #fff;
+                background: #293b56;
+                border-color: #7799e2;
+                transform: translateY(-1px);
+            }
+            #AF_testrooms .trm-btn:disabled { opacity: .55; cursor: progress; }
+            #AF_testrooms .trm-btn-icon { padding: 8px 10px; font-size: 14px; }
+            #AF_testrooms .trm-btn-small { font-size: 11px; padding: 6px; }
+
+            #AF_testrooms #hideMetestrooms {
+                background: rgba(255, 116, 140, .08) !important;
+                border-color: rgba(255, 116, 140, .3) !important;
+                color: #ffb0be !important;
+                padding: 8px 12px !important;
+            }
+
+            #AF_testrooms .trm-btn-primary {
+                width: 100%;
+                min-height: 40px;
+                color: #eef3ff;
+                background: #4268c9;
+                border-color: #7293ed;
+                box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
                 font-size: 14px;
             }
-            .trm-btn-hide { width: 55px; background: rgba(56, 142, 60, 0.3) !important; font-size: 12px; }
+            #AF_testrooms .trm-btn-primary:hover:not(:disabled) {
+                background: #547ce1;
+                border-color: #a2b9fa;
+                box-shadow: 0 6px 19px rgba(58, 96, 205, .3);
+            }
         `;
         document.head.appendChild(style);
     };
@@ -88,25 +166,27 @@
     const win_Template = `
         <div class="trm-panel" id="trm-container">
             <div class="trm-header chmaf-drag-handle" id="trm-drag">
-                <button id="hideMetestrooms" class="trm-btn trm-btn-hide" title="Скрыть">✕</button>
-                <div style="display:flex; gap:5px;">
-                    <button id="clrTestRooms" class="trm-btn" title="Очистить" style="font-size:14px;">🧹</button>
-                    <button id="aboutTestRooms" class="trm-btn" title="Инструкция">❓</button>
-                    <button id="confluenceTestRooms" class="trm-btn" title="Confluence">📋</button>
-                </div>
+                <button id="hideMetestrooms" class="trm-btn buttonHide" title="Скрыть">❌</button>
+                <div class="trm-title">🧪ТУ</div>
+                <button id="clrTestRooms" class="trm-btn trm-btn-icon" title="Очистить">🧹</button>
+                <button id="aboutTestRooms" class="trm-btn trm-btn-icon" title="Инструкция">❓</button>
+                <button id="confluenceTestRooms" class="trm-btn trm-btn-icon" title="Confluence">📋</button>
             </div>
 
-            <select id="lessontypeselect" class="trm-select" style="margin-bottom:10px;">
-                <option disabled selected value="lessonnotselect">Выбери тип урока</option>
-                <option value="test">1 - 1</option>
-                <option value="test-parallel">Параллельный</option>
-                <option value="test-webinar">Вебинар</option>
-                <option value="test-group">Групповой</option>
-            </select>
-
-            <select id="subjecttypeselect" class="trm-select" style="margin-bottom:12px;">
-                <option disabled selected value="subjnotselect">Выбери предмет</option>
-                <option value="api-english">Английский</option>
+            <div class="trm-section-label">Урок</div>
+            <div class="trm-row">
+                <select id="lessontypeselect" class="trm-select" title="Тип урока">
+                    <option disabled selected value="lessonnotselect">Тип урока</option>
+                    <option value="test">👤 1 - 1</option>
+                    <option value="test-parallel">🔀 Параллельный</option>
+                    <option value="test-webinar">📺 Вебинар</option>
+                    <option value="test-group">👥 Групповой</option>
+                </select>
+            </div>
+            <div class="trm-row" style="margin-bottom:14px;">
+                <select id="subjecttypeselect" class="trm-select" title="Предмет">
+                    <option disabled selected value="subjnotselect">Предмет</option>
+                    <option value="api-english">Английский</option>
                 <option value="api-biology">Биология</option>
                 <option value="api-geography">География</option>
                 <option value="api-preschool">Дошкольная математика</option>
@@ -129,21 +209,23 @@
                 <option value="api-german">Немецкий</option>
                 <option value="api-french">Французский</option>
                 <option value="api-chinese">Китайский</option>
-            </select>
+                </select>
+            </div>
 
+            <div class="trm-section-label">Участники</div>
             <div class="trm-row">
-                <input id="teachforroom" class="trm-input" placeholder="ID П">
-                <input id="studforroom" class="trm-input" placeholder="ID У">
+                <input id="teachforroom" class="trm-input" placeholder="ID преподавателя" autocomplete="off">
+                <input id="studforroom" class="trm-input" placeholder="ID ученика(ов)" autocomplete="off"
+                       title="Несколько учеников — через запятую">
             </div>
-
             <div class="trm-grid">
-                <button id="insertteachid" class="trm-btn">👽</button>
-                <button id="insertstudid" class="trm-btn">👨‍🎓</button>
-                <button id="userfromchatid" class="trm-btn" style="font-size:11px;">Чат→ID</button>
-                <button id="engfromchat" class="trm-btn" style="font-size:11px;">Eng→ID</button>
+                <button id="insertteachid" class="trm-btn" title="Подставить тестового П">👽</button>
+                <button id="insertstudid" class="trm-btn" title="Подставить тестового У">👨‍🎓</button>
+                <button id="userfromchatid" class="trm-btn trm-btn-small" title="ID из открытого чата">💬 Чат</button>
+                <button id="engfromchat" class="trm-btn trm-btn-small" title="1-1, английский, ID из чата">🇬🇧 Eng</button>
             </div>
 
-            <button id="starttestroom" class="trm-btn trm-btn-primary">Создать тестовый урок</button>
+            <button id="starttestroom" class="trm-btn trm-btn-primary">🚀 Создать тестовый урок</button>
         </div>
     `;
 
@@ -235,6 +317,8 @@
         // URLSearchParams сам кодирует запятые как %2C;
         // прежняя ручная замена давала двойное кодирование (%252C) и ломала мульти-ID
         const sId = sIdRaw;
+        const btn = document.getElementById('starttestroom');
+        btn.disabled = true;
         const hash = generateHash();
         const url = `https://${subject}.skyeng.ru/admin/tech-support-room/create?uniqid=${hash}`;
         const params = new URLSearchParams({
@@ -249,6 +333,7 @@
                 body: params.toString(), credentials: "include"
             }
         }, response => {
+            btn.disabled = false;
             if (response?.success) {
                 notify('Тестовый урок создан! 🚀 Приглашение на него доступно в ЛКУ и ЛКП', 'info');
                 // Таймер запоминаем: при повторном открытии окна он отменяется,
