@@ -204,8 +204,7 @@ function addinginfo(pageelement, userid, elemtype, info = processedUserIds.get(u
 
   if (elemtype === 'topline') {
     pageelement.style.width = '110px';
-    pageelement.style.color = 'blue';
-    pageelement.style.textDecoration = 'underline';
+    pageelement.classList.add('chmaf-ts-topline-user');
     pageelement.style.cursor = 'pointer';
     pageelement.title = 'ЛКМ - открыть пользователя в CRM. ПКМ - скопировать id';
 
@@ -283,15 +282,33 @@ function ensureTsThemeStyle() {
   const style = document.createElement('style');
   style.id = TS_THEME_STYLE_ID;
   style.textContent = `
+    /* Базовый стиль ссылки пользователя в верхней строке */
+    .chmaf-ts-topline-user {
+      color: #1565c0;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+
     html.chmaf-ts-dark,
     html.chmaf-ts-dark body {
-      background: #191919 !important;
+      background: #111827 !important;
       color-scheme: dark;
     }
 
-    /* Всё содержимое страницы, кроме окон ChMAF */
+    /* Общее сглаживание и четкость шрифтов */
+    html.chmaf-ts-dark,
+    html.chmaf-ts-dark body,
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) * {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+    }
+
+    /* Всё содержимое страницы, кроме окон ChMAF (легкий синий оттенок + контрастность без размывающего оверлея) */
     html.chmaf-ts-dark body > :not(script):not(style):not(link):not(.chmaf-ts-keep):not(#webrtc-diag-floating-btn) {
-      filter: invert(.9) hue-rotate(180deg);
+      filter: invert(.88) hue-rotate(185deg) contrast(1.04);
     }
 
     /* Картинки и видео возвращаем к нормальным цветам */
@@ -299,22 +316,51 @@ function ensureTsThemeStyle() {
       filter: invert(1) hue-rotate(180deg);
     }
 
-    /* Лёгкий синий оттенок — в тон окнам ChMAF, а не нейтрально-серый */
-    html.chmaf-ts-dark body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      z-index: 2147483000;
-      pointer-events: none;
-      background: rgba(40, 70, 150, .16);
-      mix-blend-mode: screen;
+    /* Единый четкий читаемый шрифт для всех текстовых элементов */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(
+      body, p, span, div, label, input, button, td, th, h1, h2, h3, h4, h5, h6,
+      .ant-form-item-label > label,
+      .ant-form-item-label,
+      .ant-picker,
+      .ant-select,
+      .mat-mdc-tab,
+      [role="tab"]
+    ) {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     }
 
+    /* Заголовки полей ввода, фильтров и разделов («Введите хэш урока», «Введите ID пользователя», «Выберите промежуток», «Устройства пользователя» и др.) */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(
+      label,
+      .ant-form-item-label > label,
+      .ant-form-item-label,
+      .mat-mdc-floating-label,
+      .mat-form-field-label,
+      .mat-mdc-form-field-label,
+      .cdk-header-cell,
+      h1, h2, h3, h4, h5, h6,
+      [class*="label" i],
+      [class*="title" i],
+      .mw-title
+    ) {
+      color: #000000 !important;
+      font-weight: 600 !important;
+      letter-spacing: .01em !important;
+    }
 
-    /* --- Серые элементы страницы → цвета ChMAF.
-       Содержимое страницы инвертировано, поэтому здесь заданы «светлые
-       прообразы»: после invert(.9) + hue-rotate(180deg) они становятся
-       тёмно-синими, как кнопки и поля в окнах расширения. --- */
+    /* Ссылка на пользователя в верхней строке («4367448 (П)») */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .chmaf-ts-topline-user {
+      color: #002266 !important; /* При инверсии становится ярким контрастным голубым #a0c2f8 */
+      font-weight: 600 !important;
+      text-decoration: underline !important;
+      text-underline-offset: 3px !important;
+    }
+
+    /* Бейджи ролей (У) и (П) */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .chmaf-usertype-badge {
+      font-weight: 700 !important;
+      letter-spacing: .02em !important;
+    }
 
     /* Кнопки («Обновить» и т. п.); вкладки, чипы и кнопки-иконки не трогаем */
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) button:not([role="tab"]):not([class*="chip"]):not([class*="icon-button"]):not([class*="mat-mdc-tab"]):not([class*="expansion"]) {
@@ -323,6 +369,7 @@ function ensureTsThemeStyle() {
       border: 1px solid #aec3e5 !important;
       border-radius: 8px !important;
       box-shadow: none !important;
+      font-weight: 600 !important;
       transition: background-color .16s ease, border-color .16s ease;
     }
 
@@ -331,9 +378,9 @@ function ensureTsThemeStyle() {
       border-color: #3a65c0 !important;
     }
 
-    /* Поля ввода: «Выберите промежуток» (input[skyuiinput]), выпадающие списки
+    /* Поля ввода: «Выберите промежуток» (.ant-picker), выпадающие списки
        ng-zorro (хэш, ID), селект «Сортировка» (Angular Material) */
-    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.ant-select-selector, .mat-mdc-text-field-wrapper, .mdc-text-field--filled) {
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.ant-select-selector, .ant-picker, .mat-mdc-text-field-wrapper, .mdc-text-field--filled) {
       color: #000000 !important;
       background-color: #f5faff !important;
       border: 1px solid #b5c7e5 !important;
@@ -343,17 +390,47 @@ function ensureTsThemeStyle() {
 
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .mdc-line-ripple { display: none !important; }
 
-    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.ant-select-selection-search-input):not(.mat-mdc-input-element), textarea) {
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(
+      input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+      textarea,
+      .ant-picker-input > input,
+      .ant-select-selection-item,
+      .ant-select-selection-search-input,
+      .mat-mdc-input-element
+    ) {
       color: #000000 !important;
-      background-color: #f5faff !important;
-      border-color: #b5c7e5 !important;
+      background-color: transparent !important;
       opacity: 1 !important;
       -webkit-text-fill-color: #000000 !important;
+      font-weight: 600 !important;
+      font-size: 13px !important;
+    }
+
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(
+      .ant-picker-range-separator,
+      .ant-picker-suffix,
+      .ant-picker-clear,
+      .ant-select-arrow
+    ) {
+      color: #112244 !important;
+      font-weight: 600 !important;
     }
 
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(input, textarea)::placeholder {
-      color: #6f7f99 !important;
-      -webkit-text-fill-color: #6f7f99 !important;
+      color: #556688 !important;
+      -webkit-text-fill-color: #556688 !important;
+    }
+
+    /* Вкладки страницы (Логи, Чек лист, Ошибки, Статистика...) */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.mat-mdc-tab, [role="tab"]) {
+      color: #222b3a !important;
+      font-weight: 500 !important;
+      font-size: 13px !important;
+    }
+
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.mat-mdc-tab.mdc-tab--active, [role="tab"][aria-selected="true"]) {
+      color: #0033aa !important;
+      font-weight: 700 !important;
     }
 
     /* Всплывающие подсказки (браузер и ОС на полосе «Устройства пользователя» — ds-tooltip) */
@@ -366,7 +443,7 @@ function ensureTsThemeStyle() {
       box-shadow: none !important;
     }
 
-    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) ds-tooltip :is(.content, .body) { color: #000000 !important; }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) ds-tooltip :is(.content, .body) { color: #000000 !important; font-weight: 500 !important; }
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) ds-tooltip .arrow :is(svg, path) { fill: #e0f0ff !important; color: #e0f0ff !important; }
 
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.tooltip-arrow, .arrow)::before {
@@ -376,6 +453,16 @@ function ensureTsThemeStyle() {
 
 
     /* --- Цвета журнала и полосы устройств (заданы «прообразы» под инверсию) --- */
+
+    /* Таблица логов: четкие шрифты */
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) td {
+      font-size: 12px !important;
+      font-weight: 500 !important;
+    }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) th {
+      font-size: 12px !important;
+      font-weight: 700 !important;
+    }
 
     /* Ячейки журнала: тёмный фон + цветная полоса слева вместо сплошной заливки */
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) td.-info {
@@ -436,8 +523,8 @@ function ensureTsThemeStyle() {
       color: #140000 !important;               /* → #f3e3c3 */
     }
 
-    html.chmaf-ts-dark ::-webkit-scrollbar { width: 10px; height: 10px; background: #191919; }
-    html.chmaf-ts-dark ::-webkit-scrollbar-thumb { background: #344258; border-radius: 8px; border: 2px solid #191919; }
+    html.chmaf-ts-dark ::-webkit-scrollbar { width: 10px; height: 10px; background: #111827; }
+    html.chmaf-ts-dark ::-webkit-scrollbar-thumb { background: #344258; border-radius: 8px; border: 2px solid #111827; }
   `;
   (document.head || document.documentElement).appendChild(style);
 }
