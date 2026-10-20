@@ -17,33 +17,11 @@ function yafFormUrl(surveyId) {
 /* Запросы из service worker уходят с Origin chrome-extension://…
    Форма может такой отвергнуть, поэтому для запросов НЕ из вкладок (tabId -1)
    подменяем Origin/Referer на сам сайт форм. Страницы и вкладки это не трогает. */
-async function yafEnsureHeaderRule(surveyId) {
-    const RULE_ID = 47001;
-    await chrome.declarativeNetRequest.updateSessionRules({
-        removeRuleIds: [RULE_ID],
-        addRules: [{
-            id: RULE_ID,
-            priority: 1,
-            action: {
-                type: "modifyHeaders",
-                requestHeaders: [
-                    { header: "origin", operation: "set", value: YAF_ORIGIN },
-                    { header: "referer", operation: "set", value: yafFormUrl(surveyId) }
-                ]
-            },
-            condition: {
-                urlFilter: "||forms.yandex.ru/",
-                tabIds: [chrome.tabs.TAB_ID_NONE],
-                resourceTypes: ["xmlhttprequest", "other"]
-            }
-        }]
-    });
-}
-
-async function yafCookie(names, url = YAF_ORIGIN) {
-    const all = await chrome.cookies.getAll({ url });
-    return all.find((c) => names.includes(c.name))?.value || "";
-}
+/* Тестовая сборка без разрешений cookies и declarativeNetRequest:
+   куки браузер прикладывает сам (credentials: "include" + host_permissions),
+   Origin не подменяем. */
+async function yafEnsureHeaderRule() { /* отключено */ }
+async function yafCookie() { return ""; }
 
 /* CSRF-токен Яндекс Форм лежит в HTML страницы формы (в состоянии приложения
    или в <meta>). На всякий случай проверяем и куки. */
@@ -146,15 +124,7 @@ async function yafFetchSurveyOptions(surveyId, token, questionIds) {
 async function yafLoadSession(surveyId, questionIds = [], force = false) {
     const fresh = yafCache.surveyId === surveyId && Date.now() - yafCache.at < YAF_TOKEN_TTL;
 
-    /* Страница формы открывается и без входа, поэтому проверяем сессию Яндекса по куке */
-    const sessionId = await yafCookie(["Session_id", "sessionid2"], "https://forms.yandex.ru")
-        || await yafCookie(["Session_id", "sessionid2"], "https://yandex.ru");
-    if (!sessionId) {
-        yafCache.at = 0;
-        return { authorized: false, loginUrl: yafFormUrl(surveyId) };
-    }
-
-    if (!force && fresh && yafCache.token) return { authorized: true, token: yafCache.token, options: yafCache.options };
+    if (!force && fresh && yafCache.token) return { authorized: true, authConfirmed: yafCache.authConfirmed, token: yafCache.token, options: yafCache.options };
 
     const res = await fetch(yafFormUrl(surveyId), { credentials: "include", cache: "no-store" });
     const finalHost = new URL(res.url).host;
@@ -173,6 +143,14 @@ async function yafLoadSession(surveyId, questionIds = [], force = false) {
         throw new Error("Не нашёл CSRF-токен на странице формы — смотри yafExtractToken в bg-yaforms.js");
     }
 
+    /* Вход определяем по данным страницы: явный флаг или uid пользователя */
+    const authFlag = html.match(/"(?:isAuth|isAuthorized|authorized|isLoggedIn)"\s*:\s*(true|false)/i);
+    const hasUid = /"(?:uid|passportUid|userId)"\s*:\s*"?[1-9]\d{4,}/.test(html);
+    if (authFlag && authFlag[1] === "false" && !hasUid) {
+        return { authorized: false, loginUrl: yafFormUrl(surveyId) };
+    }
+    const authConfirmed = hasUid || (authFlag && authFlag[1] === "true");
+
     Object.assign(yafCache, {
         surveyId, token, at: Date.now(),
         options: null
@@ -184,7 +162,35 @@ async function yafLoadSession(surveyId, questionIds = [], force = false) {
         const hasAny = options && questionIds.some(q => options[q]?.length);
         yafCache.options = hasAny ? options : yafExtractOptions(html, questionIds);
     }
-    return { authorized: true, token, options: yafCache.options };
+    yafCache.authConfirmed = !!authConfirmed;
+
+    /* Вход по странице не понять — пробная отправка dryRun (ничего не сохраняет).
+       401/403 = нет входа. */
+    if (!authConfirmed) {
+        try {
+            const probe = await fetch(YAF_SUBMIT_URL, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "accept": "application/json, text/plain, */*",
+                    "content-type": "application/json",
+                    "x-csrf-token": token,
+                    "x-form-referer": yafFormUrl(surveyId),
+                    "x-use-collab": "1"
+                },
+                body: JSON.stringify({ surveyId, values: {}, parent: yafFormUrl(surveyId), dryRun: true, timestamp: new Date().toISOString() })
+            });
+            const txt = await probe.text();
+            console.log("[ChMAF bg] dryRun-проверка входа:", probe.status, txt.slice(0, 200));
+            if (probe.status === 401 || probe.status === 403 || /auth|login|passport|unauthor/i.test(txt)) {
+                yafCache.at = 0;
+                return { authorized: false, loginUrl: yafFormUrl(surveyId) };
+            }
+        } catch (e) {
+            console.warn("[ChMAF bg] dryRun-проверка не удалась:", e.message);
+        }
+    }
+    return { authorized: true, authConfirmed: yafCache.authConfirmed, token, options: yafCache.options };
 }
 
 async function yafSubmit({ surveyId, values, dryRun }, retried = false) {
@@ -220,7 +226,7 @@ async function yafSubmit({ surveyId, values, dryRun }, retried = false) {
         yafCache.at = 0;
         return yafSubmit({ surveyId, values, dryRun }, true);
     }
-    if (res.status === 401) return { authorized: false, loginUrl: yafFormUrl(surveyId) };
+    if (res.status === 401 || res.status === 403) return { authorized: false, loginUrl: yafFormUrl(surveyId), status: res.status };
 
     const raw = await res.text();
     let data = null;

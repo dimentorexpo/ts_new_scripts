@@ -166,9 +166,9 @@
     function compSetAuth(state, text) {
         $('compAuth').dataset.state = state;
         $('compAuthText').textContent = text;
-        $('compLogin').hidden = state !== 'out';
-        compAuthorized = state === 'ok';
-        $('compSend').disabled = state !== 'ok';
+        $('compLogin').hidden = state !== 'out' && state !== 'warn';
+        compAuthorized = state === 'ok' || state === 'warn';
+        $('compSend').disabled = !compAuthorized;
     }
 
     /* ---------- Варианты ответов ---------- */
@@ -249,7 +249,11 @@
                 compSetAuth('out', 'Нет входа в Яндекс Формы');
                 return false;
             }
-            compSetAuth('ok', 'Вход выполнен — можно отправлять');
+            if (r.authConfirmed) {
+                compSetAuth('ok', 'Вход выполнен — можно отправлять');
+            } else {
+                compSetAuth('warn', 'Вход в Яндекс не подтверждён — без входа отправка не сработает');
+            }
             compApplyOptions(r.options);
             return true;
         } catch (e) {
@@ -375,7 +379,8 @@
             toast(`Компенсация для ${data.summary.student} отправлена`, 'success');
             compClear(false);
         } catch (e) {
-            toast(`Не отправилось: ${e.message}`, 'error');
+            const hint = $('compAuth').dataset.state === 'warn' ? ' Скорее всего, нет входа в Яндекс — нажмите «Войти».' : '';
+            toast(`Не отправилось: ${e.message}.${hint}`, 'error');
         } finally {
             setBusy(btn, false);
             btn.disabled = !compAuthorized;
