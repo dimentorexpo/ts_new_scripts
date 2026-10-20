@@ -1,5 +1,8 @@
 'use strict';
 
+// Компенсация: отправка в Яндекс Формы (yaForms:* сообщения)
+importScripts('bg-yaforms.js');
+
 const DATSY_URL = 'https://datsy.ru/';
 const DATSY_AUTH_URL = 'https://datsy.ru/api/auth/check.php';
 

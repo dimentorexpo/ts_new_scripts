@@ -273,6 +273,21 @@ const MODULE_MENU_CONFIG = Object.freeze([
         tp: false
     }),
     Object.freeze({
+        id: 'buttonCompensation',
+        text: '🎁 Нет честных оплат',
+        fn: () => {
+            if (typeof window.getCompensationPress === 'function') {
+                window.getCompensationPress();
+            } else {
+                window.createAndShowButton?.(
+                    'Модуль «Компенсация» не загружен. Обновите расширение и нажмите Ctrl+Shift+R.',
+                    'warning'
+                );
+            }
+        },
+        tp: true
+    }),
+    Object.freeze({
         id: 'buttonGetQueue',
         text: '🚧 Очередь',
         fn: () => window.getQueuePress?.(),

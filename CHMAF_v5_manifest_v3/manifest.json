@@ -18,7 +18,7 @@
 			"https://crm2.skyeng.ru/*"
 		]
 	},
-"content_scripts": [
+	"content_scripts": [
 		{
 			"js": [
 				"/autoFAQscripts/NotificationSystem.js",
@@ -59,11 +59,13 @@
 				"/autoFAQscripts/CheckTags.js",
 				"/autoFAQscripts/CRMcomments.js",
 				"/autoFAQscripts/CRMSpecial.js",
+				"/autoFAQscripts/Compensation.js",
 				"content.js"
 			],
 			"css": [
 				"/CSS/design-system.css",
-				"/CSS/style.css"
+				"/CSS/style.css",
+				"/CSS/compensation.css"
 			],
 			"matches": [
 				"*://skyeng.autofaq.ai/*"
@@ -164,7 +166,9 @@
 	],
 	"permissions": [
 		"storage",
-		"clipboardWrite"
+		"clipboardWrite",
+		"cookies",
+		"declarativeNetRequestWithHostAccess"
 	],
 	"host_permissions": [
 		"https://*.skyeng.ru/*",
@@ -176,6 +180,8 @@
 		"https://mm-time.skyeng.tech/*",
 		"https://*.datsy.ru/*",
 		"https://docs.google.com/forms/*",
-		"https://*.ipgeolocation.io/*"
+		"https://*.ipgeolocation.io/*",
+		"https://forms.yandex.ru/*",
+		"https://yandex.ru/*"
 	]
 }
